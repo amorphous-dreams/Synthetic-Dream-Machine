@@ -1,0 +1,85 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds2/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-11 (file date) — source `.lares-scratch/ci-reds2/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds2/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/ci-reds2/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-11
+
+Verbatim scratch record `.lares-scratch/ci-reds2/out.md` (hand-back, file date 2026-11-11); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/ci-reds2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/redmender-ii-ci-reds-cured`>>
+
+! Redmender-II — CI reds cured (branch feature/green-jello-dinosaur-5&#45;-ci-reds2, pushed)
+
+Commits (on top of span head 5a8b5e603):
+* 832e662fb lar:&#47;&#47;/floor.boots.faceless/no-working-layer — PRODUCT regression (faceless floor)
+* b765443f5 lar:&#47;&#47;/browser.holds.worker/census-and-label — product, browser module shape
+* c84b3311d lar:&#47;&#47;/census.receipts.floor/publication-board — stale census + stale test
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/per-red`>>
+
+!! Per red
+# e2e floor-user-wiki-refuses W0/W1/W2, session-sign-reach S1/S2, node-b face-cell-lights-proved C0 — PRODUCT WAS WRONG.
+Root: `SlotDocResolver.bindings` (keyhive slot-doc-resolver.ts) still minted a working slot for every wiki; at a faceless
+floor `workingDoc` threw `no-face` through the island binding reply, so the floor's `lares` mount died before wiki-ready.
+Cure: bindings answers `workingUrl: null` without a face (slotDoc still refuses `no-face`; nothing founds). Threaded:
+daemon-behavior omits the url, daemon-vm-core settles null (host daemon working layer refuses by name if null),
+vessel-steps/core-caps types, mesh `mountWikiSlot` lays no working layer → no default writable, writes refuse
+NoWorkingLayerRefusal by name. No floor anchor / floor working doc resurrected.
+2a. keyhive floor-refuses-content-verbs (2 tests) — TEST STALE. Since the workbench lane the floor verifierFactory always
+attaches the daemon wiki's device-slot working layer; the fake ctx lacked `recipe`. Test now passes a floor ctx where
+that layer already stands; verifier assertions unchanged.
+2b. browser vessel-worker-seams census — false positives in browser-floor-pin.ts (`document (` in refusal prose,
+`b.alert(`). Port renamed `raiseAlert` (open-browser-vessel + floor-pin test updated), prose reworded. No page global reached.
+3b. node-b faced-boot-requires-proof (browser) — the pre-walk face-label block pushed `keepBrowserFaceAnchor(idbName, pinned)`
+past the weld's 3000-char window. Label write moved after the pin (proof → pin → label). Now 2677 chars.
+# web-tw5 wiki-mount-private-alias — TEST STALE: workbench commit 80f3f0719 designates `personal` for mirroring on purpose;
+test now asserts it is included.
+# seed-census K15 — floor.ts / floor-cut.ts read loadVesselVerifyingKey() for the publication board, same as nexus-release
+(already `place`). Receipted as `place`, count 1 each. (floor-unlock-door F1w in that log is a todo, not a fail.)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/proved-locally`>>
+
+!! Proved locally (scratch LAR_ROOT, no LAR_BAGS, &#45;-maxWorkers=2)
+* pnpm -r build + stamp; typecheck of mesh/tw5/keyhive/browser/node/cli green; typecheck:tests ratchet every package at ceiling.
+* node: face-cell-lights-proved (C0+C1) + faced-boot-requires-proof 12/12; working-layer-host-composite 2/2.
+* keyhive: floor-refuses-content-verbs, slot-doc-resolver (new S6b, seen red with cure reverted), workbench-realm 25/25+.
+* browser: vessel-worker-seams (chromium) + browser-floor-pin 6/6; shared-holder-routes 26/26.
+* tw5: wiki-mount-private-alias 4/4. mesh: working-document-resolve + working-always-mounts 4/4. node &#45;-test seed-census 9/9.
+* E2E NOT RUN (controller correction). C0 drives the same openNodeVessel faceless-floor boot of `lares`; CI proves the e2e files.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smells`>>
+
+!! Smells
+* At the floor the `lares` wiki now stands with NO default writable: TW5's own $:/StoryList etc. writes and any host-side
+write into it refuse by name. Lawful per defaultWritableSlot docs, but W0/S1/S2 may surface a write the floor boot makes
+that I could not see without e2e. If CI reds there, the likely seam is a host write after wiki-ready.
+* "[verb-dispatcher] summons startup scan crashed: ControlHomeUnavailable" at the floor — pre-existing (8× in the CI log),
+noisy, not a red.
+* No CHANGELOG line added; controller may want one for the faceless-floor cure.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Lao3iRjWBuWpb1mphHCmU9mZDqGzFy3tvIlZIihrq70`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -3,7 +3,6 @@
 import { describe, test, expect, beforeAll, afterEach } from "vitest";
 import { bootTestWiki, wikiSkip, skipNote } from "./test-wiki.js";
 import { IslandAdaptor } from "../src/island-adaptor.js";
-import { HandGate } from "../src/hand-gate.js";
 import { asIslandStore } from "./island-store-double.js";
 import { bridgeWikiToAdaptor } from "../src/outbound-bridge.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -32,19 +31,18 @@ class RecordingStore extends MemoryTiddlerStore {
   }
 }
 
-/** Past the per-title trailing window and the wiki's nextTick dispatch. */
-const settle = (): Promise<void> => new Promise((r) => setTimeout(r, HandGate.TRAILING_MS + 100));
 
 const URI  = "lar:///t/bridge/anchor";
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/bridge/anchor"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/bridge/anchor"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 describe.skipIf(wikiSkip)(`outbound bridge — a live wiki change reaches the adaptor${skipNote}`, () => {
   let engine: TW5Engine;
   let store: RecordingStore;
   let adaptor: IslandAdaptor;
+  const settle = async (): Promise<void> => { await adaptor.handsRested(); };
   let wiki: { addTiddler(t: unknown): void; deleteTiddler(t: string): void; getTiddler(t: string): unknown; addEventListener(type: string, fn: (c: unknown) => void): void; removeEventListener(type: string, fn: (c: unknown) => void): void };
   let Tiddler: new (f: Record<string, unknown>) => unknown;
   let lares: { enqueueNalu?: (c: unknown) => void; isApplyingNalu(): boolean; meme: LaresMemeFace };

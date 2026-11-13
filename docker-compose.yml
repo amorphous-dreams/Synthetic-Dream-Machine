@@ -35,12 +35,11 @@ x-serve-volumes-ro: &serve-volumes-ro
   - lararium-data:/app/.lararium-data
 
 x-vessel-data-env: &vessel-data-env
-  # The named volume is the vessel's durable XDG data home. The founder and
-  # server therefore resolve the same daemon doc without borrowing host state.
-  XDG_DATA_HOME: /app/.lararium-data
-  XDG_STATE_HOME: /app/.lararium-data/state
-  XDG_CACHE_HOME: /app/.lararium-data/cache
-  XDG_CONFIG_HOME: /app/.lararium-data/config
+  # The named volume is the vessel's house root (`LAR_ROOT`): the founder and the
+  # server resolve the same daemon doc under its hearth without borrowing host state.
+  # Genesis rides the image, named so the corpus never reads the volume for it.
+  LAR_ROOT: /app/.lararium-data
+  LAR_GENESIS: /app/genesis
 
 services:
 
@@ -62,10 +61,10 @@ services:
       NODE_ENV: qa
       <<: *vessel-data-env
       # The image's checked-out corpus is the deliberate local QA root; the
-      # vessel state remains isolated in the XDG volume above.
+      # vessel state remains isolated in the house-root volume above.
       LAR_DEV_REPO_ROOT: "1"
       LAR_PRONAOS_FOUNDER_RECEIPT: /app/.lararium-data/pronaos-founder-receipt.json
-    command: ["sh", "-ec", "node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build; test -s /app/.lararium-data/lares/vessel/social-bootstrap.json; printf '%s\\n' '{\"kind\":\"pronaos-founder\",\"bootstrap\":\"/app/.lararium-data/lares/vessel/social-bootstrap.json\"}' > /app/.lararium-data/pronaos-founder-receipt.json"]
+    command: ["sh", "-ec", "node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build; test -s /app/.lararium-data/hearth/vessel/social-bootstrap.json; printf '%s\\n' '{\"kind\":\"pronaos-founder\",\"bootstrap\":\"/app/.lararium-data/hearth/vessel/social-bootstrap.json\"}' > /app/.lararium-data/pronaos-founder-receipt.json"]
 
   # ─── dev — hot-reload node peer (tsx watch, full source mounted) ────────────
   lararium-dev:

@@ -1,15 +1,11 @@
-<<^ code="&#x0001;" from="?" -> to="lar:///packages/AGENTS">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///packages/AGENTS`>>
 
-<<~ ahu #meta>>
+<<~ ahu slot=`#/meta`>>
 
 ```toml
 uri-path     = "packages/AGENTS"
-file-path    = "packages/AGENTS.md"
 content-type = "text/memetic-wikitext+tiddlywiki"
 l-space      = "adjacent"
-manaoio      = 16
-mana         = 18
-manao        = 17
 role         = "package workspace navigation shore for coding agents"
 cacheable    = true
 hydrate      = true
@@ -18,7 +14,7 @@ retain       = true
 
 <<~/ahu>>
 
-<<~ ahu #ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 ✶ scan the operator ask, changed files, open tabs, and package boundary.
 ⏿ orient the task against the spine: mesh contracts, TW5 VM, node host, browser vessel, caps, operator CLI.
 ◇ choose the smallest package surface that can carry the change without crossing canon by accident.
@@ -27,9 +23,14 @@ retain       = true
 ↺ report receipts: files touched, commands run, friction found, next loop.
 <<~/ahu>>
 
-<<^ code="&#x0002;">>
+<<^ code=`&#x0002;`>>
 
-<<~ ahu #network-topology>>
+```toml meta
+title    = "lar:///packages/AGENTS"
+uri-path = "packages/AGENTS"
+```
+
+<<~ ahu slot=`#/network-topology`>>
 
 ## Network Topology (canonical)
 
@@ -43,11 +44,11 @@ Within-Nexus sync = Automerge CRDT (reliable). Cross-Nexus = explicit treaty, wi
 
 <<~/ahu>>
 
-<<~ ahu #package-map>>
+<<~ ahu slot=`#/package-map`>>
 
 ## Package Map (active)
 
-Eight packages carry the stack. Each owns one boundary; cross-cutting work travels through the contracts in `@lararium/mesh`.
+Eleven packages carry the stack. Each owns one boundary; cross-cutting work travels through the contracts in `@lararium/mesh`.
 
 **This map names boundaries, never files.** A file inventory here rots the moment the tree moves, and a stale inventory misleads worse than none — read the package's own `src/` for what lives in it.
 
@@ -55,7 +56,7 @@ Eight packages carry the stack. Each owns one boundary; cross-cutting work trave
 
 `@lararium/tw5` carries TiddlyWiki runtime integration: the TW5 VM surface, the island layer, the memetic-wikitext machinery, the verb pipeline, TW5-side stores, and the TW5 wikirules/macros/modules/filters. Holds zero `@automerge` dependencies. Treat disk projection as Node-shaped even when the barrel export exposes it.
 
-`@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the oracle read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No TW5 VM runs on the main thread — every engine lives in a worker.
+`@lararium/node` carries Node-surface capability atoms: local process boot, island plumbing, bag-path + residency law, boot artifacts, the wiki composition family, disk projection, the UDS verb-channel, relay ingress, and the flow read-face. A Node-surface assembly can compose a persona-bearing Lararium stack or a persona-less Herm stack; its process name does not decide that. The runtime **finds**; it never seeds social state. No truth lives on the main thread: every authoritative engine and store runs in a worker; the main-thread mirror (DreamDOM D3) is unprivileged: it holds no keys and no truth, boots only through one private door that takes the D2 port binding, and is fed by that port alone.
 
 ### Pronaos arrival/bootstrap projection (P0 inventory)
 
@@ -80,7 +81,7 @@ bounded, read-only material under their own route owners:
 |---|---|---|
 | `/bulb/manifest`, `/bulb/<cid>.bin` | Held, all-public bootstrap snapshot | CIDs outside the held bulb; `/bulb/pointer` is retired |
 | `/cas/<cid>` | Bytes named by a `public`-tier pointer in the Herm's own or declared realm books | Private/contract/undeclared pointers, missing bytes, guesses |
-| FLOW/oracle read face | Read-only public snapshot and FLOW-map disclosure | Generic private bag or persona-document access |
+| FLOW/flow read face | Read-only public snapshot and FLOW-map disclosure | Generic private bag or persona-document access |
 
 The future Librarium's public books, images, media, and deliberately offered editions remain a separate projection
 concern. None of these Herm read faces turns a house-held `library:` collection into a public shelf by implication.
@@ -100,17 +101,21 @@ realm-public controls remain the source-backed red/green witness for the Herm re
 
 `@lararium/browser` carries browser-native capability atoms that parallel the shared keel through WebSocket egress, IndexedDB, WebCrypto, Workers, and `__stubs__` for browser-incompatible dependencies. It cooperates with `@lararium/web` inside one Web-surface device/context assembly. That assembly remains a DreamNet peer across a real island boundary; browser inability to accept inbound sockets names a substrate constraint, not reduced authority. No React, no canvas.
 
-`@lararium/web` carries Web-surface capability atoms: Vite, page DOM, worker URLs, admission carriers, web projection adapters, and an optional public `@oracle` read. Together with `@lararium/browser`, it composes the local Web device/context assembly; that peer can carry a Lararium stack when its persona and document-owning capabilities stand. Its origin may come from localhost, LAN, or a public host; static byte distribution supplies a projection capability and never an authority. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
+`@lararium/web` carries Web-surface capability atoms: Vite, page DOM, worker URLs, admission carriers, web projection adapters, and an optional public `@flow` read. Together with `@lararium/browser`, it composes the local Web device/context assembly; that peer can carry a Lararium stack when its persona and document-owning capabilities stand. Its origin may come from localhost, LAN, or a public host; static byte distribution supplies a projection capability and never an authority. Reserve `@lararium/app` for a later generic application-surface composition after materially different vessel surfaces prove a shared contract.
 
 `@lararium/keyhive` carries the capability layer — a pre-alpha integration of `@keyhive/keyhive` WASM bindings. One Keyhive Doc = one bag (1:1). Keyhive's four native grades read `relay` < `read` < `edit` < `admin`; the provider's gate stays binary (`read` or `admin`), and the wider access axis lives as a model at `lar:///ha.ka.ba/lares/api/pono/causal-islands`. Cap-event home and γ-with-operator-α-mirror sync stay in design flux — touch with care.
 
 `@lararium/mempalace` resolves the pinned Python library and its holders for sovereign Sensoriums, and keeps the separate upstream `~/.mempalace` installation reachable as a guest comparator by deliberate operator act. `@lararium/sensorium` carries the Python perception machina and capture scripts. The guest never owns the lararium's memory Sensorium, and neither store federates. See `lar:///ha.ka.ba/lararium/api/mempalace-integration` and `lar:///ha.ka.ba/lares/api/pono/sensorium-machina`.
 
+`@lararium/memetic-frame` carries the carrier frame alone: the SOH/STX/ETX/EOT marks, the head and block-check reading, and the frame verdicts (`match`, `stale`, `absent`, `torn`, `bare`, `head-unbound`). It depends on `@noble/hashes` and nothing else, so every host reads a carrier the same way.
+
+`tree-sitter-memetic-wikitext` carries the carrier-only grammar (`grammar.js`, `scanner.c`) and its TypeScript and Python hosts. The sigil vocabulary stays wiki data, never grammar.
+
 `@lares/cli` carries the operator-facing surface: the `lares` binary, arg parsing, process spawn, the socket invoker, the harness-wiring on `wake`, and the verb family in `commands/`. The CLI carries no protocol logic and **no transport of its own beyond one socket** — every verb dispatches to `@lararium/node` handlers through the daemon's UDS verb-channel (`verb-call.runVerb` → `local-connector.invokeLocal` → `<dataDir>/lares.sock`); an absent socket raises `DaemonUnreachable`, never a fallback. WS lives at the daemon's relay, for genuine remote peers; the CLI holds no Automerge dependency at all.
 
 <<~/ahu>>
 
-<<~ ahu #spine>>
+<<~ ahu slot=`#/spine`>>
 
 ## Quine-Wiki Spine
 
@@ -138,11 +143,11 @@ TW5 child edit
   -> projection fan-out + ReactionGraph dispatch
 ```
 
-Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MOVE`, `CLEAR`, `DROP`, `LOAD`) governed by the [Residency Model Epic](EPIC-RESIDENCY-MODEL.md). The `lares act` CLI carries the operator surface; no `promote` shim exists. Do not let live wiki edits write `bags/` directly — operators land bag content through ACTION verbs.
+Residency transitions travel through the ACTION verb surface (`ADD`, `COPY`, `MOVE`, `CLEAR`, `DROP`, `LOAD`) governed by the [Residency Model Epic](.shelf/EPIC-RESIDENCY-MODEL.md). The `lares act` CLI carries the operator surface; no `promote` shim exists. Do not let live wiki edits write `bags/` directly — operators land bag content through ACTION verbs.
 
 <<~/ahu>>
 
-<<~ ahu #boot-sequence>>
+<<~ ahu slot=`#/boot-sequence`>>
 
 ## Boot Sequence — three causal moments
 
@@ -158,7 +163,7 @@ Runtime       openNodeVessel  /  openBrowserVessel          finds docs, wires la
 
 ### Admin VM (landed)
 
-Admin state lives in its own Automerge doc at `lar:///ha.ka.ba/bags/admin` (bag URI; aligned to the bag-tag rule in [lar-uri.md](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.md)). The logical room presents at `lar:///ha.ka.ba/lararium/rooms/admin` (room URI). Two URIs, one doc — the bag-as-doc invariant gives admin its own sync boundary. The admin VM hosts itself through `open-admin-vm` (node) and `open-browser-admin-vm` (browser); bag-mirror configs ride as `$:/tags/LarariumBagMirror` tiddlers inside admin.
+Admin state lives in its own Automerge doc at `lar:///ha.ka.ba/bags/admin` (bag URI; aligned to the bag-tag rule in [lar-uri](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.mem)). The logical room presents at `lar:///ha.ka.ba/lararium/rooms/admin` (room URI). Two URIs, one doc — the bag-as-doc invariant gives admin its own sync boundary. The admin VM hosts itself through `open-admin-vm` (node) and `open-browser-admin-vm` (browser); bag-mirror configs ride as `$:/tags/LarariumBagMirror` tiddlers inside admin.
 
 Operator-private to one node, federated to the operator's own devices via `cap=admin` device delegations through `@lararium/keyhive`.
 
@@ -172,11 +177,11 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 <<~/ahu>>
 
-<<~ ahu #boundary-law>>
+<<~ ahu slot=`#/boundary-law`>>
 
 ## Boundary Law
 
-**Core MUST NOT import** TW5, React, filesystem APIs, DOM APIs, or Automerge runtime objects. `@lararium/mesh` stays neutral.
+**Core MUST NOT import** TW5, React, filesystem APIs or DOM APIs. Automerge enters core only as the store law and the island `Repo` factory (`makeIslandRepo`), re-exported through the mesh barrel; a vessel's own `Repo` stays with the vessel-opening packages. `@lararium/mesh` stays neutral.
 
 **Browser code SHOULD NOT** import Node-shaped disk paths. If `fs`, `path`, `vm`, or Node crypto enter a browser bundle, surface the shore. Use the `@lararium/browser/__stubs__` pattern for browser-incompatible deps.
 
@@ -188,11 +193,11 @@ Projections register as kinds with `LarProjectionRegistry`. The node-scoped `dis
 
 **Capability layer is the only authority gate.** Do not invent ad-hoc auth checks; route through `@lararium/keyhive` or the `admin-auth-gate` in `@lararium/node`.
 
-**Bag URI law.** Bag tags occupy `child[1]` only. Do not promote a `child[N]` sigil to bag identity. See [lar-uri.md](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.md).
+**Bag URI law.** Bag tags occupy `child[1]` only. Do not promote a `child[N]` sigil to bag identity. See [lar-uri](../bags/lares/ha.ka.ba/lares/api/pono/lar-uri.mem).
 
 <<~/ahu>>
 
-<<~ ahu #test-routes>>
+<<~ ahu slot=`#/test-routes`>>
 
 ## Test Routes
 
@@ -204,7 +209,7 @@ Whole-workspace typecheck:
 pnpm -r --filter './packages/**' typecheck
 ```
 
-Focused package tests (only the four packages that ship vitest configs today):
+Focused package tests (ten packages ship vitest configs today; these four commands cover the core surfaces):
 
 ```sh
 pnpm --filter @lararium/mesh test
@@ -213,7 +218,7 @@ pnpm --filter @lararium/node test
 pnpm --filter @lararium/browser test
 ```
 
-`@lararium/keyhive` and `@lares/cli` carry no test scripts yet; typecheck covers them.
+`@lararium/keyhive` and `@lares/cli` also carry test scripts; run their focused tests from their package directories.
 
 TW5 fixture and sigil-alignment routes:
 
@@ -236,13 +241,13 @@ If sandboxing blocks `tsx` IPC under `/tmp`, request escalation and rerun the sa
 
 <<~/ahu>>
 
-<<~ ahu #friction-watch>>
+<<~ ahu slot=`#/friction-watch`>>
 
 ## Friction Watch
 
 Watch these current weak spots:
 
-* **Automerge-repo API law.** The workspace pins `@automerge/automerge-repo` and its four adapters at `2.6.0-alpha.5` and `@automerge/automerge` at `3.4.1` (one engine, by the `pnpm-workspace.yaml` override). `repo.find()` rejects on unavailable: catch it, or wait through `findWhenReady`; `allowableStates` has no effect and `isUnavailable()` always answers false. `shutdown()` flushes and swallows a save failure, so a caller that must see one awaits `flush()` first. The NodeFS adapter's in-flight holding is private; `DurableNodeFSStorageAdapter` keeps its own.
+* **Automerge-repo API law.** The workspace pins `@automerge/automerge-repo` and its four adapters at `2.6.0-alpha.5` and `@automerge/automerge` at `3.5.0` (one engine, by the `pnpm-workspace.yaml` override). `repo.find()` rejects on unavailable: catch it, or wait through `findWhenReady`; `allowableStates` has no effect and `isUnavailable()` always answers false. `shutdown()` flushes and swallows a save failure, so a caller that must see one awaits `flush()` first. The NodeFS adapter's in-flight holding is private; `DurableNodeFSStorageAdapter` keeps its own.
 * **Keyhive pre-alpha.** `@keyhive/keyhive@0.3.0-alpha.1`, unaudited, never a security boundary. Archives and events carry no format tag and do not open across versions (`probes/archive-across-versions.ts`), so a version move re-founds every vessel holding keyhive state. Cap-event home and γ-with-operator-α-mirror sync stay in design flux.
 * **Browser worker bridge.** The former frozen-bundle M3 fixture no longer measures the runtime; the current worker bridge resolves browser modules through the TW5 module table. Keep browser-worker changes covered by the live bridge and C4 controls rather than reviving a checked-in bundle.
 * **`child[1]` bag URI law.** Sigils above `child[1]` MUST NOT carry bag tags. Treat any violation as a structural error.
@@ -256,7 +261,7 @@ Watch these current weak spots:
 
 <<~/ahu>>
 
-<<~ ahu #edit-discipline>>
+<<~ ahu slot=`#/edit-discipline`>>
 
 ## Edit Discipline
 
@@ -264,31 +269,31 @@ Prefer one shore per loop. Patch the package that owns the behavior. Add or upda
 
 Before changing a public export, check browser and node consumers (and `@lares/cli`, which depends on both `@lararium/mesh` and `@lararium/node`). Before changing parser or carrier grammar, check `bags/lares/ha.ka.ba/lares/api/pono/`, `bags/lares/ha.ka.ba/lares/docs/pono/`, and core parser tests. Before changing TW5 sync, check echo-loop guards and draft guards.
 
-Documentation memes go to `bags/` as `.md` files. `.tid` files live in TW5 packages and carry runtime widget / procedure code only.
+Documentation memes go to `bags/` as `.mem` carriers. `.tid` files live in TW5 packages and carry runtime widget / procedure code only.
 
 When reporting back, use OODA-HA receipts: observe facts, orient boundary, decide shore, act summary, ho'oko commands, aftermath risks.
 
 <<~/ahu>>
 
-<<~ ahu #edges>>
+<<~ ahu slot=`#/edges`>>
 
 ## Edges
 
-<<~ pranala #implements-meme ? -> lar:///ha.ka.ba/lares/api/pono/meme family=control role=implements>>
-<<~ pranala #implements-invariant ? -> lar:///ha.ka.ba/lares/api/pono/invariant family=control role=implements>>
-<<~ pranala #implements-lar-uri ? -> lar:///ha.ka.ba/lares/api/pono/lar-uri family=control role=implements>>
-<<~ pranala #implements-parser ? -> lar:///ha.ka.ba/lares/api/pono/parser family=control role=implements>>
-<<~ pranala #implements-render-pipeline ? -> lar:///ha.ka.ba/lares/api/pono/render-pipeline family=control role=implements>>
-<<~ pranala #to-root-agents ? -> lar:///AGENTS family=control role=adjacent>>
-<<~ pranala #to-lares-agents ? -> lar:///ha.ka.ba/lares/AGENTS family=control role=adjacent>>
-<<~ pranala #to-lares ? -> lar:///LARES family=control role=adjacent>>
-<<~ pranala #to-voices ? -> lar:///ha.ka.ba/lares/api/voices family=reference role=governs>>
-<<~ pranala #to-meme-provider ? -> lar:///ha.ka.ba/lares/docs/lararium/meme-provider family=reference role=describes>>
-<<~ pranala #to-dreamnet ? -> lar:///ha.ka.ba/lares/docs/mesh/dreamnet-architecture family=reference role=describes>>
-<<~ pranala #to-mempalace-integration ? -> lar:///ha.ka.ba/lararium/api/mempalace-integration family=reference role=describes>>
+<<~ pranala slot=`#implements-meme` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/meme` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-invariant` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/invariant` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-lar-uri` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/lar-uri` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-parser` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/parser` family=`control` role=`implements`>>
+<<~ pranala slot=`#implements-render-pipeline` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/render-pipeline` family=`control` role=`implements`>>
+<<~ pranala slot=`#to-root-agents` from=`?` to=`lar:///AGENTS` family=`control` role=`adjacent`>>
+<<~ pranala slot=`#to-lares-agents` from=`?` to=`lar:///ha.ka.ba/lares/AGENTS` family=`control` role=`adjacent`>>
+<<~ pranala slot=`#to-lares` from=`?` to=`lar:///LARES` family=`control` role=`adjacent`>>
+<<~ pranala slot=`#to-voices` from=`?` to=`lar:///ha.ka.ba/lares/api/voices` family=`reference` role=`governs`>>
+<<~ pranala slot=`#to-meme-provider` from=`?` to=`lar:///ha.ka.ba/lares/docs/lararium/meme-provider` family=`reference` role=`describes`>>
+<<~ pranala slot=`#to-dreamnet` from=`?` to=`lar:///ha.ka.ba/lares/docs/mesh/dreamnet-architecture` family=`reference` role=`describes`>>
+<<~ pranala slot=`#to-mempalace-integration` from=`?` to=`lar:///ha.ka.ba/lararium/api/mempalace-integration` family=`reference` role=`describes`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;yQSwUj7oKEGutaBFGjMaji_JLIq7hT1m84APxDFoYRw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RHcQXnQVjO9VR6VhL3gXnReeOAofe6sUtVggBK3cbcE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

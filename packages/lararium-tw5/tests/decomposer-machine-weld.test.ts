@@ -38,15 +38,15 @@ const SIGIL = "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-ahu";
 const BODY = [
   "lead",
   "",
-  "<<~ ahu #/a>>",
+  "<<~ ahu slot=`#/a`>>",
   "alpha",
   "",
-  "<<~ ahu #/a/b>>",
+  "<<~ ahu slot=`#/a/b`>>",
   "beta",
   "<<~/ahu>>",
   "<<~/ahu>>",
   "",
-  "<<~ ahu #/c>>",
+  "<<~ ahu slot=`#/c`>>",
   "gamma",
   "<<~/ahu>>",
   "",
@@ -104,7 +104,7 @@ describe("★ the decomposer is machine: the split reads no vocabulary ★", () 
 
   test("splitBodyTiddler decomposes root + children without a getGrammar call or a vocabulary read", () => {
     const { parent, children } = splitBodyTiddler(URI, "", BODY, { title: URI });
-    expect(String(parent.text)).toContain("<<~ kahea ahu #/a>>");
+    expect(String(parent.text)).toContain("<<~ kahea ahu slot=`#/a`>>");
     expect(children.map((c) => String(c.title))).toEqual(
       expect.arrayContaining([`${URI}#/a`, `${URI}#/a/b`, `${URI}#/c`]),
     );

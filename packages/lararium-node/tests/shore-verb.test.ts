@@ -113,7 +113,7 @@ describe("the island's shore door", () => {
   test("CONTROL: another verb and another message pass unclaimed", () => {
     const post = (): void => { throw new Error("nothing posts for a message the door leaves alone"); };
     expect(claimShoreVerb("wiki:place-verb", place("INGEST", {}, "req-2"), post, () => null)).toBe(false);
-    expect(claimShoreVerb("wiki:dom-event", place(SHORE_VERB, {}, "req-3"), post, () => null)).toBe(false);
+    expect(claimShoreVerb("lar:control-event", place(SHORE_VERB, {}, "req-3"), post, () => null)).toBe(false);
   });
 
   test("an island that mounts no projector refuses by name", async () => {

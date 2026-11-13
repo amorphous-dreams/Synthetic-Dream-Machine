@@ -75,7 +75,7 @@ describe("foundingRoster — fail-closed reads", () => {
     expect(foundingQuorumSeated(doc)).toBe(false);
   });
 
-  test("keys present, a NON-NULL bare sealEpochCid, but NO sealLineage → fail closed (the retired legacy inception path never roots)", async () => {
+  test("keys present, a NON-NULL bare sealEpochCid, but NO sealLineage → fail closed (a bare inception path never roots)", async () => {
     const doc = await seatedDoc(3);
     const legacy: NexusDoc = { ...doc, sealLineage: undefined, sealEpochCid: "legacy-bare-epoch" };
     expect(foundingRoster(legacy).keys).toEqual([]);

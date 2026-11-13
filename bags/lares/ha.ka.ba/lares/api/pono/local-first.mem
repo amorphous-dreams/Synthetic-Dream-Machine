@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/local-first.mem"
 l-space     = "stable"
-mana        = 18
-manao       = 18
-manaoio     = 17
 namespace   = "&#x2299;"
 role        = "invariant doctrine: 7 local-first ideals (Ink & Switch), each graded against what the house stands built; the Keyhive/Beelay target stack named as design; server-as-peer law; Fuller non-simultaneous Universe = causal island"
 status-date = "2026-10-12"
@@ -19,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/local-first"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Local-First Software
 
@@ -39,7 +35,7 @@ simultaneously as read 2026-05-02. The house binds Keyhive behind `KeyhiveProvid
 
 <<~/ahu>>
 
-<<~ ahu #/seven-ideals>>
+<<~ ahu slot=`#/seven-ideals`>>
 
 !! The Seven Ideals
 
@@ -63,15 +59,15 @@ A device holds first-class standing; the cloud serves as an optional relay.
 
 ''Lararium:'' SATISFIED between node vessels; a browser device stands built in code
 with no e2e witness. A second device mints its OWN key and joins by a signed
-device-delegation edge (`lares device-admit` → `runDeviceAdmitEdge`,
+device-delegation edge (`lares fleet join` carries the internal `device-admit` edge from `runDeviceAdmitEdge`,
 `packages/lararium-keyhive/src/ceremony-core.ts`), and its boot proves that edge at the
 Binding Gate (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts`). The e2e set carries
 the witness: two vessels of one operator sync a bag both ways
 (`tests/e2e/meme-two-vessel-bag.test.ts`), and two devices of one PersonaGroup sync
 through a herm that reads none of it (`tests/e2e/leaf-sibling-sync.test.ts`). The browser
-vessel persists its Repo through `IndexedDBStorageAdapter` and carries its own admit path
+vessel persists its Repo through `IndexedDBStorageAdapter` and carries its own fleet-join path
 (`packages/lararium-browser/src/open-browser-vessel.ts` · `admit-carriage.ts`). The model
-stands whole at <<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity">>.
+stands whole at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity`>>.
 
 ''UNBUILT:'' Beelay's RIBLT-based set reconciliation (nested Rateless Invertible Bloom
 Lookup Tables), which answers the "what does this peer need?" question without a central
@@ -129,7 +125,7 @@ formats (`packages/lararium-node/src/disk-projector.ts`).
 text; a pointer carrier holds a content reference in place of `text`. The `cid/` blob tier
 carries binary and pointer-kind bodies; a utf8 body rides inline unless an operator flags it
 out on purpose
-(<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/blob-carriage">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/blob-carriage`>>).
 
 ---
 
@@ -140,7 +136,7 @@ Servers hold only encrypted bytes; they see membership info but not document con
 
 ''Lararium:'' PARTIAL. Identity rows rest sealed under the vessel key; document content rests in
 cleartext, and the sealed store's later steps seal it
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store">>).
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>).
 
 * ''Stands built:'' the custody slot tree and the custody root seal from birth
   (`packages/lararium-node/src/custody-root.ts`). The keyhive archive, each face's veil
@@ -152,18 +148,20 @@ cleartext, and the sealed store's later steps seal it
   primitives stand (`sealed-box.ts` · `ciphertext-cas.ts`).
 * ''Rests in cleartext:'' Automerge document content in the node store
   (`DurableNodeFSStorageAdapter`); the vessel key file (a 0o600 JSON file,
-  `packages/lararium-node/src/node-vessel-identity.ts`); the browser's device key and persona
-  roots in IndexedDB (`packages/lararium-browser/src/browser-vessel-identity.ts`); and
-  vessel-to-vessel sync on the wire, which rides an auth-gated plain WebSocket (this tree
+  `packages/lararium-node/src/node-vessel-identity.ts`); the browser's persona
+  roots in IndexedDB outside the custody tree, and its device seed and Keyhive Archives
+  while no custody slot binds them (`packages/lararium-browser/src/browser-custody.ts`);
+  and vessel-to-vessel sync on the wire, which rides an auth-gated plain WebSocket (this tree
   binds no TLS).
 * ''OWED:'' the operator's ruling that every surface encrypts from the first write
   (`lararium-identity#/encrypt-from-start`, a carrier that stands PROPOSED) stays unbuilt
   for document content. The custody rows that rest outside the vessel key, and the order
   the sealed store's steps land in, read at
-  <<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road">>. A WebAuthn-PRF wrap for a browser seed stands as a primitive
+  <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>. A WebAuthn-PRF wrap for a browser seed stands as a primitive
   (`packages/lararium-browser/src/seed-wrap-prf.ts`) with no production caller.
 
 ''Keyhive target stack (design; BeeKEM content keying stays outside the built path):''
+
 ```
 Layer 1 — Convergent Capabilities (concap tokens):
   Self-certifying capability chains. "Documents identify themselves via public
@@ -193,12 +191,12 @@ scheme; the tiddler store admits inspection and export.
 
 ''Multi-user:'' capability gating stands. A realm bag admits a member and refuses a
 non-member (`tests/e2e/meme-realm-bag.test.ts`); Orichalcum supplies the vocabulary
-(<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>) and the residency
+(<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>) and the residency
 ACTION verbs carry the acts (`ACTION_VERBS`, `packages/lararium-mesh/src/residency-actions.ts`).
 
 <<~/ahu>>
 
-<<~ ahu #/server-as-peer>>
+<<~ ahu slot=`#/server-as-peer`>>
 
 !! Server-as-Peer Law
 
@@ -233,7 +231,7 @@ both substrates walk. Same model, different capability set.
 
 <<~/ahu>>
 
-<<~ ahu #/fuller-universe>>
+<<~ ahu slot=`#/fuller-universe`>>
 
 !! Fuller's Non-Simultaneous Universe = Causal Island Doctrine
 
@@ -260,7 +258,7 @@ not "current globally." A lararium-node MUST present its view as local — curre
 
 <<~/ahu>>
 
-<<~ ahu #/beelay-sedimentree>>
+<<~ ahu slot=`#/beelay-sedimentree`>>
 
 !! Beelay Sync Model
 
@@ -284,7 +282,7 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<~ ahu #/alignment-matrix>>
+<<~ ahu slot=`#/alignment-matrix`>>
 
 !! Alignment Matrix (measured 2026-10-12)
 
@@ -300,18 +298,18 @@ transparent to the meme layer — so Beelay would slot in beneath it, where
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/pattern-integrity">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/quine-principles">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/pattern-integrity`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/quine-principles`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;45qL8ETi7uayX21EhC4cIcIIqmZWRPVMgP-xMTW29CQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;q54wfuHL4CvMsre9XMz8nyTjYSivGUjFgSuiNr37HR4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

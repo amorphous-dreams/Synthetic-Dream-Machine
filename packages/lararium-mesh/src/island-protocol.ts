@@ -15,8 +15,8 @@
  *      across all bags, in slices paced by host tasks (`host-task.ts`); the in-wiki nalu engine
  *      applies each change synchronously. No frame, no timer and no raw-message-receipt drain
  *      decides when a change lands.
- *   4. (retired) Frame-completion ACK signal — drain timing stays island-internal.
- *   5. Vessel oracle delta delivery is removed. CRDT sync via `syncPort` is the sole
+ *   4. No frame-completion ACK signal — drain timing stays island-internal.
+ *   5. No vessel oracle delta delivery: CRDT sync via `syncPort` is the sole
  *      source of tiddler truth for causal islands.
  *   6. `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe
  *      slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash`
@@ -38,13 +38,15 @@
 *                  `browser-repo-in-island.test.ts` test 2 (browser pool, docUrl non-null path).
  *      When this law holds, two vessels sharing a bag converge without any explicit sync call —
  *      the archipelago forms the moment the AutomergeUrl crosses the boundary.
- *   9. TW5 SHALL NOT instantiate on the main thread. Every `TW5Engine` lives inside a sovereign
- *      Worker (Node `worker_threads`, browser `Web Worker`, future WASM/UE5 runtimes).
- *      The main thread holds `DocHandle` references and `CompositeStore` layers; it does not
- *      hold or reference `TW5Engine`. Any code that calls `bootTw5()` or instantiates
- *      `TW5Engine` outside a Worker constitutes a sovereignty violation.
+ *   9. No sovereign VM and no key on a surface. A page never stands as a vessel: it holds a
+ *      surface with a port onto one. Every sovereign `TW5Engine` lives inside a Worker (Node
+ *      `worker_threads`, browser `Web Worker`, future WASM/UE5 runtimes). The main thread holds
+ *      `DocHandle` references and `CompositeStore` layers; it does not hold or reference a
+ *      sovereign `TW5Engine`. Any code that calls `bootTw5()` or instantiates `TW5Engine`
+ *      outside a Worker constitutes a sovereignty violation, save the page mirror: a camera
+ *      booted through its one private door, fed by the port alone, holding no truth and no key.
  *      Boot sites (all inside Workers): `node-daemon-island.ts` (Node daemon),
- *      `lar-wiki-island.ts` (Node wiki), `browser-wiki-worker.ts` (browser wiki),
+ *      `node-wiki-island.ts` (Node wiki), `browser-wiki-worker.ts` (browser wiki),
  *      `browser-daemon-island.ts` (browser daemon). Main-thread entry files carry no TW5 import.
  *
  * GP-1: every message names its `type`, and no version counter rides beside it: a vessel and its islands run
@@ -58,11 +60,18 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/island-protocol
  */
 
-import type { AuthProofWire } from "./auth-wire.js";
 import type { DeviceDelegationTiddler } from "./device-delegation.js";
+import type { FaceAnchor } from "./face-anchor.js";
 import type { PersonaKelEvent } from "./persona-kel.js";
 import type { WorldlineEdgeTriple, WorldlineEdgeClose } from "./worldline-edge.js";
 import type { SparseFormVector } from "./worldline-trajectory.js";
+import type { DocStoreMsg_Answering, DocStoreMsg_Live, DocStoreMsg_Opened, DocStoreMsg_Sealed, DocStoreMsg_Silent, DocStoreMsg_Slot } from "./sealed-rest.js";
+import {
+  LAR_CONTROL_EVENT, LAR_CONTROL_RESULT, LAR_FRAME, LAR_RESEND, LAR_SERVICE,
+  readLarControlEvent, readLarControlResult, readLarFrame, readLarResend, readLarService,
+  type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Resend, type LarMsg_Service,
+} from "./lar-camera.js";
+import { isPortKind, readPortIslandMsg, readPortVesselMsg, type PortIslandToVesselMsg, type PortVesselToIslandMsg } from "./record-port.js";
 
 
 // ── Island storage configuration ──────────────────────────────────────────
@@ -147,6 +156,9 @@ export interface IslandGrants {
   islandUrl:    string;
   /** catalog registry ACCESS (never layered; access≠load). Absent/null = no watch. */
   catalogUrl?:  string | null;
+  /** The lit face's own catalog (sealed-store#/owed, U1), laid over the floor's: absent at the floor and on a herm, so
+   *  the island reads the floor's public rows alone. */
+  faceCatalogUrl?: string | null;
   /** The island's OWN bag (<wikiSlug>; daemon under the one-recipe model). */
   wikiUrl?:     string | null;
   /** Keyhive-bound sovereign slots (daemon resolveBinding grants). */
@@ -155,6 +167,22 @@ export interface IslandGrants {
   /** working — the SAVED live write layer (PersonaGroup×fingerprint-bound, like
    *  personal); normal edits route here, canon publishes on a promotion MOVE. */
   workingUrl?:  string | null;
+  /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
+   *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
+  kahuaUrl?:    string | null;
+  /** The vessel's CONTROL document (`control-home`), granted to the daemon island alone: an access grant, never a recipe
+   *  slot. The island's control store stands over it; absent on every wiki island. */
+  controlUrl?:  string | null;
+  /** The control document's refusal while the vessel cannot read it (`vessel-locked`: the key stays shut; `control-home-unnamed`:
+   *  the place holds no face). The island resolves nothing then: its control store refuses every read and write by this name. */
+  controlRefusal?: "vessel-locked" | "control-home-unnamed" | "control-home-unavailable";
+  /** THE FLOOR'S REST KEY as the vessel holds it for this composition (`floor-registry`): `stands` where the vessel derived
+   *  it, else the refusal the floor's registry answers (`vessel-locked`: the key stays shut; `floor-unkeyed`: the place
+   *  derives none, a herm). Granted to the daemon island alone; absent reads as `floor-unkeyed` (fail closed). */
+  floorKey?: "stands" | "vessel-locked" | "floor-unkeyed";
+  /** The worn face's daemon canon (`daemonFaceCanonBag`), the document its catalog row names: the daemon recipe's
+   *  `canonBag` slot mounts from this grant alone. Absent at the floor, where the daemon wiki reads no canon. */
+  canonUrl?:    string | null;
 }
 export interface IslandMsg_Manifest {
   type: "manifest";
@@ -168,7 +196,7 @@ export interface IslandMsg_Manifest {
    * CIDs (sha256) of the engine's plugin-tiddler blobs (application/json). The worker
    * resolves these — and the core (coreHash) — via the host's content-addressed
    * `resolveByCid` (local CAS), NOT by reading a CRDT-synced blob doc. NO FALLBACK STANDS
-   * on either platform (M6/R4 retired it): `sovereign-kernel.ts` reads `msg.pluginCids ?? []`
+   * on either platform (M6/R4): `sovereign-kernel.ts` reads `msg.pluginCids ?? []`
    * and resolves exactly that list by CID — nothing else — so an absent or empty list boots the
    * engine with no plugin tiddlers at all, never a silent "read every blob off the oracle doc"
    * scan. `resolvePluginCids` is REQUIRED on both `VesselIslandPoolCore` (node and browser alike,
@@ -195,6 +223,12 @@ export interface IslandMsg_Manifest {
    * always is).
    */
   pluginCids?: readonly string[];
+  /**
+   * The floor manifest CID the island mounts as its `@oracle` read-face: the vessel's ACCEPTED floor pin
+   * (`floor-pin` `floorCidToMount`). Absent, the island mounts the floor its genesis seed names
+   * (`GENESIS_FLOOR_TIDDLER`). The island resolves it from the local CAS exactly as it resolves the genesis floor.
+   */
+  floorCid?: string;
   /** Slot structure for this wiki — wikiSlug + optional libraryBags. */
   recipe: import("./wiki-recipe.js").WikiRecipe;
   /** Typed structural capabilities (see IslandGrants). Libraries resolve via the catalog registry. */
@@ -229,7 +263,7 @@ export interface IslandMsg_Manifest {
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
-  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
+  diskMirrors?: readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
   /**
    * DAEMON-ISLAND ONLY — operator authn/z material for in-worker keyhive boot
    * (isomorphic-vessel epic, Stage 1). The daemon worker's `onEa` calls
@@ -240,60 +274,69 @@ export interface IslandMsg_Manifest {
    * boundary (operator-confirmed): the daemon island is the authn/z home.
    */
   daemonAuth?: {
-    /** The mounted face's creator-veil: its tag, and the signing key the SHORE derived for it. The veil's root
-     *  rests with the shore (a sealed custody root the island never holds), so the key arrives derived and the
-     *  island derives none. Absent: no veil identity stands in this island. */
-    dyadVeil?: { readonly tag: string; readonly signingKey: string };
+    joinedFaces?: readonly JoinedFaceAuth[];
+    /** The mounted face's random atom seed and its verifying key. */
+    atom?: { readonly seed: string; readonly key: string };
     /** The veil identity's prior archive — restores its prekeys so material keyed to the veil's card
      *  keeps opening across boots. */
     veilArchiveBytes?: Uint8Array;
-    /** The PLACE's own 32-byte signing seed — this vessel IS the Keyhive Individual it inits. */
-    seed:                  Uint8Array;
-    /** Hex Ed25519 verifying key the keyhive identity MUST resolve to (Gate A) — the VESSEL's, not a human's. */
-    vesselVerifyingKey:    string;
+    /** Public place key for place checks; the face's atom supplies Keyhive identity. */
+    placeVerifyingKey:     string;
+    /** THE MOUNTED FACE'S ADDRESS SECRET, hex, read from main-thread custody at the manifest's build (the node's
+     *  `face-address-secret` row, the browser's keystore row): the face's own catalog derives its address from it
+     *  (`faceCatalogDocUrl`). A wiki's working layer derives from no face secret: it rests in the wiki's realm workbench
+     *  (cabal-realm#/the-workbench). It crosses the worker boundary beside the atom seed, and only with a face lit. */
+    faceAddressSecret?:    string;
+    /** THE VESSEL'S SECRET HOME, read from main-thread custody at the manifest's build (`secret-home-store`): the document
+     *  group-secret seals, dyads and Keyhive cap events rest in. Only its url crosses; the island reaches it by its own sync
+     *  (the vessel shares it with its own islands alone) and asks the vessel's rest before each secret act. Absent: every
+     *  Keyhive secret write refuses `secret-home-unavailable`. */
+    secretUrl?:            string;
     /** The FACE's pins, present only when a face stands. A place founded and never lit carries NONE of
      *  them, and that names the WAKING FLOOR rather than a fault — canon has a vessel boot permissionlessly
      *  on its own key. The worker refuses a TORN face (some pins, not all), so absence buys FEWER CAPS and
      *  never a softened gate. */
     personaGroupId?:   string;
+    /** THE LIT SET: this face's handle index on its vessel (`h<N>`), so a face-named INGEST finds its face by the ordinal the
+     *  operator names. Absent: a composition that names none (a browser lift, a herm), and no face-named wave lands there. */
+    handleIndex?:      number;
+    /** This face's relation (its face plane pin, `faceRelationOf`): its daemon canon (`bags/daemon-<relation>`) stands by
+     *  it. Absent: the face's daemon canon waits until a proof names it. */
+    faceRelation?:     string;
+    faceAnchor?: FaceAnchor | null;
     meshCabalDocIdHex?:    string;
     /** Writable bag URIs to register so verify/delegate resolve (lar: URIs). */
     registerBags:          readonly string[];
     /** The PINNED signer DID — provenance only (the founding op-key = the KEL inception op-key). The Binding
-     *  Gate no longer PINS this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid). */
+     *  Gate does not PIN this; it pins `personaKel.prefix` and walks the KEL to the current head (no hybrid). */
     signerDid?:            string;
     /** The persona-KEL PIN + the LOCAL-replica chain the worker walks. `prefix` is the stable identifier (AID)
      *  read from the daemon bag (the pin's root of trust); `chain` is the seq-sorted key-event-log the MAIN thread read
      *  from its per-Nexus KEL board replica "as of last sync" (no-global-now). The Binding Gate asserts
      *  `chain[0].prefix === prefix`, walks to the current head op-key, and verifies the edge against THAT head —
-     *  fail-closed on an absent/broken chain (never a global lookup). */
-    personaKel?:           { readonly prefix: string; readonly chain: readonly PersonaKelEvent[] };
+     *  fail-closed on an absent/broken chain (never a global lookup). `board` names that KEL board's document, so a door that
+     *  must read the lineage LIVE (the intent door: a rotation merged after boot reaches its next effect) reads the island's
+     *  own replica of it; a door that needs it holds shut where the composer names none. */
+    personaKel?:           { readonly prefix: string; readonly chain: readonly PersonaKelEvent[]; readonly board?: string };
     /** This vessel's signed device-delegation edge (root→vessel) — the public, Beelay-free binding. */
     deviceEdge?:           DeviceDelegationTiddler;
-    /** A prior keyhive Archive (from the identity home) — the restore FLOOR keyhive inits from before
-     *  replaying daemon cap-events. Absent on a first boot / a vessel that never persisted one. */
-    archiveBytes?:         Uint8Array;
     /**
-     * WHETHER THIS VESSEL'S IDENTITY ARCHIVE OPENS — true only when the composition stands holding the vessel
-     * key (it was handed the sovereign rows), carried
-     * across the worker boundary so the worker's archive-write DOOR can refuse on its OWN reading.
-     *
-     * REQUIRED, and that is the point. The M3 re-seal used to export the sovereign archive on EVERY
-     * boot, which landed a fresh faceless export over a sealed identity whenever the archive held
-     * shut — and canon rules that a locked vessel signs nothing (waking-floor #/the-shape). The
-     * worker gates on this and reads it `=== true`, so a drifted value fails CLOSED; making the field
-     * REQUIRED makes the compiler, rather than a reviewer, the thing that notices a populator which
-     * answers nothing.
-     *
-     * IT NAMES THE ARCHIVE FACT, NEVER THE CLASS. `standAs` renders a shut archive as `"herm"`, so the
-     * two agree wherever the seal decides the class; they part on a FOUNDING (no face lit, archive
-     * opens) and on an operator-declared `--recipe herm` crossroads, both of which must keep
-     * persisting their own place identity. `personaSlotCeiling("herm") === 0` bars a SEATED persona,
-     * never an archive.
+     * THE OUTBOX KEY, opened from its custody row and handed across at unlock. The island seals and opens its outbox's parcels under it for the life
+     * of this composition. Absent on a floor composition: the outbox holds shut and every parcel verb refuses.
+     */
+    outboxKey?:            Uint8Array;
+    /**
+     * Whether the selected face's veil archive opens. The worker's archive writer requires `true`;
+     * a faceless or locked composition exports no Keyhive identity bytes.
      */
     archiveOpens:          boolean;
   };
 }
+
+/** Authentication material carried by one unlocked joined face. */
+export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>,
+  "atom" | "personaGroupId" | "faceAnchor" | "personaKel" | "deviceEdge" | "signerDid" | "registerBags">> &
+  Pick<NonNullable<IslandMsg_Manifest["daemonAuth"]>, "meshCabalDocIdHex" | "veilArchiveBytes" | "faceAddressSecret" | "handleIndex" | "faceRelation">;
 
 /**
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread
@@ -341,11 +384,15 @@ export interface IslandMsg_Teardown {
 // delegate via DaemonMsg_DelegateVerb; the island awaits DaemonMsg_VerbResult before writing outcome.
 
 /** Vessel → island: place a volatile verb invocation in the daemon island's TW5 wiki. */
+export type PlaceOrigin = "channel" | "surface" | "content";
+
 export interface DaemonMsg_PlaceVerb {
+  origin: PlaceOrigin;
   type: "daemon:place-verb";
   verb: string;
   args: Record<string, unknown>;
   requestedBy: string;
+  face?: string;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -369,8 +416,8 @@ export interface DaemonMsg_TelemetryPlaceVerb {
   /**
    * The branch-frontier — the head turn-uuid(s) the producer (cli) derived from the transcript's
    * parentUuid turn-DAG (branchContextForTurn). Absent on a non-forked turn (the common case),
-   * so the handle stays byte-identical to before. Carried as flat uuid strings; the in-VM annotate
-   * rebuilds the {@link BranchContext} and feeds it to buildPatch's 3rd arg (the fork-cut).
+   * so the handle stays exactly `run`. Carried as flat uuid strings; the capture cap rebuilds the
+   * {@link BranchContext} and hands it to the engine's annotate pass (the fork-cut).
    */
   frontier?: readonly string[];
   /**
@@ -403,38 +450,10 @@ export interface DaemonMsg_StructurepalaceKapae {
   ended?: string;
 }
 
-/**
- * Vessel → island: derive a recall query's move-skeleton IN the daemon VM (the recall twin of the
- * telemetry capture). The host's recall verb routes a sigil-bearing query string here so the
- * markers→vector recall runs the SAME Move→Vec functor capture runs — parse with the full self-hosted
- * grammar + emit the skeleton (structural plane present) against the LIVE grammar-cache basis. One
- * runtime, no node-side fallback. The island calls `$tw.lares.deriveQuerySkeletonVm` and answers with
- * {@link DaemonMsg_DeriveSkeletonResult}.
- */
-export interface DaemonMsg_DeriveSkeletonRequest {
-  type: "daemon:derive-skeleton-request";
-  requestId: string;
-  /** The recall query — sniffed in-VM for sigil markers, parsed with the full grammar. */
-  query: string;
-}
-
-/** Island → vessel: the in-VM query-derive result. `skeleton`+`basis` (plain objects — the move-
- *  skeleton + the serialized `{axes, dimension}` basis) when the query carried a derivable move-form;
- *  BOTH absent (a graceful null) when it did not (→ the recall fuses content-only). `error` carries a
- *  derive fault (the VM unavailable degrades to null at the host, never an error). */
-export interface DaemonMsg_DeriveSkeletonResult {
-  type: "daemon:derive-skeleton-result";
-  requestId: string;
-  skeleton?: unknown;
-  basis?: unknown;
-  error?: string;
-}
-
 // ── Worldline reads (the permainan substrate — sovereign-worker home) ───────
 //
-// The flow-lens reads run IN the daemon VM, the same one-runtime lock the recall
-// query-derive rides (the cap-stack lifts WHOLE — no coordinator carve-out). Two
-// reads, two request/result pairs mirroring DeriveSkeleton:
+// The flow-lens reads run IN the daemon VM, the one-runtime lock (the cap-stack
+// lifts WHOLE — no coordinator carve-out). Two reads, two request/result pairs:
 //
 //   worldline-compare    — Well 1, the ITC LIVE-READ. The worker holds the
 //     WorldlineCausal registry (projected from the edge-DAG it receives) and
@@ -542,37 +561,28 @@ export interface DaemonMsg_VerbResult {
   error?: string;
 }
 
-// ---------------------------------------------------------------------------
-// Auth verify proxy (isomorphic-vessel epic, Stage 1+2)
-// ---------------------------------------------------------------------------
-// Keyhive lives in the daemon island after Stage 1, but inbound untrusted peers
-// land on the HOST transport (node WS server). The host's AuthVerifierShore asks
-// the island to verify each peer; the island answers via its keyhive. Path (b).
 
-/** Vessel → island: verify an inbound peer's capability. Host has no keyhive. */
-export interface DaemonMsg_VerifyRequest {
-  type: "daemon:verify-request";
-  requestId: string;
-  /** The peer's serialized Keyhive ContactCard bytes. */
-  cardBytes: Uint8Array;
-  /** The bag the peer wants to sync. */
-  bagUrl: string;
-  /** Access level required. */
-  access: "read" | "admin";
-  /**
-   * V3 proof-of-possession material relayed from the peer's lar:auth, for the
-   * in-worker keyholder to verify (project_verification_placement). Optional:
-   * absent until the peer transport (C) sources it; the worker reports
-   * `proofVerified` advisory-only until the enforcement flip (D).
-   */
-  proof?: AuthProofWire;
-  /**
-   * OPTIONAL device-delegation edge relayed from the peer's lar:auth. The in-worker
-   * keyholder verifies it against the PINNED hearth root and admits a device-admitted peer that
-   * holds no cap=admin. Absent → the worker takes the existing admin-cap path unchanged.
-   */
-  edge?: DeviceDelegationTiddler;
-}
+/** The ops a face's settled answer names: the type and the door's runtime check both read this one tuple. */
+export const FACE_SETTLED_OPS = ["lit", "dropped", "bags"] as const;
+export interface DaemonMsg_FaceSettled { type: "daemon:face-settled"; atomKey: string; op: (typeof FACE_SETTLED_OPS)[number]; ok: boolean; reason?: string; }
+export const mkDaemonFaceSettled = (atomKey: string, op: DaemonMsg_FaceSettled["op"], ok: boolean, reason?: string): DaemonMsg_FaceSettled => ({ type: "daemon:face-settled", atomKey, op, ok, ...(reason === undefined ? {} : { reason }) });
+export const isDaemonFaceSettled = (v: IslandToVesselMsg): v is DaemonMsg_FaceSettled => v.type === "daemon:face-settled";
+
+export interface DaemonMsg_FaceLit { type: "daemon:face-lit"; entry: JoinedFaceAuth; }
+export interface DaemonMsg_FaceDrop { type: "daemon:face-drop"; atomKey: string; }
+export const mkDaemonFaceLit = (entry: JoinedFaceAuth): DaemonMsg_FaceLit => ({ type: "daemon:face-lit", entry });
+export const mkDaemonFaceDrop = (atomKey: string): DaemonMsg_FaceDrop => ({ type: "daemon:face-drop", atomKey });
+export const isDaemonFaceLit = (v: VesselToIslandMsg): v is DaemonMsg_FaceLit => v.type === "daemon:face-lit";
+export const isDaemonFaceDrop = (v: VesselToIslandMsg): v is DaemonMsg_FaceDrop => v.type === "daemon:face-drop";
+/**
+ * THE LIFT'S RE-REGISTRATION (sealed-store#/owed, U1 · T2): the face's own catalog opens only once the daemon island's
+ * holder stands, so the bags it names reach the island's register set after the island booted. The island registers each
+ * on the mounted face's hive (durably, as the boot's own) and answers `daemon:face-settled` with op `bags` under the
+ * mounted atom's key. A bag already registered registers once.
+ */
+export interface DaemonMsg_FaceBags { type: "daemon:face-bags"; atomKey: string; bags: readonly string[]; }
+export const mkDaemonFaceBags = (atomKey: string, bags: readonly string[]): DaemonMsg_FaceBags => ({ type: "daemon:face-bags", atomKey, bags: [...bags] });
+export const isDaemonFaceBags = (v: VesselToIslandMsg): v is DaemonMsg_FaceBags => v.type === "daemon:face-bags";
 
 /**
  * PeerClass — the class a gate's sorter answers for an admitted socket, before its verdict; the node
@@ -592,27 +602,6 @@ export interface DaemonMsg_VerifyRequest {
  */
 export type PeerClass = "same-operator" | "contracted" | "walker" | "stranger";
 
-/** Island → vessel: the keyhive verdict for a verify-request. */
-export interface DaemonMsg_VerifyResult {
-  type: "daemon:verify-result";
-  requestId: string;
-  ok: boolean;
-  /** Peer's keyhive Identifier hex (from the island's receiveContactCard), so the
-   *  host can key its sharePolicy/peer map without a local keyhive. */
-  identifier?: string;
-  reason?: string;
-  /**
-   * V3 advisory: whether the relayed proof's Ed25519 signature verified against
-   * the card-derived key + this gate's own key. `undefined` when no proof crossed.
-   * Advisory until the enforcement flip (D) folds it into `ok`.
-   */
-  proofVerified?: boolean;
-  /**
-   * "same-operator" on an `ok` verdict that PROVES it (admin@daemon or a KEL-pinned device edge); absent on
-   * every other proven key, which the gate's sorter then classes (contracted · walker · stranger · silence).
-   */
-  peerClass?: PeerClass;
-}
 
 // ---------------------------------------------------------------------------
 // personal / draft binding resolution (isomorphic-vessel epic, Stage 1)
@@ -631,6 +620,27 @@ export interface DaemonMsg_ResolveBindingRequest {
   wikiSlug: string;
 }
 
+/**
+ * Vessel → island: clear one face row before main runs it as a session's face (K20). The keyholder island meets the
+ * row with the clearance a routed verb meets before it delegates (`VerbDispatcher.clearRouted`, as a local ask of the
+ * presenter the session door verified), and answers whether it cleared. Nothing is placed or dispatched, so no
+ * outcome follows: the row's answer rides the session's socket alone.
+ */
+export interface DaemonMsg_GateVerbRequest {
+  type: "daemon:gate-verb-request";
+  requestId: string;
+  verb: string;
+  args: Record<string, unknown>;
+  requestedBy: string;
+}
+
+/** Island → vessel: the face row cleared (no `error`), or the clearance's refusal. */
+export interface DaemonMsg_GateVerbResult {
+  type: "daemon:gate-verb-result";
+  requestId: string;
+  error?: string;
+}
+
 /** Island → vessel: the resolved binding doc URLs (or an error). */
 export interface DaemonMsg_ResolveBindingResult {
   type: "daemon:resolve-binding-result";
@@ -638,6 +648,13 @@ export interface DaemonMsg_ResolveBindingResult {
   personalUrl?: string;
   draftUrl?: string;
   workingUrl?: string;
+  /**
+   * THE STOOD WORKING DOCUMENT, carried with its name (cabal-realm#/the-workbench): the bytes of the realm workbench the island
+   * stood at its DERIVED address. The island asked the vessel for that address before standing it, and the vessel answered
+   * `unavailable`; the vessel lands these bytes at `workingUrl` (`landBindingDocuments`) before the mount reads it, so the
+   * name never reaches the vessel ahead of the document it names.
+   */
+  workingDoc?: Uint8Array;
   error?: string;
 }
 
@@ -695,6 +712,21 @@ export interface DaemonMsg_ResidencyOpResult {
  * island so the operator sees it. Fire-and-forget (best-effort UX); main skips wikis
  * that aren't mounted. The daemon computes "affected by content"; main filters "live".
  */
+/**
+ * Island → vessel: one verb ANSWER the daemon island's floor store took (`floorAnswerStore`): an outcome, or the effect
+ * index beside a done one, for an act a place answered with no readable control document. The vessel holds it in its own
+ * floor store for the caller that waits on it; nothing rests.
+ */
+export interface DaemonMsg_FloorAnswer {
+  type: "daemon:floor-answer";
+  /** The answer record, under an outcome or effect title (the vessel's floor store refuses any other). */
+  record: { tiddler: Record<string, unknown>; meta?: Record<string, unknown> };
+}
+
+export function mkDaemonFloorAnswer(record: DaemonMsg_FloorAnswer["record"]): DaemonMsg_FloorAnswer {
+  return { type: "daemon:floor-answer", record };
+}
+
 export interface DaemonMsg_WikiAlert {
   type: "daemon:wiki-alert";
   /** The affected wiki's slug — main maps it to `${hostId}:${slug}` to find the island. */
@@ -738,27 +770,34 @@ export function isSensoriumSignalType(value: unknown): value is SensoriumSignalT
 /** All messages the vessel may send to a causal island. */
 export type VesselToIslandMsg =
   | IslandMsg_Manifest
+  | { type: "wiki:request-drain" }
   | IslandMsg_HooAnu
   | IslandMsg_Teardown
   | DaemonMsg_PlaceVerb
   | DaemonMsg_TelemetryPlaceVerb
   | DaemonMsg_StructurepalaceKapae
-  | DaemonMsg_DeriveSkeletonRequest
   | DaemonMsg_WorldlineCompareRequest
   | DaemonMsg_WorldlineTrajectoryRequest
   | DaemonMsg_VerbResult
-  | DaemonMsg_VerifyRequest
+  | DaemonMsg_FaceLit
+  | DaemonMsg_FaceDrop
+  | DaemonMsg_FaceBags
   | DaemonMsg_ResolveBindingRequest
+  | DaemonMsg_GateVerbRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
   | WikiMsg_PlaceVerb
-  | WikiMsg_DomEvent
-  | WikiMsg_DomInput
+  | LarMsg_ControlEvent
+  | LarMsg_Resend
+  | PortVesselToIslandMsg
   | WikiMsg_SensoriumSignal
   | IslandMsg_CasBlock
   | IslandMsg_DyadRead
-  | IslandMsg_DocRested
+  | IslandMsg_ReceiptIssued
+  | { type: "receipt:close" }
+  | IslandMsg_RestAnswer
   | IslandMsg_CustodyWritten
+  | IslandMsg_SessionSigned
   | IslandMsg_ViewCatalogResult
   | IslandMsg_ViewContentResult
   | IslandMsg_ViewSettled;
@@ -904,26 +943,57 @@ export interface IslandMsg_ViewSettled {
 }
 
 /**
- * Island → vessel: THE REST DOOR's ask. An island mints a document its own Repo holds no store for; the vessel's
- * Repo alone saves it. Before the island records any pointer to that document it asks the vessel to rest the
- * named documents durably, and waits for `doc:rested` on the same `requestId`.
+ * Island → vessel: THE RECEIPT CAPABILITY's ask. An island mints a document its own Repo holds no store for; the
+ * vessel's Repo alone saves it. Before the island records any pointer to that document it asks the vessel for a
+ * durability receipt over the named documents, and waits for `receipt:issued` on the same `requestId`.
  */
-export interface IslandMsg_DocRest {
-  type: "doc:rest";
+export interface IslandMsg_ReceiptRequest {
+  type: "receipt:request";
   requestId: string;
   documentIds: string[];
+  /**
+   * The heads the island holds of each named document, keyed by document id. A wiki island that lays its own bag
+   * documents asks with them: the vessel answers only once its own Repo holds every head, then flushes.
+   */
+  heads?: Record<string, string[]>;
 }
 
-/** Vessel → island: the rest door's answer — every named document rests in the vessel's store, or `why` it does not. */
-export interface IslandMsg_DocRested {
-  type: "doc:rested";
+/**
+ * Island → vessel: THE REST ASK (sealed-store#/owed, V2). Before an island's own store rests a byte of a document it asks
+ * whether the vessel's rest holds that document sealed; a sealed one rests in the island's memory alone and reaches rest
+ * by sync, sealed in the vessel's store (`islandRestGuard`).
+ */
+export interface IslandMsg_RestAsk {
+  type: "rest:ask";
   requestId: string;
-  rested: boolean;
+  documentId: string;
+}
+
+/** The refusals a rest answer names in place of a reading: the vessel's rest faulted (`rest-fault`), or the ask named no
+ *  document (`ask-malformed`). A refusal never reads unsealed: the island rests no byte of the document. */
+export const REST_ASK_REFUSALS = ["rest-fault", "ask-malformed"] as const;
+export type RestAskRefusalName = (typeof REST_ASK_REFUSALS)[number];
+
+/** Vessel → island: the rest answer: the vessel's rest holds the document sealed (`sealed`), or not, or the vessel
+ *  `refused` to read it, by name. */
+export type IslandMsg_RestAnswer =
+  | { type: "rest:answer"; requestId: string; sealed: boolean }
+  | { type: "rest:answer"; requestId: string; refused: RestAskRefusalName };
+
+/** Vessel → island: the receipt — every named document rests in the vessel's store (`issued`), or `why` it does not. */
+export interface IslandMsg_ReceiptIssued {
+  type: "receipt:issued";
+  requestId: string;
+  issued: boolean;
+  /** The vessel names the documents it finished flushing before this receipt. */
+  proof?: { documentIds: string[] };
+  /** True when the vessel's copy changed `RECEIPT_STALL_ROUNDS` times and still lacked the island's heads: a named stall, never a silent hang. */
+  stalled?: boolean;
   why?: string;
 }
 
 /** The carriers the custody write door lands: the vessel's own keyhive archive, and the mounted face's veil archive. */
-export type CustodyWriteCarrier = "archive" | "veil";
+export type CustodyWriteCarrier = "veil";
 /**
  * Island → vessel: THE CUSTODY WRITE DOOR's ask. The vessel key rests in the vessel's main thread alone, so an
  * island that holds bytes to seal at rest hands them to the vessel, which seals them under the key it holds and
@@ -931,6 +1001,13 @@ export type CustodyWriteCarrier = "archive" | "veil";
  * where the bytes rest.
  */
 export interface IslandMsg_CustodyWrite { type: "custody:write"; requestId: string; carrier: CustodyWriteCarrier; bytes: Uint8Array; }
+/**
+ * Island → vessel: THE BINDING GATE'S VERDICT, posted by a persona-bound daemon island once its gate ran. `gate:clear`
+ * names the edge (by digest) and the persona root the gate verified, so a holder admits a session only for the edge the
+ * island itself cleared. `gate:refused` names why the gate held the boot shut.
+ */
+export interface IslandMsg_GateClear { type: "gate:clear"; edgeDigest: string; personaRoot: string; }
+export interface IslandMsg_GateRefused { type: "gate:refused"; cause: string; }
 /** Vessel → island: the custody write door's answer: the bytes rest sealed, or `why` they do not. */
 export interface IslandMsg_CustodyWritten { type: "custody:written"; requestId: string; written: boolean; why?: string; }
 
@@ -938,8 +1015,57 @@ export interface IslandMsg_CustodyWritten { type: "custody:written"; requestId: 
 export interface IslandMsg_DyadRead {
   type: "dyad:read";
   requestId: string;
-  standing: "clear" | "aside" | "owing" | "returned";
+  standing: "clear" | "aside" | "owing" | "returned" | "unknown";
 }
+
+/**
+ * Island → vessel: THE SESSION SIGN DOOR (lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-store). The daemon island
+ * holds no session key: it names the invocation a session placed (`ask`, its request id, and the `verb` it placed), and
+ * the vessel answers from the session that placed it. `op: "read"` asks the session's certificate, its proof subject and
+ * this vessel's own verified face chain; `op: "sign"` asks the session's signer to sign `payload` under the `act`
+ * purpose. The signer's secret never crosses: it signs on the vessel's main thread, behind its owner's table. A read
+ * also carries the raises the vessel counts on the face's fleet board and those no subscriber has taken yet (its own
+ * fold), so the holder counts removal versions and owed rolls across a restart.
+ */
+export interface IslandMsg_SessionSign {
+  type: "session:sign";
+  requestId: string;
+  /** `own` asks no session: it reads the vessel's own chain and its fold (the island counts records by them). */
+  op: "read" | "sign" | "own";
+  ask: string;
+  verb: string;
+  payload?: Uint8Array;
+}
+
+/**
+ * This vessel's own verified face chain, public, at each anchor its sessions meet the worn face (session-contract#/the-hands):
+ * at a Nexus, the scope its face stands at and its face-scoped key there; at its own place, the face's atom and the
+ * vessel's W29 place. A vessel standing at a Nexus names its place beside it, so what it sealed at its place still reads.
+ */
+export type SessionOwnChain = NexusOwnChain | PlaceOwnChain;
+/** The worn face at the Nexus a dial composed at, with the vessel's own place beside it where the face stands there too. */
+export interface NexusOwnChain {
+  readonly scope: { readonly faceKey: string; readonly nexus: string };
+  readonly vesselFaceKey: string;
+  readonly place?: OwnPlace;
+}
+/** The worn face at the vessel's own place alone: no Nexus admits it. */
+export interface PlaceOwnChain {
+  readonly place: OwnPlace;
+}
+/** The face's atom at one place, the vessel's W29 place KEL prefix. */
+export interface OwnPlace { readonly atomKey: string; readonly place: string }
+/** The chain's Nexus half, or null where the vessel stands at its place alone. */
+export function nexusOfChain(chain: SessionOwnChain | null): NexusOwnChain | null {
+  return chain !== null && "scope" in chain ? chain : null;
+}
+
+/** Vessel → island: the session sign door's answer, or one refusal by name. */
+export type IslandMsg_SessionSigned =
+  | { type: "session:signed"; requestId: string; certificate: unknown; subject: string; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; own: true; chain: SessionOwnChain; foldRead: boolean; counted: readonly string[]; unanswered: readonly string[] }
+  | { type: "session:signed"; requestId: string; signature: string }
+  | { type: "session:signed"; requestId: string; refusal: string };
 
 /** Island → vessel: ask the vessel's live fleet board for this device's standing. */
 export interface IslandMsg_DyadAsk {
@@ -964,63 +1090,6 @@ export interface WikiMsg_PlaceVerb {
   targets?:       string[];
   batchMode?:     string;
   requestId?:     string;
-}
-
-/**
- * Vessel → wiki island: a main-thread DOM event relayed back to the projected wiki — the
- * interactivity RETURN leg (the accumulate-family inbound twin of the coalesce projection OUT).
- * The worker resolves `renderId` to the fake DOM node TW5 bound a listener to and invokes TW5's
- * OWN stored handler; from `tm-navigate` onward the widget tree runs as if the event were local.
- * `fields` is an explicit allowlist of primitive event properties (GP-2: primitives only).
- */
-export interface WikiMsg_DomEvent {
-  type:           "wiki:dom-event";
-  renderId:       string;
-  eventType:      string;
-  fields:         Record<string, number | boolean>;
-}
-
-/**
- * The bound a relayed TEXT value carries: characters, counted, refused above the line.
- *
- * A tiddler body runs long, so the bound sits well above a paragraph and well below a payload that
- * could stall the island thread or bloat its CRDT in one keystroke. It reads as a real edit surface's
- * ceiling, not a token limit — a phone typing prose never meets it, and a paste of a novel does.
- */
-export const DOM_INPUT_MAX_CHARS = 65_536;
-
-/**
- * Read a relayed input value, or REFUSE it.
- *
- * Returns the string when it stands within the bound, `null` otherwise — fail-closed, one number, one
- * site. Both the send shore (which throws, because an over-long send names a caller bug) and the island
- * door (which drops, because an over-long arrival names an untrusted sender) read this same function.
- */
-export function boundedDomInputValue(v: unknown): string | null {
-  if (typeof v !== "string") return null;
-  if (v.length > DOM_INPUT_MAX_CHARS) return null;
-  return v;
-}
-
-/**
- * Vessel → wiki island: a TEXT-carrying DOM event — the input leg of the interactivity RETURN.
- *
- * WHY A SIBLING KIND, and never a wider `fields`. `WikiMsg_DomEvent.fields` states an explicit
- * primitives-only allowlist (GP-2). Loosening it to `string` would widen EVERY relayed event at once:
- * a click would silently gain the right to carry arbitrary text under an arbitrary key, and no reader
- * of the click path could tell by looking that it no longer holds. The text instead rides its own kind,
- * with ONE named field, ONE type, and ONE explicit bound — so the click path keeps its primitives-only
- * guarantee legible, and the text path carries a guarantee a reader can check in a single line.
- *
- * The island applies `value` to the resolved node before invoking TW5's own stored handler, so TW5's
- * edit widgets read what a human typed exactly where they read a local keystroke.
- */
-export interface WikiMsg_DomInput {
-  type:           "wiki:dom-input";
-  renderId:       string;
-  eventType:      string;
-  /** The field's whole current value, bounded by DOM_INPUT_MAX_CHARS. Never a diff, never a keycode. */
-  value:          string;
 }
 
 /**
@@ -1050,6 +1119,14 @@ export interface IslandMsg_Ready {
   type: "ready";
 }
 
+/**
+ * Island → vessel: the camera's traffic down (lar:///ha.ka.ba/lararium/mesh/lar-camera). The keyed frame rides
+ * its own kind, never an `event` envelope; the answer to a control event rides `lar:control-result`; a host door
+ * the engine asks the surface to open rides `lar:service`. The pool hands each to the vessel's handler the way it
+ * hands an `event`: an island outside any session reaches `onWorkerEvent`, a session's island its own door.
+ */
+export type LarIslandToVesselMsg = LarMsg_Frame | LarMsg_ControlResult | LarMsg_Service;
+
 /** All messages a causal island may send to the vessel. */
 export type IslandToVesselMsg =
   | IslandMsg_Event
@@ -1058,23 +1135,38 @@ export type IslandToVesselMsg =
   | IslandMsg_Breath
   | IslandMsg_Fault
   | IslandMsg_Ready
+  | IslandMsg_GateClear
+  | IslandMsg_GateRefused
   | WikiMsg_VerbResult
+  | DaemonMsg_FaceSettled
   | DaemonMsg_DelegateVerb
-  | DaemonMsg_DeriveSkeletonResult
   | DaemonMsg_WorldlineCompareResult
   | DaemonMsg_WorldlineTrajectoryResult
-  | DaemonMsg_VerifyResult
   | DaemonMsg_ResolveBindingResult
+  | DaemonMsg_GateVerbResult
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
   | DaemonMsg_WikiAlert
+  | DaemonMsg_FloorAnswer
   | IslandMsg_CasWant
   | IslandMsg_DyadAsk
-  | IslandMsg_DocRest
+  | IslandMsg_ReceiptRequest
+  | { type: "receipt:asks-done" }
+  | IslandMsg_RestAsk
   | IslandMsg_CustodyWrite
+  | IslandMsg_SessionSign
   | IslandMsg_ViewCatalog
   | IslandMsg_ViewContent
-  | IslandMsg_ViewSettle;
+  | IslandMsg_ViewSettle
+  | LarIslandToVesselMsg
+  | PortIslandToVesselMsg
+  // The document store's door (sealed-rest): the island's answers to a seal and an open, and its ask for a live document.
+  | DocStoreMsg_Sealed
+  | DocStoreMsg_Opened
+  | DocStoreMsg_Live
+  | DocStoreMsg_Slot
+  | DocStoreMsg_Answering
+  | DocStoreMsg_Silent;
 
 // ── Type guards ────────────────────────────────────────────────────────────
 
@@ -1085,18 +1177,47 @@ function _hasType(v: unknown): v is { type: string } {
 
 export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (!_hasType(v)) return false;
-  // The text bound holds AT THE ISLAND DOOR — the one gate every island message passes (the sovereign
-  // kernel's listen). Refusing here means no behavior, no cap, and no TW5 handler ever sees an unbounded
-  // string: an over-long arrival vanishes exactly as a malformed one does, and the island keeps running.
-  if (v.type === "wiki:dom-input" && boundedDomInputValue((v as Record<string, unknown>)["value"]) === null) return false;
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:derive-skeleton-request", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "wiki:dom-event", "wiki:dom-input", "cas:block", "dyad:read", "doc:rested", "custody:written", "view:catalog-result", "view:content-result", "view:settled"] as const)
-    .includes(v.type as Exclude<VesselToIslandMsg["type"], SensoriumSignalType>) || isSensoriumSignalType(v.type);
+  if (v.type === "receipt:close") return Object.keys(v).length === 1;
+  if (v.type === "wiki:request-drain") return Object.keys(v).length === 1;
+  // THE CAMERA'S KINDS READ WHOLE AT THE ISLAND DOOR, the one gate every island message passes (the sovereign
+  // kernel's listen). A control event reads through the contract's own reader: two targets, an unknown
+  // crossing or a whole value past its bound vanish here exactly as a malformed message does, so no behavior,
+  // no cap and no TW5 handler ever sees one, and the island keeps running.
+  if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
+  if (v.type === LAR_RESEND) return readLarResend(v) !== null;
+  if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+    .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
+}
+
+/** The prefix an island's teardown fault carries (`answerTeardown`): the one fault that answers a teardown. */
+export const TEARDOWN_FAULT = "teardown-fault:";
+
+/** True for the island's named answer to its teardown, never for another fault (a late slot fault) that crosses meanwhile. */
+export function isTeardownFault(v: IslandToVesselMsg): boolean {
+  return v.type === "fault" && typeof (v as { error?: unknown }).error === "string" && (v as { error: string }).error.startsWith(TEARDOWN_FAULT);
 }
 
 export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
   if (!_hasType(v)) return false;
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "wiki:verb-result", "daemon:delegate-verb", "daemon:derive-skeleton-result", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "doc:rest", "custody:write", "view:catalog", "view:content", "view:settle"] as const).includes(
-    v.type as IslandToVesselMsg["type"],
+  if (v.type === "receipt:asks-done") return Object.keys(v).length === 1;
+  // The camera's answers read whole at the vessel's door too: a frame whose key paints from two payloads, a
+  // refusal that names no reason, a host door the house never named, each vanishes before any handler.
+  if (v.type === "daemon:face-settled") {
+    const msg = v as Record<string, unknown>;
+    return typeof msg.atomKey === "string" && (FACE_SETTLED_OPS as readonly unknown[]).includes(msg.op) && typeof msg.ok === "boolean" && (msg.reason === undefined || typeof msg.reason === "string");
+  }
+  if (v.type === LAR_FRAME) return readLarFrame(v) !== null;
+  if (v.type === LAR_CONTROL_RESULT) return readLarControlResult(v) !== null;
+  if (v.type === LAR_SERVICE) return readLarService(v) !== null;
+  if (isPortKind(v.type)) return readPortIslandMsg(v) !== null;
+  if (v.type === "daemon:floor-answer") {
+    const record = (v as Record<string, unknown>).record as Record<string, unknown> | undefined;
+    const tiddler = record?.tiddler as Record<string, unknown> | undefined;
+    return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string";
+  }
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
+    v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
 
@@ -1132,9 +1253,10 @@ export function mkManifest(
   opts?: {
     storage?:        IslandStorageConfig;
     ownedDocument?:  IslandOwnedDocumentScope;
-    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; guardNexusHandles?: boolean }[];
+    diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
     daemonAuth?:      IslandMsg_Manifest["daemonAuth"];
     pluginCids?:     readonly string[];
+    floorCid?:       string | null;
     view?:           IslandViewStanding;
     resolved?:       Readonly<Record<string, string>>;
   },
@@ -1152,6 +1274,7 @@ export function mkManifest(
   if (opts?.diskMirrors?.length) msg.diskMirrors = opts.diskMirrors;
   if (opts?.daemonAuth)           msg.daemonAuth   = opts.daemonAuth;
   if (opts?.pluginCids?.length)  msg.pluginCids  = opts.pluginCids;
+  if (opts?.floorCid)            msg.floorCid    = opts.floorCid;
   if (opts?.view)                msg.view        = opts.view;
   if (opts?.resolved)            msg.resolved    = opts.resolved;
   return msg;
@@ -1177,9 +1300,11 @@ export function mkFault(wikiUri: string, error: string): IslandMsg_Fault {
 }
 
 export function mkDaemonPlaceVerb(opts: {
+  origin: PlaceOrigin;
   verb: string;
   args: Record<string, unknown>;
   requestedBy: string;
+  face?: string;
   targets?: string[];
   batchMode?: string;
   requestId?: string;
@@ -1189,6 +1314,7 @@ export function mkDaemonPlaceVerb(opts: {
 }): DaemonMsg_PlaceVerb {
   const msg: DaemonMsg_PlaceVerb = {
     type: "daemon:place-verb",
+    origin: opts.origin,
     verb: opts.verb,
     args: opts.args,
     requestedBy: opts.requestedBy,
@@ -1199,6 +1325,7 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.fromUri)          msg.fromUri    = opts.fromUri;
   if (opts.listenable)       msg.listenable = opts.listenable;
   if (opts.effectKey)        msg.effectKey  = opts.effectKey;
+  if (opts.face)             msg.face       = opts.face;
   return msg;
 }
 
@@ -1228,33 +1355,6 @@ export function mkStructurepalaceKapae(opts: {
     turnKey: opts.turnKey,
     ...(opts.ended ? { ended: opts.ended } : {}),
   };
-}
-
-export function mkDaemonDeriveSkeletonRequest(opts: {
-  requestId: string;
-  query: string;
-}): DaemonMsg_DeriveSkeletonRequest {
-  return {
-    type: "daemon:derive-skeleton-request",
-    requestId: opts.requestId,
-    query: opts.query,
-  };
-}
-
-export function mkDaemonDeriveSkeletonResult(opts: {
-  requestId: string;
-  skeleton?: unknown;
-  basis?: unknown;
-  error?: string;
-}): DaemonMsg_DeriveSkeletonResult {
-  const msg: DaemonMsg_DeriveSkeletonResult = {
-    type: "daemon:derive-skeleton-result",
-    requestId: opts.requestId,
-  };
-  if (opts.skeleton !== undefined) msg.skeleton = opts.skeleton;
-  if (opts.basis    !== undefined) msg.basis    = opts.basis;
-  if (opts.error    !== undefined) msg.error    = opts.error;
-  return msg;
 }
 
 export function mkDaemonWorldlineCompareRequest(opts: {
@@ -1363,45 +1463,6 @@ export function mkDaemonVerbResult(opts: {
   return msg;
 }
 
-export function mkDaemonVerifyRequest(opts: {
-  requestId: string;
-  cardBytes: Uint8Array;
-  bagUrl:    string;
-  access:    "read" | "admin";
-  proof?:    AuthProofWire;
-  edge?:     DeviceDelegationTiddler;
-}): DaemonMsg_VerifyRequest {
-  return {
-    type: "daemon:verify-request",
-    requestId: opts.requestId,
-    cardBytes: opts.cardBytes,
-    bagUrl:    opts.bagUrl,
-    access:    opts.access,
-    ...(opts.proof ? { proof: opts.proof } : {}),
-    ...(opts.edge ? { edge: opts.edge } : {}),
-  };
-}
-
-export function mkDaemonVerifyResult(opts: {
-  requestId:      string;
-  ok:             boolean;
-  identifier?:    string;
-  reason?:        string;
-  proofVerified?: boolean;
-  peerClass?:     PeerClass;
-}): DaemonMsg_VerifyResult {
-  const msg: DaemonMsg_VerifyResult = {
-    type: "daemon:verify-result",
-    requestId: opts.requestId,
-    ok:        opts.ok,
-  };
-  if (opts.identifier    !== undefined) msg.identifier    = opts.identifier;
-  if (opts.reason        !== undefined) msg.reason        = opts.reason;
-  if (opts.proofVerified !== undefined) msg.proofVerified = opts.proofVerified;
-  if (opts.peerClass     !== undefined) msg.peerClass     = opts.peerClass;
-  return msg;
-}
-
 export function mkDaemonResolveBindingRequest(opts: {
   requestId:   string;
   fingerprint: string;
@@ -1417,11 +1478,25 @@ export function mkDaemonResolveBindingRequest(opts: {
   };
 }
 
+export function mkDaemonGateVerbRequest(opts: {
+  requestId:   string;
+  verb:        string;
+  args:        Record<string, unknown>;
+  requestedBy: string;
+}): DaemonMsg_GateVerbRequest {
+  return { type: "daemon:gate-verb-request", requestId: opts.requestId, verb: opts.verb, args: opts.args, requestedBy: opts.requestedBy };
+}
+
+export function mkDaemonGateVerbResult(opts: { requestId: string; error?: string }): DaemonMsg_GateVerbResult {
+  return { type: "daemon:gate-verb-result", requestId: opts.requestId, ...(opts.error !== undefined ? { error: opts.error } : {}) };
+}
+
 export function mkDaemonResolveBindingResult(opts: {
   requestId:    string;
   personalUrl?: string;
   draftUrl?:    string;
   workingUrl?:  string;
+  workingDoc?:  Uint8Array;
   error?:       string;
 }): DaemonMsg_ResolveBindingResult {
   const msg: DaemonMsg_ResolveBindingResult = {
@@ -1431,6 +1506,7 @@ export function mkDaemonResolveBindingResult(opts: {
   if (opts.personalUrl !== undefined) msg.personalUrl = opts.personalUrl;
   if (opts.draftUrl    !== undefined) msg.draftUrl    = opts.draftUrl;
   if (opts.workingUrl  !== undefined) msg.workingUrl  = opts.workingUrl;
+  if (opts.workingDoc  !== undefined) msg.workingDoc  = opts.workingDoc;
   if (opts.error       !== undefined) msg.error       = opts.error;
   return msg;
 }
@@ -1511,45 +1587,6 @@ export function mkWikiPlaceVerb(opts: {
   return msg;
 }
 
-export function mkWikiDomEvent(opts: {
-  renderId: string;
-  eventType: string;
-  fields: Record<string, number | boolean>;
-}): WikiMsg_DomEvent {
-  return {
-    type: "wiki:dom-event",
-    renderId: opts.renderId,
-    eventType: opts.eventType,
-    fields: opts.fields,
-  };
-}
-
-/**
- * Build the text-carrying relay message, REFUSING an over-long value at the send shore.
- *
- * This throw names a caller bug (a main thread relaying more than an edit surface may hold), and it
- * fires where the stack still points at the offending call. The island door refuses the same value
- * again on arrival — the two checks read one function, so the bound cannot drift between them.
- */
-export function mkWikiDomInput(opts: {
-  renderId: string;
-  eventType: string;
-  value: string;
-}): WikiMsg_DomInput {
-  const value = boundedDomInputValue(opts.value);
-  if (value === null) {
-    throw new Error(
-      `[island-protocol] wiki:dom-input refused — a relayed value carries at most ${DOM_INPUT_MAX_CHARS} characters`,
-    );
-  }
-  return {
-    type: "wiki:dom-input",
-    renderId: opts.renderId,
-    eventType: opts.eventType,
-    value,
-  };
-}
-
 export function mkSensoriumSignal(opts: {
   signal: SensoriumSignalType;
   requestId: string;
@@ -1578,21 +1615,3 @@ export function mkWikiVerbResult(opts: {
 }
 
 
-// ── AuthVerifierShore — host-side verify proxy (path b) ─────────────────────
-//
-// The host transport (node WS gate) holds no keyhive after Stage 1; it asks the
-// daemon island to verify each inbound peer (the DaemonMsg_VerifyRequest/Result
-// pair above) and keys its sharePolicy map off the returned `identifier`. Node
-// binds this to DaemonAuthGate; the browser leaves it unbound (no inbound peer yet).
-export interface AuthVerifierShore {
-  verify(
-    cardBytes: Uint8Array,
-    bagUrl: string,
-    access: "read" | "admin",
-    /** V3 proof material relayed from the peer's lar:auth; the in-worker
-     *  keyholder verifies it (advisory `proofVerified` until the D flip). */
-    proof?: AuthProofWire,
-    /** OPTIONAL device-delegation edge — admits an operator-device-admitted peer. */
-    edge?: DeviceDelegationTiddler,
-  ): Promise<{ ok: boolean; identifier?: string; reason?: string; proofVerified?: boolean; peerClass?: PeerClass }>;
-}

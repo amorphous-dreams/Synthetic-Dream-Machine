@@ -10,6 +10,9 @@
  *     and lands the IDENTICAL act (same content id) on disk, where a later opener reads it;
  *   · a direct holder refuses while a vessel stands on the store.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,13 +24,13 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   antigenEntriesFromBoard, edgeKapaeActsFromBoard, offeringAnnouncesFromDoc,
   verifiedVouchesFromBoard, hexToBytes, hex, materializeSharedLarDoc, kapaeAntigenDocUrl, sha256HexBytesSync,
-  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, crossroadsDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
+  fleetEdgeBoardDocUrl, realmVouchBoardDocUrl, publicationDocUrl, computePluginsCid, DAEMON_BAG_ID, seedDaemonDoc,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
-  nexusAidOf, signCarriageQuorum, signCarriageContract, federationPostureFromDoc,
+  nexusAidOf, custodyRootDoor, deriveGateBundle, sovereignGateRoot, sovereignRoute, signCarriageQuorum, signCarriageContract, admitCarriageCommit, openAdmitCarriage, federationPostureFromDoc,
   type NexusDoc, type LarDoc, type GenesisSeed,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, wearPersona, loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, loadPersonaGroupRootVerifyingKey,
   loadPersonaGroupRootSeed,
 } from "../src/node-vessel-identity.js";
 import { nodeNexusIsland } from "../src/nexus-standing.js";
@@ -39,6 +42,15 @@ import { storeDoorReactors, storeDoorDirect, type StoreDoorVerb } from "../src/s
 import { claimStore, StoreHeld, ownedStore } from "../src/owned-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { seatChairs } from "./seat-fixture.js";
+import { seedFaceAtom } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
+import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
+import { seatScratchFaceRoute } from "./support/scratch-custody-setup.js";
+import { seedFoundedDaemonDoc } from "./daemon-control-fixture.js";
+
+// The faces this suite stands are founded under the fixture's route (the last auto-founder seated), so the twin's custody
+// opens them by that route when it first needs a face.
+seatScratchFaceRoute(FIXTURE_PASSPHRASE);
 
 let base: string;
 let priorLarRoot: string | undefined;
@@ -59,14 +71,14 @@ afterEach(async () => {
 const verify = (bytes: Uint8Array, sigHex: string, did: string) =>
   ed.verifyAsync(hexToBytes(sigHex), bytes, hexToBytes(did)).catch(() => false);
 
-/** Seat a 2-of-3 charter whose kahu are this vessel's own held roots, wear h0, and seed a minimal,
+/** Seat a 2-of-3 charter whose kahu are this vessel's own held roots (each act names h0), and seed a minimal,
  *  READABLE genesis (M-d: an absent genesis now refuses `boot-set-unknown` rather than failing
  *  open, so `nexus-publish`'s own writer test needs one; harmless for the other three writers). */
 async function seatVessel(root: string): Promise<void> {
   at(root);
   mkdirSync(join(root, "genesis"), { recursive: true });
   const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
+    format: "lararium-genesis-seed", actorSeed: "actor-seed",
     blobs: {},
     tiddlers: {
       [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
@@ -75,23 +87,24 @@ async function seatVessel(root: string): Promise<void> {
     },
   };
   writeFileSync(join(root, "genesis", "seed.json"), JSON.stringify(seed));
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
+  await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
+  await seedFleet(0);
   const { keys } = await seatChairs([0, 1, 2]);
   const charter = heldCharter({ keys, threshold: 2 });
   const doc: NexusDoc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
   writeNexusDoc(sealHome(), doc);
-  await wearPersona(0);
-  // The worn face's key at this Nexus mints HERE, before a twin copies the root: a vouch signs with it, and the
+  // Face 0's key at this Nexus mints HERE, before a twin copies the root: a vouch signs with it, and the
   // twin and the original sign one act only while both hold the same random key.
   await mintNexusLeaf(0, nexusAidOf(doc)!);
   // §2.1 — `cabal-vouch`'s `resolveBoundEpoch` reads the social bootstrap for a daemon doc URL
   // (`daemonDocUrlFromBootstrap`) and refuses fail-closed when it finds none. Seed a REAL daemon doc +
   // the bootstrap pointer in the EXACT shape `runInit` writes (flat `tiddlers[DAEMON_BAG_ID].text`), so
-  // `cabal-vouch`'s writer-test row reads a genesis (empty) fence rather than refusing "unreadable" —
-  // this fixture exercises the LIVE-PEER proof, not the daemon-doc-unreadable path.
+  // `cabal-vouch`'s writer-test row reads a genesis (empty) fence off the control document the founding names, rather
+  // than refusing "unreadable" — this fixture exercises the LIVE-PEER proof, not the fence-unreadable path.
   await ownedStore(larDataDir(), async (repo) => {
-    const handle = seedDaemonDoc(repo);
+    const handle = await seedFoundedDaemonDoc(repo);
     await repo.flush();
     mkdirSync(dirname(larBootstrapPath()), { recursive: true });
     const packedTiddlers = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
@@ -155,13 +168,13 @@ const WRITERS: readonly Writer[] = [
     carries: (doc, id) => antigenEntriesFromBoard(doc).some((e) => e.actCid === id),
   },
   {
-    verb: "edge-kapae", args: { edgeId: "e".repeat(64), raised: true },
+    verb: "edge-kapae", args: { edgeId: "e".repeat(64), raised: true, handleIndex: 0 },
     board: (_island, fleetRoot) => fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     id: (o) => String(o["actCid"]),
     carries: (doc, id) => edgeKapaeActsFromBoard(doc).some((a) => a.actCid === id),
   },
   {
-    verb: "cabal-vouch", args: { joiner: JOINER, realm: REALM },
+    verb: "cabal-vouch", args: { joiner: JOINER, realm: REALM, face: 0 },
     board: () => realmVouchBoardDocUrl(REALM), label: "board:vouch-registry",
     // A vouch reports no content id of its own; its signature over the invite bytes names it.
     id: () => "",
@@ -170,8 +183,8 @@ const WRITERS: readonly Writer[] = [
   {
     // `args.source` is filled in per-test (below) once `base` exists — the WRITERS table is built at
     // module scope, before any test's own scratch dir.
-    verb: "nexus-publish", args: {},
-    board: (i) => crossroadsDocUrl(i), label: "board:crossroads",
+    verb: "nexus-publish", args: { handleIndex: 0 },
+    board: (i) => publicationDocUrl(i), label: "board:publication",
     id: (o) => String(o["offeringCid"]),
     carries: (doc, id) => offeringAnnouncesFromDoc(doc).some((a) => a.offeringCid === id),
   },
@@ -190,7 +203,7 @@ describe("the store door — a writer reaches the standing vessel's live peers",
       // ── the twin stands a vessel: its Repo holds the store, a peer syncs it live ──
       at(twin);
       const { port1, port2 } = new MessageChannel();
-      const live = restingRepo(larDataDir(), { network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true });
+      const live = restingRepo(larDataDir(), { network: [new MessageChannelNetworkAdapter(port1)], sharePolicy: async () => true }, { heldHomes: true });
       const peer = new Repo({ network: [new MessageChannelNetworkAdapter(port2)], sharePolicy: async () => true });
       let liveOut: Record<string, unknown>;
       let liveSig: string | undefined;
@@ -200,7 +213,8 @@ describe("the store door — a writer reaches the standing vessel's live peers",
         await materializeSharedLarDoc(live, boardUrl as AutomergeUrl, w.label);
         await materializeSharedLarDoc(peer, boardUrl as AutomergeUrl, w.label);
         const doors = storeDoorReactors({ storageDir: larDataDir(), sealHome: sealHome(), repo: live });
-        liveOut = await doors[w.verb](args, {} as never);
+        // A face row rides a session of its face: this vessel's one face, h0.
+        liveOut = await doors[w.verb](args, { worn: { ordinal: 0, presenter: `0x${"00".repeat(32)}` } } as never);
         expect(liveOut["refused"], String(liveOut["refused"])).toBeUndefined();
         const url = String(liveOut["boardUrl"]);
         expect(url).toBe(boardUrl);
@@ -275,20 +289,42 @@ describe("the store door — a writer reaches the standing vessel's live peers",
     expect(federationPostureFromDoc(readNexusDoc(sealHome()))).toBe("private");
   });
 
+  it("RED nexus-posture on a HERM: a place that lit no face refuses the flip by name and writes nothing; its read says OPEN by class", async () => {
+    // A herm: a vessel key and a charter it imported, no persona root and no face anchors (operator ruling "A herm answers
+    // the knock": OPEN by class, so the charter's posture joint governs nothing here).
+    const root = join(base, "herm-root");
+    at(root);
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+    const { keys } = await seatChairs([0, 1, 2]);
+    writeNexusDoc(sealHome(), heldCharter({ keys, threshold: 2 }).doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
+    await expect(storeDoorDirect("nexus-posture", { want: "private" }, { sealHome: sealHome() })).rejects.toThrow(/answers the knock/);
+    expect(readNexusDoc(sealHome())?.federationPosture).toBeUndefined();
+    const read = await storeDoorDirect("nexus-posture", {}, { sealHome: sealHome() });
+    expect(read["herm"]).toBe(true);
+    expect(read["posture"]).toBe("open");
+    expect(read["wrote"]).toBe(false);
+  });
+
   it("RED nexus-admit-take: a taken bundle over a live Repo fires the after-roll hook and re-presents; CONTROL: direct keeps it with no hook", async () => {
     const root = join(base, "admit-take-root");
     await seatVessel(root);
     const doc = readNexusDoc(sealHome())!;
     const aidP = nexusAidOf(doc)!;
-    // The held persona's OWN per-Nexus leaf (h0, the face `seatVessel` wears) — the multitude-of-one self-admit
+    // The held persona's OWN per-Nexus leaf (h0, the face these acts name) — the multitude-of-one self-admit
     // `runNexusContract` mints in production, built here with the same pure mesh signers it uses.
     const leaf = await mintNexusLeaf(0, aidP);
     const sign = (seedBytes: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seedBytes).then(hex);
     const chairs = await seatChairs([0, 1, 2]);
     const quorum = chairs.hands.slice(0, 2);
     const consent = await signCarriageContract(leaf.verifyingKey, doc.sealEpochCid!, sign(leaf.seed));
-    const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid! }, quorum, consent);
-    const raw = JSON.stringify({ aid: aidP, gatePubKey: "c3".repeat(32), admit, lineage: [] });
+    const pin = (() => {
+      const bundle = deriveGateBundle(sovereignGateRoot(custodyRootDoor({ derive: () => new Uint8Array(32).fill(3) })), new TextEncoder().encode(aidP), sovereignRoute("/ws"));
+      try { return bundle.pin; } finally { bundle.drop(); }
+    })();
+    const opening = openAdmitCarriage({ gatePin: pin, canon: {} });
+    const admit = await signCarriageQuorum({ nym: leaf.verifyingKey, action: "admit", parents: [], sealEpochCid: doc.sealEpochCid!,
+      carriageCommit: admitCarriageCommit(opening) }, quorum, consent);
+    const raw = JSON.stringify({ aid: aidP, gatePubKey: pin.signingKey, admit, lineage: [], opening });
 
     const live = restingRepo(larDataDir());
     const rolled: Array<string | undefined> = [];

@@ -1,7 +1,7 @@
 /**
  * quorum-entry — the ONE canonical byte-image every quorum-signed steward entry signs over.
  *
- * THE SUBTRACTION. The Kapae antigen (`kapae-antigen.ts`) and the members set (`membership-registry.ts`) stand the
+ * THE SUBTRACTION. The Kapae antigen (`kapae-antigen.ts`) and the members set (`carriage-registry.ts`) stand the
  * SAME structure: a causal per-nym CRDT of quorum-signed steward acts. Their signed bytes carry the identical five
  * fields in the identical order — only the `kind` DOMAIN separates them. This module holds that common image once, so
  * the two boards can never drift a field apart while both claiming a quorum verified them.

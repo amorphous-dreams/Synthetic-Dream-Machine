@@ -70,13 +70,13 @@ describe.skipIf(absent)(`the wiki booted from genesis bytes${absent ? ` [SKIPPED
   test("CONTROL: a framed carrier reads back whole through the same face", async () => {
     const uri = "lar:///t/genesis-framed";
     const framed =
-      `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n` +
-      `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n` +
+      `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>\n\n` +
+      `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
       "```toml meta\nuri-path = \"t/genesis-framed\"\n```\n\n" +
-      `<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+      `<<~ ahu slot=\`#/a\`>>\n\n! a\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
     const receipt = await face.place(uri, framed);
     expect(receipt.decision).toBe("ingest");
-    expect((await face.read(uri))?.text).toContain("<<~ ahu #/a>>");
+    expect((await face.read(uri))?.text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
   test("★ a put of no bytes refuses by name and lands nothing ★", async () => {

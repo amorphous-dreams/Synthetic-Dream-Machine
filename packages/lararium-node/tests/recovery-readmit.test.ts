@@ -8,7 +8,7 @@
 import { describe, test, expect } from "vitest";
 import { generateKeyPairSync } from "node:crypto";
 import * as ed25519 from "@noble/ed25519";
-import { splitToShares, assembleQuorum, reconstructFromQuorum, verifyDeviceDelegation, personaPrefixOf } from "@lararium/mesh";
+import { countersignDeviceDelegation, faceAtomKeyFromSeed, mintFaceAtomSeed, type DeviceDelegationRootHalf, splitToShares, assembleQuorum, reconstructFromQuorum, verifyDeviceDelegation, personaPrefixOf } from "@lararium/mesh";
 import { runReadmitEdge } from "@lararium/keyhive";
 
 /** The lost citizen's PersonaGroup root (the "become you" atom). */
@@ -27,10 +27,15 @@ function seededRng(seed: number) {
 }
 
 /** A fresh device's Ed25519 verifying-key hex (the disposable key the drowned one is replaced by). */
-function freshDeviceKey(): string {
-  const { publicKey } = generateKeyPairSync("ed25519");
-  return Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
-}
+const deviceSeeds = new Map<string, Uint8Array>();
+const freshDeviceKey = (): string => {
+  const seed = mintFaceAtomSeed();
+  const key = faceAtomKeyFromSeed(seed, "recovery").key;
+  deviceSeeds.set(key, seed);
+  return key;
+};
+/** The fresh device completes the root's half with its own countersignature. */
+const complete = (half: DeviceDelegationRootHalf) => countersignDeviceDelegation(half, faceAtomKeyFromSeed(deviceSeeds.get(half.deviceVerifyingKey)!, "recovery").sign);
 
 describe("recovery keel — quorum → reconstruct → re-admit a fresh device", () => {
   test("the recovery happy path: the reconstructed root re-admits a fresh device, edge verifies against the pinned root", async () => {
@@ -42,12 +47,12 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
     // Layer 3: the reconstructed root signs a FRESH device's re-admit edge (admit ceremony, signer swapped).
     // In Fork-A reconstruct the op-key does NOT rotate — the reconstructed root IS the KEL head — so the
     // re-admit carries the persona's stable inception prefix over (root op-key + unarmed recovery-commit).
-    const freshVK = freshDeviceKey();
+    const freshTreeKey = freshDeviceKey();
     const rootDidPin = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     const personaKelPrefix = personaPrefixOf(rootDidPin, "");
     const payload = await runReadmitEdge({
       reconstructedRoot,
-      joineeVerifyingKey: freshVK,
+      joineeVerifyingKey: freshTreeKey,
       personaKelPrefix,
       // REQUIRED now (early alpha, no back-compat): `runReadmitEdge`/`runDeviceAdmitEdge` only WRITE this
       // chain forward, never re-verify it at mint time, so a minimal hand-shaped inception suffices here.
@@ -63,16 +68,18 @@ describe("recovery keel — quorum → reconstruct → re-admit a fresh device",
       syncUrl: null,
       hearthDaemonUrl: null,
       personaUrl: "automerge:2fakeReadmitPersonaDocUrl00000",
+      // This vector mints the edge alone; the log and frontier a re-admit carries have their reds elsewhere.
+      personaActs: [], edgeFrontier: { records: [], snapshots: [] },
     });
 
     // The re-admit edge verifies against the ORIGINAL root's DID (independently derived) — the Handle's
     // pinned signer is unchanged, so the joinee accepts it at the same Binding Gate.
     const rootDid = `0x${Buffer.from(await ed25519.getPublicKeyAsync(ROOT)).toString("hex")}`;
     expect(payload.signerDid).toBe(rootDid);
-    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshVK);
-    expect((await verifyDeviceDelegation(payload.deviceEdge, rootDid)).ok).toBe(true);
+    expect(payload.deviceEdge.deviceVerifyingKey).toBe(freshTreeKey);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), rootDid)).ok).toBe(true);
     // A DIFFERENT root would NOT verify — the edge is bound to the recovered root, not any signer.
-    expect((await verifyDeviceDelegation(payload.deviceEdge, `0x${"ff".repeat(32)}`)).ok).toBe(false);
+    expect((await verifyDeviceDelegation(await complete(payload.deviceEdge), `0x${"ff".repeat(32)}`)).ok).toBe(false);
   });
 
   test("a bare seed cannot mint a re-admit edge — recovery must pass the quorum gate (the type wall)", () => {

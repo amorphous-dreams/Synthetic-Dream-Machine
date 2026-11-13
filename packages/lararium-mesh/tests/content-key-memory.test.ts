@@ -109,7 +109,7 @@ describe("REACH APART FROM AUTHORSHIP: what a bundle's keys open, and what they 
     const context: SealContext = { bagId: BAG, keyVersion: V, role: "blob", logicalRef: hexToBytes(forged.body.ref) };
     const manifest: ManifestBody = { bag: before.founding, keyVersion: V, parents: [], entries: [{ role: "blob", address: forged.body.cid, locator: entryLocatorOf(key, context), parents: [] }] };
     const plant = async (signer: RecordSigner): Promise<void> => {
-      const signed = await signRecord({ kind: "manifest", body: manifest, private: {}, bagId: BAG, key, signer });
+      const signed = await signRecord({ kind: "manifest", body: manifest, private: { writer: `session:${signer.certificate.sessionKey}` }, bagId: BAG, key, signer });
       if (!("record" in signed)) throw new Error(`setup: the manifest did not sign (${signed.refusal})`);
       fresh.values.set(forged.body.cid, forged.body.ciphertext);
       await fresh.store.putRecord(signed.record);
@@ -201,6 +201,43 @@ describe("the cut: the section seals inside the holder", () => {
     // CONTROL: the same holder, asked with no such word, reads its own shadow and refuses.
     expect(said(await old.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public }))).toBe("own-edge-shadowed");
     old.shadowed = false;
+  });
+
+  it("A VESSEL THAT NAMES NO CHAIN AND OPENS NO LOCKBOX cuts an empty section: under any chain it holds nothing; one that opens a lockbox refuses `chain-absent` and answers no section", async () => {
+    // A vessel that dials no hearth composes no chain (a lone founder, a herm): its backup still cuts, and its
+    // memory section carries what it holds under every chain, nothing.
+    let chainNow: string | null = null;
+    const lone = await vessel(world(), "lone-device", { standing: { holdsWrite: () => true, chainOf: () => chainNow } });
+    const empty = await lone.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public });
+    expect(said(empty)).toBe("OK");
+    if (!("section" in empty)) throw new Error("unreachable");
+    expect(empty.holds).toEqual([]);
+    // The empty answer cached no reading: once a chain stands, the vessel seals and its cut carries the key.
+    chainNow = "chain-one";
+    await seal(lone, "under the chain");
+    expect((await cut(lone)).holds).toHaveLength(1);
+    // CONTROL: the same vessel, its chain gone (a restart before the dial composes), opens a lockbox now: a cut
+    // would count records under no chain, so it refuses by name and answers no section.
+    chainNow = null;
+    const refused = await lone.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public });
+    expect(said(refused)).toBe("chain-absent");
+    expect("section" in refused).toBe(false);
+  });
+
+  it("a chainless vessel whose rest holds only lockboxes for OTHER seats cuts an empty section: none opens for its own seat", async () => {
+    const { old } = await lostAndReturned();
+    await seal(old, "sealed elsewhere");
+    let chainNow: string | null = null;
+    const lone = await vessel(world(), "lone-device", { standing: { holdsWrite: () => true, chainOf: () => chainNow } });
+    // The lockbox reaches this rest whole, wrapped for another seat alone.
+    for (const [k, b] of old.rest.values) if (k.startsWith("lockbox/")) await lone.rest.put("lockbox", k.slice("lockbox/".length), Uint8Array.from(b));
+    expect((await lone.store.lockboxes()).length).toBeGreaterThan(0);
+    const r = await lone.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public });
+    expect(said(r)).toBe("OK");
+    if ("holds" in r) expect(r.holds).toEqual([]);
+    // CONTROL (the test above): a lockbox that opens for this seat makes the same chainless cut refuse `chain-absent`.
+    chainNow = "chain-one";
+    expect(said(await lone.holder.cutMemory({ bags: [BAG], to: mintMemoryKeypair().public }))).toBe("OK");
   });
 
   it("a locked holder refuses the cut and the import by name", async () => {

@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna12/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/luna12/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna12/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/luna12/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/luna12/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/luna12/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+* ''MED — fallback kill can leave Codex descendants running'' ([[launch-codex.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:431]]): if the group signal fails, the fallback kills only the direct child PID. Codex-spawned processes can survive after the supervisor waits for the child and returns. The throwing-signal test checks only the shell PID ([[launch-codex.test.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:807]]), so it would miss surviving descendants.
+
+* ''LOW — run.log assertion doesn’t verify held-directory behavior'' ([[launch-codex.test.mjs|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:642]]): `readFileSync(...) !== null` is true for any successfully read file, including an empty one. It doesn’t show that child output lands through the inherited directory handle.
+
+The fd mapping itself looks correct: stdio array index 3 maps the held fd to supervisor fd 3; the Codex spawn maps only fds 0–2, so fd 3 is not passed through. I found no defect in the checked append, symlink-open, step-claim, temp-file, or placement-before-create paths.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Wojw1Poulgikoy4AHZzIG7FgbcZJRTk5MFXNmzspfgM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

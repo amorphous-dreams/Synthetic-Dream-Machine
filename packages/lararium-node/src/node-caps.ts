@@ -45,14 +45,13 @@ import {
   // ── the lifted carriage machinery, now mesh-floor (re-exported below) ──
   CARRIAGE_CAP,
   carriageStack, type MeshSelf, type MeshPalaceComponent,
-  type AuthVerifierShore, type LeafIdentity,
+  type MeshPalaceDoc, type FlowPullResult, type PlaceSigner,
 } from "@lararium/mesh";
 import {
   composeCoreVessel, substrateCap, daemonCap, CORE_CAP,
   type DaemonCapDeps, type VesselDaemonVm,
 } from "@lararium/tw5";
-import { mountFlowMapReadFace, type OracleReadFace } from "./oracle-read-face.js";
-import type { SocketSorter } from "./daemon-auth-gate.js";
+import { mountFlowMapReadFace, type FlowReadFace, type FlowGateArgs } from "./flow-read-face.js";
 import { mountBulbReadFace, type PublicCasShore } from "./bulb-read-face.js";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { BulbArtifact } from "./bulb.js";
@@ -85,15 +84,13 @@ export const CAP = {
 
 // ── the node-ONLY cap: the gated read-face that serves the meshpalace FLOW-map to proven peers ──────
 
-/** read-face — serves the meshpalace FLOW-map to PROVEN PEERS over the vessel's gated oracle socket (the
- *  disclosure shore at the wire). Requires substrate + meshpalace (the doc it projects) + daemon (the
- *  verify shore its gate admits on). Disposes the socket face. */
+/** read-face — serves the meshpalace FLOW-map to PROVEN PEERS over the vessel's floor gates on the flow route
+ *  (the disclosure shore at the wire). Requires substrate + meshpalace (the doc it projects) + daemon. Disposes
+ *  the face, its gates and their sessions. */
 export function flowMapReadFaceCap(deps: {
-  httpServer: Server; signerSeed: Uint8Array; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
-  /** The daemon island's inbound-peer verify shore, read once the daemon cap stands. */
-  authShore: () => AuthVerifierShore;
-  /** The vessel's ONE sorter — the oracle socket's gate classes every proven reader by it. */
-  sort:      SocketSorter;
+  httpServer: Server; signer: PlaceSigner; storageDir: string; dispatcher?: HttpFaceDispatcher; onLog?: (line: string) => void;
+  /** The floor gates the face stands, one per Nexus, each seating through the face's own table. */
+  gates:     FlowGateArgs["gates"];
 }): CapModule {
   return {
     id: CAP.readFace, requires: [CAP.substrate, CAP.meshpalace, CAP.daemon],
@@ -102,15 +99,14 @@ export function flowMapReadFaceCap(deps: {
       return mountFlowMapReadFace({
         httpServer:       deps.httpServer,
         meshPalaceHandle: mp.handle,
-        signerSeed:       deps.signerSeed,
+        signer:           deps.signer,
         storageDir:       deps.storageDir,
-        authShore:        deps.authShore(),
-        sort:             deps.sort,
+        gates:            deps.gates,
         ...(deps.dispatcher ? { dispatcher: deps.dispatcher } : {}),
         ...(deps.onLog ? { onLog: deps.onLog } : {}),
       });
     },
-    dispose: (face) => (face as OracleReadFace).dispose(),
+    dispose: (face) => (face as FlowReadFace).dispose(),
   };
 }
 
@@ -132,7 +128,7 @@ export function bulbCap(deps: {
       ...(deps.onLog ? { onLog: deps.onLog } : {}),
       ...(deps.publicCas ? { publicCas: deps.publicCas } : {}),
     }),
-    dispose: (face) => (face as OracleReadFace).dispose(),
+    dispose: (face) => (face as FlowReadFace).dispose(),
   };
 }
 
@@ -150,18 +146,17 @@ export interface HermStackDeps extends DaemonCapDeps {
   readonly repo:           Repo;
   readonly residency?:     BagStowage;
   readonly httpServer:     Server;
-  readonly signerSeed:     Uint8Array;
+  readonly signer:         PlaceSigner;
   readonly storageDir:     string;
   readonly dispatcher?:    HttpFaceDispatcher;
   /** This Herm's mesh standing — derived once via deriveMeshSelf. Present → it self-announces, self-peers,
    *  re-ranks by proximity + drifts r. Absent → a leaf that only carries what it pulls (no carriage dials). */
   readonly meshSelf?:      MeshSelf;
-  /** The daemon island's inbound-peer verify shore — the read-face's gate admits a peer on its verdict. */
-  readonly authShore:      () => AuthVerifierShore;
-  /** The vessel's ONE sorter — the read-face's gate classes every proven reader by it. */
-  readonly sort:           SocketSorter;
-  /** The identity this Herm's carriage proves at each peer's gate. Absent → it carries in nothing. */
-  readonly identity?:      LeafIdentity;
+  /** The flow's floor gates the read-face stands, one per Nexus this Herm stands in. */
+  readonly flowGates:    FlowGateArgs["gates"];
+  /** The gate-native pull of a peer's public FLOW-map (`gateNativeCarriagePull`): one floor dial per (peer, Nexus) at the pin
+   *  this Herm's boards carried, presenting its own carriage contract. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
+  readonly pullFlow?:    (peer: string, publisherKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   readonly pullIntervalMs?: number;
   /** The HELD bulb this Herm serves by cid over the public floor. Absent → no `/bulb/*` face (a Herm with no
    *  genesis to hand). Present → a stranger pulls it + kindles their OWN sovereign hearth (serve fire, never key). */
@@ -202,15 +197,15 @@ export async function composeHerm(d: HermStackDeps): Promise<ComposedHerm> {
     // one. That is what a crossroads IS before anyone passes.
     ...carriageStack({
       repo:        d.repo,
-      nodeSeedHex: Buffer.from(d.signerSeed).toString("hex"),
+      ...(d.meshSelf?.gatePubKey ? { cadenceKey: d.meshSelf.gatePubKey } : {}),
       ...(d.residency ? { residency: d.residency } : {}),
       ...(d.meshSelf ? { self: d.meshSelf } : {}),
-      ...(d.identity ? { identity: d.identity } : {}),
+      ...(d.pullFlow ? { pullFlow: d.pullFlow } : {}),
       ...(d.pullIntervalMs !== undefined ? { pullIntervalMs: d.pullIntervalMs } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),
     flowMapReadFaceCap({
-      httpServer: d.httpServer, signerSeed: d.signerSeed, storageDir: d.storageDir, authShore: d.authShore, sort: d.sort,
+      httpServer: d.httpServer, signer: d.signer, storageDir: d.storageDir, gates: d.flowGates,
       ...(d.dispatcher ? { dispatcher: d.dispatcher } : {}),
       ...(d.onLog ? { onLog: d.onLog } : {}),
     }),

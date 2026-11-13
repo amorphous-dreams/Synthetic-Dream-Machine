@@ -13,7 +13,7 @@ module-type: route
  * 404 when the wiki holds no record under the URI.
  *
  * `:bag` names a container the server resolves. `default` names THE HOST'S ANCHOR — the one wiki on a
- * plain server; @daemon on a lares island. Any other recipe or bag answers 404 with a one-line body.
+ * plain server; daemon-plane on a lares island. Any other recipe or bag answers 404 with a one-line body.
  *
  * ── A RECIPE READS ITS STACK ────────────────────────────────────────────────────────────────────
  * On a plain server the wiki IS the stack: `recipes/default` reads the one wiki, top to bottom, and

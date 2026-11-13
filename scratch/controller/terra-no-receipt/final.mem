@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-no-receipt/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-no-receipt/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-no-receipt/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''INFER:'' The daemon messages in the rest-before-reload logs most strongly suggest a teardown-related refusal, but they do not prove that the vessel had stopped or that a particular write was lost. The shutdown code closes the receipt capability before draining owed writes, which can itself produce these messages. The separate e2e timeout is a real test failure; these logs do not establish that the daemon refusals caused it.
+
+''MEASURED:'' The error is thrown by `ack()` when its request returns false in [[receipt.ts|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/receipt.ts:116]]. False can result from a closed capability, a missing local handle, a negative or stalled vessel answer, or closure while waiting ([[receipt.ts:59|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/receipt.ts:59]], [[receipt.ts:102|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/receipt.ts:102]], [[receipt.ts:119|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/receipt.ts:119]]).
+
+''MEASURED:'' The island asks for a `receipt:issued` with `issued: true`, naming each written document and its Automerge heads. The vessel’s island pool answers for a granted island; its storage-backed Repo must hold those heads and flush the documents before issuing the receipt ([[receipt.ts:61|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/receipt.ts:61]], [[vessel-island-pool-core.ts:1135|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/vessel-island-pool-core.ts:1135]], [[receipt-with-heads.ts:21|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/receipt-with-heads.ts:21]]). The adaptor writes first, then requires that durable acknowledgment; refusal leaves the title owed ([[island-adaptor.ts:452|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/island-adaptor.ts:452]]).
+
+''MEASURED:'' Both local e2e logs show daemon-working refusals followed by named teardown-write failures ([[run 1:772|/home/joshu/.lares-scratch/b1-seal/rbr-run1.log:772]], [[run 2:68|/home/joshu/.lares-scratch/b1-seal/rbr-run2.log:68]]). The kernel explicitly closes receipt waits before `adaptor.stop()` drains owed titles ([[sovereign-kernel.ts:555|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/src/sovereign-kernel.ts:555]]). Run 2 separately reports a timeout in `confirmSettled` ([[run 2:99|/home/joshu/.lares-scratch/b1-seal/rbr-run2.log:99]]).
+
+''MEASURED:'' Both supplied lane CI logs contain the same error text, but their matches are test fixtures: the draft-road test deliberately throws it ([[lift CI:1097|/home/joshu/.lares-scratch/b1-lift/ci-42197282289.log:1097]], [[seal CI:9796|/home/joshu/.lares-scratch/b1-seal/ci-42205053266.log:9796]], [[test:55|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/tests/wiki-shore-draft-road.test.ts:55]]); the quiet-peer test deliberately closes a hung receipt ([[lift CI:9756|/home/joshu/.lares-scratch/b1-lift/ci-42197282289.log:9756]], [[test:10|/home/joshu/Synthetic-Dream-Machine/packages/lararium-tw5/tests/stop-with-hung-receipt.test.ts:10]]). No span CI web-tw5 log was supplied, so whether ''span CI'' carries the line remains unverified.
+
+''INFER — minimal next red:'' With a responsive vessel, queue one daemon working write immediately before teardown; complete shutdown, reopen the vessel, and assert the exact value is durable. Include a quiet-peer control proving shutdown still terminates without falsely acknowledging the write. This distinguishes a shutdown durability fault from unacknowledged but already persisted data. No files were written or tests run.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qzbxU-I89aLo9ebnlHlJDxr5rNzfFO7wAgNhKacskpY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

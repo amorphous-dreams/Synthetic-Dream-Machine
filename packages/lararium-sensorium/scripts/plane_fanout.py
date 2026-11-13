@@ -9,7 +9,7 @@ other two planes, so all three planes key on one cid over genuinely-shared units
   · form      — `form_induction.induce_forest` mines the pass's OWN structure forest
     into a constructicon (MDL-selected templates, blind); each record then reads as a
     membership vector over those induced templates, landed by cid into the
-    `form_encoder.FormPalaceStore` "form" collection.
+    `form_store.FormPalaceStore` "form" collection.
 
 THE INDEPENDENCE LAW (RUN-ARC — the whole point): neither plane ever touches the content
 EMBEDDING. Structure reads only the parse SHAPE; form reads only the induced-grammar
@@ -178,7 +178,7 @@ def compose_text_planes(root_dir: str, *, min_support: int = _DEFAULT_MIN_SUPPOR
     (the test-bed sensorium's plane palaces, beside its `<root>/content`). The two caps
     share one tree map, so each record parses once and both planes read the unfolding.
     Imports ride here (not module-top) so the pure caps stay composable without chroma."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from structurepalace_io import StructurePalaceStore
 
     trees: dict = {}

@@ -68,7 +68,7 @@ read faces only.
 
 Usage (the mempalace venv):
   PYTHONPATH=<repo>/mempalace ~/.venv/bin/python3 dream_pass.py run \
-      --eidetic <lararium>/sensoriums/human-text-lares-memes [--dream <root>] \
+      --eidetic <root>/sensoriums/human-text-lares-memes [--dream <root>] \
       [--tolerance 0.25] [--min-support 2] [--max-forms 64] [--max-candidates 384] \
       [--loci-cap 32]
 
@@ -195,7 +195,7 @@ def eidetic_logical_hash(root: str) -> str:
     metadatas, and vectors, read through each store's own face and canonically
     serialized. The record grain carries the never-writes-eidetic witness where the
     sqlite carrier's bookkeeping churn cannot."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from structurepalace_io import StructurePalaceStore
 
     root = os.path.expanduser(root)

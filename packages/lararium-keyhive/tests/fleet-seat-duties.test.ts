@@ -181,4 +181,17 @@ describe("the provider says how a seat answered", () => {
     expect(await f.founder.revokeGroupSeat(`0x${"7e".repeat(32)}`, f.groupId)).toEqual({ how: "gone" });
     expect(await f.holds(f.founder, f.ids[1]!)).toBe(true);                                             // CONTROL
   });
+
+  test("MEASURE (road T34): a joinee's island answers its own seat duties, holds no authority, and still hands its subscriber the roll", async () => {
+    const f = await fleet(0xc0);
+    const joinee = f.others[1]!;
+    await ship(f.founder, joinee);
+    const raise = await f.act(f.ids[0]!, true);
+    const heard: SeatRoll[] = [];
+    const out = await f.answer(joinee, [raise], { own: [f.ids[1]!], sink: (r) => { heard.push(r); } });
+    expect(out.outcomes.map((o) => o.did)).toEqual(["no-authority"]);
+    expect(heard.map((r) => [r.how, r.raiseCids])).toEqual([["no-authority", [raise.actCid]]]);
+    expect(out.rolls).toHaveLength(1);
+    expect(await f.holds(f.founder, f.ids[0]!), "the seat stands until its seating hand revokes it").toBe(true);
+  });
 });

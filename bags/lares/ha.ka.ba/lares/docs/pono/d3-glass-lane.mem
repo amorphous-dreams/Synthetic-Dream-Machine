@@ -1,0 +1,165 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = false
+l-space   = "adjacent"
+role      = "the D3 lane's kit: the glass engine on the record port, through the mirror door: the port adaptor, the glass boot and mount, the service doors, the multi-tab topology, the draft prompt, the full-width walk and the three-boot width spike"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/d3-glass-lane"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/d3-glass-lane"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! D3 ~ the glass engine and the width spike
+
+Order (controller, 2026-10-28): the lane runs on a port a page can reach (D2, PR #103) and on rest-before-reload (PR #91). The operator ruled full as the default on 2026-10-28; the mirror boot lights that width through the D2 port binding, with none as the fallback (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>> D3).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-slices`>>
+
+!! The slices, each built red first with its control
+
+# ''G1 ~ the port adaptor ~ BUILT.'' A startup module on the glass (`packages/lararium-tw5/src/glass-port-adaptor.ts`), pure over a `$tw`-shaped wiki and a port transport: it binds `$tw.wiki`'s `change`, lands `port:snapshot` and `port:changes` under an origin tag its own listener skips, posts `port:write` with a `txId`, and keeps the write optimistic until `port:written` echoes; no `$tw.syncer`, no `syncadaptor` module. Skinny and story stand as settings of the same adaptor (`width`, `fields`); skinny asks `port:ask{kind: load}` for a body on open. Witnesses: `glass-echo-lands-once`, `glass-skinny-body-loads-on-open`, `glass-peer-edit-presence-reads-aloud`.
+# ''G2 ~ the glass boot and mount ~ BUILT.'' The page boots the engine's own kernel in TW5's browser mode and nothing else of its own: one `port:open` carrying `boot` asks the vessel's island for its boot set and its records, the island hands the engine blob and each plugin blob it booted from (`port:boot`, verbatim, by CID) and then the snapshot, and the engine boots from that store alone, the boot set and the wiki's records standing in `$tw.preloadTiddlers` before TW5 unpacks a plugin (#/the-handoff). The camera mounts the page template in a shadow root over `window.document`. The mirror opens full; named failures take the one step or leave the none floor. `packages/lararium-web/src/glass/`, `packages/lararium-tw5/src/glass-handoff.ts`.
+# ''G3 ~ the service doors ~ BUILT, three doors owed by name.'' The mirror answers every root `tm-*` message stock TW5 binds in its browser startup, over its own pane (#/the-doors); the `http-request` door, the `open-surface` door and the address a link opens stand owed (#/owed).
+# ''G4 ~ the multi-tab topology ~ BUILT; the vessel lift (row `B1`, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>>) replaces its leader, follower and lend with one vessel worker and a session per tab.'' One tab per origin holds the vessel and leads; a Web Lock beside the store lock queues succession (`leader.ts`, `topology.ts` `standTabTopology`, live in `main.ts`). Another tab on the origin follows: it says hello over the BroadcastChannel, the leader answers with ready and its ''lend'' (the surface its mirror stands on, the actor it writes as, the engine inputs the vessel names), and the follower stands its own mirror through the same door over its follower doors (`#mirror` reads `data-lar-tab="follower"`), promoting to full through the leader's port doors. The leader binds the surface itself and ignores a follower frame's surface, refuses a `port-up` from a tab that never said hello, and parks a hello that arrives before its surface stands until it lends. When the leader's page goes, the next lock request grants: that tab opens the vessel itself, serves the rest through a second channel object, and its own doors re-hello to it, re-open at the width the mirror reached (a widen rewrites the remembered open) and send the unanswered writes again under their txIds, so its mirror never tears down. The shared holder (`?holder`) is its own topology, every tab a port onto one holder, and takes no election. The bus is same-origin plumbing and no boundary between tabs (a script of the origin reads every frame): its fences hold a buggy tab to its own wiki, never a hostile one. A follower has no vessel, so no custody step, no floor projection, no summon and no instruments: with no mirror it says so in its status. A leader whose vessel refuses to open keeps the lead (no other tab could open the store) and offers the retry. Witnesses: `glass-leader-handoff-mid-write`, `glass-late-tab-gets-snapshot`, `glass-tab-fence`, `glass-tab-follower`; e2e `glass-tabs` (two tabs, the hand-off, a third tab after it).
+# ''G5 ~ the draft prompt ~ BUILT.'' A peer write into an open draft shows the newer-base prompt; a draft is a tiddler like any other.
+# ''G6 ~ the full-width walk ~ PART.'' The five `isTiddlyWikiFakeDom` sites (`FramedEngine`, storyviews, popup positioning, the toolbar, auto-height) walked once in a real browser inside the shadow root; interaction goldens 1 to 13 at width full with stock TW5 as oracle.
+# ''G7 ~ the three-boot spike ~ PART.'' One 2,000-tiddler corpus, one loopback port, full, skinny and none (story only if skinny and full split), each measure and threshold the roadmap's D3 Measures states; on this host's browsers and on Node; each phone figure named unmeasured.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-visible-mirror`>>
+
+!! The visible mirror, the person's choice and the vessel setups (operator, 2026-10-28)
+
+* ''The mirror is the surface.'' The person reads and edits through the mirror wherever it stands (`#mirror`, `data-lar-shown="mirror"`); the worker-rendered view stays beneath as the named floor, shown again only when the mirror tears down. The vessel lends its own wiki page the right to edit the default bag as the worn face (`pagePortGrant`; the daemon surface keeps a read-only port). A port write answers once its documents rest, as a save act's result did; the page holds its leave while a mirror write waits; a title keeps one write in flight with the latest text behind it.
+* ''Full first; ONE mirror step, then teardown.'' The mirror opens full wherever no evidence holds it. A caught capacity error takes one step to skinny: before the engine stands, a fresh handoff at skinny on a fresh port; after, a fresh skinny open on the same engine. A failure past that step tears the mirror down to the floor. `port:gone` closes it. A test pins the count. No open port widens in place from the mirror: the promotion row left with the order it served (#/moolelo).
+* ''Two crash records, both per tab and per wiki, both evidence and never a flag.'' `mirror:began:<wiki>` stands from the moment a full boot begins to full's first painted frame; `mirror:full-standing:<wiki>` stands from that frame to `pagehide` (a back-forward restore writes it again). A boot that finds either opens skinny and names why (`full-boot-unfinished`, `full-ended-without-pagehide`). A store that throws names `evidence-unavailable`.
+* ''One pattern for boot, width and caps.'' The boot measures capacity and sets the width. The vessel's grant sets authority. A face intent sets experience. No one of the three picks another's value. A person's lighter choice (reduced chrome, a calmer story) is an ''experience'' carried as a face intent, worded for the person and never `skinny`; however a person customizes TW5, the width stays what the boot measured. No setting, URL value or stored value selects a width, and a census test holds the glass sources to the two evidence keys.
+* ''The mirror wears what the wiki wears.'' The island's boot set carries TW5's stock `$:/themes/tiddlywiki/vanilla` and `$:/themes/tiddlywiki/snowwhite` as plugin blobs (packed from the vendored TW5 at the core blob's own revision, `build-tw5-themes.ts`, genesis class `stock`, folded into no epoch region), and the mirror receives them as the island's own boot members over the port, never from a store the page reads. A theme, palette or language a person installed in the wiki reaches the mirror as the wiki's own record and boots with the engine. `$:/palette` names the gruvbox-dark carrier's `#/palette` slot, a TW5 palette dictionary. A house theme, should one come, rides the offering door.
+* ''The wiki owns its default story.'' No engine opens a story inside boot: the page boot env and the island runtime both disable TW5's `story` startup, and `openDefaultStory` (`default-story.ts`) opens it at the engine's first whole snapshot, the mirror after the port's greeting, the island after its seed drains (a landed personal `$:/StoryList` stays). The house plugin's `$:/DefaultTiddlers` shadow reads the wiki's own records tagged `$:/tags/lares/Landing` and falls back to GettingStarted; lares canon tags `lar:///ha.ka.ba/lares/docs/welcome`.
+* ''The pane names its surface.'' The projection pane's heading carries the shown surface's name (`#projection-wiki`, `data-lar-pane-wiki`), the vessel card's own word, beside the summon button; `#mirror` carries `data-lar-mirror-why` while a named reason holds it at skinny.
+* ''The weld reads the mirror.'' M1-M5 in `tools/browser-weld/weld.mjs` wait on the product's own settle and read the shown mirror: its sheet, sidebar, icon bound and palette (M2), its first story title against the wiki's `$:/DefaultTiddlers` (M3), the pane's name against the vessel card (M4), and a title typed through Playwright's own input and read back from the worker's render (M5). A red reading whose source `genesis/unbaked.json` declares reads as a gap naming the row.
+* ''Vessel setups.'' A browser on a node's own box takes a port onto the node's vessel, one setup of many; a ''user'' class cap-stack gets no node infrastructure and stands an anon-device-browser-vessel or a fleet of equivalent vessels (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/device-seats). The mirror reads the same in each.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! What stands owed
+
+* ''G4'': a write sent again after a hand-off carries its txId, and the island applies each txId once from an actor ledger it holds in memory; a vessel the hand-off re-opens holds a fresh ledger, so a write the old island applied without its answer reaching the tab lands twice (the same record, the later image winning). The ledger rests durably with the store, so a retried write lands once across a respawn: slice 6 of <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>> builds that, and the actor's per-port attachments stay D4's.
+* ''G3'': three doors. `tm-http-request` refuses by name until the vessel's `http-request` door stands (`dreamdom-roadmap` row `D15`; the plugin library and a person's own fetching code ride that approved crossing). `open-surface` (`tm-open-window`) refuses `page-action-unavailable`: no second surface opens from the page yet (D4). The address: `permalink` and `permaview` hand stock's link form to the clipboard, and no link opens a story yet, since the page's fragment already carries the floor's own words; the route-in waits on one owner for the address.
+* ''The boot set and the landing reach every island'' BUILT: the bake carries the stock themes, the palette pointer and the landing shadow, and the floor replays its pinned rows into every island's engine (`floorReadFace`, first-wins, `bag` the slot), so the worker and the mirror both open the wiki's own landing; every island now lands about 5.6k floor rows at seed.
+* ''The mirror's ground'' BUILT: the camera reads the theme's whole-document sheet inside the shadow root (`glass-sheet.ts`): `html` reads as the host, `body.tc-body` as `.lar-mirror.tc-body`, and a width-only `@media` as an `@container` query, so the palette grounds the pane, TW5's fixed sidebar lays out inside it and the breakpoint reads the pane's width.
+* ''The boot to live'': a browser vessel takes 40 to 50 s from boot to `live` on a warm local dev profile, and the mirror's handoff 1.5 to 3 s after it; a CI runner reads near a minute. The suspect, unmeasured: the floor rows each island lands at seed. Owed before the browser leg of the walk: a trace of the vessel's open phases (`LarOpenPhase`, `boot` to `live`, <<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/open-phases`>>) with each phase's span, read on one boot, so the cure names the phase that pays.
+* ''Switching the mirror's wiki'': the mirror serves the surface the page shows when it first stands and keeps it for its life; a switch re-points the floor alone. The switch unmounts and stands the mirror on the new surface, and the `reload` road in `main.ts` gives the seam. The daemon camera stays at width none (its `$:/temp/lares/*` panes never cross the record port).
+* ''The held tab searches as stock does'': a tab the evidence holds at skinny boots once, and its sidebar search finds a record by title though its body stayed behind (`glass-held-search`); the e2e walk plants its held record on the tab it already stood, under a named bound for a bare tab.
+* ''Read in CI alone'': weld M2, M3, M5 and M6; the e2e files `glass-mirror`, `glass-tabs` and `mirror-boot-makes-no-request`, which may still wait on a skinny word.
+* ''The language switcher'': stock's switcher writes `lang` and `dir` on the page's `documentElement`, outside the pane.
+* ''G6'': one walk witness runs the framed editor, story scroll, popup layer, toolbar and auto-height in Chromium and Firefox; WebKit refuses on this host for want of two system libraries. Interaction goldens 1 to 13 at width full against stock TW5 stand owed.
+* ''G7'' on the remote setup (authority in Node over a loopback relay; 2,000 tiddlers, Chromium on this WSL2 host, median of three runs; every phone figure UNMEASURED): heap after first paint stock 32.18 / full 35.56 / skinny 21.66 MiB; first paint 836 / 942 / 677 ms; keystroke to paint p95 15.1 / 26.5 / 23.7 ms; skinny cold filter p95 3.3 ms; peer write 32 / 43 ms, in order; hot swap 611 / 179 ms; one echo write, zero re-landings; none bytes per key 63,344 against a 52,429-byte budget (phone unmeasured). The sync ask, the verb census and the none page controls stand unmeasured.
+* ''Mirror door'' BUILT: the pool names a mounted wiki's boot set (`mountInputsOf`: the CIDs its island booted from), the browser vessel result carries `mirrorInputs(surface)`, and `main.ts` stands the mirror through `standPageMirror` once the first frame names the surface (host `#mirror`, outcome in `data-lar-mirror`). The names come from the vessel and the bytes from its island: the page hashes each handed member against the names.
+* ''G7 on the shipped setup'' (the island as a Web Worker in the same tab, no relay; 2,000 tiddlers, Chromium on this WSL2 host, median of three runs; every phone figure UNMEASURED): process memory of every browser process, island worker included (Linux RSS), stock 575.5 / full 624.0 / skinny 589.4 MiB, so full costs +48.6 MiB (+8.4 %) over a stock tab: PASS against the +25 % and 150 MiB gate. The JS-heap row (stock 32.2 / full 35.6 / skinny 21.7 MiB) counts the page's main thread only. First paint 879 / 1,308 / 1,166 ms; keystroke to paint p95 15.1 / 26.8 / 26.8 ms; peer write 29.7 / 43.1 ms in order; hot swap 437 / 202 ms; one echo write, zero re-landings.
+* ''Skinny as the step'': a skinny open carries titles, `tags`, `modified`, `type` and `caption`, so a mirror the evidence holds at skinny, or one that stepped there, paints with no palette body and holds every plugin record back (nothing can read what it would evaluate). The skinny notch wants the system and plugin bodies in its projection; that row stands owed to the port's projection.
+* ''Full-width landing'': a landed record's tag reads the tiddler back as TW5 holds it, so a landing never posts itself as a write.
+* ''The seal's word'': the plugin gate opens on the vessel's `sealedRest`, and no vessel speaks it yet (`mirrorInputs` carries the names alone); S's row lands the feed. ''A wiki's StartupAction records'' wait out the mirror's boot and `$:/tags/StartupAction/PostRender` never runs on the surface: the island's gate decides which startup actions run. ''The node's page door'': the node vessel serves `ports.place` and refuses its daemon surface; no node-served page takes that port yet (#/the-handoff names the one protocol both vessels speak).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-handoff`>>
+
+!! The whole handoff ~ the mirror boots from what the island hands it
+
+A TiddlyWiki server holds the tiddlers and hands a browser its store; the browser boots a kernel over that store. The house keeps that shape between a vessel's island and the page.
+
+* ''The island holds everything.'' Every worker VM carries `$:/core`, the house plugin, the stock themes, the boot shadows and the wiki's records as tiddlers; the engine blob it evaluated carries TW5's kernel beside `$:/core`, as TW5's own bundle packs them.
+* ''One open asks for all of it.'' `port:open{boot: true}` at the mirror's width. The island answers `port:boot` chunks (the engine blob, then each plugin blob, in boot order, verbatim from its CAS, re-hashed before a byte leaves), then `port:snapshot`, then `port:changes` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>> #/boot).
+* ''Two speakers, one check.'' The vessel names the CIDs (`mirrorInputs`); the island sends the bytes; the page hashes each member against the names. A member the vessel never named, a name the island never answered and a member whose bytes hash to another value each floor the mirror by name (`mirror-boot-member-unnamed`, `-missing`, `-mismatch`).
+* ''The engine boots after the snapshot.'' The boot set and the wiki's records stand in `$tw.preloadTiddlers` before `execStartup`, so TW5 registers a person's plugin, theme, palette and language at boot, as it does for a store a server handed it. The port adaptor adopts the open port; a booted record stands as landed and never posts itself.
+* ''The gate rides TW5's own ordering.'' The record census (`censusRecords`) keeps out of the boot: a record whose title names a tiddler of the verified boot set; a plugin or loose module carrying a `syncadaptor` or a `saver`; a plugin or loose module that evaluates JavaScript, on a vessel whose store does not yet rest sealed; a plugin whose body the port left out; a `$:/tags/StartupAction` record; a record carrying a `module-type` of its own; a record that shares its title with a module the boot set packs (house canon names a carrier and its module alike, and TW5 defines no shadow module an ordinary tiddler overrides). The last three wait with no alert: the island evaluates none of them either, so nothing was refused. A held record lands after boot as an ordinary record, where TW5 defines no module and registers no plugin code, so the person still reads, edits and deletes it and no field changes. Each refusal names itself on the alert rail.
+* ''One protocol, both vessels.'' The kernel that boots the island (`sovereign-kernel.ts`) names its boot set to the port on Node and in a browser worker alike; a page on a node's own box asks the same open and receives the same members.
+* ''The page reads no store.'' `glass/cas.ts` and the page's CAS reader left; a census holds the glass sources to that.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-doors`>>
+
+!! The doors ~ stock TiddlyWiki's whole surface, inside the pane
+
+Stock binds its root messages in three browser startups the mirror's boot keeps out (`rootwidget`, `render`, `windows`). `glass-root.ts` answers each on the engine's own `$tw.rootWidget`, where the house plugin's `lar-story` listeners already stand.
+
+|! Message |! Where it lands |
+| `tm-modal` · `tm-show-switcher` | stock's `Modal`, handed a document whose `body` reads as the pane's body stand-in: the wrapper paints inside the shadow root, beside the page container |
+| `tm-notify` | the pane's body stand-in; the browser's own animation paces its leave over the wiki's notification duration |
+| `tm-scroll` · storyview scrolls | the pane's scroll box (`makePaneScroller`), never the window |
+| `tm-focus-selector` · `tm-rename-tiddler` · `tm-relink-tiddler` | the engine, over the shadow root and `$tw.wiki` |
+| `tm-copy-to-clipboard` · `tm-download-file` · `tm-full-screen` · `tm-print` · `tm-open-external-window` | the surface's door (`glass/doors.ts`, `page-doors.ts`), in the task of the person's act |
+| `tm-browser-refresh` | `route{reload}`: the mirror boots afresh from a new handoff while the page stays; a write still waiting holds it |
+| `tm-permalink` · `tm-permaview` | `route`: stock's link form to the clipboard |
+| `tm-home` | the wiki's default story (`default-story.ts`) |
+| `tm-open-window` · `tm-http-request` | refused by name (#/owed) |
+
+* ''The pane mirrors a stock page's document.'' `.lar-mirror.tc-body` stands as the body, `.tc-page-container-wrapper` as `$tw.pageContainer` beneath it; popups read the body stand-in as their root.
+* ''Keys stay in the pane.'' The wiki's keyboard shortcuts hear a key only while it travels through the pane, and the stock handler returns when the camera leaves.
+* ''Hooks.'' `th-page-refreshing` and `th-page-refreshed` fire around each refresh. The camera refreshes at once on every change; stock's draft throttle timer stays out (the measured keystroke-to-paint p95 stands in #/owed).
+* ''What crosses the port.'' Every record change the person makes, drafts among them (a draft reads as a tiddler like any other, one write in flight per title with the latest text behind it); the story, the history, `$:/state`, `$:/temp`, `$:/status` and `$:/info` stay on the glass. Nothing crosses per act.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/moolelo`>>
+
+!! Moʻolelo ~ forks the build decided, each overrulable
+
+* ''Full first.'' The operator ruled skinny-then-promote on 2026-10-28, to hold until full passed its memory gate. G7 on the shipped setup measured full at +48.6 MiB (+8.4 %) over a stock tab, a pass against the +25 % and 150 MiB gate (#/owed), and a whole handoff needs the plugin bodies in the store before the engine boots, which a skinny first open cannot carry. So full stands first and skinny stays as the one named step and the evidence hold. Every phone figure stays unmeasured; a phone that fails the gate reopens this.
+* ''The kernel rides inside the engine blob.'' The handoff's first member carries TW5's kernel and `$:/core` as TW5's own bundle packs them, under the one CID the vessel already names and the island already verified. A kernel split from `$:/core` would want a second pinned hash at genesis and buys the page nothing: both come from the island either way.
+* ''The names stay with the vessel.'' The page could trust the island's bytes alone; it keeps the vessel's CIDs as a second speaker so a boot member that arrives bent or unbidden floors by name.
+* ''Held records land after boot.'' The gate changes no field and strips nothing; it leans on TW5 evaluating modules during boot alone.
+* ''Startup actions belong to the island.'' Stock runs `$:/tags/StartupAction` in every engine; two engines over one wiki would run a wiki's action twice, the second time past the island's gate.
+* ''The address waits on one owner.'' The fragment carries the surface's route alone: the floor card and its anchor left it for the page's carriage door (no query string and no fragment names an arrival), so any URL intent rides the mirror's route door into the TW5 VM.
+* ''No draft throttle.'' Stock defers a draft's refresh behind a timer; the camera refreshes at once and keeps the house's no-clock census whole.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-realm`>>
+
+!! The mirror's realm ~ the operator's rulings (2026-10-29) as the lane's work order
+
+* ''A page never stands as a vessel.'' The page holds a surface with a port onto a vessel; §9 of the Island Sovereignty Law reads "no sovereign VM and no key on a surface", and the mirror honors it as a camera fed by the port alone.
+* ''Browser mode, no lends.'' The mirror boots TW5 in its own browser mode: no `configureIslandRuntime`, no worker boot env, no `global`, `Buffer`, `process`, `setImmediate` or `clearImmediate` lent onto the page window. Mu on the iframe and thread menu (same-origin iframe, sandboxed iframe, ShadowRealm, core patch).
+* ''No syncer, no saver, no syncadaptor.'' The port adaptor stays the mirror's one road to truth; TW5's syncer, savers and syncadaptor stay out of its boot, and a person's plugin carrying a syncadaptor or a saver refuses at mount by name.
+* ''The surface owns the URL'' through its `route` door; TW5's hash handling stays off and `#:safe` burns. ''Faults'' land on the alert rail, with TW5's `window.onerror` uninstalled. ''Modals and notifications'' paint in the surface's root layer, and `lar-root-services` owns the mirror's doors (G3).
+* ''Plugins wait on the seal.'' The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store; no clear row stands under it, the device key rests non-extractable, and the browser vessel's opened key lives in its own worker.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-fences`>>
+
+!! What the lane leaves alone
+
+* The hands spine until PR #108 lands (`session-contract.ts`, `uds-channel.ts`, `uds-session-door.ts`, `session-switch.ts`, `store-door-verbs.ts`, the openers' compose hunks) and I2's `intent-*` files. No opener compose hunk unless the controller hands one; the glass builds it as a named patch.
+* The road and the changelog.
+* D4's manifest and gate.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-roadmap`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d2-port-lane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;744b7XFmOBW2tT6CHaChdkvRUkyv62wJhUxAhms6wSQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

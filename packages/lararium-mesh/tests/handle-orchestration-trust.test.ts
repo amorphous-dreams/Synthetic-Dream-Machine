@@ -12,7 +12,7 @@ const OTHER = new Uint8Array(32).fill(43);
 const RECOVERY = "ab".repeat(32);
 const signer = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
 
-function board(): LarDoc { return { schemaVersion: "0.1", tiddlers: {} }; }
+function board(): LarDoc { return { tiddlers: {} }; }
 
 async function rootCard(seed = SEED, glamour = "root"): Promise<HandleCard> {
   const did = `0x${await ed.getPublicKeyAsync(seed).then(hex)}`;

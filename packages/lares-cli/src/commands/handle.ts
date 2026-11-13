@@ -21,7 +21,8 @@
  */
 import { readFileSync } from "node:fs";
 import type { ParsedArgs } from "../parse-args.js";
-import { loadHandleBook } from "../sealed-rows.js";
+import { bookFace, loadHandleBook } from "../sealed-rows.js";
+import { actingFace } from "../face-option.js";
 import {
   verifyAttestation, normalizeHandleClaim, handleClaimFrom, handleClaimSubject, HANDLE_CLAIM_SURFACES,
   type HandleAttestation, type HandleKelEvent, type HandleCard,
@@ -140,7 +141,8 @@ async function handleVerifyAttestation(args: ParsedArgs): Promise<number> {
     chain = card.chain as HandleKelEvent[];
     chainSource = "card";
   } else {
-    const book = await loadHandleBook();
+    const face = await bookFace(await actingFace(args));
+    const book = await loadHandleBook(face);
     const record = book.get(statement.prefix);
     if (!record) {
       emit(args, {

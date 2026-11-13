@@ -68,11 +68,10 @@ export interface CabalInvite {
   /** The VOUCHER: an already-licensed member, staking their standing. Attributable by construction. */
   readonly voucherDid:  string;
   /**
-   * THE FENCE. The realm's lease epoch this invite is bound to — a 1-15 digit decimal, mirroring
-   * `device-delegation`. `epoch-lease` holds that epoch as a coordinator-free MAX-REGISTER in
-   * per-writer slots, so it converges without a coordinator and never decreases. Roll the realm's
-   * epoch and every invite bound behind it lapses at once, on every replica, with no clock consulted
-   * and no message sent.
+   * THE FENCE. The realm's charter-quorum lease epoch this invite binds to — a 1-15 digit decimal,
+   * mirroring `device-delegation`. `quorumLeaseEpoch` folds verified signed advances under the
+   * charter's seal-epoch lineage. Advance the realm's epoch and every invite bound behind it lapses
+   * at once, with no clock consulted and no message sent.
    */
   readonly boundEpoch:  string;
   /** Ed25519 over the canonical bytes of everything above, hex. */
@@ -131,7 +130,7 @@ export async function decideCabalJoin(args: {
   readonly joinerIdentityHex: string;
   readonly invite:            CabalInvite | null;
   /**
-   * The realm's effective lease epoch — the max over `epoch-lease`'s per-writer slots.
+   * The realm's verified charter-quorum lease epoch (`quorumLeaseEpoch`).
    *
    * THIS REPLACES A CLOCK, and the replacement had to remove the clock rather than stop reading it.
    * A `now` this gate merely ignored would still be suppliable, and the next hand to touch the file
@@ -154,10 +153,10 @@ export async function decideCabalJoin(args: {
   if (inv.realmDocIdHex !== args.realmDocIdHex) return { admitted: false, refusal: "wrong-realm" };
   if (inv.joinerIdentityHex !== args.joinerIdentityHex) return { admitted: false, refusal: "wrong-joiner" };
 
-  // THE LEASE, READ AS A FENCE. Standing decays unless fed, and a vouch that never lapses leaves the
+  // THE LEASE, READ AS A FENCE. A vouch that never lapses leaves the
   // voucher no way to withdraw it from a mesh they can no longer reach. But the shelf life cannot be a
   // timestamp: the reader supplies the instant, so the party being gated would hold the dial. The
-  // realm's lease epoch is a max-register every replica converges on, and rolling it lapses every
+  // realm's signed charter-quorum lease epoch rises on verified advances, and raising it lapses every
   // invite bound behind it at once — no clock consulted, no message sent.
   const lease = inviteLeaseVerdict({ boundEpoch: inv.boundEpoch, effectiveEpoch: args.effectiveEpoch });
   if (!lease.live) return { admitted: false, refusal: "expired" };

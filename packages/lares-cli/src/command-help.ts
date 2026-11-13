@@ -13,7 +13,7 @@
  * through `helpLines`, so the refusal and `--help` render identical bytes. A module holding its own copy
  * splits the two, and `tests/help-door-meme.test.ts` welds that split shut.
  *
- * A KEY MAY NAME A SUB-DOOR. `"vessel wire"` keys the sub-verb's own entry; the dispatcher prefers the
+ * A KEY MAY NAME A SUB-DOOR. `"<door> <sub>"` keys the sub-verb's own entry; the dispatcher prefers the
  * longer key when the positional matches, so a sub-door's flags reach the reader instead of its parent's.
  *
  * PURE DATA, SO ANY VESSEL CAN HOLD IT. This module imports nothing — no `node:fs`, no environment read.
@@ -21,6 +21,7 @@
  * reach rides the daemon verb rail `lares meme get` already uses, which any vessel holding the cap can run.
  * Every URI here comes HARVESTED from the owning module's own `Meme:` header — never invented at this seat.
  */
+import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
 
 export interface CommandHelp {
   /** the spine an operator greps for: `usage: lares <door> <a | b | c>`. */
@@ -40,16 +41,79 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
+  herm: {
+    usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
+    synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",
+    details: [
+      "  lares herm                stand the herm detached; needs a founded place (`lares vessel found`) and a built node",
+      "  lares herm relay-rotate   mint a new durable relay gate and print its pin; restart the herm, then hand each dialing hearth the new pin",
+    ],
+    examples: ["lares herm", "lares herm --port 8080 --relay-port 8090", "lares herm relay-rotate"],
+    flags: [
+      "--port <N>         the http read-face port (LAR_PORT, else 8080)",
+      "--relay-port <N>   the carriage crossroads port hearths dial (LAR_HERM_RELAY_PORT, else 8090)",
+    ],
+    next: ["where the host holds the engine, a herm stands as the container's own service: docker compose -f docker-compose.surface.yml --profile herm up -d herm"],
+  },
+  promote: {
+    usage: "usage: lares promote list|prepare|commit|drop|orphan [digest] [--wiki wiki] [--face N]",
+    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
+    examples: ["lares promote list --wiki garden", "lares promote prepare <digest> --why reason", "lares promote commit <digest>", "lares promote orphan <digest> --keep"],
+    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
+  },
+  kapae: {
+    usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
+    synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
+    examples: ["lares kapae flag <digest> --why reason", "lares kapae raise <digest> --wiki garden", "lares kapae lower <digest>"],
+    flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   flag reason", "--keep   keep an orphan", "--drop   drop an orphan"],
+  },
+  "intent-relay": {
+    usage: "usage: lares intent-relay enable|disable|status|rotate [--face N] [--json]",
+    synopsis: "Control a face's sealed intent relay and inspect its public pin and admission key.",
+    examples: ["lares intent-relay enable --face 1", "lares intent-relay status --face 1", "lares intent-relay rotate"],
+    flags: ["--face N   face index", "--json   structured output"],
+  },
+  kahua: {
+    usage: "usage: lares kahua mint|propose|stage|lift|withdraw|carry|list|get [title|cid...] [--face N]",
+    synopsis: "Read and write one face's kahua stage, the fleet's working-memory stage. The face's founding act pins the stage, by whichever device founds the face; `mint` adopts that pin and registers it, and a face whose log names none refuses `kahua-mint-outside-founding`. Memory climbs in two crossings: `stage` writes a row into the face's local canon bags/daemon-<F> (local, unsigned; any seat may), and a lift carries one staged row to every device the face wears. A lift prints the staged row's preview (title, row digest, fields, body) and lifts only on that row digest typed back at a terminal, or `--digest <hex>` naming the row digest the preview printed; a bare --yes lifts nothing. Two digests share one word: the row digest (what `stage` answers and a lift names) covers the row's body and fields, while a proposal's `digest` names the body digest, the body bytes alone; a lift with `--proposal` compares the proposal's body digest with the staged body. A lift signs under the face's root, so a lift always asks the face's passphrase at a terminal; `--digest` spares the typed-back digest alone. The door reads the row back and refuses `kahua-lift-unstaged` (no such row) or `kahua-lift-digest-moved` (the row moved since the preview); a lift the head already carries lands nothing. An AI seat proposes and stages; the operator's hand lifts, withdraws and carries (after a root rotation, the earlier items stand again only once carried), each act signed under the face's root out of sealed custody. Every answer prints as JSON.",
+    examples: [
+      "lares kahua mint --face 1",
+      "lares kahua propose --face 1 --proposals '[{\"title\":\"T\",\"revision\":\"r1\",\"text\":\"body\",\"taint\":[]}]'",
+      "lares kahua stage T --face 1 --text body",
+      "lares kahua lift T --face 1 --taint none   # previews the staged row, asks for its row digest, then the face's passphrase",
+      "lares kahua lift T --face 1 --taint none --digest <hex> --proposal <intent-id>",
+      "lares kahua withdraw <cid> --face 1",
+      "lares kahua carry <cid> <cid> --face 1",
+      "lares kahua carry --all --face 1",
+      "lares kahua get T --face 1 --history",
+    ],
+    flags: ["--face N   face index", "--text <body> | --file <path>   (stage) the row's body", "--fields <json>   (stage) the row's fields", "--digest <hex>   (lift) the staged row's row digest, as its preview printed it; it stands in for typing the digest back, and the passphrase prompt still needs a terminal", "--taint a,b | none   inputs from outside the face", "--sources <json>   further daemon sources the item distils (the staged row always rides)", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
+  },
+  intent: {
+    usage: "usage: lares intent issue|show|ask|answer|claim|takeover|release|cancel|supersede|release-root|delegate|delegate-revoke|delegations [verb-or-id] [--face N]",
+    synopsis: "Read and write one face's signed intent plane. Name --face N on every invocation when this vessel holds several faces; a sole face resolves itself.",
+    examples: [
+      "lares intent issue face-join --face 1 --to <atom> --args '{}'",
+      "lares intent show --face 1",
+      "lares intent ask <intent-id> --face 1",
+      "lares intent answer <ask-cid> --face 1 --executor <atom>",
+      "lares intent cancel <intent-id> --face 1",
+    ],
+    flags: ["--face N   face index", "--to <atom> | --prefer <atoms> | --class <capability> | --every   audience", "--args <json>   issue arguments", "--nonce <text>   invocation nonce", "--void-at <act-cid> | --through <act-cid>   causal bounds", "--agent <key> --prefix <verb> --policy <json> --as-of <cite> | --until <cite>   delegation", "--executor <atom> [--deny]   answer", "--detail <digest>   ask: the act digest a co-sign names", "--json   structured show"],
+  },
   nexus: {
-    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | posture | kahuli | publish | realm-bag | realm-bags | offering>",
+    usage: "usage: lares nexus <seal | rite | kapae | un_kapae | contract | revoke | carry | uncarry | members | accept-carriage | admit-take | carry-for | carry-take | posture | kahuli | publish | realm-bag | realm-bags | offering | promote | cabal | release>",
     synopsis: "the Nexus relation doors: charter ceremony, admission, carriage, posture, realm bags, and exact local offering inspection.",
     details: [
-      "  seal <seat | rotate | show | export | import | grow | cold | cofound>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal)",
-      "  kapae <nym> [--reason <text>]             raise a quorum-signed ban on a presenter nym",
-      "  kapae --list                              read the currently-Kapae'd set (the fold)",
-      "  un_kapae <nym>                            mint a quorum-signed causal lift",
-      "  contract <operator-pubkey> [--sig <hex>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);",
+      "  seal <seat | rotate | show | export | import | grow | cold | cofound | roll | anchor>  the kahu quorum's seats + pre-rotated epoch chain; grow = the crossing record ceremony; cold rehearse = read a card back; cofound = found a Nexus with a second operator (open | join | seal); roll = roll a joint Nexus across its vaults (open | join | sign | file | abandon); anchor = carry the roll's anchor across them (--out | --from)",
+      "  kapae <nym> [--reason <text>] [--nexus <aid>]   raise a quorum-signed ban on a presenter nym",
+      "  kapae <nym> [--nexus <aid>] --out <partial>   sign the seats held here, write a PARTIAL (two-vault Nexus)",
+      "  kapae --from <partial> [--out <file>]     judge a partial, cosign it, land the ban once the quorum counts",
+      "  kapae --list [--nexus <aid>]              read the currently-Kapae'd set (the fold)",
+      "  un_kapae <nym> [--nexus <aid>]            mint a quorum-signed causal lift (--out / --from carry it across two vaults)",
+      "  contract <operator-pubkey> [--sig <hex>] [--sync-url <url>]  seat a vessel at the CONTRACT cap-tier (quorum + contract-in);",
       "                                            --json emits the admit BUNDLE the joinee takes by hand",
+      "  contract <operator-pubkey> --sync-url <url>   name the url the joinee dials this hearth at; the bundle carries it (admit only)",
       "  revoke <operator-pubkey>                  revoke a member (quorum-only)",
       "  contract|revoke <nym> --nexus <aid> --out <partial>   a Nexus whose seats rest in two vaults: sign with the",
       "                                            seats held here and write the act as a PARTIAL file; nothing lands",
@@ -58,6 +122,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  carry <place-vessel-key> --carrier <hex>  contract a faceless PLACE (a Herm) as a CARRIER — quorum + its own",
       "                                            VESSEL-key seal. It NEVER enters the member set; its whole grant is",
       "                                            the realm's PUBLIC-declared books, by hash (heraldry#/the-herm-card)",
+      "        --floor-pin <file>                  the place's signed floor pin CLAIM with its KEL rows (`carry-for --out`); REQUIRED:",
+      "                                            it lands atomically beside the counted act, and the carry emits the CARRY BUNDLE",
+      "                                            the place takes. With `--out <partial>` a Nexus whose seats rest in two vaults",
+      "                                            carries it as a PARTIAL (`carry --from <partial>` on the other vault)",
       "  uncarry <place-vessel-key>                end a carrier contract (quorum-only)",
       "  members --list [--nexus <aid>]            read a Nexus's members board — a public RECORD of admits, never",
       "                                            authority (default: the primary charter's Nexus)",
@@ -66,13 +134,19 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "  admit-take <bundle-file>                  (joining operator) verify the admit bundle a founding kahu handed over",
       "                                            against the charter held for its Nexus, keep it, and re-present a",
       "                                            running vessel's dial to the hearth that wrote it",
-      "  carry-for                                 (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
-      "                                            key — reads no persona, because a crossroads holds none",
-      "  posture [private | open]                  read / flip the cross-Nexus federation posture",
+      "  carry-for [--nexus <aid>] [--out <file>]  (joining PLACE, on itself) mint the carrier seal with its OWN vessel",
+      "                                            key — reads no persona, because a crossroads holds none — and sign",
+      "                                            its floor pin at this Nexus (default the primary charter's; --nexus",
+      "                                            names a carried one) at the head of its own place KEL. --out writes the",
+      "                                            claim with the KEL rows: the file the kahu's `carry --floor-pin` reads",
+      "  carry-take <bundle-file>                  (carried PLACE, on itself) verify the carry bundle and write it onto",
+      "                                            its own board replica: its floor gate stands at that Nexus, only there",
+      "  posture [private | open]                  read / flip the cross-Nexus federation posture of this hearth's charter (a herm",
+      "                                            answers the knock by class, operator ruling: it reads OPEN and refuses the flip)",
       "  rite <petname>                            the pet-named procedures — `cabal` seats the founding quorum, `kahuli` overturns a ratchet tier",
       "  kahuli <engine | grammar>                 the OVERTURN — advance one ratchet tier of this Nexus's genesis composition",
       "  realm-bag <bag-uri>                       register a bag this steward keeps on the realm's shared CRDT (read at CONTRACT);",
-      "                                            the WORN face's key for this Nexus seals it (`lares persona wear N` first)",
+      "                                            the acting face's key for this Nexus seals it (--face N, else the one face standing open)",
       "            [--realm <id>]                  the realm the act lands in: a cabal realm (64 hex) or the charter-derived realm (the default)",
       "            [--join]                        ASK to keep a bag another hand keeps — the record waits on each standing steward",
       "            [--cosign [--with <key>]]       consent as a named steward to a record that waits on this hand;",
@@ -85,6 +159,19 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "                                            held apart from `kahuli`, which overturns what the MESH shares",
       "  offering inspect <offering-cid>           inspect one exact local gift; read-only, no fetch or install",
       "  realm-bags [--realm <id>]                 the bags a realm carries, and who keeps each; a listing never enters a realm",
+      "  promote open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval>",
+      "                                            sign the exact bytes of a promotion with the seats held here",
+      "  promote sign <approval> --confirm-statement <digest> [--nexus <aid>] --out <file>   add this vault's seats to it",
+      "  promote check <approval> <file> [--nexus <aid>]   the verdict over the file's bytes (exit 0 only on ok)",
+      "  cabal <admit | remove> <group> [--nexus <aid>] [--out <partial>]",
+      "                                            the seat quorum admits a PersonaGroup into the Kahu cabal, or removes it",
+      "  cabal cosign <partial> --act <cid> [--nexus <aid>] [--out <file>]   add this vault's seats; lands once it counts",
+      "  cabal standing <group> [--nexus <aid>]    where one group stands in the cabal, as of this vessel's last sync",
+      "  release <manifest-file> --approval <file> [--nexus <aid>]   publish the Nexus's FLOOR RELEASE: a held seat seals the porch body naming the",
+      "                                            manifest, the seats' approval of its exact bytes (`promote open --surface floor-release`) rides",
+      "                                            attached, and it lands on the Nexus's publication board once it counts",
+      "  release <manifest-file> --cut [--nexus <aid>]   cut that manifest from LIVE house canon (a promoted offer rides it),",
+      "                                            stage the floor in this hearth's CAS; it lands nothing (offering#/the-canon-offer)",
     ],
     examples: [
       "lares nexus rite quorum",
@@ -96,11 +183,44 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
 
   "nexus offering": {
     usage: "usage: lares nexus offering inspect <offering-cid>",
-    synopsis: "inspect one exact signed offering already carried by this Nexus Crossroads board. It reads local CAS only and never fetches, installs, mutates genesis, or changes grammar.",
+    synopsis: "inspect one exact signed offering already carried by this Nexus's publication board. It reads local CAS only and never fetches, installs, mutates genesis, or changes grammar.",
     examples: ["lares nexus offering inspect sha256:<offering-cid>"],
   },
 
+  "nexus promote": {
+    usage: "usage: lares nexus promote <open | sign | check>",
+    synopsis: "the seats' approval of ONE promotion's exact bytes, carried between vaults as a file. The approval holds public material alone; each signature comes from a seat key held in this vault.",
+    details: [
+      "  open <file> --purpose <p> --surface <s> [--class ordinary|high-impact] [--nexus <aid>] --out <approval.json>",
+      "  sign <approval.json> --confirm-statement <digest> [--confirm-hash <hash>] [--nexus <aid>] --out <approval.json>",
+      "  check <approval.json> <file> [--nexus <aid>]",
+      "",
+      "  --confirm-statement  the ni:///sha-256 digest of the approval's signed statement (bytes hash, purpose, surface, class,",
+      "                       epoch) that `open` prints, read by a person before a seat signs it",
+      "  --confirm-hash       optional: also name the bytes hash, the exact bytes the person approves",
+    ],
+    examples: ["lares nexus promote check ./approval.json ./page.md"],
+    meme: "lar:///ha.ka.ba/lararium/mesh/kahu#/chartered-classes",
+  },
+
+  "nexus cabal": {
+    usage: "usage: lares nexus cabal <admit | remove | cosign | standing>",
+    synopsis: "the seat quorum's admission of a PersonaGroup into a Nexus's Kahu cabal, at the high-impact threshold the charter's seats set. A vouch admits nobody; where the seats rest in several vaults the act travels as a partial file, read aloud by its act CID.",
+    details: [
+      "  admit <group> [--nexus <aid>] [--out <partial.json>]    open the admission and sign with the seats held here",
+      "  remove <group> [--nexus <aid>] [--out <partial.json>]   take the group back out, at the admission's threshold",
+      "  cosign <partial.json> --act <cid> [--nexus <aid>] [--out <partial.json>]",
+      "                                            add this vault's seats; the act lands once it counts",
+      "  standing <group> [--nexus <aid>]          admitted, removed, unsettled or absent, as of this vessel's last sync",
+      "",
+      "  --act  the act CID the partial carries, read aloud before a seat signs it",
+    ],
+    examples: ["lares nexus cabal admit <group-id> --out ./cabal-partial.json", "lares nexus cabal standing <group-id>"],
+    meme: "lar:///ha.ka.ba/lararium/mesh/kahu#/cabal-admission",
+  },
+
   sensorium: {
+    usage: "usage: lares sensorium <run|open|query|ls|keep|dissolve|name|names|propose-name|accept-name> …",
     synopsis:
       "The source-neutral sensorium surface. `run` / `open` ingest a path into a scratch sensorium. " +
       "`run` is ephemeral-DEFAULT: open → ingest → analyze → DISSOLVE on exit (success OR error). `open` " +
@@ -135,6 +255,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   mempalace: {
+    usage: "usage: lares mempalace <install|setup|harvest|repave|status|quiesce|resume> [flags]  ·  lares mempalace <vendored verb> …",
     synopsis:
       "THE GUEST COMPARATOR'S DOOR (the sovereign sensorium lives at `lares sense`). The guest ~/.mempalace " +
       "is the vendored vanilla nakama store — a clean comparator, a SEPARATE causal island the vessel never " +
@@ -160,6 +281,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   hooks: {
+    usage: "usage: lares hooks <pause|resume|status>",
     synopsis:
       "The hook-lever on its own: `pause` / `resume` / `status` the capture + ingest hooks by writing / " +
       "removing a marker file the hook scripts check and NO-OP on when present. Lets a migration or a " +
@@ -183,7 +305,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "ends every grant and token before it), and `invite` mints one invite at the current epoch, printed as " +
       "the one `lar-invite:` string to carry. Bare `lares host` reads the live epochs, the cap and how many " +
       "invites were redeemed — counts, never rows. Nothing about who was invited is kept anywhere. While the " +
-      "vessel stands, each door runs inside it, so a roll reaches its walkers with no restart.",
+      "vessel stands, each door runs inside it, so a roll reaches its walkers with no restart. The walker route ships SHUT " +
+      "by name (the shut-routes house ruling, stable-founding-road #/rulings): the act is written, but no gate seats a walker until a live grant reader opens the route.",
     details: [
       "  (none)                                   per Nexus: the current and previous epoch, the cap, the redemption counts",
       "  roll   [--nexus <aid>] [--cap <n>]       roll the hosting epoch; the act lands on this hearth's hosting doc",
@@ -206,19 +329,19 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   walk: {
     usage: "usage: lares walk <take | invite>",
     synopsis:
-      "this vessel's WALKING door. A vessel walks in at another hearth on an invite, as the face it wears: " +
+      "this vessel's WALKING door. A vessel walks in at another hearth on an invite, as one face (`--face N`, else the one face standing open): " +
       "`take` keeps a carried `lar-invite:` string durably, and the vessel's hearth dial walks in on it; " +
       "`invite` hands the newest invite out of the wallet, as one string to carry. Bare `lares walk` reads " +
       "where this vessel walks — the Nexus, its standing there, and its wallet. A vessel walks at one hearth: " +
-      "a take for a second refuses and writes nothing. While the vessel stands, each door runs inside it.",
+      "a take for a second refuses and writes nothing. While the vessel stands, each door runs inside it. The walker route " +
+      "ships SHUT by name (the shut-routes house ruling, stable-founding-road #/rulings): the invite is kept, but no hearth gate seats a walk until a live grant reader opens the route.",
     details: [
       "  (none)                  per hearth: the Nexus, whether the invite still waits, the grant held, the wallet count",
-      "  take <lar-invite:…>     keep a carried invite; the hearth dial walks in on it as the worn face",
+      "  take <lar-invite:…> [--face N]   keep a carried invite; the hearth dial walks in on it as that face",
       "  invite                  hand the newest invite out of the wallet",
     ],
     examples: [
-      "lares persona wear 0                     # a walker walks as the face it wears",
-      "lares walk take 'lar-invite:…'           # keep the invite a hearth handed you",
+      "lares walk take 'lar-invite:…' --face 0  # keep the invite a hearth handed you, walking as face 0",
       "lares walk                               # where this vessel walks, and how many invites it holds",
       "lares walk invite                        # one invite to carry to one newcomer",
     ],
@@ -226,39 +349,43 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite",
   },
   vessel: {
+    usage: "usage: lares vessel <unbound|found|rotate|stand|stop|seed|read|census|fresher|floor|rite> [flags]",
     synopsis:
       "THE VESSEL DOOR — one namespace over the vessel's own causal island. Four primitives and one " +
       "read: `found` mints identity + bootstrap · `stand` brings the daemon up and reports · `stop` " +
-      "halts it on the port · `seed` plants " +
-      "every bags/* holding back into its doc · `read` inspects and starts nothing. Compositions ride " +
+      "halts it on the port · `seed` lays every disk mirror back into the layer it mirrors (each disk-sourced " +
+      "bags/* holding into its canon through INGEST, then every mirror under the projections root into its one layer, a former " +
+      "face's folders adopted by pet-name; kahua lifts only on a typed count or --lift-kahua N; import carries a bundle onto this hearth's faces by pet-name) · `read` inspects and starts nothing. Compositions ride " +
       "`vessel rite <petname>`, so a new cap-stack arrives as a rite rather than another top-level verb. " +
       "Advancing the genesis composition is a MESH act — `nexus kahuli` — never a vessel door.",
     examples: [
       "lares vessel stand                      # idempotent boot, attach-or-start, and REPORT",
-      "lares vessel wire                       # point every AI surface here (re-aims drift)",
-      "lares vessel wire --claude              # ~/.claude alone",
       "lares vessel read --palaces             # health, plus the palace-organ table",
       "lares vessel seed --apply --yes         # plant every holding (idempotent)",
+      "lares vessel seed --apply --verbose     # keep full CREATE detail",
+      "lares vessel fresher --bag sdm          # each working copy's base hash beside the canon hash standing now",
+      "lares vessel seed --apply --lift-kahua 3   # also lift the 3 kahua items the preview named",
       "lares vessel rite refresh               # the post-code-change cure: build · stop · stand",
+      "lares vessel floor status               # the vessel's floor pin: pinned release, newest seen, fast-forward, fork",
+      "lares vessel floor accept [<release>]   # walk prior from the pin to the release (or the sole newest)",
     ],
     flags: [
       "stand --foreground   this terminal owns the node (no Vite)",
       "stand --with-web     node + Vite web surface together",
+      "stand --page         the daemon also serves the built Web page (names its root and receipt; declares same origin where undeclared)",
       "stand --restart             free the port, then serve the current vessel",
       "stand --observe      REPORT ONLY — withholds the standing half; outranks every acting flag",
-      "stand --install      found a vessel that holds none, then link `lares` globally — the founding runs first and stays inside LAR_ROOT; the mempalace sidecar has its own door, `mempalace install`",
-      "stand --init         founds the same, AND wires every AI surface (reaches ~/.claude etc; `vessel wire` is the door for that alone)",
-      "stand --admit <file>        join an existing operator PersonaGroup",
-      "wire [--claude|--codex|--copilot|--vscode]   aim that surface here; no flag aims them all",
-      "wire --observe       REPORT what a wiring would touch; write nothing",
+      "stand --init         found a vessel where the root holds none — writes LAR_ROOT alone; the operator's homes ride `lares home`, the mempalace sidecar `mempalace install`",
       "read --palaces       the palace-organ health table (mempalace · structure · form · mesh)",
       "rite <petname>       founding · refresh · rebuild — the pet-named cap-stacks",
+      "seed --lift-kahua <N>  lift the kahua items the seed previewed when N equals their count (a bare --yes lifts none)",
     ],
     next: ["lares vessel read --palaces", "lares sense pour --all"],
     meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
   },
 
   sense: {
+    usage: "usage: lares sense <search|relate|structure|status> [--lens <plane>]  ·  lares sense <lifecycle verb> …",
     synopsis:
       "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). READ four " +
       "verbs with the plane as a `--lens` parameter (search · relate · structure · status), so a new plane " +
@@ -270,25 +397,31 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares sense search \"entrance block\" --lens structure   # hybrid recall over a plane",
       "lares sense status --lens content                       # wings · rooms · entities · total",
-      "lares sense recall keyhive convergent removal           # stamp-filtered verbatim drawers",
-      "lares sense recall fork --voice Council --band canon     # filters compose (AND)",
+      "lares sense recall keyhive convergent removal           # verbatim drawers",
+      "lares sense recall fork --speaker operator --surface claude  # filters compose (AND)",
       "lares sense pour --all                                  # the sovereign re-pave (all sources)",
       "lares sense worldline 0425c035                          # walk a session's spirit tree",
       "lares sense teardown --confirm --drain                  # tear the planes for a clean re-pave",
+      "lares sense trial-run --trial-root /state/sensorium-serving-one --freeze-receipt /state/freeze-receipt.json --intent one --source-host host-a --model-home /state/model-home",
+      "lares sense search \"known phrase\" --trial-root /state/sensorium-serving-one --model-home /state/model-home --json",
+      "lares sense status --trial-root /state/sensorium-serving-one --json  # typed and semantic frontiers, unsupported views",
     ],
     flags: [
       "--lens <plane>  content | structure | form | persistence (default content) — READ verbs",
       "--wing <w>      scope to one project wing",
-      "--voice/--band/--agent/--surface/--drift   recall stamp filters (compose AND, honest counts)",
+      "--agent/--surface/--speaker/--channel/--function   recall filters (compose AND; need a query)",
       "--imago <id>    (recall) fetch one imago verbatim; --list lists imagines",
       "--all           (pour) sweep every transcript source",
+      "--trial-root <absolute named root>  frozen Claude serving operation; trial-run/search/status only",
+      "--model-home <root>  pinned MiniLM assets for trial-run/search; must match the operation receipt",
+      "--source-key/--revision <value>  trial search postfilters (bounded candidate window)",
       "--confirm/--drain/--force   (teardown) remove / quiesce-first / override live holders",
     ],
     next: ["lares sense status --lens content", "lares mempalace status   # the guest comparator door"],
   },
 
   meme: {
-    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote> (store verbs require (--recipe <slug> | --bag <slug>))",
+    usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:
       "THE MEME DOOR — one family for every law over meme text, and each verb DECLARES ITS SEAT: " +
       "`normalize` · `check` · `sitting` · `project --to md` (over a file) run LOCAL with no daemon in " +
@@ -309,7 +442,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares meme check bags/**/*.mem                         # CI / pre-commit: drift exits 1",
       "lares meme project note.mem --to md --out ./out        # the submission pair, clock-free",
       "lares meme project --to md --check bags/…/submissions   # every pair on the shelf re-projects clean",
-      "lares meme promote bags/…/docs/pono/x.mem              # the canon crossing, receipt beside the carrier",
+      "lares meme promote bags/…/docs/pono/x.mem --face 0     # the selected face signs the canon crossing",
+      "lares meme promote x.mem --dest-bag lar:///ha.ka.ba/bags/crossroads --approval a.json  # publish for the Nexus: the seats approved these bytes",
+      "lares meme offer lar:///ha.ka.ba/... --bag lares     # offer a working record toward canon; canon stays unmoved",
+      "lares meme offer list --bag lares · offer show <cid> · offer promote <cid> [--over-fresher]  # the steward reviews and lands it",
     ],
     flags: [
       "--recipe <slug>    an edit AS that wiki: its designated writable bag, write-then-sync",
@@ -321,6 +457,10 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
         "`list --recipe` names the roots the wiki's whole stack resolves (a removed carrier lists nowhere); " +
         "`list --bag` names that one bag's own",
       "--dest-bag <uri>   (promote) the canon bag crossed into; the cap is read against this name",
+      `--approval <file>  (promote) the seats' approval over these exact bytes; a crossing into the ${PLANE_LABELS.crossroads} refuses without one`,
+      "--nexus <aid>      (promote) the Nexus whose charter reads the approval",
+      "--all              (offer list) retired offers too; open ones alone otherwise",
+      "--over-fresher     (offer promote) the steward's explicit choice to land an offer canon moved under (\"canon is fresher\")",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
@@ -334,12 +474,30 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     meme: "lar:///ha.ka.ba/lares/api/pono/meme",
   },
 
+  events: {
+    usage: "usage: lares events [--since <epoch:writer:seq>] [--kind <bag-projected>] [--wait] --json",
+    synopsis:
+      "Read the vessel journal through the daemon. Without --wait it returns the matching entries already standing. " +
+      "With --wait it answers on the first matching entry after --since (or after now when --since is absent).",
+    examples: [
+      "lares events --json",
+      "lares events --kind bag-projected --wait --json",
+      "lares events --since genesis:node-daemon:12 --json",
+    ],
+    flags: [
+      "--since <epoch:writer:seq>  read entries after this cursor",
+      "--kind <k>                  one kind: bag-projected",
+      "--wait                      hold until the first matching entry lands",
+      "--json                      print the structured payload",
+    ],
+  },
+
   library: {
     usage: "usage: lares library <list | show | acquire | verify | index | path>",
     synopsis:
       "The ACQUIRED shelf — books and corpora a human did not author, kept READABLE and VERIFIABLE outside " +
-      "every tracked tree. The tier stands in the SHRINE at `<lararium>/library` (`~/.local/share/lararium/" +
-      "library`, or LAR_LIBRARY) — a house no wipe names. Layout: `<collection>/<cid>/<the real filename>`: " +
+      "every tracked tree. The tier stands at `<root>/library` (or LAR_LIBRARY), beside the hearth and never " +
+      "inside it, so no re-founding reaches it. Layout: `<collection>/<cid>/<the real filename>`: " +
       "the directory name IS the digest (audit with sha256sum, no tooling), the filename reads to a human. " +
       "No per-entry sidecar: each entry's record rides as its own `#/<cid>` ahu slot inside the collection's " +
       "`index.mem` carrier — origin · licence · the RFC-6920 anchor. A reference NAMES — " +
@@ -418,7 +576,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares handle burn --from-persona                      # the persona buries the face from above",
     ],
     flags: [
-      "--persona <index>  which persona acts (default: the worn persona, then 0)",
+      "--persona <index>  which persona acts (default: the one face standing open)",
       "--from-persona     (burn) the owning persona buries the face from above, not the seated key",
       "--surface <kind>   (attest) WHICH adapter answers: dns-control · atproto-account · kowloon-actor · loopback-address",
       "--subject <name>   (attest) the foreign name the edge reaches, in that surface's own grammar",
@@ -435,25 +593,29 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   persona: {
-    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list | sync | admit | reissue [--nexus <aid>] | guardian show <index> | guardian offer --prefix <persona-…> | guardian enrol <index> --threshold <k> <offer>…>",
+    usage: "usage: lares persona <new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list | sync | reissue [--nexus <aid>] [--face N] | recovery-contact show <index> | recovery-contact offer --prefix <persona-…> | recovery-contact enrol <index> --threshold <k> <offer>… | recovery-contact view --prefix <persona-…> | provisional <index> | confirm <index> <lar-log-view:…> | view <persona-…> --seat-key <key>>",
     synopsis:
       "The PLURALITY-PONO identity multitude. THREE NAMES, THREE JOBS: the private LABEL names a compartment " +
       "to you alone; the declared HANDLE names what a persona answers to OUTWARD (an intent — only " +
       "`lares handle publish` performs the announce); the SEAT stands it for a Kahu chair on this node and " +
-      "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. `wear` switches the active persona (reboot-to-switch — one face to the " +
-      "mesh). Local-first: a write lands on this node first and rides up when a hearth answers. A joinee " +
-      "receives a root by admit and never mints here.",
+      "needs no Handle and carries a private chair label. `--split-root` opts into recovery shares. A vessel wears no face " +
+      "between commands: a command names the face it acts as (`--face N`), or resolves the one face standing open. Local-first: a write lands on this node first and rides up when a hearth answers. A joining " +
+      "vessel takes a face by `lares fleet join` and never mints its root here. RECOVERY CONTACTS: three people each hold a recovery key for one face, and two of the three, together, restore " +
+      "your Handle (your Handle: the public card your face publishes, recognised by its own key). A recovery contact restores your Handle; a custodian card of a `--split-root` returns your memory, and neither stands in for the other.",
     examples: [
       "lares persona new 0 --name '<label>' --seat [--chair '<chair label>']",
       "lares persona new 1 --name '<label>' --seat [--chair '<chair label>']",
       "lares persona new 2 --name '<label>' --seat [--chair '<chair label>'] [--split-root]",
       "lares nexus seal seat                  # ... the founding sequence closes here",
-      "lares persona wear 1                   # switch the active persona",
-      "lares persona list                     # held indices · active marker · labels · declared Handles",
+      "lares persona list                     # held indices · labels · declared Handles",
       "lares persona sync                     # carry labels + Handles up to the fleet (the persona plane)",
-      "lares persona reissue --nexus <aid>    # the worn face hands its key at that Nexus on to a fresh key",
-      "lares persona guardian offer --prefix <persona-…>         # a guardian cuts a fresh key for one face",
-      "lares persona guardian enrol 0 --threshold 2 <offer> <offer> <offer>   # the face's first guardian set",
+      "lares persona reissue --nexus <aid> --face 1   # face 1 hands its key at that Nexus on to a fresh key",
+      "lares persona recovery-contact offer --prefix <persona-…>         # a recovery contact cuts a fresh key for one face",
+      "lares persona recovery-contact enrol 0 --threshold 2 <offer> <offer> <offer>   # the face's first recovery contact set",
+      "lares persona provisional 1              # a restored face: the head its restore read, and who could confirm it",
+      "lares persona confirm 1 <lar-log-view:…>  # one party's own view of that head confirms the face",
+      "lares persona view <persona-…> --seat-key <key>   # a chair this vessel holds signs its view of a face's head",
+      "lares persona recovery-contact view --prefix <persona-…>  # a recovery contact signs its own view of a face's head with its card",
     ],
     flags: [
       "--name <petname>   (new) the PRIVATE label at that handle-index",
@@ -461,20 +623,19 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--seat             (new) stand it for a Kahu chair on THIS node (no Handle needed)",
       "--chair <label>    (new) private label for a seat claim; pass with --seat",
       "--split-root       (new) opt into arming the 2-of-3 recovery split",
-      "admit <sub>        offer | grant | open | accept | list — airgapped device-to-device hand-off (QR 3-hop)",
-      "reissue            the worn face's key at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
+      "reissue            the face's key (--face N, else the one face standing open) at one Nexus hands its standing on to a fresh random key, by a hand-over both keys sign",
       "--nexus <aid>      (reissue) the Nexus; absent, this vessel's own charter",
-      "guardian show      the face's prefix, which a guardian's offer names, and the set it holds",
-      "guardian offer     a guardian's fresh recovery key for one face: a card it keeps and an offer line it hands over",
-      "guardian enrol     the face's own key enrols its first guardian set; a key another face holds refuses",
-      "--prefix <p>       (guardian offer) the face the guardian guards",
-      "--threshold <k>    (guardian enrol) how many guardians sign a later rotation",
+      "recovery-contact show      the face's prefix, which a recovery contact's offer names, and the set it holds",
+      "recovery-contact offer     a recovery contact's fresh recovery key for one face: a card it keeps and an offer line it hands over",
+      "recovery-contact enrol     the face's own key enrols its first set of three recovery contacts (two of the three restore your Handle); a key another face holds refuses",
+      "--prefix <p>       (recovery-contact offer) the face the recovery contact guards",
+      "--threshold <k>    (recovery-contact enrol) how many recovery contacts sign a later rotation; two, the only count enrolment takes",
     ],
     next: ["lares persona list", "lares handle publish '<glamour>'   # the outward announce"],
   },
 
   vault: {
-    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory]> [--passphrase | --paper] [--rotate]",
+    usage: "usage: lares vault <status | unlock | lock | bind | unbind <slot-id> | backup --face <N> --out <file> | restore <file> [--as <N>] [--memory] [--cards --face <root-key-or-prefix>] | rewrap --face <N>> [--passphrase | --paper] [--rotate]",
     synopsis:
       "The VESSEL KEY custody door (status, unlock, lock, bind, unbind): the key seals the vessel's private rows, the " +
       "keyhive and veil archives among them, and every boot rests at the floor until a person unlocks it. " +
@@ -486,25 +647,29 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "sealed or reads as a fault, a row outside it names the law it rests bare under, and a private file no row " +
       "names prints by name. `unbind --rotate` runs as one act: the rotation's census passes before any byte moves, " +
       "so a carrier that refuses it leaves the slot bound. A credential rides a TTY alone, typed with no echo: no " +
-      "flag, no environment variable and no pipe carries one.",
+      "flag, no environment variable and no pipe carries one. `rewrap --face N` moves a face founded before the ward " +
+      "under one: its ward tree binds over the typed route, then each root row moves under the ward key.",
     examples: [
       "lares vault status                     # the slot tree, one reading of each standing file, and any private file outside the carrier table",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
-      "lares vault lock                       # the standing vessel drops its key and stands at the floor",
-      "lares vault bind [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back)",
-      "lares vault unbind <slot-id>           # unlock, remove a slot; the rotation offer prints",
+      "lares vault lock [--face N]            # the standing vessel drops its key and stands at the floor; --face N drops that face alone",
+      "lares vault bind [--face N] [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back); --face N binds into that face's own tree",
+      "lares vault unbind <slot-id> [--face N]   # unlock, remove a slot; the rotation offer prints; --face N leaves the node tree alone",
       "lares vault unbind <slot-id> --rotate  # one act: a new vessel key seals every carrier and each staying slot binds over it",
       "lares vault backup --face <N> --out <file>   # cut ONE face's backup bundle, sealed under a route of its own",
       "lares vault restore <file>             # bring a face back from its bundle: a recovery act that takes a NEW seat",
-      "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked, wearing the face)",
+      "lares vault restore <file> --memory    # land the bundle's content keys on the restored seat (vessel standing, unlocked on the face)",
+      "lares vault restore --cards --face <key|persona-…> --as 1   # rebuild a face's root from two split cards: a root, never memory",
     ],
     flags: [
       "--passphrase|--paper  (bind) which route the new slot carries; (unlock) skip the route question",
       "--rotate           (unbind) mint a new vessel key and re-bind each staying slot; put <slot-id> BEFORE it",
-      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel wears it",
+      "--face <N>         (backup) the handle-index of the face to cut; the standing vessel holds it open",
       "--out <file>       (backup) the bundle file to write; a file already standing there refuses",
       "--as <N>           (restore) the handle-index the face lands at here; absent, the index its bundle named",
       "--memory           (restore) import the bundle's memory section instead of its lineage",
+      "--cards            (restore) read a root split's cards on the terminal instead of a bundle; needs --face and --as",
+      "--face <key|pfx>   (restore --cards) the face the cards should rebuild: its root's public key or its prefix",
       "unlock | bind | unbind | backup | restore read their credential on a TTY ALONE — no flag, env var or pipe; no TTY refuses CredentialTtyRefusal",
     ],
     next: ["lares vault status", "lares vault unlock"],
@@ -514,17 +679,17 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     usage: "usage: lares cabal <face | vouch | join | feed | clock>",
     synopsis:
       "The JOIN AXIS — a mutual-hold relation with a cabal-realm, orthogonal to the CARRIAGE contract " +
-      "`nexus contract` writes. ONE KEY ACTS IN A REALM: the key the WORN face presents at the Nexus the realm " +
-      "stands under; no verb here names a persona index, and a person wears the face that acts. A vouch stakes " +
+      "`nexus contract` writes. ONE KEY ACTS IN A REALM: the key the acting face presents at the Nexus the realm " +
+      "stands under; a verb names that face (`--face N`), else the one face standing open acts. A vouch stakes " +
       "that face's OWN standing on one joiner and needs no kahu " +
       "quorum, because it performs no steward act. IT ADMITS NOBODY: the vouch rides as signal-2 on the " +
       "lineage the admission price walks, and the cost lands at the moment of vouching, since a voucher's " +
       "score SPLITS across everyone they vouch for. Re-vouching the same joiner stays ONE edge — re-minting " +
       "never buys out-degree.",
     examples: [
-      "lares cabal face --realm <realm-doc-id>                        # your worn face's key there: the nym a voucher names",
+      "lares cabal face --realm <realm-doc-id> [--face N]             # the face's key there: the nym a voucher names",
       "lares cabal vouch <joiner-nym> --realm <realm-doc-id>          # dilutes you, admits nobody",
-      "lares cabal join --realm <realm-doc-id>                        # PRESENT and cross",
+      "lares cabal join --realm <realm-doc-id> [--bundle <path|json>] # PRESENT and cross with carried heads",
       "lares cabal feed --realm <realm-doc-id>                        # the OFFERING — roll your lease slot",
       "lares cabal clock --realm <realm-doc-id>                       # who feeds this realm, and how deep",
     ],
@@ -543,7 +708,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "over a party. Scoped under `edge` to mirror `nexus kapae` / `nexus un_kapae` and stay apart from " +
       "them: that pair shadows a PRESENTER at a Nexus, this pair shadows one RELATIONSHIP. TWO HANDS ACT. The " +
       "HOLDER signs with the one key the edge names: a voucher over their own vouch (`--realm`), with the key " +
-      "the worn face presents at the Nexus the realm stands under, or a fleet " +
+      "the acting face (--face N) presents at the Nexus the realm stands under, or a fleet " +
       "root over a device of its fleet (`--device`, on the fleet's own board). The QUORUM (`--quorum`) signs " +
       "with the seats this vessel holds of the charter the realm stands under, at that charter's head epoch: it strikes a vouch, or sets a " +
       "MEMBER's whole relation to a realm aside (`--member`), which holds against a fresh vouch. A lower " +
@@ -578,7 +743,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--member <key>     name a member's whole relation to the realm (the quorum's edge)",
       "--device <key>     name a device's relation to the signing root's fleet",
       "--quorum           sign with this vessel's held seats of the charter's quorum",
-      "--as <root-index>  (--device) which held fleet root signs as the holder (default: the first held one); a realm's holder is the worn face",
+      "--as <root-index>  (--device) which held fleet root signs as the holder (default: the first held one); a realm's holder is the acting face (--face N)",
       "--nexus <aid>      the Nexus the realm stands under, at this vessel's first act there (default: the primary charter's)",
       "--fleet <root>     (settle) one fleet root to settle (default: the root of every face this vessel holds)",
       "--partial          with --quorum: sign with the seats held here and print a partial, landing nothing",
@@ -588,6 +753,35 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--act <act-cid>    (cosign) sign and land that act; absent, the verb only reads the partial",
     ],
     next: ["lares cabal join --realm <realm-id>   # reads every shadow the crossing meets", "lares nexus kapae --list   # the PRESENTER board — a different kind of setting-aside"],
+  },
+
+  fleet: {
+    usage: "usage: lares fleet join <offer [--face N] | request <offer-file> | answer <request-file> [--face N] | land <answer-file> | abandon>",
+    synopsis:
+      "THE FLEET-JOIN DOOR: one face's fleet takes a new vessel of the same human, by three files carried by hand. " +
+      "The joining vessel founds a PLACE first and mints its own face-scoped keys there; the root holder's answer " +
+      "carries the device edge, a certificate and a grant per scope, the gate pin and canon list inside the root's " +
+      "signature, and the face's address secret sealed to the request. The joining vessel's acts run with no vessel standing.",
+    details: [
+      "  join offer [--face N] [--out FILE]          on the root holder: the face, its root key, a nonce, the scopes it stands at",
+      "  join request <offer-file> [--out FILE]      on the joining place: its face-scoped keys mint; the join stays pending",
+      "  join answer <request-file> [--face N] [--out FILE] [--sync-url URL] [--doc-url URL]   on the root holder: the signed answer",
+      "  join land <answer-file>                     on the joining place: the face lands",
+      "  join abandon                                on the joining place: the pending join leaves",
+    ],
+    examples: [
+      "lares fleet join offer --out offer.json                      # on the root holder",
+      "lares fleet join request offer.json --out request.json       # on the new vessel, a place already founded",
+      "lares fleet join answer request.json --sync-url ws://hearth:7777/ws --out answer.json",
+      "lares fleet join land answer.json                            # on the new vessel",
+      "lares fleet join offer --face 1 --out offer.json             # the root holder's second face takes the vessel",
+    ],
+    flags: [
+      "--face N          which of the root holder's faces the join serves (default 0, the founding face); offer and answer name the same one",
+      "--out FILE        write the file the next vessel reads, instead of printing it", "--sync-url URL    the url the new vessel dials this hearth at",
+      "--doc-url URL     the document the new vessel's dial asks this hearth for (an automerge: url); the answer carries it beside the gate pin",
+    ],
+    next: ["lares vessel stand --with-web"],
   },
 
   raise: {
@@ -610,32 +804,74 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares persona list", "lares vessel read"],
   },
 
-  "vessel wire": {
-    usage: "usage: lares vessel wire [--claude] [--codex] [--copilot] [--vscode] [--observe]",
+  "vessel rite": {
+    usage: "usage: lares vessel rite <founding|refresh|rebuild>",
     synopsis:
-      "Point every AI surface on this machine at this vessel. Idempotent: an aligned wire passes untouched, " +
-      "a DRIFTED one re-aims, an absent one gets written. THIS IS THE ONE VESSEL VERB THAT REACHES OUTSIDE " +
-      "THE VESSEL ROOT — `stand` never does.",
+      "The pet-named compositions over the vessel primitives. A rite composes ONE door's radius: each step writes " +
+      "LAR_ROOT and nothing else, so a machine's onboarding reads as three acts at three doors (`lares repo tend` · " +
+      "`lares home tend` · `lares vessel rite founding`).",
     examples: [
-      "lares vessel wire                # tend every surface, plus this repo's own adapters",
-      "lares vessel wire --claude       # ~/.claude alone",
-      "lares vessel wire --observe      # REPORT what a wiring would do; touch nothing",
+      "lares vessel rite founding        # found · stand · seed",
+      "lares vessel rite refresh         # the post-code-change cure: build · stop · stand",
+      "lares vessel rite rebuild         # re-derive · stand",
+    ],
+    flags: ["founding   found · stand · seed", "refresh    build · stop · stand", "rebuild    re-derive · stand"],
+    next: ["lares vessel read", "lares home read"],
+    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+  },
+
+  repo: {
+    usage: "usage: lares repo <read|tend|verify|undo> [--staged] [--force] [--probe] [--json]",
+    synopsis:
+      "THE CHECKOUT'S DOOR — this checkout holds its declared reality tunnel (lar:///ha.ka.ba/lares/cli/reality-tunnel): the seed's links " +
+      "and CLAUDE.md's import, the scouts that carry the seed, the files Copilot reads beside CLAUDE.md, Codex's doc cap, the " +
+      "operator rule's exclude. `read` answers both diffs (live against the tunnel, live against what the house last wrote) and " +
+      "writes nothing; `tend` writes only on difference and records a generation; `verify` reads what the hosts loaded; " +
+      "`undo [gen]` restores one. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
+    examples: [
+      "lares repo read                  # every item, both diffs; writes nothing",
+      "lares repo read --staged         # what the commit carries (the pre-commit gate reads this)",
+      "lares repo tend                  # converge; the root build runs this",
+      "lares repo verify --probe        # Claude's /context, Codex's final hash, Copilot's sources",
+      "lares repo undo                  # restore the latest tend generation",
     ],
     flags: [
-      "no flag        tend every surface, plus this repo's own adapters",
-      "--claude       ~/.claude — mempalace MCP + the wake/ingest hooks",
-      "--codex        ~/.codex",
-      "--copilot      ~/.copilot",
-      "--vscode       every VS Code root present (stable + Insiders, remote + local)",
-      "--observe      REPORT what a wiring would do; touch nothing",
+      "--staged       read the index rather than the working tree (read only)",
+      "--force        take bytes the house does not own; the ledger keeps them",
+      "--probe        verify by asking each host (spends model calls)",
     ],
-    next: ["lares vessel read --palaces", "lares vessel stand"],
-    meme: "lar:///ha.ka.ba/lares/cli/vessel-door",
+    next: ["lares home read", "lares repo verify"],
+    meme: "lar:///ha.ka.ba/lares/cli/reality-tunnel",
+  },
+
+  home: {
+    usage: "usage: lares home <read|tend|verify|undo> [--brief] [--force] [--probe] [--yes] [--json]",
+    synopsis:
+      "THE OPERATOR'S HOMES' DOOR — every home the device carries (the native home, and the Windows profile under WSL) " +
+      "holds its declared reality tunnel: each harness's memory guard at its maximum (Claude's cleanupPeriodDays, Codex's saved " +
+      "history, Copilot's prompt history), the lares MCP seats and hooks aimed at the main clone, the seed rule, `lares` on " +
+      "the path. `tend` names every path it will write and asks first (--yes without a terminal). No door lowers a memory " +
+      "guard. Exit: 0 aligned · 1 drift · 2 usage · 3 foreign bytes refused · 4 a needed piece absent.",
+    examples: [
+      "lares home read                  # every home's items, both diffs; writes nothing",
+      "lares home read --brief          # one line (the wake hook prints it at turn 1)",
+      "lares home tend                  # converge every home; asks before writing",
+      "lares home verify                # the last Claude session loaded the seed once",
+      "lares home undo 3                # restore generation 3",
+    ],
+    flags: [
+      "--brief        one line: every item holds, or which stand off the tunnel (drift alone; an aligned row another hand rewrote reads apart)",
+      "--force        take bytes the house does not own; the ledger keeps them",
+      "--probe        verify by asking each host (spends model calls)",
+      "--yes          tend without asking (a terminal-less caller)",
+    ],
+    next: ["lares home verify", "lares repo read"],
+    meme: "lar:///ha.ka.ba/lares/cli/reality-tunnel",
   },
 };
 
 /**
- * The door key for a `--help` call: the SUB-DOOR entry when one stands (`vessel wire`), the command
+ * The door key for a `--help` call: the SUB-DOOR entry when one stands (`"<door> <sub>"`), the command
  * otherwise. Longest match wins, so a sub-verb's own flags reach the reader instead of its parent's.
  */
 export function helpDoor(command: string, positional: readonly string[]): string {
@@ -650,15 +886,21 @@ export function memeForDoor(door: string): string | undefined {
   return uri ? uri : undefined;
 }
 
+/** The long account each top-level verb carries in the command table, seated by the table at load so a door's help
+ *  and its usage refusal (both drawn from `helpLines`) print it alike. The top-level list prints the brief. */
+const ABOUT = new Map<string, string>();
+export function seatAbout(door: string, about: string): void { ABOUT.set(door, about); }
+
 /**
  * One door's help as LINES — the single home both the `--help` render and a module's usage REFUSAL draw
  * from. A module that keeps its own copy of these words splits the two; the weld test refuses that.
  */
 export function helpLines(door: string, summary?: string): string[] {
   const help = COMMAND_HELP[door];
+  const about = ABOUT.get(door);
   if (!help) {
-    const out = [`lares ${door}`];
-    if (summary) out.push("", `  ${summary}`);
+    const out = [`lares ${door}`, "", "Examples:", `  lares ${door}                 # usage`, `  lares ${door} --help          # this account`];
+    if (summary) out.push("", "About:", `  ${summary}`);
     out.push("", `  (no detailed help yet — run \`lares ${door}\` for usage.)`);
     return out;
   }
@@ -678,6 +920,7 @@ export function helpLines(door: string, summary?: string): string[] {
     out.push("", "Next:");
     for (const n of help.next) out.push(`  ${n}`);
   }
+  if (about) out.push("", "About:", `  ${about}`);
   if (help.meme) {
     out.push("", "Meme:", `  ${help.meme}`, `  read it: lares ${door} --help --meme`);
   }

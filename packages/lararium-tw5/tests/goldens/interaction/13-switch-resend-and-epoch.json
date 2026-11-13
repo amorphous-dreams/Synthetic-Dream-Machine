@@ -1,0 +1,34 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/13",
+  "pins": "the surface switch: the arriving surface paints its mount's first snapshot, and an act carrying the old mount epoch answers stale-target and touches nothing",
+  "surfaces": {
+    "alpha": {
+      "world": {
+        "tiddlers": [{ "title": "lar:///t/switch/alpha", "text": "0" }],
+        "story": ["lar:///t/switch/alpha"],
+        "root": "<$button class=\"bump\" set=\"lar:///t/switch/alpha\" setTo=\"alpha-pressed\">alpha</$button>"
+      }
+    },
+    "beta": {
+      "world": {
+        "tiddlers": [{ "title": "lar:///t/switch/beta", "text": "0" }],
+        "story": ["lar:///t/switch/beta"],
+        "root": "<$button class=\"bump\" set=\"lar:///t/switch/beta\" setTo=\"beta-pressed\">beta</$button>"
+      }
+    }
+  },
+  "steps": [
+    { "frame": "first", "surface": "alpha" },
+    { "expect": { "page": { "surface": "alpha", ".bump": { "text": "alpha" } } } },
+    { "switch": { "surface": "beta" } },
+    { "expect": { "page": { "surface": "beta", ".bump": { "text": "beta" } }, "frame": { "surface": "beta", "epoch": "fresh" } } },
+    { "act": { "surface": "beta", "control": ".bump", "action": "lar:click", "epoch": "stale" } },
+    { "expect": { "answers": ["stale-target"], "writes": [] } },
+    { "act": { "surface": "beta", "control": ".bump", "action": "lar:click" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/switch/beta", "text": "beta-pressed" }] } },
+    { "switch": { "surface": "alpha" } },
+    { "expect": { "page": { "surface": "alpha", ".bump": { "text": "alpha" } }, "frame": { "surface": "alpha", "epoch": "fresh" } } },
+    { "act": { "surface": "alpha", "control": ".bump", "action": "lar:click", "epoch": "stale" } },
+    { "expect": { "answers": ["stale-target"], "writes": [] } }
+  ]
+}

@@ -14,10 +14,75 @@ Meme: lar:///ha.ka.ba/lararium/sensorium/lares-mcp (the isomorphic surface).
 from __future__ import annotations
 
 import os
+import re
+
+# The `mcp` this seat builds on — the pin `requirements.txt` names and the image lock repeats (a test welds
+# all three). An older `mcp` lacks `mcp.server.mcpserver`, and a seat that died on that import inside its build
+# reached the harness as a closed connection and nothing more. A LAUNCH reads the installed version FIRST, ahead
+# of every import below, and refuses by name: before the stack loads (chroma takes seconds to stand for nothing)
+# and before `import mempalace` strips PYTHONPATH from sys.path, so the version read answers for the same path
+# the launch was handed.
+MCP_PIN = "2.3.0"
+
+
+_VERSION = re.compile(r"^v?(\d+(?:\.\d+)*)(.*)$", re.IGNORECASE)
+_PRE = re.compile(r"^[-_.]?(a|b|c|rc|alpha|beta|pre|preview|dev)", re.IGNORECASE)
+
+
+def _release(version: str) -> "tuple[tuple[int, ...], bool]":
+    """A version's numeric release and whether it reads FINAL (`2.3.0rc1` -> ((2, 3, 0), False);
+    `2.3.0.post1` -> ((2, 3, 0), True)). A pre-release or dev build of a release sorts below that release (PEP 440),
+    so it may lack what the release carries. An unreadable version reads as ((), False), below every pin."""
+    m = _VERSION.match(version.strip())
+    if not m:
+        return (), False
+    return tuple(int(n) for n in m.group(1).split(".")), not _PRE.match(m.group(2))
+
+
+def _below(found: str, pin: str) -> bool:
+    (have, have_final), (need, _) = _release(found), _release(pin)
+    width = max(len(have), len(need))   # `2.3` and `2.3.0` name one release: pad before the compare
+    have, need = have + (0,) * (width - len(have)), need + (0,) * (width - len(need))
+    return have < need or (have == need and not have_final)
+
+
+def mcp_floor_refusal() -> "str | None":
+    """Why this interpreter cannot carry the seat, or None. Reads the version of the `mcp` copy the import
+    WILL load, without importing it, so a stale install refuses here, by name, before any build touches it.
+
+    THE COPY THAT RUNS ANSWERS. `metadata.version` reads the first `mcp-*.dist-info` on sys.path, which may
+    belong to another copy than the package `import mcp` finds; so the read takes the distribution whose
+    files hold the very `mcp/__init__.py` the import resolves, and falls to the first only when none claims it."""
+    import importlib.util
+    from importlib import metadata
+
+    cure = (f"install the pin into the interpreter that runs this seat: "
+            f"<python> -m pip install -r packages/lararium-sensorium/requirements.txt (mcp=={MCP_PIN})")
+    spec = importlib.util.find_spec("mcp")
+    dists = list(metadata.distributions(name="mcp"))
+    if spec is None or spec.origin is None or not dists:
+        return f"lares_mcp: no mcp installed; the seat needs mcp=={MCP_PIN}. {cure}"
+    origin = os.path.realpath(spec.origin)
+    runs = next((d for d in dists if os.path.realpath(str(d.locate_file("mcp/__init__.py"))) == origin), dists[0])
+    found = runs.version
+    if _below(found, MCP_PIN):
+        return f"lares_mcp: mcp {found} stands below the pin mcp=={MCP_PIN}; the seat cannot build on it. {cure}"
+    return None
+
+
+if __name__ == "__main__":
+    _refusal = mcp_floor_refusal()
+    if _refusal is not None:
+        raise SystemExit(_refusal)
+
 
 import content_io as cio
 import worldline_io as wl
 import lares_uds as uds
+# THE MCP SEAT MARKS EVERY CALL AS THE AI SEAT (`"seat": "ai"` on each UDS request line and session opening): the vessel lets
+# it act as the worn face alone, and a call naming another face refuses `face-hand-refused`. A designation, not a proof (F7:
+# authority by designation on one machine, for the dogfood).
+uds.SEAT_KIND = "ai"
 from capture_session import capture_and_observe, worldline_path
 from embed_cap import make_embed_cap
 from plane_query import (crossplane_hit as _crossplane_hit, open_plane_store, plane_record_witness,
@@ -61,6 +126,22 @@ WIKI_VERBS = ("wiki",)
 # `@` spelling stands retired. All three ride `lares_uds.call` to the @daemon — never a store (the
 # single-writer law).
 MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project")
+
+# The OFFERING door (offering#/the-canon-offer) — an AI seat offers its face's working records toward a house-canon bag
+# and reads the Nexus's offer table. `meme_offer` mirrors `lares meme offer <uri…> --bag <slug>`; `meme_offer_list` mirrors
+# `lares meme offer list`; `meme_offer_show` mirrors `lares meme offer show <cid>`. An offer GRANTS NOTHING: canon moves only
+# under the Kahu steward's promotion, and `lares meme offer promote` stays the steward's hand, holding no MCP tool (the kahua
+# lift's shape).
+OFFER_VERBS = ("meme_offer", "meme_offer_list", "meme_offer_show")
+
+# The KAHUA namespace — an AI seat's reach onto its face's kahua stage, the fleet's working-memory stage. `kahua_propose`
+# posts ONE batch of proposals on the face's intents plane (titles, daemon revisions, body digests, taint; a proposal
+# grants nothing); `kahua_stage` writes ONE row into the face's local canon `bags/daemon-<F>` (local, unsigned: the row a
+# lift later names); `kahua_list` and `kahua_get` read the stage's VERIFIED items (the fold, never a raw tiddler). Each
+# mirrors `lares kahua propose|stage|list|get` and rides a local SESSION under the `seat` hand (`lares_uds.session_act`),
+# whose profile the vessel refuses every kahua pin, lift, withdraw and carry. THE SEAT PROPOSES AND STAGES; THE OPERATOR'S
+# HAND LIFTS: no MCP tool lifts, withdraws, carries or mints (`lares kahua lift|withdraw|carry|mint` stay the operator's).
+KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_list", "kahua_get")
 
 # The targets `meme_project` renders — the same list `lares meme project --to` takes.
 PROJECT_TARGETS = ("mem", "md", "html", "tid", "json")
@@ -107,6 +188,17 @@ VERB_SEATS = {
     "meme_list": (True, False),         # list the roots a seat holds + their canonical hashes — a read → HOTL
     "meme_delete": (True, False),       # remove a meme's group — a kāpae tombstone a re-put restores; stale base → conflict → HOTL
     "meme_project": (True, False),      # render a meme to a target — a read, deterministic, trusted → HOTL
+    # The offering door — an offer appends a signed row to the Nexus's offer table and moves no canon byte; the reads fold
+    # the table → HOTL. The promotion never seats here: no MCP tool carries it.
+    "meme_offer": (True, False),        # one signed offer toward a house-canon bag — grants nothing, trusted → HOTL
+    "meme_offer_list": (True, False),   # the offer table, each record's freshness against canon — a read → HOTL
+    "meme_offer_show": (True, False),   # one offer's field diff against canon — a read → HOTL
+    # The kahua seat verbs — a proposal grants nothing (the operator's signed lift decides) and the reads fold the
+    # verified stage; both stay on the face's own fleet → HOTL. The lift itself never seats here: no MCP tool carries it.
+    "kahua_propose": (True, False),     # one proposal batch on the face's intents plane — grants nothing, trusted → HOTL
+    "kahua_stage": (True, False),       # one row in the face's local canon, unsigned and on this device alone → HOTL
+    "kahua_list": (True, False),        # the stage's verified standing items — a read → HOTL
+    "kahua_get": (True, False),         # one title's verified item (and its history) — a read → HOTL
     # teardown tears a whole sensorium store DOWN — IRREVERSIBLE → HITL. It rides the CLI today, gated
     # by --confirm (the operator's hand at the door); the grid NAMES its HITL seat so a future MCP mirror
     # inherits the gate rather than crossing the surface ungated.
@@ -133,6 +225,12 @@ def seat_of(verb: str) -> str:
     irreversible OR crosses a trust boundary."""
     reversible, trust_crossing = VERB_SEATS[verb]
     return "HOTL" if (reversible and not trust_crossing) else "HITL"
+
+
+# THE REFUSAL FAMILIES this seat raises by name: the vessel's own refusal and an absent daemon (`lares_uds`), an unnamed
+# house root (a RuntimeError), a tool's argument guard (ValueError), the HITL guard (PermissionError), and a verb this
+# seat never runs (RuntimeError, NotImplementedError). `build_mcp`'s seat hands each to the caller in its own words.
+REFUSALS = (uds.LaresVerbError, uds.LaresDaemonUnreachable, ValueError, PermissionError, RuntimeError)
 
 
 def guard_hitl(verb: str, approval=None) -> None:
@@ -232,7 +330,7 @@ class LaresCoordinator:
     def pour(self, surface: str, pointer: str, *, all: bool = False, writeback: bool = False,
              dry_run: bool = False, wing: "str | None" = None,
              room: str = "conversations") -> dict:
-        """Capture a surface's transcript into the Memory sensorium (mirrors `lares sense pour`).
+        """Capture a surface's transcript into the Memory sensorium (mirrors `lares sense capture`; `all` mirrors the drawers leg of `lares sense pour --all`).
         Idempotent re-derivation — a re-run lands only the un-landed tail (the crash-cure).
 
         The isomorphism contract carries the CLI's rich args onto this one spine: `all` sweeps every
@@ -659,8 +757,24 @@ def build_mcp(coordinator: LaresCoordinator):
     forces the gate until the tool calls it. The @daemon (holding this cap in its wiki-island VM worker)
     supplies the approval capability out-of-band (ask→confirm→cap→wiki-audit)."""
     from mcp.server.mcpserver import MCPServer
+    from mcp.server.mcpserver.exceptions import ToolError, UnexpectedToolError
 
-    mcp = MCPServer("lares")
+    class _Seat(MCPServer):
+        """THE SEAT SPEAKS ITS REFUSALS. The SDK reads any exception outside its own `ToolError` family as a crash and
+        answers the bare `Error executing tool <name>`, keeping the words server-side. A refusal this house NAMED
+        (`REFUSALS`: the vessel's, the wire's, a tool's own guard) is no crash: it crosses to the caller as a
+        `ToolError` carrying its own words, on every tool, through this one door. Anything else stays a crash and
+        stays unnamed."""
+
+        async def call_tool(self, name, arguments, context=None):
+            try:
+                return await super().call_tool(name, arguments, context)
+            except UnexpectedToolError as crash:
+                if isinstance(crash.__cause__, REFUSALS):
+                    raise ToolError(f"Error executing tool {name}: {crash.__cause__}") from crash.__cause__
+                raise
+
+    mcp = _Seat("lares")
 
     # The addressed-sensorium shore: an AI names a sensorium; the tool resolves the name to its root and
     # threads it up the @daemon cap-ladder (the routed recall/capture/refresh verbs pick the holder by
@@ -890,11 +1004,29 @@ def build_mcp(coordinator: LaresCoordinator):
         island cannot write it); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). `base` carries the
         canonical hash the writer read back from `meme_get` — the merge base: stale → the receipt's
         `decision` reads "conflict"; absent → adopt. Returns the receipt {uri, decision, grade, landed,
-        tombstoned, canonicalHash, warnings, diagnostics}. Rides the @daemon wire, never a store."""
+        tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
+        records already say it). A WRITE THAT NEVER LANDED RAISES: `refuse` and `conflict` answer a tool error
+        naming the decision, its reason or warnings, and the live hash to re-read against; a locked vessel
+        answers `vessel-locked: run lares vault unlock`. THE STAGE ROW LAW: a record under the memory stage,
+        `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`, carries `row-key = "<class>/<slug>"` in its toml meta block
+        (one or two lowercase, hyphen-joined segments; the title derives from the key). Without the key the put
+        refuses `row-key-missing`; a key that derives another title refuses `row-key-title`; a key that reads no
+        path refuses `row-key-shape`. Rides the @daemon wire, never a store."""
         args: dict = {**_meme_container("meme_put", recipe, bag), "uri": uri, "text": text}
         if base is not None:
             args["base"] = base
-        return _meme_wire("meme-put", args)
+        receipt = _meme_wire("meme-put", args)
+        decision = (receipt or {}).get("decision")
+        if decision in ("refuse", "conflict"):
+            said = [f"meme-put {decision}: nothing landed at {uri}"]
+            if receipt.get("reason"):
+                said.append(f"reason {receipt['reason']}")
+            if receipt.get("warnings"):
+                said.append("; ".join(str(w) for w in receipt["warnings"]))
+            if receipt.get("canonicalHash"):
+                said.append(f"the records read canonicalHash {receipt['canonicalHash']}: meme_get, merge, put with that base")
+            raise uds.LaresVerbError(" · ".join(said), f"meme-put-{decision}")
+        return receipt
 
     @mcp.tool()
     def meme_get(uri: str, recipe: "str | None" = None, bag: "str | None" = None) -> "dict | None":
@@ -915,11 +1047,16 @@ def build_mcp(coordinator: LaresCoordinator):
         """LIST every meme ROOT a seat holds, each with the canonical hash a writer hands back as `base` —
         mirrors `lares meme list`. CONTAINER LAW: exactly one of `recipe` / `bag` names the seat
         (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. `tree` nests each root's slot tree
-        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. A `bag` lists that bag's own
-        records; a named `recipe` lists the roots its whole stack resolves, each row naming the `bag` that
-        answered. THE LISTING PAGES: one answer carries a bounded page of roots in title order and `next`
-        names the cursor of the page behind it; hand it back as `after` until `next` reads null. Returns
-        {bag | recipe, roots, next}. A plain tiddler never lists. Rides the @daemon wire, never a store."""
+        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. THREE ANSWERS: a `bag` lists that
+        bag's own records and returns {bag, roots, next}; a named `recipe` lists the roots its whole stack resolves,
+        each row naming the `bag` that answered, and returns {recipe, bags, roots, next} (`bags` names the stack top
+        first; `unreached` rides beside it where a layer stood out of reach); `recipe="default"` lists the @daemon's
+        own wiki across its whole stack and returns {bag, roots, next}, where the one `bag` names the layer a write
+        lands in and labels the whole answer: under `recipe="default"` no row names a `bag`, so a root there may
+        answer from a floor bag beneath (house canon) and the listing never says which. THE LISTING PAGES: one
+        answer carries a bounded page of roots in title order and `next` names the cursor of the page behind it;
+        hand it back as `after` until `next` reads null. A plain tiddler never lists. Rides the @daemon wire,
+        never a store."""
         args: dict = _meme_container("meme_list", recipe, bag)
         if tree:
             args["tree"] = True
@@ -955,6 +1092,134 @@ def build_mcp(coordinator: LaresCoordinator):
             raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
         args: dict = {**_meme_container("meme_project", recipe, bag), "uri": uri, "to": to}
         return _meme_wire("meme-project", args)
+
+    # ── the OFFERING door — an AI seat offers toward house canon; the steward's hand alone promotes ──
+
+    def _offer_bag(verb: str, bag: "str | None") -> str:
+        if not bag or bag.startswith("@"):
+            raise ValueError(f"{verb}: name the house-canon `bag` the offer goes toward, a bare slug (`lares`, `sdm`), got {bag!r}")
+        return bag
+
+    def _offer_wire(verb: str, args: dict):
+        out = _meme_wire(verb, args) or {}
+        if out.get("ok") is False:
+            raise uds.LaresVerbError(str(out.get("why") or out.get("refusal") or f"{verb} refused"), str(out.get("refusal") or f"{verb}-refused"))
+        return out
+
+    @mcp.tool()
+    def meme_offer(uris: list, bag: str, nexus: "str | None" = None) -> dict:
+        """OFFER records from the worn face's working layer toward a house-canon `bag` — mirrors `lares meme offer <uri…>
+        --bag <slug>`. Each record names its carrier digest and its fork base (the canon carrier its working copy forked
+        from, or none for a new title); the offer seals under the face's atom and lands on the Nexus's offer table. It
+        GRANTS NOTHING and moves no canon byte: the Kahu steward reviews (`meme_offer_list`, `meme_offer_show`) and promotes
+        by hand. A withheld or `cap/**` title refuses `offer-withheld-title`. `nexus` names the Nexus where this vessel's
+        island reads no charter. Returns {cid, landed, bag, nexus, records}; a replay answers `landed: false`."""
+        if not isinstance(uris, list) or not uris or not all(isinstance(u, str) and u.startswith("lar:") for u in uris):
+            raise ValueError("meme_offer: name `uris` as a non-empty list of lar: uris")
+        args: dict = {"bag": _offer_bag("meme_offer", bag), "titles": uris}
+        if nexus:
+            args["nexus"] = nexus
+        return _offer_wire("offer-make", args)
+
+    @mcp.tool()
+    def meme_offer_list(bag: "str | None" = None, all: bool = False, nexus: "str | None" = None) -> dict:  # noqa: A002 — the CLI's `--all`
+        """LIST the offers on the Nexus's offer table — mirrors `lares meme offer list [--bag <slug>] [--all]`. Each offer
+        names its records and each record's freshness against canon now: `new`, `base-holds`, `landed`, or
+        `canon-is-fresher` (canon moved since the fork — a WARNING, never a refusal). Open offers alone unless `all`.
+        Returns {nexus, offers, setAside}. Reads alone."""
+        args: dict = {}
+        if bag:
+            args["bag"] = _offer_bag("meme_offer_list", bag)
+        if all:
+            args["all"] = True
+        if nexus:
+            args["nexus"] = nexus
+        return _offer_wire("offer-list", args)
+
+    @mcp.tool()
+    def meme_offer_show(cid: str, nexus: "str | None" = None) -> dict:
+        """SHOW one offer — mirrors `lares meme offer show <cid>`: each record's freshness and its field diff against canon
+        now ({field, canon, offered}). Returns the listing row plus `diffs`. Reads alone."""
+        if not isinstance(cid, str) or len(cid) != 64 or any(c not in "0123456789abcdef" for c in cid):
+            raise ValueError("meme_offer_show: `cid` names one offer CID (64 lower-case hex)")
+        args: dict = {"cid": cid}
+        if nexus:
+            args["nexus"] = nexus
+        return _offer_wire("offer-show", args)
+
+    # ── the KAHUA namespace — an AI seat proposes, stages and reads its face's stage through a `seat` session ──
+
+    def _kahua_face(face: "int | None") -> "int | None":
+        if face is not None and (not isinstance(face, int) or isinstance(face, bool) or face < 0):
+            raise ValueError(f"kahua: `face` takes a whole persona index from 0, got {face!r}")
+        return face
+
+    @mcp.tool()
+    def kahua_propose(proposals: list, face: "int | None" = None, session: "str | None" = None) -> dict:
+        """PROPOSE items for the face's kahua stage — mirrors `lares kahua propose`. `proposals` lists
+        {title, revision, text | digest, taint}: the daemon title and revision the item distils, its body (or the body's
+        sha-256 digest) and every input from outside the face (web page, tool output, pasted text); an AI summary
+        inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this
+        device; it carries digests and never a body, and it grants nothing: the operator's hand lifts it with
+        `lares kahua lift <title> --proposal <id>`. TWO DIGESTS, ONE WORD: a proposal's `digest` names the BODY
+        digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex), which this tool computes from `text`. The
+        ROW digest that `lares kahua stage` prints and `lift --digest` takes covers the body AND the row's carried
+        fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the
+        lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's. `face` may name only the worn face (absent: the worn face); the AI seat naming another refuses `face-hand-refused`.
+        Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts (`kahua_stage` writes
+        the local row a lift names)."""
+        if not isinstance(proposals, list) or not proposals:
+            raise ValueError("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
+        args: dict = {"proposals": proposals}
+        if session:
+            args["session"] = session
+        return uds.session_act("kahua-propose", args, face=_kahua_face(face))
+
+    @mcp.tool()
+    def kahua_stage(title: str, text: str, fields: "dict | None" = None, face: "int | None" = None) -> dict:
+        """STAGE one row into the face's local canon `bags/daemon-<F>` — mirrors `lares kahua stage <title> --text
+        <body> [--fields <json>]`. The first of memory's two crossings: local to this device, unsigned, and it lifts
+        nothing; the operator's hand carries a staged row to the fleet with `lares kahua lift <title>`, reading its
+        preview first. `text` carries the row's whole body; `fields` carries its string-valued fields (`title`, `text`
+        and any `kahua-` field never ride). A row already standing at `title` gives way to this one. Returns
+        {title, digest, relation, staged}: `digest` names the ROW digest (sha-256 over the body and the carried fields),
+        the one `lift --digest` takes, never the BODY digest a proposal carries (`kahua_propose`); `staged` reads
+        false where the row already stood at that digest and nothing moved. `face` may name only the worn face
+        (absent: the worn face); the AI seat naming another refuses `face-hand-refused`. A face with no local canon
+        standing refuses `kahua-stage-no-canon`. Rides a `seat` session over the @daemon wire."""
+        if not isinstance(title, str) or not title:
+            raise ValueError("kahua_stage: name the row's `title`")
+        if not isinstance(text, str):
+            raise ValueError("kahua_stage: name the row's body as `text`")
+        if fields is not None and (not isinstance(fields, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items())):
+            raise ValueError("kahua_stage: `fields` takes an object of string values ({\"tags\": \"memory\"})")
+        args: dict = {"title": title, "text": text}
+        if fields:
+            args["fields"] = fields
+        return uds.session_act("kahua-stage", args, face=_kahua_face(face))
+
+    @mcp.tool()
+    def kahua_list(face: "int | None" = None) -> dict:
+        """LIST the face's kahua stage — mirrors `lares kahua list`. Every standing item the stage's signed acts
+        verify under the face's grant: {items: [{title, status: standing|siblings, heads: [{cid, text, fields,
+        parent, origin, taint, sources, proposal, signer, withdrawn}]}], relation}. `siblings` names two lifts on
+        one parent, both kept. `relation` names the face's opaque relation id F, the folder name its projections
+        carry (`daemon-<F>`, `kahua-<F>`); null where the face's log names none yet. A fresh face whose log pins no
+        stage answers {items: [], relation, `stage: "none"`}, never a refusal. A plain tiddler in the stage doc
+        never lists. Rides a `seat` session over the @daemon wire."""
+        return uds.session_act("kahua-read", {"action": "list"}, face=_kahua_face(face))
+
+    @mcp.tool()
+    def kahua_get(title: str, history: bool = False, face: "int | None" = None) -> dict:
+        """GET one title's item on the face's kahua stage — mirrors `lares kahua get <title>`. Returns {item}
+        (null where none stands: never lifted, or every head withdrawn) and, with `history`, every verified revision,
+        withdrawn ones included. Rides a `seat` session over the @daemon wire."""
+        if not isinstance(title, str) or not title:
+            raise ValueError("kahua_get: name a `title`")
+        args: dict = {"action": "get", "title": title}
+        if history:
+            args["history"] = True
+        return uds.session_act("kahua-read", args, face=_kahua_face(face))
 
     # ── the DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` and routes over the
     #    @daemon wire to the pure manifest.json reducer in open-node-vessel.ts. The reads + reversible
@@ -1052,7 +1317,7 @@ class DaemonCoordinator:
     # read `recall`, the per-pointer `capture` (pour), plus the five lifecycle/plane verbs now wired onto
     # the capture holder — `status`/taxonomy, the worldline `dag` read, the `cascade_kapae`/`cascade_un_kapae`
     # branch-mute, and the cross-plane `plane_record`. Each routes to a serve-op on the ONE holder that owns
-    # the palace (content_io · worldline_io · structurepalace_io · form_encoder), serialized with capture so a
+    # the palace (content_io · worldline_io · structurepalace_io), serialized with capture so a
     # mutation never races the live writer. A verb the wire does NOT yet carry refuses honestly through
     # `_owed` rather than route to an unknown verb (the wall this surface names, not hides).
     ROUTED = {"recall", "pour", "sweep", "status", "worldline", "kapae", "un_kapae", "plane_record", "rejim", "analyze", "ki", "li", "jing", "couple_r", "forecast", "mismatch"}
@@ -1106,8 +1371,8 @@ class DaemonCoordinator:
     def pour(self, surface: str, pointer: str, *, all: bool = False, writeback: bool = False,
              dry_run: bool = False, wing: "str | None" = None, room: str = "conversations",
              sensorium_root: "str | None" = None, **_) -> dict:
-        # Route ONE pointer's capture through the @daemon `capture` verb (the same verb `lares sense pour`
-        # / harvest drives) — the daemon owns the capture holder, so the compute lands there, this surface
+        # Route ONE pointer's capture through the @daemon `capture` verb (the same verb `lares sense capture`
+        # drives) — the daemon owns the capture holder, so the compute lands there, this surface
         # holds nothing. Mirrors `recall` above: build the daemon's camelCase args, ride `uds.output`.
         #
         # The shaping args (all/writeback/dry_run) carry NO holder-side support on the `capture` verb (it

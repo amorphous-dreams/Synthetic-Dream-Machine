@@ -6,7 +6,9 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtempSync, mkdirSync, writeFileSync, rmSync, chmodSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
 import { join } from "node:path";
+import { POLL_FLOOR_S } from "./ci-verdict.mjs";
 import { evaluateMergeGate, relativeToE2eDir, readShardReports, pushLaneAndWatch } from "./e2e-shards.mjs";
 
 const TRACKED = ["tests/e2e/alpha.test.ts", "tests/e2e/beta.test.ts"];
@@ -123,6 +125,27 @@ test("RED — a red shard names each failing test by file and name, and a report
   assert.ok(verdict.problems.includes("red shard: shard 2 failed (1 failing test(s)): beta.test.ts :: the floor R1 — a herm reaches live"),
     verdict.problems.join("; "));
   assert.ok(!verdict.problems.join("; ").includes("the floor stands"), "a passing case got named as a red");
+});
+
+test("RED — a shard red with zero failing tests names the file whose hook failed, and why", () => {
+  // A `beforeAll` that throws fails its FILE: vitest skips every case, reports zero failing tests, and exits 1.
+  const red = {
+    numTotalTests: 2, numPassedTests: 1, numFailedTests: 0, numPendingTests: 1, success: false,
+    testResults: [{
+      name: "/home/runner/work/x/x/tests/e2e/beta.test.ts", status: "failed",
+      message: "Error: receiver never stood: staged vessel never unlocked\n  the daemon still stands; its log ends:",
+      assertionResults: [{ status: "skipped", fullName: "replicates the board" }],
+    }, { name: "/home/runner/work/x/x/tests/e2e/gamma.test.ts", status: "passed", assertionResults: [{ status: "passed", fullName: "g" }] }],
+  };
+  const verdict = evaluateMergeGate({
+    shardCount: 2,
+    shardReports: shardReportsFor({ 1: { report: goodReport(["/runner/a/tests/e2e/alpha.test.ts"]) }, 2: { report: red } }),
+    trackedFiles: [...TRACKED, "tests/e2e/gamma.test.ts"],
+  });
+  assert.equal(verdict.ok, false);
+  assert.ok(verdict.problems.includes("red shard: shard 2 failed (0 failing test(s)): beta.test.ts failed outside any test: Error: receiver never stood: staged vessel never unlocked"),
+    verdict.problems.join("; "));
+  assert.ok(!verdict.problems.join("; ").includes("gamma.test.ts failed"), "a passing file got named as a red");
 });
 
 // ── RED 5a: zero total across every shard combined ─────────────────────────────────────────────
@@ -399,6 +422,109 @@ esac
   rmSync(bin, { recursive: true, force: true });
 });
 
+function fakeFindBin(dir, { found }) {
+  const counter = join(dir, "reads.count");
+  writeFileSync(join(dir, "git"), `#!/usr/bin/env bash
+case "$*" in
+  *"rev-parse HEAD"*) echo "deadbeefcafef00d" ;;
+  *"config --get core.bare"*) echo false ;;
+esac
+exit 0
+`);
+  writeFileSync(join(dir, "gh"), `#!/usr/bin/env bash
+case "$*" in
+  *"run list --branch"*) echo x >> "${counter}"; echo '${found ? '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]' : "[]"}' ;;
+  *"run view 42 --log"*) echo "MERGE-VERIFY: ok=true" ;;
+esac
+exit 0
+`);
+  chmodSync(join(dir, "git"), 0o755);
+  chmodSync(join(dir, "gh"), 0o755);
+  return counter;
+}
+
+// The find loop spaces its rounds at the house pace: no sleep under POLL_FLOOR_S, at most three rounds when the
+// run never shows; a run found on the first read sleeps zero times.
+test("the pushLaneAndWatch find loop sleeps at the house pace and runs at most three rounds", async () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find-"));
+  const counter = fakeFindBin(bin, { found: false });
+  const prevPath = process.env.PATH;
+  process.env.PATH = `${bin}:${prevPath}`;
+  const sleeps = []; let t = 0;
+  try {
+    await assert.rejects(
+      () => pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", now: () => t, sleep: async (ms) => { sleeps.push(ms); t += ms; } }),
+      /no e2e-shards.yml run appeared/,
+    );
+  } finally { process.env.PATH = prevPath; }
+  const { readFileSync: rf, existsSync: ex } = await import("node:fs");
+  const reads = ex(counter) ? rf(counter, "utf8").trim().split("\n").length : 0;
+  rmSync(bin, { recursive: true, force: true });
+  assert.ok(sleeps.every((ms) => ms >= POLL_FLOOR_S * 1000), `sleeps ${sleeps}`);
+  assert.ok(reads <= 3, `reads ${reads}`);
+});
+
+test("a run found on the first read sleeps zero times in pushLaneAndWatch", async () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-find1-"));
+  fakeFindBin(bin, { found: true });
+  const prevPath = process.env.PATH;
+  process.env.PATH = `${bin}:${prevPath}`;
+  const sleeps = [];
+  try {
+    await pushLaneAndWatch({ repoRoot: tmpdir(), lane: "find-probe", sleep: async (ms) => { sleeps.push(ms); } }).catch(() => {});
+  } finally { process.env.PATH = prevPath; }
+  rmSync(bin, { recursive: true, force: true });
+  assert.equal(sleeps.length, 0);
+});
+
+test("the printed CI hint names the branch full CI runs on, from attached and detached checkouts", () => {
+  const bin = mkdtempSync(join(tmpdir(), "e2e-shards-hint-"));
+  const root = fileURLToPath(new URL("../", import.meta.url));
+  try {
+    writeFileSync(join(bin, "git"), `#!/usr/bin/env bash
+case "$*" in
+  *"config --get core.bare"*) echo false ;;
+  *"rev-parse --abbrev-ref HEAD"*) echo "$TEST_BRANCH" ;;
+  *"rev-parse HEAD"*|*"rev-parse deadbeefcafef00d"*) echo deadbeefcafef00d ;;
+  *"branch -r --points-at"*) printf 'origin/ci/hint-probe\n%s' "$TEST_TIPS" ;;
+esac
+`);
+    writeFileSync(join(bin, "gh"), `#!/usr/bin/env bash
+case "$*" in
+  *"run list"*"--event push"*) echo '[{"databaseId":42,"headSha":"deadbeefcafef00d"}]' ;;
+  *"run list"*) echo '[]' ;;
+  *"run view 42 --log"*) echo 'MERGE-VERIFY: ok=true shards=5 totalTests=10 executedFiles=2 trackedFiles=2' ;;
+  *"run view 42 --json"*) echo '{"conclusion":"success","url":"https://example.test/42"}' ;;
+esac
+`);
+    chmodSync(join(bin, "git"), 0o755);
+    chmodSync(join(bin, "gh"), 0o755);
+    const hintFor = (tips) => {
+      const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, TEST_TIPS: tips };
+      const pushed = spawnSync(process.execPath, [join(root, "tools/e2e-shards.mjs"), "push", "hint-probe"], { cwd: root, encoding: "utf8", env });
+      assert.equal(pushed.status, 0, pushed.stderr);
+      const hint = pushed.stdout.split("\n").find((line) => line.startsWith("HALF A VERDICT:"));
+      assert.ok(hint, pushed.stdout);
+      return { env, args: hint.slice(hint.indexOf("node tools/ci-verdict.mjs")).split(" ").slice(2) };
+    };
+    // The full run stands on the feature branch the head rides; `ci.yml` never runs on a `ci/` lane branch.
+    const { env, args } = hintFor("origin/feature/hint-probe");
+    assert.ok(!args.join(" ").includes("ci/hint-probe"), args.join(" "));
+    for (const branch of ["feature/hint-probe", "HEAD"]) {
+      const read = spawnSync(process.execPath, [join(root, "tools/ci-verdict.mjs"), ...args], {
+        cwd: root, encoding: "utf8", env: { ...env, TEST_BRANCH: branch },
+      });
+      assert.equal(read.status, 2, `${branch}: ${read.stderr}`);
+      assert.match(read.stdout, /ci-verdict: branch feature\/hint-probe/);
+    }
+    // CONTROL: a head no non-lane branch carries names no branch, rather than the lane branch.
+    const bare = hintFor("");
+    assert.match(bare.args.join(" "), /--branch <the branch this head rides>/);
+  } finally {
+    rmSync(bin, { recursive: true, force: true });
+  }
+});
+
 // ── EVERY SET RIDES THE SHARDS (B.c4) ─────────────────────────────────────────────────────────────
 import { evaluateAllSets, E2E_SETS } from "./e2e-shards.mjs";
 import { readFileSync } from "node:fs";
@@ -464,13 +590,24 @@ test("readShardReports reads a named set's artifacts under e2e-shard-<set>-<k>",
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
-test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS", () => {
+test("e2e-shards.yml carries exactly one matrix row per (set, shard) of E2E_SETS, a companion set riding the row its table names", () => {
   const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
-  const rows = [...yml.matchAll(/- \{ set: (\w+), dir: ([^,]+), config: ([^,]+), shard: (\d+), count: (\d+) \}/g)]
-    .map((m) => `${m[1]} ${m[2]} ${m[3]} ${m[4]}/${m[5]}`).sort();
-  const want = E2E_SETS.flatMap((s) =>
-    Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}`)).sort();
+  const rows = [...yml.matchAll(/- \{ set: (\w+), dir: ([^,]+), config: ([^,]+), shard: (\d+), count: (\d+)(?:, companion: (\w+))? \}/g)]
+    .map((m) => `${m[1]} ${m[2]} ${m[3]} ${m[4]}/${m[5]}${m[6] ? ` +${m[6]}` : ""}`).sort();
+  const rider = (s) => E2E_SETS.find((o) => o.companion?.of === s.name);
+  const want = E2E_SETS.filter((s) => !s.companion).flatMap((s) =>
+    Array.from({ length: s.shards }, (_, i) => `${s.name} ${s.dir} ${s.config} ${i + 1}/${s.shards}${rider(s)?.companion.shard === i + 1 ? ` +${rider(s).name}` : ""}`)).sort();
   assert.deepEqual(rows, want);
+});
+
+test("E2E_SETS: the node set rides a tests shard as a companion (a shard of its own would spend one of the ten jobs), and its gate artifact keeps its own name", () => {
+  const node = E2E_SETS.find((s) => s.name === "node");
+  assert.deepEqual(node.companion, { of: "tests", shard: 3 });
+  assert.equal(node.shards, 1);
+  const yml = readFileSync(fileURLToPath(new URL("../.github/workflows/e2e-shards.yml", import.meta.url)), "utf8");
+  assert.match(yml, /name: e2e-shard-\$\{\{ matrix\.companion \}\}-1$/m, "the companion run uploads no e2e-shard-<set>-1 artifact for the merge gate");
+  assert.match(yml, /report-shard-\$\{\{ matrix\.companion \}\}-1\.json/, "the companion report loses the name the merge gate reads");
+  assert.doesNotMatch(yml, /- \{ set: node,/, "the node set still has a shard row of its own");
 });
 
 // ── ONE E2E VERDICT PER PUSH: the full CI workflow CALLS the shard workflow ──────────────────────────────────
@@ -495,5 +632,5 @@ test("ci.yml takes its e2e verdict from the shard workflow, and runs no unsharde
   assert.equal(group(ci), "ci");
   assert.equal(group(shards), "e2e-shards", "caller and callee sharing one concurrency group wait on each other");
   // CONTROL: the comment filter left the workflow's real commands in place.
-  assert.match(code, /pnpm test\b/);
+  assert.match(code, /ci-cells\.mjs run-test/);
 });

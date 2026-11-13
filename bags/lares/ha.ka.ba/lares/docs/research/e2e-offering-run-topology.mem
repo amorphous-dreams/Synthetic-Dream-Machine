@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/research/e2e-offering-run-topology">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/research/e2e-offering-run-topology`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/research/e2e-offering-run-topology.mem"
 l-space   = "lares"
-mana      = 16
-manao     = 16
-manaoio   = 15
 role      = "static QA topology audit and deterministic run-order receipt for the focused Offering receiver E2E"
 status    = "repo topology first scouted at 92865ca0a; prior-art collision refreshed at 02e1693b3; no suite or build executed"
 tags      = ["research/qa", "tests/e2e", "mesh/offering", "build/stamp", "causal-island"]
@@ -18,9 +14,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/research/e2e-offering-run-topology"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-<<~ ahu #/scope>>
+<<~ ahu slot=`#/scope`>>
 
 ! Offering receiver E2E — run topology audit
 
@@ -33,7 +29,7 @@ The handoff's run command and source-versus-`dist` distinction are confirmed by 
 !! What this witness reads and writes
 
 * The test imports `runNexusInspectOffering` and `NexusOfferingInspectError` from Node **source** (`tests/e2e/nexus-offering-replication.test.ts`, import at line 14). The helper it calls, `openStagedJoinee`, imports `rendezvousPath` from Mesh source (`tests/harness/instance.ts`, line 23).
-* `openStagedJoinee` boots two staged vessels, A and B, with distinct roots and OS-assigned ports. It founds A, copies A's `genesis/` into B's root, mints B's key, runs A's device-admit, and starts both daemons (`tests/harness/instance.ts`, lines 471–548). The Offering test seats three Kahu faces, rites A's cabal, publishes an offering before B boots, then gives B the deterministic Crossroads board URL (`tests/e2e/nexus-offering-replication.test.ts`, lines 60–97).
+* `openStagedJoinee` boots two staged vessels, A and B, with distinct roots and OS-assigned ports. It founds A, copies A's `genesis/` into B's root, mints B's key, runs A's fleet join, and starts both daemons (`tests/harness/instance.ts`, lines 471–548). The Offering test seats three Kahu faces, rites A's cabal, publishes an offering before B boots, then gives B the deterministic Crossroads board URL (`tests/e2e/nexus-offering-replication.test.ts`, lines 60–97).
 * The daemon is `packages/lararium-node/dist/src/main.js`; each CLI operation launches `packages/lares-cli/dist/src/bin/lares.js` (`tests/harness/instance.ts`, lines 44–47, 79–95, 182–183). Thus one run intentionally mixes direct Node source for the local inspector with **built CLI and Node daemon** for process behavior. It is not a source-only test.
 * The witness removes the matching plugin byte from B's staged cleartext CAS, inspects the local Crossroads evidence as partial, writes the exact source byte into B's CAS as an explicit custody control, then overwrites it with corrupt bytes and expects invalid. It compares the Genesis seed and non-CAS files before and after. It also runs an unknown-record refusal and temporarily swaps `process.env.LAR_ROOT` for a wrong-root check (`tests/e2e/nexus-offering-replication.test.ts`, lines 101–154). It does not exercise generic plugin-byte carriage: the byte is explicitly seeded by the test.
 
@@ -126,5 +122,5 @@ This is the minimum **reproducible** preparation established by repository wirin
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;d_1Jwr7mOlYAaIfDQoTQ0a_f3336mrHBtMcrz8A0INU
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uPc6ycRzAHrgsdLqNgO5ON7-ou_v9xEutDDrg5D_ML8`>>
+<<^ code=`&#x0004;` to=`?`>>

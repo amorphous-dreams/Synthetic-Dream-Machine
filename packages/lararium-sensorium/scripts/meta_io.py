@@ -41,14 +41,11 @@ ANNOTATORS_ENV = "META_ANNOTATORS"
 
 
 def _meta_config_path() -> str:
-    """The house meta-schema file — `<config-home>/meta.json`. Mirrors the vessel's `larConfigHome`
-    (`LAR_ROOT/config`, else `$XDG_CONFIG_HOME/lares`, else `~/.config/lares`); the `lares sense meta`
-    verb writes it, this holder reads it. Kept in lockstep with vessel-paths.ts `larConfigHome`."""
-    root = os.environ.get("LAR_ROOT")
-    if root:
-        return os.path.join(root, "config", "meta.json")
-    base = os.environ.get("XDG_CONFIG_HOME", "").strip() or os.path.join(os.path.expanduser("~"), ".config")
-    return os.path.join(base, "lares", "meta.json")
+    """The house meta-schema file — `<root>/config/meta.json`. Mirrors the vessel's `larConfigHome`
+    through `house_root.config_home()`; the `lares sense meta` verb writes it, this holder reads it. An
+    unnamed `LAR_ROOT` raises `HouseRootUnnamed`."""
+    import house_root
+    return os.path.join(house_root.config_home(), "meta.json")
 
 
 _config_cache: dict = {}

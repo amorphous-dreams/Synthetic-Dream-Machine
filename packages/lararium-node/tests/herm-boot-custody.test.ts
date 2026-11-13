@@ -27,7 +27,7 @@ import { join, resolve } from "node:path";
 const roots: string[] = [];
 afterEach(() => { for (const root of roots.splice(0)) rmSync(root, { recursive: true, force: true }); });
 
-const ORIGIN_ENV = ["LAR_WEB_ORIGIN", "LAR_ORACLE_ORIGIN", "LAR_SAME_ORIGIN", "LAR_PUBLIC_URL", "LAR_RECIPE"];
+const ORIGIN_ENV = ["LAR_WEB_ORIGIN", "LAR_FLOW_ORIGIN", "LAR_SAME_ORIGIN", "LAR_PUBLIC_URL", "LAR_RECIPE"];
 
 const REPO = resolve(process.cwd(), "../..");
 
@@ -148,14 +148,14 @@ describe("a herm-standing boot refuses origin custody before listen", () => {
     expect(linkFault(run.stderr), LINKED).toBeNull();
     expect(run.status).not.toBe(0);
     expect(run.stderr).not.toMatch(WAYSTONE);
-    expect(run.stderr).toMatch(/oracle origin must be declared/);
+    expect(run.stderr).toMatch(/flow origin must be declared/);
     expect(run.stdout).not.toContain("WS relay on");
   }, 90_000);
 
   test("a herm with no origin declaration reaches listen with no Web origin", async () => {
     const run = await bootUntilListen({});
     expect(linkFault(run.stderr), LINKED).toBeNull();
-    expect(run.stderr).not.toMatch(/origin composition refused|Web origin|oracle origin/);
+    expect(run.stderr).not.toMatch(/origin composition refused|Web origin|flow origin/);
     expect(run.listened).toBe(true);
     // The boot links the workspace from source alone: a sibling build rewriting a dist cannot reach it.
     expect(run.resolved.some((url) => url.includes("/packages/lararium-keyhive/src/")), "the trace saw the keyhive source link").toBe(true);

@@ -19,7 +19,7 @@
  */
 
 import type { Repo, AutomergeUrl } from "@lararium/mesh";
-import { plainEntries, plainRecordOrNull, storedRecord } from "@lararium/mesh";
+import { plainEntries, plainRecordOrNull, storedRecord, ownEntry } from "@lararium/mesh";
 import {
   type LarDoc,
   emptyLarDoc, storedLarRecord, mkDaemonResidencyOp, mkDaemonWikiAlert,
@@ -70,7 +70,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
     // registry entry, read via the accessor (access≠load), not the composite.
     const oldDocUrl = await opts.catalog.urlOf(bagUrl);
     if (!oldDocUrl) {
-      throw new Error(`bag has no oracle: ${bagUrl}`);
+      throw new Error(`bag has no catalog row: ${bagUrl}`);
     }
 
     // Open the old doc; enumerate every tiddler, tombstones included.
@@ -99,7 +99,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
     // same pattern as wiki-init's oracle write.
     const catalogHandle = await opts.catalog.handle();
     catalogHandle.change((doc) => {
-      const existing = plainRecordOrNull(doc.tiddlers[bagUrl]);
+      const existing = plainRecordOrNull(ownEntry(doc.tiddlers, bagUrl));
       doc.tiddlers[bagUrl] = storedRecord({
         tiddler: {
           ...(existing?.tiddler ?? { title: bagUrl }),
@@ -142,8 +142,8 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
 // Whole-wiki "fresh start" lever. Composes Epoch (mint new canonical doc)
 // with recipe mutation (insert old canonical as a previous-canon underlay
 // slot at lower priority). Operator wants a clean canonical surface but
-// keeps the old generation accessible read-only. Mirrors Nix's
-// generation-pinning + GC pattern at the recipe granularity.
+// keeps the old canon accessible read-only, addressed by its own document id
+// and linked to the canon it followed (`rotated-from`): no counter orders them.
 
 export type RotateRecipeOptions = EpochHandlerOptions;
 
@@ -153,13 +153,13 @@ export type RotateRecipeOptions = EpochHandlerOptions;
  *
  * Steps:
  *   1. Mint a NEW canonical Automerge doc (fresh, empty).
- *   2. Compute the previous-canon underlay URI: wikiBagUri/canon/vN.
+ *   2. Name the previous-canon underlay by the superseded doc's own id: wikiBagUri/canon/<documentId>.
  *   3. Update catalog: wiki oracle's text → new doc URL; mint a
  *      previous-canon oracle whose text → old doc URL.
  *   4. Mutate recipe: keep wiki URI in stack at the same position
  *      (now points at new doc); insert previous-canon URI just BELOW
- *      it (lower priority). Old generations accumulate as deeper
- *      underlays.
+ *      it (lower priority). Earlier canons stay as deeper underlays,
+ *      each linked to the one before it by `rotated-from`.
  *   5. Re-pin residency for both URIs.
  *
  * Draft-drain into new canonical is deferred to F-arc routing rules.
@@ -180,21 +180,13 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
     // Wiki oracle lives in the catalog registry — accessor read (recipe above stays
     // composite, it lives in the lararium bag, a real load layer).
     const oldDocUrl = await opts.catalog.urlOf(wikiKey);
-    if (!oldDocUrl) throw new Error(`wiki oracle missing for "${slug}"`);
+    if (!oldDocUrl) throw new Error(`wiki catalog row missing for "${slug}"`);
 
-    // Compute the previous-canon URI. Walk existing stack to find the next
-    // generation number; previous-canon URIs match canon/v\d+.
+    // Name the previous canon by the superseded document's own id: the address the bytes already carry, never a count of
+    // rotations. The canon it followed (if any) rides as its `rotated-from` link, so the chain orders the canons.
     const stack   = bagStackFromRec(recipeRec);
-    const canonRe = new RegExp(`^${escapeRegExp(wikiKey)}/canon/v(\\d+)$`);
-    let nextGen = 1;
-    for (const url of stack) {
-      const m = url.match(canonRe);
-      if (m) {
-        const n = Number(m[1]);
-        if (Number.isFinite(n) && n >= nextGen) nextGen = n + 1;
-      }
-    }
-    const previousCanonUri = `${wikiKey}/canon/v${nextGen}`;
+    const previousCanonUri = `${wikiKey}/canon/${oldDocUrl.replace(/^automerge:/, "")}`;
+    if (stack.includes(previousCanonUri)) throw new Error(`"${slug}" already holds ${previousCanonUri} as a previous canon`);
 
     // Mint fresh canonical doc.
     const newHandle = opts.repo.create<LarDoc>(emptyLarDoc());
@@ -204,7 +196,8 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
     const catalogHandle = await opts.catalog.handle();
     catalogHandle.change((doc) => {
       const tiddlers = doc.tiddlers;
-      const existingWiki = plainRecordOrNull(tiddlers[wikiKey]);
+      const existingWiki = plainRecordOrNull(ownEntry(tiddlers, wikiKey));
+      const followed = typeof existingWiki?.tiddler?.["rotated-from"] === "string" ? existingWiki.tiddler["rotated-from"] as string : null;
       tiddlers[wikiKey] = storedRecord({
         tiddler: {
           ...(existingWiki?.tiddler ?? { title: wikiKey }),
@@ -212,7 +205,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
           text: newHandle.url,
           "rotated-at": new Date().toISOString(),
           "rotated-prev": oldDocUrl,
-          "rotation-gen": String(nextGen),
+          "rotated-from": previousCanonUri,
         },
         meta: {
           ...(existingWiki?.meta ?? {}),
@@ -222,7 +215,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
       tiddlers[previousCanonUri] = storedLarRecord(previousCanonUri, {
         text: oldDocUrl,
         kind: "previous-canon",
-        rotation: String(nextGen),
+        ...(followed ? { "rotated-from": followed } : {}),
         "frozen-at": new Date().toISOString(),
       }, "lares-cli:rotate-recipe");
     });
@@ -241,7 +234,7 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
           title: recipeTitle,
           "bag-stack": nextStack.join(" "),
           "updated-at": new Date().toISOString(),
-          "rotation-gen": String(nextGen),
+          "rotated-from": previousCanonUri,
         },
         meta: {
           ...(recipeRec.meta ?? {}),
@@ -256,11 +249,10 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
     opts.post(mkDaemonResidencyOp({ requestId: makeRequestId("resop"), op: "register-cold", bagId: previousCanonUri }));
     // Reboot-pending: new canonical doc + recipe change — the live island still has the
     // old canon mounted. Alert it.
-    opts.post(mkDaemonWikiAlert({ wikiSlug: slug, message: `Recipe rotated for "${slug}" (gen ${nextGen}) — reboot to load the new canonical.`, cause: "rotate-recipe" }));
+    opts.post(mkDaemonWikiAlert({ wikiSlug: slug, message: `Recipe rotated for "${slug}" (previous canon ${previousCanonUri}) — reboot to load the new canonical.`, cause: "rotate-recipe" }));
 
     return {
       slug,
-      generation:        nextGen,
       newCanonDocUrl:    newHandle.url,
       previousCanonUri,
       previousCanonDocUrl: oldDocUrl,
@@ -269,10 +261,6 @@ export function makeRotateRecipeReactor(opts: RotateRecipeOptions): VerbReactor 
       note: "oracle + recipe changes sync to islands (reboot — alert seeded); draft-drain into new canonical reserved for F-arc (`lares act MOVE`/`ADD`)",
     };
   };
-}
-
-function escapeRegExp(s: string): string {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 /** Prefix of a user wiki recipe title in the catalog registry: `lar:///ha.ka.ba/bags/catalog/recipes/`. */

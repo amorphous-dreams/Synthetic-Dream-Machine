@@ -1,7 +1,7 @@
 /**
  * VesselIslandPoolCore — the one platform-blind island pool.
  *
- * Holds all island residency ONCE — wela/anu + pin, LRU, sweeper, placeWikiVerb,
+ * Holds all island residency ONCE — wela/anu + pin, LRU, sweeper, placeWikiVerb, placeControlEvent,
  * diskMirror. Node and browser each supply only a VesselIslandHost (worker spawn,
  * sync channel, per-wiki storage, the ready handshake flag) and pool config
  * (mainRepo, diskMirrorGrant, hotCap); the browser runs the same residency on a
@@ -24,19 +24,21 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/vessel-island-pool-core
  */
 
-import { attachMessageChannelSync } from "./island-repo.js";
+import { attachMessageChannelSync, markWikiIslandPeer } from "./island-repo.js";
 import { awaitIslandMsg } from "./vessel-host.js";
-import { wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
+import { SYSTEM_BAGS, wikiBagUri, wikiSlotUri, type WikiSlotKind } from "./wiki-recipe.js";
+import { isFaceScopedBag } from "./persona-scope.js";
 import type { VesselWorkerHandle, VesselIslandHost } from "./vessel-host.js";
 import {
   isIslandToVesselMsg,
+  isTeardownFault,
   mkManifest,
   mkTeardown,
   mkWikiPlaceVerb,
-  mkWikiDomEvent, mkWikiDomInput,
   mkSensoriumSignal,
 } from "./island-protocol.js";
-import type { SensoriumSignalType } from "./island-protocol.js";
+import type { LarIslandToVesselMsg, SensoriumSignalType } from "./island-protocol.js";
+import { LAR_CONTROL_RESULT, LAR_FRAME, LAR_SERVICE, mkLarResend, type LarMsg_ControlEvent } from "./lar-camera.js";
 import type {
   AutomergeUrl,
   DocHandle,
@@ -58,7 +60,11 @@ import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.
 import { facetsOfSurfaceRecipe, resolvedSlotsOf, type SurfaceRecipe } from "./surface-recipe.js";
 import { ORACLE_BAG } from "./wiki-recipe.js";
 import { verifyCidBytes } from "./cas-transit.js";
-import type { IslandGrants, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
+import { answerReceiptWithHeads } from "./receipt-with-heads.js";
+import { receiptSettlement } from "./capability-record.js";
+import { makePortDoor, type PortPlacement, type PortPolicy } from "./port-lease.js";
+import { isPortKind, type PortIslandToVesselMsg } from "./record-port.js";
+import type { IslandGrants, IslandMsg_ReceiptRequest, IslandMsg_ViewCatalog, IslandMsg_ViewContent, IslandMsg_ViewSettle } from "./island-protocol.js";
 
 // ── Slots — two-state thermal axis (wela/anu) + orthogonal pin flag ──────────
 
@@ -187,7 +193,17 @@ interface ColdSlot {
 
 type Slot = IslandSlot | ColdSlot;
 
-export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; guardNexusHandles?: boolean }[];
+/** One held disk-write grant. `sourcedRoots` (per-wiki grants alone) names, by wiki slug, the base a SOURCED slug projects
+ *  under in place of `mirrorRoot`: a wiki whose bag stands in the canon source writes back beside that source, while every
+ *  other slug keeps `mirrorRoot` (the mirror root splits by origin; the host derives the map from its source tree). */
+export type DiskMirrorGrant = readonly {
+  bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean; wikiSlot?: WikiSlotKind; mirrorClass?: "recovery";
+  sourcedRoots?: Readonly<Record<string, string>>; consentSlugs?: readonly string[]; tempLayer?: boolean;
+  /** A wiki's WORKING grant: the operator's workspace dir per slug (`/lar/workspaces/<name>`), where its share row names one. */
+  workspaceRoots?: Readonly<Record<string, string>>;
+  /** A wiki's PERSONAL grant: the folder of the face the composition wears (its relation F), read at each mount; none: no mirror. */
+  faceFolder?: () => string | null;
+}[];
 
 /** Resolve a mount's disk mirrors: intersect the held grant (authority) with the
  *  recipe's `mirrorBags` (designation), then fill a per-wiki grant's bag + leaf
@@ -201,7 +217,17 @@ export type DiskMirrorGrant = readonly { bagId: string; mirrorRoot: string; scop
  *    `bags/{slug}` bag → disk `bags/{slug}`), yielding only when the recipe
  *    designates that canon AND no literal grant already covers it — so system
  *    wikis (lares/lararium, literal grants) keep their static roots and never
- *    double-project.
+ *    double-project; a system wiki's canon never projects by self-canon at all
+ *    (`bags/` projects on the Kahu's vessel alone, road `W26`).
+ *
+ *  A `temp` slot entry projects the wiki's user temp layer to `wikis/{slug}/temp` and yields only for a slug its
+ *  `consentSlugs` names (the operator's consent row, keyed by slug); the resolved entry carries `tempLayer`, so the
+ *  projector bars the layer's internal volatile titles by namespace. A draft recovery entry lands in `/recovery`.
+ *
+ *  A wiki's WORKING slot rests in its realm workbench (cabal-realm#/the-workbench), and its grant may name a workspace for the
+ *  slug (`workspaceRoots`): the workbench's mirror then roots there instead of `wikis/{slug}`. A wiki's PERSONAL slot carries the
+ *  wearing face's private margin (operator ruling 2026-11-11), so its grant roots per face: `personal/<F>/{slug}`, read off the
+ *  grant's `faceFolder` at each mount; with no face worn it yields no mirror.
  *
  *  OCAP-clean: authority stays in the static grant, designation in the synced
  *  recipe, the per-instance bag + subdir resolved here. */
@@ -218,45 +244,71 @@ export function resolveDiskMirrors(
   return grant
     .filter((g) => {
       const bag = perWikiBag(g);
+      if (isFaceScopedBag(bag)) return false;
+      // A consent-keyed grant (the user temp layer) yields only for a slug the operator's consent row names.
+      if (g.consentSlugs !== undefined && !g.consentSlugs.includes(wikiSlug)) return false;
+      if (g.faceFolder !== undefined && !g.faceFolder()) return false;
+      // A SYSTEM wiki's canon projects through its LITERAL grant alone, which only the Kahu's vessel holds: self-canon
+      // never reaches `bags/lares` or `bags/lararium`, so no vessel outside the cabal writes under them.
       return g.selfCanon
-        ? Boolean(mirrorBags?.includes(bag)) && !literalBags.has(bag)
+        ? Boolean(mirrorBags?.includes(bag)) && !literalBags.has(bag) && !SYSTEM_BAGS.has(bag)
         : Boolean(mirrorBags?.includes(bag));
     })
-    .map((g) =>
-      (g.selfCanon || g.wikiSlot)
-        ? { ...g, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${wikiSlug}` }
+    .map((g) => {
+      // A sourced slug's per-wiki root writes back beside its source; every other slug keeps the grant's own root.
+      const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]! : g.mirrorRoot;
+      const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, ...held } = g;
+      if (g.faceFolder !== undefined) return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${wikiSlug}` };
+      if (g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) return { ...held, bagId: perWikiBag(g), mirrorRoot: g.workspaceRoots![wikiSlug]! };
+      const leaf = g.wikiSlot === "temp" ? "/temp" : g.mirrorClass === "recovery" ? "/recovery" : "";
+      return (g.selfCanon || g.wikiSlot)
+        ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}${leaf}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) }
         : g.perWikiSlug
-          ? { ...g, mirrorRoot: `${g.mirrorRoot}/${wikiSlug}` }
-          : g,
-    );
+          ? { ...held, mirrorRoot: `${base}/${wikiSlug}` }
+          : held;
+    });
 }
+
+/** What the vessel itself read of its receipt requests: asked, answered issued (`rested`: its Repo held the heads and flushed), answered stalled. */
+export interface VesselRestState { readonly asked: number; readonly rested: number; readonly stalled: number }
 
 export interface VesselIslandPoolCoreOptions {
   host: VesselIslandHost;
+  portPolicy?: PortPolicy;
+  onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
+  onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
   /** Vessel main Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo | null;
   /** Held disk-write capability — bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: DiskMirrorGrant;
-  /** Called when an island OUTSIDE any session emits a verse-event reaction. */
-  onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event) => void;
+  /** Called when an island OUTSIDE any session emits a verse-event reaction, a camera frame, a control
+   *  result or a host-door ask. */
+  onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
+  /** Called each time the vessel's receipt ledger moves: a wiki island's receipt request arrives, or the vessel answers it. */
+  onRest?: (state: VesselRestState) => void;
   /**
-   * Called when a SESSION's island emits a verse-event reaction, with the key parts that island stands
-   * under. A session island's event never reaches `onWorkerEvent`: that door's callers place vessel verbs
+   * Called when a SESSION's island emits a verse-event reaction, a camera frame, a control result or a
+   * host-door ask, with the key parts that island stands under. A session island's event never reaches `onWorkerEvent`: that door's callers place vessel verbs
    * from an event's payload, and a session acts through a gate bound to its own facets. Absent, a surface
    * island's events drop.
    */
-  onSurfaceEvent?: (surface: IslandKeyParts, msg: IslandMsg_Event) => void;
+  onSurfaceEvent?: (surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
   /**
    * R3/R4 — resolve ONE mount's own `spec.recipe` into the CIDs its manifest should carry (the
    * fixed boot-set floor UNION this wiki's verified, byte-checked offering selection). REQUIRED:
-   * the pre-R3 flat `pluginCids` floor (every island getting the SAME vessel-wide list) has
-   * retired on BOTH platforms — node supplies `resolveNodeIslandPluginCids`, the browser supplies
+   * no flat vessel-wide `pluginCids` floor stands on either platform — node supplies `resolveNodeIslandPluginCids`, the browser supplies
    * `resolveBrowserIslandPluginCids`, and the constructor refuses to build a pool with neither, so
    * no blanket-list path can survive by omission. Called once per activation, BEFORE the worker
    * spawns; a refusal here throws, so a wiki whose recipe names an unresolvable, colliding, or
    * byte-missing offering never reads as an empty or successful mount — it fails the activation
    * outright, exactly like any other mount failure (counted in the same OTP intensity ledger).
    */
+  /**
+   * The floor manifest each mount's `@oracle` read-face stands on: the vessel's accepted pin (`floor-pin`
+   * `floorCidToMount`), read afresh at every activation, so the mount after an accept stands on the accepted floor.
+   * Absent, or answering null, the island mounts its genesis floor. Both hosts bind the same pick.
+   */
+  floorCid?: () => string | null | Promise<string | null>;
   resolvePluginCids: (recipe: WikiRecipe) => Promise<
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
@@ -279,17 +331,13 @@ export interface VesselIslandPoolCoreOptions {
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
   mountStallMs?: number;
-  /** Mount failures tolerated per wiki inside the window before the cap trips. */
+  /** Mount failures tolerated per wiki in a row before the cap trips. */
   maxMountFailures?: number;
-  /** The intensity window in ms (OTP MaxR/MaxT discipline). */
-  mountFailureWindowMs?: number;
 }
 
-// The mount-failure window, the cold-slot `cooledAt`, and every failure timestamp below are
-// THIS PROCESS'S OWN local resource-pressure bookkeeping — never persisted, never compared
-// across a restart — so they read `performance.now()` rather than `Date.now()`: an adversarial
-// or operator wall-clock set-back/set-forward can neither reopen a mount intensity cap early
-// nor hold it closed past its real window.
+// The cold-slot `cooledAt` below is THIS PROCESS'S OWN local resource-pressure bookkeeping — never
+// persisted, never compared across a restart — so it reads `performance.now()` rather than `Date.now()`:
+// a wall-clock set-back/set-forward cannot move it.
 //
 // A SILENCE budget, not a mount deadline: the ea-wait re-arms on each island
 // breath (resetOnTypes), so a slow mount that keeps breathing never times out.
@@ -297,7 +345,6 @@ export interface VesselIslandPoolCoreOptions {
 // (MaxR/MaxT) bounds restart storms on a deterministically failing mount.
 const HANDSHAKE_TIMEOUT_MS        = 10_000;
 const MAX_MOUNT_FAILURES          = 3;
-const MOUNT_FAILURE_WINDOW_MS     = 60_000;
 
 export class VesselIslandPoolCore {
   private readonly _slots = new Map<string, Slot>();
@@ -312,14 +359,24 @@ export class VesselIslandPoolCore {
   // later REFERENCE re-mounts it byte-for-byte (Orleans activation-on-reference: the
   // grain identity outlives its physical activation). `ensureWiki` reads this.
   private readonly _mountSpecs = new Map<string, { spec: WikiMountSpec; pinned: boolean }>();
+  /** The core hash and resolved plugin CIDs each wiki island last booted with. */
+  private readonly _bootInputs = new Map<string, { coreCid: string; pluginCids: readonly string[] }>();
   private readonly _host:           VesselIslandHost;
   private readonly _mainRepo:       Repo | null;
+  /** The sync peer each wiki island's channel carries, so a receipt request reads a closed channel as a fact. */
+  private readonly _islandPeerOf = new Map<string, string>();
+  private _restState: VesselRestState = { asked: 0, rested: 0, stalled: 0 };
+  private readonly _onRest: ((state: VesselRestState) => void) | null;
   private readonly _diskMirrorGrant: DiskMirrorGrant;
-  private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event) => void) | null;
-  private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event) => void) | null;
+  private readonly _onWorkerEvent:  ((wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
+  private readonly _onSurfaceEvent: ((surface: IslandKeyParts, msg: IslandMsg_Event | LarIslandToVesselMsg) => void) | null;
   private readonly _resolvePluginCids: VesselIslandPoolCoreOptions["resolvePluginCids"];
+  private readonly _floorCid: VesselIslandPoolCoreOptions["floorCid"];
   private readonly _onEa:           ((wikiId: string) => void) | null;
   private readonly _readContent:    VesselIslandPoolCoreOptions["readContent"] | null;
+  private readonly _portDoor: ReturnType<typeof makePortDoor>;
+  private readonly _onPortMessage: VesselIslandPoolCoreOptions["onPortMessage"];
+  private readonly _onPortDrop: VesselIslandPoolCoreOptions["onPortDrop"];
   private readonly _pendingWikiVerbs = new Map<string, {
     /** The island the call went to: a lease that drops rejects every call still parked on it. */
     key:     string;
@@ -334,12 +391,11 @@ export class VesselIslandPoolCore {
   private readonly _activatingSurfaces = new Map<string, { readonly parts: IslandKeyParts; view: SessionDocumentView | null }>();
   // True while `disposeAll` runs: a mount that lands meanwhile takes no slot.
   private _disposing = false;
-  // OTP intensity bookkeeping — per-wiki failure timestamps inside the window.
-  private readonly _mountFailures = new Map<string, number[]>();
+  // OTP intensity bookkeeping — per-wiki consecutive failure COUNT (no clock window); a clean mount or the operator's remount clears it.
+  private readonly _mountFailures = new Map<string, number>();
   private readonly _mountSilenceMs:       number;
   private readonly _mountStallMs:         number;
   private readonly _maxMountFailures:     number;
-  private readonly _mountFailureWindowMs: number;
 
   constructor(opts: VesselIslandPoolCoreOptions) {
     // M6 — no silent ignore. `resolvePluginCids` is REQUIRED in the type above; this runtime
@@ -348,24 +404,40 @@ export class VesselIslandPoolCore {
     if (!opts.resolvePluginCids) {
       throw new Error(
         "[vessel-pool] resolvePluginCids is required — every mount resolves its OWN recipe's " +
-        "plugin selection; the flat vessel-wide pluginCids floor has retired on every platform",
+        "plugin selection; no flat vessel-wide pluginCids floor stands on any platform",
       );
     }
     this._host            = opts.host;
     this._mainRepo        = opts.mainRepo ?? null;
     this._diskMirrorGrant = opts.diskMirrorGrant ?? [];
     this._onWorkerEvent   = opts.onWorkerEvent ?? null;
+    this._onRest          = opts.onRest ?? null;
     this._onSurfaceEvent  = opts.onSurfaceEvent ?? null;
     this._resolvePluginCids = opts.resolvePluginCids;
+    this._floorCid = opts.floorCid;
     this._onEa            = opts.onEa ?? null;
     this._readContent     = opts.readContent ?? null;
+    this._portDoor = makePortDoor({ ...(opts.portPolicy ? { policy: opts.portPolicy } : {}),
+      post: (scope, msg) => {
+        const slot = this._slots.get(scope);
+        if (slot?.temperature === "wela" && !slot.closing) slot.worker.post(msg);
+      } });
+    this._onPortMessage = opts.onPortMessage;
+    this._onPortDrop = opts.onPortDrop;
     this._mountSilenceMs       = opts.mountSilenceMs ?? HANDSHAKE_TIMEOUT_MS;
     this._mountStallMs         = opts.mountStallMs ?? 3 * this._mountSilenceMs;
     this._maxMountFailures     = opts.maxMountFailures ?? MAX_MOUNT_FAILURES;
-    this._mountFailureWindowMs = opts.mountFailureWindowMs ?? MOUNT_FAILURE_WINDOW_MS;
   }
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
+
+  /** Ask every live wiki to start a best-effort drain; this does not acknowledge durability. */
+  requestWikiDrains(): void {
+    for (const slot of this._slots.values()) {
+      if (slot.temperature !== "wela" || slot.closing) continue;
+      try { slot.worker.post({ type: "wiki:request-drain" }); } catch { /* A departing worker must not block its peers. */ }
+    }
+  }
 
   /** Mount a wiki as a live (`wela`) island. `opts.pinned` exempts from LRU.
    *  Single-flight per grain: concurrent activations of one wikiId fold into ONE. */
@@ -543,6 +615,14 @@ export class VesselIslandPoolCore {
 
   /** The scoped view an island's peer ID stands under, or null. The share verdict's caller reads it to keep
    *  a session island's announcements inside its facets before any message forms. */
+  /** The vessel's own reading of its receipt requests, for a page to show and a test to wait on. */
+  restState(): VesselRestState { return this._restState; }
+
+  private _moveRest(change: Partial<{ -readonly [K in keyof VesselRestState]: VesselRestState[K] }>): void {
+    this._restState = { ...this._restState, ...change };
+    try { this._onRest?.(this._restState); } catch { /* a sink never breaks the receipt answer */ }
+  }
+
   viewOfPeer(peerId: string): SessionDocumentView | null {
     for (const slot of this._slots.values()) {
       if (slot.temperature === "wela" && slot.surface?.view.peerId === peerId) return slot.surface.view;
@@ -578,22 +658,26 @@ export class VesselIslandPoolCore {
     return this.has(wikiId);
   }
 
+  private _failuresOf(wikiId: string): number { return this._mountFailures.get(wikiId) ?? 0; }
+  private _countMountFailure(wikiId: string): void { this._mountFailures.set(wikiId, this._failuresOf(wikiId) + 1); }
+
+  /** The operator's remount: forget one grain's failure count so its next mount tries afresh. The cap clears on this
+   *  or on a clean mount, never on elapsed time. */
+  forgetMountFailures(wikiId: string): void { this._mountFailures.delete(wikiId); }
+
   /** The activation body proper — intensity gate → LRU evict → spawn → `ea`
    *  handshake → live slot. Runs under mountWiki's single-flight latch, so exactly
    *  one activation runs per grain at a time (single-owner preserved). */
   private async _activate(wikiId: string, plan: ActivationPlan, opts: { pinned?: boolean }): Promise<void> {
     const pinned = opts.pinned ?? false;
     // Intensity gate (MaxR/MaxT): a wiki that keeps failing its mount inside
-    // the window fails FAST and NAMED — never another full silence budget per
-    // attempt, never a restart storm. The window prunes itself; success clears.
-    const failures = (this._mountFailures.get(wikiId) ?? [])
-      .filter((t) => performance.now() - t < this._mountFailureWindowMs);
-    if (failures.length >= this._maxMountFailures) {
-      this._mountFailures.set(wikiId, failures);
+    // in a row fails FAST and NAMED — never another full silence budget per
+    // attempt, never a restart storm. Success or the operator's remount clears.
+    if (this._failuresOf(wikiId) >= this._maxMountFailures) {
       throw new Error(
         `[vessel-pool] mount intensity cap for ${wikiId} — ` +
-        `${failures.length} failures inside ${this._mountFailureWindowMs}ms; ` +
-        `retry after the window clears`,
+        `${this._failuresOf(wikiId)} failures in a row; ` +
+        `the operator's remount clears it (forgetMountFailures)`,
       );
     }
 
@@ -611,11 +695,15 @@ export class VesselIslandPoolCore {
     // no mount ever falls through to a flat, unresolved floor.
     const resolved = await plan.pluginCids();
     if (!resolved.ok) {
-      failures.push(performance.now());
-      this._mountFailures.set(wikiId, failures);
+      this._countMountFailure(wikiId);
       throw new Error(`[vessel-pool] ${wikiId} plugin resolution refused: ${resolved.error}`);
     }
     const pluginCids = resolved.pluginCids;
+    // THE FLOOR THIS MOUNT STANDS ON: a session's recipe names the floor its view admits (its first floor CID, the manifest's
+    // own); every other island reads the vessel's accepted pin afresh, so the mount after an accept stands on that floor.
+    const floorCid = plan.surface ? (plan.surface.mount.recipe.floorCids[0] ?? null) : ((await this._floorCid?.()) ?? null);
+    // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
+    if (!plan.surface && plan.coreHash) this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids });
 
     // THE FENCE READS BEFORE ANY VIEW ATTACHES. A session that ended or switched while the plugins resolved,
     // or a pool that began to close, opens no channel at all.
@@ -634,8 +722,7 @@ export class VesselIslandPoolCore {
           ...(plan.surface.mount.referencesContent ? { referencesContent: plan.surface.mount.referencesContent } : {}),
         });
       } catch (err) {
-        failures.push(performance.now());
-        this._mountFailures.set(wikiId, failures);
+        this._countMountFailure(wikiId);
         throw err;
       }
       // The fence reaches this view from here on, though no slot holds it yet.
@@ -646,8 +733,10 @@ export class VesselIslandPoolCore {
     const { mainPort, syncPort } = this._host.newSyncChannel();
     // A session island's port rides its view and nothing wider; an island outside any session rides the port bare.
     if (this._mainRepo) {
-      if (view) view.attach(this._mainRepo, mainPort);
-      else attachMessageChannelSync(this._mainRepo, mainPort);
+      // EVERY POOL ISLAND IS A WIKI ISLAND: it renders pages and syncs no custody document (`markWikiIslandPeer`).
+      const repo = this._mainRepo;
+      if (view) { markWikiIslandPeer(repo, view.peerId); view.attach(this._mainRepo, mainPort); }
+      else attachMessageChannelSync(repo, mainPort, (peerId) => { markWikiIslandPeer(repo, peerId); this._islandPeerOf.set(wikiId, peerId); });
     }
 
     // A session's island spawns without the vessel's own doors: its view answers what it may ask.
@@ -671,6 +760,7 @@ export class VesselIslandPoolCore {
         ...(storage            ? { storage }     : {}),
         ...(diskMirrors.length ? { diskMirrors } : {}),
         ...(pluginCids.length ? { pluginCids } : {}),
+        ...(floorCid ? { floorCid } : {}),
         ...(plan.surface && view ? { view: { peerId: view.peerId }, resolved: resolvedSlotsOf(plan.surface.mount.recipe) } : {}),
       },
     );
@@ -706,8 +796,7 @@ export class VesselIslandPoolCore {
       worker.terminate();
       view?.close();
       mainPort.close();
-      failures.push(performance.now());
-      this._mountFailures.set(wikiId, failures);
+      this._countMountFailure(wikiId);
       throw err;
     }
 
@@ -757,6 +846,7 @@ export class VesselIslandPoolCore {
     // The island takes no placement from here on: a verb placed after its settle would write past what
     // `settled` vouches for.
     workerSlot.closing = true;
+    this._portDoor.releaseScope(wikiId);
     // ONLY A SETTLE THIS TEARDOWN DRAWS COUNTS. An island that settled earlier and wrote again leaves here
     // unsettled unless it asks afresh, so `settled` never vouches for a write the owner may lack.
     if (workerSlot.surface) {
@@ -770,6 +860,9 @@ export class VesselIslandPoolCore {
       await awaitIslandMsg<IslandMsg_TeardownAck>({
         expectedType: "teardown:ack",
         timeoutMs:    HANDSHAKE_TIMEOUT_MS,
+        // The island answers its teardown either way: an ack, or a fault by name (`teardown-fault: …`) that ends the
+        // handshake at once, unacked. Another fault crossing meanwhile (a late slot fault) ends nothing: the flush still runs.
+        rejectOn:       isTeardownFault,
         subscribe:      (h) => workerSlot.worker.listen(h),
         subscribeError: (h) => workerSlot.worker.onError(h),
         send: () => workerSlot.worker.post(mkTeardown()),
@@ -838,43 +931,47 @@ export class VesselIslandPoolCore {
     const requestId = crypto.randomUUID();
     const worker = slot.worker;
     return new Promise<Record<string, unknown>>((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this._pendingWikiVerbs.delete(requestId);
-        reject(new Error(`[vessel-pool] wiki:place-verb timeout for ${wikiId}/${opts.verb}`));
-      }, HANDSHAKE_TIMEOUT_MS);
-      this._pendingWikiVerbs.set(requestId, {
-        key: wikiId,
-        resolve: (r) => { clearTimeout(timer); resolve(r); },
-        reject:  (e) => { clearTimeout(timer); reject(e); },
-      });
+      // The verb ends on the island's answer, its unmount (a lease that dropped), or its exit or error (`_failParkedVerbs`);
+      // no timer answers for a verb running long on a live island.
+      this._pendingWikiVerbs.set(requestId, { key: wikiId, resolve, reject });
       worker.post(mkWikiPlaceVerb({ ...opts, requestId }));
     });
   }
 
-  /** Relay a main-thread DOM event to the wiki island — the interactivity RETURN leg. Accumulate-
-   *  family but fire-and-forget: postMessage IS the ordered queue, the sink (TW5's own handler) is
-   *  synchronous, so no requestId/timeout/reserve. A cooled slot drops it (Hiatus drop-honesty). */
-  placeWikiEvent(
-    wikiId: string,
-    ev: { renderId: string; eventType: string; fields: Record<string, number | boolean> },
-    session?: PlacingSession,
-  ): void {
-    const slot = this._placeable(wikiId, session);
-    if (typeof slot === "string") return;
-    slot.worker.post(mkWikiDomEvent(ev));
+  /** The island went away on its own (exit or error): every call parked on it rejects by name. */
+  private _failParkedVerbs(wikiId: string, why: string): void {
+    for (const [requestId, pending] of [...this._pendingWikiVerbs]) {
+      if (pending.key !== wikiId) continue;
+      this._pendingWikiVerbs.delete(requestId);
+      pending.reject(new Error(`[vessel-pool] the island for ${wikiId} exited (${why}) with this call parked`));
+    }
   }
 
-  /** Relay a main-thread TEXT event to the wiki island — the input leg of the RETURN. Same drop-honest
-   *  fire-and-forget as placeWikiEvent; `mkWikiDomInput` refuses a value past the bound at this shore,
-   *  and the island door refuses it again on arrival. */
-  placeWikiInput(
-    wikiId: string,
-    ev: { renderId: string; eventType: string; value: string },
-    session?: PlacingSession,
-  ): void {
+  /** Place one control event (an act, a sense, a write or a service answer) into the island that renders its
+   *  camera: the up leg of the camera (lar:///ha.ka.ba/lararium/mesh/lar-camera). Fire-and-forget: postMessage
+   *  carries the order a person acted in, and the island answers on `lar:control-result`, which reaches the
+   *  vessel's handler. The event travels whole; the island door reads it through the contract's own reader. A
+   *  cooled slot drops it (Hiatus drop-honesty). */
+  placeControlEvent(wikiId: string, event: LarMsg_ControlEvent, session?: PlacingSession): void {
     const slot = this._placeable(wikiId, session);
     if (typeof slot === "string") return;
-    slot.worker.post(mkWikiDomInput(ev));
+    slot.worker.post(event);
+  }
+
+  placePort(key: string, binding: string, msg: unknown, session?: PlacingSession): PortPlacement {
+    const slot = this._placeable(key, session);
+    if (typeof slot === "string") return { ok: false, reason: slot };
+    return this._portDoor.place(key, binding, msg);
+  }
+
+  closePortBinding(binding: string): void { this._portDoor.closeBinding(binding); }
+
+  /** Ask the island to paint one camera whole: it mints a fresh mount epoch and emits every key on `lar:frame`.
+   *  A surface switch and a late attach ask this. The same drop-honest fire-and-forget as placeControlEvent. */
+  resendProjection(wikiId: string, cameraId: string, session?: PlacingSession): void {
+    const slot = this._placeable(wikiId, session);
+    if (typeof slot === "string") return;
+    slot.worker.post(mkLarResend(cameraId));
   }
 
   /** Post one sensorium read-signal INTO a live island — the daemon's supervision read ridden
@@ -911,6 +1008,14 @@ export class VesselIslandPoolCore {
   coldSince(wikiId: string): number | null {
     const slot = this._slots.get(wikiId);
     return slot?.temperature === "anu" ? slot.cooledAt : null;
+  }
+
+  /**
+   * The engine inputs a mounted wiki's mirror reads: the core hash and plugin CIDs its island last booted with, the same two its manifest carried. Null when the wiki has no retained mount, no core
+   * hash (pre-CAS), or a recipe whose plugins refuse: the mirror never guesses an input.
+   */
+  async mountInputsOf(wikiId: string): Promise<{ readonly coreCid: string; readonly pluginCids: readonly string[] } | null> {
+    return this._bootInputs.get(wikiId) ?? null;
   }
 
   has(wikiId: string): boolean {
@@ -1021,10 +1126,17 @@ export class VesselIslandPoolCore {
   private _wireWorkerListeners(
     wikiId: string, worker: VesselWorkerHandle, view: SessionDocumentView | null, standing: SurfaceStanding, surface: IslandKeyParts | null,
   ): void {
-    // One settle waits per island at a time: a second ask while one waits answers false at once, so an island
-    // cannot stack waiters on the owner by asking for heads that never arrive.
+    const settlement = receiptSettlement(() => { try { worker.post({ type: "receipt:close" }); } catch { /* the worker already left */ } });
     worker.listen((raw: unknown) => {
       if (!isIslandToVesselMsg(raw)) return;
+      if (raw.type === "receipt:asks-done") { settlement.asksDone(); return; }
+      if (isPortKind(raw.type)) {
+        const msg = raw as PortIslandToVesselMsg;
+        const holder = this._portDoor.holderOf(wikiId, msg.portId);
+        if (holder && this._onPortMessage) this._onPortMessage(holder, wikiId, msg);
+        else this._onPortDrop?.(wikiId, msg.type, "no-port-lease");
+        return;
+      }
       // THE VIEW'S TWO ASKED GATES. A catalog name and a content address answer from the island's own view;
       // an island that stands under no view draws the refusal `view-absent`, never another island's answer.
       if (raw.type === "view:catalog") {
@@ -1038,6 +1150,10 @@ export class VesselIslandPoolCore {
         });
         return;
       }
+      // ONE VIEW SETTLE WAITS PER ISLAND AT A TIME (`standing.settling`): a second ask while one waits answers false at once, so a
+      // session island cannot stack waiters on the owner by asking for heads that never arrive. RECEIPT asks below hold no such cap:
+      // they run concurrently by ruling (L29), one answer per owed write, bounded by the island's owed titles, each ending on its
+      // heads, its stall rounds, the peer's leave, or the round's close.
       if (raw.type === "view:settle") {
         const ask = raw as IslandMsg_ViewSettle;
         if (typeof ask.requestId !== "string") return;
@@ -1058,6 +1174,22 @@ export class VesselIslandPoolCore {
         void this._answerSettle(ask, view).then(land, () => land(false));
         return;
       }
+      // ONE ANSWERER PER RECEIPT ASK. The pool answers only where the asking island's bound record grants `receipt`
+      // (read now, off the handle); otherwise it stays silent, never reads its main Repo, and the island's own worker
+      // answers with the named refusal. A durable "acked" never races a refusal on one requestId.
+      if (raw.type === "receipt:request" && !view && worker.grants?.().receipt === true) {
+        const ask = raw as IslandMsg_ReceiptRequest;
+        if (typeof ask.requestId !== "string") return;
+        this._moveRest({ asked: this._restState.asked + 1 });
+        void settlement.answering(answerReceiptWithHeads(this._mainRepo, ask, this._islandPeerOf.get(wikiId)).then((answer) => {
+          this._moveRest(answer.issued ? { rested: this._restState.rested + 1 } : answer.stalled ? { stalled: this._restState.stalled + 1 } : {});
+          try { worker.post({ type: "receipt:issued", requestId: ask.requestId, ...answer }); }
+          catch { /* the island went away: nothing to answer */ }
+        }, () => {
+          try { worker.post({ type: "receipt:issued", requestId: ask.requestId, issued: false }); } catch { /* the worker already left */ }
+        }));
+        return;
+      }
       if (raw.type === "view:content") {
         const ask = raw as IslandMsg_ViewContent;
         if (typeof ask.requestId !== "string") return;
@@ -1067,11 +1199,13 @@ export class VesselIslandPoolCore {
         });
         return;
       }
-      if (raw.type === "event") {
+      if (raw.type === "event" || raw.type === LAR_FRAME || raw.type === LAR_CONTROL_RESULT || raw.type === LAR_SERVICE) {
         // A SESSION ISLAND'S EVENT TAKES ITS OWN DOOR. The wiki door's consumers place vessel verbs from an
-        // event's payload; a session's island reaches no such consumer.
-        if (surface) this._onSurfaceEvent?.(surface, raw as IslandMsg_Event);
-        else if (this._onWorkerEvent) this._onWorkerEvent(wikiId, raw as IslandMsg_Event);
+        // event's payload; a session's island reaches no such consumer. The camera's frames, answers and
+        // host-door asks take the same two doors.
+        const msg = raw as IslandMsg_Event | LarIslandToVesselMsg;
+        if (surface) this._onSurfaceEvent?.(surface, msg);
+        else if (this._onWorkerEvent) this._onWorkerEvent(wikiId, msg);
         return;
       }
       if (raw.type === "wiki:verb-result") {
@@ -1088,7 +1222,14 @@ export class VesselIslandPoolCore {
         console.error(`[vessel-pool] island fault for ${wikiId}: ${(raw as { error: string }).error}`);
       }
     });
+    worker.onExit?.((why) => this._failParkedVerbs(wikiId, why));
     worker.onError((err) => {
+      this._failParkedVerbs(wikiId, `error: ${err.message}`);
+      this._portDoor.releaseScope(wikiId);
+      // A SESSION ISLAND THAT ERRED LEAVES THE HOUSE (road `P26`): its scoped view closes, so its leg's arrival unseats and
+      // no gone island reads as standing in the arrival table.
+      const erred = this._slots.get(wikiId);
+      if (erred && erred.temperature === "wela" && erred.surface) { try { erred.surface.view.close(); } catch { /* already closed */ } }
       console.error(`[vessel-pool] island error for ${wikiId}:`, err);
     });
   }

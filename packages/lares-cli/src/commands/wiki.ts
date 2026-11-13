@@ -19,6 +19,7 @@ import { vesselDid } from "../env.js";
 import { emit } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
+import { cmdShare } from "./share-cmd.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 type WikiSubcommand = (args: ParsedArgs) => Promise<number>;
@@ -220,7 +221,7 @@ export async function cmdWikiSwitch(args: ParsedArgs): Promise<number> {
     return 2;
   }
   const did = await vesselDid();
-  const r = await call("wiki-switch", { slug }, did, { timeoutMs: 30_000 });
+  const r = await call("wiki-switch", { slug, remount: true }, did, { timeoutMs: 30_000 });
   if (r.status === "error") {
     console.error(`switch failed: ${r.errorMessage ?? "unknown"}`);
     return 4;
@@ -304,6 +305,8 @@ export async function cmdWikiActive(_args: ParsedArgs): Promise<number> {
     const marks = [held.has(w) ? "📌" : "  ", surface === w ? "◀ surface" : ""].filter(Boolean).join(" ");
     console.log(`  ${marks} ${w}`);
   }
+  // THE DAEMON'S STANDING SLOT: the daemon stands no wiki island, so this list never shows it, yet it holds one slot of the cap.
+  console.log(`     daemon  (always live; it holds one of the ${result["activationCap"] ?? "?"} slots and stands outside this list)`);
   console.log(`  rotatable pin budget: ${result["pinBudget"] ?? "?"}`);
   console.log("");
   return 0;
@@ -410,7 +413,7 @@ export async function cmdWikiRotateRecipe(args: ParsedArgs): Promise<number> {
   }
   const result = summaryOutput(r) ?? {};
   console.log("");
-  console.log(`wiki ${slug}: rotated to generation ${result["generation"]}`);
+  console.log(`wiki ${slug}: rotated to a fresh canon`);
   console.log(`  new canon doc:   ${result["newCanonDocUrl"]}`);
   console.log(`  previous canon:  ${result["previousCanonUri"]}`);
   console.log(`    ↳ doc:         ${result["previousCanonDocUrl"]}`);
@@ -560,11 +563,12 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
 
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
   "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent." },
+  "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>); --list shows the resolved answer. The daemon wiki never shares." },
   "open":  { handler: cmdWikiOpen,  summary: "Set which wiki the next `lares vessel stand --foreground` boot mounts as active. Does not live-remount the current vessel." },
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },
   "hold":    { handler: cmdWikiHold,    summary: "Pin a wiki as a rotatable active pin (the daemon bag always + N rotatable; a hold past budget releases the least-recently-held)." },
   "release": { handler: cmdWikiRelease, summary: "Drop a wiki's rotatable pin (it stays live, becomes a cooling candidate)." },
-  "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface." },
+  "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface (the daemon always holds one slot and stands outside the list)." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
   "pin":        { handler: cmdWikiPin,       summary: "Pin every bag in the wiki's recipe (whole-recipe STOWAGE — the heat axis, never the canon one `resolve` reads)." },
   "unpin":      { handler: cmdWikiUnpin,     summary: "Unpin every bag in the wiki's recipe." },
@@ -578,13 +582,14 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
 };
 
+/** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */
+export function wikiHelpLines(): string[] {
+  const width = Math.max(...Object.keys(SUBCOMMANDS).map((v) => v.length));
+  return ["lares wiki <verb> [args...]", "", "Verbs:", ...Object.entries(SUBCOMMANDS).map(([verb, entry]) => `  ${verb.padEnd(width)} ${entry.summary}`)];
+}
+
 function printWikiHelp(): void {
-  console.log("lares wiki <verb> [args...]\n");
-  console.log("Verbs:");
-  for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
-    console.log(`  ${verb.padEnd(10)} ${entry.summary}`);
-  }
-  console.log("\nFull E-arc surface complete.");
+  for (const line of wikiHelpLines()) console.log(line);
 }
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {

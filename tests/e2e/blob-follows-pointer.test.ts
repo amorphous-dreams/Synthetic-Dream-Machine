@@ -5,19 +5,19 @@
  * bytes a CID names are FETCHED on request by a peer holding the pointer and the read cap, never
  * synced with the record. This witness stands the pair `meme-two-vessel-bag` proves — a founder A
  * and a same-operator joiner B — and carries a `.png` POINTER (bytes in A's `cid/`, the handle in
- * the CRDT) through the one shared door into `bags/lares`, then measures what B holds:
+ * the CRDT) into A’s own `bags/lares`, then measures what B holds:
  *
  *   ⑤ A LOADs `photo.png` (+ `.meta`) once B stands → A's `cid/` holds the bytes; the CRDT the handle
- *   ⑦ B, after sync, projects the POINTER (`_is_skinny` · `textCid` · `_integrity`, no `text`)
+ *   ⑦ B, after sync, measures the absence of A’s live system pointer (W24/W27 owns its BOOK crossing)
  *   ★ B's `cid/` — do the BYTES stand there? By which door?
  *
  * The rite (①–⑥) copies `meme-two-vessel-bag` step for step; that file stays untouched.
  *
- * THE FETCH DOOR (basket-one #/the-fetch-door, ruled 2026-09-11): A stands a carriage crossroads
- * (Socket B, `LAR_HERM_RELAY_PORT`) and both vessels dial it (`LAR_CARRIAGE_RELAY`). B's resolver composes
- * `makeCidResolver(localRead, casTransit, cacheWriteThrough)`; a READ on B that misses `cid/` want-blocks
- * A over Socket B, A's gate reads B as FLEET (same operator — the signed device edge) and serves the
- * cleartext blob, B verifies sha256 and writes through. Fetch-on-read: the bytes cross when B reads
+ * THE FETCH DOOR (basket-one #/the-fetch-door): B's resolver composes
+ * `makeCidResolver(localRead, casTransit, cacheWriteThrough)`, and its transit is the Herm's public shore alone
+ * (`LAR_HERM_SHORE`). This pair names no shore, and carriage peering ships SHUT by name, so the bytes stay on A: a
+ * READ on B that misses `cid/` answers "not held" at the `local-only` door and writes nothing.
+ * Fetch-on-read: a byte crosses only when B reads
  * (`lares bag cas --fetch <cid>`), never before — ★ measures the absence FIRST, as the control.
  */
 
@@ -25,7 +25,8 @@ import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { createHash } from "node:crypto";
-import { openStagedJoinee, freePort, pinnedCarriageRelay, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -42,6 +43,7 @@ const LOCI  = "t.witness.blob";
 const LOCI_EARLY = "t.witness.early";
 const TITLE = `lar:///${LOCI}/photo`;
 const LARES_BAG = "lar:///ha.ka.ba/bags/lares";
+const WORKING_LARES = "lar:///ha.ka.ba/wikis/lares/working";
 
 const said = (r: { stdout: string; stderr: string }): string => `${r.stdout}\n${r.stderr}`;
 const casDirOf = (v: LarInstance): string => join(vesselStorageDir(v), "cas");
@@ -112,22 +114,17 @@ let joinGate = "";
 /** The cid the stager wrote on A — whichever derivation its `cid/` answers. */
 let cid = "";
 
-describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYTES follow? ★", () => {
+describe.skipIf(gaps.length > 0)("★ A’s live pointer stays local while B measures the byte door ★", () => {
   beforeAll(async () => {
-    // The joinee rite — one door in the harness. The carriage crossroads (Socket B) A stands and both dial —
-    // the fetch door's transport; the early LOAD lands on A before B stands.
-    const portRelay = await freePort();
-    const relay = await pinnedCarriageRelay(portRelay);
+    // The joinee rite — one door in the harness; the early LOAD lands on A before B stands.
     pair = await openStagedJoinee({
       tag: "blob",
-      daemonEnv:  { LAR_CARRIAGE_RELAY: relay.url },
-      daemonEnvA: { LAR_HERM_RELAY_PORT: String(portRelay), LAR_HERM_RELAY_SEED: relay.seedHex },
       beforeB: async (a) => {
         const earlyDir = join(a.root, "blob-stage/bags/lares", LOCI_EARLY);
         mkdirSync(earlyDir, { recursive: true });
         writeFileSync(join(earlyDir, "photo.png"), PNG_BYTES);
         writeFileSync(join(earlyDir, "photo.png.meta"), "type: image/png\n");
-        const early = await a.cli(["act", "LOAD", "--source-uri", earlyDir, "--to", LARES_BAG, "--yes", "--json"]);
+        const early = await a.cli(["act", "LOAD", "--source-uri", earlyDir, "--to", WORKING_LARES, "--yes", "--json"]);
         const earlyWhich = await a.cli(["wiki", "which", `lar:///${LOCI_EARLY}/photo`, "--no-json"]);
         console.error(`blob-follows-pointer MEASURE A (before B stands): LOAD ${early.json?.["ok"]} → wiki which: ${/primary:\s+(\S+)/.exec(earlyWhich.stdout)?.[1]}`);
       },
@@ -150,8 +147,9 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     mkdirSync(srcDir, { recursive: true });
     writeFileSync(join(srcDir, "photo.png"), PNG_BYTES);
     writeFileSync(join(srcDir, "photo.png.meta"), "type: image/png\n");
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", srcDir, "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "LOAD", "--source-uri", srcDir, "--to", WORKING_LARES, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const casA = listCas(A!);
     cid = casA.includes(CID_RAW) ? CID_RAW : casA.includes(CID_BASE64) ? CID_BASE64 : "";
     console.error(`blob-follows-pointer MEASURE A: LOAD → ${said(ld).trim().slice(0, 600)}\n  A cid/ (${casDirOf(A!)}): ${casA.length} blobs; raw-cid ${casA.includes(CID_RAW)} · base64-cid ${casA.includes(CID_BASE64)}`);
@@ -182,22 +180,13 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     expect(B!.bootLog()).toContain("[lar-leaf] verdict OK — crossing open, syncing");
   });
 
-  test("★ ⑦ on B: the RECORD crossed — B projects the POINTER (_is_skinny · textCid · _integrity, no text) ★", async () => {
-    // The CRDT read gates the crossing; the projection reads the fields the record carries.
-    const which = await awaitWhich(B!, 90_000);
-    console.error(`blob-follows-pointer MEASURE B: wiki which ${TITLE}\n${which.trim()}`);
-    expect(which, "the record did not cross — B's bag never answered the title").toContain(`  ${LARES_BAG}`);
-    expect(/primary:\s+(\S+)/.exec(which)?.[1]).toBe(LARES_BAG);
-    const deadline = Date.now() + 60_000;
-    let p = projectedPointer(B!.root);
-    while (!p && Date.now() < deadline) { await new Promise((r) => setTimeout(r, 1000)); p = projectedPointer(B!.root); }
-    console.error(`blob-follows-pointer MEASURE B: bags/lares tree: ${walk(join(B!.root, "bags/lares")).join(" · ") || "(empty)"}\n  pointer file: ${p?.file ?? "(none projected)"}\n  ${p ? JSON.stringify(p.fields) : ""}`);
-    if (p) {
-      expect(p.fields["textCid"]).toBe(cid);
-      expect(p.fields["_is_skinny"]).toBeDefined();
-      expect(p.fields["_integrity"]).toMatch(/^ni:\/\/\/sha-256;/);
-      expect(p.fields["text"]).toBeUndefined();
-    }
+  test("★ ⑦ MEASURE on B: A's live system pointer stays outside B's own lares book ★", async () => {
+    // W24/W27 owns the same-face BOOK crossing. B holds its own system doc and no record from A's live lares doc.
+    const which = await B!.cli(["wiki", "which", TITLE, "--no-json"]);
+    const pointer = projectedPointer(B!.root);
+    console.error(`blob-follows-pointer MEASURE B: wiki which ${TITLE}\n${which.stdout.trim()}\n  pointer file: ${pointer?.file ?? "(none projected)"}`);
+    expect(which.stdout).not.toContain(`  ${LARES_BAG}`);
+    expect(pointer).toBeNull();
   });
 
   test("⑦ MEASURE on B: what the cid/ dir, the projection, the boot log and `bag cas` say about the BYTES", async () => {
@@ -224,7 +213,7 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
   // the bytes usually stand in B's cid/ before any CLI read — that IS fetch-on-read through the worker's own
   // resolver, not a prefetch (the prefetch cap stays off). The explicit `bag cas --fetch` then reads
   // `held:true`; whichever door fired first is reported, never assumed.
-  test("★ the BYTES follow the pointer: a READ on B pulls the blob through the fetch door into its cid/ ★", async () => {
+  test("★ the BYTES stay behind the SHUT carriage: a READ on B answers held:false at the local-only door ★", async () => {
     const beforeRead = existsSync(join(casDirOf(B!), cid));
     console.error(`blob-follows-pointer MEASURE B: bytes on B before the CLI read (the island's own read fired?): ${beforeRead}`);
     const r = await B!.cli(["bag", "cas", "--fetch", cid, "--json"]);
@@ -232,9 +221,15 @@ describe.skipIf(gaps.length > 0)("★ a pointer crosses the fleet — do its BYT
     const carriageLines = (v: LarInstance): string => v.bootLog().split("\n").filter((l) => /\[carriage\]|fetch door|admit|delegation|cross-operator|same-operator|auth/.test(l)).slice(-14).join("\n    ");
     console.error(`blob-follows-pointer MEASURE A carriage:\n    ${carriageLines(A!)}\nblob-follows-pointer MEASURE B carriage:\n    ${carriageLines(B!)}`);
     expect(r.json?.["ok"], said(r)).toBe(true);
-    expect(r.json?.["data"] && (r.json["data"] as Record<string, unknown>)["held"]).toBe(true);
-    expect(existsSync(join(casDirOf(B!), cid))).toBe(true);
-    expect(createHash("sha256").update(readFileSync(join(casDirOf(B!), cid))).digest("hex")).toBe(cid);
+    // THE CARRIAGE SHIPS SHUT BY NAME (the shut-routes house ruling, stable-founding-road #/rulings: carriage peering ships
+    // SHUT; a closed route grants no silent authority). W24/W27 owns the BOOK crossing; B holds no live pointer
+    // from A. The carriage's fetch door has no gate-native caller, so the read answers "not held" and writes nothing. The witness
+    // is the door the read names.
+    const data = r.json?.["data"] as Record<string, unknown> | undefined;
+    expect(data?.["held"]).toBe(false);
+    expect(data?.["fetched"]).toBe(false);
+    expect(existsSync(join(casDirOf(B!), cid))).toBe(false);
+    expect(data?.["door"], "the read names the door it read through").toBe("local-only");
   }, 60_000);
 
   test("CONTROL: a cid no fleet holder carries stays PENDING — `held:false`, no fault, nothing written", async () => {

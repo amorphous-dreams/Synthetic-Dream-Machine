@@ -205,12 +205,12 @@ def test_singleton_independent_per_prefix(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     p = str(tmp_path / "shared")
     fh_ast = sc.acquire_serve_lock(p, "structurepalace_serve")
-    fh_form = sc.acquire_serve_lock(p, "form_encoder_serve")
+    fh_content = sc.acquire_serve_lock(p, "content_io_serve")
     try:
-        assert fh_ast is not None and fh_form is not None
+        assert fh_ast is not None and fh_content is not None
     finally:
         sc.release_lock(fh_ast)
-        sc.release_lock(fh_form)
+        sc.release_lock(fh_content)
 
 
 # ---------------------------------------------------------------------------

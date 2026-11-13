@@ -26,12 +26,12 @@ import {
   type LarDoc,
 } from "@lararium/mesh";
 import { identityShareDecision } from "@lararium/mesh";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 import { fixtureKey } from "./fixture-keys.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 const SHARED_GENESIS_SEED: GenesisSeed = {
-  format: "lararium-genesis-seed/v1",
+  format: "lararium-genesis-seed",
   actorSeed: "11".repeat(32),
   blobs: {},
   tiddlers: {},
@@ -92,14 +92,16 @@ describe("multiple-Nexus household proof", () => {
     for (const documentId of aBoards) {
       expect(await selfSlotShareDecision({
         hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
-        antigenRing: null, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
+        antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
+        shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
       })).toBe(true);
     }
     for (const documentId of [...bBoards, privateA]) {
       // This assertion is the mutation pin: replacing the gate with `() => true` must turn red.
       expect(await selfSlotShareDecision({
         hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateA,
-        antigenRing: null, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
+        antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: "foreign-peer", documentId,
+        shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
       })).toBe(false);
     }
   });
@@ -145,7 +147,8 @@ describe("multiple-Nexus household proof", () => {
     const gateB = new DeterministicFederationGate(NEXUS_B);
     expect(await selfSlotShareDecision({
       hasWsSocket: true, peerClass: "stranger", selfSlotFedGate: gateB,
-      antigenRing: null, membership: null, planeSeal: null, peerId: RELAY_A, documentId: docIdOf(crossroadsDocUrl(NEXUS_A)),
+      antigenRing: NO_BANS, membership: null, planeSeal: null, peerId: RELAY_A, documentId: docIdOf(crossroadsDocUrl(NEXUS_A)),
+      shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
     })).toBe(false);
     expect(bBoard.doc()?.tiddlers["lar:///household/b-state"]?.text).toBe("B-local-causal-state");
     await repo.shutdown();
@@ -153,7 +156,6 @@ describe("multiple-Nexus household proof", () => {
 
   test("FLOW remains a separate public projection: coarse public routes cross, private territory does not", async () => {
     const flowDoc: LarDoc = {
-      schemaVersion: "0.1",
       tiddlers: {
         "public-dial": { tiddler: { title: "public-dial", kind: "dial", scale: "nexus", endpoint: "ws://relay-a" } },
         "private-dial": { tiddler: { title: "private-dial", kind: "dial", endpoint: "ws://local-b" } },

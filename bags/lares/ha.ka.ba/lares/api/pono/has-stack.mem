@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/has-stack.mem"
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 13
 role      = "the has-stack law (kānāwai): nameless entity + composable component stack; single-entity components; relative-name qualification; rating-as-predicate; kapu as grant — ratified 2026-06-12"
 title     = "lar:///ha.ka.ba/lares/api/pono/has-stack"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -17,21 +13,19 @@ uri-path  = "ha.ka.ba/lares/api/pono/has-stack"
 written   = "2026-06-12"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Has-Stack — the composition law
 
 A carrier reads as a ''nameless entity'': essence lives nowhere; identity rides the address; meaning rides what the entity //wears// (its stack) and what its body //says//. Interfaces-and-implements ontology stands REJECTED whole cloth — no carrier //${copula}-a// anything; every carrier //has// things, and the carried things speak for themselves.
 
-TW5 speaks `has` natively: the `tags` field carries the stack, and a tag filter runs the type-predicate. This law governs that field's grammar; `meme` governs copy-shape; `loci` governs the address.
+TW5 speaks `has` natively: the `tags` field carries the stack, and a tag filter runs the type-predicate. This law governs that field's grammar; `meme` governs copy-shape; `lar-uri` governs address syntax and resolution.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the carrier's tags field and title before judging composition; gather which entries resolve, which stand declared-unresolved.
 ⏿ orient each entry against its definition meme; the carried thing carries the semantics, never the edge.
@@ -41,13 +35,13 @@ TW5 speaks `has` natively: the `tags` field carries the stack, and a tag filter 
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The Seven Clauses
 
 # ''One component, one entity.'' A component exists as exactly one carrier: its definition meme at its `lar:` address — self-describing, self-enacting memetic-wikitext. Shim or pointer tiddlers MUST NOT exist in the corpus at rest; any tag-tiddler a live wiki needs gets derived as `$:/temp` runtime shadow, never synced, never sited.
-# ''Short names read as relative addresses.'' Within a carrier scoped `root/@bag/version`, a path-shaped tag qualifies to `lar:///<scope>/<tag>` by derivation (the `loci` office), never by pointer. `lar:` tags pass through qualified; system (`$:/`) and free-form tags ride outside the stack. The meta `tags` field stands as the ''single source'' of the stack; body `#has` edges read as derived residue and burn at normalization.
-# ''The mandatory component rides the title.'' Every placed carrier holds exactly one intrinsic: its `lar:` address (`loci` — the transform analog). Everything else composes.
+# ''Short names read as relative addresses.'' Within a carrier scoped `root/@bag/version`, a path-shaped tag qualifies to `lar:///<scope>/<tag>` by derivation here, never by pointer. `lar:` tags pass through qualified; system (`$:/`) and free-form tags ride outside the stack. The meta `tags` field stands as the ''single source'' of the stack; body `#has` edges read as derived residue and burn at normalization.
+# ''The title carries identity.'' A placed carrier's `lar:` title names it. The address does not add a component to its has-stack; other components compose through tags.
 # ''Bare tags read fertile.'' A stack entry whose definition meme has not landed stands ''declared-unresolved'' — a lawful, promotable state, never an error. Promotion follows the rating ladder: bare entry (data-grade) → definition lands (meme) → definition carries law (ano). Open minting, judged by the ladder — never a schema registry. A fixed enum of blessed components in any law reads as the interface sneaking back; refuse it.
 # ''Families carry exclusivity.'' Component families (the directory grain) MAY declare arity in their own family meme — "at most one of mine per stack" or "many welcome." Arity semantics live in the carried family, never in the edge.
 # ''Kapu rides as a grant.'' A stack entry whose definition wears kapu MUST NOT self-add; the write shore refuses it without the operator's mint. Authority = what a carrier holds and who granted it, never what it //is//.
@@ -55,12 +49,12 @@ TW5 speaks `has` natively: the `tags` field carries the stack, and a tag filter 
 
 Runtime: `qualifyStackTag` / `stackOf` and the `stack` filter operator (`[stack[]]`, `[stack:has[<name>]]`).
 
-<<~ pranala #source from="?" -> to="packages/lararium-tw5/src/has-stack.ts" family="code" role="has">>
-<<~ pranala #source-filter from="?" -> to="packages/lararium-tw5/src/filters/stack.ts" family="code" role="has">>
+<<~ pranala slot=`#source` from=`?` to=`packages/lararium-tw5/src/has-stack.ts` family=`code` role=`has`>>
+<<~ pranala slot=`#source-filter` from=`?` to=`packages/lararium-tw5/src/filters/stack.ts` family=`code` role=`has`>>
 
 <<~/ahu>>
 
-<<~ ahu #/verse-binding>>
+<<~ ahu slot=`#/verse-binding`>>
 
 !! The Verse Marriage — witnessed bindings
 
@@ -70,7 +64,7 @@ Field-grounded against Epic's UEFN+/Scene Graph direction (2026-06-12, two resea
 |---|---|
 | entity (empty container) | nameless carrier |
 | component (sole semantics carrier) | component definition meme |
-| default transform component | `loci` — the mandatory address |
+| default transform component | the carrier title — identity outside the component stack |
 | type-as-predicate (succeeds/fails on a value) | tag filter / rating-by-schema-compliance |
 | effect specifiers as negative promises | grants bounding what a carrier never does |
 | non-enumerable `weak_map` persistence | capability-keyed access — authority = possession |
@@ -84,25 +78,25 @@ Field-grounded against Epic's UEFN+/Scene Graph direction (2026-06-12, two resea
 
 <<~/ahu>>
 
-<<~ ahu #/runtime-twin>>
+<<~ ahu slot=`#/runtime-twin`>>
 
 !! The runtime twin ~ a causal island runs as a nameless cap stack
 
 The has-stack law has a ''runtime mirror''. Where a DATA entity is a nameless carrier whose `tags` are a stack of component memes, a RUNTIME entity — a sovereign ''causal island'' worker — is a nameless behavior whose ''cap stack'' is its identity. No carrier //${copula}-a// "wiki worker" or "telemetry worker"; an island //has// caps, and the caps speak for themselves. `composeIsland([...caps])` (`tw5/island-caps.ts`) folds a `#has` cap stack into the one `IslandBehavior` the sovereign kernel drives.
 
-<<~ scale plane "data/tags→component-memes -> runtime/caps→IslandBehavior">>
+<<~ scale name=`plane` ranks=`data/tags→component-memes -> runtime/caps→IslandBehavior`>>
 
 The same grammar runs both planes: stack order carries precedence (a cap claims a signal before later caps; teardown mirrors LIFO), an absent/unresolved cap reads fertile not broken, and each cap injects its substrate shore (`role = capability ≠ platform`) so the same stack composes on node, browser, any vessel. The TW5 VM workers stand as cap stacks — wiki `[hasDispatch, hasProjection, …]`, admin `[hasEngineWatch, hasDispatch]`, telemetry `[hasCapture]` — each a nameless causal island.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/projection-nalu">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-isomorphism`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
 
 ''Tie ~ a palace IS its cap-stack.'' The runtime twin extends a third substrate: the nameless memory-
 palace daemon ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace#/palace-instance]]) ports `composeIsland` to Python — one body,
@@ -113,6 +107,6 @@ the py caps consume.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ocUIfw3GritdXANBwHXIgyfprQ1ZHGuWldtOJ_xhfFk
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D8cbqqO8pR2KKwqd0mK2-Cudn01OvFGZTtD983xK6FU`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

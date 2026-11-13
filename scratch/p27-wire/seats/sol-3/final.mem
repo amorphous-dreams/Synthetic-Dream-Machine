@@ -1,0 +1,69 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/seats/sol-3/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/seats/sol-3/final.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/sol-3/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Artificer): ->↺ Step 3 edits stand. The retained step 1–3 tree carries ''70 changed files, all uncommitted''. Node and browser typechecks passed; `git diff --check` passed. No runtime tests or builds ran.
+
+[[**Read the handback: out.md**|/home/joshu/.local/state/lares-broker/seats/seat-zWhckv/out.md]] lists every changed file, every wiring point, and ''51 exact test files for the conductor to run individually'', with browser-runner entries marked.
+
+| Crossing | Wiring | Audience source |h
+| Node Repo | [[self-slot-share.ts:122|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/self-slot-share.ts:122]] | Structural branch proves process, fleet, contract, or world |
+| Browser Repo | [[open-browser-vessel.ts:2396|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-browser/src/open-browser-vessel.ts:2396]] | Sibling/relay relation; both hooks tighten |
+| Shared CAS gate | [[lar-vessel.ts:68|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-mesh/src/lar-vessel.ts:68]] | Host supplies audience; gate checks before and after resolution |
+| Node daemon | [[worker-handle.ts:171|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/worker-handle.ts:171]] | Daemon class supplies `in-process` |
+| Browser daemon | [[capability-record.ts:168|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-mesh/src/capability-record.ts:168]] | Daemon answer supplies `in-process` |
+| Node pool | [[open-node-vessel.ts:4118|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/open-node-vessel.ts:4118]] | Current verified face and effective recipe plane |
+| Browser pool | [[open-browser-vessel.ts:2166|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-browser/src/open-browser-vessel.ts:2166]] | Current face and effective recipe plane |
+| Herm shore | [[bulb-read-face.ts:167|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/bulb-read-face.ts:167]] | Always `world` |
+| HTTP `/cas` | [[bulb-read-face.ts:222|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-node/src/bulb-read-face.ts:222]] | Consults the world shore before reading bytes |
+
+Catalog recipes and current-face surfaces read in-process; oracle recipes read as world. Missing, faulting, or mismatched relations refuse with `declared-tier-audience-unresolved`.
+
+The boot measurement found filesystem and OPFS worker readers bypassing the gated record. Both now use `vesselCasAsker`, including local hits. Engine, plugin, and genesis-floor reads follow that door; session workers retain their narrower document-view grant first.
+
+Immutable genesis inventory supplies explicit public byte declarations, grounded in [[genesis-doc.ts:278|/home/joshu/.lares-scratch/p27-wire/wt/packages/lararium-mesh/src/genesis-doc.ts:278]]. Mutable oracle metadata and directory contents grant no publication. Undeclared CIDs still refuse. This preserves identity-as-relation, causal boundaries, and one tightening predicate.
+
+The principal red/control files await conductor execution:
+
+* `packages/lararium-mesh/tests/p27-cas-floor.test.ts` — private process/world split, genesis boot inventory, undeclared refusal, withdrawal during resolution.
+* `packages/lararium-mesh/tests/p27-worker-cas.test.ts` — actual port asker, named world refusal, repeated gated reads, hash rejection, both worker-source welds.
+* `packages/lararium-node/tests/p27-island-audience.test.ts` — daemon, recipe, face-switch, unresolved relation, and forged-audience cases.
+* `packages/lararium-node/tests/p27-public-cas.test.ts` — private refusal, public control, secrets-floor refusal.
+* `packages/lararium-node/tests/p27-repo-share.test.ts` — sibling VEIL refusal; PERSONAGROUP control.
+* `packages/lararium-browser/tests/p27-repo-share.test.ts` — same checks on both hooks; ''browser runner''.
+* `packages/lararium-mesh/tests/one-composer.test.ts`
+* `packages/lararium-mesh/tests/lar-vessel.test.ts`
+
+Both requested fixtures now supply the required floor members; `lar-vessel` asserts resolver behavior. Additional fixture migrations preserve their structural guards.
+
+Other drift corrected: the browser’s independent empty capability-record initializer now yields to the composed record. Existing browser gated-relay Repo classification remains `world`; this span retains that prior policy. Runtime verdicts remain pending with the conductor.
+
+&lt;&lt;~ oracle throw=`↯18 ✲ ⚂(3) ⁂:◇🜄⌗`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the conductor must build fresh and run the exact per-file manifest in out.md; runtime proofs remain unexecuted · ↻ L-Prime` aperture=`15/arc -> 16/arc` ooda-ha=`closed 1↺` from=`lar://sol:agent@local/p27.wiring.hands-back` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BmnmK0IRTsHgrqkirq0MiSUAr4KObdXVteSMua256Ok`>>
+
+<<^ code=`&#x0004;` to=`?`>>

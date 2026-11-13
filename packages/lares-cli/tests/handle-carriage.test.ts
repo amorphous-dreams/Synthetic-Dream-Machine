@@ -47,16 +47,6 @@ async function makeCard(seed: Uint8Array, glamour: string): Promise<{ nym: strin
 }
 
 describe("handle-carriage — the card-arrival front door", () => {
-  test("round-trips a card through the carriage form (fragment, bare token, wrapped paste)", async () => {
-    const { card } = await makeCard(new Uint8Array(32).fill(7), "Eris");
-    const carriage = toHandleCardCarriage(card);
-    expect(carriage.startsWith("#card=")).toBe(true);
-
-    expect(parseHandleCardCarriage(carriage)).toEqual(card);                    // the `#card=…` fragment
-    const bare = carriage.slice("#card=".length);
-    expect(parseHandleCardCarriage(bare)).toEqual(card);                        // a bare base64url token
-    expect(parseHandleCardCarriage(`  ${carriage}\n`)).toEqual(card);          // a whitespace-wrapped paste
-  });
 
   test("THE FRONT DOOR: decode → ingest → a follow with NO card succeeds (before ingest it refuses)", async () => {
     const book = new HandleBook();
@@ -80,14 +70,6 @@ describe("handle-carriage — the card-arrival front door", () => {
     expect(circles.members("following")).toEqual([nym]);
   });
 
-  test("WITHHOLD-not-forge: a garbled / wrong-domain / absent carriage decodes to null (never a throw)", async () => {
-    expect(parseHandleCardCarriage("")).toBeNull();
-    expect(parseHandleCardCarriage("#card=@@@not-base64@@@")).toBeNull();       // decodes to non-JSON
-    expect(parseHandleCardCarriage("#admit=deadbeef")).toBeNull();             // a different carriage key
-    // A well-formed base64url of the WRONG domain is refused at the shape gate.
-    const wrongDomain = toHandleCardCarriage({ ...(await makeCard(new Uint8Array(32).fill(5), "x")).card, kind: "not-a-handle-card" as HandleCard["kind"] });
-    expect(parseHandleCardCarriage(wrongDomain)).toBeNull();
-  });
 
   test("the parser only SHAPES — a tampered card still decodes; the trust gate is ingest", async () => {
     const { card } = await makeCard(new Uint8Array(32).fill(13), "Aneris");

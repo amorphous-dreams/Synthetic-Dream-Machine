@@ -136,7 +136,8 @@ export interface CopyAction extends ResidencyActionBase {
 /** MOVE — atomic ADD to toBag + CLEAR title from fromBag (transfer pair). */
 export interface MoveAction extends ResidencyActionBase {
   readonly verb:        "MOVE";
-  readonly title:       string;
+  /** One family's root; absent, the MOVE promotes the WHOLE source layer (every live title) into toBag. */
+  readonly title?:      string;
   readonly fromBag:     string;
   readonly toBag:       string;
   readonly changeId:    string;
@@ -263,6 +264,11 @@ export interface IngestCarrier {
    *  integrity, no body) rather than materialize the body as a CRDT text field
    *  (content-resolution.mem Scenario B). */
   readonly skinny?:    boolean;
+  /** THE OVERRIDE BASE A CARRY RESTORES (`override-base.ts`): the carrier identity (`carrierHash`, `sha256:…`) of the
+   *  canon record a working copy forked from, as an export read it off the record's meta envelope. A wave into a wiki's working layer stamps it on the
+   *  record it lands under this title, so a bundle's override keeps its base across a re-founding. Absent for every
+   *  disk scan (a base never projects): the composite forks a fresh base where a copy lands over canon. */
+  readonly overrideBase?: string;
 }
 
 /** One vanished carrier riding an INGEST wave — a path gone from disk where a base stands. A gesture
@@ -280,8 +286,10 @@ export interface IngestDeletion {
  *  refuse · canonical-equivalent · ingest · conflict) and tombstones group
  *  members that vanished from the re-parsed carrier. A wave MAY also carry
  *  whole-carrier `deletions` (vanished files): the island re-links each unique
- *  hash-matched rename and declines the rest. No wave tombstones a carrier: a
- *  vanished file stands pending at the vessel's shore until a person answers. */
+ *  hash-matched rename and declines the rest. No wave tombstones a carrier for a
+ *  vanished file: it stands pending at the vessel's shore until a person answers. A
+ *  wave's `kapae` titles come from shadow files an export carries, the one explicit
+ *  exclusion a disk can speak: each raises a kāpae in the target bag. */
 export interface IngestAction extends ResidencyActionBase {
   readonly verb:      "INGEST";
   readonly sourceUri: string;
@@ -289,10 +297,22 @@ export interface IngestAction extends ResidencyActionBase {
   readonly changeId:  string;
   readonly carriers:  readonly IngestCarrier[];
   readonly deletions?: readonly IngestDeletion[];
+  /** THE EXPLICIT SHADOW GESTURE: the carrier-root titles an export's kāpae shadow files name
+   *  (`<stem>.kapae`, lar:///ha.ka.ba/lares/api/pono/kapae). Unlike a vanished file, a shadow file
+   *  speaks: the island raises a kāpae over each title in the target bag, and a carrier the same wave
+   *  names under a shadowed title never lands (remove-wins). */
+  readonly kapae?: readonly string[];
   /** NO PERSON STANDS BEHIND THIS WAVE: a watcher settled it by itself. Such a wave never adopts a file
    *  that holds no base over records that say something else; the gate answers `conflict`, `no-base`,
    *  and a person settles it. Absent → a gesture a person named. */
   readonly unattended?: boolean;
+  /**
+   * THE FACE-NAMED WAVE (the lit set): the handle index of the face whose OWN layer this wave lands in. The handler resolves
+   * that face's document through the island's face resolver and lands only where the vessel's device table names THAT face
+   * as the document's owner; it never falls back to the worn face. Absent → the worn face's layer, and a target whose owner
+   * names another face refuses.
+   */
+  readonly face?: number;
 }
 
 export type ResidencyAction =
@@ -354,7 +374,7 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
     case "COPY":
     case "MOVE":
       return {
-        title:        action.title,
+        ...(action.title !== undefined ? { title: action.title } : {}),
         "from-bag":   action.fromBag,
         "to-bag":     action.toBag,
         "change-id":  action.changeId,
@@ -379,7 +399,9 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
         "change-id":  action.changeId,
         carriers:     action.carriers,
         ...(action.deletions ? { deletions: action.deletions } : {}),
+        ...(action.kapae ? { kapae: action.kapae } : {}),
         ...(action.unattended === true ? { unattended: true } : {}),
+        ...(action.face !== undefined ? { face: action.face } : {}),
       };
     default: {
       // Exhaustiveness guard: a new ResidencyAction variant that lands here without a case
@@ -417,10 +439,15 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
     const fromBag  = str("from-bag");
     const toBag    = str("to-bag");
     const changeId = str("change-id");
-    if (!title || !fromBag || !toBag || !changeId) return null;
+    if (!fromBag || !toBag || !changeId) return null;
     const shadow = inv.action === "MOVE" && args["shadow"] === true ? { shadow: true as const } : {};
     // The shadow ask rides a MOVE alone, and only as `true`.
     if (args["shadow"] !== undefined && (inv.action !== "MOVE" || args["shadow"] !== true)) return null;
+    // A MOVE with no title promotes the whole source layer; a shadow ask names one title. ADD and COPY name one.
+    if (!title) {
+      if (inv.action !== "MOVE" || args["title"] !== undefined || args["shadow"] !== undefined) return null;
+      return { ...base, verb: "MOVE", fromBag, toBag, changeId };
+    }
     return { ...base, verb: inv.action, title, fromBag, toBag, changeId, ...shadow };
   }
 
@@ -442,7 +469,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       for (const c of rawCarriers) {
         if (!c || typeof c !== "object") return null;
         const o = c as Record<string, unknown>;
-        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"];
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"]; const overrideBase = o["overrideBase"];
         if (typeof uri !== "string" || !uri) return null;
         if (file !== undefined && typeof file !== "string") return null;
         // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
@@ -458,7 +485,8 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         if (meta !== undefined && typeof meta !== "string") return null;
         if (size !== undefined && typeof size !== "number") return null;
         if (skinny !== undefined && typeof skinny !== "boolean") return null;
-        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}) });
+        if (overrideBase !== undefined && (typeof overrideBase !== "string" || !/^sha256:[0-9a-f]{64}$/.test(overrideBase))) return null;
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}), ...(typeof overrideBase === "string" ? { overrideBase } : {}) });
       }
     }
     const deletions: IngestDeletion[] = [];
@@ -474,16 +502,30 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         deletions.push({ uri, syncedHash });
       }
     }
-    // A wave MUST carry at least one carrier or one deletion.
-    if (carriers.length === 0 && deletions.length === 0) return null;
+    const kapae: string[] = [];
+    const rawKapae = args["kapae"];
+    if (rawKapae !== undefined) {
+      if (!Array.isArray(rawKapae)) return null;
+      for (const t of rawKapae) {
+        if (typeof t !== "string" || !t) return null;
+        kapae.push(t);
+      }
+    }
+    // A wave MUST carry at least one carrier, one deletion or one kāpae.
+    if (carriers.length === 0 && deletions.length === 0 && kapae.length === 0) return null;
     // The flag reads true or absent: any other spelling refuses, since a wave that MEANT to ride
     // unattended and read as a person's gesture would adopt where it must stand off.
     const unattended = args["unattended"];
     if (unattended !== undefined && unattended !== true) return null;
+    // A named face reads as a whole handle index; any other spelling refuses rather than land on a face nobody named.
+    const face = args["face"];
+    if (face !== undefined && (typeof face !== "number" || !Number.isSafeInteger(face) || face < 0)) return null;
     return {
       ...base, verb: "INGEST", sourceUri, toBag, changeId, carriers,
       ...(deletions.length > 0 ? { deletions } : {}),
+      ...(kapae.length > 0 ? { kapae } : {}),
       ...(unattended === true ? { unattended: true } : {}),
+      ...(typeof face === "number" ? { face } : {}),
     };
   }
 

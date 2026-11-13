@@ -6,6 +6,8 @@
 import type { VesselWorkerHandle } from "@lararium/mesh";
 
 export function browserWorkerHandle(w: Worker): VesselWorkerHandle {
+  // A browser Worker gives no exit event: the exit this handle names is the one its own terminate makes.
+  const exits = new Set<(why: string) => void>();
   return {
     post: (msg, transfer) => w.postMessage(msg, (transfer ?? []) as Transferable[]),
     listen: (cb) => {
@@ -24,7 +26,12 @@ export function browserWorkerHandle(w: Worker): VesselWorkerHandle {
       w.addEventListener("error", fn);
       return () => w.removeEventListener("error", fn);
     },
-    terminate: () => w.terminate(),
+    onExit: (cb) => { exits.add(cb); return () => { exits.delete(cb); }; },
+    terminate: () => {
+      w.terminate();
+      const heard = [...exits]; exits.clear();
+      for (const cb of heard) cb("the island exited (terminated)");
+    },
   };
 }
 

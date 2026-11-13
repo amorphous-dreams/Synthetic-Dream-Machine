@@ -315,11 +315,13 @@ describe("claimStore — one holder at every instant", () => {
   });
 
   it("CONTROL: a parked caller still inside its own deadline is served once handOver runs", async () => {
-    const claim = await claimStore(dir, { holder: "vessel" });
+    let parkedIt!: () => void;
+    const parkedFirst = new Promise<void>((resolve) => { parkedIt = resolve; });
+    const claim = await claimStore(dir, { holder: "vessel", onPark: () => parkedIt() });
     try {
       let ran = false;
       const asked = ask(socketOf(dir), { verb: "nexus-kapae", requestedBy: "did:test", timeoutMs: 20_000 });
-      await new Promise((r) => setTimeout(r, 10));                 // well short of its 20s deadline
+      await parkedFirst;                                           // the claim's own park event, not a timer
       claim.serve((sock) => {
         ran = true;
         sock.setEncoding("utf8");
@@ -432,9 +434,42 @@ describe("ownedStore — crash-atomic saves", () => {
     expect(tears).toEqual([]);
   });
 
+  // A stock Repo's constructor starts its own storage-id read beside the caller's; on a fresh dir both save an id,
+  // and the constructor's save, awaited by no one, can land after the fault arms and reject unhandled. A seeded id
+  // means neither read saves, so the fault meets only the chunk writes the control plants it for.
+  async function seedStorageId(): Promise<void> {
+    const seed = new Repo({ storage: new NodeFSStorageAdapter(dir) });
+    await seed.storageId();
+    await seed.shutdown();
+  }
+
+  it("a seeded storage id leaves the stock Repo's construction no id to save", async () => {
+    const saves = (adapter: NodeFSStorageAdapter): string[][] => {
+      const keys: string[][] = [];
+      const real = adapter.save.bind(adapter);
+      adapter.save = async (key, data) => { keys.push([...key]); await real(key, data); };
+      return keys;
+    };
+    const fresh = new NodeFSStorageAdapter(join(dir, "fresh"));
+    const freshKeys = saves(fresh);
+    const a = new Repo({ storage: fresh });
+    await a.storageId();
+    await a.shutdown();
+    expect(freshKeys.filter((k) => k[0] === "storage-adapter-id").length).toBeGreaterThan(0);   // CONTROL: a fresh dir saves one
+
+    await seedStorageId();
+    const seeded = new NodeFSStorageAdapter(dir);
+    const seededKeys = saves(seeded);
+    const b = new Repo({ storage: seeded });
+    await b.storageId();
+    await b.shutdown();
+    expect(seededKeys.filter((k) => k[0] === "storage-adapter-id")).toEqual([]);
+  });
+
   it("CONTROL (planted known positive): the stock adapter under the same fault tears a chunk", async () => {
+    await seedStorageId();                        // no id save stays in flight when the disk fails
     const repo = new Repo({ storage: new NodeFSStorageAdapter(dir) });
-    await repo.storageId();                       // the store's own id lands before the disk fails
+    await repo.storageId();
     const fault = await armMidChunkFault();
     let tears: string[] = [];
     try {
@@ -448,5 +483,31 @@ describe("ownedStore — crash-atomic saves", () => {
     }
     expect(fault.attempted.length).toBeGreaterThan(0);
     expect(tears.length).toBeGreaterThan(0);
+  });
+});
+
+describe("ownedStore — T2: the direct holder never writes clear over a sealed rest", () => {
+  it("a document whose rest holds a sealed value takes no clear byte from the direct holder; an unsealed document still writes (control)", async () => {
+    const { DurableNodeFSStorageAdapter } = await import("../src/durable-storage-adapter.js");
+    const A = await import("@automerge/automerge");
+    // A sealed bag's document at rest: the vessel's store left a pointer to its sealed value, and no clear byte.
+    const sealedDoc = "4NMNnkMhL8jXrxRQAdy5DpbKHvBg";
+    const seed = new DurableNodeFSStorageAdapter(dir);
+    await seed.save([sealedDoc, "snapshot", "aa".repeat(32)], new TextEncoder().encode(`lares-sealed-value:${"b".repeat(64)}`));
+    await seed.close();
+    const clearOf = () => readdirSync(dir, { recursive: true }).map(String).filter((p) => p.includes(sealedDoc.slice(2)) || p.includes(sealedDoc));
+    const before = clearOf().length;
+    let wrote: unknown = null;
+    await ownedStore(dir, async (repo) => {
+      try { const h = repo.import<{ n?: number }>(A.save(A.from({ n: 1 })), { docId: sealedDoc as never }); h.change((d) => { d.n = 2; }); await repo.flush(); }
+      catch (e) { wrote = e; }
+      const plain = repo.create<{ n: number }>({ n: 3 });
+      await repo.flush();
+      return plain.url;
+    }).catch((e: unknown) => { wrote = e; });
+    // No new chunk landed beside the sealed value.
+    expect(clearOf().length).toBe(before);
+    const named = (e: unknown): string => [String((e as { refusal?: string })?.refusal ?? e), ...((e as { errors?: unknown[] })?.errors ?? []).map(named)].join(" ");
+    expect(named(wrote)).toMatch(/bag-unmapped/);
   });
 });

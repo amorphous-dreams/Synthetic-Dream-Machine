@@ -24,7 +24,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { rewindThenFork, type WorldlineEdgeTriple, type WorldlineEdgeClose, type RewindThenForkResult } from "@lararium/mesh";
 import { resolveMempalacePython } from "@lararium/mempalace";
 import { resolveHolderCapEnv } from "@lararium/mempalace";
-import { memorySensoriumDir } from "@lararium/mempalace/xdg-base";
+import { memorySensoriumDir } from "@lararium/mempalace/house-root";
 
 /** Raised when python / `kg_io.py` are absent — the caller renders a clean error. */
 export class KgUnavailable extends Error {}
@@ -80,7 +80,7 @@ function resolve(opts: WorldlineKgOptions): Resolved {
       return execFileSync(bin, [...args], { cwd: submoduleRoot, env: pyEnv, maxBuffer: 1 << 28, encoding: "utf8" });
     });
   const py = opts.python ?? resolveMempalacePython() ?? "";
-  if (!py) throw new KgUnavailable("no python holds mempalace — create ~/.venv and pip install the holder deps (`lares vessel stand --install`)");
+  if (!py) throw new KgUnavailable("no python holds mempalace — create ~/.venv and pip install the holder deps (`lares mempalace install`)");
   const script = opts.script ?? resolveKgIo();
   if (!existsSync(script)) throw new KgUnavailable(`kg_io.py missing at ${script}`);
   // The KG lands SOVEREIGN — `<memory>/knowledge_graph.sqlite3`, beside the fork-DAG's own

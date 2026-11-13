@@ -46,6 +46,19 @@ const landing = async (o: SubmitIngestOpts): Promise<SubmitResult> => ({
   results: { [VERB_RESULT_KEY]: { ok: true, output: { carriers: o.candidates.map((c) => ({ uri: c.uri, decision: "ingest", grade: "clean", landed: 1 })) } } },
 }) as SubmitResult;
 
+describe("take-disk follows the standoff's selected store", () => {
+  test("secret-shaped titles stay ordinary content when the selected store is an ordinary bag", async () => {
+    for (const uri of ["lar:///ha.ka.ba/bags/persona/group-secret/abc", "lar:///ha.ka.ba/bags/daemon/cap/0123456789abcdef01234567/deadbeef"]) {
+      const s = standing("record.tid", "words\n", uri);
+      const taken = await takeDisk({ uri, key: KEY }, s.deps(landing));
+      expect(taken, uri).toMatchObject({ ok: true, uri, bag: BAG });
+      expect(s.waves).toHaveLength(1);
+      expect(s.waves[0]!.toBag).toBe(BAG);
+      rmSync(tmp, { recursive: true, force: true }); tmp = "";
+    }
+  });
+});
+
 describe("take-disk answers at the island that listed the standoff", () => {
   test("a key two islands list refuses by name, and no wave leaves the door", async () => {
     const uri = "lar:///ha.ka.ba/x/twice";

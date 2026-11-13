@@ -22,14 +22,14 @@ const CARRIER = "text/memetic-wikitext+tiddlywiki";
 
 /** A framed carrier over an authored body (the meta stays outside the body, as the frame law reads it). */
 const carrier = (body: string, uri = URI): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n\`\`\`\n\n` +
-  `${body}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice(7)}"\n\`\`\`\n\n` +
+  `${body}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
-const SOUND = "<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<~ ahu #/b>>\n\n! b\n\n<<~/ahu>>";
+const SOUND = "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\n<<~ ahu slot=`#/b`>>\n\n! b\n\n<<~/ahu>>";
 /** One ahu's closer gone: `#/b` never closes — a MISSING closer in the family split. */
-const UNCLOSED = "<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\n<<~ ahu #/b>>\n\n! b";
+const UNCLOSED = "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\n<<~ ahu slot=`#/b`>>\n\n! b";
 /** A closer no opener claims — an ERROR in the family split. */
-const ORPHAN = "<<~ ahu #/a>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>";
+const ORPHAN = "<<~ ahu slot=`#/a`>>\n\n! a\n\n<<~/ahu>>\n\nstray prose\n\n<<~/ahu>>";
 
 /** A Map-backed sink with a rail, so the surfacing is observable. */
 function mapSink() {
@@ -100,7 +100,7 @@ describe("★ the quoteblock floor fences a whole un-decomposable chunk at the i
   });
 
   test("CONTROL: a torn frame still REFUSES — no fence repairs a tear", async () => {
-    const torn = carrier(UNCLOSED).replace(`<<^ code="&#x0003;">>\n\n`, "");
+    const torn = carrier(UNCLOSED).replace(`<<^ code=\`&#x0003;\`>>\n\n`, "");
     expect(verdict(torn).kind).toBe("torn");
     const { store, alerts, sink } = mapSink();
     const receipt = await placeMeme({ uri: URI, text: torn }, sink);
@@ -115,7 +115,7 @@ describe("★ the quoteblock floor fences a whole un-decomposable chunk at the i
     const receipt = await placeMeme({ uri: URI, text: carrier(SOUND) }, sink);
     expect(receipt.decision).toBe("ingest");
     expect(receipt.landed).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
-    expect(String(store.get(URI)!["text"])).toBe("<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>");
+    expect(String(store.get(URI)!["text"])).toBe("<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>");
     expect(receipt.diagnostics.map((d) => d.code)).not.toContain(QUOTEBLOCKED_CODE);
     expect(receipt.warnings).toEqual([]);
     expect(alerts).toEqual([null]);
@@ -177,13 +177,13 @@ describe("★ the stock-syncer path lands the fenced chunk and never refuses; th
   test("CONTROL: the child gate's in-place grain is unchanged — ONE ahu body fences, the family and the root's refs stand", async () => {
     await placeMeme({ uri: URI, text: carrier(SOUND) }, wikiMemeSink(wiki));
     await settle();
-    const unclosed = "! a\n\n<<~ ahu #/a/z>>\n\nnever closes";
+    const unclosed = "! a\n\n<<~ ahu slot=`#/a/z`>>\n\nnever closes";
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: unclosed });
     await settle();
     await settle();
     expect(String(wiki.store.get(`${URI}#/a`)!["text"])).toBe(quoteblockFence(unclosed));
     expect(String(wiki.store.get(`${URI}#/b`)!["text"])).toBe("! b");
-    expect(String(wiki.store.get(URI)!["text"])).toBe("<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>");
+    expect(String(wiki.store.get(URI)!["text"])).toBe("<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>");
     expect(String(wiki.store.get(memeAlertTitle(URI))?.["child"])).toBe(`${URI}#/a`);
   });
 });

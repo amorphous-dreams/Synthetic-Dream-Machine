@@ -35,9 +35,9 @@ const uriOf = (i: number) => `lar:///ha.ka.ba/lares/api/note-${String(i).padStar
 
 /** A framed meme in a hand's own framing: an unsorted meta block and a wide margin. Its render differs from its bytes. */
 const framed = (i: number): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uriOf(i)}">>\n<<^ code="&#x0002;">>\n\n` +
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uriOf(i)}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\nzeta = \"last\"\nalpha = \"first\"\nuri-path = \"" + uriOf(i).slice("lar:///".length) + "\"\n```\n\n\n\n" +
-  `body ${i}\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `body ${i}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** `n` carriers: a framed meme each, but every `plainEvery`-th one a frameless note the pure door cannot read. */
 function seed(n: number, plainEvery = 0): { tree: SyncedTree; candidates: ScanRow[] } {

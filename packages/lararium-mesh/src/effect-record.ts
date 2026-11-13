@@ -63,6 +63,21 @@ export function isArchivalVerb(verb: string): verb is ArchivalVerb {
 /** Tag carried by every effect-record tiddler in the bag's residency ledger. */
 export const LARES_EFFECT_RECORD_TAG = stableTagUri("lares-effect-record");
 
+/** Recognize an audit record by its declared record shape, independently of its address. */
+export function hasEffectRecordKind(fields: Record<string, unknown>): boolean {
+  const tags = fields["tags"];
+  const tagged = typeof tags === "string" ? tags.split(/\s+/).includes(LARES_EFFECT_RECORD_TAG)
+    : Array.isArray(tags) && tags.includes(LARES_EFFECT_RECORD_TAG);
+  return tagged
+    && typeof fields["event-id"] === "string" && fields["event-id"] !== ""
+    && typeof fields["request-id"] === "string" && fields["request-id"] !== ""
+    && typeof fields["bag"] === "string" && fields["bag"] !== ""
+    && typeof fields["actor"] === "string" && fields["actor"] !== ""
+    && typeof fields["timestamp"] === "string" && fields["timestamp"] !== ""
+    && typeof fields["action-verb"] === "string" && fields["action-verb"] !== ""
+    && typeof fields["archival-verb"] === "string" && isArchivalVerb(fields["archival-verb"]);
+}
+
 // ── URI shape ───────────────────────────────────────────────────────────────
 
 /** `lar:///ha.ka.ba/bags/<bag>/ledger/residency/` — residency-ledger prefix for one bag. */
@@ -289,18 +304,20 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
         reason:       "copy-overwrite",
       }];
     case "MOVE": {
+      // A layer MOVE names no title: its rows name the bags alone.
+      const titled: { tiddlerTitle?: string } = action.title !== undefined ? { tiddlerTitle: action.title } : {};
       const summary = opts?.result && typeof opts.result === "object" ? opts.result as Record<string, unknown> : {};
       if (summary["carried"] === "tombstone") {
         const shadow = summary["shadow"] === true;
         return [
           {
             ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.toBag,
-            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            ...titled, changeId: action.changeId, sourceBag: action.fromBag,
             destBag: action.toBag, disposition: `${shadow ? "shadowed" : "deleted"}-by-move-from:${action.fromBag}`,
           },
           {
             ...base, eventId: newId(), archivalVerb: "deaccession", bag: action.fromBag,
-            tiddlerTitle: action.title, changeId: action.changeId, sourceBag: action.fromBag,
+            ...titled, changeId: action.changeId, sourceBag: action.fromBag,
             destBag: action.toBag, disposition: `transferred-to:${action.toBag}`,
           },
         ];
@@ -312,7 +329,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
           eventId:      newId(),
           archivalVerb: "accession",
           bag:          action.toBag,
-          tiddlerTitle: action.title,
+          ...titled,
           changeId:     action.changeId,
           sourceBag:    action.fromBag,
           destBag:      action.toBag,
@@ -323,7 +340,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
           eventId:      newId(),
           archivalVerb: "deaccession",
           bag:          action.fromBag,
-          tiddlerTitle: action.title,
+          ...titled,
           changeId:     action.changeId,
           sourceBag:    action.fromBag,
           destBag:      action.toBag,
@@ -376,7 +393,7 @@ export function mapActionToEffects(action: ResidencyAction, opts?: MapOptions): 
         eventId:      newId(),
         archivalVerb: "creation",
         bag:          action.bag,
-        reason:       `bag minted in @${action.plane} plane`,
+        reason:       `bag minted in the ${action.plane} plane`,
       }];
   }
 }

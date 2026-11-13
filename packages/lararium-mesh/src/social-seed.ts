@@ -3,7 +3,7 @@
  *
  * Exports:
  *   seedLaresDoc          — create the ba satellite doc on first boot
- * A PLACE seeds the daemon bag alone. A FACE seeds its own four planes, each under the id its PersonaGroup's
+ * A PLACE seeds the daemon bag alone. A FACE seeds its own five planes, each under the id its PersonaGroup's
  * tag derives (`personaScopedBagIds`) — so the caller passes the bag id in rather than reading a constant,
  * and a vessel holding a multitude keeps one set of relations per face instead of one per machine.
  */
@@ -16,6 +16,7 @@ import {
   emptyIdentitiesDoc,
   emptyCirclesDoc,
   emptySessionsDoc,
+  emptyIntentsDoc,
   storedLarRecord,
   circleTiddlerUri,
 } from "@lararium/mesh";
@@ -69,6 +70,14 @@ export function seedSessionsDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
     doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
   });
   console.log(`[social-seed] SessionsDoc seeded  url=${handle.url}`);
+  return handle;
+}
+
+export function seedIntentsDoc(repo: Repo, bagId: string): DocHandle<LarDoc> {
+  const handle = repo.create<LarDoc>(emptyIntentsDoc());
+  handle.change((doc) => {
+    doc.tiddlers[bagId] = storedLarRecord(bagId, { text: handle.url }, "lararium-seed");
+  });
   return handle;
 }
 

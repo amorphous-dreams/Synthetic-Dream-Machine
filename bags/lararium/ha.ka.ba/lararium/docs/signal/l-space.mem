@@ -1,23 +1,19 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/docs/signal/l-space">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/docs/signal/l-space`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lararium/ha.ka.ba/lararium/docs/signal/l-space.mem"
 l-space   = "stable"
-mana      = 17
-manao     = 17
-manaoio   = 18
 role      = "docs room for definitional lar l-space semantics and address-slot framing"
-tags      = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci"]
+tags      = ["lar:///ha.ka.ba/lares/api/pono/meme"]
 title     = "lar:///ha.ka.ba/lararium/docs/signal/l-space"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lararium/docs/signal/l-space"
 ```
 
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Lararium Signal — l-space
 
@@ -26,7 +22,7 @@ This room holds definitional docs for `lar` URI l-space.
 
 <<~/ahu>>
 
-<<~ ahu #/l-space-definition>>
+<<~ ahu slot=`#/l-space-definition`>>
 
 !! l-space Definition
 
@@ -61,16 +57,16 @@ Working definition:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/hud">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/signal/render-targets">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/hud`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/signal/render-targets`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;3oMGVaro1VTCpVckosaeKWi8jY1SI6FxOq8YGGTtsQ0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TjeVUbu37umsJyNHfJ5uogeLYgsD7UjrfiZxh0zYC5o`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -18,6 +18,7 @@ import {
   emptyLarDoc, mutableLarRecord,
   type EdgeKapae, type EdgeRollAnchor, type EdgeCharter, type EdgeAuthority, type EdgeHand, type LarDoc, type CabalInvite,
 } from "../src/index.js";
+import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, signSeatRoll, type SeatRoll, type SignedSeatRoll } from "../src/index.js";
 import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
 import type { SealEpoch } from "../src/wax-stamp.js";
 import { seatedCharter, charterSeatSeeds } from "./charter-fixture.js";
@@ -473,10 +474,11 @@ describe("acts only accrete — the reader keeps what it counted", () => {
     expect(again.readings.get(EDGE)?.verdict).toBe("held");
     expect(again.missing.anchors).toHaveLength(1);
     expect(again.readings.get(EDGE)?.raiseCids).toEqual([up.actCid]);
-    expect(rolledRaises(ledger, SCOPE).size).toBe(0);
-    markRaiseRolled(ledger, SCOPE, up.actCid);
-    markRaiseRolled(ledger, SCOPE, up.actCid);
-    expect(rolledRaises(ledger, SCOPE)).toEqual(new Set([up.actCid]));
+    const key = await ed25519VerifyingKeyFromSeed(OWN_SEED);
+    expect(rolledRaises(ledger, SCOPE, key).size).toBe(0);
+    markRaiseRolled(ledger, SCOPE, up.actCid, await ownRoll(up.actCid, EDGE, "revoked"), key);
+    markRaiseRolled(ledger, SCOPE, up.actCid, await ownRoll(up.actCid, EDGE, "revoked"), key);
+    expect(rolledRaises(ledger, SCOPE, key)).toEqual(new Set([up.actCid]));
     expect(ledgerScopes(ledger)).toEqual([SCOPE]);
     expect(ledgerScopes(emptyLarDoc())).toEqual([]);
   });
@@ -595,31 +597,35 @@ describe("edge standing", () => {
   });
 });
 
+/** This vessel's own seed: its island signs each roll's receipt with it (road `T33`). */
+const OWN_SEED = new Uint8Array(32).fill(0x31);
+const ownRoll = (cid: string, edgeId: string, how: SeatRoll["how"], seat?: { group: string; member: string }): Promise<SignedSeatRoll> =>
+  signSeatRoll({ kind: "seat-roll", scope: SCOPE, edgeId, raiseCids: [cid], how, ...(seat ? { seat } : {}) }, ed25519SignerFromSeed(OWN_SEED));
+
 describe("the ledger keeps each roll beside its mark", () => {
   test("a marked raise reads back as the roll the vessel kept, and the first answer stands", async () => {
     const up = await holderAct(EDGE, true), other = await holderAct("e2".repeat(32), true);
+    const key = await ed25519VerifyingKeyFromSeed(OWN_SEED);
     const ledger = emptyLarDoc();
     const seat = { group: "0xgroup", member: "0xmember" };
-    markRaiseRolled(ledger, SCOPE, up.actCid, { edgeId: EDGE, how: "revoked", seat });
-    markRaiseRolled(ledger, SCOPE, up.actCid, { edgeId: EDGE, how: "gone" });
-    markRaiseRolled(ledger, SCOPE, other.actCid, { edgeId: "e2".repeat(32), how: "no-authority" });
-    const kept = keptSeatRolls(ledger, SCOPE);
+    const first = await ownRoll(up.actCid, EDGE, "revoked", seat);
+    markRaiseRolled(ledger, SCOPE, up.actCid, first, key);
+    markRaiseRolled(ledger, SCOPE, up.actCid, await ownRoll(up.actCid, EDGE, "gone"), key);
+    markRaiseRolled(ledger, SCOPE, other.actCid, await ownRoll(other.actCid, "e2".repeat(32), "no-authority"), key);
+    const kept = keptSeatRolls(ledger, SCOPE, key);
     expect(kept).toHaveLength(2);
-    expect(kept.find((r) => r.raiseCids[0] === up.actCid)).toEqual({ kind: "seat-roll", scope: SCOPE, edgeId: EDGE, raiseCids: [up.actCid], how: "revoked", seat });
+    expect(kept.find((r) => r.raiseCids[0] === up.actCid)).toEqual(first);
     expect(kept.find((r) => r.raiseCids[0] === other.actCid)?.how).toBe("no-authority");
     // One step up: a raise answered with no authority takes the later answer once its seat leaves, and reads
     // as owed until then.
-    expect(raisesSeenThrough(ledger, SCOPE)).toEqual(new Set([up.actCid]));
-    markRaiseRolled(ledger, SCOPE, other.actCid, { edgeId: "e2".repeat(32), how: "gone" });
-    expect(raisesSeenThrough(ledger, SCOPE)).toEqual(new Set([up.actCid, other.actCid]));
-    markRaiseRolled(ledger, SCOPE, other.actCid, { edgeId: "e2".repeat(32), how: "no-authority" });
-    expect(keptSeatRolls(ledger, SCOPE).find((r) => r.raiseCids[0] === other.actCid)?.how).toBe("gone");
-    // CONTROL: another board's rolls stay apart, and a bare mark names a raise as answered with no roll to read.
-    expect(keptSeatRolls(ledger, "cd".repeat(32))).toEqual([]);
-    const bare = emptyLarDoc();
-    markRaiseRolled(bare, SCOPE, up.actCid);
-    expect(rolledRaises(bare, SCOPE)).toEqual(new Set([up.actCid]));
-    expect(keptSeatRolls(bare, SCOPE)).toEqual([]);
+    expect(raisesSeenThrough(ledger, SCOPE, key)).toEqual(new Set([up.actCid]));
+    markRaiseRolled(ledger, SCOPE, other.actCid, await ownRoll(other.actCid, "e2".repeat(32), "gone"), key);
+    expect(raisesSeenThrough(ledger, SCOPE, key)).toEqual(new Set([up.actCid, other.actCid]));
+    markRaiseRolled(ledger, SCOPE, other.actCid, await ownRoll(other.actCid, "e2".repeat(32), "no-authority"), key);
+    expect(keptSeatRolls(ledger, SCOPE, key).find((r) => r.raiseCids[0] === other.actCid)?.how).toBe("gone");
+    // CONTROL: another board's rolls stay apart, and another key reads none of this vessel's marks.
+    expect(keptSeatRolls(ledger, "cd".repeat(32), key)).toEqual([]);
+    expect(rolledRaises(ledger, SCOPE, await ed25519VerifyingKeyFromSeed(new Uint8Array(32).fill(0x77))).size).toBe(0);
   });
 
   test("a lifted raise this vessel has not answered reads owing, and returned once it has", async () => {

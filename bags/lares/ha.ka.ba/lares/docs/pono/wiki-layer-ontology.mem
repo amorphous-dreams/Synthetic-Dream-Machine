@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/wiki-layer-ontology.mem"
 l-space   = "stable"
-mana      = 14
-manao     = 14
-manaoio   = 13
 role      = "doctrine: the wiki layer stack in OCI-aligned nouns — library layers / write layer / instance mounts; named⇒shareable vs typed-slot⇒owned; only the write layer crosses (motion rides ACTION verbs, never VCS verbs); writes flow through the layer's own wiki; recipe DAG; the wiki-as-bag quine; transitive closure held open; the ALPHA TRANSITION (#/alpha-transition) — why the tree does not yet wear the shore: `bags/` survives because the substrate gets paved, three roles ride it and only the hand-edit door retires, the standing carriers stay put, the window carries the risk and the weld lands last"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
@@ -17,11 +13,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wiki-layer-ontology"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wiki-Layer Ontology
 
@@ -31,7 +25,7 @@ Every wiki composes from a recipe/cascade stack, and one bag in that stack works
 
 <<~/ahu>>
 
-<<~ ahu #/rosetta>>
+<<~ ahu slot=`#/rosetta`>>
 
 !! The Rosetta Table
 
@@ -50,17 +44,19 @@ The OCI column carries structure only. Our layers sync as CRDT coordinates, not 
 
 <<~/ahu>>
 
-<<~ ahu #/quine>>
+<<~ ahu slot=`#/quine`>>
 
 !! The Wiki-as-Bag Quine
 
 ''The name names the bag; a wiki reads as that bag opened through a recipe'' — write layer + library list + instance mounts. `lares`-the-wiki and `lares`-the-bag never compete for the name: the wiki projects the bag, the way a git repo and its checkout share a name without confusion.
 
-''The write layer rides live; the canon rides below (operator ruling, 2026-06-18).'' A wiki's saved edits land in its ''`@working`'' layer — a typed instance mount (Law 2), persisted, projecting to the live surface (`wikis/{slug}`), distinct from `@draft`'s //unsaved// drafts — never straight into canon. The wiki's `@{slug}` bag mounts ''read-only as a library member''; its canon (`bags/{slug}`) takes a write only through a cap-gated promotion `MOVE` (`@working → @{slug}`, the working↔canon shore — #shore-law). ''No wiki writes into its own canon'', system or user alike: write layer and canon stay distinct coordinates, so saved content lives where a save lands and canon publishes only on promotion. A quine wiki obeys the same split as every other — standing as its own bag grants it no shortcut through the shore. The checkout/repo image holds: `@working` reads as the working tree, `@{slug}` as the committed canon, promotion as the commit.
+''The write layer rides live; the canon rides below (operator ruling, 2026-06-18).'' A wiki's saved edits land in its ''`@working`'' layer — a typed instance mount (Law 2), persisted, resting in a realm workbench for every wiki but the daemon's (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>), projecting to the live surface (`wikis/{slug}` or the workspace its share row names), distinct from `@draft`'s //unsaved// drafts — never straight into canon. The wiki's `@{slug}` bag mounts ''read-only as a library member''; its canon (`bags/{slug}`) takes a write only through a cap-gated promotion `MOVE` (`@working → @{slug}`, the working↔canon shore — #shore-law). ''No wiki writes into its own canon'', system or user alike: write layer and canon stay distinct coordinates, so saved content lives where a save lands and canon publishes only on promotion. A quine wiki obeys the same split as every other — standing as its own bag grants it no shortcut through the shore. The checkout/repo image holds: `@working` reads as the working tree, `@{slug}` as the committed canon, promotion as the commit.
+
+''Every bag opens as its own wiki'' (operator ruling, 2026-10-18). The floor recipe names the bag alone over `@oracle`, the face's own instance slots above it: `expandRecipe` over a recipe with no libraries lays exactly `temp · draft · personal · working · bags/{slug} · oracle-floor`. An absent record reads as that floor, never as "no such wiki" (`surface-recipe.ts` reads `{ wikiSlug }` where no record stands). ''A composed wiki'' names more: a recipe record a hand authors lays several bags and plugin offerings as libraries beneath the wiki's own canon bag, which `expandRecipe` always lays, so the name still names a bag. So two shapes stand, the floor wiki a bag opens as alone, derived and never minted, and the composed wiki whose record a hand writes. Nothing walks the bags minting wikis: the floor answers at read time for any bag the vessel resolves, the act that first writes there founds the wiki's private cabal of one for its working layer, creates that face's other instance slots and registers their cap in the same act, and a grant still decides what the worn face may read. A bag that rides as a library in many wikis opens as its own wiki beside them, each wiki's working layer its own, and only promotion reaches its canon.
 
 The pattern runs fractal on purpose: `sdm` mounts into `elyncia`, `elyncia` into `@caverns-of-neo-thracia` — every wiki's write layer can serve as another wiki's library layer. Healthy prior art carries the same quine property: every TiddlyWiki can act as another's plugin library; every OCI image can base another.
 
-The quine governs ''every'' wiki — user and system alike. `@oracle` //alone// stands //below// as the protocol-invariant floor every recipe inherits structurally (`expandRecipe` hardcodes `@oracle` — the sole universal slot, ''operator ruling 2026-06-16''). `lares` and `lararium` stand as ''DreamNet system bags'', each opening as its own ''quine wiki'' carrying a wiki-recipe of its own — `lares` wiki = `@oracle` + `lararium` + `lares`; `lararium` wiki = `@oracle` + `lararium`. They ride a recipe as library/identity members, never as hardcoded floor slots; their oracle pointers ''and'' their wiki-recipes live in the ''`@oracle` system plane'', never `@catalog` (#/oracle-planes).
+The quine governs ''every'' wiki — user and system alike. `@oracle` //alone// stands //below// as the protocol-invariant floor every recipe inherits structurally (`expandRecipe` hardcodes `@oracle` — the sole universal slot). `lares` and `lararium` stand in the house canon on every vessel, each opening as its own ''quine wiki'' carrying a wiki-recipe of its own — `lares` wiki = `@oracle` + `lararium` + `lares`; `lararium` wiki = `@oracle` + `lararium`. Every other wiki reads house canon through the floor's read-face, which lays one pinned, history-free snapshot per house-canon bag named by a manifest CID, read-only; a minted user wiki's recipe names neither as a library (W26 slice 1, `floor-manifest.ts`). Their own quine wikis compose the live documents as library and identity members. The shared `@oracle` document holds genesis seed rows alone; each vessel's `@catalog` holds its own crossroads and realm pointers, and no catalog row names a house-canon bag: recipe-watch resolves one through the Kahu realm's standing registration (`libraryDocUrl`), while system recipe seeds remain on `@oracle`. See `#oracle-planes`.
 
 ''The default seat (operator ruling, 2026-06-10; recipe revised 2026-06-16):'' the vessel's default pinned primary wiki = `lares`-as-wiki — slug `lares` seats the operator-minted system doc itself as the write layer. The `lares` wiki-recipe (seeded in the `@oracle` system plane, not `@catalog`) carries `lararium` as a live library, so the doctrine corpus composes into the hearth; the recipe dedupes the coinciding wiki slot against the `@oracle` floor. The operator tends the personality at the hearth by default, and the disk-mirror designation carries those edits back to `bags/lares` as `.md` memes.
 
@@ -68,7 +64,7 @@ The quine governs ''every'' wiki — user and system alike. `@oracle` //alone// 
 
 <<~/ahu>>
 
-<<~ ahu #/bag-as-cap>>
+<<~ ahu slot=`#/bag-as-cap`>>
 
 !! A Bag Answers by Capability, Never by Format
 
@@ -98,7 +94,7 @@ composition and never to the meme.
 
 <<~/ahu>>
 
-<<~ ahu #/oracle-planes>>
+<<~ ahu slot=`#/oracle-planes`>>
 
 !! Four Homes — Three Registries and the Seed
 
@@ -120,7 +116,7 @@ The read-face projects only the rows named by the supplied seed, as a history-fr
 | ''WHO board'' | derived from the Nexus key | one board per Nexus | the Nexus relation |
 | ''Public answer'' | porch, carried by a herm | the Nexus charter and floor CID | Kahu steward signs; Kahu Plane / R-WIRE build owed |
 
-`lares` and `lararium` remain system bag names and recipe members. Their per-vessel document pointers still ride `@oracle`; moving them to bootstrap seeds and each vessel's catalog remains owed on Kahu Plane. A leaf learns the admitted canon documents through its admit. A face's planes and the daemon URL resolve from that vessel's bootstrap alone.
+`lares` and `lararium` remain recipe members and stand in the house canon beside every other disk-sourced holding but the public board `crossroads`. Only each Nexus's Kahu cabal writes house canon live, in the Kahu realm at contract. Every other wiki mounts it read-only through `@oracle`, as the floor its vessel accepted from its Nexus's releases (operator ruling, 2026-10-16; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> #/rulings, row `W26`). The release rides the crossroads board as the Nexus's public answer. The VESSEL pins the floor, one pin per (vessel, Nexus), in its control home; a face pins nothing, so a face switch moves no floor. A person's accept (`lares vessel floor accept`) fast-forwards the pin along `prior` and refuses a fork or a release that does not descend (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin`>>). No `@oracle` or catalog row carries a per-vessel house-canon pointer. A leaf learns the admitted canon documents through its admit. A face's planes and the daemon URL resolve from that vessel's bootstrap alone.
 
 The WHO board address derives from the Nexus key. LAW THE BUILD OWES: one public answer per Nexus names the floor CID; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority. The Kahu Plane owns the steward-signing shape, and R-WIRE owes answer carriage. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule, the crossroads address derivation, and retirement of `CREATE --plane oracle`.
 
@@ -130,7 +126,7 @@ The leaf's own gate opens exactly the canon documents its admit names. It never 
 
 <<~/ahu>>
 
-<<~ ahu #/lifecycle-law>>
+<<~ ahu slot=`#/lifecycle-law`>>
 
 !! Law 1 — Lifecycle Coupling Defines the Boundary
 
@@ -138,7 +134,7 @@ The write-layer boundary derives from what happens when the wiki dies, never fro
 
 <<~/ahu>>
 
-<<~ ahu #/naming-law>>
+<<~ ahu slot=`#/naming-law`>>
 
 !! Law 2 — Named ⇒ Shareable; Typed-Slot ⇒ Owned
 
@@ -155,7 +151,7 @@ Shareability reads off //where a name lives//, not off a flag:
 
 <<~/ahu>>
 
-<<~ ahu #/crossing-law>>
+<<~ ahu slot=`#/crossing-law`>>
 
 !! Law 3 — Only the Write Layer Crosses; Motion Rides ACTION Verbs
 
@@ -165,7 +161,7 @@ When `sdm` injects into `elyncia`, exactly one thing travels: `sdm`'s write laye
 
 <<~/ahu>>
 
-<<~ ahu #/write-law>>
+<<~ ahu slot=`#/write-law`>>
 
 !! Law 4 — Writes Flow Through the Layer's Own Wiki
 
@@ -175,7 +171,7 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 <<~/ahu>>
 
-<<~ ahu #/totality-law>>
+<<~ ahu slot=`#/totality-law`>>
 
 !! Law 4b — The Cascade Routes; It Never Decides Whether to Write
 
@@ -193,7 +189,7 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 <<~/ahu>>
 
-<<~ ahu #/the-daemon-wiki>>
+<<~ ahu slot=`#/the-daemon-wiki`>>
 
 !! The daemon wiki ~ the first one built, and no exception (operator ruling, 2026-09-02)
 
@@ -203,9 +199,11 @@ The write layer marks the write boundary. From a consuming wiki's vantage, every
 
 ''`@daemon` HOLDS THE WORKING-MEMORY STAGE'': the surface an operator and an agent share, belonging to ''no other composed knowledge domain''. Every other wiki concerns something; this one holds the place two minds leave things for each other before either knows where they belong. That explains why an exemption would cost rather than merely look untidy — ''the one place work crosses between hands must land on disk to read, diff or commit''.
 
+''The daemon carries working memory alone'' (operator, 2026-10-20). The face's pins rest in the face's custody and `@persona`; verb summonses and their answers travel on the face's own intent plane, `@intents-<tag>`; the daemon bag beneath keeps only the vessel's own records. The daemon wiki shows the intent plane through a read-only view pane, never as its pipe (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>> #/the-split).
+
 !!! How it stands
 
-The daemon recipe expands the ordinary slots, then `attachDaemonWorking` resolves, registers and attaches `wikis/daemon/working` as its default writable (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:252-284`; `packages/lararium-mesh/src/wiki-recipe.ts:330-343`). A successful attachment establishes the working layer; an attachment failure throws `WorkingLayerAttachRefusal` and stops that boot path. The daemon working layer projects to `wikis/daemon/` (`open-daemon-vm.ts`, `node-daemon-island.ts`); `bags/daemon` remains distinct from that writable layer (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/as-mounted">>). A hand's delete of a canon-landed title writes an ordinary title-only tombstone into the working layer. Without a working layer, `UnroutedSaveRefusal` reaches the alert rail; the title remains owed and the wiki stays as the hand left it (`packages/lararium-tw5/src/island-adaptor.ts` `_tombstoneBag`).
+The daemon recipe expands the ordinary slots, then `attachDaemonWorking` resolves, registers and attaches `wikis/daemon/working` as its default writable (`packages/lararium-keyhive/src/operator-daemon-behavior.ts:252-284`; `packages/lararium-mesh/src/wiki-recipe.ts:330-343`). A successful attachment establishes the working layer; an attachment failure throws `WorkingLayerAttachRefusal` and stops that boot path. The daemon working layer projects to `wikis/daemon/` (`open-daemon-vm.ts`, `node-daemon-island.ts`); `bags/daemon` remains distinct from that writable layer (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/as-mounted`>>). A hand's delete of a canon-landed title writes an ordinary title-only tombstone into the working layer. Without a working layer, `UnroutedSaveRefusal` reaches the alert rail; the title remains owed and the wiki stays as the hand left it (`packages/lararium-tw5/src/island-adaptor.ts` `_tombstoneBag`).
 
 !!! What closing it must respect
 
@@ -221,7 +219,7 @@ The archive floor precedes the working-layer attach; the fail-closed boot window
 
 <<~/ahu>>
 
-<<~ ahu #/dag-law>>
+<<~ ahu slot=`#/dag-law`>>
 
 !! Law 5 — The Recipe Graph Stays a DAG
 
@@ -229,13 +227,13 @@ The moment layers mount layers, cycles become expressible. Recipe-watch MUST ref
 
 <<~/ahu>>
 
-<<~ ahu #/shore-law>>
+<<~ ahu slot=`#/shore-law`>>
 
 !! The Lararium Shore Law — loose interop across causal islands (operator ruling, 2026-06-18)
 
 Every boundary a lararium holds reads as a ''causal-island shore'' (`causal-islands`): two sides, each its own partially-ordered log, no shared "now." Three shores wear one law:
 
-* ''working ↔ canon'' — the `@working` live layer crosses to its `@{slug}` canon by a cap-gated promotion `MOVE`.
+* ''working ↔ canon'' — the `@working` live layer crosses to its `@{slug}` canon by a cap-gated promotion `MOVE`. A `MOVE` naming the two bags and no title promotes the whole layer: every live title lands in the canon first, then each leaves the layer only while it still holds the fields that landed, so a record another hand wrote or deleted since stays for the next promotion and the answer counts it kept. No door passes a `LOAD` into canon. A seed walks no promotion: it feeds a disk-sourced holding's canon through `INGEST` alone, and a working copy keeps shadowing the canon under it, since the recipe stack alone decides what shows. Each working copy names the carrier identity of the canon record it forked from on its `meta` envelope (`carrierHash` over the record's canonical carrier form, tagged `sha256:<hex>` and compared through `digestsEqual`; a meme's bcc stays its in-band seal) (`overrideBase`, which never projects), an instrument and never a gate: where canon moved past it, the seed warns that canon stands fresher than the copy, and nothing writes.
 * ''plane ↔ plane'' — a bag's pointer crosses `@catalog` (user) ⇄ `@oracle` (system) by an admin `MOVE` that sets a new meshwise surface. ''Plane membership stays mutable, never hardcoded'' — composability across planes holds first-class; the split scopes by //role//, never by a frozen plane.
 * ''host ↔ lararium'' //(deferred horizon)// — a lararium may embed as a ''guest'' causal island inside a host that owns its own integration layer (UE5.6/6+ Verse / SceneGraph; MUDlet's Lua object-model). The guest never assumes it sits at the top, never claims a global now across the shore.
 
@@ -243,7 +241,7 @@ Every boundary a lararium holds reads as a ''causal-island shore'' (`causal-isla
 
 <<~/ahu>>
 
-<<~ ahu #/alpha-transition>>
+<<~ ahu slot=`#/alpha-transition`>>
 
 !! The Alpha Transition — why the tree does not wear the shore
 
@@ -286,7 +284,7 @@ So a reader takes the grading as a statement about ''grain'', never as a licence
 
 <<~/ahu>>
 
-<<~ ahu #/crossing-grain>>
+<<~ ahu slot=`#/crossing-grain`>>
 
 !! Crossing Grain — SETTLED (operator, 2026-06-10)
 
@@ -294,7 +292,7 @@ The wiki-level crossing earns a ''bag-grain verb pair'', SPARQL Update derived: 
 
 <<~/ahu>>
 
-<<~ ahu #/open-transitive-closure>>
+<<~ ahu slot=`#/open-transitive-closure`>>
 
 !! Open — Transitive Closure (held, not settled)
 
@@ -302,7 +300,7 @@ When `@caverns-of-neo-thracia` mounts `elyncia`, does it inherit `elyncia`'s lib
 
 <<~/ahu>>
 
-<<~ ahu #/pack-refinements>>
+<<~ ahu slot=`#/pack-refinements`>>
 
 !! Pack Model — Owed Refinements (held; external precedent)
 
@@ -317,32 +315,31 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<~ loulou "lar:///ha.ka.ba/lararium/docs/lararium-doc-stack">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/system-pattern-integrities#/threshold-pattern-integrities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/lararium-doc-stack`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
 
-
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — defines floor projection and corpus residency
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model">> — separates derived board address from steward answer
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane">> — sets registry scope and herm answer carriage
-<<~ loulou "lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split">> — limits read-face export to seed-named rows
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder">> — places answer carriage and public signing
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate">> — grounds CAS and content-addressed floor delivery
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer">> — names seed-derived floor and porch answer
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model">> — mounts oracle floor read-only with copy-up
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/boot-sequence-mapping">> — resolves daemon address from vessel bootstrap
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — defines floor projection and corpus residency
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance#/board-model`>> — separates derived board address from steward answer
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — sets registry scope and herm answer carriage
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>> — limits read-face export to seed-named rows
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>> — places answer carriage and public signing
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-cas-substrate`>> — grounds CAS and content-addressed floor delivery
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc#/the-oracle-pointer`>> — names seed-derived floor and porch answer
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — mounts oracle floor read-only with copy-up
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/boot-sequence-mapping`>> — resolves daemon address from vessel bootstrap
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;28xTq_rCLYyCMgnRJ3BnXnUMWMW80UiEuUIqu1_8YaY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_3U8KH9Nu_yEpQlP2UbddsLYnbA9JTitzGyFEH2qhi8`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

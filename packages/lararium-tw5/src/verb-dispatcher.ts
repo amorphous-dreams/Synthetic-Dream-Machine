@@ -8,15 +8,15 @@
  *                 directly to the daemon TW5 wiki. The dispatcher watches wiki
  *                 change events and picks these up immediately.
  *
- *   REMOTE path — external vessels write a verb-summons tiddler at
- *                 bags/daemon/summons/<id> to the Automerge doc. IslandAdaptor flows
+ *   REMOTE path — a verb-summons tiddler at bags/control/summons/<id> lands in the
+ *                 vessel's control document (`control-home`). IslandAdaptor flows
  *                 it into the TW5 wiki. The dispatcher's Automerge subscriber
  *                 sees the summons, calls placeVerb() to create the volatile
  *                 invocation, then tombstones the summons tiddler.
  *                 The summons carries edge transport, not durable coordination state.
  *
- * Outcome flow: handler result → concludeVerb → daemon composite store
- *   → IslandAdaptor.saveTiddler → bags/daemon/outcomes/<id> in Automerge → syncs.
+ * Outcome flow: handler result → concludeVerb → the control store (the vessel's control document, no recipe layer and
+ *   no mirror, sealed under the lit face) → bags/control/outcomes/<id> in Automerge.
  *   Durable shared meaning begins at the outcome, not at the summons.
  *
  * Daemon-only law: ONLY the daemon VM runs a VerbDispatcher. Pinned wiki and
@@ -52,18 +52,35 @@ import {
   OUTCOME_URI_PREFIX,
   SUMMONS_URI_PREFIX,
   verbInputDigest,
+  wikiSlugOfBag,
+  ControlHomeUnavailable,
 } from "@lararium/mesh";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";
 import type { SummonsRequest } from "./verb-summons.js";
-import { runLocalVerb, deriveRoutedCap } from "./verb-local-dispatch.js";
+import { runLocalVerb, gateRoutedVerb, RoutedCapDenied, makeCapVerify, routedAddressesWiki, routedWikiSlug } from "./verb-local-dispatch.js";
 
 export interface VerbContext {
   readonly daemon: CompositeStore;
   readonly invocation: Verb;
+  readonly signal?: AbortSignal;
+  /** Who the verb presents as (the capability's presenter); absent where no dispatcher named one. */
+  readonly presenter?: string;
+  /** True for a verb the vessel's own presence channel took; absent or false for a synced summons. */
+  readonly local?: boolean;
+  readonly surface?: boolean;
+  /**
+   * The face a session wore, as the vessel's main thread booked it when it placed the ask: the face's ordinal on this
+   * vessel and the presenter the session door verified. Absent for every ask that rode no session; never read off a
+   * delegate, a payload or a tiddler.
+   */
+  readonly worn?: SessionWorn;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
+
+/** What a session wore: its face's ordinal on this vessel and the presenter its door verified. */
+export interface SessionWorn { readonly ordinal: number; readonly presenter: string }
 
 export type VerbReactor = (
   args:    Readonly<Record<string, unknown>>,
@@ -91,7 +108,7 @@ export interface VerbSpec {
    *
    * An agent surface may COMPOSE such an act into a presentable artifact and MUST NEVER execute it: the
    * signing hand stays the human's. The pattern already runs twice in this house — `nexus accept-carriage`
-   * mints a token a human carries to a kahu, and a persona grant stays inert until a live human opens it.
+   * mints a token a human carries to a kahu, and a seal roll opens only on a card a live human reads in.
    * Marking it here turns that convention into something a projection can enforce.
    */
   readonly signs?: boolean;
@@ -133,9 +150,31 @@ export function projectOntoSurface<T>(
     .map((e) => e.item);
 }
 
+/** A table's one fence: what it checks, and the verbs it leaves open, each with its reason. */
+export interface VerbFence {
+  /** Runs before every fenced verb; a throw refuses the verb before its handler reads anything. */
+  readonly check: (verbName: string, context: VerbContext) => void;
+  /** The verbs the check never runs before, each mapped to its one-line reason. */
+  readonly open: Readonly<Record<string, string>>;
+  /** Runs every verb, open or fenced, once past the check: the fence's owner may hold what the verb uses until it settles. */
+  readonly span?: (context: VerbContext, run: () => Promise<Record<string, unknown>>) => Promise<Record<string, unknown>>;
+}
+
 export class VerbTable {
   private readonly handlers = new Map<string, VerbReactor>();
   private readonly specs    = new Map<string, VerbSpec>();
+  private fenceOf: VerbFence | null = null;
+  private handCodes: Readonly<Record<string, string>> | null = null;
+
+  handOnly(codes: Readonly<Record<string, string>>): void {
+    if (this.handCodes) throw new Error("[verb-dispatcher] hand-only codes already set");
+    this.handCodes = { ...codes };
+  }
+
+  private admitHand(verbName: string, context: VerbContext): void {
+    const code = this.handCodes?.[verbName];
+    if (code && context.surface !== true) throw Object.assign(new Error(code), { reason: code });
+  }
 
   /**
    * Register a verb, optionally declaring what the surfaces should know about it.
@@ -153,7 +192,44 @@ export class VerbTable {
     if (spec) this.specs.set(verbName, spec);
   }
 
-  get(verbName: string): VerbReactor | undefined { return this.handlers.get(verbName); }
+  /**
+   * THE FENCE DENIES BY DEFAULT. `check` runs on the context of every verb, registered before or after this call,
+   * except the verbs `open` names, each with the reason it touches nothing the fence keeps. A verb nobody named
+   * stands fenced, so a new verb chooses by joining the open list with its reason. One fence per table.
+   */
+  fence(fence: VerbFence): void {
+    if (this.fenceOf) throw new Error("[verb-dispatcher] this table already stands a fence");
+    this.fenceOf = fence;
+  }
+
+  /** True when the fence's check runs before this registered verb. */
+  fenced(verbName: string): boolean {
+    return this.fenceOf !== null && this.handlers.has(verbName) && !Object.hasOwn(this.fenceOf.open, verbName);
+  }
+
+  /** Run the fence's check for a registered verb on a path that answers without its handler (an effect's replay). */
+  admit(verbName: string, context: VerbContext): void {
+    this.admitHand(verbName, context);
+    if (this.fenceOf && this.fenced(verbName)) this.fenceOf.check(verbName, context);
+  }
+
+  admitRouted(verbName: string, context: VerbContext, checkFence = true): void {
+    this.admitHand(verbName, context);
+    if (checkFence && this.fenceOf && !Object.hasOwn(this.fenceOf.open, verbName)) this.fenceOf.check(verbName, context);
+  }
+
+  get(verbName: string): VerbReactor | undefined {
+    const inner = this.handlers.get(verbName);
+    const fence = this.fenceOf;
+    if (!inner) return inner;
+    const fenced = this.fenced(verbName);
+    const span = fence?.span;
+    return async (args, context) => {
+      this.admitHand(verbName, context);
+      if (fenced) fence!.check(verbName, context);
+      return span ? span(context, () => inner(args, context)) : inner(args, context);
+    };
+  }
   has(verbName: string): boolean { return this.handlers.has(verbName); }
   list(): readonly string[] { return [...this.handlers.keys()].sort(); }
 
@@ -187,15 +263,28 @@ export class VerbTable {
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
   readonly daemon:    CompositeStore;
+  /**
+   * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and
+   * effect index it writes and reads. No recipe composes it and no mirror names it, so no control record reaches a
+   * projected layer by placement.
+   */
+  readonly control:   CompositeStore;
   readonly registry:  VerbTable;
   readonly verifier?: CapabilityVerifier;
-  readonly routeFn?:  (invocation: Verb) => Promise<Record<string, unknown>>;
+  /** Who a verb presents as. Absent: the invocation's own `requestedBy`. The one place every cap check resolves it. */
+  readonly presenterOf?: (invocation: Verb) => string;
+  /** True for a verb the vessel's own presence channel took; the verifier reads it as `channel: "local"`. */
+  readonly localOf?: (invocation: Verb) => boolean;
+  readonly surfaceOf?: (invocation: Verb) => boolean;
+  /** Route a verb to main. `signal` aborts when the dispatcher gives up on the ask (a mount that timed out), so the router drops what it holds for it. */
+  readonly routeFn?:  (invocation: Verb, signal?: AbortSignal) => Promise<Record<string, unknown>>;
 }
 
 export class VerbDispatcher {
   private unsubWiki:      (() => void) | null = null;
   private unsubAutomerge: (() => void) | null = null;
   private readonly inFlight = new Set<string>();
+  private readonly inFlightAbort = new Map<string, AbortController>();
   private readonly seenSummons = new Set<string>();
   /**
    * Effect dedup (D1, P2.5 iter 4) — one chained promise per effectKey. A second attempt
@@ -211,10 +300,10 @@ export class VerbDispatcher {
   startupScan: Promise<void> = Promise.resolve();
 
   private async scanSummons(): Promise<void> {
-    const titles = (await this.opts.daemon.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
+    const titles = (await this.opts.control.listVisible()).filter((title) => title.startsWith(SUMMONS_URI_PREFIX));
     for (const title of titles) {
       if (!this.unsubAutomerge) return;
-      const top = await this.opts.daemon.resolveTopmost(title);
+      const top = await this.opts.control.resolveTopmost(title);
       if (!top) continue;
       await this.receiveSummons({
         title,
@@ -227,7 +316,7 @@ export class VerbDispatcher {
 
   private receiveSummons(change: LarTiddlerChange): Promise<void> {
     return heedSummons(change, {
-      daemon: this.opts.daemon,
+      control: this.opts.control,
       isInFlight: (requestId) => this.inFlight.has(requestId),
       seenRequestIds: this.seenSummons,
       placeVerb: (invocation) => { this.placeVerb(invocation); },
@@ -237,30 +326,86 @@ export class VerbDispatcher {
   /** Run the invocation's handler — local registry first, else the verify-then-delegate
    *  route to main, else a "no handler" refusal. Shared by the plain-dispatch path and
    *  the effect-dedup "run fresh" path (both end up calling exactly this). */
-  private async runHandler(invocation: Verb): Promise<Record<string, unknown>> {
+  private async runHandler(invocation: Verb, signal?: AbortSignal): Promise<Record<string, unknown>> {
     if (this.opts.registry.has(invocation.action)) {
       return runLocalVerb(invocation, {
         daemon:   this.opts.daemon,
         registry: this.opts.registry,
+        ...(signal ? { signal } : {}),
         ...(this.opts.verifier ? { verifier: this.opts.verifier } : {}),
+        ...(this.opts.presenterOf ? { presenterOf: this.opts.presenterOf } : {}),
+        ...(this.opts.localOf ? { localOf: this.opts.localOf } : {}),
+        ...(this.opts.surfaceOf ? { surfaceOf: this.opts.surfaceOf } : {}),
       });
     }
     if (this.opts.routeFn) {
-      // Verify-then-delegate: the keyholder worker gates the cap BEFORE
-      // routing to main; main then trusts the worker→main channel as the
-      // capability (project_verification_placement). Enforced only when a
-      // real verifier exists; a pre-sovereign/test island (no verifier)
-      // routes as before.
-      if (this.opts.verifier) {
-        const { access, bagUrl } = deriveRoutedCap(invocation);
-        const proof = await this.opts.verifier.verify({ presenter: invocation.requestedBy, bagUrl, access });
-        if (!proof.ok) {
-          throw new Error(`[verb-dispatcher] capability denied for routed verb "${invocation.action}" (bag=${bagUrl}, access=${access}): ${proof.reason ?? "no grant"}`);
-        }
-      }
+      await this.clearRouted(invocation);
       return this.opts.routeFn(invocation);
     }
     throw new Error(`no handler registered for "${invocation.action}"`);
+  }
+
+  /**
+   * THE CLEARANCE A ROUTED VERB MEETS before main runs it under this island's trust: the fence, for a wiki-addressing
+   * envelope or an ask that did not arrive local, then the capability. A refusal throws. The delegate route meets it
+   * before it posts to main, and a session's face row meets it alone (`daemon:gate-verb-request`) before main runs
+   * the row as the session's face, its answer on the socket.
+   */
+  async clearRouted(invocation: Verb, given?: { readonly local: boolean; readonly presenter: string }): Promise<void> {
+    // A face row's clearance (`given`) comes from the session door, whose socket already refused a seat's hand-only act, so it carries the
+    // hand mark; a PLACED ask has no `given` and must have arrived on the surface path for a hand-only verb to pass.
+    // A face row's clearance names its locality and presenter itself (the session door verified both), so no ask the
+    // island holds ever lends or borrows them.
+    const presenter = given?.presenter ?? this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+    const local = given?.local ?? this.opts.localOf?.(invocation) === true;
+    // A wiki-addressing envelope meets the fence by its presenter. Any other routed ask that did not arrive local (a
+    // synced summons, content) names no presenter that can wear a face here, so the fence reads it as naming none.
+    this.opts.registry.admitRouted(invocation.action, { daemon: this.opts.daemon, invocation, ...(local ? { presenter } : {}), local, surface: given !== undefined || this.opts.surfaceOf?.(invocation) === true, cap: makeCapVerify(this.opts.verifier, presenter, local) }, routedAddressesWiki(invocation) || !local);
+    // Verify-then-delegate: the keyholder worker gates the cap BEFORE
+    // routing to main; main then trusts the worker→main channel as the
+    // capability (project_verification_placement). Enforced only when a
+    // real verifier exists; a pre-sovereign/test island (no verifier)
+    // routes as before.
+    if (!this.opts.verifier) return;
+    try {
+      await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
+    } catch (refusal) {
+      // THE MOUNT FOLLOWS THE CAP'S OWN WORD. A working slot's cap mints at its wiki's first mount, so the one denial
+      // that asks for a mount reads `bag not registered` for a slot of the wiki the act aims at: a presenter the
+      // verifier denies for any other reason (no face, no grant) never reaches a mount, and the fence ran before.
+      const slug = routedWikiSlug(invocation);
+      const unregistered = refusal instanceof RoutedCapDenied && refusal.kind === "bag-not-registered" ? refusal.bagUrl : undefined;
+      if (!slug || !unregistered || wikiSlugOfBag(unregistered) !== slug) throw refusal;
+      await this.mountAimedWiki(slug, invocation);
+      await gateRoutedVerb(invocation, this.opts.verifier, presenter, local);
+    }
+  }
+
+  /**
+   * W27: an act aimed at a wiki no island mounts asks the vessel to mount it, and refuses by name when the mount cannot
+   * stand. It follows the fence and the verifier's own `bag not registered` (see clearRouted), so only a presenter the
+   * fence admits and the verifier otherwise clears can ask one. Main answers `wiki-switch` the way `ensureActive` does,
+   * and that mount ends on the island's answer, its fault or the pool's named liveness bound, so the gate waits on main's
+   * answer and no clock gives up on it.
+   */
+  private async mountAimedWiki(slug: string, invocation: Verb): Promise<void> {
+    const refuse = (cause: string): Error => Object.assign(new Error(`wiki-mount-refused: ${cause}`), { reason: "wiki-mount-refused" });
+    if (!this.opts.routeFn) throw refuse(`no-route: ${slug} has no island to ask`);
+    const abandon = new AbortController();
+    try {
+      // The ask rides its own correlation id: a caller's request id never names a mount.
+      const asked = this.opts.routeFn({
+        requestId: `wiki-mount:${globalThis.crypto.randomUUID()}`, title: `wiki-mount:${slug}`, action: "wiki-switch", args: { slug }, requestedBy: invocation.requestedBy,
+        targets: [], batchMode: "best-effort", status: "pending", requestedAt: invocation.requestedAt,
+      } as Verb, abandon.signal);
+      const answer = await asked;
+      if (answer["active"] !== true) throw refuse(`${String(answer["cause"] ?? "not-active")}: ${String(answer["detail"] ?? slug)}`);
+    } catch (cause) {
+      if ((cause as { reason?: string }).reason === "wiki-mount-refused") throw cause;
+      throw refuse(cause instanceof Error ? cause.message : String(cause));
+    } finally {
+      abandon.abort();   // a settled ask has no entry left in the router; the abort drops any that stands
+    }
   }
 
   /**
@@ -277,25 +422,43 @@ export class VerbDispatcher {
    * of it before doing its own read), then replaces the map entry with its own promise before
    * returning — so a third concurrent attempt chains onto THIS one in turn.
    */
-  private dispatchWithEffectDedup(invocation: Verb): Promise<void> {
+  /**
+   * A replay answers without the handler, so the table's fence asks first: a presenter the fence refuses never reads a
+   * prior attempt's result, and its fresh run concludes refused by the fence's own name.
+   */
+  private replayAdmitted(invocation: Verb): boolean {
+    try {
+      const local = this.opts.localOf?.(invocation) ?? false;
+      const presenter = this.opts.presenterOf?.(invocation) ?? invocation.requestedBy;
+      const registered = this.opts.registry.has(invocation.action);
+
+      const named = registered || local ? { presenter } : {};
+      this.opts.registry[registered ? "admit" : "admitRouted"](invocation.action, {
+        daemon: this.opts.daemon, invocation, cap: async () => ({ ok: false, reason: "replay" }), ...named, local, surface: this.opts.surfaceOf?.(invocation) === true,
+      }, ...(!registered ? [routedAddressesWiki(invocation) || !local] as const : []));
+      return true;
+    } catch { return false; }
+  }
+
+  private dispatchWithEffectDedup(invocation: Verb, signal?: AbortSignal): Promise<void> {
     const effectKey = invocation.effectKey as string;
     const ahead = this.inFlightEffect.get(effectKey);
-    const chained = (ahead ?? Promise.resolve()).catch(() => {}).then(() => this.resolveEffect(invocation, effectKey));
+    const chained = (ahead ?? Promise.resolve()).catch(() => {}).then(() => this.resolveEffect(invocation, effectKey, signal));
     this.inFlightEffect.set(effectKey, chained);
     return chained.finally(() => {
       if (this.inFlightEffect.get(effectKey) === chained) this.inFlightEffect.delete(effectKey);
     });
   }
 
-  private async resolveEffect(invocation: Verb, effectKey: string): Promise<void> {
+  private async resolveEffect(invocation: Verb, effectKey: string, signal?: AbortSignal): Promise<void> {
     const inputDigest = await verbInputDigest({
-      verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy, effectKey,
+      verb: invocation.action, args: invocation.args, face: invocation.face, effectKey,
     });
 
-    const priorFact = await this.opts.daemon.getLive(EFFECT_URI_PREFIX + effectKey);
+    const priorFact = await this.opts.control.getLive(EFFECT_URI_PREFIX + effectKey);
     const priorRequestId = priorFact ? String(priorFact.tiddler["request-id"] ?? "") : "";
     if (priorRequestId) {
-      const priorOutcome = await this.opts.daemon.getLive(OUTCOME_URI_PREFIX + priorRequestId);
+      const priorOutcome = await this.opts.control.getLive(OUTCOME_URI_PREFIX + priorRequestId);
       if (!priorOutcome) {
         // The effect index still names a prior requestId, but that attempt's own outcome
         // is GONE (evicted by the CAS sweep's retention window) — the dedup shortcut has
@@ -303,7 +466,7 @@ export class VerbDispatcher {
         // effect whose prior record a caller can no longer check. Conclude THIS attempt
         // as refused; never run the handler.
         console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
-        await writeOutcome(this.opts.daemon, {
+        await writeOutcome(this.opts.control, {
           invocation, status: "error",
           errorMessage: `effect "${effectKey}" indexes a prior outcome ("${priorRequestId}") that is no longer retained`,
           refusal: "retention-gap",
@@ -312,17 +475,17 @@ export class VerbDispatcher {
         return;
       }
       const priorDigest = String(priorOutcome.tiddler["input-digest"] ?? "");
-      if (priorDigest === inputDigest) {
+      if (priorDigest === inputDigest && this.replayAdmitted(invocation)) {
         const priorResults = JSON.parse(String(priorOutcome.tiddler["results"] ?? "{}")) as Record<string, VerbTargetResult>;
-        await copyEffectOutcome(this.opts.daemonVm, this.opts.daemon, invocation, {
+        await copyEffectOutcome(this.opts.daemonVm, this.opts.control, invocation, {
           priorRequestId, priorResults, inputDigest,
         });
         return;
       }
-      console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
+      if (priorDigest !== inputDigest) console.log(`[verb-dispatcher] effect "${effectKey}" reused with a changed digest (request=${invocation.requestId}, prior=${priorRequestId}) — running fresh, no dedup`);
     }
 
-    await dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation));
+    await dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, signal));
   }
 
   start(): void {
@@ -332,13 +495,19 @@ export class VerbDispatcher {
     const onWikiChange = (changedTiddlers: Record<string, { deleted?: boolean }>) => {
       for (const title of Object.keys(changedTiddlers)) {
         if (!title.startsWith(VERB_URI_PREFIX)) continue;
-        if (changedTiddlers[title]?.deleted) continue;
+        if (changedTiddlers[title]?.deleted) {
+          const requestId = title.slice(VERB_URI_PREFIX.length);
+          this.inFlightAbort.get(requestId)?.abort();
+          continue;
+        }
         const tw5Tiddler = wiki.getTiddler(title) as { fields: Record<string, unknown> } | undefined;
         if (!tw5Tiddler) continue;
         const invocation = parseVerb(tw5Tiddler.fields);
         if (!invocation || invocation.status !== "pending" || this.inFlight.has(invocation.requestId)) continue;
+        const abort = new AbortController();
         this.inFlight.add(invocation.requestId);
-        void this.opts.daemon.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
+        this.inFlightAbort.set(invocation.requestId, abort);
+        void this.opts.control.getLive(OUTCOME_URI_PREFIX + invocation.requestId).then(async (prior) => {
           // Durable idempotency — the CRDT is the dedup store: a verb whose
           // outcome already landed has already taken effect, so skip re-execution
           // (exactly-once EFFECT, not delivery). See project_asymmetric_peer_handoff.
@@ -351,28 +520,33 @@ export class VerbDispatcher {
             const priorDigest = prior.tiddler["input-digest"];
             if (typeof priorDigest === "string") {
               const redeliveredDigest = await verbInputDigest({
-                verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy,
+                verb: invocation.action, args: invocation.args, face: invocation.face,
                 ...(invocation.effectKey !== undefined && { effectKey: invocation.effectKey }),
               });
               if (redeliveredDigest !== priorDigest) {
                 console.warn(`[verb-dispatcher] requestId "${invocation.requestId}" (verb "${invocation.action}") redelivered with a changed input digest against its already-landed outcome — skipping re-execution, not re-deriving`);
               }
             }
+            // The redelivery leaves the VM as a concluded verb does, so no stamp rides a standing invocation.
+            removeVerb(this.opts.daemonVm, invocation.title);
             return undefined;
           }
           // Effect dedup (D1): a distinct requestId naming the SAME effect skips the
           // handler entirely when a prior done attempt's digest matches; see above.
-          if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation);
-          return dispatchVerb(this.opts.daemonVm, this.opts.daemon, invocation, () => this.runHandler(invocation));
+          if (invocation.effectKey) return this.dispatchWithEffectDedup(invocation, abort.signal);
+          return dispatchVerb(this.opts.daemonVm, this.opts.control, invocation, () => this.runHandler(invocation, abort.signal));
         }).catch((err) => {
           console.error("[verb-dispatcher] verb dispatch crashed:", err);
-        }).finally(() => this.inFlight.delete(invocation.requestId));
+        }).finally(() => {
+          this.inFlight.delete(invocation.requestId);
+          this.inFlightAbort.delete(invocation.requestId);
+        });
       }
     };
     wiki.addEventListener("change", onWikiChange);
     this.unsubWiki = () => wiki.removeEventListener("change", onWikiChange);
 
-    this.unsubAutomerge = this.opts.daemon.subscribe((change) => {
+    this.unsubAutomerge = this.opts.control.subscribe((change) => {
       this.receiveSummons(change).catch((err) => {
         console.error("[verb-dispatcher] summons relay crashed:", err);
       });
@@ -381,6 +555,9 @@ export class VerbDispatcher {
     // Startup scan: persisted pending summons are heeded once. The request-id set shared with live
     // delivery keeps a record that also arrives as a change from firing twice.
     this.startupScan = this.scanSummons().catch((err) => {
+      // A FLOOR HOLDS NO SUMMONS: a place with no readable control document (no face landed, or its key stays shut) rests none,
+      // so its scan reads the stand-in's refusal by name and nothing waits. Any other fault of the scan surfaces as itself.
+      if (err instanceof ControlHomeUnavailable) { console.log(`[verb-dispatcher] no summons scan at the floor (${err.refusal})`); return; }
       console.error("[verb-dispatcher] summons startup scan crashed:", err);
     });
 
@@ -399,4 +576,3 @@ export class VerbDispatcher {
     return placeVerb(this.opts.daemonVm, opts);
   }
 }
-

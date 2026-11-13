@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/row7-s2b-7a6ff41ca0ee63c8c1fb6755078521cde20181bf.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+7a6ff41ca0ee63c8c1fb6755078521cde20181bf
+read: Terra S2b scout (the root rested under the keystore tree key; verified); blind Opus custody read of 3293533a4 = LAND-AFTER-CURES: P2-a the seed-deriving acts left Uint8Array seeds unzeroed (cured: zeroed in finally, red with a buffer watch), the vessel's custody ran on the page main thread (named honestly in canon, owed to road row B1, the lift building on its own lane), P3s cured (ward-face-predates by name; seed-wrap-beside-ward). The evergreen narration red cured (no ceiling moved). Merged with PR #168 by composition (the CUSTODY_ROW set keeps the persona root ward-only and adds the tag row; the founding binds the ward and mints the tag secret). CI 42155756592 green at e1eea0267; this head adds canon-only commits over it (no non-.mem file changed).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VvYybD-oXy3av0o5gNQd9dIlJSS3umYhmi7Es76-3s0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

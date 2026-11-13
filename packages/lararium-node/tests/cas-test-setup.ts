@@ -21,7 +21,7 @@ import { join, dirname } from "path";
 import { fileURLToPath } from "url";
 import { randomBytes } from "crypto";
 import {
-  pluginCidsFromIslandBlobs, authorizeAddress, openPrivateBody, readContentKey,
+  bootSetPluginCids, authorizeAddress, openPrivateBody, readContentKey,
   type AntigenRing, type LarDoc, type MembershipEnvelope, type NexusMembership, type PrivateBodyKey,
 } from "@lararium/mesh";
 import { casDirForStorage, mirrorGenesisCasFs } from "../src/node-cas.js";
@@ -43,6 +43,8 @@ const REPO_GENESIS_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..
 export interface CasSetup {
   /** Pool storageRoot — the CAS lives at `<storageDir>/cas`. */
   readonly storageDir:  string;
+  /** The vessel's one runtime `cid/` dir the pool is handed (`VesselIslandPoolOptions.cidDir`). */
+  readonly cidDir:      string;
   /** Plugin-tiddler CIDs the island resolves from the CAS. */
   readonly pluginCids:  readonly string[];
   /** Remove the temp storageDir (call in finally). */
@@ -63,7 +65,8 @@ export function setupCasFromGenesis(genesisDoc: LarDoc, genesisDir: string = REP
   mirrorGenesisCasFs(manifest, genesisCasDir(genesisDir), casDirForStorage(storageDir));
   return {
     storageDir,
-    pluginCids: pluginCidsFromIslandBlobs(genesisDoc.blobs),
+    cidDir: casDirForStorage(storageDir),
+    pluginCids: bootSetPluginCids(genesisDoc.blobs),
     cleanup: () => rmSync(storageDir, { recursive: true, force: true }),
   };
 }

@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/research/dreamdom-width/terra/` — 5 record(s) here, 5 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/research/dreamdom-width/terra/`
+
+The scratch planning records of `.lares-scratch/research/dreamdom-width/terra/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 5 record(s) stand here and 5 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[research/dreamdom-width/|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[brief|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/brief]] | brief | 2026-10-28 | `brief.md` |
+| [[final|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/final]] | research | 2026-10-28 | `final.md` |
+| [[final3|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/final3]] | research | 2026-10-28 | `final3.md` |
+| [[out|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out]] | research | 2026-10-28 | `out.md` |
+| [[out3|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out3]] | research | 2026-10-28 | `out3.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zHzDZXx6Tx1KAa-g1bqtuncW04qdwfi_MLk7Qf_Argk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

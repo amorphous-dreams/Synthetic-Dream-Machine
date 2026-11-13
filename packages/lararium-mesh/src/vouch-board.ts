@@ -92,7 +92,7 @@ export function writeVouch(draft: LarDoc, invite: CabalInvite): void {
 }
 
 /** A parsed payload reads as an invite only at the exact FLOOR shape — else null. Extra fields are dropped. */
-function coerceInvite(parsed: unknown): CabalInvite | null {
+export function readCabalInvite(parsed: unknown): CabalInvite | null {
   if (typeof parsed !== "object" || parsed === null) return null;
   const p = parsed as Record<string, unknown>;
   if (p["kind"] !== CABAL_INVITE_DOMAIN) return null;                  // not a vouch tiddler → skip
@@ -109,6 +109,7 @@ function coerceInvite(parsed: unknown): CabalInvite | null {
     sig:               p["sig"] as string,
   };
 }
+const coerceInvite = readCabalInvite;
 
 /**
  * Every invite the board carries WHOSE SIGNATURE VERIFIES against the voucherDid it names — the only read,

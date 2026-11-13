@@ -17,6 +17,10 @@ import type { ChangeOrigin, LarTiddlerRecord, VerbContext, Verb, CapabilityAcces
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors } from "../../lararium-tw5/src/action-handler.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
+
+/** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
+const KAHU = await kahuHand();
 
 const BAG = "lar:///ha.ka.ba/bags/lares";
 
@@ -80,7 +84,7 @@ describe("INGEST — the vanished addresses a wave names", () => {
     await seedCarriers(composite, 10);
     const before = await liveTitles(composite);
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
 
     const args = waveArgs({ deletions: [{ uri: "lar:///c0", syncedHash: "h0" }] });
     const result = await table.get("INGEST")!(args, ctx(composite, args)) as Record<string, unknown>;
@@ -95,7 +99,7 @@ describe("INGEST — the vanished addresses a wave names", () => {
     await seedCarriers(composite, 10);
     const before = await liveTitles(composite);
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
 
     const deletions = [0, 1, 2, 3, 4, 5].map((i) => ({ uri: `lar:///c${i}`, syncedHash: `h${i}` }));
     const args = waveArgs({ deletions });
@@ -109,7 +113,7 @@ describe("INGEST — the vanished addresses a wave names", () => {
     const composite = makeComposite();
     await seedOne(composite, "lar:///old-name", "cid-keepme");
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
 
     const args = waveArgs({
       deletions: [{ uri: "lar:///old-name", syncedHash: "HMATCH" }],
@@ -127,7 +131,7 @@ describe("INGEST — the vanished addresses a wave names", () => {
   test("a vanished source whose records hold nothing reads absent, and its arrival lands as itself", async () => {
     const composite = makeComposite();
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
     const args = waveArgs({
       deletions: [{ uri: "lar:///never-landed", syncedHash: "HMATCH" }],
       carriers: [{ uri: "lar:///new-name", text: "renamed content", diskHash: "HMATCH", syncedHash: null }],
@@ -158,7 +162,7 @@ describe("INGEST — the vanished addresses a wave names", () => {
     // A wave no person stands behind: nothing re-links, nothing lands, both carriers stand as they stood.
     const quiet = await seeded();
     const quietTable = new VerbTable();
-    registerActionReactors(quietTable, { composite: quiet });
+    registerActionReactors(quietTable, { kahuReach: KAHU, composite: quiet });
     const stood = await quietTable.get("INGEST")!(wave(true), ctx(quiet, wave(true))) as Record<string, unknown>;
     expect(stood["deletions"]).toEqual({ renames: [], absent: [], declined: ["lar:///old-name"] });
     expect((stood["carriers"] as Array<Record<string, unknown>>).find((c) => c["uri"] === "lar:///new-name")).toMatchObject({ decision: "conflict", reason: "no-base" });
@@ -168,7 +172,7 @@ describe("INGEST — the vanished addresses a wave names", () => {
     // CONTROL: a person's wave adopts the file at the target; the source still declines and stands.
     const named = await seeded();
     const namedTable = new VerbTable();
-    registerActionReactors(namedTable, { composite: named });
+    registerActionReactors(namedTable, { kahuReach: KAHU, composite: named });
     const adopted = await namedTable.get("INGEST")!(wave(false), ctx(named, wave(false))) as Record<string, unknown>;
     expect((adopted["deletions"] as Record<string, unknown>)["declined"]).toEqual(["lar:///old-name"]);
     expect(await textAt(named, "lar:///new-name")).toBe("renamed content");
@@ -180,7 +184,7 @@ describe("INGEST — the vanished addresses a wave names", () => {
     await seedCarriers(composite, 10);
     await seedOne(composite, "lar:///old-name", "cid-keepme");
     const table = new VerbTable();
-    registerActionReactors(table, { composite });
+    registerActionReactors(table, { kahuReach: KAHU, composite });
 
     const args = waveArgs({
       deletions: [{ uri: "lar:///old-name", syncedHash: "HMATCH" }],

@@ -17,10 +17,10 @@ import { CARRIER_DECLARATION } from "@lararium/memetic-frame";
 import { carrierText, deserializeCarrier } from "../src/deserializer.js";
 
 const URI = "lar:///t/division";
-const HEAD = `<<^ code="&#x0001;" from="?" -> to="${URI}">>`;
-const STX = '<<^ code="&#x0002;">>';
-const ETX = '<<^ code="&#x0003;">>';
-const EOT = '<<^ code="&#x0004;" -> to="?">>';
+const HEAD = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>`;
+const STX = '<<^ code=`&#x0002;`>>';
+const ETX = '<<^ code=`&#x0003;`>>';
+const EOT = '<<^ code=`&#x0004;` to=`?`>>';
 const META = '```toml meta\nuri-path = "t/division"\n```';
 const framed = (body: string): string => `${HEAD}\n${STX}\n\n${META}\n\n${body}\n\n${ETX}\n\n${EOT}\n`;
 /** The carrier's own bytes: heading through the mark that closes it. */
@@ -34,12 +34,12 @@ describe("★ the one carrier a text carries — heading to close, through the s
   });
 
   test("an ahu opener with no closer never moves the close — the text closes at its first ETX (#/control-set)", () => {
-    const text = framed("<<~ ahu #/a>>\nopened, never closed");
-    expect(divided(text)).toBe(`${HEAD}\n${STX}\n\n${META}\n\n<<~ ahu #/a>>\nopened, never closed\n\n${ETX}`);
+    const text = framed("<<~ ahu slot=`#/a`>>\nopened, never closed");
+    expect(divided(text)).toBe(`${HEAD}\n${STX}\n\n${META}\n\n<<~ ahu slot=\`#/a\`>>\nopened, never closed\n\n${ETX}`);
   });
 
   test("ahu sigils of every spelling leave the close where the span reader puts it", () => {
-    const body = "<<~ ahu #/c -> lar:///x/y>>\nc\n<<~ / ahu>>\n<<fragment #/f>>\nf";
+    const body = "<<~ ahu #/c -> lar:///x/y>>\nc\n<<~ / ahu>>\n<<fragment slot=`#/f`>>\nf";
     expect(divided(framed(body))!.endsWith(`${body}\n\n${ETX}`)).toBe(true);
   });
 
@@ -59,7 +59,7 @@ describe("★ the one carrier a text carries — heading to close, through the s
   });
 
   test("an EOT or ETX spelled outside the control head is no mark, and closes nothing (#/frame-head-lock)", () => {
-    for (const notAMark of ['<<~ -> "?">>', '<<~ code="&#x0004;" -> "?">>', '<<^ code="&#x0014;" -> to="?">>']) {
+    for (const notAMark of ['<<~ -> "?">>', '<<~ code=`&#x0004;` -> "?">>', '<<^ code=`&#x0014;` to=`?`>>']) {
       const text = `${HEAD}\n${STX}\n\nbody\n${notAMark}\nstill body\n\n${ETX}\n\n${EOT}\n`;
       expect(divided(text)!.endsWith(`still body\n\n${ETX}`)).toBe(true);
     }

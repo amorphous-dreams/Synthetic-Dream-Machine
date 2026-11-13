@@ -29,7 +29,7 @@ describe("resolveLarUri — canonical URI topology", () => {
    * the retired address form REACHABLE, so anything still minting one resolved correctly and went
    * unnoticed. The resolver refuses now; a name that travels nowhere must not read like one that does.
    */
-  test("a rootless single-term address refuses — the retired class resolves nowhere", () => {
+  test("a rootless single-term address refuses — no such class resolves", () => {
     for (const uri of ["lar:///AGENTS", "lar:///LARES", "lar:///INDEXES/carriers"]) {
       expect(() => resolveLarUri(uri)).toThrow(/unsupported lar root/);
     }

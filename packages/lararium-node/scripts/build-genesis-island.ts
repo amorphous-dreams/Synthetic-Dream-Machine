@@ -27,7 +27,11 @@ import { repoRoot } from "@lararium/mesh/node";
 import {
   sha256HexBytesSync,
   LARES_MEMETIC_WIKITEXT_PLUGIN_URI,
+  isStockTw5PluginTitle,
   buildGenesisDoc,
+  computeEngineCid,
+  computeGrammarCid,
+  computePluginsCid,
   verifyGenesisArtifact,
   verifyPluginAttestation,
   type GenesisInputs,
@@ -41,6 +45,7 @@ import { tw5PluginsRoot } from "@lararium/tw5/tw5-memes-root";
 import { writeCasEntriesFs } from "../src/node-cas.js";
 import { genesisSeedFileBytes } from "../src/genesis-artifact.js";
 import { deriveGenesisActorSeed, genesisPackedPluginFiles } from "../src/genesis-actor-seed.js";
+import { cutGenesisFloor } from "../src/genesis-floor.js";
 
 // ---------------------------------------------------------------------------
 // Path constants
@@ -67,8 +72,8 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
   const out = new Map<string, PluginBuildAttestation>();
   if (!existsSync(LARES_TW5_PLUGIN_ATTESTATION)) return out;
   const att = JSON.parse(readFileSync(LARES_TW5_PLUGIN_ATTESTATION, "utf8")) as PluginBuildAttestation;
-  if (att.format !== "lararium-tw5-plugin-build/v1") {
-    throw new Error(`[genesis] unsupported plugin attestation format: ${att.format}`);
+  if (att.format !== "lararium-tw5-plugin-build") {
+    throw new Error(`[genesis] the plugin attestation names the format ${JSON.stringify(att.format)}: it lacks the plugin build shape ("lararium-tw5-plugin-build")`);
   }
   out.set(att.canonicalTitle, att);
   return out;
@@ -85,7 +90,8 @@ function readPluginAttestations(): Map<string, PluginBuildAttestation> {
  * seed overturned an operator's plugin epoch.
  *
  * So the class reads from the DECLARATION, never the path: a plugin declares a plugin envelope (an object
- * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI.
+ * with a `title`); anything else is base seed. The grammar is then recognised by its own canonical URI, and a stock TW5
+ * plugin (`build-tw5-themes.ts`) by its title's TW5-reserved namespace (`isStockTw5PluginTitle`).
  */
 async function collectPlugins(attestations: Map<string, PluginBuildAttestation>): Promise<GenesisPluginEntry[]> {
   const entries: GenesisPluginEntry[] = [];
@@ -110,6 +116,9 @@ async function collectPlugins(attestations: Map<string, PluginBuildAttestation>)
       if (typeof meta["source"]  === "string") source  = meta["source"];
     } catch { /* unparseable — it declares nothing, so it stands as base seed */ }
     if (id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI) kind = "grammar";
+    // A stock TW5 plugin (the vanilla and snowwhite themes, packed from the core's own revision) declares itself by its title's
+    // TW5-reserved namespace: it ships in the boot set and folds into no epoch region.
+    if (kind === "plugin" && isStockTw5PluginTitle(id)) kind = "stock";
 
     const att = attestations.get(id);
     if (att && att.pluginJsonSha256 !== sha) {
@@ -215,7 +224,10 @@ async function main(): Promise<void> {
   }
 
   // Layer B: build genesis doc — pure mesh, no fs.
+  // Region folds are pure over the exact inputs buildGenesisDoc consumes, so the floor can name them without a provisional second bake.
+  const floor = cutGenesisFloor({ repoRoot: REPO_ROOT, engine: computeEngineCid(coreSha256), grammar: computeGrammarCid(plugins), plugins: computePluginsCid(plugins) });
   const inputs: GenesisInputs = {
+    floor,
     actorSeed,
     coreBlob,
     coreVersion: TW5_VERSION,
@@ -246,6 +258,7 @@ async function main(): Promise<void> {
   const casDir   = join(genesisDir, "cas");
   const casWrote = writeCasEntriesFs(artifact.casEntries, casDir);
 
+  console.log(`[genesis] ✓ floor  ${floor.manifestCid}  ${Object.keys(floor.snapshots).sort().map((slug) => `${slug}=${floor.snapshots[slug]!.cid} (${floor.rows[slug]} rows)`).join("  ")}`);
   console.log(`[genesis] ✓ genesis/cas  ${artifact.casEntries.length} blob file(s) by CID (${casWrote} newly written)`);
   console.log(`[genesis] ✓ seed.json  PLAIN-DATA oracle seed (the boot artifact)  tiddlers=${Object.keys(artifact.seed.tiddlers).length}  blobs=${Object.keys(artifact.seed.blobs).length}`);
   console.log(`[genesis] ✓ blobs(meta)=${counts.blobCount}  tiddlers=${counts.tiddlerCount}`);

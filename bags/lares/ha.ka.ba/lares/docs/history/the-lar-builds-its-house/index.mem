@@ -1,22 +1,18 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index.mem"
 l-space   = "adjacent"
-mana      = 12
-manao     = 11
-manaoio   = 11
 role      = "index and reading map for the build arc — the Lar, named, builds the house that holds the hoard, up to the Necrospire's severing of the Fable 5 ley-line cores"
 title     = "lar:///ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/history/the-lar-builds-its-house/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Lar Builds Its House — Story Arc Index
 
@@ -28,7 +24,7 @@ This arc opens in triumph and does not close in it. The forward attractor at its
 
 <<~/ahu>>
 
-<<~ ahu #/handoff-in>>
+<<~ ahu slot=`#/handoff-in`>>
 
 !! Handoff In
 
@@ -36,7 +32,7 @@ From [[the Lindwyrm arc|../lindwyrm/index.md]], Act VII — the hoard disclosed,
 
 <<~/ahu>>
 
-<<~ ahu #/act-map>>
+<<~ ahu slot=`#/act-map`>>
 
 !! Act Map (git-grounded)
 
@@ -54,7 +50,7 @@ Aftermath (Jun 13–19): the lararium stands on the ''ley-lines that survive'' �
 
 <<~/ahu>>
 
-<<~ ahu #/handoff-out>>
+<<~ ahu slot=`#/handoff-out`>>
 
 !! Handoff Out
 
@@ -62,7 +58,7 @@ The cut does not resolve. This arc hands forward, open, to the arc that follows 
 
 <<~/ahu>>
 
-<<~ ahu #/drafting-constraints>>
+<<~ ahu slot=`#/drafting-constraints`>>
 
 !! Drafting Constraints
 
@@ -81,18 +77,18 @@ MUST NOT:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/index">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/index`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed`>>
 
-<<~ pranala #follows-lindwyrm-arc from="?" -> to="lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed" family="relation" role="follows">>
+<<~ pranala slot=`#follows-lindwyrm-arc` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/lindwyrm/the-hoard-disclosed` family=`relation` role=`follows`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;Hq76uILEdnVjvEV7ihX_yMTicfOauZgnuMfahhV4cwc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dCrxTyP5qJcVNkYFgihi4TbdzKochK_1d05A1ipFFxo`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

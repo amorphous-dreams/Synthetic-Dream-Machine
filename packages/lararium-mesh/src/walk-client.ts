@@ -32,8 +32,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./auth-wire.js";
-import { ed25519SignerFromSeed } from "./auth-wire.js";
+import type { LeafIdentity, UnsignedPresented, LarSessionMsg } from "./leaf-presentation.js";
+import { ed25519SignerFromSeed } from "./ed25519-door.js";
 import {
   decodeInvite, encodeInvite, redeemClaim, isHostingGrant, isInviteToken, allowance, hostingActCid, blindWalkerBatch, finalizeWalkerBatch,
   hostingActsFromBoard, verifyHostingAct,
@@ -196,9 +196,10 @@ export function walkArm(record: WalkRecord, leaf: WalkLeaf): UnsignedPresented |
 
 /** The dial identity a walk presents: the base card and proof, the walk arm, and the leaf's signer. No edge. */
 export function walkIdentity(base: LeafIdentity, record: WalkRecord, leaf: WalkLeaf): LeafIdentity | null {
+  if (base.arm !== "face") return null;
   const presented = walkArm(record, leaf);
   if (!presented) return null;
-  return { contactCard: base.contactCard, peerPubKey: base.peerPubKey, sign: base.sign, presented, leafSign: ed25519SignerFromSeed(leaf.seed) };
+  return { arm: base.arm, contactCard: base.contactCard, peerPubKey: base.peerPubKey, sign: base.sign, presented, leafSign: ed25519SignerFromSeed(leaf.seed) };
 }
 
 /** The walker's view of a dialed transport: its session, its re-presentation, and its proven peers. */
@@ -207,7 +208,12 @@ export interface WalkTransport {
   sendSession(kind: string, body: unknown): boolean;
   represent(identity: LeafIdentity): void;
   on(event: "peer-candidate", listener: (e: { peerId: unknown }) => void): unknown;
-  readonly identity: LeafIdentity;
+  /**
+   * What the transport presents. The sealed gate adapter presents a face, not a walk, so it carries none: the
+   * WALKER ROUTE IS SHUT BY NAME (`walker-route-shut`) and a transport without an identity settles no invite. A
+   * walker transport that carries one presents it.
+   */
+  readonly identity?: LeafIdentity;
 }
 
 /**
@@ -226,6 +232,7 @@ export function walkOver(opts: {
   /** Told each message this walk dropped because its store, its act read or its transport refused. */
   readonly onFault:    (fault: WalkFault) => void;
 }): () => void {
+  if (opts.base.arm !== "face") throw new Error("a place identity cannot present a face walk");
   const gate = opts.gatePubKey.toLowerCase();
   const leafKey = opts.leaf.verifyingKey.toLowerCase();
   /** Start work nobody awaits; its refusal reaches the fault port and no farther. */
@@ -246,13 +253,13 @@ export function walkOver(opts: {
       if (!kept) return;
       // Re-present under the grant: the dial that stands on it is the one that settles the invite.
       opts.transport.represent({
-        contactCard: opts.base.contactCard, peerPubKey: opts.base.peerPubKey, sign: opts.base.sign,
+        arm: opts.base.arm, contactCard: opts.base.contactCard, peerPubKey: opts.base.peerPubKey, sign: opts.base.sign,
         presented: { kind: "grant", grant }, leafSign: ed25519SignerFromSeed(opts.leaf.seed),
       });
     });
   });
   opts.transport.on("peer-candidate", () => {
-    const presented = opts.transport.identity.presented;
+    const presented = opts.transport.identity?.presented;
     if (presented?.kind !== "grant") return;
     unawaited("settle", async () => {
       await opts.store.update(gate, (held) => {
@@ -356,6 +363,7 @@ export async function hostingActOn(handle: HostingDocHandle, epochCid: string, w
     // A read that throws answers nothing for that change; the patience above still ends the wait.
     const look = (): void => { void find().then((act) => { if (act) done(act); }, () => undefined); };
     const onChange = (): void => look();
+    // LIVENESS: the peer may never sync the signed act; document changes can settle sooner.
     const timer = setTimeout(() => done(null), withinMs);
     handle.on("change", onChange);
     look();

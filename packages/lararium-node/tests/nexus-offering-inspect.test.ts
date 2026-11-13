@@ -4,39 +4,34 @@
  * The inspection reads the board off the holder's Repo and never shuts that Repo down: run as a door row inside a
  * standing vessel, the Repo it reads IS the vessel's own, and its peers keep syncing after the row answers.
  */
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { afterEach, describe, expect, vi } from "vitest";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import { restEvery, restingRepo } from "./resting-repo.js";
 import {
-  sha256HexBytesSync, materializeSharedLarDoc, offeringAnnounceKey, computePluginsCid,
+  sha256HexBytesSync, materializeSharedLarDoc, offeringAnnounceKey, computePluginsCid, crossroadsDocUrl, writeOfferingAnnounce,
   GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER,
   type GenesisSeed,
 } from "@lararium/mesh";
-import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, wearPersona } from "../src/node-vessel-identity.js";
+import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { runNexusPublishPlugins } from "../src/commands/nexus-publish.js";
 import { runNexusInspectOffering, NexusOfferingInspectError } from "../src/commands/nexus-offering-inspect.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { direct } from "./direct-store.js";
 import { tiddlerText } from "@lararium/mesh";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorRoot: string | undefined;
 
-beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lares-offering-inspect-"));
-  priorRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-});
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
-  if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
-  rmSync(root, { recursive: true, force: true });
+
 });
 
 /** An UNSIGNED offering source directory — `offering.json` plus the one blob's bytes beside it
@@ -65,7 +60,7 @@ function seedMinimalGenesis(): void {
   const genesisDir = join(root, "genesis");
   mkdirSync(genesisDir, { recursive: true });
   const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
+    format: "lararium-genesis-seed", actorSeed: "actor-seed",
     blobs: {},
     tiddlers: {
       [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
@@ -78,9 +73,8 @@ function seedMinimalGenesis(): void {
 
 async function stand(): Promise<void> {
   seedMinimalGenesis();
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
-  await wearPersona(0);
 }
 
 describe("runNexusInspectOffering — bounded local receiver", () => {
@@ -98,7 +92,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
     fetchSpy.mockRestore();
     expect(result.verification.ok).toBe(true);
-    expect(result.transport).toEqual({ status: "complete", source: "local-crossroads", remoteFetch: false });
+    expect(result.transport).toEqual({ status: "complete", source: "local-publication-board", remoteFetch: false });
     expect(result.inspection).toEqual({ status: "verified", byteStatus: "complete", adoption: "not-requested" });
     expect(result.bytes.held).toEqual([cid]);
     expect(result.bytes.missing).toEqual([]);
@@ -118,7 +112,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     expect(missing.bytes.missing).toEqual([cid]);
   });
 
-  it("refuses unknown CID and does not mint a blank Crossroads board", async () => {
+  it("refuses unknown CID and does not mint a blank publication board", async () => {
     await stand();
     const storage = larDataDir();
     await expect(direct(runNexusInspectOffering)({ offeringCid: `sha256:${"f".repeat(64)}`, storageDir: storage }))
@@ -134,19 +128,19 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     await stand();
     const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
     const repo = restingRepo(larDataDir());
-    const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
+    const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:publication");
     board.change((doc) => { doc.tiddlers[offeringAnnounceKey(offered.offeringCid)] = { tiddler: { title: offeringAnnounceKey(offered.offeringCid), text: "not-json" }, meta: { authority: "test" } }; });
     await repo.rest();
     await expect(direct(runNexusInspectOffering)({ offeringCid: offered.offeringCid, storageDir: larDataDir() }))
       .rejects.toThrow(/malformed/);
   });
 
-  it("refuses a signed offering placed beneath the wrong Crossroads wrapper domain", async () => {
+  it("refuses a signed offering placed beneath the wrong offering wrapper domain", async () => {
     const { dir } = seedOfferingSource();
     await stand();
     const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
     const repo = restingRepo(larDataDir());
-    const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:crossroads");
+    const board = await materializeSharedLarDoc(repo, offered.boardUrl, "board:publication");
     const key = offeringAnnounceKey(offered.offeringCid);
     const prior = tiddlerText(board.doc()?.tiddlers[key]);
     expect(typeof prior).toBe("string");
@@ -162,6 +156,20 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
     await repo.rest();
     await expect(direct(runNexusInspectOffering)({ offeringCid: offered.offeringCid, storageDir: larDataDir() }))
       .rejects.toThrow(/malformed/);
+  });
+
+  it("an offering hand-placed in the mirrored crossroads document reads as not present", async () => {
+    const { dir } = seedOfferingSource();
+    await stand();
+    const offered = await direct(runNexusPublishPlugins)({ source: dir, storageDir: larDataDir() });
+    const repo = restingRepo(larDataDir());
+    const publication = await materializeSharedLarDoc(repo, offered.boardUrl, "board:publication");
+    publication.change((doc) => { delete doc.tiddlers[offeringAnnounceKey(offered.offeringCid)]; });
+    const crossroads = await materializeSharedLarDoc(repo, crossroadsDocUrl(await loadVesselVerifyingKey()), "board:crossroads");
+    crossroads.change((doc) => writeOfferingAnnounce(doc, offered.offering));
+    await repo.rest();
+    await expect(direct(runNexusInspectOffering)({ offeringCid: offered.offeringCid, storageDir: larDataDir() }))
+      .rejects.toThrow(/not present on the local publication board/);
   });
 
   it("RED: as a door row over a standing vessel's own Repo, it inspects and leaves that Repo syncing its peers", async () => {
@@ -184,7 +192,7 @@ describe("runNexusInspectOffering — bounded local receiver", () => {
       expect(seen.doc().n).toBe(2);
       // A refusal answers as `{ refused }`, the way every row names one.
       const unknown = await row({ offeringCid: `sha256:${"f".repeat(64)}` }, {} as never);
-      expect(String(unknown["refused"])).toMatch(/not present on the local Crossroads board/);
+      expect(String(unknown["refused"])).toMatch(/not present on the local publication board/);
     } finally {
       await peer.shutdown();
       await live.rest();

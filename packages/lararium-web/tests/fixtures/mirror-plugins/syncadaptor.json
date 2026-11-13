@@ -1,0 +1,6 @@
+{
+  "title": "$:/plugins/test/syncadaptor",
+  "type": "application/json",
+  "plugin-type": "plugin",
+  "text": "{\"tiddlers\": {\"$:/plugins/test/syncadaptor/module.js\": {\"title\": \"$:/plugins/test/syncadaptor/module.js\", \"type\": \"application/javascript\", \"module-type\": \"syncadaptor\", \"text\": \"exports.name='x';\"}}}"
+}

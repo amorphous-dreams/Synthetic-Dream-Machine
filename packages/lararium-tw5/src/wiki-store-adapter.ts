@@ -25,8 +25,9 @@ import type { CompositeStore, CompositeEntry, ChangeOrigin } from "@lararium/mes
 import { consistencyRadius, type ConsistencyRadius, type ComparisonStalk, type PlaneRestriction } from "@lararium/mesh";
 import { CompositeStore as CompositeStoreCtor } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "./memory-store.js";
-import { foldCorpus, corpusPlanes } from "./wiki-sense-fold.js";
-import { senseDocOfEntry } from "./wiki-corpus-reader.js";
+import { foldCorpus, corpusPlanes, type CorpusFold } from "./wiki-sense-fold.js";
+import { compositeCorpusReader, senseDocOfEntry, type WikiCorpusReader } from "./wiki-corpus-reader.js";
+import type { DocStalk, WikiSenseDoc } from "./wiki-sense-fold.js";
 
 // ── the per-tiddler plane readings (structure ⊥ form; content rides the perceiver's shore) ──────────
 
@@ -58,7 +59,16 @@ export interface WikiSensoriumSnapshot {
  * non-vacuous by construction.
  */
 export function projectWikiSensorium(entries: readonly CompositeEntry[]): WikiSensoriumSnapshot {
-  const fold = foldCorpus(entries.map(senseDocOfEntry));
+  return projectWikiSensoriumOfDocs(entries.map(senseDocOfEntry));
+}
+
+/** The same projection over already-lifted docs, with an optional per-title stalk supplier (a warm refold). */
+export function projectWikiSensoriumOfDocs(docs: readonly WikiSenseDoc[], stalkOf?: (doc: WikiSenseDoc) => DocStalk): WikiSensoriumSnapshot {
+  return projectWikiSensoriumOfFold(foldCorpus(docs, stalkOf));
+}
+
+/** Project a fold whose document frequencies may come from a persistent corpus reader. */
+export function projectWikiSensoriumOfFold(fold: CorpusFold): WikiSensoriumSnapshot {
   const { stalk, restrictions } = corpusPlanes(fold);
   const structureVal = restrictions[0]!.value;
   const formVal = restrictions[1]!.value;
@@ -79,12 +89,20 @@ export function projectWikiSensorium(entries: readonly CompositeEntry[]): WikiSe
  * and reads the cross-plane consistency radius. Read-only: it never writes the store it senses.
  */
 export class WikiStoreAdapter {
-  constructor(private readonly store: CompositeStore) {}
+  private readonly reader: WikiCorpusReader;
 
-  /** The causal-stamped snapshot projection over the island's OWN resolved surface. */
+  /** The reader carries the per-title stalk memo: a refold after one write re-derives one stalk, so the island's
+   *  event loop is not held for a whole-corpus fold at each change. */
+  constructor(store: CompositeStore, reader: WikiCorpusReader = compositeCorpusReader(store)) { this.reader = reader; }
+
+  /** The causal-stamped snapshot projection over the island's OWN resolved surface. A reader that folds in slices
+   *  folds here in slices, so the cold seed gives the island's loop back and a person's act never waits it out. */
   async snapshot(): Promise<WikiSensoriumSnapshot> {
-    const entries = await this.store.entries();
-    return projectWikiSensorium(entries);
+    const docs = await this.reader.docs();
+    if (this.reader.foldPaced) return projectWikiSensoriumOfFold(await this.reader.foldPaced(docs));
+    return this.reader.fold
+      ? projectWikiSensoriumOfFold(this.reader.fold(docs))
+      : projectWikiSensoriumOfDocs(docs, this.reader.stalkOf);
   }
 
   /** The Robinson li-radius over the engineered structure⊥form stalk — the wiki-sensorium's read. */

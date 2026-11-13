@@ -5,7 +5,7 @@
  *
  * The gesture holds the disk grant and the Synced tree (the island holds
  * neither — readiness reads local on both sides of the shore):
- *   scan      walk source for `.mem` carriers; derive each uri by the loci law
+ *   scan      walk source for `.mem` carriers; derive each uri by the address siting rule
  *   diff      disk-hash vs synced-hash per carrier (the cheap two legs)
  *   preview   (default) print NEW / UNCHANGED / CHANGED; submit nothing
  *   --apply   send NEW+CHANGED carriers with their hashes riding an INGEST
@@ -21,7 +21,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
 import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
@@ -37,7 +37,22 @@ function printUsage(): void {
   console.log("             write-layer ingest-back — a wikis/ source derives its URIs off that layer).");
 }
 
-export async function cmdIngest(args: ParsedArgs): Promise<number> {
+/** The working copies that shadow a canon record this INGEST moved past the base each forked from (`override-bases.ts`). */
+export interface FresherCanonReading {
+  readonly working: string;
+  readonly titles: readonly string[];
+  readonly count: number;
+}
+
+/** Read the outcome's fresher-canon warning; absent where the wave moved no canon record under a working copy. */
+export function readFresherCanon(summary: Readonly<Record<string, unknown>>): FresherCanonReading | undefined {
+  const o = summary["fresherCanon"] as Record<string, unknown> | undefined;
+  if (o === undefined || o === null || typeof o !== "object") return undefined;
+  const titles = Array.isArray(o["titles"]) ? (o["titles"] as unknown[]).map(String) : [];
+  return { working: String(o["working"] ?? ""), titles, count: typeof o["count"] === "number" ? (o["count"] as number) : titles.length };
+}
+
+export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCanonReading }): Promise<number> {
   const source = args.options["source"];
   const toBag  = args.options["to"];
   if (!source || !toBag) { printUsage(); return 2; }
@@ -46,7 +61,8 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   const tree = openSyncedTree();
 
   // scan — observations only, never a work queue
-  const dirs = { bags: larBagsDir(), wikis: larWikisDir() };
+  const projections = larProjectionsDirOrNone();
+  const dirs = { bags: larBagsDir(), wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
   const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs));
   if (scan === null) {
     emit(args, { ok: false, error: { code: "usage", message: `source "${source}" does not resolve` }, human: () => console.error(`lares ingest: source "${source}" does not resolve`) });
@@ -55,7 +71,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   const { rows, skipped } = scan;
   // A scan that skipped every carrier is no success: say which mirror directories it derived against.
   if (rows.length === 0 && skipped.length > 0) {
-    const message = `scanned 0 carriers; ${skipped.length} skipped (no loci derivation). Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]}`;
+    const message = `scanned 0 carriers; ${skipped.length} skipped (no address derivation). Derived against bags dir ${dirs.bags} and wikis dir ${dirs.wikis}; first skipped: ${skipped[0]}`;
     emit(args, {
       ok: false,
       error: { code: "usage", message, hint: "the source must sit under the bags dir (LAR_BAGS) or wikis dir (LAR_WIKIS) as <holding>/<w.w.w>/…/<name>.<ext>" },
@@ -68,6 +84,10 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // rename-deletion so the island re-links records (change-id preserved) and the
   // observation survives the move (see applyConfirmedRenames, post-submit).
   const renameDeletions = scan.renameDeletions ?? [];
+  // THE KĀPAE THE SOURCE SPEAKS: each shadow file's title rides the wave, and the island raises a kāpae over
+  // it in the target bag; a shadow file that proves no kāpae gets named and fails the run.
+  const shadows = scan.shadows ?? [];
+  const refusedShadows = scan.refusedShadows ?? [];
 
   // Carriers that would hit the ungated-large-inline wall during ingest, still
   // un-flagged — the readiness law reads off text the scan already holds.
@@ -100,12 +120,16 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         unchanged: rows.filter((r) => r.status === "unchanged").length,
         nonNfc: rows.filter((r) => r.status === "non-nfc").map((r) => r.uri),
         wouldFault: wouldFault.map((r) => r.uri),
+        kapae: shadows,
+        refusedShadows,
         skipped,
         rows: rows.filter((r) => r.status !== "unchanged").map((r) => ({ uri: r.uri, status: r.status })),
       },
       human: () => {
         for (const r of rows) console.log(`  ${r.status.toUpperCase().padEnd(10)} ${r.uri}`);
-        for (const f of skipped) console.log(`  SKIPPED    ${f} (no loci derivation — outside bags//wikis/, non-.md, or rootless interior)`);
+        for (const t of shadows) console.log(`  ${"KAPAE".padEnd(10)} ${t}`);
+        for (const r of refusedShadows) console.error(`  ${"REFUSE".padEnd(10)} ${r.file} (${r.refusal})`);
+        for (const f of skipped) console.log(`  SKIPPED    ${f} (no address derivation — outside bags//wikis/, non-.md, or rootless interior)`);
         console.log(`\n  ${rows.length} scanned · ${candidates.length} would submit · preview only (pass --apply)`);
         if (wouldFault.length > 0) console.log(`  ${wouldFault.length} large un-flagged file(s) would fault during ingest — run \`--tag-blobs\` to flag them.`);
       },
@@ -113,7 +137,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     return 0;
   }
 
-  if (candidates.length === 0) {
+  if (candidates.length === 0 && shadows.length === 0) {
     emit(args, { ok: true, data: { toBag, scanned: rows.length, submitted: 0 }, human: () => console.log("nothing to ingest — all carriers match the Synced tree") });
     return 0;
   }
@@ -125,8 +149,9 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       return exitFor("usage");
     }
     for (const r of candidates) console.log(`  ${r.status.toUpperCase().padEnd(8)} ${r.uri}`);
+    for (const t of shadows) console.log(`  ${"KAPAE".padEnd(8)} ${t}`);
     const rl = createInterface({ input: stdin, output: stdout });
-    const answer = await rl.question(`INGEST ${candidates.length} carriers into ${toBag}? [y/N] `);
+    const answer = await rl.question(`INGEST ${candidates.length} carriers${shadows.length > 0 ? ` and raise ${shadows.length} kāpae` : ""} into ${toBag}? [y/N] `);
     rl.close();
     if (!/^y(es)?$/i.test(answer.trim())) { console.log("aborted"); return 1; }
   }
@@ -147,6 +172,7 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
       source, toBag, candidates, did,
       inWiki: Boolean(args.flags["in-wiki"]),
       ...(renameDeletions.length > 0 ? { deletions: renameDeletions } : {}),
+      ...(shadows.length > 0 ? { kapae: shadows } : {}),
       ...(args.options["change-id"] ? { changeId: args.options["change-id"] } : {}),
     }, tree);
   } catch (err) {
@@ -170,6 +196,8 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const summary = summaryOutput(result) ?? {};
+  const fresher = readFresherCanon(summary);
+  if (sink && fresher) sink.fresher = fresher;
 
   // The gesture pinned what it landed (`settleIngest`); the projector pins what it projects; both write
   // the same key and the same base where they agree. An unchanged carrier then reads `unchanged` on the
@@ -181,11 +209,12 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // THE SETTLE WORD. Each carrier whose records this gesture moved causes a projection; the gesture asks the
   // vessel to say when that projection has run, so the run ends where a scan that follows reads what the
   // projection left (`askSettle`). A wait that ends with no word says so and changes no exit: the records
-  // landed either way.
+  // landed either way. The word keeps waiting while pages keep settling; one that stalls leaves the carriers
+  // still waiting as the bag's record, and `lares shore settle --bag <bag> --pending` resumes it.
   let settle: SettleReading | { readonly settled: false; readonly refusal: string; readonly why: string } | undefined;
   if (settled.rendered.length > 0) {
     try {
-      settle = await askSettle((a) => askShore(a, did), toBag, settled.rendered);
+      settle = await askSettle((a) => askShore(a, did), toBag, settled.rendered, { record: true });
     } catch (err) {
       const f = verbFailure(err);
       settle = { settled: false, refusal: f.code, why: f.message };
@@ -201,7 +230,16 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
   // one gets named with the two doors that settle it by key.
   const { refused, conflicts } = settled;
   const pageError = settled.pageError;
-  const { failed, message: refusedMessage } = ingestVerdict(settled);
+  const verdict = ingestVerdict(settled);
+  // A SHADOW THAT RAISED NOTHING NEVER READS AS APPLIED: a file that proved no kāpae, or a title the island
+  // refused to set aside, fails the run by name.
+  const kapaeAnswer = (summary as { kapae?: { raised?: unknown; standing?: unknown; refused?: unknown } }).kapae;
+  const kapaeRefused = Array.isArray(kapaeAnswer?.refused) ? (kapaeAnswer.refused as Array<Record<string, unknown>>) : [];
+  const kapaeFault = refusedShadows.length > 0 || kapaeRefused.length > 0
+    ? `INGEST set aside no title for ${refusedShadows.length + kapaeRefused.length} kāpae shadow(s): ${[...refusedShadows.map((r) => `${r.file} (${r.refusal})`), ...kapaeRefused.map((r) => `${String(r["uri"])} (${String(r["code"])})`)].join(", ")}`
+    : null;
+  const failed = verdict.failed || kapaeFault !== null;
+  const refusedMessage = verdict.message ?? kapaeFault;
   const stoodOff = !failed && conflicts.length > 0;
   const conflictMessage = `INGEST landed nothing for ${conflicts.length} of ${candidates.length} carrier(s) that stand in a conflict: ${conflicts.map((r) => r.uri).join(", ")}. \`lares shore\` names each standoff's key; settle one with \`lares shore take-disk <uri> --key <key>\` (the file's words) or \`lares shore take-records <uri> --key <key>\` (the records')`;
   const data = {
@@ -228,6 +266,9 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         ? `INGEST ✓ applied locally — ${candidates.length} carrier(s) submitted (req ${result.requestId.slice(0, 8)})`
         : `INGEST ✗ ${refused.length} of ${candidates.length} carrier(s) refused; the rest applied locally (req ${result.requestId.slice(0, 8)})`);
       for (const [decision, n] of Object.entries(settled.tallies)) console.log(`  ${decision.toUpperCase().padEnd(10)} × ${n}`);
+      for (const t of Array.isArray(kapaeAnswer?.raised) ? (kapaeAnswer.raised as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (raised)`);
+      for (const t of Array.isArray(kapaeAnswer?.standing) ? (kapaeAnswer.standing as unknown[]) : []) console.log(`  ${"KAPAE".padEnd(10)} ${String(t)}  (already set aside)`);
+      if (kapaeFault !== null) console.error(`  ⚠ ${kapaeFault}`);
       // Under the row cap every row prints. Past it the landed rows ride the tally above, and each row
       // that asks for a hand prints below with its reason.
       const asking = new Set([...refused, ...conflicts].map((r) => r.uri));
@@ -247,10 +288,15 @@ export async function cmdIngest(args: ParsedArgs): Promise<number> {
         } else if (settle.settled && "mirrored" in settle && !settle.mirrored) {
           console.log(`  no mirror holds ${toBag}: no projection follows these records`);
         } else if (settle.settled) {
-          console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from a higher bag` : ""}`);
+          console.log(`  projection settled for ${settle.settledCount} carrier(s)${settle.elsewhereCount > 0 ? `; ${settle.elsewhereCount} project from a higher bag` : ""} · ${settle.pendingCount} pending · ${settle.stalledCount} stalled`);
           if ("supersededCount" in settle && settle.supersededCount > 0) console.error(`  ⚠ a later settle word took ${settle.supersededCount} carrier(s) over; this run claims no projection for them, and a scan now may read a file the projection still moves`);
+        } else if ("stalled" in settle && settle.stalled) {
+          console.log(`  projection settled for ${settle.settledCount} carrier(s) · ${settle.pendingCount} pending · ${settle.stalledCount} stalled`);
+          console.error(`  ⚠ no page settled within the stall window; ${settle.pendingCount} carrier(s) still wait: \`lares shore settle --bag ${toBag} --pending\` resumes the word`);
         } else console.error(`  ⚠ the vessel did not say the projection settled (${settle.refusal}: ${settle.why}); a scan now may read a file the projection still moves`);
       }
+      // The copy keeps shadowing canon (the recipe stack decides what shows); the word names it, nothing writes.
+      if (fresher !== undefined) console.error(`  ⚠ canon is fresher than the working copy above it for ${fresher.count} title(s) in ${fresher.working}: ${fresher.titles.slice(0, 8).join(", ")}${fresher.count > 8 ? ", …" : ""} (remove a copy with the ordinary verbs to take the fresher canon)`);
       if (conflicts.length > 0) console.error(`  ⚠ settle a conflict under its key (\`lares shore\` names it): \`lares shore take-disk <uri> --key <key>\` lands the file's words · \`lares shore take-records <uri> --key <key>\` writes the records' render`);
       console.log(`\n  audit: ${auditUri}`);
     },

@@ -4,28 +4,24 @@ description: Audit or correct EXISTING text for L-Prime conformance under lar://
 allowed-tools: Read, Grep, Glob, Bash, Edit, Write
 ---
 
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable          = true
 constraints        = ["any copula left standing owns its warrant in the sentence", "smallest lawful intervention; never widen a local fix into a rewrite", "quotations, code, and literal examples never normalize silently", "has runs free --- never policed"]
 covers             = ["lar:///ha.ka.ba/lares/api/mu/l-prime"]
-file-path          = "bags/lares/ha.ka.ba/lares/api/mu/l-prime/SKILL.mem"
-mana               = 14
-manao              = 15
-manaoio            = 13
 role               = "deliberate post-hoc L-Prime auditor of existing text; Hoʻoko correction surface --- distinct from the forward-seeding ward"
 skill-package-root = "bags/lares/ha.ka.ba/lares/api/mu/l-prime"
-tags               = ["api/pono/meme", "api/pono/loci"]
+tags               = ["api/pono/meme"]
 title              = "lar:///ha.ka.ba/lares/api/mu/l-prime/SKILL"
 type               = "text/memetic-wikitext+tiddlywiki"
 uri-path           = "ha.ka.ba/lares/api/mu/l-prime/SKILL"
 ```
 
-<<~ ahu #/place>>
+<<~ ahu slot=`#/place`>>
 
 ! L-Prime Auditor
 
@@ -33,7 +29,7 @@ The ward seeds generation forward; the loci governs first-pass composition. ''Th
 
 <<~/ahu>>
 
-<<~ ahu #/trigger>>
+<<~ ahu slot=`#/trigger`>>
 
 !! Trigger
 
@@ -41,7 +37,7 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 
 <<~/ahu>>
 
-<<~ ahu #/loop>>
+<<~ ahu slot=`#/loop`>>
 
 !! The Loop
 
@@ -63,11 +59,12 @@ A request to scan, flag, compare before/after, or correct ''already-settled'' wo
 
 <<~/ahu>>
 
-<<~ ahu #/surfaces>>
+<<~ ahu slot=`#/surfaces`>>
 
 !! Output Surfaces
 
 ''Mark-only'' (inspection, no mutation):
+
 ```text
 [mark-only]
 location: <line | sentence | local quote>
@@ -76,6 +73,7 @@ reason:   <short reason>
 ```
 
 ''Hoʻoko'' (correction):
+
 ```text
 [hooko]
 before: <original>
@@ -87,15 +85,15 @@ A sentence turn beats a lecture. Output stays compact: location, bucket, reason,
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;EksIkf3oEUTJdaJ3dOxtPaSxdDGCOofirua4gh0VI-I
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5SDfbsGm7yT_O78ArV6cwn04uFsevQGhoD95qdbA6Ls`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

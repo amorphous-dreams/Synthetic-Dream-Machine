@@ -1,27 +1,21 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu/the-syad-perspectives.mem"
 l-space   = "stable"
-mana      = 15
-manao     = 17
-manaoio   = 16
 role      = "condensed syad research shelf, stance-reading summary, bridge to the archive bundle"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/the-syad-perspectives"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Syad Perspectives — Condensed Research
 
@@ -31,7 +25,7 @@ The deeper archive bundle stays adjacent.
 
 <<~/ahu>>
 
-<<~ ahu #/reading-question>>
+<<~ ahu slot=`#/reading-question`>>
 
 !! Reading Question
 
@@ -43,7 +37,7 @@ Different measure.
 
 <<~/ahu>>
 
-<<~ ahu #/saptabhangi>>
+<<~ ahu slot=`#/saptabhangi`>>
 
 !! Saptabhangi
 
@@ -62,7 +56,7 @@ It names a frame where the truth axis does not fit cleanly.
 
 <<~/ahu>>
 
-<<~ ahu #/flag-surface>>
+<<~ ahu slot=`#/flag-surface`>>
 
 !! Flag Surface
 
@@ -78,7 +72,7 @@ Quiet stances stay encoded as quiet, not missing.
 
 <<~/ahu>>
 
-<<~ ahu #/legacy-boundary>>
+<<~ ahu slot=`#/legacy-boundary`>>
 
 !! Legacy Boundary
 
@@ -91,7 +85,7 @@ Spread rides flags and combination, not omission.
 
 <<~/ahu>>
 
-<<~ ahu #/provenance>>
+<<~ ahu slot=`#/provenance`>>
 
 !! Provenance
 
@@ -107,16 +101,16 @@ The archive-derived research bundle lives at:
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/l-prime">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-syad-perspectives`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu/the-syad-perspectives/README`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/l-prime`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;KOy6NVN8xDSSGfFhsTMfYTC0ev14nR1u6bMk8K0aPfI
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3B4UKbIFjfb0LgBRUpVmMWe3Dq82D0Q2iNCUdTQgjg4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

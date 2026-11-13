@@ -4,13 +4,13 @@
  * emits a live-delta hydration frame for the waking session.
  *
  * IT CARRIES TWO CAPABILITIES, AND `--observe` WITHHOLDS THE SECOND. Observing reports what stands and
- * touches nothing; standing brings a node up, founds a vessel, wires the AI surfaces. An unattended
+ * touches nothing; standing brings a node up and founds a vessel. An unattended
  * caller — a session hook, a cron, anything that only wants a reading — holds the first alone, so
  * looking never decides what stands.
  *
- * FOUNDING STANDS THE VESSEL AND NOTHING ELSE (operator ruling). The mempalace library and
- * the sensorium organs keep their own doors (`lares mempalace install`, `lares sense setup`), so a
- * founding stays isolated to the vessel root. A stand still REPORTS what stands, because naming a missing
+ * STANDING WRITES `LAR_ROOT` AND NOTHING ELSE (the radius law, lar:///ha.ka.ba/lares/cli/reality-tunnel). The
+ * mempalace library and the sensorium organs keep their own doors (`lares mempalace install`, `lares sense
+ * setup`), and every operator home rides `lares home`, so a founding stays inside the vessel root. A stand still REPORTS what stands, because naming a missing
  * tool serves the operator and installing one behind them does not.
  *
  * The static CLAUDE.md @-import carries the canonical seed; this frame carries
@@ -22,21 +22,23 @@ import { existsSync, mkdirSync, openSync, readFileSync, statSync } from "node:fs
 import { join } from "node:path";
 import { spawn } from "node:child_process";
 import { repoRoot } from "@lararium/mesh/node";
-import { fatalLine } from "@lararium/node";
+import { fatalLine, derivePronaosDeskInputs, originDeclaration } from "@lararium/node";
 import { faceStandsOnDisk } from "../floor-cure.js";
 import { engineHeldByHost } from "../port-control.js";
 import { standingPath, standingVerdict } from "@lararium/mesh/rendezvous-path";
 import { larRoot, larBootstrapPath, larDataDir, larCasDir, vesselDid } from "../env.js";
 import { udsAlive } from "../local-connector.js";
+import { awaitBootPhase, awaitVerbSocket } from "../stand-socket-wait.js";
 import { readVesselStanding, conditionOk } from "../vessel-condition.js";
 import { emit } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { checkMempalaceIntegration, standOk } from "../integration-check.js";
+import { standPageEnv } from "../stand-page.js";
 import { foundIfAbsent, type FoundStep } from "../standup.js";
-import { tendSurfaces, SURFACES } from "./wire.js";
 import type { ParsedArgs } from "../parse-args.js";
 
+// PACING: boot evidence or its silence bound ends the wait; sleep spaces polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** This project's wing slug, from the session's cwd (matches the harvest wing). */
@@ -116,24 +118,20 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   const root = larRoot();
   const bootstrap = larBootstrapPath();
 
-  // 1. Found-if-absent (the whole shebang) under --install; else just report the cheap check.
+  // 1. Found-if-absent (the whole shebang) under --init; else just report the cheap check.
   //    Each step is a no-op when its artifact is present; genesis is never rebuilt; the
-  //    keypair is never wiped; --install never passes --force.
+  //    keypair is never wiped; --init never passes --force.
   // TWO CAPABILITIES RIDE HERE, AND A CALLER MAY HOLD ONLY THE FIRST.
   //   observe — report what stands. It carries no side effects, so it runs safely unattended.
-  //   stand   — bring the node up, found a vessel, wire the AI surfaces. ACTS, every one.
+  //   stand   — bring the node up and found a vessel. ACTS, every one, inside LAR_ROOT.
   // Fused, they let a caller asking "what stands right now" CHANGE what stands: merely looking started a
   // daemon. `--observe` withholds the acting half ENTIRELY and OUTRANKS every acting flag rather than
   // sitting beside them, so no flag further down an argv can talk a reading into an act.
   const observeOnly = args.flags["observe"] === true;
 
   let founding: FoundStep[] | undefined;
-  // The full standup runs under --init / --install (found a first vessel) OR
-  // --admit FILE (join an existing PersonaGroup — own fresh keypair, same group).
-  // All idempotent. `--install` founds a vessel that holds none; `--init` does that AND wires
-  // every AI surface (below). Two flags, two reaches.
-  const doStandup = !observeOnly &&
-    (args.flags["init"] === true || args.flags["install"] === true || args.options["admit"] !== undefined);
+  // `--init` founds a vessel where the root holds none; every step stays idempotent.
+  const doStandup = !observeOnly && args.flags["init"] === true;
   if (doStandup) founding = await foundIfAbsent(args, { root, bootstrap });
 
   // A REFUSED FOUNDING ENDS THE STAND. `cmdFound` printed the refusal by name; carrying on would wake a daemon over a
@@ -165,22 +163,6 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   // The CHECK stays here and stays cheap: a wake still REPORTS what stands, because reporting a missing
   // tool serves the operator and installing one behind their back does not.
   const integration = checkMempalaceIntegration();
-
-  // 1b. THE AI-SURFACE SEATS, AND THE ONE PLACE STANDING LEAVES LAR_ROOT.
-  //     Every harness reaches the memory sensorium through the same lares seat, and each wire converges
-  //     on the RESOLVED spawn — aligned passes untouched, drifted RE-AIMS, absent gets written — so
-  //     running them again is how a stale seat heals rather than a waste. A seat aimed at a moved
-  //     holder script otherwise stays shut while its wire reports success.
-  //
-  //     `lares vessel wire` is the door for this alone, and it names the reach the way a verb should.
-  //     These flags stand beside it for the caller who wants a founding and its wiring in one breath.
-  const initAll = !observeOnly && args.flags["init"] === true;
-  const named = SURFACES.filter((s) => args.flags[s] === true);
-  // A founding wires every surface; a single flag wires that one. The repo's own adapters ride the
-  // whole-house pass alone — naming one harness says nothing about where this checkout points.
-  const wanted = initAll ? SURFACES : (observeOnly ? [] : named);
-  const wires = wanted.length > 0 ? await tendSurfaces(wanted, initAll) : undefined;
-  const { claude, codex, copilot, vscode, adapters } = wires ?? {};
 
   // 2. Ensure the node is up — attach if healthy, start detached if down. NOT a restart.
   // "Up" for the CLI means the UDS verb socket answers — the CLI reaches the daemon there
@@ -255,7 +237,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
     } else if (!existsSync(bootstrap)) {
       nodeNote = "no bootstrap — run `lares vessel found` (or point LAR_ROOT at an initialized instance)";
     } else {
-      const dataDir = larDataDir();   // runtime → <lares>/vessel
+      const dataDir = larDataDir();   // runtime → <root>/hearth/vessel
       mkdirSync(dataDir, { recursive: true });
       const log = join(dataDir, "stand.log");
       // Readiness is SELF-ATTESTED, not requested (no web2 /health probe): the node
@@ -272,6 +254,15 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       const startOffset = existsSync(log) ? statSync(log).size : 0;
       const logFd = openSync(log, "a");
       // Detached + unref so the hook never blocks on the long-lived daemon.
+      // `--page` (an explicit act) names the desk's prepared Web root for the child; the node's composition verifies it.
+      let childEnv: NodeJS.ProcessEnv = { ...process.env, LAR_CAS: larCasDir() };
+      if (args.flags["page"] === true) {
+        const declared = originDeclaration();
+        const page = standPageEnv(childEnv, derivePronaosDeskInputs(repoRoot),
+          { originDeclared: declared.sameOrigin !== undefined || declared.webOrigin !== undefined || declared.flowOrigin !== undefined });
+        childEnv = { ...page.env };
+        if (page.note !== null) console.error(`lares vessel stand: ${page.note}`);
+      }
       const child = spawn("node", [distMain, "--port", String(port), "--root", root], {
         cwd: join(repoRoot, "packages", "lararium-node"),
         detached: true,
@@ -280,38 +271,29 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         // Export the corpus CAS dir so the daemon worker's resolveByCid reads the SAME
         // dir the CLI stages carrier bodies to (larCasDir) — deterministic across the two
         // processes regardless of the LAR_ROOT default. A verb rides references, not bodies.
-        env: { ...process.env, LAR_CAS: larCasDir() },
+        env: childEnv,
       });
       child.unref();
+      let childExited = false;
+      child.once("exit", () => { childExited = true; });
       started = true;
 
       const readAttestation = (): string => {
         try { return readFileSync(log, "utf8").slice(startOffset); } catch { return ""; }
       };
-      // The sd_notify WATCHDOG idiom: a healthy boot that keeps WRITING to the log is making
-      // progress, however long the corpus/keyhive replay runs — so extend the window whenever
-      // the log grows, and fail only on a genuine STALL (no output for the idle span) or the
-      // absolute ceiling. The adaptive window holds a slow-but-live boot instead of false-timing
-      // it at a fixed 15s deadline. (The real CPU cost is paced/deferred separately; this stops the watcher lying.)
-      // This door's own liveness patience — never a safety verdict — reads a monotonic clock,
-      // so an adversarial or operator wall-clock set-back/set-forward changes neither how long
-      // this wait actually ran nor when it gives up.
-      const IDLE_MS = 30_000; // headroom for a silent heavy stretch (Automerge corpus materialize)
-      const hardCap = performance.now() + 180_000;
-      let idleDeadline = performance.now() + IDLE_MS;
-      let seenLen = 0;
-      let phase: "starting" | "ready" | "fault" = "starting";
-      while (performance.now() < idleDeadline && performance.now() < hardCap) {
-        const tail = readAttestation();
-        if (/fatal:/.test(tail)) { phase = "fault"; break; }
-        if (tail.includes("vessel-ready")) { phase = "ready"; break; }
-        if (tail.length > seenLen) { seenLen = tail.length; idleDeadline = performance.now() + IDLE_MS; } // progress → extend
-        await sleep(200);
-      }
+      // The boot ends on the node's own events: `vessel-ready`, `fatal:` or the child's exit. Progress means a LATER boot
+      // milestone (`phase → <name>`, BOOT_MILESTONES): each one renews the silence span, however long the boot runs; a
+      // repeated or earlier milestone, or any other line, renews nothing. No fixed ceiling cuts a boot that keeps advancing.
+      const booted = await awaitBootPhase({
+        readAttestation, childExited: () => childExited, now: () => performance.now(), sleep,
+        silenceMs: 30_000, // LIVENESS: headroom for a silent heavy stretch (Automerge corpus materialize)
+      });
+      let phase: "starting" | "ready" | "fault" | "exited" = booted === "silent" ? "starting" : booted;
       // `vessel-ready` is attested BEFORE the daemon-keyhive gates settle, so a gate
       // fault (e.g. the Binding Gate) surfaces as a LATE `fatal:`. After a ready attestation,
       // settle and re-read for that late fault — never report up for a node that died.
       if (phase === "ready") {
+        // LIVENESS: no event says the keyhive gates settled after `vessel-ready`; the late-fault read waits this span.
         await sleep(1500);
         if (/fatal:/.test(readAttestation())) phase = "fault";
       }
@@ -331,14 +313,14 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       // about the vessel stands correctly.
       let udsRefusal: string | null = null;
       if (phase === "ready") {
-        const sockDeadline = performance.now() + 120_000;
-        while (performance.now() < sockDeadline && !(await udsAlive())) {
-          const tail = readAttestation();
-          if (/fatal:/.test(tail)) { phase = "fault"; break; }
-          const refused = /uds error: (.+)/.exec(tail);
-          if (refused) { udsRefusal = refused[1]!.trim(); break; }
-          await sleep(500);
-        }
+        // The wait ends on the node's own events (connect, `fatal:`, `uds error:`, the child's exit); each later
+        // socket-stage milestone (tw5-booted, live, daemon-ea, verb-seat) renews the silence span, so a slow cold bind
+        // that keeps advancing is never cut by a fixed deadline.
+        const waited = await awaitVerbSocket({
+          alive: udsAlive, readAttestation, childExited: () => childExited, now: () => performance.now(), sleep, silenceMs: 120_000,
+        });
+        if (waited.outcome === "fault") phase = "fault";
+        else if (waited.outcome === "refused") udsRefusal = waited.refusal;
       }
       // ONE READING, FROM ONE PLACE. `readVesselStanding` folds what this supervisor OBSERVED into the
       // four-state condition the whole house reports in, and `ok` derives from that state — so the note
@@ -351,15 +333,17 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         accepting: await udsAlive(),
         refusal:   udsRefusal,
       });
-      nodeUp = conditionOk(condition);
-      nodeNote = phase === "fault"
+      nodeUp = phase !== "exited" && conditionOk(condition);
+      nodeNote = phase === "exited"
+        ? `child exited before ready (pid ${child.pid ?? "?"}) — see ${log}`
+        : phase === "fault"
         // A BOOT FAULT KEEPS ITS OWN VOICE. The node writes a cure-naming line, and a report answering with a PATH sends the
         // operator to a file at the moment they least want a detour, while the caller downstream fails on
         // the symptom and buries the cause. The line that knows the answer belongs where the question got
         // asked, so it rides verbatim rather than through the condition's vocabulary.
         ? `started then attested a boot fault: ${fatalLine(readAttestation()) ?? "see " + log}`
         : condition.state === "rising" && phase !== "ready"
-          ? `starting detached (pid ${child.pid ?? "?"}); boot stalled (no log progress for 15s) — see ${log}`
+          ? `starting detached (pid ${child.pid ?? "?"}); boot stalled (no new boot milestone for 30s) — see ${log}`
           : `${condition.message} (pid ${child.pid ?? "?"})`
             + (condition.reason === "uds-refused" && /EINVAL/.test(udsRefusal ?? "")
                 ? "  (a Unix socket path caps near 108 bytes — LAR_ROOT sits too deep)" : "");
@@ -413,11 +397,6 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
       mempalace: { ok: integration.ok, standing: integration.standing, checks: integration.checks },
       ...(founding !== undefined ? { founding } : {}),
       ...(foundingHint !== undefined ? { foundingHint } : {}),
-      ...(claude !== undefined ? { claude } : {}),
-      ...(codex !== undefined ? { codex } : {}),
-      ...(adapters !== undefined ? { adapters } : {}),
-      ...(copilot !== undefined ? { copilot } : {}),
-      ...(vscode !== undefined ? { vscode } : {}),
       root,
       bootstrap: existsSync(bootstrap) ? "present" : "absent",
       timestamp: new Date().toISOString(),
@@ -441,32 +420,12 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
         console.log("    → lares sense setup          the sovereign sensorium organs");
       }
       if (founding !== undefined) {
-        console.log("  founding (--install):");
+        console.log("  founding (--init):");
         for (const s of founding) console.log(`    ${s.action.padEnd(6)} ${s.step}: ${s.detail}`);
       }
       if (foundingHint !== undefined) {
         console.log("  next — stand the founding kahu quorum:");
         for (const h of foundingHint) console.log(`    → ${h}`);
-      }
-      if (claude !== undefined) {
-        console.log(`  claude (--claude): ${claude.changed ? "wired" : "already wired"}${claude.backedUp ? " (settings.json backed up)" : ""}`);
-        for (const s of claude.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
-      }
-      if (adapters !== undefined) {
-        console.log("  repo adapters:");
-        for (const a of adapters) console.log(`    ${a.action.padEnd(8)} ${a.item}: ${a.detail}`);
-      }
-      if (codex !== undefined) {
-        console.log(`  codex (--codex): ${codex.changed ? "wired" : "already wired / nothing to do"}`);
-        for (const s of codex.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
-      }
-      if (copilot !== undefined) {
-        console.log(`  copilot (--copilot): ${copilot.changed ? "wired" : "already wired / nothing to do"}`);
-        for (const s of copilot.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
-      }
-      if (vscode !== undefined) {
-        console.log(`  vscode (--vscode): ${vscode.changed ? "wired" : "already wired / nothing to do"}`);
-        for (const s of vscode.steps) console.log(`    ${s.action.padEnd(8)} ${s.item}: ${s.detail}`);
       }
       console.log(`  root:        ${root}`);
       console.log(`  bootstrap:   ${existsSync(bootstrap) ? "present" : "absent"}`);

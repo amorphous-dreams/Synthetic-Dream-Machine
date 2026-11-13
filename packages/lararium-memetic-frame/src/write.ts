@@ -20,12 +20,15 @@
  */
 
 import { FRAME_MARKS } from "./marks.js";
-import { bccOf, bccOfSpan, classifyPostamble, verifyBcc } from "./check.js";
-import { checkSpan } from "./span.js";
+import { bccOf, bccOfSpan, etxFaults } from "./check.js";
+import { checkSpan, readFrame } from "./span.js";
 
-/** The one declaration a carrier opens on: this grammar, at the address that specifies it. */
+/**
+ * The one declaration a carrier opens on: this grammar (`type=`), at the address that specifies it
+ * (`spec=`). Both values name themselves and ride backtick runs, as every value in the grammar does.
+ */
 export const CARRIER_DECLARATION =
-  '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>';
+  "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>";
 
 /** A mark's entity by its NAME — so a writer names a mark rather than spelling its code. */
 export function markCode(name: string): string {
@@ -43,11 +46,30 @@ export interface FrameHeadSpec {
   readonly kapu?: boolean;
 }
 
-/** The canonical head sigil: `code` first, the namespace where one stands, both bearing ends quoted. */
+/**
+ * The canonical head sigil: `code` first, the namespace where one stands, then the bearing pair,
+ * `from` before `to`. Every value rides a backtick run, and no arrow stands between the ends: the
+ * pair carries the relation.
+ */
 export function headSigil(head: FrameHeadSpec): string {
   const ns = (head.namespace ?? "").trim();
   const code = markCode(head.kapu ? "SOH2" : "SOH");
-  return `<<^ code="${code}"${ns ? ` namespace="${ns}"` : ""} from="?" -> to="${head.uri}">>`;
+  return `<<^ code=\`${code}\`${ns ? ` namespace=\`${ns}\`` : ""} from=\`?\` to=\`${head.uri}\`>>`;
+}
+
+/** A bare frame mark by its NAME — ``<<^ code=`&#x0002;`>>`` for STX — the one spelling every writer mints. */
+export function markSigil(name: string): string {
+  return `<<^ code=\`${markCode(name)}\`>>`;
+}
+
+/** The sealed close: ETX carrying the block check in its `bcc` slot — ``<<^ code=`&#x0003;` bcc=`ni:///…`>>``. */
+export function sealSigil(check: string): string {
+  return `<<^ code=\`${markCode("ETX")}\` bcc=\`${check}\`>>`;
+}
+
+/** The release: EOT, resolving toward an address it cannot know — ``<<^ code=`&#x0004;` to=`?`>>``. */
+export function releaseSigil(): string {
+  return `<<^ code=\`${markCode("EOT")}\` to=\`?\`>>`;
 }
 
 export interface FrameCarrierInput {
@@ -65,7 +87,7 @@ export interface FrameCarrierInput {
 /**
  * Frame a body:
  *
- *     [prologue]<declaration>\n\n<head>\n<STX>\n\n<body>\n\n<ETX><check>\n\n<EOT>\n[postamble]
+ *     [prologue]<declaration>\n\n<head>\n<STX>\n\n<body>\n\n<ETX bcc=check>\n\n<EOT>\n[postamble]
  *
  * The padding is the canonical form's own (one blank line inside each bound), so a body framed here and
  * read back by the deserializer re-frames to the same bytes.
@@ -77,11 +99,13 @@ export function frameCarrier(input: FrameCarrierInput): string {
   out += `${headSigil(input.head)}\n`;
   // THE SPAN OPENS HERE, on the STX sigil's first byte.
   const spanStart = out.length;
-  out += `<<^ code="${markCode("STX")}">>\n\n${input.body}\n\n<<^ code="${markCode("ETX")}">>`;
-  // ETX takes its check adjacent, per the received framing (STX -> text -> ETX -> BCC).
-  out += bccOfSpan(out.slice(spanStart));
+  out += `${markSigil("STX")}\n\n${input.body}\n\n`;
+  // THE CHECK RIDES ITS SLOT. The digest reads the span with the bcc run deleted, which is the span
+  // closed on the bare ETX, so the writer hashes that and then seats the value in the slot.
+  const check = bccOfSpan(out.slice(spanStart) + markSigil("ETX"));
+  out += sealSigil(check);
   out += "\n";
-  out += `\n<<^ code="${markCode("EOT")}" -> to="?">>\n`;
+  out += `\n${releaseSigil()}\n`;
   out += (input.postamble ?? "").replace(/^\n+/, "");
   return out;
 }
@@ -90,40 +114,26 @@ export function frameCarrier(input: FrameCarrierInput): string {
  * Re-stamp a carrier's check over its current span — the writer's half for a carrier edited IN PLACE.
  *
  * A writer that patches body bytes (a field, a digest, a line of prose) has moved the span the check
- * covers, and the check must move with it: the body first, the check last, always.
+ * covers, and the check must move with it: the body first, the check last, always. The check rides
+ * the closing ETX sigil's `bcc` slot, so a stamp rewrites that one sigil and no other byte.
  *
- *   · `ok` — nothing to do; the bytes come back unchanged.
- *   · `torn` / no frame — nothing is stampable: no bounded span stands to attest to. Unchanged.
- *   · `mismatch` — the stale check adjacent to ETX is REPLACED, byte-anchored at the span's close
- *     (never a whole-file swap: `ni:///…` also reads as prose in a carrier that discusses checks).
- *   · `unchecked` — names TWO shapes. `verifyBcc` demands exact adjacency, so a check that stands but
- *     drifted off its ETX reads `unchecked` like a bare slot. The slot classifier tells them apart: a
- *     check standing anywhere in the slot (the whole tail, or just its first line where more follows)
- *     is REPLACED, never left beside a second one; a genuinely empty slot takes the bare insert.
+ *   · a matching slot — the bytes come back unchanged.
+ *   · no frame, a torn frame, an ETX in a spelling outside the grammar, or the retired trailer after
+ *     ETX — nothing stamps: the frame names its fault and the writer never guesses over it (the
+ *     trailer migrates through `tools/grammar-cut.mjs`, which never re-seals a broken seal).
+ *   · a stale slot — its value is REPLACED in place.
+ *   · a bare ETX — the slot is MINTED.
  *
  * MINTING ON ABSENT (operator ruling). The check is optional on READ and minted on every EMIT, so a
  * hand-authored framed carrier gains its check here rather than standing legal at one gate and red at
  * the next. The cost, named: an unchecked FRAMED carrier cannot be authored on purpose through this
- * door — the BSC trusted-link case. The `unchecked` branch is the one line to reverse if it ever is.
+ * door — the BSC trusted-link case.
  */
 export function stampCarrier(text: string): string {
-  const standing = verifyBcc(text);
-  if (standing !== "mismatch" && standing !== "unchecked") return text;
-  const span = checkSpan(text);
+  const frame = readFrame(text);
+  if (!frame.stx || !frame.etx || frame.faults.length > 0) return text;
+  if (etxFaults(text, frame.etx, true).length > 0) return text;
   const want = bccOf(text);
-  if (!span || !want) return text;
-  if (standing === "mismatch") {
-    return text.slice(0, span.end) + text.slice(span.end).replace(/^ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/, want);
-  }
-  const after = text.slice(span.end);
-  const wholeTail = classifyPostamble(after);
-  const eol = after.indexOf("\n");
-  const ownLine = eol < 0 ? wholeTail : classifyPostamble(after.slice(0, eol));
-  const standingDigest = wholeTail.kind === "bcc" ? wholeTail.digest : ownLine.kind === "bcc" ? ownLine.digest : null;
-  if (standingDigest !== null) {
-    const at = after.indexOf(standingDigest);
-    const rest = at < 0 ? after : after.slice(at + standingDigest.length);
-    return text.slice(0, span.end) + want + rest;
-  }
-  return text.slice(0, span.end) + want + after;
+  if (!want || !checkSpan(text)) return text;
+  return text.slice(0, frame.etx.index) + sealSigil(want) + text.slice(frame.etx.end);
 }

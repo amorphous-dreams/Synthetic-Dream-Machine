@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/homes/PLACE-STEP-2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-STEP-2.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/homes/PLACE-STEP-2.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-step-2-source-and-record-measurement`>>
+
+! Placement step 2 — source and record measurement
+
+Expanded the read-only inventory in `PLACE-MEASURE.md`. It now distinguishes persisted and in-memory families, names their current stores and readers, lists family-level test coverage, and records that INGEST's `source` and `to` remain independent. `vessel-island-pool-core.ts:resolveDiskMirrors` intersects recipe designation with the vessel's mirror grant and sends concrete per-wiki mirror entries in the manifest, but `IslandContext` and ACTION handlers do not currently receive that registry.
+
+Key placement findings: outcomes and receipt facts currently use the daemon wiki working slot; daemon document holds mailbox and lease epochs; ward audits use default writable; residency effects remain in each affected bag and have a distinct record shape; secrets and dyads currently share the daemon document; persona acts live in persona plane with an admission duplicate in daemon; signed swarm acts live on a promote board while transient swarm controls live in the daemon wiki. Delegate and face-row request rows are in-memory/socket flows, not stored records. Realm announcements live in the crossroads document. `cap/**` lives in the daemon document through its composite.
+
+The measurement does not grant authority to move a record family: Step 3 must introduce explicit homes and thread those handles to all identified writers/readers. No records moved in this step.
+
+`PLACE-RULING.md` is not needed yet; target home names and placement follows the operator's explicit ruling. The sources do not settle whether lower-level signed swarm board records should move with `swarm controls`; the operator names the controls and the existing architecture assigns the signed acts to a different face promote board. Keep that distinct unless a concrete writer/read contract proves otherwise.
+
+Suggested commit subject: `lar:///placement.measures/record-homes`
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;nOPDXDOUn5FSeXyZjibYH02m-90hvcdOao-4K3JzRT0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

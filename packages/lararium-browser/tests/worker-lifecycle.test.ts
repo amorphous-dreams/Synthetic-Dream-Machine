@@ -12,6 +12,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/worker-lifecycle
  */
 
+import { readyWorker } from "./fixtures/ready-worker.js";
 import { describe, test, expect, afterEach } from "vitest";
 import {
   isIslandToVesselMsg,
@@ -23,8 +24,8 @@ import {
 
 const FIXTURE_URL = new URL("./fixtures/teardown-echo-browser.mjs", import.meta.url);
 
-function spawnFixture(): Worker {
-  return new Worker(FIXTURE_URL, { type: "module" });
+function spawnFixture(): Promise<Worker> {
+  return readyWorker(FIXTURE_URL);
 }
 
 function collectUntil(
@@ -61,7 +62,7 @@ describe("browser worker lifecycle — GP-5 contract", () => {
   });
 
   test("manifest delivery elicits ea sovereignty declaration with matching wikiUri", async () => {
-    worker = spawnFixture();
+    worker = await spawnFixture();
     const wikiUri = "lar:///ha.ka.ba/test-wiki";
 
     const msgsPromise = collectUntil(
@@ -82,7 +83,7 @@ describe("browser worker lifecycle — GP-5 contract", () => {
   });
 
   test("GP-5: teardown — cancel:confirmed arrives before teardown:ack", async () => {
-    worker = spawnFixture();
+    worker = await spawnFixture();
 
     const msgsPromise = collectUntil(
       worker,
@@ -101,7 +102,7 @@ describe("browser worker lifecycle — GP-5 contract", () => {
   });
 
   test("teardown:ack passes isIslandToVesselMsg guard", async () => {
-    worker = spawnFixture();
+    worker = await spawnFixture();
 
     const msgsPromise = collectUntil(
       worker,

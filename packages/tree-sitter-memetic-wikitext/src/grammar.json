@@ -135,6 +135,27 @@
           }
         },
         {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "FIELD",
+              "name": "inline",
+              "content": {
+                "type": "ALIAS",
+                "content": {
+                  "type": "SYMBOL",
+                  "name": "_pair_inline"
+                },
+                "named": true,
+                "value": "inline_body"
+              }
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
           "type": "REPEAT",
           "content": {
             "type": "SYMBOL",
@@ -223,7 +244,12 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "STRING",
+          "type": "ALIAS",
+          "content": {
+            "type": "SYMBOL",
+            "name": "_control_open"
+          },
+          "named": false,
           "value": "<<^"
         },
         {
@@ -301,7 +327,7 @@
         "value": 1,
         "content": {
           "type": "PATTERN",
-          "value": "([^>\\n]|>[^>\\n])+"
+          "value": "(```([^`\\n]|`[^`\\n]|``[^`\\n])*```|`[^`\\n]*`|[^>`\\n]|>[^>`\\n])+"
         }
       }
     },
@@ -647,13 +673,6 @@
         "value": "\\{\\{[^\\n]*\\}\\}[ \\t]*\\r?\\n?"
       }
     },
-    "macrocall_block": {
-      "type": "TOKEN",
-      "content": {
-        "type": "PATTERN",
-        "value": "<<[^<~^\\s][^\\n]*>>[ \\t]*\\r?\\n?"
-      }
-    },
     "horizontal_rule": {
       "type": "TOKEN",
       "content": {
@@ -733,6 +752,18 @@
     {
       "type": "SYMBOL",
       "name": "_pair_close"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_control_open"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "macrocall_block"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_pair_inline"
     },
     {
       "type": "SYMBOL",

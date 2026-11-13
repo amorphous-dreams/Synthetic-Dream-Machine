@@ -37,7 +37,7 @@
  * unbuilt: a two-predecessor record refuses `REUNION_UNBUILT`.
  */
 import { sha256HexSync, canonicalJson, canonicalJsonBytes } from "./crypto.js";
-import { CHARTER_ABANDON_DOMAIN, CHARTER_INCEPTION_DOMAIN, CHARTER_REUNION_DOMAIN, CHARTER_SEAT_ROLL_DOMAIN } from "./domains.js";
+import { CHARTER_ABANDON_DOMAIN, CHARTER_INCEPTION_DOMAIN, CHARTER_REUNION_DOMAIN, CHARTER_SEAT_ROLL_DOMAIN, WAX_STAMP_DOMAIN } from "./domains.js";
 import { seatNextDigest } from "./cold-key-card.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import { acceptEd25519Key, verifyEd25519, type Ed25519KeyRefusal } from "./ed25519-door.js";
@@ -484,7 +484,7 @@ export function detectDuplicity(a: readonly SealEpoch[], b: readonly SealEpoch[]
 }
 /** A wax-stamp's canonical signed bytes. */
 export function waxStampProofBytes(artifactHash: string, epochCid: string, sealedAt: string): Uint8Array {
-  return new TextEncoder().encode(`lar-wax-stamp/v1|${artifactHash}|${epochCid}|${sealedAt}`);
+  return new TextEncoder().encode(`${WAX_STAMP_DOMAIN}|${artifactHash}|${epochCid}|${sealedAt}`);
 }
 /** A single-key digest retained for the stamp verifier's one-seat floor. */
 export function singleKeySetHash(signerKeyHex: string): string { return sha256HexSync(signerKeyHex); }

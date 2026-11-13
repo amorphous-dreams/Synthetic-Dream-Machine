@@ -7,17 +7,23 @@
  * no digest, receipt or outcome behind. This module never logs what it sends.
  */
 import { createConnection } from "node:net";
-import type { Credential } from "@lararium/mesh";
+import type { Credential, SlotSpec } from "@lararium/mesh";
 import { udsSocketPath } from "./local-connector.js";
 
 export type CustodyFrame =
-  | { readonly op: "unlock"; readonly credentials: readonly Credential[] }
-  | { readonly op: "lock" }
+  | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
+  | { readonly op: "lock"; readonly face?: number }
   | { readonly op: "custody" }
+  /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */
+  | { readonly op: "census" }
   /** One act of the sealed-act table and its typed arguments; nothing rides beside them. */
   | { readonly op: "act"; readonly act: string; readonly args: Readonly<Record<string, unknown>> }
   /** One face's backup cut: the vessel's own route, the face's handle-index and the bundle key (64 lower hex). */
-  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string };
+  | { readonly op: "backup"; readonly credentials: readonly Credential[]; readonly face: number; readonly key: string }
+  /** The human route the next new face this vessel founds will bind (passphrase pins; one use). */
+  | { readonly op: "face-route"; readonly slots: readonly SlotSpec[]; readonly purpose: "persona-new" | "bundle.restore"; readonly argsDigest: string }
+  /** One ward act's route: the vessel parks it under a one-use ticket the verb names (seat-harness#/the-ward). */
+  | { readonly op: "ward"; readonly credentials: readonly Credential[]; readonly verb: string; readonly argsDigest: string };
 
 /** The daemon's answer, as the door spells it (`custody-frames` in the node package). */
 export type CustodyDoorAnswer = Record<string, unknown> & { readonly op?: string };
@@ -27,10 +33,12 @@ export type CustodyDoorAnswer = Record<string, unknown> & { readonly op?: string
  * answers (no socket, a refused connect, a closed line with no answer). An unlock waits as long as the vessel
  * takes to compose again: nothing here times it out.
  */
-export function sendCustodyFrame(frame: CustodyFrame, dataDir?: string | null): Promise<CustodyDoorAnswer | null> {
+export function sendCustodyFrame(frame: CustodyFrame, dataDir?: string | null, signal?: AbortSignal): Promise<CustodyDoorAnswer | null> {
   const path = udsSocketPath(dataDir);
   return new Promise((settle) => {
     const sock = createConnection(path);
+    // A caller that stops waiting hangs up: its socket never rests open beside a vessel that cannot answer.
+    signal?.addEventListener("abort", () => { sock.destroy(); settle(null); }, { once: true });
     let buf = "";
     sock.setEncoding("utf8");
     sock.once("connect", () => { sock.write(JSON.stringify(frame) + "\n"); });
@@ -47,7 +55,7 @@ export function sendCustodyFrame(frame: CustodyFrame, dataDir?: string | null): 
 /** What stands at the socket, as far as the custody door says. */
 export type VesselStanding =
   /** A vessel's custody door answered: it holds its key, or rests locked. */
-  | { readonly reading: "vessel"; readonly unlocked: boolean }
+  | { readonly reading: "vessel"; readonly unlocked: boolean; /** An unlock or a lock still recomposes: the verb channel has not stood yet. */ readonly composing: boolean }
   /** Something accepted the connection and gave no answer inside the wait: a holder nobody can name. */
   | { readonly reading: "silent" }
   /** No custody door answers: nothing listens, or another command holds the store for one act. */
@@ -61,8 +69,10 @@ export type VesselStanding =
  */
 export function vesselStanding(dataDir?: string | null, waitMs = 5_000): Promise<VesselStanding> {
   let timer: ReturnType<typeof setTimeout> | undefined;
-  const silent = new Promise<VesselStanding>((resolve) => { timer = setTimeout(() => resolve({ reading: "silent" }), waitMs); });
-  const asked = sendCustodyFrame({ op: "custody" }, dataDir).then((a): VesselStanding =>
-    (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true } : { reading: "none" }));
+  const abort = new AbortController();
+  // LIVENESS: a socket holder may accept the frame and remain silent; the result records silence.
+  const silent = new Promise<VesselStanding>((resolve) => { timer = setTimeout(() => { abort.abort(); resolve({ reading: "silent" }); }, waitMs); });
+  const asked = sendCustodyFrame({ op: "custody" }, dataDir, abort.signal).then((a): VesselStanding =>
+    (a !== null && a["op"] === "custody" ? { reading: "vessel", unlocked: a["unlocked"] === true, composing: a["composing"] === true } : { reading: "none" }));
   return Promise.race([asked, silent]).finally(() => { if (timer) clearTimeout(timer); });
 }

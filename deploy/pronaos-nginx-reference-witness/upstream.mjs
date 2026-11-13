@@ -15,7 +15,8 @@ const server = createServer((req, res) => {
 });
 
 server.on("upgrade", (req, socket) => {
-  if (req.url !== "/ws" || req.headers.upgrade?.toLowerCase() !== "websocket") {
+  // A knocked path alone: `<route>/<knock>` on the sync or the oracle route, as a gate stands it.
+  if (!/^\/(?:ws|oracle)\/[A-Za-z0-9_-]+$/.test(req.url ?? "") || req.headers.upgrade?.toLowerCase() !== "websocket") {
     socket.destroy();
     return;
   }

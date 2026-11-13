@@ -12,7 +12,7 @@
  */
 import { describe, expect, test } from "vitest";
 
-import { isPersonaPlaneSlug, personaBagIdFor, personaScopeTag, PERSONA_SCOPE_TAG_HEX } from "../src/persona-scope.js";
+import { isPersonaPlaneSlug, personaBagIdFor, personaScopeTag, personaScopedBagIds, PERSONA_SCOPE_TAG_HEX } from "../src/persona-scope.js";
 import { isSovereignBag, hermCanRead } from "../src/mesh-palace.js";
 
 const WORK = "b7f1c2a9d4e60381";
@@ -63,6 +63,7 @@ describe("★ the guards cover the FAMILY, not a list of names ★", () => {
     // slug already denies — but a sovereign fence must say what it means rather than lean on that.
     expect(isSovereignBag("persona")).toBe(true);
     expect(isSovereignBag(personaBagIdFor(WORK).split("/").pop()!)).toBe(true);
+    expect(isSovereignBag(personaScopedBagIds(WORK).intents.split("/").pop()!)).toBe(true);
     expect(isSovereignBag("lares")).toBe(false);
   });
 

@@ -8,6 +8,7 @@
 
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { join } from "node:path";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import {
   resolveLarRoot, repoPresetEnabled,
   larRoot, larBagsDir, larWikisDir, larGenesisDir, larCasDir, larBootstrapPath, larDataDir,
@@ -54,7 +55,14 @@ describe("composable resource caps — independent siting off the corpus root", 
     expect(larRoot()).toBe("/corpus");
     expect(larBagsDir()).toBe(join("/corpus", "bags"));
     expect(larWikisDir()).toBe(join("/corpus", "wikis"));
-    expect(larGenesisDir()).toBe(join("/corpus", "genesis"));
+    // A corpus holding its own seed keeps it; one holding none reaches the build's shipped genesis (genesis-cold-start.test.ts).
+    const held = mkdtempSync("/tmp/lares-corpus-held-");
+    try {
+      mkdirSync(join(held, "genesis"), { recursive: true });
+      writeFileSync(join(held, "genesis", "seed.json"), "{}");
+      process.env["LAR_ROOT"] = held;
+      expect(larGenesisDir()).toBe(join(held, "genesis"));
+    } finally { rmSync(held, { recursive: true, force: true }); process.env["LAR_ROOT"] = "/corpus"; }
     // The bootstrap does NOT follow the corpus — it names ONE VESSEL, so it sits with the store that
     // holds the docs it addresses, and dies with them on a reset (same law as the CAS, below).
     expect(larBootstrapPath()).toBe(join(larDataDir(), "social-bootstrap.json"));

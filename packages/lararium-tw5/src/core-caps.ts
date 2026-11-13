@@ -18,7 +18,7 @@
  * daemon decouple) and with `slot` present where one does.
  */
 
-import type { Repo, DocHandle, LarDoc, LarOpenPhase, VesselKeel, VesselCoreAssembly } from "@lararium/mesh";
+import type { CompositeStore, Repo, DocHandle, LarDoc, LarOpenPhase, VesselKeel, VesselCoreAssembly } from "@lararium/mesh";
 import { assembleVessel, mountWikiSlot, LARES_DOC_URI, composeVessel, recipeFromRecord, type CapModule } from "@lararium/mesh";
 import { mountPrimaryWiki, recipeRecordOf, resolveSlotDocs, type PrimaryMountPool, type BindingResolver } from "./vessel-steps.js";
 import { VerbTable } from "./verb-dispatcher.js";
@@ -28,6 +28,8 @@ import { VerbTable } from "./verb-dispatcher.js";
 /** The daemon VM surface the orchestrator drives (node + browser both satisfy it). */
 export interface VesselDaemonVm {
   workerEa:       Promise<void>;
+  /** The vessel's control document as a store (`control-home`): the durable mailbox parks here. */
+  control:        CompositeStore;
   mountMainVerbs: (registry: VerbTable) => void;
   resolveBinding: BindingResolver;
 }
@@ -155,12 +157,14 @@ export function wikiCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<T
       const slot     = resolve<VesselWikiSlot>(CORE_CAP.wikislot);
       const daemon   = resolve<VesselDaemonVm>(CORE_CAP.daemon);
       const presetWiki = slot.wikiBagId === LARES_DOC_URI ? assembly.laresHandle ?? undefined : undefined;
+      console.info("[mount] awaiting worker ready");
       await daemon.workerEa;
+      console.info("[mount] worker ready");
       let slotDocs: ReturnType<typeof resolveSlotDocs> | undefined;
       const resolveSlots = (wikiUrl: string) => slotDocs ??= resolveSlotDocs(daemon.resolveBinding, { wikiSlug: slot.wikiSlug, wikiUrl });
       const resolveDraft = async (wikiUrl: string): Promise<string> =>
         (await resolveSlots(wikiUrl)).draftUrl;
-      const resolveWorking = async (wikiUrl: string): Promise<string> =>
+      const resolveWorking = async (wikiUrl: string): Promise<string | null> =>
         (await resolveSlots(wikiUrl)).workingUrl;
       const { wikiHandle, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, resolveWorking, presetWiki);
       emit("wiki-ready");

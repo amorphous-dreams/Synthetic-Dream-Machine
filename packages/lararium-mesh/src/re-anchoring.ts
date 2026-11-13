@@ -73,9 +73,10 @@ export interface Attestation {
  * A dwelling re-anchored from a host to a realm.
  *
  * THE POSITION, NEVER AN INSTANT. `epochCid` roots the record on a walkable chain, so two replicas holding that
- * chain order two records identically without either reading a clock. A wall clock in a merge-relevant
- * predicate makes convergence non-deterministic — and a device clock reads freely settable by its user and
- * more freely by its operator, where skew arrives on purpose as a testing feature.
+ * chain order two records identically without either reading a clock. A replica holding no such chain places
+ * the record nowhere: `dwellingHistory` surfaces it apart as concurrent rather than ranking it. A wall clock
+ * in a merge-relevant predicate makes convergence non-deterministic — and a device clock reads freely
+ * settable by its user and more freely by its operator, where skew arrives on purpose as a testing feature.
  *
  * THE ATTESTOR-PLURALITY TENSION, carried in the open. RFC 9576 §6.2 documents that "increasing the number of
  * required attestation procedures could decrease the overall anonymity set size" — so as the attestor count
@@ -207,28 +208,57 @@ export async function verifiedAttestors(r: ReAnchoring): Promise<string[]> {
 }
 
 /**
- * Fold a board into the re-anchorings ONE dweller holds in ONE realm, verified, in chain order.
+ * Fold a board into the re-anchorings ONE dweller holds in ONE realm, verified, split by what the reader can place.
  *
  * The fold answers "does this one hold, and since when" and NEVER "who holds" — the caller names the dweller,
  * so this reads no membership list because none exists to read. There is no roster to seize, no list to
  * delete, and no count presentable as a total.
  *
- * `epochOrder` arrives INJECTED and REQUIRED, exactly as the kāpae fold takes it: this module holds no chain
- * and must not. An unknown epochCid ranks below every known one, so a record rooting on a chain the reader
- * cannot walk never outranks one it can — fail-closed. A reader holding no chain says so with `noChainHeld`
- * rather than by omitting an argument nobody sees.
+ * `lineage` carries the reader's OWN walked chain: epoch cids, genesis first, and an empty array when the reader
+ * holds none. No global now exists, so no order stands that every reader shares; an injected order would rank records
+ * that no chain orders, so the fold takes none and reads the lineage the reader holds. `epochCid` stays a FENCE, and the fold surfaces concurrency rather than ranking it:
+ *
+ *  - `anchored` holds the verified records whose `epochCid` stands on the held lineage, in lineage order
+ *    (`position` = the index on that lineage). Arrival order on the board never decides it.
+ *  - Records sharing one `epochCid` fold to ONE entry per list: the key names one act, and its attestors read
+ *    as the sorted union of every verified mark, since a set grows without re-signing.
+ *  - `unanchored` holds the verified records rooting on an epoch the reader cannot place, sorted by `epochCid`
+ *    for a stable read. They never rank against the anchored ones and never drop silently: a record the reader
+ *    cannot order stands concurrent to every other, so it surfaces apart.
+ *
+ * An unattested record, or one whose every mark fails its signature, deposits nothing in either list.
  */
 export async function dwellingHistory(
   doc: LarDoc | undefined | null,
   dweller: string,
   realm: string,
-  epochOrder: (epochCid: string) => number | null,
-): Promise<{ epochCid: string; attestors: string[] }[]> {
+  lineage: readonly string[],
+): Promise<{
+  anchored:   { epochCid: string; position: number; attestors: string[] }[];
+  unanchored: { epochCid: string; attestors: string[] }[];
+}> {
+  const position = new Map<string, number>();
+  lineage.forEach((cid, i) => { if (!position.has(cid)) position.set(cid, i); });
   const mine = reAnchoringsFromBoard(doc).filter((r) => r.dweller === dweller && r.realm === realm);
-  const out: { epochCid: string; attestors: string[] }[] = [];
+  // The key names ONE act per epochCid: records sharing an epoch fold to one entry whose attestors read as the
+  // sorted union of every verified mark, so board order never decides what comes back.
+  const marks = new Map<string, Set<string>>();
   for (const r of mine) {
     const attestors = await verifiedAttestors(r);
-    if (attestors.length > 0) out.push({ epochCid: r.epochCid, attestors });   // an unattested record deposits nothing
+    if (attestors.length === 0) continue;         // an unattested record deposits nothing
+    const held = marks.get(r.epochCid) ?? new Set<string>();
+    for (const a of attestors) held.add(a);
+    marks.set(r.epochCid, held);
   }
-  return out.sort((a, b) => (epochOrder(a.epochCid) ?? -1) - (epochOrder(b.epochCid) ?? -1));
+  const anchored: { epochCid: string; position: number; attestors: string[] }[] = [];
+  const unanchored: { epochCid: string; attestors: string[] }[] = [];
+  for (const [epochCid, held] of marks) {
+    const attestors = [...held].sort();
+    const at = position.get(epochCid);
+    if (at === undefined) unanchored.push({ epochCid, attestors });
+    else anchored.push({ epochCid, position: at, attestors });
+  }
+  anchored.sort((a, b) => a.position - b.position);
+  unanchored.sort((a, b) => (a.epochCid < b.epochCid ? -1 : a.epochCid > b.epochCid ? 1 : 0));
+  return { anchored, unanchored };
 }

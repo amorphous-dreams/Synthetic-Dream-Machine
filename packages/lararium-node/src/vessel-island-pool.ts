@@ -13,28 +13,29 @@
 
 import { join } from "path";
 import {
-  VesselIslandPoolCore,
+  VesselIslandPoolCore, houseCanonSlugsSeated,
   type Repo,
   type IslandMsg_Event,
+  type LarIslandToVesselMsg,
   type IslandStorageConfig,
   type WikiRecipe,
+  type PortIslandToVesselMsg,
+  type CapabilityRecord,
 } from "@lararium/mesh";
-import { fetchThroughCasDoor, nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
-import { casDirFromIslandStorageDir, readCasBlobFromFs } from "./node-cas.js";
+import type { PortPolicy } from "@lararium/mesh/port-lease";
+import { nodeNewSyncChannel, nodeSpawnSessionWorker, nodeSpawnWikiWorker } from "./worker-handle.js";
+import { readCasBlobFromFs, type IslandCasData } from "./node-cas.js";
 
 /**
- * The vessel's content store, as a session island's scoped view reads it: the runtime CID plane beside the
- * islands' storage root, then the corpus store, then the vessel's fetch door. A session island holds no
- * store of its own, so every content read it makes arrives here, after its view has passed the address.
+ * The vessel's content store, as a session island's scoped view reads it: the vessel's one runtime `cid/` dir
+ * (`cidDir`, handed at construction), then the vessel's `cas` capability, read off the record at ask time (absent, or
+ * faulting, reads a miss; the corpus store rides inside that capability as its second tier). A session island holds no
+ * store of its own, so every content read it makes arrives here, after its view has passed the address. No env read.
  */
-export function nodeContentReader(storageRoot: string | null): (cid: string) => Promise<Uint8Array | null> {
-  const runtime = storageRoot ? casDirFromIslandStorageDir(join(storageRoot, "island")) : null;
-  return async (cid) => {
-    const corpus = process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);
-    return (runtime ? readCasBlobFromFs(cid, runtime) : null)
-      ?? (corpus ? readCasBlobFromFs(cid, corpus) : null)
-      ?? fetchThroughCasDoor(cid);
-  };
+export function nodeContentReader(cidDir: string | null, caps: CapabilityRecord): (cid: string) => Promise<Uint8Array | null> {
+  return async (cid) =>
+    (cidDir ? readCasBlobFromFs(cid, cidDir) : null)
+      ?? (caps.cas ? caps.cas(cid).catch(() => null) : null);
 }
 
 /** Node's default live-wiki activation cap — the vessel advertises this as the
@@ -44,19 +45,32 @@ export const NODE_WIKI_ACTIVATION_CAP = 4;
 const DEFAULT_WORKER_URL = new URL("./node-wiki-island.js", import.meta.url);
 
 export interface VesselIslandPoolOptions {
+  /**
+   * THE CAPABILITY RECORD the vessel hands every island this pool spawns. A wiki island reaches its `cas` alone (its
+   * receipt, custody and dyad asks refuse by name); a session island reaches none. The members read at ask time.
+   */
+  caps: CapabilityRecord;
   /** Compiled island entry script. Defaults to node-wiki-island.js alongside this module. */
   workerScriptUrl?: URL;
-  /** Called when an island emits a IslandMsg_Event (RE reaction). */
-  onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event) => void;
+  /** Called when an island outside any session emits an `event` (RE reaction) or one of the camera's kinds
+   *  (`lar:frame`, `lar:control-result`, `lar:service`); a session island's traffic reaches its own surface door instead. */
+  onWorkerEvent?: (wikiId: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
   /** Called when the island's ea declaration lands — the mailbox drain rides the breath. */
   onEa?: (wikiId: string) => void;
   /** Vessel Automerge Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo;
+  portPolicy?: PortPolicy;
+  onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
+  onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
   /** Root dir for island-owned NodeFS storage partitions; absent = memory-only. */
   storageRoot?: string;
+  /** The vessel's ONE runtime `cid/` dir, handed at construction: the pool's content reader and every island it spawns read it. */
+  cidDir?: string;
+  /** The CORPUS CAS dir the vessel resolved at construction, handed to each WIKI island it spawns (the islands read no env; a session island gets no dir, it reads through its view). */
+  corpusCasDir?: string | null;
   /** R3/M6 — resolve a mount's OWN recipe into its final pluginCids (the boot-set floor UNION its
-   *  verified offering selection). REQUIRED — the pre-R3 flat `pluginCids` floor (every island
-   *  getting the SAME vessel-wide list) has retired; `open-node-vessel.ts` always supplies
+   *  verified offering selection). REQUIRED — no flat vessel-wide `pluginCids` floor stands (every island
+   *  getting the SAME list); `open-node-vessel.ts` always supplies
    *  `resolveNodeIslandPluginCids` (`node-plugin-resolution.ts`) at both its call sites, and
    *  `VesselIslandPoolCore`'s own constructor refuses to build a pool with no resolver at all
    *  (`VesselIslandPoolCoreOptions.resolvePluginCids`, M6). See that module's docblock. */
@@ -64,16 +78,16 @@ export interface VesselIslandPoolOptions {
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
   >;
+  /** The floor each mount stands on: the vessel's accepted pin (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
+  floorCid?: () => string | null | Promise<string | null>;
   /** Held disk-write capability: canon bag → mirror configs this pool MAY project. */
   diskMirrorGrant?: readonly { bagId: string; mirrorRoot: string; scope: string; perWikiSlug?: boolean; selfCanon?: boolean }[];
   /** Override the mount silence budget in ms (tests). */
   mountSilenceMs?: number;
   /** Override the mount progress-stall budget in ms (default 3x silence). */
   mountStallMs?: number;
-  /** Mount failures tolerated per wiki inside the window before the cap trips. */
+  /** Mount failures tolerated per wiki in a row before the cap trips. */
   maxMountFailures?: number;
-  /** The intensity window in ms (OTP MaxR/MaxT discipline). */
-  mountFailureWindowMs?: number;
 }
 
 /** Node island pool: VesselIslandPoolCore configured with a worker_threads host. */
@@ -81,23 +95,27 @@ export class VesselIslandPool extends VesselIslandPoolCore {
   constructor(options: VesselIslandPoolOptions) {
     const workerUrl   = options.workerScriptUrl ?? DEFAULT_WORKER_URL;
     const storageRoot = options.storageRoot ?? null;
+    const casData: IslandCasData = { cidDir: options.cidDir ?? null, corpusCasDir: options.corpusCasDir ?? null, houseCanon: houseCanonSlugsSeated() };
     super({
       host: {
-        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl) : nodeSpawnWikiWorker(workerUrl)),
+        spawnWorker: (spawn) => (spawn?.session ? nodeSpawnSessionWorker(workerUrl, options.caps) : nodeSpawnWikiWorker(workerUrl, options.caps, casData)),
         newSyncChannel: nodeNewSyncChannel,
         storage: (wikiId): IslandStorageConfig | undefined =>
           storageRoot ? { type: "nodefs", dir: join(storageRoot, _sanitizeWikiId(wikiId)) } : undefined,
       },
       mainRepo: options.mainRepo ?? null,
-      readContent: nodeContentReader(storageRoot),
+      readContent: nodeContentReader(options.cidDir ?? null, options.caps),
       diskMirrorGrant: options.diskMirrorGrant ?? [],
       resolvePluginCids: options.resolvePluginCids,
+      ...(options.floorCid ? { floorCid: options.floorCid } : {}),
       ...(options.onWorkerEvent ? { onWorkerEvent: options.onWorkerEvent } : {}),
+      ...(options.portPolicy ? { portPolicy: options.portPolicy } : {}),
+      ...(options.onPortMessage ? { onPortMessage: options.onPortMessage } : {}),
+      ...(options.onPortDrop ? { onPortDrop: options.onPortDrop } : {}),
       ...(options.onEa ? { onEa: options.onEa } : {}),
       ...(options.mountSilenceMs       !== undefined ? { mountSilenceMs:       options.mountSilenceMs }       : {}),
       ...(options.mountStallMs         !== undefined ? { mountStallMs:         options.mountStallMs }         : {}),
       ...(options.maxMountFailures     !== undefined ? { maxMountFailures:     options.maxMountFailures }     : {}),
-      ...(options.mountFailureWindowMs !== undefined ? { mountFailureWindowMs: options.mountFailureWindowMs } : {}),
     });
   }
 }

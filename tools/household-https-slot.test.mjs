@@ -69,7 +69,7 @@ function scan(text) {
     for (const required of ["LARES_TLS_ZONE", "LARES_TLS_DIR", "LARES_DNS_CREDENTIAL_DIR", "LARES_ACME_ACCEPT_TOS", "LARES_TLS_CERT_NAME"]) {
       if (!issuer.includes(`'${required} stands unset`)) problems.push(`issuer has no named ${required} refusal`);
     }
-    for (const mount of ["LARES_STATE", "LARES_WORKSPACE", "LARES_TLS_DIR"]) {
+    for (const mount of ["LARES_HOUSE", "LARES_WORKSPACE", "LARES_TLS_DIR"]) {
       if (!issuer.includes(`'LARES_DNS_CREDENTIAL_DIR lies inside ${mount}`)) problems.push(`issuer lacks the inside-${mount} refusal`);
     }
     // The prefix checks compare plain absolute paths: a relative or dotted path refuses before any comparison.
@@ -176,7 +176,7 @@ services:
       refuse 'LARES_DNS_CREDENTIAL_DIR stands unset — supply directory'
       refuse 'LARES_ACME_ACCEPT_TOS stands unset — accept terms'
       refuse 'LARES_TLS_CERT_NAME stands unset — supply name'
-      refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE — move it'
+      refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_HOUSE — move it'
       refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_WORKSPACE — move it'
       refuse 'LARES_DNS_CREDENTIAL_DIR lies inside LARES_TLS_DIR — move it'
       refuse "$$1 ($$2) stands relative — give an absolute host path"
@@ -252,7 +252,7 @@ services:
   }
   red(lawful.replace("profiles: [issuer]", "profiles: [other]"), "issuer profile");
   red(lawful.replace("/run/dns/porkbun-secret-api-key", "${PORKBUN_SECRET_API_KEY_FILE:-}"), "not a literal container path");
-  for (const mount of ["LARES_STATE", "LARES_WORKSPACE", "LARES_TLS_DIR"]) {
+  for (const mount of ["LARES_HOUSE", "LARES_WORKSPACE", "LARES_TLS_DIR"]) {
     red(lawful.replace(`lies inside ${mount}`, "check removed"), `inside-${mount} refusal`);
   }
   red(lawful.replace("stands relative", "check removed"), "unnormalized paths");

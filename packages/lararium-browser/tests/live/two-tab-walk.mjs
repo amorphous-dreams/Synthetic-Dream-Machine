@@ -1,18 +1,15 @@
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
 
 const base = process.env.LARES_URL ?? "http://localhost:4321";
-const gate = process.env.LIVE_WIKI_GATE;
 
+// The page's address names the page alone: its relay comes from its own origin's arrival descriptor, and no query key selects a holder.
 const url = new URL(base);
-url.searchParams.set("holder", "");
-if (process.env.LIVE_WIKI_RELAY === "1") {
-  if (!gate) throw new Error("LIVE_WIKI_GATE must carry the node's out-of-band gate key");
-  url.searchParams.set("relay", `${url.protocol === "https:" ? "wss:" : "ws:"}//${url.host}/ws`);
-  url.searchParams.set("gate", gate);
-}
 
 const browser = await chromium.launch({ args: ["--no-sandbox"] });
 const context = await browser.newContext();
+await armTestCustody(context, "two-tab-walk");
 const errors = [];
 const pageStatus = () => {
   const rows = [...document.querySelectorAll("#vessel .row")];

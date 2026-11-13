@@ -5,12 +5,9 @@
  * no revocation back. Set aside in silence, though, it would hide that someone wrote it. Each door surfaces it:
  *   · the Binding Gate at boot — on the log and in its result (`boot-daemon-keyhive`, pinned in the node suite);
  *   · the face-grant verifier — in its verdict (`face-grant-record.test`);
- *   · the live admission door (`operator-daemon-behavior` `verifyPeer`) — in the verdict's provenance, through
- *     `kelWalkNote`, pinned here both by behaviour and by the door's own source.
+ *   · `kelWalkNote` (`operator-daemon-behavior`) — the note any admission verdict carries, pinned here by behaviour.
  */
 import { describe, test, expect } from "vitest";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import {
   buildDeviceDelegation, ed25519VerifyingKeyFromSeed, mintPersonaInception, enrolmentDigestOf, personaEventCidOf,
   verifyEdgeAgainstPersonaKel, type PersonaKelEvent,
@@ -29,17 +26,11 @@ describe("the live admission door says what the KEL walk set aside", () => {
       enrolmentDigest: enrolmentDigestOf([]),
     };
     const junk: PersonaKelEvent = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [], recoveryThreshold: 0, rotationSigs: [] };
-    const edge = await buildDeviceDelegation({ personaRootSeed: ROOT, deviceVerifyingKey: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a" /* RFC 8032 §7.1 TEST 1: a real key */, hearthTrueName: "", boundEpoch: 0 });
+    const edge = await buildDeviceDelegation({ personaRootSeed: ROOT, atomSeed: Uint8Array.from(Buffer.from("9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60", "hex")), hearthTrueName: "", boundEpoch: 0 });
     const planted = await verifyEdgeAgainstPersonaKel(edge, [inception, junk], { expectedEpoch: 0 });
     expect(planted.ok).toBe(true);
     expect(kelWalkNote(planted)).toMatch(new RegExp(`set aside: .*${junk.eventCid.slice(0, 16)}`));
     expect(kelWalkNote(await verifyEdgeAgainstPersonaKel(edge, [inception], { expectedEpoch: 0 }))).toBe("");
   });
 
-  test("the door threads the note into BOTH its admit and its refusal", () => {
-    const src = readFileSync(join(import.meta.dirname, "..", "src", "operator-daemon-behavior.ts"), "utf8");
-    expect(src).toMatch(/const unreadNote\s*=\s*kelWalkNote\(delegation\)/);
-    expect(src).toMatch(/reason: `admitted via operator device-delegation\$\{unreadNote\}`/);
-    expect(src).toMatch(/"device-delegation requires a verified proof-of-possession"\) \+ unreadNote/);
-  });
 });

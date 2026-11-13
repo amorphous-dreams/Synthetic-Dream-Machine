@@ -10,17 +10,21 @@
 //       leaves every private row of the three custody homes byte-identical and mints none.
 //                                                                 control: holding the vessel key and handed the
 //                                                                 seated readers, the composition runs each boot
-//                                                                 reader, reads the archive rows, lands the island's
-//                                                                 archive exports through the custody write door, and
-//                                                                 both archives rest sealed afterward
+//                                                                 reader, reads the face's archive row, lands the island's
+//                                                                 archive export through the custodyWrite capability, and
+//                                                                 the archive rests sealed afterward
 //   T3  a boot that refuses frees its store name, whether the refusal lands while the prep stands the Repo or
 //       later while the caps compose.                             control: a standing composition holds the name
 //                                                                 against a second claim
-//   T4  a teardown leaves the caller's WebSocket server with the listeners it had before. control: a standing
-//       composition adds some
+//   T4  a teardown leaves the caller's server with the faces, gate knocks and listeners it had before.
+//                                                                 control: a standing composition holds a face
 //   T5  every teardown completes on its daemon island's ack: the composition reaches the island's shutdown by two
 //       roads, the handshake runs once, and no road waits out its bound on a worker already terminated.
 //                                                                 control: the capture reads this process's warnings
+//   T6  a composition hands its islands its OWN capability record and its teardown clears the record's `cas`; a
+//       composition that refuses leaves no capability in module state, so no later island reads it (T27,
+//       test-recut-road).                                              control: a standing composition's `cas` stands
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import fs, { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync } from "node:fs";
@@ -61,15 +65,17 @@ function stage(tag, { found }) {
     // floor mints none): the boot then reaches its caps and refuses there, over the bootstrap.
     const mint = spawnSync(process.execPath, ["--input-type=module", "-e", `
       import { generateOrLoadVesselIdentity } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/node-vessel-identity.js"))};
-      import { FsCustodyIo, makeCustodyHolder, seatCustody, vesselCustodyHomes } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/index.js"))};
+      import { FsCustodyIo, makeCustodyHolder, seatCustody, seatReadBackStandIn, vesselCustodyHomes } from ${JSON.stringify(join(repo, "packages/lararium-node/dist/src/index.js"))};
       import { TEST_PASSPHRASE } from ${JSON.stringify(join(repo, "tools/test-custody-route.mjs"))};
       const homes = vesselCustodyHomes();
       const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
       const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
       if (opened.reading !== "opens") throw new Error("the staged custody reads " + opened.reading);
       seatCustody(holder);
-      await generateOrLoadVesselIdentity();
-      await holder.lock();
+      // This node -e child bypasses the CLI-only preload. Explicitly answer its founding card in this process.
+      seatReadBackStandIn(true);
+      try { await generateOrLoadVesselIdentity(); }
+      finally { seatReadBackStandIn(false); await holder.lock(); }
     `], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: root } });
     assert.equal(mint.status, 0, `vessel key mint: ${mint.stderr}`);
   }
@@ -123,7 +129,7 @@ async function recordingReads(run) {
 }
 
 function counting(readers) {
-  const calls = { wornMount: 0, personaRoots: 0, walkRecords: 0, archive: 0, veilArchive: 0, veil: 0, writeArchive: 0, writeVeilArchive: 0 };
+  const calls = { wornMount: 0, personaRoots: 0, walkRecords: 0, veilArchive: 0, veil: 0, writeVeilArchive: 0, outboxKey: 0 };
   const wrapped = {};
   for (const name of Object.keys(calls)) wrapped[name] = (...a) => { calls[name] += 1; return readers[name](...a); };
   return { calls, readers: wrapped };
@@ -139,11 +145,30 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
   const { WebSocketServer } = await import(pathToFileURL(join(repo, "packages/lararium-node/node_modules/ws/wrapper.mjs")).href);
   const httpServer = createServer();
   const wss = new WebSocketServer({ noServer: true });
+  // THE CALLER'S SERVER, as the daemon stands it: one dispatcher over the HTTP server, every face and every knock
+  // registered through it (`main.ts`). A composition's sockets open through its face gates, each on a knock the
+  // dispatcher routes, and its Repo listens on the gate's own server (`gate-sync-server`), so what a composition holds
+  // on the caller's server is the faces and knocks live there, plus the server's own listeners.
+  const { mountHttpFaceDispatcher } = await import(pathToFileURL(join(repo, "packages/lararium-node/dist/src/http-face-dispatcher.js")).href);
+  const mounted = mountHttpFaceDispatcher(httpServer);
+  const live = { faces: new Set(), knocks: new Set() };
+  const tracked = (set, off, face) => { set.add(face); return () => { set.delete(face); off(); }; };
+  const dispatcher = {
+    register: (face) => tracked(live.faces, mounted.register(face), face),
+    registerUpgrade: (face) => tracked(live.knocks, mounted.registerUpgrade(face), face),
+    dispose: () => mounted.dispose(),
+  };
+  /** What the caller's server holds: live faces and knocks, the server's own listeners, the handed wss's. */
+  const held = () => ({
+    faces: live.faces.size, knocks: live.knocks.size,
+    request: httpServer.listenerCount("request"), upgrade: httpServer.listenerCount("upgrade"),
+    connection: wss.listenerCount("connection"),
+  });
   const storageDir = node.larDataDir();
   const genesisDir = join(root, "genesis");
   const phases = [];
   const open = (extra) => node.openNodeHerm({
-    hostId: "two-phase", wikiId: "lares", storageDir, genesisDir, rootDir: root, wss, httpServer, catalogUrl: null,
+    hostId: "two-phase", wikiId: "lares", storageDir, genesisDir, rootDir: root, wss, httpServer, dispatcher, catalogUrl: null,
     onPhase: (p) => phases.push(p), ...extra,
   });
   let floor = null;
@@ -156,7 +181,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     assert.equal(typeof node.standNodeFloor, "function", "the node package exports the floor");
     console.warn("two-phase-boot: capture probe");
     assert.equal(warned.at(-1), "two-phase-boot: capture probe", "T5 control: the capture reads this process's warnings");
-    const baseline = wss.listenerCount("connection");
+    const baseline = held();
     floor = await node.standNodeFloor(storageDir);
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "the floor's name answers before any composition");
 
@@ -188,7 +213,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     await zero.teardown();
     assert.deepEqual(unackedTeardowns(), [], "T5: the floor composition's teardown completes on its island's ack");
     assert.deepEqual(privateRows(), before, "T2: the floor leaves every private row byte-identical and mints none");
-    assert.equal(wss.listenerCount("connection"), baseline);
+    assert.deepEqual(held(), baseline);
 
     // ── T2 control + T1: handed readers, the composition runs each of them and reads the rows ─────────────────
     // The key opens first, by the staged root's published route: the seated holder then reads and writes the rows.
@@ -198,46 +223,61 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     node.seatCustody(holder);
     t.after(async () => { await holder.lock(); node.unseatCustody(holder); });
     assert.equal(node.custodyHeld(), false, "T2: a seated holder that never unlocked holds nothing");
-    assert.equal((await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }])).reading, "opens");
-    const archiveAt = join(homes.identity, "keyhive-archive.bin");
-    const veilAt = join(homes.identity, "veil-archive-h0.bin");
-    const restBefore = { archive: readFileSync(archiveAt), veil: readFileSync(veilAt) };
+    const route = [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }];
+    assert.equal((await holder.unlock(route)).reading, "opens");
+    await holder.unlockFaces(route);
+    const faceDirs = readdirSync(join(homes.identity, "faces"));
+    const veilAt = faceDirs.map((d) => join(homes.identity, "faces", d)).flatMap((d) => readdirSync(d).map((name) => join(d, name)))
+      .find((path) => /\/veil-archive-g[0-9a-f]{64}\.bin$/.test(path));
+    assert.ok(veilAt, "T2 control: no veil-archive-g<64 lowercase hex>.bin row stands in a face's directory");
+    const restBefore = { veil: readFileSync(veilAt) };
     phases.length = 0;
     const first = counting(node.seatedSovereignReaders());
     const sovereignly = await recordingReads(() => open({ floor, sovereign: first.readers }));
     const one = sovereignly.value;
     assert.equal(phases.at(-1), "live", "T1: a composition reaches live on the floor a torn-down one stood on");
     await one.daemon.workerEa;
-    for (const name of ["wornMount", "personaRoots", "walkRecords", "archive", "veilArchive", "veil", "writeArchive", "writeVeilArchive"]) {
+    for (const name of ["wornMount", "personaRoots", "walkRecords", "veilArchive", "writeVeilArchive", "outboxKey"]) {
       assert.ok(first.calls[name] >= 1, `T2 control: the ${name} reader ran (${first.calls[name]})`);
     }
-    // The island's exports landed through the custody write door: both rows moved, and both rest sealed.
-    for (const [name, at] of [["archive", archiveAt], ["veil", veilAt]]) {
+    // The island's export landed through the custodyWrite capability: the face's archive row moved and rests sealed.
+    for (const [name, at] of [["veil", veilAt]]) {
       const now = readFileSync(at);
-      assert.equal(mesh.readVkCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under the vessel key`);
+      assert.equal(name === "veil" ? mesh.readFckCarrier(now) : mesh.readSCarrier(now), "sealed", `T2 control: the ${name} archive rests sealed under its key`);
       assert.equal(now.equals(restBefore[name]), false, `T2 control: the island's ${name} export replaced the row`);
     }
-    const rowsRead = new Set(sovereignly.seen.map(privateRow).filter(Boolean));
-    assert.ok(rowsRead.has("keyhive-archive"), `T2 control: the sovereign composition reaches the archive row (reached: ${[...rowsRead].join(", ") || "none"})`);
+    assert.ok(sovereignly.seen.includes(veilAt), `T2 control: the sovereign composition reads the face's archive row (${veilAt})`);
     assert.notEqual(one.repo, zero.repo, "T1: a fresh Repo");
     assert.notEqual(one.daemon, zero.daemon, "T1: a fresh daemon island");
-    assert.ok(wss.listenerCount("connection") > baseline, "T4 control: a standing composition listens on the server");
+    // A herm stands a gate knock only at a Nexus whose carriage board counts a carry for it (`gateNexusesOf`), and this
+    // one is carried nowhere: what it holds on the server is its bulb read face.
+    assert.ok(live.faces.size + live.knocks.size > baseline.faces + baseline.knocks,
+      `T4 control: a standing composition holds a face on the server (${JSON.stringify(held())})`);
     await assert.rejects(node.standNodeFloor(storageDir), (e) => e?.constructor?.name === "StoreHeld",
       "T3 control: a standing composition holds the store against a second claim");
 
     // ── T1 / T4: tear down; the floor still answers; the server holds its listeners as before ─────────────────
     await one.teardown();
     assert.deepEqual(unackedTeardowns(), [], "T5: the sovereign composition's teardown completes on its island's ack");
-    assert.equal(wss.listenerCount("connection"), baseline, "T4: the teardown removes every listener it added");
+    assert.deepEqual(held(), baseline, "T4: the teardown removes every listener it added");
     assert.equal(existsSync(floor.storeClaim.socketPath), true, "T1: the floor's name stands between compositions");
     assert.equal(await nameAnswers(floor.storeClaim.socketPath), true, "T1: the floor's name answers between compositions");
+
+    // ── T6: a composition's capabilities ride its own record, never module state (T27) ─────────────────────────
+    assert.equal(one.islandCaps.cas, undefined, "T6: a whole teardown clears its record's cas");
+    const refusing = { ...first.readers, walkRecords: async () => { throw new Error("t6: a walk row it cannot read"); } };
+    await assert.rejects(open({ floor, sovereign: refusing }), /t6: a walk row it cannot read/, "T6: the walk read refuses the boot");
+    assert.deepEqual(held(), baseline, "T6: the refused boot leaves no listener behind");
 
     // A third composition stands on the same floor: the teardown left nothing a later stand trips on.
     const three = await open({ floor, sovereign: null });
     await three.daemon.workerEa;
+    assert.notEqual(three.islandCaps, one.islandCaps, "T6: each composition hands its islands its own record");
+    assert.equal(typeof three.islandCaps.cas, "function", "T6 control: a standing composition's record holds its cas");
     await three.teardown();
+    assert.equal(three.islandCaps.cas, undefined, "T6: the third composition's teardown clears its cas");
     assert.deepEqual(unackedTeardowns(), [], "T5: a third composition's teardown completes on its island's ack");
-    assert.equal(wss.listenerCount("connection"), baseline);
+    assert.deepEqual(held(), baseline);
 
     // ── T3: a refusal while the prep stands the Repo frees the store name ────────────────────────────────────
     await floor.release();
@@ -245,18 +285,18 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
     await assert.rejects(open({ catalogUrl: "automerge:not-a-document" }), /./, "a catalog address no Repo parses refuses the boot");
     const afterPrepRefusal = await node.standNodeFloor(storageDir);
     await afterPrepRefusal.release();
-    assert.equal(wss.listenerCount("connection"), baseline, "T3: a boot refused in its prep leaves no listener behind");
+    assert.deepEqual(held(), baseline, "T3: a boot refused in its prep leaves no listener behind");
 
     // ── T3: a refusal while the caps compose frees the store name ─────────────────────────────────────────────
     process.env.LAR_ROOT = bare;
     const bareStorage = node.larDataDir();
     await assert.rejects(
-      node.openNodeHerm({ hostId: "two-phase", wikiId: "lares", storageDir: bareStorage, genesisDir: join(bare, "genesis"), rootDir: bare, wss, httpServer, catalogUrl: null }),
+      node.openNodeHerm({ hostId: "two-phase", wikiId: "lares", storageDir: bareStorage, genesisDir: join(bare, "genesis"), rootDir: bare, wss, httpServer, dispatcher, catalogUrl: null }),
       /names no daemon doc/,
     );
     const again = await node.standNodeFloor(bareStorage);
     await again.release();
-    assert.equal(wss.listenerCount("connection"), baseline, "T3: the refused boot leaves no listener behind");
+    assert.deepEqual(held(), baseline, "T3: the refused boot leaves no listener behind");
   } catch (e) {
     // Said at once: a composition that leaks a handle keeps this process alive past the runner's own report.
     console.error(`TWO-PHASE-BOOT FAILED: ${e?.stack ?? e}`);
@@ -264,6 +304,7 @@ test("a composition tears down off its floor and a fresh one stands on it", { ti
   } finally {
     console.warn = warn;
     await floor?.release();
+    mounted.dispose();
     httpServer.close();
     if (prior.root === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = prior.root;
     if (prior.relay !== undefined) process.env.LAR_HERM_RELAY_PORT = prior.relay;

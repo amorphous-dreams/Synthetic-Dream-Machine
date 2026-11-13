@@ -15,7 +15,7 @@ let base = "";
 const stopIncumbent = vi.fn(async () => undefined);
 const spawn = vi.fn((_command: string, _args: string[], options: { stdio: [string, number, number] }) => {
   writeSync(options.stdio[1], "vessel-ready\n");
-  return { pid: 123, unref: vi.fn() };
+  return { pid: 123, unref: vi.fn(), once: vi.fn() };
 });
 
 vi.mock("@lararium/mesh/node", () => ({ get repoRoot() { return base; } }));
@@ -91,6 +91,22 @@ describe("vessel stand and the host-held engine", () => {
     });
     expect(stopIncumbent).not.toHaveBeenCalled();
     expect(spawn).not.toHaveBeenCalled();
+  });
+
+  it("reports a child that exits before ready as exited, not starting", async () => {
+    vi.stubEnv("LAR_ENGINE", "");
+    vi.doMock("../src/stand-socket-wait.js", () => ({ awaitBootPhase: async () => "exited", awaitVerbSocket: vi.fn() }));
+    vi.doMock("../src/vessel-condition.js", () => ({
+      readVesselStanding: () => ({ state: "rising", message: "starting" }), conditionOk: () => false,
+    }));
+    const { cmdStand } = await import("../src/commands/stand.js");
+    await cmdStand(parseArgs(["vessel", "stand", "--json"]));
+    const node = (emitted.at(-1)?.data as { node: { up: boolean; note: string } }).node;
+    expect(node.up).toBe(false);
+    expect(node.note).toMatch(/exited.*before.*ready/i);
+    expect(node.note).not.toMatch(/starting/i);
+    vi.doUnmock("../src/stand-socket-wait.js");
+    vi.doUnmock("../src/vessel-condition.js");
   });
 
   it("CONTROL without LAR_ENGINE retains the in-container stop and spawn path", async () => {

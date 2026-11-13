@@ -101,17 +101,19 @@ export function detectInjectionTurns(turns: readonly TranscriptTurn[]): Transcri
  * inject twin of deriveSubagentEdges' spawn/handback. `injector` is the handle that reached the
  * spirit (the parent/root — the spirit transcript can't name the sender, so the caller supplies it,
  * the parent being the safe default). One edge per detected injection point, turnKey = the injected
- * turn's uuid, valid_from = its timestamp. PURE.
+ * turn's uuid, parentKey = the first prompt's uuid, valid_from = its display timestamp. PURE.
  */
 export function deriveInjectionEdges(
   injector: string,
   targetHandle: string,
   turns: readonly TranscriptTurn[],
 ): WorldlineEdgeTriple[] {
+  const spawnAnchor = turns.find((t) => t.role === "user" && !t.isToolResult)?.uuid;
   return detectInjectionTurns(turns).map((t) =>
     communicationEdge(injector, targetHandle, {
       ...(t.ts ? { validFrom: t.ts } : {}),
       ...(t.uuid ? { turnKey: t.uuid } : {}),
+      ...(spawnAnchor ? { parentKey: spawnAnchor } : {}),
     }),
   );
 }

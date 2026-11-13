@@ -1,0 +1,72 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins-collide`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/cut-reads/b5-browser-twins-collide.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins-collide"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/b5-browser-twins-collide"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b5-browser-twins-collide.md — plan, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/cut-reads/b5-browser-twins-collide.md` (plan, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/cut-reads/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b5-browser-twins-collision-2026-10-31`>>
+
+! b5-browser-twins collision (Anvil-Five: Lares (Tasked Spirit)) 2026-10-31
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/new-findings`>>
+
+!! New findings
+N1 [CONFIRMED by read, fails closed->repeats] Browser catalog re-found never repairs the pointer. open-browser-vessel.ts 1090-1099: the `bootKeys.catalogUrl` branch calls loadFoundedCatalogOrWarn(...blankCatalog) and sets NO bootKeyWrites.catalogUrl (only the else branch does). After one DATA-AMNESIA re-found, the stale pointer stays in IDB keystore "catalog-url"; every later boot re-founds a fresh blank (new url each time), so wikis registered after the re-found orphan on the next boot. Red: boot with catalogUrl naming a missing doc, boot twice, assert the second boot does not warn.
+N2 F1 reach is narrower than reported: bites only when admit.hearthGatePubKey is non-null and (kind anchor, or kind charter). A null gate key resolves to own on both boots (no bug).
+N3 F1 also leaves hearthCanonDocs baked with the admit boot's nexusPubkey (746, admittedCanonDocs) while later boots key everything else on the own island.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! Findings
+F1 CONFIRMED. Writer 729-747 omits hearthIslandKind/Scope (bootstrap type 140-170 has no field). Reader 619-623: anchorGateKey null hard-coded, explicitScope only from walk. admit rides one boot (lararium-web main.ts 215-221 takeStashedAdmit removes the sessionStorage entry; pendingAdmit is module-level, so a same-tab non-reload reboot masks it; a reload exposes it). nexusIslandsBelow (mesh nexus-identity.ts 290) is empty at the own island, so carryPersonaKelUpTheGradient finds nothing; gate throws at 1249-1251. No other restore: grep of the browser package finds no island row, fleet board or holder path; node restores via nodeNexusStandsAt 55-84 (hearthPin.gatePubKey/islandScope). No test reboots after an admit: leaf-continuity.mjs founds offline then reloads (never admits); two-tab-walk.mjs admit path is the old paste flow; wire-vessel-rig halts at catalog-ready. Fails closed (boot halts, no leak). Red: wire-vessel-rig boot with admit (hearthGatePubKey set, kind anchor) to bootstrap-kept, then boot again with no admit; assert same nexusPubkey / no "absent" throw. Control: null-gate admit and founded leaf keep own key.
+F2 CONFIRMED. Browser 1539-1552 `if (active)` on WikiActivationResult object (mesh wiki-activation.ts 45-47), always truthy; node 3209 reads active.ok. Failed activation flips activeSurfaceId, places open-wiki. Fails open in UI state only. No test touches the browser handler. Red: stub ensureActive -> {ok:false}; assert activeSurfaceId unchanged, no placeVerb.
+F3 NARROWED. Divergence real (browser: no repo.flush before writeBootKeys at loadGenesis; automerge-repo saveDebounceRate defaults 100ms, so a window exists). But the window is the first boot only, when the catalog holds one self-record, so "orphans every registered wiki" overstates; the real cost is N1. Policy fork stays NEEDS-RULING; cheap cure inside the browser adapter: await repo.flush() before writeBootKeys (no collapse needed).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/net-collapse-re-measure`>>
+
+!! Net collapse re-measure
+Code-line counts reproduce within ~10% (browser spans 26/16/71/32/16/22/16/73/76; node 9/20/66/25/19/28/20/39). Glue deleted ~480-525 confirmed; the 180-200 add-back is an unwritten-code estimate, and omits per-vessel port adapters. Range -200..-400; "~330" is a plausible point, not a measurement. "800 touched" holds.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verdicts`>>
+
+!! Verdicts
+Agree with all reporter verdicts and leans. Order: F1 red + N1 red first (both browser-only, no node collision). C1 should land F1 cure before or with the stage; old shape (bootstrap lacking island pair) refuses by name, no back-compat read.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources`>>
+
+!! Sources (search-only, 2026-10-31)
+* https://automerge.org/automerge-repo/interfaces/_automerge_automerge-repo.RepoConfig.html (saveDebounceRate 100ms) search-only
+* https://lwn.net/Articles/323344/ (fsync before rename ordering) search-only
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z-anVIuCDDmR9DY544DG8KD0st0U4iuDwdLW-jTtJlI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

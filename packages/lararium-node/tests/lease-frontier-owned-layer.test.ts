@@ -20,14 +20,17 @@
 import { describe, test, expect, afterEach } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
-import { runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { runFoundingCeremony } from "@lararium/keyhive";
 import { operatorDaemonOptions } from "@lararium/keyhive/operator-daemon-behavior";
 import {
-  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
+  CompositeStore, AutomergeDocStore, DAEMON_BAG_ID, controlStoreOf, standControlHome, hex, leaseEpochSlotUri, wikiBagUri, makeIslandRepo, attachMessageChannelSync,
   materializeSharedLarDoc, personaKelBoardDocUrl, personaKelChainForPrefix, type LarDoc,
+  mintFaceAnchor, signLeaseAdvance, ed25519SignerFromSeed, faceAtomPublicKey, signAsFaceAtom, signFaceLeafBond, hexToBytes, realmFeedAskImage,
 } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import * as ed25519 from "@noble/ed25519";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const pubOf = async (s: Uint8Array): Promise<string> => hex(await ed25519.getPublicKeyAsync(s));
 const seed  = (n: number): Uint8Array => new Uint8Array(32).fill(n);
@@ -42,8 +45,7 @@ afterEach(() => { while (teardown.length) { try { teardown.pop()!(); } catch { /
 async function standIsland(opts: { daemonLayer?: boolean } = {}) {
   const vesselRepo = new Repo({ sharePolicy: async () => true });
   const key = await pubOf(FOUNDER_SEED);
-  const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(FOUNDER_SEED)),
-    repo: vesselRepo, vesselSeed: FOUNDER_SEED, vesselVerifyingKey: key,
+  const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(vesselRepo), repo: vesselRepo, vesselSeed: FOUNDER_SEED, placeVerifyingKey: key,
     vesselDisplayName: "Founder", binding: { mode: "self-stood", signerSeed: FOUNDER_SEED }, hearthTrueName: "", nexusPubkey: key,
   });
   const kelBoard = await materializeSharedLarDoc(vesselRepo, personaKelBoardDocUrl(key), "board:persona-kel");
@@ -52,11 +54,9 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
 
   // The oracle registry names the daemon doc — the address the old road walked.
   const oracle = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [DAEMON_BAG_ID]: { tiddler: { title: DAEMON_BAG_ID, text: cer.daemonUrl } } },
   } as unknown as LarDoc);
   const catalog = vesselRepo.create<LarDoc>({
-    schemaVersion: "lar/1",
     tiddlers: { [wikiBagUri("daemon")]: { tiddler: { title: wikiBagUri("daemon"), text: cer.daemonUrl } } },
   } as unknown as LarDoc);
 
@@ -69,6 +69,7 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
 
   // The composite's daemon layer — the owned doc, as the kernel layers it.
   const daemonHandle = await vesselRepo.find<LarDoc>(cer.daemonUrl as AutomergeUrl);
+  const controlHandle = opts.daemonLayer !== false ? await standControlHome(vesselRepo, daemonHandle) : null;
   const composite = new CompositeStore();
   if (opts.daemonLayer !== false) {
     const store = new AutomergeDocStore(daemonHandle, DAEMON_BAG_ID);
@@ -80,20 +81,32 @@ async function standIsland(opts: { daemonLayer?: boolean } = {}) {
     handles: new Map([[wikiBagUri("daemon"), daemonHandle]]), post: () => {},
     repo: islandRepo, catalogUrl: catalog.url, oracleUrl: oracle.url, engine: { sha256: "", version: "" },
     recipe: { wikiSlug: "daemon" },
+    ...memorySecretStore(await vesselRepo.find(cer.secretUrl as AutomergeUrl)),
+    // The lease slots rest in the vessel's control document (`control-home`): the island reads its lease off that store.
+    ...(controlHandle ? { control: controlStoreOf(controlHandle) } : {}),
   } as never;
   const daemonAuth = {
-    seed: FOUNDER_SEED, vesselVerifyingKey: key,
+    atom: { seed: hex(cer.atomSeed), key: cer.founderEdge.deviceVerifyingKey }, veilArchiveBytes: cer.veilArchive,
+    seed: FOUNDER_SEED, placeVerifyingKey: key, faceAddressSecret: hex(new Uint8Array(32).fill(74)),
     personaGroupId: cer.personaGroupId,
     meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
     personaKel: { prefix: cer.personaKelPrefix, chain }, deviceEdge: cer.founderEdge, archiveOpens: true,
+    faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+      personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
   };
-  const writeSlot = (value: string) => daemonHandle.change((d) => {
+  // A face's lease slot counts only SIGNED by a key the KEL seats: the root signs; a bare number raises nothing.
+  const writeSlotText = (text: string) => controlHandle!.change((d) => {
     const title = leaseEpochSlotUri(cer.personaGroupId, "another-writer");
-    (d.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text: value } };
+    (d.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text } };
   });
-  return { ctx, daemonAuth, daemonHandle, writeSlot, chain };
+  const writeSlot = async (epoch: number) => writeSlotText(await signLeaseAdvance(
+    { resource: cer.personaGroupId, epoch },
+    { key: cer.founderEdge.personaRootDid.replace(/^0x/, ""), sign: ed25519SignerFromSeed(FOUNDER_SEED) }));
+  const writeUnsignedSlot = writeSlotText;
+  return { ctx, daemonAuth, daemonHandle, controlHandle, writeSlot, writeUnsignedSlot, chain };
 }
 
+const cer0AtomSeed = (auth: { atom: { seed: string } }): Uint8Array => hexToBytes(auth.atom.seed);
 const boot = async (daemonAuth: unknown, ctx: unknown) => {
   const opts = operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" });
   const kh = await opts.verifierFactory!(ctx as never);
@@ -108,22 +121,36 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
 
   test("V2 — a slot present is read: a slot of 1 over an edge bound at 0 refuses STALE", async () => {
     const { ctx, daemonAuth, writeSlot } = await standIsland();
-    writeSlot("1");
+    await writeSlot(1);
     await expect(boot(daemonAuth, ctx)).rejects.toThrow(/delegation lease stale/);
   }, 60_000);
 
+  test("V2b — RED: an unsigned slot, or a stranger's signed one, raises nothing: the boot stands", async () => {
+    const { ctx, daemonAuth, writeUnsignedSlot } = await standIsland();
+    writeUnsignedSlot("1");
+    await expect(boot(daemonAuth, ctx)).resolves.toBeUndefined();
+    writeUnsignedSlot(await signLeaseAdvance({ resource: daemonAuth.personaGroupId, epoch: 9 },
+      { key: "ab".repeat(32), sign: ed25519SignerFromSeed(new Uint8Array(32).fill(8)) }));
+    await expect(boot(daemonAuth, ctx)).resolves.toBeUndefined();
+  }, 60_000);
+
   test("V3 — realm-feed and realm-clock reach the composite's daemon layer", async () => {
-    const { ctx, daemonAuth, daemonHandle } = await standIsland();
+    const { ctx, daemonAuth, daemonHandle, controlHandle } = await standIsland();
     const registry = new VerbTable();
     operatorDaemonOptions({ daemonAuth } as never, { dyadReading: () => "clear" }).wireWorkerVerbs!(registry, ctx as never);
     const realm = "ab".repeat(32);
-    const writer = "cd".repeat(32);
+    // realm-feed writes the mounted face's own leaf slot, its writer bound to the presenter through the face's bond.
+    const leafSeed = new Uint8Array(32).fill(91);
+    const writer = faceAtomPublicKey(leafSeed);
+    const bond = await signFaceLeafBond({ atom: daemonAuth.atom.key, leaf: writer, nexusAid: "bafy-lease-nexus", realm },
+      { atom: (b) => signAsFaceAtom(cer0AtomSeed(daemonAuth), b), leaf: (b) => signAsFaceAtom(leafSeed, b) });
     const call = (verb: string, args: Record<string, unknown>) =>
-      (registry as unknown as { get(n: string): ((a: Record<string, unknown>) => Promise<Record<string, unknown>>) | undefined })
-        .get(verb)!(args);
-    const fed = await call("realm-feed", { realm, writer });
-    expect(fed["epoch"]).toBe(1);
-    expect(Object.keys(daemonHandle.doc()!.tiddlers).some((t) => t.includes(realm))).toBe(true);
+      (registry as unknown as { get(n: string): ((a: Record<string, unknown>, c: unknown) => Promise<Record<string, unknown>>) | undefined })
+        .get(verb)!(args, { presenter: `0x${daemonAuth.atom.key}`, local: true, invocation: { requestId: "v3-feed" } });
+    const askSig = await signAsFaceAtom(cer0AtomSeed(daemonAuth), realmFeedAskImage({ requestId: "v3-feed", realm, writer }));
+    const fed = await call("realm-feed", { realm, writer, bond, askSig });
+    expect(fed["fed"]).toBe(true);
+    expect([...Object.keys(daemonHandle.doc()!.tiddlers), ...Object.keys(controlHandle!.doc()!.tiddlers)].some((t) => t.includes(realm))).toBe(true);
     const clock = await call("realm-clock", { realm });
     expect(JSON.stringify(clock)).toContain(writer);
   }, 60_000);
@@ -133,9 +160,9 @@ describe("the lease frontier reads off the island's own daemon layer", () => {
     await expect(boot(daemonAuth, ctx)).rejects.toThrow(/current lease frontier unavailable/);
   }, 60_000);
 
-  test("C2 — an edge for a different vessel refuses", async () => {
+  test("C2 — an edge for a different atom refuses", async () => {
     const { ctx, daemonAuth } = await standIsland();
-    const other = { ...daemonAuth, seed: OTHER_SEED, vesselVerifyingKey: await pubOf(OTHER_SEED) };
+    const other = { ...daemonAuth, atom: { seed: hex(OTHER_SEED), key: await pubOf(OTHER_SEED) }, veilArchiveBytes: undefined };
     await expect(boot(other, ctx)).rejects.toThrow(/Binding Gate/);
   }, 60_000);
 

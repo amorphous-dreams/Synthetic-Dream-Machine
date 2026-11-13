@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, draftBag, ManualTimers, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
+  afterDispatch, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
   turns, typeInto, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
@@ -19,11 +19,11 @@ const surfaced = async (r: Rig, title: string, field: string): Promise<string[]>
 describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
   for (const raced of ["none", "a", "b", "c"] as const) {
     test(`a rename onto a standing title writes the fields that differ from its landed state (concurrent change: ${raced})`, async () => {
-      const timers = new ManualTimers();
+      const boundary = new ManualBoundary();
       let hold = false;
       let release!: () => void;
       const held = new Promise<void>((resolve) => { release = resolve; });
-      const r = await shoreRig({ timers, yieldHost: async () => { if (hold) await held; } });
+      const r = await shoreRig({ boundary, yieldHost: async () => { if (hold) await held; } });
       const x = `lar:///t/grain/${raced}-from`;
       const y = `lar:///t/grain/${raced}-to`;
       await r.working.put({ tiddler: { title: x, text: "t", a: "1", b: "9" } }, remote);
@@ -37,7 +37,7 @@ describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
       const d = openDraft(r, x, "t");
       typeInto(r, d, "t", { "draft.title": y });
       await afterDispatch();
-      timers.fireAll(400);
+      boundary.fire();
       await turns(16);
       if (raced !== "none") {
         hold = true;
@@ -49,14 +49,15 @@ describe.skipIf(wikiSkip)(`wiki shore field grain${skipNote}`, () => {
       const mark = r.calls.length;
       saveSequence(r, d);
       await afterDispatch();
-      const act = r.calls.slice(mark).filter((c) => c.bag === workingBag);
-      // Y's write and X's tombstone ride one call when their bases agree, else one call each, Y first.
-      expect(act.flatMap((c) => c.puts.concat(c.deletes)), "Y's write, then X's tombstone").toEqual([y, x]);
-      expect(act[0]!.puts).toEqual([y]);
-      expect(act[0]!.base, "Y's write carries Y's landed base").toEqual(yBase);
+      const initial = r.calls.slice(mark).filter((c) => c.bag === workingBag);
+      expect(initial.flatMap((c) => c.puts.concat(c.deletes)), "only Y leaves in the dispatch").toEqual([y]);
+      expect(initial[0]!.base, "Y's write carries Y's landed base").toEqual(yBase);
       if (raced !== "none") { hold = false; release(); }
       await turns(24);
       await r.adaptor.landingIdle();
+      const act = r.calls.slice(mark).filter((c) => c.bag === workingBag);
+      expect(act.flatMap((c) => c.puts.concat(c.deletes)), "Y's write precedes X's tombstone").toEqual([y, x]);
+      expect(act).toHaveLength(2);
       const now = stored(r, y);
       expect(storeDeleted(r, workingBag, x), "X reads deleted").toBe(true);
       expect(storeDeleted(r, draftBag, d)).toBe(true);

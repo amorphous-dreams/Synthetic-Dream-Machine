@@ -1,0 +1,14 @@
+// A marker that names the far-side event stands as a barrier; a count and a not-form follow it.
+describe("the vessel", () => {
+  test("a rested count stays zero", async () => {
+    await vessel.send("rest");
+    // barrier: the vessel's tally line "rested 1" reached the log
+    expect(rests).toHaveLength(0);
+    expect(log).not.toContain("plaintext");
+  });
+  test("a barrier above the act bars nothing", async () => {
+    // barrier: the vessel's tally line "rested 1" reached the log
+    await vessel.send("rest");
+    expect(rests).toHaveLength(0);
+  });
+});

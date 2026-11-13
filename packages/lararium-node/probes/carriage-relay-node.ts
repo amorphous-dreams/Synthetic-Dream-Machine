@@ -1,8 +1,7 @@
 /**
- * carriage-relay-node — the CARRIAGE relay service entrypoint (Socket B): a proof-of-possession authenticated
- * relay the family vessels dial to carry sealed cad ciphertext bodies hearth to hearth, plus the DHT-free
- * bag-tracker. Distinct from relay-node (the Herm's OPEN membership-CEREMONY relay); this is the member-gated
- * SEALED-body cad carriage (Socket B). Both are Herm transports; NEITHER is the Automerge /ws doc relay (Socket A).
+ * carriage-relay-node — the CARRIAGE relay service entrypoint (Socket B): the herm's relay port, which takes
+ * persona-KEL drops over plain HTTP and meets every WebSocket upgrade with silence, plus the DHT-free bag-tracker.
+ * It is a Herm transport and NOT the Automerge /ws doc relay (Socket A); cleartext CRDT never routes through here.
  *
  * The relay reads no ciphertext, holds no read-cap, keeps no charter / keyring / roster; it stands from a 32-byte
  * gate seed + a bound port. The member gate lives on the vessels' cas-wire serve side, never here.
@@ -30,8 +29,8 @@ async function main(): Promise<void> {
   const gateSeed = resolveGateSeed();
   const gatePubKey = hex(await ed.getPublicKeyAsync(gateSeed));
   const relay = await startCarriageRelay({ gateSeed, port: PORT });
-  console.log(`[carriage-relay-node] carriage relay up on :${String(relay.port)} — members may dial ws://<host>:${String(relay.port)}`);
-  console.log(`[carriage-relay-node] gate pubkey ${gatePubKey} (the proof-of-possession binding)`);
+  console.log(`[carriage-relay-node] carriage relay up on :${String(relay.port)} — persona-KEL drops land at http://<host>:${String(relay.port)}`);
+  console.log(`[carriage-relay-node] gate pubkey ${gatePubKey} (the relay's gate identity)`);
   // Stay up for the family's lifetime; the container/process is torn down externally.
 }
 

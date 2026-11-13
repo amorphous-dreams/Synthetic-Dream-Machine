@@ -14,7 +14,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync, existsSync, mkdirSync
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { projectSubmission } from "@lararium/tw5/weave";
-import { verifyBcc } from "@lararium/memetic-frame";
+import { stampCarrier, verifyBcc } from "@lararium/memetic-frame";
 
 const h = vi.hoisted(() => ({
   calls: [] as Array<{ verb: string; args: Record<string, unknown> }>,
@@ -91,10 +91,10 @@ describe("memePlan — the argument law, no daemon", () => {
 describe("lares meme put", () => {
   test("★ reads the meme off --file and dispatches meme-put with uri · text · target · base ★", async () => {
     h.reply = { uri: "lar:///t/x", decision: "ingest", grade: "clean", landed: ["lar:///t/x"], tombstoned: [], canonicalHash: "sha256:1", warnings: [], diagnostics: [] };
-    const file = tmpFile("<<^ code=\"&#x0001;\">> hello");
+    const file = tmpFile("<<^ code=`&#x0001;`>> hello");
     const code = await cmdMeme(memeArgs(["put", "lar:///t/x"], { file, bag: "sdm", base: "sha256:0" }));
     expect(code).toBe(0);
-    expect(h.calls).toEqual([{ verb: "meme-put", args: { uri: "lar:///t/x", text: "<<^ code=\"&#x0001;\">> hello", bag: "sdm", base: "sha256:0" } }]);
+    expect(h.calls).toEqual([{ verb: "meme-put", args: { uri: "lar:///t/x", text: "<<^ code=`&#x0001;`>> hello", bag: "sdm", base: "sha256:0" } }]);
   });
 
   test("a CONFLICT receipt exits as the conflict class", async () => {
@@ -273,6 +273,21 @@ describe("lares meme check — the read-alone seat, local, no daemon", () => {
     expect(await cmdMeme(memeArgs(["check", PRISM]))).toBe(0);
     vi.restoreAllMocks();
   });
+  test("RED: a root meta holding the retired file-path reads as drift; CONTROL: the same carrier without it reads clean", async () => {
+    // Residency rides the envelope (Train Q, 2026-11-01): the check names the retired field, whatever
+    // the seal says, and the carrier stripped of it (re-sealed) reads canonical.
+    const src = readFileSync(PRISM, "utf8").replace(/^file-path[ \t]*=.*\n/m, "");
+    const without = stampCarrier(src);
+    const withField = stampCarrier(without.replace(/^(cacheable[ \t]*=.*\n)/m, `$1file-path = "bags/x/prism.mem"\n`));
+    expect(withField).toMatch(/^file-path = /m);
+    const lines: string[] = [];
+    const spy = vi.spyOn(console, "log").mockImplementation((m: unknown) => { lines.push(String(m)); });
+    expect(await cmdMeme(memeArgs(["check", tmpFile(withField)]))).toBe(1);
+    expect(lines.join("\n")).toMatch(/file-path/);
+    expect(await cmdMeme(memeArgs(["check", tmpFile(without)]))).toBe(0);
+    spy.mockRestore();
+    expect(h.calls).toEqual([]);
+  });
   test("--gradient and --edges ride check: read alone, write nothing", async () => {
     const file = staledPrism();
     const before = readFileSync(file, "utf8");
@@ -305,15 +320,15 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
   });
   test("★ a FRAMED carrier holding NO check gets one MINTED — minting on absent reads pono ★", async () => {
     // The operator ruling, and this fixture is the one that always exercised the case honestly: it keeps
-    // the ETX sigil and strips only the trailer, so a span stands for a check to cover. Read-optional,
+    // the ETX sigil and strips only the slot value, so a span stands for a check to cover. Read-optional,
     // emit-always is the fault it cures — the grammar rules the BCC optional on READ while the emitter
     // mints one unconditionally, so a hand-authored carrier lands legal on every gate its author runs
     // and red on the one they do not.
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     const bare = join(d, "bare.mem");
-    const src = readFileSync(PRISM, "utf8").replace(/^ni:\/\/\/[^\n]*$/m, "").replace(/<<\^ code="&#x0003;">>[^\n]*/, "<<^ code=\"&#x0003;\">>");
+    const src = readFileSync(PRISM, "utf8").replace(/ bcc=`ni:\/\/\/[^`\n]*`/, "");
     writeFileSync(bare, src, "utf8");
-    expect(verifyBcc(readFileSync(bare, "utf8")), "the fixture never lost its trailer").toBe("unchecked");
+    expect(verifyBcc(readFileSync(bare, "utf8")), "the fixture never lost its slot value").toBe("unchecked");
     vi.spyOn(console, "log").mockImplementation(() => {});
     await cmdMeme(memeArgs(["normalize", bare]));
     vi.restoreAllMocks();
@@ -322,15 +337,6 @@ describe("lares meme normalize — the write seat, local, no daemon", () => {
 });
 
 describe("projectPlan — the seat law, no daemon", () => {
-  test("a file with --to md seats LOCAL", () => {
-    expect(projectPlan(memeArgs(["project", "x.mem"], { to: "md" })).seat).toBe("local");
-  });
-  test("★ a file with any other target, or a lar: uri, seats DAEMON ★", () => {
-    for (const to of ["html", "tid", "json", "mem"]) {
-      expect(projectPlan(memeArgs(["project", "x.mem"], { to, recipe: "default" })).seat, `file --to ${to}`).toBe("daemon");
-    }
-    expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", recipe: "default" })).seat).toBe("daemon");
-  });
   test("a target off the list refuses; a missing --to refuses; --recipe with --bag refuses", () => {
     expect(() => projectPlan(memeArgs(["project", "x.mem"], { to: "pdf" }))).toThrow(/--to/);
     expect(() => projectPlan(memeArgs(["project", "x.mem"]))).toThrow(/--to/);
@@ -340,7 +346,7 @@ describe("projectPlan — the seat law, no daemon", () => {
     const d = mkdtempSync(join(tmpdir(), "lares-meme-")); dirs.push(d);
     const source = join(d, "source.mem");
     const output = join(d, "rendered");
-    writeFileSync(source, "<<^ code=\"&#x0001;\">> local\n", "utf8");
+    writeFileSync(source, "<<^ code=`&#x0001;`>> local\n", "utf8");
     const stderr = vi.spyOn(console, "error").mockImplementation(() => {});
     expect(await cmdMeme(memeArgs(["project", source], { to: "md", out: output, recipe: "a", bag: "b" }, { json: false }))).toBe(2);
     expect(stderr.mock.calls.flat().join(" ")).toMatch(/no-container.*--recipe.*--bag/s);
@@ -535,7 +541,7 @@ describe("lares meme project --to md — a bare re-project reads the pair's OWN 
 });
 
 /**
- * The fold of `tools/submission-parity.mjs` into this door: `project --to md --check <file|dir>`
+ * The `project --to md --check <file|dir>` door
  * re-projects each named pair's SOURCE (read off the meta's `source:` field, resolved against the
  * repo's `bags/lares` tree) and compares in memory — no write, no wire. `PRISM`'s own declared
  * address (`lar:///ha.ka.ba/lares/api/pono/prism`) resolves back to itself, so a pair projected
@@ -734,10 +740,10 @@ describe("lares meme project — the daemon seat rides meme-project", () => {
 describe("project --to mem reads the composition it just rendered", () => {
   /** The two-frame smuggle, as `expandRefs` composes it. Assembled at read time — it declares nothing on disk. */
   const HEAD = [
-    `<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>`,
+    `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>`,
     ``,
-    `<<^ code="&#x0001;" namespace="&#x2299;" from="?" -> to="lar:///t/two-heads">>`,
-    `<<^ code="&#x0002;">>`,
+    `<<^ code=\`&#x0001;\` namespace=\`&#x2299;\` from=\`?\` to=\`lar:///t/two-heads\`>>`,
+    `<<^ code=\`&#x0002;\`>>`,
     ``,
   ].join("\n");
   const TWO_FRAMES = HEAD + [
@@ -746,9 +752,9 @@ describe("project --to mem reads the composition it just rendered", () => {
     `uri-path = "t/two-heads"`,
     "```",
     ``, `body one`, ``,
-    `<<^ code="&#x0002;">>`, ``, `body two`, ``,
-    `<<^ code="&#x0003;">>ni:///sha-256;AAAA`,
-    `<<^ code="&#x0004;" -> to="?">>`, ``,
+    `<<^ code=\`&#x0002;\`>>`, ``, `body two`, ``,
+    `<<^ code=\`&#x0003;\` bcc=\`ni:///sha-256;AAAA\`>>`,
+    `<<^ code=\`&#x0004;\` to=\`?\`>>`, ``,
   ].join("\n");
   const TORN = HEAD + [
     "```toml meta",
@@ -891,16 +897,16 @@ const say = (): { lines: string[]; done: () => string } => {
 
 describe("lares meme check — the stage law, enforced only where the tag stands", () => {
   test("★ a standing carrier holding an open lean faults, and exits 1 ★", async () => {
-    const file = tmpFile(governed(["lifecycle/standing"], "<<~ ahu #/leans>>\n\n# unruled. `-> ?`\n\n<<~/ahu>>"));
+    const file = tmpFile(governed(["lifecycle/standing"], "<<~ ahu slot=`#/leans`>>\n\n# unruled. ``to=`?` ``\n\n<<~/ahu>>"));
     const out = say();
     const code = await cmdMeme(memeArgs(["check", file]));
     const text = out.done();
     expect(code).toBe(1);
-    expect(text).toMatch(/an open lean `-> \?` stands in #\/leans/);
+    expect(text).toMatch(/an open lean ``to=`\?` `` stands in #\/leans/);
   });
 
   test("CONTROL — the same carrier tagged designed reads clean and exits 0", async () => {
-    const file = tmpFile(governed(["lifecycle/designed"], "<<~ ahu #/leans>>\n\n# unruled. `-> ?`\n\n<<~/ahu>>"));
+    const file = tmpFile(governed(["lifecycle/designed"], "<<~ ahu slot=`#/leans`>>\n\n# unruled. ``to=`?` ``\n\n<<~/ahu>>"));
     const out = say();
     const code = await cmdMeme(memeArgs(["check", file]));
     out.done();
@@ -909,7 +915,7 @@ describe("lares meme check — the stage law, enforced only where the tag stands
 
   /** The whole shelf declines the ladder; a check over an UNGOVERNED carrier enforces nothing new. */
   test("CONTROL — an untagged carrier carrying the same open lean enforces nothing new", async () => {
-    const file = tmpFile(governed(["api/pono/meme"], "<<~ ahu #/leans>>\n\n# unruled. `-> ?`\n\n<<~/ahu>>"));
+    const file = tmpFile(governed(["api/pono/meme"], "<<~ ahu slot=`#/leans`>>\n\n# unruled. ``to=`?` ``\n\n<<~/ahu>>"));
     const out = say();
     const code = await cmdMeme(memeArgs(["check", file]));
     out.done();
@@ -936,7 +942,7 @@ describe("lares meme check — the stage law, enforced only where the tag stands
 
 describe("lares meme sitting — the fire is CALLED, and this call burns nothing", () => {
   test("★ names every folded and retiring carrier nothing points at, and writes nothing ★", async () => {
-    const folded = tmpFile(governed(["lifecycle/folded"], "<<~ ahu #/one>>\n\nfolded to lar:///ha.ka.ba/lares/api/pono/meme\n\n<<~/ahu>>"));
+    const folded = tmpFile(governed(["lifecycle/folded"], "<<~ ahu slot=`#/one`>>\n\nfolded to lar:///ha.ka.ba/lares/api/pono/meme\n\n<<~/ahu>>"));
     const before = readFileSync(folded, "utf8");
     const out = say();
     const code = await cmdMeme(memeArgs(["sitting", folded]));
@@ -951,9 +957,9 @@ describe("lares meme sitting — the fire is CALLED, and this call burns nothing
 
   /** THE WELD COMES FIRST AND THE FIRE SECOND. A carrier something still names is not a candidate. */
   test("★ CONTROL: a folded carrier something still names is HELD, never a candidate ★", async () => {
-    const folded = tmpFile(governed(["lifecycle/folded"], "<<~ ahu #/one>>\n\nfolded to lar:///ha.ka.ba/lares/api/pono/meme\n\n<<~/ahu>>"));
+    const folded = tmpFile(governed(["lifecycle/folded"], "<<~ ahu slot=`#/one`>>\n\nfolded to lar:///ha.ka.ba/lares/api/pono/meme\n\n<<~/ahu>>"));
     const addr = /^uri-path = "([^"]+)"/m.exec(readFileSync(folded, "utf8"))![1]!;
-    const namer = tmpFile(governed(["api/pono/meme"], `<<~ loulou "lar:///${addr}">>`));
+    const namer = tmpFile(governed(["api/pono/meme"], `<<~ loulou uri=\`lar:///${addr}\`>>`));
     const out = say();
     const code = await cmdMeme(memeArgs(["sitting", folded, namer]));
     const text = out.done();

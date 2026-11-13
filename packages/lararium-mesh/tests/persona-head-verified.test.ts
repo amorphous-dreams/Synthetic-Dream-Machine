@@ -1,8 +1,8 @@
 /**
  * persona-head-verified.test — no reader takes a persona's head off a rotation it did not verify.
  *
- * A persona rotation carries its own proof: the revealed guardian roster hashes to the predecessor's rolling
- * commitment, and a threshold of those guardians signed the event. `verifyPersonaKel` reads structure alone and
+ * A persona rotation carries its own proof: the revealed recovery contact roster hashes to the predecessor's rolling
+ * commitment, and a threshold of those recovery contacts signed the event. `verifyPersonaKel` reads structure alone and
  * a junk rotation passes it, so `headOpKey` verifies every step's authority on EVERY read: no option selects a
  * head off structure.
  */
@@ -21,28 +21,28 @@ const signer = (n: number) => async (b: Uint8Array): Promise<string> => hex(awai
 
 describe("a persona head rests on verified steps alone", () => {
   test("★ a stranger's unsigned rotation reads structurally whole and seats no head ★", async () => {
-    const guardian = await key(2), founding = `0x${await key(1)}`, stranger = `0x${await key(66)}`;
-    const inception = mintPersonaInception(founding, sealKeySetHash([guardian], 1));
-    // The stranger learned the guardian roster (public keys) and reveals it, with no signature at all.
+    const recoveryContact = await key(2), founding = `0x${await key(1)}`, stranger = `0x${await key(66)}`;
+    const inception = mintPersonaInception(founding, sealKeySetHash([recoveryContact], 1));
+    // The stranger learned the recovery contact roster (public keys) and reveals it, with no signature at all.
     const core = {
       seq: 1, prefix: inception.prefix, opKeyDid: stranger, recoverySetHash: inception.recoverySetHash,
       nextRecoverySetHash: inception.nextRecoverySetHash, prevEventCid: inception.eventCid, provisional: false, vetoOfCid: null,
       enrolmentDigest: inception.enrolmentDigest,
     };
-    const forged = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [guardian], recoveryThreshold: 1, rotationSigs: [] } as PersonaKelEvent;
+    const forged = { ...core, eventCid: personaEventCidOf(core), recoveryRoster: [recoveryContact], recoveryThreshold: 1, rotationSigs: [] } as PersonaKelEvent;
     expect(verifyPersonaKel([inception, forged])).toBe(true);                                   // KNOWN POSITIVE: structure passes
     expect((await verifyPersonaKelFull([inception, forged])).ok).toBe(false);
     expect(await headOpKey([inception, forged])).toBeNull();
     expect(await headOpKey([inception, forged], { acceptProvisional: true })).toBeNull();
   });
 
-  test("CONTROL: the inception's key heads its own log, and a guardian-signed rotation moves the head", async () => {
-    const guardian = await key(2), founding = `0x${await key(1)}`, fresh = `0x${await key(3)}`;
-    const inception = mintPersonaInception(founding, sealKeySetHash([guardian], 1));
+  test("CONTROL: the inception's key heads its own log, and a recovery-contact-signed rotation moves the head", async () => {
+    const recoveryContact = await key(2), founding = `0x${await key(1)}`, fresh = `0x${await key(3)}`;
+    const inception = mintPersonaInception(founding, sealKeySetHash([recoveryContact], 1));
     expect(await headOpKey([inception])).toBe(founding);
     const rotated = await attestAndRotate({
-      head: inception, freshOpKeyDid: fresh, guardianRecoveryKeys: [guardian], recoveryThreshold: 1,
-      guardianSigners: [{ signer: guardian, sign: signer(2) }],
+      head: inception, freshOpKeyDid: fresh, recoveryContactKeys: [recoveryContact], recoveryThreshold: 1,
+      recoveryContactSigners: [{ signer: recoveryContact, sign: signer(2) }],
     });
     if (!rotated.ok) throw new Error(rotated.reason);
     expect(await headOpKey([inception, rotated.event])).toBe(fresh);

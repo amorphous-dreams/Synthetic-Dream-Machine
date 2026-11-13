@@ -1,14 +1,15 @@
 /**
- * runDeviceAdmit — Node adapter: produce a device-admit/v1 payload for a new vessel.
+ * runDeviceAdmit — Node adapter: produce a device-admit payload for a new vessel, and this hearth's reading the
+ * fleet-join answer signs beside it.
  *
  * Node-specific shores (only these belong here):
- *   - readFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
+ *   - readFileSync for the social bootstrap (<root>/hearth/vessel — see larBootstrapPath)
  *   - findWithProgress on the store's one holder for daemon doc access — the standing vessel's own Repo
  *     when the door runs inside it, the direct holder's (`ownedStore`) when no vessel stands
  *   - loadVesselSigningSeed (disk keypair)
  *
- * The door hands back the minted payload and its carried form; the caller's own process writes or prints
- * them, so a door that ran inside the standing vessel never speaks into the vessel's log.
+ * The door hands back the minted payload and the hearth's reading (its gate pin, canon and resolved island). The
+ * fleet-join door's answer signs both, so the pin and the canon reach a joinee only INSIDE the root's signature.
  *
  * All ceremony logic (Keyhive hydration, Gate B/C self-check, payload construction)
  * lives in @lararium/keyhive (runDeviceAdmitCore) and runs identically in any vessel.
@@ -17,26 +18,39 @@
  * A second OPERATOR joins a Nexus by carriage contract (`lares nexus accept-carriage` + `lares nexus contract`) — a different axis (ceremony.ts stubs).
  */
 
+import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "fs";
-import { isValidAutomergeUrl, type AutomergeUrl, type Repo } from "@automerge/automerge-repo";
+import { type AutomergeUrl, type DocHandle, type Repo } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, personaBagIdFor, PERSONA_KEL_PREFIX_TIDDLER,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   personaKelBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc,
-  leaseEpochPrefix, effectiveLeaseEpoch,
-  LARES_DOC_URI, LARARIUM_DOC_URI, oracleGenesisDocUrl, tiddlerText, type LarDoc,
-} from "@lararium/mesh";
-import { larBootstrapPath } from "../vessel-paths.js";
-import { runDeviceAdmitEdge, type DeviceAdmitPayload, type CarriedAdmitPayload } from "@lararium/keyhive";
+  buildDeviceDelegationRootHalf,
+  faceAtomKeyFromSeed,
+  leaseEpochPrefix, readControlHome, readFace,
+  seatDeviceInFace, DeviceSeatRefused, ed25519VerifyingKeyFromSeed,
+  tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
+import { makeCatalogAccessor } from "@lararium/tw5";
+import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
+import { openVesselSecretHomeIfNamed } from "../secret-home-store.js";
+import { runDeviceAdmitEdge, type DeviceAdmitPayload } from "@lararium/keyhive";
 import { loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { readVesselEdgeBoard } from "../edge-board.js";
-import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId } from "@lararium/mesh";
+import { fleetEdgeBoardDocUrl, fleetEdgeAuthority, deviceEdgeId, readFleetFrontier, fleetFrontierCarriage, fleetRaiseCids, readFrontierPins, type CustodyRootDoor, type GateBundlePin } from "@lararium/mesh";
+import { stoodSovereignPin } from "../hearth-sovereign-pin.js";
 import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../nexus-standing.js";
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
+import { loadIdentityAnchors } from "../identity-anchors.js";
+import { admitCanonDocs, hearthCustodyGroup } from "../kahu-realm.js";
+import { loadFaceAtomOfGroup } from "../face-atom-store.js";
+import { fleetLineageForVessel } from "../fleet-lineage.js";
+import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { wsUrlForOrigin } from "../lan-address.js";
+import { appendPersonaActs, readFacePersonaRecords } from "../persona-act-store.js";
 
-export type { DeviceAdmitPayload, CarriedAdmitPayload } from "@lararium/keyhive";
+import { resolveFace } from "../face-selector.js";
+export type { DeviceAdmitPayload } from "@lararium/keyhive";
 
 /**
  * THE ISLAND THIS DOOR READS A PER-NEXUS BOARD AT — the founder's own, resolved exactly as its BOOT
@@ -105,36 +119,25 @@ export function deviceAdmitSyncUrl(explicitSyncUrl?: string): string | null {
   return wsUrlForOrigin(url.origin);
 }
 
-/** The oracle titles whose documents a joinee mounts as its hearth's base canon. */
-const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
-
-/**
- * THE CANON DOCUMENTS THIS HEARTH NAMES TO A JOINEE — `@lares` and `@lararium`, by document url, as this
- * vessel's own oracle holds them. They ride the carried admit so the joinee's gate widens by exactly these
- * documents; the oracle plane itself (which also names this vessel's catalog, its daemon doc and its faces'
- * planes) never crosses. A pointer the oracle lacks, or holds torn, goes unnamed. A read: a vessel whose
- * store holds no oracle names nothing, and nothing gets minted here.
- */
-export async function admitCanonDocs(repo: Repo): Promise<Readonly<Record<string, string>>> {
-  let oracle: LarDoc | undefined;
-  try { oracle = (await repo.find<LarDoc>(oracleGenesisDocUrl())).doc(); } catch { return {}; }
-  const named: Record<string, string> = {};
-  for (const title of HEARTH_CANON_TITLES) {
-    const url = tiddlerText(oracle?.tiddlers?.[title]);
-    if (url && isValidAutomergeUrl(url)) named[title] = url;
-  }
-  return named;
-}
-
 /** The root refuses to bind a device its own fleet board shows set aside. The reading names itself. */
 export class DeviceSetAside extends Error {
   constructor(readonly verdict: string) {
     super(
-      `[lares device-admit] REFUSED: that device stands SET ASIDE from this fleet (its edge reads ${verdict}). ` +
+      `[lares fleet join answer] REFUSED: that device stands SET ASIDE from this fleet (its edge reads ${verdict}). ` +
       "A delegation binds nothing under a standing shadow. Lift it first, by the root's own hand " +
       "(`lares edge un-kapae --device <key>`); the device then takes a fresh seat and no earlier key.",
     );
     this.name = "DeviceSetAside";
+  }
+}
+
+export class DeviceFrontierUnknown extends Error {
+  constructor(why: string) {
+    super(
+      "[lares fleet join answer] REFUSED: this fleet's signed frontier reads unknown here (" + why + "). " +
+      "A delegation binds only against a frontier this vessel can verify; sync the fleet board and the root's persona KEL, then retry.",
+    );
+    this.name = "DeviceFrontierUnknown";
   }
 }
 
@@ -144,36 +147,91 @@ export class DeviceSetAside extends Error {
  * deleted from the board still refuses here. The operator's own door names the reading, and the lift stays a
  * separate, deliberate act. A vessel that holds no root key reads no fleet and binds nothing by this door anyway.
  */
-export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string): Promise<void> {
-  const fleetRoot = (await loadPersonaGroupRootVerifyingKey())?.toLowerCase().replace(/^0x/, "");
-  const ownKey = await loadVesselVerifyingKey();
-  if (!fleetRoot || !ownKey) return;
+export async function assertDyadBinds(repo: Repo, joineeVerifyingKey: string, face = 0): Promise<void> {
+  // Each face holds its own fleet: the root that signs reads its own board, never the founding face's.
+  const fleetRoot = (await loadPersonaGroupRootVerifyingKey(face))?.toLowerCase().replace(/^0x/, "");
+  if (!fleetRoot) return;
+  const anchors = await loadIdentityAnchors(face);
+  const atomSeed = anchors ? await loadFaceAtomOfGroup(anchors.personaGroupId) : null;
+  if (!anchors || !atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+  const ownKey = faceAtomKeyFromSeed(atomSeed, anchors.personaGroupId).key;
   const fleet = await readVesselEdgeBoard({
     repo, scope: fleetRoot, kind: "fleet", boardUrl: fleetEdgeBoardDocUrl(fleetRoot), label: "board:edge-kapae",
     vesselKey: ownKey, authorityFor: fleetEdgeAuthority(fleetRoot),
   });
+  // ABSENCE IS NOT CLEAR: the board binds only against its signed frontier. Where no qualifying frontier covers the fleet the
+  // standing reads `unknown`, and a bind refuses by name rather than reading the missing raise as a clear dyad.
+  const lineage = await fleetLineageForVessel(repo, fleetRoot);
+  const frontier = lineage ? readFleetFrontier({
+    fleetRoot, board: fleet.handle.doc(), lineage, seenRaises: fleetRaiseCids(fleet.counted.acts),
+    pinned: readFrontierPins(fleet.ledger.doc(), fleetRoot)[FLEET_HAND] ?? null,
+  }) : null;
+  if (!frontier || frontier.status !== "known") throw new DeviceFrontierUnknown(frontier ? frontier.missing.map((m) => `${m.hand}:${m.why}`).join(", ") : "no-lineage");
   const dyad = fleet.readings.get(deviceEdgeId(fleetRoot, joineeVerifyingKey.trim().toLowerCase().replace(/^0x/, "")));
   if (dyad?.stands === true) throw new DeviceSetAside(dyad.verdict);
 }
 
+/** The hearth refused a join's vessel tag by name: `vessel-tag-absent`, `ward-key-absent`, `vessel-tag-invalid`, `ward-key-unproven`, `vessel-already-admitted`. */
+export class DeviceAdmitTagRefused extends Error {
+  override readonly name = "DeviceAdmitTagRefused";
+  constructor(readonly refusal: "vessel-tag-absent" | "ward-key-absent" | "vessel-tag-invalid" | "ward-key-unproven" | "vessel-already-admitted" | "replay-edge-lapsed", detail: string) {
+    super(`[lares fleet join answer] ${refusal}: ${detail}`);
+  }
+}
+
 export interface DeviceAdmitOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
+  readonly signedRequest?: Uint8Array;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:           Repo;
+  /** This hearth's catalog, supplied by the holder of its store; absence names no canon. */
+  readonly catalogUrl?:   string | undefined;
   readonly syncUrl?:       string;
   /** The joining vessel's PUBLIC Ed25519 verifying-key hex — the delegate the founder's root signs. */
   readonly joineeVerifyingKey: string;
+  /** The joining vessel's blinded tag for this face, the joinee device's per-face ward key, the tag's signature over (group,
+   *  joinee atom, ward key) and the ward key's pop over the same, as its request carried them: the admission act carries all four,
+   *  and the hearth refuses a tag that does not hold or already stands seated, and a ward key the joinee proves it holds nothing of. */
+  readonly vesselTag:      { readonly vesselTag?: unknown; readonly vesselSig?: unknown; readonly wardKey?: unknown; readonly wardPop?: unknown };
   /** Automerge URL of this vessel's genesis island — included in payload for peer-sync delivery. */
   readonly islandDocUrl?:  string | null;
   /** This hearth's own daemon doc — the door the joinee knocks on for its seat. */
   readonly hearthDaemonUrl?: string | null;
+  /**
+   * The persona index whose root signs the edge (`lares fleet join --face`); the founding face where absent. The
+   * founding face reads its pins off the bootstrap and the daemon doc; a face an operator added reads them off its
+   * own anchors, since both pin the founding face alone.
+   */
+  readonly face?:          number;
+  /** The custody door the hearth's gate pin derives from (`hearthSovereignPin`); absent → this home's own custody seat. */
+  readonly gateDoor?:      CustodyRootDoor;
 }
 
-/** What the door mints: the signed edge, and the form a joinee founds against. */
+/** This hearth's reading at the admit: what the fleet-join answer signs beside the edge. */
+export interface AdmitHearthReading {
+  /** The full sovereign sync pin a joinee files for this hearth's dial, at the island the reading names. */
+  readonly gatePin: GateBundlePin;
+  /** The canon documents this hearth names, by url (`admitCanonDocs`). */
+  readonly canon: Readonly<Record<string, string>>;
+  /** The board island this hearth stands on, resolved as its boot resolves it; absent on a torn standing. */
+  readonly islandKind?: "own" | "anchor" | "charter" | "explicit";
+  readonly islandScope?: string;
+}
+
+/** What the door mints: the signed edge, and this hearth's reading the fleet-join answer signs beside it. */
 export interface DeviceAdmitResult {
-  /** The signed edge as the ceremony minted it — the bytes the carried `#admit=` fragment encodes. */
   readonly payload: DeviceAdmitPayload;
-  /** The edge with the hearth's dial pin and resolved island beside it — the file `vessel found --admit` reads. */
-  readonly carried: CarriedAdmitPayload;
+  readonly hearth: AdmitHearthReading;
+}
+
+/**
+ * The hearth's daemon doc, read on the document's own events: ready opens it, unavailable refuses by name at once. The
+ * one clock left rides mesh's `findOrThrow` at its hang bound (LIVENESS: a connected peer that stays silent says
+ * nothing), so no clock of the admit's own decides.
+ */
+export function openHearthDaemonDoc(repo: Repo, daemonUrl: string): Promise<DocHandle<LarDoc>> {
+  return findOrThrow(repo, daemonUrl, "the hearth's daemon doc", { timeoutMs: DOCUMENT_HANG_BOUND_MS });
 }
 
 export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAdmitResult> {
@@ -181,7 +239,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
 
   if (!existsSync(bootstrap)) {
     throw new Error(
-      `[lares device-admit] ${bootstrap} not found — run \`lares vessel found\` first.\n` +
+      `[lares fleet join answer] ${bootstrap} not found — run \`lares vessel found\` first.\n` +
       `  expected: ${bootstrap}`,
     );
   }
@@ -192,19 +250,25 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     tiddlers?: Record<string, { text?: string }>;
   }).tiddlers ?? {};
 
-  const personaGroupId = tiddlers[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
-  const meshCabalDocIdHex   = tiddlers[MESH_CABAL_DOC_ID_TIDDLER]?.text   ?? null;
-  const daemonUrl            = tiddlers[DAEMON_BAG_ID]?.text                 ?? null;
+  const face = await resolveFace(opts.face);
+  // A face an operator added stands on its OWN anchors: the bootstrap and the daemon doc pin the founding face.
+  const faceAnchors = face === 0 ? null : await loadIdentityAnchors(face);
+  if (face !== 0 && faceAnchors === null) {
+    throw new Error(`[lares fleet join answer] this vessel holds no face at index ${face} — found one with \`lares persona new ${face}\` first.`);
+  }
+  const personaGroupId = faceAnchors?.personaGroupId ?? (face === 0 ? ownEntry(tiddlers, PERSONA_GROUP_ID_TIDDLER)?.text ?? null : null);
+  const meshCabalDocIdHex   = faceAnchors?.meshCabalDocIdHex ?? (face === 0 ? ownEntry(tiddlers, MESH_CABAL_DOC_ID_TIDDLER)?.text ?? null : null);
+  const daemonUrl            = ownEntry(tiddlers, DAEMON_BAG_ID)?.text                 ?? null;
   // The founder's PersonaGroup plane — carried into the payload so the joinee SYNCS the shared veiled
   // identity (membership-sync foundation); the daemon bag stays sovereign (the joinee seeds its own). The entry
   // is keyed by the name the group's own id derives, which both devices compute alike.
   const personaUrl           = personaGroupId
-    ? tiddlers[personaBagIdFor(personaGroupId)]?.text ?? null
+    ? ownEntry(tiddlers, personaBagIdFor(personaGroupId))?.text ?? null
     : null;
 
   if (!personaGroupId || !meshCabalDocIdHex) {
     throw new Error(
-      `[lares device-admit] the PersonaGroup or MeshCabal id is missing from social-bootstrap.json.\n` +
+      `[lares fleet join answer] the PersonaGroup or MeshCabal id is missing from social-bootstrap.json.\n` +
       `  Run \`lares vessel found --force\` to re-establish the founding ceremony.`,
     );
   }
@@ -212,31 +276,24 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // persona doc in its place. A founding with no recorded plane re-founds rather than admits.
   if (!personaUrl) {
     throw new Error(
-      `[lares device-admit] the PersonaGroup plane url is missing from social-bootstrap.json.\n` +
+      `[lares fleet join answer] the PersonaGroup plane url is missing from social-bootstrap.json.\n` +
       `  Run \`lares vessel found --force\` to re-found with a recorded plane before admitting a device.`,
     );
   }
   if (!daemonUrl) {
-    throw new Error(`[lares device-admit] daemon doc URL missing from social-bootstrap.json.`);
+    throw new Error(`[lares fleet join answer] daemon doc URL missing from social-bootstrap.json.`);
   }
 
   // Open daemon doc to read cap events and the group pin.
   const repo        = opts.repo;
-  const progress    = repo.findWithProgress(daemonUrl as AutomergeUrl);
-  // automerge-repo 2.6: whenReady() resolves the handle when ready, rejects on
-  // unavailable; race it against a 5s timeout.
-  const daemonHandle = await Promise.race([
-    progress.whenReady(),
-    new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error("[lares device-admit] daemon doc not ready after 5s")), 5000),
-    ),
-  ]);
+  const daemonHandle = await openHearthDaemonDoc(repo, daemonUrl);
   const daemonDoc    = daemonHandle.doc();
   const tiddlerMap  = (daemonDoc as LarDoc | undefined)?.tiddlers ?? {};
 
-  // The bootstrap and the daemon doc each pin the face's group; they name one group, or the founding tore.
-  if (tiddlerText(tiddlerMap[PERSONA_GROUP_ID_TIDDLER]) !== personaGroupId) {
-    throw new Error(`[lares device-admit] the daemon doc pins no PersonaGroup, or another than social-bootstrap.json names — run \`lares vessel found --force\`.`);
+  // The bootstrap and the daemon doc each pin the founding face's group; they name one group, or the founding tore.
+  // An added face's group rides its own anchors, which no daemon doc pins.
+  if (face === 0 && tiddlerText(tiddlerMap[PERSONA_GROUP_ID_TIDDLER]) !== personaGroupId) {
+    throw new Error(`[lares fleet join answer] the daemon doc pins no PersonaGroup, or another than social-bootstrap.json names — run \`lares vessel found --force\`.`);
   }
 
   // The founder's persona-KEL PREFIX (the identifier the joinee will pin) + the chain SNAPSHOT off the
@@ -245,16 +302,19 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   // the snapshot into its local board so it boots to a head with no sync wait (no-global-now). Fail-closed:
   // a founding always seats an inception, so a prefix + a chain always stand — their absence names a torn
   // founding, refuse to admit.
-  const personaKelPrefix = tiddlerText(tiddlerMap[PERSONA_KEL_PREFIX_TIDDLER]);
+  const personaKelPrefix = face === 0 ? tiddlerText(tiddlerMap[PERSONA_KEL_PREFIX_TIDDLER]) : faceAnchors?.personaKelPrefix;
+  if (!personaKelPrefix && face !== 0) {
+    throw new Error(`[lares fleet join answer] face ${face}'s anchors name no persona-KEL prefix — anchors written before that slot stood, so this face admits no device here.`);
+  }
   if (!personaKelPrefix) {
-    throw new Error(`[lares device-admit] persona-KEL prefix missing from daemon doc — run \`lares vessel found --force\`.`);
+    throw new Error(`[lares fleet join answer] persona-KEL prefix missing from daemon doc — run \`lares vessel found --force\`.`);
   }
   const founderVesselKey = await loadVesselVerifyingKey();
   const boardIsland      = admitBoardIsland(founderVesselKey);
   // ── CARRY ON READ — a door names its own sources rather than trusting a boot to have run ──
   // `open-node-vessel.ts` carries the pinned chain onto the resolved island right before its OWN board
   // read, at every boot. A rite since that boot may have moved the island, and a direct holder never
-  // boots at all, so the ordinary walk `vessel found` → `persona new 0` → `nexus rite quorum` → `device-admit`
+  // boots at all, so the ordinary walk `vessel found` → `persona new 0` → `nexus rite quorum` → `fleet join answer`
   // reaches this line with no daemon restart between the climb and the call. Composing the carry HERE,
   // fed by `nodeNexusIslandsBelow` off the identical resolution `admitBoardIsland` above already ran,
   // lets a sound climbed founding admit with no restart owed — the resolution names one ranking,
@@ -275,89 +335,124 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     // The carry above already walked every island BELOW this one and found nothing to move — so this
     // names an identifier no island in the gradient ever seated (a genuinely torn founding), never a
     // sound climbed founder still waiting on a carry: the line above already ran that carry.
-    throw new Error(`[lares device-admit] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from ${boardIsland.slice(0, 18)}… and every island below it — the identifier was never seated — run \`lares vessel found --force\`.`);
+    throw new Error(`[lares fleet join answer] persona-KEL chain for ${personaKelPrefix.slice(0, 20)}… absent from ${boardIsland.slice(0, 18)}… and every island below it — the identifier was never seated — run \`lares vessel found --force\`.`);
   }
 
   await repo.flush();
 
   // The founder's PersonaGroup ROOT signs the joinee's edge (the upgrade event). The root seed is
-  // founder-only, held in the spirits' house at `<lares>/identity`; the joinee supplies ONLY its
+  // founder-only, held in the spirits' house at `<root>/hearth/identity`; the joinee supplies ONLY its
   // PUBLIC verifying key.
   if (!opts.joineeVerifyingKey) {
-    throw new Error("[lares device-admit] --joinee-key <hex> required — the joining vessel's public verifying key.");
+    throw new Error("[lares fleet join answer] the request names no joinee key — the joining vessel's public verifying key.");
   }
-  const signerSeed     = await loadPersonaGroupRootSeed();
+  const signerSeed     = await loadPersonaGroupRootSeed(face, opts.ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
   // THE BINDING GATE READS THE DYAD'S SHADOW (kapae#/reach): no seat, no bind.
-  await assertDyadBinds(repo, opts.joineeVerifyingKey);
+  await assertDyadBinds(repo, opts.joineeVerifyingKey, face);
   // The joinee's edge binds THIS hearth: the AID of its seed charter, the true name its own face's edge names.
   const hearthTrueName = hearthAid();
   if (!hearthTrueName) {
-    throw new Error("[lares device-admit] no seed charter stands here, so no hearth stands to admit a device to — found the hearth with `lares vessel found --hearth`.");
+    throw new Error("[lares fleet join answer] no seed charter stands here, so no hearth stands to admit a device to — found the hearth with `lares vessel found --hearth`.");
   }
 
-  // THE LEASE READ — off the SAME daemon doc already open above, the same fold `gateFaceJoin` runs
-  // (leaseEpochPrefix → per-writer slot values → effectiveLeaseEpoch = max). The minted edge binds to
+  // THE LEASE READ — off the vessel's control document the daemon doc above names (`control-home`), the same fold
+  // `gateFaceJoin` runs (leaseEpochPrefix → per-writer slot values → signedLeaseEpoch = max). The minted edge binds to
   // THIS PersonaGroup's current epoch, so a device admitted here reads fresh at the door until a later
-  // roll leases it stale (re-admits via face-join regrant, never a silent renewal).
+  // roll leases it stale; its next answer renews the seated edge at the epoch then current (the renewal below).
   const leasePrefix = leaseEpochPrefix(personaGroupId);
   const leaseSlotValues: string[] = [];
-  for (const [title, entry] of Object.entries(tiddlerMap)) {
+  // The admission READS the lease through the vessel's own stand (the secret home's custody row opens first, the key stands
+  // before a byte reads); it mints no control document. FAIL CLOSED (M16): an unnamed or unread control document refuses
+  // the admission by name, never signs at the genesis epoch.
+  const controlMap = await readControlHome(repo, daemonHandle).then(
+    (control) => (control.doc() as LarDoc | undefined)?.tiddlers ?? {},
+    (e: unknown) => { throw new Error(`[lares fleet join answer] the lease fence reads unread: ${e instanceof Error ? e.message : String(e)}; open the vessel's custody and retry`); });
+  for (const [title, entry] of Object.entries(controlMap)) {
     if (!title.startsWith(leasePrefix)) continue;
     const text = tiddlerText(entry);
     if (typeof text === "string") leaseSlotValues.push(text);
   }
-  const boundEpoch = effectiveLeaseEpoch(leaseSlotValues);
+  // THE ADMIT DOOR READS WHAT THE BOOT READS (`readFace`, the one door): the issuer's sealed anchor bounds the edge, so a stale
+  // daemon doc (an older valid slot) never signs a joinee below an epoch this device already accepted, and the log projects
+  // from the anchor's accepted frontier so a retired key's linked act cannot root an admission the destination would refuse.
+  const issuerAnchor = await loadFaceAnchorOfGroup(personaGroupId);
+  if (!issuerAnchor) throw new Error("[lares fleet join answer] Face proof: this face holds no sealed anchor; re-found or re-admit the face");
+  if (issuerAnchor.personaKelPrefix !== personaKelPrefix) throw new Error("[lares fleet join answer] Face proof: prefix; the bootstrap and daemon doc name a KEL prefix this face's sealed anchor does not; re-found or re-admit the face");
+  const reading = readFace(personaKelChain, issuerAnchor);
+  if (!reading) throw new Error("[lares fleet join answer] Face proof: no-lineage; re-found the face");
 
-  const payload = await runDeviceAdmitEdge({
-    signerSeed,
-    joineeVerifyingKey: opts.joineeVerifyingKey.toLowerCase(),
-    personaKelPrefix,
-    personaKelChain,
-    hearthTrueName,
-    personaGroupId,
-    meshCabalDocIdHex,
-    boundEpoch,
-    syncUrl:      deviceAdmitSyncUrl(opts.syncUrl),
-    islandDocUrl: opts.islandDocUrl ?? null,
-    // THE DOOR. Defaults to this hearth's OWN daemon doc, read from the same bootstrap the sentinel ids come
-    // from — a joinee seeds its own plane at admission, so only this url tells it where to knock.
-    hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
-    personaUrl,
+  // THE FACE'S PROOF ANSWERS FOR THE PLANE (sealed-store#/owed, U1): the plane's row rests in the face's own catalog,
+  // sealed, which a door with no vessel standing never opens; the bootstrap names the plane, and the projection below
+  // verifies its records against the face's lineage before any act lands.
+  const rowUrl = opts.catalogUrl ? await makeCatalogAccessor(repo, opts.catalogUrl).urlOf(personaBagIdFor(personaGroupId)).catch(() => null) : null;
+  if (rowUrl !== null && rowUrl !== personaUrl) throw new Error("[lares fleet join answer] Face proof: the catalog names another persona plane than the founding's bootstrap");
+  const operationStore = new AutomergeDocStore(await repo.find<LarDoc>(personaUrl as AutomergeUrl), personaBagIdFor(personaGroupId));
+  const atomSeed = await loadFaceAtomOfGroup(personaGroupId);
+  if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+  const personaHandle = await repo.find<LarDoc>(personaUrl as AutomergeUrl);
+  const records = await readFacePersonaRecords(repo, { personaUrl, group: personaGroupId,
+    // This face's carried admit acts rest in the vessel's secret home until its plane syncs (never the daemon document).
+    extraDocs: [(await openVesselSecretHomeIfNamed(repo))?.handle.doc() as LarDoc | undefined] });
+  // THE SEAT (`seatDeviceInFace`, the one core every root holder's vessel seats through): the face's proof, the tag law,
+  // the admission or the renewal, and the root's signature over the joinee's edge. This door hands it the node's reads
+  // and runs the enrolment over the fleet board's frontier.
+  const deviceKey = opts.joineeVerifyingKey.toLowerCase();
+  const seat = await seatDeviceInFace({
+    personaGroupId, reading, issuerAnchor, records, leaseSlotValues, signerSeed, hearthTrueName, deviceKey,
+    kelEpoch: personaKelChain[personaKelChain.length - 1]!.seq,
+    vesselTag: opts.vesselTag,
+    rootHalf: buildDeviceDelegationRootHalf,
+    enrol: async ({ boundEpoch, personaActs, signedEdge }) => {
+      const operation = { store: operationStore, atomSeed,
+        signedInput: opts.signedRequest ?? new TextEncoder().encode(JSON.stringify(signedEdge)) };
+      const fleetRoot = (await ed25519VerifyingKeyFromSeed(signerSeed)).toLowerCase();
+      const fleetBoard = await materializeSharedLarDoc(repo, fleetEdgeBoardDocUrl(fleetRoot), "board:edge-kapae");
+      const edgeFrontier = fleetFrontierCarriage(fleetBoard.doc(), fleetRoot);
+      return runDeviceAdmitEdge({
+        edgeFrontier,
+        operation,
+        signerSeed,
+        joineeVerifyingKey: deviceKey,
+        personaKelPrefix,
+        personaKelChain,
+        personaActs,
+        hearthTrueName,
+        personaGroupId,
+        meshCabalDocIdHex,
+        boundEpoch,
+        syncUrl:      deviceAdmitSyncUrl(opts.syncUrl),
+        islandDocUrl: opts.islandDocUrl ?? null,
+        // THE DOOR. Defaults to this hearth's OWN daemon doc, read from the same bootstrap the sentinel ids come
+        // from — a joinee seeds its own plane at admission, so only this url tells it where to knock.
+        hearthDaemonUrl: opts.hearthDaemonUrl ?? daemonUrl,
+        personaUrl,
+      });
+    },
+  }).catch((error: unknown) => {
+    if (!(error instanceof DeviceSeatRefused)) throw error;
+    if (error.refusal === "face-proof") throw new Error(`[lares fleet join answer] ${error.detail}`);
+    throw new DeviceAdmitTagRefused(error.refusal, error.detail);
   });
+  const payload = seat.payload;
+  if (seat.appended.length) appendPersonaActs(personaHandle, [...seat.appended]);
 
-  // THE PIN NAMES THE DIAL (hearth-dial-pin.ts). The founder's gate key IS its vessel key — the anti-relay
-  // binding the joinee's V3 proof commits to. It rides the payload beside `syncUrl` so the joinee's bootstrap
-  // can carry both and its boot can dial with no `LAR_JOIN_*` set by hand.
-  // ⚠ THE PIN CARRIES THE VESSEL KEY ON PURPOSE — UNCHANGED. The gate key is the anti-relay binding the
-  // joinee's V3 proof COMMITS TO, so it must stay the founder's own vessel key; the charter island would
-  // break that commitment and is not a substitute for it.
-  //
-  // THE LOOP THIS CLOSES (Option A — split the payload): the gate key alone used to be the ONLY thing the
-  // joinee read to resolve its board (`init.ts` forced `anchorGateKey := hearthGatePubKey`), so it always
-  // resolved `kind: "anchor"` — never `charter` — even when the founder itself stands on a charter island.
-  // `founderIdentity` below is the SAME resolution `boardIsland` above already composed (`admitBoardIsland`
-  // → `nodeNexusIsland` → `nodeNexusStanding`, the one canonical read); it names WHICH board the founder
-  // actually stands on, and rides beside the dial key rather than being inferred from it. `init.ts` feeds
-  // `kind`/`scope` into `nexusIdentity` directly (the charter branch when `kind === "charter"`), so a
-  // climbed founder's device now seats on the board the founder itself stands on.
-  //
-  // SNAPSHOT, DELIBERATELY: this freezes the founder's resolved board AT ADMIT TIME. A founder that climbs
-  // AFTER admitting does not retroactively move an already-admitted device — that device re-admits by a
-  // new act. Live re-resolution here would reintroduce a reachability/global-now dependency this design
-  // sheds; `admitBoardIsland` already refuses (throws) on a torn founder before this point is ever reached,
-  // so `founderIdentity.kind` is never `"torn"` here — the guard below is a defensive type-narrow, not a
-  // path this admit can actually take.
+  // THE PIN NAMES THE DIAL (hearth-dial-pin.ts): the hearth's full sovereign sync pin at the Nexus its own sync gate
+  // STANDS at (`stoodSovereignPin`: the primary charter's AID, the hearth's true name above), never the island standing's
+  // scope, which an anchor or an explicit standing points elsewhere. The fleet-join answer signs it beside the edge, with
+  // the canon this hearth names and the board island it stands on, resolved by the one canonical read
+  // (`nodeNexusStanding`). The island freezes at the admit: a founder that climbs later moves no device it admitted;
+  // that device joins again by a new act.
   const founderIdentity = nodeNexusStanding({ ownVesselKey: founderVesselKey });
-  const carried: CarriedAdmitPayload = {
-    ...payload,
-    hearthGatePubKey: founderVesselKey.toLowerCase(),
-    // THE CANON THIS HEARTH NAMES: the documents the joinee's wiki reads, by url. Its gate opens these and
-    // keeps the oracle plane shut (`admitCanonDocs`).
-    hearthCanonDocs: await admitCanonDocs(repo),
-    ...(founderIdentity.kind !== "torn" ? {
-      hearthIslandKind:  founderIdentity.kind,
-      hearthIslandScope: founderIdentity.scope,
-    } : {}),
+  if (founderIdentity.kind === "torn") {
+    throw new Error("[lares fleet join answer] the founder's Nexus standing reads torn — there is no Nexus to pin the hearth's gate at; resolve the charter first.");
+  }
+  const hearth: AdmitHearthReading = {
+    gatePin: stoodSovereignPin(larSealHome(), opts.gateDoor),
+    canon:   await admitCanonDocs(repo, larSealHome(), await hearthCustodyGroup()),
+    islandKind: founderIdentity.kind, islandScope: founderIdentity.scope,
   };
-  return { payload, carried };
+  return { payload, hearth };
+  } finally { signerSeed.fill(0); }
 }

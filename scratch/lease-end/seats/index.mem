@@ -1,0 +1,50 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/lease-end/seats/` — 2 record(s) here, 10 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/seats/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/lease-end/seats/`
+
+The scratch planning records of `.lares-scratch/lease-end/seats/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 2 record(s) stand here and 10 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[lease-end/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[ci-triage/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage/index]] | 2 |
+| [[ci-triage-2/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/ci-triage-2/index]] | 2 |
+| [[luna-w1/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w1/index]] | 2 |
+| [[luna-w2/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/luna-w2/index]] | 2 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[blind-opus-grant|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-grant]] | plan | 2026-11-07 | `blind-opus-grant.md` |
+| [[blind-opus-slice2|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-slice2]] | plan | 2026-11-07 | `blind-opus-slice2.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BHyG9ZE-aFY5IyrMUdBMvxiiK1LkgLsm93aiXUVPCaA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

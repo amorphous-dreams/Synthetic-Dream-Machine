@@ -458,22 +458,16 @@ class CaptureSessionServer:
             store.close()
 
     def subagent_edges(self, req: dict) -> dict:
-        """Derive a session transcript's spawn/handback edge-DAG — the worldline-COMPARE consumer's edge
-        source, ported off the retired TS `deriveSubagentEdges`. PURE: reads the spirit transcripts under
-        `<session>/subagents/`, writes nothing (no store, no worldline handle) — so it needs no capture.
+        """Derive a session transcript's spawn/handback edge-DAG for worldline comparison.
 
-        REUSES `worldline_observe.derive_subagent_edges` (the SAME crunch `observe_worldline` runs at
-        capture-time), so ONE derivation feeds both the storage path and this compare feed — no second port.
-
-        The run-root reads PLAIN (`run_id_of`, the session basename), NOT the veiled worldline-root: the
-        compare's caller names handles as `<sessionId>.<agentId>` (the retired TS crunch's identity, which
-        the operator's `a`/`b` handles match); the veil rides the worldline_io STORAGE path alone. Each pair
-        matches the TS `SubagentEdgePair` shape exactly:
+        The read uses `worldline_observe.derive_subagent_edges` over spirit transcripts under
+        `<session>/subagents/` and writes no store or worldline handle. The compare feed uses the
+        plain session basename as its run-root; the storage path carries its own veiled root. Each
+        pair carries these edge shapes:
           spawn    = {subject: run, predicate: "prov:Delegation", object: handle, turnKey: <first turn uuid>}
-          handback = {subject: run, predicate: "prov:Delegation", object: handle}
-        The edge stays CLOCK-PURE (no valid_from/ended) — `worldlineCausalFromEdges` reads a timestamp only
-        for same-instant sort tie-break, and a set of sibling spirits under ONE run-root carries a
-        timestamp-invariant fork-tree verdict, so the ITC compare answers identically to the retired TS."""
+          handback = {subject: run, predicate: "prov:Delegation", object: handle, parentKey: <spawn turnKey>}
+        The edges carry causal turn links and no valid_from/ended. The spawn names the spirit's first
+        turn, and the handback follows that spawn for this capture path's one-handoff pair."""
         from worldline_observe import derive_subagent_edges, run_id_of
         transcript = str(req.get("transcript") or "")
         if not transcript:
@@ -485,6 +479,8 @@ class CaptureSessionServer:
             if spirit.chain:
                 spawn["turnKey"] = spirit.chain[0].uuid   # the spawn anchor = the spirit's first turn uuid
             handback = {"subject": run, "predicate": _PRED_DELEGATION, "object": spirit.handle}
+            if spirit.chain:
+                handback["parentKey"] = spirit.chain[0].uuid
             pairs.append({"spawn": spawn, "handback": handback})
         return {"pairs": pairs}
 

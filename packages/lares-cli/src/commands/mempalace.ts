@@ -75,6 +75,7 @@ function passthroughGuest(verb: string, inner: ParsedArgs): number {
   }
 }
 
+// PACING: process exit or the escalation bound ends each drain wait; sleep spaces polls.
 const sleep = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 /** Snapshot the live topology, marking the WS-port holder(s) as the node vessel. */
@@ -237,6 +238,7 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
   // This door's own liveness patience before escalating — never a safety verdict — reads a
   // monotonic clock, so an adversarial or operator wall-clock jump changes neither grace window.
   const graceDeadline = performance.now() + graceMs;
+  // LIVENESS: external holders can ignore SIGTERM without exiting.
   while (performance.now() < graceDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced: [], remaining: [] };
     await sleep(pollMs);
@@ -246,6 +248,7 @@ async function drainHolders(opts: { select?: (p: PalaceProc) => boolean; graceMs
   const forced: number[] = [];
   for (const p of stubborn) { forced.push(p.pid); try { process.kill(p.pid, "SIGKILL"); } catch { /* gone */ } }
   const killDeadline = performance.now() + killMs;
+  // LIVENESS: an uninterruptible holder can remain after SIGKILL.
   while (performance.now() < killDeadline) {
     if (holdersNow().length === 0) return { drained: [...drained], forced, remaining: [] };
     await sleep(pollMs);
@@ -476,7 +479,7 @@ export async function cmdMempalace(args: ParsedArgs): Promise<number> {
  *
  * FOUNDING NEVER REACHES IT (operator ruling). This writes OUTSIDE the vessel root, into the
  * operator's real Python environment — so a founding that ran it could never stay isolated, and a throwaway
- * rehearsal would touch the machine it rehearses on. `vessel stand --install` stands the vessel; a separate tool
+ * rehearsal would touch the machine it rehearses on. `vessel stand --init` stands the vessel; a separate tool
  * answers on its own door.
  *
  * The mempalace is a READ-ONLY sidecar submodule. A vessel founds and serves without it; what it unlocks is

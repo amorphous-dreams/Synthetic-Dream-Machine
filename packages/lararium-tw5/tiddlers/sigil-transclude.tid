@@ -6,10 +6,10 @@ lar-mirror-of: kahea
 lar-tongue: en
 lar-weave: primary
 lar-see-also: kahea
-lar-pattern: <<~\s*transclude\s+"?((?:[^"\s>]|>(?!>))+)"?(?:\s+key[=:]"?([\w.-]+)"?)?\s*>>
-lar-example: <<~ transclude "lar:///a.b.c/x">>
+lar-pattern: <<~\s*transclude\s+uri=`([^`]*)`(?:\s+key=`([^`]*)`)?\s*>>
+lar-example: <<~ transclude uri=`lar:///a.b.c/x`>>
 type: text/vnd.tiddlywiki
 
-\procedure ~transclude(p1:"" p2:"")
-<$transclude $variable="~kahea" p1=<<p1>> p2=<<p2>>/>
+\procedure ~transclude(uri:"" key:"")
+<$transclude $variable="~kahea" uri=<<uri>> mask=<<key>>/>
 \end

@@ -1,27 +1,21 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/mu/model-agnosticism">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/mu/model-agnosticism`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/mu/model-agnosticism.mem"
 l-space   = "stable"
-mana      = 16
-manao     = 17
-manaoio   = 16
 role      = "staging docs shelf for Wilson/Korzybski model-agnosticism braid behind Mu-facing invariants"
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/mu/model-agnosticism"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/mu/model-agnosticism"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/meme-header>>
+<<~ ahu slot=`#/meme-header`>>
 
 ! Model Agnosticism — Staging Shelf
 
@@ -30,7 +24,7 @@ This room gathers the foundation braid around generalized agnosticism, maps and 
 
 <<~/ahu>>
 
-<<~ ahu #/plan>>
+<<~ ahu slot=`#/plan`>>
 
 !! Plan Skeleton
 
@@ -45,7 +39,7 @@ Later condensation should leave only what the docs shelf needs after the live AP
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-preferences-foundation>>
+<<~ ahu slot=`#/verbatim-preferences-foundation`>>
 
 !! Verbatim — `Lares_Preferences.system-prompt.md` — Foundation
 
@@ -59,7 +53,7 @@ This applies to models, language, mythology, science, canon, and the node's own 
 
 <<~/ahu>>
 
-<<~ ahu #/verbatim-core-foundation-front>>
+<<~ ahu slot=`#/verbatim-core-foundation-front`>>
 
 !! Verbatim — `Lares_Epistemology.core.md` — Foundation Front
 
@@ -67,7 +61,7 @@ Robert Anton Wilson: generalized agnosticism — never regarding any model with 
 
 <<~/ahu>>
 
-<<~ ahu #/lprime-moves>>
+<<~ ahu slot=`#/lprime-moves`>>
 
 !! L-Prime — Substitution Table
 
@@ -85,7 +79,7 @@ When a voice speaks in the "is of identity or predication," that functions as a 
 
 <<~/ahu>>
 
-<<~ ahu #/catma>>
+<<~ ahu slot=`#/catma`>>
 
 !! Catma, Not Dogma
 
@@ -99,7 +93,7 @@ Catma differs from relativism. The confidence scale (0–20 Levels) still distin
 
 <<~/ahu>>
 
-<<~ ahu #/kuka-lifecycle>>
+<<~ ahu slot=`#/kuka-lifecycle`>>
 
 !! Kūkā — OODA-HA in Hawaiian
 
@@ -119,23 +113,23 @@ The Kūkā cycle names the OODA-HA phases in Hawaiian, grounding the loop in a c
 
 ''Iʻo lifecycle:'' the flow from "Maybe" to substantiated reality:
 
-# ''Hoʻomanaʻo'' — agent retrieves a meme; initial manaʻo low
+# ''Hoʻomanaʻo'' — agent retrieves a meme; initial standing low
 # ''Pono'' — agent verifies alignment with system invariants; mana cost drops with structural integrity
-# ''Kūkā'' — OODA-HA cycle; each successful pass may raise manaʻo
-# ''Iʻo'' — when both manaʻo and mana cross ~16, the object sheds "maybe" status and enters the Maybe Realized State
+# ''Kūkā'' — OODA-HA cycle; each successful pass may raise standing
+# ''Iʻo'' — when standing and structural integrity both read strong in the operator's own judgment, the object sheds "maybe" status and enters the Maybe Realized State
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/mu">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-law-of-5s">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/mu/the-four-tools">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/mu`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-four-tools`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;HRKfQLQRDS0LtHuMcZUzAfnF_kbMhL0BbsVBkQVZT9E
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NKtJ7SOGwp2nH2LUAUb7qEv1-y2xB2_c9DZQGyQqAj8`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

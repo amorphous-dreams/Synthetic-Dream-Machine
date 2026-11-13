@@ -11,7 +11,7 @@
  *
  * `LAR_PUBLIC_URL` leads when the operator sets it: a declared reach-face names the RELAY reachability
  * the OPERATOR made (a tunnel, a reverse proxy, a name in DNS), which the interface table cannot see and
- * must never override. It does not silently name the Web or oracle origin; those are explicit composition
+ * must never override. It does not silently name the Web or flow origin; those are explicit composition
  * inputs below.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/lan-address
@@ -104,7 +104,7 @@ export function wsUrlForOrigin(origin: string): string {
 }
 
 /**
- * The standing an origin composition answers for. A lararium serves relay, read (oracle), and Web; a herm
+ * The standing an origin composition answers for. A lararium serves relay, read (flow), and Web; a herm
  * is a waystone that carries for peers and informs readers, so it serves relay and read and no Web surface.
  */
 export type OriginStanding = "lararium" | "herm";
@@ -113,8 +113,8 @@ export type OriginStanding = "lararium" | "herm";
 export interface ExplicitOriginComposition {
   /** Caller-declared Web origin; absent unless `sameOrigin` explicitly names the relay origin. A herm refuses it. */
   readonly webOrigin?: string | null;
-  /** Caller-declared oracle/read-face origin; never inferred from the relay or Web origin. */
-  readonly oracleOrigin?: string | null;
+  /** Caller-declared flow/read-face origin; never inferred from the relay or Web origin. */
+  readonly flowOrigin?: string | null;
   /** Explicitly declare that every surface the standing has shares the relay face's origin. */
   readonly sameOrigin?: boolean;
 }
@@ -123,14 +123,14 @@ export interface ExplicitOriginComposition {
 export interface FaceOriginComposition {
   readonly webOrigin: string;
   readonly relayOrigin: string;
-  readonly oracleOrigin: string;
+  readonly flowOrigin: string;
 }
 
 /** A herm's two reachability strings. The Web origin is absent by law: a waystone serves no arrival page. */
 export interface WaystoneOriginComposition {
   readonly webOrigin?: never;
   readonly relayOrigin: string;
-  readonly oracleOrigin: string;
+  readonly flowOrigin: string;
 }
 
 /** Either standing's composition; `webOrigin` stands present exactly when the standing serves a Web surface. */
@@ -168,16 +168,33 @@ export function assertWaystoneCustody(
   if (pronaos.length > 0) throw waystoneRefusal(pronaos.join(", "));
 }
 
+/**
+ * A refused declaration names its cure. The Web and read (flow) origins each ride one environment variable
+ * or one config key, and `sameOrigin` covers both; a person at a terminal reading the boot fault cures it
+ * from the line itself (the Founding Walk, W2: a hearth stood bare on a desk read "Web origin must be
+ * declared" and no carrier named a declaration).
+ */
+const ORIGIN_DECLARATIONS: Readonly<Record<string, { env: string; key: string }>> = {
+  Web:  { env: "LAR_WEB_ORIGIN",  key: "origins.web" },
+  flow: { env: "LAR_FLOW_ORIGIN", key: "origins.flow" },
+};
+
 function explicitOrigin(value: string | null | undefined, label: string): string {
   const origin = value?.trim().replace(/\/+$/, "");
-  if (!origin) throw new Error(`[origin composition] ${label} origin must be declared`);
+  if (!origin) {
+    const declaration = ORIGIN_DECLARATIONS[label];
+    const cure = declaration
+      ? `: set ${declaration.env}=<origin> (or \`${declaration.key}\` in the root's config.json), or LAR_SAME_ORIGIN=true (\`origins.sameOrigin\`) when every surface shares the relay face's origin`
+      : "";
+    throw new Error(`[origin composition] ${label} origin must be declared${cure}`);
+  }
   return origin;
 }
 
 /**
  * Resolve a face's origins for the vessel's standing from an explicit composition declaration.
  *
- * A lararium composes relay + read (oracle) + Web; a herm composes relay + read and returns no Web origin,
+ * A lararium composes relay + read (flow) + Web; a herm composes relay + read and returns no Web origin,
  * and a herm handed a Web origin refuses with the waystone message. The read origin stays explicit for both
  * standings, and a lararium's Web origin stays explicit too.
  *
@@ -193,20 +210,20 @@ export function originCompositionForFace(face: ReachFace, declaration: ExplicitO
   if (standing === "herm" && declaresWeb(declaration)) throw waystoneRefusal("a Web origin");
   const relayOrigin = explicitOrigin(face.origin, "relay");
   if (declaration.sameOrigin === true) {
-    if (declaresWeb(declaration) || declaration.oracleOrigin?.trim()) {
-      throw new Error("[origin composition] sameOrigin cannot be combined with separate Web/oracle origins");
+    if (declaresWeb(declaration) || declaration.flowOrigin?.trim()) {
+      throw new Error("[origin composition] sameOrigin cannot be combined with separate Web/flow origins");
     }
     return standing === "herm"
-      ? { relayOrigin, oracleOrigin: relayOrigin }
-      : { webOrigin: relayOrigin, relayOrigin, oracleOrigin: relayOrigin };
+      ? { relayOrigin, flowOrigin: relayOrigin }
+      : { webOrigin: relayOrigin, relayOrigin, flowOrigin: relayOrigin };
   }
   if (standing === "herm") {
-    return { relayOrigin, oracleOrigin: explicitOrigin(declaration.oracleOrigin, "oracle") };
+    return { relayOrigin, flowOrigin: explicitOrigin(declaration.flowOrigin, "flow") };
   }
   return {
     webOrigin: explicitOrigin(declaration.webOrigin, "Web"),
     relayOrigin,
-    oracleOrigin: explicitOrigin(declaration.oracleOrigin, "oracle"),
+    flowOrigin: explicitOrigin(declaration.flowOrigin, "flow"),
   };
 }
 
@@ -223,36 +240,50 @@ export function webOriginForFace(face: ReachFace, webPort: number, declaration?:
   return originCompositionForFace(face, declaration, "lararium").webOrigin;
 }
 
-/** Resolve the oracle/read-face origin for a standing without deriving it from the relay or Web origin. */
-export function oracleOriginForFace(face: ReachFace, declaration: ExplicitOriginComposition, standing: OriginStanding): string {
-  return originCompositionForFace(face, declaration, standing).oracleOrigin;
+/** Resolve the flow/read-face origin for a standing without deriving it from the relay or Web origin. */
+export function flowOriginForFace(face: ReachFace, declaration: ExplicitOriginComposition, standing: OriginStanding): string {
+  return originCompositionForFace(face, declaration, standing).flowOrigin;
 }
 
 /**
- * Build the crossing URL a leaf opens: the web origin, the relay it dials, and the GATE key its V3 proof
- * commits to. The relay rides the SAME name the web surface came from — a phone that loaded the web surface over a LAN
- * address cannot dial `localhost` (which on that phone names the phone), and a browser on a TLS name cannot
- * dial a `ws://` relay from an `https://` page (mixed content), so a declared face carries `wss` throughout.
+ * The page a device opens to cross: the web origin, and nothing else. No query string names the relay (the page asks its own
+ * origin's arrival descriptor, and dials that origin's relay) and no fragment carries the floor card (the fragment stays the
+ * wiki's own permalink; the card travels by the carriage door, `floorCarriageBannerLines`). The URL names no gate key: a fresh
+ * device stands at the floor, and a face joined to it by the fleet-join door carries the full sovereign pin inside the root's
+ * signature.
  */
-export function crossingUrl(opts: { webOrigin: string; wsUrl: string; gateKey: string }): string {
-  return `${opts.webOrigin.replace(/\/+$/, "")}/?relay=${opts.wsUrl}&gate=${opts.gateKey}`;
+export function crossingUrl(opts: { webOrigin: string }): string {
+  return `${opts.webOrigin.replace(/\/+$/, "")}/`;
 }
 
 /**
- * The crossing banner's lines — one crossing URL per face, tagged with the face's kind. Only a lararium
+ * The floor's carriage lines: the hearth's floor card as the one-line file a person carries to the page's carriage door (paste it,
+ * save it as a file, or show it as a QR), and the place AID on a line of its own, conveyed apart (the card never anchors itself).
+ * A hearth that stands no floor gate at a Nexus yields no line.
+ */
+export function floorCarriageBannerLines(floor: { readonly cardFile: string; readonly aid: string } | null): string[] {
+  if (floor === null) return [];
+  return [
+    "floor card — carry this one line to the page's carriage door (paste, file or QR):",
+    `  ${floor.cardFile}`,
+    `floor anchor: ${floor.aid}   (carry it to the same door by its own act, apart from the card; the card never anchors itself)`,
+  ];
+}
+
+/**
+ * The crossing banner's lines — one page URL per face, tagged with the face's kind. Only a lararium
  * speaks them: a herm serves no Web surface for a leaf to open, so a herm (or any composition without a
  * Web origin) yields no line.
  */
 export function crossingBannerLines(
   standing: OriginStanding,
   entries: readonly { readonly face: ReachFace; readonly composition: StandingOriginComposition }[],
-  gateKey: string,
 ): string[] {
   if (standing !== "lararium") return [];
   const lines: string[] = [];
   for (const { face, composition } of entries) {
     if (composition.webOrigin === undefined) continue;
-    lines.push(`${crossingUrl({ webOrigin: composition.webOrigin, wsUrl: wsUrlForOrigin(composition.relayOrigin), gateKey })}   (${face.kind})`);
+    lines.push(`${crossingUrl({ webOrigin: composition.webOrigin })}   (${face.kind})`);
   }
   return lines;
 }

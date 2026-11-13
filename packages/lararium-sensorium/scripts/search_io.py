@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import argparse
 
+from mempalace.palace import get_collection
 from mempalace.searcher import search_memories
 
 from holder_caps import idle_ttl_seconds, make_dispatch, run_holder
@@ -78,6 +79,7 @@ class Searcher:
             n_results=over,
             max_distance=max_distance,
         )
+        self._carry_metadata(res.get("results") or [])
         if not not_root or self_weight >= 1.0:
             return res
 
@@ -110,6 +112,22 @@ class Searcher:
         res["dropped_self"] = dropped
         res["self_weight"] = self_weight
         return res
+
+    def _carry_metadata(self, hits: list) -> None:
+        """Give every hit that arrives without it the metadata its drawer stored, read back by id.
+
+        Upstream `develop` flattens a hit to its display fields, so the root handle, turn ordinal and every
+        other stamp the capture engine wrote never ride the hit itself, and a consumer that filters or
+        re-ranks on them reads blind. The stored row still holds them, in the same default collection
+        content_io writes; a hit that already carries its own `metadata` keeps it untouched."""
+        ids = [h["drawer_id"] for h in hits if "metadata" not in h and h.get("drawer_id")]
+        if not ids:
+            return
+        got = get_collection(self._palace, _skip_identity_check=True).get(ids=ids, include=["metadatas"])
+        stored = dict(zip(got.get("ids") or [], got.get("metadatas") or []))
+        for h in hits:
+            if "metadata" not in h:
+                h["metadata"] = dict(stored.get(h.get("drawer_id")) or {})
 
 
 def _build_ops(s: Searcher) -> dict:

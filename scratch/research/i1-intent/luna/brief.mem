@@ -1,0 +1,76 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/i1-intent/luna/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/i1-intent/luna/brief.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/i1-intent/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Luna-Intentreader: Lares (Tasked Spirit)
+
+Handback to /home/joshu/.lares-scratch/research/i1-intent/luna/out.md (NOT final.md), under 1300 words, ending WORDS=&lt;n>. Your seat dir: /home/joshu/.lares-scratch/research/i1-intent/luna.
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in your seat dir. No git writes,
+no suites. Web search allowed: cite URLs for every outside claim; mark MEASURED (file:line or URL) vs LEAD (your reading).
+
+GROUND. Code in the main checkout /home/joshu/Synthetic-Dream-Machine at the span head (read only). The row: `I1` in
+bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem (grep "^\* \`I1\`"), and its carrier
+bags/lares/ha.ka.ba/lares/api/pono/face-intent-plane.mem (read it whole, #/the-reds included). Its order: the operator
+ruled (2026-10-20) that I1 builds after Wave C lands the face's sealed identity anchor. Wave C, K15-H and Wave D have all
+landed (kits docs/pono/k15-wave-c-lane.mem, k15-wave-d-lane.mem): each face keeps its own FCK, atom, plane set
+(<code>&#64;persona</code>, <code>&#64;circles</code>, <code>&#64;identities</code>, ...), its signed acts on <code>&#64;persona</code>, its sealed anchor. No <code>&#64;intents-</code> code
+stands yet (grep it). Neighbours: the daemon wiki and daemon bag, the face-join summons on the daemon doc
+(grep "summons", "face-join"), the CLI's per-invocation face naming ("A command names its face", CHANGELOG), the
+plane registry and signed plane acts, the fleet board and its edge frontier (K17), the verb registry
+(open-node-vessel.ts `registry.register`), the browser house.
+
+THE TASK: scout I1 before any build, so a lane kit stands on a ruled model (house law: build the end state; a lane that
+hardens an unruled assumption costs more than the wait).
+# MEASURE what stands that I1 extends: how a face plane mints, registers by signed act, syncs to every device wearing
+the face, and seals; how a device atom signs; how the daemon doc carries the face-join summons today; how verbs run
+and on which device. file:line, node and browser alike.
+# THE MODEL GAPS. Read the carrier against the code and name every joint the carrier leaves to the builder: entry
+kinds and their signed image; content-hash ids; the read-side winner for claim/release/takeover with NO GLOBAL NOW;
+"any device" refusal for single-effect verbs; causal voids and the operator's release; the summons move off the
+daemon doc and how it closes two hearths of one face; the rubric's witness; the view pane. For each: canon already
+rules it (quote), house law derives it (name the law), or the operator owns it (options + one lean).
+# SLICING. Propose the lane's slices in build order, red-first, each red with its control and known positive; the files
+each holds; overlap with the live lanes (W14-W16 floor pin claim: place-floor-pin, admit-gate-pin, gate pins, card
+filing, nexus-contract carry; K17-R landing: frontier, lease, realm boards; W26 slice 5 queued: the floor accept act
+per (face, Nexus)). Whether I1 lands as one lane or splits, and why (build the end state).
+# PRIOR ART on the web: intent/outbox/claim-lease patterns in local-first and CRDT systems (Automerge, Ink & Switch
+local-first essays, Keyhive/Beelay), Erlang/OTP supervision and work-claim, Kubernetes leader election contrasted
+(it uses clocks: say what a clockless house substitutes), CRDT task queues, actor mailboxes. What fits?
+# STORIES: one Gaia story (a person's laptop and phone wear one face; the laptop issues "rebuild the wiki" while the
+phone sleeps), one Elyncia story (two devices of one shrine-keeper's face both see a summons to join a realm).
+
+House laws binding any lean: no global now (no clock decides a claim; no timeout ages an intent out); build the end
+state; one name, one relation; isomorphic by intent (node and browser alike, read by capability); the herm carries and
+never reads; silent-zero instruments prove a zero with a known positive; evergreen; never "family" for a PersonaGroup.
+
+Lens: the reader and the law; lead with section 2 and the risks a builder would harden by accident.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sOeTgo_UzRvb-ePrrhNPwkvEFDdzpT2tYWi45QxO6hg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

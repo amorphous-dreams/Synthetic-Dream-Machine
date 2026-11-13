@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-3`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/homes/PLACE-STEP-3.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-3"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-step-3"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-STEP-3.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/homes/PLACE-STEP-3.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-step-3-homes`>>
+
+! Placement step 3 — homes
+
+Status: ''blocked by the secret-custody ruling; remaining homes not wired''.
+
+The daemon document no longer receives an ordinary mirror. The keyhive ceremony now requires a distinct secret document and a sealed-rest capability before it writes founding/admission secret material; the admission copy of persona acts into the daemon document is retired. `PLACE-RULING.md` records why a live sealed-rest enrollment must precede those writes.
+
+The vessel control document and its readers/writers are not yet migrated. Face-bound `bags/daemon-<F>` minting and recipe order also remain unwired. Keep those routes out of scope for any claim that step 3 is complete. The remaining work does not weaken the fail-closed secret boundary.
+
+Tests: keyhive agent ran its full suite (97 files, 560 tests passed) and build/stamp/typecheck before the later node-facing edits. Node full suite ran and failed on secret-home-unavailable across founding/face flows (85 failed files; 454 passed; 11 skipped). No e2e suite run.
+
+Proposed commit subject: `lar:///ha.ka.ba/placement/mints-private-homes`
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-FP_AUbxjVNS-x1PTtdxNmYQDY22z_AoZqtCTL3m9B4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

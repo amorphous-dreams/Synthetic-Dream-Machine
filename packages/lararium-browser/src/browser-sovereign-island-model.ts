@@ -24,6 +24,7 @@
  */
 
 import { IndexedDBStorageAdapter } from "@automerge/automerge-repo-storage-indexeddb";
+import { islandRestGuard, shoreStorage, vesselRestAsker } from "@lararium/mesh";
 import {
   runSovereignKernel,
   type IslandHostShore,
@@ -34,27 +35,53 @@ import type { IslandBehavior } from "@lararium/tw5";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
 
 /** Browser storage composition: preserve ordinary wiki durability while the
- * D-VR daemon primary crossing stays ephemeral. */
-export function browserIslandStorage(msg: IslandMsg_Manifest) {
-  if (msg.storage?.type === "idb") return new IndexedDBStorageAdapter(msg.storage.dbName);
+ * D-VR daemon primary crossing stays ephemeral; every island store stands behind the vessel's rest guard. */
+export function browserIslandStorage(msg: IslandMsg_Manifest, restsAtVessel?: (documentId: string) => Promise<boolean>) {
+  // V2: the daemon island's owned store rests no document the vessel's rest seals (`islandRestGuard`).
+  if (msg.storage?.type === "idb") {
+    const inner = shoreStorage(new IndexedDBStorageAdapter(msg.storage.dbName));
+    return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
+  }
   if (msg.storage?.type === "memory" || msg.ownedDocument) return undefined;
-  return new IndexedDBStorageAdapter(msg.wikiUri);
+  // A WIKI ISLAND'S STORE rests no byte of a document the vessel holds sealed or held (the node's island rest guard, every
+  // island store): the pool answers its `rest:ask` from the vessel's sealed rest.
+  const inner = shoreStorage(new IndexedDBStorageAdapter(msg.wikiUri));
+  return restsAtVessel ? islandRestGuard(inner, restsAtVessel) : inner;
+}
+
+export interface BrowserIslandScope {
+  post(msg: IslandToVesselMsg): void;
+  listen(cb: (msg: unknown) => void): void;
+  ready(): void;
+  onStop?(cb: () => void): void;
 }
 
 // ── runBrowserSovereignWorker — browser host shore over the shared kernel ────
 
 export function runBrowserSovereignWorker(
   behaviorOrFactory: IslandBehavior | ((manifest: IslandMsg_Manifest) => IslandBehavior),
+  scope?: BrowserIslandScope,
+  opts?: { caps?: { receipt?: true } },
 ): void {
+  const post = (msg: unknown): void => { if (scope) scope.post(msg as IslandToVesselMsg); else self.postMessage(msg); };
+  const restsAtVessel = vesselRestAsker({
+    post,
+    listen: (cb) => {
+      if (scope) scope.listen(cb);
+      else self.addEventListener("message", (e: MessageEvent) => cb(e.data));
+      return () => {};
+    },
+  }, { idPrefix: `island-${Math.random().toString(36).slice(2, 10)}` });
   const host: IslandHostShore = {
-    post:    (msg: IslandToVesselMsg) => self.postMessage(msg),
-    listen:  (onMessage) => self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
-    storage: browserIslandStorage,
-    ready:   () => self.postMessage(mkReady()),
+    post:    (msg: IslandToVesselMsg) => post(msg),
+    listen:  (onMessage) => scope ? scope.listen(onMessage) : self.addEventListener("message", (e: MessageEvent) => onMessage(e.data)),
+    storage: (msg) => browserIslandStorage(msg, restsAtVessel),
+    restsAtVessel,
+    ready:   () => scope ? scope.ready() : self.postMessage(mkReady()),
     // The breath path: pull engine + plugin bytes by CID from the OPFS CAS the vessel
     // populated on genesis-load — never CRDT-synced over the port.
     resolveByCid: (cid) => readCasBlobFromOpfs(cid),
   };
 
-  runSovereignKernel(host, behaviorOrFactory);
+  runSovereignKernel(host, behaviorOrFactory, opts?.caps?.receipt ? { caps: { receipt: true } } : undefined);
 }

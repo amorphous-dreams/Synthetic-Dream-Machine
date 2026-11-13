@@ -328,6 +328,7 @@ export function createWikiSenseSupervisor(
       ));
     }
     return new Promise<unknown>((resolve, reject) => {
+      // LIVENESS: a live island may never answer; reply or unmount settles the other cases.
       const timer = setTimeout(() => {
         pending.delete(requestId);
         reject(new Error(`[wiki-sense] ${signal} to "${island}" timed out after ${timeoutMs}ms`));

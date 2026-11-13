@@ -6,31 +6,34 @@
 import { describe, expect, test, vi } from "vitest";
 import { wikiSkip, skipNote } from "./test-wiki.js";
 import {
-  afterDispatch, draftBag, ManualTimers, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
+  afterDispatch, arrived, draftBag, ManualBoundary, openDraft, peerWrite, remote, saveSequence, shoreRig, storeDeleted,
   storeText, turns, workingBag, type Rig,
 } from "./wiki-shore-rig.js";
 
 const seed = async (r: Rig, records: ReadonlyArray<Record<string, unknown>>): Promise<void> => {
+  const before = r.arrivals.length;
   for (const tiddler of records) await r.working.put({ tiddler: tiddler as never }, remote);
-  await turns();
+  await arrived(r, before, records.map((tiddler) => String(tiddler["title"])));
   await r.adaptor.armSeedCheckpoint();
   await r.adaptor.landingIdle();
 };
-const landDraft = async (r: Rig, timers: ManualTimers): Promise<void> => {
+/** The boundary leaves the hands; `echoes` names the titles the store takes as a change, and the store's own event for each ends the wait. */
+const landDraft = async (r: Rig, boundary: ManualBoundary, echoes: readonly string[] = []): Promise<void> => {
+  const before = r.arrivals.length;
   await afterDispatch();
-  timers.fireAll(400);
-  await turns(24);
+  boundary.fire();
+  await arrived(r, before, echoes);
   await r.adaptor.landingIdle();
 };
 
 describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
   test("a save act the store refused stays owed, draft tombstone included, and the teardown lands all of it", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/residue/refused-act";
     await seed(r, [{ title: x, text: "landed" }]);
     const d = openDraft(r, x, "hand value");
-    await landDraft(r, timers);
+    await landDraft(r, boundary, [d]);
     expect(storeText(r, draftBag, d), "the draft reached the store").toBe("hand value");
     r.failures.family = new Error("refused");
     saveSequence(r, d);
@@ -39,7 +42,7 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     expect(storeText(r, workingBag, x), "the refused save wrote nothing").toBe("landed");
     expect(storeDeleted(r, draftBag, d), "the refused tombstone wrote nothing").toBe(false);
     expect(r.adaptor.holdsHand(x)).toBe(true);
-    expect(r.adaptor.holdsHand(d), "the draft's tombstone stays owed").toBe(true);
+    expect(r.adaptor.holdsHand(d), "the recovery copy waits behind the owed target").toBe(false);
     r.failures.family = null;
     await r.stop();
     expect(storeText(r, workingBag, x), "the teardown lands the owed save").toBe("hand value");
@@ -47,8 +50,8 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
   }, 120_000);
 
   test("a write the store takes as a noop marks nothing ahead of the ledger", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/residue/noop";
     const control = "lar:///t/residue/noop-control";
     await seed(r, [{ title: x, text: "landed" }, { title: control, text: "landed" }]);
@@ -56,12 +59,12 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     const changes = r.changes(workingBag);
     // A field the shore never persists on a non-draft: the wiki differs from the landed value, the store record does not.
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(x)!.fields, { "lar-draft-base-bag": "never persisted" }));
-    await landDraft(r, timers);
+    await landDraft(r, boundary);
     expect(r.changes(workingBag), "the store took the write as a noop").toBe(changes);
     expect(unlanded.has(x), "no wave will come to clear a mark, so none stands").toBe(false);
     // CONTROL: an acknowledged write stands ahead of the ledger until its wave lands, and the wave clears it.
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(control)!.fields, { text: "changed" }));
-    await landDraft(r, timers);
+    await landDraft(r, boundary, [control]);
     expect(r.changes(workingBag)).toBe(changes + 1);
     expect(unlanded.has(control)).toBe(false);
     expect(r.adaptor.ledger.landedOf(control)!.tiddler).toBe(r.wiki.getTiddler(control));
@@ -69,14 +72,14 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
   }, 120_000);
 
   test("two drafts of one target leaving in one dispatch write the target once", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/residue/two-drafts";
     await seed(r, [{ title: x, text: "landed" }]);
     const d1 = openDraft(r, x, "first draft");
     const d2 = "Draft 2 of 'two-drafts'";
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(x)!.fields, { title: d2, "draft.of": x, "draft.title": x, text: "second draft" }));
-    await landDraft(r, timers);
+    await landDraft(r, boundary, [d1, d2]);
     const mark = r.calls.length;
     // One dispatch: the target written from the second draft, both drafts gone.
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(d2)!.fields, { title: x, "draft.of": undefined, "draft.title": undefined }));
@@ -94,8 +97,8 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
   }, 120_000);
 
   test("a stopped shore holds no account of the wiki and turns resident again at its own seed checkpoint", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/residue/restart";
     await seed(r, [{ title: x, text: "landed" }]);
     expect(r.adaptor.isResident()).toBe(true);
@@ -116,8 +119,8 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
   }, 120_000);
 
   test("a wave whose composition read answers after the shore stopped lands nothing", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary });
     const x = "lar:///t/residue/stopped-landing";
     const control = "lar:///t/residue/stopped-landing-control";
     await seed(r, [{ title: control, text: "landed while standing" }]);
@@ -142,11 +145,11 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
   }, 120_000);
 
   test("a hand's next write builds on its own last write, never on the merged heads", async () => {
-    const timers = new ManualTimers();
+    const boundary = new ManualBoundary();
     let hold = false;
     let release!: () => void;
     const held = new Promise<void>((done) => { release = done; });
-    const r = await shoreRig({ timers, yieldHost: async () => { if (hold) await held; } });
+    const r = await shoreRig({ boundary, yieldHost: async () => { if (hold) await held; } });
     const x = "lar:///t/residue/own-base";
     await seed(r, [{ title: x, text: "landed", note: "n0" }]);
     const landedHeads = r.adaptor.ledger.landedOf(x)!.heads!;
@@ -156,13 +159,13 @@ describe.skipIf(wikiSkip)(`wiki shore residue${skipNote}`, () => {
     const mark = r.calls.length;
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(x)!.fields, { text: "hand one" }));
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     const merged = [...(r.working.headsNow() ?? [])].sort();
     expect(merged, "the hand's change stands concurrent with the peer's").toHaveLength(2);
     r.wiki.addTiddler(new r.Tiddler(r.wiki.getTiddler(x)!.fields, { text: "hand two" }));
     await afterDispatch();
-    timers.fireAll(400);
+    boundary.fire();
     await turns(24);
     const writes = r.calls.slice(mark).filter((c) => c.puts.includes(x));
     expect(writes).toHaveLength(2);

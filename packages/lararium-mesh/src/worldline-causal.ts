@@ -45,7 +45,7 @@ export interface WorldlineCausal {
 const FRONTIER_SEP = "@";
 
 /**
- * FNV-1a/32 → 8 hex — a short, stable, dependency-free fingerprint (twin of build-patch's fnv1a8,
+ * FNV-1a/32 → 8 hex — a short, stable, dependency-free fingerprint (twin of branch-frontier's fnv1a8,
  * inlined here so this module — and the pure `@lararium/mesh/worldline` VM subpath it feeds — pulls
  * in NOTHING heavier). NOT cryptographic; it only DISTINGUISHES frontiers deterministically.
  */

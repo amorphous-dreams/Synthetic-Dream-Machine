@@ -1,6 +1,8 @@
 // @lararium/keyhive — capability layer wrapping @keyhive/keyhive (Ink & Switch concap, pre-alpha).
 
-import type { DeviceDelegationTiddler, PersonaKelEvent, GroupSecretSeal } from "@lararium/mesh";
+import type { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
+export { DEVICE_ADMIT_KIND } from "./device-admit-kind.js";
+import type { DeviceDelegationRootHalf, PersonaKelEvent, GroupSecretSeal, GateBundlePin } from "@lararium/mesh";
 
 export type {
   CapabilityProvider, CapabilityProviderInitOpts,
@@ -9,19 +11,26 @@ export type {
 } from "./capability-provider.js";
 
 export { KeyhiveProvider, ArchiveIdentityMismatch, ensureKeyhiveWasm, setKeyhiveWasmBytes, KEYHIVE_TRACE_ENV, keyhiveTraceAsked } from "./keyhive-provider.js";
+export { makeFaceBagDoor, faceOwnerVerifier } from "./face-bag-door.js";
+export type { FaceBagDoor } from "./face-bag-door.js";
+export { answerKahuaCap } from "./kahua-cap.js";
+export { proposeDraftsToKahua, pageTitleList, KahuaProposeRefused, type PageProposeInput } from "./kahua-page-propose.js";
+export { registerBagsDurably, daemonBagDocLedger, planeBagDocLedger } from "./bag-doc-ledger.js";
+export type { BagDocLedger } from "./bag-doc-ledger.js";
 export { keyhiveLockboxShore, encodeLockboxBox, readLockboxBox } from "./keyhive-lockbox.js";
 export type { LockboxProvider } from "./keyhive-lockbox.js";
 export { seatContentKeys } from "./content-key-seat.js";
 export type { ContentKeySeat, ContentKeySeatInput, ContentKeyProvider, SessionProof } from "./content-key-seat.js";
+export { certificateUnderChain, ownChainStanding } from "./island-session-proof.js";
+export type { IslandSessionProof, SessionAsk, SessionReading } from "./island-session-proof.js";
+export { islandSessionDoor } from "./island-session-proof.js";
 export type { ProviderChunkRest } from "./capability-provider.js";
 export { memoryProviderChunkRest } from "./capability-provider.js";
-// `KeyhiveIdentitySlot` stays out of this barrel: it stands specified in code, and no production path constructs it
-// (its header names the caller it waits on).
 export { packPersonaCrossing, applyPersonaCrossing } from "./persona-crossing.js";
 export type { PersonaCrossingBundle, CrossingContent, CrossingPlaintext } from "./persona-crossing.js";
 export { runFaceJoin, gateFaceJoin } from "./face-join.js";
-export { faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
-export type { FaceGrantRecord, UnsignedFaceGrantRecord, FaceGrantVerifyContext, FaceGrantVerdict } from "./face-grant-record.js";
+export { faceGrantRecordCid, faceGrantTitle, signFaceGrantRecord, verifyFaceGrantRecord, FACE_GRANT_PREFIX } from "./face-grant-record.js";
+export type { FaceGrantRecord, UnsignedFaceGrantRecord, FaceGrantVerifyContext, FaceGrantVerdict, FounderLineage } from "./face-grant-record.js";
 // THE ONE assembly of the PersonaGroup identity-slot ring — node and browser both call it; only the proof source differs.
 export { assemblePersonaGroupRing } from "./persona-group-ring-assembly.js";
 export type { PersonaGroupRingInput } from "./persona-group-ring-assembly.js";
@@ -39,13 +48,13 @@ export { InMemoryEventStore, inIslandSlice, inSelfSlice } from "./event-store.js
 export type { EventStore, EventRecord } from "./event-store.js";
 
 export { DaemonEventStore, capEventTitle } from "./daemon-event-store.js";
-export type { DaemonEventStoreOptions } from "./daemon-event-store.js";
+export type { DaemonEventStoreOptions, SecretRestCapability } from "./daemon-event-store.js";
 
-export { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
+export { bootDaemonKeyhive, FacelessKeyhiveRefused } from "./boot-daemon-keyhive.js";
 export type { BootDaemonKeyhiveInput, BootDaemonKeyhiveResult } from "./boot-daemon-keyhive.js";
 // THE ONE ROAD a daemon island reads its lease frontier by — its own daemon layer, two verdicts never merged.
-export { readLeaseFrontier, daemonLayerOf } from "./lease-frontier.js";
-export type { LeaseFrontier, DaemonLayerHolder } from "./lease-frontier.js";
+export { readLeaseFrontier, controlLayerOf } from "./lease-frontier.js";
+export type { LeaseFrontier, ControlLayerHolder } from "./lease-frontier.js";
 // THE ONE DOOR that lands the sovereign identity archive — and the standing gate standing on it.
 export { persistArchiveFloor } from "./archive-floor-write.js";
 export type {
@@ -56,8 +65,8 @@ export { resolveOrMintBinding, unboundMints, restingMinter } from "./resolve-bin
 export type {
   ResolveBindingArgs, ResolveBindingResult, BindingKind, DocMinter,
 } from "./resolve-binding.js";
-export { makeSlotDocResolver } from "./slot-doc-resolver.js";
-export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo } from "./slot-doc-resolver.js";
+export { makeSlotDocResolver, litFaceSlotDocs, WorkingSlotRefusal } from "./slot-doc-resolver.js";
+export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo, LitFaceSlotSpec, LitFaceSlotDocs } from "./slot-doc-resolver.js";
 
 // makeOperatorDaemonBehavior is NOT re-exported here — it couples to @lararium/tw5
 // (makeDaemonBehavior), and dragging tw5's index through the keyhive core index
@@ -68,15 +77,20 @@ export type { SlotDocResolver, SlotDocResolverArgs, SlotDoc, SlotDocRepo } from 
 
 export {
   foundThePlace, foundTheFace, runFoundingCeremony, runDeviceAdmitEdge, runApplyAdmitPayload,
-  replayCapEvents,
+  replayCapEvents, retireFaceCheckpoint, retireApplyCheckpoint, sealCheckpoint, openCheckpoint,
 } from "./ceremony-core.js";
 export type {
   PlaceFoundingInput, PlaceFoundingResult, FaceFoundingInput, FaceFoundingResult,
 } from "./ceremony-core.js";
 export { runReadmitEdge, type ReadmitEdgeInput } from "./recovery-core.js";
-// The veil's key-class door: the dyad veil derives from a DEVICE-MINTED key and refuses every other class.
-export { mintDeviceMintedKey, isDeviceMintedKey, deriveVeilFromDeviceKey, veilFromDeviceKey, VeilKeyClassRefused } from "./veil-key.js";
-export type { DeviceMintedKey, ClassedKey, KeyClassName, VeilDeriver } from "./veil-key.js";
+export { faceOperationTitle, readFaceOperation, writeFaceOperation } from "./face-operation-record.js";
+export { runFaceJoinOperation } from "./face-join-operation.js";
+export { makeFaceIntentDoor, requestFaceJoin, faceJoinNonce, makeFaceIntentReader, admitAgentEntry, witnessed, witnessedStandings, watchHandles, settledRunsOf } from "./face-intent-door.js";
+export { makeSeatSummons, foundingHearthOf, standingOfReading, standingOwnSummons, ownSummonsOf } from "./face-seat-summons.js";
+export type { SeatSummonsPorts, SeatSummonsAnswer } from "./face-seat-summons.js";
+export type { FaceIntentDoorPorts, FaceIntentAdmissionPorts, AuthorityAcquisition } from "./face-intent-door.js";
+export { archiveIsOf } from "./archive-is-of.js";
+export type { GrantPlane, FaceJoinOperationInput } from "./face-join-operation.js";
 export type {
   FoundingCeremonyInput, FoundingCeremonyResult,
   DeviceAdmitEdgeInput,
@@ -88,7 +102,16 @@ export {
   openDwelling, dwellersHolding, cabalRealmLiveness,
 } from "./cabal-realm-ceremony.js";
 export type { FoundCabalRealmOpts, FoundedCabalRealm } from "./cabal-realm-ceremony.js";
+// EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
+export {
+  foundWorkbench, standWorkbench, adoptWorkbench, admitWorkbenchFace, removeWorkbenchFace, workbenchFaceHolds, requireWorkbenchWriter,
+  landWorkbench, projectWorkbenchRoster,
+} from "./workbench-realm.js";
+export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";
 export { forkCabalRealm } from "./fork-realm-ceremony.js";
+// THE FLEET-JOIN ANSWER'S ADMIT: the one shape the node's `runInit` and the browser's admit boot found a face by.
+export * from "./carried-seat.js";
+export { carriedAdmitOfFleetJoin, FLEET_JOIN_ADMIT_REFUSALS, type FleetJoinAdmitRefusalName } from "./fleet-join-admit.js";
 export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
 
 /**
@@ -100,7 +123,7 @@ export type { ForkCabalRealmOpts } from "./fork-realm-ceremony.js";
  * can import this type without taking a Node dependency.
  */
 export interface DeviceAdmitPayload {
-  readonly kind:                   "device-admit/v1";
+  readonly kind:                   typeof DEVICE_ADMIT_KIND;
   /** The PINNED signer DID — PROVENANCE only (the founder's persona-KEL inception op-key). The pin is
    *  `personaKelPrefix`: the Binding Gate walks that identifier's KEL to its current head and verifies
    *  against THAT, so a rotated key still binds and a superseded one rejects. */
@@ -114,14 +137,16 @@ export interface DeviceAdmitPayload {
    *  would RE-FOUND rather than join, so `runApplyAdmitPayload` refuses it by a named error instead of silently
    *  falling back to a federated-board wait. */
   readonly personaKelChain:       readonly PersonaKelEvent[];
-  /** The signed root→joinee device-delegation edge (the founder's signer signs the joinee's
-   *  vessel key × hearthTrueName) — the joinee's binding, verified at its Binding Gate. No Beelay. */
-  readonly deviceEdge:             DeviceDelegationTiddler;
+  /** Signed persona log records, including the joinee's admission. */
+  readonly personaActs:           readonly unknown[];
+  readonly edgeFrontier: { readonly records: readonly unknown[]; readonly snapshots: readonly (readonly [string, readonly string[]])[] };
+  /** The root-signed delegation half addressed to the joinee's atom; the joinee countersigns it. */
+  readonly deviceEdge:             DeviceDelegationRootHalf;
   /** The PersonaGroup secret the same root sealed to the joinee's device key, beside the edge — the secret its
    *  sibling proofs and channel tags run on. REQUIRED: an enrolment that delivers no secret leaves the joinee
    *  unable to meet a single sibling, so `runApplyAdmitPayload` refuses a payload without one. */
   readonly groupSecretSeal:        GroupSecretSeal;
-  /** The hearth true-name (engine CID) the joinee binds TO. */
+  /** The hearth true name the joinee's edge binds TO (the root holder's seed-charter Nexus AID; "" from a gateless leaf). */
   readonly hearthTrueName:         string;
   /** Founder sentinel oracle IDs — for the founding sentinel dance + the future affiliation layer. */
   readonly personaGroupId:    string;
@@ -175,19 +200,25 @@ export interface DeviceAdmitPayload {
  * documents that hearth names to the joinee, and the founder's RESOLVED island at mint time — a SNAPSHOT, kind + scope, so a climbed founder's joinee seats
  * where the founder actually stood rather than where its raw vessel key falls.
  *
- * KEPT DISTINCT from `DeviceAdmitPayload` on purpose, not merged into it: these fields are added
- * by object-spread AFTER the ceremony signature is computed (both the node CLI's `runDeviceAdmit` and the
- * browser's admit-apply path add them post-signing), so they never enter the SIGNED byte image
- * (`delegationProofBytes`, device-delegation.ts). Widening the base interface would blur that boundary —
- * a reader of `DeviceAdmitPayload` alone should not have to ask which of its fields the signature covers.
+ * KEPT DISTINCT from `DeviceAdmitPayload` on purpose, not merged into it: these fields sit outside the device
+ * edge's own signed image (`delegationProofBytes`, device-delegation.ts) and ride instead inside the root-signed
+ * fleet-join answer, as its carriage and reach. `carriedAdmitOfFleetJoin` builds this shape from an answer that
+ * already read under the face's root key, and from nothing else. Widening the base interface would blur which
+ * signature covers which field: the edge's covers `DeviceAdmitPayload`, the answer's covers the rest.
  *
  * Exported here (not `@lararium/node`) for the same reason `DeviceAdmitPayload` is — so browser and
- * mobile vessels can read a payload carrying these fields without taking a Node dependency. The node CLI
- * mints this shape (`commands/device-admit.ts`); the browser's `admit-carriage.ts`/`open-browser-vessel.ts`
- * read it, isomorphically, off a `#admit=` carriage.
+ * mobile vessels can read a payload carrying these fields without taking a Node dependency. The node land
+ * (`commands/fleet-join.ts`) and the browser land (`browser-fleet-join.ts`) build it from a verified answer; the
+ * browser's `#admit=` stash carries it across the page's own reload alone.
  */
 export type CarriedAdmitPayload = DeviceAdmitPayload & {
+  /** The key that signs the hearth gate's verdict: the carried pin's `signingKey`, kept as the one key the anchor and the hosting address read. */
   readonly hearthGatePubKey?: string;
+  /** The hearth's FULL sovereign sync pin the root-signed answer carried (tier, Nexus, route, transport and signing keys): what a dial files and knocks with. */
+  readonly hearthGatePin?: GateBundlePin;
+  /** The hearth's FLOOR pins at that Nexus, which the root-signed answer carried (house ruling "The admit's gate pin", carrier (b)):
+   *  what the oracle read files under the same hearth, before any crossing. */
+  readonly hearthFloorPins?: readonly GateBundlePin[];
   /** The hearth's base-canon documents the joinee mounts, keyed by canon bag URI (`bags/lares`,
    *  `bags/lararium`) and valued by document url. The joinee's gate widens by exactly these documents when it
    *  dials this hearth; the hearth's oracle plane never crosses to it. */
@@ -200,3 +231,5 @@ export type CarriedAdmitPayload = DeviceAdmitPayload & {
   /** The scope that kind names — the genesis epoch string for `charter`, else the founder's own key. */
   readonly hearthIslandScope?: string;
 };
+export { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
+export { kahuReachSourceOf } from "./kahu-reach-source.js";

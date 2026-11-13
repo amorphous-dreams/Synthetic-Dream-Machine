@@ -136,29 +136,29 @@ export function mayDeclassify(from: CapTier, to: CapTier, isOperatorRoot: boolea
 }
 
 /**
- * TierFloorOracle — WHERE the structural floor comes from on a real bag. The floor names the MOST-OPEN tier
- * the crypto structure permits, read off the SAME oracles the carry-split already consults:
+ * TierFloorSource — WHERE the structural floor comes from on a real bag. The floor names the MOST-OPEN tier
+ * the crypto structure permits, read off the SAME sources the carry-split already consults:
  *   · a doc in the deterministically-federatable public set → PUBLIC (a stranger reads it foreign-legible).
  *   · a provably-sealed plane (ciphertext a carrier cannot read) → CONTRACT (the fleet∪cabal member-carry
  *     ceiling; a PERSONAGROUP refinement rides ATOP as a declared tightening — the wire shore cannot itself
  *     split fleet from cabal, so CONTRACT is the honest structural ceiling of the sealed lane).
  *   · everything else — a cleartext-local plane → VEIL (nothing crosses in the clear).
  *
- * FAIL-CLOSED: absent both oracles, the floor reads VEIL — the correct restriction floor while no sealed
+ * FAIL-CLOSED: absent both sources, the floor reads VEIL — the correct restriction floor while no sealed
  * plane type stands. Isomorphic in spirit to `federationPostureFromDoc`'s fail-closed read.
  */
-export interface TierFloorOracle {
+export interface TierFloorSource {
   /** True → the doc rides the deterministically-federatable PUBLIC shelf (world-readable). */
   isPublicPlane(documentId: string): boolean;
   /** True → the doc's bytes are provably ciphertext a carrier cannot read (the sealed member-carry lane). */
   isSealedPlane(documentId: string): boolean;
   /**
    * True → the doc holds SECRETS whose whole value rests on staying unpublished, so no reading of any other
-   * oracle may raise it past CONTRACT. A reach credential (a foreign app secret the vessel holds so a human
+   * source may raise it past CONTRACT. A reach credential (a foreign app secret the vessel holds so a human
    * posts outward from their wiki) is the first such store; the name stays general because the property does
    * — any store whose bytes stop meaning anything the moment they go world-readable belongs here.
    *
-   * REQUIRED. An oracle that could omit this reading would floor a secrets plane by its other readings and
+   * REQUIRED. An source that could omit this reading would floor a secrets plane by its other readings and
    * publish what must not publish — and the omission would look exactly like a plane holding no secrets.
    * Every floor answers all three questions or answers none.
    */
@@ -166,7 +166,7 @@ export interface TierFloorOracle {
 }
 
 /**
- * structuralFloorFor — fold the floor oracles into the tier ceiling for one doc.
+ * structuralFloorFor — fold the floor sources into the tier ceiling for one doc.
  *
  * ── ORDER CARRIES THE WHOLE GUARANTEE ────────────────────────────────────────────────────────────
  * The contract-secrets reading runs FIRST, ahead of PUBLIC. Placed anywhere later it never fires, because
@@ -182,18 +182,18 @@ export interface TierFloorOracle {
  *
  * The remaining order stands as before: PUBLIC wins over SEALED (a plane both federatable-public AND sealed
  * reads PUBLIC — its ciphertext still names a world-readable shelf entry); a sealed-but-not-public plane
- * reads CONTRACT; none of them reads VEIL. A null oracle → VEIL.
+ * reads CONTRACT; none of them reads VEIL. A null source → VEIL.
  */
-export function structuralFloorFor(oracle: TierFloorOracle | null, documentId: string): CapTier {
-  if (!oracle) return "veil";
-  if (oracle.isContractSecretsPlane(documentId)) return "contract";
-  if (oracle.isPublicPlane(documentId)) return "public";
-  if (oracle.isSealedPlane(documentId)) return "contract";
+export function structuralFloorFor(source: TierFloorSource | null, documentId: string): CapTier {
+  if (!source) return "veil";
+  if (source.isContractSecretsPlane(documentId)) return "contract";
+  if (source.isPublicPlane(documentId)) return "public";
+  if (source.isSealedPlane(documentId)) return "contract";
   return "veil";
 }
 
 /**
- * makeTierFloorOracle — the ONE door that assembles a floor oracle, so no site hand-rolls one.
+ * makeTierFloorSource — the ONE door that assembles a floor source, so no site hand-rolls one.
  *
  * WHY A CONSTRUCTOR RATHER THAN AN OBJECT LITERAL. The interface requires all three readings, and this
  * door takes each as a NAMED argument, so a site that leaves one out does so in plain sight.
@@ -201,16 +201,16 @@ export function structuralFloorFor(oracle: TierFloorOracle | null, documentId: s
  * AN ABSENT READING ANSWERS FALSE, AND FALSE CLOSES ONLY TWO OF THE THREE. An absent `federatable` or
  * `sealed` floors toward VEIL. An absent `secrets` withholds the CONTRACT ceiling: a doc whose `federatable`
  * reads true then floors PUBLIC. A caller that holds a secrets store must pass `secrets`, and nothing here
- * notices the omission. Passing nothing at all yields an oracle that reads VEIL for everything.
+ * notices the omission. Passing nothing at all yields an source that reads VEIL for everything.
  */
-export function makeTierFloorOracle(readings: {
+export function makeTierFloorSource(readings: {
   /** The doc rides the deterministically-federatable PUBLIC shelf. */
   readonly federatable?: (documentId: string) => boolean;
   /** The doc's bytes are provably ciphertext a carrier cannot read. */
   readonly sealed?: (documentId: string) => boolean;
   /** The doc holds secrets whose value rests on staying unpublished — floors at CONTRACT, read FIRST. */
   readonly secrets?: (documentId: string) => boolean;
-}): TierFloorOracle {
+}): TierFloorSource {
   const { federatable, sealed, secrets } = readings;
   return {
     isPublicPlane:          (d) => federatable?.(d) ?? false,
@@ -231,14 +231,14 @@ export interface DeclaredTierSource {
 }
 
 /**
- * CapTierRing — the SHORE the gate consults: a declared-tier source ∧ a structural-floor oracle. Pure and
+ * CapTierRing — the SHORE the gate consults: a declared-tier source ∧ a structural-floor source. Pure and
  * deny-by-default at the edges. `resolveTierForDoc` is the keystone applied per-doc: `resolveTier(declared
  * ?? floor, floor)` — a null declaration degenerates to the floor (no tightening), a present declaration can
  * only tighten below it.
  */
 export interface CapTierRing {
   readonly declared: DeclaredTierSource;
-  readonly floor:    TierFloorOracle;
+  readonly floor:    TierFloorSource;
 }
 
 /**

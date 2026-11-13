@@ -10,15 +10,32 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import type { VesselKey } from "@lararium/mesh";
+import type { TreeKey } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
-import { makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
+import { makeCustodyHolder, seatFaceAutoFounder, type CustodyHolder } from "../src/custody-holder.js";
 import { seatCustody, unseatCustody } from "../src/custody-seat.js";
+import { seatFaceRoute } from "../src/face-route.js";
 import { vesselCustodyHomes, type CustodyHomes } from "../src/vault-carriers.js";
+import { setMountedFace } from "../src/node-vessel-identity.js";
+import { parkWardTicket, wardCredential, type WardCredential } from "../src/ward-credential.js";
 
 /** The synthetic route every fixture custody founds under. */
 export const FIXTURE_PASSPHRASE = "fixture-custody-passphrase";
+
+/**
+ * The ward route of a face founded under this fixture (seat-harness#/the-ward): a fresh token per act, as a person types one per act.
+ * `fixtureWardRef(verb, args)` parks it for one store verb's act, bound to that verb and those arguments, as the CLI's ward door does.
+ */
+/** The routes a suite's faces are founded under: this fixture's synthetic one, and `found-route`'s test founding route. */
+const SUITE_ROUTES = [FIXTURE_PASSPHRASE, "test-founding-passphrase"] as const;
+export const fixtureWard = (passphrase?: string): WardCredential =>
+  wardCredential((passphrase === undefined ? [...SUITE_ROUTES] : [passphrase]).map((p) => ({ kind: "passphrase" as const, passphrase: p })));
+export const fixtureWardRef = (verb: string, args: Readonly<Record<string, unknown>>, passphrase?: string): string => parkWardTicket(fixtureWard(passphrase), { verb, args });
+
+// A face founded under this fixture asks its own route; the fixture answers with the same synthetic passphrase.
+seatFaceRoute(async () => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);
+seatFaceAutoFounder(() => [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }]);
 
 export interface SeatedScratchCustody {
   readonly root:   string;
@@ -26,7 +43,7 @@ export interface SeatedScratchCustody {
   readonly io:     FsCustodyIo;
   readonly holder: CustodyHolder;
   /** A copy of the minted vessel key, for a test that builds a second holder over the same tree. */
-  readonly vk:     VesselKey;
+  readonly treeKey:     TreeKey;
   /** Lock, clear the seat, restore `LAR_ROOT`, remove the root. */
   drop(): Promise<void>;
 }
@@ -41,10 +58,10 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
   const io = new FsCustodyIo(homes);
   const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
   const holder = makeCustodyHolder({ io, homes });
-  await holder.adopt(founded.vk);
+  await holder.adopt(founded.treeKey);
   seatCustody(holder);
   return {
-    root, homes, io, holder, vk: founded.vk,
+    root, homes, io, holder, treeKey: founded.treeKey,
     async drop() {
       await holder.lock();
       unseatCustody(holder);
@@ -52,6 +69,14 @@ export async function seatScratchCustody(label = "seat"): Promise<SeatedScratchC
       rmSync(root, { recursive: true, force: true });
     },
   };
+}
+
+/** A scratch custody with its founding face standing unlocked for hosting's first write. */
+export async function seatHostingCustody(label = "hosting"): Promise<SeatedScratchCustody> {
+  const c = await seatScratchCustody(label);
+  setMountedFace(undefined);
+  await c.holder.foundFace({ ordinal: 0, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+  return { ...c, async drop() { setMountedFace(undefined); await c.drop(); } };
 }
 
 /**

@@ -57,7 +57,7 @@ describe("★ a crafted #meta body reads within a linear bound, or refuses ★",
   }, 120_000);
 
   test("CONTROL: an ordinary body reads every field, and one redefinition names its key with no overflow line", () => {
-    expect(parseTaploFields('title = "lar:///x"\nmana = 16\n')).toEqual({ title: "lar:///x", mana: "16" });
+    expect(parseTaploFields('title = "lar:///x"\ngauge = 16\n')).toEqual({ title: "lar:///x", gauge: "16" });
     const warnings: string[] = [];
     expect(parseTaploFields("a = 1\na = 2\n", warnings)).toEqual({});
     expect(warnings).toHaveLength(1);

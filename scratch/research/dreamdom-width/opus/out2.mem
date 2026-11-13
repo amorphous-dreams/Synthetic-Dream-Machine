@@ -1,0 +1,262 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/dreamdom-width/opus/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/dreamdom-width/opus/out2.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/opus/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/dreamdom-s-default-width-across-every-vessel-cla`>>
+
+! DreamDOM's default width across every vessel class · wave two (Opus): verify, argue, ratchet
+
+Opus, 2026-10-28. Reads the shared brief, wave one (`terra/out.md`, Terra-6.1), the ratcheted capability design (`research/capability-default/out2.md`), the mirror rulings (memory `project_dreamdom_mirror_ruling`), the device seats (`device-capabilities-2026.mem` #/device-seats), the D3 kit and spike (`d3-glass/wt/.../d3-glass-lane.mem`, `d3-glass/spike/table-final.md`, `spike/run.mjs`), the D3 code (`d3-glass/wt/packages/lararium-web/src/glass/stand.ts`), the dreamdom roadmap (`d3-glass/wt/.../dreamdom-roadmap.mem`), the TW5 submodule (`TiddlyWiki5/`, HEAD `ea94ca840`, 2026-10-12), and the three laws.
+Marks: ''SOURCED (URL, date)'' for a field claim, quoted where it carries weight; ''SOURCED (repo: path)'' for a house read; ''REASONED'' for inference or design. Nothing was run except reading files and one corpus-size count over the spike's own generator output.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-the-ratchet-in-eight-lines`>>
+
+!! 0. The ratchet in eight lines
+
+# Wave one's platform claims ''hold'' at their pages (§1). One citation is weaker than stated: the Fresh islands page does not say "ordinary pages ship no client JavaScript."
+# Wave one's verdict ("full target, skinny first, promote, one named fallback, same policy on every browser class") ''survives'', and it matches what D3 already built (`stand.ts`). This wave keeps it.
+# Wave one missed the fact that changes the confidence: ''the spike's heap number cannot see the risk that kills phones.'' It reads the page isolate's `JSHeapUsedSize` after a forced GC (`spike/run.mjs:147`). It does not read the worker island's heap, the DOM, layout, or images. On WebKit those all count against one WebContent process limit (§2c).
+# ''Corpus growth breaks the relative gate.'' The +25 % gate compares full against a stock tab, and stock grows with the corpus too. At 20,000 tiddlers of the spike's mix, full passes +25 % and still crosses the 150 MiB tripwire by linear extrapolation, roughly 225 MiB against stock's roughly 220 MiB (§2b, REASONED, unmeasured).
+# ''Skinny is not a memory floor over time.'' Nothing in the adaptor evicts a body once loaded, so a long-lived skinny mirror converges to full as the person opens tiddlers (§2a). On the waking-floor tablet, skinny buys first paint, not a ceiling.
+# ''Accessibility argues for the mirror, against none.'' Every width mounts in a shadow root, but none paints serialized frames, and the house's own law 8 says serialized HTML cannot carry element references or pre-existing live regions. Gmail's lighter view is a counter-case: it was the accessible one and it was retired (§2e).
+# The ruling ratchets to: ''full by promotion on every class that renders a page, the same for phones, with three owed measurements before the operator can call it validated.'' Those are a reference phone at process grain, a 20,000-tiddler corpus, and a long-session growth run. Skinny should gain body eviction on close before the waking floor ships.
+# One seam in the built code needs a ruling. `stand.ts` steps full → skinny on a capacity error, then floors to none on a second one. Whether that floor counts as "the one step per boot" goes to the operator (§6 Q1).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-verify-wave-one-s-load-bearing-sourced-claims`>>
+
+!! 1. VERIFY · wave one's load-bearing sourced claims at their pages
+
+| # | Wave-one claim | Verdict | Quote at the page |h
+| V1 | iPhone WebContent soft limit around 1.5 GB, lower on some devices, pressure-dependent, jetsam not a catchable error | ''HOLDS'' | Simon Fraser: "WebContent processes on iPhone are subject to a "soft" limit of around 1.5GB … subject to getting killed by "jetsam""; "This is a "soft" limit because these processes are allowed to go above this limit"; "related to overall memory pressure on the device"; "somewhat lower on iPhone models with less RAM." ''SOURCED'' https://bugs.webkit.org/show_bug.cgi?id=277848, 2024-08-09 |
+| V2 | The reload loop: the page reloads into the same death | ''HOLDS (wave one did not cite it; the house's earlier wave did)'' | Reporter: "Safari will try to load it twice then display "A problem repeatedly occurred on"" (iPhone 15 Pro Max, iOS 18.1 beta). Ryan Reno: "a highwater jetsam which can occur when the WebContent process crosses a soft limit"; "the system needs memory due to memory pressure." ''SOURCED'' https://bugs.webkit.org/show_bug.cgi?id=279637, 2024-09-12 / 2024-09-20 |
+| V3 | "WebKit describes different memory limits across devices" (bug 268816) | ''HOLDS, and it says more than wave one used'' | Ben Nham: "On iPhones, for most devices, the limit is 1.5GB"; on iPad "the WebContent process has a higher memory limit, which differs by device … For an 8GB device, the limit will be in the 4GB+ range"; Gigacage "supports 2GB of allocations on iOS" (typed arrays). Proskuryakov: "I do not think that this is documented by Apple." ''SOURCED'' https://bugs.webkit.org/show_bug.cgi?id=268816, 2024-03-13 / 2024-05-15. The reporter re-filed on 2026-09-17 (bug 324370), claiming the problem persists on all iOS devices. |
+| V4 | Home Screen install changes presentation and Web Push, not process survival | ''HOLDS'' | The post covers Web Push and permission "in response to direct user interaction"; it says nothing on memory or process lifetime. ''SOURCED'' https://webkit.org/blog/13878/, 2023-02-16. ''REASONED:'' the device-seats row "a full vessel only after Home Screen install" rests on storage (the seven-day exemption, `persist()`), not on memory. Install does not move the jetsam line, so it should not move the width. |
+| V5 | Android LMK kills under pressure; background first | ''HOLDS; foreground is not exempt'' | "Processes with a high score are killed first. Background apps are killed first; system processes, last." The ranking places the foreground app above persistent/system/native, and the page advises checking RAM "to prevent games from being killed when in the foreground." ''SOURCED'' https://developer.android.com/topic/performance/issues/lmk, accessed 2026-10-28 |
+| V6 | Chrome 148 re-enabled SharedWorker on Android while investigating termination | ''HOLDS'' | "SharedWorker instances might terminate unexpectedly, without notifying users or web developers"; "SharedWorker is being re-enabled on Android while this behavior is investigated." Stable 2026-05-05. ''SOURCED'' https://developer.chrome.com/release-notes/148 |
+| V7 | Freeze/discard without a callback; `freeze`/`resume` not general | ''HOLDS; one refinement'' | Discarded: "No tasks, event callbacks, or JavaScript of any kind can run in this state"; "not observable by developers at the time a page is being discarded." `freeze`/`resume`: Chrome 68, Edge 79; Firefox and Safari not supported. `wasDiscarded` is "on desktop Chrome", with "Android support … being tracked." ''SOURCED'' https://developer.chrome.com/docs/web-platform/page-lifecycle-api, updated 2026-10-16. ''Refinement:'' the earlier wave's "Chromium-only" `wasDiscarded` is narrower still: desktop only. On an Android phone it cannot serve as evidence. |
+| V8 | bfcache revives an old in-memory page; `pageshow.persisted`; unload unreliable | ''HOLDS'' | bfcache is "a snapshot of the entire page in memory, including the JavaScript heap"; browsers "pause any pending timers or unresolved promises"; `persisted` is "true if the page was restored from bfcache." ''SOURCED'' https://web.dev/articles/bfcache, updated 2026-10-16. Lifecycle page: "The unload event does not fire in many typical unload situations, including closing a tab from the tab switcher on mobile." |
+| V9 | TW5 lazy loading: skinny = all fields but text; `getTiddlerText()` triggers async load and refresh; search sees only loaded text | ''HOLDS; wave one under-read the Node mode'' | "the browser first requests a "skinny" version of each tiddler (consisting of all the fields apart from the text field) … `wiki.getTiddlerText()` will trigger an asynchronous load of the full tiddler text, which in turn triggers a refresh cycle"; "The browser-based search built into TiddlyWiki5 will only search the text of tiddlers that have been fully loaded … it is only the server that can "see" the text of all tiddlers." ''SOURCED'' https://tiddlywiki.com/dev/#LazyLoadingMechanism, modified 2014-02-06; repo `TiddlyWiki5/editions/dev/tiddlers/from tw5.com/mechanisms/LazyLoadingMechanism.tid`. Missed: under Node, "just image tiddlers or all non-system tiddlers can be subject to lazy loading" (`--listen root-tiddler=$:/core/save/lazy-all`). ''SOURCED'' `TiddlyWiki5/editions/tw5.com/tiddlers/features/LazyLoading.tid`, modified 2024-12-14. `lazy-all` is the stock analogue of house skinny. The roadmap's skinny-loses condition already names "a `lazy-all` hole" (repo: `dreamdom-roadmap.mem:109`). |
+| V10 | Notion: best-effort cache could not guarantee completeness; offline needs apps, not a browser | ''HOLDS'' | "was best-effort: It didn't have guarantees about which records would be available or for how long." ''SOURCED'' https://www.notion.com/blog/how-we-made-notion-available-offline, 2025-12-11. "This feature isn't available on web browsers." ''SOURCED'' https://www.notion.com/help/use-pages-offline, accessed 2026-10-28 |
+| V11 | tldraw culls offscreen shapes, never selected/edited ones | ''HOLDS'' | "Selected shapes and the shape being edited are never culled"; `canCull` returning false is the opt-out; DOM-measuring, glowing and animating shapes must stay rendered. ''SOURCED'' https://tldraw.dev/sdk-features/performance, accessed 2026-10-28 |
+| V12 | Fresh: "ordinary pages ship no client-side JavaScript" | ''OVERSTATED at the cited current page'' | The islands page says "Islands enable client side interactivity in Fresh and they are rendered both on the server and in the client" and "We'll keep sending only the JavaScript that is needed for the islands." It gives no explicit default statement. ''SOURCED'' https://usefresh.dev/docs/concepts/islands, accessed 2026-10-28. This is not load-bearing for the ruling. |
+| — | INP, Astro, Qwik, RSC, Partytown, Comlink, AMP, Figma, Excalidraw, Obsidian, Logseq | ''not re-checked'' | None carries the width ruling: they are frameworks for content pages or for renderers that are not device-tiered. The house's earlier waves already checked Partytown, AMP and Figma (memory `project_off_main_thread_engine_laws`; `capability-default/out2.md` V1). |
+
+''Wave one's house-shaped claims, checked against the code (SOURCED repo, REASONED reading):''
+* //"For a full target, select one viable fallback; if the chosen fallback fails, stop; do not try a third tier."// The built code does something different. `stand.ts` header: "After it stands, a caught capacity error steps it down to skinny once on the same engine, a second one unmounts it, and `port:gone` closes it." The full → skinny → none path is therefore reachable in one boot. Wave one would stop at a failed skinny with a named failure. The code also stops, but by unmounting to the none floor. The difference is whether none counts as a step or as a floor. §6 Q1.
+* //"Installation alone neither grants a mirror nor proves memory headroom."// ''HOLDS'' (V4) and lines up with the seats table's reading that install buys storage, not memory.
+* Wave one's arithmetic (+10.6 %) matches the kit's +10.5 % (repo: `table-final.md`): 35.56 against 32.18 MiB. ''HOLDS.''
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-gaps-what-this-house-needs-that-wave-one-misse`>>
+
+!! 2. GAPS · what this house needs that wave one missed
+
+!!! 2a. The household's always-on tablet at the waking floor (hours, not first paint)
+
+* ''TW5's own caches are bounded or tied to change.'' Per-tiddler caches (parse trees, links, transcludes) "are automatically cleared when a tiddler is modified or deleted". They are ''not'' cleared when a tiddler is closed, so every tiddler rendered once keeps its parse tree for the session. ''SOURCED (repo: `TiddlyWiki5/core/modules/wiki.js:15,1000-1023`).'' The global cache clears "whenever any tiddler change occurs" (`wiki.js:16`). The filter cache flushes at 2,000 entries (`core/modules/filters.js:403-408`). `changeCount` holds one entry per title ever changed (`wiki.js:14`). ''REASONED:'' the engine's own growth over a session is bounded by the corpus touched, not by elapsed time. That makes a growth run meaningful: the curve should flatten. If it doesn't, the cause is a leak.
+* ''The house adds two growth sources stock TW5 lacks.'' (i) The adaptor's per-record image of what it landed. (ii) Skinny's opened bodies: the adaptor reloads a body after a peer write "so the editor never loses its text" (`glass-port-adaptor.ts:169`), and no code path evicts a body (repo grep: no `evict`/`unload` in the adaptor). ''REASONED:'' a skinny mirror on a shelf tablet, browsed for a week, holds every body anyone opened, so it trends to full. Skinny is a first-paint width, not a resident-size bound.
+* ''The waking floor's lifetime is not the camera's.''
+** Screen Wake Lock is "Baseline 2025", needs a secure context, and "previously acquired locks are automatically released when document becomes inactive". A request "may be rejected … power save mode or low battery level." ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API, accessed 2026-10-28.
+** Chrome's Energy Saver freezes a group "hidden and silent for more than five minutes" and CPU-intensive, unless it "Hold[s] a Web Lock or an IndexedDB connection that blocks operations outside the group." ''SOURCED'' https://developer.chrome.com/blog/freezing-on-energy-saver, 2025-01-20.
+** Memory Saver deactivates inactive tabs, with exemptions for audio/video, downloads, partly filled forms and pinned tabs. ''SOURCED'' https://support.google.com/chrome/answer/12929150, accessed 2026-10-28.
+** ''REASONED:'' the platform already owns the step-down for a hidden tab: it freezes or discards the whole page. The house's ruling "(5) a hidden tab keeps its mirror" is therefore correct and costs nothing extra: the platform discards a hidden full mirror and a hidden skinny one alike. The visible shelf tablet is the case that matters, and only a growth run can speak to it.
+* ''REASONED · what the floor needs from width:'' the floor stands in the island and the vessel (seats: node is "the waking floor"; a tablet "may stand" one). A camera death must not take the floor down. On a tablet the island worker and the mirror share one WebContent process (§2c), so a mirror that grows can jetsam the floor with it. That is the strongest argument for bounded skinny on the floor device specifically. §5.
+
+!!! 2b. Corpus growth: 2,000 measured, 20,000 extrapolated
+
+* ''The spike corpus:'' 2,002 tiddlers, 14,014,876 text characters, about 7.0 kB per body (sizes 205 to 12,288, with every 143rd at 100 kB). ''SOURCED (repo: `spike/run.mjs:42-49`; count over `spike/stock-corpus.json`).''
+* ''Full − skinny = 13.9 MiB, against 13.4 MiB of body text.'' One-byte strings, so heap per body is close to its byte length. Skinny's 21.7 MiB holds the engine, core, plugins, fields and the page template. ''REASONED.''
+* ''Linear extrapolation to 20,000 of the same mix (REASONED, unmeasured):''
+** The engine base is assumed at 12–15 MiB, which puts fields at about 3.4–4.9 KiB per tiddler.
+** That gives skinny ≈ 80–95 MiB, full ≈ 215–230 MiB, and stock ≈ full − 3.4 × 10 ≈ 200–215 MiB.
+** Full against stock: about +7–10 %. ''The relative gate passes. The 150 MiB tripwire fails.''
+** The relative gate is blind to absolute size by construction, because stock grows too. Only the tripwire sees growth. And the tripwire reads the page isolate alone (§2c).
+* ''Field reports:'' forum members report single-file wikis of 10,000–20,000 tiddlers running well, one of 40,000+, with lag from "the construction of filters and the size of the wiki, in that order". A core developer says lookups stay fast and DOM for long lists is the cost. ''SOURCED'' https://talk.tiddlywiki.org/t/the-5-000-tiddler-club-people-with-the-need-for-speed/4040/27 and https://talk.tiddlywiki.org/t/performance-of-wiki-and-the-number-of-tiddlers-assume-same-amount-of-information/553, accessed 2026-10-28 (search summary; not quoted line by line). TW5's own record: "users regularly work with files that are tens or even over a hundred megabytes". ''SOURCED (repo: `TiddlyWiki5/editions/tw5.com/tiddlers/features/Scalability.tid`).'' ''REASONED:'' a 20,000-tiddler full mirror is ordinary TW5 territory on a desktop. The question is the phone process, not the engine.
+
+!!! 2c. What the spike's heap number can and cannot see (the gap that most changes confidence)
+
+* ''SOURCED (repo: `spike/run.mjs:147`):'' heap = CDP `HeapProfiler.collectGarbage` then `JSHeapUsedSize` of the page target. This is the page's main isolate after GC.
+* ''REASONED (WebKit architecture; not quoted from a page):'' dedicated workers run as threads inside the page's WebContent process. Jetsam counts the process footprint: page heap, every worker heap, DOM, layout, decoded images and JIT. On the iPhone, therefore, the island (Automerge documents plus its own TW5 engine) and the mirror share the ~1.5 GB line (V1).
+* ''Full width holds the corpus twice in one process:'' once as truth in the island, once as a copy in the mirror. Skinny holds the bodies once, plus whatever was opened.
+* ''REASONED:'' at 2,000 tiddlers this is far from the line (tens of MiB against 1.5 GB). At 20,000 with Automerge's per-document overhead it is still probably far, but ''unmeasured''. The +25 % gate cannot speak to it, because it compares page isolates.
+* ''Owed instrument:'' a process-grain number on the reference devices: Safari Web Inspector's Memory timeline on iOS, `chrome://memory-internals` or `dumpsys meminfo` on Android. Release-time only, never a boot input (`measureUserAgentSpecificMemory` needs cross-origin isolation the house does not serve; `capability-default/out2.md` V4).
+
+!!! 2d. A node that a browser attaches to
+
+* ''SOURCED (repo: `dreamdom-roadmap.mem:64`):'' "the first surface (the browser on the Node vessel's box) shows the daemon wiki, the pinned wiki and the other wikis … and spawns each as the ordinary page template at the width the spike ruled." The D4 actor manifest carries `width[]`, and per-port attachments carry `width` (`dreamdom-roadmap.mem:115`).
+* ''REASONED:'' two different attachments hide under "a browser attaches to a node".
+*# ''The browser boots its own browser vessel and peers with the node.'' It is a desktop-browser leaf, its island sits in its own process, and the default is that class's default.
+*# ''The browser's port reaches the node's island over the relay or gate.'' The truth then lives in another process (the node). The page process holds only the mirror, so full is cheaper here than anywhere: no second copy in-process. Skinny's on-open body loads also cross a network instead of a MessageChannel, which makes skinny //worse// here (cold-filter and load latency rise; the spike's planted 50 ms relay delay moved skinny's cold filter p95 from 5.1 to 54.3 ms, repo `table-final.md`).
+** ''Lean:'' in case 2, the same full-by-promotion rule applies, and the measured latency favours full. Which case the first surface builds is not settled in what I read. §6 Q4.
+* ''The node itself renders no page, so it holds no width.'' Its "camera" is the Node CLI text camera or the SSR face (`dreamdom-roadmap.mem:129`), outside this ruling. Wave one ''HOLDS'' here.
+
+!!! 2e. The person's lighter surface, and accessibility, as width inputs
+
+* ''Ruled already:'' "(3) a person may choose a lighter surface later as an intent on their face, after D3" (memory `project_dreamdom_mirror_ruling`).
+* ''REASONED · how it fits the laws:'' a face intent is a decision, and decisions cross devices (memory index: FACE INTENT PLANE "decisions cross devices, never motion"). A "lighter" intent should name the //experience// the person wants (fewer bodies resident, less motion), not a width. Each vessel then maps that intent onto its own lit widths. A width name crossing devices would be the URL flag again, one layer up.
+* ''Field prior art for user-declared lightness:'' `prefers-reduced-data` is "experimental … not supported by any user agent". ''SOURCED'' https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-data, accessed 2026-10-28. `Save-Data` remains a Chromium request header (MDN links it; not re-verified for engines). ''REASONED:'' the field has no cross-engine "I want the light version" signal, so the house's face intent stands alone. That is fine, because it is the person's own word.
+* ''Reduced motion is orthogonal to width.'' TW5 core does not read `prefers-reduced-motion`; animation runs through `$tw.utils.getAnimationDuration()` and `$:/config/AnimationDuration`. ''SOURCED (repo: `TiddlyWiki5/core/modules/storyviews/*.js`, `core/ui/ControlPanel/Basics.tid:13`; grep finds no `prefers-reduced-motion` in core or themes).'' ''REASONED:'' every width that runs the engine (full, skinny) should map the media query onto that config tiddler at mirror boot, as a camera concern, not a width input. None's sink should honour it in its own CSS.
+* ''Screen readers favour the mirror over none.''
+** The house's law 8: "ARIA IDREFs do not cross shadow boundaries … Live regions must ''pre-exist'' their content"; serialized HTML cannot express element references; `document.activeElement` returns the host (memory `project_off_main_thread_engine_laws`).
+** The mirror renders real TW5 DOM inside one shadow root, so IDREFs within that root resolve, and live regions persist as real nodes. None morphs serialized frames into a sink.
+** ''REASONED:'' a person using a screen reader gets a sounder surface at full or skinny than at none. That is one more reason none stays the floor and never becomes a default "light" choice.
+** The roadmap already makes none lose "if any ruled control fails its browser and accessibility probes" (`dreamdom-roadmap.mem:109`).
+* ''Field counter-case: the light tier was the accessible one, and it rotted.'' Gmail's Basic HTML view ended in January 2024. Google called it an old version "replaced more than a decade ago" lacking features, and blind and low-vision users who relied on it for screen readers objected. ''SOURCED'' https://www.theregister.com/2023/09/25/gmail_basic_html_discontinued/, 2023-09-25 (via search summary).
+** ''REASONED rhyme:'' a lighter tier maintained as a //separate product// decays and dies. The house's widths are settings of ''one'' adaptor over ''one'' engine (`glass-port-adaptor.ts:21`: `width: "full" | "skinny" | "story"`), which is the structural cure.
+** Keep it that way: story must stay a setting of the same adaptor, never a second renderer.
+
+!!! 2f. Smaller gaps
+
+* ''bfcache plus the mirror (REASONED):'' a bfcache-restored page carries a mirror whose port may be gone. `pageshow.persisted` is the causal signal to re-greet. Treat it as L4 again (the greeting decides), not as a fresh width choice. The width held at freeze stays.
+* ''An iPad is not an iPhone (V3):'' "4GB+" for an 8 GB iPad against 1.5 GB for most iPhones. ''REASONED:'' the house must not let "tablet" read as "phone" in its test plan. Device classes organise //testing//, never authority (wave one, HOLDS).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-rhymes-and-golden-principles-what-survives-the`>>
+
+!! 3. RHYMES and GOLDEN PRINCIPLES · what survives the check
+
+''Rhymes that survive (each with the source it rests on):''
+# ''The real attempt is the probe:'' Figma starts WebGPU and falls back later on observed failure (`capability-default/out2.md` V1); the house boots L1–L5 and reads the result (`stand.ts`). ''HOLDS.''
+# ''Only the side that holds everything answers completeness:'' TW5's lazy search note (V9) and Notion's best-effort cache (V10). The worker island answers corpus-wide filters, and skinny never pretends. ''HOLDS'', and it is the strongest rhyme in the set.
+# ''Keep the edited thing resident:'' tldraw never culls the selected or edited shape (V11). Skinny's body reload "so the editor never loses its text" is the same law. Any future eviction (§5) must exempt open and draft tiddlers. ''HOLDS, newly binding.''
+# ''The platform's step-down is not the app's evidence:'' Chrome freezes and discards hidden tabs on its own terms (V7, §2a). The house's "a hidden tab keeps its mirror" and "a discard is not mirror failure" read the same. ''HOLDS.''
+# ''Name the diminished face:'' Notion marks blocks unavailable offline (V10); `stand.ts` emits `stepped`/`floor` with `why`. ''HOLDS.''
+
+''Rhymes cut:'' wave one's "Astro/Partytown show capability over host" — those are author opt-ins, not capability reads, so the rhyme is decorative. Wave one's "React Suspense rhymes with a real step result" is too loose to carry weight.
+
+''Golden principles (with counter-cases):''
+* ''G1 · One engine, many settings.'' A light tier built as a separate product decays (Gmail Basic HTML, §2e). //Counter-case:// none is a different renderer (worker frames), and it is held to its own goldens for exactly that reason.
+* ''G2 · Default to the richest surface the real boot carries; make first paint cheap.'' Wave one, HOLDS, built. //Counter-case:// richness held twice in one process (§2c) is a cost first paint never shows.
+* ''G3 · Gate on absolute process size on the weakest reference device, not only relative to a baseline.'' ''NEW.'' The relative gate passes at 20,000 while the absolute tripwire fails (§2b). //Counter-case:// an absolute gate tuned to one phone freezes today's device into the rule. Name it as a release gate per reference device, never a runtime classifier.
+* ''G4 · Bound what grows by causal events, not by time.'' ''NEW.'' TW5 clears caches on change (§2a); tldraw culls by viewport, not by timer (V11). An evicted body leaves on close (the tiddler leaves the story), never on idle time.
+* ''G5 · Accessibility is a correctness property of a width, not a preference.'' ''NEW.'' None must pass the screen-reader probes before it counts as a floor anyone can live on (§2e).
+* ''G6 · Evidence that survives the kill, scoped to the tab.'' `mirror:began` in sessionStorage (built). This is the only defence against V2's reload loop; the field has no other in-page answer (V1, V7).
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-yin-then-yang`>>
+
+!! 4. YIN, then YANG
+
+!!! YIN · the strongest case against "full by default where the boot's steps pass"
+
+# ''The steps cannot see the failure that matters.'' On iOS the kill is jetsam at process grain under system-wide pressure (V1, V2). Every L1–L5 step can pass and the process can still die later, at promotion or an hour in. The boot "passing" proves only that it passed //then//. The evidence record breaks the reload loop, but only //after// one death per tab, and a phone user experiences that death as "the app crashed".
+# ''The one number behind the default measured the wrong thing for phones.'' It covers the page isolate on WSL2 Chromium. It excludes the worker island, DOM and images (§2c), the WebKit engine, and a phone. The Firefox run is N=1 and shows full's first paint at 1,259 ms against stock's 1,046 (repo `table-final.md`). WebKit refuses to run on this host (`d3-glass-lane.mem` #/owed).
+# ''Growth defeats the gate.'' Full's +25 % passes at any size, because stock grows with it, while the absolute footprint goes past the tripwire near 20,000 (§2b). A household's corpus only grows.
+# ''Long sessions defeat skinny too (§2a).'' If skinny converges to full, "step down to skinny" is a step down only in first paint. The step-down path gives a phone far less protection than its name suggests.
+# ''Typing is already slower at full than stock:'' p95 keystroke-to-paint 26.5 ms against 15.1 (repo `table-final.md`). That is fine on WSL2. On a phone at 3–5× slower JS, the same ratio could cross a frame budget. ''REASONED; unmeasured.''
+# ''Battery is unmeasured on every class.'' A second engine refreshing on every peer change costs CPU twice (island and mirror) on a phone.
+
+!!! YANG · what survives
+
+* ''The alternatives are worse, or not built.''
+** None misses its byte budget (63,344 against 52,429 bytes per key), its page controls are unbuilt, and it is weaker for screen readers (§2e).
+** Story waits on promotion.
+** Skinny-forever saves first paint and nothing durable (§2a).
+** A phone-specific default would be a host classifier, which `isomorphic-by-intent` forbids. Its only honest form is a capacity //fact//, and the boot already reads that fact.
+* ''The margins are wide where it was measured.'' 35.6 MiB against an iPhone's ~1.5 GB soft line is a 40× margin before counting the island. Even the doubled corpus in one process at 2,000 tiddlers sits well under 100 MiB. ''REASONED.''
+* ''The order already absorbs the worst case.'' Skinny paints first, so a jetsam during promotion lands after a usable surface, and the per-tab evidence keeps the reload at skinny (built, `stand.ts`). This is Figma's shape (rhyme 1).
+* ''Every YIN point is a measurement, not a principle.'' None of them argues for a different //rule//. Each argues for a release gate the house has not yet run: process grain, 20,000 tiddlers, a long session, a reference phone. So the ruling holds, and its confidence is "provisional until §5's measurements land", exactly as wave one said.
+* ''What YIN wins:'' (a) the absolute gate (G3) joins the relative one as a release gate; (b) skinny gains causal body eviction before the waking floor ships; (c) the house measures at process grain on a real iPhone before calling phones validated.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-the-ruling-ratcheted`>>
+
+!! 5. THE RULING, ratcheted
+
+''One rule on every class that renders a page:'' the mirror opens through the port grant, paints skinny first, and promotes to full by one `port:widen`. It steps down only on a named step failure, a caught `RangeError`/`QuotaExceededError`, or `port:gone`, never by a clock. A tab whose full boot died before paint holds skinny for its life (`mirror:began`). This is what `stand.ts` builds. The class table below sets ''test obligations and known risks, not authority''.
+
+| Class | Default | Step-down path | What the boot reads (no clocks) | Reds that prove it |h
+| ''iPhone, iOS 26'' (tab or Home Screen) | full by promotion; install changes nothing about width (V4) | full → skinny on caught capacity error; → none floor on a second (Q1); a jetsam → reload → `mirror:began` holds skinny for the tab | L1–L5 outcomes; caught capacity errors; `mirror:began`; `port:gone`; `pageshow.persisted` → re-greet | `jetsam-reload-holds-skinny` (plant a kill between snapshot and paint; the reload paints skinny and names why); `reload-after-paint-promotes` (control: an evidence record cleared at paint lets the next boot promote) |
+| ''Android 16 Chrome'' (tab or WebAPK) | full by promotion | same; an LMK kill of the renderer reads as a reload, same evidence path; `wasDiscarded` unavailable on Android (V7), so it is never read | same | same two reds on a real device; `hidden-discard-keeps-full` (a hidden-tab discard leaves no `mirror:began`, so the next boot promotes) |
+| ''Tablet, person's surface'' | full by promotion | same | same | as iPhone; tested on an iPad separately (V3) |
+| ''Tablet, waking-floor device'' | ''skinny with body eviction on close'', promotion held, ''as a lean pending §6 Q2''; the floor's island must outlive the camera | camera step-downs never touch the island; a camera floor leaves the floor standing | same, plus the floor's own liveness (not the camera's) | `floor-survives-camera-floor` (unmount the mirror; the island keeps serving peers); `closed-body-evicts` / `open-draft-never-evicts`; long-session growth curve flattens (§5 owed) |
+| ''Desktop browser, any engine'' | full by promotion | same | same | the five-site walk and goldens 1–13 at full on Chromium, Firefox ''and WebKit'' (WebKit owed on this host) |
+| ''Browser attached to a node'' | case 1 (own vessel): as desktop; case 2 (port to the node's island): full by promotion, which the latency favours (§2d) | same, plus `port:gone` on a relay drop → named, re-greet on reconnect (the greeting decides) | same | `relay-drop-names-gone-and-regreets`; skinny cold filter under the planted relay delay stays named, never silent |
+| ''Node'' | no width: renders no page | n/a (CLI/SSR cameras are other surfaces) | n/a | n/a |
+| ''Mudlet'' | no width: a probe over HTTP/telnet | n/a | n/a | n/a |
+| ''Unreal guest / Pixel Streaming'' | the width belongs to whichever vessel hosts the browser camera; the stream client holds none | that vessel's path | that vessel's | n/a here |
+
+''The step-down to none is the floor, not a preference.'' No class defaults to none until none passes its byte budget and its accessibility probes (roadmap thresholds).
+
+''Release gates (run by the house, never read by the boot):''
+# Relative: full ≤ +25 % over stock, page isolate (exists).
+# ''Absolute, new (G3):'' full's page isolate ≤ 150 MiB on the reference corpus, plus a ''process-grain'' figure on each reference device, recorded beside it.
+# ''Growth, new (G4):'' heap and process figures at fixed //event// counts (after opening N tiddlers, after M peer writes), never at wall-clock marks. The curve must flatten by N = corpus size.
+
+''Measurements the house still owes before the operator can rule with confidence:''
+# ''A reference iPhone'' (and an iPad, V3) at process grain: full, skinny and none, 2,000 tiddlers; a planted jetsam to prove the evidence path on real WebKit.
+# ''A reference Android phone'' (Chrome 149) under the same harness, with background/foreground LMK.
+# ''A 20,000-tiddler corpus'' of the spike's mix (one more `count`), on desktop and the reference phone. This tests the §2b extrapolation; full crossing 150 MiB here is the expected red.
+# ''A long-session growth run:'' open every tiddler once, then apply 10,000 peer writes, measured at event counts on the tablet. This tests §2a.
+# ''WebKit desktop'' (the two missing system libraries on this host), Firefox at N=3.
+# ''Keystroke p95 on the phone'' at full against stock (YIN 5).
+# ''The island's own heap'' beside the mirror's (a worker CDP target on Chromium), so "the corpus twice in one process" becomes a number.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/6-open-questions-only-the-operator-can-rule`>>
+
+!! 6. Open questions only the operator can rule (each with a lean)
+
+# ''Does the none floor count as the one step?'' `stand.ts` goes full → skinny → none within a boot on two capacity errors. The ruling says "at most once per boot".
+#* //Lean:// rule that ''a step is a width change the mirror survives''. Unmounting to none ends the mirror and is the floor, not a second step. This keeps the built code and the ruling's intent (no flapping, never back up). Wave one's stricter reading would leave a person on a failed skinny with nothing painted, which is worse.
+# ''The waking-floor tablet: full like any tablet, or skinny with eviction?''
+#* //Lean:// ''skinny with causal body eviction on close'' for the device that stands the floor, because a camera that grows can take the floor's island down with it in one process (§2a, §2c).
+#* This needs a ruling because it makes width depend on a //role// (stands a floor). Roles are structural predicates over the cap-stack, so the rule reads by capability, not host (`isomorphic-by-intent`).
+#* The alternative: keep full and let the growth run (owed #4) decide.
+# ''Does a corpus-size fact ever hold promotion?'' The body bytes are known from the snapshot, a fact about the content, not the host. The ruling says "(4) no width ceiling on the grant".
+#* //Lean:// ''not yet.'' Run owed #3. If full crosses the tripwire at 20,000 on the reference phone, rule then between (a) a content-derived promotion ceiling, (b) eviction applied at full too (full keeps all fields resident and only bounds bodies), or (c) accepting the cost.
+#* Lean then toward (b): it keeps one engine and one rule (G1, G4).
+# ''The node's first surface: own vessel, or a port into the node's island?'' (§2d)
+#* //Lean:// a port into the node's island for the browser on the node's own box: one copy of truth, full cheaper, latency favours full. A browser elsewhere on the LAN stands its own vessel as a leaf.
+# ''Does the "lighter surface" face intent name a width or an experience?''
+#* //Lean:// ''an experience'' ("keep fewer bodies", "less motion"), mapped by each vessel to its own lit widths. A width name crossing devices is the URL flag one layer up.
+# ''Do phones ship full-by-promotion before owed #1 and #2 land?''
+#* //Lean:// ''yes, as built'', because the order (skinny paints first, evidence holds the reload) already bounds the worst case to one skinny tab after a death. The changelog should mark phones "UNMEASURED" by name until the reference devices report.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;G2zOtdM0zLIzQPAagzubCuP_WZrglO6iDeHfyZhV6nc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

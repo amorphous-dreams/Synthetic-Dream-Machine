@@ -1,0 +1,284 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/resume`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — resume, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/resume.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/resume"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/resume"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! resume.md — resume, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/resume.md` (resume, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b1-lift-slice-4-resume`>>
+
+! b1-lift slice 4 — resume (Lift-Wright, 2026-11-06)
+
+Head: 2eead34b5 on feature/green-jello-dinosaur-5&#45;-b1-lift (local, NOT pushed; slice not yet a feature). Tree clean but for this.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/done-this-step`>>
+
+!! Done this step (red only)
+`packages/lararium-web/tests/floor-broker.test.ts` — FB1/FB2/FB3 RED + CONTROL, run on the broker's real served bytes
+(`public/ceremony-broker.js?raw` evaluated against a stand-in SW scope, real MessageChannels). Local: chromium + firefox
+3 red / control green each (WebKit refused on host, CI runs it). Reds fail for the right reason: no `vessel:*` routes.
+
+Protocol the reds fix (floor, no SharedWorker):
+* follower page → broker `vessel:claim{tabSession}`
+* broker → every OTHER window client (never claimant, never /ceremony.html) `vessel:want{claimId, tabSession}`
+* owner page (its vessel worker mints a MessageChannel, `connect`s one end as that tab's own session, hands the other
+end to its page unread) → broker `vessel:offer{claimId}` [port]
+* broker → claimant alone `vessel:port{tabSession}` [port], unstarted; a claim spends once
+* ceremony doc claim → `vessel:absent{tabSession}`; an offer from it, or for an unclaimed id, hands nothing
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/next-steps`>>
+
+!! Next steps (in order)
+# Build to green (Terra seat fits: mechanical): `public/ceremony-broker.js` grows the vessel routes above (held claims
+keyed by a broker-minted claimId → claimant client id; `clients.matchAll({type:"window"})` for the want,
+`clients.get(id)` for the hand; waitUntil until hand); types in `src/ceremony-protocol.ts` (PageToBroker etc.).
+# Red FB4 (vessel-host project, `tests/vessel-host-*.test.ts` style, see vessel-host-faces.test.ts `tab()`): a follower
+tab whose scope rides a brokered port opens its OWN session, its ceremony answer reaches the host on its own ceremony
+port, and the broker's log of everything it saw holds no `answer`/ArrayBuffer. Needs a host message
+`port:want{tabSession}` → `port:minted` (vessel-protocol.ts) on the owner's page port.
+# Red: a second SharedWorker host over a held store refuses `store-owned` (VS4 covers dedicated; add a SharedWorker
+fixture in lararium-browser tests/fixtures beside vessel-house.worker.ts). Engine facts unmeasured stay probe items.
+# The "two-tab reds that waited on the broker": NOT found named in the handoff (controller-handoff.mem line 127 only
+names slice 4's scope). Ask the controller which reds; candidates: lararium-web tests/e2e/glass-tabs.e2e.test.ts,
+glass-tab-follower/-fence page tests (G4 leader/follower dissolves), lararium-browser tests/live/two-tab-walk.mjs.
+design.md:41 ("floor followers hold no session") stands superseded by the 2026-11-06 ruling; true it.
+# Then: SharedWorker entry (`vessel.shared-worker.ts`, `connect` → host.connect), page picks by capability, `?holder`
+and shared-holder.worker.ts go, Pronaos route inventory (minimal named hunk), readiness waits on SW control (never the
+broker's hand), carrier order line (line 111) trues to 4, 5b, 6, 7, X0b, the joined gate in the canon commit.
+
+Leave alone: b1-seal (lararium-node composer, sealed store), secrets-store.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-after-the-terra-seat`>>
+
+!! Controller, after the Terra seat (head f0b98a958)
+* Step 1 GREEN: f0b98a958 (Terra terra-s4-1 built; controller ran floor-broker 8/8 chromium+firefox, committed). Build cure: <code>pnpm &#45;-filter &#64;lararium/web build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lararium-web</code> (the &#45;-pkg takes the dir name, not packages/...).
+* New owed: an unanswered vessel claim holds the SW waitUntil forever; end it on an event (claimant client gone / a withdraw message), never a timer.
+* The "two-tab reds" (controller's house reading; no list names them): FB4 (a follower opens its OWN session over a brokered port; the broker never sees ceremony answer bytes) + a two-tab e2e where each tab holds its own session (session-contract:233). Read glass-tab-follower / glass-tab-fence / glass-tabs.e2e against the 2026-11-06 ruling (leader/follower/lend dissolves) and retire or rewrite what encodes the old model. design.md:41 stands stale ("a follower holds no session").
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-wright-step-3`>>
+
+!! Lift-Wright step 3 (head bf31c5a56, local, not pushed)
+* Reds committed bf31c5a56: FB4/FB4b in tests/vessel-host-follower.test.ts (vessel-host project; red: `never: port:minted`), FB5/FB6 in floor-broker.test.ts (red: waits never settle; FB1-3 + CONTROL green, chromium 4/6). Broker stand-in now tests/fixtures/broker-scope.ts (logs `seen`, `kept`, `settled`).
+* Unanswered-claim end: `vessel:withdraw{tabSession}` from the claimant, or the claimant gone at the broker's NEXT event (a sweep at every message), never a timer. Owed beside it: the page must send the withdraw on pagehide (step 5 glue).
+* Terra seat terra-s4-2 LAUNCHED (pid 2815286): brief.md names 4 files (ceremony-broker.js, vessel-protocol.ts, vessel-host.ts, ceremony-protocol.ts types). Wait: `until [ -f terra-s4-2/done-88881f3b-1494-4808-af95-46e715c9248f ] || ! kill -0 2815286`; read final.md, run floor-broker (chromium+firefox) + vessel-host project, commit.
+* design.md:41 trued to the 2026-11-06 ruling (decision 2 now names the brokered own-session path).
+* Two-tab file verdicts: glass-tab-follower.page.test.ts RETIRE (lend, parked hello, bus succession); glass-tab-fence.page.test.ts RETIRE (its guards: no place before hello, no surface forged; the host's per-session admission already carries them; a "brokered port before hello refuses session-unadmitted" red can carry the intent); both burn WITH src/glass/tab-bus.ts serveFollowers/makeFollowerDoors and topology.ts's follower path (glass-topology.page.test.ts reads them too: check it at the burn). glass-tabs.e2e REWRITE: two tabs, each its own session and own unlock (session-contract:233), second over the broker; first tab closes -> second re-stands as owner (last tab returns the floor). Both burn and rewrite wait on step 5's page glue (not done this step).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-after-terra-s4-2`>>
+
+!! Controller, after terra-s4-2 (head now the commit "each-tab-its-own-session")
+* FB4/FB4b/FB5/FB6 GREEN; 16/16 chromium+firefox; vessel-host project 12/12.
+* NEW OWED (custody seam): a minted connection in vessel-host.ts `port:want` carries no `lost` — a follower tab that dies leaves its session open and the last-session lock never fires. Red first: closing a follower's minted port ends its session and, when it was the last, locks the house. Wire on the port's close event where the engine fires one, plus the page's pagehide `vessel:withdraw` (already owed) and a session-close message.
+* Then: retire glass-tab-follower + glass-tab-fence (keep a `session-unadmitted` red), rewrite glass-tabs.e2e (two tabs, own sessions, survivor becomes owner), the SharedWorker entry, `?holder` out, Pronaos routes, carrier order line. Push the lane for CI at this slice boundary.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gate-and-glass-owed-into-slice-4-7-the-gate`>>
+
+!! Gate-and-Glass (Sol, 2026-11-06; /home/joshu/.lares-scratch/scout-wave/gate-glass/final.md) — owed into slice 4 / 7 / the gate
+* Production page code holds no `vessel:claim`/`vessel:want` handler yet, and `?holder` stays (src/main.ts:62,445): slice 4's page wiring owes both.
+* `src/ceremony-page.ts:29` picks an active service worker without awaiting page control: a red first (a first-load page whose SW has not claimed it yet).
+* iOS Safari carries SharedWorker since 16, Android Chrome since 148: feature-detect on the device, and keep the dedicated-worker floor exercised regardless; true the carrier/design lines that call iOS SharedWorker absent or Android unmeasured.
+* tools/capability-probe/app.js:306 hardcodes `ws://`: an HTTPS-hosted probe needs a WSS path.
+* main.ts:647 asks persist() after live boot; slice 7 wants the durability warning BEFORE founding/join binds.
+* The Pronaos ceremony routes stand on b1-lift (pronaos-adapter.ts:320,390), not yet on the span.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-wright-step-4`>>
+
+!! Lift-Wright step 4 (head 9d808cd8c, local, not pushed)
+* 7b637a5b5 REDS: vessel-host-follower FB7/FB7b (minted port close ends the follower's session; locks the house when it was last; the owner survives — gated on a measured MessagePort-close probe: NEITHER chromium nor firefox fired close here, so both SKIP: a probe item), FB8/FB9 GREEN at red time (pagehide word over the follower's own port, lifetime lock: the roads that already stand, so the seam rides on the follower page actually standing a VesselPort over its port — the page wiring); vessel-port.test.ts two REDs (mintPort; vesselWorkerOfPort arms lock + carries page:life + terminate closes); floor-tab.test.ts FT1-FT4 (new src/floor-tab.ts: owner lock leads / held lock claims+follows / owner mints+offers / claiming pagehide withdraws); ceremony-page.test.ts CP1 + CONTROL (standCeremonyBroker(env) awaits controllerchange).
+* 9d808cd8c: `headless: true` in both browser projects of lararium-web/vitest.config.ts (operator saw WSLg windows). Every local browser run: add `--browser.headless` too.
+* Terra seat terra-s4-3 LAUNCHED pid 3126651 (brief: 5 files — vessel-host.ts close→lost, vessel-port.ts, floor-tab.ts NEW, ceremony-page.ts, main.ts: ?holder off the page, G4 topology → standFloorTab, lead(boot, port?)). Wait: `until [ -f terra-s4-3/done-c7edf6cb-f016-402c-b2d2-e2b58a97f9ad ] || ! kill -0 3126651`; read out.md/final.md; run headless: web-browser floor-tab, vessel-port, ceremony-page, ceremony, floor-broker; vessel-host project; page-entry-witness; glass-* page tests will likely break with main.ts's topology gone (retire/rewrite is the next step); commit.
+* Reading taken: "claim when it finds no owner" read as "claim when the owner lock stands held by another tab"; a tab that gets the lock leads.
+* Next step: retire glass-tab-follower/-fence (keep a session-unadmitted red), rewrite glass-tabs.e2e (succession: the follower re-stands as owner when the owner's page goes — floor-tab has no succession yet), SharedWorker entry, host-side holder spawn out, Pronaos routes, carrier order line. Push at the slice boundary.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-after-ci-42208362197`>>
+
+!! Controller, after CI 42208362197 (4200215e7)
+* RED, predicted: tests/e2e/glass-tabs.e2e.test.ts ("[first] Warning: Global assignment detected [name, onmessage, …]"), the old leader/follower e2e after main.ts dropped the topology. Next Lift-Wright step (after Merge-Wright's merge lands locally): rewrite glass-tabs.e2e — two tabs, each its own session and unlock, the second through the broker; the survivor becomes owner when the first closes (succession owed in floor-tab) — and retire glass-tab-follower + glass-tab-fence (keep a `session-unadmitted` red), check glass-topology. Then push once.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/merge-wright-b1-seal-merges-into-b1-lift`>>
+
+!! Merge-Wright: b1-seal merges into b1-lift (head c98557881, local, NOT pushed by the controller's word)
+* Parents: 4200215e7 (lift) + 93c808f7e (b1-seal local tip, carrying the span through PR #173). 32 files conflicted (~80 hunks; the span's S2b/S3b browser ward work met lift's per-face custody), resolved by hunk; 5 carriers normalized twice to canonical.
+* THE COLLISION AND ITS COMPOSITION (worth the controller's read): lift rested the persona root in the face's own tree (`face-root/<G>`, ward acts via `faceWardRows`); span's S2b rests it under a per-face WARD keyed by handle (`ward/h<N>/slots|persona-root`, roster `persona-root-roster` = index + public key under the place tree). Merged: the ward holds the root (lift's own carrier named that move as owed); `face-root/<G>` retires and every door refuses it `ward-needs-fresh-unlock`; the roster rests under the place tree (lift's HANDLE_ROW no longer lists it; its codec is span's); lift's one-root-per-face holds at the mint and slot (`refuseOtherHandle`, h0 only); every other D row stays per face, and span's new `vessel-face-tag/<G>` joins the face rows (FACE_ROWS). A founding's tag secret mints before the group names the tree, so `browserVesselFaceTagDoor(idb, ward, rowFace)` seals it under the unnamed founder face (cured rest-before-reload's `no-custody-slot` boot red). Ward APIs take span's signatures (handleIndex + WardRoute); lift callers pass 0 (the worn face's handle). The vessel host asks ward routes through the ceremony with `wardAskWords(act, kind)`; the ceremony paints those words; a fleet join carries `ward: { route: askWardOf(conn) }`; span's `wardAsk` hello flag and page ward form dropped (lift's ceremony stands).
+* OWED (named in seat-harness residuals + browser-vessel-lift slice 3): re-key the browser ward and roster by PersonaGroup (they still name the face `h0`); lift's face-absent/no-tree checks at the root mint went with the root's move (no face gate on the ward mint now).
+* Tests trued to the composition (span tests bind the face's tree before tag rows; lift tests read the root under the ward; ward-root r4/r4b pre-stand the founder face so the ward bind/retype path stays exercised); fleet-join's five-bind test takes a 90 s timeout (it timed out at 30 s once under the full package run, 11/11 alone).
+* Local reads (scratch HOME/LAR_ROOT, LAR_BAGS unset, bwrap, logs in /home/joshu/.lares-scratch/b1-lift/merge/): pnpm build + stamp; typecheck-witness clean; page-entry holds (no tools/pre-push-gate.mjs in tree); node device-admit-edge-renewal 4/4, device-admit-replay-edge 3/3, ward-cosign-face-fold 5/5; mesh catalog-view 13/13; tw5 bag-tier-restamp 3/3; web floor-broker+floor-tab 20/20, vessel-host project 16 + 4 probe skips, ceremony/vessel-port 34/34; lararium-browser chromium 504/505 (the timeout, then cured); e2e rest-before-reload 2/2 (red before the tag-row cure).
+* Next (controller): Lift-Wright rewrites glass-tabs.e2e, retires glass-tab-follower/-fence, then the lane pushes once.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-wright-step-5`>>
+
+!! Lift-Wright step 5 (head 852e38439, PUSHED: merge c98557881 + three commits)
+* 74dfce987 floor-tab succession: a claiming tab queues behind the owner lock; when the owner's tab goes the survivor stands as owner (own worker, own unlock); a pending claim withdraws first. FT5/FT5b red → green; web-browser 54/54 on the floor files; vessel-host 18 + 4 probe skips.
+* 513610d26 custody (the ward answers one face; blind read P2-1/2/3 folded):
+** MEASURED: after the merge only a sealed place tree gated the ward mint. Now `refuseUnwornFace`: face-absent / face-not-worn (optional `face` arg on generateOrLoadBrowserPersonaRoot; the founding passes `founder`) / no-custody-slot (worn face's tree) / face-locked, all before a ward binds.
+** `ward/h<N>/face-tree` = the owning face tree's fcid, written before the ward tree; `refuseWardOfAnotherFace` gates the mint, the held path, slot load, browserPersonaRootHeld (→ false), browserWardSign/Signer (`ward-owned-by-another-face`). This also cures P3 browser-walk:75 (held reads owner-bound) and P2-3 (open-browser-vessel:1547, vessel-host walk:ward both ride browserWardSigner).
+** clearFaceCustody removes the ward rows it owns, its roster line (needs the place tree open: a locked place refuses `sealed-locked` before the ask) and ward/sign/&lt;G>/*. NOT done: a "vessel-wide face removal" — clearBrowserCustody keeps the ward by design (BC25); overwriteEveryFaceCustody only zeroes keys.
+** mintFaceRoot/readFaceRoot/faceWardRows burned; checkRow refuses `persona-root`; FC2's root lines retired.
+** Reds: BC22/BC22b (browser-custody), WO1-3 (new tests/browser-ward-face-owner.test.ts). Fixtures trued (BC23-25 + wrap, ward-root r1-r3, r5 now mints under the face it walks, ward-cosign-gate-browser, browser-ward-key).
+** FORK FOR THE CONTROLLER (◇): BC12 — a founding halted before its bootstrap, rerun over a FRESH founder face, used to ADOPT the halted face's h0 root; it now refuses `ward-owned-by-another-face` by name (BC12 trued to read that refusal). Choices: (a) keep the refusal (the person clears the halted face first); (b) the rerun resumes the halted face (standFounderFace re-wears it; nameFace takes a named face); (c) a halted founding's ward (no bootstrap) retires on rerun. Custody ruling, not mine.
+* 852e38439 glass-tabs.e2e rewritten (owner/follower/succession/third tab) — RED locally: the first tab reads owner/full; the second's vessel stands over its brokered port but its mirror never settles: the host sends surface traffic to ONE surface session (vessel-host.ts:20), so a follower session never paints `lar:surface`. OWED: per-session surface traffic. glass-tab-follower + glass-tab-fence retired; FB10 (vessel-host-follower) keeps the fence (brokered port before hello → session-unadmitted; green at write).
+* Whole lararium-browser chromium headless: 508 passed, 1 failed: wiki-sense-supervision "recall rides the same wire" (ready timeout, 10 s silence under load; 4/4 alone) — the fleet-join 90 s cure held. typecheck-witness clean; page-entry holds.
+* Still owed: glass-topology + src/glass/topology.ts + tab-bus follower path burn (main.ts reaches none); P3s from the blind read: browserVesselFaceTagDoor rowFace unchecked; browser-ward-tree.ts:15-18 stale comment; vessel-host.ts:153 askWardRoute bound to the first session's ceremony door (each tab's own unlock); the SharedWorker entry, Pronaos routes, the carrier order line.
+* Logs: /home/joshu/.lares-scratch/b1-lift/s5/.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-after-lift-wright-step-5`>>
+
+!! Controller, after Lift-Wright step 5 (head 852e38439, pushed)
+* BC12 fork, settled by canon (no operator ruling): X0b ("a founding run twice from the same floor leaves one atom, one group and no orphan row") makes a rerun RESUME the halted face. Until the X0b sweep lands, the refusal `ward-owned-by-another-face` stands (fails closed, names its cause); X0b's red owed: a halted founding's rerun resumes the halted face — no fresh founder face, no orphan row. Never retire a ward on rerun (orphans signed rows).
+* NEXT (step 6): surface traffic per session — vessel-host.ts:20 sends surface traffic to one session, so a follower tab's mirror never paints (glass-tabs e2e red). Custody-adjacent (a session sees only its own face's surface): Claude-authored reds; Terra builds the green from them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-wright-step-6`>>
+
+!! Lift-Wright step 6 (head 30f6759bb, local, NOT pushed)
+* 30f6759bb REDS: tests/vessel-host-surface.test.ts (vessel-host project). SV1: two admitted sessions of the lit face each hear the frame over their own port; each hears its OWN binding's port-msg, never the other's; a place on another session's binding refuses `binding-not-owned` and never reaches the vessel. CONTROL: an admitted session of ANOTHER face (its own unlock) hears no frame and no port traffic — THE FACE CHECK: `session.admission === "admitted" && session.face === litVessel.face`; a greeted-not-admitted session hears no frame. SV2: a closed session (pagehide) hears no frame after its close and its bindings close at the vessel; the survivor keeps frames, its binding's traffic, and its binding open. CONTROL: both heard before. Local headless chromium+firefox: 4 red, right reason (`never: B hears the frame`). Log s6/surface-red.log.
+* glass-tabs.e2e = red (3), unchanged since 852e38439 (same seam); not re-run this step.
+* Terra seat terra-s6-1 LAUNCHED pid 3283269 (brief: vessel-host.ts alone — wearsLitFace, face-wide fan-out for rest/phase/frame/control-result/coherence, a `lighting` conn for callbacks during the open, bindings Map binding→sessionId, owner-only place/close, onDrop closes the dropped session's bindings, burn surface/surfacePost/moveSurface, header trued + owed line: set-surface stays vessel-wide). Wait: `until [ -f /home/joshu/.lares-scratch/b1-lift/terra-s6-1/done-a01a2ea9-4439-4d77-96c2-2a5534ecde5a ] || ! kill -0 3283269`; read out.md/final.md; run headless (`--browser.headless`): vessel-host project whole (surface + follower + faces), then glass-tabs.e2e one file (timeout 600, scratch LAR_ROOT, LAR_BAGS unset; rebuild + stamp first: <code>pnpm &#45;-filter &#64;lararium/web build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lararium-web</code>); commit.
+* Choices taken (controller may overturn): control-result fans face-wide with frames (not to the one sender); a second face's session hears NO surface until a per-face surface exists (owed, not this step); `set-surface` stays vessel-wide (owed: per-session active surface — one tab switching moves every same-face tab's frames).
+* Still owed from step 5: glass-topology/topology.ts/tab-bus burn; P3s (browserVesselFaceTagDoor rowFace unchecked; browser-ward-tree.ts:15-18 comment; vessel-host askWardRoute bound to the lighting session's door — each tab's own unlock); SharedWorker entry, Pronaos routes, carrier order line; X0b red (halted founding rerun resumes the halted face).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-on-step-6-s-choices`>>
+
+!! Controller, on step 6's choices
+* OVERTURNED: control-result answers ONE session's act, so it routes to the session that sent the control event, never to every session of the face (a refusal would paint in a tab whose person never acted). Frames, rest, phase and coherence go to every session of the lit face. Red owed with the green: a control result reaches only its sender; control: a frame still reaches both.
+* Kept as owed rows: a second face's session sees no surface until each face holds its own surface; `set-surface` moves the frames for every tab of the face.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-wright-step-7`>>
+
+!! Lift-Wright step 7 (head ceba74f1d, local, NOT pushed)
+* THE PREMISE WAS STALE: at cff897999 the FIRST tab settles owner/full (line 62 passes). The "Global assignment detected" lines are noise (the worker's own globals), as terra-globals-read said. The glass-tabs red had moved to the SECOND tab.
+* Cause 1 (cured): a session admitted AFTER the vessel lit missed every frame already sent (vessel-host fans frames out live only), so the follower's `lar:surface` frame never came and its mirror never stood. 748668057 SV4 red (custody-adjacent; authored by me; chromium+firefox red `never: B's admission asks the vessel to repaint`); ceba74f1d green by hand (3 lines: `litBy` + `litVessel.resend(litVessel.activeWikiId)` in admitSession for a late same-face session). vessel-host project 26 pass + 4 probe skips. glass-tabs e2e now passes the second tab and the succession (second -> owner/full).
+* Choice taken: the repaint asks `activeWikiId`; if the daemon surface shows when a tab joins, the repaint names the wiki, not the daemon (owed: expose the active surface id on the vessel). The repaint reaches every same-face tab under a fresh epoch (the sink handles it).
+* STILL RED: glass-tabs.e2e line 81, the THIRD tab: "follower/full" never settles. Hearth log shows 3 test-custody asks only (bind-first; second tab unlock; second tab's succession unlock): the third's unlock is never asked, so no port reaches it or its hello never admits. Third's console ends at "floor card carries no weight alone". Suspects, unmeasured: the broker's want after the first tab closed (stale clients / claim sweep), `leading.vessel.mintPort` on the successor (port:want needs conn.session), the successor's `door` set in own(). NEXT: probe (page.evaluate on the third: role, #status; broker log) then a unit red at the narrowest seam (floor-broker.test.ts / floor-tab.test.ts: a claim after the owner changed).
+* DETECTOR: Terra seat terra-s7-1 LAUNCHED pid 3318973 (brief.md: tw5-host-bridge.ts shim snapshot-before-module; new tests/browser-vm-shim-globals.test.ts in lararium-tw5). Wait: `until [ -f /home/joshu/.lares-scratch/b1-lift/terra-s7-1/done-97ecd5c0-2118-4e3d-951a-fd308f2f400b ] || ! kill -0 3318973`; read final.md; run the tw5 tests it names; commit with `--only`.
+* Then: rebuild + stamp web (<code>pnpm &#45;-filter &#64;lararium/web build &amp;&amp; node tools/stamp-build.mjs . &#45;-pkg lararium-web</code>), glass-tabs e2e one file (env: PLAYWRIGHT_BROWSERS_PATH=/home/joshu/.cache/ms-playwright, scratch HOME/LAR_ROOT, LAR_BAGS unset; project golden-whole-road-e2e), typecheck-witness, page-entry witness, push once.
+* Logs: /home/joshu/.lares-scratch/b1-lift/s7/ (gt.log first run, gt2.log after the cure); page logs in /tmp/glass-tabs-*/.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-after-lift-wright-step-7`>>
+
+!! Controller, after Lift-Wright step 7 (head ceba74f1d, local)
+* MUST-FIX before the lane lands (raised from owed): the late-session repaint names `activeWikiId`, so a tab joining while the daemon surface shows would flip every same-face tab to the wiki under a fresh epoch. One tab's arrival never moves what the others show: expose the active surface id on the vessel and repaint THAT surface; red: a tab joining while surface X shows leaves every other tab on X; control: the joining tab paints X too.
+* Next: the third tab (its unlock never asked: a claim after the owner changed — broker vessel:want after the first tab closed, mintPort on the successor, or the successor's door); then glass-tabs green; witnesses; push.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-wright-step-8`>>
+
+!! Lift-Wright step 8 (PUSHED; head see git log)
+* Commits: de1e9aa70 SV5 red; d805353c7 cure (vessel exposes `activeSurface()`; host repaints THAT surface); then vessel-port red + cure.
+* THIRD TAB ROOT: the e2e's settled(second) read the stale follower mirror word, so the third tab claimed while the successor's fresh vessel worker had not yet greeted (conn.session unset); `port:want` refused session-unadmitted, mintPort -> null, floor-tab dropped the claim, and nothing retried. Cure at vessel-port: mintPort holds the want until the greeting. Red: tests/vessel-port.test.ts (want before greeting waits; control: after greeting crosses at once).
+* Green: glass-tabs.e2e (one file, chromium), vessel-host project 28 pass/4 skip, vessel-port + floor-tab + floor-broker, typecheck-witness, page-entry-witness. Owed still: second-tab "settled" in the e2e could wait on the successor's real admission (test reads follower-phase word); SharedWorker entry, Pronaos routes, carrier order line, X0b red.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rekey-wright`>>
+
+!! Rekey-Wright (head 0670b225a, PUSHED)
+* RED: CI 42234220343 node shard 1, nexus-rekey-full-boot "seats-not-held expected, got Cannot read properties of undefined (reading 'subscribe')". Reproduced locally (one file; /home/joshu/.lares-scratch/b1-lift/rekey/t1.sh; logs run1-3.log, probe1.log there; artifact in artifacts-42234220343/node-1).
+* ROOT = FIXTURE, NOT PRODUCT, and NOT Seal-Mender's face-proof root (no catalog/plane crossing here). Two layers: (1) 0d3ca666f (b1-seal, came in by merge c98557881) moved askIslandVerb from `daemonHandle` to `composite` and trued every caller but this e2e; tests sit outside every lararium-node tsconfig (tsconfig.json excludes `tests`), so no checker read the stale key. (2) Trued, the ask hung: main.ts awaits workerEa + mountHostWorkingLayer after openNodeVessel; the e2e skipped the mount, so the host composite held no working slot (probe: layers daemon + persona, default writable null) and the island's outcome never reached the reader.
+* CURE 0670b225a (test only): `composite: vm.composite`; stand the vessel as main.ts does (workerEa, mountHostWorkingLayer). No assertion moved. Green locally (one file); pnpm build + stamp; pre-push gate GREEN.
+* OWED: (a) lararium-node tests (incl. tests/e2e) sit outside typecheck — a stale call shape passes silent; a test typecheck config would have caught layer 1. (b) unmeasured product read: openNodeVessel's own island asks (seat-settle `askSeatDutiesAsVessel`, the store doors' `askIsland`) read `vm.composite`; if any fires before the boot caller mounts the host working layer, it waits forever (NO TIMER). main.ts mounts before the channel serves; whether a settle can fire earlier stays unread.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-after-rekey-wright-must-fix-before-th`>>
+
+!! Controller, after Rekey-Wright (head 0670b225a) — MUST-FIX before the lane lands (a Terra read, /home/joshu/.lares-scratch/controller/terra-boot-order/final.md: YES)
+* THE BOOT HANG: openNodeVessel's daemon cap registers `workerEa.then(() => seatSettler.onFold())` (core-caps.ts:120/158, open-node-vessel.ts:3830), so a sovereign vessel with an owed seat raise issues `seat-duties` BEFORE main.ts mounts the host working layer (main.ts:784); the ask checks once and rechecks on change events, and a layer added later forwards future events only, so the outcome can be missed and the ask waits forever (no timer on that road). Store doors (seat-duties, kahua-cap, realm-feed) and backup doors can ask in the same window. Cure: the composer mounts the host working layer itself before any internal ask can fire (it belongs in composeVessel, slice 5b's seam), or the ask's reader reads the outcomes already standing when a layer attaches. Red (custody-adjacent: author it): boot a sovereign vessel with an owed raise, hold the mount, let the boot-triggered seat-duties outcome land, then mount: the ask settles or refuses by name, never hangs.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/boot-wright-the-boot-hang-measured`>>
+
+!! Boot-Wright (head d60ceea0c, local, NOT pushed) — THE BOOT HANG measured
+* VERDICT: no hang on the current tree; NO product cure moved. Terra's INFER ("a layer added later forwards future events only") reads false: `CompositeStore.addLayer` (lararium-mesh/src/composite-store.ts ~160) replays every title the arriving layer holds to the composite's subscribers whenever a listener stands, and a pending `askIslandVerb` stands one. `rebindWorkingLayer` re-adds through addLayer. Every internal ask (seat-duties, store doors' askIsland, backup memory doors) rides askIslandVerb over the same composite, so cure (b) already stands for all of them.
+* MEASURED on the real road (tests/e2e/seat-settle-before-mount.test.ts S1): founded sovereign vessel + `runEdgeKapae` raise of another device; after workerEa the seat-duties outcome lands in the vessel Repo's copy of the island working doc while `composite.get` reads null and no settle has reported; then the mount; the settler logs `[edge-seats] settled on a fold: 1 raise(s) owed, 0 marked, 1 row(s) stay owed (undelivered)`. S2 CONTROL: no raise → no seat-duties outcome, no settle line at mount (soft zero: read at the mount, with S1's instrument as its known positive).
+* PROOF THE TEST READS THE CAUSE: with the addLayer replay switched off in mesh SOURCE (vitest aliases &#64;lararium/* to src, so a dist patch proves nothing — the first try did), S1 hangs to its 180 s timeout, and unit L1/L2 (tests/island-verb-ask-late-layer.test.ts) hang; L3 control stays green. Source and dist restored (git clean apart from the commit).
+* Green: the new e2e (2/2, ~40 s each boot), unit weld 3/3, heavy-roster-is-complete (new e2e entered EXCLUDED_BY_DESIGN), working-layer-host-composite, daemon-reopen-hazards-weld, seat-settle, seat-duties-ask, daemon-island-ask; mesh charter-funnel + gate-dial-funnel; unbuilt-laws witness (19 declared, 19 red, 0 greened). Pre-push gate NOT run (no push asked).
+* Owed: run `node tools/pre-push-gate.mjs` before the push; option (a) (composeVessel mounts the working layer itself) stays available for slice 5b on design grounds, not on a fault.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-lares-awakens-after-blind-warden-ii`>>
+
+!! Controller Lares-Awakens, after Blind-Warden-II (2bbfb2413; /home/joshu/.lares-scratch/b1-lift/blind-warden-2.md)
+* LAND-AFTER-CURES. PR #180 open; land waits on the cures (and the operator: the safety check refused land-train &#45;-plan).
+* P2 cure A: inbound face gate — control-event, set-surface, port:place, read:mirror-inputs refuse face-not-worn unless wearsLitFace(conn).
+* P2 cure B: torn founding — at founding, sweep a ward whose owner tree stands in no index and no seat, with its roster line.
+* P3s riding the step: controlSenders overwrite; clear removes the owner row LAST; port:want refuses a session not yet admitted. Others stay owed rows.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lift-warden-step`>>
+
+!! Lift-Warden step (head 55b631484, local, NOT pushed)
+* 8bc247e9c REDS (authored by the lead): SV6, SV7 (lararium-web tests/vessel-host-surface.test.ts); BC12b plus a BC12 control (lararium-browser tests/browser-custody.test.ts); WO4 (tests/browser-ward-face-owner.test.ts). Each failed for its named reason: SV6 `[evG, evA]` (G's event reached the vessel), chromium+firefox; SV7 `[evX, evX, evB]`; BC12b `ward-owned-by-another-face`; WO4 owner row gone first. Logs: /home/joshu/.lares-scratch/b1-lift/lw/a-red.log, b-red.log.
+* 55b631484 CURES: A, in vessel-host.ts: `litFaceVessel` gates control-event, set-surface, port:place and read:mirror-inputs, which refuse `face-not-worn`. Control: the lit face's four acts reach the vessel. B: `faceTreeIdLive` (browser-face-custody.ts), plus `sweepOrphanBrowserWards` (browser-ward-tree.ts), which the founding calls in open-browser-vessel.ts after the founder face is worn and before the root mints. It sweeps a ward whose owner tree stands in no live index entry and no seat, together with its roster line, removing the owner row last. Control BC12: a live owner's ward, owner row and roster line stand byte-identical after the rerun's refusal.
+* P3s TAKEN: (c) a control event under a pending eventId refuses (SV7); (d) the clear removes `ward/h<N>/face-tree` last (WO4).
+* P3 LEFT: (e) port:want before admission. Refusing it would re-break step 8's third-tab road (the successor greets before it admits). The cure would hold the want until admission; that takes a controller call.
+* Owed: the swept torn face's own tree rows (`face-tree/<fcid>`, its sealed rows) and any `ward/sign/<G>` stay as dead bytes; X0b resume of a halted NAMED face still owed.
+* Green: vessel-host project whole, headless: 6 files, 32 pass / 4 skip. Browser chromium headless: custody + ward-face-owner + face-custody, 3 files, 45 pass; ward-root + ward-key + face-anchor + vessel-face-sessions, 4 files, 21 pass. typecheck-witness clean (11 projects). Pre-push gate NOT run; no push.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/mount-warden-step`>>
+
+!! Mount-Warden step (head 0df40b07b, local, nothing committed)
+* VERDICT: no order stall measured; no red, no cure. The CI fault reads as a founding boot that outruns the test's 20 s `live` wait under the cell's parallel load. That budget is span ground, untouched by this lane.
+* MEASURED, the lead overturned: run 42197282289 at 09ed61bd1 failed the same two tests the same way (20.2 s, draft at vessel-ready, faults empty). 09ed61bd1 LACKS eef7f06ae (the commit that brought litFaceCatalogOf / the face catalog into the mount). So the face-catalog order cannot cause it. Lane runs failing this way: 42197282289, 42234220343, 42261057541. Lane runs green: 42155606294, 42208362197.
+* MEASURED, edge timing: in every green run the instruments test (one founding boot, then a metrics read) totals 21.6 to 27.2 s on lane and span alike (span CI 42229539524 27.2 s, 42234165270 25.8 s, 42244363604 23.3 s). The draft test totals 26.8 to 37.4 s. Every failure lands at 20.2 s, the first waitForFunction's clock. The cut lands at different phases (corpus-ready in one, vessel-ready in five), which reads as a moving boot, not one held await.
+* MEASURED, local idle (probe /tmp/claude-1000/-home-joshu-Synthetic-Dream-Machine/8d0e5723-219c-46e0-9b1e-6808f3184c30/scratchpad/mw/probe.mjs, run1.log, headless, bwrap, scratch HOME/LAR_ROOT): the founding boot reaches live at 12.5 s, every phase in order (catalog-ready@5.9 s after the ceremony, wiki-ready@10.1 s after workerEa, live@12.5 s after the mount ea). Unlock reloads reach live at 7.2 s and 6.9 s. The mount road completes each time (`[mount] binding ready … awaiting ea` → `[mount] ea lares`).
+* INFER: the CI cell runs ~1.6x or more slower than local idle while four browser e2e files boot at once, so a founding boot runs ~15 to 22 s against a 20 s clock (8420d37d3 set it, back when founding cost less).
+* Owed (controller's call; I widened nothing): either a silence-bounded wait keyed on #phases progress (fail only when no new phase arrives within the window, the slot-wait doctrine from 31180ff9d), or cut the founding cost. Both sit on span ground.
+* Commands: pnpm &#45;-filter &#64;lararium/web build + stamp (lararium-web); the probe once (3 boots). No vitest run, no .vitest left, tree clean.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0j52z1g5tpm-W6Nv8FtHp-2nnDJUuTybXH3Ye0wGp2w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

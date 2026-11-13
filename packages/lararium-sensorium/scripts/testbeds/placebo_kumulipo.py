@@ -76,11 +76,9 @@ LIBRARY_DIR = os.path.join("bags", "@lares", "ha.ka.ba", "lares", "library",
 FIXTURES_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                             "fixtures", "placebo-kumulipo")
 
-# The envelope swaps ONLY these address strings (file-path first — it contains the
-# library path as a substring, so order carries correctness).
+# The envelope swaps ONLY this address string (the carrier names no file it rests in;
+# residency rides the envelope).
 _URI_SWAPS = (
-    ("bags/lares/ha.ka.ba/lares/library/hawaii/kumulipo/",
-     "packages/lararium-sensorium/scripts/fixtures/placebo-kumulipo/"),
     ("ha.ka.ba/lares/library/hawaii/kumulipo/",
      "ha.ka.ba/lares/testbed/placebo/kumulipo/"),
 )
@@ -284,10 +282,9 @@ def write_fixture(out_dir: str, basename: str, text: str, *, arm: str) -> str:
     read the held text back byte for byte (`kumulipo_sections.held`). Returns the written path."""
     stem = os.path.splitext(basename)[0]
     path = os.path.join(out_dir, basename)
-    rel = os.path.relpath(os.path.abspath(path), _find_repo_root(out_dir)).replace(os.sep, "/")
     role = (f"the Kumulipo ablation's {arm} leg, {_WHO[stem]} carrier — envelope and wā markers "
             f"verbatim, {_LEGS[arm]}; held whole as the text the testbed reads")
-    carrier = hold(text, uri=f"ha.ka.ba/lares/testbed/{arm}/kumulipo/{stem}", file_path=rel,
+    carrier = hold(text, uri=f"ha.ka.ba/lares/testbed/{arm}/kumulipo/{stem}",
                    role=role, held_type=HELD_TYPE)
     with open(path, "w", encoding="utf-8") as fh:
         fh.write(carrier)

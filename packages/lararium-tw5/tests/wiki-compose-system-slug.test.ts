@@ -1,8 +1,9 @@
 /**
- * A system wiki's canon doc and default recipe stand in the oracle plane. The vessel composes it
+ * A system wiki's LIVE canon doc rests in the Kahu realm (the vessel's `systemCanonUrl`, named to a hand the cabal admits);
+ * no catalog row names it. Its default recipe stands in the oracle plane. The vessel composes it
  * through its OWN catalog record: `init-wiki` mints nothing for a system slug, and `add-bag` /
  * `remove-bag` adopt the default into the catalog on the first edit. A user slug walks the
- * mint-and-append path unchanged.
+ * mint-and-append path with the system floor carried through @oracle.
  */
 import { describe, test, expect } from "vitest";
 import { recipeUri, wikiBagUri, type LarDoc, type LarTiddlerRecord, type Repo, type DocHandle } from "@lararium/mesh";
@@ -35,18 +36,19 @@ const DEFAULT_STACK = "lar:///ha.ka.ba/bags/oracle lar:///ha.ka.ba/bags/lararium
 
 function rig() {
   const oracle  = plane("automerge:oracle", {
-    [LARES]: rec(LARES, { text: "automerge:lares-canon" }),
     [recipeUri("oracle", "lares")]: rec(recipeUri("oracle", "lares"), { "bag-stack": DEFAULT_STACK }),
   });
   const catalog = plane("automerge:catalog", {});
+  // The Kahu realm names the live canon doc to the hand the cabal admits; no catalog row carries it.
+  const systemCanonUrl = async (bag: string): Promise<string | null> => (bag === LARES ? "automerge:lares-canon" : null);
   const created: string[] = [];
   const repo = {
     create: () => { created.push("create"); return { url: "automerge:minted", whenReady: async () => {} }; },
     find: async (u: string) => ({ url: u, whenReady: async () => {} }),
   } as unknown as Repo;
   const posted: unknown[] = [];
-  const mint = { repo, catalog: catalog.accessor, oracle: oracle.accessor, vesselDid: () => "did:x", rootDir: "", resolveDraftDoc: async () => ({ url: "automerge:draft", reach: "floor" as never }) };
-  return { oracle, catalog, created, posted, mint, post: (m: unknown) => { posted.push(m); } };
+  const mint = { repo, catalog: catalog.accessor, oracle: oracle.accessor, systemCanonUrl, vesselDid: () => "did:x", rootDir: "", resolveDraftDoc: async () => ({ url: "automerge:draft", reach: "floor" as never }) };
+  return { oracle, catalog, created, posted, mint, systemCanonUrl, post: (m: unknown) => { posted.push(m); } };
 }
 const ctx = {} as VerbContext;
 
@@ -58,6 +60,16 @@ describe("a system slug composes through the vessel's own record", () => {
     expect(r.created).toEqual([]);
     expect(JSON.stringify(r.catalog.tiddlers)).toBe(before);
     expect(out).toMatchObject({ status: "already-exists", system: true, wikiDocUrl: "automerge:lares-canon", recipePlane: "oracle", recipeUri: recipeUri("oracle", "lares") });
+  });
+
+  test("CONTROL: a vessel outside the Kahu cabal (no live canon named) finds no wiki on a system slug, and lists its row without a document", async () => {
+    const r = rig();
+    await expect(makeInitWikiReactor({ ...r.mint, systemCanonUrl: async () => null })({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag: "lares" names a system bag, and no wiki stands on it/);
+    await expect(makeInitWikiReactor({ ...r.mint, systemCanonUrl: undefined as never })({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
+    const rows = (await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor, async () => null)({}, ctx))["wikis"];
+    expect(rows).toEqual([expect.objectContaining({ slug: "lares", kind: "system", automergeUrl: null })]);
+    const held = (await makeListWikisReactor(r.catalog.accessor, r.oracle.accessor, r.systemCanonUrl)({}, ctx))["wikis"];
+    expect(held).toEqual([expect.objectContaining({ slug: "lares", kind: "system", automergeUrl: "automerge:lares-canon" })]);
   });
 
   test("init-wiki on a system slug with no oracle recipe refuses by name", async () => {
@@ -139,6 +151,8 @@ describe("a system slug composes through the vessel's own record", () => {
       expect(out).toMatchObject({ status: "minted" });
       expect(r.catalog.tiddlers[wikiBagUri("elyncia")]).toBeDefined();
       expect(r.catalog.tiddlers[recipeUri("catalog", "elyncia")]).toBeDefined();
+      expect(plainField(r.catalog.tiddlers[recipeUri("catalog", "elyncia")], "bag-stack"))
+        .toBe(`lar:///ha.ka.ba/bags/oracle ${wikiBagUri("elyncia")}`);
       const added = await makeAddBagReactor({ catalog: r.catalog.accessor, oracle: r.oracle.accessor, post: r.post })({ slug: "elyncia", bagUrl: X }, ctx);
       expect(added).toMatchObject({ status: "added", recipePlane: "catalog" });
       expect(added).not.toHaveProperty("adopted");

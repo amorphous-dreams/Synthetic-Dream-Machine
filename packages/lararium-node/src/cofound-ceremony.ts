@@ -111,12 +111,12 @@ export async function openCofound(input: { readonly face: number; readonly next:
   let seat: string | null = null, cadence: string | null = null;
   try {
     seat = await mintSeatKey(input.face);
-    const hearth = await mintCadenceKey();
+    const hearth = await mintCadenceKey(input.face);
     cadence = hearth.key;
     const offer = pure(() => cofoundOffer({ seat: seat!, next: input.next, cadence: hearth, charterLaw: input.charterLaw, manifest: input.manifest }));
     const fingerprint = offerFingerprint(offer);
     const record: CofoundRecord = { role: "offer", face: input.face, seat: seat!, cadence: hearth.key, offer, image: null };
-    await updateCofoundRecord(fingerprint, (standing) => {
+    await updateCofoundRecord(input.face, fingerprint, (standing) => {
       if (standing !== null) throw refuse("cofound-recorded", "an offer with that fingerprint already stands recorded here");
       return { next: record, value: undefined };
     });
@@ -150,12 +150,12 @@ export async function joinCofound(input: { readonly face: number; readonly offer
   let recorded = false;
   try {
     seat = await mintSeatKey(input.face);
-    const hearth = await mintCadenceKey();
+    const hearth = await mintCadenceKey(input.face);
     cadence = hearth.key;
     const joiner = { seat: seat!, next: input.next, cadence: hearth };
     const image = pure(() => composeCharterInception(offer, joiner));
     const record: CofoundRecord = { role: "join", face: input.face, seat: seat!, cadence: hearth.key, offer, image };
-    await updateCofoundRecord(fp, (standing) => {
+    await updateCofoundRecord(input.face, fp, (standing) => {
       if (standing !== null) throw refuse("cofound-recorded", "this vessel already recorded that offer: one founding, one answer");
       return { next: record, value: undefined };
     });
@@ -187,7 +187,7 @@ export async function sealCofoundAct(input: { readonly join: unknown; readonly h
   if (!record || record.role !== "offer") throw refuse("cofound-offer-unrecorded", "this vessel made no offer that join answers, so no seat signs for it");
   const judged = judgeCofoundJoin(input.join, { offer: record.offer, heardJoinSeat: input.heardJoinSeat });
   if (!judged.ok) throw refuse(judged.code, judged.why);
-  await updateCofoundRecord(fp, (standing) => {
+  await updateCofoundRecord(record.face, fp, (standing) => {
     if (!standing || standing.role !== "offer") throw refuse("cofound-offer-unrecorded", "the offer's row left under this step");
     if (standing.image !== null && !sameInceptionImage(standing.image, judged.image)) {
       throw refuse("cofound-judged-another", "this offer already sealed another join's image; one offer founds one Nexus");

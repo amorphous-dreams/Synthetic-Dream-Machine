@@ -13,13 +13,13 @@
  *   · routing slots — `(bearing, r, θ)` — carriage-standing `r` (FLOW) + coarse
  *                     declared kinship `θ` (the greedy-routing chart coordinate).
  *
- * The PUBLIC read-face rides the Two-Faced Substrate (oracle-substrate): an
+ * The PUBLIC read-face rides the Two-Faced Substrate (flow-substrate): an
  * immutable content-addressed snapshot + a signed monotone pointer. The
  * disclosure shore (`publicFlowMap`) filters the doc to only the coarse,
  * public, FLOW-plane tiddlers BEFORE the snapshot crosses to peers — so the map
  * federates where the private territory never could.
  *
- * Pure core (isomorphic, no I/O), hardened like oracle-substrate: decode NEVER
+ * Pure core (isomorphic, no I/O), hardened like flow-substrate: decode NEVER
  * throws on untrusted input; it returns null.
  *
  * Canon:
@@ -35,15 +35,15 @@ import type { DocHandle } from "@automerge/automerge-repo";
 import type { LarDoc } from "./base-doc.js";
 import { mutableLarRecord } from "./base-doc.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { plainField, plainRecord, type StoredLarRecord } from "./stored-value.js";
+import { plainField, plainRecord, type StoredLarRecord, ownEntry } from "./stored-value.js";
 import { bagUri, MESH_SCALES, MESH_SCALE_FEDERATES, type MeshScale } from "./lar-uris.js";
-import { isPersonaPlaneSlug } from "./persona-scope.js";
+import { isFaceScopedBag } from "./persona-scope.js";
 import {
-  type OracleSnapshot,
-  type OraclePointer,
+  type FlowSnapshot,
+  type FlowPointer,
   type PointerVerdict,
-  exportOracleSnapshot,
-} from "./oracle-substrate.js";
+  exportFlowSnapshot,
+} from "./flow-substrate.js";
 import { storedRecord } from "./stored-record.js";
 
 // ── The cap vocabulary (canon: mesh/vessel-caps) ──────────────────────────
@@ -78,7 +78,7 @@ export function isCap(c: string): c is Cap {
  */
 export const WIRE_CAPS = {
   "rhizome.forward": "carriage: forward sealed bytes blind (the relay/leyline)",
-  "stolon.admit":    "carriage: deploy/admit a remote vessel (device-admit, then wither)",
+  "stolon.admit":    "carriage: bring a new vessel into one face's fleet (fleet join)",
   "tuber.author":    "vessel: author sovereign causal state",
   "tuber.store":     "vessel: hold sovereign state + genesis-buds (the lararium)",
   "bulb.seed":       "vessel: carry a boot-seed snapshot, next-gen inside (cacheable genesis)",
@@ -447,7 +447,7 @@ const SOVEREIGN_BAGS: ReadonlySet<string> = new Set(["catalog", "persona", "daem
  * `persona-scope`, so this fence and the regenesis refusal cannot drift apart on what counts as a plane.
  */
 export function isSovereignBag(slug: string): boolean {
-  return SOVEREIGN_BAGS.has(slug) || isPersonaPlaneSlug(slug);
+  return SOVEREIGN_BAGS.has(slug) || isFaceScopedBag(slug);
 }
 
 /** The first segments that name a MEME namespace — a corpus whose tiddlers belong to the same-named bag.
@@ -527,18 +527,18 @@ export function publicFlowMap(doc: LarDoc): LarDoc {
   for (const [title, rec] of Object.entries(doc.tiddlers)) {
     if (crossesShore(rec)) tiddlers[title] = storedRecord(plainRecord(rec));
   }
-  return { schemaVersion: doc.schemaVersion, tiddlers };
+  return { tiddlers };
 }
 
-// ── The Two-Faced public read-face (rides oracle-substrate) ────────────────
+// ── The Two-Faced public read-face (rides flow-substrate) ────────────────
 // The mesh-palace publishes its public FLOW-map exactly as the oracle doc publishes
 // its corpus: an immutable content-addressed snapshot + a signed monotone
 // pointer. A peer pulls the pointer, verifies (anti-rollback · anti-equivocation
 // · freshness · rehash), then fetches the snapshot by cid.
 
 export type {
-  OracleSnapshot as FlowMapSnapshot,
-  OraclePointer as FlowMapPointer,
+  FlowSnapshot as FlowMapSnapshot,
+  FlowPointer as FlowMapPointer,
   PointerVerdict as FlowMapVerdict,
 };
 
@@ -553,8 +553,8 @@ function loadDoc(d: LarDoc): Doc<Record<string, unknown>> {
 }
 
 /** Snapshot a mesh-palace doc's PUBLIC FLOW-map (shore applied) as a content-addressed read-face. */
-export function snapshotPublicFlowMap(palaceDoc: LarDoc): Promise<OracleSnapshot> {
-  return exportOracleSnapshot(loadDoc(publicFlowMap(palaceDoc)));
+export function snapshotPublicFlowMap(palaceDoc: LarDoc): Promise<FlowSnapshot> {
+  return exportFlowSnapshot(loadDoc(publicFlowMap(palaceDoc)));
 }
 
 // ── The live surface — a DocHandle-bound read/write over the pure core ─────
@@ -565,7 +565,7 @@ export function snapshotPublicFlowMap(palaceDoc: LarDoc): Promise<OracleSnapshot
 export type MeshPalaceDoc = LarDoc;
 
 export function emptyMeshPalaceDoc(): MeshPalaceDoc {
-  return { schemaVersion: "0.1", tiddlers: {} };
+  return { tiddlers: {} };
 }
 
 export class MeshPalace {
@@ -591,7 +591,7 @@ export class MeshPalace {
 
   /** Resolve one bearing to its dial-record, or null when unknown. */
   getDial(bearing: string): DialEntry | null {
-    return recordToDialEntry(this.current().tiddlers[dialUri(bearing)]);
+    return recordToDialEntry(ownEntry(this.current().tiddlers, dialUri(bearing)));
   }
 
   dials():   DialEntry[]      { return dialEntries(this.current()); }
@@ -602,7 +602,7 @@ export class MeshPalace {
   publicProjection(): MeshPalaceDoc { return publicFlowMap(this.current()); }
 
   /** Export the public FLOW-map as a content-addressed snapshot (the read-face). */
-  exportPublicSnapshot(): Promise<OracleSnapshot> {
+  exportPublicSnapshot(): Promise<FlowSnapshot> {
     return snapshotPublicFlowMap(this.current());
   }
 }

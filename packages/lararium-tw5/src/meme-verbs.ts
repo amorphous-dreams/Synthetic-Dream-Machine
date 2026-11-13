@@ -59,9 +59,9 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, isHouseCanonBag, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
-  type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
+  type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
@@ -72,7 +72,7 @@ import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import { pinTargetsOf, profileOf } from "./weave/index.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
-import type { VerbReactor } from "./verb-dispatcher.js";
+import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import { AUDIT_ARRAY_CAP } from "./verb-vm.js";
 import type { TiddlerFields } from "./deserializer.js";
@@ -93,15 +93,20 @@ export interface MemeVerbOptions {
    *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
    *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
   readonly slotStore?: (slug: string, kind: WikiSlotKind, bag: string, opts: { mint: boolean }) => Promise<LarTiddlerStore | null>;
+  /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a house canon bag asks it
+   *  BEFORE the cap gate, so a realm steward's grant stands in for no check. Absent → a stranger (fail closed). */
+  readonly kahuReach?: KahuReachSource;
 }
 
 /** The daemon's options off its island context — reach across both registry planes (access ≠ load). */
 export function memeVerbOptions(
-  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "oracleUrl">,
+  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "faceCatalogUrl" | "oracleUrl">,
   /** The instance-slot doc url by THE ONE resolver; null when nothing stands and `mint` is false. */
   slotDocUrl: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>,
+  /** A house canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
+  systemCanonUrl?: (bag: string) => Promise<string | null>,
 ): MemeVerbOptions {
-  const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl) : null;
+  const catalog = ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null;
   const oracle  = ctx.oracleUrl  ? makeCatalogAccessor(ctx.repo, ctx.oracleUrl)  : null;
   const planes = [...(catalog ? [catalog] : []), ...(oracle ? [oracle] : [])];
   return {
@@ -127,13 +132,18 @@ export function memeVerbOptions(
         const handle = await accessor.find(key).catch(() => null);
         if (handle) return new AutomergeDocStore(handle, bag);
       }
+      if (systemCanonUrl && isHouseCanonBag(bag)) {
+        const url = await systemCanonUrl(bag).catch(() => null);
+        const handle = url ? await findOrThrow(ctx.repo, url, bag).catch(() => null) : null;
+        if (handle) return new AutomergeDocStore(handle, bag);
+      }
       return null;
     },
     // The realm's WRITE answer: the standing registration's doc as a writable store, for a steward alone.
     realmWritable: async (bag, namedRealm) => {
       const standing = await realmStanding(namedRealm);
       if (!standing) return null;
-      const nym = tiddlerText(await oracle!.recordOf(realmStewardPointer(standing.realmId)).catch(() => null));
+      const nym = tiddlerText(await catalog!.recordOf(realmStewardPointer(standing.realmId)).catch(() => null));
       if (!mayWriteRealmBag(standing.bags, bag, nym)) return null;
       const rec = standing.bags.get(bag)!;
       const handle = await findOrThrow(ctx.repo, rec.docUrl, `${bag} (realm bag)`).catch(() => null);
@@ -142,15 +152,15 @@ export function memeVerbOptions(
   };
 
   /** The realm this vessel stands in, and the registrations its doc carries as of the last sync. Null when
-   *  no oracle plane, no realm id, or no realm doc has arrived — each a vessel outside every realm. */
+   *  no catalog plane, no realm id, or no realm doc has arrived — each a vessel outside every realm. */
   async function realmStanding(namedRealm?: string): Promise<{ realmId: string; bags: ReadonlyMap<string, import("@lararium/mesh").RealmBagRegistration> } | null> {
-    if (!oracle) return null;
-    const realmId = namedRealm?.trim().toLowerCase() || tiddlerText(await oracle.recordOf(REALM_ID_TIDDLER).catch(() => null));
+    if (!catalog) return null;
+    const realmId = namedRealm?.trim().toLowerCase() || tiddlerText(await catalog.recordOf(REALM_ID_TIDDLER).catch(() => null));
     if (!realmId) return null;
     // A realm this vessel stands in pins its doc on the vessel's own plane: with no such pin the vessel stands
     // outside that realm, and no verdict a departed plane left behind answers for it.
-    if (tiddlerText(await oracle.recordOf(realmDocPointer(realmId)).catch(() => null)) !== realmDocUrl(realmId)) return null;
-    const text = tiddlerText(await oracle.recordOf(realmStandingPointer(realmId)).catch(() => null));
+    if (tiddlerText(await catalog.recordOf(realmDocPointer(realmId)).catch(() => null)) !== realmDocUrl(realmId)) return null;
+    const text = tiddlerText(await catalog.recordOf(realmStandingPointer(realmId)).catch(() => null));
     return { realmId, bags: readRealmStanding(text) };
   }
 
@@ -245,6 +255,14 @@ interface Resolved {
   readonly sink: MemeSink;
   /** True on the anchor — the daemon's own live wiki, where the in-VM face renders. */
   readonly anchor: boolean;
+  /** True where the realm's grant answers: a named realm's counted registration, or a steward's write on the realm
+   *  doc. A realm-carried bag stands in no registry of this vessel's own, so its cap reads the realm. */
+  readonly realmGrant?: boolean;
+}
+
+/** The cap a resolved container answers to: the realm's grant where it reached the bag, this vessel's own otherwise. */
+function capOf(realmGrant: boolean | undefined, cap: VerbContext["cap"]): VerbContext["cap"] {
+  return realmGrant ? async () => ({ ok: true }) : cap;
 }
 
 /** A wiki's instance slot addressed as a bag — `lar:///ha.ka.ba/wikis/<slug>/<draft|working|personal|temp>`. */
@@ -272,11 +290,11 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
       if (mode === "put") {
         const steward = await opts.realmWritable?.(bag, target.realm);
         if (!steward) throw new Error(`meme: bag "${bag}" holds no steward's write in realm ${target.realm}`);
-        return { bag, sink: storeMemeSink(steward, bag, origin), anchor: false };
+        return { bag, sink: storeMemeSink(steward, bag, origin), anchor: false, realmGrant: true };
       }
       const store = await opts.reach?.(bag, bag, target.realm);
       if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access in realm ${target.realm}`);
-      return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
+      return { bag, sink: storeMemeSink(store, bag, origin), anchor: false, realmGrant: true };
     }
     // A NAMED WIKI'S INSTANCE SLOT, addressed as a bag. `--bag lar:///ha.ka.ba/wikis/<slug>/working` names the
     // doc THE ONE slot-doc resolver mints — the same doc `--recipe <slug>` walks and a `LOAD --to` that bag
@@ -294,7 +312,7 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
       // same name (that is the two-chests drift the ruling forbids). A hand outside `keptBy` reads null
       // here and draws exactly the refusal it drew before.
       const steward = await opts.realmWritable?.(bag);
-      if (steward) return { bag, sink: storeMemeSink(steward, bag, origin), anchor: false };
+      if (steward) return { bag, sink: storeMemeSink(steward, bag, origin), anchor: false, realmGrant: true };
       return { bag, sink: compositeMemeSink(opts.composite, bag, origin), anchor: false };
     }
     const store = opts.composite.storeForBag(bag) ?? (await opts.reach?.(bag, bag)) ?? null;
@@ -316,8 +334,9 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     if (!text) throw new Error("meme-put: args.text is required (the whole meme, framed)");
     const base = optionalStringArg(args, "base");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    const { bag, sink } = await resolveSink(opts, target, origin, "put");
-    const proof = await ctx.cap("admin", bag);
+    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
+    await requireKahuReach(bag, opts.kahuReach, "meme put");
+    const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await placeMeme({ uri: target.uri, text, baseHash: base }, sink);
     return { ...receipt };
@@ -328,8 +347,8 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-get");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    const { bag, sink } = await resolveSink(opts, target, origin, "get");
-    const proof = await ctx.cap("read", bag);
+    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "get");
+    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
     // The read hands a person the meme's TEXT: a pointer whose body rests in the content tier refuses by name.
     if (await holdsUnreadPointer(target.uri, sink)) {
@@ -421,8 +440,8 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
     const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
     if (target.recipe && target.recipe !== "default") return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
-    const { bag, sink } = await resolveSink(opts, target, origin, "get");
-    const proof = await ctx.cap("read", bag);
+    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "get");
+    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
     return { bag, ...(await listMemePage(sink, page)) };
   };
@@ -459,6 +478,7 @@ async function deleteThroughRecipe(
   if (!stack.includes(designated)) {
     throw new VerbRefusal("recipe-unshadowed", `recipe-unshadowed: recipe "${slug}" designates bag "${designated}", which its own stack never reads; a tombstone there shadows nothing the wiki reads, so meme-delete removes nothing.`);
   }
+  await requireKahuReach(designated, opts.kahuReach, "meme delete");
   const answered = await reachRecipeBag(opts, slug, "get", uri);
   const readProof = await cap("read", answered.bag);
   if (!readProof.ok) throw new Error(`cap-denied: read on ${answered.bag} required (${readProof.reason ?? "no reason"})`);
@@ -533,8 +553,9 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
     const base = optionalStringArg(args, "base");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
     if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap);
-    const { bag, sink } = await resolveSink(opts, target, origin, "put");
-    const proof = await ctx.cap("admin", bag);
+    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
+    await requireKahuReach(bag, opts.kahuReach, "meme delete");
+    const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await removeMeme({ uri: target.uri, baseHash: base }, sink);
     return { uri: target.uri, ...receipt };
@@ -553,8 +574,8 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
       throw new Error(`meme-project: --dialect/--tongue weave the "md" target alone; got "${projectTarget}"`);
     }
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    const { bag, sink, anchor } = await resolveSink(opts, target, origin, "get");
-    const proof = await ctx.cap("read", bag);
+    const { bag, sink, anchor, realmGrant } = await resolveSink(opts, target, origin, "get");
+    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
     if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
     // A projection renders the meme's TEXT: the same pointer refusal the read gives, at every seat.
     if (await holdsUnreadPointer(target.uri, sink)) {

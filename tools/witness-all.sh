@@ -12,6 +12,9 @@
 # enrols itself by existing; leaving one out is a DECLARED act with its reason beside it.
 set -uo pipefail
 cd "$(dirname "$0")/.." || exit 1
+# Every `lares` CLI a witness spawns on a staged root takes the harness's explicit ward and face routes (the product binary answers
+# neither from a file; seat-harness#/the-ward).
+export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=file://$PWD/tools/test-ward-route.mjs"
 
 # Witnesses that stand real containers or drive a real browser. They are entry points of their own
 # (`tools/civic-witness.sh`, `tools/browser-weld-witness.sh`) because they need a runtime this script
@@ -21,14 +24,59 @@ declare -A HELD_OUT=(
   [harbor-walk-witness]="stands a docker vessel"
   [crossing-witness]="stands a docker-compose crossing matrix"
   [herm-mesh-witness]="stands the docker-compose relay mesh"
+  [herm-mesh-roll-witness]="stands the docker-compose relay mesh and rolls A's charter between its joins"
   [mesh-scenarios]="stands the docker-compose mesh on the product image, scenario by scenario — needs docker"
   [browser-weld-witness]="drives a real browser against a standing web surface"
   [tree-clean-witness]="the e2e set runs through the CI shards; a local run stages vessels and reads any write into the tracked tree as red"
   [witness-all]="this script"
 )
 
+# Witnesses in the default roster that still stand docker compose services or a container image. `--static` leaves
+# them to CI and the train, which carry docker, and runs every other witness; a bare run stays whole.
+declare -A DOCKER=(
+  [household-https-witness]="stands the compose issuer and terminator with a Pebble test authority on the product image — needs docker"
+  [household-resolver-witness]="stands the compose records check and resolver — needs docker"
+)
+
+# Static witnesses slow enough to leave the lane's FAST tier (`--fast`, which implies `--static`): measured run times on the
+# box, each over a minute where every other static witness ran under 30 seconds (measured 2026-10-31). The cloud's long tier and the train run them.
+declare -A SLOW=(
+  [contract-witness]="373s — founds vessels and walks the contract handshake end to end"
+  [custody-census-witness]="69s — walks the custody census over every carrier"
+  [law-mutants-witness]="134s — kills every mutant of the law tables"
+)
+
+# Witnesses heavy enough to run in a CI cell of their own (`tools/ci-cells.mjs` names the cell of each). A bare run
+# still runs them all; `--except-apart` leaves them to their cells, and `--only <name>` runs exactly one of them.
+APART=(contract-witness)
+
+mode=all
+static=0
+fast=0
+only=""
+list=0
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --list) list=1 ;;
+    --except-apart) mode=except ;;
+    --static) static=1 ;;
+    --fast) static=1; fast=1 ;;
+    --only) mode=only; only="${2:-}"; shift ;;
+    *) echo "witness-all: unknown argument $1" >&2; exit 2 ;;
+  esac
+  shift
+done
+is_apart() { local a; for a in "${APART[@]}"; do [ "$a" = "$1" ] && return 0; done; return 1; }
+if [ "$mode" = only ] && ! is_apart "$only"; then
+  echo "witness-all: --only names '$only', which is no apart witness (${APART[*]})" >&2
+  exit 2
+fi
+
 status=0
 held=()
+apart_skipped=()
+docker_skipped=()
+slow_skipped=()
 order=()
 declare -A exit_of=()
 declare -A seen=()
@@ -36,6 +84,13 @@ for path in tools/*witness*.sh; do
   w="$(basename "$path" .sh)"
   seen[$w]=1
   if [ -n "${HELD_OUT[$w]:-}" ]; then held+=("$w — ${HELD_OUT[$w]}"); continue; fi
+  if [ "$static" -eq 1 ] && [ -n "${DOCKER[$w]:-}" ]; then docker_skipped+=("$w — ${DOCKER[$w]}"); continue; fi
+  if [ "$fast" -eq 1 ] && [ -n "${SLOW[$w]:-}" ]; then slow_skipped+=("$w — ${SLOW[$w]}"); continue; fi
+  case "$mode" in
+    except) is_apart "$w" && { apart_skipped+=("$w"); continue; } ;;
+    only) [ "$w" = "$only" ] || continue ;;
+  esac
+  if [ "$list" -eq 1 ]; then echo "$w"; continue; fi
   echo "── $w ──"
   "$path"
   rc=$?
@@ -51,7 +106,24 @@ for w in "${!HELD_OUT[@]}"; do
   [ -f "tools/$w.sh" ] && held+=("$w — ${HELD_OUT[$w]}")
 done
 
-if [ "${#held[@]}" -gt 0 ]; then
+[ "$list" -eq 1 ] && exit 0
+
+if [ "$mode" = except ] && [ "${#apart_skipped[@]}" -gt 0 ]; then
+  echo "── run apart, in cells of their own ──"
+  printf '  %s\n' "${apart_skipped[@]}"
+fi
+
+if [ "${#slow_skipped[@]}" -gt 0 ]; then
+  echo "── slow witnesses left to the long tier (--fast) ──"
+  printf '  %s\n' "${slow_skipped[@]}"
+fi
+
+if [ "${#docker_skipped[@]}" -gt 0 ]; then
+  echo "── docker witnesses left to CI and the train (--static) ──"
+  printf '  %s\n' "${docker_skipped[@]}"
+fi
+
+if [ "$mode" != only ] && [ "${#held[@]}" -gt 0 ]; then
   echo "── held out of this run ──"
   printf '  %s\n' "${held[@]}"
 fi

@@ -36,6 +36,7 @@ import { cmdCas } from "./cas.js";
 import { summaryOutput } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { exitFor } from "../render.js";
+import { cmdShare } from "./share-cmd.js";
 import type { ParsedArgs } from "../parse-args.js";
 
 /** `lares bag compact <bag-url>` — DXOS-style snapshot-restart on one bag.
@@ -43,7 +44,7 @@ import type { ParsedArgs } from "../parse-args.js";
  *  NAMED FOR WHAT IT DOES, and for whose word it borrows. The ceremony is DXOS's, and `epoch` in this
  *  house is RESERVED for the monotone fencing frontier a grant binds to. A compaction CUTS history and
  *  fences nobody, so it carries the qualifier and leaves the bare word to the fence
- *  (lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/whose-word-is-it). */
+ *  (lar:///ha.ka.ba/lararium/mesh/epoch-binding-surfaces#/the-five). */
 export async function cmdBagCompact(args: ParsedArgs): Promise<number> {
   const bagUrl = args.positional[0];
   if (!bagUrl) {
@@ -96,6 +97,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: BagSubcommand; summary: st
   "declare":       { handler: bagLifecycle(cmdBagDeclare), summary: "Write/amend a bag's own declaration (--tier --home --repo --role). Moves no bytes." },
   "home":          { handler: bagLifecycle(cmdBagHome),    summary: "MOVE a bag to a home (--to, --repo). Plans by default; --approve performs it." },
   "repo":          { handler: bagLifecycle(cmdBagRepo),    summary: "The repo registry: `list` | `add <id> --root <path>` | `drop <id>`. Bags name IDs, never paths." },
+  "share":         { handler: cmdShare("bag"), summary: "Who reads and writes a bag, by face pet-name (--read <names> --write <names> --note <why> --face N); --list shows the resolved answer per bag. Sharing rides by reference and delegation, never a copy." },
 };
 
 function printBagHelp(): void {

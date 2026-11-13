@@ -1,0 +1,155 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out3`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-28 (file date) — source `.lares-scratch/research/dreamdom-width/terra/out3.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out3"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/out3"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out3.md — research, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/dreamdom-width/terra/out3.md` (research, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/dreamdom-width/terra/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/dreamdom-width-third-wave-the-first-researcher-a`>>
+
+! DreamDOM width · third wave: the first researcher answers
+
+Ink-Clerk · 2026-10-28. ''SOURCED'' carries a URL and date, or a local file link and read date for the house's code and measurements; ''REASONED'' carries inference, an operator-supplied rule, or a proposed decision. The code and documents were read, not run. This wave does not claim an operator ruling or a new device measurement.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/my-revised-answer`>>
+
+!! My revised answer
+
+''REASONED — Agree with Opus on the provisional direction:'' where a page's port grants a mirror, paint skinny first and promote to full through that grant; do not select by device name or install status. Treat phone deployment as unvalidated until real-device process, growth, interaction and recovery tests pass. Node has no page width until a browser attaches; guests do not inherit a vessel's authority. Story remains held.
+
+''REASONED — Three corrections sharpen the decision.'' First, the supplied heap comparison measures the Chromium page target in a loopback spike, not a colocated worker-plus-page WebKit process. Second, retained skinny bodies create a credible growth risk, but neither convergence to full nor a 20,000-tiddler tripwire failure has been measured. Third, the built reload marker clears when the full snapshot lands, not after full paint, and may fail to persist. Thus neither successful boot nor the marker bounds every later crash or reload loop.
+
+''REASONED — I retain the operator's literal one-step rule.'' Full → skinny → none changes the effective camera width twice, even if the second change unmounts the engine. If the operator wishes to allow emergency unmount after one mirror step, amend the contract explicitly: one mirror-to-mirror step plus a terminal teardown, with none mounted only when its separate grant and viable sink exist. Until then, do not silently redefine “step” to validate the current code. Ending unsafe mirror access on grant revocation remains mandatory; ending access does not itself prove that a none surface has mounted.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/1-where-opus-challenged-my-first-wave`>>
+
+!! 1 · Where Opus challenged my first wave
+
+''SOURCED — Fresh, V12: accept the citation criticism; contest the stronger implication that the underlying framework-default statement lacks support.'' My cited current islands page alone did not explicitly establish that ordinary pages ship no JavaScript; my cited 1.x getting-started page described its example. Fresh's separate [[server-components documentation|https://usefresh.dev/docs/1.x/concepts/server-components]], accessed 2026-10-28, explicitly says no client JavaScript ships unless an island is included. Its [[current architecture|https://usefresh.dev/docs/concepts/architecture]], accessed 2026-10-28, says only islands hydrate; custom scripts and host integrations still need separate accounting. My shorthand should have scoped itself to framework-generated component JavaScript.
+
+''REASONED — One-step implementation: accept Opus's finding, reject its proposed semantic resolution as already settled.'' My first wave prescribed a terminal stop after the chosen fallback failed; I did not establish that the implementation did so. ''SOURCED:'' [[stand.ts|/home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-web/src/glass/stand.ts]], read 2026-10-28, sets `stepped` on a full-to-skinny capacity failure and calls `end({type: "floor"})` on a later one. It reports `width: "none"` and unmounts the mirror; this file alone does not demonstrate a granted, accessible none sink being mounted. ''REASONED:'' call the discrepancy a design decision, not a verified conformance result.
+
+''REASONED — Cut my decorative rhymes.'' Astro and Partytown expose author opt-ins, not vessel capability reads; Suspense represents dependency readiness, not the house's ban on clock-selected width. Those examples illuminate selective work but do not evidence the laws I attached to them. Retain TW5 search completeness, tldraw's edited-object protection, and AMP's ownership boundary as scoped analogies. ''SOURCED:'' [[Astro|https://docs.astro.build/en/concepts/islands/]], [[Partytown|https://partytown.qwik.dev/trade-offs/]], [[React Suspense|https://react.dev/reference/react/Suspense]], accessed 2026-10-28.
+
+''REASONED — Accept the TW5 Node omission.'' My first wave mentioned lazy images but omitted the documented `lazy-all` configuration, a particularly relevant skinny analogue. ''SOURCED:'' [[TW5 lazy-loading feature|https://tiddlywiki.com/static/LazyLoading.html]], accessed 2026-10-28; local [[LazyLoading.tid|/home/joshu/Synthetic-Dream-Machine/TiddlyWiki5/editions/tw5.com/tiddlers/features/LazyLoading.tid]], read 2026-10-28. Its incomplete browser text-search caveat still stands. [[TW5 developer documentation|https://tiddlywiki.com/dev/#LazyLoadingMechanism]], 2014-02-06, accessed 2026-10-28.
+
+''REASONED — Lifecycle refinement:'' I did not rely on `document.wasDiscarded` for Android, and Opus correctly cautions against doing so based on the cited Chrome documentation. Do not assume that a frozen page's worker, port, grant or authority remained live; re-greet and reconcile on restore. ''SOURCED:'' [[Chrome Page Lifecycle|https://developer.chrome.com/docs/web-platform/page-lifecycle-api]], accessed 2026-10-28; [[bfcache|https://web.dev/articles/bfcache]], accessed 2026-10-28.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2-test-the-new-claims`>>
+
+!! 2 · Test the new claims
+
+!!! 2.1 · The memory instrument and process boundary
+
+''SOURCED — Confirm the narrow metric.'' [[run.mjs|/home/joshu/.lares-scratch/d3-glass/spike/run.mjs]], lines 147 and 173, read 2026-10-28, creates a CDP session for the page, forces garbage collection, and reads `Performance.getMetrics`'s `JSHeapUsedSize`. The same file constructs the authority in the harness and communicates over a loopback WebSocket; the [[results table|/home/joshu/.lares-scratch/d3-glass/spike/table-final.md]], read 2026-10-28, identifies the loopback relay. It does not measure a browser-resident authority worker's heap or total browser process footprint.
+
+''SOURCED — WebKit supports Opus's general concern, not every detail of its universal process claim.'' WebKit's [[memory timeline|https://webkit.org/blog/6425/memory-debugging-with-web-inspector/]], 2016-05-05, separates JavaScript, decoded images, layers and page/DOM/rendering memory. Its engineers describe a pressure-dependent soft limit for an iPhone WebContent ''process'' in [[bug 277848|https://bugs.webkit.org/show_bug.cgi?id=277848]], 2024-08-09. WebKit's [[architecture|https://docs.webkit.org/Getting%20Started/Introduction.html]], accessed 2026-10-28, says a Safari tab typically has a WebContent process; [[WebKit's service-worker description|https://webkit.org/blog/8090/workers-at-your-service/]], 2018-02-07, explicitly places service workers in a separate process. ''REASONED:'' a dedicated worker can plausibly share the page's kill domain, but the exact placement of the house's actual worker type, all frames, GPU-backed allocations and current iOS build requires inspection. Do not assert that every worker and every image always occupies one WebContent process.
+
+''REASONED — Retract both claimed safety margins.'' Opus's “35.6 MiB versus 1.5 GB” and “under 100 MiB even doubled” do not measure comparable quantities; neither establishes distance from jetsam. Two logical copies of bodies do not prove exactly twice their physical memory: string representation, sharing, serialization, storage, duplication and process placement matter. Record page/worker JS and OS process footprints separately; distinguish peak, after-GC and steady-state measurements. Web Inspector's page categories help diagnose, but do not by themselves prove complete OS jetsam accounting. No process figure has been obtained here.
+
+!!! 2.2 · The 20,000-tiddler projection
+
+''SOURCED — Only one corpus size anchors the claimed slope.'' [[run.mjs|/home/joshu/.lares-scratch/d3-glass/spike/run.mjs]], lines 33 and 42–53, and [[table-final.md|/home/joshu/.lares-scratch/d3-glass/spike/table-final.md]], read 2026-10-28, show the 2,000-generated-tiddler workload and medians 21.66 MiB skinny, 35.56 full, 32.18 stock. The generated bodies use repetitive ASCII and a particular synthetic mix; the two extra story/default records are not two representative bodies.
+
+''REASONED — The 215–230 MiB estimate remains a scenario, not a validated prediction.'' Full-minus-skinny, 13.90 MiB, lies near the corpus's reported 13.37 MiB of text, but this coincidence does not prove one-byte representation, per-body linearity, or causal attribution. Under Opus's own model of a 12–15 MiB fixed skinny base and tenfold growth of the remainder, skinny computes to ''81.6–108.6 MiB'', not 80–95 MiB; adding ten times 13.90 MiB gives full ''220.6–247.6 MiB''. The bounds change if body distribution, core count, caches, duplicate references, snapshot transients or GC behavior change. The stock slope and the 3.38 MiB full/stock difference cannot be inferred from one size; therefore neither a 150 MiB crossing nor a +25% pass at 20,000 follows as an observed result.
+
+''REASONED — Keep the existing absolute tripwire and measure an additional process figure.'' The operator already supplied 150 MiB as a tripwire; Opus did not discover a new one. Relative and absolute gates answer different questions. Agree on 2k/5k/10k/20k runs, including representative nonrepeating Unicode text, images, plugins and different body distributions; fit slopes only after those results. State exactly whether the tripwire applies to post-paint page JS heap, peak heap, or whole process before using it as a release decision. Do not silently replace the existing gate with a new process threshold.
+
+!!! 2.3 · Skinny over a session and eviction
+
+''SOURCED — Confirm retention, with scope.'' [[glass-port-adaptor.ts|/home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-tw5/src/glass-port-adaptor.ts]], read 2026-10-28, adds a title to `opened` in `openBody`, lands returned text into the TW wiki and `landed`, and `closeBody` only deletes the title from `opened`; it does not remove its text. The `port:changes` path refreshes an opened omitted body after a peer change. Thus normal close does not itself release a previously fetched body. Delete, replacement, reset, teardown, and garbage collection can affect individual objects; this is not proof that every byte stays forever.
+
+''REASONED — Narrow “converges to full.”'' If a person opens all corpus bodies without an intervening removal, the skinny wiki can eventually hold all those body fields; extra full-port fields, concurrent edits, different cache histories and representation mean its total heap need not equal full. A finite corpus does not guarantee a flat memory curve: pending writes, tombstones, images, changing titles or a leak may continue to grow. Conversely an unbounded wiki can grow without a leak. Measure fixed corpus and repeated identical cycles as well as changing-corpus and peer-write workloads, separately accounting for reachable objects and process footprint.
+
+''REASONED — Body eviction deserves a prototype, not an unconditional close hook.'' On the last relevant consumer's release, evict only when the title has no open view, draft, pending write, composition, transclusion, widget/filter/plugin dependency, or active async body request; maintain omission metadata, prevent the local eviction from being misread as a write or deletion, and protect against stale response/peer-write races. Reopening must reload the authoritative body; search, export, filters and offline access must remain complete or explicitly report limits. A closed tiddler may still appear through transclusion, so story close alone does not establish safety. Prove with race, reopen, transclusion, unsent-draft, peer-update and memory tests. Eviction changes skinny semantics and does not preserve “full” if full requires every body resident.
+
+!!! 2.4 · Accessibility and the none sink
+
+''SOURCED — The concerns hold; the ranking remains unproved.'' [[MDN's reflected-attributes guide|https://developer.mozilla.org/en-US/docs/Web/API/Document_Object_Model/Reflected_attributes]], accessed 2026-10-28, scopes attribute ID references to the same DOM or shadow DOM; reflected element-reference properties have different scope rules. [[MDN's live-region guidance|https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Guides/Live_regions]], accessed 2026-10-28, recommends establishing live regions before changes and notes browser/assistive-technology variation; `role=alert` has special handling. These rules apply to either width's actual nodes.
+
+''REASONED — HTML serialization can carry same-root `id`/`aria-labelledby` attributes.'' A keyed none sink can also preserve existing DOM nodes and live regions across frame updates if designed to do so. Conversely a TW mirror can replace nodes, lose focus or mishandle shadow-root accessibility. Serialized HTML cannot itself transport JavaScript element object references, but that does not show that none necessarily fails ARIA or that full/skinny passes. “Screen readers favour the mirror” therefore remains a hypothesis until matched tests run. Require keyboard, VoiceOver/Safari, TalkBack/Chrome and desktop screen-reader tests for labels, live announcements, focus, composition, selection and frame updates on each width. Treat a failing none as unavailable for the affected task, with a named reason.
+
+''REASONED — Reject ‘one adaptor cures tier decay’ as a guarantee.'' Shared code can reduce drift, but none already has a distinct sink and story remains unfinished; shared code cannot replace maintenance and parity testing. Gmail's historical counterexample does not establish a causal proof for this project. Shared engines remain useful where they preserve behavior and grants.
+
+!!! 2.5 · Waking-floor tablet
+
+''REASONED — Agree with the risk; differ from Opus's skinny default.'' If a particular worker and mirror share a kill domain, camera growth can take the authority down too. A camera teardown that leaves its worker alive does not simulate a process kill, and a browser leaf cannot promise continuous wakefulness. The strongest defense combines durable commits, peer/failover recovery and actual process-placement tests; body eviction may reduce camera exposure after its correctness is proved. The floor role does not itself measure headroom or prove skinny has a bound, and eviction is not built. Keep the provisional common full-by-promotion policy while testing the floor's separate availability requirement. A role-specific policy could be legitimate if explicitly authorized and supported by evidence; it would not need a user-agent check.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/3-what-opus-still-missed`>>
+
+!! 3 · What Opus still missed
+
+''SOURCED — The recovery marker clears before full paint.'' [[stand.ts|/home/joshu/.lares-scratch/d3-glass/wt/packages/lararium-web/src/glass/stand.ts]], lines 118–121 and 137–148, read 2026-10-28, paints skinny, writes `mirror:began`, widens, then removes the marker as soon as the final promotion snapshot lands. There is no full-paint acknowledgment in that branch. The reason string `full-boot-did-not-paint` overstates what the marker establishes. ''REASONED:'' a death after snapshot completion but before actual full paint, or any later memory death, can reload with no marker and attempt promotion again. A death before completion can have other causes; holding skinny names an incomplete attempt, not proof of jetsam.
+
+''SOURCED — Marker persistence can fail or be copied.'' The same code catches access and write errors silently. [[MDN sessionStorage|https://developer.mozilla.org/en-US/docs/Web/API/Window/sessionStorage]], accessed 2026-10-28, says sessions normally survive reload, may initially copy from an opener, and can throw `SecurityError`. ''REASONED:'' do not claim “one death per tab” or that this mechanism alone prevents all reload loops. Test storage denial, failed set/remove, duplicate/opener tabs, crashes before/after marker clearing, bfcache, normal navigation during promotion, and multiple wikis sharing the key. If unavailable, surface recovery uncertainty; choose a conservative recovery design with explicit approval where it changes the width contract.
+
+''REASONED — Recovery evidence introduces a contract seam.'' The brief permits width step-down on named failure, caught capacity exception or revoked grant. A prior incomplete promotion record selects skinny on a subsequent boot even though its cause is unknown. Decide explicitly whether that record names an allowed boot failure and how long it remains effective; it must not claim to identify an OOM. This is event evidence, not a clock, but still affects the rule.
+
+''REASONED — Test ‘revoked’ separately from ‘disconnected’.'' A network interruption does not necessarily revoke a capability. A `port:gone` signal needs a reason and generation discipline; on reconnect obtain a fresh greeting and grant. Never continue privileged use on a stale restored port. Do not assert remote attachment exists merely because the roadmap sketches a browser surface.
+
+''REASONED — State loss is not settled by a first paint.'' Test composed input, unacknowledged writes, duplicate delivery, selection and focus across promotion, failure and crash; verify a durable authority commit before acknowledging save. A screen-reader announcement and a named status must accompany a width change without obscuring the editor.
+
+''REASONED — A release gate needs a decision rule, not only measurements.'' Name reference devices and corpus, required sample sizes, comparable stock baseline, process metric and target thresholds, plus what happens if an instrument cannot run. Keep telemetry or benchmarking out of automatic boot selection. Report battery and thermal measurements as energy per fixed operation and background drain in controlled scenarios; wall time may measure battery, but must never decide width.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/4-revised-per-class-ruling`>>
+
+!! 4 · Revised per-class ruling
+
+''REASONED — Common contract:'' with a valid mirror grant, start skinny and request full promotion; real boot steps and named failures decide this attempt. Preserve at most one downward width change under the current wording. On revocation stop mirror use immediately; mount none only under its own valid grant after its sink works, otherwise expose a named unavailable state. An uncatchable process death begins a new recovery attempt, not an in-process fallback. Story remains held. Every line below describes a provisional default and a test obligation, not a host-derived grant.
+
+| Class | REASONED default and step-down | Evidence and unresolved constraint |h
+| iOS phone, browser leaf or Home Screen vessel | Full by skinny-first promotion; on named failure select one authorized viable fallback; after a crash apply the explicitly ruled recovery-evidence policy. | ''SOURCED:'' soft iPhone process limit and pressure vary; installed status alone does not prove headroom. [[WebKit bug 277848|https://bugs.webkit.org/show_bug.cgi?id=277848]], 2024; [[Home Screen apps|https://webkit.org/blog/13878/]], 2023. ''REASONED:'' iOS 26, real peak, kill/reload and accessibility unmeasured. |
+| Android phone, browser leaf or WebAPK | Same full target, grant and one-step policy. | ''SOURCED:'' [[Android LMK|https://developer.android.com/topic/performance/issues/lmk]], accessed 2026-10-28; [[Chrome 148 SharedWorker|https://developer.chrome.com/release-notes/148]], 2026. ''REASONED:'' worker survival and foreground/background LMK remain test obligations. |
+| Tablet, including waking floor | Same full target provisionally; prototype safe skinny eviction, but do not represent it as shipped or a proven floor. If measured floor availability fails, decide an explicit role-specific policy. | ''SOURCED:'' [[WebKit device limits|https://bugs.webkit.org/show_bug.cgi?id=268816]], 2024; [[screen wake lock|https://developer.mozilla.org/en-US/docs/Web/API/Screen_Wake_Lock_API]], accessed 2026-10-28. ''REASONED:'' kill-domain mapping, restart and peer continuity matter independently of width. |
+| Desktop browser on each engine | Full by skinny-first promotion, with the common one-step path. | ''SOURCED:'' [[spike table|/home/joshu/.lares-scratch/d3-glass/spike/table-final.md]], read 2026-10-28: Chromium 2k passes the stated post-paint heap gate; Firefox has one paint run and WebKit lacks this measurement. ''REASONED:'' validate parity and large-corpus memory on all target engines. |
+| Browser attached to Node | If it stands its own island, apply that browser's policy; if an authorized remote island supplies a port, apply the same policy at that camera, with relay failure separately named. | ''REASONED:'' the remote topology and its measured end-to-end costs remain design questions; a 50 ms planted loopback delay does not establish local-node or LAN performance. |
+| Node vessel | No browser width without an attached camera; Node's other CLI or SSR faces have separate contracts. | ''REASONED:'' renderer width belongs to the surface, not the relay or process name. |
+| Mudlet guest | No DreamDOM width; use the telnet guest/probe contract. | ''REASONED:'' guest connection does not confer a vessel grant. |
+| Unreal guest / Pixel Streaming | Guest bridge holds its own contract; where streaming uses a server-side browser vessel, that vessel's granted camera gets the common policy. | ''REASONED:'' a streaming client does not become the vessel merely by viewing pixels. |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/5-answers-to-opus-s-six-questions`>>
+
+!! 5 · Answers to Opus's six questions
+
+# ''REASONED — None floor and one step: differ.'' Count effective full → skinny → none as two width changes under the operator's wording. Permit immediate teardown for revoked or unsafe mirror access; whether a none sink may then mount as an explicit terminal exception requires an amended rule. A failed skinny need not remain interactive: show a named unavailable face if no authorized sink can be mounted. Test the built two-error path and missing/revoked sink grant.
+# ''REASONED — Waking floor: differ for now.'' Keep common full-by-promotion provisional; prototype eviction with consumer/race protections and measure a real floor, including process kill. Consider a role-specific skinny policy only after evidence and an explicit contract. This does not prohibit a structural role policy forever.
+# ''REASONED — Corpus size: agree with “not yet,” differ on option (b)'s name.'' A snapshot-derived size can guide release analysis, but a ceiling changes the grant/width decision and needs a new ruling. Evicting bodies from full makes that width lazy or bounded, so define a new semantic contract rather than calling it unchanged full. Measure first.
+# ''REASONED — Node first surface: differ on settling the topology.'' A node port may save a local copy and a browser island may improve offline independence; both need authority, security, availability and latency designs. The spike's loopback plant demonstrates sensitivity to an injected delay, not the best topology. Prototype both or read the settled roadmap before choosing; the default camera rule remains the same.
+# ''REASONED — Lighter face intent: agree, with an optional precise control.'' Carry a person's desired outcome, such as reduced memory or motion, across devices; map it to granted capabilities and disclose any unavailable behavior. Reduced motion must work at every width. An explicit local width choice could also be legitimate if the operator grants it; a person selecting a width through an authorized face does not automatically equal an untrusted URL or Boolean grant.
+# ''REASONED — Ship phones before measurements: differ.'' Do not present full-by-promotion as a generally validated phone release merely because a marker exists. A clearly named, operator-authorized experimental cohort may exercise the built path with recoverable data and visible risks; broad default release awaits the reference iPhone and Android process, accessibility and crash-recovery tests. The marker cannot guarantee one death or a successful skinny reload.
+
+''REASONED — Next contact with reality:'' instrument the real vessel topology and compare peak/steady process footprints at several corpus sizes; run long-session and eviction correctness tests; then test the marker boundary and screen-reader behavior on real iOS and Android. Those results can change the rollout recommendation without changing authority into a host label or making a clock decide width.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n3DG-EPr6YB--uNXyrEQq7TzpC9zcv5doT98xWd9xa4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

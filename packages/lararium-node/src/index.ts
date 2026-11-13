@@ -6,17 +6,19 @@ export {
 } from "./lan-discovery.js";
 export type { LanAnnouncement, LanCandidate, LanSocket, LanDatagramSocket, LanPacket, LanRecord } from "./lan-discovery.js";
 export {
-  larHome, larDataDir, larIdentityDir, larProjectionDir, larSealHome, larBootstrapPath,
-  larHarvestDir, larHarvestStageDir, larStructurePalaceDir, larFormPalaceDir,
+  larDataDir, larIdentityDir, larProjectionCheckpointDir, larSealHome, larBootstrapPath,
+  larHarvestCheckpointDir, larHarvestStagingDir, larStructurePalaceDir, larFormPalaceDir,
   larMempalaceDir, larContentDir, scratchSensoriumDir, scratchSensoriumInstanceDir,
-  // XDG base homes + the memory sensorium dir + config path (the consolidated layout).
-  laresDataHome, larariumDataHome, larStateHome, larCacheHome, larConfigHome, larRuntimeHome,
+  // The named house root and its classes (one level each beneath LAR_ROOT).
+  HouseRootUnnamed, larHouseRoot, larHearthHome, larSensoriumsHome, larCheckpointsHome, larStagingHome,
+  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome,
   assertOneSegment,
   memorySensoriumDir, memorySensoriumLenses, sensoriumLenses, sensoriumNames, sensoriumDir,
   // The `mesh` sensorium dir + its WHO/AUTHORITY/FLOW child dirs (the consolidated federation tree).
   meshSensoriumDir, meshWhoDir, meshAuthorityDir, meshFlowDir,
 } from "./vessel-paths.js";
 export { atomicWriteFileSync } from "./fs-atomic.js";
+export { fileJournal } from "./vessel-journal-file.js";
 
 // The Erisian date: `ddate(1)` where it stands (it carries holydays, exclamations, X-Day and the whole
 // %{…%} shape), the computed calendar where it does not — and the STAMP always computed, because ddate's
@@ -33,18 +35,18 @@ export {
 export type { BagSighting, BagMoveOutcome } from "./bag-declare.js";
 
 // The ACQUIRED tier — bodies a human did not author, sited readable + verifiable in the SHRINE
-// (`<lararium>/library`), a house no wipe names, so a shelf may grow without a repository growing with it.
+// (`<root>/library`), a house no wipe names, so a shelf may grow without a repository growing with it.
 export {
   larLibraryHome, libraryCollectionDir, resolveLibraryRef, acquireIntoLibrary,
   readLibraryMeta, listCollections, listCollection, verifyCollection, writeLibraryIndex,
 } from "./library-store.js";
 export type { AcquireOutcome, AcquireOptions, LibraryVerdict } from "./library-store.js";
 
-// The per-daemon resource-override reader + the composable daemon resource caps (`~/.lares/config.json`
+// The per-daemon resource-override reader + the composable daemon resource caps (`<root>/config/config.json`
 // sites bags/genesis/cas away from the repo-relative default; genesis artifacts stay checked-in by default).
 export {
   loadLaresConfig, laresConfigPath, daemonCorpusRoot, daemonGenesisDir, daemonBagsDir, daemonCasDir,
-  runtimeCasOverride, originDeclaration,
+  runtimeCasOverride, originDeclaration, tempConsentedSlugs, tempProjectionConsented, tempExpiryDays,
 } from "./lares-config.js";
 export type { LaresConfig, LaresResourceRoots, LaresVesselState, LaresOriginConfig } from "./lares-config.js";
 
@@ -75,9 +77,9 @@ export type {
 // The LI (sheaf) CONSISTENCY-RADIUS — the Robinson li-disagreement signal over content/structure/form
 // (0 ⟺ they glue; positive ⟺ a localizable obstruction), PAIRED with the KI (cosheaf) co-consistency —
 // the PUSHFORWARD mirror over bands/coupling (0 ⟺ the flows co-extend; positive ⟺ a localizable
-// co-obstruction), the sheaf/cosheaf dual pair now complete.
+// co-obstruction), the sheaf/cosheaf dual pair.
 // The consistency-radius organ (H⁰ li/ki dual), the cohomological gate (H¹ fusion), and the EFE organ
-// now live PLATFORM-BLIND in `@lararium/mesh` (the pono-homes lift: one hull, every tier — node, tw5,
+// live PLATFORM-BLIND in `@lararium/mesh` (one hull, every tier — node, tw5,
 // browser — reaches the same organs; py mirrors them by contract). Import them from `@lararium/mesh`.
 
 // The memetic-wikitext SENSORIUM — the concrete neither-top, co-located-peers instance: the reader
@@ -136,8 +138,8 @@ export type { JingRead, LobeRoundTrip, ReadJingOptions } from "./sensorium-squar
 
 // The auto-extraction PROJECTOR — read a poured target's child streams into a ChildSignalMV[] signal-matrix
 // (the couple_r/mismatch/flow shape), the time-series twin of the salience sidecar. Feature-gated: the
-// STRUCTURE lands now, the default reader reads a `signal.json` sidecar the re-pour lands per child; absent
-// (every real sensorium today) ⇒ the honest empty matrix, the surface names the calibration data-wait.
+// STRUCTURE uses a `signal.json` sidecar the re-pour lands per child; absent
+// ⇒ the honest empty matrix, and the surface names the calibration data-wait.
 export { extractSignalFromTarget, defaultChildSignalReader, CHILD_SIGNAL_SIDECAR } from "./sensorium-signal.js";
 export type { ChildSignalReader, SignalExtraction, ExtractSignalOptions } from "./sensorium-signal.js";
 
@@ -159,15 +161,24 @@ export { composeStreamSensorium, defaultStreamPlaneSink } from "./sense-stream.j
 export type { ComposeStreamOptions } from "./sense-stream.js";
 
 export { LarDiskProjector } from "./disk-projector.js";
-export { DaemonAuthGate } from "./daemon-auth-gate.js";
-export type { SocketChallenge, SocketSorter, SortInput, SortVerdict, GateKey, DaemonAuthGateOptions } from "./daemon-auth-gate.js";
-export { makeSocketSorter, socketsNoLongerHeld } from "./socket-sorter.js";
+export { KAPAE_EXT, KAPAE_RAISED, kapaeShadowBody, readKapaeShadow } from "./kapae-shadow.js";
+export { makeGateSorter, socketsNoLongerHeld, ownPlacePosture, SHUT_ARMS } from "./socket-sorter.js";
+export type { GateSorterDeps, ShutArm, PlaceClass } from "./socket-sorter.js";
+export { gateShadowRing, faceDevicesUnbound } from "./gate-shadow-ring.js";
+export { faceDeviceBook, faceDeviceBindings, type FaceDeviceBook, type FaceDeviceSources } from "./face-device-book.js";
+export { faceFleetFacets, faceFleetViews, viewFederationGate, type FaceFleetViews } from "./face-fleet-view.js";
+export { heldRootHoldings, standingFaceScopes } from "./face-root-holdings.js";
+export type { FaceDeviceReading, GateShadowRingDeps } from "./gate-shadow-ring.js";
+export { vesselGate } from "./vessel-gates.js";
+export type { VesselGateDeps } from "./vessel-gates.js";
+export { faceGateServer, gateSessionRegistry, gatePath, wsGateSocket, timerGateDeadlines, GATE_SOCKET_QUEUE_BOUND } from "./face-gate-server.js";
+export type { FaceGateServer, GateSessionRegistry, SeatedGateSession, StoodGate, GateWire } from "./face-gate-server.js";
 export { openNodeVessel, openNodeHerm, standNodeFloor, seatedSovereignReaders } from "./open-node-vessel.js";
 export { openDaemonVm } from "./open-daemon-vm.js";
 export { runDoctor, formatDoctorReport, enumerateStoreDocs } from "./doctor.js";
 export { probeDocLoad, makeChildProcessDocLoadProbe, quarantineDoc } from "./doc-load-probe.js";
 export { precheckDocStore, docStorePath } from "./store-integrity.js";
-export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistIdentityArchive, loadIdentityArchive, persistVeilArchive, loadVeilArchive, archivePath, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
+export { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, listFaceOrdinals, persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors } from "./identity-anchors.js";
 
 export type { DaemonVmOptions } from "./open-daemon-vm.js";
 export type { NodeVesselOptions, NodeVesselResult, NodeHermResult, NodeFloor, SovereignReaders, NodeOpenPhase } from "./open-node-vessel.js";
@@ -176,35 +187,54 @@ export type { NodeReadiness, ReadinessState, ReadinessFace } from "./readiness-f
 
 export { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "./open-node-vessel.js";
 export { SyncedTree, contentHash, syncedTreeKey, syncedTreeDir, type SyncedBase } from "./synced-tree.js";
-export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri } from "./bag-paths.js";
+export { PERSONAL_PROJECTION_DIR, personalFaceRoot, workspaceRootsOf } from "./bag-paths.js";
+export { bagsFileToUri, wikisFileToUri, mirrorDirFileToUri, isTempLayerInternalTitle, TEMP_LAYER_DIR,
+  daemonFaceFolder, isDaemonFaceFolder, kahuaFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, projectionRoots, type ProjectionRoots } from "./bag-paths.js";
+export { parseTidCarrier, readBackTempCarriers, TempLayerHousekeeper, tempAuditPath, TEMP_ORPHAN_SETTLE_MS, HOUSEKEEPING_PERIOD_MS } from "./temp-layer.js";
+export type { TempHousekeepingClock, TempHousekeepingPolicy, TempAuditLine, TempRecordState, TidFields } from "./temp-layer.js";
 
 export { runInit, runFoundTheFace, faceStands, armRecoveryAtFounding } from "./commands/init.js";
-export { guardianOffer } from "./guardian-enrolment.js";
+export { recoveryContactOffer } from "./recovery-contact-enrolment.js";
 // THE STABLE FOUNDING ACT: place, persona zero, the one-seat seed charter and the face that binds its AID — see `found-hearth`.
 export { runFoundHearth, foundSeedCharter, HearthFoundingRefused } from "./commands/found-hearth.js";
 export type { FoundHearthOptions, FoundHearthResult, HearthCard } from "./commands/found-hearth.js";
+// THE ROOT-CARD READER: the split-root cards build a face's body in the person's own process — see `face-card-restore`.
+export { buildCardBody, CardRestoreRefused, CARD_REFUSALS } from "./face-card-restore.js";
+// THE FACE LABELS: each face's pet-name and its copies' override bases, in plaintext outside every mirror (`face-labels`).
+export { FACE_LABELS_DIR, FACE_LABEL_SCHEMA, FACE_BASES_SCHEMA, faceLabelsDir, faceLabelPath, faceBasesPath, readFaceLabel, writeFaceLabel, labelledRelations,
+  moveFaceLabelFile, readFaceBases, writeFaceBases, basesOfDoc, keepFaceBases, type FaceLabel, type KeptDoc, type KeptDocState } from "./face-labels.js";
+export type { CardRefusal, FaceNamed, PresentedCard } from "./face-card-restore.js";
 // The live read path onto `mesh/dyad` — a vessel enumerates the relationships it already holds.
 export { makeBagTierReader, bagNameFromBagUrl } from "./vessel-bag-tier.js";
 export type { InitOptions, InitResult, FoundFaceOptions, FoundFaceResult } from "./commands/init.js";
 
-export { runDeviceAdmit } from "./commands/device-admit.js";
+export { runDeviceAdmit, DeviceAdmitTagRefused } from "./commands/device-admit.js";
 export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "./commands/device-admit.js";
+// THE FLEET-JOIN DOOR: the root holder's offer and answer ride the store door; the joining vessel requests, lands
+// and abandons in its own process, with no vessel standing.
+export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
+export { runIntentCommand, resolveIntentFaceIndex, intentAudience, IntentRefused } from "./commands/intent.js";
+export { runKahuaCommand, KahuaRefused, type KahuaAction, type KahuaCommandOptions } from "./commands/kahua.js";
+export { kahuaDoor, type KahuaDoorPorts, type KahuaLiftInput, type KahuaProposeInput } from "./kahua-door.js";
+export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
+export { readJoinedFaceProof } from "./joined-face-proof.js";
+export type { JoinedFaceProof, JoinedFaceAbsence } from "./joined-face-proof.js";
 export { runHandlePublish, runHandleBurn, runHandleRotate, runHandleAttest, resolveOwnerBurnHand } from "./commands/handle.js";
 export type { HandlePublishOptions, HandleBurnOptions, HandleRotateOptions, HandleAttestOptions, OwnerAuthHand } from "./commands/handle.js";
 
 // The Kapae antigen RAISE side (#65) — the founding kahu writes a quorum-signed ban/lift onto the board.
-export { runNexusKapae, runNexusKapaeList, NexusKapaeError } from "./commands/nexus-kapae.js";
+export { runNexusKapae, runNexusKapaeList, runNexusKapaeOpen, runNexusKapaePartial, NexusKapaeError, type NexusKapaePartialResult } from "./commands/nexus-kapae.js";
 export { runHostState, runHostRoll, runHostInvite, HostRefusal } from "./commands/host.js";
 export type { HostedNexusReading, HostRollResult } from "./commands/host.js";
 export { runWalkState, runWalkTake, runWalkInvite, WalkRefusal } from "./commands/walk.js";
 export type { WalkReading } from "./commands/walk.js";
 // ONE STORE, ONE HOLDER — the door table every store command routes through, and the one direct opener.
-export { storeDoorReactors, storeDoorDirect, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
+export { storeDoorReactors, storeDoorDirect, storeRowFace, KAHUA_OPERATOR_ROWS, STORE_DOOR_FACE_ROWS, STORE_DOOR_VERBS, type StoreDoorVerb, type StoreDoorDeps } from "./store-door-verbs.js";
 export { ownedStore, claimStore, StoreHeld, StoreHeldElsewhere, type StoreClaim, readBootEpoch, bootEpochPath } from "./owned-store.js";
 export { claimName, anchoredName, NameTooLong, NameHeld, NameReaping, type ClaimedName, type ClaimNameOptions } from "./socket-claim.js";
 export { readHearthDialPin } from "./hearth-dial-pin.js";
 export {
-  readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, hostingDir, hostingRowDir, HostingStateMoved,
+  readHostingState, rollHosting, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount, HostingStateMoved,
   DEFAULT_HOSTING_CAP,
 } from "./hosting-store.js";
 export type { HostingState, SpendOutcome } from "./hosting-store.js";
@@ -221,17 +251,23 @@ export { runCabalJoin, CabalJoinError } from "./commands/cabal-join.js";
 export { runCabalFace, CabalFaceError, type CabalFaceResult } from "./commands/cabal-face.js";
 export { runEdgeKapae, EdgeKapaeError } from "./commands/edge-kapae-cmd.js";
 export type { EdgeKapaeOptions, EdgeKapaeResult } from "./commands/edge-kapae-cmd.js";
-export { runEdgeRollAnchors, EdgeRollAnchorError, type EdgeRollAnchorLanded } from "./commands/edge-roll-anchor.js";
+export { runEdgeRollAnchors, rollAnchorFace, EdgeRollAnchorError, type EdgeRollAnchorLanded, type EdgeRollAnchorUnanchored, type EdgeRollAnchorOutcome } from "./commands/edge-roll-anchor.js";
 export { readVesselEdgeBoard, vesselEdgeCharter, type VesselEdgeBoardRead } from "./edge-board.js";
 export { runEdgeSeatFacts, runEdgeSeatMarks, EdgeSeatError, type EdgeSeatFacts } from "./commands/edge-seats.js";
 export { runEdgePartial, runEdgeCosign, EdgeCosignError, type EdgePartialResult, type EdgeCosignResult } from "./commands/edge-cosign.js";
+export { runPromoteOpen, runPromoteSign, runPromoteCheck, runPromoteCheckBytes, promotionStatementDigest, PromoteError, type PromoteOpenResult, type PromoteSignResult } from "./commands/nexus-promote.js";
+export { runCabalAct, runCabalCosign, runCabalStanding, readKahuCabalBoard, landFoundingAdmission, NexusCabalError, type NexusCabalActResult } from "./commands/nexus-cabal.js";
+export { runFloorRelease, runFloorReleaseStanding, type NexusReleaseResult } from "./commands/nexus-release.js";
+export { runFloorStatus, runFloorAccept, nodeFloorPorts, FloorRefused, type NodeFloorOptions } from "./commands/floor.js";
+export { runFloorCut, runFloorCutOver, type FloorCutResult } from "./commands/floor-cut.js";
+export { runOfferRetire } from "./commands/offer-retire.js";
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";
 export type { RaiseSignResult } from "./commands/raise-sign.js";
 export { runNexusContract, runNexusAcceptCarriage, runNexusCarryFor, runNexusMembersList, NexusContractError,
   runNexusContractOpen, runNexusContractPartial, type NexusContractPartialResult,
-  runNexusRollAnchor, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
+  runNexusRollAnchor, runNexusRollAnchorOpen, runNexusRollAnchorPartial, runNexusRollPriorAnchorCheck, runEdgeRollAnchorOpen, runEdgeRollAnchorPartial, runEdgeRollAnchorStanding, type NexusRollPriorAnchor, type NexusEdgeRollAnchorPartialResult, type NexusEdgeRollAnchorStanding, type NexusRollAnchorPartialResult, hasContractedInto, type CarriageConsent, type NexusRollAnchorResult } from "./commands/nexus-contract.js";
 // The carried set — the Nexuses this vessel carries for, one contract-in each; partner charters land beside the primary.
 export { importCarriedCharter, readCarriedCharters, writeConsent, readConsent, carriedSet, carriedReadings,
   carriedCharterHome, carriageConsentPathFor, charterHomeFor, primaryNexusAid, CarriedCharterError,
@@ -243,14 +279,14 @@ export {
   takeAdmitBundle, readKeptAdmitBundle, readKeptAdmitBundles, admitBundlePathFor, admitBundleHolds, dialedNexusAid,
   isAdmitBundle, AdmitBundleError, type AdmitBundle, type AdmitTakeResult,
 } from "./admit-bundle.js";
+export { takeCarryBundle, carryBundleFrom, CarryBundleError, CARRY_BUNDLE_KIND, type CarryBundle, type CarryTakeResult } from "./carry-bundle.js";
 
 // The MEMBERSHIP consult holder — the carry-split's member gate: the LEAF MAP, filled from presented admits only.
 export {
-  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener, dialPresentation, presentationKey,
-  dialIdentityFor,
+  makeNexusMembership, readCarriedNexuses, leafStandingFor, liveBoardOpener,
 } from "./nexus-carriage.js";
 export type {
-  NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener, DialPresentation,
+  NexusMembershipHolder, SocketBinding, CarriedNexusReading, CarriedVia, LeafStanding, BoardOpener,
 } from "./nexus-carriage.js";
 // The cad seal's first live producer (seal a staged carrier body into the ciphertext federation plane, additive to the cleartext wake).
 export { cadSealDir, sealCarrierForFederation, ContentKeyUnavailable } from "./seal-carrier-federation.js";
@@ -262,11 +298,15 @@ export {
 } from "./cas-wire.js";
 export type { CasWireServerDeps, CasWireFetch } from "./cas-wire.js";
 
-export { loadVesselVerifyingKey, loadVesselSigningSeed, loadVesselCard, persistVesselCard, vesselFloorKeyDoor, FloorKeyDoorRefused } from "./node-vessel-identity.js";
+export { loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor, FloorKeyDoorRefused, loadPlaceKelChain, loadPlaceAid } from "./node-vessel-identity.js";
+export { vesselFaceTagDoor } from "./vessel-face-tag-store.js";
+export { rotateRelayGateSeed, openRelayGateSeed, RelayGateSeedRefused } from "./relay-gate-seed.js";
+export { rotatePlace, reconcilePlaceRotation } from "./place-rotation.js";
+export { faceSigningSeat, FaceSigningRefused } from "./face-signing-seat.js";
 // The reach-face helpers — every http origin a vessel answers on + the ws:// dial each yields. Re-used by the
 // `lares herm` stand-up verb to print the carriage crossroads' dial URLs (host from the face, the relay's own port).
 export {
-  deriveReachFaces, wsUrlForOrigin, originCompositionForFace, webOriginForFace, oracleOriginForFace,
+  deriveReachFaces, wsUrlForOrigin, originCompositionForFace, webOriginForFace, flowOriginForFace,
   assertWaystoneCustody, crossingBannerLines, OriginCustodyRefusal,
   type ReachFace, type InterfaceTable, type ExplicitOriginComposition, type FaceOriginComposition,
   type WaystoneOriginComposition, type StandingOriginComposition, type OriginStanding,
@@ -274,7 +314,7 @@ export {
 export { isSerdeSkewFault, bootFaultReport, fatalLine, SERDE_SKEW_EXIT, SERDE_SKEW_CURE } from "./boot-fault.js";
 // The active-persona selector — "put on a mask" at the identity layer (Plurality Pono). The persona-root
 // SET mints/loads the operator-root the `lares persona` door drives (founder-side custody).
-export { loadActivePersonaIndex, wearPersona, personaRootExists, listPersonaRoots, listPersonaRosterLines, orphanPersonaRoots, VesselKeyMintRefused, VesselInceptionRefused } from "./node-vessel-identity.js";
+export { setMountedFace, sovereignStands, personaRootExists, listPersonaRoots, listPersonaRosterLines, orphanPersonaRoots, VesselKeyMintRefused, VesselInceptionRefused } from "./node-vessel-identity.js";
 export { generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 export type { PersonaGroupRoot, PersonaRosterLine } from "./node-vessel-identity.js";
 // The two-layer pet-names (#64 stage 4): the PRIVATE own-persona label map (fleet-only; never PUBLICLY
@@ -287,15 +327,7 @@ export { makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
 
 // The IoC follow — the node-fs LOCAL adapters for the private circle-graph + the recogniser's handle-book.
 // Both under the identity home, sealed under the vessel key, never federated (the `lares circle` door drives them via composeFollow).
-export { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE } from "./node-circle-store.js";
-// The persona-admission PER-VESSEL multitude-view (never fleet-syncs) and the airgapped ceremony's pending state:
-// three rows sealed under the vessel key, which the `lares persona admit` door drives.
-export {
-  recordAdmittedPersona, listAdmittedPersonas, isPersonaAdmitted,
-  stashEnrollmentSecret, bindEnrollmentToGrant, takeEnrollmentSecret, peekEnrollmentSecrets, stashSentMemo, peekSentMemo, takeSentMemo, clearPersonaAdmitPending,
-  withdrawAdmitOffer, withdrawAdmitGrant, PENDING_OFFER_LIMIT, SENT_MEMO_LIMIT,
-  ADMISSIONS_FILE, PENDING_ENROLL_FILE, PENDING_GRANT_FILE,
-} from "./node-persona-admit-store.js";
+export { loadNodeHandleBook, saveNodeHandleBook, handleBookFile, HANDLE_BOOK_FILE } from "./node-circle-store.js";
 // QR transport — GENERATE a scannable carriage QR (terminal / PNG / SVG / matrix, ECC H) + DECODE a still PNG
 // through an injected decoder shore (the headless node scanner + the browser camera both plug in behind it).
 export {
@@ -303,15 +335,8 @@ export {
   pngToImageData, decodeQrPng, HANDSHAKE_QR_ECC,
 } from "./qr-transport.js";
 export type { QrImageDecoder } from "./qr-transport.js";
-// The airgapped persona-admission ORCHESTRATION — the 5 flow functions the `lares persona admit` CLI thin-wraps
-// (mint/seal/open/ack composing the ceremony + the per-vessel store + the QR render), plus the §2a withdrawal
-// pair + M12's KEL-seq resolver.
-export {
-  offerAdmitFlow, grantAdmitFlow, openAdmitFlow, acceptAdmitFlow,
-  makeLocalPersonaKelHeadResolver, makeLocalPersonaKelHeadSeqResolver,
-  withdrawOfferFlow, withdrawGrantFlow,
-} from "./persona-admit-flow.js";
-export type { HopRender } from "./persona-admit-flow.js";
+// THIS vessel's local persona-KEL board, read: a KEL's head and its sequence off one board read.
+export { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 // The `bags/nexus` charter DOC adapter — the antigen roster's authority home read/written on disk (#66).
 export {
   readNexusDoc, parseNexusDoc, writeNexusDoc, renderNexusDoc, writeNexusSeal, writeNexusKahu, writeNexusPractice,
@@ -366,7 +391,7 @@ export { VesselIslandPool } from "./vessel-island-pool.js";
 export type { VesselIslandPoolOptions } from "./vessel-island-pool.js";
 // The consolidated sensorium file — the manifest primitive + the shared palace transport +
 // the palace CLIENTS (content/form/persistence) + the unified cap-stack. The palace transport
-// cap (the #has-stack foundation both local stores compose) lives here now.
+// cap (the #has-stack foundation both local stores compose) lives here.
 export { PalaceHolder, PalaceHolderRegistry, canonicalDirOf } from "./sensorium.js";
 export type { PalaceHolderProc, PalaceHolderSpawn, PalaceFeedCap } from "./sensorium.js";
 export { makePersistencePalace } from "./sensorium.js";
@@ -384,25 +409,23 @@ export type { GraphCap, GraphCapOptions } from "./graph-cap.js";
 export { composePalaceCaps } from "./sensorium.js";
 export type { PalaceCaps, PalaceCapsOptions } from "./sensorium.js";
 export { makeLaresQuery, openMemorySensorium } from "./lares-query.js";
+export { runTrialServing, trialContentDir, verifyTrialModel } from "./sensorium-trial-serving.js";
 export type { LaresQuery, Lens } from "./lares-query.js";
 export { makeEmbedCap } from "./embed-cap.js";
 export type { EmbedCap, EmbedResult, EmbedCapOptions } from "./embed-cap.js";
 export { makeSourceCapture } from "./capture/capture-source.js";
 export type { SourceCapture, SourceCaptureRequest, SourceCaptureResult, SourceCaptureSpawn } from "./capture/capture-source.js";
-export { startMembershipRelay, WSMembershipChannel } from "./ws-membership-channel.js";
-// The AUTHENTICATED live-WS membership transport — Ed25519 proof-of-possession binds each envelope's `from` to a
-// proven key (no impersonation of the cas-wire member gate), reusing the DaemonAuthGate's own challenge/verify.
-export { startAuthenticatedMembershipRelay, AuthenticatedWSMembershipChannel } from "./authenticated-membership-relay.js";
-export type { AuthenticatedMembershipRelay } from "./authenticated-membership-relay.js";
-// The CARRIAGE relay capability (Socket B) — the authenticated transport + the DHT-free bag-tracker, one service;
-// and the vessel-side serve-loop that carries a sealed cad body to members (inert until a relay URL is configured).
+// The herm's relay port: the persona-KEL drops over plain HTTP; every upgrade meets silence.
+export { startHermRelayPort } from "./herm-relay-port.js";
+export type { HermRelayPort } from "./herm-relay-port.js";
+// The CARRIAGE relay capability: the herm's relay port and the DHT-free bag-tracker, one service.
 export { startCarriageRelay } from "./carriage-relay.js";
 export type { CarriageRelay } from "./carriage-relay.js";
-export { startCarriageServeLoop } from "./carriage-serve-loop.js";
-export type { CarriageServeLoop, CarriageServeLoopConfig } from "./carriage-serve-loop.js";
-// The immune keel's RE-KEY (roll a lease epoch, per-writer-slot max-register) + RE-SHARE (list held sealed bodies
-// to re-announce) teeth at the Herm's own tier — the `nexus-rekey` / `nexus-reshare` daemon verbs' cores.
-export { rollLeaseEpochOnBoard } from "./lease-rekey.js";
+export { fileCarriageJournal, CARRIAGE_LOG_FILE } from "./carriage-log-file.js";
+export { CARRIED_ROUTE } from "./herm-relay-port.js";
+// The immune keel's RE-KEY (the Nexus or realm charter quorum advances its signed lease) + RE-SHARE
+// (list held sealed bodies to re-announce) teeth at the Herm's own tier — the `nexus-rekey` / `nexus-reshare` daemon verbs' cores.
+export { rollQuorumLeaseOnBoard, rollSignedLeaseEpochOnBoard } from "./lease-rekey.js";
 export type { LeaseRekeyResult } from "./lease-rekey.js";
 export { listSealedCids } from "./cas-reshare.js";
 // The BULB cap — the genesis seed + the CAS it names, named by the seed's CID and served by cid over the public
@@ -423,13 +446,16 @@ export type {
 export { buildPronaosProjection } from "./pronaos-projection.js";
 export type { PronaosProjectionInputs } from "./pronaos-projection.js";
 export { composePronaosFromEnv, parsePronaosCompositionConfig } from "./pronaos-composition.js";
+export { resolveGenesis, pinGenesisSeed, checkGenesisPin, genesisFoundingLine, genesisResolutionAt } from "./genesis-resolve.js";
+export type { GenesisResolution, GenesisSource } from "./genesis-resolve.js";
+export { derivePronaosDeskInputs } from "./pronaos-desk.js";
+export type { PronaosDeskInputs } from "./pronaos-desk.js";
 export type { PronaosComposition, PronaosCompositionConfig } from "./pronaos-composition.js";
 export { bulbCap } from "./node-caps.js";
 export { pullBulb, pullArrival, kindleFromBulb, httpBulbTransport } from "./kindle.js";
 export type { BulbPullTransport, KindleResult } from "./kindle.js";
 export { startNexusClientDial, maybeStartNexusClientDial } from "./nexus-client-dial.js";
 export type { NexusClientDial, NexusClientDialConfig, NexusClientDialInput } from "./nexus-client-dial.js";
-export type { MembershipRelay } from "./ws-membership-channel.js";
 export { FileMembershipChannel } from "./file-membership-channel.js";
 export { makeFormPalace } from "./sensorium.js";
 export type {
@@ -439,7 +465,7 @@ export type {
 // P4 — the RRF multi-graph query: fuse the CONTENT (verbatim mempalace), FORM (.formpalace), and
 // later graphs on verbatim_sha by N-ary reciprocal rank fusion (living-grammar-palace#dual-graph).
 export {
-  fuseMultiGraph, multiGraphRecall, buildFormWhere, combineWhere, makeFormSearch, DEFAULT_RRF_K,
+  fuseMultiGraph, multiGraphRecall, buildFormWhere, makeFormSearch, DEFAULT_RRF_K,
   resolveApertureGrain, apertureWeight, weightByAperture, PARAGRAPH_APERTURE,
   contentKeyOf, contentLeg, formLeg, verbatimShaOf,
 } from "./sensorium-recall.js";
@@ -458,22 +484,22 @@ export type {
 export { KEY_CLASSES, isKeyClass, isRelationClass } from "@lararium/mesh";
 export { FsCustodyIo, vesselCustodyIo, CustodyLockRefused, CUSTODY_CLAIM_NAME, type FsCustodyIoOptions } from "./custody-io.js";
 export type { KeyClass } from "@lararium/mesh";
-// The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the VK
+// The ONE carrier table: every carrier at rest by home, custody class and writer. The custody status, the S key
 // rotation, the bundle's cut and the custody shape reader all derive from it — see `vault-carriers`.
 export {
-  CUSTODY_CLASSES, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
-  vkSlotsPath, skSlotsPath, vkSealedCarriers, rotateVesselVk,
+  CUSTODY_CLASSES, CUSTODY_PARTS, carrierTable, carrierCensus, outsideTheTable, vesselCustodyHomes,
+  sSlotsPath, skSlotsPath, sSealedCarriers, occupantCarriers, rotateNodeKey,
 } from "./vault-carriers.js";
 export type {
-  CustodyClass, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
+  CustodyClass, CustodyPart, CustodyTarget, CustodyHome, CustodyHomes, CarrierRow, CarrierEntry, OutsideFile, OutsideWhy,
 } from "./vault-carriers.js";
-// The old-shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
-export { readCustodyShape, oldShapeRefusal, FRESH_START_RUNBOOK } from "./custody-shape.js";
-export type { CustodyShape, CustodyShapeReading, OldShapeOffender, OldShapeReason } from "./custody-shape.js";
+// The custody shape reader: the shape every vessel home stands in, read before any write — see `custody-shape`.
+export { readCustodyShape, occupiedStoreRefusal } from "./custody-shape.js";
+export type { CustodyShape, CustodyShapeReading, OccupantOffender, OccupantReason } from "./custody-shape.js";
 // The custody root: the hot carrier every sovereign derivation stands on, apart from the floor key — see `custody-root`.
 export {
   CUSTODY_ROOT_BYTES, CustodyRootRefused, mintCustodyRoot, custodyRootFromBytes, isCustodyRoot, custodyRootPath,
-  custodyDerive, custodyVeil, openCustodyRootCarrier, sealCustodyRoot,
+  custodyDerive, openCustodyRootCarrier, sealCustodyRoot,
 } from "./custody-root.js";
 export type { CustodyRoot, OpenedCustodyRoot } from "./custody-root.js";
 // The custody session: found, unlock, bind, unbind, rotate and read the vessel's key custody — see `custody-session`.
@@ -488,13 +514,30 @@ export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCi
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
 export { makeCustodyHolder, CustodyLocked, CustodyRowUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
-export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
-export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused, GATE_MEMORY_DIR } from "./gate-memory-rows.js";
-export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow, custodyVeilKeys } from "./custody-seat.js";
+export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SESSION_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
+export { gateMemoryRows, gateMemoryRowFile, GateMemoryRowRefused } from "./gate-memory-rows.js";
+export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
+export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
+export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
+// The ward (seat-harness#/the-ward): the face root seed opens fresh under a human route for one act.
+export { WardNeedsFreshUnlock, WardAbsent } from "./custody-holder.js";
+export type { WardSeat } from "./custody-holder.js";
+export { rewrapWardCustody, withWardKeyCustody } from "./custody-seat.js";
+export { wardCredential, wardCredentialOfRoute, parkWardTicket, wardBindDigest, storeVerbNeedsWard, storeVerbGatesFirst, seatWardGatherer, wardGathererSeated, gatherSeatedWardRoute } from "./ward-credential.js";
+export type { WardCredential } from "./ward-credential.js";
+export { wardRootSigner } from "./ward-signer.js";
+export { faceDir, faceFileNames, faceFilePathSync, listFaceFiles, readFaceIndexSync } from "./face-index.js";
+export { bindFaceSlot, unbindFaceSlot, FaceTreeUnreadable } from "./face-slot-ops.js";
+export { openFaceTree } from "./face-custody.js";
+export { faceRouteSeated, seatFaceRoute, faceRouteBindDigest, parkFaceRoute, gatherFaceRoute, ensureFaceCustodyOfGroup, ensureFaceCustodyOfAsk, FaceRouteAbsent } from "./face-route.js";
+export type { FaceRouteGatherer } from "./face-route.js";
 export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
-export { serveUdsFront, type UdsFront } from "./uds-channel.js";
+export { serveUdsFront, makeUdsSeat, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";
 export type { CustodyFrame, CustodyAnswer, CustodyFrameDeps } from "./custody-frames.js";
+export { nodePromoteStores, nodePromoteCas, promotedFile, kapaeFile, PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
+
+export { seatReadBackStandIn, readBackStandInSeated } from "./seal-ceremony.js";

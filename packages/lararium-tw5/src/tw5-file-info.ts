@@ -24,6 +24,10 @@
  * here writes its own `title:` — in the `.tid` field block, the `.json` array, or the
  * `.meta` sidecar. `flattenedRelPath` supplies the candidate it starts from.
  *
+ * The bytes rendered here and the carrier form `carrierFormOf` (`@lararium/mesh`) defines for a record name one carrier:
+ * `carrier-form-agreement.test.ts` pins them together, the mesh form standing as the engine-free author of the record's
+ * carrier identity.
+ *
  * Meme: lar:///ha.ka.ba/lararium/tw5/tw5-file-info
  */
 
@@ -35,7 +39,7 @@ export interface Tw5FileInfo {
    *  filesystem adaptor would site under `tiddlers/`. */
   readonly relPath: string;
   /** True when a `$:/config/FileSystemPaths` rule named the path; false when TW5's flattened-title
-   *  default did. The projector honours a ruled path and otherwise sites by the loci law. */
+   *  default did. The projector honours a ruled path and otherwise sites by the address siting rule. */
   readonly pathRuled: boolean;
   /** The chosen extension (".tid" / ".json" / a content-type extension). */
   readonly ext: string;
@@ -172,7 +176,7 @@ function sitePath($tw: TW5Instance, title: string, base: string, ext: string): s
  * 338-341 + the sanitization tail): path separators become underscores so no title ever mints a
  * directory, then the whole title sanitizes into one filename.
  *
- * The `lar:` family never needs it — the loci law sites those at their uri-path, which is injective —
+ * The `lar:` family never needs it — the address siting rule sites those at their uri-path, which is injective —
  * but every OTHER title does, and a stock folder wiki writes exactly this file. Two distinct titles
  * MAY flatten to one path (`A/B` and `A_B` both read `A_B`); resolving that collision is the
  * projector's uniquifier, since only the disk knows what already sits there.

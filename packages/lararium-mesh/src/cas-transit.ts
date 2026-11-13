@@ -28,7 +28,7 @@
  * sub-range without the whole blob). Whole-blob `verifyCiphertextCid` is correct and sufficient today; bao is the
  * streaming upgrade, wire-compatible, and lands when large-body range-fetch needs it.
  *
- * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-transit
+ * Meme: lar:///ha.ka.ba/lararium/mesh/content-resolution#/cad-storage
  */
 
 import { verifyCiphertextCid, CIPHERTEXT_CID_ALGO } from "./ciphertext-cas.js";
@@ -52,7 +52,7 @@ export function cidDigestClass(cid: string): CidDigestClass {
 
 /**
  * THE CLASS-AWARE VERIFY. A `blake3:` cid verifies as ciphertext (BLAKE3); a `sha256:` cid, or a bare `cid/` blob
- * address, as a cleartext blob (sha256 of the bytes). Bytes that do not recompute to the cid are rejected.
+ * address, as a cleartext blob (sha256 of the bytes). Bytes that do not recompute to the cid are rejected, and so is any other algorithm tag.
  */
 export function verifyCidBytes(bytes: Uint8Array, cid: string): boolean {
   const bare = BARE_CID_HEX.test(cid);
@@ -63,6 +63,9 @@ export function verifyCidBytes(bytes: Uint8Array, cid: string): boolean {
     try { parsed = parseDigest(cid); } catch { return false; }
   }
   if (!bare && parsed.algo === CIPHERTEXT_CID_ALGO) return verifyCiphertextCid(bytes, cid);
+  // An algorithm tag this verify does not implement REFUSES: bytes named under an unknown tag were never checked under
+  // it, and their SHA-256 digest proves nothing about that name.
+  if (parsed.algo !== "sha256") return false;
   return sha256HexBytesSync(bytes).toLowerCase() === parsed.hex.toLowerCase();
 }
 

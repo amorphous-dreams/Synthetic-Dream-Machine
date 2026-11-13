@@ -1,139 +1,170 @@
 /**
- * `lares vessel seed` — plant the disk holdings into the vessel docs.
+ * `lares vessel seed` — plant the disk holdings into the vessel's canon.
  *
- * A nameless entity composed of #has caps: disk-grant (the bags dir) · synced-tree · the two
- * existing feed gestures, kind-routed per holding:
- *   - SYSTEM bags (lares, lararium — their docs mint at boot) → the diff-gated
- *     `ingest` gesture (disk-hash vs synced-hash vs island render-hash).
- *   - Every OTHER holding (sdm, elyncia, …) → the `act LOAD`
- *     gesture, whose island reactor mints the catalog-corpus entry on a virgin
- *     catalog (the ingest gate cannot).
+ * THE WORD: seed lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's
+ * faces by pet-name. Two legs: the HOLDINGS leg lays the checkout's canon (`bags/<slug>`) back into each canon bag, and
+ * then the MIRRORS leg (`seed-mirrors.ts`) lays every mirror under the projections root back into its one layer (face
+ * working and canon, house bags, other wikis' working), adopts a former face's folders by pet-name after a
+ * re-founding, previews the kahua items it would lift and lifts them on the operator's confirmed count alone, and moves
+ * an adopted face's folders to ashes once nothing stands pending.
  *
- * IDEMPOTENT (causal-island law): each run converges from whatever state it finds —
- * a virgin Synced tree reads everything NEW; a converged tree no-ops per holding.
- * No toggles: whether a zero-new wave counts as failure belongs to the CALLER's flow
- * (founding feeds the initial corpus; a daily seed accepts convergence).
+ * ONE ROAD, DECIDED BY WHERE CANON STANDS. A holding whose canon source stands on disk (its dir under the canon source
+ * the daemon resolves, `daemonBagsDir`, and no private plane: `projectionRoots(...).sourcedSlugs()`) takes the
+ * diff-gated `ingest` gesture into its canon bag, after a CREATE that converges on the bag that stands (a bag that
+ * resolves anywhere, the realm's house canon included, mints nothing). No name list picks the road: in the vessel
+ * `LAR_BAGS=/workspace/bags`, so every holding the checkout carries rides it. A holding whose canon source stands
+ * elsewhere takes no road, and the seed names it.
  *
- *   lares vessel seed [--apply] [--yes]   — preview per holding by default (the ingest posture)
+ * A SEED NEVER WRITES A WIKI'S WORKING LAYER. INGEST lands canon alone, through its three-way gate (disk, synced base,
+ * canon render), and the recipe stack decides what shows: a working copy keeps shadowing the canon under it. Where the
+ * seed moved canon past the text a copy forked from, it warns per title that canon stands fresher (`override-bases.ts`)
+ * and writes nothing. A working-only title never promotes, and a title gone from disk stands pending at the shore.
+ * LOAD + MOVE stays the human promotion door; the seed never walks it.
+ *
+ * IDEMPOTENT (causal-island law): each run converges from whatever state it finds — a virgin Synced tree reads
+ * everything NEW; a converged tree no-ops per holding.
+ *
+ *   lares vessel seed [--apply] [--yes] [--lift-kahua <N>]   — preview per holding by default (the ingest posture);
+ *                                          a bare --yes lifts nothing in kahua: a typed count on a TTY, or --lift-kahua N
  */
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { bagUri, LARES_DOC_URI, LARARIUM_DOC_URI, identitySlug } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
-import { larBagsDir } from "../env.js";
-import { cmdIngest } from "./ingest.js";
+import { larBagsDir, vesselDid } from "../env.js";
+import { askShore, readShoreList } from "../shore-core.js";
+import { cmdIngest, type FresherCanonReading } from "./ingest.js";
 import { cmdAct } from "./act.js";
-
-/**
- * The holdings whose docs the vessel mints at boot — fed by the diff-gated ingest gesture.
- *
- * DERIVED from the bag URI constants (`LARES_DOC_URI`/`LARARIUM_DOC_URI`, the single owner of
- * "what these two holdings are named"), never hand-typed — a re-typed literal can drift out from
- * under the constants it means to mirror, and a set that can never match `discoverHoldings`'s
- * directory names is worse than an absent one: the branch below still reads as reachable while
- * the infrastructure bags silently take the LOAD route.
- */
-export const SYSTEM_HOLDINGS = new Set(
-  [identitySlug(LARES_DOC_URI), identitySlug(LARARIUM_DOC_URI)].filter(
-    (s): s is string => s !== null,
-  ),
-);
+import { LIVE_MIRROR_DOORS, type MirrorDoors } from "../seed-mirrors.js";
+import { runMirrors } from "../seed-mirror-leg.js";
 
 export interface SeedHolding {
   readonly holding: string;               // "lares"
   readonly source: string;                // "<bags dir>/lares"
   readonly toBag: string;                 // "lar:///ha.ka.ba/bags/lares"
-  readonly gesture: "ingest" | "load";    // the kind-route taken
+  readonly gesture: "ingest" | "skip" | "floor";    // the road taken (`floor`: house canon this face reads, never writes)
   readonly exitCode: number;              // the gesture's verdict for this holding
+  readonly reason?: string;               // why a holding took no road
+  readonly fresher?: FresherCanonReading; // working copies that shadow a canon record this seed moved past their base
 }
 
-/**
- * The holdings map — every dir under the BAGS DIR, discovered, never hardcoded.
- *
- * THE BAGS DIR SITES ON ITS OWN CAP (`larBagsDir`: `LAR_BAGS`, else `<corpus>/bags`), the same cap the daemon's
- * projection and the `ingest` and `act` gestures read. A vessel whose state and corpus rest on two mounts (the
- * container: `LAR_ROOT=/state`, `LAR_BAGS=/workspace/bags`) holds its bags apart from its root, so a seed that
- * joined `bags` onto the root read an empty map there and planted nothing.
- */
-export function discoverHoldings(bagsDir: string): Array<{ holding: string; source: string; toBag: string }> {
-  let names: string[] = [];
-  try {
-    // EVERY DIRECTORY UNDER bags/ IS A HOLDING. The kind-plane segment above already says these are bags,
-    // so the entity name carries no marker of its own — and a filter demanding one matches nothing, returns
-    // an empty roster, and seeds silently with a clean exit.
-    names = readdirSync(bagsDir).filter((n) => !n.startsWith(".") && statSync(join(bagsDir, n)).isDirectory());
-  } catch { return []; }
-  return names.sort().map((holding) => ({
-    holding,
-    source: join(bagsDir, holding),
-    // The disk dir `elyncia` names bag `bags/elyncia` — mint through bagUri so the seed
-    // targets the bag the daemon registers.
-    toBag: bagUri(holding),
-  }));
-}
+export { discoverHoldings, canonIsDisk } from "../holdings.js";
+
+/** The seed's word for a house canon holding on a face outside the Kahu cabal (action-handler `HOUSE_CANON_READS_FLOOR`). */
+export const HOUSE_CANON_FLOOR_REASON = "house canon, written by the Kahu steward (h0); this face reads the floor";
+import { canonIsDisk, discoverHoldings } from "../holdings.js";
 
 /**
- * Feed ONE holding back into its doc — the kind-route (ingest for system bags, CREATE+LOAD
- * for the rest), lifted out so the whole-store `seedRun` shares ONE kind-routed spelling for feeding a holding. Returns this holding's verdict row.
+ * Feed ONE holding into its canon. A disk-sourced holding: CREATE (applied runs only; it converges on the bag that
+ * stands), then the diff-gated INGEST. A preview sends the INGEST preview alone and mutates nothing.
  */
 export async function seedHolding(
   args: ParsedArgs,
   h: { holding: string; source: string; toBag: string },
+  diskSourced: boolean = canonIsDisk(h),
 ): Promise<SeedHolding> {
-  if (SYSTEM_HOLDINGS.has(h.holding)) {
-    // Infrastructure bags (lares/lararium) flow as NAMELESS ENTITIES — no special auto-confirm.
-    // A converged bag submits zero (silent no-op); a bag with genuinely NEW content trips the
-    // ingest gate's "confirmation required" WITHOUT `--yes` — and that is the FEATURE: new infra
-    // content SURFACES for the operator to grade on a gradient (approve → re-run with --yes, or
-    // abort), never silently auto-applied. `--yes` (the operator's relayed approval) passes through.
-    const exitCode = await cmdIngest({
-      command: "ingest",
-      positional: [],
-      options: { ...args.options, source: h.source, to: h.toBag },
-      flags: args.flags,
-    });
-    return { ...h, gesture: "ingest", exitCode };
+  if (!diskSourced) {
+    return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the seed feeds disk canon alone" };
   }
-  // LOAD refuses an unregistered bag (cap-denied) — CREATE registers the
-  // catalog-corpus entry first. CREATE converges idempotently (same content
-  // id → same outcome), so every seed run may lead
-  // with it. Applied runs only — a preview mutates nothing.
-  const flags = args.flags["apply"]
-    ? { ...args.flags, yes: true }
-    : { ...args.flags, "dry-run": true };
   if (args.flags["apply"]) {
-    const createCode = await cmdAct({
+    const created = await foldCreateOutput(args, () => cmdAct({
       command: "act",
       positional: ["CREATE"],
       options: { ...args.options, bag: h.toBag },
       flags: { ...args.flags, yes: true },
-    });
-    if (createCode !== 0) return { ...h, gesture: "load", exitCode: createCode };
+    }));
+    if (created.code !== 0) return { ...h, gesture: "ingest", exitCode: created.code };
+    // HOUSE CANON ON A FACE OUTSIDE THE KAHU CABAL: the CREATE answered that this face reads the floor, so the INGEST
+    // writes nothing (the steward alone writes canon live) and the seed names the state, clean.
+    if (created.readsFloor) return { ...h, gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON };
   }
-  const exitCode = await cmdAct({
-    command: "act",
-    positional: ["LOAD"],
-    options: { ...args.options, "source-uri": h.source, to: h.toBag },
-    flags,
-  });
-  return { ...h, gesture: "load", exitCode };
+  // New content SURFACES for the operator to grade: without `--yes` the ingest gate asks; `--yes` (the operator's
+  // relayed approval) passes through.
+  const sink: { fresher?: FresherCanonReading } = {};
+  const exitCode = await withIngestTicks(h.holding, () => cmdIngest({
+    command: "ingest",
+    positional: [],
+    options: { ...args.options, source: h.source, to: h.toBag },
+    flags: args.flags,
+  }, sink));
+  return { ...h, gesture: "ingest", exitCode, ...(sink.fresher ? { fresher: sink.fresher } : {}) };
 }
 
 /**
- * The core run — one existing gesture per holding, sequential (one island gate, no
- * write contention). Continues past a failing holding (converge what it can); the
- * caller reads per-holding exit codes.
+ * THE SHORE FLOOD, ANSWERED ONCE. A wave tombstones no carrier: a title gone from disk (a branch switch drops many)
+ * stands pending at the shore. The seed counts what stands pending per bag it fed and prints the one batch answer per
+ * bag, so a person answers once rather than carrier by carrier.
  */
-export async function seedRun(args: ParsedArgs): Promise<SeedHolding[]> {
-  const holdings = discoverHoldings(larBagsDir());
-  const ledger: SeedHolding[] = [];
-  for (const h of holdings) ledger.push(await seedHolding(args, h));
-  return ledger;
+export function pendingRemovalLines(pending: ReadonlyArray<Record<string, unknown>>, bags: readonly string[]): string[] {
+  const counts = new Map<string, number>();
+  for (const p of pending) {
+    const bag = String(p["bagId"]);
+    if (bags.includes(bag)) counts.set(bag, (counts.get(bag) ?? 0) + 1);
+  }
+  return [...counts].sort(([a], [b]) => (a < b ? -1 : 1)).map(([bag, n]) =>
+    `seed: ${n} pending removal(s) in ${bag}: the files left disk and nothing tombstoned; answer once with \`lares shore remove --all --count ${n} --bag ${bag}\` (or \`restore --all --count ${n} --bag ${bag}\`)`);
 }
 
-export async function cmdSeed(args: ParsedArgs): Promise<number> {
+/** How many fresher-canon titles a report names before it counts the rest. */
+export const SEED_FRESHER_NAMES = 8;
+
+/** The CLI already uses performance.now() for process-local liveness budgets; seed durations share that monotonic clock. */
+function elapsedText(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  return seconds >= 60 ? `${Math.floor(seconds / 60)}m${String(seconds % 60).padStart(2, "0")}s` : `${seconds}s`;
+}
+
+function countCarriers(dir: string): number {
+  let count = 0;
+  try {
+    for (const name of readdirSync(dir)) {
+      const path = join(dir, name);
+      const stat = statSync(path);
+      if (stat.isDirectory()) count += countCarriers(path);
+      else if (stat.isFile() && !name.startsWith(".")) count++;
+    }
+  } catch { /* The ingest gesture reports source failures. */ }
+  return count;
+}
+
+async function withIngestTicks(holding: string, run: () => Promise<number>): Promise<number> {
+  const started = performance.now();
+  const timer = setInterval(() => {
+    console.log(`… ${holding}: settling · ${elapsedText(performance.now() - started)}`);
+  }, 5000);
+  try { return await run(); } finally { clearInterval(timer); }
+}
+
+/** The CREATE's verdict, and whether its answer named the floor (a house canon bag on a face outside the Kahu cabal). */
+export interface CreateFold { readonly code: number; readonly readsFloor: boolean }
+
+/** Whether the CREATE's printed answer names the floor (`readsFloor true`, the action handler's house canon answer). */
+export function createReadsFloor(lines: readonly string[]): boolean {
+  return lines.some((line) => /^\s*readsFloor\s+true\s*$/.test(line));
+}
+
+async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): Promise<CreateFold> {
+  const lines: string[] = [];
+  const log = console.log;
+  console.log = (...values: unknown[]) => { lines.push(values.map(String).join(" ")); };
+  try {
+    const code = await run();
+    if (args.flags["verbose"]) for (const line of lines) log(line);
+    else {
+      const detail = lines.join(" · ").replace(/\s+/g, " ").trim();
+      if (detail) log(`  CREATE ${detail}`);
+    }
+    return { code, readsFloor: code === 0 && createReadsFloor(lines) };
+  } finally { console.log = log; }
+}
+
+/** Run the mirror leg off the seed's own flags: `--apply`, `--lift-kahua <N>`, `--json`. */
+export function runMirrorLeg(args: ParsedArgs, doors: MirrorDoors, opts: { kahuaOnly?: boolean } = {}): Promise<number> {
+  return runMirrors({ apply: args.flags["apply"] === true, liftKahua: args.options["lift-kahua"], json: args.flags["json"] === true, ...(opts.kahuaOnly ? { kahuaOnly: true } : {}) }, doors);
+}
+
+export async function cmdSeed(args: ParsedArgs, mirrorDoors: MirrorDoors = LIVE_MIRROR_DOORS): Promise<number> {
   const bagsDir = larBagsDir();
   const holdings = discoverHoldings(bagsDir);
   if (holdings.length === 0) {
@@ -144,10 +175,40 @@ export async function cmdSeed(args: ParsedArgs): Promise<number> {
     });
     return 3;
   }
-  console.log(`[seed] ${holdings.length} holding(s): ${holdings.map((h) => h.holding).join(" · ")}${args.flags["apply"] ? "" : "  (preview — pass --apply)"}`);
-  const ledger = await seedRun(args);
+  const ledger: SeedHolding[] = [];
+  const started = performance.now();
+  for (const h of holdings) {
+    const carriers = countCarriers(h.source);
+    console.log(`seed ${h.holding}: ${carriers} files…`);
+    const holdingStarted = performance.now();
+    const row = await seedHolding(args, h);
+    ledger.push(row);
+    if (row.gesture === "skip") { console.log(`- ${h.holding}: no road · ${row.reason}`); continue; }
+    if (row.gesture === "floor") { console.log(`· ${h.holding}: ${row.reason}`); continue; }
+    const retry = row.exitCode === 0 ? "retry safe" : "retry safe (diff-gated)";
+    console.log(`${row.exitCode === 0 ? "✓" : "✗"} ${h.holding}: ${carriers} files · ${elapsedText(performance.now() - holdingStarted)} · ${retry}`);
+  }
   const failed = ledger.filter((h) => h.exitCode !== 0);
-  for (const h of failed) console.error(`[seed] ${h.holding} (${h.gesture}) → exit ${h.exitCode}`);
-  console.log(`[seed] ${ledger.length - failed.length}/${ledger.length} holding(s) converged`);
-  return failed.length === 0 ? 0 : 1;
+  for (const h of failed) console.error(`  ${h.holding}: ${h.gesture} failed (exit ${h.exitCode})`);
+  // THE FRESHER CANON: working copies keep shadowing the canon this seed moved; the word names them, nothing writes.
+  const fresher = ledger.flatMap((h) => (h.fresher?.titles ?? []).map((t) => `${h.holding}:${t}`));
+  const fresherCount = ledger.reduce((n, h) => n + (h.fresher?.count ?? 0), 0);
+  if (fresherCount > 0) {
+    console.error(`  ⚠ canon is fresher than the working copy above it for ${fresherCount} title(s): ${fresher.slice(0, SEED_FRESHER_NAMES).join(", ")}${fresherCount > SEED_FRESHER_NAMES ? `, … ${fresherCount - SEED_FRESHER_NAMES} more` : ""}`);
+    console.error("    each copy still shadows canon; the daemon's fresher-canon read lists them all, and a person removes a copy with the ordinary verbs to take the fresher canon");
+  }
+  const fed = ledger.filter((h) => h.gesture === "ingest");
+  const floorRead = ledger.filter((h) => h.gesture === "floor").length;
+  if (args.flags["apply"] && fed.length > 0) {
+    try {
+      const did = await vesselDid();
+      const listed = await readShoreList((a) => askShore(a, did), { op: "list" });
+      if (listed.ok) for (const line of pendingRemovalLines(listed.pending, fed.map((h) => h.toBag))) console.log(line);
+    } catch { /* the shore unread: the seed's own verdict stands; `lares shore` reads it */ }
+  }
+  const offDisk = ledger.filter((h) => h.gesture === "skip").length;
+  console.log(`seed: ${fed.length - failed.length}/${fed.length} holdings${floorRead > 0 ? ` · ${floorRead} read the floor` : ""}${offDisk > 0 ? ` · ${offDisk} off disk` : ""} · ${elapsedText(performance.now() - started)}`);
+  // THE MIRRORS LEG, after canon stands: every mirror under the projections root back into its one layer.
+  const mirrors = await runMirrorLeg(args, mirrorDoors);
+  return failed.length === 0 && mirrors === 0 ? 0 : 1;
 }

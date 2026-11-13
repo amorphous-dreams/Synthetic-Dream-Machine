@@ -13,9 +13,8 @@ import meta_io
 
 def _write_meta_config(tmp_path, monkeypatch, schema: dict) -> None:
     """Point the house config at a tmp dir, write meta.json, force a cache reload."""
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
-    cfgdir = tmp_path / "lares"
+    monkeypatch.setenv("LAR_ROOT", str(tmp_path))
+    cfgdir = tmp_path / "config"
     cfgdir.mkdir(exist_ok=True)
     (cfgdir / "meta.json").write_text(json.dumps(schema), encoding="utf-8")
     meta_io._config_mtime = -1.0  # invalidate the mtime cache so the write lands now
@@ -84,9 +83,8 @@ def test_annotators_config_selects_when_no_arg_or_env(tmp_path, monkeypatch):
 
 
 def test_corrupt_meta_config_degrades_to_the_seed(tmp_path, monkeypatch):
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.setenv("XDG_CONFIG_HOME", str(tmp_path))
-    cfgdir = tmp_path / "lares"
+    monkeypatch.setenv("LAR_ROOT", str(tmp_path))
+    cfgdir = tmp_path / "config"
     cfgdir.mkdir(exist_ok=True)
     (cfgdir / "meta.json").write_text("{ this is not json", encoding="utf-8")
     meta_io._config_mtime = -1.0

@@ -9,7 +9,6 @@
  *     --source <file>   the disk bundle (.json / .multids) whose pack the island collects
  *     --from <bag>      the bag holding the pack's members (their aside provenance)
  *     --out <file>      (optional) where the re-rendered bundle lands; defaults to --source
- *     --in-wiki         render through the active wiki island's composite layer stack
  *
  *   ADD / COPY / MOVE
  *     --title <t>       tiddler title (Work-level identity)
@@ -37,12 +36,16 @@
 
 import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
-import { join, extname, resolve, relative, sep } from "node:path";
+import { join, extname, resolve, relative, sep, basename } from "node:path";
 import { statSync, readdirSync, readFileSync, existsSync, writeFileSync } from "node:fs";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+
+/** The projections root when one stands, as the optional `MirrorDirs` field. */
+const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { readCarrierText, fileToUriForSource } from "../ingest-core.js";
 import { stageBodyToCas, carrierCasFlagged, declaredType } from "../cas-stage.js";
-import { ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX } from "@lararium/mesh";
+import { metaTableFromBody } from "@lararium/node";
+import { bagManifestUri, BAG_MANIFEST_FILE, ACTION_VERBS, isActionVerb, isTransferVerb, isBagVerb, newChangeId, newRequestId, taskContentId, OUTCOME_URI_PREFIX, wikiSlugOfBag } from "@lararium/mesh";
 import { summaryOutput, type SubmitResult } from "../verb-result.js";
 import { runVerb } from "../verb-call.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "../local-connector.js";
@@ -67,26 +70,30 @@ function receiptToResult(r: ReceiptAnswer): SubmitResult | undefined {
 }
 
 /**
- * The loci title a LOADed file carries — used when the file is NOT a memetic
+ * The `lar:` title a LOADed file carries — used when the file is NOT a memetic
  * carrier (a memetic carrier self-titles from its own heading; this rides as the
  * fallback baseUri). Two derivations:
  *   1. A file under a `bags/<holding>/…` or `wikis/<slug>/…` mirror tree carries
  *      its stable lar: name — the interior after the holding dir, any extension
- *      stripped, when it bears a `w.w.w` loci root.
+ *      stripped, when it bears a `w.w.w` address root.
  *   2. Otherwise the file namespaces under the destination bag by its path
  *      relative to the LOAD source (extension stripped) — unique + projectable.
  */
-function lociTitleForLoad(source: string, file: string, toBag: string): string {
+function addressTitleForLoad(source: string, file: string, toBag: string): string {
   const parts = resolve(file).split(sep);
+  // The FIRST plane segment whose interior reads as an address wins: a holding's files sit at
+  // `bags/<holding>/ha.ka.ba/bags/<holding>/…`, and the inner `bags` names no interior of its own.
   for (const plane of ["bags", "wikis"]) {
-    const i = parts.lastIndexOf(plane);
-    if (i >= 0 && i + 2 < parts.length) {
+    for (let i = parts.indexOf(plane); i >= 0; i = parts.indexOf(plane, i + 1)) {
+      if (i + 2 >= parts.length) continue;
       const interior = parts.slice(i + 2).join("/").replace(/\.[^/.]+$/, "");
       if (/^\w+\.\w+\.\w+\//.test(interior)) return `lar:///${interior}`;
     }
   }
   const rel = relative(source, file).split(sep).join("/").replace(/\.[^/.]+$/, "");
-  const base = toBag.replace(/\/+$/, "");
+  // A record's address lives under its BAG; a wiki slot (`wikis/<slug>/working`) is where it rests, never its name.
+  const slug = wikiSlugOfBag(toBag);
+  const base = (slug && /\/wikis\//.test(toBag) ? `lar:///ha.ka.ba/bags/${slug}` : toBag).replace(/\/+$/, "");
   return rel ? `${base}/${rel}` : base;
 }
 
@@ -96,15 +103,18 @@ function printUsage(): void {
   console.error(`  VERB ∈ { ${ACTION_VERBS.join(", ")}, REPACK }`);
   console.error("");
   console.error("  ADD / COPY / MOVE  --title <t> --from <bag> --to <bag> [--change-id <id>]");
+  console.error("  MOVE of a layer    --from <bag> --to <bag>   moves every live title the source holds (promotion)");
   console.error("  MOVE of a tombstone  --title <t> --from <bag> [--to <bag>] [--shadow]");
   console.error("                     carries the delete down into a bag that holds the title; with no --to the");
   console.error("                     holders print as candidates; --shadow hides the title from a bag that holds none");
   console.error("  CLEAR / DROP       --bag <bag> [--change-id <id>]");
   console.error("  CREATE             --bag <bag> [--plane <catalog|oracle>] [--change-id <id>]");
   console.error("  LOAD               --source-uri <u> --to <bag> [--change-id <id>]");
-  console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>] [--in-wiki]");
+  console.error("  REPACK             --source <bundle-file> --from <bag> [--out <file>]");
   console.error("");
   console.error("  --yes              skip confirmation prompt");
+  console.error("  --dry-run          preview the effect without committing it");
+  console.error("  --in-wiki          run any act in the active wiki");
 }
 
 /**
@@ -132,10 +142,10 @@ async function actRepack(args: ParsedArgs): Promise<number> {
 
   const root = larRoot();
   // Derive the pack path (mirror-relative, WITH extension) exactly as the island recorded it in the
-  // aside provenance: the loci URI's path + the file's extension.
-  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() })(root, source);
+  // aside provenance: the `lar:` URI's path + the file's extension.
+  const uri = fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() })(root, source);
   if (!uri || !uri.startsWith("lar:///")) {
-    emit(args, { ok: false, error: { code: "usage", message: `no loci derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no loci derivation for "${source}"`) });
+    emit(args, { ok: false, error: { code: "usage", message: `no address derivation for "${source}" (outside bags//wikis/, or rootless)` }, human: () => console.error(`lares act REPACK: no address derivation for "${source}"`) });
     return exitFor("usage");
   }
   const packPath = uri.slice("lar:///".length) + extname(source);
@@ -147,20 +157,15 @@ async function actRepack(args: ParsedArgs): Promise<number> {
     return exitFor("not-found");
   }
 
-  // --in-wiki: run REPACK IN the active wiki island, so the members render through THAT wiki's
-  // composite layer stack — the SAME bundle of titles renders distinctly per wiki (shadowing edits
-  // above the canon), on purpose. The default path resolves daemon-side (canon bags, no working-layer
-  // shadow).
-  const inWiki     = Boolean(args.flags["in-wiki"]);
   const repackArgs = { bag: fromBag, "pack-path": packPath };
-  const submitName = inWiki ? "wiki-act" : "REPACK";
-  const submitArgs = inWiki ? { verb: "REPACK", args: repackArgs } : repackArgs;
 
   // REPACK READS — it registers as a QUERY verb (no residency mutation, no effect record), so it
   // carries NO effectKey (H7). An effect-dedup key names a MUTATION this attempt would produce; a
   // read produces none, and a re-render from the same aside provenance is always safe to repeat —
   // there is no "ran twice" to guard against. Only `requestId` rides, a fresh nonce every attempt.
   const repackRequestId  = newRequestId();
+  const submitName = args.flags["in-wiki"] ? "wiki-act" : "REPACK";
+  const submitArgs = args.flags["in-wiki"] ? { verb: "REPACK", args: repackArgs } : repackArgs;
   let result;
   try {
     result = await runVerb(submitName, submitArgs, did, { requestId: repackRequestId });
@@ -265,15 +270,21 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     const fromBag  = args.options["from"];
     const toBag    = args.options["to"];
     changeId = args.options["change-id"] ?? newChangeId();
-    if (!title || !fromBag || (verb !== "MOVE" && !toBag)) {
-      console.error(`lares act ${verb}: --title, --from, --to all required`);
+    // A MOVE naming --from and --to and no --title promotes the WHOLE source layer (every live title) in one act.
+    const layerMove = verb === "MOVE" && !title && !!fromBag && !!toBag;
+    if (!layerMove && (!title || !fromBag || (verb !== "MOVE" && !toBag))) {
+      console.error(verb === "MOVE" ? "lares act MOVE: --title, --from, --to (or --from and --to alone to move the whole layer) required" : `lares act ${verb}: --title, --from, --to all required`);
+      return 2;
+    }
+    if (layerMove && args.flags["shadow"]) {
+      console.error("lares act MOVE: --shadow names one tombstoned title; a layer move names none");
       return 2;
     }
     if (verb !== "MOVE" && args.flags["shadow"]) {
       console.error(`lares act ${verb}: --shadow rides a MOVE of a tombstone alone`);
       return 2;
     }
-    if (verb === "MOVE" && !toBag) {
+    if (verb === "MOVE" && !toBag && title) {
       try {
         const did = await vesselDid();
         const where = await runVerb("where", { tiddler: title }, did);
@@ -291,7 +302,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
       }
       return 2;
     }
-    actionArgs["title"]      = title;
+    if (title) actionArgs["title"] = title;
     actionArgs["from-bag"]   = fromBag;
     actionArgs["to-bag"]     = toBag;
     actionArgs["change-id"]  = changeId;
@@ -350,9 +361,15 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
             .filter((f) => { try { return statSync(f).isFile(); } catch { return false; } })
         : [sourceUri])
         // A `.meta` sidecar rides WITH its content file, never as a carrier of its own.
-        .filter((f) => !f.endsWith(".meta"));
+        .filter((f) => !f.endsWith(".meta"))
+        // The catalog owns only a declaration naming this source bag; authored meta.mem files still travel.
+        .filter((f) => {
+          if (!isDir || f !== join(sourceUri, BAG_MANIFEST_FILE)) return true;
+          try { return metaTableFromBody(readFileSync(f, "utf8"))["title"] !== bagManifestUri(basename(resolve(sourceUri))); }
+          catch { return true; }
+        });
       // The feed lands BOTH memetic-wikitext memes AND every other legal TW5
-      // filetype: each carrier rides its text + a loci title + its extension, and
+      // filetype: each carrier rides its text + a `lar:` title + its extension, and
       // the island routes by content (an SOH heading → the memetic shore; else
       // TW5's own deserializer registry, keyed by extension). Only an empty /
       // whitespace-only file is skipped — it holds no carrier and would reject the
@@ -381,7 +398,7 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
           const type = declaredType(meta);
           const staged = stageBodyToCas(text, { ext, flagged, binary, ...(type ? { type } : {}) });
           return {
-            size: staged.size, title: lociTitleForLoad(sourceUri, f, toBag), ext,
+            size: staged.size, title: addressTitleForLoad(sourceUri, f, toBag), ext,
             ...(staged.staged ? { textCid: staged.cid } : { text }),
             ...(staged.skinny ? { skinny: true } : {}),
             ...(meta !== undefined ? { meta } : {}),
@@ -446,13 +463,20 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // dispatcher's outcome-keyed dedup then gives exactly-once EFFECT. A fresh
   // change-id (the --change-id default) means a genuinely distinct change → runs.
   const subject   = String(actionArgs["to-bag"] ?? actionArgs["bag"] ?? "");
-  // --in-wiki: run the ACTION IN the active wiki island over ITS composite
-  // (where working + canon both live) — the daemon commands via `wiki-act`,
-  // never reaching the per-fingerprint working binding. The default path
-  // executes daemon-side (write-then-sync).
-  const inWiki     = Boolean(args.flags["in-wiki"]);
+  // An explicit --in-wiki ask uses the active wiki. A slot act without that ask
+  // reaches the named wiki; other acts use the daemon's reach.
+  // The daemon wiki stands on the daemon's own reach, never a wiki island, so its slots route nowhere.
+  const slot = (bag: string): boolean => /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(?:temp|draft|personal|working)$/.test(bag) && wikiSlugOfBag(bag) !== "daemon";
+  const wikiVerb = verb === "LOAD" || verb === "MOVE" || verb === "COPY" || verb === "ADD";
+  const destinationWiki = wikiVerb && slot(subject) ? wikiSlugOfBag(subject) : null;
+  const source = actionArgs["from-bag"];
+  const sourceWiki = verb === "MOVE" && typeof source === "string" && slot(source)
+    ? wikiSlugOfBag(source) : null;
+  const explicitInWiki = args.flags["in-wiki"] === true;
+  const wiki = explicitInWiki ? null : sourceWiki ?? destinationWiki;
+  const inWiki = explicitInWiki || wiki !== null;
   const submitName = inWiki ? "wiki-act" : verb;
-  const submitArgs = inWiki ? { verb, args: actionArgs } : actionArgs;
+  const submitArgs = inWiki ? { verb, args: actionArgs, ...(wiki ? { wiki } : {}) } : actionArgs;
   // THE EFFECT NAMES WHAT RUNNING THIS WOULD DO, content-addressed — always computed, every verb.
   // EVERY action verb now SPLITS its id from it (E1 commit 4′, generalizing H4's LOAD-only fix,
   // D1 P2.5 iter 4 commit 4): `requestId` mints a FRESH nonce per attempt, so a retry after an
@@ -470,10 +494,9 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // itself succeeds.
   const timeoutMs = Math.max(10_000, 10_000 + carrierCount * 400);
   // ONE SHORT READ-BACK, BY THE SAME REQUEST ID, THROUGH `queryReceipt` — A READ, NEVER A SECOND
-  // DISPATCH (H1). This used to re-submit through `runVerb` a second time, trusting the dispatcher's
-  // outcome dedup to make that safe — but an id this vessel had already dropped as ABANDONED (the
-  // caller gave up before the vessel ever committed) carried no outcome to dedup against, so the
-  // "read-back" ran the act a second time under the SAME id. `queryReceipt` rides a dedicated
+  // DISPATCH (H1). A re-submit through `runVerb` cannot stand in for it: the dispatcher's outcome dedup
+  // holds nothing for an id this vessel dropped as ABANDONED (the caller gave up before the vessel ever
+  // committed), so a re-submitting "read-back" runs the act a second time under the SAME id. `queryReceipt` rides a dedicated
   // `{op:"receipt"}` line the vessel answers from its own ledger + durable outcome doc alone — it
   // cannot dispatch anything, by construction.
   const READBACK_MS = 2_000;
@@ -583,10 +606,11 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
   // attempt's landed outcome, rather than running the verb again — the CLI's own telling of "that
   // already landed" distinct from "I just landed it".
   const effectOf = result.effectOf;
+  const data = { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) };
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { verb, ...summary, audit: auditUri, changeId, ...(effectOf !== undefined ? { effectOf } : {}) },
+    data,
     human: () => {
       if (summary["dryRun"]) {
         const wl = Array.isArray(summary["wouldLand"]) ? summary["wouldLand"].length : 0;

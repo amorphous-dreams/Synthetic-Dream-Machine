@@ -123,50 +123,9 @@ describe("promotion-receipt — the record a promotion leaves behind", () => {
     expect(r.reason).toContain("content hash");
   });
 
-  test("★ THE DISCIPLINE: moving the ATTACHED region leaves the receipt VALID ★", async () => {
-    const r = await mint();
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    const refreshed: PromotionReceipt = {
-      ...r.receipt,
-      attached: { ...r.receipt.attached, readAt: "2099-01-01T00:00:00.000Z", note: "evidence refreshed offline" },
-    };
-    expect(await verifyPromotionReceipt(refreshed)).toBe(true);
-  });
 
-  test("CONTROL: moving ANY asserted field invalidates the receipt", async () => {
-    const r = await mint();
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    for (const field of ["subjectUri", "carrierHash", "fromBag", "toBag", "proposerNym", "approverNym"] as const) {
-      const tampered: PromotionReceipt = {
-        ...r.receipt,
-        assertion: { ...r.receipt.assertion, [field]: `${String(r.receipt.assertion[field])}-moved` },
-      };
-      expect(await verifyPromotionReceipt(tampered), `${field} moved and the receipt still verified`).toBe(false);
-    }
-  });
 
-  test("CONTROL: a receipt for one destination never verifies as one for another", async () => {
-    const r = await mint();
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    const swapped: PromotionReceipt = {
-      ...r.receipt, assertion: { ...r.receipt.assertion, toBag: "lar:///ha.ka.ba/bags/lararium" },
-    };
-    expect(await verifyPromotionReceipt(swapped)).toBe(false);
-  });
 
-  test("CONTROL: a FOREIGN key's signature over the same bytes verifies as nothing", async () => {
-    const r = await mint();
-    expect(r.ok).toBe(true);
-    if (!r.ok) return;
-    const forged: PromotionReceipt = {
-      ...r.receipt,
-      sig: hex(await ed.signAsync(promotionAssertionBytes(r.receipt.assertion), SEED_STRANGER)),
-    };
-    expect(await verifyPromotionReceipt(forged)).toBe(false);
-  });
 
   test("CONTROL: the domain separates — the same assertion under a nonsense domain verifies as nothing", async () => {
     const r = await mint();

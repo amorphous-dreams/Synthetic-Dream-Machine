@@ -43,7 +43,7 @@ import type { ParsedArgs } from "./parse-args.js";
  * argues otherwise. Only two motions neither found nor boot — `read` inspects and starts nothing, and
  * `stop` is pure port-control that loads no vessel logic.
  */
-const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound"]);
+const NEVER_STALE: ReadonlySet<string> = new Set(["read", "stop", "help", "unbound", "census", "fresher"]);
 
 /**
  * The vessel door's own sub-door names, DERIVED from its SUBS table — never a second roster to drift.
@@ -136,8 +136,9 @@ export async function isWorkspaceStale(root: string = repoRoot): Promise<boolean
 /** Record the digest the current dist was built FROM — written only after a build succeeds. */
 async function stampBuild(): Promise<void> {
   try {
-    mkdirSync(dirname(BUILD_STAMP), { recursive: true });
-    writeFileSync(BUILD_STAMP, await sourceDigest(join(repoRoot, "packages")));
+    // The stamp tool's writer: no planted link at the stamp (or on its way) is ever followed (test-door code writes this dir).
+    const { writeStamp } = await import(pathToFileURL(stampToolPath(repoRoot)).href);
+    writeStamp(repoRoot, BUILD_STAMP, await sourceDigest(join(repoRoot, "packages")));
   } catch { /* a stamp we cannot write costs one extra build, never correctness */ }
 }
 

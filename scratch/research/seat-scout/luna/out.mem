@@ -1,0 +1,74 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-25 (file date) — source `.lares-scratch/research/seat-scout/luna/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — research, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/research/seat-scout/luna/out.md` (research, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/seat-scout/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Luna-Gatescout (Tasked Spirit) · Ink-Clerk · Map-Wisp · Lares (Council) · Lares (Artificer)
+
+ooda-ha="7/declare-glyphs" · L-Prime carries every claim through verbs. I read the Wave D excerpts and source, then compared event-driven join models and exemption mechanisms; the evidence supports two bounded leans.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a-when-should-the-seat-land`>>
+
+!! A — When should the seat land?
+
+''LEAN:'' Seat on the PersonaGroup document’s change event when a matching grant appears, using that event path as the sole seat-and-lift owner; keep `faceSeated()` as a read-only seated-state check and let boot/recovery replay a pending grant through the same handler. Confidence: ''16/20''.
+
+''Strongest counter-reading:'' Lazy reads preserve a single consumer and avoid running expensive verification/ingest on unrelated group changes; no-clock grant verification already lets a later use safely find an arrived record. An arrival callback can race partial CRDT state and a temporarily unavailable lease frontier.
+
+''Ground:'' `operator-daemon-behavior.ts:282-332` verifies the grant, leaves unavailable-frontier grants unjudged, and ingests; `:349-367` currently triggers that operation only from `faceSeated()` and lifts there. `resolve-binding.ts:144-155` calls it on vessel-only reuse. Automerge documents that a `DocHandle` fires `change` on peer sync ([[Automerge Repo docs|https://automerge.org/docs/reference/repositories/dochandles/]]: “Whenever a change is received from a connected peer the `DocHandle` will fire a ‘change’ event”). MLS likewise gives a new member state via Welcome: [[RFC 9420 §12|https://www.rfc-editor.org/rfc/rfc9420.html#section-12]], “A Welcome message provides a new member … information to initialize their state.” Matrix’s cross-signing flow ties key sharing to device verification; it gates the action on trust rather than mere record visibility ([[Matrix security overview|https://matrixdocs.github.io/docs/security/overview]]: “confirm each new device … clients … will not send keys to an unconfirmed device”). These examples support arrival-triggered processing with validation gates, not trusting arrival itself.
+
+''Gaia 2026:'' On device one, the founder publishes the grant; device two receives a PersonaGroup change and runs one handler. If the lease frontier lacks its causal head, it leaves the signature unjudged and tries on the next actual change or explicit recovery event. Once verified, device two seats and lifts all keyed anon material once; duplicate sync cannot ingest twice. A boot that sees an already-seated face performs the same one-time lift.
+
+''Elyncia 5492:'' A ley-line echo receives the new guardian’s grant through a changed shrine record. It waits for the lease frontier to answer, then verifies against the KEL head and seats. If an echo crashes mid-lift, restart repeats the idempotent lift; no moon-clock summons the ritual. Binding reuse merely observes the seat and adopts the moved face record.
+
+''Build brief:'' Subscribe at the point that opens/watches the PersonaGroup plane in daemon boot (the setup around `operator-daemon-behavior.ts:282`, exact watch hook to locate in that boot path); filter changed doc records for this vessel’s grant, then call a single shared grant-consumer that owns verification, ingest and `floorLifted` handling. The present excerpts do not expose the plane-open/change-listener lines, so Wave D must pin that exact hook before implementation. Red test: publish a valid grant after a positive unseated state and assert change alone seats and lifts; control: unrelated group change does nothing. Also assert unavailable lease remains unjudged then succeeds on a later event, duplicate grant/change produces one ingest, and boot-seated positive performs lift. Keep `faceSeated()` as a recovery backstop that invokes the same consumer only when a pending grant exists, never a second lift owner.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b-scout-exemption-per-file-or-per-line`>>
+
+!! B — Scout exemption: per file or per line?
+
+''LEAN:'' Replace the whole-file scout skip with narrowly named per-line exemptions carrying a reason and the exact matched third-party term; keep every scout in `carrierFiles()` enumeration. Confidence: ''15/20''.
+
+''Strongest counter-reading:'' Inline marks add house syntax and maintenance burden to third-party research notes, may distort the meme normalizer, and can miss variants. A per-term/per-file allow-list centralizes the policy and avoids carrier edits; the current file skip already names the general reason.
+
+''Ground:'' `tools/s-vocabulary.mjs:11-13` names the scout rationale; `:43-46` uses `carrierFiles()` but filters all `*-scout.mem`; `:26-35` scans lines individually and exposes line numbers. `tools/s-vocabulary.test.mjs:23-35` already pairs known positives with a clean control; `:45-53` proves carrier enumeration nonzero. ESLint offers narrow `disable-next-line` directives and rule-specific suppression ([[ESLint configuration|https://eslint.org/docs/latest/use/configure/rules#using-configuration-comments]]): “disable a rule for a specific line.” CSpell also supports `cspell:disable-next-line` ([[CSpell docs|https://cspell.org/docs/Configuration/Inline-Suppression]]): line-scoped suppression. These patterns keep exceptions adjacent to the exceptional text, which makes silent regrowth visible in review.
+
+''Gaia 2026:'' The scout records an upstream verifier field and a tool acronym in two marked lines, each naming source and term. A new house-voice sentence elsewhere in the same carrier still trips the red check. The clean current scout set provides the positive baseline: exemption count equals today’s known third-party hits, while unrelated words remain a control.
+
+''Elyncia 5492:'' An echo copies an upstream protocol name into a scout and marks only that quoted line with a source reason. A later shrine instruction that independently adopts the retired term fails. The marker remains ordinary memetic-wikitext comment syntax or metadata proven inert by normalizer tests; it cannot hide surrounding prose.
+
+''Build brief:'' Stop filtering scout carriers at `s-vocabulary.mjs:46`; make the scanner recognize a single-line exemption marker with required reason plus exact term(s), and still reject every unmatched occurrence. Prefer a carrier-safe comment form already accepted by the normalizer, after confirming parser/render output. Red test: insert an unmarked house-voice occurrence beside a valid marked scout term and require failure; known positive is the marked upstream term, control is a clean scout line and current clean canon. Assert the finder returns carriers including scouts and nonzero count. A per-term allow-list ranks second if inline syntax cannot survive carrier normalization, but it must name file and term and fail on unused entries.
+
+ooda-ha="closed 1↺" · ↻ L-Prime
+
+WORDS=961
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x2pgn-RPV_zZMwsjwMobq3qv0cBoEoDsEe73alIL20I`>>
+
+<<^ code=`&#x0004;` to=`?`>>

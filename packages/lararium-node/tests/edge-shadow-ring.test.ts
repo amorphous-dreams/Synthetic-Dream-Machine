@@ -6,9 +6,11 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/kapae#/reach
  */
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { afterEach, beforeEach, describe, expect } from "vitest";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join, dirname } from "node:path";
 import * as ed from "@noble/ed25519";
 import { interpretAsDocumentId, type DocumentId, type PeerId } from "@automerge/automerge-repo";
@@ -16,41 +18,48 @@ import {
   hex, DAEMON_BAG_ID, seedDaemonDoc, materializeSharedLarDoc,
   RealmBoardGate, RealmBagGate, realmDocUrl, realmEdgeBoardDocUrl, realmVouchBoardDocUrl, fleetEdgeBoardDocUrl,
   deviceEdgeId, DeterministicFederationGate, crossroadsDocUrl,
+  nexusAidOf,
   type FederationGate, type NexusMembership, type PlaneSeal, type AntigenRing,
 } from "@lararium/mesh";
 import {
-  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey, wearPersona,
+  generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot, loadVesselVerifyingKey,
 } from "../src/node-vessel-identity.js";
-import { signCabalInvite, writeVouch, type NexusDoc } from "@lararium/mesh";
+import { signCabalInvite, writeVouch, prepareHolderFrontier, registerHandFrontierInto, type NexusDoc } from "@lararium/mesh";
 import { larDataDir, larSealHome, larBootstrapPath } from "../src/vessel-paths.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
+import { noteVesselRealm } from "../src/edge-board.js";
 import { ownedStore } from "../src/owned-store.js";
 import { runCabalVouch } from "../src/commands/cabal-vouch.js";
+import { runCabalJoin } from "../src/commands/cabal-join.js";
 import { runEdgeKapae } from "../src/commands/edge-kapae-cmd.js";
 import { runEdgeSeatMarks } from "../src/commands/edge-seats.js";
 import { signSeatRoll, ed25519SignerFromSeed } from "@lararium/mesh";
-import { loadVesselSigningSeed } from "../src/node-vessel-identity.js";
 import { makeEdgeShadowRing, type EdgeShadowRing } from "../src/edge-shadow-ring.js";
-import { makeSocketSorter } from "../src/socket-sorter.js";
-import { selfSlotShareDecision } from "../src/self-slot-share.js";
+import { floorShadowRing } from "../src/floor-fleet-lanes.js";
+import { makeGateSorter } from "../src/socket-sorter.js";
+import { gateShadowRing } from "../src/gate-shadow-ring.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 import { decideAndServeWantBlock, type CasWireServerDeps } from "../src/cas-wire.js";
-import type { SortInput } from "../src/daemon-auth-gate.js";
+import type { FaceScope, GateSortInput, VesselFaceKey } from "@lararium/mesh";
 import { direct } from "./direct-store.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
-import { seatChairs } from "./seat-fixture.js";
+import { chairKey, seatChairs } from "./seat-fixture.js";
+import { foundRealmFrontier } from "./realm-frontier-fixture.js";
+import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
+import { seedFleet } from "./fleet-seed-fixture.js";
+import { fleetLineageOf } from "../src/fleet-lineage.js";
+import { nodeNexusIsland } from "../src/nexus-standing.js";
+import { scratchRoot as root, it } from "./support/scratch-fixture.js";
 
-let root: string;
-let priorLarRoot: string | undefined;
 const REALM = "a".repeat(64);
 const nymOf = (byte: number) => ed.getPublicKeyAsync(new Uint8Array(32).fill(byte)).then(hex);
 const idOf = (url: string): DocumentId => interpretAsDocumentId(url as never) as DocumentId;
 
 beforeEach(async () => {
-  root = mkdtempSync(join(tmpdir(), "lares-ring-"));
-  priorLarRoot = process.env["LAR_ROOT"];
-  process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
+  await seedFleet(0);
   await ownedStore(larDataDir(), async (repo) => {
     const handle = seedDaemonDoc(repo);
     await repo.flush();
@@ -60,15 +69,12 @@ beforeEach(async () => {
   });
 });
 afterEach(async () => {
-  if (priorLarRoot === undefined) delete process.env["LAR_ROOT"];
-  else process.env["LAR_ROOT"] = priorLarRoot;
   await new Promise((r) => setTimeout(r, 200));
-  rmSync(root, { recursive: true, force: true });
 });
 
 /**
- * Seat a charter over chair 0's own seat key, wear face 0, and root that face in REALM: the seat vouches the face
- * (by its own hand, outside every door), so a vouch the worn face makes through the door roots in the seat. The
+ * Seat a charter over chair 0's own seat key, and root face 0 in REALM: the seat vouches the face
+ * (by its own hand, outside every door), so a vouch that face makes through the door roots in the seat. The
  * lineage's roots stay the seats of the charter the realm stands under; a face's key at that Nexus never sits
  * among them, since the Nexus names itself after its seats.
  */
@@ -76,11 +82,17 @@ let seatKey = "";
 let charterDoc: NexusDoc | null = null;
 async function seatOwnCharter(): Promise<void> {
   await generateOrLoadPersonaGroupRoot(0);
+  await seedFaceAtom(0);
   const seat = (await seatChairs([0])).hands[0]!;
   seatKey = seat.signer;
-  charterDoc = heldCharter({ keys: [seat.signer], threshold: 1 }).doc({ labels: ["Kahu 0"] });
+  const charter = heldCharter({ keys: [seat.signer], threshold: 1 });
+  charterDoc = charter.doc({ labels: ["Kahu 0"] });
   writeNexusDoc(larSealHome(), charterDoc);
-  await wearPersona(0);
+  await ownedStore(larDataDir(), async (repo) => {
+    const board = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+    await foundRealmFrontier(board, REALM, charter, [seat]);
+    await repo.flush();
+  });
 }
 async function rootFaceInRealm(face: string): Promise<void> {
   const invite = await signCabalInvite({ realmDocIdHex: REALM, joinerIdentityHex: face, voucherDid: seatKey, boundEpoch: "0" },
@@ -88,6 +100,11 @@ async function rootFaceInRealm(face: string): Promise<void> {
   await ownedStore(larDataDir(), async (repo) => {
     const board = await materializeSharedLarDoc(repo, realmVouchBoardDocUrl(REALM), "board:vouch-registry");
     board.change((d) => writeVouch(d, invite));
+    const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+    const chair = (await seatChairs([0])).hands[0]!;
+    const head = await prepareHolderFrontier({ realm: REALM, board: edge.doc(), voucher: seatKey,
+      counted: [], signer: { key: chair.signer, sign: chair.sign } });
+    if (head.kind !== "none") edge.change((d) => registerHandFrontierInto(d, head));
     await repo.flush();
   });
 }
@@ -98,10 +115,12 @@ async function withRing<T>(
   charterRealm: string | null = REALM,
 ): Promise<T> {
   const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-  const vesselKey = (await loadVesselVerifyingKey())!;
+  const vesselKey = (await actingAtomKey(0));
+  const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
   return ownedStore(larDataDir(), async (repo) => run(makeEdgeShadowRing({
-    repo, vesselKey, sealHome: larSealHome(),
+    repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
     fleetRoots: () => [fleetRoot],
+    lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
     charterRealm: () => charterRealm,
     vesselKeyOfPeer: (peerId) => peers[peerId]?.vessel ?? null,
     realmNymOfPeer: (peerId) => peers[peerId]?.nym ?? null,
@@ -109,6 +128,30 @@ async function withRing<T>(
 }
 
 describe("the ring fails closed until its first fold lands", () => {
+  it("a floor composition stays shut, then the selected face folds its fleet on the same store", async () => {
+    const selected = await actingAtomKey();
+    const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+    await ownedStore(larDataDir(), async (repo) => {
+      const common = {
+        repo, sealHome: larSealHome(), charterRealm: () => null,
+        vesselKeyOfPeer: () => null, realmNymOfPeer: () => null,
+      };
+      const floor = floorShadowRing(makeEdgeShadowRing({ ...common, vesselKey: () => "", fleetRoots: () => [] }), (p) => p === "sibling");
+      expect(floor.fold()).toBeNull();
+      expect(floor.deviceAside(selected)).toBe(true);
+      expect(floor.aside("sibling")).toBe(true);
+      await floor.refold();
+      expect(floor.deviceAside(selected)).toBe(true); // floor remains shut after folding
+      floor.dispose();
+
+      const face = makeEdgeShadowRing({ ...common, vesselKey: () => selected, fleetRoots: () => [fleetRoot] });
+      expect(face.fold()).toBeNull();
+      const fold = await face.refold();
+      expect(fold.fleets.map((f) => f.fleetRoot)).toContain(fleetRoot);
+      expect(face.fold()).not.toBeNull();
+      face.dispose();
+    });
+  });
   it("★ before any fold every device reads aside, every member reads aside, and nobody stands ★", async () => {
     const phone = await nymOf(51);
     await withRing({ p: { vessel: phone, nym: phone } }, async (ring) => {
@@ -118,9 +161,25 @@ describe("the ring fails closed until its first fold lands", () => {
       expect(ring.memberAside(REALM)("p")).toBe(true);
       expect(ring.standsInRealm("p", REALM)).toBe(false);
       await ring.refold();
-      // CONTROL: once the boards read clean, the same asks answer clear.
       expect(ring.deviceAside(phone)).toBe(false);
       expect(ring.aside("p")).toBe(false);
+      // A fold alone cannot clear a member while the realm has no signed frontier.
+      expect(ring.memberAside(REALM)("p")).toBe(true);
+      expect(ring.standsInRealm("p", REALM)).toBe(false);
+    });
+    const chairs = await seatChairs([0]);
+    const charter = heldCharter({ keys: [...chairs.keys], threshold: 1 });
+    writeNexusDoc(larSealHome(), charter.doc());
+    await ownedStore(larDataDir(), async (repo) => {
+      await noteVesselRealm(repo, await actingAtomKey(0), REALM, nexusAidOf(charter.doc())!);
+      const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+      await foundRealmFrontier(edge, REALM, charter, chairs.hands);
+      await repo.flush();
+    });
+    await withRing({ p: { vessel: phone, nym: phone } }, async (ring) => {
+      await ring.refold();
+      // CONTROL: the charter's held hand founds genesis, so the same member reads clear. (The device half stands in the
+      // first ring: seating a charter renames the island the fleet lineage is read through.)
       expect(ring.memberAside(REALM)("p")).toBe(false);
     });
   });
@@ -146,7 +205,7 @@ describe("device standing names the fleet edge", () => {
     // The lift stands and the raise still owes its roll: the reading says so until this vessel answers it.
     await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, device)).toBe("owing"); });
     const receipt = async (how: "revoked" | "no-authority", cid: string, edgeId: string) =>
-      signSeatRoll({ kind: "seat-roll", scope: fleet.toLowerCase(), edgeId, raiseCids: [cid], how }, ed25519SignerFromSeed(await loadVesselSigningSeed()));
+      signSeatRoll({ kind: "seat-roll", scope: fleet.toLowerCase(), edgeId, raiseCids: [cid], how }, ed25519SignerFromSeed(await atomSeedOf()));
     await direct(runEdgeSeatMarks)({ fleetRoot: fleet, rolls: [await receipt("revoked", raised.actCid, raised.edgeId)] });
     await withRing({}, async (ring) => { await ring.refold(); expect(ring.deviceStanding(fleet, device)).toBe("returned"); });
     // A raise this vessel answered with NO AUTHORITY left its seat standing under another hand: it reads owing still.
@@ -171,11 +230,12 @@ describe("a fold that fails leaves no reading", () => {
   it("★ after a failed refold every gate answers closed, where the earlier reading would have admitted ★", async () => {
     const phone = await nymOf(54);
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-    const vesselKey = (await loadVesselVerifyingKey())!;
+    const vesselKey = (await actingAtomKey(0));
     let fail = false;
+    const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey, sealHome: larSealHome(),
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
         fleetRoots: () => { if (fail) throw new Error("the store would not read"); return [fleetRoot]; },
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => phone,
       });
@@ -197,11 +257,12 @@ describe("the reading goes dark the moment a board moves", () => {
   it("★ a change on a board this ring follows closes every gate until the next fold lands ★", async () => {
     const phone = await nymOf(55);
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-    const vesselKey = (await loadVesselVerifyingKey())!;
+    const vesselKey = (await actingAtomKey(0));
     let refolds = 0;
+    const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey() });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot],
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(), fleetRoots: () => [fleetRoot], lineageOfFleet: (r) => fleetLineageOf(repo, r, [island]),
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
       });
       await ring.refold();
@@ -223,14 +284,14 @@ describe("a fold a board's change overtook publishes nothing", () => {
   it("★ a fold that started before a board moved never lands over the fold that followed the move ★", async () => {
     const phone = await nymOf(56);
     const fleetRoot = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
-    const vesselKey = (await loadVesselVerifyingKey())!;
+    const vesselKey = (await actingAtomKey(0));
     let refolds = 0;
     let calls = 0;
     let release = (): void => undefined;
     const held = new Promise<void>((r) => { release = r; });
     await ownedStore(larDataDir(), async (repo) => {
       const ring = makeEdgeShadowRing({
-        repo, vesselKey, sealHome: larSealHome(),
+        repo, vesselKey: () => vesselKey, sealHome: larSealHome(),
         // The SECOND fold waits inside its first read; every other fold runs straight through.
         fleetRoots: async () => { if (++calls === 2) await held; return [fleetRoot]; },
         vesselKeyOfPeer: () => phone, realmNymOfPeer: () => null, onRefold: () => { refolds++; },
@@ -247,6 +308,52 @@ describe("a fold a board's change overtook publishes nothing", () => {
       await early;
       expect(ring.fold()).toBe(fresh);                                             // the overtaken fold published nothing
       ring.dispose();
+    });
+  });
+});
+
+// ── D4: the face key a gate proves, bound to its device edge ──────────────────────────────────────────────
+const PHONE_FACE = "a1".repeat(32), PHONE_FACE_TWO = "a2".repeat(32), LAPTOP_FACE = "b1".repeat(32);
+const FACE_N = "nexus-n";
+const presenterOf = (vesselFaceKey: string, faceKey = "f1".repeat(32)) => ({ scope: { faceKey, nexus: FACE_N } as FaceScope, vesselFaceKey: vesselFaceKey as VesselFaceKey });
+const faceDevices = (pairs: Record<string, string>) => (p: { vesselFaceKey: VesselFaceKey }) =>
+  pairs[p.vesselFaceKey] !== undefined ? { device: pairs[p.vesselFaceKey]! } : { unreadable: "face-device-unbound" };
+/** What a sovereign gate hands its sorter for a face it read held, with the PersonaGroup's grant. */
+function sameOperatorInput(fleetAside: boolean): GateSortInput {
+  const faceKey = "f1".repeat(32);
+  return {
+    tier: "sovereign", scope: { faceKey, nexus: FACE_N } as FaceScope, placeKey: null, place: null, profile: "face" as GateSortInput["profile"],
+    admit: { verdict: { state: "held", reason: "held", nym: faceKey }, nexus: FACE_N, admitRef: "ref", revision: "r", head: faceKey },
+    sameGroup: { personaGroup: "0xgroup", faceKey, nexus: FACE_N, revision: "g" }, fleetAside,
+    arm: { kind: "admit", admit: {} as never, lineage: [] },
+  };
+}
+
+describe("D4 — a device set aside cuts every face it presented, across a restart", () => {
+  it("★ two faces one device presents read fleet-aside from the gate's ring, before and after the vessel restarts ★", async () => {
+    const phone = await nymOf(54), laptop = await nymOf(55);
+    const devices = faceDevices({ [PHONE_FACE]: phone, [PHONE_FACE_TWO]: phone, [LAPTOP_FACE]: laptop });
+    const faces = [presenterOf(PHONE_FACE), presenterOf(PHONE_FACE_TWO, "f2".repeat(32)), presenterOf(LAPTOP_FACE)];
+    // CONTROL: before any shadow, a folded ring reads every mapped face clear.
+    await withRing({}, async (ring) => {
+      await ring.refold();
+      expect(faces.map((f) => gateShadowRing({ ring, deviceOf: devices }).consult(f).fleetAside)).toEqual([false, false, false]);
+    });
+    await direct(runEdgeKapae)({ device: phone, raised: true });
+    await withRing({}, async (ring) => {
+      const shadows = gateShadowRing({ ring, deviceOf: devices });
+      await ring.refold();
+      expect(faces.map((f) => shadows.consult(f).fleetAside)).toEqual([true, true, false]);
+    });
+    // THE RESTART: a fresh ring over the reopened store answers closed until it folds, then reads the shadow again.
+    await withRing({}, async (ring) => {
+      const shadows = gateShadowRing({ ring, deviceOf: devices });
+      expect(faces.map((f) => shadows.consult(f))).toEqual(faces.map(() => ({ aside: true, fleetAside: true })));
+      await ring.refold();
+      expect(faces.map((f) => shadows.consult(f).fleetAside)).toEqual([true, true, false]);
+      const sorter = makeGateSorter({ posture: () => "private" });
+      expect(await sorter.sort(sameOperatorInput(shadows.consult(faces[1]!).fleetAside))).toMatchObject({ class: "contracted" });
+      expect(await sorter.sort(sameOperatorInput(shadows.consult(faces[2]!).fleetAside))).toEqual({ class: "same-operator" });
     });
   });
 });
@@ -269,20 +376,23 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
       expect(ring.aside("peer-unnamed")).toBe(false);                             // a peer the wire has not named
       expect(ring.fleetBoardUrls()).toEqual([fleetEdgeBoardDocUrl(fleetRoot)]);
 
-      // THE SORTER, through its own entry point: a delegation that proves same-operator, set aside.
-      const sorter = makeSocketSorter({ readings: async () => [], carrier: () => false, primaryPosture: () => "private", deviceAside: ring.deviceAside });
-      const input = (vesselKey: string): SortInput => ({ identifier: `0x${vesselKey}`, vesselKey, sameOperator: true, challenge: { nonce: "ab".repeat(32), gatePubKey: "ee".repeat(32) } });
-      expect(await sorter(input(phone))).toBeNull();                              // silence under PRIVATE: what a stranger meets
-      expect(await sorter(input(laptop))).toEqual({ class: "same-operator" });     // CONTROL
-      const open = makeSocketSorter({ readings: async () => [], carrier: () => false, primaryPosture: () => "open", deviceAside: ring.deviceAside });
-      expect(await open(input(phone))).toEqual({ class: "stranger" });             // under OPEN it sorts by what else it proves: nothing
+      // THE GATE (D4), through its own entry points: a face the phone presents, proven same-operator, set aside.
+      const shadows = gateShadowRing({ ring, deviceOf: faceDevices({ [PHONE_FACE]: phone, [LAPTOP_FACE]: laptop }) });
+      const sorter = makeGateSorter({ posture: () => "private" });
+      const sorted = (vesselFaceKey: string) => sorter.sort(sameOperatorInput(shadows.consult(presenterOf(vesselFaceKey)).fleetAside));
+      expect(shadows.consult(presenterOf(PHONE_FACE))).toEqual({ aside: false, fleetAside: true });
+      expect(await sorted(PHONE_FACE)).toMatchObject({ class: "contracted" });      // it sorts by what else it proves: its admit
+      expect(await sorted(LAPTOP_FACE)).toEqual({ class: "same-operator" });        // CONTROL
 
       // THE SHARE VERDICT: a socket admitted before the shadow arrived still holds its class; the verdict reads the shadow first.
       const MY_NEXUS = "11".repeat(32);
       const share = (peerId: string, documentId: DocumentId, sibling = false) => selfSlotShareDecision({
         hasWsSocket: !sibling, sibling, siblingGate: { mayFederate: () => true }, peerClass: "same-operator",
-        selfSlotFedGate: new DeterministicFederationGate(MY_NEXUS), antigenRing: null, membership: null, planeSeal: null,
+        selfSlotFedGate: new DeterministicFederationGate(MY_NEXUS), antigenRing: NO_BANS, membership: null, planeSeal: null,
         peerId, documentId, shadow: ring,
+        // D3: the gate of the face each session proved; it would hand over the face's every plane, so only the shadow refuses.
+        sessionFace: { mayFederate: () => true },
+        protectedDocs: NOTHING_CLASSED,
       });
       const PRIVATE = idOf(realmDocUrl("a-private-plane")), SHELF = idOf(crossroadsDocUrl(MY_NEXUS));
       for (const doc of [PRIVATE, SHELF]) {
@@ -323,13 +433,48 @@ describe("a device the fleet root set aside — the sorter, the share verdict an
   });
 
   it("★ a shadow over this vessel's own device edge reads back as selfAside ★", async () => {
-    const own = (await loadVesselVerifyingKey())!;
+    const own = (await actingAtomKey(0));
     await direct(runEdgeKapae)({ device: own, raised: true });
     await withRing({}, async (ring) => { expect((await ring.refold()).fleets[0]!.selfAside).toBe(true); });
   });
 });
 
 describe("a realm's members — the realm gate and the lane its boards cross by", () => {
+  it("waits before a qualifying frontier, then admits under the charter quorum's genesis", async () => {
+    const joiner = await nymOf(60);
+    // Name a real chair in the charter before this vessel stores its key. The face can vouch,
+    // but the vouch cannot sign a quorum genesis until the chair's hand is held here.
+    const seat = await chairKey(0);
+    const charter = heldCharter({ keys: [seat], threshold: 1 });
+    writeNexusDoc(larSealHome(), charter.doc({ labels: ["Kahu 0"] }));
+    const vouch = await direct(runCabalVouch)({ joiner, realm: REALM, boundEpoch: 0 });
+    await withRing({ p: { nym: joiner } }, async (ring) => {
+      await ring.refold();
+      expect(ring.realmFrontierOf(REALM)?.status).toBe("unknown");
+      expect(ring.memberAside(REALM)("p")).toBe(true);
+      expect(ring.standsInRealm("p", REALM)).toBe(false);
+    });
+    const waiting = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, epoch: 0 });
+    expect(waiting.refusal).toBe("frontier-unknown");
+    expect(waiting.missing?.length).toBeGreaterThan(0);
+
+    const held = (await seatChairs([0])).hands[0]!;
+    seatKey = held.signer;
+    await ownedStore(larDataDir(), async (repo) => {
+      const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+      await foundRealmFrontier(edge, REALM, charter, [held]);
+      await repo.flush();
+    });
+    await rootFaceInRealm(vouch.voucherDid);
+    await withRing({ p: { nym: joiner } }, async (ring) => {
+      await ring.refold();
+      expect(ring.realmFrontierOf(REALM)?.status).toBe("known");
+      expect(ring.standsInRealm("p", REALM)).toBe(true);
+    });
+    const entered = await direct(runCabalJoin)({ realm: REALM, applicant: joiner, epoch: 0 });
+    expect(entered.admitted).toBe(true);
+    expect(entered.frontier?.asOf["quorum"]?.cid).toMatch(/^[0-9a-f]{64}$/);
+  });
   it("★ a withdrawn vouch sets its joiner aside at the realm's gate and closes the realm's boards to it ★", async () => {
     await seatOwnCharter();
     const joiner = await nymOf(61), bystander = await nymOf(62);
@@ -431,13 +576,23 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
 
   it("★ a member the quorum set aside reads nothing of the realm, though no vouch ever named it ★", async () => {
     await Promise.all([0, 1, 2].map((i) => generateOrLoadPersonaGroupRoot(i)));
-    const keys = [...(await seatChairs([0, 1, 2])).keys];
+    await Promise.all([0, 1, 2].map((i) => seedFaceAtom(i)));
+    // three faces held: each act names the one these vectors act as (face 0)
+    const chairs = await seatChairs([0, 1, 2]);
+    const keys = [...chairs.keys];
     const charter = heldCharter({ keys, threshold: 2 });
-    writeNexusDoc(larSealHome(), charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) }));
+    const doc = charter.doc({ labels: keys.map((_, i) => `Kahu ${i}`) });
+    writeNexusDoc(larSealHome(), doc);
+    await ownedStore(larDataDir(), async (repo) => {
+      const edge = await materializeSharedLarDoc(repo, realmEdgeBoardDocUrl(REALM), "board:edge-kapae");
+      await foundRealmFrontier(edge, REALM, charter, chairs.hands.slice(0, 2));
+      await noteVesselRealm(repo, await actingAtomKey(0), REALM, nexusAidOf(doc)!);
+      await repo.flush();
+    });
     const member = await nymOf(63);
     const peers = { "peer-m": { nym: member } };
     await withRing(peers, async (ring) => { await ring.refold(); expect(ring.memberAside(REALM)("peer-m")).toBe(false); });   // CONTROL
-    await direct(runEdgeKapae)({ member, realm: REALM, raised: true, hand: "quorum" });
+    await direct(runEdgeKapae)({ face: 0, member, realm: REALM, raised: true, hand: "quorum" });
     await withRing(peers, async (ring) => {
       await ring.refold();
       expect(ring.memberAside(REALM)("peer-m")).toBe(true);
@@ -445,7 +600,7 @@ describe("a realm's members — the realm gate and the lane its boards cross by"
     });
     // A holder's hand over a member edge meets a refusal: only the quorum holds that edge.
     const other = await nymOf(64);
-    await expect(direct(runEdgeKapae)({ member: other, realm: REALM, raised: true })).rejects.toThrow(/no single key holds/);
+    await expect(direct(runEdgeKapae)({ face: 0, member: other, realm: REALM, raised: true })).rejects.toThrow(/no single key holds/);
     await withRing({ "peer-o": { nym: other } }, async (ring) => { await ring.refold(); expect(ring.memberAside(REALM)("peer-o")).toBe(false); });
   });
 });

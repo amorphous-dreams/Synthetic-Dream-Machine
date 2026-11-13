@@ -9,21 +9,35 @@
  * moment a finite hotCap creates eviction pressure.
  *
  * The pool supplies no explicit storage config: ordinary browser islands retain
- * their legacy IndexedDB partition keyed by wiki URI inside the worker. D-VR
+ * their own IndexedDB partition keyed by wiki URI inside the worker. D-VR
  * daemon ownership is a separate explicit manifest capability.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool
  */
 
 import {
-  VesselIslandPoolCore,
+  VesselIslandPoolCore, answerRestAsk,
+  type IslandMsg_RestAsk, type VesselWorkerHandle,
   type Repo,
   type IslandMsg_Event,
+  type LarIslandToVesselMsg,
   type WikiRecipe,
+  type PortIslandToVesselMsg,
+  type VesselRestState,
 } from "@lararium/mesh";
+import type { PortPolicy } from "@lararium/mesh/port-lease";
 import { browserNewSyncChannel, browserSpawnWorker } from "./worker-handle.js";
-import { refuseBrowserDyadAsks } from "./browser-dyad-door.js";
+import { refuseBrowserDyadAsks } from "./browser-dyad-refusal.js";
 import { readCasBlobFromOpfs } from "./browser-genesis.js";
+
+/** A page life signal the page feeds the vessel: the page went hidden, or the page is leaving. */
+export type PageLife = "hidden" | "pagehide";
+
+/**
+ * The page's life signals as the vessel reads them: the page subscribes the listener to its own events and returns the
+ * unsubscribe. A vessel thread reads no page object; the page feeds each signal over the vessel port as `page:life`.
+ */
+export type PageLifeFeed = (listener: (life: PageLife) => void) => () => void;
 
 export interface BrowserVesselIslandPoolOptions {
   /**
@@ -34,17 +48,27 @@ export interface BrowserVesselIslandPoolOptions {
   workerScriptUrl?: URL;
   /** Vessel Automerge Repo — each island's mainPort wires to it for CRDT sync. */
   mainRepo?: Repo;
-  /** Called when an island emits a verse-event reaction. */
-  onWorkerEvent?: (id: string, msg: IslandMsg_Event) => void;
+  portPolicy?: PortPolicy;
+  onPortMessage?: (binding: string, islandKey: string, msg: PortIslandToVesselMsg) => void;
+  onPortDrop?: (islandKey: string, type: string, reason: "no-port-lease") => void;
+  /** V2: does the vessel's rest hold a document sealed or held? A wiki island's store asks before it rests a byte of one. */
+  restsSealed?: (documentId: string) => Promise<boolean>;
+  /** What the vessel read of its receipt requests, each time it moves; the page shows it, so a person's tooling waits on the vessel's own word. */
+  onRest?: (state: VesselRestState) => void;
+  /** Called when an island outside any session emits a verse-event reaction or one of the camera's kinds
+   *  (`lar:frame`, `lar:control-result`, `lar:service`); a session island's traffic reaches its own surface door instead. */
+  onWorkerEvent?: (id: string, msg: IslandMsg_Event | LarIslandToVesselMsg) => void;
   /** R4 — resolve ONE mount's own `recipe` into the CIDs its manifest should carry (the fixed
-   *  boot-set floor UNION its verified, byte-checked offering selection). REQUIRED: the flat
-   *  vessel-wide `pluginCids` floor has retired — `VesselIslandPoolCore` itself refuses to
+   *  boot-set floor UNION its verified, byte-checked offering selection). REQUIRED: no flat
+   *  vessel-wide `pluginCids` floor stands — `VesselIslandPoolCore` itself refuses to
    *  construct without this, so the browser can supply no blanket list even by omission. See
    *  `resolveBrowserIslandPluginCids` in `open-browser-vessel.ts`. */
   resolvePluginCids: (recipe: WikiRecipe) => Promise<
     | { readonly ok: true; readonly pluginCids: readonly string[] }
     | { readonly ok: false; readonly error: string }
   >;
+  /** The floor each mount stands on: the vessel's accepted pin (`@lararium/mesh` `vesselFloorCid`); null mounts genesis. */
+  floorCid?: () => string | null | Promise<string | null>;
 }
 
 /** Browser island pool: VesselIslandPoolCore configured with a Web Worker host. */
@@ -53,6 +77,7 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
     const workerUrl = opts.workerScriptUrl ?? null;
     super({
       resolvePluginCids: opts.resolvePluginCids,
+      ...(opts.floorCid ? { floorCid: opts.floorCid } : {}),
       host: {
         spawnWorker: () => {
           if (!workerUrl) {
@@ -61,10 +86,16 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
               "Pass workerScriptUrl when constructing the pool (requires genesis island for TW5 core bytes).",
             );
           }
-          // A wiki island reaches no dyad door: its ask draws `aside` and one named warning.
+          // A wiki island reaches no dyad capability: its ask draws `aside` and one named warning.
           const handle = browserSpawnWorker(workerUrl);
           refuseBrowserDyadAsks(handle);
-          return handle;
+          // THE REST ASK (sealed-store#/owed, V2): the island's store asks before it rests a byte of a document, and the
+          // vessel answers from its sealed rest, as it answers the daemon island; a pool with no rest answers unsealed.
+          answerBrowserRestAsks(handle, opts.restsSealed);
+          // The browser vessel's lift stands its main Repo beside the pool, and that Repo is the browser's receipt
+          // capability: a wiki island's receipt ask draws the pool's answer (the one answerer) exactly where the pool holds
+          // one, since the page carries no record a worker could refuse from. A pool built with no Repo grants none.
+          return { ...handle, grants: () => ({ receipt: opts.mainRepo != null }) };
         },
         newSyncChannel: browserNewSyncChannel,
         storage: () => undefined,
@@ -74,6 +105,23 @@ export class BrowserVesselIslandPool extends VesselIslandPoolCore {
       // The vessel's content store, as a session island's scoped view reads it: the origin's OPFS plane.
       readContent: (cid) => readCasBlobFromOpfs(cid),
       ...(opts.onWorkerEvent ? { onWorkerEvent: opts.onWorkerEvent } : {}),
+      ...(opts.portPolicy ? { portPolicy: opts.portPolicy } : {}),
+      ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
+      ...(opts.onPortDrop ? { onPortDrop: opts.onPortDrop } : {}),
+      ...(opts.onRest ? { onRest: opts.onRest } : {}),
     });
   }
+}
+
+/** Answer one island's `rest:ask` over its handle from the vessel's sealed rest (`answerRestAsk`); a pool with no rest
+ *  answers unsealed, so an island never waits on silence. */
+export function answerBrowserRestAsks(handle: Pick<VesselWorkerHandle, "post" | "listen">, restsSealed?: (documentId: string) => Promise<boolean>): void {
+  const caps = restsSealed ? { restsSealed } : {};
+  handle.listen((raw: unknown) => {
+    const m = raw as Partial<IslandMsg_RestAsk> | null;
+    if (!m || m.type !== "rest:ask" || typeof m.requestId !== "string") return;
+    void answerRestAsk(caps, m as Partial<IslandMsg_RestAsk> & { requestId: string }).then((reply) => {
+      try { handle.post(reply); } catch { /* the island went away: nothing to answer */ }
+    });
+  });
 }

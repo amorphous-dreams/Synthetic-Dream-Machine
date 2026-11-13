@@ -101,8 +101,54 @@ def test_stream_lifecycle_transition_preserves_capture_owned_evidence(tmp_path):
     set_stream_ephemeral(str(tmp_path), False)
     manifest = read_stream_manifest(str(tmp_path))
     assert manifest["ephemeral"] is False
+    assert manifest["lifecycle"] == "durable"
     assert manifest["order"] == {"projector": "stream", "basis": "observed:connection-sequence"}
     assert manifest["worldline"] == {"real": ["connection-sequence"], "arbitrary": []}
+
+
+@pytest.mark.parametrize(("ephemeral", "half_life", "expected"), [
+    (True, None, "pioneer"), (True, 12, "pioneer"),
+    (False, 12, "hardening"), (False, None, "durable"),
+    (False, 0, "durable"), (False, -3, "durable"), (False, "12", "durable"), (False, True, "durable"),
+])
+def test_stream_writer_declares_lifecycle_from_ephemeral_and_half_life(tmp_path, ephemeral, half_life, expected):
+    from sensorium import OrderCap, write_stream_manifest
+
+    # Deliberately start with a partial older declaration: the writer must fill lifecycle.
+    (tmp_path / "manifest.json").write_text(json.dumps({
+        "persistencePolicy": {"halfLife": half_life},
+    }), encoding="utf-8")
+    write_stream_manifest(str(tmp_path), name="stream", lar="lar:///x",
+                          order=OrderCap("stream", "observed:connection-sequence"), ephemeral=ephemeral)
+    manifest = json.loads((tmp_path / "manifest.json").read_text(encoding="utf-8"))
+    assert manifest["lifecycle"] == expected
+
+
+def test_stream_ephemeral_flip_rewrites_lifecycle_but_preserves_tombstone(tmp_path):
+    from sensorium import OrderCap, set_stream_ephemeral, write_stream_manifest
+
+    write_stream_manifest(str(tmp_path), name="stream", lar="lar:///x",
+                          order=OrderCap("stream", "observed:connection-sequence"), ephemeral=True)
+    path = tmp_path / "manifest.json"
+    assert json.loads(path.read_text(encoding="utf-8"))["lifecycle"] == "pioneer"
+    set_stream_ephemeral(str(tmp_path), False)
+    assert json.loads(path.read_text(encoding="utf-8"))["lifecycle"] == "durable"
+    set_stream_ephemeral(str(tmp_path), True)
+    assert json.loads(path.read_text(encoding="utf-8"))["lifecycle"] == "pioneer"
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["lifecycle"] = "tombstone"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    set_stream_ephemeral(str(tmp_path), False)
+    assert json.loads(path.read_text(encoding="utf-8"))["lifecycle"] == "tombstone"
+    write_stream_manifest(str(tmp_path), name="stream", lar="lar:///x",
+                          order=OrderCap("stream", "observed:connection-sequence"), ephemeral=False)
+    assert json.loads(path.read_text(encoding="utf-8"))["lifecycle"] == "tombstone"
+
+    manifest = json.loads(path.read_text(encoding="utf-8"))
+    manifest["lifecycle"] = "hardening"
+    path.write_text(json.dumps(manifest), encoding="utf-8")
+    set_stream_ephemeral(str(tmp_path), False)
+    assert json.loads(path.read_text(encoding="utf-8"))["lifecycle"] == "hardening"
 
 
 def test_stream_lifecycle_transition_refuses_an_absent_root_without_minting_lock_state(tmp_path):

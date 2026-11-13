@@ -42,12 +42,15 @@ import { cmdStand }     from "./stand.js";
 import { posturePlan, posturePlanNotice } from "./posture-plan.js";
 import { cmdSeed }     from "./seed.js";
 import { cmdRead, cmdStop } from "./read.js";
-import { cmdWire } from "./wire.js";
-import { cmdVesselCard } from "./vessel-card.js";
+import { cmdRotatePlace } from "./rotate-place.js";
+import { cmdCensus } from "./census.js";
+import { fresherBagOf, fresherLines, readFresher } from "./vessel-fresher.js";
 import { cmdStandForeground, cmdStandWithWeb, cmdRestart, cmdRiteRebuild, cmdRiteRefresh } from "./scripted.js";
 import { vesselDid } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { summaryOutput } from "../verb-result.js";
+
+import { cmdFloor } from "./floor.js";
 
 type Sub = (args: ParsedArgs) => Promise<number>;
 
@@ -171,16 +174,32 @@ const SUBS: Readonly<Record<string, { readonly summary: string; readonly run: Su
     return 0;
   } },
   found: { summary: "mint the vessel identity, persona root, social planes and bootstrap (idempotent)", run: (a) => cmdFound(under(a)) },
-  // THE HANDOFF ARTIFACT. A second operator cannot enter a relation with this vessel until she holds
-  // its card; the founding mints one and nothing surfaced it.
-  card: { summary: "print this vessel's ContactCard — the artifact another operator needs to relate to it", run: cmdVesselCard },
+  rotate: { summary: "rotate the place's online signer by its founding card — reads the card, prints and reads back the replacement", run: (a) => cmdRotatePlace(under(a)) },
   stand: { summary: "bring the daemon up and report — [--foreground] [--with-web] [--restart]", run: standVessel },
-  // THE ONE VESSEL VERB THAT REACHES OUTSIDE THE ROOT. Standing stays inside `LAR_ROOT`; wiring
-  // always touches the operator's home. Two radii, two verbs — a reader sees the reach in the name.
-  wire:  { summary: "point every AI surface on this machine at this vessel — idempotent, re-aims drift",  run: (a) => cmdWire(under(a)) },
   stop:  { summary: "halt the daemon on the port (graceful → forced); a free port reads as stopped",     run: (a) => cmdStop(under(a)) },
   seed:  { summary: "plant every bags/* holding back into its doc, kind-routed and diff-gated",         run: (a) => cmdSeed(under(a)) },
   read:  { summary: "inspect and start nothing — bootstrap, storage, port, seal, personas, quorum",      run: (a) => cmdRead(under(a)) },
+  floor: { summary: "the vessel's floor pin, one per Nexus: `status` (pinned, newest seen, fast-forward, fork) · `accept [<release>]` walks prior from the pin — [--nexus <aid>] [--porch <origin>]", run: (a) => cmdFloor(under(a)) },
+  census: { summary: "name what a stop would drop: saves held in memory, carriers the projector owes — [--json]", run: (a) => cmdCensus(under(a)) },
+  fresher: { summary: "each working copy over a canon bag that shadows fresher canon: its base hash beside canon's — --bag <slug>", run: async (a) => {
+    const named = a.options["bag"];
+    if (!named) { console.error("lares vessel fresher: --bag <slug|lar:///ha.ka.ba/bags/<slug>> names the canon bag"); return 2; }
+    const bag = fresherBagOf(named);
+    const did = await vesselDid();
+    const read = await readFresher(bag, async (args) => {
+      const r = await runVerb("fresher-canon", { ...args }, did);
+      if (r.status === "error") return { ok: false, why: r.errorMessage ?? "the daemon refused the read" };
+      const out = (summaryOutput(r) ?? {}) as { ok?: unknown; why?: unknown; fresher?: unknown; next?: unknown };
+      if (out.ok === false) return { ok: false, why: String(out.why ?? "refused") };
+      const fresher = Array.isArray(out.fresher) ? (out.fresher as Array<Record<string, unknown>>).map((f) => ({
+        title: String(f["title"]), base: typeof f["base"] === "string" ? f["base"] : null, canonHash: typeof f["canonHash"] === "string" ? f["canonHash"] : null,
+      })) : [];
+      return { ok: true, fresher, next: typeof out.next === "string" ? out.next : null };
+    });
+    if (!read.ok) { console.error(`lares vessel fresher: ${read.why}`); return 2; }
+    for (const line of fresherLines(bag, read.rows)) console.log(line);
+    return 0;
+  } },
   rite:  { summary: "the pet-named procedures: founding · refresh · rebuild",                            run: runRite },
 };
 
@@ -197,7 +216,7 @@ function printVesselHelp(): void {
   console.log("    lares vessel rite founding            found · stand · seed");
   console.log("    lares persona new 0 --name '<label>'  light a face — this lifts it off the floor");
   console.log("    lares vessel stand                    stand again; the lift lands here");
-  console.log("    lares vessel wire                     point this machine's AI surfaces at it");
+  console.log("    lares home tend                       keep this device's homes on intent (another door, another radius)");
 }
 
 export async function cmdVessel(args: ParsedArgs): Promise<number> {

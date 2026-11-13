@@ -12,9 +12,9 @@ import { startup, name, after } from "../src/modules/meme-door-charm.js";
 const URI = "lar:///t/x";
 const CARRIER = "text/memetic-wikitext+tiddlywiki";
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code="&#x0002;">>\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n<<^ code=\`&#x0002;\`>>\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 interface Request { url: string; type?: string; data?: unknown; headers?: Record<string, string>; callback: (err: unknown, data?: string, request?: unknown) => void }
 
@@ -76,7 +76,7 @@ describe("★ THE TWO DOORS (b): the charm routes a framed root to /memes/ ★",
   test("CONTROL: a plain tiddler and a split root ride the adaptor's own save; a read-only adaptor saves nothing", () => {
     const adaptor = fake.tw["syncadaptor"] as { saveTiddler(t: unknown, cb: (e: unknown, i?: unknown, r?: unknown) => void, o?: unknown): void; isReadOnly: boolean };
     adaptor.saveTiddler(tiddler({ title: "plain", text: "prose" }), () => {});
-    adaptor.saveTiddler(tiddler({ title: URI, type: CARRIER, text: "<<~ kahea ahu #/a>>" }), () => {});
+    adaptor.saveTiddler(tiddler({ title: URI, type: CARRIER, text: "<<~ kahea ahu slot=`#/a`>>" }), () => {});
     expect(fake.native).toHaveLength(2);
     expect(fake.requests).toHaveLength(0);
     adaptor.isReadOnly = true;

@@ -1,7 +1,7 @@
 /**
  * qr-transport — GENERATE a scannable QR for a carried carriage, and DECODE a still image back to one.
  *
- * The persona-admission hops (and any carriage) ride a QR between airgapped devices. This is the node side:
+ * Airgapped carriage rides a QR between devices. This is the node side:
  *   · GENERATE (freely, everywhere) — a carriage string → a terminal QR (a tabletop hand-off), a PNG buffer
  *     (a file / a still image), or the raw module matrix. Handshake QRs render at ECC level H — they are small,
  *     so the redundancy buys scan reliability. Pure `qrcode` (soldair, MIT): canvas-free, no node-gyp, offline.

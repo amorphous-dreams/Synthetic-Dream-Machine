@@ -15,18 +15,36 @@ import { mkdirSync, readFileSync, existsSync, copyFileSync, readdirSync, statSyn
 import { join, dirname } from "node:path";
 import {
   casReferences, graceForTier, tiersByGraceDescending, realmPace, pinnedCids,
-  sha256HexBytesSync, verifyCidBytes,
+  sha256HexBytesSync, verifyCidBytes, makeCidResolver,
   type GenesisCasManifest, type PinCap, type CasReferenceEntry, type CabalRealmMaintenanceProvenance, type CasTransitTransport,
 } from "@lararium/mesh";
 import { runtimeCasOverride } from "./lares-config.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
-/** The CAS dir for a vessel rooted at `storageDir` (`<lares>/vessel` → `<lares>/vessel/cas`). The
+/** The CAS dir for a vessel rooted at `storageDir` (`<root>/hearth/vessel` → `<root>/hearth/vessel/cas`). The
  *  runtime-cas OVERRIDE (`LAR_CAS` → `config.vessel.cas`) wins when sited — the SAME lever the CLI stager
  *  (`larCasDir`) honors, so ONE dir holds the blob the CLI stages and the blob a worker resolveByCid-reads.
  *  Absent → the storage-rooted default. A lever moving only one side diverges the two silently. */
 export function casDirForStorage(storageDir: string): string {
   return runtimeCasOverride() ?? join(storageDir, "cas");
+}
+
+/**
+ * The CORPUS CAS dir — where the operator gesture stages oversized carrier bodies: `LAR_CAS`, else `<LAR_ROOT>/cas`, else
+ * none. The ONE env read of it: a vessel calls it ONCE at construction and hands the dir on (the pool, the daemon island's
+ * workerData, the record's `cas`); nothing reads the env again at ask time.
+ */
+export function corpusCasDirFromEnv(): string | null {
+  return process.env["LAR_CAS"] ?? (process.env["LAR_ROOT"] ? join(process.env["LAR_ROOT"], "cas") : null);
+}
+
+/** What an island worker is handed at construction (`workerData`): the vessel's CAS dirs, so the worker reads no env. */
+export interface IslandCasData {
+  readonly cidDir: string | null;
+  readonly corpusCasDir: string | null;
+  /** The house canon slugs the vessel seated off its checkout (`seatHouseCanon`): the island seats the same set, since a
+   *  worker thread holds its own module state and reads no disk for it. Absent: the island holds the system canon alone. */
+  readonly houseCanon?: readonly string[];
 }
 
 /**
@@ -183,6 +201,35 @@ export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): Cas
   return url && url.length > 0 ? hermCasTransit(url) : null;
 }
 
+/**
+ * The vessel's `cas` capability over its CAS dirs, fixed at construction: the runtime `cid/` dir first, the CORPUS store
+ * (staged carrier bodies) as its second tier, then the Herm shore where one stands (write-through into `cid/`). Every
+ * local hit re-verifies against its own address, so a two-dir lookup never widens trust. Reads no env.
+ */
+export function makeNodeCasResolver(opts: { readonly cidDir: string; readonly corpusCasDir: string | null; readonly shore: CasTransitTransport | null }): (cid: string) => Promise<Uint8Array | null> {
+  const { cidDir, corpusCasDir, shore } = opts;
+  const local = (cid: string): Uint8Array | null =>
+    readVerifiedCasBlobFromFs(cid, cidDir) ?? (corpusCasDir ? readVerifiedCasBlobFromFs(cid, corpusCasDir) : null);
+  if (!shore) return async (cid) => local(cid);
+  return makeCidResolver(local, shore, (cid, bytes) => { writeCasEntriesFs([{ cid, bytes }], cidDir); });
+}
+
+/**
+ * The reading `cas-fetch` answers: whether the cid resolved (`held`), whether the vessel FETCHED it (`fetched`) and its size. `fetched`
+ * compares against a VERIFIED local read of either local tier: a file whose bytes fail their address is not held, so
+ * the resolver's fetch from the shore (and its write-through repair) reads as the fetch it was.
+ */
+export async function casFetchReading(
+  cid: string,
+  dirs: { readonly cidDir: string; readonly corpusCasDir: string | null },
+  resolve: (cid: string) => Promise<Uint8Array | null>,
+): Promise<{ readonly held: boolean; readonly fetched: boolean; readonly bytes: number }> {
+  const before = readVerifiedCasBlobFromFs(cid, dirs.cidDir) !== null
+    || (dirs.corpusCasDir !== null && readVerifiedCasBlobFromFs(cid, dirs.corpusCasDir) !== null);
+  const bytes = await resolve(cid);
+  return { held: bytes !== null, fetched: bytes !== null && !before, bytes: bytes?.byteLength ?? 0 };
+}
+
 // ── PIN and RELEASE (tiddler-carriage #/pin-and-release) ─────────────────────
 //
 // A blob is RETAINED while any locally-held record references its cid (`casReferences`, derived —
@@ -191,8 +238,8 @@ export function hermCasTransitFromEnv(env: NodeJS.ProcessEnv = process.env): Cas
 // records out of the derived count — the sweep reads the count, it never reads the verb.
 //
 // A PIN CARRIES NO CLOCK — EVER. A pin stands exactly as long as its sidecar entry stands: `pinCas` writes
-// it, `releaseCas` removes it. `PinCap` (@lararium/mesh) carries NO `expiry` field at all (M7 — the field
-// left the record entirely, never merely unread). Its OPTIONAL `fence` names a holder's OWN boot epoch
+// it, `releaseCas` removes it. `PinCap` (@lararium/mesh) carries NO clock field at all (M7: the record has
+// no place for one, so none is ever read). Its OPTIONAL `fence` names a holder's OWN boot epoch
 // at pin time (M7′): PRESENCE in the sidecar still decides by default (a bare `--pin` carries no `fence` —
 // the operator's own explicit, standing-forever pin), but a pin that DOES carry a `fence` (a `--held`
 // pin) is a CAUSAL supersession, never a span — `casSweep`'s REQUIRED `currentFence` option, this vessel's
@@ -242,13 +289,13 @@ export interface CasSweepOptions {
    * This vessel's CURRENT boot epoch (M7′/M7″, `owned-store.ts`'s `StoreClaim.bootEpoch`) — the fence a
    * `--held` pin's own stamped `fence` is read against (`pinnedCids` — the SAME law `cas-caps.ts` states:
    * absent `fence` on a pin holds regardless, i.e. presence-only; a pin WITH a `fence` holds only while
-   * `currentFence` has not yet moved past it). REQUIRED (alpha line, no back-compat — M7″ G3): every caller,
+   * `currentFence` has not yet moved past it). REQUIRED (M7″ G3): every caller,
    * production or test, threads its own epoch through — never guessed. `0` is the fence law's OWN floor
    * ("no boot has happened yet"): every `--held` pin reads as still standing against it (`0 <= fence` for
    * any non-negative fence), so a caller with no real epoch to give is never safe passing `0` AS IF it were
    * a genuine epoch — it must withhold the sweep instead (`open-node-vessel.ts`'s shape beside
    * `genesisProtect === "unreadable"`). Only the ABSENCE of a pin's own `fence` field reads as a
-   * standing-forever pin; the absence of THIS option is no longer representable at all.
+   * standing-forever pin; the absence of THIS option is not representable at all.
    */
   readonly currentFence: number;
   /** Name what would sweep; delete nothing. */
@@ -294,10 +341,9 @@ export function casSweep(opts: CasSweepOptions): CasSweepResult {
 
 const PINS_FILE = ".pins.json";
 
-/** `PinCap`'s own fields (`cas-caps.ts`) — the only keys a record may ever carry. Any other key (the retired
- *  `expiry` chief among them) reads the WHOLE sidecar as malformed (evergreen sweep, gp25): a record shape
- *  this reader does not recognize might carry a clock-driven verdict this house no longer honors, so it
- *  refuses rather than silently accepting an old shape back in. */
+/** `PinCap`'s own fields (`cas-caps.ts`) — the only keys a record may ever carry. Any other key reads the
+ *  WHOLE sidecar as malformed (gp25): a record shape this reader does not recognize might carry a
+ *  clock-driven verdict, and a pin carries no clock, so it refuses rather than read a shape it never named. */
 const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "fence"]);
 
 /** The pins a CAS dir holds — an ABSENT sidecar reads as no pins (a vessel that never pinned anything is
@@ -306,9 +352,9 @@ const PIN_RECORD_FIELDS = new Set(["cid", "holder", "tier", "fence"]);
  *  everything). A per-record `cid` string is the only load-bearing field: a record missing/mistyping its
  *  `holder`/`tier`/`fence` still holds that cid (presence-only, if its `fence` reads as absent) rather than
  *  being dropped whole — dropping a torn record is exactly the "fails open toward deletion" fault M7′
- *  closes. A record carrying the retired `expiry` field, or ANY field outside `PIN_RECORD_FIELDS`, is NOT
- *  silently ignored (the old shape): it REFUSES the whole read (evergreen sweep, gp25-SW2) — fail toward
- *  KEEPING every blob, never toward deleting over a shape this reader no longer recognizes. */
+ *  closes. A record carrying ANY field outside `PIN_RECORD_FIELDS` is NOT silently ignored: it REFUSES the
+ *  whole read by the field's name (gp25-SW2) — fail toward KEEPING every blob, never toward deleting over a
+ *  shape this reader does not recognize. */
 export function readCasPins(casDir: string): PinCap[] {
   const path = join(casDir, PINS_FILE);
   let raw: string;
@@ -326,15 +372,14 @@ export function readCasPins(casDir: string): PinCap[] {
   if (!Array.isArray(parsed)) {
     throw new Error(`[node-cas] pin sidecar ${path} is not a JSON array — refusing to read it as "no pins" (M7′: fail toward KEEPING, never toward deleting)`);
   }
-  // ANY record carrying a field outside PIN_RECORD_FIELDS (the retired `expiry` chief among them) REFUSES
-  // the WHOLE read — an old or unknown shape might carry a clock-driven verdict this house no longer
-  // honors; the run stops here, logged by name, rather than silently accepting it back in (evergreen
-  // sweep, gp25-SW2).
+  // ANY record carrying a field outside PIN_RECORD_FIELDS REFUSES the WHOLE read — an unknown shape might
+  // carry a clock-driven verdict, and a pin carries no clock; the run stops here, logged by name, rather
+  // than read the record (gp25-SW2).
   for (const p of parsed) {
     if (!p || typeof p !== "object") continue;
     for (const key of Object.keys(p as Record<string, unknown>)) {
       if (!PIN_RECORD_FIELDS.has(key)) {
-        throw new Error(`[node-cas] pin sidecar ${path} carries a record with unknown field "${key}" (e.g. the retired \`expiry\`) — refusing to read it as "no pins" (evergreen sweep: fail toward KEEPING, never toward deleting)`);
+        throw new Error(`[node-cas] pin sidecar ${path} carries a record with unknown field "${key}" — refusing to read it as "no pins" (a pin record holds PinCap's own fields alone: fail toward KEEPING, never toward deleting)`);
       }
     }
   }
@@ -524,6 +569,7 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
       opts.log(`[cas-sweep] tick faulted: ${(err as Error)?.message ?? err}`);
     } finally { inFlight = false; }
   };
+  // PACING: probes check the realm clock; its roll decides when a sweep runs.
   const timer = setInterval(() => { void probe(); }, probeMs);
   timer.unref?.();
   return { sweep, probeMs, stop: () => { stopped = true; clearInterval(timer); } };

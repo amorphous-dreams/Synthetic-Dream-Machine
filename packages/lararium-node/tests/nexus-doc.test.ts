@@ -11,6 +11,9 @@
  *   · the seat gesture (the roster FORMS from what declared + stood → seated keys → genesis epoch) raises a
  *     live roster, and the chair names come from the operator's declarations rather than from this build.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { NEXUS_DOC_DOMAIN } from "@lararium/mesh";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync, existsSync, readFileSync } from "node:fs";
@@ -18,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import * as ed from "@noble/ed25519";
 import { verifyBcc } from "@lararium/memetic-frame";
-import { readCarrierShape } from "@lararium/tw5";
+import { readCarrierShape, rootMetaFields } from "@lararium/tw5";
 import {
   emptyFoundingCharterDoc, foundingRoster, foundingQuorumSeated,
   rotateSealEpoch, sealLineageHead, ed25519SignerFromSeed, hex, UNARMED, seatNextDigest,
@@ -94,6 +97,22 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     // CONTROL: torn bytes read null, never a partial guess.
     expect(parseNexusDoc(body.slice(0, Math.floor(body.length / 2)))).toBeNull();
     expect(parseNexusDoc("")).toBeNull();
+  });
+
+  test("the generated root meta imposes no scalar rating: every key the house writes names carrier structure", () => {
+    const keys = [fixtureKey(0xc), fixtureKey(0xd)];
+    const doc: NexusDoc = {
+      kind: NEXUS_DOC_DOMAIN, threshold: 2,
+      sealEpochCid: heldCharter({ keys: keys, threshold: 2 }).aid,
+      kahu: [
+        { chairLabel: "Kahu Alpha", verifyingKey: keys[0]! },
+        { chairLabel: "Kahu Beta",  verifyingKey: keys[1]! },
+      ],
+    };
+    const fields = rootMetaFields(renderNexusDoc(doc));
+    const STRUCTURE = new Set(["uri-path", "type", "register", "cacheable", "retain", "role", "title", "namespace", "l-space", "tags"]);
+    expect(Object.keys(fields).filter((k) => !STRUCTURE.has(k))).toEqual([]);
+    expect(Object.values(fields).filter((v) => typeof v === "string" && /^\d+$/.test(v))).toEqual([]);
   });
 
   test("charter shape distinguishes earlier, torn and whole epochs", () => {
@@ -248,9 +267,7 @@ describe("persona pet-name + seat gesture (the door's core)", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-personaseat-"));
     bags = mkdtempSync(join(tmpdir(), "lares-personaseat-bags-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }

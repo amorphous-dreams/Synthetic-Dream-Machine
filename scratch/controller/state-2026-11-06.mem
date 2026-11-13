@@ -1,0 +1,92 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/state-2026-11-06`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/state-2026-11-06.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/state-2026-11-06"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/state-2026-11-06"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! state-2026-11-06.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/state-2026-11-06.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-state-brief-fold-into-controller-hand`>>
+
+! Controller state brief (2026-11-06, early) — fold into controller-handoff#/state, then burn
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/span`>>
+
+!! Span
+`feature/green-jello-dinosaur-5` at `6f5bf8c56`. Landed 2026-11-05/06: #157 promote train, #158 seat harness, #159 pre-rite cures, #160 cap stack, #161 social axis, #162 mirror echo, #163 memegraph fold, #164 ci-container (pinned Playwright image), #165 evening canon batch, #166 land-poll (the 180 s CI-read pace), #167 row7-s2 (S1+S2, the ward, marker cure), #168 row7-s3a (S3a judge, per-face random tag secret, renewal, lease guard), #169 row7-s2b (browser root under its own ward).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lanes-in-flight`>>
+
+!! Lanes in flight (worktree · head · state · next)
+* `row7-s3b` · ~/.lares-scratch/s3b/wt · `ce42e0662` · S3b steps A–G + vectors: the co-sign gate in the three ward doors (judgeCosign, never mayAct); readers enforce the co-sign (wardActWitness); frozen spend (outcomes cite answer + frontier); go chain (longest co-signed `after`, forks read as forks); per-face ward public key in the signed admission (`wardKey`) with proof of possession (`wardPop`); warded approvals (`wardSig` over the answer + frontier); the browser answer door; the browser ward signing seed under its own ward (`ward/sign/<group>/…`); set-aside/unknown issuers refused; a mint asks twice; a refused cap tip reads the tightest cap (`braked`). CI running at ce42e0662. Next: on green, merge the span (canon conflicts by hunk), SHIP (blind Opus reads of steps A, B, C–E, F all cured), land DIRECT.
+* `b1-lift` · ~/.lares-scratch/b1-lift/wt · `b1adaa476` (+ Face-Keyer building slice 3-ii) · the browser vessel lift: slices 0 (page-entry witness), 1 (substrate seams), 2 (the vessel runs in `vessel.worker.ts`; the page speaks a typed port), 1b (the clean ceremony document takes every secret over a service-worker-brokered port; operator APPROVED 2026-11-05), the reload drain + witness reds, the mirror keeps a typist's focus, 3-i (per-tab in-memory sessions, own unlock each, last-session lock drops every key, one owner per store, ownerEpoch). Building: 3-ii (per-face FCK map + slot trees, `face` on every ask/clear, K19 providers, sibling sealing, ember row, no-custody-slot, K15/Wave B reds). Then: slice 4 (SharedWorker house + the floor's service-worker port broker for follower tabs, Pronaos routes), 5b (one composeVessel with the node), 6 (idempotence: ownerEpoch, durable txId ledger), 7 (durability reading), the joined node+browser founding gate, the phone walk.
+* `b1-seal` · ~/.lares-scratch/b1-seal/wt · `bdcba4f9f` (+ Catalog-Splitter building) · sealed-store step three; the repair; slice 5a (browser capability record, session signer); the sealed rest under the production Repo on node and browser; true writer; stand-down flush; published bag key; the P1 clear-write cure (a dropped dial never writes clear); holder routes; browser lock unmaps; fresh-base crash order; manifest writer field. Building: the catalog and daemon bag split per face (D) + floor-public (F), islands' own stores sealed, charter lookup field, staged CAD shelf sealed, node lift session books edits, crash test, P3s, the restart e2e as a standing test.
+* Parked: `spend-burn` (6a63e0991), the spend table — lands with the AI-harness batch once the live wiki stands (operator).
+* Held (dirty, patches saved byte-equal at ~/.lares-scratch/controller/builder-tree-patches/): promote/wt-lifecycle50, wt-migrate46, wt-recovery47 — removal is the operator's call.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/operator-rulings-2026-11-05`>>
+
+!! Operator rulings 2026-11-05 (record each where it belongs)
+"Browser + Node is part of founding" (B1 rises before the rite). "Land all before the rite, no 'build a now, b later'." "Multiple tabs will carry live sessions, and later can change face (ONE FACE per session later on the roadmap)." "realm" stays reserved for the DreamNet (a JavaScript execution context reads as a thread). The ceremony document approved. Terra and Luna readers approved when needed; an online reader 1-off approved. The 180 s CI-read pace (a pace for a tool's own reads at the web2 edge, never a deadline or verdict).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/house-decisions-awaiting-the-operator-s-overrule`>>
+
+!! House decisions awaiting the operator's overrule (record as defaults)
+* The ward key in the admission, the ward proof of possession, warded approvals carrying the frontier (S3b D/E) — changes admission bytes; built as the default.
+* "The asker seals" rewording: "the asker's session seals, on the vessel worker's thread, while that face's session stands unlocked" (default pending).
+* A set-aside device's past outcomes stop standing for readers who see the set-aside (from the edge-frontier ruling "a raise shadows its target at once"); a refused cap tip reads the tightest cap.
+* Sealing scope (from the 2026-10-12 ruling): every wiki content store and CAD seal; planes and boards stay clear by the waking-floor law; the catalog and daemon bag split per face (D) + floor-public (F), no vessel-wide content key.
+* Timer saves sign under the session that wrote the change; the lock and stand-down flush first; an unbooked save waits in memory.
+* Same-face tabs: one provider per face lit at the first unlock, each tab proves its own unlock.
+* The ceremony hosts passphrase (ward + custody) and PRF (custody only) answers; PRF never the sole copy.
+* The vessel reads its own durability (Safari's 7-day rule; Home Screen exemption).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-order-to-the-rite`>>
+
+!! The order to the rite
+# S3b lands. 2. b1-seal and b1-lift finish their slices and merge (b1-seal into b1-lift, then the span). 3. The joined node+browser founding gate. 4. The phone walk (iPhone + Android) with the capability probe. 5. The pre-rite (image rebuilt last at the landed head with its GIT_REV label; old homes renamed aside after `down`; the projection check; no `.lar-test-scratch` under the root) — the runbook draft from the Terra scout. 6. The operator's rite.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/crew-practice`>>
+
+!! Crew practice (as practiced tonight)
+Fresh spirit per step, never resumes; ≤3 Claude builders; readers outside the cap; blind Opus on custody, Terra/Luna on other reads (Codex pool at ~98% used; resets 2026-11-09); every lane red-first with a blind read before land; DIRECT lands after a span merge (canon conflicts resolved by hunk — never a whole-file `--ours`); land-train refuses a .mem-only merge riding its green parent (dispatch CI; an owed tools row); one writer per worktree; worktrees under ~/.lares-scratch (cap 6). Spend tonight: builders ran 60k–650k per step; one resumed spirit ran ≈953k.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-tools-rows-found-tonight`>>
+
+!! Owed tools rows found tonight
+land-train lets a .mem-only merge commit ride its green parent (today it reads unread); the CI pace by quota (G54).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LhtIzpPkgHrpFFGD3gs38GVsFnQB0tc0EaB_tvECS3Q`>>
+
+<<^ code=`&#x0004;` to=`?`>>

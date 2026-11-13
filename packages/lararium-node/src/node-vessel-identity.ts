@@ -5,7 +5,7 @@
  *   - keypair is generated device-local, persists to disk with mode 0o600
  *   - verifyingKey (hex 32 bytes) feeds did:key derivation
  *   - did:key derivation happens in the TW5 VM (cold-boot-ceremony module)
- *   - displayName derives from `git config user.name` — local truth, no network call
+ *   - displayName derives from `git config user.name` — local truth, no network call; it names no file
  *
  * The TRUE NAME MODEL — three parts that bind without merging (#has-stack ontology: a
  * nameless entity carries a stack of capabilities, never a numbered plane):
@@ -26,23 +26,23 @@
  * See lar:///ha.ka.ba/lares/docs/federation and api/pono/has-stack-ontology.
  *
  * Storage law — identity lives beside the runtime store:
- *   the keypair + card persist to `<lares>/identity` (`larIdentityDir`), in the XDG data
- *   home BESIDE — never inside — the runtime `<lares>/vessel` store. No storage operation
+ *   the place keypair persists to `<root>/hearth/identity` (`larIdentityDir`), in the hearth
+ *   BESIDE — never inside — the runtime `<root>/hearth/vessel` store. No storage operation
  *   can reach it (they rmSync the substrate store, never the home that holds it). This realizes the
  *   law below (the key MUST NOT sit inside an Automerge doc storage path) and the
  *   keypair-wipe lesson: a destructive storage verb cannot reach identity.
  *
- * Custody law — the FLOOR reads the vessel key, its inception and its card, and nothing else here:
- *   the vessel keypair, the inception and the ContactCard rest in the clear (mode 0o600), since a vessel stands and
+ * Custody law — the FLOOR reads the public place key and inception, and presents the public floor card and pin:
+ *   the place keypair and inception rest in the clear (mode 0o600), since a vessel stands and
  *   answers its public name before any person unlocks it. Every other row this module writes rests sealed under
- *   the vessel key and passes through the custody seat: the persona roster, the selector, the three name maps
- *   (hot) and each persona root (cold). The persona section below states that law.
+ *   the vessel key and passes through the custody seat: the persona roster, the three name maps (hot) and each
+ *   persona root (cold). The worn face lives in session memory and rests in no row. The persona section below states
+ *   that law.
  *
- * Key file naming (inside the identity dir):
- *   git email configured:  .vessel-key-{email-slug}.json
- *   git email absent:      .vessel-key.json
- *
- * Different developers on the same machine each get their own keypair.
+ * Key file naming (inside the identity dir): `.vessel-key.json`, beside its KEL `.vessel-kel.json`. Every custody
+ * name derives from the identity home alone: a host fact (a git email, a login) never picks which file a vessel
+ * reads, so a changed host fact never reads a standing vessel as empty. The home itself answers "which vessel"
+ * (the house root `LAR_ROOT` names; an unnamed root refuses), and each face's rows stand in that face's own directory.
  * The keypair derives from a local CSPRNG — fully device-local, no external service.
  *
  * MUST NOT be placed inside any Automerge doc storage path — MUST NOT sync.
@@ -52,15 +52,15 @@
 import { createPrivateKey, createPublicKey, generateKeyPairSync, hkdfSync } from "node:crypto";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, readdirSync, renameSync, openSync, writeSync, fsyncSync, closeSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, chmodSync, renameSync, openSync, writeSync, fsyncSync, closeSync, unlinkSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
+import type { WardCredential } from "./ward-credential.js";
 import {
   generateOrLoadKeypair,
   signingSeedFromHex,
   assertHandleIndex,
-  wearPersona as coreWearPersona,
-  loadActivePersona as coreLoadActivePersona,
   type KeypairStore,
   type KeypairCrypto,
   type PersistedKeypair,
@@ -72,32 +72,33 @@ import {
   type PersonaDeclarationStore,
   type OwnPublicHandleStore,
   type PersonaPublicHandleRecord,
-  inceptVesselKel,
-  decodeVesselKelInception,
-  verifyVesselKelInception,
+  armPlaceInception, PlaceFoundingCardUnread, type PlaceFoundingCard, mintPlaceRotation, placeNextDigest, verifyPlaceKel, decodePlaceKelEvent,
+  mintColdKey, canonicalJson, hex, type PlaceKelEvent, type PlaceRotation, type RandomProvider,
   ALL_DOMAINS,
   GATE_BUNDLE_INFO,
   floorKeyDoor,
   type FloorKeyDoor,
+  placeSignerFromSeed, type PlaceSigner,
 } from "@lararium/mesh";
+import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
+import { readFaceIndexSync } from "./face-index.js";
 import {
-  openedCustody, exclusiveCustody, readCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow,
+  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRow, updateCustodyRow, withWardKeyCustody,
 } from "./custody-seat.js";
 
 /**
- * The identity dir — the ONE resolver, `<lares>/identity` (`larIdentityDir`), in the XDG
- * data home beside the `<lares>/vessel` store; the key + card + anchors are separate from vessel
+ * The identity dir — the ONE resolver, `<root>/hearth/identity` (`larIdentityDir`), in the hearth
+ * beside the `<root>/hearth/vessel` store; the place key + face anchors are separate from vessel
  * documents and unreachable by store operations. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
  *
- * TAKES NO `dataDir` — it never did, in effect: this resolver has always answered off
- * `LAR_ROOT`/XDG env vars alone (`larIdentityDir`), never off a caller-supplied path. A `dataDir`
- * parameter here USED to exist and be silently ignored, which is the exact footgun a prior spirit
- * measured live (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per
- * simulated vessel, in-process, with no matching `LAR_ROOT` mutation, silently read/wrote the REAL
- * `~/.local/share/lares/identity` home instead of its intended isolated one. Removing the parameter
+ * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT` alone (`larIdentityDir`), never
+ * off a caller-supplied path. A `dataDir` parameter it ignored would be the footgun measured live
+ * (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per simulated vessel,
+ * in-process, with no matching `LAR_ROOT` mutation, silently reads/writes the identity home of
+ * whatever house the process names instead of its intended isolated one. Removing the parameter
  * (rather than honoring it) preserves the tested invariant "ONE resolver, no second spelling"
  * (`vessel-identity-home.test.ts`) — honoring it would need a SECOND address-derivation scheme to
  * keep identity separate from a caller-supplied store path, which is exactly the thing this file's storage
@@ -108,34 +109,18 @@ function identityDir(): string {
 }
 
 
-// ── Local operator identity hint ──────────────────────────────────────────
-// Fully local-first: reads git config only. No network calls, no server tokens.
-// Email slug derived from git email (email-prefix, lowercased, sanitized) for
-// per-developer key file naming on shared machines. DisplayName from git user.name.
-//
-// Causal-island law: operator identity derives from local keys — not from any
-// server-conferred session. Git config supplies local truth; no external registry.
+// ── Local operator display name ───────────────────────────────────────────
+// Fully local-first: reads git config `user.name` only, to enrich the IdentityTiddler and the founding's vessel
+// display name. It names no file: custody resolves its names from its home alone.
 
 const exec = promisify(execFile);
 
-interface LocalOperatorHint { login: string | null; displayName: string | null }
-
-async function readLocalOperatorHint(): Promise<LocalOperatorHint> {
-  let displayName: string | null = null;
-  let login:       string | null = null;
+async function readOperatorDisplayName(): Promise<string | null> {
   try {
+    // LIVENESS: the external git process may hang without an exit event.
     const { stdout } = await exec("git", ["config", "--global", "user.name"], { timeout: 2_000 });
-    displayName = stdout.trim() || null;
-  } catch { /* git absent or user.name unset */ }
-  try {
-    const { stdout } = await exec("git", ["config", "--global", "user.email"], { timeout: 2_000 });
-    const email = stdout.trim();
-    if (email) {
-      // Stable, filesystem-safe slug: email prefix, lowercased, non-alnum→dash.
-      login = email.split("@")[0]!.replace(/[^a-z0-9_-]/gi, "-").toLowerCase();
-    }
-  } catch { /* git absent or user.email unset */ }
-  return { login, displayName };
+    return stdout.trim() || null;
+  } catch { return null; /* git absent or user.name unset */ }
 }
 
 interface PersistedKey {
@@ -143,8 +128,6 @@ interface PersistedKey {
   verifyingKey: string;
   /** Hex-encoded 32-byte Ed25519 private key seed. Local signing only. Never synced. */
   signingKey:   string;
-  /** Git email prefix at key-generation time. Informational only — drives key file naming. */
-  gitEmail?: string;
 }
 
 export interface VesselIdentity {
@@ -154,14 +137,12 @@ export interface VesselIdentity {
   displayName?: string;
 }
 
-function keyFileName(login: string | null): string {
-  return login ? `.vessel-key-${login}.json` : ".vessel-key.json";
-}
+const KEY_FILE = ".vessel-key.json";
 
 // ── Platform shores for the shared keypair lifecycle (vessel-identity-core) ────
 // node mints via the local CSPRNG (generateKeyPairSync) and persists each keypair
-// as a 0o600 JSON file in the runtime-store-sibling identity dir, stamping the git
-// email hint. The core (mesh) owns the generate-or-load control flow over these.
+// as a 0o600 JSON file in the runtime-store-sibling identity dir. The core (mesh) owns the
+// generate-or-load control flow over these.
 
 const nodeKeypairCrypto: KeypairCrypto = {
   async generate() {
@@ -175,8 +156,8 @@ const nodeKeypairCrypto: KeypairCrypto = {
   },
 };
 
-/** A single 0o600 JSON keypair slot at `keyFile`; save() stamps the git-email hint. */
-function fileKeypairStore(keyFile: string, login: string | null): KeypairStore {
+/** A single 0o600 JSON keypair slot at `keyFile`. */
+function fileKeypairStore(keyFile: string): KeypairStore {
   return {
     async load() {
       if (!existsSync(keyFile)) return undefined;
@@ -184,47 +165,56 @@ function fileKeypairStore(keyFile: string, login: string | null): KeypairStore {
       return { verifyingKey: raw.verifyingKey, signingKey: raw.signingKey };
     },
     async save(kp) {
-      const persisted: PersistedKey = {
-        verifyingKey: kp.verifyingKey,
-        signingKey:   kp.signingKey,
-        ...(login ? { gitEmail: login } : {}),
-      };
+      const persisted: PersistedKey = { verifyingKey: kp.verifyingKey, signingKey: kp.signingKey };
       writeFileSync(keyFile, JSON.stringify(persisted, null, 2), { mode: 0o600, encoding: "utf8" });
       chmodSync(keyFile, 0o600);
     },
   };
 }
 
-// ── THE INCEPTION: the floor key signed by itself, and no next key ───────────
+// ── THE PLACE KEL: an armed inception, rotated by the founding card ───────────
 //
-// The floor key stands NON-TRANSFERABLE (lar:///ha.ka.ba/lararium/mesh/identity-classes): it commits no next key, so
-// it cannot rotate by construction, and a lost or stolen floor key gets answered by founding the place afresh. Its
-// one inception (`packages/lararium-mesh/src/vessel-kel.ts`) names the key and carries the key's own signature, and
-// nothing beside: no next-key digest, no next threshold, no clock, no version. The same seed mints the same bytes.
-// It rests in the clear beside the key (a `floor` row), and every load of a standing key reads it: an inception that
-// fails to prove that key refuses by name (`VesselInceptionRefused`), and nothing writes one over a standing key.
-function kelFileName(login: string | null): string {
-  return login ? `.vessel-kel-${login}.json` : ".vessel-kel.json";
-}
+// The place KEL (`packages/lararium-mesh/src/vessel-kel.ts`) seats the online signer and commits the digest of a cold
+// next key that rests on the founding card alone. A founding reads that card back before any byte lands; a rotation
+// reveals it, seats a replacement signer and commits the following cold key. The chain rests in the clear beside the
+// key (a `floor` row), and every load of a standing key verifies the chain to its head: a chain that fails to prove
+// the key refuses by name (`VesselInceptionRefused`), and nothing writes one over a standing key.
+const KEL_FILE = ".vessel-kel.json";
+const STAGED_FILE = ".vessel-rotating.json";
 
 /** A standing vessel key whose own files fail to prove it (its inception, or a seed that derives another key); nothing gets written over either file. */
 export class VesselInceptionRefused extends Error {
   override readonly name = "VesselInceptionRefused";
-  constructor(readonly kelFile: string, readonly reading: "absent" | "malformed" | "names-another-key" | "signature-fails" | "seed-names-another-key") {
+  constructor(readonly kelFile: string, readonly reading: "absent" | "malformed" | "unarmed" | "names-another-key" | "signature-fails" | "seed-names-another-key" | "chain-refused", readonly chainRefusal?: string) {
     super(
-      `the vessel key's inception at ${kelFile} reads ${reading}: a floor key proves itself by its own inception, ` +
-      `and none gets written over a standing key — found the place afresh on a fresh root`,
+      `the place KEL at ${kelFile} reads ${reading}${chainRefusal ? `: ${chainRefusal}` : ""}; no standing key gets overwritten`,
     );
   }
 }
 
 /** Read the inception standing at `kelFile` and hold it to `verifyingKey`; refuse by name where it fails. */
-function proveInception(kelFile: string, verifyingKey: string): void {
+function readPlaceChain(kelFile: string): PlaceKelEvent[] {
   if (!existsSync(kelFile)) throw new VesselInceptionRefused(kelFile, "absent");
-  const inception = decodeVesselKelInception(readFileSync(kelFile));
-  if (inception === null) throw new VesselInceptionRefused(kelFile, "malformed");
-  if (inception.k.length !== 1 || inception.k[0] !== verifyingKey) throw new VesselInceptionRefused(kelFile, "names-another-key");
-  if (!verifyVesselKelInception(inception)) throw new VesselInceptionRefused(kelFile, "signature-fails");
+  let raw: unknown;
+  try { raw = JSON.parse(readFileSync(kelFile, "utf8")); } catch { throw new VesselInceptionRefused(kelFile, "malformed"); }
+  if (!Array.isArray(raw)) throw new VesselInceptionRefused(kelFile, "malformed");
+  return raw as PlaceKelEvent[];
+}
+
+function verifiedPlaceChain(kelFile: string) {
+  const chain = readPlaceChain(kelFile);
+  const reading = verifyPlaceKel(chain);
+  if (!reading.ok) {
+    const named = reading.refusal === "unarmed-inception" ? "unarmed" :
+      reading.refusal === "bad-signature" ? "signature-fails" : reading.refusal === "malformed" ? "malformed" : "chain-refused";
+    throw new VesselInceptionRefused(kelFile, named, reading.refusal);
+  }
+  return reading;
+}
+
+function proveInception(kelFile: string, verifyingKey: string): void {
+  const reading = verifiedPlaceChain(kelFile);
+  if (reading.signerKey !== verifyingKey) throw new VesselInceptionRefused(kelFile, "names-another-key");
 }
 
 /**
@@ -261,11 +251,114 @@ function publishFile(file: string, bytes: string | Uint8Array): void {
   finally { if (dir !== undefined) closeSync(dir); }
 }
 
+interface StagedPlaceRotation { readonly event: PlaceRotation; readonly signingKey: string; readonly cardRead: true }
+function placeFiles() {
+  const dir = identityDir();
+  return { key: join(dir, KEY_FILE), kel: join(dir, KEL_FILE), stage: join(dir, STAGED_FILE) };
+}
+function stagedRotation(file: string): StagedPlaceRotation {
+  let raw: unknown;
+  try { raw = JSON.parse(readFileSync(file, "utf8")); } catch { throw new Error("place-rotation-torn"); }
+  if (!raw || typeof raw !== "object" || (raw as { cardRead?: unknown }).cardRead !== true ||
+      typeof (raw as { signingKey?: unknown }).signingKey !== "string" ||
+      !/^[0-9a-f]{64}$/.test((raw as { signingKey: string }).signingKey) ||
+      decodePlaceKelEvent((raw as { event?: unknown }).event)?.t !== "rot") throw new Error("place-rotation-torn");
+  return raw as StagedPlaceRotation;
+}
+function reconcileFiles(files: ReturnType<typeof placeFiles>): void {
+  if (!existsSync(files.stage)) return;
+  const staged = stagedRotation(files.stage);
+  const chain = readPlaceChain(files.kel);
+  const reading = verifiedPlaceChain(files.kel);
+  const extended = verifyPlaceKel([...chain, staged.event]);
+  const already = chain.at(-1)?.t === "rot" && canonicalJson(chain.at(-1)) === canonicalJson(staged.event);
+  if (!already && (!extended.ok || extended.seq !== reading.seq + 1)) throw new Error("place-rotation-torn");
+  if (verifyingKeyOfSeed(staged.signingKey) !== staged.event.key) throw new Error("place-rotation-torn");
+  if (already && reading.signerKey !== staged.event.key) throw new Error("place-rotation-torn");
+  const raw = JSON.parse(readFileSync(files.key, "utf8")) as PersistedKey;
+  if (!already && raw.verifyingKey !== reading.signerKey) throw new Error("place-rotation-torn");
+  if (!already) publishFile(files.kel, canonicalJson([...chain, staged.event]));
+  if (raw.verifyingKey !== staged.event.key) publishFile(files.key, JSON.stringify({ verifyingKey: staged.event.key, signingKey: staged.signingKey }, null, 2));
+  unlinkSync(files.stage);
+}
+
+/** Finish a fully read-back card's staged rotation under the custody claim. */
+export async function reconcilePlaceRotation(): Promise<void> {
+  const files = placeFiles();
+  if (existsSync(files.stage)) await exclusiveCustody(async () => reconcileFiles(files));
+}
+
+export async function loadPlaceKelChain(): Promise<readonly PlaceKelEvent[]> {
+  await reconcilePlaceRotation();
+  return verifiedPlaceChain(placeFiles().kel).chain;
+}
+/** Where this vessel's place stands: its W29 KEL prefix and the head of its verified KEL. A place-anchored session meets it here. */
+export async function loadPlaceReading(): Promise<{ readonly place: string; readonly seq: number; readonly head: string }> {
+  await reconcilePlaceRotation();
+  const reading = verifiedPlaceChain(placeFiles().kel);
+  return { place: reading.aid, seq: reading.seq, head: reading.headDigest };
+}
+/**
+ * A STANDING DOOR'S READ OF ITS PLACE: the door watches the one KEL its identity home names. Each read stats that KEL and verifies
+ * it only once its bytes moved (inode, size, times), so a frame spawns no process and re-verifies no unchanged KEL;
+ * a staged rotation reconciles first. A read that fails throws, and the caller refuses that frame `anchor-unread`.
+ */
+export function placeReadingWatch(): () => Promise<{ readonly place: string; readonly seq: number; readonly head: string }> {
+  let files: ReturnType<typeof placeFiles> | null = null;
+  let kept: { readonly stamp: string; readonly reading: { readonly place: string; readonly seq: number; readonly head: string } } | null = null;
+  return async () => {
+    if (files === null) files = placeFiles();
+    const at = files;
+    if (existsSync(at.stage)) await exclusiveCustody(async () => reconcileFiles(at));
+    const st = statSync(at.kel);
+    const stamp = `${st.ino}:${st.size}:${st.mtimeMs}:${st.ctimeMs}`;
+    if (kept?.stamp === stamp) return kept.reading;
+    const read = verifiedPlaceChain(at.kel);
+    kept = { stamp, reading: Object.freeze({ place: read.aid, seq: read.seq, head: read.headDigest }) };
+    return kept.reading;
+  };
+}
+export async function loadPlaceAid(): Promise<string> {
+  await reconcilePlaceRotation();
+  return verifiedPlaceChain(placeFiles().kel).aid;
+}
+
+/** Rotate a place only after the replacement cold card reads back. */
+export async function rotatePlace(opts: { card: Uint8Array; placeFoundingCard: PlaceFoundingCard; entropy?: RandomProvider }):
+  Promise<{ event: PlaceRotation; aid: string; seq: number }> {
+  await openedCustody();
+  const files = placeFiles();
+  // A staged rotation finishes (or refuses) before another begins.
+  await reconcilePlaceRotation();
+  const reading = verifiedPlaceChain(files.kel);
+  if (!(opts.card instanceof Uint8Array) || opts.card.length !== 32) throw new Error("place-card-refused");
+  let reveal: string;
+  try { reveal = verifyingKeyOfSeed(hex(opts.card)); }
+  catch { throw new Error("place-card-refused"); }
+  if (placeNextDigest(reveal) !== reading.nextDigest) throw new Error("place-card-refused");
+  const next = await mintColdKey(opts.entropy);
+  const signer = new Uint8Array(32);
+  (opts.entropy ?? globalThis.crypto).getRandomValues(signer);
+  try {
+    const signingKey = hex(signer);
+    const event = mintPlaceRotation({ chain: reading.chain, coldSeed: opts.card, newSignerKey: verifyingKeyOfSeed(signingKey), nextColdVerifyingKey: next.verifyingKey });
+    // THE REPLACEMENT CARD READS BACK BEFORE THE CLAIM (a read-back may ask the custody its own questions), and no event
+    // stages until it has: the chain, the key file and the stage change only inside the claim below.
+    await opts.placeFoundingCard.readBack({ seed: next.seed, digest: event.next, verifyingKey: next.verifyingKey }, reading.aid.slice(-16), reading.seq + 1);
+    return await exclusiveCustody(async () => {
+      if (existsSync(files.stage)) throw new Error("place-rotation-torn");
+      if (verifiedPlaceChain(files.kel).headDigest !== reading.headDigest) throw new Error("place-rotation-raced");
+      publishFile(files.stage, canonicalJson({ event, signingKey, cardRead: true }));
+      reconcileFiles(files);
+      return { event, aid: reading.aid, seq: event.seq };
+    });
+  } finally { next.seed.fill(0); signer.fill(0); }
+}
+
 /**
  * Generate or load the device Ed25519 operator keypair.
  *
- * Key file naming uses git email slug — different developers on the same machine
- * each hold separate keys. Falls back to a shared file when git email is absent.
+ * The key file takes one name in the identity home (`.vessel-key.json`); no host fact names it.
  *
  * Causal-islands alignment: keypair generation runs as a device-local operation that
  * MUST complete before any Automerge doc opens. The verifyingKey flows into the
@@ -284,15 +377,15 @@ export class VesselKeyMintRefused extends Error {
   }
 }
 
-export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
+export async function generateOrLoadVesselIdentity(opts: { placeFoundingCard?: PlaceFoundingCard; entropy?: RandomProvider } = {}): Promise<VesselIdentity> {
   const idDir = identityDir();
   mkdirSync(idDir, { recursive: true });
 
-  const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
   // Keep both identity files beside the runtime store on every boot/init — the card
   // is re-mintable but still identity, and belongs beside its key.
-  const keyFile  = join(idDir, keyFileName(hint.login));
-  const base     = fileKeypairStore(keyFile, hint.login);
+  const keyFile  = join(idDir, KEY_FILE);
+  const base     = fileKeypairStore(keyFile);
+  if (existsSync(join(idDir, STAGED_FILE))) await reconcilePlaceRotation();
 
   // THE MINT: the inception, then the key file, and THE KEY FILE COMMITS THE MINT. Both land inside ONE hold of the
   // custody claim (`exclusiveCustody`), the same claim every sealed write in every process takes, so two racing acts
@@ -302,16 +395,24 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
   // its custody open. A key file that stands always stands beside the inception that names it; an act that stops
   // between the two leaves an inception no key answers to, and the next mint writes it afresh.
   let lostTo: PersistedKeypair | undefined;
-  const kelFile = join(idDir, kelFileName(hint.login));
+  const kelFile = join(idDir, KEL_FILE);
   const minting: KeypairStore = {
     load: () => base.load(),
     async save(keypair) {
       try { await openedCustody(); } catch (err) { throw new VesselKeyMintRefused(keyFile, err); }
+      // THE CARD READS BACK BEFORE THE CLAIM: a read-back may ask the custody its own questions (a staged root's stand-in
+      // proves the test route), and the claim admits one holder. Nothing lands until the card reads back.
+      const seed = signingSeedFromHex(keypair.signingKey);
+      let inception: PlaceKelEvent;
+      try {
+        const card: PlaceFoundingCard | null = opts.placeFoundingCard ?? ((await readBackStandsIn()) ? { readBack: async () => {} } : null);
+        if (card === null) throw new PlaceFoundingCardUnread();
+        inception = (await armPlaceInception({ signerSeed: seed, card, ...(opts.entropy ? { entropy: opts.entropy } : {}) })).event;
+      } finally { seed.fill(0); }
       const committed = await exclusiveCustody(async () => {
         if (existsSync(keyFile)) return false;
-        const seed = signingSeedFromHex(keypair.signingKey);
-        try { publishFile(kelFile, inceptVesselKel(seed).bytes); } finally { seed.fill(0); }
-        const persisted: PersistedKey = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey, ...(hint.login ? { gitEmail: hint.login } : {}) };
+        publishFile(kelFile, canonicalJson([inception]));
+        const persisted: PersistedKey = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey };
         publishFile(keyFile, JSON.stringify(persisted, null, 2));
         return true;
       });
@@ -320,7 +421,13 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
       if (!lostTo) throw new VesselKeyMintRefused(keyFile, new Error("the key another act landed vanished before this act read it; run the founding again"));
     },
   };
-  const minted = await generateOrLoadKeypair(minting, nodeKeypairCrypto);
+  const crypto = opts.entropy ? { generate: async () => {
+    const seed = new Uint8Array(32);
+    opts.entropy!.getRandomValues(seed);
+    try { const signingKey = hex(seed); return { signingKey, verifyingKey: verifyingKeyOfSeed(signingKey) }; }
+    finally { seed.fill(0); }
+  } } : nodeKeypairCrypto;
+  const minted = await generateOrLoadKeypair(minting, crypto);
   const verifyingKey = lostTo ? lostTo.verifyingKey : minted.verifyingKey;
   const created = minted.created && !lostTo;
 
@@ -329,13 +436,14 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
     const standing = JSON.parse(readFileSync(keyFile, "utf8")) as PersistedKey;
     if (standing.verifyingKey !== verifyingKey) throw new VesselInceptionRefused(kelFile, "names-another-key");
     proveStandingKey(kelFile, standing);
-    console.log(`[vessel-identity] loaded keypair${hint.login ? ` for ${hint.login}` : ""}`);
+    console.log("[vessel-identity] loaded keypair");
   } else {
-    console.log(`[vessel-identity] generated new Ed25519 keypair and its inception (no next key)${hint.login ? ` for ${hint.login}` : ""}`);
+    console.log("[vessel-identity] generated place signer and armed KEL");
   }
 
   const base2: VesselIdentity = { verifyingKey };
-  return hint.displayName ? { ...base2, displayName: hint.displayName } : base2;
+  const displayName = await readOperatorDisplayName();
+  return displayName ? { ...base2, displayName } : base2;
 }
 
 /**
@@ -345,8 +453,8 @@ export async function generateOrLoadVesselIdentity(): Promise<VesselIdentity> {
  */
 export async function loadVesselIdentity(): Promise<VesselIdentity> {
   const verifyingKey = await loadVesselVerifyingKey();
-  const hint = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  return hint.displayName ? { verifyingKey, displayName: hint.displayName } : { verifyingKey };
+  const displayName = await readOperatorDisplayName();
+  return displayName ? { verifyingKey, displayName } : { verifyingKey };
 }
 
 /**
@@ -375,8 +483,8 @@ export async function loadVesselIdentity(): Promise<VesselIdentity> {
  * file exists, and refuses `VesselInceptionRefused` by name where the key fails its proof.
  */
 export async function loadVesselVerifyingKey(): Promise<string> {
-  const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const keyFile = join(identityDir(), keyFileName(hint.login));
+  await reconcilePlaceRotation();
+  const keyFile = join(identityDir(), KEY_FILE);
   if (!existsSync(keyFile)) {
     throw new Error(
       `[vessel-identity] no key file at ${keyFile} — run \`lares vessel found\` first to generate the keypair`,
@@ -386,50 +494,13 @@ export async function loadVesselVerifyingKey(): Promise<string> {
   if (typeof raw.verifyingKey !== "string" || raw.verifyingKey.length !== 64) {
     throw new Error(`[vessel-identity] malformed verifyingKey in ${keyFile}`);
   }
-  proveStandingKey(join(identityDir(), kelFileName(hint.login)), raw);
+  proveStandingKey(join(identityDir(), KEL_FILE), raw);
   return raw.verifyingKey;
 }
 
-function cardFileName(login: string | null): string {
-  return login ? `.vessel-card-${login}.json` : ".vessel-card.json";
-}
-
-/**
- * Persist the operator's pre-minted Keyhive ContactCard JSON beside the keypair
- * (mode 0o600). The founding ceremony mints it once; a short-lived LEAF actor
- * (CLI run / agent turn) re-presents this cached card on every peer handshake
- * WITHOUT booting keyhive — the light-identity path (operator-peer #actor-parity
- * OP-AP5). The card carries no expiry/nonce, so the cache never goes stale; proof
- * freshness rides the per-challenge nonce, never the card.
- */
-export async function persistVesselCard(contactCardJson: string): Promise<void> {
-  const idDir = identityDir();
-  mkdirSync(idDir, { recursive: true });
-  const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const cardFile = join(idDir, cardFileName(hint.login));
-  writeFileSync(cardFile, contactCardJson, { mode: 0o600, encoding: "utf8" });
-  chmodSync(cardFile, 0o600);
-  console.log(`[vessel-identity] persisted ContactCard${hint.login ? ` for ${hint.login}` : ""}`);
-}
-
-/**
- * Load the operator's cached ContactCard JSON. Throws when absent — the caller
- * must run `lares vessel found` (which mints + persists it during the founding ceremony).
- */
-export async function loadVesselCard(): Promise<string> {
-  const hint     = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const cardFile = join(identityDir(), cardFileName(hint.login));
-  if (!existsSync(cardFile)) {
-    throw new Error(
-      `[vessel-identity] no ContactCard at ${cardFile} — run \`lares vessel found\` (it mints the card during the founding ceremony)`,
-    );
-  }
-  return readFileSync(cardFile, "utf8");
-}
-
-export async function loadVesselSigningSeed(): Promise<Uint8Array> {
-  const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const keyFile = join(identityDir(), keyFileName(hint.login));
+async function loadVesselSigningSeed(): Promise<Uint8Array> {
+  await reconcilePlaceRotation();
+  const keyFile = join(identityDir(), KEY_FILE);
   if (!existsSync(keyFile)) {
     throw new Error(
       `[vessel-identity] no key file at ${keyFile} — run \`lares vessel found\` first to generate the keypair`,
@@ -439,8 +510,15 @@ export async function loadVesselSigningSeed(): Promise<Uint8Array> {
   if (typeof raw.signingKey !== "string" || raw.signingKey.length !== 64) {
     throw new Error(`[vessel-identity] malformed signingKey in ${keyFile}`);
   }
-  proveStandingKey(join(identityDir(), kelFileName(hint.login)), raw);
+  proveStandingKey(join(identityDir(), KEL_FILE), raw);
   return signingSeedFromHex(raw.signingKey);
+}
+
+/** Open only the five framed place duties after proving the key at the current KEL head. */
+export async function vesselPlaceSignerDoor(): Promise<PlaceSigner> {
+  const seed = await loadVesselSigningSeed();
+  try { return placeSignerFromSeed(seed); }
+  finally { seed.fill(0); }
 }
 
 /** The floor key's door refused: a name the registry never declared, or a child that belongs to the sealed custody root. */
@@ -459,13 +537,16 @@ export class FloorKeyDoorRefused extends Error {
  * rests in no closure between two calls.
  *
  * It derives no child the sealed custody root owns: the sovereign gate bundle's name refuses here, so a floor
- * key never stands in for the custody root. The custody seat's own door refuses the floor bundle's name the
+ * key never stands in for the custody root. Every `vessel-face-tag*` name refuses too: a child under one would read as
+ * one secret across every face this vessel wears, which links its admissions. The custody seat's own door refuses the floor bundle's name the
  * same way (`custodyGateDoor`), and the two doors carry two types no composer can swap.
  */
+const VESSEL_FACE_TAG_NAME = /\/vessel-face-tag[^/]*$/;
+
 export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
-  const hint    = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const keyFile = join(identityDir(), keyFileName(hint.login));
-  const kelFile = join(identityDir(), kelFileName(hint.login));
+  await reconcilePlaceRotation();
+  const keyFile = join(identityDir(), KEY_FILE);
+  const kelFile = join(identityDir(), KEL_FILE);
   return floorKeyDoor({
     derive(domain: string): Uint8Array {
       if (!ALL_DOMAINS.includes(domain)) {
@@ -473,6 +554,9 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
       }
       if (domain === GATE_BUNDLE_INFO) {
         throw new FloorKeyDoorRefused("refused the sovereign gate bundle's name: that child derives from the sealed custody root alone");
+      }
+      if (VESSEL_FACE_TAG_NAME.test(domain)) {
+        throw new FloorKeyDoorRefused("refused the vessel face tag's name: a face's tag key derives from that face's own random secret, never from a vessel-wide key");
       }
       if (!existsSync(keyFile)) {
         throw new FloorKeyDoorRefused(`no vessel key stands at ${keyFile}: found the vessel with \`lares vessel found\``);
@@ -502,14 +586,14 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 // ROOT-ON-FOUNDER: `generateOrLoadPersonaGroupRoot` mints founder-side only; a joinee holds the founder's public
 // DID + a signed edge at admit, so its roster reads empty. UNIFORM KEYING — every persona-root spells `-h${N}`.
 //
-// ── AT REST: SIX ROWS, ONE CUSTODY BOUNDARY ────────────────────────────────────────────────────
+// ── AT REST: FIVE ROWS, ONE CUSTODY BOUNDARY ───────────────────────────────────────────────────
 // Every row of this family rests sealed under the vessel key and passes through the custody seat
 // (`custody-seat`): the one sealed writer on the way down, the sealed open on the way up.
-//   HOT (read while the vessel stays unlocked): the persona ROSTER, the active-persona selector, the private
-//       pet-name map, the declaration map, the published-face record.
+//   HOT (read while the vessel stays unlocked): the persona ROSTER, the private pet-name map, the declaration
+//       map, the published-face record. The worn face lives in session memory (`wornInSession`), never a row.
 //   COLD (opened for one act, then dropped): each persona ROOT (`…-h<N>.json`).
 // At the floor every door here refuses `CustodyLocked`. A hot row with nothing at its path reads as holding
-// nothing (no root, no worn face, no label), which states a fact about a vessel that never wrote it. A row that
+// nothing (no root, no mounted face, no label), which states a fact about a vessel that never wrote it. A row that
 // stands and does not open (torn, bare, another key's) refuses `CustodyRowUnavailable`, and so does one that
 // opens to another shape. No reader folds a refusal to empty, so no act writes over a row it could not read.
 //
@@ -543,21 +627,16 @@ function objectOf(value: unknown, file: string): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-/** The persona-root keypair filename — uniform `-h${N}` per handle-index, login-scoped so developers on
- *  one machine hold separate roots. No founding special-case (uniform keying). */
-function personaGroupRootFileName(login: string | null, handleIndex: number): string {
-  return login ? `.persona-group-root-${login}-h${handleIndex}.json` : `.persona-group-root-h${handleIndex}.json`;
-}
-
-/** The active-persona selector filename — one pointer per vessel, login-scoped. */
-function activePersonaFileName(login: string | null): string {
-  return login ? `.active-persona-${login}.json` : ".active-persona.json";
+/** The persona-root keypair filename — uniform `-h${N}` per handle-index, in its face's own directory. No founding
+ *  special-case (uniform keying). */
+function personaGroupRootFileName(handleIndex: number): string {
+  return `.persona-group-root-h${handleIndex}.json`;
 }
 
 /** The persona-root ROSTER filename — the EXPLICIT written record of every handle-index this vessel
  *  holds a root for, each beside its root's public key. */
-function personaRosterFileName(login: string | null): string {
-  return login ? `.persona-roster-${login}.json` : ".persona-roster.json";
+function personaRosterFileName(handleIndex: number): string {
+  return `.persona-roster-h${handleIndex}.json`;
 }
 
 /** One held root, as the roster records it: its handle-index and its public verifying key. */
@@ -584,9 +663,20 @@ function parseRoster(bytes: Uint8Array | null, file: string): PersonaRosterLine[
   return out.sort((a, b) => a.handleIndex - b.handleIndex);
 }
 
-async function readRoster(login: string | null): Promise<PersonaRosterLine[]> {
-  const file = personaRosterFileName(login);
-  return parseRoster(await readCustodyRow("identity", file), file);
+/** One face's roster line (its own row, in its own directory); null where it holds none. */
+async function readRosterLine(handleIndex: number): Promise<PersonaRosterLine | null> {
+  const file = personaRosterFileName(handleIndex);
+  return parseRoster(await readCustodyRow("identity", file), file).find((l) => l.handleIndex === handleIndex) ?? null;
+}
+
+/** The roster of the faces standing UNLOCKED, ascending: each face keeps its own line, so a locked face names itself by the floor index alone. */
+async function readRoster(): Promise<PersonaRosterLine[]> {
+  const out: PersonaRosterLine[] = [];
+  for (const handleIndex of await unlockedFaceOrdinals()) {
+    const line = await readRosterLine(handleIndex);
+    if (line) out.push(line);
+  }
+  return out;
 }
 
 /** The Ed25519 public key (hex) a 32-byte signing seed (hex) derives. */
@@ -614,13 +704,14 @@ function parseRootRow(bytes: Uint8Array, file: string): PersistedKeypair {
  * Open the root row the roster line `line` commits, for one act. A row that went missing refuses `absent`; a row
  * that names another key than the line refuses `names-another-key`; every other reading refuses by its own name.
  */
-async function openCommittedRoot(login: string | null, line: PersonaRosterLine): Promise<PersistedKeypair> {
-  const file = personaGroupRootFileName(login, line.handleIndex);
-  return openColdCustodyRow("identity", file, (bytes) => {
+async function openCommittedRoot(line: PersonaRosterLine, ward: WardCredential | undefined): Promise<PersistedKeypair> {
+  const file = personaGroupRootFileName(line.handleIndex);
+  // THE ROOT RESTS UNDER THE WARD: one fresh unlock of the face's ward key opens it for this act, and the key zeroes after.
+  return withWardKeyCustody({ ordinal: line.handleIndex }, ward, (seat) => seat.open(file, (bytes) => {
     const root = parseRootRow(bytes, file);
     if (root.verifyingKey !== line.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return root;
-  });
+  }), `the face root at h${line.handleIndex}`);
 }
 
 /**
@@ -628,16 +719,16 @@ async function openCommittedRoot(login: string | null, line: PersonaRosterLine):
  * line that commits it. Answers the keypair that stands and whether this call wrote it. A roster line that names
  * another key at this index refuses and moves nothing further.
  */
-async function commitRoot(login: string | null, handleIndex: number, keypair: PersistedKeypair): Promise<{ root: PersistedKeypair; wrote: boolean }> {
+async function commitRoot(handleIndex: number, keypair: PersistedKeypair, ward: WardCredential | undefined): Promise<{ root: PersistedKeypair; wrote: boolean }> {
   const idDir = larIdentityDir();
   mkdirSync(idDir, { recursive: true, mode: 0o700 });
-  const rootFile = personaGroupRootFileName(login, handleIndex);
-  const kept = await updateColdCustodyRow("identity", rootFile, (bytes) => {
+  const rootFile = personaGroupRootFileName(handleIndex);
+  const kept = await withWardKeyCustody({ ordinal: handleIndex }, ward, (seat) => seat.update(rootFile, (bytes) => {
     if (bytes !== null) return { plaintext: null, value: { root: parseRootRow(bytes, rootFile), wrote: false } };
-    const persisted = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey, ...(login ? { gitEmail: login } : {}) };
+    const persisted = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey };
     return { plaintext: encodeRow(persisted), value: { root: keypair, wrote: true } };
-  });
-  const rosterFile = personaRosterFileName(login);
+  }), `the face root at h${handleIndex}`);
+  const rosterFile = personaRosterFileName(handleIndex);
   await updateCustodyRow("identity", rosterFile, (bytes) => {
     const roster = parseRoster(bytes, rosterFile);
     const standing = roster.find((l) => l.handleIndex === handleIndex);
@@ -656,18 +747,17 @@ async function commitRoot(login: string | null, handleIndex: number, keypair: Pe
  * takes the root; the same root standing changes nothing; any other root row or roster line at the index refuses
  * `names-another-key` with its bytes untouched. The keypair's public half must derive from its seed.
  */
-export async function landPersonaRoot(handleIndex: number, keypair: { readonly signingKey: string; readonly verifyingKey: string }): Promise<void> {
+export async function landPersonaRoot(handleIndex: number, keypair: { readonly signingKey: string; readonly verifyingKey: string }, ward?: WardCredential): Promise<void> {
   assertHandleIndex(handleIndex);
-  const login = await loginHint();
-  const file = personaGroupRootFileName(login, handleIndex);
+  const file = personaGroupRootFileName(handleIndex);
   if (!HEX64.test(keypair.signingKey) || !HEX64.test(keypair.verifyingKey) || verifyingKeyOfSeed(keypair.signingKey) !== keypair.verifyingKey) throw malformed(file);
   // EVERY STANDING ROW READS BEFORE ANY WRITE: a roster line or an orphan root under another key refuses here, so
   // a refused landing adopts no orphan and records no line.
-  const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+  const line = await readRosterLine(handleIndex) ?? undefined;
   if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
-  const orphan = line ? null : await orphanPersonaRootKey(handleIndex);
+  const orphan = line ? null : await orphanPersonaRootKey(handleIndex, ward);
   if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
-  const kept = await commitRoot(login, handleIndex, { signingKey: keypair.signingKey, verifyingKey: keypair.verifyingKey });
+  const kept = await commitRoot(handleIndex, { signingKey: keypair.signingKey, verifyingKey: keypair.verifyingKey }, ward);
   if (kept.root.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
 }
 
@@ -675,68 +765,85 @@ export async function landPersonaRoot(handleIndex: number, keypair: { readonly s
  * The public key of the ORPHAN root row at `handleIndex`: a root row that stands while the roster holds no line
  * for it. Null where no such row stands. Opens that one cold row for the length of this read.
  */
-export async function orphanPersonaRootKey(handleIndex: number): Promise<string | null> {
+export async function orphanPersonaRootKey(handleIndex: number, ward?: WardCredential): Promise<string | null> {
   assertHandleIndex(handleIndex);
   if (!(await orphanPersonaRoots()).includes(handleIndex)) return null;
-  const file = personaGroupRootFileName(await loginHint(), handleIndex);
-  return openColdCustodyRow("identity", file, (bytes) => parseRootRow(bytes, file).verifyingKey);
+  const file = personaGroupRootFileName(handleIndex);
+  return withWardKeyCustody({ ordinal: handleIndex }, ward, (seat) => seat.open(file, (bytes) => parseRootRow(bytes, file).verifyingKey), `the orphan root at h${handleIndex}`);
 }
 
-/** The sealed ActivePersonaStore — one pointer row, read whole or refused. */
-function nodeActivePersonaStore(login: string | null): ActivePersonaStore {
-  const file = activePersonaFileName(login);
-  const parse = (bytes: Uint8Array | null): number | undefined => {
-    if (bytes === null) return undefined;   // no inference: an unset selector reads undefined
-    const handleIndex = objectOf(parseRow(bytes, file), file)["handleIndex"];
-    if (!isIndex(handleIndex)) throw malformed(file);
-    return handleIndex;
-  };
+/**
+ * THE MOUNTED FACE is the composition's own state, never a pointer at rest and never a default face. The unlock names which face
+ * the sovereign composition MOUNTS (`lares vault unlock --face N`); nothing persists that choice across a restart. With no choice
+ * recorded and exactly one face standing unlocked, that face is the one mounted. A command never reads this: it names its face
+ * (`--face N`), or resolves the one face standing open (`face-selector`).
+ */
+let mountedFace: number | undefined;
+export function setMountedFace(handleIndex: number | undefined): void { mountedFace = handleIndex; }
+
+/**
+ * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND the mounted face unlocked. A pure query: it reads the
+ * seated holder and the floor index and changes nothing, so a preflight reads the same answer the composition does. A place
+ * the floor index names no face for needs S alone; a place with faces and no face mounted (none, or several and none chosen)
+ * stands at the floor.
+ */
+export function sovereignStands(): boolean {
+  const holder = standingCustody();
+  if (holder === null || !holder.isUnlocked()) return false;
+  const faces = readFaceIndexSync(larIdentityDir()).faces;
+  const named = faces.flatMap((f, ordinal) => ("fcid" in f ? [{ ordinal, fcid: f.fcid }] : []));
+  if (named.length === 0) return true;
+  const open = new Set(holder.unlockedFaces());
+  const openOrdinals = named.filter((f) => open.has(f.fcid)).map((f) => f.ordinal);
+  const mounted = mountedFace ?? (openOrdinals.length === 1 ? openOrdinals[0] : undefined);
+  return mounted !== undefined && openOrdinals.includes(mounted);
+}
+
+/** The face the unlock named for the composition to mount, or undefined where it named none. */
+export function mountedFaceOrdinal(): number | undefined { return mountedFace; }
+
+/** The composition's mount reader: the face the unlock named, else the one face standing open. It keeps no pointer. */
+function nodeMountedFaceStore(): ActivePersonaStore {
   return {
-    async load() { return parse(await readCustodyRow("identity", file)); },
-    async save(handleIndex) {
-      mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-      await updateCustodyRow("identity", file, (bytes) => {
-        parse(bytes);   // a selector that stands and reads another shape refuses before anything lands over it
-        return { plaintext: encodeRow({ handleIndex }), value: undefined };
-      });
+    async load() {
+      if (mountedFace !== undefined) return mountedFace;
+      const open = await unlockedFaceOrdinals();
+      return open.length === 1 ? open[0] : undefined;   // no inference beyond the one face standing open
     },
   };
 }
 
 /**
- * Build the node PersonaVault over the sealed rows. Resolves the git-email hint ONCE (login-scoped filenames).
+ * Build the node PersonaVault over the sealed rows.
  * `rootSlot(i).load` answers a HELD root's keypair (the roster names it, and its row opens to the key the roster
  * records) and `undefined` when the roster holds no line there; `save` lands a root and commits its roster line.
  * `hasRoot`/`listRoots` read the roster alone. `anchors`/`recovery` ride their own sealed stores.
  */
-export async function makeNodeFsPersonaVault(): Promise<PersonaVault> {
-  const hint  = await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }));
-  const login = hint.login;
+export async function makeNodeFsPersonaVault(ward?: WardCredential): Promise<PersonaVault> {
+  // A vault built with no ward token lists and counts roots; a root read or write asks the ward's one choke point, which takes the
+  // process's seated gatherer (a person at this terminal) or refuses `ward-needs-fresh-unlock`.
+  const warded = (): WardCredential | undefined => ward;
   return {
     rootSlot(handleIndex) {
       return {
         async load() {
-          const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
-          return line ? openCommittedRoot(login, line) : undefined;
+          const line = await readRosterLine(handleIndex) ?? undefined;
+          return line ? openCommittedRoot(line, warded()) : undefined;
         },
         async save(keypair) {
-          const kept = await commitRoot(login, handleIndex, keypair);
+          const kept = await commitRoot(handleIndex, keypair, warded());
           if (kept.root.verifyingKey !== keypair.verifyingKey) {
-            throw new CustodyRowUnavailable("identity", personaGroupRootFileName(login, handleIndex), "names-another-key");
+            throw new CustodyRowUnavailable("identity", personaGroupRootFileName(handleIndex), "names-another-key");
           }
         },
       };
     },
-    async listRoots() { return (await readRoster(login)).map((l) => l.handleIndex); },
-    async hasRoot(handleIndex) { return (await readRoster(login)).some((l) => l.handleIndex === handleIndex); },
-    selector: nodeActivePersonaStore(login),
+    async listRoots() { return (await readRoster()).map((l) => l.handleIndex); },
+    async hasRoot(handleIndex) { return (await readRosterLine(handleIndex)) !== null; },
+    selector: nodeMountedFaceStore(),
     anchors:  nodeAnchorStore,
     recovery: nodeRecoveryShareStore,
   };
-}
-
-async function loginHint(): Promise<string | null> {
-  return (await readLocalOperatorHint().catch(() => ({ login: null, displayName: null }))).login;
 }
 
 /** A persona-root's public face + whether THIS call minted it (the mesh core's PersonaRoot). */
@@ -751,16 +858,15 @@ export type PersonaGroupRoot = PersonaRoot;
  * keypair, and a root already standing (an orphan an earlier act left, or another process's mint a moment ago)
  * gets adopted and named. The roster line lands last and commits it.
  */
-export async function generateOrLoadPersonaGroupRoot(handleIndex = 0): Promise<PersonaGroupRoot> {
+export async function generateOrLoadPersonaGroupRoot(handleIndex = 0, ward?: WardCredential): Promise<PersonaGroupRoot> {
   assertHandleIndex(handleIndex);
-  const login = await loginHint();
-  const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+  const line = await readRosterLine(handleIndex) ?? undefined;
   if (line) {
-    await openCommittedRoot(login, line);
+    await openCommittedRoot(line, ward);
     console.log(`[vessel-identity] loaded PersonaGroup root (persona h${handleIndex})`);
     return { verifyingKey: line.verifyingKey, created: false };
   }
-  const kept = await commitRoot(login, handleIndex, await nodeKeypairCrypto.generate());
+  const kept = await commitRoot(handleIndex, await nodeKeypairCrypto.generate(), ward);
   if (kept.wrote) {
     console.log(`[vessel-identity] minted PersonaGroup root (persona h${handleIndex})`);
   } else {
@@ -775,17 +881,16 @@ export async function generateOrLoadPersonaGroupRoot(handleIndex = 0): Promise<P
  * for this one act. Throws when the roster holds no line there (a joinee never holds this), and refuses by name
  * when the line's root row went missing or names another key.
  */
-export async function loadPersonaGroupRootSeed(handleIndex = 0): Promise<Uint8Array> {
+export async function loadPersonaGroupRootSeed(handleIndex = 0, ward?: WardCredential): Promise<Uint8Array> {
   assertHandleIndex(handleIndex);
-  const login = await loginHint();
-  const line = (await readRoster(login)).find((l) => l.handleIndex === handleIndex);
+  const line = await readRosterLine(handleIndex) ?? undefined;
   if (!line) {
     throw new Error(
       `[persona-vault] no persona-root at h${handleIndex} — mint it via the founding ceremony first ` +
       `(founder-only; a joining vessel never holds the root seed)`,
     );
   }
-  return signingSeedFromHex((await openCommittedRoot(login, line)).signingKey);
+  return signingSeedFromHex((await openCommittedRoot(line, ward)).signingKey);
 }
 
 /**
@@ -798,37 +903,24 @@ export async function loadPersonaGroupRootVerifyingKey(
   handleIndex = 0,
 ): Promise<string | undefined> {
   assertHandleIndex(handleIndex);
-  return (await readRoster(await loginHint())).find((l) => l.handleIndex === handleIndex)?.verifyingKey;
+  return (await readRosterLine(handleIndex))?.verifyingKey;
 }
 
 /** True when this vessel HOLDS a persona-root at `handleIndex` (founder-side custody). A joinee holds none. */
 export async function personaRootExists(handleIndex: number): Promise<boolean> {
   assertHandleIndex(handleIndex);
-  return (await readRoster(await loginHint())).some((l) => l.handleIndex === handleIndex);
-}
-
-/** Load the active-persona handle-index the vessel currently WEARS, or undefined when it wears none yet
- *  (no inference from an empty home — the caller decides any default). */
-export async function loadActivePersonaIndex(): Promise<number | undefined> {
-  return coreLoadActivePersona(await makeNodeFsPersonaVault());
-}
-
-/** WEAR a persona — set the active handle-index ("put on a mask"). The custody-by-TYPE wall (uniform,
- *  no founding special-case): wearing REQUIRES that this vessel HOLD that persona-root. */
-export async function wearPersona(handleIndex: number): Promise<void> {
-  await coreWearPersona(await makeNodeFsPersonaVault(), handleIndex);
-  console.log(`[vessel-identity] wearing persona h${handleIndex}`);
+  return (await readRosterLine(handleIndex)) !== null;
 }
 
 /** The persona ROSTER — every handle-index this vessel HOLDS a root for, ascending, from the explicit
  *  written record. A one-persona vessel returns `[0]`; a joinee returns `[]`. */
 export async function listPersonaRoots(): Promise<number[]> {
-  return (await readRoster(await loginHint())).map((l) => l.handleIndex);
+  return (await readRoster()).map((l) => l.handleIndex);
 }
 
 /** The roster's lines: each held handle-index beside its root's public key, ascending. Opens no root row. */
 export async function listPersonaRosterLines(): Promise<readonly PersonaRosterLine[]> {
-  return readRoster(await loginHint());
+  return readRoster();
 }
 
 /**
@@ -838,12 +930,10 @@ export async function listPersonaRosterLines(): Promise<readonly PersonaRosterLi
  * root row.
  */
 export async function orphanPersonaRoots(): Promise<number[]> {
-  const login = await loginHint();
-  const held = new Set((await readRoster(login)).map((l) => l.handleIndex));
-  const escaped = (login ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const spelled = new RegExp(login ? `^\\.persona-group-root-${escaped}-h(0|[1-9]\\d*)\\.json$` : "^\\.persona-group-root-h(0|[1-9]\\d*)\\.json$");
+  const held = new Set((await readRoster()).map((l) => l.handleIndex));
+  const spelled = /^\.persona-group-root-h(0|[1-9]\d*)\.json$/;
   let names: string[];
-  try { names = readdirSync(larIdentityDir()); } catch { return []; }
+  try { names = faceFileNames(larIdentityDir()); } catch { return []; }
   const out: number[] = [];
   for (const name of names) {
     const m = spelled.exec(name);
@@ -854,24 +944,23 @@ export async function orphanPersonaRoots(): Promise<number[]> {
 
 // ── The two-layer PET-NAME stores — the own-side private label + the own-side public face ────────────
 //
-// Two DISTINCT sealed rows in `<lares>/identity`, login-scoped like the vault's slots so developers on one
-// machine keep separate identity homes:
-//   · the PRIVATE pet-name map (`.persona-petnames-${login}.json`) — the human's own label for their own
+// Two DISTINCT sealed rows in each face's own directory under `<root>/hearth/identity`:
+//   · the PRIVATE pet-name map (`.persona-petnames-h<N>.json`) — the human's own label for their own
 //     personas, freely renamable, never PUBLICLY federated (persona-petname).
-//   · the PUBLIC handle record (`.persona-public-handles-${login}.json`) — the vessel's memory of ITS OWN
+//   · the PUBLIC handle record (`.persona-public-handles-h<N>.json`) — the vessel's memory of ITS OWN
 //     published glamour faces (index → nym/glamour/causal heads), so a re-publish extends the local frontier
 //     (persona-glamour). Distinct from the pet-name map and from the handle-book (others' nyms).
 // Each map changes under one custody holder (`updateCustodyRow`): a set or a clear reads the map, changes one
 // entry and writes it, so two acts in two processes never drop each other's entry.
 
-/** The private pet-name map filename — login-scoped. */
-function personaPetnameFileName(login: string | null): string {
-  return login ? `.persona-petnames-${login}.json` : ".persona-petnames.json";
+/** The private pet-name map filename. */
+function personaPetnameFileName(handleIndex: number): string {
+  return `.persona-petnames-h${handleIndex}.json`;
 }
 
-/** The public published-face record filename — login-scoped. */
-function personaPublicHandleFileName(login: string | null): string {
-  return login ? `.persona-public-handles-${login}.json` : ".persona-public-handles.json";
+/** The public published-face record filename. */
+function personaPublicHandleFileName(handleIndex: number): string {
+  return `.persona-public-handles-h${handleIndex}.json`;
 }
 
 /** A `{ <field>: { handleIndex -> entry } }` map row: nothing standing reads as an empty map, and a row that
@@ -912,14 +1001,21 @@ const isLabel = (entry: unknown): entry is string => typeof entry === "string";
  * stays structural — no board write exists in this shore).
  */
 export async function makeNodePersonaPetnameStore(): Promise<OwnPersonaPetnameStore> {
-  const file = personaPetnameFileName(await loginHint());
-  const read = async (): Promise<Record<string, string>> => parseIndexMap(await readCustodyRow("identity", file), file, "names", isLabel);
+  const fileOf = (handleIndex: number): string => personaPetnameFileName(handleIndex);
+  const read = async (handleIndex: number): Promise<Record<string, string>> => parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "names", isLabel);
   return {
-    async get(handleIndex) { return (await read())[String(handleIndex)]; },
-    set(handleIndex, petname) { return changeIndexMap(file, "names", isLabel, (names) => { names[String(handleIndex)] = petname; }); },
-    clear(handleIndex) { return changeIndexMap(file, "names", isLabel, (names) => { delete names[String(handleIndex)]; }); },
-    async entries() { return sortedEntries(await read()); },
+    async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
+    set(handleIndex, petname) { return changeIndexMap(fileOf(handleIndex), "names", isLabel, (names) => { names[String(handleIndex)] = petname; }); },
+    clear(handleIndex) { return changeIndexMap(fileOf(handleIndex), "names", isLabel, (names) => { delete names[String(handleIndex)]; }); },
+    async entries() { return gatherEntries(read); },
   };
+}
+
+/** The entries of the faces standing unlocked, each read from its own face's row, ascending by handle-index. */
+async function gatherEntries<T>(read: (handleIndex: number) => Promise<Record<string, T>>): Promise<Array<readonly [number, T]>> {
+  const out: Array<readonly [number, T]> = [];
+  for (const handleIndex of await unlockedFaceOrdinals()) out.push(...sortedEntries(await read(handleIndex)));
+  return out.sort((a, b) => a[0] - b[0]);
 }
 
 // ── The DECLARATION store — what a persona declares outward, before any announce ─────────────────────
@@ -928,9 +1024,9 @@ export async function makeNodePersonaPetnameStore(): Promise<OwnPersonaPetnameSt
 // seat. It sits between the private pet-name and the published record so neither welds to the other — a
 // declared Handle stays a private intent until an announce binds it (the binding law).
 
-/** The declaration map filename — login-scoped, beside the pet-name map. */
-function personaDeclarationFileName(login: string | null): string {
-  return login ? `.persona-declarations-${login}.json` : ".persona-declarations.json";
+/** The declaration map filename, beside the pet-name map. */
+function personaDeclarationFileName(handleIndex: number): string {
+  return `.persona-declarations-h${handleIndex}.json`;
 }
 
 /** A declaration's shape: an object whose `handle` and `chair`, where present, read as strings and whose `seat` reads as a boolean. */
@@ -948,14 +1044,14 @@ const isDeclaration = (entry: unknown): entry is PersonaDeclaration => {
  * binds a persona to a public glamour.
  */
 export async function makeNodePersonaDeclarationStore(): Promise<PersonaDeclarationStore> {
-  const file = personaDeclarationFileName(await loginHint());
-  const read = async (): Promise<Record<string, PersonaDeclaration>> =>
-    parseIndexMap(await readCustodyRow("identity", file), file, "declarations", isDeclaration);
+  const fileOf = (handleIndex: number): string => personaDeclarationFileName(handleIndex);
+  const read = async (handleIndex: number): Promise<Record<string, PersonaDeclaration>> =>
+    parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "declarations", isDeclaration);
   return {
-    async get(handleIndex) { return (await read())[String(handleIndex)]; },
-    set(handleIndex, declaration) { return changeIndexMap(file, "declarations", isDeclaration, (all) => { all[String(handleIndex)] = declaration; }); },
-    clear(handleIndex) { return changeIndexMap(file, "declarations", isDeclaration, (all) => { delete all[String(handleIndex)]; }); },
-    async entries() { return sortedEntries(await read()); },
+    async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
+    set(handleIndex, declaration) { return changeIndexMap(fileOf(handleIndex), "declarations", isDeclaration, (all) => { all[String(handleIndex)] = declaration; }); },
+    clear(handleIndex) { return changeIndexMap(fileOf(handleIndex), "declarations", isDeclaration, (all) => { delete all[String(handleIndex)]; }); },
+    async entries() { return gatherEntries(read); },
   };
 }
 
@@ -974,16 +1070,16 @@ const isPublicHandle = (entry: unknown): entry is PersonaPublicHandleRecord => {
  * extending the causal frontier a peer's HandleBook holds to.
  */
 export async function makeNodePublicHandleStore(): Promise<OwnPublicHandleStore> {
-  const file = personaPublicHandleFileName(await loginHint());
-  const keyed = (map: Record<string, PersonaPublicHandleRecord>): Record<string, PersonaPublicHandleRecord> => {
+  const fileOf = (handleIndex: number): string => personaPublicHandleFileName(handleIndex);
+  const keyed = (map: Record<string, PersonaPublicHandleRecord>, file: string): Record<string, PersonaPublicHandleRecord> => {
     for (const [key, record] of Object.entries(map)) if (String(record.handleIndex) !== key) throw malformed(file);
     return map;
   };
-  const read = async (): Promise<Record<string, PersonaPublicHandleRecord>> =>
-    keyed(parseIndexMap(await readCustodyRow("identity", file), file, "handles", isPublicHandle));
+  const read = async (handleIndex: number): Promise<Record<string, PersonaPublicHandleRecord>> =>
+    keyed(parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "handles", isPublicHandle), fileOf(handleIndex));
   return {
-    async load(handleIndex) { return (await read())[String(handleIndex)] ?? null; },
-    save(record) { return changeIndexMap(file, "handles", isPublicHandle, (handles) => { keyed(handles); handles[String(record.handleIndex)] = record; }); },
-    async list() { return sortedEntries(await read()).map(([k]) => k); },
+    async load(handleIndex) { return (await read(handleIndex))[String(handleIndex)] ?? null; },
+    save(record) { return changeIndexMap(fileOf(record.handleIndex), "handles", isPublicHandle, (handles) => { keyed(handles, fileOf(record.handleIndex)); handles[String(record.handleIndex)] = record; }); },
+    async list() { return (await gatherEntries(read)).map(([k]) => k); },
   };
 }

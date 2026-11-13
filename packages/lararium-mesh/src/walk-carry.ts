@@ -35,7 +35,7 @@ import { authorizeAddress, readContentKey, sealedImage } from "./sealed-chunk.js
 import { base64UrlEncode, base64UrlDecode, hex, hexToBytes, sha256HexBytesSync } from "./crypto.js";
 import { WALK_CARRY_DOCUMENT_INFO } from "./domains.js";
 import { walkCarrySecret } from "./hosting.js";
-import type { LarSessionMsg } from "./auth-wire.js";
+import type { LarSessionMsg } from "./leaf-presentation.js";
 import { tellWalkFault, type WalkStore, type WalkLeaf, type WalkTransport, type CarryReceipt, type WalkFault } from "./walk-client.js";
 
 const REF = /^[0-9a-f]{64}$/;
@@ -89,6 +89,7 @@ type CarryTransport = Pick<WalkTransport, "sendSession" | "onSession">;
 function answerFor(transport: CarryTransport, kind: string, cid: string, withinMs: number, accept: (msg: LarSessionMsg) => Promise<boolean>): Promise<LarSessionMsg | null> {
   return new Promise((resolve, reject) => {
     let off: () => void = () => {};
+    // LIVENESS: a remote peer may never send the matching session frame.
     const timer = setTimeout(() => { off(); resolve(null); }, withinMs);
     off = transport.onSession((msg) => {
       if (msg.kind !== kind || (msg.body as { cid?: unknown } | null)?.cid !== cid) return;

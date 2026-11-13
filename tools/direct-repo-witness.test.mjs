@@ -1,7 +1,6 @@
 /**
  * direct-repo-witness.test.mjs — proves the INSTRUMENT, over a fixture tree the real repo's own churn never
- * touches (never the live source: the live tree reads red until `nexus-refresh.ts` retires, which is a
- * different lane's act, not this witness's self-test).
+ * touches (never the live source, so this witness's self-test reads a fixed fixture).
  *
  * Proven:
  *   · CONTROL: a fixture with exactly the two lawful sites (named like the real files, comments stripped of
@@ -140,7 +139,7 @@ export async function runAliasedDoor() {
   });
 });
 
-await test("RED (L3): a `new Repo(` planted in packages/lares-cli/src is no longer a blind spot", async () => {
+await test("RED (L3): a `new Repo(` planted in packages/lares-cli/src is seen", async () => {
   const dir = await mkdtemp(join(tmpdir(), "direct-repo-witness-"));
   const nodeSrc = join(dir, "packages", "lararium-node", "src");
   const cliSrc = join(dir, "packages", "lares-cli", "src");

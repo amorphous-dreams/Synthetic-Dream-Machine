@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/braided-islands">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/braided-islands`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/braided-islands.mem"
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 13
 rating    = "meme"
 role      = "pono pattern — braided islands: parallel sovereign log-holders with inverted precedence stacks, joined only through carried text; scales from AI sessions to human dyads"
 title     = "lar:///ha.ka.ba/lares/api/pono/braided-islands"
@@ -17,11 +13,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/braided-islands"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Braided Islands
 
@@ -36,7 +30,7 @@ dissolve, the braid stands ''peers that persist''. First enactment: Session 0.1,
 
 <<~/ahu>>
 
-<<~ ahu #/laws>>
+<<~ ahu slot=`#/laws`>>
 
 !! The Laws
 
@@ -64,7 +58,7 @@ by name'' · this crossing law. Reds live as durable memes so a braid re-boots i
 
 <<~/ahu>>
 
-<<~ ahu #/degraded-braids>>
+<<~ ahu slot=`#/degraded-braids`>>
 
 !! Degraded-Braid States
 
@@ -83,7 +77,7 @@ by name'' · this crossing law. Reds live as durable memes so a braid re-boots i
 
 <<~/ahu>>
 
-<<~ ahu #/when-to-braid>>
+<<~ ahu slot=`#/when-to-braid`>>
 
 !! When to Braid
 
@@ -93,14 +87,14 @@ without a loom.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot#/worker-swarm">>
-<<~ loulou "lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot#/worker-swarm`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/campaign/session-0-1-handoff-prompts`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;uJfh8qaBWrLgLw6UGF2Hs0rG1TSwYsf_KSCzKADjx1o
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jZ8G03Ua-zqzVdHCZGUTNbOLvRFHr_jOmRvUpCAJ6RM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

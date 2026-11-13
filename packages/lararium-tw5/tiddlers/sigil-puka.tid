@@ -12,8 +12,8 @@ type: text/vnd.tiddlywiki
      yields the block's result; the rest run on, and only the enclosing scope's exit cancels them:
 
          <<~ puka>>
-           <<~ lele "lar:///target-a">>
-           <<~ lele "lar:///target-b">>
+           <<~ lele to=`lar:///target-a`>>
+           <<~ lele to=`lar:///target-b`>>
          <<~/puka>>
 
      A //puka// marks where passage happens. The fish through the gap decides the outcome; the net

@@ -5,13 +5,12 @@
 # py-side verb dial it from `lares_uds`. Nothing but agreement joins them: no import crosses the
 # seam, no type spans it, and the typechecker cannot see one half of it at all.
 #
-# Measured, that gap ran live. The socket moved out of `<dataDir>/lares.sock` and onto the rendezvous
-# — `/tmp/lares-<uid>/<sha256(root)[0:12]>.sock`, which holds a fixed 40 bytes however deep the root
-# runs — and the py side kept the retired spelling. The daemon served throughout. Every MCP verb met
-# a socket nothing had created since the move, and 20 witnesses stayed green over it.
+# The rendezvous stands at `/tmp/lares-<uid>/<sha256(root)[0:12]>.sock`, which holds a fixed 40 bytes
+# however deep the root runs. A py side that drifts from the TS derivation meets a socket nothing
+# created, while the daemon serves on and every other witness stays green.
 #
-# So this collides the two derivations directly, under BOTH root branches: the XDG default and an
-# isolated `LAR_ROOT`. A drift in either one is the whole surface going dark.
+# So this collides the two derivations directly under named house roots, and checks that an unnamed root
+# refuses on BOTH sides rather than either one guessing a home. A drift is the whole surface going dark.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -38,8 +37,8 @@ harness_check() {
     import { rendezvousPath } from "./packages/lararium-mesh/dist/rendezvous-path.js";
     import { join } from "node:path";
     const root = process.argv[1];
-    // The harness derivation: substrate dir = <LAR_ROOT>/data/lares/vessel (tests/harness/instance.ts).
-    process.stdout.write(rendezvousPath({ root: join(root, "data", "lares", "vessel"), uid: process.getuid() }));
+    // The harness derivation: substrate dir = <LAR_ROOT>/hearth/vessel (tests/harness/instance.ts).
+    process.stdout.write(rendezvousPath({ root: join(root, "hearth", "vessel"), uid: process.getuid() }));
   ' "$root")
   from_connector=$(env LAR_ROOT="$root" node --input-type=module -e '
     import { rendezvousPath } from "./packages/lararium-mesh/dist/rendezvous-path.js";
@@ -55,14 +54,14 @@ harness_check() {
 }
 
 check() {
-  local label="$1" root_env="$2"
+  local label="$1"; shift
   local ts py
-  ts=$(env ${root_env:+LAR_ROOT="$root_env"} node --input-type=module -e '
+  ts=$(env "$@" node --input-type=module -e '
     import { rendezvousPath } from "./packages/lararium-mesh/dist/rendezvous-path.js";
     import { larDataDir }     from "./packages/lararium-node/dist/src/vessel-paths.js";
     process.stdout.write(rendezvousPath({ root: larDataDir(), uid: process.getuid() }));
   ')
-  py=$(env ${root_env:+LAR_ROOT="$root_env"} python3 -c '
+  py=$(env "$@" python3 -c '
 import sys; sys.path.insert(0, "packages/lararium-sensorium/scripts")
 import lares_uds as uds; sys.stdout.write(uds.socket_path())
   ')
@@ -76,9 +75,32 @@ import lares_uds as uds; sys.stdout.write(uds.socket_path())
   fi
 }
 
+# AN UNNAMED ROOT REFUSES ON BOTH SIDES. Neither tongue guesses a home, so neither can meet at a socket the other
+# never derived: each exits non-zero naming LAR_ROOT.
+refuses() {
+  local label="$1"; shift
+  local ts_rc=0 py_rc=0 ts_err py_err
+  ts_err=$(env "$@" node --input-type=module -e '
+    import { larDataDir } from "./packages/lararium-node/dist/src/vessel-paths.js";
+    larDataDir();
+  ' 2>&1 >/dev/null) || ts_rc=$?
+  py_err=$(env "$@" python3 -c '
+import sys; sys.path.insert(0, "packages/lararium-sensorium/scripts")
+import lares_uds as uds; uds.socket_path()
+  ' 2>&1 >/dev/null) || py_rc=$?
+  if (( ts_rc != 0 && py_rc != 0 )) && [[ "$ts_err" == *LAR_ROOT* && "$py_err" == *LAR_ROOT* ]]; then
+    echo "  ok    $label  both refuse, naming LAR_ROOT"
+  else
+    echo "  DRIFT $label  ts rc=$ts_rc py rc=$py_rc — an unnamed root must refuse on both sides"
+    fail=1
+  fi
+}
+
 echo "rendezvous-parity: the daemon binds it, the py holder dials it"
-check "xdg default   " ""
-check "isolated root " "/tmp/lares-rendezvous-parity-probe"
+refuses "unnamed root  " -u LAR_ROOT XDG_DATA_HOME="/tmp/lares-rendezvous-parity-xdg"
+refuses "blank root    " LAR_ROOT="   "
+check "named root    " LAR_ROOT="/tmp/lares-rendezvous-parity-probe"
+check "padded root   " LAR_ROOT="/tmp/lares-rendezvous-parity-probe "
 
 # THE BUDGET IS PART OF THE AGREEMENT. A path both sides spell identically still fails to bind if it
 # outruns `sun_path`, and the whole point of the rendezvous is that it cannot.

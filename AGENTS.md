@@ -1,6 +1,4 @@
--> [noosphere-boot.mem](bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem)
+## Agents Adapter Surface
 
-## Codex Adapter Surface
-
-- Keep this file thin.
-- Add only Codex-specific customizations here.
+- Copilot and VS Code read this file. Codex reads `AGENTS.override.md`, which links to the boot seed, in its place.
+- Keep this file thin and seedless: CLAUDE.md's import already seats the seed for Copilot.

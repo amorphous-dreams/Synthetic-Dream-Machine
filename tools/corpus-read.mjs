@@ -51,7 +51,7 @@ export function vanishedNote() {
 // never clocks. `assertDistFresh` is the one door every dist-shore boot above passes through before
 // it imports: it resolves the dist's OWNING package, walks that package's workspace dependency
 // closure, and refuses (exit 2, naming the stale package and its cure) the moment any member of that
-// closure carries a dist whose stamp disagrees with what its source reads right now.
+// closure carries a dist whose stamp disagrees with its source.
 //
 // TWO STAMPS, ONE INVARIANT. A fresh WORKSPACE stamp (struck by `pnpm -r build`, one digest over all
 // of `packages/`) covers every package at once, so it is checked first and short-circuits the whole
@@ -117,8 +117,8 @@ const freshnessCache = new Map();
 // many dists a single run opens, since the source cannot have changed bytes between those calls.
 const globalDigestCache = new Map();
 
-/** Whether `repo`'s global build stamp currently covers EVERY package — the fast, whole-tree pass. */
-function globalStampFresh(repo) {
+/** Whether `repo`'s global build stamp covers EVERY package — the fast, whole-tree pass. */
+export function globalStampFresh(repo) {
   if (!globalDigestCache.has(repo)) {
     globalDigestCache.set(repo, sourceDigest(join(repo, "packages")));
   }
@@ -128,8 +128,9 @@ function globalStampFresh(repo) {
   return stamped === digest;
 }
 
-function packageFreshness(repo, dir) {
-  if (freshnessCache.has(dir)) return freshnessCache.get(dir);
+export function packageFreshness(repo, dir) {
+  const key = `${resolve(repo)}:${dir}`;
+  if (freshnessCache.has(key)) return freshnessCache.get(key);
   const distDir = join(repo, "packages", dir, "dist");
   let result;
   if (!existsSync(distDir)) {
@@ -142,13 +143,13 @@ function packageFreshness(repo, dir) {
     try { stamped = readFileSync(packageStampPath(repo, dir), "utf8").trim(); } catch { stamped = null; }
     result = { stale: stamped !== digest };
   }
-  freshnessCache.set(dir, result);
+  freshnessCache.set(key, result);
   return result;
 }
 
 /**
  * Refuse (exit 2) when `distPath`'s owning package, or any workspace package it depends on, carries
- * a dist whose stamp disagrees with the source the tree holds right now. A no-op when `distPath`
+ * a dist whose stamp disagrees with the source the tree holds. A no-op when `distPath`
  * runs outside `packages/` — nothing here owns a per-package stamp to compare against. `repo` is
  * accepted for callers that already hold it, but the package root is always DERIVED from `distPath`
  * itself (see `owningPackage`), since several callers pass a dist-local root, not the repo's.
@@ -171,7 +172,7 @@ export function assertDistFresh(repo, distPath, toolName) {
 
 /**
  * Refuse (exit 2) when `packages/<dir>/<wasmFile>` is missing, carries no wasm stamp, or carries one that
- * disagrees with the C sources and wasm bytes the tree holds right now. The grammar-wasm twin of
+ * disagrees with the C sources and wasm bytes the tree holds. The grammar-wasm twin of
  * `assertDistFresh`: same door shape, same exit code, one cure line naming the build and the stamp.
  * Returns the absolute wasm path once it reads fresh.
  */

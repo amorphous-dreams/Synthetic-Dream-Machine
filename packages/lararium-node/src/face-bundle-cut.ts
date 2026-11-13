@@ -16,18 +16,22 @@
  * The cut reads its vessel's own edge shadow ONCE, at its entry, and refuses under it before any row opens
  * (`own-edge-shadowed`). The island's holder takes that one reading inside the ask the vessel signs and reads none
  * of its own. The cut then refuses, by name: a face this vessel holds no root for (`face-not-held`); a face the
- * standing vessel does not wear, since its island counts keys for the worn face alone (`face-not-worn`); a board
- * that holds no whole key history for the face (`key-history-unread`); and an island with no content-key holder
- * (`memory-unavailable`). A cut that refuses seals nothing and answers nothing but the name.
+ * standing vessel does not wear, since its island counts keys for the mounted face alone (`face-not-worn`); a board
+ * that holds no whole key history for the face (`key-history-unread`); a face whose address secret stands nowhere
+ * here (`no-address-secret`), since its restore could derive no face catalog document; and an island with no
+ * content-key holder (`memory-unavailable`). A cut that refuses seals nothing and answers nothing but the name.
  *
  * Node-main only: a worker never imports this module.
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-cut
  */
+import type { WardCredential } from "./ward-credential.js";
 import {
   bundleMemoryKeypair, faceBundleBodyBytes, sealFaceBundleBody, verifyPersonaKelFull,
-  type FaceBundleBody, type FaceBundleHolding, type PersonaKelEvent,
+  type FaceBundleBody, type FaceBundleRecoveryContactSet, type FaceBundleHolding, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { listFaceProofKeys } from "./face-key-custody.js";
+import { readFaceAddressSecret } from "./fleet-join-custody.js";
+import { readRecoveryContactSet } from "./recovery-contact-enrolment.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
 import { loadNodeHandleBook } from "./node-circle-store.js";
@@ -38,7 +42,7 @@ import {
 import { bundleRows } from "./vault-carriers.js";
 
 /** The names a cut refuses under (custody#/the-cut). */
-export const CUT_REFUSALS = ["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable"] as const;
+export const CUT_REFUSALS = ["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable", "no-address-secret"] as const;
 export type CutRefusal = (typeof CUT_REFUSALS)[number];
 
 /** A cut that refuses: nothing sealed, nothing answered but the name. */
@@ -51,7 +55,7 @@ export class BackupRefused extends Error {
 export interface BackupDoor {
   /** The face this composition wears, by handle-index: the one its island counts keys for. Null where no face stands lit. */
   readonly wornFace: () => number | null;
-  /** This vessel's own reading of its edge on the worn face's fleet: true under its own shadow. */
+  /** This vessel's own reading of its edge on the mounted face's fleet: true under its own shadow. */
   readonly ownEdgeShadowed: () => Promise<boolean>;
   /**
    * Ask the daemon island for the memory section, sealed to `to`, as part of a cut that already read this
@@ -75,16 +79,21 @@ export interface BackupDoor {
 }
 
 type Mutable<T> = { -readonly [K in keyof T]: T[K] };
-type Parts = Partial<Mutable<Omit<FaceBundleBody, "names">>> & { names: { petname?: string; handle?: string } };
-type Extractor = (line: PersonaRosterLine, parts: Parts) => Promise<void>;
+type Parts = Partial<Mutable<Omit<FaceBundleBody, "names" | "recoveryContactSet">>> & {
+  names: { petname?: string; handle?: string };
+  /** The face's recovery-contact-set record as this vessel holds it, with the prefix it names; the key history decides whether it rides. */
+  recoveryContactRecord?: FaceBundleRecoveryContactSet & { readonly prefix: string };
+};
+type Extractor = (line: PersonaRosterLine, parts: Parts, ward: WardCredential | undefined) => Promise<void>;
 
 const hexOf = (bytes: Uint8Array): string => Buffer.from(bytes).toString("hex");
 
 /** One extractor per row the table's `bundle` column names: what of that row one face's bundle carries. */
 const EXTRACTORS: Readonly<Record<string, Extractor>> = {
   // whole: the face's root, the seed its lineage signs with.
-  "persona-root": async (line, parts) => {
-    const seed = await loadPersonaGroupRootSeed(line.handleIndex);
+  // A cut hands the root off the vessel, so it opens under the face's ward alone (seat-harness#/the-ward).
+  "persona-root": async (line, parts, ward) => {
+    const seed = await loadPersonaGroupRootSeed(line.handleIndex, ward);
     try { parts.root = { signingKey: hexOf(seed), verifyingKey: line.verifyingKey }; } finally { seed.fill(0); }
   },
   // whole: each proof key this vessel holds for the face, under its scope's own name.
@@ -114,10 +123,26 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
     const handle = (await (await makeNodePersonaDeclarationStore()).get(line.handleIndex))?.handle;
     if (typeof handle === "string" && handle.length > 0) parts.names.handle = handle;
   },
-  // lines: the records this face recognised, each under this face's own label. A record no face tagged stays.
+  // whole: the records this face recognised, each under this face's own label; the book rests in the face's own row.
   "handle-book": async (line, parts) => {
-    const mine = (await loadNodeHandleBook()).snapshotFor(line.verifyingKey);
+    const mine = (await loadNodeHandleBook(line.handleIndex)).snapshot();
     parts.handleBook = { records: JSON.parse(JSON.stringify(mine.records)) as Record<string, unknown>[] };
+  },
+  // whole: the face's address secret, so the face restored elsewhere derives the catalog document it derives here.
+  "face-address-secret": async (line, parts) => {
+    const group = (await loadIdentityAnchors(line.handleIndex))?.personaGroupId;
+    const secret = group ? await readFaceAddressSecret(group) : null;
+    if (!secret) {
+      throw new BackupRefused("no-address-secret", `the face at h${line.handleIndex} holds no address secret on this vessel, so a restore could derive no face catalog document; nothing was cut`);
+    }
+    try { parts.addressSecret = hexOf(secret); } finally { secret.fill(0); }
+  },
+  // whole: the recovery contact set this face's typed first enrolment committed. It rides only where the face's key history,
+  // as this vessel's board holds it, commits that very set (read after the history below); a record the head does
+  // not show stands pending on this vessel and stays.
+  "recovery-contact-set": async (line, parts) => {
+    const record = await readRecoveryContactSet(line.handleIndex);
+    if (record) parts.recoveryContactRecord = record;
   },
 };
 
@@ -130,14 +155,14 @@ export interface FaceBundleCut {
   readonly holds:      readonly FaceBundleHolding[];
   readonly face:       { readonly handleIndex: number; readonly verifyingKey: string };
   /** How many of each standing part the body carries, for the command's own words. */
-  readonly carries:    { readonly keyEvents: number; readonly faceProofKeys: number; readonly handleBookRecords: number; readonly petname: boolean; readonly handle: boolean };
+  readonly carries:    { readonly keyEvents: number; readonly faceProofKeys: number; readonly handleBookRecords: number; readonly petname: boolean; readonly handle: boolean; readonly recoveryContacts: number };
 }
 
 /**
  * Cut face `face`'s bundle body and seal it under `bundleKey`. The caller owns the key and zero-fills it.
  * Refuses `BackupRefused` by name; a custody refusal (`CustodyLocked`, `CustodyRowUnavailable`) passes through.
  */
-export async function cutFaceBundle(args: { readonly face: number; readonly bundleKey: Uint8Array; readonly door: BackupDoor | null }): Promise<FaceBundleCut> {
+export async function cutFaceBundle(args: { readonly face: number; readonly bundleKey: Uint8Array; readonly door: BackupDoor | null; readonly ward?: WardCredential }): Promise<FaceBundleCut> {
   const { face, door } = args;
   // THE SHADOW, READ ONCE, AT THE ENTRY, and judged before any row opens: a vessel under its own shadow performs
   // no key act, whatever face the cut names. A raise this vessel counts while the cut runs binds its next act.
@@ -149,8 +174,8 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   const worn = door?.wornFace() ?? null;
   if (door === null || worn !== face) {
     throw new BackupRefused("face-not-worn", worn === null
-      ? `this vessel stands wearing no face, so no island counts keys for h${face}: wear it (\`lares persona wear ${face}\`), stand the vessel again, unlock, and cut`
-      : `this vessel wears h${worn}, so its island counts no key for h${face}: wear it (\`lares persona wear ${face}\`), stand the vessel again, unlock, and cut`);
+      ? `this vessel's composition mounts no face, so no island counts keys for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`
+      : `this vessel's composition mounts h${worn}, so its island counts no key for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`);
   }
   if (door.cutMemory === null) throw new BackupRefused("memory-unavailable", "no daemon island stands in this vessel, so no content-key holder answers the memory section");
 
@@ -158,7 +183,7 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   for (const { row } of bundleRows()) {
     const extract = EXTRACTORS[row];
     if (!extract) throw new Error(`face-bundle-cut: the carrier table's bundle column names "${row}" and no extractor reads it; nothing was cut`);
-    await extract(line, parts);
+    await extract(line, parts, args.ward);
   }
 
   // THE KEY HISTORY rides as this vessel's board holds it, and only where it verifies whole from its inception.
@@ -181,9 +206,17 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
     throw err;
   } finally { pair.secret.fill(0); }
 
+  // THE RECOVERY CONTACT SET rides where the history's head commits it, under this face's own prefix.
+  const head = kel[kel.length - 1]!;
+  const record = parts.recoveryContactRecord;
+  const recoveryContactSet: FaceBundleRecoveryContactSet | null = record && record.prefix === parts.anchors!.personaKelPrefix && head.nextRecoverySetHash === record.recoveryContactSetHash
+    ? { recoveryContactSetHash: record.recoveryContactSetHash, threshold: record.threshold, recoveryContacts: record.recoveryContacts.map((g) => ({ slot: g.slot, label: g.label, recoveryPubKey: g.recoveryPubKey, confirmPhrase: g.confirmPhrase })) }
+    : null;
+
   const body: FaceBundleBody = {
     root: parts.root!, rosterLine: parts.rosterLine!, anchors: parts.anchors!, kel,
-    names: parts.names, faceProofKeys: parts.faceProofKeys ?? [], handleBook: parts.handleBook ?? { records: [] },
+    names: parts.names, faceProofKeys: parts.faceProofKeys ?? [], handleBook: parts.handleBook ?? { records: [] }, recoveryContactSet,
+    addressSecret: parts.addressSecret!,
     memory: { section: memory.section, holds: memory.holds.map((h) => ({ bagId: h.bagId, founding: h.founding, keyVersion: h.keyVersion })) },
   };
   const bytes = faceBundleBodyBytes(body);
@@ -195,6 +228,7 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
       carries: {
         keyEvents: kel.length, faceProofKeys: body.faceProofKeys.length, handleBookRecords: body.handleBook.records.length,
         petname: body.names.petname !== undefined, handle: body.names.handle !== undefined,
+        recoveryContacts: body.recoveryContactSet?.recoveryContacts.length ?? 0,
       },
     };
   } finally { bytes.fill(0); }

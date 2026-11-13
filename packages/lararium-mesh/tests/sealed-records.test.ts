@@ -46,6 +46,7 @@ async function sign<K extends RecordKind>(kind: K, body: SealedRecord<K>["body"]
   if (!("record" in r)) throw new Error(`setup: sign refused ${r.refusal} ${r.cause ?? ""}`);
   return r.record;
 }
+const MANIFEST_WRITER = { writer: "session:the-signing-session" } as const;
 const refusalOf = (r: { record: unknown } | { refusal: string; cause?: string }): string => ("refusal" in r ? `${r.refusal}${r.cause ? `:${r.cause}` : ""}` : "READ");
 
 /** Seal one value and build its manifest entry. */
@@ -305,13 +306,47 @@ describe("a record reads whole, or refuses by name", async () => {
   });
 });
 
+describe("the manifest's writer rides its sealed part, under its signature (U3)", async () => {
+  const writer = await chain("writer", NEXUS);
+  const change1 = value(k1, "change", "change-0001", "first words");
+  const body: ManifestBody = { bag: LOCATOR, keyVersion: v1, parents: [], entries: [change1.entry] };
+  const context = { bagId: BAG, keyVersion: v1, role: "record" as const, logicalRef: hexToBytes(recordIdOf("manifest", body)) };
+  const partOf = (real: SealedRecord<"manifest">) => {
+    const opened = openChunk({ key: k1, context, sealed: real.sealed, authorized: authorizeAddress(sealedAddressOf(real.sealed), "record-part")! });
+    if (!("plaintext" in opened)) throw new Error(opened.refusal);
+    return JSON.parse(new TextDecoder().decode(opened.plaintext)) as { private: Record<string, unknown>; certificate: unknown; signature: unknown };
+  };
+  const craft = (part: unknown): SealedRecord<"manifest"> => {
+    const r = sealChunk({ key: k1, context, plaintext: utf8Bytes(canonicalJson(part)) });
+    if (!("chunk" in r)) throw new Error(r.refusal);
+    return { kind: "manifest", body, sealed: r.chunk.sealed };
+  };
+
+  it("CONTROL: a peer's writer signs and reads back from the sealed part, and the clear part names no writer", async () => {
+    const real = await sign("manifest", body, { writer: "peer:0fcd47cc" }, k1, writer);
+    const r = readRecord("manifest", real, reader(k1));
+    if (!("record" in r)) throw new Error(refusalOf(r));
+    expect(r.record.private).toEqual({ writer: "peer:0fcd47cc" });
+    expect(JSON.stringify(real.body).includes("0fcd47cc")).toBe(false);
+  });
+  it("a writer swapped inside the sealed part refuses its signature; a part with no writer, or a writer of no known form, reads malformed", async () => {
+    const real = await sign("manifest", body, { writer: "peer:0fcd47cc" }, k1, writer);
+    const part = partOf(real);
+    expect(part.private).toEqual({ writer: "peer:0fcd47cc" });   // the setup took
+    expect(refusalOf(readRecord("manifest", craft({ ...part, private: { writer: "session:someone-else" } }), reader(k1)))).toMatch(/^signature-refused/);
+    expect(refusalOf(readRecord("manifest", craft({ ...part, private: {} }), reader(k1)))).toBe("authorship-malformed");
+    expect(refusalOf(readRecord("manifest", craft({ ...part, private: { writer: "nobody" } }), reader(k1)))).toBe("authorship-malformed");
+    expect(refusalOf(await signRecord({ kind: "manifest", body, private: { writer: "" }, bagId: BAG, key: k1, signer: signerOf(writer) }))).toBe("record-malformed");
+  });
+});
+
 describe("a verified manifest entry authorizes its address", async () => {
   const writer = await chain("writer", NEXUS);
   const change1 = value(k1, "change", "change-0001", "set the title to Garden");
   const change2 = value(k1, "change", "change-0002", "add a row for beans", [change1.chunk.address]);
   const blob = value(k1, "blob", "digest-of-photo", "photo bytes");
   const body: ManifestBody = { bag: LOCATOR, keyVersion: v1, parents: [], entries: [change1.entry, change2.entry, blob.entry] };
-  const carried = await sign("manifest", body, {}, k1, writer);
+  const carried = await sign("manifest", body, MANIFEST_WRITER, k1, writer);
   const read = (record: unknown = carried, standing: WriterStanding = everyone): VerifiedRecord<"manifest"> => {
     const r = readRecord("manifest", record, reader(k1, standing));
     if (!("record" in r)) throw new Error(refusalOf(r));
@@ -343,7 +378,7 @@ describe("a verified manifest entry authorizes its address", async () => {
 
   it("an entry whose clear role differs from the role its locator binds authorizes nothing", async () => {
     // The writer tells the carrier `checkpoint` and binds the locator to a `change`.
-    const mislabelled = await sign("manifest", { ...body, entries: [{ ...change1.entry, role: "checkpoint" }] }, {}, k1, writer);
+    const mislabelled = await sign("manifest", { ...body, entries: [{ ...change1.entry, role: "checkpoint" }] }, MANIFEST_WRITER, k1, writer);
     const manifest = read(mislabelled);
     expect(authorizeFromManifest(manifest, k1, change1.context)).toBeNull();
     expect(authorizeFromManifest(manifest, k1, { ...change1.context, role: "checkpoint" })).toBeNull();
@@ -370,14 +405,14 @@ describe("a verified manifest entry authorizes its address", async () => {
     const manifest = read();
     const lookalike = { ...manifest } as VerifiedRecord<"manifest">;
     expect(authorizeFromManifest(lookalike, k1, change1.context)).toBeNull();
-    const unverified = { kind: "manifest", id: manifest.id, body, private: {}, certificate: manifest.certificate } as VerifiedRecord<"manifest">;
+    const unverified = { kind: "manifest", id: manifest.id, body, private: MANIFEST_WRITER, certificate: manifest.certificate } as VerifiedRecord<"manifest">;
     expect(authorizeFromManifest(unverified, k1, change1.context)).toBeNull();
     expect(() => indexRowsOf(lookalike)).toThrow(/verified/);
   });
 
   it("a writer that lists another value under an entry's locator opens nothing with it", async () => {
     // The writer claims change-0002's address for change-0001's reference.
-    const lying = await sign("manifest", { ...body, entries: [{ ...change1.entry, address: change2.chunk.address }] }, {}, k1, writer);
+    const lying = await sign("manifest", { ...body, entries: [{ ...change1.entry, address: change2.chunk.address }] }, MANIFEST_WRITER, k1, writer);
     const authorized = authorizeFromManifest(read(lying), k1, change1.context);
     expect(authorized?.address).toBe(change2.chunk.address);
     const opened = openChunk({ key: k1, context: change1.context, sealed: change2.chunk.sealed, authorized: authorized! });
@@ -385,9 +420,9 @@ describe("a verified manifest entry authorizes its address", async () => {
   });
 
   it("two entries under one locator that name unlike addresses authorize nothing", async () => {
-    const twice = await sign("manifest", { ...body, entries: [change1.entry, { ...change1.entry, address: change2.chunk.address }] }, {}, k1, writer);
+    const twice = await sign("manifest", { ...body, entries: [change1.entry, { ...change1.entry, address: change2.chunk.address }] }, MANIFEST_WRITER, k1, writer);
     expect(authorizeFromManifest(read(twice), k1, change1.context)).toBeNull();
-    const same = await sign("manifest", { ...body, entries: [change1.entry, change1.entry] }, {}, k1, writer);
+    const same = await sign("manifest", { ...body, entries: [change1.entry, change1.entry] }, MANIFEST_WRITER, k1, writer);
     expect(authorizeFromManifest(read(same), k1, change1.context)?.address).toBe(change1.chunk.address);
   });
 

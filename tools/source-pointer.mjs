@@ -5,9 +5,9 @@
 // name a repo-relative path.
 //
 // WHEN THE CODE MOVES AND THE POINTER DOES NOT, the meme becomes unfalsifiable. A reader cannot check it
-// against anything, so its claims stand unchallenged however far they have drifted — and a high-mana
+// against anything, so its claims stand unchallenged however far they have drifted — and a high-rated
 // carrier's claims are exactly the ones a reader will not think to doubt. Measured once:
-// `mesh/causal-island.mem` (mana 18) pointed at a deleted `causal-island.ts` and, unanchored, had grown a
+// `mesh/causal-island.mem` (rated high) pointed at a deleted `causal-island.ts` and, unanchored, had grown a
 // four-level `ABILITY_LADDER` that exists in no source file, promising a tiered gate its own sibling meme
 // warns readers not to expect.
 //
@@ -30,7 +30,9 @@ const REPO = join(dirname(fileURLToPath(import.meta.url)), "..");
 const NAMES_CODE = /^(packages|tools|scripts)\//;
 
 const META_KEY = /^source-file\s*=\s*"([^"]+)"/m;
-const PRANALA  = /<<~\s*pranala\s+#source[a-z-]*\b(?:(?!>>).)*?to="([^"]+)"/gs;
+// The pair and the slot name themselves (the kupono cut): ``<<~ pranala slot=`#source` from=`?` to=`packages/…`>>``,
+// either order, the target captured by its name.
+const PRANALA  = /<<~\s*pranala(?=(?:(?!>>).)*?\sslot=`#source[a-z-]*`)(?:(?!>>).)*?\sto=`([^`]+)`/gs;
 
 const mems = execFileSync("git", ["ls-files", "-z", "*.mem"], { cwd: REPO, encoding: "utf8", maxBuffer: 1 << 28 })
   .split("\0").filter(Boolean);
@@ -55,6 +57,10 @@ for (const rel of mems) {
 }
 
 console.log(`[source-pointer] ${pointers} carrier→code pointer(s) across ${mems.length} carriers · ${dangling.length} dangling`);
+if (mems.length === 0 || pointers === 0) {
+  console.log("  NO CARRIER CODE POINTERS FOUND — the pointer census checked nothing");
+  process.exit(1);
+}
 if (dangling.length > 0) {
   console.log("\n  A CARRIER POINTS AT CODE THAT IS GONE — re-aim it, or retire the carrier:");
   for (const [mem, target] of dangling) console.log(`    ${mem}\n      -> ${target}`);

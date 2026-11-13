@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/l23-drop-floor-ebbfdd348b8a2bbc1b16cf556dd65e429425b831.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP l23-drop-floor ebbfdd348b8a2bbc1b16cf556dd65e429425b831
+read: blind Opus (Blind-Warden-Drop) over d2a8164dd...9d528aa52: LAND-AFTER-CURES (F1 cross-device brake, F2 far-seq wedge, F3 revocation lifts, F4 delete lifts; P3s) (/home/joshu/.lares-scratch/l23-drop-floor/blind-opus/out.md); cures at bfb497116 red-first; re-read over 9d528aa52..bfb497116: LAND-AFTER-CURES (R1 overwrite lifts, R2 quadratic history) (reread.md); cures at ee054e2f3 red-first (R1 red on the repo's board handle; R2 765 -> 30 records), controller read the R1/R2 diff: holds. Exploit (stripped tombstone + re-inserted ward-signed row replays at boot) red on base, void after.
+read (head moved, canon merge only): ee054e2f3..ebbfdd348b8a2bbc1b16cf556dd65e429425b831 = span merges eacb354a5 + adee70ffa; seat-harness.mem differs from the span in the two #/the-ward drop-floor lines and the stamp only (lead verified by diff); promote suites re-run green.
+owed: named limits in seat-harness#/the-ward: a single-device board-storage rollback still replays; an atom rotation voids this device's bound rows until recommitted (fails closed). Rows signed before this head carry no owner and void until recommitted (alpha, no back-compat). R1's text-edit and overwrite-then-delete cases seen green only (the overwrite case red on base).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iZZs8qTE4pPwP8Sle6EvuJWxWqlMaiia-CleLojYZV4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

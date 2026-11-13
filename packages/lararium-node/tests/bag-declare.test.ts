@@ -15,7 +15,7 @@ import {
   readBagManifest, writeBagManifest, surveyBags, moveBagHome,
   readRepoRegistry, registerRepo, unregisterRepo, bagHomeRoots, metaTableFromBody,
 } from "../src/bag-declare.js";
-import { laresDataHome } from "../src/vessel-paths.js";
+import { larProjectionsHome, larConfigHome } from "../src/vessel-paths.js";
 
 const saved: Record<string, string | undefined> = {};
 const setEnv = (k: string, v: string | undefined): void => {
@@ -29,8 +29,6 @@ describe("bag-declare — the disk shore", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-bagdecl-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "xdgstate"));
-    setEnv("XDG_DATA_HOME", join(root, "xdgstate"));   // identity/seal/library answer HERE
     corpus = join(root, "corpus");
     mkdirSync(join(corpus, "lares"), { recursive: true });
     mkdirSync(join(corpus, "nexus"), { recursive: true });
@@ -76,8 +74,6 @@ describe("the repo registry — IDs, never paths", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-bagrepo-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "xdgstate"));
-    setEnv("XDG_DATA_HOME", join(root, "xdgstate"));   // identity/seal/library answer HERE
   });
   afterEach(() => {
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
@@ -104,11 +100,17 @@ describe("the repo registry — IDs, never paths", () => {
     // The declaration is untouched; only this vessel's ability to place it changed.
   });
 
-  test("the hearth root always stands, so hearth-homed bags always place", () => {
-    // THE CRITERION IS WHOSE IT IS. A hearth bag holds what a Lar authored, so it stands in the
-    // SPIRITS' house beside the identity and the seal. The house's own things — the acquired shelf,
-    // the sensoriums — stand at `<lararium>`, and the state home keeps watermarks alone.
-    expect(bagHomeRoots().hearth).toBe(join(laresDataHome(), "bags"));
+  test("the house bag root always stands, so house-homed bags always place", () => {
+    // A bag homed in the house holds the operator's own bytes, so it rests under `<root>/projections/bags`,
+    // beside the hearth a re-founding clears and never inside it.
+    expect(bagHomeRoots().hearth).toBe(join(larProjectionsHome(), "bags"));
+    expect(bagHomeRoots().hearth).toBe(join(root, "projections", "bags"));
+  });
+
+  test("the registry rests with the operator's settings, outside the hearth", () => {
+    registerRepo({ id: "canon", root: "/a", vcs: "git" });
+    expect(existsSync(join(larConfigHome(), "repos.json"))).toBe(true);
+    expect(existsSync(join(root, "hearth"))).toBe(false);
   });
 });
 
@@ -118,8 +120,6 @@ describe("surveyBags + moveBagHome — the drift surface and the act", () => {
   beforeEach(() => {
     root = mkdtempSync(join(tmpdir(), "lares-bagmove-"));
     setEnv("LAR_ROOT", root);
-    setEnv("XDG_STATE_HOME", join(root, "xdgstate"));
-    setEnv("XDG_DATA_HOME", join(root, "xdgstate"));   // identity/seal/library answer HERE
     corpus = join(root, "corpus");
     mkdirSync(join(corpus, "lares"), { recursive: true });
     writeFileSync(join(corpus, "lares", "a.mem"), "content", "utf8");

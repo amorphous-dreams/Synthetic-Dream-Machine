@@ -4,7 +4,7 @@ import {
   createLanAnnouncement, createLanAnnouncer, createLanListener, encodeLanResponse, encodePtrQuestion,
   decodeLanPacket, candidatePin, type LanSocket,
 } from "../src/lan-discovery.js";
-import { parseMeshPeer, knockPath, knockSegment } from "@lararium/mesh";
+import { parseMeshPeer, knockSegment } from "@lararium/mesh";
 
 type Receiver = (bytes: Uint8Array, from: { address: string }) => void;
 class Bus {
@@ -148,9 +148,8 @@ describe("LAN candidate discovery", () => {
 
   test("the gate's wrong-key knock differs from its registered path", () => {
     const own = "11".repeat(32), wrong = "22".repeat(32);
-    const registered = knockPath(own, "/ws");
+    const registered = `/ws/${knockSegment(own, "/ws")}`;
     const discoveredDialPath = `/ws/${knockSegment(wrong, "/ws")}`;
-    expect(discoveredDialPath).toBe(knockPath(wrong, "/ws"));
     expect(discoveredDialPath).not.toBe(registered);
   });
 

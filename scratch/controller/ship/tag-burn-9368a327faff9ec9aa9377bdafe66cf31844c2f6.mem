@@ -1,0 +1,36 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/controller/ship/tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/controller/ship/tag-burn-9368a327faff9ec9aa9377bdafe66cf31844c2f6.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP tag-burn 9368a327faff9ec9aa9377bdafe66cf31844c2f6
+read: Luna cold read over 5d262a8b3..e107c613f (LAND-AFTER-CURES; P2 re-key named in the domains.ts header, P3 colon/spaced witness fixtures, both cured); controller diff read over 5d262a8b3..9368a327f (2026-11-07): every signing domain and HKDF info derives once in packages/lararium-mesh/src/domains.ts via mint(); signers and verifiers import the same exported constants, so no signer/verifier split; FACE_GRANT_DOMAIN and REALM_FEED_DOMAIN move from module literals into the registry; the registry witness refuses duplicates and any domain literal outside the file; the custody-root WELD vector re-pins to HKDF-SHA256(info = the renamed device-delegation domain), recomputed by the controller and matching CI.
+law: no backward compatibility in early alpha (operator, 2026-11-07): the rename re-keys every record; no stored record crosses it; every CRDT doc re-genesises until the X0 bake.
+ci: GREEN at 9368a327f (run 42345843937).
+owed: the genesis format strings (lararium-floor/v1, lararium-tw5-plugin-build/v1) in the pre-rite's one labelled re-bake.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P24M6s2481cQr_EMwSxDlBqCLwjP6KuJh1Ey3ANvGIE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

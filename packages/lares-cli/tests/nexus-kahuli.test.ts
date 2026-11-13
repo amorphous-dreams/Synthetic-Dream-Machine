@@ -1,7 +1,7 @@
 /**
  * nexus-kahuli — the tier-parameterized OVERTURN verb and its composed rite (the approved command surface).
  *
- *   lares nexus kahuli engine    the SLOW ratchet (engineCid = the hearth true-name) — HELD: advancing it
+ *   lares nexus kahuli engine    the SLOW ratchet (engineCid = the engine CID) — HELD: advancing it
  *                                re-binds membership mesh-wide; the graceful forward-rebind span awaits rulings.
  *   lares nexus kahuli grammar   the FAST ratchet (grammarCid = the REQUIRED memetic-wikitext grammar ALONE,
  *                                held apart from pluginsCid, this operator's own collection) — reads the

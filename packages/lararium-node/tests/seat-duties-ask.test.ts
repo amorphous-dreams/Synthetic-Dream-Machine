@@ -21,43 +21,51 @@
  *       sovereign vessel standing it refuses by name.
  *   Q5  an ask abandoned while its proof signs places nothing.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { readFileSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Repo } from "@automerge/automerge-repo";
 import * as ed from "@noble/ed25519";
 import { describe, expect, test } from "vitest";
-import { concludeVerb, ed25519SignerFromSeed, emptyLarDoc, hex, seatDutiesAskRefusal, signSeatDutiesAsk, type LarDoc } from "@lararium/mesh";
+import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, concludeVerb, ed25519SignerFromSeed, emptyLarDoc, hex, seatDutiesAskRefusal, signSeatDutiesAsk, wikiSlotUri, type LarDoc, CONTROL_HOME_ID } from "@lararium/mesh";
 import { IslandAskAbandoned, askSeatDuties } from "../src/island-verb-ask.js";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { runEdgeSeatFacts } from "../src/commands/edge-seats.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 const VESSEL_SEED = new Uint8Array(32).fill(41);
 const OTHER_SEED = new Uint8Array(32).fill(42);
+const PLACE_SEED = new Uint8Array(32).fill(43);
 const FACTS = { fleetRoot: "ab".repeat(32), acts: [{ kind: "a-synthetic-act", n: 1 }], rolled: ["cd".repeat(32)] };
 const pub = async (seed: Uint8Array): Promise<string> => hex(await ed.getPublicKeyAsync(seed));
 
-/** A daemon document and a main-thread channel that records what got placed. */
+/** The control store (the control document the island writes outcomes into) and a main-thread channel that records what got placed. */
 function island() {
   const repo = new Repo({});
-  const daemonHandle = repo.create<LarDoc>(emptyLarDoc());
+  const working = CONTROL_HOME_ID;
+  const composite = new CompositeStore();
+  composite.addLayer({ bagId: DAEMON_BAG_ID, store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()) as never, DAEMON_BAG_ID), writable: true, defaultWritable: false });
+  composite.addLayer({ bagId: working, store: new AutomergeDocStore(repo.create<LarDoc>(emptyLarDoc()), working), writable: true });
   const placed: Array<{ verb: string; args: Record<string, unknown>; requestedBy: string; requestId: string }> = [];
   let onPlace: () => void = () => {};
   const placedOnce = new Promise<void>((r) => { onPlace = r; });
-  const conclude = (requestId: string, output: Record<string, unknown>): void => {
-    const outcome = concludeVerb({ requestId, verb: "seat-duties", status: "done", requestedBy: "vessel", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output } } });
-    daemonHandle.change((doc) => { doc.tiddlers[outcome.tiddler.title] = outcome as unknown as LarDoc["tiddlers"][string]; });
+  const conclude = (requestId: string, output: Record<string, unknown>): Promise<void> => {
+    const outcome = concludeVerb({ requestId, verb: "seat-duties", status: "done", cause: "test-island", batchMode: "best-effort", results: { summary: { ok: true, output } } });
+    return composite.put(outcome, { kind: "lares-verb", requestId });
   };
-  return { daemonHandle, placed, placedOnce, conclude, place: (o: (typeof placed)[number]) => { placed.push(o); onPlace(); } };
+  return { composite, placed, placedOnce, conclude, place: (o: (typeof placed)[number]) => { placed.push(o); onPlace(); } };
 }
 
 describe("who may ask the island's seat-duties verb", () => {
   test("Q1/Q2 — the vessel's own ask reads licensed; every other ask refuses", async () => {
     const vesselKey = await pub(VESSEL_SEED);
     const s = island();
-    const ask = askSeatDuties({ daemonHandle: s.daemonHandle, placeVerb: s.place, facts: FACTS, vesselKey, sign: ed25519SignerFromSeed(VESSEL_SEED) });
+    const ask = askSeatDuties({ control: s.composite, placeVerb: s.place, facts: FACTS, vesselKey, sign: ed25519SignerFromSeed(VESSEL_SEED) });
     await s.placedOnce;
     expect(s.placed).toHaveLength(1);
     const sent = s.placed[0]!;
@@ -69,7 +77,7 @@ describe("who may ask the island's seat-duties verb", () => {
     // Q1 / CONTROL: the island reads the main thread's ask as licensed, under either spelling of the vessel's key.
     expect(check({})).toBeNull();
     expect(check({ vesselVerifyingKey: `0x${vesselKey.toUpperCase()}` })).toBeNull();
-    s.conclude(sent.requestId, { ran: true, rolls: [] });
+    await s.conclude(sent.requestId, { ran: true, rolls: [] });
     expect(await ask.answer).toEqual({ ran: true, rolls: [] });
 
     // Q2 RED: no proof at all (what a wiki island's surface, a session island or a peer's summons would place).
@@ -78,6 +86,8 @@ describe("who may ask the island's seat-duties verb", () => {
     // A proof another key made, over this very request and these very facts.
     const foreign = await signSeatDutiesAsk({ requestId: sent.requestId, facts: FACTS, sign: ed25519SignerFromSeed(OTHER_SEED) });
     expect(check({ ask: foreign })).toMatch(/proof does not hold under the vessel's key/);
+    const place = await signSeatDutiesAsk({ requestId: sent.requestId, facts: FACTS, sign: ed25519SignerFromSeed(PLACE_SEED) });
+    expect(check({ ask: place })).toMatch(/proof does not hold under the vessel's key/);
     // The true proof, replayed under another request id.
     expect(check({ requestId: "another-request" })).toMatch(/proof does not hold/);
     expect(check({ requestId: "" })).toMatch(/names no request/);
@@ -92,12 +102,12 @@ describe("who may ask the island's seat-duties verb", () => {
     const packages = join(fileURLToPath(new URL(".", import.meta.url)), "..", "..");
     const behavior = readFileSync(join(packages, "lararium-keyhive", "src", "operator-daemon-behavior.ts"), "utf8");
     const registrations = behavior.split('registry.register("seat-duties"').length - 1;
-    expect(registrations).toBe(1);
-    const body = behavior.slice(behavior.indexOf('registry.register("seat-duties"'), behavior.indexOf('registry.register("face-join"'));
+    expect(registrations).toBe(2); // face handler and the faceless waking-floor refusal
+    const body = behavior.slice(behavior.indexOf('registry.register("seat-duties"'), behavior.indexOf('faceJoinEffect = async'));
     const at = (needle: string): number => { const i = body.indexOf(needle); expect(i, needle).toBeGreaterThan(-1); return i; };
     const check = at("seatDutiesAskRefusal(");
     expect(at("if (unlicensed) throw")).toBeGreaterThan(check);
-    for (const later of ["veilKh", "daemonAuth.deviceEdge", "as FleetSeatFacts", "answerFleetSeatDuties("]) expect(at(later), later).toBeGreaterThan(at("if (unlicensed) throw"));
+    for (const later of ["daemonAuth.deviceEdge", "as FleetSeatFacts", "answerFleetSeatDuties("]) expect(at(later), later).toBeGreaterThan(at("if (unlicensed) throw"));
     expect(body).toContain("context.invocation.requestId");                         // the proof binds the island's own reading of the request
     // ONE ROAD: across every package's source, the verb's name gets placed (named beside its arguments, or handed
     // to a verb call) by the main thread's asker alone. The island's own answers echo the name and place nothing.
@@ -114,8 +124,9 @@ describe("who may ask the island's seat-duties verb", () => {
   test("Q4 — the store door's row names a fleet and reads its facts itself; it takes no facts from its caller", async () => {
     const c = await seatScratchCustody("seat-duties-q4");
     try {
-      await generateOrLoadVesselIdentity();
+      await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       const root = (await generateOrLoadPersonaGroupRoot(0)).verifyingKey;
+      await seedFaceAtom(0);
       const asked: unknown[] = [];
       const repo = new Repo({});
       const withVessel = storeDoorReactors({ storageDir: "/a-synthetic/storage", sealHome: "/a-synthetic/seal", repo, seatDuties: async (facts) => { asked.push(facts); return { ran: true, outcomes: [], rolls: [] }; } });
@@ -136,7 +147,7 @@ describe("who may ask the island's seat-duties verb", () => {
   test("Q5 — an ask abandoned while its proof signs places nothing", async () => {
     const s = island();
     let signed!: (sig: string) => void;
-    const ask = askSeatDuties({ daemonHandle: s.daemonHandle, placeVerb: s.place, facts: FACTS, vesselKey: await pub(VESSEL_SEED), sign: () => new Promise((resolve) => { signed = resolve; }) });
+    const ask = askSeatDuties({ control: s.composite, placeVerb: s.place, facts: FACTS, vesselKey: await pub(VESSEL_SEED), sign: () => new Promise((resolve) => { signed = resolve; }) });
     ask.abandon();
     signed("00".repeat(64));
     await expect(ask.answer).rejects.toBeInstanceOf(IslandAskAbandoned);

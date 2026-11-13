@@ -11,7 +11,7 @@ import os
 import pytest
 
 from lares_mcp import (LIFECYCLE_VERBS, PLANE_VERBS, WIKI_VERBS, SENSE_LIFECYCLE_VERBS,
-                       MEME_VERBS,
+                       MEME_VERBS, KAHUA_VERBS, OFFER_VERBS,
                        VERB_SEATS, DaemonCoordinator,
                        LaresCoordinator, build_mcp, guard_hitl, seat_of)
 from worldline_veil import veiled_root
@@ -227,7 +227,7 @@ def test_mcp_tools_mirror_the_cli_lifecycle_verbs(tmp_path):
     # DURABLE sensorium-lifecycle sub-verbs, and the meme placement pair — name-for-name (the growth floor).
     assert _mcp_tool_names(tmp_path) == (set(LIFECYCLE_VERBS) | set(PLANE_VERBS) | set(WIKI_VERBS)
                                          | set(SENSE_LIFECYCLE_VERBS)
-                                         | set(MEME_VERBS))
+                                         | set(MEME_VERBS) | set(KAHUA_VERBS) | set(OFFER_VERBS))
 
 
 def test_recall_tool_args_are_isomorphic_with_the_recall_api(tmp_path):
@@ -332,7 +332,7 @@ def _three_plane_bed(tmp_path):
     import hashlib
 
     import content_io as cio
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from structure_router import canonical_json, detect_kind, parse_to_tree, structural_hash
     from structurepalace_io import StructurePalaceStore
 
@@ -540,7 +540,7 @@ def test_daemon_recall_plane_lens_owes_the_routing():
 
 
 def test_daemon_pour_routes_to_the_capture_verb(monkeypatch):
-    # pour rides the @daemon `capture` verb (the same verb harvest/`lares sense pour` drives) — the
+    # pour rides the @daemon `capture` verb (the same verb `lares sense capture` drives) — the
     # routed surface REACHES the holder instead of `_owed`-refusing. Record the wire call to prove the
     # verb name + camelCase arg mapping without a live daemon.
     calls = []
@@ -620,58 +620,24 @@ def test_daemon_routed_set_names_the_wired_verbs():
 
 
 def test_sensorium_address_resolver_honors_lar_root(monkeypatch, tmp_path):
-    # the py resolver mirrors TS larariumDataHome/sensoriumDir: LAR_ROOT/data/lararium for an isolated
-    # instance, so the MCP `sensorium=` address and the CLI `lares sense <sensorium>` name ONE root
-    # byte-for-byte.
-    #
-    # THE CRITERION IS WHOSE IT IS. A sensorium holds operator history and DreamNet history — the HOUSE'S,
-    # never any one Lar's — so it homes beside the acquired shelf, and every directory under an isolated
-    # root names an XDG KIND with the two HOUSES nested inside the data kind, exactly as under XDG.
+    # the py resolver mirrors TS sensoriumDir: <root>/sensoriums/<name>, so the MCP `sensorium=` address
+    # and the CLI `lares sense <sensorium>` name ONE root byte-for-byte.
     from sensorium import sensorium_dir, sensorium_names
     monkeypatch.setenv("LAR_ROOT", str(tmp_path))
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "data", "lararium", "sensoriums", "memory")
+    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "sensoriums", "memory")
     assert sensorium_names() == []                         # an absent dir rosters empty, never raises
-    os.makedirs(os.path.join(str(tmp_path), "data", "lararium", "sensoriums", "ai-sessions"))
+    os.makedirs(os.path.join(str(tmp_path), "sensoriums", "ai-sessions"))
     assert "ai-sessions" in sensorium_names()             # a stood sensorium shows in the roster
-    # AND IT STANDS CLEAR OF THE WIPE ZONE — which is the LARES HOUSE, never the data KIND. Both houses
-    # nest inside `data/` exactly as they nest inside `$XDG_DATA_HOME`; what a rite reforges is everything
-    # under `lares/`, and the shrine is its SIBLING there, never its child.
-    assert not sensorium_dir("memory").startswith(os.path.join(str(tmp_path), "data", "lares"))
 
 
-def test_sensorium_address_resolver_falls_to_xdg(monkeypatch, tmp_path):
-    # LAR_ROOT unset → $XDG_DATA_HOME/lararium/sensoriums/<name>, the same fall TS larariumDataHome takes.
+def test_sensorium_address_resolver_refuses_an_unnamed_root(monkeypatch, tmp_path):
+    # LAR_ROOT unset → the resolver refuses by name; no XDG base or home directory stands in for the house.
+    from house_root import HouseRootUnnamed
     from sensorium import sensorium_dir
     monkeypatch.delenv("LAR_ROOT", raising=False)
     monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
-    assert sensorium_dir("mesh") == os.path.join(str(tmp_path), "lararium", "sensoriums", "mesh")
-    assert "lares" not in sensorium_dir("mesh").split(os.sep)   # the spirit's house holds no history
-
-
-def test_the_two_homes_never_nest_or_alias(monkeypatch, tmp_path):
-    # The ruling's force rests on two ADDRESSES, so hold the addresses. Neither home reaches the other,
-    # in either direction and by either reading — the segment-safe one AND the naive string prefix a
-    # hand-written wipe reaches for. `lararium` parts from `lares` at the fifth character, so even the
-    # careless reading misses the shrine.
-    from sensorium import _lares_data_home, _lararium_data_home
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.setenv("XDG_DATA_HOME", str(tmp_path))
-    data, abide = _lares_data_home(), _lararium_data_home()
-    assert data == os.path.join(str(tmp_path), "lares")          # the resolvers RAN
-    assert abide == os.path.join(str(tmp_path), "lararium")
-    assert not abide.startswith(data) and not data.startswith(abide)
-
-
-def test_lar_root_isolates_both_homes(monkeypatch, tmp_path):
-    # An isolated instance nests BOTH tiers under its own root, so a test never reaches the operator's
-    # own shelf — and the two stay disjoint inside the sandbox exactly as they do outside it.
-    from sensorium import _lares_data_home, _lararium_data_home
-    monkeypatch.setenv("LAR_ROOT", str(tmp_path))
-    monkeypatch.setenv("XDG_DATA_HOME", "/somewhere/else")       # present, and OUTRANKED
-    assert _lares_data_home() == os.path.join(str(tmp_path), "data", "lares")
-    assert _lararium_data_home() == os.path.join(str(tmp_path), "data", "lararium")
-    assert not _lararium_data_home().startswith(_lares_data_home() + os.sep)
+    with pytest.raises(HouseRootUnnamed, match="set LAR_ROOT"):
+        sensorium_dir("mesh")
 
 
 def test_a_sensorium_address_never_routes_out_of_the_shrine(monkeypatch, tmp_path):
@@ -680,7 +646,7 @@ def test_a_sensorium_address_never_routes_out_of_the_shrine(monkeypatch, tmp_pat
     # it in — and a traversing segment consults no wipe-list on the way. The shore refuses it.
     from sensorium import sensorium_dir, assert_one_segment
     monkeypatch.setenv("LAR_ROOT", str(tmp_path))
-    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "data", "lararium", "sensoriums", "memory")
+    assert sensorium_dir("memory") == os.path.join(str(tmp_path), "sensoriums", "memory")
     assert assert_one_segment("t", "memetic-wikitext") == "memetic-wikitext"   # a plain name passes
     for bad in ("..", ".", "", "../abide", "a/b", "/etc", "..\\win"):
         with pytest.raises(ValueError, match="ONE path segment"):

@@ -1,0 +1,90 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/cure-1-out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! cure-1-out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/cure-1-out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/p27-cure-step-1-share-wright-hand-back`>>
+
+! P27 cure step 1 — Share-Wright (Opus seam lead) hand-back
+
+''Outcome:'' pushed `feature/green-jello-dinosaur-5--p27-wire` at ''918864e79'' (PR #200). Red `79de53d77`, then cure `918864e79`. The pre-push gate is GREEN. The P27 manifest's node and mesh files (49), plus the new witnesses, pass, each run alone in bwrap. The 9 browser files ride CI.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/honest-witness-packages-lararium-node-tests-p27`>>
+
+!! Honest witness (required): `packages/lararium-node/tests/p27-honest-floor.test.ts`
+It runs the real `makeHeldShareFloor` with no permissive stub. The readers come from a real Repo's handles, the face catalog binding and sealed map, `DeterministicFederationGate`, and the face secrets registry over a real catalog doc. The face-grant and sibling gates come from a real `makePersonaGroupIdentityRing`, and the crossings run through the real `selfSlotShareDecision`, `islandFloorStack` and `publicCasShore`. At ed44bf39a all 7 tests fail red by over-refusal; at 918864e79 all 7 pass:
+# crossroads reaches `world`, before and after the registry initializes.
+# A sibling reads a face-scoped plane at `fleet` after the bound catalog initializes. Before init it refuses `secrets-registry-uninitialized` (control). A stranger never reads it (control).
+# A fresh bound face catalog: `fleet` after init, never `world`.
+# A face-grant member reads the face plane as `fleet`. The control with no ring proof is refused.
+# A contracted carrier reads hosting docs at `contract`. The control: a stranger is refused.
+# A private blob is refused to `world`, and the daemon island reads it `in-process`.
+# Herm `/cas`: a pointer on the board serves; the same cid in a face plane withholds.
+
+Mesh `p27-audience-proof.test.ts`: the unproven peer, the null refinement and the non-bag tier, each with controls. `island-doors-by-class` D4: CasRefused, rejected through `vesselCasAsker`. `browser-share-config.test.ts`: the unproven-peer red and the null-gate relay refusal (rides CI).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! Findings
+* ''Sol P1#1 / blind F1, secrets scope — CURED.'' `held-share-floor.ts`: `faceScopedSecrets(registry.plane, owns)`. `owns` reads the face's sealed map (`faceOwns`), the catalog, and face-scoped families. A doc bound to another bag, or named non-bag, does not ask the registry. A doc that is unbound and unnamed throws `declared-tier-unresolved`.
+* ''Sol P2#3, init wiring — CURED.'' `open-node-vessel.ts` `standFaceCatalog`: after `view.bindFace(face)` it awaits `shareFloor.registry.initialize()`, and a refusal is logged by name. Registration is still unwired (it waits for a secrets store).
+* ''Blind F2, VEIL floor for cleartext planes — CURED.'' `share-tighten.ts`: `ShareBoundary.allows(…, carried)`. `makeShareBoundary(ring, onRefusal, carriedRing)` floors a crossing by the gate that allowed it. `self-slot-share.ts` passes `carried` on every non-in-process lane and proves `fleet` when `faceGrant.admitsPeer` holds. The node passes `faceGrant: faceGrantRing`. The five face-scoped families declare PERSONAGROUP when they carry no manifest (`FACE_PLANE_TIER`); a carrier they hold must still agree.
+* ''Blind F3, the face catalog has no manifest — CURED.'' It binds as `{kind:"non-bag", tier:"personagroup"}`. `DocBagBinding` non-bag now requires `tier`, so the inert null is gone.
+* ''Blind F4, hosting docs — CURED.'' The `nonBagTier` reader maps the node's `ownHostingDocs` to CONTRACT and the fleet edge boards to PERSONAGROUP.
+* ''Blind F4 / F7b, herm `/cas` — CURED.'' `bulb-read-face.ts`: each pointer carries `documentId` (the node passes `hermCrossroads.documentId`), and the shore requires `world` of every id `documentsForCid` returns.
+* ''Blind F7a, porch serve — CURED.'' `floor-porch.ts`: the `/cas` serve passes the predicate for the board and every referencing doc. `share` is required wherever `serveCas` stands (`floor-porch-share-absent`).
+* ''Sol P1#2 / blind F9b, browser audience — CURED.'' `peerShareAudience` in mesh. `browserShareConfig` takes a 5th argument, `{house: islandPeersOf(repo), grant: faceGrantRing}`. An unclassified peer or a null-gate relay refuses by name.
+* ''Sol P2#5, null refinement — CURED.'' `share-tighten.ts` filters only `undefined`.
+* ''Sol P2#6, node session CAS — CURED.'' `worker-handle.ts` replies with `refusal:"CasRefused"`.
+* ''Lane drift found by the gate — CURED.'' The `capability-inventory` witness was red at ed44bf39a: the pool spawn now takes the audience context and `audienceForIsland`, and the browser pool takes `caps`. The tool is fixed, and the table is rewritten to the deliberate P27 reach (web wiki cas grants, web session refused).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-rows`>>
+
+!! Owed rows (scenario each)
+# ''Browser face planes (P1 for M3).'' The browser binds no face catalog, so its registry reads `secrets-registry-unread`. A leaf's own face-sealed and face-scoped docs refuse toward siblings and toward its hearth (they refused at ed44bf39a too). Scenario: a two-device face where the browser leaf shares a circles plane to its sibling, or pushes a face-plane edit to its hearth. Fork for a ruling: either the leaf binds or reads the hearth's catalog registry rows, or the house rules that no secrets plane ever reaches a leaf (no gate governs one) and the browser floors with established absence.
+# ''Realm lane (Sol F4 remainder).'' Realm books on herm `/cas` still go through `documentForBag(book.bagUri)`, which is unbound on a herm. Realm boards and registration books on the wire have no non-bag tier and no `contract` proof for standing or charter peers. Scenario: a herm serves a public realm book blob a peer staged, and a contracted carrier replicates a CONTRACT realm book.
+# ''Blind F5.'' Plugin CIDs that plugin resolution proved, and a browser replica with no genesis seed (the engine for an oracle-plane wiki). Scenario: a wiki island loads an R4 offered plugin; a fresh browser replica loads its engine.
+# ''Blind F6.'' A non-session wiki island rides the main repo bare (`view.attach` gated sync is owed). Scenario: an oracle-plane island writes a catalog recipe row for its own slug and flips its CAS audience.
+# ''Sol P3 / blind F8.'' Stop passing `cidDir` and `corpusCasDir` into node workers (`vessel-island-pool.ts:96`, `open-daemon-vm.ts`), and state the OPFS same-origin limit in the claim.
+# ''Blind F9a.'' The post-await recheck in `islandFloorStack` reuses the audience read before the await.
+# ''Canon blobs to a world island.'' The CAS floor (no gate) reads the public boards and the seed only, so a canon-bag blob asked at `world` refuses. Scenario: an oracle-plane wiki shows an image from the `lares` bag.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-decided`>>
+
+!! Forks decided
+* ''Floor equals the allowing gate on sync crossings; the byte door keeps the held ring.'' This follows the brief's item 2. The floor's distinct work on a gated crossing is now the secrets ceiling, and declared tiers carry readership. CAS has no gate, so it keeps public boards and the seed (row 7).
+* ''Face-scoped families declare PERSONAGROUP by construction.'' Their ids derive from the PersonaGroup. This is a named constant, not a default: any other bag with no carrier still refuses `manifest-unread`.
+* ''Ownership is proven by the face's sealed map, catalog and families.'' A doc bound to another bag does not ask the registry. A doc bound nowhere refuses unresolved, never answers false. This changed one p27-cas-floor expectation from `secrets-registry-unread` to `declared-tier-unresolved`, because the registry gates only its own face's documents.
+* ''A face-grant admit proves `fleet`, overriding `contract`.''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VnLgzZxJJpazICbKowFnrHWx7MckrKLyPif2E-AHSpo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

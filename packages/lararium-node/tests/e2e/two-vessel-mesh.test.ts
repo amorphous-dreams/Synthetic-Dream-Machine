@@ -3,14 +3,15 @@
  *
  * Scenario:
  *   Vessel A = founding operator node (runs lares vessel found, becomes Gate A/B/C passing)
- *   Vessel B = second vessel admitted via device-admit payload (same operator, second machine)
+ *   Vessel B = second vessel joined by the fleet-join door (same operator, second machine)
  *
  * Assertions:
  *   1. Vessel A: runInit produces sentinel oracle tiddlers in daemon doc + bootstrap
- *   2. Vessel A: daemon doc cap events carry lar URI tags (not $:/tags/CapEvent)
+ *   2. Vessel A: cap events rest in the vessel's SECRET HOME (placement over patterns), never in the daemon
+ *      document, and carry lar URI tags (not $:/tags/CapEvent)
  *   3. Vessel A: cap events parse cleanly as Keyhive event records — the founder MINTS the
- *      capability history, so the event records live in A's bag
- *   4. Vessel A: runDeviceAdmit signs an edge over the key B already holds, and emits admit.json
+ *      capability history, so the event records rest in A's secret home
+ *   4. Vessel A: its fleet-join answer signs an edge over the key B already holds
  *   5. Vessel B: admission delivers a LINEAGE — the persona KEL prefix, the signer that vouched,
  *      the hearth the edge binds to, and a self-delegation — and copies NO cap events
  *
@@ -29,27 +30,34 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/node/two-vessel-mesh
  */
+import { seatWardGatherer } from "../../src/ward-credential.js";
+// This suite stands as the person at the terminal: a root act it drives with no ward route asks it, and it answers the routes
+// its faces were founded under (seat-harness#/the-ward).
+seatWardGatherer(async () => ["test-founding-passphrase", "fixture-custody-passphrase"].map((passphrase) => ({ kind: "passphrase" as const, passphrase })));
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { mkdirSync, rmSync, existsSync, readFileSync, cpSync, writeFileSync } from "fs";
+import { mkdirSync, rmSync, existsSync, readFileSync, cpSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
 import { Repo } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID,
+  DAEMON_BAG_ID, SECRET_HOME_ID,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   CAP_EVENT_TAG,
   PERSONA_KEL_PREFIX_TIDDLER, SIGNER_DID_TIDDLER,
   HEARTH_TRUE_NAME_TIDDLER, DEVICE_DELEGATION_SELF_TIDDLER,
 } from "@lararium/mesh";
 import { InMemoryEventStore } from "@lararium/keyhive";
-import { runFoundTheFace, runDeviceAdmit } from "../../src/index.js";
-import { generateOrLoadVesselIdentity } from "../../src/node-vessel-identity.js";
+import { runFoundTheFace, runFleetJoinOffer, runFleetJoinRequest, runFleetJoinAnswer, runFleetJoinLand } from "../../src/index.js";
+import { larSealHome } from "../../src/vessel-paths.js";
+import { ownedStore } from "../../src/owned-store.js";
+import { openVesselSecretHome } from "../../src/secret-home-store.js";
 import { withLarRoot } from "../../../../tests/harness/with-lar-root.js";
 import { direct } from "../direct-store.js";
-import { foundDirect, sealTestCustody, seatSeedCharter } from "../found-route.js";
+import { standFacePlane } from "../face-plane-fixture.js";
+import { foundDirect, openTestCustody, sealTestCustody, seatSeedCharter } from "../found-route.js";
 import { plainEntries, tiddlerText } from "@lararium/mesh";
 
 // ---------------------------------------------------------------------------
@@ -59,9 +67,8 @@ import { plainEntries, tiddlerText } from "@lararium/mesh";
 const TEST_ROOT  = join(tmpdir(), `lar-two-vessel-${Date.now()}`);
 const VESSEL_A_ROOT = join(TEST_ROOT, "a");
 const VESSEL_B_ROOT = join(TEST_ROOT, "b");
-const VESSEL_A   = { root: VESSEL_A_ROOT, storage: join(VESSEL_A_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_A_ROOT, "genesis") };
-const VESSEL_B   = { root: VESSEL_B_ROOT, storage: join(VESSEL_B_ROOT, "data", "lares", "vessel"), genesis: join(VESSEL_B_ROOT, "genesis") };
-const ADMIT_FILE = join(TEST_ROOT, "admit.json");
+const VESSEL_A   = { root: VESSEL_A_ROOT, storage: join(VESSEL_A_ROOT, "hearth", "vessel"), genesis: join(VESSEL_A_ROOT, "genesis") };
+const VESSEL_B   = { root: VESSEL_B_ROOT, storage: join(VESSEL_B_ROOT, "hearth", "vessel"), genesis: join(VESSEL_B_ROOT, "genesis") };
 
 // The built hearth artifact, which `pnpm --filter @lararium/node build:genesis` produces.
 const BUILT_GENESIS = join(new URL("../../", import.meta.url).pathname, "..", "..", "genesis");
@@ -139,6 +146,17 @@ async function openDaemonDocTiddlers(storageDir: string, daemonUrl: string): Pro
   return tiddlers;
 }
 
+/** The vessel's secret home, read through the direct holder with its custody open: the home rests sealed under the
+ *  vessel's key, so no reader of the raw store reads a byte of it. */
+async function openSecretHomeTiddlers(storageDir: string): Promise<Record<string, unknown>> {
+  await openTestCustody();
+  return await ownedStore(storageDir, async (repo) => {
+    const home = await openVesselSecretHome(repo);
+    const doc = home.handle.doc() as Record<string, unknown> | null;
+    return Object.fromEntries(plainEntries((doc?.["tiddlers"] ?? {}) as never)) as Record<string, unknown>;
+  });
+}
+
 function daemonTiddlerText(tiddlers: Record<string, unknown>, key: string): string | null {
   return tiddlerText(tiddlers[key] as never);
 }
@@ -150,6 +168,7 @@ const HEX_RE = /^(0x)?[0-9a-f]{60,}$/;
 // ---------------------------------------------------------------------------
 
 let vesselADaemonTiddlers: Record<string, unknown> = {};
+let vesselASecretTiddlers: Record<string, unknown> = {};
 let admitPayload: Record<string, unknown> = {};
 let vesselBDaemonTiddlers: Record<string, unknown> = {};
 let vesselABootstrapPath = "";
@@ -165,7 +184,7 @@ beforeAll(async () => {
   }
 
   // Step 1b — A wears a FACE. `runInit` founds the PLACE alone (faceless: `foundThePlace` writes no
-  // PersonaGroup / mesh-cabal sentinel IDs); the FACE lands by a distinct act, and `runDeviceAdmit` (Step 3)
+  // PersonaGroup / mesh-cabal sentinel IDs); the FACE lands by a distinct act, and the fleet-join answer (Step 3)
   // needs the face's sentinel oracle IDs to sign an edge — mirrors the founder in `persona-ring-cross-operator-admit`.
   // The seed charter seats first, as the Stable founding act seats it: A's face and every edge A signs bind its AID.
   await withLarRoot(VESSEL_A.root, () => seatSeedCharter({ name: "vessel-a" }));
@@ -176,34 +195,28 @@ beforeAll(async () => {
   const daemonUrlA   = bootstrapA[DAEMON_BAG_ID]?.text;
   if (!daemonUrlA) throw new Error("Vessel A: daemon URL missing from bootstrap");
   vesselADaemonTiddlers = await openDaemonDocTiddlers(VESSEL_A.storage, daemonUrlA);
+  vesselASecretTiddlers = await withLarRoot(VESSEL_A.root, () => openSecretHomeTiddlers(VESSEL_A.storage));
 
-  // Step 2 — B mints its OWN vessel key, before anyone admits it.
+  // Step 2 — B founds a PLACE under its OWN root, before anyone admits it.
   //
-  // Admission SIGNS a key the joinee already holds; it never issues one. B's private seed is born on
-  // B and stays there, and only the public verifying key crosses to A — which is what lets the QR
-  // ceremony stay photograph-inert, and why `runDeviceAdmit` refuses to run without that key.
-  // `generateOrLoadVesselIdentity` reads through on a second call, so B's `runInit` below loads this
-  // same identity rather than minting a second one.
-  const vesselB = await withLarRoot(VESSEL_B.root, async () => { await sealTestCustody(); return generateOrLoadVesselIdentity(); });
+  // Admission SIGNS a key the joinee already holds; it never issues one. B's private seed mints on B and stays
+  // there, and only public keys cross to A, inside B's fleet-join request.
+  await withLarRoot(VESSEL_B.root, async () => { await sealTestCustody(); });
+  await withLarRoot(VESSEL_B.root, () => foundDirect({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis }));
 
-  // Step 3 — A's PersonaGroup root signs B's edge
-  const minted = await withLarRoot(VESSEL_A.root, () => direct(runDeviceAdmit)({
-      storageDir:         VESSEL_A.storage,
-      genesisDir:         VESSEL_A.genesis,
-      syncUrl:            "ws://localhost:3000/automerge",
-      joineeVerifyingKey: vesselB.verifyingKey,
-    }));
-  // The door hands back the carried form; the caller writes the file a joinee founds against.
-  writeFileSync(ADMIT_FILE, JSON.stringify(minted.carried, null, 2), "utf8");
-  admitPayload = JSON.parse(readFileSync(ADMIT_FILE, "utf8"));
+  // Step 3 — the fleet-join door: A offers, B requests, A's PersonaGroup root signs B's edge into its answer.
+  const offer   = await withLarRoot(VESSEL_A.root, () => runFleetJoinOffer({ sealHome: larSealHome() }));
+  const request = await withLarRoot(VESSEL_B.root, () => runFleetJoinRequest({ offer: JSON.parse(JSON.stringify(offer)) }));
+  const catalogA = await withLarRoot(VESSEL_A.root, async () => { await openTestCustody(); return standFacePlane(VESSEL_A.storage); });
+  const answer  = await withLarRoot(VESSEL_A.root, () => direct(runFleetJoinAnswer)({
+    storageDir: VESSEL_A.storage, catalogUrl: catalogA, request: JSON.parse(JSON.stringify(request)), syncUrl: "ws://localhost:3000/automerge",
+  }));
+  admitPayload = JSON.parse(JSON.stringify(answer.edge)) as Record<string, unknown>;
 
-  // Step 4 — Vessel B founds against the signed payload
-  const initB = await withLarRoot(VESSEL_B.root, () =>
-    foundDirect({ storageDir: VESSEL_B.storage, genesisDir: VESSEL_B.genesis, admitPayloadPath: ADMIT_FILE }));
-  vesselBBootstrapPath = initB.bootstrapPath;
-  if (vesselBBootstrapPath !== join(VESSEL_B.storage, "social-bootstrap.json")) {
-    throw new Error(`Vessel B: runInit returned an unexpected bootstrap path: ${vesselBBootstrapPath}`);
-  }
+  // Step 4 — Vessel B lands the answer: the face founds on B's place through the edge the root signed
+  await withLarRoot(VESSEL_B.root, () => direct(runFleetJoinLand)({ storageDir: VESSEL_B.storage, answer: JSON.parse(JSON.stringify(answer)) }));
+  vesselBBootstrapPath = join(VESSEL_B.storage, "social-bootstrap.json");
+  if (!existsSync(vesselBBootstrapPath)) throw new Error(`Vessel B: the land founded no bootstrap at ${vesselBBootstrapPath}`);
 
   const bootstrapB = readBootstrap(vesselBBootstrapPath);
   const daemonUrlB  = bootstrapB[DAEMON_BAG_ID]?.text;
@@ -236,9 +249,11 @@ describe("Vessel A — founding ceremony", () => {
     expect(daemonTiddlerText(vesselADaemonTiddlers, MESH_CABAL_DOC_ID_TIDDLER)).toMatch(HEX_RE);
   });
 
-  test("daemon doc cap events use lar URI tag — never $:/tags/CapEvent", () => {
-    const capEntries = Object.entries(vesselADaemonTiddlers).filter(([title]) =>
-      title.startsWith(`${DAEMON_BAG_ID}/cap/`),
+  test("cap events rest in the secret home, never the daemon document, and use the lar URI tag — never $:/tags/CapEvent", () => {
+    // PLACEMENT OVER PATTERNS: the ceremony flushes its cap events through the secret handle alone.
+    expect(Object.keys(vesselADaemonTiddlers).filter((t) => t.includes("/cap/")), "a cap event rests in the daemon document").toEqual([]);
+    const capEntries = Object.entries(vesselASecretTiddlers).filter(([title]) =>
+      title.startsWith(`${SECRET_HOME_ID}/cap/`),
     );
     expect(capEntries.length).toBeGreaterThan(0);
 
@@ -257,7 +272,7 @@ describe("Vessel A — founding ceremony", () => {
 
 describe("device-admit payload", () => {
   test("payload carries kind, sentinel IDs, the signed edge on its lineage, and syncUrl", () => {
-    expect(admitPayload["kind"]).toBe("device-admit/v1");
+    expect(admitPayload["kind"]).toBe("device-admit");
     expect(String(admitPayload["personaGroupId"])).toMatch(HEX_RE);
     expect(String(admitPayload["meshCabalDocIdHex"])).toMatch(HEX_RE);
 
@@ -312,12 +327,12 @@ describe("Vessel B — admitted vessel", () => {
   });
 
   test("the founder's cap events parse as valid Keyhive event records", async () => {
-    // The founder mints the capability history, so the event records live in A's bag. An admitted
+    // The founder mints the capability history, so the event records rest in A's secret home. An admitted
     // vessel receives a lineage edge instead (below), which is why this reads A rather than B.
     const store     = new InMemoryEventStore();
-    const capPrefix = `${DAEMON_BAG_ID}/cap/`;
+    const capPrefix = `${SECRET_HOME_ID}/cap/`;
 
-    for (const [title, entry] of Object.entries(vesselADaemonTiddlers)) {
+    for (const [title, entry] of Object.entries(vesselASecretTiddlers)) {
       if (!title.startsWith(capPrefix)) continue;
       const t       = (entry as Record<string,unknown>)?.["tiddler"] as Record<string,unknown>;
       const variant = t?.["variant"] as string | undefined;
@@ -350,7 +365,7 @@ describe("Vessel B — admitted vessel", () => {
 
     // And the negative half, which carries the design: an admitted vessel copies NO cap events.
     const capCount = Object.keys(vesselBDaemonTiddlers)
-      .filter((t) => t.startsWith(`${DAEMON_BAG_ID}/cap/`)).length;
+      .filter((t) => t.includes("/cap/")).length;
     expect(capCount).toBe(0);
   });
 });

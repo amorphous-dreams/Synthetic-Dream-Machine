@@ -8,7 +8,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 
 export function assertPronaosFounderReceipt({
   receiptPath,
-  bootstrapPath = "/app/.lararium-data/lares/vessel/social-bootstrap.json",
+  bootstrapPath = "/app/.lararium-data/hearth/vessel/social-bootstrap.json",
 } = {}) {
   if (!receiptPath) throw new Error("Pronaos live witness requires a founder receipt path");
   if (!existsSync(receiptPath) || !statSync(receiptPath).isFile()) {
@@ -29,7 +29,7 @@ if (process.argv[1]?.endsWith("pronaos-founder-receipt.mjs")) {
   try {
     const result = assertPronaosFounderReceipt({
       receiptPath: process.env.LAR_PRONAOS_FOUNDER_RECEIPT,
-      bootstrapPath: process.env.LAR_PRONAOS_BOOTSTRAP ?? "/app/.lararium-data/lares/vessel/social-bootstrap.json",
+      bootstrapPath: process.env.LAR_PRONAOS_BOOTSTRAP ?? "/app/.lararium-data/hearth/vessel/social-bootstrap.json",
     });
     console.log(JSON.stringify(result));
   } catch (error) {

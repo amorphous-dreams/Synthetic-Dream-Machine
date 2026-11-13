@@ -45,7 +45,7 @@ The TS spine (`bifurcation-bench.ts`, `sensorium-efe.ts`, `sensorium-fusion.ts` 
 
 ## What is OWED in py (build — the arc)
 
-1. **The plane fan-out** — `capture_stream.run_pass` lands CONTENT only; wire the structure plane (`structure_router` → `structurepalace_io`) and form plane (`form_encoder`/`form_induction`) into the pass, so all three planes ride the same records. *The keystone — the cross-plane thesis needs genuinely-independent planes on shared units.*
+1. **The plane fan-out** — `capture_stream.run_pass` lands CONTENT only; wire the structure plane (`structure_router` → `structurepalace_io`) and form plane (`form_store`/`form_induction`) into the pass, so all three planes ride the same records. *The keystone — the cross-plane thesis needs genuinely-independent planes on shared units.*
 2. **A curated-corpus source-cap** — `capture_sources` reads AI surfaces only; add a human-text/markdown reader (borrow `structure_router` kind-detection) for the ephemeral test-bed.
 3. **LANDED 2026-07-06** — the twins (5a39f2fd: sensorium_consistency/fusion/efe.py, all three parity
    rows turned WITNESSED, 10 TS assertions bound at first contact) + the projector (d50526cc:

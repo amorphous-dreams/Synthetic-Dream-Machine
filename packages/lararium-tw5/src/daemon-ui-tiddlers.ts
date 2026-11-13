@@ -10,13 +10,13 @@
  *   CODE  → born-from-source at daemon boot (setTiddler, deterministic per
  *           device). NOT bag-seeded — the $:/ live-surface filter (meme-provider)
  *           drops a $:/ put on the writing boot, so a bag-seed would not paint
- *           until a second boot. Born-from-source paints at once. The write lands
- *           in the daemon wiki's working layer like any hand's save, and each
- *           record carries the disk opt-out ({@link SEED_OFF_DISK}), so the
- *           workspace never receives a file the next boot would write over.
- *   STATE → LOCAL/unsynced. $:/lares/surface (which panel) matches no bag-paths
- *           cascade rule → pure in-memory. $:/temp/lares/switcher (the live list)
- *           → the volatile temp slot. Neither ever syncs cross-device.
+ *           until a second boot. Born-from-source paints at once. The records
+ *           rest in TiddlyWiki's shadow layer ({@link seedShadows}), never in a
+ *           store, so no mirror receives a file the next boot would write over,
+ *           and a hand's edit lands as an override the next seed leaves standing.
+ *   STATE → LOCAL/unsynced. $:/temp/lares/surface (which panel) and $:/temp/lares/switcher
+ *           (the live list) both route to the volatile temp slot through the bag-paths cascade's
+ *           `$:/temp/` rule. Neither ever reaches a store, a disk, or another device.
  *
  * The parallel-cap surface is a LARES-owned switch — it never overloads TW5's
  * own $:/tags/Layout (that stays wiki-specific + untouched).
@@ -27,27 +27,34 @@
 // Leaf subpath (NOT the barrel) — keeps automerge WASM out of any CJS plugin bundle this
 // module's constants get pulled into (the reaction-router leaf-import rule).
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
+import { KAHUA_SHADOW_PREFIX } from "./kahua-shadow-title.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
+/** The volatile slot each daemon seed plugin's own tiddler rests in: device memory, no store, no mirror. */
+export const DAEMON_SEED_PLUGIN_PREFIX = "$:/temp/lares/daemon-seed/";
+
 /**
- * The per-record disk opt-out every born-from-source daemon record carries (the projector's
- * `disk-projection: "no"`, as a receipt, a summons and a ward audit carry it). The seed writes these
- * records from source at every boot, so a file under `wikis/daemon/` would hold nothing the source lacks,
- * and the next seed would write over a hand's edit to it.
+ * Lay one seed's born-from-source records into the shadow layer, as the plugin `name` under
+ * {@link DAEMON_SEED_PLUGIN_PREFIX}. The records rest where no store and no mirror reaches them; each boot re-lays
+ * them from source, and a hand's save of one writes an ordinary tiddler that overrides it.
  */
-export const SEED_OFF_DISK = { "disk-projection": "no" } as const;
+export function seedShadows(tw5: TW5Engine, name: string, records: ReadonlyArray<Record<string, string | string[]>>): void {
+  tw5.setShadowTiddlers(`${DAEMON_SEED_PLUGIN_PREFIX}${name}`, records);
+}
 
 // ── Titles ─────────────────────────────────────────────────────────────────
 /** The parallel-cap surface tag (organizational; the wrapper drives by state, not tag). */
 export const LARES_SURFACE_TAG   = "$:/tags/Lares/Surface";
-/** LOCAL state: which surface tiddler the wrapper shows (in-memory, never synced). */
-export const LARES_SURFACE_STATE = "$:/lares/surface";
+/** LOCAL state: which surface tiddler the wrapper shows (the volatile temp slot, never synced). */
+export const LARES_SURFACE_STATE = "$:/temp/lares/surface";
 /** LOCAL state: the live switcher list + pin/surface/recipe (volatile temp slot, never synced). */
 export const SWITCHER_STATE_TITLE = "$:/temp/lares/switcher";
 const WRAPPER_TITLE   = "$:/lares/ui/surface-switch";
 const WORKING_TITLE   = "$:/lares/ui/working-surface";
 const PAGECTRL_TITLE  = "$:/lares/ui/PageControls/daemon";
+/** The view-template segment that marks a title whose local draft covers its kahua record. */
+export const KAHUA_SHADOW_VIEW_TITLE = "$:/lares/ui/view/kahua-shadow";
 
 // The volatile verb-summon namespace (mirrors mesh/lar-uris laresVerbUri). A button
 // writes a tiddler titled `…/verb/<verb>` (PURE BEARING — the verb NAME, no args) carrying
@@ -57,8 +64,8 @@ const PAGECTRL_TITLE  = "$:/lares/ui/PageControls/daemon";
 const VERB_PREFIX = "lar:///lararium.local.vm/verb/";
 
 /** The LOCAL projection state: `uri` names the carrier root; `markdown` + `meta` hold the pair the
- *  button last projected. Matches no bag-paths cascade rule → in-memory, never synced. */
-export const PROJECT_STATE_TITLE = "$:/lares/state/meme-project";
+ *  button last projected. Routes to the volatile temp slot, never synced. */
+export const PROJECT_STATE_TITLE = "$:/temp/lares/state/meme-project";
 
 /** The button's action: the submission pair projected IN this wiki VM through the `meme-project`
  *  filter — the operator the face's `md` template renders through — so no verb leaves the VM. A uri
@@ -68,7 +75,7 @@ export const PROJECT_ACTION =
 
 // ── The four CODE tiddlers ───────────────────────────────────────────────────
 
-/** 1. The parallel-cap wrapper switch — shows the surface tiddler $:/lares/surface
+/** 1. The parallel-cap wrapper switch — shows the surface tiddler $:/temp/lares/surface
  *  names, defaulting to the Working Surface. Driven by state, not by $:/tags/Layout. */
 const WRAPPER_BODY = `<$transclude $tiddler={{{ [{${LARES_SURFACE_STATE}}has[text]] ~[[${WORKING_TITLE}]] }}} $mode="block"/>`;
 
@@ -124,10 +131,20 @@ project
 
 </div>`;
 
+/** 4. The "local draft over shared" mark: a view-template segment that lists the current title through
+ *  `[kahua-shadow[]]` and renders the draft against the kahua body its stamp carries. */
+const KAHUA_SHADOW_BODY = `\\whitespace trim
+<$list filter="[<currentTiddler>kahua-shadow[]]" variable="_">
+<div class="lares-kahua-shadow" data-lares-kahua-shadow=<<currentTiddler>>>
+<p class="lares-kahua-shadow-label">local draft over shared</p>
+<$diff-text source={{{ [<currentTiddler>addprefix[${KAHUA_SHADOW_PREFIX}]get[text]] }}} dest={{!!text}}/>
+</div>
+</$list>`;
+
 /** The action the sidebar button fires: name the Working Surface as the active panel.
  *  It does NOT $action-navigate — the wrapper already sits open in the daemon story
  *  (seeded at boot), and navigation in a headless Worker references `window`. Toggling
- *  $:/lares/surface just re-transcludes the wrapper in place — no story navigation. */
+ *  $:/temp/lares/surface just re-transcludes the wrapper in place — no story navigation. */
 const SUMMON_ACTION = `<$action-setfield $tiddler="${LARES_SURFACE_STATE}" text="${WORKING_TITLE}"/>`;
 
 /** 3. The $:/tags/PageControls sidebar button. */
@@ -158,21 +175,20 @@ export const DAEMON_UI_TIDDLERS: readonly TiddlerSpec[] = [
   { title: WRAPPER_TITLE, type: "text/vnd.tiddlywiki", tags: "$:/tags/AboveStory", text: WRAPPER_BODY },
   { title: WORKING_TITLE, type: "text/vnd.tiddlywiki", tags: LARES_SURFACE_TAG, text: WORKING_BODY, caption: "daemon" },
   { title: PAGECTRL_TITLE, type: "text/vnd.tiddlywiki", tags: "$:/tags/PageControls", text: PAGECTRL_BODY },
+  { title: KAHUA_SHADOW_VIEW_TITLE, type: "text/vnd.tiddlywiki", tags: "$:/tags/ViewTemplate", text: KAHUA_SHADOW_BODY },
 ];
 
 /**
- * Seed the born-from-source daemon UI tiddlers into the live TW5 wiki + open the
- * wrapper as the story's INITIAL content. Idempotent (addTiddler overwrites).
+ * Seed the born-from-source daemon UI tiddlers into the live TW5 wiki's shadow layer.
+ * Idempotent (each call re-lays the shadow plugin).
  *
- * MUST run BEFORE the projection camera's first render (the daemon island's onBoot,
- * ahead of mountProjection): setting $:/StoryList as initial content renders the
- * wrapper with NO story-navigation beat. Setting it AFTER the camera is live fires a
- * navigator refresh whose scroll path references `window` — undefined in the headless
- * Worker, a fatal fault. Seeded pre-render, the switcher paints like any boot content.
+ * MUST run BEFORE the projection camera's first render (the daemon island's onEa,
+ * ahead of mountProjection): the wrapper rides `$:/tags/AboveStory`, so seeded
+ * pre-render the switcher paints like any boot content.
  * On a headless node daemon (no projection) the tiddlers simply rest, never painting.
  */
 export function seedDaemonUiTiddlers(tw5: TW5Engine): void {
-  for (const spec of DAEMON_UI_TIDDLERS) tw5.setTiddler({ ...spec, ...SEED_OFF_DISK } as Record<string, string>);
+  seedShadows(tw5, "ui", DAEMON_UI_TIDDLERS);
 }
 
 // ── The switcher-state worker verb (the IN path: main → LOCAL push) ──────────

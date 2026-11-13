@@ -21,7 +21,7 @@ describe("mempalace-client (read leg, against a fake NDJSON holder)", () => {
     await client.start();
     const res = await client.listDrawers({ limit: 20 });
     expect(res.total).toBe(1);
-    expect(res.drawers[0].drawer_id).toBe("sweep_s1_m1");
+    expect(res.drawers[0]?.drawer_id).toBe("sweep_s1_m1");
   });
 
   it("fetches verbatim drawer content (double-parse)", async () => {

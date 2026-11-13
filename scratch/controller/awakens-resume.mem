@@ -1,0 +1,124 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-resume`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — resume, 2026-11-06 (file date) — source `.lares-scratch/controller/awakens-resume.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/awakens-resume"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/awakens-resume"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! awakens-resume.md — resume, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/awakens-resume.md` (resume, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-resume-lares-awakens`>>
+
+! Controller resume — Lares-Awakens (seat held since 2026-11-06, span 7c7279cd8)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lanes-in-flight`>>
+
+!! Lanes in flight
+* b5b: worktree /home/joshu/.lares-scratch/b5b/wt at span b81ba9b37, branch &#45;-b5b; Opus lead step 1 (Composer-Wright) running: the one-name decision and the reds.
+* tools-ground: PR #181 at af1f4b98a (Luna P2 cured: walk bounded at 50), CI reading; SHIP owed (read: controller diff + Luna cold read); then the test door row.
+* ci-ground: G55 + G56 green at 56f68280c, CI reading; PR owed.
+* b1-lift: LANDED as b81ba9b37 (PR #180, 2026-11-06); b1-lift and b1-seal worktrees removed. [was: PR #180, head 0df40b07b (span merge, .mem only, over CI-green 55b631484). Dispatched CI run 42261057541; on green: land with
+`node tools/land-train.mjs b1-lift:180:0df40b07b...:/home/joshu/.lares-scratch/b1-lift/land.msg` (SHIP at controller/ship/b1-lift-&lt;full>.md written).
+After land: remove b1-lift and b1-seal worktrees (b1-seal init'd submodules: landed-clean &#45;-force rule), launch 5b from /home/joshu/.lares-scratch/b5b/brief.md.
+* tools-ground (Codex lead recipe test — PASSED all four links): broker pid running, branch &#45;-tools-ground at fd24e57ca pushed, CI waiting. G59 built (70/70), domain-registry witness row in step 5.
+* ci-ground (Codex lead): G55 then G56; broker running; step 1 in flight.
+* custody-review: Terra read seats k22/k23/l28 under /home/joshu/.lares-scratch/custody-review/; next: one blind Opus collides all three, then each row's work.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/house-readings-taken-this-seat`>>
+
+!! House readings taken this seat
+* 5b keeps cap-compose's composeVessel as THE composer (one name, one relation); flip by measure.
+* b1-lift P3 (e) port:want before admission stays owed (FB10 fence holds).
+* G59 trigger narrows to .mem-only heads (fail-safe); other ignored-only heads dispatch CI.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-tools-rows-noted`>>
+
+!! Owed tools rows noted
+* domain-registry witness walks ignored .vitest dirs (in tools-ground).
+* the safety check refused land-train &#45;-plan once (Merge Without Review); operator added allow rules for land-train and ci-verdict in .claude/settings.local.json (backup at controller/settings-backups/).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings-taken-this-seat-fold-into-the-road-s-rul`>>
+
+!! Rulings taken this seat (operator, 2026-11-06) — fold into the road's #/rulings at the batch land
+* "No timeout, 'No global now'" + "Approve your lean, event-only first": every wait ends on the product's own events; a liveness (silence) window only where the page offers no terminal signal. b1-lift 2e106a6bb cures shore-writes' live wait so.
+* "'No global now' applies to 'version numbers' (old web2.5 concept we discard) too": version literals are debt (evergreen witness: 58 standing). Owed row: burn every /vN tag and schema version house-wide, the domain registry's tags first (lar-&lt;name>/vN, lares/&lt;name>/vN, lar:&lt;name>:vN).
+* Root cards (Q1): operator leaned RETIRE, asked a Luna confirmation; Card-Seeker (gpt-6-luna research) recommends RETIRE (/home/joshu/.lares-scratch/recovery-research/root-cards/final.md). Owed: retire &#45;-split-root and vault restore &#45;-cards, fix help, amend persona-kel/road wording; the no-contact gap rides a tested separate bundle.
+* Lease (Q2): "Build the end state." Lease-Seeker (Terra research): retire the face delegation lease, replacing its freshness reading at every authority reader with anchor-pinned persona lineage and remove-wins standing; keep the roll guard until every reader is proven to enforce set-aside (/home/joshu/.lares-scratch/recovery-research/lease-end-state/final.md).
+* Custody collision (/home/joshu/.lares-scratch/custody-review/collide.md): K22 retire the reconstruct pair (K18 door = attestAndRotate + rollEnrolments + reanchorAfterRotation); K23 retire KeyhiveIdentitySlot + identity arm + deriveActorId (before 5b); L28 rollEnrolments to K18; the `?? 0` expectedEpoch fail-open goes into 5b.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed-rows-found-this-seat`>>
+
+!! Owed rows found this seat
+* e2e fixed total waits (20_000 etc.) sweep house-wide → event waits (shore-writes' others first).
+* lane-state: leads write extra seat keys; the lead law should print the {name, mode, dir} shape.
+* Lead steps inside the wall cannot spawn git (EPERM) for witnesses that shell out; the controller runs those.
+* NEW load-red (2026-11-06, CI 42270237951 node-a on b1-lift 2e106a6bb, a test b1-lift never touched): packages/lararium-node/tests/edge-kapae-shadow-readers.test.ts beforeEach (generateOrLoadVesselIdentity + generateOrLoadPersonaGroupRoot) hit vitest's 10 s hookTimeout under an 869 s loaded suite. Owed: under the operator's "No timeout" law, test and hook budgets are clocks too: a sweep row reads vitest testTimeout/hookTimeout house-wide and moves KDF-heavy setup out of per-test hooks (one identity per file) — measure first. Controller reran the failed job once per land-train's own one-rerun policy (first sighting, not a recurrence).
+* G55 green written by a Sonnet build agent after two Codex seats stopped short (spend note for the tiers measure).
+* Ruling (operator, 2026-11-06): "free-form roots read pono, the prior sessions just fell into a basin with ha.ka.ba as a stable root." A commit subject's lar: URI takes any three-term root (lar:&#47;&#47;/t1.t2.t3/...); ha.ka.ba stays the stable API root, never a requirement. The controller wrongly called lar:&#47;&#47;/ci.boundary.specifies a URI-law break and withdrew it. Fold into controller-handoff #/the-lane-law's subject line and the commit-convention memory at the batch land.
+* Ruling (operator, 2026-11-06): "any 'vessel' codefixes should be checked for idempotent-by-intent lifts to /mesh or to mirror behaviour between all vessel types." Every fix that touches a vessel composer or host (open-node-vessel.ts, open-browser-vessel.ts, vessel-host, gate/session servers) gets a check before it commits: does the cure belong in &#64;lararium/mesh as one relation both vessels call, or must the other vessel types (node, browser, herm) mirror it? The answer lands in the commit message. 5b's brief carries it as law.
+* Approved: the broker `test` door on tools-ground (named test files run outside the wall, bwrap PID ns, scratch HOME/LAR_ROOT, loopback only, Node toolchain read-only, tallies back; docker stays controller-only).
+* FOUND (2026-11-06): the span's held-out read RED for nine runs since a9f461bf4 (row7-s1-s2; last green 09acaa941 = #164 ci-container): cells mesh-scenarios-leaf (unsigned request refuses request-vessel-tag-absent before request-unsigned), mesh-scenarios-nexus (no carriage from the herm), browser-weld (C4: 2 chain reads in one fetched module). Unseen because DIRECT lands do not read the span's held-out (Kiaʻi confirms). Lane `held-out` (Held-Warden, Opus) cures; container logs at /home/joshu/.lares-scratch/held-out/artifacts/.
+* Owed tools row: land-train DIRECT reads the span's held-out like a train does (refuse over a red held-out, or say so loudly). Goes on tools-ground beside the test door.
+* RECURRENCE (2026-11-06, span CI 42276901315 at b81ba9b37, Witness cell rest): tools/launch-codex.test.mjs P1-3 "a seat that sleeps past its ceiling is stopped by its parent" — second sighting after tools-ci 42223282838 → now a fault, owed on tools-ground beside the test door: pin the read on the child's own exit or the held fd's flush, never a sleep; reap the stub's group.
+* Controller practice slip (twice, 2026-11-06): a commit chained after a failing check with `;` ran anyway (ci-ground 13252c2c7, b5b 8be30b253; both later proven right). Rule for this seat and every brief: chain a commit after its check with `&&`, never `;`.
+* Worktree cap: 7/6 house worktrees (disk-witness). canon-road's wt leaves under the landed-clean &#45;-force rule once 25e2257d3 lands; parked secrets-store and spend-burn stay the operator's.
+* M6 clock found: the island's 8 s silence budget (b5b step 4's deadlock) — name it in the M6 sweep.
+* Owed tools row (operator saw browser windows pop over VSCode, 2026-11-06): every vitest browser config defaults to HEADED, so one missed `--browser.headless` flag opens windows on the operator's desktop. Cure: headless by default in every package's vitest browser config; a headed run opts in with vitest's own flag `--browser.headless=false` (operator, 2026-11-06: "Approve the headless defaults with a flag (no new env vars)."); a witness reads every browser config for the default. On tools-ground beside the test door.
+* Ruling (operator, 2026-11-06: "Approved, & the tools message to the spirits should deliver it, not flat memory files."): HOUSE GUARDS TEACH. A house guard's refusal (stash-guard, the pre-push gate, any witness red: evergreen, roster, disk) names the pono procedure in its own message, and the spirit takes that procedure and continues its wave. HARNESS WALLS STOP: a permission denial, the auto-mode safety check or a sandbox wall still ends the step and reaches the operator (routing around one launders a permission). Delivery rides the tool's message itself, never a memory file. Owed tools row (Codex, M1): every house guard and witness refusal ends with one line "pono: &lt;the procedure>" (stash-guard already reads "Read the tree with git status, diff or log instead."). Fold into the road's #/rulings and controller-handoff #/the-lane-law ("A refused command stops the lane" splits into guards-teach / walls-stop) at the next canon land.
+* Rulings (operator, 2026-11-06, closing the open-questions talk-story: "Pono, approve your leans, but product timeers need to go if not pono, now, tests later; flow on OODA-HA"):
+** THE DOMAIN TAGS BURN before the founding, in the name-without-number shape (`lar-<name>`, `lares/<name>`, `lar:<name>`): one commit per tag family carrying every signer and verifier together; the domain witness reads zero `/vN` before the rite.
+** M6's PRODUCT TIMERS GO NOW: each of the census's PRODUCT-WAIT rows (111, all REVIEW) either cures onto the product's own events, or stays only as a named pono liveness bound (a silence bound where no event can say "never"); the TEST-WAIT and HARNESS rows sweep later.
+* Controller slips (2026-11-06 late): (1) stopped ci-ground's broker by its zsh wrapper pid, leaving the node child running until the operator's check found it (cured: kill the `node tools/commit-relay.mjs` pid, never the wrapper); (2) launched tools-door step 7 and tag-burn step 3 without arming watchers, so both waited unread (cured: every lead launch arms its watcher in the same turn).
+* First sighting (2026-11-07, clock-sweep CI 42336186984 node-b, a file the lane never touched): packages/lararium-node/tests/custody-io.test.ts "a holder that leaves during the last wait spends no look" — FsCustodyIo.acquire (src/custody-io.ts ~171-173) paces its looks on a clock and seizes after maxWaits: a PRODUCT-WAIT that decides a lock seizure; owed into the product-waits sweep (event: the holder's release, never a paced look). Failed job rerun once per land-train's policy.
+* House reading (tag-burn step 8): `lar/realm-feed` moves into the registry (already versionless); the sensorium's Python HMAC tag `lar:worldline-root:v1` renames to `lar:worldline-root` (the operator's 2026-10-27 ruling rests the sensorium from re-standing, not a string inside it; no suite verifies that code, the commit says so), so the domain witness reads zero /vN before the rite.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/2026-11-07-04-30z`>>
+
+!! 2026-11-07 ~04:30Z
+* tools-door LANDED (PR #186) as 8f06d984a; broker stopped (node pid), wt removed (landed-clean &#45;-force). Owed rows carried: launcher P1-3, broker test door, pono lines on 3 heavy-roster messages (fresh lane).
+* tag-burn: step 10 sensorium tag 687f5185e (py 10/10, witness sh exit 0); step 11 wax-stamp 5c004ae90 (wax-stamp vitest 11/11); step 12 running (holder-continuity, keel witness, empty ALLOW, witness test expectations).
+* spend research: Luna wave-1 seat at ~/.lares-scratch/spend-research/wave-1 (setup mark 2026-11-04T08:46Z); wave 2 follows.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/handoff-skeleton`>>
+
+!! HANDOFF SKELETON (Awakens -> next seat, Lares-Kiaʻi after /clear)
+Re-arm on wake (each Codex seat survives the clear; Opus subagents do NOT):
+* tag-burn lead steps: `node tools/launch-codex.mjs --lead-step --lane-root ~/.lares-scratch/tag-burn --model gpt-6.1-terra --effort medium --worktree ~/.lares-scratch/tag-burn/wt`; watch `until [ -f <step>/done-* ] || ! kill -0 <pid>`; read relay/res-NNN.json, run witness/signing suites outside the wall, then launch the next step.
+* tag-burn broker: kill the NODE pid (`pgrep -f 'commit-relay.mjs --lane-root .../tag-burn'` returns the zsh wrapper too), restart with the same args if the clear killed it.
+* spend research: wave-1 at ~/.lares-scratch/spend-research/wave-1 (final.md); wave 2 = Luna read seat over wave-1's final, trends vs 80:20 + parallelization.
+* 5b and clock-sweep: state at the Opus agents' last reports (fill in before the clear).
+* clock-sweep CI run 42336186984: a failed-job rerun watcher was armed (node-b custody-io load-red, a file the lane never touched).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kC5Sg3dNINNU4iB3-zE4aOA-v8qgPhQx_3xXjKQOrvg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

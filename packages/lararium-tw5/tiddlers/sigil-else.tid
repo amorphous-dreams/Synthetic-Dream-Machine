@@ -8,6 +8,6 @@ lar-pattern: <<~\s*else\s*>>
 lar-example: <<~ else>>
 type: text/vnd.tiddlywiki
 
-\procedure ~else(p2:"")
-<$transclude $variable="~" name=<<p2>>/>
+\procedure ~else(sigil:"")
+<$transclude $variable="~" name=<<sigil>>/>
 \end

@@ -1,14 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/recipe">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/recipe`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/recipe.mem"
 l-space     = "lararium"
-mana        = 12
-manao       = 12
 role        = "RecipeTiddler schema + bag-stack parsing — the stored shape of a wiki's composition record"
 source-file = "packages/lararium-mesh/src/recipe.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/recipe"
@@ -16,7 +13,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/recipe"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Contract
 
@@ -38,7 +35,7 @@ island mounts from.
 
 <<~/ahu>>
 
-<<~ ahu #/where-recipes-live>>
+<<~ ahu slot=`#/where-recipes-live`>>
 
 !! Where recipes live — two planes (operator ruling, 2026-06-16)
 
@@ -46,16 +43,17 @@ Recipes split by bag tier, each plane its own home:
 
 * ''System wiki-recipes'' (`lares` wiki, `lararium` wiki) live in the
   ''`@oracle`'' runtime-system-island plane — protocol substrate, seeded at
-  genesis beside the system bag→doc oracle. `lares`/`lararium` are DreamNet
-  ''system bags''; their recipes are substrate, not user composition.
+  genesis. `lares`/`lararium` stand in the house canon; their recipes are
+  substrate, not user composition, and a vessel's own composition shadows them.
 * ''User wiki-recipes'' live in the user's ''`@catalog`'' (registry), minted
   per-wiki by init-wiki and read+written via the catalog accessor (access≠load).
 
-The bag-oracle reach runs ''two-source'': system bags resolve from the
-`@oracle` doc, user bags from `@catalog` (`wiki-layer-ontology#oracle-planes`).
-A recipe record for a system bag landing in `@catalog` — or a user recipe in
-`@oracle` — reads as a plane-leak. `lararium`-the-corpus stays pure tracked
-source; its //runtime// recipe pointer lives in `@oracle`, never the seed tree.
+Every bag pointer resolves from the vessel's `@catalog`; a house-canon bag carries
+no catalog row and resolves through the Kahu realm's standing registration
+(`libraryDocUrl`, `wiki-layer-ontology#oracle-planes`). A catalog row for a
+house-canon bag — or a user recipe in `@oracle` — reads as a plane-leak.
+`lararium`-the-corpus stays pure tracked source; its live document rests in the
+Kahu realm, never in the seed tree.
 
 A recipe change syncs as ordinary data; running islands reconcile it LIVE
 via recipe-watch (composition class), with the reboot-pending alert as the
@@ -68,16 +66,16 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/lararium/wiki-recipe">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/engine-watch">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/lararium/wiki-recipe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/engine-watch`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bT_LXGNPNQkv_JecGo1lLH1P3vJ2GZTaXz0BSzXTSzY
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oQ_tJpeCOW0sGUt-xjgZ0VQtLWQg2BIUcoHglEmxaVY`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

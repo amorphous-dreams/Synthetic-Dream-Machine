@@ -1,13 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/island-protocol">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/island-protocol`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/mesh/island-protocol.mem"
 l-space       = "lararium"
-mana          = 14
 revised-on    = "2026-06-12"
 revision-note = "ea-breath law lands: breath message (phase + monotonic progress) added island→vessel; watchdogs re-arm on breath, judge frozen evidence by stall budget, silence alone times out; mkBreath factory"
 role          = "island message envelope schema: all vessel ↔ causal-island message types, the nine-clause Island Sovereignty Law, IslandGrants (typed ocap manifest capabilities), and envelope factories"
@@ -17,7 +15,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/mesh/island-protocol"
 ```
 
-<<~ ahu #/contract>>
+<<~ ahu slot=`#/contract`>>
 
 !! Island Protocol
 
@@ -25,32 +23,30 @@ Discriminated union for all messages crossing the vessel / causal-island boundar
 Every message MUST carry its `type`, and no version counter rides beside it. Platform-neutral — no Node or browser imports.
 Vessel entrypoints (node, browser) bind the I/O; this module names the envelopes only.
 
-!!! Island Sovereignty Law — nine clauses (isomorphic across all vessel types)
+!!! Island Sovereignty Law — seven clauses (isomorphic across all vessel types)
 
 # Every island boots a Repo-in-island via a transferred `syncPort` (MessagePort).
-# The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas.
+# The island derives tiddler state from its own CRDT doc — never from vessel oracle deltas. CRDT sync via `syncPort` stands as the sole source of tiddler truth.
 # The island owns its timing. The wiki shore queues every inbound change at `$tw.lares.enqueueNalu` and lands the queue in slices, yielding to the host between them; the in-wiki nalu engine applies each change synchronously (`$tw.lares.applyNalu`). One queue serves all bags. No raw-message-receipt drains (`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`).
-# //(retired)// The frame-completion ACK signal — drain timing stays island-internal.
-# Vessel oracle delta delivery removed. CRDT sync via `syncPort` stands as the sole source of tiddler truth.
-# `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash` (content-address intent vector; null = pre-CAS). TW5 core bytes do NOT ride the manifest — islands read them from `LarDoc.blobs[ENGINE_CORE_ID]` on the @lararium CRDT doc after `handle.whenReady()`; two vessels federating @lararium share the engine automatically via Automerge sync.
+# `IslandMsg_Manifest` carries `syncPort` (transferred, not cloned), `recipe` (WikiRecipe slot structure), `grants` (IslandGrants — typed structural capabilities), and `coreHash` (content-address intent vector; null names no pinned core). TW5 core bytes do NOT ride the manifest — islands read them from `LarDoc.blobs[ENGINE_CORE_ID]` on the lararium CRDT doc after `handle.whenReady()`; two vessels federating lararium share the engine automatically via Automerge sync.
 # The vessel MUST close `mainPort` at evict/unmount time. Failure leaks the Automerge NetworkAdapter silently. Structural: every vessel holds `mainPort: MessagePort` on its hot slot and calls `mainPort.close()` in teardown. No exceptions.
 # Federation shore — when a grant carries a non-empty AutomergeUrl, two obligations activate. Vessel: wire `MessageChannelNetworkAdapter(mainPort)` on the vessel Repo before delivering `manifest`. Island: call `repo.find(docUrl).whenReady()` and await readiness before seeding TW5 and declaring `ea`; failure on either side moves the slot to disposed within `HANDSHAKE_TIMEOUT_MS`. Gate proof: `federation-shore.test.ts` (node) + `browser-repo-in-island.test.ts` test 2 (browser). When this law holds, two vessels sharing a bag converge without any explicit sync call.
-# TW5 SHALL NOT instantiate on the main thread. Every `TW5Engine` lives inside a sovereign Worker; the main thread holds `DocHandle` references and `CompositeStore` layers only. Any `bootTw5()` outside a Worker constitutes a sovereignty violation.
+# No sovereign VM and no key on a surface. A page never stands as a vessel: it holds a surface with a port onto one. Every sovereign `TW5Engine` lives inside a Worker; the main thread holds `DocHandle` references and `CompositeStore` layers only. Any `bootTw5()` outside a Worker constitutes a sovereignty violation, save the page mirror, which boots through its one private door as a camera fed by the port alone and holds no truth and no key (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>> #/open-rulings).
 
 !!! IslandGrants — typed ocap manifest capabilities
 
-The keel cut (2026-06-09) retired the `resolver` dictionary (slot URI → AutomergeUrl map, a main-owned lookup). The manifest HANDS the island typed structural capabilities — each field arrives as a grant (ocap), never gets looked up from a vessel-owned table:
+The manifest HANDS the island typed structural capabilities — each field arrives as a grant (ocap), never gets looked up from a vessel-owned table:
 
 | Grant | Carries | Law |
 |---|---|---|
 | `islandUrl` | `@oracle` runtime system-island doc | REQUIRED — engine bytes precede TW5 boot |
-| `catalogUrl?` | @catalog registry ACCESS | access ≠ load; never layered; absent = no watch |
+| `catalogUrl?` | catalog-plane registry ACCESS | access ≠ load; never layered; absent = no watch |
 | `wikiUrl?` | the island's OWN write-layer bag | `@{wikiSlug}`; `@daemon` under the one-recipe model |
 | `personalUrl?` / `draftUrl?` | keyhive-bound sovereign instance mounts | minted by admin `resolveBinding` |
 
-The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the oracle-plane rulings 2026-06-15/06-16): `lares` and `lararium` are ''DreamNet system bags'' — islands resolve their pointers + wiki-recipes from the ''`@oracle`'' runtime system-island doc's own well-known tiddlers, the substrate they already hold (the bag-oracle moved out of the `lararium` corpus in the carve). Three oracle planes, three authorities: ''system bags'' (`@oracle` doc — `@oracle`/`lararium`/`lares` pointers + system recipes) · ''user bags'' (`@catalog`, ocap grants) · public/infrastructure (`crossroads`, future). See `wiki-layer-ontology#oracle-planes`.
+`lares` and `lararium` stand in the house canon on every vessel, beside every other disk-sourced holding but the public board `crossroads`. The shared `@oracle` document holds genesis seed rows alone; each vessel's `@catalog` carries its own crossroads and realm pointers, and no catalog row names a house-canon bag: recipe-watch resolves one through the Kahu realm's standing registration (`libraryDocUrl`), while system recipe seeds remain on `@oracle`. `@catalog` also carries user-bag pointers under OCAP grants; public and infrastructure pointers belong to the crossroads surface as it stands. See `wiki-layer-ontology#oracle-planes`.
 
-''Library layers never ride the manifest.'' The island resolves them itself from its registry plane (recipe-watch reconcile — system bags from `@oracle`, user bags from `@catalog`) — boot runs the same path as live composition (boot = first reconcile). See `wiki-layer-ontology` Law 2.
+''Library layers never ride the manifest.'' The island resolves them itself from its registry plane (recipe-watch reconcile — every bag pointer from `@catalog`, a house-canon bag through the Kahu realm's standing registration) — boot runs the same path as live composition (boot = first reconcile). See `wiki-layer-ontology` Law 2.
 
 !!! Guarantee grades
 
@@ -70,9 +66,11 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 | `admin:place-verb` | Place a volatile job tiddler in the admin island's TW5 wiki. |
 | `admin:verb-result` | Deliver delegation result back to the admin island. |
 | `admin:verify-request` | Ask the keyholder admin island to verify before delegation proceeds. |
-| `admin:resolve-binding-request` | Ask the admin island to mint/resolve keyhive-bound @personal/@draft docs. |
+| `admin:resolve-binding-request` | Ask the admin island to mint/resolve keyhive-bound personal-slot/@draft docs. |
 | `admin:evict-result` / `admin:residency-op-result` | Outcomes for admin-commanded eviction / residency ops. |
 | `wiki:place-verb` | Place a wiki-scope job in a wiki island's TW5 wiki. |
+| `lar:control-event` | One act, sense, write or service answer from a surface, addressed to one control of one camera under one mount epoch; read whole at the door through the camera contract's reader. |
+| `lar:resend` | Ask the named camera for a whole repaint under a new mount epoch. |
 
 !!! Message types — Island → vessel
 
@@ -90,6 +88,13 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 | `admin:evict-request` / `admin:residency-op` | Admin island commands eviction / residency action. |
 | `admin:wiki-alert` | Admin computes "affected by content"; main delivers a `system-alert` verb to the affected LIVE island (fire-and-forget; unmounted wikis skipped). |
 | `wiki:verb-result` | Wiki island result for a job the vessel awaits. |
+| `lar:frame` | The keyed absolute frame of one camera on one surface, each key whole under its own revision; never an `event` envelope. |
+| `lar:control-result` | The answer to one control event: `applied`, `stale-target` or `refused` with a named reason. |
+| `lar:service` | A host door the engine asks the surface to open, under a person's activation, answered by a `lar:service-result` control event. |
+
+''The camera's kinds ride the island wire under their own names'' (`lar:///ha.ka.ba/lararium/mesh/lar-camera`). Each reads whole at its door through the contract's own reader, and a malformed one vanishes there as any malformed message does. No `wiki:dom-event` or `wiki:dom-input` kind passes a door.
+
+''A worker listens in its entry's synchronous top level, then announces `ready`; a sender posts only after `ready`.'' A module worker whose listener registers after an `await` can lose earlier messages, so an island entry registers `host.listen` before awaiting and `host.ready?.()` follows it (`runSovereignKernel`); senders gate on `ready` (`manifestGate`, `awaitReady`). The worker-entry census derives its entry list from every `*.worker.*` file and static Worker, SharedWorker, and `?sharedworker` targets, and walks top-level statements (esbuild strips the types, acorn reads the module), including executable template expressions. A listener inside an uncalled function does not count; an await inside a deferred function does not delay registration. SharedWorker entries register `connect` themselves synchronously and buffer ports until the runtime opens; the production holder entry lives in the lararium-web shim. The census names the ready-gated daemon and wiki shims and checks their delegates; tests spawning module workers await `ready` (`readyWorker`) before posting.
 
 ''The teardown handshake runs once per island.'' A composition reaches its daemon island's shutdown by more than one road (its own dispose, then the list of what it stood). The first call sends `teardown`, hears `teardown:ack` and terminates the worker; every later call reads that first answer and sends nothing, since a terminated worker can answer no second `teardown`. A hard dispose runs no handshake: it settles the answer as unacked, and it ends a handshake that stands waiting at once. The handshake's bound stays a bound for an island that never answers (`packages/lararium-tw5/src/daemon-vm-core.ts`, `shutdown`; `packages/lararium-node/tests/daemon-vm-shutdown-runs-once.test.ts`; `tools/two-phase-boot.test.mjs`, T5). The wiki islands' pool holds the same law: `unmountWiki` and `disposeAll` that reach one island while its handshake waits read that one handshake (`packages/lararium-mesh/src/vessel-island-pool-core.ts`; `packages/lararium-mesh/tests/pool-teardown-runs-once.test.ts`). ''A mount that arrives while its island tears down waits for that handshake's answer.'' The island's slot reads live until the handshake ends, so the pool's two mount doors read the handshake in flight first: the mount waits for its answer, by the answer and no clock, and then enters afresh, where it mounts a new island, folds into a mount that waited beside it, or refuses by name (`pool-closing`, `session-ended`, `generation-fenced`) (`packages/lararium-mesh/src/vessel-island-pool-core.ts`, `mountWiki`, `mountSurface`; `packages/lararium-mesh/tests/pool-mount-during-teardown.test.ts`).
 
@@ -104,17 +109,17 @@ The `laresUrl?` grant got trimmed (keel trim, 2026-06-10; re-grounded on the ora
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/ea">>
-<<~ loulou "lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-tiers">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ea`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/browser-vessel-island-pool`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;rIxh2uFuk_lxJ59oG2ydPLEoYI_dQng0JaFV5qlhD9w
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rDc-R86cXu1M7j1HTuoKBhAcxIATF18GI3mA8Xd1fNs`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

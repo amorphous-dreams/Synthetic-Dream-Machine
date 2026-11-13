@@ -1,16 +1,15 @@
 #!/usr/bin/env bash
-# meme-coordinates-witness — do a meme's DERIVED coordinates still name where it stands?
+# meme-coordinates-witness — does a meme's DERIVED coordinate still name where it stands?
 #
-# TWO coordinates, TWO different facts, and each mirrors something the meme itself already carries:
-#   `file-path` — where the carrier rests on disk.
+# ONE coordinate mirrors something the meme itself already carries:
 #   `uri-path`  — the address in the carrier's own head sigil.
+# `file-path` RETIRED (Train Q, operator ruling 2026-11-01): residency rides the envelope (the bag), and
+# a meme travels to hosts that keep no files. A carrier still declaring it reads as drift here.
 #
-# Nothing stamps either. The deserializer derives a record's TITLE from the head sigil (a `title` written
+# Nothing stamps the coordinate. The deserializer derives a record's TITLE from the head sigil (a `title` written
 # in the TOML is explicitly ignored) and the disk projector sites by that address, so `uri-path` consults
 # nothing at ingest — its whole job is to AGREE, and a field whose only job is agreement is exactly the
-# field that drifts unnoticed. 351 `file-path` values and 3 `uri-path` values had.
-#
-# The first pass here checked `file-path` alone, and the second coordinate was left to a reader's eye.
+# field that drifts unnoticed. 3 `uri-path` values had.
 #
 # Exit 0 = every coordinate names its own file. Exit 1 = the drift, listed.
 set -uo pipefail
@@ -33,7 +32,7 @@ def heads(paths):
 drift = []
 _carriers = sorted(pathlib.Path("bags").rglob("*.mem"))
 _heads = heads(_carriers)
-read_file_path = 0
+declared_file_path = 0
 read_uri_path = 0
 for f in _carriers:
     # THE WHOLE CARRIER, NEVER A BYTE PREFIX. This read `[:4000]`, and a meta block is not obliged to
@@ -46,9 +45,8 @@ for f in _carriers:
 
     m = re.search(r'(?m)^file-path\s*=\s*"(.*?)"', head)
     if m:
-        read_file_path += 1
-    if m and m.group(1) != str(f):
-        drift.append((str(f), "file-path", m.group(1), str(f)))
+        declared_file_path += 1
+        drift.append((str(f), "file-path", m.group(1), "retired: residency rides the envelope"))
 
     # `uri-path` answers to the HEAD SIGIL, never to the tree: a root resource may deliberately carry a
     # rootless address (`lar:///AGENTS`), and the field must follow the address rather than the folder.
@@ -62,16 +60,14 @@ for f in _carriers:
 
 # ── THE FLOOR ON THE SUBJECT, AND THE COUNT THAT MAKES IT READABLE ──────────────────────────────
 # This printed a verdict and NO NUMBER, so a reader could not tell a clean walk over 699 carriers from
-# a clean walk over none. Both coordinates are read by a regex binding one spelling of a TOML key; a
+# a clean walk over none. The coordinate is read by a regex binding one spelling of a TOML key; a
 # key that gains a comment, moves out of the meta fence, or is renamed reads as ABSENT on every
 # carrier, and a field never read is a field that never disagrees. The set is asserted before its
-# members are: the walk states how many carriers it entered and how many declared each coordinate,
-# and a walk that read either coordinate on NOBODY fails rather than reporting the cleanest run.
+# members are: the walk states how many carriers it entered and how many declared the coordinate,
+# and a walk that read it on NOBODY fails rather than reporting the cleanest run.
 _floor = []
 if not _carriers:
     _floor.append("no carrier under bags/ — the walk had no members")
-if read_file_path == 0:
-    _floor.append("not one carrier declared `file-path` — the probe reads a spelling nothing writes")
 if read_uri_path == 0:
     _floor.append("not one carrier declared `uri-path` — the probe reads a spelling nothing writes")
 if _floor:
@@ -82,9 +78,9 @@ if _floor:
     sys.exit(1)
 
 if not drift:
-    print(f"[meme-coordinates] {len(_carriers)} carriers · {read_file_path} declare file-path · "
+    print(f"[meme-coordinates] {len(_carriers)} carriers · {declared_file_path} declare the retired file-path · "
           f"{read_uri_path} declare uri-path")
-    print("[meme-coordinates] every file-path names its own file, and every uri-path its own address")
+    print("[meme-coordinates] no carrier names the file it rests in, and every uri-path names its own address")
     sys.exit(0)
 
 print(f"[meme-coordinates] {len(drift)} coordinate(s) name something other than what they mirror:")

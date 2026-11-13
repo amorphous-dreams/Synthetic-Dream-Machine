@@ -20,8 +20,8 @@
  * version id commits the key, so the payload needs no signature; the wrap to a bag's readers rides Keyhive's
  * own encryption and belongs to the lockbox store.
  *
- * Pure but for the salt a seal draws. Stands specified in code until the sealed store's lockbox store and
- * chunk index consume it; out of the package barrel till then.
+ * Pure but for the salt a seal draws. Called by `content-key-holder`, `sealed-store-rest` and `lockbox-wrap`; the
+ * package barrel names it.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-records
  */
 import { hkdf } from "@noble/hashes/hkdf.js";
@@ -33,8 +33,8 @@ import {
   SEALED_RECORD_AUTHORSHIP_DOMAIN,
 } from "./domains.js";
 import {
-  own, readSessionCertificate, readSessionSignature,
-  type FaceProofRefusalName, type KeysHeldApart, type SessionCertificate, type Signature,
+  faceProofSubjectRef, own, placeProofSubjectRef, readPlaceSessionCertificate, readPlaceSessionSignature, readSessionCertificate, readSessionSignature,
+  type FaceProofRefusalName, type KeysHeldApart, type PlaceSessionCertificate, type Read, type SessionCertificate, type Signature,
 } from "./face-proof-subjects.js";
 import { readActs, type HistoryDeclaration, type KeyCause, type KeyVersionFact } from "./content-key-lineage.js";
 import {
@@ -148,7 +148,11 @@ export interface KeyVersionPrivate {
    *  ascending. Sealed, so every reader of the version reads the debt and no carrier does. */
   readonly unserved:   readonly string[];
 }
-export type ManifestPrivate = Readonly<Record<string, never>>;
+export interface ManifestPrivate {
+  /** The writer of the batch's change: `session:<session key>` where the signing session made it, `peer:<actor>` where a
+   *  peer's change rests as received under the session that holds the rest. Sealed, since it names a party. */
+  readonly writer: string;
+}
 export interface CheckpointPrivate {
   /** The causal frontier in the document engine's own ids: unique, sorted ascending. */
   readonly frontier: readonly string[];
@@ -169,13 +173,33 @@ export interface SealedRecord<K extends RecordKind = RecordKind> {
   readonly body:   RecordBodies[K];
   readonly sealed: Uint8Array;
 }
+/**
+ * The certificate a record's writer carries: the session that signed it, at whichever anchor that session met its face
+ * (session-contract#/the-hands). A Nexus session's certificate stands beneath the vessel's face-scoped key; a place
+ * session's beneath the face's atom at the vessel's own place. The sealer reads (face, anchor) whatever the anchor.
+ */
+export type RecordCertificate = SessionCertificate | PlaceSessionCertificate;
+/** Is this certificate a place session's? It carries no face-scoped vessel key. */
+export function isPlaceCertificate(certificate: RecordCertificate): certificate is PlaceSessionCertificate {
+  return !("vesselFaceKey" in certificate);
+}
+/** The proof subject of the face that wrote under `certificate`, at its own anchor. */
+export function recordWriterSubject(certificate: RecordCertificate): string {
+  return isPlaceCertificate(certificate) ? placeProofSubjectRef(certificate.scope) : faceProofSubjectRef(certificate.scope);
+}
+/** Read a writer's certificate at either anchor: a place certificate names an atom and a place, and no vessel key. */
+function readRecordCertificate(value: unknown, apart: KeysHeldApart): Read<RecordCertificate> {
+  const place = typeof value === "object" && value !== null && !("vesselFaceKey" in value);
+  return place ? readPlaceSessionCertificate(value) : readSessionCertificate(value, apart);
+}
+
 /** A record a reader verified. Built by `readRecord` alone. */
 export interface VerifiedRecord<K extends RecordKind = RecordKind> {
   readonly kind:        K;
   readonly id:          RecordId;
   readonly body:        RecordBodies[K];
   readonly private:     RecordPrivates[K];
-  readonly certificate: SessionCertificate;
+  readonly certificate: RecordCertificate;
 }
 const VERIFIED = new WeakSet<object>();
 
@@ -205,6 +229,11 @@ function sortedUnique<T extends string>(value: unknown, read: (member: unknown) 
 }
 /** Well-formed text of bounded length: an id whose bytes name it alone. */
 const nonEmptyText = (value: unknown): string | null => (isWellFormedText(value) && value.length <= 512 ? value : null);
+/** A change's writer: `session:` or `peer:`, then well-formed text that names it. */
+const readWriter = (value: unknown): string | null => {
+  const text = nonEmptyText(value);
+  return text !== null && /^(session|peer):./.test(text) ? text : null;
+};
 
 function readKeyVersionBody(value: unknown): KeyVersionBody | null {
   if (!isRecord(value) || !exactKeys(value, ["bag", "keyVersion", "parents", "span"])) return null;
@@ -293,7 +322,11 @@ function readKeyVersionPrivate(value: unknown, body: KeyVersionBody): KeyVersion
 function readPrivate<K extends RecordKind>(kind: K, value: unknown, body: RecordBodies[K]): RecordPrivates[K] | null {
   try {
     if (kind === "key-version") return readKeyVersionPrivate(value, body as KeyVersionBody) as RecordPrivates[K] | null;
-    if (kind === "manifest") return (isRecord(value) && exactKeys(value, []) ? {} : null) as RecordPrivates[K] | null;
+    if (kind === "manifest") {
+      if (!isRecord(value) || !exactKeys(value, ["writer"])) return null;
+      const writer = readWriter(value["writer"]);
+      return (writer === null ? null : { writer }) as RecordPrivates[K] | null;
+    }
     if (kind === "hand-over") {
       if (!isRecord(value) || !exactKeys(value, ["reader"])) return null;
       const reader = nonEmptyText(value["reader"]);
@@ -344,7 +377,7 @@ function privateImage<K extends RecordKind>(kind: K, value: RecordPrivates[K]): 
     const acts = p.cause.kind === "removal" ? p.cause.acts : p.cause.kind === "admission" ? [p.cause.act] : [];
     return sealedImage("", utf8Bytes(p.cause.kind), listField(acts.map((act) => utf8Bytes(act))), utf8Bytes(p.history), hexList(p.joinProofs), listField(p.unserved.map((reader) => utf8Bytes(reader))));
   }
-  if (kind === "manifest") return sealedImage("");
+  if (kind === "manifest") return sealedImage("", utf8Bytes((value as ManifestPrivate).writer));
   if (kind === "hand-over") return sealedImage("", utf8Bytes((value as HandOverPrivate).reader));
   if (kind === "memory-import") return sealedImage("", utf8Bytes((value as MemoryImportPrivate).seat));
   return sealedImage("", listField((value as CheckpointPrivate).frontier.map((id) => utf8Bytes(id))));
@@ -366,7 +399,7 @@ const recordContext = (bagId: string, keyVersion: KeyVersionId, id: RecordId): S
 // ── Sign ────────────────────────────────────────────────────────────────────────────────────────
 /** What a record's writer signs with: one session's signer (`session-signer`), by its interface. */
 export interface RecordSigner {
-  readonly certificate: SessionCertificate;
+  readonly certificate: RecordCertificate;
   sign(purpose: "act", payload: Uint8Array): Promise<{ readonly signature: Signature } | { readonly refusal: string }>;
 }
 export const SIGN_RECORD_REFUSALS = ["record-malformed", "key-malformed", "key-mismatch", "signer-refused", "seal-refused"] as const;
@@ -398,7 +431,10 @@ export async function signRecord<K extends RecordKind>(args: {
 /** The reader's own reading of who may write a bag. It answers for the face certificate beneath the session
  *  certificate, for the face's withdrawal history, and for the face's standing in the bag. */
 export interface WriterStanding {
-  holdsWrite(args: { readonly certificate: SessionCertificate; readonly bagId: string }): boolean;
+  holdsWrite(args: { readonly certificate: RecordCertificate; readonly bagId: string }): boolean;
+  /** The chain this standing reads writers under, named, or null where none stands yet: a reading taken then counts
+   *  no writer, so a holder takes no reading and settles no roll on it. Absent: the standing reads alike always. */
+  readonly chainOf?: () => string | null;
 }
 export const READ_RECORD_REFUSALS = [
   "record-malformed",       // the carried record, or its clear part, reads as no record of this kind
@@ -443,9 +479,12 @@ export function readRecord<K extends RecordKind>(kind: K, carried: unknown, read
     if (!isRecord(part) || !exactKeys(part, ["private", "certificate", "signature"])) return { refusal: "authorship-malformed" };
     const secret = readPrivate(kind, part["private"], body);
     if (secret === null) return { refusal: "authorship-malformed" };
-    const certificate = readSessionCertificate(part["certificate"], reader.apart ?? []);
+    const certificate = readRecordCertificate(part["certificate"], reader.apart ?? []);
     if (!own(certificate, "read")) return { refusal: "certificate-refused", cause: certificate.refusal };
-    const signature = readSessionSignature(certificate.read, "act", authorshipImage(kind, id, secret), part["signature"]);
+    const authorship = authorshipImage(kind, id, secret);
+    const signature = isPlaceCertificate(certificate.read)
+      ? readPlaceSessionSignature(certificate.read, "act", authorship, part["signature"])
+      : readSessionSignature(certificate.read, "act", authorship, part["signature"]);
     if (!own(signature, "read")) return { refusal: "signature-refused", cause: signature.refusal };
     if (reader.standing.holdsWrite({ certificate: certificate.read, bagId: reader.bagId }) !== true) return { refusal: "writer-not-capable" };
     // The readers built `body` and `secret` afresh from what they read, so no caller holds a way into them;

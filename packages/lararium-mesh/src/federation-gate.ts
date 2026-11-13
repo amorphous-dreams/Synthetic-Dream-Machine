@@ -12,8 +12,9 @@
  * deliberately like `IdentitySlot.verifyCapability(docUrl, "read")`: the alpha
  * allow-set fork and the V5 capability-check fork are the SAME gate at two
  * capability resolutions — the deterministic allow-set IS a degenerate cap set.
- * So the V5 `KeyhiveIdentitySlot` swaps in behind this interface with no
- * call-site churn.
+ * A capability slot binds nothing here unless it joins a PROVED peer or session
+ * presenter to the decision (a self-DID verifier alone binds nothing); any
+ * peer-bound restriction rides P27 (stable-founding-road, K23 retired).
  *
  * HONEST BOUND: this gate decides at this vessel's Repo alone, and it encrypts
  * nothing. Seated on both share hooks (`shareConfigOf`), it stops the repo
@@ -43,7 +44,7 @@ import {
   type DocumentId,
   type PeerId,
 } from "@automerge/automerge-repo";
-import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, personaKelBoardDocUrl, carriageDocUrl } from "./deterministic-doc.js";
+import { crossroadsDocUrl, whoBoardDocUrl, kapaeAntigenDocUrl, personaKelBoardDocUrl, carriageDocUrl, realmAnnounceDocUrl, publicationDocUrl } from "./deterministic-doc.js";
 import type { IdentitySlot } from "./identity-slot.js";
 import type { PeerClass } from "./island-protocol.js";
 import { type CapTierRing, resolveTierForDoc, tierPermitsRelayPeer } from "./cap-tier.js";
@@ -64,16 +65,16 @@ export interface FederationGate {
  *
  * The federatable surface spans the per-island PUBLIC boards, addressed
  * deterministically from each confederation (relay-gate) key the gate holds. For
- * EVERY key it federates that island's five boards: the crossroads public-plane
+ * EVERY key it federates that island's seven boards: the crossroads public-plane
  * doc, the WHO board, the Kapae-ANTIGEN board (the immune antigen rides the
  * mandatory-carry plane, carry-contract MANDATORY tier), the carriage-contracts
- * board, and the persona-KEL board. Automerge-repo does NOT auto-follow doc refs
+ * board, the persona-KEL board, the realm-announce board, and the publication board. Automerge-repo does NOT auto-follow doc refs
  * (each doc syncs independently under its own sharePolicy verdict), so these board
  * ids name the WHOLE relay surface — no transitive dep-set to chase and ZERO
  * hand-maintenance (the key set alone derives the set).
  *
  * `nexusPubkey` takes one key or a carried key set. A single string federates
- * exactly that island's five boards; an empty set federates nothing. Federating a
+ * exactly that island's seven boards; an empty set federates nothing. Federating a
  * carried set sends every carried island's PUBLIC boards to this vessel's
  * cross-operator peers — that is CARRY, and carry ⊥ read holds: the gate admits
  * only the derived public addresses, never a private plane (private planes carry
@@ -95,6 +96,8 @@ export class DeterministicFederationGate implements FederationGate {
         kapaeAntigenDocUrl(key),   // the immune antigen (DENY-twin) rides the always-carried plane (MANDATORY tier)
         carriageDocUrl(key),        // the operator carriage-contracts board (ALLOW-twin) — quorum-signed contracts, MANDATORY tier
         personaKelBoardDocUrl(key), // the persona-KEL board — PUBLIC identifier→head mapping (federates once)
+        realmAnnounceDocUrl(key),   // the realm-announce board — each realm's PUBLIC book addresses, read by carriers
+        publicationDocUrl(key),     // the publication board — the Nexus's signed offerings and floor releases
       ]),
       ...extraBoardUrls,
     ];
@@ -132,7 +135,7 @@ export function presenterStandsAside(shadow: ShadowConsult | null | undefined, p
  * device of the face's own PersonaGroup, proven over the sibling session: it holds STANDING, never the vessel. It
  * is neither a house member nor the operator's own node, so it never shares freely: every doc it asks for passes
  * the sibling gate, which a vessel composes from its PersonaGroup ring (`composeSiblings`) over the public boards —
- * the face's own planes and nothing else, never the @daemon, never another face's planes.
+ * the face's own planes and nothing else, never the daemon-plane, never another face's planes.
  */
 export interface SiblingShare {
   /** True for a peer a sibling channel PROVED. */
@@ -232,8 +235,8 @@ export interface IdentityRing {
  * main-thread sharePolicy: the live KeyhiveProvider runs INSIDE the daemon-island
  * worker (bootDaemonKeyhive over the worker composite), and the bag↔docId registry
  * lives there too — the founding ceremony DISPOSES its transient provider before
- * returning, and LarVessel (whose `identity` field would carry the slot) is not on
- * the live factory path. So the node vessel passes `identity = null` and this degenerates
+ * returning. No vessel record carries an identity slot; its one record carries capability
+ * members only. So the node vessel passes `identity = null` and this degenerates
  * EXACTLY to federationShareDecision (zero behavior change, deny-by-default intact); the browser
  * vessel reads `federationShareDecision` directly, its PersonaGroup ring composed onto the gate itself.
  * The BRIDGE and the MAP both stand already, and conflating their absence with the ring's absence
@@ -274,7 +277,7 @@ export async function identityShareDecision(
 /**
  * AntigenRing — the #59 identity-ring shore the carry-contract enforces: consult the quorum-signed
  * Kapae-antigen and deny a Kapae'd PRESENTER with Mu. This is NOT a second peer-gate (peer-auth lives,
- * live, at the DaemonAuthGate) and it is NOT the self-slot capability ring (that stays inert — see the
+ * live, at the face gate) and it is NOT the self-slot capability ring (that stays inert — see the
  * surfaced fork below). It is a purely ADDITIVE deny path keyed on the PEER, orthogonal to the per-doc
  * cap barrier.
  *
@@ -383,7 +386,7 @@ export async function carryContractShareDecision(
  * The mesh breathes across a Nexus because a MEMBER relay blind-transits sealed ciphertext (carry, never
  * read); a STRANGER reaches ONLY the public shelf (the federatable set). This consult draws that line — and
  * it reads the node's OWN nexus-doc replica (as of last sync; no global now). It is NOT a peer-auth gate (that
- * lives, live, at the DaemonAuthGate) and NOT a read-cap (the BeeKEM read-floor stays absolute). It answers
+ * lives, live, at the face gate) and NOT a read-cap (the BeeKEM read-floor stays absolute). It answers
  * ONE question: MEMBER or not.
  *
  * FAIL-CLOSED: an unrecognized / unconsultable peer reads `false` (STRANGER) — a node NEVER assumes a peer
@@ -498,7 +501,7 @@ export function answersStrangers(postures: readonly FederationPosture[]): boolea
  *   · otherwise a STRANGER — admitted at the public shelf iff `answersStrangers`, else null: SILENCE.
  *
  * Every input is a fact the caller proved before asking; this fold decides precedence and nothing else, so one
- * reading orders every gate (the relay and the oracle socket alike).
+ * reading orders every gate (the relay and the flow socket alike).
  */
 export function classifySocket(proven: {
   readonly sameOperator:     boolean;
@@ -540,8 +543,8 @@ export function classifySocket(proven: {
  * No vessel's share config calls this fn: the node composes `carrierShareDecision` and the browser
  * `federationShareDecision`, so no `CapTierRing` stands on a live path, neither its `floor` oracle nor its
  * `declared` source. A bag's declared tier reaches production through the `bagTier` readers alone (the
- * crossing gate, the bulb read face). Lighting this shore needs a composer that hands it a floor oracle
- * answering all three readings (cap-tier.ts `makeTierFloorOracle`) + a doc→bag resolver over the bag
+ * crossing gate, the bulb read face). Lighting this shore needs a composer that hands it a floor source
+ * answering all three readings (cap-tier.ts `makeTierFloorSource`) + a doc→bag resolver over the bag
  * registry (the same bridge `identityShareDecision`'s bound names). This fn is that shore's tested socket;
  * it never fakes a verdict.
  *
@@ -594,7 +597,7 @@ export interface ShareVerdictRecord {
 export type ShareVerdictSink = (record: ShareVerdictRecord) => void;
 
 /**
- * THE VERDICT SEATS ON BOTH HOOKS. A legacy `sharePolicy` fills `announce` alone and leaves
+ * THE VERDICT SEATS ON BOTH HOOKS. A policy wired only to `announce` leaves
  * `access: () => true`, so a peer that asks for a doc by id pulls it past a denying policy. Every vessel
  * composes its share decision through this one function; the node's `nodeShareConfig` and the browser's
  * `browserShareConfig` both read it.

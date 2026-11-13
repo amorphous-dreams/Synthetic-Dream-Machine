@@ -7,6 +7,9 @@
  * that still signed, verified, and announced). These tests build real `--source` directories: an
  * UNSIGNED descriptor this persona signs fresh, and a pre-SIGNED gift kept exactly as signed.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -17,6 +20,7 @@ import { restEvery, restingRepo } from "./resting-repo.js";
 import {
   computePluginsCid,
   crossroadsDocUrl,
+  publicationDocUrl,
   ed25519SignerFromSeed,
   ed25519VerifyingKeyFromSeed,
   GENESIS_CID_ENGINE_TIDDLER,
@@ -40,10 +44,10 @@ import {
   generateOrLoadPersonaGroupRoot,
   generateOrLoadVesselIdentity,
   loadVesselVerifyingKey,
-  wearPersona,
 } from "../src/node-vessel-identity.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
+import { seedFaceAtom } from "./atom-fixture.js";
 
 let root: string;
 let priorRoot: string | undefined;
@@ -69,7 +73,7 @@ function seedMinimalGenesis(): void {
   const genesisDir = join(root, "genesis");
   mkdirSync(genesisDir, { recursive: true });
   const seed: GenesisSeed = {
-    format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
+    format: "lararium-genesis-seed", actorSeed: "actor-seed",
     blobs: {},
     tiddlers: {
       [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
@@ -130,20 +134,19 @@ async function seedSignedGift(): Promise<{ readonly dir: string; readonly offero
 }
 
 async function standPersona(): Promise<void> {
-  await generateOrLoadVesselIdentity();
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
-  await wearPersona(0);
 }
 
 describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", () => {
-  it("signs an UNSIGNED source as PUBLISHER, announces, and retrieves the exact gift from a persisted Crossroads board", async () => {
+  it("signs an UNSIGNED source as PUBLISHER, announces, and retrieves the exact gift from the persisted publication board, and the mirrored crossroads document carries no announce", async () => {
     const source = seedUnsignedSource();
     seedMinimalGenesis();
     await standPersona();
 
     const first = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
     expect(first.offeringCid).toBe(pluginOfferingCid(first.offering));
-    expect(first.boardUrl).toBe(crossroadsDocUrl(await loadVesselVerifyingKey()));
+    expect(first.boardUrl).toBe(publicationDocUrl(await loadVesselVerifyingKey()));
     expect(first.blobCount).toBe(1);
     // The bytes landed in THIS publisher's own CAS, keyed by the SAME sha256 the offering declares.
     const blobSha = first.offering.blobs[0]!.sha256;
@@ -154,9 +157,12 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     expect(second.offering).toEqual(first.offering);
 
     const repo = restingRepo(larDataDir());
-    const board = await materializeSharedLarDoc(repo, first.boardUrl, "board:crossroads");
+    const board = await materializeSharedLarDoc(repo, first.boardUrl, "board:publication");
     const records = offeringAnnouncesFromDoc(board.doc());
     expect(records).toHaveLength(1);
+    // The crossroads document mirrors to its canon source; an announce written there would land in the tracked tree.
+    const crossroads = await materializeSharedLarDoc(repo, crossroadsDocUrl(await loadVesselVerifyingKey()), "board:crossroads");
+    expect(offeringAnnouncesFromDoc(crossroads.doc()), "the crossroads mirror would write it to disk").toEqual([]);
     expect(records[0]?.offeringCid).toBe(first.offeringCid);
     expect(records[0]?.offering).toEqual(first.offering);
     await repo.rest();
@@ -175,13 +181,17 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     expect(result.offering).toEqual(announced);                     // byte-identical to what the gift already carried
   });
 
-  it("refuses without an explicitly worn persona and leaves no board behind", async () => {
+  it("RED: refuses by name when several faces stand and none is named; CONTROL: the face named signs", async () => {
     const source = seedUnsignedSource();
-    await generateOrLoadVesselIdentity();
-    await generateOrLoadPersonaGroupRoot(0);
+    seedMinimalGenesis();
+    await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+    for (const face of [0, 1]) { await generateOrLoadPersonaGroupRoot(face); await seedFaceAtom(face); }
 
-    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
-      .rejects.toBeInstanceOf(NexusPublishError);
+    const unnamed = direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() });
+    await expect(unnamed).rejects.toBeInstanceOf(NexusPublishError);
+    await expect(unnamed).rejects.toThrow(/--face N/);
+    const named = await direct(runNexusPublishPlugins)({ source, storageDir: larDataDir(), handleIndex: 1 });
+    expect(named.blobCount).toBe(1);
   });
 
   it("refuses when the offering source is absent", async () => {
@@ -218,7 +228,7 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     const genesisDir = join(root, "genesis-separate");
     mkdirSync(genesisDir, { recursive: true });
     const seed: GenesisSeed = {
-      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
+      format: "lararium-genesis-seed", actorSeed: "actor-seed",
       blobs: {},
       tiddlers: {
         [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },
@@ -235,10 +245,19 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
   it("MUTATION PROOF (M-d) — boot-set-unknown: an ABSENT genesis refuses the collision check rather than failing open", async () => {
     // No seedMinimalGenesis() here — the whole point. Before M-d's fix, an absent/torn genesis read
     // as "no boot ids at all" and let a source claiming the grammar's own id sign and announce.
-    const source = seedUnsignedSource();
-    await standPersona();
-    await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
-      .rejects.toThrow(/boot-set-unknown/);
+    // A root holding no seed now reaches the build's shipped genesis (genesis-resolve), so "absent" is declared:
+    // an explicit LAR_GENESIS naming a dir with no seed never falls back.
+    const priorGenesis = process.env["LAR_GENESIS"];
+    process.env["LAR_GENESIS"] = join(root, "declared-absent-genesis");
+    try {
+      const source = seedUnsignedSource();
+      await standPersona();
+      await expect(direct(runNexusPublishPlugins)({ source, storageDir: larDataDir() }))
+        .rejects.toThrow(/boot-set-unknown/);
+    } finally {
+      if (priorGenesis === undefined) delete process.env["LAR_GENESIS"];
+      else process.env["LAR_GENESIS"] = priorGenesis;
+    }
   });
 
   it("boot-set-collision: a source naming a real boot-set id refuses, WITH genesis readable", async () => {
@@ -246,7 +265,7 @@ describe("runNexusPublishPlugins — immutable offering boundary (H3, F2-3)", ()
     mkdirSync(genesisDir, { recursive: true });
     const bootBlobId = "$:/boot/the-grammar";
     const seed: GenesisSeed = {
-      format: "lararium-genesis-seed/v1", actorSeed: "actor-seed",
+      format: "lararium-genesis-seed", actorSeed: "actor-seed",
       blobs: { [bootBlobId]: { id: bootBlobId, sha256: "f".repeat(64), mimeType: "application/json", version: "v1" } },
       tiddlers: {
         [GENESIS_CID_ENGINE_TIDDLER]: { tiddler: { cid: "e".repeat(64) } },

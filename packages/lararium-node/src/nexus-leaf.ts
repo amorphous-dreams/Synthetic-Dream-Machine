@@ -12,14 +12,15 @@
  *     genesis epoch CID, which a seal rotation leaves fixed. The face's lineage moves the key only by a signed
  *     hand-over (`nexus-key-reissue`), which the Nexus's gates read off its carriage board.
  *
- * A READ NEVER MINTS. `nexusLeafFor`, `heldNexusLeaves` and `wornNexusLeaf` answer the keys that stand. Only an act
- * that presents the face at a Nexus mints one (`mintNexusLeaf`, `mintWornNexusLeaf`): a walk taken, a contract
+ * A READ NEVER MINTS. `nexusLeafFor`, `heldNexusLeaves` and `faceNexusLeaf` answer the keys that stand. Only an act
+ * that presents the face at a Nexus mints one (`mintNexusLeaf`, `mintFaceNexusLeaf`): a walk taken, a contract
  * signed, a hearth's hosting, a steward's seal.
  *
  * It reads the persona vault and the face's sealed rows and returns key material; it mints no root.
  */
 
-import { listPersonaRoots, makeNodeFsPersonaVault } from "./node-vessel-identity.js";
+import { listPersonaRoots, makeNodeFsPersonaVault, personaRootExists } from "./node-vessel-identity.js";
+import { resolveFace } from "./face-selector.js";
 import { mintNexusKey, nexusKeyPublicOf, readNexusKey, readNexusKeys } from "./face-key-custody.js";
 
 /** One persona's key at one Nexus: the public half, and the 32-byte signing seed. */
@@ -62,26 +63,27 @@ export async function heldNexusLeaves(nexusAid: string): Promise<readonly NexusL
   return leaves;
 }
 
-/** The face this vessel WEARS, where it holds that face's root; null otherwise. */
-async function wornIndex(): Promise<number | null> {
-  const vault = await makeNodeFsPersonaVault();
-  const worn = await vault.selector.load();
-  return worn === undefined || !(await vault.hasRoot(worn)) ? null : worn;
+/**
+ * The face a command acts as (`resolveFace`: the face named, else the one face standing open), where this vessel holds
+ * that face's root; null where it holds none there. Several faces and none named refuse by name (`FaceNotNamed`).
+ */
+async function actingIndex(named?: number): Promise<number | null> {
+  const face = await resolveFace(named);
+  return (await personaRootExists(face)) ? face : null;
 }
 
 /**
- * The key the face this vessel WEARS holds at the Nexus named by `nexusAid` — or null when it wears none (an unset
- * selector, or a worn index whose root this vessel does not hold), or holds no key there yet. Never mints. A walker
- * is a person, so its key is the worn face's; nothing is picked by roster order, and a vessel that wears no face
- * walks nowhere until the operator puts one on (`lares persona wear N`).
+ * The key the acting face holds at the Nexus named by `nexusAid` — or null when this vessel holds no root for that
+ * face, or the face holds no key there yet. Never mints. A walker is a person, so its key is that face's; nothing is
+ * picked by roster order.
  */
-export async function wornNexusLeaf(nexusAid: string): Promise<NexusLeaf | null> {
-  const worn = await wornIndex();
-  return worn === null ? null : nexusLeafFor(worn, nexusAid);
+export async function faceNexusLeaf(nexusAid: string, face?: number): Promise<NexusLeaf | null> {
+  const acting = await actingIndex(face);
+  return acting === null ? null : nexusLeafFor(acting, nexusAid);
 }
 
-/** The worn face's key at `nexusAid`, minted at random where none stands; null when the vessel wears no face. */
-export async function mintWornNexusLeaf(nexusAid: string): Promise<NexusLeaf | null> {
-  const worn = await wornIndex();
-  return worn === null ? null : leafOf(worn, await mintNexusKey(worn, nexusAid));
+/** The acting face's key at `nexusAid`, minted at random where none stands; null where this vessel holds no root for it. */
+export async function mintFaceNexusLeaf(nexusAid: string, face?: number): Promise<NexusLeaf | null> {
+  const acting = await actingIndex(face);
+  return acting === null ? null : leafOf(acting, await mintNexusKey(acting, nexusAid));
 }

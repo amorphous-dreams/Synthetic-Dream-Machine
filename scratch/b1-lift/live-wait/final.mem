@@ -1,0 +1,39 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/live-wait/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/live-wait/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/live-wait/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Live-Wright: Lares (Tasked Spirit): ->▶ The live wait now resets its 20-second silence window when a new phase appears and stops at a 60-second ceiling. The mirror retains its own 20-second window. Failure messages identify the wait and include the phases and faults.
+
+->↺ The shared fake-clock tests passed: ''3 passed, 0 failed''. No sibling e2e files copied the helper, so none changed. No browser or e2e tests ran, and no commit was made.
+
+The hand-back appears in [[out.md|/home/joshu/.local/state/lares-broker/seats/seat-0JxzU3/out.md]].
+
+&lt;&lt;~ oracle throw=`↯8 ✲ ⚁(2) ⁂:⊗☕`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`the lead can verify the browser integration in its e2e run · ↻ L-Prime` ooda-ha=`closed 1↺` from=`lar://live-wright:agent@work/wait.progress.tracks` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1cJ0TVyJl-Z_c7RfxKS_L_SlWyqBGuSUgz6DC6QYLUE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

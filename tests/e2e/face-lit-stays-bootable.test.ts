@@ -52,7 +52,7 @@ function lares(args: string[], env: Record<string, string> = {}): string {
 
 /** The bootstrap's own record of which daemon document this place stands on. */
 function daemonUrlFromBootstrap(): string | null {
-  const p = join(root, "data/lares/vessel/social-bootstrap.json");
+  const p = join(root, "hearth/vessel/social-bootstrap.json");
   if (!existsSync(p)) return null;
   const m = /automerge:[A-Za-z0-9]+/.exec(readFileSync(p, "utf8"));
   return m ? m[0] : null;
@@ -87,7 +87,7 @@ describe.skipIf(!existsSync(CLI))("a face lit leaves the vessel bootable", () =>
 
   test("the lit face is recorded where the boot reads it", () => {
     // `faceStands()` reads the BOOTSTRAP for the PersonaGroup id — not the roster, not the key on disk.
-    const bootstrap = readFileSync(join(root, "data/lares/vessel/social-bootstrap.json"), "utf8");
+    const bootstrap = readFileSync(join(root, "hearth/vessel/social-bootstrap.json"), "utf8");
     expect(/persona[-_]?group/i.test(bootstrap)).toBe(true);
   });
 

@@ -20,12 +20,13 @@
     "clean": "node ../../tools/clean-output.mjs dist",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run"
   },
   "dependencies": {
     "@noble/hashes": "2.4.0"
   },
   "devDependencies": {
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   }
 }

@@ -1,18 +1,14 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/ref/RFC-9162">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/ref/RFC-9162`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
-file-path      = "bags/lares/ha.ka.ba/lares/ref/RFC-9162.mem"
-mana           = 14
-manao          = 14
-manaoio        = 13
 namespace      = "&#x2299;"
 reference-kind = "rfc"
 role           = "reference meme — cites IETF RFC 9162 by its own bibliographic metadata"
-tags           = ["api/pono/loci", "lar:///ha.ka.ba/lares/ref"]
+tags           = ["lar:///ha.ka.ba/lares/ref"]
 title          = "lar:///ha.ka.ba/lares/ref/RFC-9162"
 type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/ref/RFC-9162"
@@ -25,7 +21,7 @@ target     = "https://www.rfc-editor.org/info/rfc9162"
 title      = "Certificate Transparency Version 2.0"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! RFC 9162 — Certificate Transparency Version 2.0
 
@@ -35,14 +31,14 @@ Obsoletes `lar:///ha.ka.ba/lares/ref/RFC-6962`.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/ref/RFC-6962">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/ref/RFC-6962`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;bvrKn-uWsPi7UYrMtd1yEy3NMRengpqbmeIJy1zNF4Q
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z1KpP7Dx9FRQ3VOmk5jp3J83RDmNDCZtuibd2aX9JnE`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

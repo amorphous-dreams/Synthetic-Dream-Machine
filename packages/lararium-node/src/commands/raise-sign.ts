@@ -118,7 +118,7 @@ export async function runRaiseSign(opts: {
     const line = keyLineAt(sealHome, aid, handle.doc());
     leaf = offered.find((l) => admittedKeyOf({ nexus: aid, key: l.verifyingKey, carried: line }) !== null) ?? offered[0]!;
     const admitted = admittedKeyOf({ nexus: aid, key: leaf.verifyingKey, carried: line });
-    read = admitted === null ? { presentation: null, findings: [] } : await presentationFromBoardDoc(handle.doc(), admitted, roster);
+    read = admitted === null ? { presentation: null, findings: [] } : await presentationFromBoardDoc(handle.doc(), admitted, roster, readNexusDoc(home)?.sealLineage);
   } finally {
     await repo.flush().catch(() => { /* read-only: nothing owed */ });
   }

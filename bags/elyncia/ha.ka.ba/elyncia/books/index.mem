@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/books/index">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/books/index`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia/ha.ka.ba/elyncia/books/index.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 12
 rating    = "ano"
 role      = "landing page — the Elyncia books as a TW5 ToC over the spine memes; each spine walks its chapter's chunks through the graph"
 title     = "lar:///ha.ka.ba/elyncia/books/index"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/books/index"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Elyncia Books
 
@@ -29,7 +25,7 @@ uplift to live wikitext last.
 
 <<~/ahu>>
 
-<<~ ahu #/toc>>
+<<~ ahu slot=`#/toc`>>
 
 \procedure BookShelf() <<toc-selective-expandable "ha.ka.ba/elyncia/books/index" sort="uri-path">>
 
@@ -48,6 +44,6 @@ shelf reads plainly:)//
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;LK7uS3ljZssSjDcIEFQsJ5wzjlVZ4fAr8GuZcg81lR8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;S-WY3JfYe7ntLrwv415gOFQNh8emrEH49PnMiy3Uyow`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

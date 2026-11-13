@@ -22,9 +22,8 @@ import {
   dialEntryToRecord, dialEntries, type DialEntry,
   routingSlots, routingSlotToRecord, hyperbolicDistance, radialCoordinate, type Coord, type RoutingSlot,
 } from "./mesh-palace.js";
-import { pullAndVerifyOracle } from "./oracle-read-client.js";
-import type { LeafIdentity } from "./auth-wire.js";
-import { plainRecord, sameStoredRecord, type StoredTiddlers } from "./stored-value.js";
+import type { FlowPullResult } from "./flow-read-client.js";
+import { plainRecord, sameStoredRecord, type StoredTiddlers, ownEntry } from "./stored-value.js";
 import type { LarDoc } from "./base-doc.js";
 import type { VesselCoreAssembly } from "./open-vessel-core.js";
 import type { BagStowage } from "./bag-residency.js";
@@ -36,6 +35,8 @@ import { storedRecord } from "./stored-record.js";
  * so the value, not the symbol, carries the match. node-caps' `CAP` object folds these in.
  */
 export const CARRIAGE_CAP = { meshpalace: "meshpalace", carriage: "carriage" } as const;
+/** Leaf-only local jitter, minted once for this process; it authenticates nothing. */
+const LOCAL_CADENCE_KEY = Array.from(crypto.getRandomValues(new Uint8Array(32)), (b) => b.toString(16).padStart(2, "0")).join("");
 
 /** The substrate cap-id this carriage depends on — a WIRE-STRING. Matches tw5's `CORE_CAP.substrate` by
  *  VALUE (mesh can't import CORE_CAP — circular). cap-ids are handshake strings, matched by value. */
@@ -92,9 +93,9 @@ const PHI_INV = 0.6180339887498949;
  * JITTER randomizes each interval's realization (the secret phase — a predictable phase is the exploit,
  * not the rate). Constants PROVISIONAL/seeded, awaiting the mesh's live witness (the canon's open fork).
  */
-export function incommensurablePullMs(seedHex: string, baseMs: number, rand: () => number): number {
+export function incommensurablePullMs(cadenceKey: string, baseMs: number, rand: () => number): number {
   let h = 2166136261 >>> 0;
-  for (let i = 0; i < seedHex.length; i++) h = Math.imul(h ^ seedHex.charCodeAt(i), 16777619) >>> 0;
+  for (let i = 0; i < cadenceKey.length; i++) h = Math.imul(h ^ cadenceKey.charCodeAt(i), 16777619) >>> 0;
   const factor = 0.7 + ((h * PHI_INV) % 1) * 0.6;   // per-node incommensurable mean-multiplier ~[0.7,1.3]
   const jitter = 0.75 + rand() * 0.5;               // renewal realization ~[0.75,1.25] (the secret phase)
   return Math.max(250, Math.round(baseMs * factor * jitter));
@@ -104,7 +105,7 @@ export interface CarriageComponent { readonly pullOnce: () => Promise<number>; r
 
 /**
  * A peer the carriage pulls: its http read-face and the gate key it PINS there. The key is the peer's vessel
- * key — the gate its oracle socket stands behind and the signer of its pointer — so a pull knocks on the path
+ * key — the gate its flow socket stands behind and the signer of its pointer — so a pull knocks on the path
  * that key derives, proves to it, and reads only a map it signed. A peer known by address alone is not dialed.
  */
 export interface MeshPeer {
@@ -196,7 +197,7 @@ export interface MeshSelf {
   readonly bearing: string;
   readonly coord: Coord;                 // routing-chart coord (r=standing, θ=kinship), published in its slot
   readonly peers: readonly MeshPeer[];   // bootstrap peers carried (∪ discovered dials); empty = a leaf
-  /** OWN gate key — the vessel key its read-face's oracle socket stands behind, published in its dial so a
+  /** OWN gate key — the vessel key its read-face's flow socket stands behind, published in its dial so a
    *  peer can knock and pin. ABSENT → no dial is published (nothing could reach the face). */
   readonly gatePubKey?: string;
   readonly maxFanout?: number;           // max peers pulled per cycle
@@ -262,15 +263,19 @@ export function meshSelfSeed(self: MeshSelf): readonly DialEntry[] {
   return dial ? [dial] : [];
 }
 
-/** carriage — the blind relay: pull each PEER's PUBLIC FLOW-map (pullAndVerifyOracle) and merge it into
+/** carriage — the blind relay: pull each PEER's PUBLIC FLOW-map (pullAndVerifyFlow) and merge it into
  *  this vessel's meshpalace doc, re-served by the read-face (carry-by-aggregate-reserve). Peers are
  *  DISCOVERED from the carried dials (self-peering) ∪ the bootstrap. A peer down is no error —
  *  feed-or-fade. Requires meshpalace (the doc to merge into + discover dials from).
  *
- *  PEERS PROVE FIRST: each pull proves `identity` at the peer's gate before any map crosses. A carriage
- *  handed no identity has nothing to prove with, so it pulls nothing — it still stands its own map. */
+ *  PEERS PROVE FIRST, AND THE PULL IS INJECTED. A carried dial names a peer's endpoint and gate KEY, never the full
+ *  gate pin a sealed dial needs, so this cap dials nothing of its own: the bare route ships SHUT by name
+ *  ("carriage-peering-shut", the shut-routes house ruling, stable-founding-road #/rulings). A caller that holds a
+ *  gate-native pull (`carriage-pull`) hands it as `pullFlow`; a carriage handed none pulls nothing — it still stands
+ *  its own map. */
 export function carriageCap(deps: {
-  peers: readonly MeshPeer[]; pullIntervalMs?: number; nodeSeedHex?: string; identity?: LeafIdentity;
+  peers: readonly MeshPeer[]; pullIntervalMs?: number; /** Public place id, never seed material. */ cadenceKey?: string;
+  pullFlow?: (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   selfEndpoint?: string; maxFanout?: number; selfCoord?: Coord; selfBearing?: string; onLog?: (line: string) => void;
 }): CapModule {
   return {
@@ -281,8 +286,8 @@ export function carriageCap(deps: {
       const seenDiscovered = new Set<string>();
       let rCurrent = deps.selfCoord?.r ?? 1; // the carriage's radial standing, low-pass damped from live degree
       let rPublished = rCurrent;
-      const identity = deps.identity;
-      if (!identity) deps.onLog?.("carriage: no identity to prove at a peer's gate — this vessel carries in nothing");
+      const pullFlow = deps.pullFlow;
+      if (!pullFlow) deps.onLog?.("carriage: carriage-peering-shut — no gate-native pull is handed in, so this vessel carries in nothing");
       const pullOnce = async (): Promise<number> => {
         let merged = 0;
         const peers = discoverPeers(mp.handle.doc(), deps.peers, deps.selfEndpoint, deps.maxFanout ?? 16, deps.selfCoord);
@@ -297,21 +302,21 @@ export function carriageCap(deps: {
             // outright when the slot we're about to publish is byte-identical to what's already stored
             // — the deadband already limits HOW OFTEN this fires, but a content check costs nothing and
             // closes the case where damping settles back to a value already on the doc.
-            const existing = mp.handle.doc()?.tiddlers[rec.tiddler.title];
+            const existing = ownEntry(mp.handle.doc()?.tiddlers, rec.tiddler.title);
             if (!sameStoredRecord(existing, rec)) {
               mp.handle.change((d) => { d.tiddlers[rec.tiddler.title] = storedRecord(rec); });
               deps.onLog?.(`carriage: standing → r=${rCurrent.toFixed(2)} (degree ${peers.length}, past the band)`);
             }
           }
         }
-        if (!identity) return merged;   // nothing to prove with — nothing crosses in
+        if (!pullFlow) return merged;   // the route is shut: nothing crosses in
         for (const { endpoint: peer, gatePubKey } of peers) {
           if (!bootstrap.has(peer) && !seenDiscovered.has(peer)) {
             seenDiscovered.add(peer);
             deps.onLog?.(`carriage: self-peering discovered ${peer} from a carried dial`);
           }
           let verdict;
-          try { verdict = await pullAndVerifyOracle<MeshPalaceDoc>(peer, { identity, verifyingKey: gatePubKey }); }
+          try { verdict = await pullFlow(peer, gatePubKey); }
           catch { continue; } // a peer down/unreachable is no error — feed-or-fade
           if (!verdict.ok || !verdict.doc) continue;
           const incoming = verdict.doc.tiddlers;
@@ -325,8 +330,8 @@ export function carriageCap(deps: {
           // still costs nothing today, but this also spares that cost outright.
           const stored = mp.handle.doc()?.tiddlers ?? {};
           const changedTitles = titles.filter((t) => {
-            const existing = stored[t];
-            const arriving = incoming[t];
+            const existing = ownEntry(stored, t);
+            const arriving = ownEntry(incoming, t);
             return arriving !== undefined && !sameStoredRecord(existing, arriving);
           });
           if (changedTitles.length > 0) {
@@ -343,7 +348,7 @@ export function carriageCap(deps: {
       // FFZ axis-2: self-reschedule on a per-node INCOMMENSURABLE, renewal-randomized cadence (never a
       // global fixed interval — the herd is the single point of failure). Each interval is drawn fresh.
       const baseMs = deps.pullIntervalMs ?? 30_000;
-      const seed = deps.nodeSeedHex ?? "leaf";
+      const seed = deps.cadenceKey ?? LOCAL_CADENCE_KEY;
       let stopped = false;
       let timer: ReturnType<typeof setTimeout> | undefined;
       // CRASH-HARDENING: this is a bare fire-and-forget boundary (a setTimeout callback / build-time
@@ -362,6 +367,7 @@ export function carriageCap(deps: {
         });
       const schedule = (): void => {
         if (stopped) return;
+        // PACING: jitter spaces peer pulls; each pull ends when its peer requests settle, and stop ends recurrence.
         timer = setTimeout(() => { void guardedTick().finally(schedule); }, incommensurablePullMs(seed, baseMs, Math.random));
         timer.unref();
       };
@@ -396,9 +402,10 @@ export function carriageStack(deps: {
   repo:            Repo;
   residency?:      BagStowage;
   self?:           MeshSelf;
-  nodeSeedHex:     string;
-  /** The identity each pull proves at a peer's gate. Absent → the carriage pulls nothing. */
-  identity?:       LeafIdentity;
+  /** Public place id, never seed material; a leaf without one uses process-local randomness. */
+  cadenceKey?:     string;
+  /** A gate-native pull of a peer's public FLOW-map. Absent → the carriage pulls nothing ("carriage-peering-shut"). */
+  pullFlow?:     (peer: string, gatePubKey: string) => Promise<FlowPullResult<MeshPalaceDoc>>;
   pullIntervalMs?: number;
   onLog?:          (line: string) => void;
 }): readonly CapModule[] {
@@ -411,8 +418,8 @@ export function carriageStack(deps: {
     }),
     carriageCap({
       peers:       self?.peers ?? [],
-      nodeSeedHex: deps.nodeSeedHex,   // the node-id seeds this vessel's incommensurable cadence
-      ...(deps.identity ? { identity: deps.identity } : {}),
+      ...(deps.cadenceKey ? { cadenceKey: deps.cadenceKey } : {}),
+      ...(deps.pullFlow ? { pullFlow: deps.pullFlow } : {}),
       ...(deps.pullIntervalMs !== undefined ? { pullIntervalMs: deps.pullIntervalMs } : {}),
       ...(self ? {
         ...(self.endpoint ? { selfEndpoint: self.endpoint } : {}), // absent → a leaf, not dial-able

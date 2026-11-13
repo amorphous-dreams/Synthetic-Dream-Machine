@@ -14,14 +14,14 @@ const ANSWER = {
 };
 vi.mock("../src/verb-call.js", () => ({
   DaemonUnreachable: class extends Error {},
-  runVerb: async () => ({ status: "done", requestId: "r", results: { summary: { ok: true, output: ANSWER } } }),
+  runVerb: async (name: string) => ({ status: "done", requestId: "r", results: { summary: { ok: true, output: name === "wiki-active" ? { active: ["lares"], held: [], activeSurface: "lares", activationCap: 4, pinBudget: 3 } : ANSWER } } }),
 }));
 vi.mock("../src/env.js", async (orig) => ({
   ...(await orig<typeof import("../src/env.js")>()),
   vesselDid: async () => "0x" + "ab".repeat(32),
 }));
 
-import { cmdWikiList } from "../src/commands/wiki.js";
+import { cmdWikiActive, cmdWikiList } from "../src/commands/wiki.js";
 import { parseArgs } from "../src/parse-args.js";
 
 afterEach(() => { vi.restoreAllMocks(); });
@@ -58,5 +58,17 @@ describe("lares wiki list", () => {
     await cmdWikiList(parseArgs(["wiki", "--no-json"]));
     expect(c.out()).not.toMatch(/default differs/);
     ANSWER.wikis[0]!.defaultDiffers = true;
+  });
+});
+
+describe("lares wiki active", () => {
+  test("names the daemon's standing slot, which the list of live wikis never shows", async () => {
+    const c = capture();
+    expect(await cmdWikiActive(parseArgs(["wiki", "active"]))).toBe(0);
+    const text = c.out();
+    expect(text).toMatch(/daemon\s+\(always live; it holds one of the 4 slots and stands outside this list\)/);
+    // CONTROL: the live wikis still list, counted against the cap.
+    expect(text).toMatch(/active wikis \(1\/4\)/);
+    expect(text).toMatch(/◀ surface lares/);
   });
 });

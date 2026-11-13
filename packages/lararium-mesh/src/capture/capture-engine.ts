@@ -28,16 +28,15 @@
 
 import { CaptureNalu, PONO_FLUSH_GATE } from "../capture-nalu.js";
 import type { CaptureFlush, CaptureRecord, CaptureStats, FlushGate } from "../capture-nalu.js";
-import type { BranchContext } from "./build-patch.js";
+import type { BranchContext } from "./branch-frontier.js";
 import { CoalesceGate } from "../projection-nalu.js";
 import { adaptGate, deriveGate } from "../gate-tuning.js";
 import { defaultCryptoProvider, sha256Hex, utf8Bytes } from "../crypto.js";
 import type { DigestProvider } from "../crypto.js";
 
-/** The forward annotate pass: a raw turn → its `lar_*` metadata. Each vessel injects its
- *  own (node: harvestTurnGradient + buildPatch; browser: the pure twin). The optional `branch`
- *  carries the turn-DAG fork-frontier (buildPatch's 3rd arg) so a same-session fork derives a
- *  DISTINCT handle; absent (the common case) ⇒ byte-identical to before. */
+/** The forward annotate pass: a raw turn → its `lar_*` metadata. Each vessel injects its own.
+ *  The optional `branch` carries the turn-DAG fork-frontier so a same-session fork derives a
+ *  DISTINCT handle; absent (the common case) ⇒ the handle stays exactly `run`. */
 export type CaptureAnnotate = (
   turnText: string,
   sourceFile: string,

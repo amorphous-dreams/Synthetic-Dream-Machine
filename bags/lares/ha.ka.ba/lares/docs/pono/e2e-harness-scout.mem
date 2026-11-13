@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/e2e-harness-scout">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/e2e-harness-scout`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/e2e-harness-scout.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 16
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-02"
@@ -21,7 +17,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/e2e-harness-scout"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wright ~ a spirit's handoff, held unedited
 
@@ -33,7 +29,7 @@ uri-path          = "ha.ka.ba/lares/docs/pono/e2e-harness-scout"
 
 <<~/ahu>>
 
-<<~ ahu #/the-handoff>>
+<<~ ahu slot=`#/the-handoff`>>
 
 !! The handoff, verbatim
 
@@ -74,7 +70,7 @@ Cure: `process.exitCode = code` and let the loop drain (or await a stdout drain 
 
 `packages/lares-cli/src/local-connector.ts:29` — `rendezvousPath({ root: dataDir ?? larDataDir(), … })`.
 
-`herm-floor.test.ts:158/169/196` calls `findSock(root)`, gets `null` (see D3/RC-C), and passes `dir!`. `null ?? larDataDir()` resolves to `/home/joshu/.local/share/lares/vessel` → `/tmp/lares-1000/c338a5d9ed5f.sock`, **which exists on this machine** (dated 30 Aug). Measured on the box: a live daemon stands at `--root /home/joshu/Synthetic-Dream-Machine` (pid 624306) plus six stale ones.
+`herm-floor.test.ts:158/169/196` calls `findSock(root)`, gets `null` (see D3/RC-C), and passes `dir!`. `null ?? larDataDir()` resolves to the vessel of whatever house the process names (`<root>/hearth/vessel`; the operator's own when the harness names no scratch `LAR_ROOT`) → `/tmp/lares-1000/c338a5d9ed5f.sock`, **which exists on this machine** (dated 30 Aug). Measured on the box: a live daemon stands at `--root /home/joshu/Synthetic-Dream-Machine` (pid 624306) plus six stale ones.
 
 Consequences in this very run:
 - **R5 fails against the wrong vessel.** Its message — `"this vessel stands at the WAKING FLOOR and holds no face"` — is the *operator's home vessel* answering, not the herm the test just lifted. R5 is **not** evidence that the lift is broken.
@@ -158,9 +154,9 @@ Measured through the built deserializer, `noosphere-boot.mem` yields **22**: par
 
 ### RC-H · The framing head took named ends — **1 failure + 1 FALSE GREEN**
 Commit **`5acdf71ca`** (2026-08-29, "the graph names its own ends — 628 carriers take from= and to="). Touched **0** files under `tests/`. The head is now
-`<<^ code="&#x0001;" namespace="…" from="?" -> to="lar:///…">>`.
+`<<^ code=`&#x0001;` namespace=`…` from=`?` to=`lar:///…`>>`.
 
-**Failure:** `load-tw5-filetypes.test.ts:38` writes the retired head `<<^ code="&#x0001;" from="?" -> to="lar:///…">>`. Collided directly against `packages/lararium-tw5/dist/deserializer.js`:
+**Failure:** `load-tw5-filetypes.test.ts:38` writes the retired head `<<^ code=`&#x0001;` from=`?` to=`lar:///…`>>`. Collided directly against `packages/lararium-tw5/dist/deserializer.js`:
 
 ```
 OLD head → 1 record titled 'fallback-title'                       ← membrane does not read it
@@ -219,8 +215,8 @@ Finally, two housekeeping notes worth the operator's ear: add a named `test:e2e:
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/dreamdom">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;k7BBeHoNCN1RLXRqz1yW0fop0hb_zVdPK7B9oMmUjpg
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UxkI-vUSF5VQXu8IXQ4pcNIh7MdwF4FT2n4rbhUf2Hc`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

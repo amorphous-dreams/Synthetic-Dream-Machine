@@ -1,0 +1,13 @@
+{
+  // THE TESTS' TYPECHECK: `typecheck` reads source alone (tsconfig.json excludes tests/), so a test that drifted from the
+  // code it calls still runs under vitest's esbuild and typechecks by nothing. This config reads tests/ against source;
+  // `pnpm typecheck:tests` (tools/typecheck-tests-witness.sh) walks it in every package.
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "types": ["vite/client","tw5-typed","node"],
+    "rootDir": "../..",
+    "noEmit": true
+  },
+  "include": ["tests/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

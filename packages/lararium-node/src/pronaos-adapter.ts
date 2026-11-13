@@ -3,10 +3,10 @@
  *
  * This adapter projects a prepared Herm/Lararium Pronaos snapshot. It
  * does not discover a filesystem root, inspect private bags, mint identity,
- * answer oracle routes, or mutate a vessel. The caller supplies the exact
+ * answer flow routes, or mutate a vessel. The caller supplies the exact
  * exact prepared bytes and route names that the held public projection permits.
  *
- * `/ws`, `/oracle`, and `/bulb` remain other read faces. A static byte shore
+ * `/ws`, `/flow`, and `/bulb` remain other read faces. A static byte shore
  * cannot become their authority by falling through to it.
  *
  * THE ARRIVAL DESCRIPTOR (pronaos#/the-first-arrival). The same face answers one RFC 8615 well-known name,
@@ -45,6 +45,9 @@ export interface PronaosPreparedProjection {
   readonly assets: ReadonlyMap<string, PronaosFile>;
   /** Optional exact PWA install projection; absent means the route remains unowned. */
   readonly manifest?: PronaosFile;
+  /** The unlock ceremony's document and its port broker (a service worker); absent, each route stays unowned. */
+  readonly ceremony?: PronaosFile;
+  readonly ceremonyBroker?: PronaosFile;
   readonly genesisSeed: PronaosFile;
   /** Exact seed-named public CAS members, keyed by their 64-hex CID. */
   readonly cas: ReadonlyMap<string, PronaosFile>;
@@ -62,6 +65,14 @@ export interface PronaosMount {
 const INDEX_ROUTE = "/";
 const ASSET_ROUTE = /^\/assets\/([A-Za-z0-9._-]+)$/;
 const MANIFEST_ROUTE = "/manifest.webmanifest";
+const CEREMONY_ROUTE = "/ceremony.html";
+const CEREMONY_BROKER_ROUTE = "/ceremony-broker.js";
+/**
+ * The ceremony document's policy as a response header: the same strict policy its meta carries, and `frame-ancestors`, which
+ * a meta policy cannot carry. The ceremony takes the secret, so nothing frames it and no inline script runs in it
+ * (`tools/ceremony-entry-witness.mjs` welds this string to the document's meta).
+ */
+export const CEREMONY_POLICY = "default-src 'none'; script-src 'self'; style-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'; frame-ancestors 'none'";
 const SEED_ROUTE = "/genesis/seed.json";
 const CAS_ROUTE = /^\/genesis\/cas\/([0-9a-f]{64})$/;
 // The finite Pronaos projection owns its whole public projection surface.
@@ -79,8 +90,10 @@ export const ARRIVAL_WELL_KNOWN_ROUTE = "/.well-known/lar";
 export const WELL_KNOWN_LAR_ROUTE_KEY = "well-known:lar";
 /** The descriptor's media type; a request for `/` naming it negotiates onto the same descriptor bytes. */
 export const ARRIVAL_MEDIA_TYPE = "application/vnd.lar.arrival+json";
-/** The descriptor format tag — a name, never a version; a reader refuses any other. */
-export const ARRIVAL_FORMAT = "lar-arrival";
+/** The descriptor format tag — a name, never a version; a reader refuses any other. One owner (`@lararium/mesh/wire-names`),
+ *  so the page reads the same constant. */
+export { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
+import { ARRIVAL_FORMAT } from "@lararium/mesh/wire-names";
 
 /**
  * One hash-pinned copy of one receipt CID, standing on an origin of its own. A mirror serves a vessel that
@@ -104,7 +117,7 @@ export interface ArrivalDescriptor {
 
 /** Deployment inputs the descriptor reads beside the prepared projection. */
 export interface ArrivalOptions {
-  /** Every origin the house itself answers on (Web, relay, oracle, each reach face). A mirror may hold none of them. */
+  /** Every origin the house itself answers on (Web, relay, flow, each reach face). A mirror may hold none of them. */
   readonly houseOrigins: readonly string[];
   readonly mirrors?: readonly ArrivalMirror[];
 }
@@ -158,16 +171,16 @@ export function validateArrivalMirrors(
 
 /**
  * Every origin a house answers on: each reach face's origin, whatever its standing, plus each composed Web,
- * relay and oracle origin where the standing composes them. The reach faces feed in unconditionally, so a mirror
+ * relay and flow origin where the standing composes them. The reach faces feed in unconditionally, so a mirror
  * on the house's own origin refuses on every standing.
  */
 export function houseOriginsOf(
   reachFaces: readonly { readonly origin: string }[],
-  compositions: readonly { readonly webOrigin?: string; readonly relayOrigin: string; readonly oracleOrigin: string }[] | null,
+  compositions: readonly { readonly webOrigin?: string; readonly relayOrigin: string; readonly flowOrigin: string }[] | null,
 ): string[] {
   return [...new Set([
     ...reachFaces.map((face) => face.origin),
-    ...(compositions ?? []).flatMap((c) => [c.webOrigin, c.relayOrigin, c.oracleOrigin]
+    ...(compositions ?? []).flatMap((c) => [c.webOrigin, c.relayOrigin, c.flowOrigin]
       .filter((origin): origin is string => typeof origin === "string")),
   ])];
 }
@@ -306,6 +319,8 @@ export function pronaosRouteInventoryForProjection(
     },
   ];
   if (projection.manifest) routes.splice(1, 0, routeForProjection(MANIFEST_ROUTE, projection.manifest, "no-store"));
+  if (projection.ceremony) routes.push(routeForProjection(CEREMONY_ROUTE, projection.ceremony, "no-store"));
+  if (projection.ceremonyBroker) routes.push(routeForProjection(CEREMONY_BROKER_ROUTE, projection.ceremonyBroker, "no-store"));
   for (const [path, file] of [...projection.assets.entries()].sort(([a], [b]) => a.localeCompare(b))) {
     if (!ASSET_ROUTE.test(path)) throw new Error(`[pronaos] noncanonical asset route: ${path}`);
     routes.push(routeForProjection(path, file, "immutable"));
@@ -337,6 +352,7 @@ function validateProjection(projection: PronaosProjection): void {
 /** The exact paths this face claims: the receipt's own routes and the one well-known name. */
 function ownsPath(pathname: string): boolean {
   return pathname === INDEX_ROUTE || pathname === MANIFEST_ROUTE || pathname === SEED_ROUTE ||
+    pathname === CEREMONY_ROUTE || pathname === CEREMONY_BROKER_ROUTE ||
     pathname === ARRIVAL_WELL_KNOWN_ROUTE || pathname.startsWith("/assets/") || pathname.startsWith("/genesis/cas/");
 }
 
@@ -355,7 +371,7 @@ export function pronaosRequestHandler(
     const query = rawUrl.search(/[?#]/);
     const rawPath = query < 0 ? rawUrl : rawUrl.slice(0, query);
     if (/%2e|%2f|%5c|%25/i.test(rawPath) || rawPath.includes("..")) {
-      if (rawPath === "/ws" || rawPath.startsWith("/oracle") || rawPath.startsWith("/bulb")) return false;
+      if (rawPath === "/ws" || rawPath.startsWith("/flow") || rawPath.startsWith("/bulb")) return false;
       refuse(res, "Pronaos path refused");
       return true;
     }
@@ -373,6 +389,11 @@ export function pronaosRequestHandler(
       return true;
     }
     if (pathname === MANIFEST_ROUTE && projection.manifest) { serve(res, projection.manifest, req.method, "no-store"); return true; }
+    if (pathname === CEREMONY_ROUTE && projection.ceremony) {
+      serve(res, projection.ceremony, req.method, "no-store", { "content-security-policy": CEREMONY_POLICY, "x-frame-options": "DENY", "referrer-policy": "no-referrer" });
+      return true;
+    }
+    if (pathname === CEREMONY_BROKER_ROUTE && projection.ceremonyBroker) { serve(res, projection.ceremonyBroker, req.method, "no-store"); return true; }
     if (pathname === SEED_ROUTE) { serve(res, projection.genesisSeed, req.method, "no-store"); return true; }
     const asset = pathname.match(ASSET_ROUTE);
     if (asset) {
@@ -405,7 +426,7 @@ export function mountPronaosReadFace(
   const owns = (req: IncomingMessage): boolean => {
     const rawUrl = req.url ?? "/";
     if (/%2e|%2f|%5c|%25/i.test(rawUrl) || rawUrl.includes("..")) {
-      return !(rawUrl === "/ws" || rawUrl.startsWith("/oracle") || rawUrl.startsWith("/bulb"));
+      return !(rawUrl === "/ws" || rawUrl.startsWith("/flow") || rawUrl.startsWith("/bulb"));
     }
     return ownsPath(new URL(rawUrl, "http://localhost").pathname);
   };

@@ -48,10 +48,34 @@ describe("an island's wait for a slot document", () => {
     expect(await waitForSlotDocument(w.deps)).toEqual({ outcome: "ready", handle: "handle-of-the-daemon-bag" });
     expect(w.asks()).toBeGreaterThan(1);
 
-    // control: a connected peer that answers without the document gives a verdict, at the first ask
+    // control: a connected peer that never comes to hold the document gives a verdict, once the budget passes
     const c = world({ peerCount: () => 1, find: async () => { throw new Error("unavailable"); } });
     expect(await waitForSlotDocument(c.deps)).toEqual({ outcome: "verdict" });
-    expect(c.asks()).toBe(1);
+    expect(c.asks()).toBeGreaterThan(1);
+  });
+
+  test("S5 — the main thread's 'unavailable' is a relay's word: the ask goes again, and the document its peer brings later answers", async () => {
+    // The island's one peer is the vessel's main thread. It answers "unavailable" while no source IT hears holds the
+    // document (its dial to the hearth not yet carrying it), and it asks again and pushes the document on once one
+    // does: the same island, asking again inside its budgets, meets the handle.
+    let relayHolds = false;
+    let asks = 0;
+    const w = world({
+      peerCount: () => 1,
+      find: async () => {
+        if (++asks === 4) relayHolds = true;     // the hearth's copy reaches the main thread after three asks
+        if (!relayHolds) { w.hear(); throw new Error("unavailable"); }
+        return "handle-of-the-hearths-lararium";
+      },
+    });
+    expect(await waitForSlotDocument(w.deps)).toEqual({ outcome: "ready", handle: "handle-of-the-hearths-lararium" });
+    expect(w.asks()).toBe(4);
+
+    // control: a relay that never comes to hold it still ends loud, as a verdict, once the budget passes
+    const c = world({ peerCount: () => 1, find: async () => { throw new Error("unavailable"); } });
+    expect(await waitForSlotDocument(c.deps)).toEqual({ outcome: "verdict" });
+    expect(c.at()).toBeGreaterThanOrEqual(8_000);
+    expect(c.asks()).toBeGreaterThan(1);
   });
 
   test("S2 — no peer and a silent port ends never-arrived at the silence budget", async () => {

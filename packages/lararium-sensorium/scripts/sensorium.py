@@ -14,6 +14,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 import os
 import tempfile
 
@@ -94,45 +95,14 @@ def derived_views(root: str) -> dict:
     return views
 
 
-def _lares_data_home() -> str:
-    """Resolve THE SPIRITS' HOUSE the SAME way TS `laresDataHome` (xdg-base.ts) resolves it:
-    `LAR_ROOT/data/lares` for an isolated instance, else `$XDG_DATA_HOME/lares` (unset → `~/.local/share/lares`).
-
-    `lares` names the SPIRITS — their identity, their seal, the substrate they run on; a Lar's keys ARE
-    that Lar. `lararium` names the HOUSE. `lar` names the NAMESPACE alone. The two views stay
-    byte-identical by convention so a name a caller addresses lands on the one root both surfaces name."""
-    lar_root = os.environ.get("LAR_ROOT")
-    if lar_root:
-        return os.path.join(lar_root, "data", "lares")
-    xdg = (os.environ.get("XDG_DATA_HOME") or "").strip()
-    return os.path.join(xdg or os.path.join(os.path.expanduser("~"), ".local", "share"), "lares")
-
-
-def _lararium_data_home() -> str:
-    """Resolve THE HOUSE'S HOME the SAME way TS `larariumDataHome` (xdg-base.ts) resolves it:
-    `LAR_ROOT/data/lararium` for an isolated instance, else `$XDG_DATA_HOME/lararium`
-    (unset -> `~/.local/share/lararium`).
-
-    THE CRITERION IS WHOSE IT IS. A sensorium holds operator history and DreamNet history — the
-    LARARIUM's, never any one Lar's — so it stands here. LARES PASS; THE LARARIUM ABIDES, and surviving a
-    complete re-founding follows from that: capture the machine took once and cannot take again, kept in
-    its own house rather than off a wipe's list."""
-    lar_root = os.environ.get("LAR_ROOT")
-    if lar_root:
-        return os.path.join(lar_root, "data", "lararium")
-    xdg = (os.environ.get("XDG_DATA_HOME") or "").strip()
-    return os.path.join(xdg or os.path.join(os.path.expanduser("~"), ".local", "share"), "lararium")
-
-
 def assert_one_segment(kind: str, name: str) -> str:
     """Admit a caller-supplied NAME as exactly one path segment, or refuse. Mirrors TS
     `assertOneSegment` (vessel-paths.ts).
 
     `os.path.join` resolves nothing, but the joined string still walks: a name carrying `..` reaches
     out of the root it was meant to stay inside the moment anything opens or removes it. This shore
-    takes names from the MCP, so the segment arrives from outside this island entirely. The shrine
-    survives a RITE structurally, by standing in a house no wipe-list names; a traversing segment is
-    the one thing that defeats that, because it walks rather than consulting a list. It RAISES rather
+    takes names from the MCP, so the segment arrives from outside this island entirely. The sensoriums
+    stand under one root; a traversing segment is the one thing that walks out of it. It RAISES rather
     than returning a verdict — a caller resolves a path it is about to act on, and a fail-closed
     refusal is the only reading that cannot be ignored."""
     if not name or name in (".", "..") or os.path.basename(name) != name or "\\" in name:
@@ -143,17 +113,19 @@ def assert_one_segment(kind: str, name: str) -> str:
 
 
 def sensorium_dir(name: str) -> str:
-    """Turn a sensorium NAME into its root — `<lararium>/sensoriums/<name>` — mirroring TS `sensoriumDir`
+    """Turn a sensorium NAME into its root — `<root>/sensoriums/<name>` — mirroring TS `sensoriumDir`
     (vessel-paths.ts). The one shore a `lares sense <sensorium>` / MCP `sensorium=` address crosses to
     reach a target root; `memory` resolves the same dir the memory default names. The name passes the
-    one-segment law first, so an address can never route out of the shrine."""
-    return os.path.join(_lararium_data_home(), "sensoriums", assert_one_segment("sensorium_dir", name))
+    one-segment law first, so an address can never route out of the sensoriums home."""
+    import house_root
+    return os.path.join(house_root.sensoriums_home(), assert_one_segment("sensorium_dir", name))
 
 
 def sensorium_names() -> "list[str]":
-    """Roster every sensorium standing under `<lararium>/sensoriums` — the names an address may reach.
+    """Roster every sensorium standing under `<root>/sensoriums` — the names an address may reach.
     Mirrors TS `sensoriumNames`; an absent dir reads as an empty roster rather than raising."""
-    root = os.path.join(_lararium_data_home(), "sensoriums")
+    import house_root
+    root = house_root.sensoriums_home()
     try:
         return sorted(e.name for e in os.scandir(root) if e.is_dir())
     except OSError:
@@ -365,11 +337,26 @@ def set_stream_ephemeral(root: str, ephemeral: bool) -> str:
             raise ValueError(f"stream manifest at {path!r} cannot carry a lifecycle transition: {exc}") from exc
         if not isinstance(manifest, dict):
             raise ValueError(f"stream manifest at {path!r} must hold an object")
+        previous_ephemeral = manifest.get("ephemeral")
         manifest["ephemeral"] = ephemeral
+        if manifest.get("lifecycle") != "tombstone" and (
+                previous_ephemeral != ephemeral or "lifecycle" not in manifest):
+            manifest["lifecycle"] = _derive_stream_lifecycle(
+                ephemeral, manifest.get("persistencePolicy", {}).get("halfLife"))
         _atomic_json_write(path, manifest)
         return path
     finally:
         release_lock(lock)
+
+
+def _derive_stream_lifecycle(ephemeral: bool, half_life: "float | None") -> str:
+    """Mirror lararium-mesh/src/sensorium-lifecycle.ts::deriveLifecycle at mint time."""
+    if ephemeral:
+        return "pioneer"
+    if isinstance(half_life, (int, float)) and not isinstance(half_life, bool) \
+            and math.isfinite(half_life) and half_life > 0:
+        return "hardening"
+    return "durable"
 
 
 def _write_stream_manifest_unlocked(paths: SensoriumPaths, *, name: str, lar: str, order: OrderCap,
@@ -428,6 +415,8 @@ def _write_stream_manifest_unlocked(paths: SensoriumPaths, *, name: str, lar: st
         "bands": manifest.get("bands", {"grain": "membership", "computed": "capture"}),
         "coupling": manifest.get("coupling", {"children": []}),
         "ephemeral": ephemeral,
+        "lifecycle": manifest.get("lifecycle") or _derive_stream_lifecycle(
+            ephemeral, manifest.get("persistencePolicy", {}).get("halfLife")),
         "created": created or island_local_now(millis=True, z=True),
     })
     if apertures:

@@ -20,12 +20,12 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, readdirSync, existsSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
 import { memeticWikitextDeserializer, expandMemeRefs } from "../../packages/lararium-tw5/src/deserializer.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const BOOT_MEME = join(REPO_ROOT, "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem");
-const LARES_URI = "lar:///ha.ka.ba/bags/lares";
 const BOOT_URI  = "lar:///ha.ka.ba/lares/api/noosphere-boot";
 
 /** Canonical render of carrier text through the membrane (the V4 law's left side). */
@@ -51,7 +51,7 @@ function walkFiles(dir: string): string[] {
 
 /** Poll the staged root's lares-bag mirror surface until files appear (or timeout). */
 async function awaitMirrorFiles(root: string, timeoutMs = 30_000): Promise<string[]> {
-  const mirrorRoot = join(root, "bags/lares");
+  const mirrorRoot = join(root, "projections/bags/lares");
   const start = Date.now();
   for (;;) {
     const files = walkFiles(mirrorRoot);
@@ -62,20 +62,19 @@ async function awaitMirrorFiles(root: string, timeoutMs = 30_000): Promise<strin
 
 beforeAll(async () => {
   lar = await targetInstance();
-  if (lar.mode !== "staged") return;        // mutating vectors — staged only
-  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", LARES_URI, "--yes", "--json"]);
+  if (!stagedTarget) return;   // mutating vectors — staged only
+  const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", "lar:///ha.ka.ba/wikis/lares/working", "--yes", "--json"]);
   loadOk = r.json?.["ok"] === true;
+  if (loadOk) await promoteLoadedTitles(lar, ((r.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
 });
 afterAll(async () => { await lar.stop(); });
 
-describe("carrier-whole at rest — the kupono vectors", () => {
+describe.skipIf(!stagedTarget)("carrier-whole at rest — the kupono vectors", () => {
   test("V1 — the CRDT doc holds record-grain (parent + ahu children): lawful", () => {
-    if (lar.mode !== "staged") return;
     expect(loadOk).toBe(true);               // 18 records asserted in smoke; here: the LOAD landed
   });
 
   test("V2 — the lares-bag mirror materializes a disk projection after LOAD", async () => {
-    if (lar.mode !== "staged") return;
     const files = await awaitMirrorFiles(lar.root);
     expect(files.length).toBeGreaterThan(0);
   });
@@ -86,7 +85,6 @@ describe("carrier-whole at rest — the kupono vectors", () => {
   // a child change climbs `fragment-parent` to the carrier root and re-flushes
   // the ROOT. One carrier in, one file out. This vector stands guard.
   test("V3 — one carrier in, ONE file out: ahu children never become disk files", async () => {
-    if (lar.mode !== "staged") return;
     const files = await awaitMirrorFiles(lar.root, 5_000);  // V2 already waited
     expect(files.filter((f) => f.includes("#") || /%23/.test(f))).toEqual([]);
     expect(files).toHaveLength(1);
@@ -105,7 +103,6 @@ describe("carrier-whole at rest — the kupono vectors", () => {
   //   - idempotence + parse∘render ≡ records hold in the membrane harness
   //     (packages/lararium-tw5/tests/meme-roundtrip.test.ts).
   test("V4 — the carrier round-trips content-whole; only iam framing normalizes", async () => {
-    if (lar.mode !== "staged") return;
     const files = await awaitMirrorFiles(lar.root, 5_000);
     const parent = files.find((f) => f.endsWith("noosphere-boot.mem"));
     expect(parent, "no whole-carrier projection of the loaded meme found").toBeTruthy();

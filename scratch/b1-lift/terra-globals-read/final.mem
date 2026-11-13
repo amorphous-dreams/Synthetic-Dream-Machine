@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-globals-read/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/b1-lift/terra-globals-read/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-globals-read/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-globals-read/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/b1-lift/terra-globals-read/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/terra-globals-read/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''INFER — The warning is a false positive from the browser VM shim reading the worker’s existing globals.'' The smallest cure is to make that detector compare against the host global’s enumerable keys before each module executes, while still reporting newly added keys. Do not suppress the warning or change the floor-tab product code.
+
+* ''MEASURED — Printer and comparison:'' [[TiddlyWiki5/boot/boot.js:583|/home/joshu/.lares-scratch/b1-lift/wt/TiddlyWiki5/boot/boot.js:583]] prints the message with `console.log`. Its `__temp__` getter exposes the global object and `Object.keys` lists ''all current enumerable own keys''; there is no before/after snapshot. The check is appended after a module when `!$tw.browser && sandbox && !allowGlobals` ([[boot.js:606|/home/joshu/.lares-scratch/b1-lift/wt/TiddlyWiki5/boot/boot.js:606]]). The source search found the printer in the TW5 boot source; the ceremony harness filters the message ([[ceremony.e2e.test.ts:139|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/tests/e2e/ceremony.e2e.test.ts:139]]).
+
+* ''MEASURED — Realm:'' The browser worker’s `vm` shim returns the context object but compiles with `new Function`, so evaluated code uses the worker’s actual global realm ([[tw5-host-bridge.ts:100|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/tw5-host-bridge.ts:100]], [[tw5-host-bridge.ts:288|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/tw5-host-bridge.ts:288]]). The bridge itself lends its names non-enumerably ([[tw5-host-bridge.ts:197|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/src/tw5-host-bridge.ts:197]]). ''INFER:'' The reported worker-shaped names are consistent with the browser’s pre-existing dedicated-worker globals, not evidence of assignments in the first page. A page-associated console message alone does not establish the execution realm.
+
+* ''MEASURED — Slice 4 path:'' The first lock holder calls `lead`; the follower receives a port ([[floor-tab.ts:22|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/floor-tab.ts:22]]). The page registers a service worker ([[ceremony-page.ts:24|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/ceremony-page.ts:24]]); `main` creates a dedicated vessel worker for the owner or wraps the follower’s port ([[main.ts:434|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/main.ts:434]], [[vessel-port.ts:28|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/src/vessel-port.ts:28]]). These paths do not assign the listed globals.
+
+* ''MEASURED — What actually reddens this HEAD:'' [[glass-tabs.e2e.test.ts:52|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-web/tests/e2e/glass-tabs.e2e.test.ts:52]] records console messages; line 62 supplies them as the ''diagnostic message'' for an `owner/full` assertion. It does not independently fail on a warning. ''INFER:'' The warning may accompany the failure without explaining why the first tab failed to settle; that underlying failure remains undiagnosed.
+
+''INFER — Red to add:'' Exercise the real browser-worker shim with existing enumerable host globals: a clean module must produce no warning, while a module adding a fresh enumerable global must still report it. The current Node-hosted control explicitly excludes globals already present before boot ([[genesis-boot.test.ts:100|/home/joshu/.lares-scratch/b1-lift/wt/packages/lararium-tw5/tests/genesis-boot.test.ts:100]]), so it misses this case. Lead runs the browser/e2e verification; this read-only diagnosis ran no tests.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bu52f7NegJx6lMW1svNthKh7b1ZWzMW6jNb79eV6rmk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

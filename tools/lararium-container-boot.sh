@@ -6,6 +6,7 @@
 # compiled CLI; this root gets its own genesis copy so `lares vessel found` can read the CID.
 set -e
 : "${LAR_ROOT:?LAR_ROOT must be set}"
+. tools/test-container-route.sh
 
 mkdir -p "$LAR_ROOT/genesis"
 cp /app/genesis/seed.json "$LAR_ROOT/genesis/" 2>/dev/null || true
@@ -14,9 +15,8 @@ cp -r /app/genesis/cas  "$LAR_ROOT/genesis/" 2>/dev/null || true   # the CAS sub
 # in that vessel's own store (<lares>/vessel), so no copy of a seed can hand a container someone
 # else's identity. Each container founds its own below.
 #
-# THE STORE SITES BY HOUSE, NOT BY KIND. Under LAR_ROOT each directory names an XDG kind — data, state,
-# cache, config, run — and the two houses nest inside the data kind exactly as they do under XDG, so the
-# spirits' substrate stands at `<root>/data/lares/vessel` beside the house's `<root>/data/lararium`.
+# THE STORE SITES BY CLASS. Under LAR_ROOT each first-level directory names one class — hearth, library,
+# projections, config, cache, run — and the spirits' substrate stands at `<root>/hearth/vessel`.
 # A probe reading one segment short finds nothing and re-founds a container that already stands.
 
 # THE CARD OF A STAGED HEARTH. On a staged root the founding's read-back stands in, and its JSON answer carries the
@@ -26,7 +26,7 @@ _card=""
 _json_line() { node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{const l=s.split("\n").filter((x)=>x.startsWith("{")).pop();process.stdout.write(l??"")})'; }
 _card_of() { node -e 'let s="";process.stdin.on("data",(d)=>{s+=d}).on("end",()=>{try{process.stdout.write(String(JSON.parse(s).data.cards[0].code??""))}catch{}})'; }
 
-_bootstrap="$LAR_ROOT/data/lares/vessel/social-bootstrap.json"
+_bootstrap="$LAR_ROOT/hearth/vessel/social-bootstrap.json"
 # A HEARTH WHOSE FOUNDING STOPPED RESUMES. A place that stands with no face lit, under LAR_STAND_FACE, runs the
 # Stable founding act again: the act skips what stands (the place, a seed charter it already seated) and completes.
 _resume=""
@@ -57,16 +57,16 @@ if [ ! -f "$_bootstrap" ] || [ -n "$_resume" ]; then
     echo "[boot] founding the hearth '${LAR_STAND_FACE}' by the Stable founding act…"
     if [ -n "${LAR_STAGE_DIR:-}" ]; then
       # A staged root: the read-back stands in, and the JSON answer carries the card's code for the roll below.
-      _out="$(LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js vessel found --hearth --name "$LAR_STAND_FACE" --skip-build --json)" \
+      _out="$(LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found --hearth --name "$LAR_STAND_FACE" --skip-build --json)" \
         || { echo "$_out"; echo "[boot] the hearth did NOT found (see above) — serving as a place, at the waking floor"; }
       _card="$(printf '%s\n' "$_out" | _json_line | _card_of)"
     else
       # A live root: the card prints on this terminal and reads back there, and no answer carries its code.
-      LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js vessel found --hearth --name "$LAR_STAND_FACE" --skip-build \
+      LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found --hearth --name "$LAR_STAND_FACE" --skip-build \
         || echo "[boot] the hearth did NOT found (see above) — serving as a place, at the waking floor"
     fi
   else
-    node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build
+    test_container_route node packages/lares-cli/dist/src/bin/lares.js vessel found --skip-build
   fi
 
   # A HEARTH THAT CARRIES IS NOT YET A HEARTH THAT TENDS. `LAR_STAND_KAHU` names the chairs' Handles,
@@ -87,13 +87,15 @@ if [ ! -f "$_bootstrap" ] || [ -n "$_resume" ]; then
       printf '%s\n' "$LAR_STAND_KAHU" | tr ',' '\n' | while IFS= read -r _handle; do
         [ -z "$_handle" ] && continue
         _label="kahu-$_i"; [ "$_i" -eq 0 ] && _label="$LAR_STAND_FACE"
-        LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js persona new "$_i" \
+        LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js persona new "$_i" \
           --name "$_label" --handle "$_handle" --seat \
           || echo "[boot] kahu $_i ('$_handle') did NOT stand — the roster will read short"
         _i=$((_i + 1))
       done
       _chairs=$(printf '%s\n' "$LAR_STAND_KAHU" | tr ',' '\n' | grep -c .)
-      LAR_PEERS= node packages/lares-cli/dist/src/bin/lares.js nexus seal rotate --cold-key "$_card" --threshold $(( _chairs / 2 + 1 )) \
+      # THE ROLL NAMES ITS FACE: three faces stand open now, and a command acts as the face it names (`--face N`). The
+      # founding face, persona zero, holds the seed chair the card arms, so it acts the roll and its realm edge anchors.
+      LAR_PEERS= test_container_route node packages/lares-cli/dist/src/bin/lares.js nexus seal rotate --face 0 --cold-key "$_card" --threshold $(( _chairs / 2 + 1 )) \
         || echo "[boot] the seed charter did NOT roll (see above) — this hearth tends under its one seed seat"
     fi
   fi

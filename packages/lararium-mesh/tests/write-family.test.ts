@@ -9,7 +9,7 @@ import { getAllChanges } from "@automerge/automerge";
 import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { CompositeStore } from "../src/composite-store.js";
 import { emptyLarDoc, type LarDoc } from "../src/base-doc.js";
-import type { ChangeOrigin, LarTiddlerRecord } from "../src/tiddler-store.js";
+import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord } from "../src/tiddler-store.js";
 import { tiddlerText } from "../src/index.js";
 
 const ROOT = "lar:///t/family";
@@ -21,7 +21,7 @@ function seeded(): Promise<{ store: AutomergeDocStore; changes: () => number; do
   const handle = repo.create<LarDoc>(emptyLarDoc());
   const store = new AutomergeDocStore(handle, "bag-f");
   return (async () => {
-    await store.put(rec(ROOT, "<<~ kahea ahu #/old>>"), origin);
+    await store.put(rec(ROOT, "<<~ kahea ahu slot=`#/old`>>"), origin);
     await store.put(rec(`${ROOT}#/old`, "old"), origin);
     return { store, changes: () => getAllChanges(handle.doc()!).length, doc: () => handle.doc()! };
   })();
@@ -32,10 +32,10 @@ describe("★ a meme family lands as ONE change ★", () => {
     const { store, changes, doc } = await seeded();
     const before = changes();
 
-    await store.writeFamily([rec(ROOT, "<<~ kahea ahu #/new>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
+    await store.writeFamily([rec(ROOT, "<<~ kahea ahu slot=`#/new`>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
 
     expect(changes() - before).toBe(1);
-    expect(tiddlerText(doc().tiddlers[ROOT])).toBe("<<~ kahea ahu #/new>>");
+    expect(tiddlerText(doc().tiddlers[ROOT])).toBe("<<~ kahea ahu slot=`#/new`>>");
     expect(tiddlerText(doc().tiddlers[`${ROOT}#/new`])).toBe("fresh");
     expect(doc().tiddlers[`${ROOT}#/old`]!.meta?.deleted).toBe(true);
   });
@@ -45,7 +45,7 @@ describe("★ a meme family lands as ONE change ★", () => {
     const seen: string[] = [];
     store.subscribe((c) => seen.push(`${c.record?.meta?.deleted ? "tombstone" : "put"} ${c.title}`));
 
-    await store.writeFamily([rec(ROOT, "<<~ kahea ahu #/new>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
+    await store.writeFamily([rec(ROOT, "<<~ kahea ahu slot=`#/new`>>"), rec(`${ROOT}#/new`, "fresh")], [`${ROOT}#/old`], origin);
 
     expect(seen).toEqual([`put ${ROOT}`, `put ${ROOT}#/new`, `tombstone ${ROOT}#/old`]);
   });
@@ -53,7 +53,7 @@ describe("★ a meme family lands as ONE change ★", () => {
   test("CONTROL — a family whose content already stands makes no change at all", async () => {
     const { store, changes } = await seeded();
     const before = changes();
-    await store.writeFamily([rec(ROOT, "<<~ kahea ahu #/old>>"), rec(`${ROOT}#/old`, "old")], [], origin);
+    await store.writeFamily([rec(ROOT, "<<~ kahea ahu slot=`#/old`>>"), rec(`${ROOT}#/old`, "old")], [], origin);
     expect(changes()).toBe(before);
   });
 
@@ -157,5 +157,53 @@ describe("a single put or tombstone is a family of one", () => {
     await store.remove(`${ROOT}#/old`, origin);
     expect(doc().tiddlers[`${ROOT}#/old`]).toBeUndefined();
     expect(seen).toEqual([null]);
+  });
+});
+
+describe("a store's own write reaches every projection with its writer's origin", () => {
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const tag = (c: LarTiddlerChange) => `${c.title}:${c.origin.kind}${c.redelivery ? ":redelivery" : ""}`;
+  const watched = () => {
+    const repo = new Repo({ network: [] });
+    const handle = repo.create<LarDoc>(emptyLarDoc());
+    const store = new AutomergeDocStore(handle, "bag-o");
+    const perUri: string[] = [];
+    const perSet: string[] = [];
+    store.addProjection({ onUriChanged: (c) => perUri.push(tag(c)) });
+    store.addProjection({ onUriChanged: (c) => perSet.push(tag(c)), onChangeset: (cs) => perSet.push(cs.map(tag).join(",")) });
+    const outside = (title: string, text: string) => handle.change((doc) => {
+      (doc.tiddlers as Record<string, unknown>)[title] = { tiddler: { title, text } };
+    });
+    return { store, perUri, perSet, outside };
+  };
+  const CLI = "lar:///t/cli-put";
+  const writer: ChangeOrigin = { kind: "lares-verb", requestId: "cli-put" };
+
+  test("the debounced wave after the write re-reads the title under the writer's origin, marked a redelivery, never crdt-remote; CONTROL: a change made on the handle outside the store arrives as crdt-remote", async () => {
+    const { store, perUri, perSet, outside } = watched();
+    await store.writeFamily([rec(CLI, "hello")], [], writer);
+    const atReturn = { perUri: [...perUri], perSet: [...perSet] };
+    await sleep(200);                                                                   // past the provider's 40 ms debounce
+    expect(atReturn).toEqual({ perUri: [`${CLI}:lares-verb`], perSet: [`${CLI}:lares-verb`] });
+    // The debounced wave stands (a shore lands from it: the island adaptor's own-write wave, then the disk projector) and names its writer.
+    expect(perUri).toEqual([`${CLI}:lares-verb`, `${CLI}:lares-verb:redelivery`]);
+    expect(perSet).toEqual([`${CLI}:lares-verb`, `${CLI}:lares-verb:redelivery`]);
+    outside("lar:///t/remote", "from elsewhere");
+    await sleep(200);
+    expect(perUri.at(-1)).toBe("lar:///t/remote:crdt-remote");
+    expect(perSet.at(-1)).toBe("lar:///t/remote:crdt-remote");
+  });
+
+  test("a remote change still pending when the store writes the same title keeps its delivery: the coalesced wave reads crdt-remote, unmarked; CONTROL: remove re-reads under its writer's origin", async () => {
+    const { store, perUri, perSet, outside } = watched();
+    outside(CLI, "remote first");
+    await store.writeFamily([rec(CLI, "local after")], [], writer);
+    await sleep(200);
+    expect(perUri).toEqual([`${CLI}:lares-verb`, `${CLI}:crdt-remote`]);
+    expect(perSet).toEqual([`${CLI}:lares-verb`, `${CLI}:crdt-remote`]);
+    perUri.length = 0;
+    await store.remove(CLI, writer);
+    await sleep(200);
+    expect(perUri).toEqual([`${CLI}:lares-verb`, `${CLI}:lares-verb:redelivery`]);
   });
 });

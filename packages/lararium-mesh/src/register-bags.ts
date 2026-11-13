@@ -41,8 +41,11 @@
  */
 
 import { type LarDoc, tiddlerText } from "./base-doc.js";
-import { BAG_IDS, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
-import { personaScopedBagIds } from "./persona-scope.js";
+import { BAG_IDS, CATALOG_DOC_URI, DAEMON_BAG_ID, isBagId } from "./lar-uris.js";
+import { isFaceScopedBag, personaScopedBagIds } from "./persona-scope.js";
+import { ownEntry } from "./stored-value.js";
+import { houseCanonBagsSeated, isHouseCanonBag } from "./kahu-canon-reach.js";
+import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 
 /**
  * The bag URIs the `catalog` registry NAMES — the PersonaGroup's own work, read from the projection.
@@ -66,7 +69,7 @@ import { personaScopedBagIds } from "./persona-scope.js";
 export function catalogNamedBags(doc: LarDoc | undefined | null): string[] {
   const tiddlers = doc?.tiddlers ?? {};
   return Object.keys(tiddlers).filter(
-    (title) => isBagId(title) && (tiddlerText(tiddlers[title]) ?? "").startsWith("automerge:"),
+    (title) => isBagId(title) && (tiddlerText(ownEntry(tiddlers, title)) ?? "").startsWith("automerge:"),
   );
 }
 
@@ -87,6 +90,9 @@ export interface RegisterBagsInput {
   readonly fleets: readonly FleetMembership[];
   /** The wiki slot's bag ids, when a wiki stands in the stack. A Herm carries none — blind by structure. */
   readonly wikiBags?: readonly string[];
+  /** True where the Kahu cabal admitted this vessel's group and the keel mounted the live system documents: the
+   *  vessel then registers every house canon bag (`houseCanonBagsSeated`). Absent = it holds no canon document. */
+  readonly systemCanon?: boolean;
 }
 
 /**
@@ -94,27 +100,96 @@ export interface RegisterBagsInput {
  *
  * Every id here belongs to the VESSEL or to the mesh beneath it: its daemon, the catalog and oracle it
  * reads through, and the substrate bags a vessel needs to stand at all. NO PLANE OF A FACE sits among
- * them — not the persona plane, and not the circles, identities or sessions that travel with it. Those
+ * them — not the persona plane, and not the circles, identities, sessions or intents that travel with it. Those
  * belong to a PERSONAGROUP and arrive through this vessel's memberships, so a vessel standing in no group
  * holds none of them, and a vessel standing in several holds one set per face.
  */
 const OWN_GROUND = [
-  DAEMON_BAG_ID, BAG_IDS.catalog, BAG_IDS.oracle, BAG_IDS.lares, BAG_IDS.lararium,
+  DAEMON_BAG_ID, BAG_IDS.catalog, BAG_IDS.oracle,
 ] as const;
+
+/**
+ * The LIVE house canon (`houseCanonBagsSeated`): ground for the Kahu cabal's vessel alone. It rests in the Kahu realm
+ * (`kahu-realm`), so a vessel outside the cabal holds no document of it and registers none of its bags. It remains
+ * vessel-ground in KIND: the daemon's own key holds its caps, as it holds the substrate's.
+ */
+export function isVesselGround(bag: string): boolean {
+  return (OWN_GROUND as readonly string[]).includes(bag) || isHouseCanonBag(bag);
+}
 
 /**
  * The bags this vessel registers, derived — its ground, its wiki, and the union over the groups it stands in.
  *
- * Each membership contributes THE WHOLE FACE — its persona plane and the circles, identities and sessions
- * that travel with it, all four derived off the one tag that group's doc id yields — plus every bag that
+ * Each membership contributes THE WHOLE FACE — its persona plane and the circles, identities, sessions and intents
+ * that travel with it, all five derived off the one tag that group's doc id yields — plus every bag that
  * group's catalog names. Order stays stable and duplicates collapse, so two vessels in the same groups
  * produce one comparable set, and two groups naming a bag in common register it once.
  */
 export function deriveRegisterBags(input: RegisterBagsInput): string[] {
-  const out: string[] = [...OWN_GROUND, ...(input.wikiBags ?? [])];
+  const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? houseCanonBagsSeated() : []), ...(input.wikiBags ?? [])];
   for (const fleet of input.fleets) {
     const face = personaScopedBagIds(fleet.personaGroupId);
-    out.push(face.persona, face.circles, face.identities, face.sessions, ...(fleet.catalogNamed ?? []));
+    // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape
+    // recognises without any list of the others.
+    out.push(face.persona, face.circles, face.identities, face.sessions, face.intents, ...(fleet.catalogNamed ?? []).filter((bag) => !isFaceScopedBag(bag)));
   }
   return [...new Set(out)];
+}
+
+/** A wiki slot's three bags, as a vessel's mounted slot names them. */
+export interface WikiSlotBags {
+  readonly wikiBagId: string;
+  readonly workingBagId: string;
+  readonly draftBagId: string;
+}
+
+/**
+ * THE DAEMON WIKI'S OWN SLOTS: its working and draft slots, the D half of the daemon bag (sealed-store#/owed, U1). The
+ * working slot carries the verb outcome ledger and the receipt facts; each seals under the lit face. The daemon wiki's
+ * canon bag and the daemon document (`DAEMON_BAG_ID`) stand on the floor, clear and signed, and never join this set.
+ */
+/** The bag the face's own catalog document answers to (`catalog-view`), sealed under the lit face. */
+export const FACE_CATALOG_BAG_ID = `${CATALOG_DOC_URI}/face`;
+
+export const DAEMON_WIKI_SLOT_BAGS: readonly string[] = [wikiSlotUri("daemon", "working"), wikiSlotUri("daemon", "draft"), wikiSlotUri("daemon", "personal")];
+
+/**
+ * The daemon canon bag a worn face stands (`daemonFaceCanonBag`), or null. The canon's document seals under the face, so it
+ * stands only where {@link wornFaceWikiBags} registers and seals its bag: a face that stands lit and proved. A worn face
+ * that stands unlit, and the floor, stand none.
+ */
+export function standingDaemonCanonBag(input: { readonly lit: boolean; readonly faceRelation: string | null }): string | null {
+  return input.lit && input.faceRelation ? daemonFaceCanonBag(input.faceRelation) : null;
+}
+
+/**
+ * THE LIT SET: the bags a face OWNS while it stands lit, worn or beside the worn face: the daemon wiki's device slots, its daemon
+ * canon (where its relation stands known), and its own catalog half. A sibling face's hive registers these and never a user
+ * wiki's bags, which belong to the worn face's mount.
+ */
+export function litFaceOwnBags(faceRelation: string | null | undefined): string[] {
+  return [...DAEMON_WIKI_SLOT_BAGS, ...(faceRelation ? [daemonFaceCanonBag(faceRelation)] : []), FACE_CATALOG_BAG_ID];
+}
+
+/**
+ * The wiki bags a vessel's worn face carries: `registered`, the wiki bags the face's hive registers (`deriveRegisterBags`'s
+ * `wikiBags`), and `sealed`, the bags the sealed rest seals under that face. `lit` reads true only while the face stands
+ * lit and proved.
+ *
+ * EVERY BAG THE REST SEALS, THE FACE REGISTERS. A record a session seals there carries the face's certificate, and its
+ * reader reads the writer capable only over a bag the face registers (`ownChainStanding`); a sealed bag outside the
+ * register set reads `writer-not-capable`, its seal refuses, and a flush waits on it. The user wiki's slots register at
+ * the floor and lit alike, as a wiki stack stands; the daemon wiki's slots register and seal under the lit face alone.
+ */
+export function wornFaceWikiBags(input: { readonly slot?: WikiSlotBags | undefined; readonly lit: boolean; readonly daemonCanon?: string }): { readonly registered: string[]; readonly sealed: string[] } {
+  const user = input.slot ? [input.slot.wikiBagId, input.slot.workingBagId, input.slot.draftBagId] : [];
+  // The face's own catalog (U1's D half of the catalog) rides with the daemon wiki's slots: the island registers it at
+  // boot, so its holder holds the catalog's key before the lift opens the sealed document. The vessel's control document
+  // seals beside the secret home under the vessel's own key (`secret-home`), never under one face.
+  // The worn face's daemon canon (`bags/daemon-<F>`, `daemonFaceCanonBag`) rides with them too: a face's daemon wiki content.
+  const faceOwn = input.lit ? [...DAEMON_WIKI_SLOT_BAGS, ...(input.daemonCanon ? [input.daemonCanon] : []), FACE_CATALOG_BAG_ID] : [];
+  return {
+    registered: [...user, ...faceOwn],
+    sealed: [...(input.lit ? user : []), ...faceOwn],
+  };
 }

@@ -1,8 +1,9 @@
 /**
- * `lares persona {new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | wear <index> | list}` — the
+ * `lares persona {new <index> --name <petname> [--handle <Handle>] [--seat [--chair <label>]] [--split-root] | list}` — the
  * operator's door to the
  * PLURALITY-PONO identity multitude. A vessel HOLDS a set of PersonaGroup-roots — one per persona
- * the operator wears (persona-vault) — and WEARS one at a time. This command DRIVES the existing node core;
+ * the operator holds (persona-vault) — and wears none between commands: each command names the face it acts as
+ * (`--face N`), or resolves the one face standing open. This command DRIVES the existing node core;
  * it never re-implements minting, the custody wall, or the pet-name store.
  *
  *   new <index> --name <petname>       mint/load the persona-root at <index> (fail-closed via
@@ -11,8 +12,7 @@
  *                                      publish — only an announce binds a persona to a glamour)
  *              [--seat [--chair <label>]] stand this persona for a Kahu chair on THIS node
  *              [--split-root]          arm its 2-of-3 recovery split
- *   wear <index>                       switch the active persona (one-face-to-mesh; reboot-to-switch)
- *   list                               the private multitude-view — held indices, active marker, labels, Handles
+ *   list                               the private multitude-view — held indices, labels, Handles
  *
  * The pet-name stays PRIVATE (persona-petname: rests sealed, fleet-syncs among the human's own vessels over a
  * persona plane whose rest seals, never PUBLICLY federates); minting a persona announces no public glamour, because only a publicly announced Handle binds
@@ -22,23 +22,28 @@
  * fleet; `--handle` declares what that persona answers to outward; `lares handle publish` announces it. The label and
  * the Handle MAY read identical and stay two acts, so a human whose compartment reads "the-burner" can still
  * stand under any declared Handle — nothing joins them but the human's own say-so. Founder-side: `new` mints an
- * operator-root this vessel holds — a joining vessel receives a root by admit, never mints one here.
+ * operator-root this vessel holds — a joining vessel takes its face by `lares fleet join`, never mints a root here.
  */
 
+import { gatherWard, gatherWardRoute } from "../ward-door.js";
+import { faceOption } from "../face-option.js";
 import {
-  faceStands, armRecoveryAtFounding, guardianOffer, type FoundFaceResult,
+  faceStands, armRecoveryAtFounding, recoveryContactOffer, listFaceOrdinals, CustodyLocked, type FoundFaceResult,
 } from "@lararium/node";
 import {
-  renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING,
+  renameOwnPersona, ownPersonaPetname, HANDLE_INDEX_CEILING, RECOVERY_CONTACT_THRESHOLD,
   declarePersonaHandle, standForKahuSeat,
-  refuseSlot, personaSlotCeiling, defaultChairLabel, type VesselClass,
+  refuseSlot, personaSlotCeiling, defaultChairLabel, faceLogViewLine, coldKeySeedFromCode, signFaceLogView, type VesselClass,
 } from "@lararium/mesh";
-import { cmdPersonaAdmit } from "./persona-admit-cmd.js";
-import { storeVerb, storeFailure } from "../store-door.js";
+import { requireTty } from "../custody-prompt.js";
+import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
+import { promptSecret } from "../prompt-secret.js";
+import { labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
+import { storeVerb, storeFailure, standingRefusal } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
-import { readPersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
+import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
 import {
   makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, carryOwnName,
 } from "../daemon-persona-store.js";
@@ -96,12 +101,14 @@ export async function cmdPersona(args: ParsedArgs): Promise<number> {
   try {
     switch (sub) {
       case "new":   return await personaNew(args);
-      case "wear":  return await personaWear(args);
       case "list":  return await personaList(args);
       case "sync":  return await personaSync(args);
-      case "admit": return await cmdPersonaAdmit(args);
       case "reissue": return await personaReissue(args);
-      case "guardian": return await personaGuardian(args);
+      case "lease": return await personaLease(args);
+      case "recovery-contact": return await personaRecoveryContact(args);
+      case "provisional": return await personaProvisional(args);
+      case "confirm": return await personaConfirm(args);
+      case "view": return await personaView(args);
       default:
         console.error(`lares persona: unknown sub-verb "${sub}"`);
         return usage(args, sub);
@@ -131,7 +138,7 @@ function fleetStores(): {
 }
 
 /**
- * `lares persona reissue [--nexus <aid>]` — the face this vessel WEARS hands its key at one Nexus on to a fresh key
+ * `lares persona reissue [--nexus <aid>] [--face N]` — the face named (else the one face standing open) hands its key at one Nexus on to a fresh key
  * minted at random. Both keys sign one hand-over; it lands on that Nexus's carriage board, where every gate reads
  * it beside the face's admit, and the old key leaves this vessel. The admit keeps naming the key the Nexus admitted.
  * A compromised key takes the face-key roll instead (a revoke and a fresh admit), never a re-issue.
@@ -139,7 +146,7 @@ function fleetStores(): {
 async function personaReissue(args: ParsedArgs): Promise<number> {
   const raw = args.options["nexus"];
   const nexusAid = typeof raw === "string" && raw.trim().length > 0 ? raw.trim() : undefined;
-  const r = await sealedAct("persona.reissue", nexusAid ? { nexusAid } : {});
+  const r = await sealedAct("persona.reissue", { ...(nexusAid ? { nexusAid } : {}), ...faceOption(args) });
   emit(args, {
     ok: true,
     data: r,
@@ -155,29 +162,117 @@ async function personaReissue(args: ParsedArgs): Promise<number> {
 }
 
 /**
- * `lares persona guardian show <index>` — the face's prefix (what a guardian's offer names) and the set it holds.
- *
- * `lares persona guardian offer --prefix <persona-…>` — the GUARDIAN's half: mint a fresh recovery key for ONE face,
- * print the card the guardian keeps and the offer line the face's holder enrols. The key never rests on a vessel.
- *
- * `lares persona guardian enrol <index> --threshold <k> <offer>…` — the face at `<index>` enrols its FIRST guardian
- * set: its own key signs one typed event on its key history, and the set's record rests sealed here. A key another
- * face of this vessel already holds refuses (`guardian-key-serves-another-face`); every later change to the set
- * takes the guardians' quorum. The count and the threshold stay the person's.
+ * `lares persona lease [index]` — roll the face's lease epoch forward with a signed advance. The persona root signs
+ * effective + 1 into its own slot; stale grants go cold, and the sealed anchor's frontier rises to the epoch that verified.
  */
-async function personaGuardian(args: ParsedArgs): Promise<number> {
+async function personaLease(args: ParsedArgs): Promise<number> {
+  const index = args.positional[1] === undefined ? 0 : parseIndex(args.positional[1]);
+  const r = (await storeVerb("persona-lease", { handleIndex: index })).output as Record<string, unknown>;
+  emit(args, {
+    ok: true, data: r,
+    human: () => console.log(`the face at h${index} advanced its lease from ${String(r["effective"])} to ${String(r["rolled"])} (signed); the sealed frontier reads ${String(r["frontier"])}`),
+  });
+  return 0;
+}
+
+/**
+ * `lares persona provisional <index>` — whether a restored face still stands provisional, the head its restore read,
+ * and who could confirm it (custody#/the-restore).
+ */
+async function personaProvisional(args: ParsedArgs): Promise<number> {
+  const index = parseIndex(args.positional[1]);
+  const r = await sealedAct("persona.provisional", { handleIndex: index });
+  emit(args, {
+    ok: true, data: r,
+    human: () => {
+      if (r["provisional"] !== true) { console.log(`the face at h${index} stands confirmed: no provisional mark rests on it`); return; }
+      const head = r["head"] as { seq: number; eventCid: string };
+      console.log(`the face at h${index} stands PROVISIONAL: its restore read head ${head.seq} (${head.eventCid.slice(0, 24)}…) off ${r["from"] === "board" ? "this vessel's board" : "its bundle's log"}.`);
+      console.log("  it reads, recovers and serves its own content, and signs no act that changes who holds authority.");
+      console.log("  who could confirm, each with its own view (`lares persona confirm <index> <lar-log-view:…>`):");
+      for (const line of (r["couldConfirm"] ?? []) as string[]) console.log(`    ${line}`);
+    },
+  });
+  return 0;
+}
+
+/**
+ * `lares persona confirm <index> <lar-log-view:…>` — one party's own view of the face's head confirms a provisional
+ * face where the party stands as itself on this vessel's rows and its head agrees with the one the restore read.
+ */
+async function personaConfirm(args: ParsedArgs): Promise<number> {
+  const index = parseIndex(args.positional[1]);
+  const view = args.positional[2];
+  if (typeof view !== "string" || !view.startsWith("lar-log-view:")) throw new UsageError("`persona confirm` takes the face's index and one party's view line (lar-log-view:…)");
+  const r = await sealedAct("persona.confirm", { handleIndex: index, view });
+  emit(args, {
+    ok: true, data: r,
+    human: () => {
+      const head = r["head"] as { seq: number };
+      console.log(`the face at h${index} stands CONFIRMED: a ${String(r["party"])} (${String(r["key"]).slice(0, 16)}…) holds the same head (${head.seq}).`);
+      console.log("  one agreeing party may itself sit stale: its view counts as evidence that no fork shows to it.");
+    },
+  });
+  return 0;
+}
+
+/**
+ * `lares persona view <persona-…> --seat-key <key>` — a CHAIR this vessel holds signs its own view of a face's head, read
+ * off this vessel's board, for the restored face's vessel to confirm with.
+ */
+async function personaView(args: ParsedArgs): Promise<number> {
+  const prefix = (args.positional[1] ?? "").trim();
+  const seat = typeof args.options["seat-key"] === "string" ? args.options["seat-key"].trim().toLowerCase() : "";
+  if (!/^persona-[0-9a-f]{64}$/.test(prefix) || !/^[0-9a-f]{64}$/.test(seat)) throw new UsageError("`persona view` names the face (persona-<64 hex>) and the chair it speaks as (--seat-key <64 hex>)");
+  const r = await sealedAct("persona.view", { prefix, seat });
+  const view = r["view"] as Parameters<typeof faceLogViewLine>[0];
+  const line = faceLogViewLine(view);
+  emit(args, {
+    ok: true, data: { view, line },
+    human: () => {
+      console.log(`[lares persona view] this chair holds head ${view.seq} for ${prefix.slice(0, 24)}…; hand the face's holder this line:`);
+      console.log(`  ${line}`);
+    },
+  });
+  return 0;
+}
+
+/**
+ * What enrolment says aloud, which the word "recovery contact" does not: what two of the three can do. Your Handle is
+ * the public card your face publishes, recognised by its own key; a recovery contact restores it, never your memory.
+ */
+export function recoveryContactEnrolmentSpeech(): readonly string[] {
+  return [
+    "two of these three, together, can restore your Handle.",
+    "(your Handle: the public card your face publishes, recognised by its own key. No one of the three can do it alone, and none of them opens your memory.)",
+    "every later change to this set takes the recovery contacts' quorum.",
+  ];
+}
+
+/**
+ * `lares persona recovery-contact show <index>` — the face's prefix (what a recovery contact's offer names) and the set it holds.
+ *
+ * `lares persona recovery-contact offer --prefix <persona-…>` — the RECOVERY CONTACT's half: mint a fresh recovery key for ONE face,
+ * print the card the recovery contact keeps and the offer line the face's holder enrols. The key never rests on a vessel.
+ *
+ * `lares persona recovery-contact enrol <index> --threshold <k> <offer>…` — the face at `<index>` enrols its FIRST recovery contact
+ * set: its own key signs one typed event on its key history, and the set's record rests sealed here. A key another
+ * face of this vessel already holds refuses (`recovery-contact-key-serves-another-face`); every later change to the set
+ * takes the recovery contacts' quorum. Three recovery contacts, a threshold of two: two of the three, together, restore your Handle.
+ */
+async function personaRecoveryContact(args: ParsedArgs): Promise<number> {
   const verb = args.positional[1];
   if (verb === "offer") {
     const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
-    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona guardian offer` names the face it guards: --prefix persona-<64 hex>");
-    const o = await guardianOffer(prefix);
+    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona recovery-contact offer` names the face it guards: --prefix persona-<64 hex>");
+    const o = await recoveryContactOffer(prefix);
     emit(args, {
       ok: true,
       // The card rides to this process's own output alone: the key rests nowhere else, so a reading without it
       // would leave an offer for a key nobody holds.
       data: { prefix, recoveryPubKey: o.recoveryPubKey, offer: o.offer, card: o.code },
       human: () => {
-        console.log(`[lares persona guardian offer] a fresh recovery key for the face ${prefix.slice(0, 24)}…`);
+        console.log(`[lares persona recovery-contact offer] a fresh recovery key for the face ${prefix.slice(0, 24)}…`);
         console.log("  KEEP THIS CARD: it signs this face's recovery. Write it down now; it rests nowhere else.");
         console.log(`  card   ${o.code}`);
         console.log("  hand the face's holder this offer line:");
@@ -188,18 +283,18 @@ async function personaGuardian(args: ParsedArgs): Promise<number> {
   }
   if (verb === "show") {
     const index = parseIndex(args.positional[2]);
-    const r = await sealedAct("persona.guardian.show", { handleIndex: index });
+    const r = await sealedAct("persona.recovery-contact.show", { handleIndex: index });
     emit(args, {
       ok: true,
       data: r,
       human: () => {
         console.log(`the face at h${index}: ${String(r["prefix"])}`);
-        if (r["guardianSetHash"] === null && r["headSet"] === null) {
-          console.log("  one-of-one: no guardians enrolled; a guardian cuts its offer with `lares persona guardian offer --prefix <the prefix above>`");
+        if (r["recoveryContactSetHash"] === null && r["headSet"] === null) {
+          console.log("  one-of-one: no recovery contacts enrolled; a recovery contact cuts its offer with `lares persona recovery-contact offer --prefix <the prefix above>`");
         } else if (r["committed"] === true) {
-          console.log(`  guardians: ${String(r["guardians"])} at threshold ${String(r["threshold"])} (set ${String(r["guardianSetHash"])})`);
+          console.log(`  recovery contacts: ${String(r["recoveryContacts"])} at threshold ${String(r["threshold"])} (set ${String(r["recoveryContactSetHash"])})`);
         } else {
-          console.log(`  PENDING: this vessel's record names the set ${String(r["guardianSetHash"])}, and the key history it reads commits ${String(r["headSet"] ?? "none yet")}`);
+          console.log(`  PENDING: this vessel's record names the set ${String(r["recoveryContactSetHash"])}, and the key history it reads commits ${String(r["headSet"] ?? "none yet")}`);
           console.log("  the same offers complete a stopped enrolment; a set another vessel of this face enrolled first stands as the face's");
         }
       },
@@ -208,27 +303,58 @@ async function personaGuardian(args: ParsedArgs): Promise<number> {
   }
   if (verb === "enrol") {
     const index = parseIndex(args.positional[2]);
+    // The threshold is the law's two: absent, it reads two; named, the vessel's refusal answers any other (`threshold-not-two`).
     const raw = args.options["threshold"];
-    const threshold = typeof raw === "string" ? Number(raw) : NaN;
-    if (!Number.isSafeInteger(threshold) || threshold < 1) throw new UsageError("`persona guardian enrol` needs --threshold <k>, a whole number from 1");
+    const threshold = typeof raw === "string" ? Number(raw) : RECOVERY_CONTACT_THRESHOLD;
+    if (!Number.isFinite(threshold)) throw new UsageError("`persona recovery-contact enrol` reads --threshold as a number; the rule is two");
     const offers = args.positional.slice(3);
-    if (offers.length === 0) throw new UsageError("`persona guardian enrol` takes one guardian offer line per guardian");
-    const r = await sealedAct("persona.guardian.enrol", { handleIndex: index, offers: offers.join(" "), threshold });
+    if (offers.length === 0) throw new UsageError("`persona recovery-contact enrol` takes the three recovery contacts' offer lines");
+    const r = await sealedAct("persona.recovery-contact.enrol", { handleIndex: index, offers: offers.join(" "), threshold, ward: await gatherWardRoute(`lares persona recovery-contact enrol ${index}`) });
     emit(args, {
       ok: true,
       data: r,
       human: () => {
-        console.log(`the face at h${String(r["handleIndex"])} enrolled ${String(r["guardians"])} guardian(s) at threshold ${String(r["threshold"])}`);
-        console.log(`  set:   ${String(r["guardianSetHash"])}  (on its key history, sequence ${String(r["seq"])})`);
-        console.log("  every later change to this set takes the guardians' quorum");
+        console.log(`the face at h${String(r["handleIndex"])} enrolled ${String(r["recoveryContacts"])} recovery contacts at threshold ${String(r["threshold"])}`);
+        console.log(`  set:   ${String(r["recoveryContactSetHash"])}  (on its key history, sequence ${String(r["seq"])})`);
+        for (const line of recoveryContactEnrolmentSpeech()) console.log(`  ${line}`);
       },
     });
     return 0;
   }
-  return usage(args, "guardian");
+  if (verb === "view") {
+    // THE RECOVERY CONTACT'S OWN VIEW of a face's head: this vessel's board supplies the head, and the recovery contact's card signs
+    // it in this process alone; the card's seed crosses no socket and zero-fills before the line prints.
+    const prefix = typeof args.options["prefix"] === "string" ? args.options["prefix"].trim() : "";
+    if (!/^persona-[0-9a-f]{64}$/.test(prefix)) throw new UsageError("`persona recovery-contact view` names the face it speaks for: --prefix persona-<64 hex>");
+    const head = await sealedAct("persona.head", { prefix });
+    const code = await readRecoveryContactCard();
+    const seed = coldKeySeedFromCode(code);
+    let line: string;
+    try {
+      line = faceLogViewLine(await signFaceLogView({ prefix, seq: Number(head["seq"]), eventCid: String(head["eventCid"]), party: "recovery-contact", seed }));
+    } finally { seed.fill(0); }
+    emit(args, {
+      ok: true, data: { prefix, seq: head["seq"], eventCid: head["eventCid"], view: line },
+      human: () => {
+        console.log(`[lares persona recovery-contact view] your view of ${prefix.slice(0, 24)}…: head ${String(head["seq"])}, off this vessel's own board`);
+        console.log("  hand the restored face's holder this line (`lares persona confirm <index> <line>`):");
+        console.log(`  ${line}`);
+      },
+    });
+    return 0;
+  }
+  return usage(args, "recovery-contact");
 }
 
+/** The recovery contact's card, read hidden on a terminal; a test installs its own. */
+let readRecoveryContactCard: () => Promise<string> = async () => {
+  requireTty("lares persona recovery-contact view");
+  return (await promptSecret("your recovery contact card (hidden): ")).trim();
+};
+export function setRecoveryContactCardPrompt(read: () => Promise<string>): void { readRecoveryContactCard = read; }
+
 async function personaNew(args: ParsedArgs): Promise<number> {
+  seatNewFaceRoute();
   const index = parseIndex(args.positional[1]);
   const name = typeof args.options["name"] === "string" ? args.options["name"].trim() : "";
   if (name.length === 0) throw new UsageError("`persona new` needs a private label: --name '<petname>'");
@@ -236,15 +362,22 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   const stands = args.flags["seat"] === true;
   const chair = typeof args.options["chair"] === "string" ? args.options["chair"].trim() : "";
   const splitRoot = args.flags["split-root"] === true;
+  // ONE CUSTODY PROBE PER COMMAND, taken before anything is asked or written. A vessel that stands locked, recomposes
+  // after an unlock, or answers nothing refuses here by name: no passphrase gets prompted, and no parked pin rests in
+  // the vessel's memory for a founding that was never going to run.
+  const standing = await vesselStanding();
   // A ROOT SPLIT NEVER RIDES A STANDING VESSEL. Its two off-device shares rebuild the root, so no door hands them
   // to a caller: the split runs in a person's own process, under a key session that person opens. Beside a
   // standing vessel the command refuses here, before anything founds.
-  if (splitRoot && (await vesselStanding()).reading !== "none") {
+  if (splitRoot && standing.reading !== "none") {
     throw new UsageError(
       "--split-root hands out shares that rebuild this persona's root, so it never rides a standing vessel. " +
       "Stop the vessel (`lares vessel stop`), run this command again, then stand the vessel.",
     );
   }
+  // The same reading refuses a vessel that cannot found: locked, recomposing or silent, by name, before anything is asked.
+  const refusal = standingRefusal(standing);
+  if (refusal !== null) throw refusal;
   const { petnames, declarations } = fleetStores();
   if (!stands && chair.length > 0 && (await declarations.get(index))?.seat !== true) {
     throw new UsageError("--chair labels a seat claim: pass it with --seat");
@@ -257,7 +390,8 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // inception, joins that group to the cabal the place already carries, and MOUNTS. Canon rules each
   // PersonaGroup its OWN individual (persona-policy Ruling 2/2b), so `persona new N` (N>0) founds a full
   // SECOND face — its own group, cabal, planes, persona-KEL and veil — as a register-many compartment
-  // beside the mounted one; it does not mount (wearing it is `persona wear N`, a later act).
+  // beside the mounted one; it does not mount (a command acts as it by `--face N`; the composition mounts it at
+  // `lares vault unlock --face N`).
   //
   // Every added compartment rides beside the founding face, so a vessel with no group refuses them:
   // persona h1 inside no PersonaGroup would mint a root the Binding Gate could never walk to.
@@ -265,9 +399,13 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   // ONE STORE DOOR: the face founds on the store's one holder — inside the standing vessel when one stands (the
   // floor lifts on its next stand), here otherwise.
   if (index !== 0 && !faceStands()) {
-    throw new UsageError("no face stands on this place yet — light it with `lares persona new 0 --name '<label>'` first.");
+    throw new UsageError("no face stands on this place yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
   }
-  const founded = (await storeVerb("persona-new", { handleIndex: index })).output as unknown as FoundFaceResult;
+  // A face that founds INSIDE a standing vessel takes its route over the custody door first (the route rides that frame alone).
+  const faceRouteRef = !(index === 0 && faceStands()) && standing.reading === "vessel" ? await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index }) : undefined;
+  // THE EARLY READING GOES STALE ACROSS THE PROMPT above: the door probes AGAIN, so an unlock or lock started in another
+  // shell meanwhile refuses by name instead of parking.
+  const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult;
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
   // print to the person at this terminal and ride no door. THE PERSON HOLDS BOTH OFF-DEVICE SHARES BEFORE THE
@@ -278,14 +416,20 @@ async function personaNew(args: ParsedArgs): Promise<number> {
     console.log("  Keep both carriers yourself, apart from this device and apart from each other. Handing one to another person makes that person plus this device able to rebuild the root.");
     console.log(`  recorded-code   ${recordedCode}`);
     console.log(`  escrow-carrier  ${escrowCarrier}`);
-  }) : null;
+  }, await gatherWard(`lares persona new ${index} (the recovery split reads the face root)`)) : null;
 
   // The founding act above is the ONE door that mints a persona root; this reads the root it stood (or the one
   // already standing), never mints one. Then set the PRIVATE pet-name; renameOwnPersona keeps its own guard.
   const verifyingKey = await personaRootKey(index);
   if (!verifyingKey) throw new UsageError(`the face h${index} stands here with no persona root held — re-found it`);
   const root = { verifyingKey, created: !founded.alreadyStood };
+  // The pet-name the face wore before this naming finds the label it wrote at its creation, where its stage answers no relation.
+  const formerPetname = founded.alreadyStood ? await ownPersonaPetname(petnames, index).catch(() => undefined) ?? null : null;
   await renameOwnPersona(petnames, index, name);
+  // THE FACE NAMES ITSELF AT ITS CREATION: its label (relation -> pet-name) lands now, beside the sealed pet-name, so a seed
+  // after a re-founding adopts its folders by this name though no face read ran first. A face that already stood answers its
+  // relation off its own stage, else off the one label naming it under its former pet-name.
+  await labelFaceAtNaming({ handleIndex: index, petname: name, relation: founded.faceRelation ?? null, formerPetname }, faceRelationOnStage);
 
   // The DECLARATION rides its own store, so the private label never becomes a public commitment by matching
   // a string. Each flag lands its own field; neither implies the other.
@@ -334,32 +478,23 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-async function personaWear(args: ParsedArgs): Promise<number> {
-  const index = parseIndex(args.positional[1]);
-  // The custody wall lives in the core: wearing REQUIRES a held root — an unheld index throws there.
-  await sealedAct("persona.wear", { handleIndex: index });
-  emit(args, {
-    ok: true,
-    data: { active: index },
-    human: () => {
-      console.log(`now wearing persona h${index}.`);
-      console.log(`  reboot-to-switch: the live vessel presents one face per persona — restart the node to sign as it.`);
-    },
-  });
-  return 0;
-}
-
 async function personaList(args: ParsedArgs): Promise<number> {
-  const roster = await readPersonaRoots();
+  // A LOCKED LIST PRINTS PUBLIC INDICES ONLY: the floor index names the faces that stand here; names and declarations appear once
+  // that face unlocks. A vessel with no face standing has nothing to show and refuses naming the unlock.
+  let roster: PersonaRoots;
+  try { roster = await readPersonaRoots(); }
+  catch (err) {
+    if (!(err instanceof CustodyLocked) || listFaceOrdinals().length === 0) throw err;
+    roster = { roots: [], orphans: [] };
+  }
   const held = roster.roots.map(({ handleIndex }) => handleIndex);
-  const active = roster.active;
+  const lockedFaces = listFaceOrdinals().filter((i) => !held.includes(i));
   const orphans = roster.orphans;
   const { petnames, declarations } = fleetStores();
 
   const rows = await Promise.all(
     held.map(async (handleIndex) => ({
       handleIndex,
-      active: handleIndex === active,
       petname: (await ownPersonaPetname(petnames, handleIndex)) ?? null,
       handle: (await declarations.get(handleIndex))?.handle ?? null,
       seat: (await declarations.get(handleIndex))?.seat === true,
@@ -370,22 +505,23 @@ async function personaList(args: ParsedArgs): Promise<number> {
 
   emit(args, {
     ok: true,
-    data: { active: active ?? null, personas: rows, orphans },
+    data: { personas: rows, orphans, locked: lockedFaces },
     human: () => {
       for (const index of orphans) {
         console.log(`persona root h${index} stands with no roster line (a founding stopped between its two writes) — nothing reads it as held.`);
         console.log(`  adopt it:  lares persona new ${index} --name '<label>'   (the root loads; nothing mints over it)`);
       }
+      for (const index of lockedFaces) console.log(`  h${index}  (locked — open it with \`lares vault unlock --face ${index}\`)`);
+      if (rows.length === 0 && lockedFaces.length > 0) return;
       if (rows.length === 0) {
-        console.log("no personas held — stand the founder with `lares vessel stand --install`, then name each persona and add a seat claim with `--seat` (no --handle needed).");
+        console.log("no personas held — stand the founder with `lares vessel stand --init`, then name each persona and add a seat claim with `--seat` (no --handle needed).");
         return;
       }
       console.log("personas (the private multitude — private label -> declared Handle):");
       for (const r of rows) {
         const declares = `${r.handle ? `  ->  "${r.handle}"` : ""}${r.seat ? ` [stands for a Kahu seat as "${r.chair}"]` : ""}`;
-        console.log(`  ${r.active ? "*" : " "} h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
+        console.log(`  h${r.handleIndex}  ${r.petname ?? "(unnamed)"}${declares}`);
       }
-      console.log(`  (* = active${active === null ? "; none worn yet" : ""})`);
     },
   });
   return 0;

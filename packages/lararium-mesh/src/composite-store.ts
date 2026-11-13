@@ -18,6 +18,7 @@ import type {
   LarTiddlerRecord,
   LarTiddlerChange,
   ChangeOrigin,
+  LarRemoveOptions,
   MemeProjection,
   LarWriteOptions,
 } from "./tiddler-store.js";
@@ -25,6 +26,9 @@ import {
   corpusLarUri,
 } from "./lar-uris.js";
 import { headsEqual } from "./wiki-recipe.js";
+import { assertStorableTitle } from "./title-law.js";
+import { OVERRIDE_BASE_META, isWorkingLayerBag, overrideBaseOf } from "./override-base.js";
+import { carrierHashOf } from "./carrier-form.js";
 import { buildEffectRecordTiddler, effectLedgerPrefix, effectRecordUri, isEffectRecordUri, isRetirementMarker, parseEffectRecord, RETIRED_EVENT_ID, storeIsRetired } from "./effect-record.js";
 
 /** Two flat field bags hold the same keys and the same values (each value read as its string). */
@@ -145,7 +149,7 @@ export class CompositeStore implements LarTiddlerStore {
 
     // Forward future change events from this layer to our subscribers.
     const unsub = layer.store.subscribe((change) => {
-      this.listeners.forEach((fn) => fn(change));
+      this._tell(change);
     });
     this.unsubs.set(layer.store, unsub);
 
@@ -165,7 +169,7 @@ export class CompositeStore implements LarTiddlerStore {
           this._readWithHeads(layer.store, title).then(({ record: rec, heads }) => {
             if (!rec) return;
             const change: LarTiddlerChange = { title, record: rec, origin: { kind: "canon-hydrate", receipt: layer.bagId }, bag: layer.bagId, ...(heads !== undefined ? { heads } : {}) };
-            this.listeners.forEach((fn) => fn(change));
+            this._tell(change);
           });
         }
       });
@@ -202,7 +206,7 @@ export class CompositeStore implements LarTiddlerStore {
       const answeredBy = resolved?.layer ?? layer;
       const heads = resolved?.heads;
       const change: LarTiddlerChange = { title, record: remaining, origin, bag: answeredBy.bagId, ...(heads !== undefined ? { heads } : {}) };
-      this.listeners.forEach((fn) => fn(change));
+      this._tell(change);
       for (const projection of this.projections.keys()) projection.onUriChanged(change);
     }
   }
@@ -244,7 +248,62 @@ export class CompositeStore implements LarTiddlerStore {
     const store = this._writeTargetFor(options?.bag, "put");
     const retired = this._refuseRetired(store, [record], "put");
     if (retired) await retired;
-    return store.put(record, origin, this._writeOptionsFor(options, store, "put"));
+    const writeOptions = this._writeOptionsFor(options, store, "put");
+    // A write into any layer but a working one begins inside the call, as it always has.
+    if (!this._forksOverrides(store)) return store.put(record, origin, writeOptions);
+    const [based] = this._withOverrideBasesNow(store, [record]);
+    return store.put(based!, origin, writeOptions);
+  }
+
+  /**
+   * THE FORK REMEMBERS ITS BASE (`override-base.ts`). A write into a wiki's WORKING layer of a title a lower layer holds
+   * live forks an override; the record lands naming the hash of the lower record's text (`meta.overrideBase`). A later
+   * write of a title the working layer already holds carries the base it named forward (a store that replaces records
+   * whole keeps it so); a record that names its own base keeps it. A working-only title,
+   * a tombstone, and a write into any other layer pass untouched.
+   */
+  /** Whether a write into `store` lands on a wiki's working layer, where a write of a title canon holds forks an override. */
+  private _forksOverrides(store: LarTiddlerStore): boolean {
+    const layer = this.layers.find((l) => l.store === store);
+    return layer !== undefined && isWorkingLayerBag(layer.bagId);
+  }
+
+  /**
+   * The fork stamp, read in ONE synchronous stretch: a working write NEVER waits on a read. Each layer answers through its
+   * `readNow`; the walk runs from the working layer down, and where a layer offers no synchronous read (a folded stage, a
+   * store behind a worker) the base stays unknown and the record lands unstamped. An await here would move the write out
+   * of the island's dispatch, and a held lower document's read waits until its face stands lit, so a page's save would
+   * wait with it. The base serves as an instrument, never a gate: a copy that names none simply raises no fresher warning.
+   */
+  private _withOverrideBasesNow(store: LarTiddlerStore, puts: readonly LarTiddlerRecord[]): readonly LarTiddlerRecord[] {
+    type Now = { readNow?: (title: string) => { record: LarTiddlerRecord | null } };
+    const at = this.layers.findIndex((l) => l.store === store);
+    if (at < 0) return puts;
+    const stores = this.layers.slice(0, at + 1).map((l) => l.store as unknown as Now);
+    /** A layer's record now; undefined where the layer reads nothing synchronously (the base stays unknown). */
+    const read = (i: number, title: string): LarTiddlerRecord | null | undefined => {
+      const reader = stores[i]!.readNow;
+      if (typeof reader !== "function") return undefined;
+      try { return reader.call(stores[i], title).record; } catch { return undefined; }
+    };
+    return puts.map((record) => {
+      if (record.meta?.deleted === true || overrideBaseOf(record) !== null) return record;
+      const title = record.tiddler.title;
+      const held = read(at, title);
+      if (held === undefined) return record;
+      let base: string | null = null;
+      if (held && !held.meta?.deleted) base = overrideBaseOf(held);
+      else {
+        for (let i = at - 1; i >= 0; i--) {
+          const lower = read(i, title);
+          if (lower === undefined) { base = null; break; }
+          if (lower === null) continue;
+          if (!lower.meta?.deleted) base = carrierHashOf(lower.tiddler);
+          break;
+        }
+      }
+      return base === null ? record : { ...record, meta: { ...(record.meta ?? {}), [OVERRIDE_BASE_META]: base } };
+    });
   }
 
   /**
@@ -260,14 +319,41 @@ export class CompositeStore implements LarTiddlerStore {
     origin:     ChangeOrigin,
     options?:   LarWriteOptions,
   ): Promise<void> {
-    this._requireBagForBase(options, "writeFamily");
-    const store = this._writeTargetFor(options?.bag, "writeFamily");
-    const retired = this._refuseRetired(store, puts, "writeFamily", tombstones);
+    const { store, retired } = this._familyChecks(puts, tombstones, options);
     if (retired) await retired;
     const writeOptions = this._writeOptionsFor(options, store, "writeFamily");
-    if (typeof store.writeFamily === "function") return store.writeFamily(puts, tombstones, origin, writeOptions);
-    for (const record of puts) await store.put(record, origin, writeOptions);
+    // The fork stamp reads in one synchronous stretch (`readNow`), so the layer's write still begins inside the call.
+    const based = !this._forksOverrides(store) ? puts : this._withOverrideBasesNow(store, puts);
+    if (typeof store.writeFamily === "function") return store.writeFamily(based, tombstones, origin, writeOptions);
+    for (const record of based) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
+  }
+
+  /** One listener that throws never starves the listeners after it: each hears every change. */
+  private _tell(change: LarTiddlerChange): void {
+    for (const fn of [...this.listeners]) { try { fn(change); } catch { /* a listener's fault stays its own */ } }
+  }
+
+  /** Run every composite-owned family check before a caller starts a transaction. */
+  async precheckFamily(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): Promise<void> {
+    const { store, retired } = this._familyChecks(puts, tombstones, options);
+    if (retired) await retired;
+    this._writeOptionsFor(options, store, "writeFamily");
+    if (typeof store.writeFamily !== "function") {
+      throw new VerbRefusal("non-atomic-layer", "CompositeStore.precheckFamily: destination cannot write a family atomically");
+    }
+    if (store.notifiesSynchronously !== true) {
+      throw new VerbRefusal("late-notifying-layer", "CompositeStore.precheckFamily: destination does not declare synchronous family notifications");
+    }
+  }
+
+  /** The checks `writeFamily` and `precheckFamily` share, synchronous so a layer's write begins inside the call. */
+  private _familyChecks(puts: readonly LarTiddlerRecord[], tombstones: readonly string[], options?: LarWriteOptions): { store: LarTiddlerStore; retired: Promise<void> | void } {
+    this._requireBagForBase(options, "writeFamily");
+    const store = this._writeTargetFor(options?.bag, "writeFamily");
+    for (const record of puts) assertStorableTitle(record.tiddler.title);
+    for (const title of tombstones) assertStorableTitle(title);
+    return { store, retired: this._refuseRetired(store, puts, "writeFamily", tombstones) };
   }
 
   /**
@@ -396,11 +482,11 @@ export class CompositeStore implements LarTiddlerStore {
     return this.writableStore.tombstone(title, origin, this._writeOptionsFor(options, this.writableStore, "tombstone"));
   }
 
-  async remove(title: string, origin: ChangeOrigin): Promise<void> {
+  async remove(title: string, origin: ChangeOrigin, options?: LarRemoveOptions): Promise<void> {
     if (!this.writableStore) throw new NoWorkingLayerRefusal("The bagless remove");
     const retired = this._refuseRetired(this.writableStore, [], "remove", [title]);
     if (retired) await retired;
-    return this.writableStore.remove(title, origin);
+    return this.writableStore.remove(title, origin, options);
   }
 
   /**

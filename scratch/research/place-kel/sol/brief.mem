@@ -1,0 +1,75 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/place-kel/sol/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/place-kel/sol/brief.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/place-kel/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Sol-Kelwright: Lares (Tasked Spirit)
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in your seat dir. Handback to
+/home/joshu/.lares-scratch/research/place-kel/sol/out.md (NOT final.md), under 1300 words, ending WORDS=&lt;n>. No git writes, no suites. Web allowed: cite URLs;
+mark MEASURED (file:line or URL) vs LEAD.
+
+CONTEXT. A floor-trust scout (/home/joshu/.lares-scratch/research/floor-trust/{sol,luna}/out2.md, read both) settled
+that W14–W16 build one "floor pin claim": a place-signed claim of a gate pin at (place AID, KEL sequence, event digest,
+Nexus, tier, route), filed by KEL descent. It found the prerequisite unbuilt: the place KEL today holds one inception
+(packages/lararium-mesh/src/vessel-kel.ts:23-43, node-vessel-identity.ts:199-228): no sequence, no predecessor digest,
+no rotation event, no next-key commitment. Canon rules the end state: road
+bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem :207 ("the place signs by a scoped signer under a pre-rotated
+KEL"), :363 (R-CHARTER: "the floor key commits no next key"; chairs pre-rotate on cold cards), :544 (X0 bakes "the place
+KEL's pre-rotation and the scoped place signer (the signer frames each duty's domain itself, signing len(D) ‖ D ‖
+preimage and its verifiers the same ... until then each of the five floor duties binds its domain by an exact head
+matcher)"). X0 BAKES; it builds nothing. Each X0 member carries its own readiness red.
+
+THE TASK: scout the place-KEL build lane (an X0-readiness build) so its kit stands on a ruled model.
+# MEASURE: every writer and reader of the place KEL and the floor key on node and browser (grep vessel-kel, placeKey,
+floor key, the five floor duties and their exact head matchers), the custody rows that hold the floor key today (the
+S tree: gate-root, place-archive; custody-holder.ts; vault-carriers.ts), and every signature the place makes.
+# THE EVENT SHAPE: inception with a next-key digest, rotation events (sequence, prior event digest, new key, next
+digest), maybe interaction events; compare KERI (https://trustoverip.github.io/kswg-keri-specification/) and the
+house's own KELs (the persona KEL, the charter's chair pre-rotation, handle KELs: grep "KEL"). ONE KEL format across
+the house, or does the place KEL differ by relation? Name what the house already built that this should reuse.
+# THE NEXT KEY'S CUSTODY: where the pre-rotated next key rests (an S row sealed under the node key? a cold card like the
+chairs? the operator's paper?), who can rotate (an unattended vessel? only a human unlock?), and what recovers a
+place whose current key leaks. Read the recovery ruling (layered: B-name, self-A-memory, C-end-users) and the
+custody step-zero contract (docs/pono/k15-custody-step-zero.mem). Sort what canon rules vs what stays open.
+# THE SCOPED SIGNER: the five floor duties, their domains, and the move from exact head matchers to &#96;len(D) ‖ D ‖
+preimage&#96; framing on signer and verifiers together; which duties exist (measure), and whether framing changes signed
+bytes (yes: so it rides X0's bake, built now behind a readiness red).
+# STORIES: a Gaia household rotates its place key after a laptop theft; an Elyncia waystone herm keeps carrying a
+shrine whose place key rotated while the herm sat offline.
+# THE KIT: slices red-first with controls and known positives, files held, overlap with live lanes (K17-R: lease law,
+realm boards, frontier verifier; W28: gate-exchange, face-gate*, face-dial), and the operator questions that survive,
+sorted (a) canon rules it (quote), (b) house law derives it (name the law), (c) truly the operator's (options, lean).
+
+House laws: no global now; build the end state (no interim, no dual mode, no back-compat); one name, one relation; the
+herm carries and never reads; isomorphic by intent; silent-zero with a known positive; evergreen; a shared act never
+makes a shared secret.
+Lens: code and build shape; lead with 1, 2, 4, 6.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;E0njVMd609YJ-L0UcsxXc5FkUr5fbSyOM6lYBgWvJsc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

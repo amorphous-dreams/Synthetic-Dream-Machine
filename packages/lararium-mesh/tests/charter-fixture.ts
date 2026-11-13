@@ -39,8 +39,8 @@ import * as ed from "@noble/ed25519";
 import { createPrivateKey, createPublicKey, sign as nodeSign } from "node:crypto";
 import { sha256BytesSync, utf8Bytes, hex } from "../src/crypto.js";
 import {
-  charterInceptionBytes, charterInceptionImage, genesisOfInception, rotateSealEpoch, sealKeySetHash, verifySealLineage,
-  type SealNext, type SealEpoch, type SealRollSigner,
+  charterInceptionBytes, charterInceptionImage, genesisOfInception, mintCharterEpoch, rotateSealEpoch, sealKeySetHash,
+  sealRollBytes, verifySealLineage, type SealNext, type SealEpoch, type SealRollSigner,
 } from "../src/wax-stamp.js";
 import { seatNextDigest } from "../src/cold-key-card.js";
 import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
@@ -219,6 +219,20 @@ export async function seatedCharter(opts: {
   const keys = await keysOf(charterSeatSeeds(shape.fixtureSeed, 0, shape.seats));
   const genesis = bookedGenesis(keys, shape.threshold, armed ? await successorCommitment(shape, 0) : { digests: [], threshold: 0 });
   return stand({ ...shape, chain: [genesis], armed });
+}
+
+/**
+ * A successor epoch of `old` that no lawful roll writes: `seats` sign it and take the chairs, though `old` never
+ * committed them as its successors. A reader of a presented lineage must refuse it.
+ */
+export async function uncommittedSuccessor(old: SeatedCharter, seats: SeatedCharter): Promise<SealEpoch> {
+  const parts = { predecessor: old.head.epochCid, keys: seats.keys, threshold: seats.threshold,
+    nextKeyDigests: seats.head.nextKeyDigests, nextThreshold: seats.head.nextThreshold };
+  const signatures = await Promise.all((await seats.signers()).map(async (s) => ({ signer: s.signer, sig: await s.sign(sealRollBytes(parts)) })));
+  return mintCharterEpoch({ keySetHash: sealKeySetHash(seats.keys, seats.threshold),
+    nextKeyDigests: [...seats.head.nextKeyDigests], nextThreshold: seats.head.nextThreshold,
+    predecessors: [old.head.epochCid] }, { keys: [...seats.keys], threshold: seats.threshold, signatures,
+    genesis: { keys: [...old.keys], threshold: old.threshold } });
 }
 
 // ── A charter over keys the CALLER holds ─────────────────────────────────────────────────────────

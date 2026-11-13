@@ -96,7 +96,7 @@ const corpus = carrierFiles(REPO).slice(0, 400)
 // the control head — were skipped for every mark on every run. The witness printed a green line about
 // seven marks it had never asked a single question of. Same fault, same spelling, as the one `doctype`
 // records at its own `sohAt`: a reader left behind on a retired binding reports the cleanest run it can.
-const WRITES = (code) => new RegExp(`code\\s*[:=]\\s*"${code}"`).test(corpus);
+const WRITES = (code) => new RegExp(`code\\s*=\\s*\`${code}\``).test(corpus);
 
 const inert = [];
 const onPaper = [];
@@ -203,7 +203,7 @@ if (noSubject) {
     `    ${tiddlerPatterns.size} tiddler pattern(s) stand and the corpus writes none of the codes they name,\n` +
     `    so "a pattern that finds nothing" and "a pattern that fires without the control head" both ran\n` +
     `    over an empty subject and found nothing to say. Read the probe before reading the verdict:\n` +
-    `    a carrier binds its code as \`code="&#x00NN;"\`, and a reader left on another binding sees zero.`,
+    `    a carrier binds its code as \`code=\\\`&#x00NN;\\\`\`, and a reader left on another binding sees zero.`,
   );
 }
 

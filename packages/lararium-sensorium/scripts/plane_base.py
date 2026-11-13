@@ -52,7 +52,7 @@ BASE_CLAIM = "claim"        # a testimony claim cid — what a CLAIM asserts
 BASES = (BASE_RECORD, BASE_PATTERN, BASE_TEMPLATE, BASE_CLAIM)
 
 #: Which base each durable plane's row ids ACTUALLY key on, read off the writers:
-#: content_io/form_encoder store by cid · structurepalace_io stores by structural hash ·
+#: content_io/form_store store by cid · structurepalace_io stores by structural hash ·
 #: persistence_io stores by claim_cid. A plane not listed here has no declared base and no
 #: instrument may read it cross-plane.
 PLANE_BASE = {

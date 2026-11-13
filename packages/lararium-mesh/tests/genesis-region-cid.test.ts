@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect } from "vitest";
-import { computeEngineCid, computePluginsCid, buildGenesisDoc, type GenesisPluginEntry, type GenesisInputs } from "../src/genesis-doc.js";
+import { computeEngineCid, computePluginsCid, buildGenesisDoc, isStockTw5PluginTitle, type GenesisPluginEntry, type GenesisInputs } from "../src/genesis-doc.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
 
 describe("genesis region content-CIDs — bytes name the region, labels never do", () => {
@@ -31,11 +31,11 @@ describe("genesis region content-CIDs — bytes name the region, labels never do
     // The true-name is a pinned value, never a recomputation: a preimage that grew a label (a version, a
     // packager's tag) would move these digests, and every hearth named under the old preimage would split
     // off over an editorial act. The label takes no part in the signature at all, so no re-tag can reach it.
-    expect(computeEngineCid("abcd")).toBe("bafkreiahzs2gva32i6kuci2midrmljm33g3zvmctg4azcddsuwkhydpqku");
+    expect(computeEngineCid("abcd")).toBe("bafkreif5tbhh4tdiqcve7lrtcdlmcv6or7tqhvxr7jvpn7t7wzlyxy3fhe");
     expect(computeEngineCid("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"))
-      .toBe("bafkreiczv56ip2lrydcie7bsfz5hz6fgku7b3atfenhpu3ws7t2xubkfyu");
+      .toBe("bafkreif2htmpnuqvkeoarexaeaduwvady5oazo6537c3jjyo2wq7b427z4");
     // CONTROL: the pin is not a constant — other core bytes name another engine.
-    expect(computeEngineCid("abce")).not.toBe("bafkreiahzs2gva32i6kuci2midrmljm33g3zvmctg4azcddsuwkhydpqku");
+    expect(computeEngineCid("abce")).not.toBe("bafkreif5tbhh4tdiqcve7lrtcdlmcv6or7tqhvxr7jvpn7t7wzlyxy3fhe");
   });
 
   it("pluginsCid stays order-independent (sorted by id) and deterministic", () => {
@@ -101,6 +101,28 @@ describe("the GRAMMAR region — the ratchet folds the grammar alone", () => {
     expect(withBase.engineCid,  "base seed is not the engine").toBe(without.engineCid);
     // …and it SHIPS regardless: a required blob, carried and attested, naming no epoch.
     expect(withBase.casEntries.length).toBeGreaterThan(without.casEntries.length);
+  });
+
+  it("★ a STOCK TW5 theme moves NEITHER region — it ships beside the core, and an operator's epoch never reads it ★", () => {
+    // The vanilla and snowwhite themes pack from the core's own TW5 revision (build-tw5-themes.ts), so they ship in the boot set
+    // and fold into no epoch. CONTROL: the same blob declared an operator's plugin moves the plugins region.
+    const grammar = entry(GRAMMAR, "11".repeat(32));
+    const operatorPlugin = entry("$:/plugins/sq/streams", "22".repeat(32));
+    const stock: GenesisPluginEntry = { ...entry("$:/themes/tiddlywiki/vanilla", "55".repeat(32)), kind: "stock" };
+
+    const without = buildGenesisDoc(inputsWith([grammar, operatorPlugin]));
+    const withStock = buildGenesisDoc(inputsWith([grammar, operatorPlugin, stock]));
+    expect(withStock.pluginsCid, "a stock theme is not an operator plugin").toBe(without.pluginsCid);
+    expect(withStock.grammarCid).toBe(without.grammarCid);
+    expect(withStock.engineCid).toBe(without.engineCid);
+    expect(withStock.casEntries.length).toBeGreaterThan(without.casEntries.length);
+    const asPlugin = buildGenesisDoc(inputsWith([grammar, operatorPlugin, { ...stock, kind: "plugin" }]));
+    expect(asPlugin.pluginsCid).not.toBe(without.pluginsCid);
+    // The class reads from the title's TW5-reserved namespace, never from a list of names.
+    expect(isStockTw5PluginTitle("$:/themes/tiddlywiki/snowwhite")).toBe(true);
+    expect(isStockTw5PluginTitle("$:/plugins/tiddlywiki/markdown")).toBe(true);
+    expect(isStockTw5PluginTitle("$:/plugins/sq/streams")).toBe(false);
+    expect(isStockTw5PluginTitle("$:/themes/someone/dark")).toBe(false);
   });
 
   it("★ the two regions are INDEPENDENT — an operator's collection never overturns the grammar ★", () => {

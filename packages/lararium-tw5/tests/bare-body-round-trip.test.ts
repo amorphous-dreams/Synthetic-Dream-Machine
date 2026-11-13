@@ -31,19 +31,19 @@ const BARE_BODIES: ReadonlyArray<readonly [string, string]> = [
   ["no trailing newline", "a body"],
   ["leading and trailing blank lines", "\n\n  a body  \n\n\n"],
   ["a toml fence that lifts into no field", "```toml meta\ntitle = \"elsewhere\"\n```\n\nprose\n"],
-  ["wikitext a parser would read", "! Heading\n\n<<~ ahu #/a>>\n\ninside\n\n<<~/ahu>>\n"],
+  ["wikitext a parser would read", "! Heading\n\n<<~ ahu slot=`#/a`>>\n\ninside\n\n<<~/ahu>>\n"],
   ["carriage returns and a tab", "a\r\nb\tc\r\n"],
   ["text beyond ASCII", "kūkākūkā — 言葉 ☂\n"],
 ];
 
 const framed = (uri: string, slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n` +
-  `<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n` +
+  `<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /** A head and an open text frame whose close never arrives: a torn frame. */
-const TORN = `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\nbody with no close\n`;
+const TORN = `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\nbody with no close\n`;
 
 function memorySink(): MemeSink & { store: Map<string, TiddlerFields> } {
   const store = new Map<string, TiddlerFields>();
@@ -114,7 +114,7 @@ describe("a bare body through placeMeme and readMeme", () => {
     const first = await placeMeme({ uri: URI, text: "a body\n" }, sink);
     const r = await placeMeme({ uri: URI, text: framed(URI, ["a"]), baseHash: first.canonicalHash }, sink);
     expect(r.decision).toBe("ingest");
-    expect((await readMeme(URI, sink))!.text).toContain("<<~ ahu #/a>>");
+    expect((await readMeme(URI, sink))!.text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
   test("CONTROL: a framed carrier round-trips, and a second read returns the first", async () => {
@@ -124,7 +124,7 @@ describe("a bare body through placeMeme and readMeme", () => {
     expect(r.landed.sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
     const read = (await readMeme(URI, sink))!;
     expect(read.canonicalHash).toBe(r.canonicalHash);
-    expect(read.text).toContain("<<~ ahu #/a>>");
+    expect(read.text).toContain("<<~ ahu slot=`#/a`>>");
     expect((await placeMeme({ uri: URI, text: read.text }, sink)).decision).toBe("noop");
   });
 
@@ -185,7 +185,7 @@ describe("a bare body through placeMeme and readMeme", () => {
 
   test("a lone close mark makes the text a carrier: the frame re-mints and every authored line survives", async () => {
     const sink = memorySink();
-    const text = `first line\n\n<<^ code="&#x0003;">>\n`;
+    const text = `first line\n\n<<^ code=\`&#x0003;\`>>\n`;
     const r = await placeMeme({ uri: URI, text }, sink);
     expect(r.decision).toBe("ingest");
     const read = (await readMeme(URI, sink))!;
@@ -267,7 +267,7 @@ describe("meme-put then meme-get on a wiki with a working layer", () => {
     const got = await makeMemeGetReactor(opts)({ recipe: "lares", uri: URI }, ctx("r2"));
     const meme = got["meme"] as { text: string; canonicalHash: string };
     expect(meme.canonicalHash).toBe(receipt["canonicalHash"]);
-    expect(meme.text).toContain("<<~ ahu #/a>>");
+    expect(meme.text).toContain("<<~ ahu slot=`#/a`>>");
   });
 
   test("REFUSAL: a torn frame answers refuse, names the tear, and the working layer stays empty", async () => {

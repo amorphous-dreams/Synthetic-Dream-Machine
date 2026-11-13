@@ -3,10 +3,10 @@
  *
  * One verb, the TIER is the argument (parity with `nexus seal <sub>` + `vessel rite <name>`). kāhuli is
  * the act; ʻōlelo kāhuli is the result-state of `kahuli grammar`. Two ratchets ride one genesis doc:
- *   · ENGINE  (engineCid = the hearth true-name) — SLOW, signed into every device delegation edge, so it
+ *   · ENGINE  (engineCid = the engine CID) — SLOW, signed into every device delegation edge, so it
  *             binds MEMBERSHIP. Advancing it re-binds the whole fleet; HELD until the graceful forward-
  *             rebind (predecessor pointer + a both-epoch read span, ending by non-renewal) has its rulings.
- *   · GRAMMAR (grammarCid = the REQUIRED memetic-wikitext grammar ALONE) — FAST, never the true-name.
+ *   · GRAMMAR (grammarCid = the REQUIRED memetic-wikitext grammar ALONE) — FAST, never the engine CID.
  * An operator's OWN plugin collection (pluginsCid) is NOT a kāhuli tier: it layers on the required base,
  * overturns nobody else's reading, and moves with no RATCHET act at all — it reads and publishes at
  * `lares nexus publish plugins`.
@@ -18,9 +18,9 @@
  * exactly as this line always described. The claim holds about RATCHETS; it never held about consent.
  *
  * The epochs read through the SAME composable genesis cap the vessel boots from (`LAR_GENESIS` →
- * `~/.lares/config.json` → repo-relative `<corpus>/genesis`). A hand-rolled `larRoot()/genesis` read
+ * `<root>/config/config.json` → repo-relative `<corpus>/genesis`). A hand-rolled `larRoot()/genesis` read
  * honoured neither, so with the cap pointed elsewhere this verb reported the epochs of an island the
- * vessel does not boot — and the epoch it prints is the hearth true-name, the value an operator reads
+ * vessel does not boot — and the epoch it prints is the engine CID, the value an operator reads
  * before deciding whether an overturn strands a fleet. A silent wrong answer is the worst shape here.
  *
  * ── WHAT THIS DOOR OWES ITS PARENT ──────────────────────────────────────────────────────────────
@@ -36,11 +36,11 @@ const KAHULI_USAGE: readonly string[] = [
   "usage: lares nexus kahuli <engine | grammar>",
   "",
   "  the OVERTURN — advance one ratchet tier of this Nexus's genesis composition:",
-  "    engine   the SLOW ratchet: the hearth true-name (engineCid), signed into every device",
+  "    engine   the SLOW ratchet: the engine CID (engineCid), signed into every device",
   "             delegation edge — it binds MEMBERSHIP. HELD: advancing re-binds the fleet mesh-wide;",
   "             the graceful forward-rebind span (predecessor + both-epoch reads) awaits its rulings.",
   "    grammar  the FAST ratchet: the REQUIRED memetic-wikitext grammar alone (grammarCid) —",
-  "             never the true-name. Reads the current epoch; --apply re-derives the island (the bake).",
+  "             never the engine CID. Reads the current epoch; --apply re-derives the island (the bake).",
   "",
   "  a read NEVER builds — the deliberate build+push lives behind --apply and in `nexus rite kahuli`.",
 ];
@@ -52,7 +52,7 @@ const KAHULI_USAGE: readonly string[] = [
 function kahuliEngineHeld(): number {
   const engineCid = readGenesisEngineCid();
   console.error("nexus kahuli engine — HELD.");
-  console.error(`  current engine epoch (true-name): ${engineCid ?? "(no island baked in this root yet)"}`);
+  console.error(`  current engine epoch (engine CID): ${engineCid ?? "(no island baked in this root yet)"}`);
   console.error("  advancing the engine re-binds MEMBERSHIP mesh-wide — every device delegation edge signs it.");
   console.error("  the graceful forward-rebind (predecessor pointer + a both-epoch read span, ending by");
   console.error("  non-renewal — NOT a unilateral fleet reset) awaits its coexistence-span rulings. See");
@@ -62,7 +62,7 @@ function kahuliEngineHeld(): number {
 
 /**
  * `lares nexus kahuli grammar` — the FAST ratchet. This first version READS the current grammar epoch
- * (grammarCid) beside the engine true-name; a read never builds. The operator's OWN collection reads
+ * (grammarCid) beside the engine CID; a read never builds. The operator's OWN collection reads
  * at `lares nexus publish plugins` — this door names only what it ratchets. `--apply` is where the overturn composes the bake
  * (`vessel bake` re-derives the island at the freshly-packed plugin) and the mesh-push — both wired next.
  */
@@ -82,7 +82,7 @@ function kahuliGrammar(args: ParsedArgs): number {
   console.log("nexus kahuli grammar — the current genesis epoch (a read; nothing built):");
   const none = "(no island baked in this root yet)";
   console.log(`  grammar (grammarCid, fast ratchet): ${grammarCid ?? none}   the REQUIRED memetic-wikitext grammar`);
-  console.log(`  engine  (engineCid, true-name):     ${engineCid ?? none}   the slow ratchet, binds membership`);
+  console.log(`  engine  (engineCid, engine CID):    ${engineCid ?? none}   the slow ratchet, binds membership`);
   console.log("");
   console.log("  THIS operator's own collection (pluginsCid) reads at `lares nexus publish plugins` —");
   console.log("  a region, never a tier: it overturns nobody else's reading.");

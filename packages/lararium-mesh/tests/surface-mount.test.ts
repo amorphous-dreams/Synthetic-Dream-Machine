@@ -19,7 +19,7 @@
  *   · a session's end drops its surfaces alone, and a switch fences the earlier generation;
  *   · the island key never collides, whatever its parts spell.
  */
-import { describe, test, expect, afterEach } from "vitest";
+import { describe, test, expect, afterEach, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import * as A from "@automerge/automerge";
 import { Repo, type AutomergeUrl, type DocHandle, type PeerId } from "@automerge/automerge-repo";
@@ -27,8 +27,10 @@ import { hex, sha256HexBytesSync } from "../src/crypto.js";
 import { ENGINE_CORE_ID, emptyLarDoc, type LarDoc } from "../src/base-doc.js";
 import type { CasBlobLike } from "../src/cas.js";
 import { computePluginsCid } from "../src/genesis-doc.js";
+import { FLOOR_MANIFEST_FORMAT, GENESIS_FLOOR_TIDDLER, floorManifestBytes } from "../src/floor-manifest.js";
 import { makeIslandRepo } from "../src/island-repo.js";
 import { mkEa, mkFault, mkTeardownAck, type IslandMsg_Manifest } from "../src/island-protocol.js";
+import { mkLarControlEvent, mkLarFrame } from "../src/lar-camera.js";
 import { recipeUri, wikiUri } from "../src/lar-uris.js";
 import { pluginOfferingCid, signPluginOffering, type OfferedBlob, type PluginOffering } from "../src/plugin-offering.js";
 import { storedLarRecord } from "../src/stored-record.js";
@@ -111,7 +113,7 @@ function vessel() {
   point(catalog, wikiBagUri(SLUG), canon.url);
   point(catalog, SHARED_BAG, shared.url);
   point(catalog, REFEREE_BAG, referee.url);
-  point(oracle, LARES_BAG, lares.url);
+  point(catalog, LARES_BAG, lares.url);
   const writeRecipe = (plane: "catalog" | "oracle", recipe: WikiRecipe, into: DocHandle<LarDoc> = plane === "catalog" ? catalog : oracle): void => {
     const title = recipeUri(plane, recipe.wikiSlug);
     into.change((d) => { d.tiddlers[title] = storedLarRecord(title, recipeRecordFields(recipe), "test"); });
@@ -152,6 +154,14 @@ async function resolved(input: SurfaceRecipeInput): Promise<SurfaceRecipe> {
 }
 
 describe("one function resolves a session's effective recipe at surface mount", () => {
+  test("a supplied canonBag resolves as the canon", async () => {
+    const v = vessel();
+    const bag = "lar:///ha.ka.ba/bags/daemon-custom";
+    v.point(v.catalog, bag, v.later.url);
+    const result = await resolved(inputOf(v, "player", { recipe: { wikiSlug: SLUG, canonBag: bag } }));
+    expect(result.slots.find(slot => slot.slot === bag)).toMatchObject({ layer: "canon", document: v.later.url });
+  });
+
   test("it returns absolute ids, top first, and a revision that names them", async () => {
     const v = vessel();
     v.writeRecipe("catalog", { wikiSlug: SLUG, libraryBags: [SHARED_BAG, LARES_BAG] });
@@ -166,7 +176,7 @@ describe("one function resolves a session's effective recipe at surface mount", 
       { slot: LARES_BAG,                     layer: "library",  document: v.lares.url },
       { slot: ORACLE_BAG,                    layer: "oracle",   document: v.oracle.url },
     ]);
-    expect(recipe).toMatchObject({ wikiId: WIKI, wikiSlug: SLUG, facePlaneId: v.faces.player.plane.url, profile: "face", coreHash: CORE_CID, pluginCids: [GRAMMAR_CID], unresolved: [] });
+    expect(recipe).toMatchObject({ wikiId: WIKI, wikiSlug: SLUG, facePlaneId: v.faces.player.plane.url, profile: "face", coreHash: CORE_CID, pluginCids: [GRAMMAR_CID], floorCids: [], unresolved: [] });
     expect(recipe.revision).toMatch(/^[0-9a-f]{64}$/);
     // The same inputs resolve the same revision; the resolver holds no state between two calls.
     expect((await resolved(inputOf(v, "player"))).revision).toBe(recipe.revision);
@@ -180,6 +190,42 @@ describe("one function resolves a session's effective recipe at surface mount", 
     for (const beyond of [v.catalog, v.referee, v.faces.referee.plane, v.faces.referee.working]) {
       expect(facets.documents.map((f) => f.document)).not.toContain(beyond.url);
     }
+  });
+
+  test("a named oracle floor admits its manifest and snapshots through the session view", async () => {
+    const v = vessel();
+    const base = inputOf(v, "player");
+    const withoutFloor = await resolved(base);
+    expect(withoutFloor.floorCids).toEqual([]);
+    expect(facetsOfSurfaceRecipe(withoutFloor).content).toEqual([CORE_CID, GRAMMAR_CID]);
+
+    const lares = "44".repeat(32), lararium = "55".repeat(32);
+    const bytes = floorManifestBytes({
+      format: FLOOR_MANIFEST_FORMAT, engine: CORE_CID, grammar: GRAMMAR_CID,
+      plugins: "66".repeat(32), snapshots: { lares, lararium },
+    });
+    const cid = sha256HexBytesSync(bytes);
+    v.oracle.change((d) => { d.tiddlers[GENESIS_FLOOR_TIDDLER] = storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid }, "test"); });
+    const reads: string[] = [];
+    const withBytes = { ...base, plugins: { ...base.plugins, readBytes: async (asked: string) => {
+      reads.push(asked);
+      return asked === cid ? bytes : null;
+    } } };
+    const withFloor = await resolved(withBytes);
+    expect(reads).toEqual([cid]);
+    // The manifest's slugs walk sorted: lararium before lares.
+    expect(withFloor.floorCids).toEqual([cid, lararium, lares]);
+    expect(facetsOfSurfaceRecipe(withFloor).content).toEqual([CORE_CID, GRAMMAR_CID, cid, lararium, lares]);
+    expect(withFloor.revision).not.toBe(withoutFloor.revision);
+
+    const missing = await resolveSurfaceRecipe(base);
+    expect(missing).toMatchObject({ ok: false, refusal: "floor-unresolved" });
+    if (!missing.ok) expect(missing.detail).toContain(GENESIS_FLOOR_TIDDLER);
+    const garbage = new Uint8Array([1, 2, 3]);
+    v.oracle.change((d) => { d.tiddlers[GENESIS_FLOOR_TIDDLER] = storedLarRecord(GENESIS_FLOOR_TIDDLER, { cid: sha256HexBytesSync(garbage) }, "test"); });
+    const malformed = await resolveSurfaceRecipe({ ...base, plugins: { ...base.plugins, readBytes: async () => garbage } });
+    expect(malformed).toMatchObject({ ok: false, refusal: "floor-unresolved" });
+    if (!malformed.ok) expect(malformed.detail).toContain(GENESIS_FLOOR_TIDDLER);
   });
 
   test("the vessel's own record shadows the system default, and a tombstoned one counts as nothing", async () => {
@@ -299,7 +345,7 @@ describe("one function resolves a session's effective recipe at surface mount", 
 
 // ── The pool ────────────────────────────────────────────────────────────────────────────────────
 
-interface FakeIsland { manifest: IslandMsg_Manifest; posted: unknown[]; reply(msg: unknown): void; terminated: boolean }
+interface FakeIsland { manifest: IslandMsg_Manifest; posted: unknown[]; reply(msg: unknown): void; terminated: boolean; exit(why: string): void }
 interface HostOptions {
   fault?: (m: IslandMsg_Manifest) => boolean;
   /** Hold each island's `ea` until the test sends it. */
@@ -313,7 +359,8 @@ function islandHost(opts: HostOptions = {}): { host: VesselIslandHost; islands: 
   const host: VesselIslandHost = {
     spawnWorker(): VesselWorkerHandle {
       const listeners = new Set<(raw: unknown) => void>();
-      const island: FakeIsland = { manifest: null as unknown as IslandMsg_Manifest, posted: [], reply: (msg) => { for (const l of [...listeners]) l(msg); }, terminated: false };
+      const exiters = new Set<(why: string) => void>();
+      const island: FakeIsland = { manifest: null as unknown as IslandMsg_Manifest, posted: [], reply: (msg) => { for (const l of [...listeners]) l(msg); }, terminated: false, exit: (why) => { for (const x of [...exiters]) x(why); } };
       islands.push(island);
       return {
         post: (msg: unknown) => {
@@ -328,6 +375,7 @@ function islandHost(opts: HostOptions = {}): { host: VesselIslandHost; islands: 
         },
         listen: (h) => { listeners.add(h); return () => { listeners.delete(h); }; },
         onError: () => () => {},
+        onExit: (h) => { exiters.add(h); return () => { exiters.delete(h); }; },
         terminate: () => { island.terminated = true; },
       };
     },
@@ -859,8 +907,8 @@ describe("the island pool keys by the whole session key", () => {
     const surfaceDoor: Array<[IslandKeyParts, unknown]> = [];
     const pool = new VesselIslandPoolCore({
       host, mainRepo: v.owner, resolvePluginCids: async () => ({ ok: true as const, pluginCids: [] }),
-      onWorkerEvent: (wikiId, msg) => { vesselDoor.push([wikiId, msg.payload]); },
-      onSurfaceEvent: (surface, msg) => { surfaceDoor.push([surface, msg.payload]); },
+      onWorkerEvent: (wikiId, msg) => { vesselDoor.push([wikiId, "payload" in msg ? msg.payload : msg.type]); },
+      onSurfaceEvent: (surface, msg) => { surfaceDoor.push([surface, "payload" in msg ? msg.payload : msg.type]); },
     });
     pools.push(pool);
     const key = await pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe });
@@ -874,6 +922,12 @@ describe("the island pool keys by the whole session key", () => {
     // CONTROL: the same event from an island outside any session reaches the vessel's door.
     islands[1]!.reply(event("lar:///ha.ka.ba/wikis/outside"));
     expect(vesselDoor).toEqual([["lar:///ha.ka.ba/wikis/outside", { verb: "vault-unlock", uri: "lar:///synthetic" }]]);
+    // A session island's camera frame takes the surface door too, and never the vessel's.
+    const frame = mkLarFrame({ wikiUri: WIKI, cameraId: "lar:story", mountEpoch: 1, keys: [{ key: "lar:surface", rev: 1, html: "<p/>" }], sensedRevision: {} });
+    islands[0]!.reply(frame);
+    expect(surfaceDoor).toHaveLength(3);
+    expect(surfaceDoor[2]).toEqual([pool.surfaceOf(key), "lar:frame"]);
+    expect(vesselDoor).toHaveLength(1);
     // With no surface door supplied, a session island's event drops.
     const bare = poolOver(v);
     await bare.pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe });
@@ -902,8 +956,8 @@ describe("the island pool keys by the whole session key", () => {
     expect(await place(WIKI, me)).toContain("no session holds this island");
     expect([verbsAt(islands[0]!), verbsAt(islands[1]!), verbsAt(islands[2]!)]).toEqual([1, 0, 0]);
     // Every other placement door reads the same binding.
-    pool.placeWikiEvent(theirs, { renderId: "r", eventType: "click", fields: {} }, me);
-    pool.placeWikiInput(theirs, { renderId: "r", eventType: "input", value: "x" }, me);
+    pool.placeControlEvent(theirs, mkLarControlEvent({ eventId: "e", cameraId: "lar:story", mountEpoch: 0, kind: "lar:act", renderId: "r", action: "lar:click", seenFrameRev: 0 }), me);
+    pool.resendProjection(theirs, "lar:story", me);
     expect(() => pool.placeSensoriumSignal(theirs, { signal: "sensorium:read" as never, requestId: "q" }, me)).toThrow("the placing session holds no such surface");
     expect(islands[1]!.posted.length).toBe(1);                                           // its manifest, and nothing since
     // The listing names no surface: a status read learns no session and no face plane from it.
@@ -938,6 +992,25 @@ describe("the island pool keys by the whole session key", () => {
     await quiet(50);
     expect(otherSettled).toBe(false);                                                    // control: the other island's call still waits
     await pool.closeSession("session-2");
+  });
+
+  test("a call parked on an island ends on the island's EXIT, and no clock ends it (never a handshake timeout)", async () => {
+    const v = vessel();
+    v.writeRecipe("catalog", { wikiSlug: SLUG, libraryBags: [SHARED_BAG] });
+    const { pool, islands } = poolOver(v);
+    const recipe = await resolved(inputOf(v, "player"));
+    const key = await pool.mountSurface({ sessionId: "session-1", generation: 0, surfaceId: "surface-a", recipe });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      let outcome = "parked";
+      void pool.placeWikiVerb(key, { verb: "slow-verb", args: {}, requestedBy: "test" }, { sessionId: "session-1", generation: 0 }).then(() => { outcome = "resolved"; }, (err: Error) => { outcome = err.message; });
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(outcome).toBe("parked");                                  // no clock answered for a verb on a live island
+      islands[0]!.exit("exit code 1");
+      await vi.advanceTimersByTimeAsync(0);
+      expect(outcome).toContain("exited");                             // the island's exit answers, by name
+    } finally { vi.useRealTimers(); }
+    await pool.closeSession("session-1");
   });
 
   test("failure accounting reads the whole key", async () => {

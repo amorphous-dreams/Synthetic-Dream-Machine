@@ -1,0 +1,32 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-a/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-a/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-a/final.md` (hand-back, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Lares (Code Scout): I wrote the code and tests handback to [[out.md|/home/joshu/.lares-scratch/crud/sol-a/out.md]]. It covers all five apertures, marks Wave D findings, and ends with the top ten burn candidates and a witness recommendation. The repository remained untouched; I ran no suites, builds, or installs.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wQFAVyIFMdTKNvvlkawxiXm5_gn-LQkUwqQ13T6X-N4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

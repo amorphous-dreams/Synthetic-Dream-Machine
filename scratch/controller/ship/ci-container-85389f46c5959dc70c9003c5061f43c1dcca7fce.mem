@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/controller/ship/ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/controller/ship/ci-container-85389f46c5959dc70c9003c5061f43c1dcca7fce.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+85389f46c5959dc70c9003c5061f43c1dcca7fce
+read: Terra cold read of the ci-container lane HELD on the image pin law (WL3 missed image-bearing fields, the wrapper took any PW_IMAGE), cured red-first (WL3 reads every image-bearing field against the probe's pin, WL4 seven negative controls, WL5 pw-container.sh refuses a non-pinned image before docker runs); a blind Opus read = SHIP, measured no quiet gate; its P3s folded in (stale comment and safe.directory gone, mounts narrowed to the workspace with .git read-only plus PW_MOUNTS, the /proc fallback lists LISTENING sockets only, copyLiveStore proves the copy by a known doc). Proof at this exact head, no reruns: CI 42126382295 (push), 42129408404 (dispatch), Held-out 42126471312 incl. browser-weld, all green. Owed: the image's Node 26 vs the jobs' pinned 24.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OQTceUKpUW33IqFeBXumeZSW2-zJb8VwRTPP8CixFE0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

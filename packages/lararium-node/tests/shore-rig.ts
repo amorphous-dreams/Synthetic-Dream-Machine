@@ -18,6 +18,7 @@ import type { CapabilityAccess, CapabilityVerifyResult, Verb, VerbContext } from
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
 import { VerbTable } from "../../lararium-tw5/src/verb-dispatcher.js";
 import { registerActionReactors, makeTw5Deserializer } from "../../lararium-tw5/src/action-handler.js";
+import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 import { TW5Engine } from "../../lararium-tw5/src/tw5-vm.js";
 import { exportCarrierFile } from "../../lararium-tw5/src/meme-write.js";
 import { canonicalizeCarrierText } from "../../lararium-tw5/src/carrier-canonical.js";
@@ -29,6 +30,9 @@ import type { SubmitResult } from "../../lares-cli/src/verb-result.js";
 import { boundOutcomeOutput } from "../../lararium-tw5/src/verb-vm.js";
 import { LarDiskProjector, type LarDiskProjectorOptions } from "../src/disk-projector.js";
 import { SyncedTree } from "../src/synced-tree.js";
+
+/** `bags/lares` is system canon: the suite stands as a Kahu hand (a counted admission AND a sentinel membership). */
+const KAHU = await kahuHand();
 
 const REPO = new URL("../../..", import.meta.url).pathname;
 const CORE = path.join(TW5_CORE_DIR, TW5_CORE_SCRIPT_FILENAME);
@@ -91,7 +95,7 @@ export class ShoreRig {
       this.uris.push(`lar:///ha.ka.ba/lares/api/pono/${f.slice(0, -".mem".length)}`);
     }
     this.composite.addLayer({ bagId: RIG_BAG, store: this.store, writable: true, defaultWritable: false });
-    registerActionReactors(this.table, { composite: this.composite, tw5: makeTw5Deserializer(engine) });
+    registerActionReactors(this.table, { kahuReach: KAHU, composite: this.composite, tw5: makeTw5Deserializer(engine) });
     this.newTree();
   }
 

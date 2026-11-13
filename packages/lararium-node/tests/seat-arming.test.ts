@@ -18,8 +18,8 @@
  *       key no row holds reads as done; a torn charter, primary or carried, refuses the whole act.
  *   A6  RED: THE CARDS READ BEFORE ANY ROW MOVES: a card the head never committed, two cards for one chair, fewer
  *       cards than the head's count, an unarmed head: each refuses by name and no row moves.
- *   A7  AT THE FLOOR every arming, the retirement, the roll's hand and the stand-in reading refuse `CustodyLocked`;
- *       `seat.held` answers.
+ *   A7  AT THE FLOOR armings, the roll's hand and stand-in reading refuse `CustodyLocked`;
+ *       public retirement and `seat.held` readings answer.
  *   A8  ONE FACE'S PUBLIC HALVES: the reader opens that face's rows alone; a row that answers another key refuses.
  *   A9  RED: THE ROLL'S HAND SIGNS ONLY A LAWFUL ROLL OF THIS VESSEL'S SEATS: a key no row here holds, a successor
  *       short of one distinct digest per seat or under another rule, a roll revealing fewer seats than the head's
@@ -29,9 +29,13 @@
  *   A12 RED: A COPIED MARKER STANDS IN FOR NO READ-BACK. A root that carries the scratch marker over custody sealed
  *       under another passphrase reads no stand-in.   control: the marker beside custody under the test route does
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { copyFileSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { faceRowNames, handleRowPath } from "./face-paths.js";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   NEXUS_DOC_DOMAIN, charterInceptionBytes, charterInceptionImage, foundingRoster, genesisOfInception, hex, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
@@ -47,6 +51,7 @@ import { listSeatKeys, seatKeyFile, seatKeysOfFace, signAsSeat } from "../src/se
 import { SealedActRefused, runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
 import { vesselCustodyHomes } from "../src/vault-carriers.js";
 import { larIdentityDir, larSealHome } from "../src/vessel-paths.js";
+import { seatReadBackStandIn } from "../src/seal-ceremony.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { chairSeed, seatChairs } from "./seat-fixture.js";
 
@@ -232,14 +237,15 @@ describe("the rite arms its heads behind the door", () => {
     expect(seatRows()).toBe(rows);
   });
 
-  test("A7 — at the floor the armings, the retirement, the roll's hand and the stand-in refuse; the held reading answers", async () => {
+  test("A7 — at the floor the armings, the roll's hand and stand-in refuse; public retirement and held readings answer", async () => {
     const c = await custody("arm-a7");
     await stand([0]);
     const { armed, cards } = await writeGenesis();
     await c.holder.lock();
-    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll", { cards: cards.map(hexOf) }), () => act("seat.retire", { keys: armed.seatedKeys }),
+    const steps = [() => act("seat.arm-genesis"), () => act("seat.arm-roll", { cards: cards.map(hexOf) }),
       () => act("seal.sign", { seat: armed.seatedKeys[0], image: "ab" })];
     for (const step of steps) expect(await step().catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
+    expect(await act("seat.retire", { keys: armed.seatedKeys })).toEqual({ retired: [], kept: armed.seatedKeys.map((key) => ({ key, why: "seated" })) });
     writeFileSync(join(c.root, ".lar-test-scratch"), "");
     expect(await act("seat.readback-stand-in").catch((e: unknown) => e)).toBeInstanceOf(CustodyLocked);
     expect(await act("seat.held", { keys: armed.seatedKeys })).toEqual({ held: armed.seatedKeys });
@@ -251,8 +257,9 @@ describe("the rite arms its heads behind the door", () => {
     const one = (await seatChairs([1], { family: "a8" })).keys[0]!;
     expect(await seatKeysOfFace(0)).toEqual([zero.keys[0]]);
     expect(await seatKeysOfFace(1)).toEqual([one]);
-    const rows = readdirSync(larIdentityDir()).filter((f) => f.startsWith("seat-key-h0-"));
-    copyFileSync(join(larIdentityDir(), rows[0]!), join(larIdentityDir(), `seat-key-h2-${"0".repeat(32)}.bin`));
+    const rows = faceRowNames().filter((f) => f.startsWith("seat-key-h0-"));
+    await updateColdCustodyRow("identity", `seat-key-h2-${"0".repeat(32)}.bin`, () => ({ plaintext: chairSeed(2, 0, "a8"), value: undefined }));
+    copyFileSync(handleRowPath(rows[0]!), handleRowPath(`seat-key-h2-${"0".repeat(32)}.bin`));
     expect(await seatKeysOfFace(2).catch((e: unknown) => e)).toMatchObject({ reading: "key-fails" });
     await updateColdCustodyRow("identity", seatKeyFile(one, 3), () => ({ plaintext: chairSeed(0, 0, "a8"), value: undefined }));
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toBeInstanceOf(CustodyRowUnavailable);
@@ -316,15 +323,41 @@ describe("the rite arms its heads behind the door", () => {
     const io = new FsCustodyIo(homes);
     const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }] });
     const holder = makeCustodyHolder({ io, homes });
-    await holder.adopt(founded.vk);
+    await holder.adopt(founded.treeKey);
     seatCustody(holder);
     try {
       writeFileSync(join(root, ".lar-test-scratch"), "");
+      seatReadBackStandIn(true);
       expect(await act("seat.readback-stand-in")).toEqual({ standIn: true });
     } finally {
+      seatReadBackStandIn(false);
       await holder.lock();
       unseatCustody(holder);
       process.env["LAR_ROOT"] = prior;
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test("RED: even custody bound to the published route cannot let a marker substitute for a card read-back", async () => {
+    const root = mkdtempSync(join(tmpdir(), "lar-card-marker-"));
+    const prior = process.env["LAR_ROOT"];
+    process.env["LAR_ROOT"] = root;
+    const homes = vesselCustodyHomes();
+    mkdirSync(homes.identity, { recursive: true, mode: 0o700 });
+    const io = new FsCustodyIo(homes);
+    const founded = await foundCustody({ io, homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "test-founding-passphrase" }] }] });
+    const holder = makeCustodyHolder({ io, homes });
+    await holder.adopt(founded.treeKey);
+    seatCustody(holder);
+    try {
+      expect(await act("seat.readback-stand-in")).toEqual({ standIn: false }); // CONTROL: no marker
+      writeFileSync(join(root, ".lar-test-scratch"), "");
+      expect(await act("seat.readback-stand-in")).toEqual({ standIn: false });
+    } finally {
+      seatReadBackStandIn(false);
+      await holder.lock();
+      unseatCustody(holder);
+      if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;
       rmSync(root, { recursive: true, force: true });
     }
   });

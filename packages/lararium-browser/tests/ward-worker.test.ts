@@ -1,0 +1,113 @@
+/**
+ * ward-worker — one browser ward act (seat-harness#/the-ward): the face root signs inside a per-act worker, fresh from the
+ * passphrase typed for the act, and the page's own unlock never takes part. The pure core runs in-process here through a spawn
+ * that wires a MessageChannel to it, the way the worker entry does. Every red pairs with a CONTROL.
+ */
+import { describe, expect, test } from "vitest";
+import { verifyEd25519 } from "@lararium/mesh";
+import { lockBrowserCustody, readBrowserCustody, sealBrowserKeystore } from "../src/browser-custody.js";
+import { bindFirstFaceSlot, faceCustodyHeld, lockFaceCustody } from "../src/browser-face-custody.js";
+import { generateOrLoadBrowserPersonaRoot, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
+import { runWardAct } from "../src/ward-core.js";
+import { browserWardSign, BrowserWardRefused, type WardWorkerSpawn } from "../src/browser-ward.js";
+import entrySource from "../src/ward.worker.ts?raw";
+
+const PASS = "the browser face's route";
+const fresh = () => `lares:ward-${globalThis.crypto.randomUUID()}`;
+
+const faces = new Map<string, string>();
+/** A worker double: the pure core behind a MessagePort, observing what crosses the port and whether the vessel's or the face's unlock moved. */
+function spawnCore(idbName: string, seen: { answers: unknown[]; unlockedDuring: boolean[] }): WardWorkerSpawn {
+  return () => ({
+    postMessage(_msg, transfer) {
+      const port = transfer[0] as MessagePort;
+      port.onmessage = async (m) => {
+        seen.unlockedDuring.push(((await readBrowserCustody(idbName)).reading === "sealed" && (await readBrowserCustody(idbName) as { unlocked: boolean }).unlocked) || faceCustodyHeld(idbName, faces.get(idbName)!));
+        const answer = await runWardAct(m.data);
+        seen.answers.push(answer);
+        port.postMessage(answer);
+      };
+    },
+    terminate() { /* the act is done */ },
+  });
+}
+
+/** A browser whose face root rests under its ward; the place tree and the face both stand locked. */
+async function wardedBrowser() {
+  const idbName = fresh();
+  const face = `pg-ward-${globalThis.crypto.randomUUID()}`;
+  faces.set(idbName, face);
+  await sealBrowserKeystore(idbName, { kind: "passphrase", passphrase: PASS });
+  await bindFirstFaceSlot(idbName, face, { kind: "passphrase", passphrase: PASS });
+  wearFaceOfVessel(idbName, face);
+  const root = await generateOrLoadBrowserPersonaRoot(idbName, 0, PASS);
+  lockBrowserCustody(idbName);
+  lockFaceCustody(idbName, face);
+  return { idbName, face, rootKey: root.verifyingKey };
+}
+
+describe("a browser ward act", () => {
+  test("RED: with the page locked, the ward signs from the typed passphrase alone, the page stays locked before, during and after, and only the key and the signature cross the port; CONTROL: the signature verifies under the root", async () => {
+    const { idbName, face, rootKey } = await wardedBrowser();
+    const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
+    expect((await readBrowserCustody(idbName) as { unlocked: boolean }).unlocked).toBe(false);
+    const bytes = new TextEncoder().encode("a kapae-lower over (daemon, digest)");
+    const signed = await browserWardSign(idbName, 0, PASS, bytes, spawnCore(idbName, seen));
+    expect(seen.unlockedDuring).toEqual([false]);
+    expect((await readBrowserCustody(idbName) as { unlocked: boolean }).unlocked).toBe(false);
+    expect(faceCustodyHeld(idbName, face), "the face stays locked after the act").toBe(false);
+    expect(seen.answers).toHaveLength(1);
+    expect(Object.keys(seen.answers[0] as object).sort()).toEqual(["key", "signature"]);
+    expect(signed.key).toBe(rootKey);
+    expect(verifyEd25519(signed.signature, bytes, rootKey)).toBe(true);
+  });
+
+  test("RED: a wrong passphrase or none refuses by name and crosses no key; CONTROL: the right one signs", async () => {
+    const { idbName, face } = await wardedBrowser();
+    const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
+    await expect(browserWardSign(idbName, 0, "not the route", new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toThrow(BrowserWardRefused);
+    expect(seen.answers).toEqual([{ refused: "ward-no-slot-opens" }]);
+    await expect(browserWardSign(idbName, 0, "", new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
+    expect((await browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
+  });
+});
+
+describe("the browser ward spends attempts (S2 cold read, P3)", () => {
+  test("RED: three wrong passphrases spend the page's ward attempts, and the right one then refuses `ward-attempts-spent`; CONTROL: a fresh keystore's right passphrase signs", async () => {
+    const { idbName, face } = await wardedBrowser();
+    const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
+    for (let i = 0; i < 3; i++) await expect(browserWardSign(idbName, 0, `wrong ${i}`, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-no-slot-opens" });
+    await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).rejects.toMatchObject({ reading: "ward-attempts-spent" });
+    const other = await wardedBrowser();
+    expect((await browserWardSign(other.idbName, 0, PASS, new Uint8Array([1]), spawnCore(other.idbName, seen))).signature).toMatch(/^[0-9a-f]+$/);
+  });
+});
+
+/** The runtime imports an entry evaluates before its own body (type-only imports erase). */
+const runtimeImportsOf = (source: string): string[] =>
+  [...source.matchAll(/^import\s+(?!type\s)[^;]*?from\s+"([^"]+)";?/gms)].map((m) => m[1]!);
+
+describe("the ward worker hears its act (the built page)", () => {
+  // A bundled module worker evaluates its static imports first; the mesh's wasm init awaits at top level there, and a message the
+  // page posts meanwhile reaches no listener and drops, so the act never answers. The entry stands its listener with nothing loaded.
+  test("RED: the worker entry evaluates no runtime import before its listener stands; CONTROL: it reaches the ward core by a dynamic import", () => {
+    expect(runtimeImportsOf(entrySource)).toEqual([]);
+    expect(entrySource).toMatch(/await import\("\.\/ward-core\.js"\)/);
+  });
+
+  test("RED: a ward worker that fails to load refuses `ward-worker-failed` by name at once, never hangs; CONTROL: a worker that answers signs", async () => {
+    const { idbName } = await wardedBrowser();
+    const failing: WardWorkerSpawn = () => {
+      const handle: ReturnType<WardWorkerSpawn> = {
+        postMessage() { queueMicrotask(() => handle.onerror?.(new ErrorEvent("error"))); },
+        terminate() { /* nothing stands */ },
+      };
+      return handle;
+    };
+    const hung = new Promise<string>((r) => setTimeout(() => r("hung"), 3000));
+    const read = await Promise.race([browserWardSign(idbName, 0, PASS, new Uint8Array([1]), failing).then(() => "signed", (e: { reading?: string }) => e.reading ?? "unnamed"), hung]);
+    expect(read).toBe("ward-worker-failed");
+    const seen = { answers: [] as unknown[], unlockedDuring: [] as boolean[] };
+    await expect(browserWardSign(idbName, 0, PASS, new Uint8Array([1]), spawnCore(idbName, seen))).resolves.toMatchObject({ signature: expect.any(String) });
+  });
+});

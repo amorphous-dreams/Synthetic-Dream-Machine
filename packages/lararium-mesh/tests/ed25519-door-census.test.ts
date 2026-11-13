@@ -139,7 +139,6 @@ describe("the census of Ed25519 verifiers", () => {
  * takes one.
  */
 const STILL_TAKES_A_VERIFIER: readonly string[] = [
-  "packages/lararium-keyhive/src/keyhive-identity-slot.ts",   // a token SEAL (sign and verify under one held key): no public key rides the call
   "packages/lararium-mesh/src/cabal-invite.ts",
   "packages/lararium-mesh/src/raise-challenge.ts",
   "packages/lararium-mesh/src/vouch-board.ts",
@@ -182,7 +181,7 @@ describe("CONTROL: a planted fault of each kind reads red", () => {
   test("a Python verifier", () => {
     expect(findDirectVerifies("scripts/fault.py", "from nacl.signing import VerifyKey\nVerifyKey(k).verify(m, s)\n")).not.toEqual([]);
   });
-  test("a comment that names a retired call stays quiet, and so does a signer", () => {
+  test("a comment that names a call stays quiet, and so does a signer", () => {
     const quiet = `import * as ed25519 from "@noble/ed25519";\n// was: ed25519.verifyAsync(sig, bytes, key)\n/* ed25519.verify( */\nexport const sign = (b: Uint8Array, s: Uint8Array) => ed25519.signAsync(b, s);`;
     expect(findDirectVerifies("packages/planted/src/quiet.ts", quiet)).toEqual([]);
   });

@@ -251,6 +251,54 @@ export const POINTER_BODY_CODE = "pointer-body";
 /** The code a put that carries no bytes refuses under. */
 export const EMPTY_BODY_CODE = "empty-body";
 
+/**
+ * THE STAGE ROW LAW (road `L9`). The memory stage keys every row by its content: a row's title derives from
+ * its `row-key` meta field alone (the event, the row letter, the commit, a memory's class and slug), never a
+ * clock or a counter, so a re-pour of an exported projection after a re-found lands the same tiddlers.
+ *
+ * One key, one title, one place: a row key reads as one or two lowercase path segments, and the row stands at
+ * `STAGE_ROW_PREFIX` + key (`ha.ka.ba` + `kahua/memory` + at most two more keeps the uri's four path segments).
+ * The gate refuses by name a key that reads no path (`row-key-shape`), a row at any other title
+ * (`row-key-title`), and a title under the stage prefix that carries no key (`row-key-missing`).
+ */
+export const STAGE_ROW_PREFIX = "lar:///ha.ka.ba/kahua/memory/";
+export const ROW_KEY_FIELD = "row-key";
+export const ROW_KEY_SHAPE_CODE = "row-key-shape";
+export const ROW_KEY_TITLE_CODE = "row-key-title";
+export const ROW_KEY_MISSING_CODE = "row-key-missing";
+
+const ROW_KEY_SEGMENT = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/** Why a row key reads no path, or null where it reads one. */
+function rowKeyFault(rowKey: string): string | null {
+  const segments = rowKey.split("/");
+  if (segments.length > 2) return `"${rowKey}" holds ${segments.length} segments; a row key holds one or two`;
+  const bad = segments.find((seg) => !ROW_KEY_SEGMENT.test(seg));
+  return bad === undefined ? null : `"${rowKey}" holds the segment "${bad}"; a segment reads lowercase letters and digits, hyphen-joined`;
+}
+
+/** The title a stage row stands at: the stage prefix and its row key. Throws `row-key-shape` on a key that reads no path. */
+export function stageRowTitle(rowKey: string): string {
+  const fault = rowKeyFault(rowKey);
+  if (fault !== null) throw new Error(`${ROW_KEY_SHAPE_CODE}: ${fault}`);
+  return `${STAGE_ROW_PREFIX}${rowKey}`;
+}
+
+/** The stage row law over the records an ingest would land: the refusal, or null where the row stands keyed. */
+function stageRowRefusal(uri: string, records: readonly TiddlerFields[]): MemeDiagnostic | null {
+  const root = records.find((fields) => fields.title === uri);
+  const raw = root?.[ROW_KEY_FIELD];
+  const wall = (code: string, message: string): MemeDiagnostic => ({ from: 0, to: 0, severity: "error", source: MEMETIC_SOURCE, code, message: `${code}: ${message}` });
+  if (raw === undefined) {
+    return uri.startsWith(STAGE_ROW_PREFIX) ? wall(ROW_KEY_MISSING_CODE, `${uri} stands under the memory stage and carries no \`${ROW_KEY_FIELD}\`; a stage row's title derives from its row key`) : null;
+  }
+  const rowKey = String(raw);
+  const fault = rowKeyFault(rowKey);
+  if (fault !== null) return wall(ROW_KEY_SHAPE_CODE, `${uri}: ${fault}`);
+  const derived = `${STAGE_ROW_PREFIX}${rowKey}`;
+  return derived === uri ? null : wall(ROW_KEY_TITLE_CODE, `${uri} carries row key "${rowKey}", which derives ${derived}; a row stands at its derived title alone`);
+}
+
 /** The Confluence gate's own verdict, read once — shared by `placeMeme` (which lands it) and
  *  `evaluateMeme` (which never does). Internal: callers get the two typed entry points below. */
 async function evaluate(
@@ -284,6 +332,10 @@ async function evaluate(
     ...(input.unattended === true ? { unattended: true } : {}),
     recordsAbsent: !group.includes(uri),
   });
+  if (decision.kind === "ingest") {
+    const wall = stageRowRefusal(uri, decision.records);
+    if (wall !== null) return { group, decision: { kind: "refuse", warnings: [wall.message], diagnostics: [wall] }, currentRenderHash };
+  }
   return { group, decision, currentRenderHash };
 }
 

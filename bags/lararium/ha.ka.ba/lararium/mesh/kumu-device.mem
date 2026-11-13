@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/kumu-device">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/kumu-device`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lararium/ha.ka.ba/lararium/mesh/kumu-device.mem"
 l-space     = "lararium"
-mana        = 17
-manao       = 17
-manaoio     = 16
 namespace   = "&#x0950; &#x0901;"
 role        = "type-level device contract: KumuDeviceSpec, KumuListenable, KumuSubscribable, KumuInstanceRef — the @editable boundary for kumu devices; spec derives from pranala edges, not TS class hierarchy"
 source-file = "packages/lararium-mesh/src/kumu-device.ts"
@@ -20,7 +16,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lararium/mesh/kumu-device"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Kumu Device Spec
 
@@ -36,7 +32,7 @@ pranala tiddler edges via `extractReactionBindings`.
 
 <<~/ahu>>
 
-<<~ ahu #/verse-model>>
+<<~ ahu slot=`#/verse-model`>>
 
 !! Verse 5.6+ Device Model
 
@@ -69,7 +65,7 @@ Lararium maps this directly:
 
 <<~/ahu>>
 
-<<~ ahu #/exports>>
+<<~ ahu slot=`#/exports`>>
 
 !! Exports
 
@@ -142,6 +138,7 @@ uuidFragment  — crypto.randomUUID() stable wiring address
 ```
 
 Both fragments produce tiddler title URIs:
+
 ```
 lar:///type-path#/nameFragment   — human-readable wiki-local label
 lar:///type-path#/uuidFragment   — stable UUID address for papalohe wiring
@@ -168,13 +165,11 @@ Selection rules:
 
 <<~/ahu>>
 
-<<~ ahu #/reaction-engine-removal>>
+<<~ ahu slot=`#/reaction-engine-removal`>>
 
-!! ReactionEngine Removal
+!! Reaction dispatch
 
-`ReactionEngine` (TS class, inline dispatch) was removed in the yin-collapse sprint (2026-05-15).
-
-The dispatch surface it owned collapsed into:
+No `ReactionEngine` TS class (inline dispatch) stands. Two surfaces carry dispatch:
 * `reaction-router.ts` TW5 startup module — nalu-driven dispatch (production path)
 * `ReactionGraph` in `reaction-graph.ts` — routing table and test dispatch surface
 
@@ -185,17 +180,17 @@ See: `lar:///ha.ka.ba/lares/api/pono/nalu#/yin-collapse-law`
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/papalohe">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/reaction-graph">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/reaction-engine">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/papalohe`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/reaction-graph`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/reaction-engine`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;5JYz2_UeRk7P-SHyfQQXUODQk8cqqwPH_p5yzXLlDEQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QlSdzUKt9F5Ij1xrjvhZeCPlVQ93zfeSG4Ve_rfdXq4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

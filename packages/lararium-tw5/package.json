@@ -4,6 +4,10 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./glass": {
+      "import": "./dist/glass.js",
+      "types": "./dist/glass.d.ts"
+    },
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
@@ -36,10 +40,6 @@
       "import": "./dist/memetic-wikitext-sensorium.js",
       "types": "./dist/memetic-wikitext-sensorium.d.ts"
     },
-    "./meme-worker-script.js": {
-      "import": "./dist/meme-worker-script.js",
-      "types": "./dist/meme-worker-script.d.ts"
-    },
     "./tw5-memes-root": {
       "import": "./tw5-memes-root.js",
       "types": "./tw5-memes-root.d.ts"
@@ -57,16 +57,20 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "clean": "node ../../tools/clean-output.mjs dist dist-plugin",
-    "build": "tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
+    "build": "tsx scripts/build-tw5-themes.ts && tsx scripts/build-plugin-tiddler.ts && tsc -p tsconfig.build.json && tsx scripts/sync-heleuma.ts",
     "build:tw5-vendor": "tsx scripts/build-tw5-vendor.ts",
+    "build:tw5-themes": "tsx scripts/build-tw5-themes.ts",
     "build:heleuma": "tsx scripts/sync-heleuma.ts",
     "build:heleuma:commit": "tsx scripts/sync-heleuma.ts --commit",
     "build:plugin": "tsx scripts/build-plugin-tiddler.ts",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run",
     "test:sigil-alignment": "tsx scripts/check-sigil-alignment.ts",
     "smoke:plugin-boot": "tsx scripts/smoke-plugin-boot.ts",
-    "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts"
+    "smoke:plugin-provenance": "tsx scripts/smoke-plugin-provenance.ts",
+    "measure:frames": "tsx scripts/frame-baseline.ts",
+    "measure:stock-tab": "tsx scripts/stock-tab-baseline.ts"
   },
   "dependencies": {
     "@lararium/memetic-frame": "workspace:*",
@@ -76,9 +80,10 @@
     "tiddlywiki": "workspace:*"
   },
   "devDependencies": {
+    "fast-check": "4.10.2",
     "tsx": "4.23.15",
     "tw5-typed": "1.1.5",
     "vite": "8.3.4",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   }
 }

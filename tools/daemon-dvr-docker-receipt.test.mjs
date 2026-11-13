@@ -3,14 +3,14 @@ import assert from "node:assert/strict";
 import { receiptFromLogs, runDvrDockerReceipt, uniqueProjectName } from "./daemon-dvr-docker-receipt.mjs";
 
 const receipt = {
-  schema: "lararium-dvr-node-owned/v1",
+  schema: "lararium-dvr-node-owned",
   physical: { separate: true, ordinaryFiles: [] },
   recovery: { parentAbsent: true, ownedRecovered: true, ordinaryRefused: true },
 };
 
 test("D-VR receipt parser requires the dedicated schema", () => {
   assert.deepEqual(receiptFromLogs(`noise\ndvr-node-owned-1  | DVR_NODE_RECEIPT:${JSON.stringify(receipt)}\n`), receipt);
-  assert.throws(() => receiptFromLogs("DVR_NODE_RECEIPT:{}"), /schema is unsupported/);
+  assert.throws(() => receiptFromLogs("DVR_NODE_RECEIPT:{}"), /lacks the node-owned receipt shape/);
 });
 
 test("D-VR runner preflights, inspects same-context processes, runs, and scopes cleanup", async () => {

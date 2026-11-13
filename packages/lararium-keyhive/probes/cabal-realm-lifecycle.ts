@@ -8,7 +8,7 @@
  *   2. JOIN two members (contact-card exchange → addSentinelMember via the INERT join gate)
  *   3. assert BOTH in the roster (the Keyhive doc-roster, verified per-member)
  *  3b. VEIL holds in a real founding — a charter over the LIVE roster + a secret leaks neither
- *   4. ROLL its lease (effectiveLeaseEpoch advances 0 → 1)
+ *   4. ROLL its lease (a charter quorum's signed epoch advances 0 → 1)
  *   5. STARVE + cool the substrate to anu (deriveCabalRealmLiveness → "dissolved")
  *   6. RE-WARM (feedCabalRealm → "alive")
  *   7. EVICT one member (convergent revokeSentinelMember)
@@ -17,7 +17,7 @@
  * Real lifecycle, not green-units: the sentinel stands a real Keyhive Document, the
  * members ride as independent KeyhiveProvider instances introduced by contact card, the
  * cooling/warming rides the real
- * BagStowage, the lease rolls through the real max-register.
+ * BagStowage, the lease rolls through the signed charter quorum door.
  *
  * Run: pnpm exec tsx packages/lararium-keyhive/probes/cabal-realm-lifecycle.ts
  *
@@ -31,10 +31,9 @@ import {
 import { forkCabalRealm } from "../src/fork-realm-ceremony.js";
 import {
   BagStowage,
-  cabalRealmLeaseSlot,
   feedCabalRealm,
-  effectiveLeaseEpoch,
-  rolledLeaseEpoch,
+  charterHandLineage, quorumLeaseEpoch, signQuorumLease, charterInceptionImage, inceptCharterEpoch,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
 } from "@lararium/mesh";
 import { projectRealmGlamour, realmGlamourSnapshot } from "../src/realm-glamour.js";
 
@@ -71,13 +70,11 @@ async function main(): Promise<void> {
     { title: "Probe Realm", description: "a cabal-realm founded by the witness", foundedAt: FOUNDED_AT },
     { residency, leaseWriterId: WRITER_ID, leaseSlots },
   );
-  const slot = cabalRealmLeaseSlot(realm.realmDocIdHex, WRITER_ID);
-  stage("1 FOUND — sentinel minted, substrate registered cold, lease slot at genesis 0",
+  stage("1 FOUND — sentinel minted and substrate registered cold",
     realm.realmDocIdHex.length > 0 &&
     realm.realmAgentIdHex.length > 0 &&
-    residency.tier(SUBSTRATE_URL) === "anu" &&
-    leaseSlots.get(slot) === "0",
-    `doc=${realm.realmDocIdHex.slice(0, 16)}… tier=${residency.tier(SUBSTRATE_URL)} epoch=${leaseSlots.get(slot)}`);
+    residency.tier(SUBSTRATE_URL) === "anu",
+    `doc=${realm.realmDocIdHex.slice(0, 16)}… tier=${residency.tier(SUBSTRATE_URL)}`);
 
   // ── STAGE 1b — GLAMOUR (the founding founds the realm's published face) ─────────
   const glamourKeys = Object.keys(glamour);
@@ -139,11 +136,18 @@ async function main(): Promise<void> {
     snap.cid.length === 64,                                // a real content-addressed snapshot
     `roster=${roster0.length} secret-in-wire=${wireBytes.includes(SECRET)} cid=${snap.cid.slice(0, 12)}…`);
 
-  // ── STAGE 4 — ROLL the lease (max-register 0 → 1) ──────────────────────────────
-  const eff0 = effectiveLeaseEpoch(leaseSlots.values());
-  leaseSlots.set(slot, String(rolledLeaseEpoch(eff0)));   // the writer rolls its OWN slot
-  const eff1 = effectiveLeaseEpoch(leaseSlots.values());
-  stage("4 LEASE — effectiveLeaseEpoch advanced on churn",
+  // ── STAGE 4 — ROLL the realm lease through its seated charter (0 → 1) ───────────
+  const seeds = [1, 2, 3].map((n) => new Uint8Array(32).fill(0x40 + n));
+  const hands = await Promise.all(seeds.map(async (seed) => ({ signer: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) })));
+  const genesis = await inceptCharterEpoch(charterInceptionImage(hands.map((h) => h.signer), 2), hands);
+  const lineage = charterHandLineage([genesis])!.lineage;
+  const signedSlots: string[] = [];
+  const eff0 = quorumLeaseEpoch(realm.realmDocIdHex, signedSlots, lineage);
+  const signers = hands.slice(0, 2).map((h) => ({ key: h.signer, sign: h.sign }));
+  const advance = await signQuorumLease({ resource: realm.realmDocIdHex, epoch: eff0 + 1, lineage }, signers);
+  signedSlots.push(JSON.stringify(advance));
+  const eff1 = quorumLeaseEpoch(realm.realmDocIdHex, signedSlots, lineage);
+  stage("4 LEASE — signed quorum advance counted on churn",
     eff0 === 0 && eff1 === 1,
     `${eff0} → ${eff1}`);
 

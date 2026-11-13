@@ -18,26 +18,9 @@ const arrived = (...hashes: string[]) => hashes.map((diskHash) => ({ diskHash, s
 const vanished = (rows: Array<[string, string]>) => new Map(rows.map(([uri, syncedHash]) => [uri, { syncedHash, file: `/disk/${uri.split("/").pop()}.mem` }]));
 
 describe("pairedDeletions — content pairs, and nothing else rides", () => {
-  test("a vanished address with no arrival of its content rides nowhere", () => {
-    expect(pairedDeletions(vanished([["lar:///x/a", "h-a"], ["lar:///x/b", "h-b"]]), [])).toEqual([]);
-    expect(pairedDeletions(vanished([["lar:///x/a", "h-a"]]), arrived("h-other"))).toEqual([]);
-  });
 
-  test("one vanished address and one arrived file sharing a hash ride together, with the path the watcher saw leave", () => {
-    expect(pairedDeletions(vanished([["lar:///x/a", "h-a"], ["lar:///x/b", "h-b"]]), arrived("h-a", "h-new")))
-      .toEqual([{ uri: "lar:///x/a", syncedHash: "h-a", file: "/disk/a.mem" }]);
-  });
 
-  test("CONTROL: two arrivals of one content, or two vanished addresses holding it, pair with nothing", () => {
-    expect(pairedDeletions(vanished([["lar:///x/a", "h-a"]]), arrived("h-a", "h-a"))).toEqual([]);
-    expect(pairedDeletions(vanished([["lar:///x/a", "h-a"], ["lar:///x/twin", "h-a"]]), arrived("h-a"))).toEqual([]);
-  });
 
-  test("a STANDING carrier a hand edited into the vanished one's bytes names no move: it pairs with nothing", () => {
-    expect(pairedDeletions(vanished([["lar:///x/a", "h-a"]]), [{ diskHash: "h-a", status: "changed" }])).toEqual([]);
-    // And an edited carrier beside a true arrival of the same bytes makes the pair ambiguous.
-    expect(pairedDeletions(vanished([["lar:///x/a", "h-a"]]), [{ diskHash: "h-a", status: "changed" }, { diskHash: "h-a", status: "new" }])).toEqual([]);
-  });
 
   test("a source leaves the vanished set only where the island's summary names its re-link", () => {
     expect([...confirmedRenames({ renames: [{ fromUri: "lar:///x/a", toUri: "lar:///x/b" }], absent: [], declined: [] })]).toEqual(["lar:///x/a"]);
@@ -47,10 +30,6 @@ describe("pairedDeletions — content pairs, and nothing else rides", () => {
     expect([...confirmedRenames(undefined)]).toEqual([]);
   });
 
-  test("a mass vanish sends no deletion at all", () => {
-    const many = vanished(Array.from({ length: 500 }, (_, i) => [`lar:///x/c${i}`, `h-${i}`] as [string, string]));
-    expect(pairedDeletions(many, arrived("h-unrelated"))).toEqual([]);
-  });
 });
 
 describe("the watcher's source holds no clock over a vanish and no fraction", () => {

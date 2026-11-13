@@ -40,13 +40,13 @@
  * the withdrawal memory accretes; the session table attaches. Where a gate's withdrawal memory rests
  * stands owed: `memoryBackedWithdrawals` keeps it in memory and persists nothing.
  *
- * Stands specified in code until the socket cutover wires it; out of the package barrel till then.
+ * Called by the node's `vessel-gates` and `face-gate-server`; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */
 import {
-  carriageEntryActCid, carriageEntryCounts, isCarriageDescendant,
-  type CarriageEntry, type PresentedAdmitVerdict, type PresentedAdmitState, type PresentedLineageAct,
+  carriageEntryActCid, carriageEntryCounts, isCarriageDescendant, isRollAnchor, resolveAnchoredChain, rollAnchorCid,
+  type CarriageEntry, type RollAnchor, type PresentedAdmitVerdict, type PresentedAdmitState, type PresentedLineageAct,
 } from "./carriage-registry.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { hex, utf8Bytes } from "./crypto.js";
@@ -54,13 +54,14 @@ import {
   FACE_CHAIN_REFUSALS, FACE_CHAIN_VERDICTS, checkFaceChain, foldWithdrawals, heldWithdrawals, isWithdrawalMemory, learnWithdrawals, type FaceChainRefusal, type FaceChainVerdictName, type WithdrawalMemory,
 } from "./face-authority.js";
 import {
-  FACE_PROOF_REFUSALS, own, readCertificate, readSessionCertificate, readSessionSignature, sameFaceScope,
-  type FaceProofRefusalName, type FaceScope, type NexusAid, type SessionKey, type VesselFaceKey,
+  FACE_PROOF_REFUSALS, own, readCertificate, readSessionCertificate, readSessionSignature, sameFaceScope, withdrawnKeyDigest,
+  type Digest, type FaceProofRefusalName, type FaceScope, type NexusAid, type SessionKey, type VesselFaceKey,
 } from "./face-proof-subjects.js";
 import type { GateBundle, GateTier } from "./gate-bundle.js";
 import {
-  GATE_FRAME, encodeGateAnswer, gateFinishPayload, gateFrame, gatePartReader, gateParts, gatePlaceFinishImage,
-  gateVerdictImage, readGatePresentation, readPlacePresentation, type GateAnswer, type PlaceArm, type PresentationArm,
+  GATE_FINISH_BYTES, GATE_FRAME, encodeGateAnswer, gateFinishPayload, gateFrame, gatePartReader, gateParts, gatePlaceFinishImage,
+  gateVerdictImage, readGatePresentation, readPlacePresentation, PLACE_LINEAGE_BOUND, PLACE_SEAL_LINEAGE_BOUND,
+  type GateAnswer, type PlaceArm, type PresentationArm,
   type ReadPlacePresentation,
 } from "./gate-exchange.js";
 import type { PeerClass } from "./island-protocol.js";
@@ -70,6 +71,8 @@ import { PLACE_PROFILE, type SeatProfile } from "./session-contract.js";
 import type { FaceAdmitReading, FaceGrantReading } from "./session-face.js";
 import { NO_HELD_ROOT, readAdmitAtHeldRoot } from "./held-nexus-root.js";
 import type { HeldNexusRoot } from "./held-nexus-root.js";
+import { epochSeats, verifySealLineage } from "./wax-stamp.js";
+import type { KahuQuorumSeats } from "./kapae-antigen.js";
 export type { HeldNexusRoot } from "./held-nexus-root.js";
 
 // ── The socket and the deadline ─────────────────────────────────────────────────────────────────
@@ -100,7 +103,7 @@ export interface GateDeadlines {
 export interface GateAdmitReader {
   read(arm: { readonly admit: CarriageEntry; readonly lineage: readonly PresentedLineageAct[] }): Promise<FaceAdmitReading | { readonly refusal: string }>;
   /** The same held-root door, for a place's carriage contract. */
-  readPlace(arm: { readonly contract: CarriageEntry; readonly lineage: readonly CarriageEntry[] }): Promise<PlaceContractReading | { readonly refusal: string }>;
+  readPlace(arm: PlaceArm): Promise<PlaceContractReading | { readonly refusal: string }>;
 }
 
 /** A place's carriage contract, as the held-root door read it. */
@@ -133,31 +136,91 @@ export function presentedAdmitReader(held: () => HeldNexusRoot | null | Promise<
 
 /**
  * Read a PRESENTED carriage contract against a held root: the quorum's `carry` act over a place's key, with
- * the place's own carrier seal, at the roster's own epoch. The board stays deny-only: a counted `uncarry`
- * that descends from the contract closes it, one that stands concurrent leaves it unsettled, and a held
- * kapae on the place's key denies it. A contract at an earlier epoch reads `wrong-epoch`: a place carries
- * across a roll by the new quorum's own `carry` act.
+ * the place's own carrier seal. The shared anchor walk resolves an ancestor contract; a verified
+ * presentation lineage may extend the gate's held charter for this one reading. The board stays deny-only:
+ * a counted `uncarry` that descends from the contract closes it, one that stands concurrent leaves it
+ * unsettled, and a held kapae on the place's key denies it.
  */
-export async function verifyPresentedCarry(arm: { readonly contract: CarriageEntry; readonly lineage: readonly CarriageEntry[] }, root: HeldNexusRoot): Promise<PresentedAdmitVerdict> {
+export async function verifyPresentedCarry(arm: Pick<PlaceArm, "contract" | "lineage" | "sealLineage">, root: HeldNexusRoot): Promise<PresentedAdmitVerdict> {
   const { contract } = arm;
   const nym = typeof contract?.nym === "string" ? contract.nym.toLowerCase() : "";
   const verdict = (state: PresentedAdmitVerdict["state"], reason: string): PresentedAdmitVerdict => ({ state, reason, nym });
   if (contract?.action !== "carry") return verdict("rejected", "not-a-carry");
-  if (contract.sealEpochCid !== root.roster.sealEpochCid) return verdict("wrong-epoch", "contract-not-at-head-epoch");
-  if (!(await carriageEntryCounts(contract, root.roster))) return verdict("rejected", "contract-not-counted");
+  if (!Array.isArray(arm.lineage) || arm.lineage.length > PLACE_LINEAGE_BOUND) return verdict("rejected", "lineage-malformed");
+  if (!Array.isArray(arm.sealLineage) || arm.sealLineage.length > PLACE_SEAL_LINEAGE_BOUND)
+    return verdict("wrong-epoch", "charter-lineage-malformed");
+  const held = root.sealLineage;
+  const presented = arm.sealLineage;
+  let head = root.roster;
+  let seals = held;
+  if (contract.sealEpochCid !== head.sealEpochCid && presented?.length && held?.length) {
+    // This reading borrows the presented extension at its head; it moves no held charter.
+    // The deny board and antigen stay with this gate's own replica.
+    if (presented.length < held.length || !verifySealLineage(presented) ||
+      held.some((epoch, i) => epoch.epochCid !== presented[i]?.epochCid)) {
+      return verdict("wrong-epoch", "charter-lineage-does-not-extend-held");
+    }
+    if (presented.length > held.length) {
+      const extension = presented[presented.length - 1]!;
+      if (!extension.roll || !extension.roll.keys || !extension.roll.threshold) return verdict("wrong-epoch", "charter-extension-unseated");
+      head = { keys: [...extension.roll.keys], threshold: extension.roll.threshold, sealEpochCid: extension.epochCid };
+    }
+    seals = presented;
+  }
+  const acts: CarriageEntry[] = [];
+  const anchors: RollAnchor[] = [];
+  for (const act of arm.lineage) {
+    if (isRollAnchor(act)) anchors.push(act);
+    else acts.push(act);
+  }
+  let rosters: ReadonlyMap<string, KahuQuorumSeats> = new Map([[head.sealEpochCid, head]]);
+  let chain: readonly RollAnchor[] = [];
+  // Every act names an epoch on the lineage the gate reads at, or the reading refuses by that name before any walk.
+  // An act at the head stands on the chain however short the lineage the gate holds (a seeded charter may hold none).
+  const headAt = Math.max((seals?.length ?? 0) - 1, 0);
+  const at = [contract, ...acts].map((act) => (act.sealEpochCid === head.sealEpochCid ? headAt : seals?.findIndex((e) => e.epochCid === act.sealEpochCid) ?? -1));
+  if (at.some((i) => i < 0)) return verdict("wrong-epoch", "lineage-epoch-not-on-chain");
+  const earliest = Math.min(...at);
+  if (contract.sealEpochCid !== head.sealEpochCid || anchors.length) {
+    const firstEpoch = seals?.[earliest]?.epochCid ?? contract.sealEpochCid;
+    const resolved = await resolveAnchoredChain(firstEpoch, head, seals, anchors);
+    if (typeof resolved === "string") return verdict("wrong-epoch", resolved);
+    if ("rejected" in resolved) return verdict("rejected", resolved.rejected);
+    rosters = resolved.rosters;
+    chain = [...resolved.anchors];
+  } else if (anchors.length) return verdict("rejected", "lineage-unchained-anchor");
+  const contractRoster = rosters.get(contract.sealEpochCid);
+  if (!contractRoster) return verdict("wrong-epoch", "contract-epoch-not-held");
+  if (!(await carriageEntryCounts(contract, contractRoster))) return verdict("rejected", "contract-not-counted");
   const contractCid = carriageEntryActCid(contract);
   const causal = new Map<string, { readonly parents: readonly string[] }>();
-  for (const act of arm.lineage) {
+  for (const act of acts) {
+    if (act === null || typeof act !== "object" || typeof act.nym !== "string" || !Array.isArray(act.parents))
+      return verdict("rejected", "lineage-malformed-entry");
     if (act.nym.toLowerCase() !== nym || (act.action !== "carry" && act.action !== "uncarry")) return verdict("rejected", "lineage-foreign-act");
-    if (!(await carriageEntryCounts(act, root.roster))) return verdict("rejected", "lineage-not-counted");
+    const at = rosters.get(act.sealEpochCid);
+    if (!at) return verdict("wrong-epoch", "lineage-epoch-not-on-chain");
+    if (!(await carriageEntryCounts(act, at))) return verdict("rejected", "lineage-not-counted");
     causal.set(carriageEntryActCid(act), act);
   }
-  for (const node of [contract, ...arm.lineage]) if (node.parents.some((parent) => !causal.has(parent))) return verdict("rejected", "lineage-broken-chain");
+  for (const anchor of chain) causal.set(rollAnchorCid(anchor), anchor);
+  for (const node of [contract, ...acts]) if (node.parents.some((parent) => !causal.has(parent))) return verdict("rejected", "lineage-broken-chain");
   causal.set(contractCid, contract);
+  for (const act of acts) if (!isCarriageDescendant(contractCid, carriageEntryActCid(act), causal)) return verdict("rejected", "lineage-unchained-entry");
+  const contractAt = seals?.findIndex((e) => e.epochCid === contract.sealEpochCid) ?? -1;
+  for (const anchor of chain) if ((seals?.findIndex((e) => e.epochCid === anchor.sealEpochCid) ?? -1) > contractAt &&
+    !isCarriageDescendant(rollAnchorCid(anchor), contractCid, causal)) return verdict("wrong-epoch", "contract-not-in-anchor-past");
   let closing = false, concurrent = false;
+  const denyRosters = new Map(rosters);
+  for (const epoch of held ?? []) {
+    if (denyRosters.has(epoch.epochCid)) continue;
+    const seats = epochSeats(epoch);
+    if (seats) denyRosters.set(epoch.epochCid, { keys: [...seats.keys], threshold: seats.threshold, sealEpochCid: epoch.epochCid });
+  }
   for (const entry of root.denyBoard) {
     if (entry === null || typeof entry !== "object" || entry.action !== "uncarry" || typeof entry.nym !== "string" || entry.nym.toLowerCase() !== nym) continue;
-    if (!(await carriageEntryCounts(entry, root.roster))) continue;
+    const at = denyRosters.get(entry.sealEpochCid);
+    if (!at || !(await carriageEntryCounts(entry, at))) continue;
     const cid = carriageEntryActCid(entry);
     if (!causal.has(cid)) causal.set(cid, entry);
     if (isCarriageDescendant(cid, contractCid, causal)) closing = true;
@@ -274,6 +337,11 @@ export interface GateSession {
   readonly tier:          GateTier;
   /** The face the session wears, or null for a place's seat. */
   readonly scope:         FaceScope | null;
+  /** THE PRESENTER'S DIGEST: `withdrawnKeyDigest(scope, vesselFaceKey)` of the face-scoped key the session's certificate
+   *  certified, the very digest a withdrawal of that key names; null for a place's seat. It names the key without
+   *  holding it: a reader that holds the key's own binding (the D4 device book) resolves the device edge a refold
+   *  reads again (house ruling "A device set aside"), and nobody else learns the key. */
+  readonly vesselFaceDigest: Digest | null;
   /** The session's key, or null for a place's seat: a place holds no session. */
   readonly sessionKey:    SessionKey | null;
   /** The place key a place's seat stands under; null for a face's. */
@@ -283,6 +351,13 @@ export interface GateSession {
   readonly class:         PeerClass;
   readonly standing?:     { readonly nym: string; readonly aid: string };
   readonly push:          ReadonlyArray<{ readonly kind: string; readonly body: unknown }>;
+  /** The arm as it rode, which this gate read held: an admit and its lineage, a place's contract, or null. A
+   *  refold reads it again; the gate itself reads it no further. */
+  readonly arm:           PresentationArm | PlaceArm | null;
+  /** THE PROVEN FACE VIEW's key: the PersonaGroup grant this gate's ring answered for a same-operator seat, and
+   *  null for every other class. A share verdict reads the face's documents through it (D3); the class alone
+   *  grants transport. */
+  readonly face:          FaceGrantReading | null;
   /** The sealed channel every later frame rides. */
   readonly transport:     NoiseTransport;
 }
@@ -363,6 +438,12 @@ export type GateOutcome =
 export interface FaceGate {
   /** Run the exchange on one accepted socket. It never throws and never rejects. */
   accept(socket: GateSocket): Promise<GateOutcome>;
+  /**
+   * Whether message one decrypts under this gate's bundle: the transport's check BEFORE any upgrade answers. It
+   * reads no state, takes no pending place and sends nothing; `accept` decrypts the same bytes again (one
+   * X25519 pair twice per true dial), so the gate's API keeps its one shape.
+   */
+  preflight(message1: Uint8Array): boolean;
   /** How many sockets stand accepted and neither attached nor cut. A count, never a list. */
   readonly pending: number;
 }
@@ -370,7 +451,7 @@ export interface FaceGate {
 const MAX_PENDING = 50;
 
 /** One accept's standing against its deadline. */
-interface AcceptState { lapsed: boolean; attached: boolean; standDown: () => void }
+interface AcceptState { lapsed: boolean; attached: boolean; standDown: () => void; release: (() => void) | null }
 
 /** Did any gate already run its exchange on this socket? One socket carries one first flight. */
 const ACCEPTED = new WeakSet<GateSocket>();
@@ -439,7 +520,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       presented = pushed;
     }
     const finish = await next();
-    if (finish === null || finish.length !== 65 || finish[0] !== GATE_FRAME.finish) return silence("finish-absent");
+    if (finish === null || finish.length !== GATE_FINISH_BYTES || finish[0] !== GATE_FRAME.finish) return silence("finish-absent");
 
     /** Sign and send one answer, sealed. False where the deadline already lapsed: nothing then leaves. */
     const answer = async (named: GateAnswer): Promise<boolean> => {
@@ -453,23 +534,35 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
 
     /**
      * 9 · the session's seat, then the verdict, after the finish. The table takes the session first and sends
-     * nothing; the deadline then stands down, so no lapse cuts a socket whose verdict left; the verdict leaves;
-     * the seat opens.
+     * nothing; the verdict signs and leaves UNDER THE DEADLINE, so a sign that never returns is cut at the lapse,
+     * its seat abandoned and its pending place freed; the deadline stands down the moment the verdict left, so no
+     * lapse cuts a socket whose verdict left; the seat opens.
      */
     const seat = async (session: GateSession): Promise<GateOutcome> => {
       if (state.lapsed) return silence("deadline-before-verdict");
       const taken = await deps.sessions.attach(socket, Object.freeze(session));
-      if (state.lapsed) { taken.abandon(); return silence("deadline-before-verdict"); }
-      state.attached = true;
-      state.standDown();
+      let released = false;
+      const release = (): void => { if (released) return; released = true; try { taken.abandon(); } catch { /* the table already faulted */ } };
+      if (state.lapsed) { release(); return silence("deadline-before-verdict"); }
+      state.release = release;
+      let left: boolean;
       try {
-        await answer({ state: "verified" });
+        left = await answer({ state: "verified" });
       } catch (error) {
-        // The verdict could not leave and no deadline stands to cut the socket: the gate cuts it here.
-        taken.abandon();
+        // The verdict could not leave: the gate cuts the socket here, and the deadline stands down with the seat.
+        state.standDown();
+        release();
         try { socket.cut(); } catch { /* already gone */ }
         return silence("verdict-unsent");
       }
+      if (!left) {
+        // The lapse reached the sign and cut the socket: no verdict left, so no seat opens over it.
+        release();
+        return silence("deadline-before-verdict");
+      }
+      state.attached = true;
+      state.release = null;
+      state.standDown();
       try {
         taken.open();
       } catch (error) {
@@ -495,7 +588,7 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       if (!verifyEd25519(finish.subarray(1), image, shown.placeKey)) return silence("place-finish-refused");
       let contract: PlaceContractReading | null = null;
       if (shown.arm !== null) {
-        const reading = await deps.admits.readPlace({ contract: shown.arm.contract, lineage: shown.arm.lineage });
+        const reading = await deps.admits.readPlace(shown.arm);
         if (own(reading, "refusal")) return silence("place-contract-refused");
         if (reading.verdict.state !== "held") return silence("place-contract-unheld", reading.verdict.state);
         if (reading.verdict.nym !== shown.placeKey) return silence("place-contract-other-place");
@@ -511,9 +604,9 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       if (!ARM_CLASSES[shown.arm?.kind ?? "none"].includes(sorted.class)) return silence("sorter-class-unearned", sorted.class);
       if (!standsAs(sorted.standing, shown.placeKey)) return silence("sorter-standing-foreign");
       return seat({
-        tier: bundle.pin.tier, scope: null, sessionKey: null, placeKey: shown.placeKey, profile: PLACE_PROFILE, class: sorted.class,
+        tier: bundle.pin.tier, scope: null, vesselFaceDigest: null, sessionKey: null, placeKey: shown.placeKey, profile: PLACE_PROFILE, class: sorted.class,
         ...(sorted.standing ? { standing: sorted.standing } : {}),
-        push: Object.freeze([...(sorted.push ?? [])]), transport,
+        push: Object.freeze([...(sorted.push ?? [])]), arm: shown.arm, face: null, transport,
       });
     };
 
@@ -593,14 +686,19 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
 
     const chain = verdict.chain;
     return seat({
-      tier: bundle.pin.tier, scope, sessionKey: chain.sessionKey, placeKey: null, profile: chain.profile, class: sorted.class,
+      tier: bundle.pin.tier, scope, vesselFaceDigest: withdrawnKeyDigest(scope, certificate.read.vesselFaceKey), sessionKey: chain.sessionKey, placeKey: null, profile: chain.profile, class: sorted.class,
       ...(sorted.standing ? { standing: sorted.standing } : {}),
-      push: Object.freeze([...(sorted.push ?? [])]), transport,
+      push: Object.freeze([...(sorted.push ?? [])]), arm: read.arm,
+      face: sorted.class === "same-operator" ? sameGroup : null, transport,
     });
   }
 
   return {
     get pending(): number { return pending; },
+    preflight(message1) {
+      if (!(message1 instanceof Uint8Array) || message1.length !== MIN_MESSAGE1_BYTES) return false;
+      try { bundle.respond(message1); return true; } catch { return false; }
+    },
     async accept(socket) {
       // One socket carries one first flight. A second run on it draws no deadline of its own, sends nothing and
       // touches nothing: the first run's deadline alone governs the socket.
@@ -611,15 +709,20 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
       }
       ACCEPTED.add(socket);
       // 1 · ONE deadline, drawn at accept. Whatever follows, a socket that never attached gets cut when it lapses.
-      // Until it attaches or lapses the socket holds its pending place, whatever its run came to: a refused
-      // socket and a waiting one weigh alike on the bound.
-      const state: AcceptState = { lapsed: false, attached: false, standDown: () => {} };
+      // Until it attaches, lapses or closes the socket holds its pending place, whatever its run came to: a refused
+      // socket still open and a waiting one weigh alike on the bound. A refused socket its dialer closed frees its
+      // place at once; the socket itself still meets the one deadline, so the gate's quiet runs the same either way.
+      const state: AcceptState = { lapsed: false, attached: false, standDown: () => {}, release: null };
       let placed = false;
       const leave = (): void => { if (placed) { placed = false; pending--; } };
       const deadline = deps.deadlines.draw(() => {
         state.lapsed = true;
         leave();
-        if (!state.attached) { try { socket.cut(); } catch { /* already gone */ } }
+        if (!state.attached) {
+          // A seat taken under a verdict that never left goes with the socket.
+          try { state.release?.(); } catch { /* a table fault decides nothing here */ }
+          try { socket.cut(); } catch { /* already gone */ }
+        }
       });
       state.standDown = () => { deadline.cancel(); leave(); };
       let outcome: GateOutcome;
@@ -630,6 +733,12 @@ export function makeFaceGate(deps: FaceGateDeps): FaceGate {
         try { outcome = await run(socket, state); }
         catch { outcome = { outcome: "silence", reason: "fault" }; }
       }
+      // THE REFUSED SOCKET'S PLACE. The gate reads on, unheard, until the socket ends (its dialer left, or the lapse
+      // cut it); the place frees then.
+      if (placed && !state.attached) void (async () => {
+        try { while ((await socket.recv()) !== null) { /* a refused socket's frames go unread */ } } catch { /* the socket ended */ }
+        leave();
+      })();
       // A detail passes as the outcome's OWN property alone: an inherited one names nothing the gate read.
       if (outcome.outcome === "silence") { try { deps.onRefuse?.(outcome.reason, Object.hasOwn(outcome, "detail") ? outcome.detail : undefined); } catch { /* a log never decides */ } }
       return outcome;

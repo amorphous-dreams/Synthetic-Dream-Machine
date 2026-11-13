@@ -6,7 +6,7 @@ docname: "draft-fontany-memetic-wikitext-framing-00"
 ipr: "trust200902"
 lang: "en"
 source: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
-source-check: "ni:///sha-256;tuhGoJHsntprW6TJfwJwy_rL8r5sTGdPXvj2fdzvirg"
+source-check: "ni:///sha-256;3SXpNmbwPez4yeY9Y7ZvFWx5GGwpI8FDllwhHfGVF2s"
 title: "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext-framing"
 tongue: "x-lares>en"
 variant: "kramdown-rfc2629"
@@ -85,7 +85,7 @@ The key words **MUST**, **MUST NOT**, **REQUIRED**, **SHALL**, **SHALL NOT**, **
 | **declaration** | a `<<!WORD>>` statement read before content, selecting or constraining the grammar (#/declaration-register). |
 | **namespace** | the resonance glyph a carrier's heading states, naming which layer authored it (#/resonance). |
 | **heading** | the SOH routing zone: the frame identity and transport-level bindings; authorial root metadata is body content (#/authoring). |
-| **block check** | a check computed over the framed span, carried adjacent to ETX (#/control-set). |
+| **block check** | a check computed over the framed span, carried as the ETX mark's `bcc` value (#/control-set). |
 | **carrier reader** | a processor reading and minting the frame: marks, declaration, boundary normalization, the check. |
 | **consumer** | a processor admitting carriers to a bag; the verdict obligations (#/the-touchstone) bind here. |
 
@@ -123,23 +123,24 @@ only under a policy it declares — and hold `bare` whole as one record, flagged
 ## Formal Grammar (ABNF)
 
 This grammar (RFC 5234) composes the frame around an opaque `document`. The productions `macro-call`,
-`params`, `LWSP`, `string-literal`, `name-token`, and `URI-ref`, and the claimed macro names `control`
+`call-param`, `tick-literal`, `LWSP`, `name-token`, and `URI-ref`, and the claimed macro names `control`
 (`^`) and `declaration` (`!` 1*ALPHA), import from [MEMETIC-WIKITEXT] #grammar; this document never restates them.
 Every frame construct stands as a `macro-call` in the host's reading, exactly as every sigil does.
 
 ```abnf
 ; ── the carrier frame ───────────────────────────────────────
-frame       = "<<" control LWSP code-param params LWSP ">>"
-code-param  = "code=" DQUOTE "&#x" 4HEXDIG ";" DQUOTE
+frame       = "<<" control LWSP code-param *( LWSP call-param ) LWSP ">>"
+code-param  = "code=" BACKTICK "&#x" 4HEXDIG ";" BACKTICK
 header      = "<<" control LWSP code-param [ LWSP ns-param ]
-              LWSP from-param LWSP "->" LWSP to-param LWSP ">>"
-ns-param    = "namespace=" string-literal
-from-param  = "from=" DQUOTE "?" DQUOTE
-to-param    = "to=" DQUOTE ( "?" / URI-ref ) DQUOTE
-footer      = "<<" control LWSP code-param LWSP "->" LWSP to-param LWSP ">>"
+              LWSP from-param LWSP to-param LWSP ">>"
+ns-param    = "namespace=" tick-literal
+from-param  = "from=" BACKTICK "?" BACKTICK
+to-param    = "to="   BACKTICK ( "?" / URI-ref ) BACKTICK
+footer      = "<<" control LWSP code-param LWSP to-param LWSP ">>"
 
 ; ── the declaration register (#/declaration-register) ────────
-doctype     = "<<" declaration LWSP root-name LWSP URI-ref LWSP ">>"
+doctype     = "<<" declaration LWSP "type=" BACKTICK root-name BACKTICK
+              LWSP "spec=" BACKTICK URI-ref BACKTICK LWSP ">>"
 root-name   = name-token [ "+" name-token ]        ; [RFC6839] suffix
 
 ; ── the block check (#/control-set) ──────────────────────────
@@ -149,20 +150,22 @@ alg         = 1*( %x61-7A / DIGIT / "-" )
 
 ; ── the carrier ─────────────────────────────────────────────
 carrier     = [ doctype ] [ header ] heading
-              [ text-open ] document [ text-close [ check ] ]
+              [ text-open ] document [ text-close ]
               [ footer ]
 heading     = <frame identity, bearing, and transport bindings only; the SOH zone per #authoring>
 document    = <one meme's encoded structure, opening on the root identity fence;
               [MEMETIC-WIKITEXT] #grammar>
 text-open   = frame                                ; code &#x0002; — STX
-text-close  = frame                                ; code &#x0003; — ETX
+text-close  = "<<^ code=" BACKTICK "&#x0003;" BACKTICK
+              [ " bcc=" BACKTICK check BACKTICK ] ">>"  ; ETX, the check in its slot
 ```
 
 **Normative grammar rules.** (1) A `frame` sigil MUST state `code=` as its first parameter; the
 remaining slots belong to the mark that code names (#/control-set). (2) Every frame part reads optional
 at ARRIVAL — the frame mints at projection, never as a demand on arrival (#/authoring) — and where the marks stand, spine order
-MUST hold (#/carrier-spine). (3) The `check` slot names a POSITION, never a parameter: adjacent after the
-closed `text-close` sigil, on the same line (#/control-set). (4) The composition wraps `document`
+MUST hold (#/carrier-spine). (3) The `check` rides the `text-close` sigil's `bcc` slot as its final
+named value, one space before it and one backtick each side; the digest reads the span with that
+`` bcc=`…` `` run deleted, and any other ETX spelling reads torn (#/control-set). (4) The composition wraps `document`
 without entering it; everything inside defers to [MEMETIC-WIKITEXT].
 
 <a id="doctype"></a>
@@ -172,7 +175,7 @@ without entering it; everything inside defers to [MEMETIC-WIKITEXT].
 Every carrier opens by naming the grammar that reads it:
 
 ```
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 ```
 
 **The root name carries an RFC 6839 structured syntax suffix.** A `+suffix` names the base syntax a
@@ -201,8 +204,8 @@ earlier `x-` spellings file as deprecated read-side aliases there.
 
 `<<!WORD …>>` opens a SECOND frame register, and the two divide by layer rather than by taste:
 
-`<<~moves declaration -> states/what-must-hold-BEFORE-a-transmission on/the-carrier if/read-first do/select-the-grammar>>`
-`<<~moves control -> marks/a-POSITION-WITHIN-a-transmission on/the-stream if/framing do/open-close-or-end>>`
+<<~ moves name=`declaration` params=`states/what-must-hold-BEFORE-a-transmission on/the-carrier if/read-first do/select-the-grammar`>>
+<<~ moves name=`control` params=`marks/a-POSITION-WITHIN-a-transmission on/the-stream if/framing do/open-close-or-end`>>
 
 **A declaration names no position.** `&#x0001;` opens a heading, `&#x0003;` ends text, `&#x0004;` ends
 transmission — every control mark names a place inside one act of sending. `<<!DOCTYPE …>>` names
@@ -225,7 +228,7 @@ So the declaration's claim reads weaker and truer than "first": **it MUST preced
 declares**, and nothing else. A carrier MAY open on a FOREIGN HEADER — YAML front-matter, a shebang, a
 BOM — where an outside consumer requires one, and the declaration follows it.
 
-`<<~moves prologue -> admits/a-foreign-header on/byte-zero if/an-outside-reader-requires-it do/yield-the-slot>>`
+<<~ moves name=`prologue` params=`admits/a-foreign-header on/byte-zero if/an-outside-reader-requires-it do/yield-the-slot`>>
 
 ### And the FORM stands bare
 
@@ -240,7 +243,7 @@ The order stands fixed:
 | 0 | BOM | encoding detection |
 | 1 | foreign header — YAML front-matter, shebang | the outside consumer that reads this file too |
 | 2 | `<<!DOCTYPE …>>` | this grammar |
-| 3 | `<<^ code="&#x0001;" …>>` | this carrier |
+| 3 | ``<<^ code=`&#x0001;` …>>`` | this carrier |
 
 **The DOCTYPE and the SOH bind tightly.** Nothing stands between them. That pair carries the invariant a
 processor enforces; what precedes the pair belongs to whoever else reads the file.
@@ -262,60 +265,57 @@ A carrier travels as one framed transmission. It opens on a heading that names t
 | Sigil | Form | Role | Byte | Kapu byte |
 |---|---|---|---|---|
 | --- | --- | --- | --- | --- |
-| **SOH** | `<<^ code="&#x0001;" from="?" -> to="lar:///URI">>` | Start of Heading — the Lar takes its post and names the place with its `lar:` bearing | `0x01` | DC1 `0x11` |
-| **STX** | `<<^ code="&#x0002;">>` | Start of Text — cross the threshold; the body opens | `0x02` | — |
-| **ETX** | `<<^ code="&#x0003;">>ni:///sha-256;…` | End of Text — the body closes, the check follows the closer; the hearth banks | `0x03` | — |
-| **EOT** | `<<^ code="&#x0004;" -> to="?">>` | End of Transmission — the libation pours; the carrier releases to the crossroad | `0x04` | — |
+| **SOH** | ``<<^ code=`&#x0001;` from=`?` to=`lar:///URI`>>`` | Start of Heading — the Lar takes its post and names the place with its `lar:` bearing | `0x01` | DC1 `0x11` |
+| **STX** | ``<<^ code=`&#x0002;`>>`` | Start of Text — cross the threshold; the body opens | `0x02` | — |
+| **ETX** | ``<<^ code=`&#x0003;` bcc=`ni:///sha-256;…`>>`` | End of Text — the body closes, carrying its check in the `bcc` slot; the hearth banks | `0x03` | — |
+| **EOT** | ``<<^ code=`&#x0004;` to=`?`>>`` | End of Transmission — the libation pours; the carrier releases to the crossroad | `0x04` | — |
 
 **Kapu** names the restricted, admin-only trust tier (#/trust-tiers); the kapu byte column gives each mark's substitute code in that tier.
 
 **The frame — routing, then document.** The protocol law pins the zones: SOH opens the routing heading, STX opens the checked document body. The root `toml meta` block opens the authored body after STX, alongside local metadata blocks inside `ahu` and `fragment`.
 
 ````
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///URI">>   SOH · open heading
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///URI`>>   SOH · open heading
   ‹routing only — authorial identity begins after STX›
-<<^ code="&#x0002;">>                                 STX · open text (body)
+<<^ code=`&#x0002;`>>                                 STX · open text (body)
   ```toml meta                                              root tiddler fields
   ```
-  <<~ kanawai "lar:///…RFC-2119">>                        authored relation
+  <<~ kanawai uri=`lar:///…RFC-2119`>>                        authored relation
   # title · ## sections · #edges                       the text (body)
-<<^ code="&#x0003;">>                                 ETX · close text
-<<^ code="&#x0004;" -> to="?">>                            EOT · release
+<<^ code=`&#x0003;`>>                                 ETX · close text
+<<^ code=`&#x0004;` to=`?`>>                            EOT · release
 ````
 
-**The mark names the control byte.** Each sigil states its C0 control character as a named `code=` param; the mnemonic (SOH/STX/ETX/EOT) carries the reading, the byte carries what the parser frames on. STX and ETX carry that one param and nothing else — each opens or closes the text and states no bearing.
+**The mark names the control byte.** Each sigil states its C0 control character as a named `code=` param; the mnemonic (SOH/STX/ETX/EOT) carries the reading, the byte carries what the parser frames on. STX carries that one param and nothing else; ETX carries it and, once sealed, one `bcc` value — each opens or closes the text and states no bearing.
 
 **The frame, in the transmission register and the mythic one at once:**
 
 - **SOH** — Start of Heading. The transmission opens on its heading; the parser reads identity before content. The Lar wakes at the doorpost and speaks the name of the place — the `lar:///` bearing the carrier will keep.
 - **STX** — Start of Text. The heading ends, the body begins. One steps across the threshold into the dwelling.
 - **ETX** — End of Text. The body stands complete. The hearth banks; the room falls quiet.
-- **EOT** — End of Transmission. The frame closes and hands forward on `-> to="?"` — resumption unknown. The libation pours at the crossroad; the message goes out to wherever the road runs. EOT stands as the carrier's own `yield`.
+- **EOT** — End of Transmission. The frame closes and hands forward on ``to=`?` `` — resumption unknown. The libation pours at the crossroad; the message goes out to wherever the road runs. EOT stands as the carrier's own `yield`.
 
-**SOH and EOT echo the bearing vectors.** SOH opens facing a bearing (`from="?" -> to="lar:///…"`) as `aim` opens a turn; EOT releases to the unknown (`-> "?"`) as `yield` closes one. The spine frames a meme the way the turn-frame frames an exchange.
+**SOH and EOT echo the bearing vectors.** SOH opens facing a bearing (``from=`?` to=`lar:///…` ``) as the `aim` firing opens a turn; EOT releases to the unknown (``to=`?` ``) as the `yield` firing closes one. The spine frames a meme the way the turn-frame frames an exchange.
 
-<a id="bearing-arrow"></a>
+<a id="bearing-pair"></a>
 
-## The Bearing Arrow — one edge, two orientations
+## The Bearing Pair — one edge, two orientations
 
-The frame's heading and its close both carry an arrow, and they carry ONE relation read from two ends:
+The frame's heading and its close both carry a bearing pair, and they carry ONE relation read from two ends:
 
 | mark | form | source | target |
 |---|---|---|---|
-| SOH | `from="?" -> to="lar:///…"` | unresolved | known — the carrier arriving at its address |
-| EOT | `-> to="?"` | known | unresolved — the carrier departing into open bearing |
+| SOH | ``from=`?` to=`lar:///…` `` | unresolved | known — the carrier arriving at its address |
+| EOT | ``to=`?` `` | known | unresolved — the carrier departing into open bearing |
 
 **`?` names an unresolved bearing**, never a keyword and never a name — and it rides as the VALUE of the
-end it answers for, `from="?"` or `to="?"`, never bare. A bare `?` names nothing and reads as content. The
-control-soh scan captures the arrow's target as a group, so the bearing rides as PARSED STRUCTURE rather
+end it answers for, ``from=`?` `` or ``to=`?` ``, never bare. A bare `?` names nothing and reads as content. The
+control-soh scan captures the `to=` value as a group, so the bearing rides as PARSED STRUCTURE rather
 than as decoration inside the line.
 
-### Why the arrow survives a named-parameter frame
+### Why the pair replaces the arrow
 
-A named parameter states a PROPERTY — *this carrier has a lar value*. The arrow states a RELATION —
-*this carrier resolves toward that address*. One name, one relation: the edge enacts the relation, and
-folding it into a quoted attribute would demote a relation to a field and break the scanner's capture
-with it. So named params ride in FRONT of the arrow and the arrow keeps its shape.
+**Operator ruling 2026-10-31 reverses the ruling of 2026-09-07 that the arrow survives a named-parameter frame.** The earlier law held that a named parameter states a PROPERTY — *this carrier has a lar value* — while an arrow states a RELATION — *this carrier resolves toward that address* — so the arrow kept its seat between the values and named params rode in front of it. The reversal reads the pair itself as the relation: `from=` names one end and `to=` names the other, and a processor that reads both attributes recovers the edge with no special token. A bare `->` demanded a hand-rolled scan beside the host's parser; the pair rides the host's own attribute reader, a backtick value after a name. The earlier reasoning keeps one lesson: both ends belong to ONE call, so SOH carries `from` and `to` together, and EOT carries `to` alone, its source standing as the carrier itself. Writers write `from` first; readers take either order. An arrow INSIDE a value stays (a ladder, a gauge slide), and a prose marker (`->✶`) keeps its arrow and its editor scope.
 
 ### A declared unresolved bearing, distinct from a dangling link
 
@@ -325,7 +325,7 @@ out of documents so content may move beneath them.
 
 The arrow answers the same failure from the other side. It stays embedded and makes its SOURCE
 self-resolving — `?` reads as *wherever this carrier stands* at read time — so the carrier moves and
-its outbound bearing travels with it. And `-> "?"` declares the dangle rather than suffering it: a
+its outbound bearing travels with it. And ``to=`?` `` declares the dangle rather than suffering it: a
 frontier, honestly marked, the way a MUD room's exit to an unbuilt room reads as an open edge and never
 as an error.
 
@@ -354,24 +354,25 @@ processor binds the name; nothing about either side asks the host for an extensi
 
 ```
 \procedure ^(code)
-<<^ code="&#x000N;">>
+<<^ code=`&#x000N;`>>
 \end
 ```
 
 ### Named, equals-paired, TW5-native
 
-Slots read `name="value"`, which invokes in FIVE registers at once: TW5 procedure calls (the host's
-own — a parameter labelled with its name and `=`, values in single, double, triple-double or
-`[[bracket]]` quotes), TW5 tiddler-field headers, YAML, JSON and CSS. A frame that reads correctly in
-the host's calling syntax enacts a call in that host, never a lookalike.
+Slots read ``name=`value` ``, the host's own calling syntax: a parameter labelled with its name and `=`,
+its value in a backtick run (the call side; a `\procedure` definition keeps its quoted defaults). A frame
+that reads correctly in the host's calling syntax enacts a call in that host, never a lookalike. The
+equals-paired shape also reads in TW5 tiddler-field headers; the quote marks of YAML, JSON and CSS differ
+from the backtick, and the frame claims no lookalike there.
 
 **The equals, and the spec writes only that.** TW5 takes `=` or `:` between a name and its value, and
 they part company past that point: ONLY `=` admits a filtered, indirect, macro or substituted value,
 and `:` additionally demands a strict identifier name so `$:/foo` never mis-reads as a parameter.
 
 A frame that took the narrower separator would forbid, at every call site it governs, the one form
-that reaches a computed value. **The spec writes `=`; the ENGINE reads both**, because TiddlyWiki's
-parser reads both and a reader narrower than the parser refuses a sigil the wiki renders.
+that reaches a computed value. **The spec writes `=` and a call never writes `:`**; TiddlyWiki's
+parser reads both, and the house reader refuses the old separator rather than tolerating it.
 
 ### The marks that stand
 
@@ -380,7 +381,7 @@ parser reads both and a reader narrower than the parser refuses a sigil the wiki
 | `&#x0001;` | SOH | `code` `namespace` `bearing` `uri` | the carrier declares itself and its canonical address |
 | `&#x0011;` | SOH₂ | `code` `namespace` `bearing` `uri` | the second heading form |
 | `&#x0002;` | STX | `code` | text begins |
-| `&#x0003;` | ETX | `code` `bcc` | text ends; the block check follows the mark directly |
+| `&#x0003;` | ETX | `code` `bcc` | text ends; the block check rides the `bcc` value |
 | `&#x0004;` | EOT | `code` `target` | transmission ends, bearing forward |
 
 ### The block check
@@ -388,18 +389,27 @@ parser reads both and a reader narrower than the parser refuses a sigil the wiki
 The `bcc` slot carries a check over the framed span. Normatively:
 
 - **Span:** the first character of the STX sigil through the last character of the ETX sigil, inclusive.
-  The check covers the marks that bound it and never covers itself, which lets it sit **after**
-  ETX with no self-exclusion rule.
+  The check covers the marks that bound it. It rides inside that span, in the ETX mark's own `bcc`
+  slot, so one self-exclusion rule stands: the deletion below.
 - **Form:** `ni:///sha-256;<base64url>` — an RFC 6920 named-information URI carrying the FULL SHA-256
   over the span's UTF-8 bytes, base64url without padding, canonical-or-reject: a verifier re-encodes
   what it computed and compares whole strings, so every non-canonical spelling of the final character
   refuses for free. Full width, never truncated — a digest sized against accident meets an adversary
   eventually, and a reader's short form derives at print time rather than living in the bytes. The
   namespace rides the heading, never the check: the digest binds bytes, and bytes carry no vibration.
-- **Position, not parameter.** `bcc` names the slot AFTER the closed ETX sigil — following `>>`,
-  outside the sigil and outside the span — never a parameter within the mark. One word for where a
-  check sits has admitted two readings before (RFC 3230 fell to exactly that), so this one pins:
-  the check follows the closer, adjacent, on the same line.
+- **Parameter, deleted before the digest.** `bcc` names the ETX mark's final named value —
+  ``<<^ code=`&#x0003;` bcc=`ni:///sha-256;…`>>``, one space before it, one backtick each side. The
+  digest reads the span with that one `` bcc=`…` `` run deleted, leading space included: the rule DKIM
+  wrote for its own self-covering signature ([RFC6376] §3.7 empties the `b=` value before hashing).
+  What remains closes on ``<<^ code=`&#x0003;`>>``, so every check minted while the value trailed the
+  closer carries over byte for byte. The deletion runs only where the run closes the sigil in that one
+  spelling; every other ETX spelling — a doubled run, a run off its final seat, a foreign param, an
+  unticked or double-ticked value, a value outside the `check` shape, a doubled space — reads torn
+  before any digest runs. So the run's value stays the only byte two carriers may differ in under one
+  verdict, and that value must equal the recomputed check. One word for where a check sits has admitted
+  two readings before (RFC 3230 fell to exactly that), so this one pins: the final `bcc` value, and
+  nowhere else. The deletion stays lexical, inside the one sigil the span scan already found — a relay
+  still reads raw bytes in one scan.
 - **The span binds the FRAME'S BYTE SPELLING, and that binding lets the check compute.** The span opens on the
   STX sigil and closes on the ETX sigil, so those sigils' own bytes ride inside it. A frame migration —
   a mark gaining a named parameter, a spacing rule settling — moves them, and every check computed
@@ -424,18 +434,20 @@ The `bcc` slot carries a check over the framed span. Normatively:
   parent fields change MUST receive a new check; only DOCTYPE, SOH routing, and transport carriage remain
   outside this integrity span.
 - **A carrier holding no check reads `absent`, never `stale`.** Absence of a check and a failed
-  check stand as different facts (#/bearing-arrow), and a reader that collapsed them would fail exactly
+  check stand as different facts (#/bearing-pair), and a reader that collapsed them would fail exactly
   where it matters. The caller decides what a carrier with an absent check may do; it still parses.
 - **What a relay can do with it:** raw bytes, one scan, no parser and no canonicaliser. A relay holding
   `pull` and not `read` verifies this check over an offering it cannot open.
 
-**ETX takes its check adjacent, per the received framing.** In character-oriented synchronous framing
-(IBM BSC, 1967) a block runs `STX -> text -> ETX -> BCC`: the terminator comes first and the check
-follows it directly. The `bcc` slot sits where a receiver has always looked for it.
+**ETX carries its check, per the received framing, re-seated.** In character-oriented synchronous
+framing (IBM BSC, 1967) a block runs `STX -> text -> ETX -> BCC`: the terminator comes first and the
+check rides with it. A byte trailer cannot sit inside what it covers; a named value can, behind one
+deletion, and it then reads as every value in this grammar reads — named, ticked, owned by its sigil,
+and closed with that sigil's line.
 
 **A carrier's text ends at ETX, and EOT closes the transmission.** ETB carries no office in this frame
 (operator ruling, under `$carrier-sila`): no attestation block stands for it to terminate, and its mark
-carries no assignment past a bare literal — so nothing stands between ETX's check and EOT. A surviving
+carries no assignment past a bare literal — so nothing stands between ETX and EOT, and content there reads foreign. A surviving
 ETB mark in a carrier reads as a torn spelling, never as more-follows. The office stays open for a
 future minting, and only behind a computed, verified check when signing lands — never a bare literal.
 
@@ -487,9 +499,9 @@ Resonance glyphs do **not** join the spine. They ride the **SOH opener only**, a
 **The set stays open.** These name the resonance characters known; the table admits more as layers and trust tiers emerge. A new glyph enters under the same two laws below — SOH-prefix only, EOT bare — and registers its layer in this table.
 
 ```
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/…">>   ← pono layer
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/…">>      ← mu/lares/lararium layer
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/…">>                     ← docs/library, no namespace
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/…`>>   ← pono layer
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/…`>>      ← mu/lares/lararium layer
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/…`>>                     ← docs/library, no namespace
 ```
 
 Two laws govern the namespace:
@@ -525,7 +537,7 @@ processor MUST keep the division:
 
 ### The root identity block, by position
 
-A labelled ```` ```toml meta ```` fence states identity. The root fence MUST stand immediately after STX;
+A fence labelled `toml meta` states identity. The root fence MUST stand immediately after STX;
 each nested `ahu` or `fragment` fence stands immediately inside its own worksite. Which identity it states reads by POSITION:
 
 1. The fence immediately after STX names the **carrier** — its title, address, namespace, and register.
@@ -545,7 +557,7 @@ A carrier reads in three zones, and the middle one had no name:
 2. **The root identity block** — the labelled `toml meta` fence immediately after STX. It declares the
   parent tiddler’s fields.
 1. **The authored body** — after root TOML and before ETX. It may carry prose, relations, ahu slots, or
-  nothing; `<<~ aka …>>` and `<<~ kahea ahu …>>` both stand here.
+  nothing; ``<<~ aka uri=`…`>>`` and a `kahea` summons of a child slot both stand here.
 
 A processor MUST keep the three apart on projection. Moving an authored declaration into the routing
 heading removes it from the checked document and violates its own root-field/body placement.
@@ -607,9 +619,9 @@ its two halves.
 
 ### The fence carries a label, and the label decides the office
 
-A ```` ```memetic-wikitext tangle```` -labelled fence carries structure home at tangle: a reader
+A fence labelled `memetic-wikitext tangle` carries structure home at tangle: a reader
 that meets this label treats the fenced span as the document it names, not as prose about one. A
-bare ```` ```memetic-wikitext```` fence, carrying no `tangle` label, stays an inert example — text
+bare `memetic-wikitext` fence, carrying no `tangle` label, stays an inert example — text
 a document talks about, never text a tangle pass ingests.
 
 This sharpens the fence-mask law already stated for the frame's own marks (#/frame-head-lock): an
@@ -705,7 +717,7 @@ unexamined, and reported the carrier sound.
 A carrier's block check and the Oracle's blind tail wear one shape and mean opposite things. The
 collision reads as a hazard until it gets named, at which point it becomes the point.
 
-`<<~ scale domain "oracle@stream ~ ephemeral · thrown BLIND · certifies nothing · gauges what no one can check -> touchstone@carrier ~ durable · fully DETERMINED · certifies bytes · checks what anyone can">>`
+<<~ scale name=`domain` ranks=`oracle@stream ~ ephemeral · thrown BLIND · certifies nothing · gauges what no one can check -> touchstone@carrier ~ durable · fully DETERMINED · certifies bytes · checks what anyone can`>>
 
 The Oracle's whole value rests on its tail bearing no relation to what was said; the Touchstone's rests
 on its tail bearing nothing else. So the Touchstone becomes the one instrument in this grammar that
@@ -752,11 +764,11 @@ goes where.
 The foot carries a name in the same vocabulary the shelves use for bodies that live elsewhere, and the
 two look identical because they share one kind of name: a name for the byte-string that hashes to a
 given value. A shelf's name says that string lives somewhere else. The foot's says that string sits in
-the hand already holding it. Position disambiguates them, and position alone does.
+the hand already holding it. The slot disambiguates them, and the slot alone does.
 
 Two rules follow, and both guard a reader that cannot parse what it carries.
 
-**A resolver MUST NOT resolve a name found after ETX.** Nothing waits to fetch: the body it names
+**A resolver MUST NOT resolve a name found in the ETX mark's `bcc` slot.** Nothing waits to fetch: the body it names
 sits in the same file, between the marks. A relay whose instinct on meeting this vocabulary says go
 looking carries a request it should never make.
 
@@ -768,7 +780,7 @@ the decade of confusion attacks that followed — begins exactly there.
 
 ### The reader's escalation ladder
 
-`<<~ scale read "namespace@1..4 ~ know which vocabulary reads this -> bcc@5..12 ~ raw bytes between two markers, no parser -> seal@13..20 ~ the durable question, and it needs readership">>`
+<<~ scale name=`read` ranks=`namespace@1..4 ~ know which vocabulary reads this -> bcc@5..12 ~ raw bytes between two markers, no parser -> seal@13..20 ~ the durable question, and it needs readership`>>
 
 Ordered by scope: what tells a reader HOW to read comes first, what COVERS what precedes it comes
 last. The split follows the capability lattice onto its one non-monotonic case — `pull` carries
@@ -778,8 +790,9 @@ quoted mark never frames. A relay holding carriage and not readership runs that 
 what the carrier says; the scan reads the carrier's QUOTING, never its meaning. A seal cannot travel
 that way.
 
-The received framing already put the check in that slot: STX opens the text, ETX closes it, and the
-check follows ETX because it cannot sit inside what it covers. Every documented failure of a trailing
+The received framing already put the check beside the closer: STX opens the text, ETX closes it, and
+the check rides with ETX — here in its `bcc` slot, deleted before the digest, since it cannot count
+itself. Every documented failure of a trailing
 check in the outside art came from covering a PARSED STRUCTURE rather than a byte span — an archive
 whose entries a verifier and an installer counted differently, a signature detached far enough from
 its subject to fall out of step. A span between two markers has nothing to disagree about.
@@ -791,7 +804,7 @@ a check published wherever the artifact lives proves nothing against anyone who 
 
 ### What a verdict obliges
 
-The reading names five verdicts (`packages/lararium-memetic-frame/src/verdict.ts`, the `FrameVerdict`
+The reading names six verdicts (`packages/lararium-memetic-frame/src/verdict.ts`, the `FrameVerdict`
 union), and each carries its consequence — a check whose failure obliges nothing decorates rather than
 protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
 
@@ -805,11 +818,16 @@ protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
   parses, as graceful parsing requires, as a carrier in fault.
 - **torn** — the frame cannot divide without choosing: STX without ETX, a second live STX or ETX, an
   ETX ahead of STX, a meta fence above STX, a head or release in a torn spelling, a release standing
-  before the text closes (#/carrier-spine), or a second heading anywhere in the file (one file frames
-  one carrier) — each fault named. A torn
+  before the text closes (#/carrier-spine), a second heading anywhere in the file (one file frames
+  one carrier), or a head split from its sealed root meta (`head-meta-split`, below) — each fault named. A torn
   carrier reads as a truncated or broken transmission and MUST NOT read as `absent`: conflating the two
   hands an adversary the cheapest strip on offer — cut a file ahead of its closer and a missing check
   would read as lawful absence. A consumer refuses a torn carrier, and its bytes stay where they stand.
+- **head-unbound** — the bytes match their check, and the head names an end the sealed root meta never
+  names: a `to=` address over a meta carrying neither `title` nor `uri-path`, or a `namespace=` over a
+  meta carrying no `namespace`. The verdict carries the check and names each unbound end. A verifier
+  MUST NOT report it as `match`, since the check never reaches that end of the head, and a consumer MUST
+  surface it; it reads as no tear, and the carrier admits.
 - **absent** — a frame stands and carries no check. The check stays optional and absence stays legal. A
   consumer MAY hold a policy requiring one, and under such a policy absence reads as refusal to admit —
   the only defense a bare digest affords against stripping, since whoever can rewrite a carrier can
@@ -819,9 +837,31 @@ protects, the standing RFC 9580 demoted OpenPGP's CRC-24 out of:
   meme, and reading it as one would invent a carrier nobody wrote.
 
 **What the check cannot answer.** The span opens at STX, so the declaration and SOH routing heading stand
-OUTSIDE it: a carrier's grammar selector and transport bearing can move while the check holds. The root
-TOML metadata sits inside the span, so the check covers it. The verdict answers one question — did the
-document bytes survive carriage — and a reader MUST NOT take a `match` as covering bytes the span excludes.
+OUTSIDE it: a carrier's grammar selector can move while the check holds. The root TOML metadata sits
+inside the span, so the check covers it. The verdict answers one question — did the document bytes
+survive carriage — and a reader MUST NOT take a `match` as covering bytes the span excludes.
+
+**The seal binds the head through the meta** (`packages/lararium-memetic-frame/src/head-bind.ts`). The
+head's address and namespace stand outside the span, and the sealed root meta mirrors both, so the verdict
+compares them and the check reaches the head with no byte added to it. The head's `to=` binds against the
+meta `title` where one stands, else against `lar:///` + `uri-path`; a `title` and a `uri-path` that
+disagree with each other name two places. The head's `namespace=` binds against the meta `namespace` where
+one stands, both read through their numeric character references (a head writes `ॐ ँ`, a meta
+`&#x0950; &#x0901;`). An unaddressed head (``to=`?` ``) binds only over a meta naming no address, and a
+carrier with no head binds nothing. Any split reads `torn`, fault `head-meta-split`; an end the meta never
+names reads `head-unbound`. **The fence opens the body** (`root-meta.ts`): the root meta names the carrier
+only where it is the first live labelled meta fence after STX with nothing but spacing before it, closed at
+its first tick run, the rule the deserializer splits the root fields by; every later meta fence heads its
+slot and never names the carrier. The frame parses no TOML, so it binds only a sealed meta whose every line
+stands whole by itself: no `"""` or `'''`, no byte-order mark, no control character but tab, and each line a
+blank, a comment, a `[table]` header, or a bare `key = value` whose value closes on that line. Inside that
+grammar a line read and a TOML read cannot part. The three keys read in the one spelling every emitter
+writes (a bare key, a basic string with no escape, nothing after the closing quote, before the first header),
+and anything else tears. Every house reader that holds the TOML parser (the ingest gate, `lares meme check`,
+promotion) also compares the frame's keys with the parser's and tears, `head-meta-split`, on any difference.
+A canon crossing takes its address from the head and refuses a `head-unbound` head by name. The binding names what an UNKEYED check can name: a
+head rewritten alone reads `torn`, never `match`, while a hand that rewrites head, meta and check together
+still authors a new carrier, and only a signature names who did.
 
 ### What stands, and what waits
 
@@ -846,7 +886,7 @@ in the carrier rather than beside it.
 
 A writer emitting a carrier's meta MUST:
 
-<<~ scale canon "sort ~ keys lexicographic, never authoring order -> omit ~ a key the envelope owns, a key opening with `$`, a value empty or absent -> inherit ~ a child writes a key ONLY where it differs from its parent -> align ~ `=` padded to the longest surviving key, one space each side -> entity ~ a `namespace` value renders as HTML entities -> silence ~ no surviving key means no block, never an empty fence">>
+<<~ scale name=`canon` ranks=```sort ~ keys lexicographic, never authoring order -> omit ~ a key the envelope owns, a key opening with `$`, a value empty or absent -> inherit ~ a child writes a key ONLY where it differs from its parent -> align ~ `=` padded to the longest surviving key, one space each side -> entity ~ a `namespace` value renders as HTML entities -> silence ~ no surviving key means no block, never an empty fence```>>
 
 The alignment reads as presentation and acts as law: a hand-written block using single spaces parses
 identically and re-emits one column wider, so the file reports as changed on every projection and its
@@ -859,7 +899,7 @@ belongs to what the check protects — and that choice obliges a canonical spell
 
 - **A control-mark reference spells `&#x`, exactly four hex digits, `;`** — one spelling, the one the
   recogniser reads. `&#X…;`, shortened forms (`&#1;`), and raw octets stand outside the grammar.
-- **A frame sigil's canonical spelling = the one the emitter mints** — `<<^ code="&#xNNNN;" …>>`,
+- **A frame sigil's canonical spelling = the one the emitter mints** — ``<<^ code=`&#xNNNN;` …>>``,
   single spaces. A reader admits a spelling variant (graceful parsing); the projection re-mints
   canonical; and the check follows the bytes, so a re-minted carrier restamps. Two spellings of one
   sigil never share a check, and neither claims the other's.
@@ -867,13 +907,9 @@ belongs to what the check protects — and that choice obliges a canonical spell
 ### One mouth
 
 These laws describe what the emitter already enacts, and stating them here serves a second reader —
-the one writing a migration, a sweep, or an independent implementation. Such a writer SHOULD route
+the one writing a sweep or an independent implementation. Such a writer SHOULD route
 through the emitter rather than reproduce it: the projection path already does, and every carrier in
 this corpus that failed to render back came from a hand that went around it.
-
-A migration stands as the honest exception. A writer that knows only the current shape cannot rewrite a document
-standing in a shape the current grammar never emits, so a migration reads with the
-reader, and writes with the emitter, and never composes bytes of its own.
 
 <a id="the-woven-dialect"></a>
 
@@ -949,7 +985,7 @@ mapping a mirror back to its canonical name>.
 ### Mixed grammar
 
 One matrix grammar governs a carrier, and a foreign grammar enters only inside a declared, named span —
-`<<~ hana grammar-key>>...<<~/hana>>` (`lar:///ha.ka.ba/lares/api/pono/hana`). An embedded language
+``<<~ hana grammar=`grammar-key`>>...<<~/hana>>`` (`lar:///ha.ka.ba/lares/api/pono/hana`). An embedded language
 supplies content inside that span; it never reaches out to shape the carrier's own structure. The rule
 matches the fence-mask law (#/weave-and-tangle): a foreign or example span stays legible, and no reader ever
 mistakes it for the grammar that holds it.
@@ -972,7 +1008,7 @@ beside the field map, never injected into it.
 
 So this grammar reserves those and their record-stratum siblings, and nothing else:
 
-`<<~ scale reserved "title ~ the host overwrites it -> revision ~ the host overwrites it -> text ~ the body rebuilds from the frame -> modified ~ the record stratum carries it">>`
+<<~ scale name=`reserved` ranks=`title ~ the host overwrites it -> revision ~ the host overwrites it -> text ~ the body rebuilds from the frame -> modified ~ the record stratum carries it`>>
 
 `type` joins them for a different reason: the host reads it to CHOOSE a deserializer, exactly as
 TiddlyWiki's own filetype registry does, so a carrier declares its type and the value re-derives on every
@@ -1005,7 +1041,7 @@ A TiddlyWiki `.tid` file parses its header line by line and splits the body at t
 (`boot.js`, `application/x-tiddler`). **Only `text` may carry a newline.** A value that can only survive
 inside one file format cannot travel — so no field anywhere, at any name, may hold a multi-line part.
 
-<<~ scale carriage "scalar ~ `$slot` · `$fragment-parent` · `$carrier-soh` · `$postamble-foreign` · `$origin-bag` — a field, and a native filter surface -> multi-line ~ `$prologue` · `$preamble` · `$header-text` · `$postamble` — a record, and a `text` that can hold it">>
+<<~ scale name=`carriage` ranks=```scalar ~ `$slot` · `$fragment-parent` · `$carrier-soh` · `$postamble-foreign` · `$origin-bag` — a field, and a native filter surface -> multi-line ~ `$prologue` · `$preamble` · `$header-text` · `$postamble` — a record, and a `text` that can hold it```>>
 
 The split runs **scalar-or-multi-line**, never reserved-or-free. A date, a slot name, a bag address:
 each stays a field, and making it a record would cost the filter surface and buy nothing.
@@ -1014,7 +1050,7 @@ each stays a field, and making it a record would cost the filter surface and buy
 
 A multi-line part becomes a record on the same rails that carry ahu fragments:
 
-`<<~moves carriage -> a-record-of-its-own on/the-carrier's-own-address if/the-value-can-hold-a-newline do/splice-it-back-by-position>>`
+<<~ moves name=`carriage` params=`a-record-of-its-own on/the-carrier's-own-address if/the-value-can-hold-a-newline do/splice-it-back-by-position`>>
 
 - **The address derives.** `lar:///…#/$prologue` under a carrier; `lar:///…#/slot/$preamble` under a
   fragment, extending the slot path the way a nested fragment already does. The `$` marks the host's
@@ -1022,7 +1058,7 @@ A multi-line part becomes a record on the same rails that carry ahu fragments:
   the thing it belongs to.
 - **`$fragment-parent` points home**, so the projector climbs to the root and never writes a carriage
   record as its own file. One carrier, one file, as before.
-- **No marker anywhere.** A fragment splices where its `<<~ kahea ahu>>` stands; carriage splices
+- **No marker anywhere.** A fragment splices where its `kahea` child-slot summons stands; carriage splices
   by POSITION, the only signal these bytes ever carried. The frame knows the prologue precedes
   the head and the postamble follows the release, and no mark says so.
 
@@ -1045,7 +1081,7 @@ So a carrier's health reads as a **gradient**, never a verdict. Every `.mem` sou
 the reader names the marks it carries and the marks it lacks. `uri-path` names a meme address and `bag`
 names a bag declaration inside that shared carrier shape.
 
-<<~ scale carrier "complete ~ DOCTYPE + SOH + root TOML + STX + ETX + block check + EOT stand in order -> graded ~ each absent or displaced mark remains visible to the operator -> addressed ~ `uri-path` names a meme -> bag-declaring ~ `bag` names a bag's self-description; its fields and prose travel in the same checked body">>
+<<~ scale name=`carrier` ranks=```complete ~ DOCTYPE + SOH + root TOML + STX + ETX + block check + EOT stand in order -> graded ~ each absent or displaced mark remains visible to the operator -> addressed ~ `uri-path` names a meme -> bag-declaring ~ `bag` names a bag's self-description; its fields and prose travel in the same checked body```>>
 
 `lares meme check --gradient` reads it. It reports each carrier's missing or displaced marks and fails
 on a fault. A bag-declaring carrier carries STX, ETX, EOT, and a block check so its authoritative fields
@@ -1086,8 +1122,8 @@ This law's own machine surface holds the spine, the resonance set, and the trust
 SOH  = { role = "Start of Heading — opener; names the canonical URI",         code = "code", byte = "0x01", kapu = "0x11", required = true }
 SOH2 = { role = "Start of Heading, second form — the Kapu opener",            code = "code", byte = "0x11",               required = false }
 STX  = { role = "Start of Text — body open; bare pragma",                     code = "code", byte = "0x02",               required = true }
-ETX  = { role = "End of Text — body close; bare pragma",                      code = "code", byte = "0x03",               required = true }
-EOT  = { role = "End of Transmission — throat close; return -> \"?\"",        code = "code", byte = "0x04",               required = true }
+ETX  = { role = "End of Text — body close; carries the check in its bcc slot", code = "code", byte = "0x03",               required = true }
+EOT  = { role = "End of Transmission — throat close; hands forward on to=`?`",   code = "code", byte = "0x04",               required = true }
 # ETB (0x17) carries no office under $carrier-sila (operator ruling) — no attestation block stands
 # for it to close; a surviving ETB mark reads as a torn spelling. Minted only behind a computed,
 # verified check when signing lands.
@@ -1144,9 +1180,10 @@ a reader that takes a `match` for authenticity has granted the check a standing 
 - **Respell a sigil the span covers.** The span binds the frame's byte spelling, so a spelling variant
   would hash apart from the canonical form. The canonical spelling law (#/canonical-form) closes the
   surface: one spelling stands, a variant re-mints and restamps, and two spellings never share a check.
+  The `bcc` run's one deletion stands as the sole exception, and every other ETX spelling tears.
 - **Bait a resolver with the check's own form.** The check wears `ni:///` [RFC6920], a resolvable
   scheme; here it names the bytes ABOVE it, never a thing to fetch. A resolver MUST NOT resolve a name
-  found after ETX — following one hands an adversary a fetch triggered by a field they control.
+  found in the ETX mark's `bcc` slot — following one hands an adversary a fetch triggered by a field they control.
 
 **Out of scope at this grain — reserved at the next.** Stream self-synchronisation — the RFC 7464
 discipline of scanning forward to the next mark after a failed parse — stays out of scope because this
@@ -1182,6 +1219,7 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 - **[RFC6838]** — media-type registration procedures (§4.6 security requirement).
 - **[RFC6839]** — structured syntax suffixes.
 - **[RFC6920]** — naming things with hashes; the `ni:` URI the block check wears.
+- **[RFC6376]** — DomainKeys Identified Mail; §3.7's emptied `b=` value, the self-exclusion rule the `bcc` slot's one deletion follows.
 - **[RFC6901]** — JSON Pointer syntax; the `~0`/`~1` escaping `lar:` fragments may adopt (#/the-woven-dialect).
 - **[RFC7763]** — the Markdown metadata sidecar and frontmatter convention a woven artifact's identity travels under.
 - **[RFC7764]** — the Markdown variant registry a woven artifact's dialect declares against.
@@ -1198,8 +1236,8 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 ## Annex — Open Items (Informative)
 
-- **EOT targeting (resolved for its declared meaning).** `target:` on `&#x0004;` reads `?` — a DECLARED
-  UNRESOLVED bearing, the departing end of the one relation #/bearing-arrow names, never a gap in the
+- **EOT targeting (resolved for its declared meaning).** The `to=` value on `&#x0004;` reads `?` — a DECLARED
+  UNRESOLVED bearing, the departing end of the one relation #/bearing-pair names, never a gap in the
   frame. What a RESOLVED target would name — the next carrier in a chain, a bag, a bearing — stands
   open as a new capability rather than as unfinished law; whatever it admits becomes an edge the
   graph can walk.
@@ -1221,15 +1259,15 @@ The byte law lives at the BOUNDARY: every stratum inward (records, VM) sees norm
 
 ## Edges
 
-- `loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/parser"`
-- `loulou "lar:///ha.ka.ba/lararium/docs/carrier-parse"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/meme"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/kapu"`
-- `loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/aka"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/hoike"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/hana"`
-- `loulou "lar:///ha.ka.ba/lares/api/pono/nihomano-sigils"`
+- `loulou lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`
+- `loulou lar:///ha.ka.ba/lares/api/pono/lar-uri`
+- `loulou lar:///ha.ka.ba/lares/api/pono/parser`
+- `loulou lar:///ha.ka.ba/lararium/docs/carrier-parse`
+- `loulou lar:///ha.ka.ba/lares/api/pono/render-pipeline`
+- `loulou lar:///ha.ka.ba/lares/api/pono/meme`
+- `loulou lar:///ha.ka.ba/lares/api/pono/kapu`
+- `loulou lar:///ha.ka.ba/lares/docs/pono/research-streams/ward-channel-grounds`
+- `loulou lar:///ha.ka.ba/lares/api/pono/aka`
+- `loulou lar:///ha.ka.ba/lares/api/pono/hoike`
+- `loulou lar:///ha.ka.ba/lares/api/pono/hana`
+- `loulou lar:///ha.ka.ba/lares/api/pono/nihomano-sigils`

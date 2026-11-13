@@ -4,9 +4,9 @@ lar-kind: control
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/huli
 lar-mirror-of: huli
 lar-see-also: huli
-lar-open-pattern: <<~\s*for\s+([^>]+?)\s*>>
+lar-open-pattern: <<~\s*for\s+filter=`([^`]*)`(?:\s+sigil=`[^`]*`)?\s*>>
 lar-close-pattern: <<~\/for\s*>>
-lar-example: <<~ for "[tag[x]]">>
+lar-example: <<~ for filter=`[tag[x]]`>>
 type: text/vnd.tiddlywiki
 
 <!-- \for — iteration block; maps a filter over a body template.
@@ -20,8 +20,8 @@ type: text/vnd.tiddlywiki
 
      No mode= param — control flow has no projection posture. -->
 
-\procedure ~for(p1:"" p2:"")
-<$list filter=<<p1>>>
-<$transclude $variable="~" name=<<p2>>/>
+\procedure ~for(filter:"" sigil:"")
+<$list filter=<<filter>>>
+<$transclude $variable="~" name=<<sigil>>/>
 </$list>
 \end

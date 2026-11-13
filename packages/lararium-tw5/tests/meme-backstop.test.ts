@@ -14,9 +14,9 @@ import type { TiddlerFields } from "../src/deserializer.js";
 const URI = "lar:///t/x";
 const CARRIER = "text/memetic-wikitext+tiddlywiki";
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/x"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 type Changes = Record<string, { modified?: boolean; deleted?: boolean }>;
 
@@ -68,7 +68,7 @@ describe("★ THE TWO DOORS (c): the backstop re-stamps a framed root that lande
     wiki.addTiddler({ title: URI, type: CARRIER, text: meme(["a", "b"]) });
     await settle();
     expect([...wiki.store.keys()].sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`]);
-    expect(wiki.store.get(URI)?.["text"]).toBe("<<~ kahea ahu #/a>>\n\n<<~ kahea ahu #/b>>");
+    expect(wiki.store.get(URI)?.["text"]).toBe("<<~ kahea ahu slot=`#/a`>>\n\n<<~ kahea ahu slot=`#/b`>>");
     expect(lines).toEqual([`[memetic-wikitext] re-stamped ${URI} (landed via a native write)`]);
   });
 
@@ -82,7 +82,7 @@ describe("★ THE TWO DOORS (c): the backstop re-stamps a framed root that lande
   });
 
   test("a root the gate REFUSES (error-graded) stays as it landed, and the line names the refusal", async () => {
-    const stranded = meme(["a"]).replace("<<^ code=\"&#x0003;\">>\n", "<<^ code=\"&#x0003;\">>\n<<~ ahu #edges>>\n\n* x\n\n<<~/ahu>>\n");
+    const stranded = meme(["a"]).replace("<<^ code=`&#x0003;`>>\n", "<<^ code=`&#x0003;`>>\n<<~ ahu slot=`#edges`>>\n\n* x\n\n<<~/ahu>>\n");
     wiki.addTiddler({ title: URI, type: CARRIER, text: stranded });
     await settle();
     expect([...wiki.store.keys()]).toEqual([URI]);
@@ -137,7 +137,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
 
   test("QUOTEBLOCK FLOOR: a child-slot save carrying a stray ETX gets fenced too", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
-    const stray = `! a\n\n<<^ code="&#x0003;">>\n\nstranded\n`;
+    const stray = `! a\n\n<<^ code=\`&#x0003;\`>>\n\nstranded\n`;
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: stray });
     await settle();
     const alert = wiki.store.get(alertTitle);
@@ -156,7 +156,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
    */
   test("QUOTEBLOCK FLOOR: a child-slot save carrying an unclosed ahu is fenced, codes `ahu-unbalanced-open` + `quoteblocked`", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
-    const unclosed = "! a\n\n<<~ ahu #/a/z>>\n\nno closer\n";
+    const unclosed = "! a\n\n<<~ ahu slot=`#/a/z`>>\n\nno closer\n";
     wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: unclosed });
     await settle();
     const alert = wiki.store.get(alertTitle);
@@ -180,7 +180,7 @@ describe("★ SEAM (b): a child-slot save re-grades its root and surfaces, never
 
   test("a lawful nested ahu child raises no alert", async () => {
     await placeMeme({ uri: URI, text: meme(["a"]) }, wikiMemeSink(wiki));
-    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a\n\n<<~ ahu #/a/z>>\n\n! z\n\n<<~/ahu>>\n" });
+    wiki.addTiddler({ ...wiki.store.get(`${URI}#/a`)!, text: "! a\n\n<<~ ahu slot=`#/a/z`>>\n\n! z\n\n<<~/ahu>>\n" });
     await settle();
     expect(wiki.store.has(alertTitle)).toBe(false);
   });
@@ -380,12 +380,12 @@ describe("★ RE-MEASURED: re-placing a root from its records refuses two shapes
   /** Every shape a child's text can take that the widening was meant to catch. */
   const CHILD_EDITS: Record<string, string> = {
     "a clean edit":            "! a EDITED",
-    "a stray ETX mark":        `! a\n\n<<^ code="&#x0003;">>\n\nstranded\n`,
+    "a stray ETX mark":        `! a\n\n<<^ code=\`&#x0003;\`>>\n\nstranded\n`,
     // CANON: a nested open carries its whole path from the carrier root — `#/a/z` nested inside
     // `#/a`, a strict descendant, never the bare relative leaf `#/z` a re-prefixing reader would need.
-    "a nested ahu block":      "! a\n\n<<~ ahu #/a/z>>\n\n! z\n\n<<~/ahu>>\n",
+    "a nested ahu block":      "! a\n\n<<~ ahu slot=`#/a/z`>>\n\n! z\n\n<<~/ahu>>\n",
     "a whole pasted frame":    meme(["z"]),
-    "an unclosed ahu":         "! a\n\n<<~ ahu #/a/z>>\n\nno closer\n",
+    "an unclosed ahu":         "! a\n\n<<~ ahu slot=`#/a/z`>>\n\nno closer\n",
     "a stray block closer":    "! a\n\n<<~/ahu>>\n\nafter\n",
     "a malformed meta fence":  "! a\n\n```toml meta\nbogus = [\n```\n",
   };
@@ -452,7 +452,7 @@ describe("★ RE-MEASURED: re-placing a root from its records refuses two shapes
   test("CONTROL · the SAME gate refuses that text at the ROOT's own door, so the gate works and the INPUT is the lie", async () => {
     const store = new Map<string, TiddlerFields>();
     const sink = wikiMemeSink(sinkOf(store) as never);
-    const stranded = meme(["a"]).replace(`<<^ code="&#x0003;">>\n`, `<<^ code="&#x0003;">>\n<<~ ahu #edges>>\n\n* x\n\n<<~/ahu>>\n`);
+    const stranded = meme(["a"]).replace(`<<^ code=\`&#x0003;\`>>\n`, `<<^ code=\`&#x0003;\`>>\n<<~ ahu slot=\`#edges\`>>\n\n* x\n\n<<~/ahu>>\n`);
     const receipt = await placeMeme({ uri: URI, text: stranded }, sink);
     expect(receipt.decision).toBe("refuse");
     expect(receipt.grade).toBe("error");

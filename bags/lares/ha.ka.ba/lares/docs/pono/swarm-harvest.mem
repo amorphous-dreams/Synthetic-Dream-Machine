@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/swarm-harvest">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/swarm-harvest`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/swarm-harvest.mem"
 hydrate   = true
 l-space   = "stable"
-mana      = 14
-manao     = 15
-manaoio   = 12
 namespace = "&#x2299;"
 role      = "swarm-harvest INDEX — the three largest messages from each of 55 research spirits across four waves, held verbatim in their own carriers. Names come from each spirit OWN opening heading, never from a summary of it. The fence law that makes it safe, the reason a lane with no independent name still earns a carrier, and the roll of what stands."
 tags      = ["api/pono/meme"]
@@ -19,7 +15,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/swarm-harvest"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The swarm harvest
 
@@ -33,7 +29,7 @@ Four research waves went out and ran three levels deep. ''55 spirits wrote somet
 
 <<~/ahu>>
 
-<<~ ahu #/the-roll>>
+<<~ ahu slot=`#/the-roll`>>
 
 !! What stands
 
@@ -98,14 +94,14 @@ Four research waves went out and ran three levels deep. ''55 spirits wrote somet
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/circles-field-scout">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/pattern-integrity-stress`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/managed-identity-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/circles-field-scout`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ud6Y99cBkLkq6g8FwGLUaQxUwvFgNJ8goyqPmOZDjJ4
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3Sn8lJWo5tmiZG81yP8D7loP9qaC3s_DHGXTt0eUykM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

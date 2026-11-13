@@ -54,6 +54,7 @@ export async function findOrThrow(repo: Repo, url: string, what: string, opts: F
     // automerge-repo 2.6: find() resolves only when READY and rejects on unavailable.
     const handle = await Promise.race([
       repo.find<LarDoc>(url as AutomergeUrl).catch((cause: unknown) => { failure = cause; return null; }),
+      // LIVENESS: a peer holding the document may never answer; unavailability can settle sooner.
       new Promise<null>((resolve) => { timer = setTimeout(() => resolve(null), timeoutMs); }),
     ]);
     if (handle) return handle;

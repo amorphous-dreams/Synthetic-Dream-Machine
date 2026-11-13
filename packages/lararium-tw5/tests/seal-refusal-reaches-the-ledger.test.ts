@@ -25,6 +25,7 @@
  * `persistArchiveFloor` decides the refusal and returns it; the boot frame surfaces it here. Nothing
  * raises from inside the read.
  */
+import { memoryControlStore } from "./control-store-fixture.js";
 import { describe, expect, test } from "vitest";
 
 import { CompositeStore, DAEMON_BAG_ID } from "@lararium/mesh";
@@ -36,11 +37,18 @@ import type { DaemonMsg_WikiAlert } from "../src/index.js";
 async function daemonStore(): Promise<CompositeStore> {
   const composite = new CompositeStore();
   composite.addLayer({ bagId: DAEMON_BAG_ID, store: new MemoryTiddlerStore(DAEMON_BAG_ID), writable: true });
+  controls.set(composite, memoryControlStore());
   return composite;
 }
 
-/** Every ward-ledger record standing in the daemon bag. */
-async function wardLedger(composite: CompositeStore): Promise<Record<string, unknown>[]> {
+/** The ward ledger rests in the vessel's control document, one per daemon store here. */
+const controls = new WeakMap<CompositeStore, CompositeStore>();
+const controlFor = (composite: CompositeStore): CompositeStore => controls.get(composite)!;
+
+/** Every ward-ledger record standing in the control document; the daemon bag holds none. */
+async function wardLedger(daemon: CompositeStore): Promise<Record<string, unknown>[]> {
+  expect((await daemon.listVisible()).filter((t) => t.includes("/ledger/ward/")), "a ward row reached the daemon bag").toEqual([]);
+  const composite = controlFor(daemon);
   const titles = await composite.listVisible();
   const out: Record<string, unknown>[] = [];
   for (const t of titles) {
@@ -57,7 +65,7 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
     const composite = await daemonStore();
     const posted: DaemonMsg_WikiAlert[] = [];
 
-    const react = makeWardAlertReactor(composite, (m) => posted.push(m));
+    const react = makeWardAlertReactor(composite, controlFor(composite), (m) => posted.push(m));
     await react({
       bagId:    DAEMON_BAG_ID,
       uri:      "lar:///ha.ka.ba/identity/keyhive-archive.bin",
@@ -120,7 +128,7 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
       { kind: "lares-verb", requestId: "pin" },
     );
 
-    const reactor = makeWardAlertReactor(composite, (m) => posted.push(m));
+    const reactor = makeWardAlertReactor(composite, controlFor(composite), (m) => posted.push(m));
     await reactor({ bagId: "bag:x", uri: "lar:///x", reason: "shadowed canon copy" });
 
     const ledger = await wardLedger(composite);
@@ -180,14 +188,14 @@ describe("CURE 4 — the refusal reaches a durable audience", () => {
     expect(loop, `the refusal-surfacing loop stands (anchor: ${ANCHOR})`).not.toBeNull();
     // NOT ONLY A WARN. stdout may stay — an operator at a terminal should see it — but the refusal
     // must ALSO reach the durable `@daemon` ledger, which is the only audience a 3am boot has.
-    expect(loop!, "the refusal rides Rail A, not stdout alone").toMatch(/fileWardRefusal\(ctx\.composite, ctx\.post,/);
+    expect(loop!, "the refusal rides Rail A, not stdout alone").toMatch(/fileWardRefusal\(ctx\.composite, controlOf\(ctx\), ctx\.post,/);
     expect(loop!, "and it names the seal, not the disk ward").toMatch(/wardKind:\s*"archive-seal"/);
     // AND THE CALL IS THE LOOP'S OWN, not a dead sibling the old window reached: exactly one such
     // call stands in the whole file, so it cannot be both inside the loop and duplicated outside it.
-    expect([...src.matchAll(/fileWardRefusal\(ctx\.composite, ctx\.post,[\s\S]{0,300}?wardKind:\s*"archive-seal"/g)].length,
+    expect([...src.matchAll(/fileWardRefusal\(ctx\.composite, controlOf\(ctx\), ctx\.post,[\s\S]{0,300}?wardKind:\s*"archive-seal"/g)].length,
       "exactly one archive-seal refusal call stands — a second would let one of them go dead unnoticed").toBe(1);
     // ONE BODY, TWO DOORS — the same act the registered "ward-alert" verb performs, never a second rail.
-    expect(src).toMatch(/registry\.register\("ward-alert", makeWardAlertReactor\(ctx\.composite, ctx\.post\)\)/);
+    expect(src).toMatch(/registry\.register\("ward-alert", makeWardAlertReactor\(ctx\.composite, controlOf\(ctx\), ctx\.post\)\)/);
   });
 });
 
@@ -196,7 +204,7 @@ async function react(
   composite: CompositeStore,
   post: (m: DaemonMsg_WikiAlert) => void,
 ): Promise<Record<string, unknown>> {
-  const reactor = makeWardAlertReactor(composite, post);
+  const reactor = makeWardAlertReactor(composite, controlFor(composite), post);
   return (await reactor({
     bagId:    DAEMON_BAG_ID,
     uri:      "lar:///ha.ka.ba/identity/keyhive-archive.bin",

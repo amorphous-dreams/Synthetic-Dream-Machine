@@ -1,31 +1,30 @@
 /**
- * e2e/meme-two-vessel-bag — an author's `bag` field crosses between TWO vessels byte-whole.
+ * e2e/meme-two-vessel-bag — two vessels preserve an author's `bag` field in their own live system books.
  *
  * `bag-is-user-space` proves it in one process over a memory store: an author's `bag` is user space,
  * `$origin-bag` is the host's provenance, residency rides the envelope. This witness stands the pair
  * the law is for — a founder A and a same-operator joiner B, each on its own root, port and key — and
- * carries a meme whose meta holds `bag = "backpack: rope, lantern"` from A's wiki to B's.
+ * carries a meme whose meta holds `bag = "backpack: rope, lantern"` through each vessel’s own lares book.
  *
  * THE RITE, every step through the built CLI:
  *   ① A founds (a place, a face)                          `vessel found` on a marked scratch root · `persona new 0`
- *   ② B mints its OWN key first, under its OWN root       the vessel-identity mint (the genesis island stands repo-wide off A's founding)
- *   ③ A signs the edge over B's key, naming A's dial      `device-admit --joinee-key … --sync-url …`
- *   ④ B founds BY that payload                            `vessel found --admit`
+ *   ② B founds a place under its OWN root                 `vessel found` on B's own marked scratch root
+ *   ③ A offers its face's fleet; B requests over it       `fleet join offer` · `fleet join request`
+ *   ④ A answers, naming A's dial; B lands the answer      `fleet join answer --sync-url …` · `fleet join land`
  *   ⑤ A stands; the meme lands on A's wiki                `meme put --recipe lares`
- *   ⑥ B stands dialing A                                  LAR_JOIN_SYNC · LAR_JOIN_GATE · LAR_JOIN_DOC
- *   ⑦ A promotes into the bag both mount; B reads it      `act MOVE --to lar:///ha.ka.ba/bags/lares` · `meme get --bag lares`
- *   ⑧ B edits, promotes; A reads the edit back            `meme put --recipe lares --base` · `act MOVE` · `meme get --bag lares`
+ *   ⑥ B stands dialing A                                  the pin `fleet join land` wrote (sync url · gate pin)
+ *   ⑦ A promotes in its own lares book; B measures no live record from A (W24/W27 BOOK crossing)
+ *   ⑧ B promotes in its own lares book (OWED: a sibling device's reach follows the face's counted admission, `test.fails` until then); A keeps A’s record
  *   ⑨ the later grant lands as a RECORD on the PersonaGroup plane; B's kit takes the seat by its own act
  *
  * TWO SEATS THE PAIR RIDES, each measured 2026-09-11:
  *
- *   A JOINER STANDS BY ITS EDGE ALONE. `device-admit` copies no cap events (two-vessel-mesh asserts it as
+ *   A JOINER STANDS BY ITS EDGE ALONE. The join copies no cap events (two-vessel-mesh asserts it as
  *   design), so B's veil holds no seat in the PersonaGroup until a face-join lands; B's first wiki-binding
- *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key is
- *   minted under B's root (`harness/vessel-key.ts`) — the identity dir resolves from `LAR_ROOT`, never from
- *   a path argument, so an in-process mint would have admitted the operator's home key instead.
+ *   mint reads `faceSeated` false and stays on B's own key (`resolve-binding.ts`), and B boots. B's key
+ *   mints under B's root when B founds as a place, before its fleet-join request names it.
  *
- *   THE SHARED-BAG WRITE DOOR. `--recipe lares` writes the recipe's designated bag — the wiki's WORKING
+ *   THE SYSTEM-BAG WRITE DOOR. `--recipe lares` writes the recipe's designated bag — the wiki's WORKING
  *   layer (`wikis/lares/working`, `wiki which` says so below), the doc the running wiki island mounts as
  *   its default writable, so the placement SURFACES in that wiki (its working layer projects to
  *   `wikis/lares/` on disk); `--recipe lares` READS the whole stack top-down (working shadows canon, canon
@@ -33,16 +32,16 @@
  *   read-only). The residency ACTION verbs reach `lares` by access, so a promotion into
  *   `lar:///ha.ka.ba/bags/lares` is the door — on each side, each direction.
  *
- * Nothing here fakes the sync. B's `get` carries the `bag = …` line byte-whole and no `$origin-bag`; B's
- * disk projection sites the carrier under `bags/lares/` — which only a wiki tiddler stamped
- * `$origin-bag = lar:///ha.ka.ba/bags/lares` reaches — and the projected carrier holds no `$origin-bag`.
+ * The crossing admits B to the fleet. W24/W27 owns the same-face BOOK crossing; until that step lands,
+ * B reads no record from A’s live lares document. B’s local promotion keeps its author’s `bag` line byte-whole.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openStagedJoinee, vesselStorageDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
-import { invokeLocal } from "../../packages/lares-cli/src/local-connector.js";
+import { openStagedJoinee, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { promoteLoadedTitles } from "../harness/promote.js";
+import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
 const CLI_BIN   = join(REPO_ROOT, "packages/lares-cli/dist/src/bin/lares.js");
@@ -61,9 +60,9 @@ const BAG_LINE = new RegExp(`^bag\\s+= "${INVENTORY}"$`, "m");
 
 /** The NPC meme: the author's `bag` rides the meta, the named slots ride the body. */
 const meme = (slots: readonly string[]): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${URI}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
-  slots.map((s) => `<<~ ahu #/${s}>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
-  `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${PATH}"\nbag = "${INVENTORY}"\n\`\`\`\n\n` +
+  slots.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s}\n\n<<~/ahu>>\n`).join("\n") +
+  `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 function missing(): string[] {
   const out: string[] = [];
@@ -85,19 +84,17 @@ let rootB = "";
 let admitted: CliResult | null = null;
 /** Why B never stood — the daemon's own words; empty when B stands. */
 let joinGate = "";
-let baseA = "";
 let draftA = "";
 
-describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★", () => {
+describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and author bag field ★", () => {
   beforeAll(async () => {
     // The joinee rite — one door in the harness (A founds · B mints under its own root · A signs · B founds
-    // by the payload · B dials A by env). ⑤ lands the meme on A before B stands.
+    // by the payload · B dials A by its pin). ⑤ lands the meme on A before B stands.
     pair = await openStagedJoinee({ tag: "bag", beforeB: async (a) => {
       const f = join(a.root, "npc.mem");
       writeFileSync(f, meme(["a"]));
       const put = await a.cli(["meme", "put", URI, ...WIKI, "--file", f, "--json"]);
       if (put.json?.["ok"] !== true) throw new Error(`A: put refused\n${said(put)}`);
-      baseA = String((put.json["data"] as Record<string, unknown>)["canonicalHash"]);
     } });
     A = pair.A; B = pair.B; rootB = pair.rootB; admitted = pair.admitted; joinGate = pair.joinGate ?? "";
     if (!B) console.error(`meme-two-vessel-bag: B never stood — the sync vectors SKIP. The daemon said:\n  ${joinGate}`);
@@ -108,7 +105,7 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
   test("④ the admit ceremony crosses: B founds by A's signed edge, holding its own key", () => {
     expect(admitted?.code, said(admitted ?? { stdout: "", stderr: "no founding ran" })).toBe(0);
     expect(admitted?.stdout).toContain("joined the PersonaGroup");
-    expect(existsSync(join(rootB, "data/lares/vessel/social-bootstrap.json"))).toBe(true);
+    expect(existsSync(join(rootB, "hearth/vessel/social-bootstrap.json"))).toBe(true);
   });
 
   test("⑤ on A: `get` hands the author's `bag` line back byte-whole", async () => {
@@ -130,14 +127,14 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     // The wiki island mounts the SAME working doc the recipe seat wrote (the ONE slot-doc resolver), and
     // its disk mirror sites the working layer under wikis/{slug}/ — a file here is the running wiki's own
     // projection of the placement, never the daemon's.
-    const f = join(A!.root, "wikis/lares", `${PATH}.mem`);
+    const f = join(A!.root, "projections/wikis/lares", `${PATH}.mem`);
     const deadline = Date.now() + 60_000;
     while (!existsSync(f)) {
       if (Date.now() > deadline) throw new Error(`A's running wiki never surfaced the placement at ${f}`);
       await new Promise((r) => setTimeout(r, 1000));
     }
     const text = readFileSync(f, "utf8");
-    expect(text).toContain("<<~ ahu #/a>>");
+    expect(text).toContain("<<~ ahu slot=`#/a`>>");
     expect(text).toMatch(BAG_LINE);
   });
 
@@ -175,7 +172,7 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
       console.error(`meme-two-vessel-bag MEASURE ${tag}: bag stats\n${stats.stdout.trim()}\nwiki which ${URI}\n${which.stdout.trim()}`);
     }
     // CONTROL for the projection witness below: nothing sits on B's disk before the promotion.
-    expect(existsSync(join(B!.root, "bags/lares", `${PATH}.mem`))).toBe(false);
+    expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
     const refused = await A!.cli(["meme", "put", URI, "--bag", "lares", "--file", join(A!.root, "npc.mem"), "--json"]);
     console.error(`meme-two-vessel-bag MEASURE A: meme put --bag lares → ${said(refused).trim().slice(0, 300)}`);
     expect(refused.json?.["ok"]).toBe(false);
@@ -189,8 +186,9 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
   });
 
   test("⑦ A promotes through the one door: `act LOAD` the carrier into lar:///ha.ka.ba/bags/lares", async () => {
-    const ld = await A!.cli(["act", "LOAD", "--source-uri", join(A!.root, "npc.mem"), "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await A!.cli(["act", "LOAD", "--source-uri", join(A!.root, "npc.mem"), "--to", WORKING_LARES, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
+    await promoteLoadedTitles(A!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
     const which = await A!.cli(["wiki", "which", URI, "--no-json"]);
     expect(which.stdout).toContain(`  ${LARES_BAG}`);
     // A's own working layer still shadows the recipe read; the bag read names the promoted copy.
@@ -199,56 +197,56 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     expect(String((r.json?.["data"] as Record<string, unknown>)["text"])).toMatch(BAG_LINE);
   });
 
-  test("★ ⑦ on B: the recipe seat's `get` reads the STACK — canon answers through --recipe while B's working holds nothing ★", async () => {
-    const r = await awaitMeme(B!, WIKI, (t) => t.includes("<<~ ahu #/a>>"));
-    expect(r.text).toMatch(BAG_LINE);
-    expect(r.canonicalHash).toBe(baseA);
-  });
-
-  test("⑦ on B: `get` carries the `bag` line byte-whole and no `$origin-bag`", async () => {
-    const r = await awaitMeme(B!, BAG, (t) => t.includes("<<~ ahu #/a>>"));
-    expect(r.text).toMatch(BAG_LINE);
-    expect(r.text).not.toContain("$origin-bag");
-    expect(r.canonicalHash).toBe(baseA);
+  test("★ ⑦ MEASURE on B: A's live lares record stays in A's own book ★", async () => {
+    // W24/W27 owns the same-face BOOK crossing. B's lares book does not carry A's live system record.
+    const bag = await B!.cli(["meme", "get", URI, ...BAG, "--json"]);
+    const wiki = await B!.cli(["meme", "get", URI, ...WIKI, "--json"]);
     const which = await B!.cli(["wiki", "which", URI, "--no-json"]);
-    expect(/primary:\s+(\S+)/.exec(which.stdout)?.[1]).toBe(LARES_BAG);
+    console.error(`meme-two-vessel-bag MEASURE B: bag → ${said(bag).trim().slice(0, 240)}; wiki → ${said(wiki).trim().slice(0, 240)}`);
+    expect(String((bag.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
+    expect(String((wiki.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "")).not.toContain("<<~ ahu slot=`#/a`>>");
+    expect(which.stdout).not.toContain(`  ${LARES_BAG}`);
+    expect(existsSync(join(B!.root, "projections/bags/lares", `${PATH}.mem`))).toBe(false);
   });
 
-  test("⑦ on B: the wiki tiddler wears `$origin-bag` (the projection sites it under bags/lares); the carrier does not", async () => {
-    const f = join(B!.root, "bags/lares", `${PATH}.mem`);
-    const deadline = Date.now() + 60_000;
-    while (!existsSync(f)) {
-      if (Date.now() > deadline) throw new Error(`B never projected ${f}`);
-      await new Promise((r) => setTimeout(r, 1000));
-    }
-    const text = readFileSync(f, "utf8");
-    expect(text).toContain("<<~ ahu #/a>>");
-    expect(text).toMatch(BAG_LINE);
-    expect(text).not.toContain("$origin-bag");
+  test("⑧ A's lares record stays whole while B, holding no board source yet, draws kahu-reach on lares", async () => {
+    const f = join(B!.root, "npc-b-gate.mem");
+    writeFileSync(f, meme(["a", "b"]));
+    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", WORKING_LARES, "--yes", "--json"]);
+    expect(ld.json?.["ok"], said(ld)).toBe(true);
+    const titles = ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []);
+    const root = titles.find((t) => !titles.some((c) => c !== t && (t.startsWith(`${c}#`) || t.startsWith(`${c}/`)))) ?? titles[0]!;
+    const mv = await B!.cli(["act", "MOVE", "--title", root, "--from", WORKING_LARES, "--to", LARES_BAG, "--yes", "--json"]);
+    expect(JSON.stringify(mv.json), "a missing source refuses closed, by name").toContain("kahu-reach");
+    const a = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
+    const aText = String((a.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+    expect(aText).toContain("<<~ ahu slot=`#/a`>>");
+    expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
-  test("⑧ B edits with the base B read, promotes through the same door; A gets the new slot back", async () => {
-    const read = await B!.cli(["meme", "get", URI, ...BAG, "--json"]);
-    const baseB = String((read.json?.["data"] as Record<string, unknown>)["canonicalHash"]);
-    expect(baseB).toBe(baseA);
+  // OWED ROW (`w26-floor-lane` #/owed, "a sibling device of a seat-holding face"): B is a joined sibling device of the
+  // Kahu's own face, so by law its reach follows the face's counted admission once the charter's board reads on B. Today B
+  // composes no board source and reads as a stranger, so the gate draws `kahu-reach` and this expectation fails. It turns
+  // RED the day the row lands: whoever lands it flips `test.fails` to `test`.
+  test.fails("⑧ OWED sibling-device row: B promotes its own local edit into lares; A's lares book keeps A's record", async () => {
+    // W24/W27 owns the same-face BOOK crossing. A and B each promote within their own live system document.
     const f = join(B!.root, "npc-b.mem");
     writeFileSync(f, meme(["a", "b"]));
-    // The base B read names the shared bag's render; the recipe seat gates a put against ITS bag (B's
-    // empty working layer), so the base licenses nothing there — measured, not ruled. The shared bag refuses a
-    // put outright. The edit rides the same door the promotion rode.
-    const put = await B!.cli(["meme", "put", URI, ...WIKI, "--base", baseB, "--file", f, "--json"]);
-    console.error(`meme-two-vessel-bag MEASURE B: meme put --recipe lares --base <lares render> → ${said(put).trim().slice(0, 300)}`);
-    const bagPut = await B!.cli(["meme", "put", URI, ...BAG, "--base", baseB, "--file", f, "--json"]);
-    expect(bagPut.json?.["ok"]).toBe(false);
-    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", LARES_BAG, "--yes", "--json"]);
+    const ld = await B!.cli(["act", "LOAD", "--source-uri", f, "--to", WORKING_LARES, "--yes", "--json"]);
     expect(ld.json?.["ok"], said(ld)).toBe(true);
-    // A's working layer shadows A's recipe read (measured above); the shared bag carries B's slot back to A.
-    const back = await awaitMeme(A!, BAG, (t) => t.includes("<<~ ahu #/b>>"));
-    expect(back.text).toMatch(BAG_LINE);
-    expect(back.text).not.toContain("$origin-bag");
+    await promoteLoadedTitles(B!, ((ld.json?.["data"] as { titles?: string[] } | undefined)?.titles ?? []), "lares");
+    const local = await B!.cli(["meme", "get", URI, ...BAG, "--json"]);
+    const localText = String((local.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+    expect(localText).toContain("<<~ ahu slot=`#/b`>>");
+    expect(localText).toMatch(BAG_LINE);
+    expect(localText).not.toContain("$origin-bag");
+    const a = await A!.cli(["meme", "get", URI, ...BAG, "--json"]);
+    const aText = String((a.json?.["data"] as Record<string, unknown> | undefined)?.["text"] ?? "");
+    expect(aText).toContain("<<~ ahu slot=`#/a`>>");
+    expect(aText).not.toContain("<<~ ahu slot=`#/b`>>");
   });
 
-  // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's `face-join` seats B in the group
+  // THE LATER GRANT (basket-one #/the-later-grant, ruled 2026-09-11). A's door answers B's `face-join` intent and seats B in the group
   // AND writes the grant as a SIGNED RECORD on the PersonaGroup plane (the doc both sync by membership).
   // B's own kit, on its next present (a `meme put --recipe lares` resolves the binding → `faceSeated`),
   // reads the record, verifies it offline against the persona root it pinned at admit and A's root-signed
@@ -258,21 +256,20 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
   test("⑨ the later grant lands as a record on the PersonaGroup plane; B's kit takes the seat; a put rides the face", async () => {
     const before = B!.bootLog();
     expect(before, "CONTROL: B stood pinned, not seated").toMatch(/pinned, not yet seated/);
-    expect(before).not.toMatch(/grant record taken/);
-    // B's summons — ITS card (the identity dir sits beside the vessel store) + the edge A signed for it.
-    const idDir = join(rootB, "data/lares/identity");
-    const cardFile = readdirSync(idDir).find((f) => f.startsWith(".vessel-card"));
-    expect(cardFile, `no vessel card under ${idDir}`).toBeDefined();
-    const contactCard = readFileSync(join(idDir, cardFile!), "utf8");
-    const payload = JSON.parse(readFileSync(join(rootB, "admit.json"), "utf8")) as Record<string, unknown>;
-    const deviceEdge = payload["deviceEdge"] ?? (JSON.parse(Buffer.from(String(payload["admit"] ?? ""), "base64url").toString("utf8") || "{}") as Record<string, unknown>)["deviceEdge"];
-    expect(deviceEdge, `admit.json carries no deviceEdge: ${Object.keys(payload).join(",")}`).toBeDefined();
-    // A seats B — the verb runs where A's booted provider lives; the record lands on the plane.
-    const r = await invokeLocal("face-join", { summons: { kind: "face-join/v1", contactCard, deviceEdge } },
-      `0x${"0".repeat(64)}`, { dataDir: vesselStorageDir(A!), timeoutMs: 60_000 }) as
-      { results?: { summary?: { output?: Record<string, unknown> } } };
-    const grant = r.results?.summary?.output ?? {};
-    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${Array.isArray(grant["reSealed"]) ? grant["reSealed"].length : "(none)"} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
+    // JOIN = INTENT (the Founding Walk, W4, 2026-10-29): B's own daemon island issues the one face-join summons the moment it
+    // stands joined and unseated, pinned to the founding hearth (`face-seat-summons`); the hand step below REPLAYS it and
+    // answers the standing intent's id, so the plane holds one summons of B however many times a hand asks.
+    const summonsDeadline = Date.now() + 90_000;
+    while (!/the seat summons issued/.test(B!.bootLog()) && Date.now() < summonsDeadline) await new Promise((res) => setTimeout(res, 1000));
+    // B's boot log is the only witness of which bind holds a summons back: a summons that never issues names it here.
+    const summonsLines = B!.bootLog().split("\n").filter((l) => /summons|face intent door|face-join|nexus-join|\[realm\]|lar-leaf/.test(l)).slice(-16).join("\n  ");
+    expect(B!.bootLog(), `B's own island summoned its seat:\n  ${summonsLines}`).toMatch(/the seat summons issued/);
+    // THE DIAL'S SEAT, kept in the run's log (road `P26`): the relation B's own records proved for the hearth it dials.
+    console.error(`meme-two-vessel-bag MEASURE B: the dial's seat and the summons\n  ${summonsLines}`);
+    expect(B!.bootLog(), "B seats its dialed hearth as its face's own").toMatch(/the dialed hearth \S+ seats as same-face/);
+    const requested = await requestFaceJoin(B!);
+    const grant = await faceJoinOutcome(B!, requested);
+    console.error(`meme-two-vessel-bag MEASURE A: face-join → admitted ${String(grant["admitted"])} · reKeyed ${String(grant["reKeyed"])} · reSealed ${String(grant["reSealedCount"] ?? "(none)")} · record ${String(grant["recordTitle"] ?? "(none)")} ${grant["reason"] ? `· reason ${String(grant["reason"])}` : ""}`);
     expect(grant["admitted"], JSON.stringify(grant).slice(0, 400)).toBe(true);
     expect(typeof grant["recordTitle"], "the grant landed on no plane — A's log names why").toBe("string");
     // B's next present: the binding resolves, the kit reads the record and takes the seat by its own act.
@@ -294,20 +291,3 @@ describe.skipIf(gaps.length > 0)("★ an author's `bag` crosses two vessels ★"
     expect(log.lastIndexOf("pinned, not yet seated")).toBeLessThan(log.lastIndexOf("grant record taken"));
   }, 240_000);
 });
-
-/** Poll a vessel's `meme get` until the rendered text satisfies `ready` — the sync, never faked. */
-async function awaitMeme(
-  v: LarInstance, seat: readonly string[], ready: (text: string) => boolean, timeoutMs = 60_000,
-): Promise<{ text: string; canonicalHash: string }> {
-  const deadline = Date.now() + timeoutMs;
-  let last = "";
-  for (;;) {
-    const r = await v.cli(["meme", "get", URI, ...seat, "--json"]);
-    const data = r.json?.["data"] as Record<string, unknown> | undefined;
-    const text = String(data?.["text"] ?? "");
-    if (r.json?.["ok"] === true && ready(text)) return { text, canonicalHash: String(data?.["canonicalHash"]) };
-    last = said(r);
-    if (Date.now() > deadline) throw new Error(`${v.root}: meme never arrived within ${timeoutMs}ms:\n${last.slice(-600)}`);
-    await new Promise((res) => setTimeout(res, 1000));
-  }
-}

@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
+import { generateOrLoadBrowserVesselIdentity, readBrowserIdentityContinuity } from "../src/browser-vessel-identity.js";
 
 const stores = new Set<string>();
-const markerKey = (name: string): string => `lares:vessel:continuity:${name}`;
 
 function deleteIdb(name: string): Promise<void> {
   return new Promise((resolve) => {
@@ -13,7 +12,6 @@ function deleteIdb(name: string): Promise<void> {
 
 afterEach(async () => {
   for (const name of stores) {
-    localStorage.removeItem(markerKey(name));
     await deleteIdb(name);
   }
   stores.clear();
@@ -24,12 +22,20 @@ describe("browser identity continuity", () => {
     const name = `lares:test-continuity:${crypto.randomUUID()}`;
     stores.add(name);
     const founded = await generateOrLoadBrowserVesselIdentity(name, "Continuity test");
+    expect(await readBrowserIdentityContinuity(name), "the continuity row reads founded").toBe("founded");
 
     await deleteIdb(name);
 
     await expect(generateOrLoadBrowserVesselIdentity(name, "Continuity test"))
-      .rejects.toThrow(/local-storage-lost/);
+      .rejects.toThrow(/continuity-lost/);
     expect(founded.verifyingKey).toMatch(/^[0-9a-f]+$/i);
+  });
+
+  test("CONTROL: a name never founded reads no continuity row and founds", async () => {
+    const name = `lares:test-continuity:${crypto.randomUUID()}`;
+    stores.add(name);
+    expect(await readBrowserIdentityContinuity(name)).toBeNull();
+    await expect(generateOrLoadBrowserVesselIdentity(name)).resolves.toMatchObject({ verifyingKey: expect.stringMatching(/^[0-9a-f]+$/i) });
   });
 
   test("a retained origin loads the same identity", async () => {

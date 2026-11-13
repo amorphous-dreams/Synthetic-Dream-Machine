@@ -1,5 +1,5 @@
 /**
- * lease-rekey — roll a resource's LEASE EPOCH forward on the live daemon board, per-writer-slot safe.
+ * lease-rekey — a face signs its own advance; a Nexus or realm's charter quorum signs its advance.
  *
  * The NON-RENEWAL half of revocation (lar:///ha.ka.ba/lares/api/pono/convergent-mesh): a grant names a
  * `boundEpoch`; the grant goes cold the moment the resource's lease epoch rolls past it. Rolling the epoch
@@ -7,30 +7,25 @@
  * Herm's own tier. Targeted key-MATERIAL rotation rides keyhive CGKA (`orichalcum-capabilities`), NEVER this
  * lease — the lease stales, it never re-derives a secret.
  *
- * WHY A PER-WRITER SLOT, NEVER A BARE SCALAR. The epoch rides a MAX-REGISTER held as per-writer slots
- * (`epoch-lease`): each writer owns exactly one tiddler (`bags/daemon/lease-epoch/{resource}/{writer}`), so
- * last-writer-wins WITHIN a slot stays safe (one owner holds it). The effective epoch = max over every slot.
- * Two hearths rolling the SAME resource concurrently each land effective+1 in their OWN slot, so on merge the
- * max only ever climbs. A bare shared scalar would let Automerge's LWW DROP a higher concurrent value — the
- * counter walking backward, un-staling a grant a roll had already cut. The slot-map forbids exactly that.
- *
  * Meme: lar:///ha.ka.ba/lararium/node/lease-rekey
  */
 
 import type { DocHandle } from "@automerge/automerge-repo";
 import {
   storedLarRecord, tiddlerText,
-  leaseEpochPrefix, leaseEpochSlotUri, effectiveLeaseEpoch, rolledLeaseEpoch,
-  type LarDoc,
+  leaseEpochPrefix, leaseEpochSlotUri, rolledLeaseEpoch,
+  signedLeaseEpoch, signLeaseAdvance,
+  quorumLeaseEpochOnBoard, signQuorumLease, landQuorumLease, quorumLeaseSlotUri, actCid,
+  type LarDoc, type HandLineage,
 } from "@lararium/mesh";
 
-/** The outcome of one rekey roll — the effective epoch read, the epoch written, and the slot it landed in. */
+/** The outcome of one face rekey — the verified epoch read, the epoch written, and the signing writer's slot. */
 export interface LeaseRekeyResult {
   /** The resource whose lease rolled. */
   readonly resource: string;
   /** The writer whose OWN slot took the roll (the caller's nym). */
   readonly writer:   string;
-  /** The effective (max-over-slots) epoch read BEFORE the roll. */
+  /** The verified face lease epoch read BEFORE the roll. */
   readonly effective: number;
   /** The epoch written into the writer's own slot — always effective + 1. */
   readonly rolled:    number;
@@ -38,29 +33,48 @@ export interface LeaseRekeyResult {
   readonly slot:      string;
 }
 
-/**
- * Roll a resource's lease epoch forward on a live board handle, writing ONLY the caller's own per-writer slot.
- * Reads every slot under the resource's prefix → the effective (max) epoch → writes effective+1 to this
- * writer's slot. A live board write: the roll rides WS-sync to every replica. The max never decreases — a
- * concurrent roll on another hearth lands in ITS own slot, so both survive the merge and the max climbs.
- */
-export function rollLeaseEpochOnBoard(
-  handle:   DocHandle<LarDoc>,
-  resource: string,
-  writerId: string,
-): LeaseRekeyResult {
+export interface QuorumLeaseRekeyResult {
+  readonly resource: string;
+  readonly signers: string[];
+  readonly effective: number;
+  readonly rolled: number;
+  readonly slot: string;
+}
+
+/** Sign at the charter's head roster and land one content-addressed advance. */
+export async function rollQuorumLeaseOnBoard(
+  handle: DocHandle<LarDoc>, resource: string,
+  input: { readonly lineage: HandLineage; readonly signers: readonly { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }[] },
+): Promise<QuorumLeaseRekeyResult> {
+  const effective = quorumLeaseEpochOnBoard(handle.doc(), resource, input.lineage);
+  const rolled = rolledLeaseEpoch(effective);
+  const act = await signQuorumLease({ resource, epoch: rolled, lineage: input.lineage }, input.signers);
+  const slot = quorumLeaseSlotUri(resource, actCid(act.body));
+  handle.change((draft) => { landQuorumLease(draft, resource, act); });
+  return { resource, signers: input.signers.map((s) => s.key), effective, rolled, slot };
+}
+
+/** Roll a PersonaGroup lease after checking every signed per-writer slot. */
+export async function rollSignedLeaseEpochOnBoard(
+  handle: DocHandle<LarDoc>, resource: string,
+  signer: { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> },
+  authorize: (writerHex: string) => boolean,
+  /** The anchor's floor (`FaceReading.floor`): the roll never reads below what this device accepted. */
+  floor: (observed: number) => number,
+  /** The stranding guard, REQUIRED: read fresh just before the signature, over the epoch the roll would leave; a throw here
+   *  refuses the roll whole. A caller that passes no guard function gets a refusal, never a roll. */
+  before: (effective: number) => void | Promise<void>,
+): Promise<LeaseRekeyResult> {
+  if (typeof before !== "function") throw new Error("lease-rekey: lease-roll-guard-missing: a face lease rolls only under the stranding guard; the roll wrote nothing");
+  if (!authorize(signer.key.toLowerCase())) throw new Error("lease-rekey: signer has no PersonaGroup KEL seat");
   const prefix = leaseEpochPrefix(resource);
-  const tids   = handle.doc()?.tiddlers ?? {};
-  // Read every per-writer slot under the resource prefix (a foreign resource's slot never matches the prefix).
-  const slotValues: (string | null | undefined)[] = [];
-  for (const key of Object.keys(tids)) {
-    if (key.startsWith(prefix)) slotValues.push(tiddlerText(tids[key]));
-  }
-  const effective = effectiveLeaseEpoch(slotValues);
-  const rolled    = rolledLeaseEpoch(effective);
-  const slot      = leaseEpochSlotUri(resource, writerId);
-  handle.change((doc) => {
-    doc.tiddlers[slot] = storedLarRecord(slot, { text: String(rolled) }, "lease-roll");
-  });
-  return { resource, writer: writerId, effective, rolled, slot };
+  const slots = Object.entries(handle.doc()?.tiddlers ?? {})
+    .filter(([title]) => title.startsWith(prefix)).map(([, record]) => tiddlerText(record));
+  const effective = floor(signedLeaseEpoch(resource, slots, authorize));
+  await before(effective);
+  const rolled = rolledLeaseEpoch(effective);
+  const slot = leaseEpochSlotUri(resource, signer.key);
+  const signed = await signLeaseAdvance({ resource, epoch: rolled }, signer);
+  handle.change((doc) => { doc.tiddlers[slot] = storedLarRecord(slot, { text: signed }, "lease-roll"); });
+  return { resource, writer: signer.key, effective, rolled, slot };
 }

@@ -9,7 +9,7 @@ import { SEALED_INDEX_ROW_DOMAIN, SEALED_LOCKBOX_RECORD_DOMAIN, SEALED_RECORD_RE
 import { readContentKey, keyVersionIdOf, sealedImage, type KeyVersionId } from "../src/sealed-chunk.js";
 import { bagLocatorOf, recordIdOf, signRecord, type BagLocator, type KeyVersionBody, type KeyVersionPrivate, type RecordSigner, type SealedRecord, type SealedChunkIndexRow, type LockboxRecord } from "../src/sealed-records.js";
 import { chain, signHex } from "./face-proof-fixture.js";
-import { encodeCarriedRecord, encodeIndexRow, encodeLockboxRecord, indexRowNameOf, isRestKind, isRestName, lockboxNameOf, memorySealedStoreRest, readCarriedRecord, readIndexRow, readLockboxRecord, recordNameOf, restDigest, restNameHolds, SealedStore, type RestKind, type SealedStoreRest } from "../src/sealed-store-rest.js";
+import { encodeCarriedRecord, encodeIndexRow, encodeLockboxRecord, indexRowNameOf, isRestKind, isRestName, lockboxNameOf, memorySealedStoreRest, readCarriedRecord, readIndexRow, readLockboxRecord, recordNameOf, restDigest, restNameHolds, SealedStore, mintOutboxKey, openOutboxParcel, OutboxShut, readOutboxKey, readsAsOutboxSeal, sealOutboxParcel, type RestKind, type SealedStoreRest } from "../src/sealed-store-rest.js";
 
 const BAG_ID = "lar:///ha.ka.ba/@test/bags/garden";
 const nexus = "nexus-test-one";
@@ -268,21 +268,95 @@ describe("every name fits one file name, and the outbox stays apart", () => {
     expect(indexRowNameOf(row).length).toBe(64 * 3 + 32 + 3);
   });
 
-  it("a parcel rests in the outbox under a digest of its reader, lists for that reader alone, and reads back whole", async () => {
+  it("a parcel rests in the outbox apart from every other shelf, and reads back whole for its reader alone", async () => {
     const rest = memorySealedStoreRest();
-    const store = new SealedStore(rest);
+    const store = new SealedStore(rest, { outboxKey: mintOutboxKey() });
     const one = new Uint8Array([1, 2, 3]), two = new Uint8Array([4, 5]);
-    const nameOne = await store.putOutbox("0xREADER-ONE".toLowerCase(), one);
+    const nameOne = await store.putOutbox("0xREADER-ONE", one);
     const nameTwo = await store.putOutbox("reader-two", two);
-    expect(await store.putOutbox("reader-one", one)).toBe(nameOne);           // the `0x` lead and the case name one reader
     expect(nameOne).not.toBe(nameTwo);
-    expect(nameOne.includes("reader")).toBe(false);                            // the reader's name reads opaque
-    expect((await store.outbox("reader-one")).map((p) => hex(p.parcel))).toEqual([hex(one)]);
-    expect((await store.outbox("reader-two")).map((p) => p.name)).toEqual([nameTwo]);
+    expect(isRestName(nameOne)).toBe(true);
+    expect((await store.outbox("reader-one")).map((p) => [p.name, p.reader, hex(p.parcel)])).toEqual([[nameOne, "reader-one", hex(one)]]);   // the `0x` lead and the case name one reader
+    expect((await store.outbox("READER-TWO")).map((p) => p.name)).toEqual([nameTwo]);
     expect((await store.outbox()).length).toBe(2);
     expect(await store.outbox("reader-three")).toEqual([]);
     // No other shelf holds it: a carrier that takes lockboxes, records and rows takes no parcel.
     for (const kind of ["lockbox", "key-version", "manifest", "index", "own"] as const) expect(await rest.list(kind)).toEqual([]);
     expect(isRestKind("outbox")).toBe(true);
+  });
+});
+
+describe("the outbox at rest names no reader (custody#/the-table, the outbox)", () => {
+  const READER = "reader-search-me";
+  const PARCEL = utf8Bytes("PARCEL-SEARCH-ME: the key shore's operations for reader-search-me");
+  const holdsText = (bytes: Uint8Array, text: string): boolean => hex(bytes).includes(hex(utf8Bytes(text)));
+
+  it("RED: no outbox name leads with the reader's digest, and no resting byte holds the reader or the parcel — CONTROL: the hunt finds both in the clear parcel", async () => {
+    const rest = memorySealedStoreRest();
+    const store = new SealedStore(rest, { outboxKey: mintOutboxKey() });
+    await store.putOutbox(READER, PARCEL);
+    const names = await rest.list("outbox");
+    expect(names.length).toBe(1);
+    expect(names[0]!.startsWith(restDigest(utf8Bytes(READER)))).toBe(false);
+    expect(names[0]!.includes(restDigest(PARCEL))).toBe(false);
+    const resting = (await rest.get("outbox", names[0]!))!;
+    expect(holdsText(resting, "SEARCH-ME")).toBe(false);
+    expect(readsAsOutboxSeal(resting)).toBe(true);
+    expect(holdsText(PARCEL, "SEARCH-ME")).toBe(true);                       // CONTROL: the hunt reads a buffer that holds it
+  });
+
+  it("each seal draws a fresh nonce: one parcel for one reader twice rests twice, under two names and two byte strings, and both open", async () => {
+    const rest = memorySealedStoreRest();
+    const store = new SealedStore(rest, { outboxKey: mintOutboxKey() });
+    const a = await store.putOutbox(READER, PARCEL), b = await store.putOutbox(READER, PARCEL);
+    expect(a).not.toBe(b);
+    expect(hex((await rest.get("outbox", a))!)).not.toBe(hex((await rest.get("outbox", b))!));
+    expect((await store.outbox(READER)).map((p) => hex(p.parcel))).toEqual([hex(PARCEL), hex(PARCEL)]);
+  });
+
+  it("a key the vessel does not hold opens nothing, a moved byte opens nothing, and a parcel moved under another name lists nowhere — CONTROL: the right key opens it", async () => {
+    const rest = memorySealedStoreRest();
+    const key = mintOutboxKey();
+    const store = new SealedStore(rest, { outboxKey: key });
+    const name = await store.putOutbox(READER, PARCEL);
+    const sealed = (await rest.get("outbox", name))!;
+    expect(openOutboxParcel(key, sealed)).toEqual({ reader: READER, parcel: PARCEL });   // CONTROL
+    expect(openOutboxParcel(mintOutboxKey(), sealed)).toBeNull();
+    expect(await new SealedStore(rest, { outboxKey: mintOutboxKey() }).outbox()).toEqual([]);
+    const moved = Uint8Array.from(sealed); moved[moved.length - 1]! ^= 0x01;
+    expect(hex(moved)).not.toBe(hex(sealed));                                 // the tamper moved a decoded byte
+    expect(openOutboxParcel(key, moved)).toBeNull();
+    // The same sealed bytes under a name whose digest they fail never list.
+    await rest.put("outbox", `${"ab".repeat(16)}.${restDigest(new Uint8Array([9]))}`, sealed);
+    expect((await store.outbox()).map((p) => p.name)).toEqual([name]);
+    // A clear parcel at an outbox spelling, named by its own digest, frames as no seal and lists nowhere.
+    await rest.put("outbox", `${"cd".repeat(16)}.${restDigest(PARCEL)}`, PARCEL);
+    expect(readsAsOutboxSeal(PARCEL)).toBe(false);
+    expect((await store.outbox()).map((p) => p.name)).toEqual([name]);
+  });
+
+  it("A SHUT OUTBOX REFUSES BY NAME: with no key handed, a put rests nothing and a read opens nothing", async () => {
+    const rest = memorySealedStoreRest();
+    const shut = new SealedStore(rest);
+    await expect(shut.putOutbox(READER, PARCEL)).rejects.toBeInstanceOf(OutboxShut);
+    await expect(shut.outbox()).rejects.toBeInstanceOf(OutboxShut);
+    expect(await rest.list("outbox")).toEqual([]);
+    expect(readOutboxKey(new Uint8Array(31))).toBeNull();
+    expect(readOutboxKey(new Uint8Array(32))).not.toBeNull();
+    expect(() => sealOutboxParcel(new Uint8Array(16) as never, READER, PARCEL)).toThrow(/32 bytes/);
+    expect(() => sealOutboxParcel(mintOutboxKey(), "  0x ", PARCEL)).toThrow(/names its reader/);
+  });
+
+  it("THE CRASH LAW: before its one write nothing lists; after it the parcel opens again under the same key at the next unlock", async () => {
+    const rest = memorySealedStoreRest();
+    const key = mintOutboxKey();
+    // A put whose write never lands (a stop before the commit) leaves nothing sendable.
+    const torn: SealedStoreRest = { ...rest, put: async () => { throw new Error("the process stopped before the commit"); } };
+    await expect(new SealedStore(torn, { outboxKey: key }).putOutbox(READER, PARCEL)).rejects.toThrow(/stopped/);
+    expect(await new SealedStore(rest, { outboxKey: key }).outbox()).toEqual([]);
+    // The write lands; a fresh store over the same rest, handed the same stable key, lists and opens it.
+    const name = await new SealedStore(rest, { outboxKey: Uint8Array.from(key) as typeof key }).putOutbox(READER, PARCEL);
+    const reopened = await new SealedStore(rest, { outboxKey: readOutboxKey(Uint8Array.from(key))! }).outbox(READER);
+    expect(reopened.map((p) => [p.name, hex(p.parcel)])).toEqual([[name, hex(PARCEL)]]);
   });
 });

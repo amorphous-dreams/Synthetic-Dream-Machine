@@ -1,0 +1,4 @@
+{
+  "html": "<p>A <a class=\"tc-tiddlylink tc-tiddlylink-missing\" href=\"#Beta\">link</a> and a <a class=\"tc-tiddlylink tc-tiddlylink-missing\" href=\"#Missing%20target\">missing link</a>.</p>",
+  "text": "A link and a missing link."
+}

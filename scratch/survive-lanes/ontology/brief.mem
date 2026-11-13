@@ -1,0 +1,71 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-08 (file date) — source `.lares-scratch/survive-lanes/ontology/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-08
+
+Verbatim scratch record `.lares-scratch/survive-lanes/ontology/brief.md` (brief, file date 2026-11-08); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/survive-lanes/ontology/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/read-brief-the-daemon-bag-the-kahua-word-and-the`>>
+
+! Read brief: the daemon bag, the kahua word, and the face binding (lane ontology)
+
+You stand the whole house (CLAUDE.md / noosphere boot). Mask: `Name-Reader: Lares (Tasked Spirit)`. READ ONLY; you CAN and MUST read the repo (your working directory, the main checkout). Your FINAL MESSAGE is the hand-back (under 1400 words), with file:line citations; mark inference.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-operator-s-frame`>>
+
+!! The operator's frame (2026-11-08, quote license)
+* "The wiki pattern is 'working layer -> bag-named-same-as-wiki' on human promotion, so we have some inversions to resolve. I feel we should write all daemon bag contents to disk for observability in early alpha. We can turn it off later... If real crypto keys or edges get written there, MU that placement if it feel unpono. We can keep the title/schemas, but maybe a different bag/layer above like the volatile one for these concerns? Then we can target/toggle that type of bag on/off as needed."
+* "Then we also introduced the Kahua bag, and that's where I think things got blurred (the kahua is the writable bag here, right?)."
+* "Now hold that we bind the daemon wiki to the actively worn 'face' (PersonaGroup) so approve the `wikis/daemon-<F>` version." (the daemon wiki's working mirror folder renames from wikis/kahua-&lt;F> to wikis/daemon-&lt;F>.)
+
+Facts to verify, not trust: bags/daemon serves today as a CRDT-only control plane (bag-paths.ts ~158-200, disk-projector.ts ~1526); wiki-recipe.ts reads temp, draft, personal, working, the wiki's own canon bag, kahua, library, oracle; the kahua bag rests lift-only; memory stage rows title as lar:&#47;&#47;/ha.ka.ba/kahua/memory/&lt;row-key> (L9); "ONE Lararium per HUMAN, never per face; a SESSION wears the face, the vessel wears none" (stable-founding-road.mem ~157-159).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/map-with-citations`>>
+
+!! Map, with citations
+# EVERY writer of a `bags/daemon/**` title in production code (not tests): the title family (outcomes, summons, receipts, mailbox, task, ledger/{proof,ward,residency}, cap, lease-epoch, sentinel, draft-bindings, working-bindings, active-wiki, slots, flows, and any others), who writes it, and its KIND: (S) holds private key bytes, a group secret or other secret material, sealed or not; (E) signed public edges/events/proofs (signatures and public keys only); (R) plain machine records. Grep the written values for key-shaped content where a family's kind isn't obvious.
+# EVERY reader of those titles, and anything that assumes the bag name (`bags/daemon`, DAEMON_BAG, title-prefix checks, the projector's exclusion, wards, kapae rules), so a move knows what it touches.
+# The three uses of "kahua": the lift-only bag/stage (bags/kahua, bags/kahua-&lt;F> mirror), the working mirror folder (wikis/kahua-&lt;F>), the memory title namespace. Where do memory stage rows REST: in the daemon wiki's working layer, or lifted into the kahua bag, or both (stage = proposal, lift = canon)? Who lifts, by what act?
+# The face binding: today what binds the daemon wiki to the worn face (faceRelation, kahuaFaceFolder, the no-face case)? If the daemon wiki binds to the worn face, what does its CANON bag become under the operator's pattern (bags/daemon-&lt;F>?), and does anything per-vessel (not per-face) live in bags/daemon that must stay vessel-scoped (the control plane serves the vessel, which wears no face)?
+# Propose, as a lean with reasons: a `control` layer/bag (vessel-scoped, persisted, projected behind one toggle in alpha) for the (R) and (E) families, a never-projected `secret` home for any (S) family, bags/daemon[-&lt;F>] restored as the daemon wiki's human-promoted canon, wikis/daemon-&lt;F> for the working mirror, and kahua kept for the lift-only governance stage alone. Name every file a rename touches and the riskiest reader. Name anything in canon law the move would breach.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* A lane launches no Sol seat; the controller's one Sol read per train runs at the read floor of 0%.
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* A read seat writes no file: its final message carries the hand-back. Any other seat writes `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EhWo7lZsML1ic2DM4XjqdWUZhz4ALfFppFtTo7e46as`>>
+
+<<^ code=`&#x0004;` to=`?`>>

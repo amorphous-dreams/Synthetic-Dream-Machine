@@ -40,6 +40,19 @@ describe("posture-plan — a dropped flag names itself", () => {
     }
   });
 
+  it("★ `--page` REFUSES beside every acting posture, by name — a dropped warning let the page seem to stand ★", () => {
+    for (const acting of ["restart", "foreground", "with-web"]) {
+      const p = posturePlan(["page", acting]);
+      expect(p.refuse).toMatch(/--page rides the bare stand alone/);
+      expect(p.refuse).toMatch(new RegExp(acting));
+    }
+  });
+
+  it("CONTROLS: `--page` alone stands, and `--restart --port` stands with no refusal", () => {
+    expect(posturePlan(["page"]).refuse).toBe(null);
+    expect(posturePlan(["restart", "port"]).refuse).toBe(null);
+  });
+
   it("★ `--init --foreground` names the drop and stands anyway ★", () => {
     const p = posturePlan(["init", "foreground"]);
     expect(p.posture).toBe("foreground");
@@ -50,9 +63,9 @@ describe("posture-plan — a dropped flag names itself", () => {
   it("★ `--with-web` drops the most, and says the most ★", () => {
     // It reads its args not at all, so even `--port` goes. A person aiming a second vessel at
     // another port with `--with-web` gets 8080 and no word about it.
-    const p = posturePlan(["with-web", "init", "claude"]);
+    const p = posturePlan(["with-web", "init", "port"]);
     expect(p.posture).toBe("with-web");
-    expect(p.dropped).toEqual(expect.arrayContaining(["init", "claude"]));
+    expect(p.dropped).toEqual(expect.arrayContaining(["init", "port"]));
   });
 
   it("a flag the posture reads never counts as dropped", () => {

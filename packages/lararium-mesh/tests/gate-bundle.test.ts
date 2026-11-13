@@ -19,14 +19,13 @@ import { describe, expect, test } from "vitest";
 import { hex, hexToBytes, utf8Bytes } from "../src/crypto.js";
 import {
   ALL_DOMAINS, GATE_BUNDLE_INFO, GATE_FLOOR_BUNDLE_INFO, GATE_BUNDLE_PIN_DOMAIN, GATE_HANDSHAKE_DOMAIN, GATE_SIGNING_KEY_INFO,
-  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN, SESSION_FINISH_DOMAIN,
+  GATE_TRANSPORT_KEY_INFO, GATE_VERDICT_DOMAIN, SESSION_FINISH_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN,
 } from "../src/domains.js";
 import {
   GATE_BUNDLE_REFUSALS, GATE_SIGNING_PURPOSES, GateBundleRefused, deriveGateBundle, gateBundleDigest, gateFields,
-  custodyRootDoor, floorGateRoot, floorKeyDoor, floorRoute, gateKnock, gatePrologue, readGateBundlePin, readGateSignature, sovereignGateRoot, sovereignRoute,
+  custodyRootDoor, floorGateRoot, floorKeyDoor, floorRoute, gateKnock, gatePrologue, knockSegment, readGateBundlePin, readGateSignature, sovereignGateRoot, sovereignRoute,
   type GateBundlePin, type GateBundleRoot, type GateRootDoor,
 } from "../src/gate-bundle.js";
-import { knockSegment } from "../src/gate-knock.js";
 import { NoiseHandshakeError, noiseInitiate, noiseKeyPair } from "../src/noise-ik.js";
 import { IDENTITY_KEY } from "./ed25519-torsion.js";
 
@@ -63,7 +62,7 @@ describe("the two root doors", () => {
     expect(refusal(() => floorGateRoot({ root: "floor-key", derive: bare.derive }))).toBe("door-other-tier");   // dressed, never minted
     expect(refusal(() => sovereignGateRoot(null as never))).toBe("door-other-tier");
     expect(bare.asked).toEqual([]);                                                                      // a refused door derives nothing
-    expect(refusal(() => deriveGateBundle(floorGateRoot(floorKeyDoor(bare)), AID_A, floorRoute("/oracle")))).toBeNull();
+    expect(refusal(() => deriveGateBundle(floorGateRoot(floorKeyDoor(bare)), AID_A, floorRoute("/flow")))).toBeNull();
     expect(refusal(() => deriveGateBundle(sovereignGateRoot(custodyRootDoor(bare)), AID_A, sovereignRoute("/ws")))).toBeNull();
     expect(GATE_BUNDLE_REFUSALS).toContain("door-other-tier");
   });
@@ -95,11 +94,11 @@ describe("the gate bundle derives, and never rests", () => {
 
   test("RED: two routes of one Nexus share no key, and two roots share none", () => {
     const ws = deriveGateBundle(rootOf(7), AID_A, sovereignRoute("/ws"));
-    const oracle = deriveGateBundle(rootOf(7), AID_A, sovereignRoute("/oracle"));
+    const flow = deriveGateBundle(rootOf(7), AID_A, sovereignRoute("/flow"));
     const other = deriveGateBundle(rootOf(8), AID_A, sovereignRoute("/ws"));
-    const keys = [ws, oracle, other].flatMap((bundle) => [bundle.pin.transportKey, bundle.pin.signingKey]);
+    const keys = [ws, flow, other].flatMap((bundle) => [bundle.pin.transportKey, bundle.pin.signingKey]);
     expect(new Set(keys).size).toBe(6);
-    expect(new Set([ws.knock, oracle.knock, other.knock]).size).toBe(3);
+    expect(new Set([ws.knock, flow.knock, other.knock]).size).toBe(3);
   });
 
   test("the recipe stands pinned: each key derives under its own name, over the Nexus and the route, length-prefixed", () => {
@@ -122,7 +121,7 @@ describe("the gate bundle derives, and never rests", () => {
   test("the bundle asks its root for ONE registered child, and refuses a root that answers anything but 32 bytes", () => {
     const door = doorOf(7), floorDoor = doorOf(8);
     deriveGateBundle(sov(door), AID_A, sovereignRoute("/ws"));
-    deriveGateBundle(flo(floorDoor), AID_A, floorRoute("/oracle"));
+    deriveGateBundle(flo(floorDoor), AID_A, floorRoute("/flow"));
     expect(door.asked).toEqual([GATE_BUNDLE_INFO]);
     expect(floorDoor.asked).toEqual([GATE_FLOOR_BUNDLE_INFO]);                 // each tier asks its own child, and no other
     for (const domain of [GATE_BUNDLE_INFO, GATE_FLOOR_BUNDLE_INFO, GATE_TRANSPORT_KEY_INFO, GATE_SIGNING_KEY_INFO, GATE_BUNDLE_PIN_DOMAIN, GATE_HANDSHAKE_DOMAIN, GATE_VERDICT_DOMAIN]) {
@@ -162,7 +161,7 @@ describe("the gate bundle derives, and never rests", () => {
       () => deriveGateBundle(sov({ derive: () => new Uint8Array(3) }), AID_A, sovereignRoute("/ws")),
       () => deriveGateBundle(rootOf(1), new Uint8Array(0), sovereignRoute("/ws")),
       () => deriveGateBundle(rootOf(1), AID_A, sovereignRoute("ws")),
-      () => deriveGateBundle(rootOf(1), AID_A, floorRoute("/oracle") as never),
+      () => deriveGateBundle(rootOf(1), AID_A, floorRoute("/flow") as never),
       () => deriveGateBundle({ tier: "sovereign", child: () => new Uint8Array(32) } as never, AID_A, sovereignRoute("/ws")),
       () => deriveGateBundle(rootOf(1), AID_A, { tier: "sovereign", path: "/ws" } as never),
     ]) {
@@ -180,7 +179,7 @@ describe("two tiers: the floor answers locked, the sovereign gate answers raised
     const door = { locked: false, derive(domain: string): Uint8Array { if (door.locked) throw new Error("CustodyLocked"); return inner.derive(domain); } };
     return door;
   }
-  const FLOOR_ROUTES = ["/shelf", "/oracle", "/announce", "/relay"];
+  const FLOOR_ROUTES = ["/shelf", "/flow", "/announce", "/relay"];
 
   test("RED: a locked custody derives every floor bundle and no sovereign one", () => {
     const sealed = custody(7);
@@ -211,11 +210,11 @@ describe("two tiers: the floor answers locked, the sovereign gate answers raised
   test("RED: a sovereign route asked of the floor root, and a floor route asked of the sovereign root, refuse by name", () => {
     const refusal = (act: () => unknown): string => { try { act(); return "derived"; } catch (error) { return (error as GateBundleRefused).refusal; } };
     expect(refusal(() => deriveGateBundle(floorOf(9), AID_A, sovereignRoute("/ws") as never))).toBe("route-other-tier");
-    expect(refusal(() => deriveGateBundle(rootOf(7), AID_A, floorRoute("/oracle") as never))).toBe("route-other-tier");
+    expect(refusal(() => deriveGateBundle(rootOf(7), AID_A, floorRoute("/flow") as never))).toBe("route-other-tier");
     // A route or a root spelled by hand carries no tier this module believes.
-    expect(refusal(() => deriveGateBundle(floorOf(9), AID_A, { tier: "floor", path: "/oracle" } as never))).toBe("route-malformed");
-    expect(refusal(() => deriveGateBundle({ tier: "floor", child: () => new Uint8Array(32).fill(1) } as never, AID_A, floorRoute("/oracle")))).toBe("root-astray");
-    expect(refusal(() => deriveGateBundle(floorOf(9), AID_A, floorRoute("/oracle")))).toBe("derived");   // CONTROL
+    expect(refusal(() => deriveGateBundle(floorOf(9), AID_A, { tier: "floor", path: "/flow" } as never))).toBe("route-malformed");
+    expect(refusal(() => deriveGateBundle({ tier: "floor", child: () => new Uint8Array(32).fill(1) } as never, AID_A, floorRoute("/flow")))).toBe("root-astray");
+    expect(refusal(() => deriveGateBundle(floorOf(9), AID_A, floorRoute("/flow")))).toBe("derived");   // CONTROL
     // The compiler refuses the same crossings: each line below fails the type check without its cast.
     // @ts-expect-error a sovereign route asks no floor root
     expect(refusal(() => deriveGateBundle(floorOf(9), AID_A, sovereignRoute("/ws")))).toBe("route-other-tier");
@@ -303,7 +302,7 @@ describe("what the bundle's keys do", () => {
   test("the signing key signs a gate's own purposes and nothing else", async () => {
     const bundle = deriveGateBundle(rootOf(7), AID_A, sovereignRoute("/ws"));
     const other = deriveGateBundle(rootOf(7), AID_B, sovereignRoute("/ws"));
-    expect(GATE_SIGNING_PURPOSES).toEqual([GATE_VERDICT_DOMAIN]);
+    expect(GATE_SIGNING_PURPOSES).toEqual([GATE_VERDICT_DOMAIN, WAKING_FLOOR_ANNOUNCE_DOMAIN]);
     const image = gateFields(GATE_VERDICT_DOMAIN, new Uint8Array(32).fill(1), hexToBytes(bundle.digest));
     const signature = await bundle.sign(image);
     expect(readGateSignature(bundle.pin, image, signature)).toBe(true);                    // CONTROL

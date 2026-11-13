@@ -38,6 +38,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
+import { SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh";
 
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName, type ReapWord } from "./socket-claim.js";
@@ -224,6 +225,7 @@ export async function claimStore(storageDir: string, opts: ClaimOptions = {}): P
       if (met === null) {
         // Nothing answers: the holder let go this instant, or a claimant reaps a dead holder's name.
         if ((err instanceof StoreReaping || err instanceof StoreHeldElsewhere) && ++reaping > REAP_PATIENCE) throw err;
+        // PACING: retries end on a holder response or the reaping attempt bound.
         await new Promise((r) => setTimeout(r, 5));
         continue;
       }
@@ -250,7 +252,7 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
   // back, read as only `["line"]` on a peer that hangs up while parked: the unshifted bytes sit in the readable
   // buffer unconsumed, and a readable stream holding unconsumed bytes never emits `end` — so `close` never fired,
   // `parked.delete` never ran, and the vessel replayed the line on thaw long after the caller gave up and told its
-  // own operator "failed" (`pause-eof.mjs` isolates exactly this). So `park` instead keeps consuming every byte
+  // own operator "failed". So `park` instead keeps consuming every byte
   // that arrives into its OWN buffer — the socket stays exactly as able to notice its own EOF as an unparked one
   // — and only hands that buffer back (via `unshift`, once) at the moment a real verb channel takes the socket
   // over.
@@ -387,12 +389,35 @@ async function bindClaim(storageDir: string, holder: StoreHolder, refuse: () => 
 export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Promise<T>): Promise<T> {
   const claim = await claimStore(storageDir);
   try {
-    const storage = new DurableNodeFSStorageAdapter(storageDir);
+    // THE DIRECT HOLDER NEVER WRITES CLEAR OVER A SEALED REST (sealed-store#/owed, T2). It stands no daemon island, no
+    // session and no face, so it seals no wiki bag: a document whose rest holds a sealed value refuses its reads and its
+    // writes by name (`bag-unmapped`), and every other document rests as the engine hands it.
+    // THE ONE MAP IT HOLDS: the vessel's secret home (placement over patterns). An act that stands or opens the home enrolls
+    // it on this rest before its first byte (`bindSecretHomeRest`), and it rests sealed under the held key the vessel's
+    // custody keeps; nothing else maps.
+    const held = vesselHeldHomes();
+    const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+    const storage = new SealedDocumentStore({
+      inner: new DurableNodeFSStorageAdapter(storageDir),
+      bagOf: (documentId) => held.bagOf(documentId),
+      sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse,
+      refuseClearOverSealed: true,
+    });
     // NO WRITE OUTLIVES THE CLAIM. A Repo opening a store with no id mints one and saves it unawaited, so that
     // save could land after the act returns and the name stands free. The holder seats the id first; the Repo then
     // reads it and writes nothing of its own accord.
     if (!(await storage.load([STORE_ID_KEY]))) await storage.save([STORE_ID_KEY], new TextEncoder().encode(randomUUID()));
     const repo = new Repo({ storage });
+    // The vessel's key stands on demand: an act that reaches the control document opens the secret home's custody row first.
+    // A REFUSED OPEN NAMES ITS REASON (a locked custody, a place that names no home): the act refuses by it, and no
+    // stand-in stands in its place. The map moving (a home opened) wakes every load waiting on it and reseals what waits.
+    bindSecretHomeRest(repo, held.rest((documentId) => storage.holdsSealed(documentId), () => {
+      storage.mapMoved();
+      void storage.reseal().catch(() => { /* each keeps waiting, never clear */ });
+    }, async () => {
+      await (await import("./secret-home-store.js")).openVesselSecretHome(repo);
+      return true;
+    }));
     let done = false;
     try {
       const out = await act(repo);
@@ -404,6 +429,7 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
       // THE STORE RESTS BEFORE THE CLAIM RELEASES. The adapter closes: every write it issued lands, and a save the
       // Repo's own debounce starts after its shutdown returned lands no byte in a store this holder gave up.
       await storage.close();
+      held.wipe();
     }
   } finally {
     await claim.release();

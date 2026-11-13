@@ -1,22 +1,21 @@
 """Pytest config for the sensorium scripts — the SHARED-GROUND FENCE, plus the slow-test gate.
 
 THE GROUND EVERY TEST IN THIS TREE STANDS ON. These suites drive real holders: each one opens a
-chroma PersistentClient, resolves an XDG path, and reads a HOME-rooted corpus. None of that is
+chroma PersistentClient, resolves a house path, and reads a HOME-rooted corpus. None of that is
 per-test unless something makes it per-test, and the three leaks below all measured live:
 
   1. HANDLES NEVER CLOSED. `mempalace.palace.get_collection` caches ONE PersistentClient per palace
      dir on a long-lived backend singleton and never closes it. Measured over `test_content_io.py`
-     alone: open fds 31 -> 312 across 28 tests (~10 per test), while `test_loci_io.py` — same run,
-     no chroma — held flat at 312. Over a whole-suite run the curve ran 12 -> 1245 and a set of
+     alone: open fds 31 -> 312 across 28 tests (~10 per test), while a no-chroma suite in
+     the same run held flat at 312. Over a whole-suite run the curve ran 12 -> 1245 and a set of
      wall-clock-deadline guards (`serve_loop` idle-reap, 0.5s TTL under a 5s assert) lost their
      margin and reddened, each one green when its file ran alone.
 
   2. THE REAL HOME. `session_discovery` resolves `~/.claude/projects`, `~/.codex/sessions` and the
      copilot store AT IMPORT TIME, so no later monkeypatch can move them: a test that reaches the
      sweep path mines the operator's actual chat corpus (1912 + 146 sessions, 1.6 GB on the box this
-     was written on) into a tmp palace, which reads as a hang. `meta_io` likewise reads the
-     operator's real `~/.config/lares/meta.json` — plant one and two `test_meta_io` tests red on
-     content they never wrote.
+     was written on) into a tmp palace, which reads as a hang. `meta_io` likewise reads the house's
+     `<root>/config/meta.json`, so the fence names a scratch house root for the session.
 
   3. ENV THAT OUTLIVES ITS TEST. A bare `os.environ[...] = ...` (or product code that stamps an env
      var and never restores it) leaks into every later test in the process. This exact shape is a
@@ -57,6 +56,14 @@ os.environ["USERPROFILE"] = _SESSION_HOME
 os.environ["HOMEDRIVE"] = os.path.splitdrive(_SESSION_HOME)[0] or "C:"
 os.environ["HOMEPATH"] = os.path.splitdrive(_SESSION_HOME)[1] or _SESSION_HOME
 
+# THE HOUSE ROOT FENCE. Every house-state resolver reads `LAR_ROOT` alone and refuses an unnamed root, so a
+# suite names one: a session-scoped scratch house beside the session home, never the operator's own. A test
+# that proves the refusal deletes it under `monkeypatch`, which restores it after.
+_ORIGINAL_LAR_ROOT = os.environ.get("LAR_ROOT")
+_SESSION_HOUSE = os.path.join(_SESSION_HOME, "house")
+os.makedirs(_SESSION_HOUSE, exist_ok=True)
+os.environ["LAR_ROOT"] = _SESSION_HOUSE
+
 # MODEL CACHES STAY POINTED AT THE REAL ONES. The fence exists to stop tests READING and WRITING the
 # operator's data, never to make them re-download a 79 MB ONNX model (or the stanza constituency
 # model, or an HF checkpoint) on every run. These are read-mostly caches outside the operator's
@@ -82,8 +89,8 @@ except Exception:  # noqa: BLE001 — a missing/renamed embedder must never sink
 
 
 def pytest_sessionfinish(session, exitstatus):
-    """Put the operator's home back and drop the session sandbox."""
-    for var, original in _ORIGINAL_HOME_ENV.items():
+    """Put the operator's home and house root back and drop the session sandbox."""
+    for var, original in (*_ORIGINAL_HOME_ENV.items(), ("LAR_ROOT", _ORIGINAL_LAR_ROOT)):
         if original is None:
             os.environ.pop(var, None)
         else:
@@ -108,6 +115,10 @@ _ENV_EXEMPT = {
     # nothing in this tree reads it. Whichever test happens to import torch first would otherwise
     # carry the blame for the library's initialisation.
     "TORCHINDUCTOR_CACHE_DIR": "torch's one-shot inductor cache pointer, set on first use",
+    # The mempalace package defaults this to "False" with `os.environ.setdefault` the first time anything
+    # imports it, so whichever test imports it first would carry that import's blame. It is a constant
+    # opt-out of chroma's telemetry, identical for every later test, and nothing in this tree reads it.
+    "ANONYMIZED_TELEMETRY": "mempalace's one-shot telemetry opt-out, set on first import",
 }
 
 

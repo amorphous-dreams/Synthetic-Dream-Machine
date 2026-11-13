@@ -1,0 +1,86 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-handback`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/homes/PLACE-HANDBACK.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-handback"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-handback"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-HANDBACK.md — hand-back, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/homes/PLACE-HANDBACK.md` (hand-back, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-hand-back`>>
+
+! Placement hand-back
+
+The placement leap remains incomplete and must not be treated as ready for founding. The operator's ruling requires the full feature before founding; this hand-back records the concrete blocker and the unfinished work accurately.
+
+* ''Step 1 — walk fix:'' implemented in `lares-cli` carrier gathering. A directory LOAD omits only its catalog-owned root manifest. Red coverage and prior touched-package checks are recorded in `PLACE-STEP-1.md`.
+* ''Step 2 — measure:'' inventory completed, including mailbox, delegate/face-row, lease epoch, swarm, ward audit and persona-act copies. Source-to-mirror scope gap and homes are documented in `PLACE-MEASURE.md`.
+* ''Step 3 — homes:'' blocked and incomplete. Keyhive now fails closed unless secret custody supplies a separate secret handle and sealed-rest grant. The full vessel secret enrollment, control document migration, writer/reader sweep, persona recipe/browser cleanup and `bags/daemon-<F>` mint/recipe path remain. `PLACE-RULING.md` records the current lean: secrets stay off disk; daemon mirror remains withheld until control writers move. The operator requires restoring the daemon mirror in the completed tree, after that migration.
+* ''Step 4 — placement:'' projector and title gates changed; effect records skip by record kind; structural mirror-source checking and private-home LOAD refusal are present. Carry's arbitrary bundle importer still submits INGEST directly and needs the named LOAD-to-working then MOVE road. Daemon mirror withholding is a safety hold, not completion.
+* ''Step 5 — witness/canon:'' witness is wired into the witness collection; canon files and adapter paragraph updated. Witness, evergreen boundary and diff check pass. See `PLACE-STEP-5.md`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/verification`>>
+
+!! Verification
+
+Mesh full suite passed: 527 files, 5,117 passed, 20 skipped. Keyhive full suite passed: 97 files, 560 passed. TW5 full suite ran before vendor-core generation and failed on missing generated core and stale seals; it has not been rerun after generation. CLI full suite ran before the latest carry edits and failed old behavior/founding expectations; it has not been rerun. Node full suite completed after mirror edits: 82 failed files, 468 passed; 221 failed tests, 3,234 passed, 59 skipped, one unhandled error. Founding and face tests report `secret-home-unavailable`. Not all five package builds/stamps/typechecks have a final pass against the current tree.
+
+Witnesses run: placement-residency witness passed; evergreen boundary passed; `git diff --check` passed. No Python sensorium suite or e2e suite ran.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/e2e-files-for-controller-review`>>
+
+!! E2E files for controller review
+
+Likely touched: `tests/e2e/load-tw5-filetypes.test.ts`, `tests/e2e/corpus-feed.test.ts`, `tests/e2e/residency-create.test.ts`. Carry import/export also needs e2e review; locate the carry-specific e2e file before landing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/remaining-work`>>
+
+!! Remaining work
+
+Complete secret-document sealed enrollment and every custody path; migrate control writers/readers and per-bag effect handling; mint face-bound daemon canon and correct recipe order; remove persona acts from page recipes while preserving proof access; convert carry import to LOAD then MOVE; restore the daemon mirror only after control writers leave; run all five package builds/stamps/typechecks and full suites, Python sensorium suite if its mirrored contract moved, and all relevant e2e review. No commits or pushes were made.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/further-custody-trace`>>
+
+!! Further custody trace
+
+The direct founding route uses `ownedStore`, whose `SealedDocumentStore` deliberately has no bag map, save session, or sealing door. `runFoundTheFace` calls `foundTheFace` without a secret handle or sealed-rest capability. `foundThePlace` creates an empty secret placeholder, but `runInit` persists only the daemon URL in the bootstrap, so that placeholder does not supply a recoverable secret-home address. Enrollment must establish the map and booking before secret writes and preserve the secret address across restart; supplying a bare handle to the existing direct holder would not satisfy sealed rest.
+
+Focused confirmation: <code>pnpm &#45;-filter &#64;lararium/node exec vitest run tests/founding-seed-by-ask.test.ts &#45;-maxWorkers=4</code> failed its one test at `requireSecretHandle` with `secret-home-unavailable`. No implementation change or new ruling followed this trace; items A–G remain open.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/homes-wright-hand-back-commit-72fcb8d9d`>>
+
+!! Homes-Wright hand-back (items B, C, F; D and E went to Terra seats) — commit 72fcb8d9d
+* ''B, built:'' one vessel control document, `bags/control` (`mesh/src/control-home.ts`). The daemon document names it, and no recipe composes it. Summons, outcomes, the effect index, receipt facts, ward audits, the mailbox, swarm controls and lease epochs all move there, with every writer and reader. It seals under the lit face (fork 1 in PLACE-RULING).
+* ''C, built:'' `bags/daemon-<F>` mints at the face's first worn stand into the face's catalog (`node/src/face-daemon-canon.ts`). The recipe reads working, then the face canon, then kahua, and the daemon document sits beneath every canon (`WikiRecipe.canonBag` plus the `canonUrl` grant). Node only; the browser daemon recipe is unchanged.
+* ''F, built:'' both mirrors project again, `wikis/daemon-<F>` and `bags/daemon-<F>`. The placement witness now checks the control families, the daemon mirrors and the control writers, and it reads red on a mutation.
+* Remaining reds: node and CLI founding/face tests fail with `secret-home-unavailable` (item A). Two node tests fail from the WIP projector change: foreign-title-projection and projection-standoff-alert. Two CLI tests fail inside carry-verbs (item E).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hV641BGIlmtitLb1nKHtU_7I_qZWXTYnaREYDnFTdx8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

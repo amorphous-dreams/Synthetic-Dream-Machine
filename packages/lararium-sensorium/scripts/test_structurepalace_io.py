@@ -427,45 +427,27 @@ def test_put_edit_same_uuid_retracts_the_old_structure_tally(tmp_path):
     assert store.get(H1).get("tombstoned") == stamp
 
 
-# --- the XDG parity guard (the structure plane resolves one home in both tongues) -----------
-# The structure default MUST resolve the SAME rule the TS `larariumDataHome()` (xdg-base.ts) holds,
-# or capture writes one dir while FFZ recall reads another (the write-only-store disease). A sensorium
-# ABIDES — it stands in the shrine, never in the house whose substrate a rite reforges — so both views
-# name `lararium/`, and these tests pin them byte-identical by rule.
+# --- the house-root parity guard (the structure plane resolves one home in both tongues) -----------
+# The structure default MUST resolve the SAME path the TS `memorySensoriumStructureDir()` (house-root.ts) names,
+# or capture writes one dir while FFZ recall reads another (the write-only-store disease).
 
-def test_structure_default_mirrors_xdg(monkeypatch):
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.setenv("XDG_DATA_HOME", "/x/data")
-    assert ap._default_structurepalace_dir() == "/x/data/lararium/sensoriums/memory/structure"
-
-
-def test_structure_default_never_the_spirits_home(monkeypatch):
-    # The wipe zone made structural: the plane shares NO prefix with the home a rite reforges.
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.setenv("XDG_DATA_HOME", "/x/data")
-    assert not ap._default_structurepalace_dir().startswith("/x/data/lares/")
-
-
-def test_structure_default_honors_xdg_unset(monkeypatch):
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    expect = os.path.join(os.path.expanduser("~"), ".local", "share",
-                          "lararium", "sensoriums", "memory", "structure")
-    assert ap._default_structurepalace_dir() == expect
-
-
-def test_structure_default_isolated_instance(monkeypatch):
-    # LAR_ROOT (test harness / staged pairs) roots under <root>/data/lararium — the SAME branch TS takes.
-    # Every directory under an isolated root names an XDG KIND; the two HOUSES nest inside the data kind.
+def test_structure_default_mirrors_the_house_root(monkeypatch):
     monkeypatch.setenv("LAR_ROOT", "/iso")
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
-    assert ap._default_structurepalace_dir() == "/iso/data/lararium/sensoriums/memory/structure"
+    assert ap._default_structurepalace_dir() == "/iso/sensoriums/memory/structure"
 
 
-def test_structure_default_never_the_prexdg_scatter(monkeypatch):
+def test_structure_default_refuses_an_unnamed_root(monkeypatch):
+    # No XDG base or home directory stands in for the house: an unset root refuses by name.
+    from house_root import HouseRootUnnamed
+    monkeypatch.delenv("LAR_ROOT", raising=False)
+    monkeypatch.setenv("XDG_DATA_HOME", "/x/data")
+    with pytest.raises(HouseRootUnnamed, match="LAR_ROOT"):
+        ap._default_structurepalace_dir()
+
+
+def test_structure_default_never_a_scatter(monkeypatch):
     # ONE ADDRESS, never a scatter. A per-plane dir hung off the operator's bare home splits the
     # store capture writes from the store recall reads; these vectors refuse that shape by name.
-    monkeypatch.delenv("LAR_ROOT", raising=False)
-    monkeypatch.delenv("XDG_DATA_HOME", raising=False)
+    monkeypatch.setenv("LAR_ROOT", "/iso")
     assert ".structurepalace" not in ap._default_structurepalace_dir()
     assert "/.lares/" not in ap._default_structurepalace_dir()

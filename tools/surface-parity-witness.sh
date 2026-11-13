@@ -145,10 +145,10 @@ def daemon_verbs_cli(name: str) -> set:
 # and says what each one writes — so a reader meeting either door learns the difference here rather
 # than by running both and comparing stores.
 SLICING: dict[str, str] = {
-    "pour": ("CLI `pour` harvests ONE pointer's bearing gradient into the harvest index that "
-             "`sense worldline` joins; `pour --all` walks the whole tending movement. The MCP tool "
-             "captures one pointer's DRAWERS, and its `all` rides the same sweep spine the CLI's "
-             "drawers leg reaches. Both fill a sensorium; they enter at different legs."),
+    "pour": ("CLI `pour --all` walks the whole tending movement and `pour --writeback` runs its "
+             "bearing leg alone. The MCP tool captures one pointer's DRAWERS, and its `all` rides "
+             "the same sweep spine the CLI's drawers leg reaches. Both fill a sensorium; they "
+             "enter at different legs."),
 }
 
 drift = []

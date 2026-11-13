@@ -8,6 +8,9 @@
          house — a Home Screen install, which exempts the origin from WebKit's seven-day clock. The page never
          demands it; `phone-seat.ts` explains and offers, once, where the clock stands. -->
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- The page names its own icon (the manifest's house, inline), so no browser asks the hearth for /favicon.ico. -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20128%20128'%3E%3Crect%20width='128'%20height='128'%20rx='24'%20fill='%230d0f14'/%3E%3Cpath%20d='M24%2060%20L64%2024%20L104%2060%20Z'%20fill='%23c9d1d9'/%3E%3Crect%20x='34'%20y='60'%20width='60'%20height='44'%20fill='%2311151c'%20stroke='%23c9d1d9'%20stroke-width='4'/%3E%3Crect%20x='56'%20y='76'%20width='16'%20height='28'%20fill='%23d29922'/%3E%3C/svg%3E" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Lararium" />
     <meta name="theme-color" content="#0d0f14" />
@@ -38,6 +41,14 @@
       #phases .phase { padding: 0.12rem 0; color: #58a6ff; }
       #phases .phase::before { content: "→ "; color: #3fb950; }
       .ok { color: #3fb950; } .warn { color: #d29922; } .err { color: #f85149; }
+      /* A vessel's ask waits on the person: the notice at the top of the page and the boot status row both say so. */
+      .ask { color: #d29922; font-weight: 600; }
+      .ceremony-ask {
+        position: sticky; top: 0; z-index: 10; padding: 0.8rem 1.25rem;
+        background: #2b2111; border-bottom: 2px solid #d29922; color: #f0d58c;
+      }
+      .ceremony-ask[data-refusal] { border-bottom-color: #f85149; }
+      .ceremony-ask button.ceremony-open { margin-top: 0.5rem; font: inherit; font-weight: 600; padding: 0.35rem 0.8rem; cursor: pointer; }
       .veil { color: #d2a8ff; }
 
       /* The admit surface carries a THUMB. Every tap target clears 44px, the paste box holds 16px type
@@ -64,13 +75,20 @@
         background: #0d1117; color: #c9d1d9; font-family: inherit; font-size: 16px;
       }
       #admit-apply { width: 100%; margin-top: 0.6rem; }
+      .carriage textarea { width: 100%; }
+      .carriage [data-lar-carriage-frame] svg { width: min(18rem, 100%); height: auto; display: block; cursor: pointer; }
+      .carriage [data-lar-carriage-video] { width: min(18rem, 100%); display: block; }
       #admit-status { padding-top: 0.5rem; font-size: 0.88rem; min-height: 1.3rem; }
       @media (max-width: 560px) {
         main { margin: 2vh auto; }
         .row { flex-direction: column; gap: 0; }
         .row .k { min-width: 0; font-size: 0.8rem; }
       }
-    </style>
+        #mirror { display: none; }
+    #mirror[data-lar-shown="mirror"] { display: block; }
+    #mirror[data-lar-shown="mirror"] ~ #projection { display: none; }
+    /* The person reads through the mirror wherever it stands; the worker-rendered view beneath it stays the named floor, shown again only when the mirror steps down to teardown. */
+  </style>
   </head>
   <body>
     <main>
@@ -102,25 +120,33 @@
           </div>
         </div>
         <div class="admit">
-          <label for="admit-paste">paste the admit the node printed (the <code>#admit=…</code> line, its URL, or the JSON)</label>
+          <label for="admit-paste">paste the fleet-join offer the root holder showed (a browser that founded the face, or a node); this browser answers with its request. Then paste the answer.</label>
           <textarea id="admit-paste" rows="4" spellcheck="false" autocapitalize="off" autocorrect="off"
-                    placeholder="#admit=…"></textarea>
-          <button id="admit-apply" type="button">admit this vessel</button>
+                    placeholder='{ "kind": "fleet-join-offer", … }'></textarea>
+          <button id="admit-apply" type="button">join this face's fleet</button>
           <div id="admit-status"></div>
+          <div id="admit-carriage" class="carriage"></div>
+          <p class="floor-carriage">Carry the hearth's floor card in here (paste, file or QR off its banner), then its place AID on its own line: this device then reads the hearth's floor under them.</p>
+          <div id="floor-carriage-door" class="carriage"></div>
+          <div id="floor-carriage-status" role="status"></div>
+          <div id="fleet-root-door" class="carriage"></div>
+          <div id="fleet-seat-door" class="carriage"></div>
+          <p class="found-face">This browser stands as an unbound veil until a face joins it. <button id="found-face" type="button">Found a face of its own here</button> The ceremony asks a first passphrase and shows a place card to write down.</p>
         </div>
       </section>
 
       <section class="panel">
-        <h2>@oracle read-face</h2>
-        <div class="rows" id="oracle">
-          <div class="row"><span class="k">status</span><span class="v" id="oracle-status">—</span></div>
+        <h2>the floor — the Nexus's release</h2>
+        <div class="rows" id="floor">
+          <div class="row"><span class="k">status</span><span class="v" id="floor-status">—</span></div>
         </div>
       </section>
 
       <section class="panel">
-        <h2>projection — the live wiki
+        <h2>projection — <span id="projection-wiki" data-lar-pane-wiki="">…</span>
           <button id="summon-daemon" type="button" title="Summon the @daemon working surface (Ctrl+Shift+D)" disabled>☰ @daemon</button>
         </h2>
+        <div id="mirror"></div>
         <div id="projection"></div>
       </section>
     </main>

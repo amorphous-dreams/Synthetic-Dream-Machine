@@ -13,8 +13,7 @@
  *   · a hearth's notice marks the record at risk.
  */
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { mkdtempSync, rmSync, readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { rmSync, readdirSync, statSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   carryDocument, fetchDocument, openCarried, watchCarryNotice, takeInvite, issueGrant, encodeInvite, mintHostToken, utf8Bytes, hex,
@@ -22,8 +21,10 @@ import {
   HOSTING_NOTICE_SESSION_KIND, type HostingGrant, type LarSessionMsg, type WalkRecord, type WalkStore,
 } from "@lararium/mesh";
 import { serveHostingCarry } from "../src/hosting-carry.js";
-import { rollHosting, readHostingState, liveEpochs, hostingDir, hostingRowDir } from "../src/hosting-store.js";
+import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
+import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
 import { readCustodyRow } from "../src/custody-seat.js";
+import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID = "nexus-" + "a".repeat(64);
 const HEARTH = new Uint8Array(32).fill(71);
@@ -31,14 +32,10 @@ const GATE = "ee".repeat(32);
 // A REAL verifying key (RFC 8032 §7.1): a grant names only a walker leaf the Ed25519 door accepts.
 const LEAF = { verifyingKey: "d75a980182b10ab7d54bfed3c964073a0ee172f3daa62325af021a68f707511a", seed: new Uint8Array(32).fill(72) };
 const OTHER_LEAF = { verifyingKey: "3d4017c3e843895a92b70aa74d1b7ebc9c982ccf2ec4968cc0cd55f12af4660c", seed: new Uint8Array(32).fill(73) };
-// The hearth's hosting rows rest sealed in the custody storage home of this scratch root.
-let storageDir = "";
-let priorRoot: string | undefined;
-beforeEach(() => { storageDir = mkdtempSync(join(tmpdir(), "walker-carry-")); priorRoot = process.env["LAR_ROOT"]; process.env["LAR_ROOT"] = storageDir; });
-afterEach(() => {
-  if (priorRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = priorRoot;
-  rmSync(storageDir, { recursive: true, force: true });
-});
+// The hearth's hosting rows rest in its founded face under this scratch custody.
+let custody: SeatedScratchCustody;
+beforeEach(async () => { custody = await seatHostingCustody("walker-carry"); });
+afterEach(async () => { await custody.drop(); });
 
 function memoryStore(): WalkStore & { map: Map<string, WalkRecord> } {
   const map = new Map<string, WalkRecord>();
@@ -120,19 +117,19 @@ describe("the walker's carriage over the session verbs", () => {
 
   /**
    * Every carried value the hearth holds: its row's path, its file name, and the bytes the hearth's own fetch door
-   * opens there (the walker's ciphertext; the row rests sealed again under the hearth's vessel key).
+   * opens there (the walker's ciphertext; the row rests sealed again under the hearth's face key).
    */
   async function carriedFiles(): Promise<{ path: string; name: string; bytes: Uint8Array }[]> {
     const out: { path: string; name: string; bytes: Uint8Array }[] = [];
-    const base = await hostingDir(AID);
+    const base = hostingDirPath(0, AID)!;
     const walk = async (d: string, rel: string, inBlobs: boolean): Promise<void> => {
       for (const f of readdirSync(d)) {
         const p = join(d, f);
         if (statSync(p).isDirectory()) await walk(p, `${rel}/${f}`, f === "blobs");
-        else if (inBlobs) out.push({ path: p, name: f, bytes: (await readCustodyRow("storage", `${rel}/${f}`))! });
+        else if (inBlobs) out.push({ path: p, name: f, bytes: (await readCustodyRow("identity", `${rel}/${f}`))! });
       }
     };
-    await walk(base, hostingRowDir(AID), false);
+    await walk(base, hostingRowDir(0, AID), false);
     return out;
   }
   /** The hearth names a carried value's row by its address's hex, then its length. */

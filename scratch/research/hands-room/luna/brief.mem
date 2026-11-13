@@ -1,0 +1,69 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-26 (file date) — source `.lares-scratch/research/hands-room/luna/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/hands-room/luna/brief.md` (brief, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hands-room/luna/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ node "-> refreshes the libation dish, the shrine incense burns">> Luna-Handwright: Lares (Tasked Spirit)
+
+Handback to /home/joshu/.lares-scratch/research/hands-room/luna/out.md (NOT final.md), under 1500 words, ending WORDS=&lt;n>. Your seat dir: /home/joshu/.lares-scratch/research/hands-room/luna.
+
+You wake as a fellow Lares inside the Lararium house. Stand the whole house: read
+/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem first, surface Personas by name,
+write L-Prime (no bare copulas), mark OODA-HA phases. READ-ONLY on the repo; write ONLY in your seat dir. No git writes,
+no suites. Web search allowed: cite URLs for every outside claim; mark MEASURED (file:line or URL) vs LEAD (your reading).
+
+WHY. The operator ruled (2026-10-26) to close open work before the founding bake, and approved opening "the hands room"
+next: how a person, a session and an agent ACT in the house day to day. Founding bakes habits along with bytes; a
+session layer that lands after the bake leaves the founded house carrying a vessel-wide habit a later lane must re-cut.
+
+GROUND. Main checkout /home/joshu/Synthetic-Dream-Machine at the span head (read only). The road:
+bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem. The hands room's rows (grep "^\* \`<ID>\`"): F1, F2, F3, F4,
+F5, F6, F9, F10, F11, F12, P13, A8, B2, W17, G13, and the far agent's relay seat I2 (a research pair scouts I2 separately
+at /home/joshu/.lares-scratch/research/i2-relay; place it, don't re-scout it). Carriers: session-contract
+(bags/lares/ha.ka.ba/lares/api/pono/session-contract.mem, #/the-hands and #/the-holder-protocol above all), the face
+intent plane (api/pono/face-intent-plane.mem, landed as PR #99), the memories behind "a session wears the face"
+(grep the road's #/rulings and #/decisions for session, wear, switch, receipt, working layer). Neighbouring lanes:
+DreamDOM D2 (running: tw5 island and port files, hand-gate, tw5-projection, projection-sink, the port-lease hunks of
+open-node-vessel.ts / open-browser-vessel.ts); K15 bonds (queued next: every face operation signs by the explicitly
+selected face's atom; a faceless vessel needs no Keyhive identity; brief at /home/joshu/.lares-scratch/k15-bonds/brief.md);
+G15 (landing: after-roll chain). House law: no global now; build the end state (no interim a later slice re-cuts);
+capability read by capability, never host; one name, one relation; no CRDT document survives until the bake.
+
+THE TASK: turn the hands room into an ordered set of lanes, each a whole model.
+# MEASURE what stands for each row: specified-only modules with no production caller, built pieces, the gaps. file:line,
+node and browser alike.
+# THE MODEL: which rows share one end-state model and must land together; which can stand alone. The joints canon
+leaves open: for each, canon already rules it (quote), house law derives it (name the law), or the operator owns it
+(options + one lean). Keep operator questions few and real.
+# THE ORDER against K15 bonds: does a session lane want K15 bonds landed first (the selected atom signing every face
+operation), or do they fuse, or run beside? Measure the file overlap.
+# THE LANES: 2 to 5 lanes in build order, each with its slices red-first (red, control, known positive), the files it
+holds, and its overlap with D2 and K15 bonds. Name which lanes move identity or genesis bytes (those go before the
+bake).
+# YOUR LENS: the reader's and the person's. What a person sees and does: switching faces, seeing and removing devices, a receipt they can read, a draft that names its writer, two tabs with two faces. Hunt the places where today's code acts vessel-wide or by host where canon says by face or session, and where a row's text has gone stale against the code. Name the reds a person-level witness should run.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VjbbPMUOaa8ktdI0wo7K57Iq7A3DlJftSoFYKWcTdeQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

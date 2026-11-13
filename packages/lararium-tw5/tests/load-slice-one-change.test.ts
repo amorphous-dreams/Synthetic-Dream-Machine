@@ -26,7 +26,7 @@ const A = meshRequire("@automerge/automerge") as {
   applyChanges<T>(doc: T, changes: Uint8Array[]): [T];
 };
 
-const BAG = "lar:///ha.ka.ba/bags/load-slice";
+const BAG = "lar:///ha.ka.ba/wikis/load-slice/working";
 const allowCap = async (_access: CapabilityAccess, _bag: string): Promise<CapabilityVerifyResult> => ({ ok: true });
 
 function context(composite: CompositeStore): VerbContext {
@@ -44,9 +44,9 @@ const meme = (i: number): { title: string; text: string } => {
   const uri = `lar:///t/load-slice/meme-${i}`;
   return {
     title: uri,
-    text: `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "t/load-slice/meme-${i}"\n\`\`\`\n\n` +
-      SLOTS.map((s) => `<<~ ahu #/${s}>>\n\n! ${s} of ${i}\n\n<<~/ahu>>\n`).join("\n") +
-      `\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`,
+    text: `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "t/load-slice/meme-${i}"\n\`\`\`\n\n` +
+      SLOTS.map((s) => `<<~ ahu slot=\`#/${s}\`>>\n\n! ${s} of ${i}\n\n<<~/ahu>>\n`).join("\n") +
+      `\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`,
   };
 };
 

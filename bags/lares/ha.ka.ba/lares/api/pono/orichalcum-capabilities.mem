@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/orichalcum-capabilities`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/orichalcum-capabilities.mem"
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 16
 namespace = "&#x2299;"
 role      = "invariant law: Orichalcum capability profile — UCAN-compatible at wire boundary, Lararium-native semantic caveats; authority-gate law for wiki islands, edge islands, and canon MOVE"
 tags      = ["api/pono/meme"]
@@ -18,7 +14,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/orichalcum-capabilities"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Orichalcum Capabilities
 
@@ -27,7 +23,7 @@ Authority gate for wiki islands, edge islands, and canon MOVE.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the capability shape — who grants, who receives, what resource, what abilities, what caveats
 ⏿ orient the authority ladder: pull/read/write/sync/admin/delegate; locate the principal types
@@ -37,7 +33,7 @@ Authority gate for wiki islands, edge islands, and canon MOVE.
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -55,7 +51,7 @@ Authority travels with the graph. Authority MUST hold in the graph, beyond crypt
 
 <<~/ahu>>
 
-<<~ ahu #/principal>>
+<<~ ahu slot=`#/principal`>>
 
 !! Principal Shapes
 
@@ -79,7 +75,7 @@ These name distinct objects. Keep device identity below operator identity.
 
 <<~/ahu>>
 
-<<~ ahu #/ability-ladder>>
+<<~ ahu slot=`#/ability-ladder`>>
 
 !! Ability Ladder
 
@@ -126,7 +122,7 @@ federable-ratings = ["meme", "ano", "kapu"]
 
 <<~/ahu>>
 
-<<~ ahu #/caveats>>
+<<~ ahu slot=`#/caveats`>>
 
 !! Lararium Caveats
 
@@ -153,18 +149,9 @@ note    = """
 A carrier MUST reach `Meme` rating to federate.
 Noise and Data stay node-local only.
 
-!!! Manaoio Caveat (believability weight)
+!!! No Scalar Caveat
 
-```toml
-[[caveats]]
-kind    = "manaoio-at-least"
-type    = "integer Level [0–20]"
-note    = """
-  Community-weighted believability. Distinct from confidence (operator-set).
-  Three separate thresholds: read / edit / admin.
-  Default: 0 / 12 / 16.
-"""
-```
+A capability caveat never reads a score a carrier declares about itself. Read, propose and move rights ride the holder's delegated capability, the wiki recipe, revocation and the kapu scope below; an operator who wants a believability notion keeps it in their own wiki under their own field and their own meaning.
 
 !!! Scope and Boundary Caveats
 
@@ -201,11 +188,6 @@ note    = "capability invalid once the chain rolls past the epoch it roots on. A
 # Structural gate — rating ladder
 min_rating_federate  = "Meme"   # Noise and Data are node-local only
 
-# Believability gate — manaoio scalar
-min_manaoio_read     = 0
-min_manaoio_propose  = 12
-min_manaoio_move     = 16
-
 # Stage band is a UX/rendering annotation only.
 # Wiki recipes MAY include stage-based filter predicates as operator configuration,
 # but stage is not a hardcoded capability gate condition.
@@ -213,7 +195,7 @@ min_manaoio_move     = 16
 
 <<~/ahu>>
 
-<<~ ahu #/gate-points>>
+<<~ ahu slot=`#/gate-points`>>
 
 !! Capability Gate Points
 
@@ -234,7 +216,7 @@ Gate failures at steps 5–6 reject the operation and emit a refusal receipt.
 
 <<~/ahu>>
 
-<<~ ahu #/documents-as-groups>>
+<<~ ahu slot=`#/documents-as-groups`>>
 
 !! Documents as Groups
 
@@ -266,7 +248,7 @@ No global ACL owns these. Authority travels with the graph. Each object owns its
 
 <<~/ahu>>
 
-<<~ ahu #/ucan-posture>>
+<<~ ahu slot=`#/ucan-posture`>>
 
 !! UCAN Posture
 
@@ -283,19 +265,19 @@ UCAN provides the external proof shape. Orichalcum holds the semantic law.
 Build adapters so a Lararium capability can emit and verify a UCAN wire proof.
 Do not let UCAN wire validity become the internal source of truth for Lararium authority.
 
-A cryptographically valid UCAN that fails a Lararium caveat (rating, manaoio,
+A cryptographically valid UCAN that fails a Lararium caveat (rating,
 kapu-scope, epoch) authorizes nothing. The caveat gate fires after
 the crypto gate, not instead of it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/federated-causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/research-streams">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/research-streams`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;RWkZYSLrcs5u_QvE9wKfyQNzzJmwJr9Xe7Zy7J0RZMs
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xu5uoQuxF6R4UbPA2BKd2YV95l5ILwEI63k6H69u2X0`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -10,7 +10,7 @@
  *     the parent's wing.
  *   - IDENTIFIED BY UUID: identity rides the worldline handle `<run>.<agentId>`
  *     (`lar_agent_handle`); the staged basename (spiritStageBasename) only carries the
- *     provenance tokens buildPatch reads.
+ *     provenance tokens the branch-frontier derivations read.
  *
  * The `source_file` a spirit turn rides under (spiritCaptureSourceFile) fuses the wing
  * PREFIX (routing) with the staged basename (provenance) in one string.
@@ -28,7 +28,7 @@
  * The staged spirit BASENAME — the source_file provenance token:
  * `<surface>__<name>__agent-<id>__run-<run>.jsonl`. The leading `<surface>__` token
  * follows the main-transcript law (`${surface}__…`, runHarvestAll) so `lar_surface`
- * stamps by token instead of defaulting; buildPatch skips it before deriving
+ * stamps by token instead of defaulting; the derivations skip it before deriving
  * `lar_agent`, and `lar_agent_handle` reads off the end-anchored `__agent-…__run-…`
  * segment — the handle law holds unshifted.
  */
@@ -40,7 +40,7 @@ export function spiritStageBasename(name: string, agentId: string, runId: string
  * The `source_file` a spirit turn rides through the daemon `capture` verb under. Two channels
  * fuse in one string: a `<wing>/` PREFIX (the routing — `spiritsWing(wing)`, decoded to
  * `metadata.wing` at the node flush) and the `spiritStageBasename` (the provenance —
- * buildPatch reads `lar_surface` / `lar_agent` / `lar_sidechain` / `lar_agent_handle` off it,
+ * the branch-frontier derivations read `lar_surface` / `lar_agent` / `lar_sidechain` / `lar_agent_handle` off it,
  * exactly the convention the direct-mine leg stages). The capture path takes the basename, the
  * wing-stamp takes the prefix, so one record lands BOTH the `__spirits` wing AND the AST keyed
  * to the spirit.

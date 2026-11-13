@@ -64,6 +64,7 @@ export function sleepSync(ms: number): void {
 
 /** Async sleep (for execFileAsync/spawn callers). */
 function sleepAsync(ms: number): Promise<void> {
+  // PACING: backoff spaces retries; the attempt budget ends the retry loop.
   return new Promise((res) => setTimeout(res, Math.max(0, Math.round(ms))));
 }
 

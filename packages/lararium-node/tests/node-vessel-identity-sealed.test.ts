@@ -2,13 +2,13 @@
  * V1 THE ROSTER COMMITS A ROOT. Mint writes the root before its public roster line; roster readers open no root row. Control: the seed opens to that public key.
  * V2 ORPHANS STAND UNHELD. Readers ignore an orphan and the next mint adopts its own bytes. Control: its roster line then commits it.
  * V3 MISSING AND MISNAMED ROOTS REFUSE. A roster line cannot mint over a missing or different root. Control: intact committed roots open.
- * V4 ABSENT HOT ROWS HOLD NOTHING. Each map and selector gives its empty answer. Control: a written row opens whole.
+ * V4 ABSENT FACE ROWS HOLD NOTHING. Each map and selector gives its empty answer. Control: a written row opens whole.
  * V5 SEALED ROWS THAT DO NOT OPEN REFUSE EVERY DOOR. Tampered, truncated, and bare bytes move no further. Control: intact rows work.
  * V6 OPEN ROWS WITH ANOTHER SHAPE REFUSE EVERY DOOR. Control: well-shaped rows round-trip.
  * V7 THE FLOOR CLOSES EVERY DOOR, the vessel key's mint among them. Control: an existing vessel key loads at the floor.
- * V8 THE VESSEL MINT COMMITS NO NEXT KEY. It lands the key and its one signed inception, which names that key and
- *    holds no next key, no clock and no version; no next-key seed stands. Control: a second call reads both files unchanged.
- * V9 WEAR REQUIRES A HELD ROOT. Control: a held root wears through its sealed selector.
+ * V8 THE VESSEL MINT ARMS THE KEL. It lands the key and its armed inception, which names that key and commits the
+ *    digest of a cold next key, with no clock and no version; no next-key seed stands on disk. Control: a second call reads both files unchanged.
+ * V9 A MOUNT REQUIRES A HELD ROOT. Control: a held root mounts at the unlock's choice, a command never reads that choice, and a cleared choice leaves two unlocked faces unmounted.
  * V10 THREE MAPS SEAL AND ROUND-TRIP. Control: entries sort and absent clears leave a readable row.
  * V11 TAMPER PROBE RETIRES THE SEATED KEY. Control: the new tree key opens every row whole.
  * V12 TWO HOLDERS SHARE ONE TREE. Control: both pet-name updates and the raced root mint remain whole.
@@ -26,43 +26,59 @@
  * V20 A KEY FILE WHOSE SEED DERIVES ANOTHER KEY REFUSES AT EVERY DOOR, the found act's load among them, though its
  *    public key and its inception still agree. Control: the intact file answers at every door.
  */
-import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
+import { createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { mkdtempSync, rmSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import {
-  mintVk, readVkCarrier, writeSealedCarrier, TreeVkRefusal,
-  inceptVesselKel, decodeVesselKelInception, verifyVesselKelInception, canonicalJsonBytes, VESSEL_KEL_DOMAIN, ed25519SignerFromSeed,
+  readFckCarrier, readSCarrier,
+  mintPlaceInception, verifyPlaceKel,
   GATE_FLOOR_BUNDLE_INFO,
 } from "@lararium/mesh";
 import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey,
   listPersonaRoots, listPersonaRosterLines, personaRootExists, orphanPersonaRoots,
-  makeNodeFsPersonaVault, loadActivePersonaIndex, wearPersona,
+  makeNodeFsPersonaVault, setMountedFace, sovereignStands,
   makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, makeNodePublicHandleStore,
   generateOrLoadVesselIdentity, VesselKeyMintRefused, VesselInceptionRefused,
-  loadVesselIdentity, loadVesselVerifyingKey, loadVesselSigningSeed, vesselFloorKeyDoor,
+  loadVesselIdentity, loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor,
 } from "../src/node-vessel-identity.js";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
-import { seatCustody } from "../src/custody-seat.js";
+import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
+import { CustodyLocked, CustodyRowUnavailable, WardNeedsFreshUnlock, makeCustodyHolder } from "../src/custody-holder.js";
+import { seatCustody, withWardKeyCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
-import { vkSlotsPath } from "../src/vault-carriers.js";
-import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
+import { handleRowPathIn } from "./face-paths.js";
+import { seatScratchCustody, FIXTURE_PASSPHRASE, fixtureWard, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
 const enc = (v: unknown): Uint8Array => new TextEncoder().encode(JSON.stringify(v));
 const bytes = (s: string): Uint8Array => new TextEncoder().encode(s);
 const HEX = /^[0-9a-f]{64}$/;
+const mintVessel = () => generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+const readKel = (bytes: Buffer) => (JSON.parse(bytes.toString()) as [{ key: string; next: string; sig: string }])[0];
+const kelOk = (bytes: Buffer) => verifyPlaceKel(JSON.parse(bytes.toString())).ok;
+async function foreignKel(seed: Uint8Array): Promise<Buffer> {
+  const coldVerifyingKey = Buffer.from(await seedPublic(new Uint8Array(32).fill(8)), "base64url").toString("hex");
+  return Buffer.from(JSON.stringify([mintPlaceInception({ signerSeed: seed, coldVerifyingKey }).event]));
+}
+
 let c: SeatedScratchCustody;
 let priorHome: string | undefined;
 let priorXdg: string | undefined;
 let priorGlobal: string | undefined;
 let configHome: string;
-const at = (file: string): string => join(c.homes.identity, file);
+const at = (file: string): string => /^\.persona-(?:group-root|roster|petnames|declarations|public-handles)-h\d+\.json$/.test(file) ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 const read = (file: string): Buffer => readFileSync(at(file));
-const sealed = (file: string): void => expect(readVkCarrier(read(file))).toBe("sealed");
+const sealed = (file: string): void => expect(at(file) === join(c.homes.identity, file) ? readSCarrier(read(file)) : readFckCarrier(read(file))).toBe("sealed");
+const rosterFile = (i: number): string => `.persona-roster-h${i}.json`;
+const petFile = (i: number): string => `.persona-petnames-h${i}.json`;
+const declarationFile = (i: number): string => `.persona-declarations-h${i}.json`;
+const publicFile = (i: number): string => `.persona-public-handles-h${i}.json`;
 async function seedPublic(seed: Uint8Array): Promise<string> {
   const privateKey = createPrivateKey({ key: Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), Buffer.from(seed)]), format: "der", type: "pkcs8" });
   return createPublicKey(privateKey).export({ format: "jwk" }).x!;
@@ -71,15 +87,23 @@ function rootFile(i: number): string { return `.persona-group-root-h${i}.json`; 
 /** One cold row's JSON, opened for this one read through the fixture's own holder. */
 const cold = <T>(file: string): Promise<T> =>
   c.holder.openColdRow("identity", file, (plain) => JSON.parse(new TextDecoder().decode(plain)) as T);
+/** A face root row rests under the face's WARD: unlocked custody never reaches it. These two doors run the ward route (one fresh unlock per act). */
+const rootIndexOf = (file: string): number => Number(/-h(\d+)\.json$/.exec(file)![1]);
+const wardCold = <T>(file: string): Promise<T> =>
+  withWardKeyCustody({ ordinal: rootIndexOf(file) }, fixtureWard(), (seat) => seat.open(file, (plain) => JSON.parse(new TextDecoder().decode(plain)) as T), "test read");
+const wardWrite = (file: string, plaintext: Uint8Array): Promise<void> =>
+  withWardKeyCustody({ ordinal: rootIndexOf(file) }, fixtureWard(), (seat) => seat.update(file, () => ({ plaintext, value: undefined })), "test write");
 
 beforeEach(async () => {
   priorHome = process.env.HOME; priorXdg = process.env.XDG_CONFIG_HOME; priorGlobal = process.env.GIT_CONFIG_GLOBAL;
   configHome = mkdtempSync(join(tmpdir(), "synthetic-git-config-"));
   process.env.HOME = configHome; process.env.XDG_CONFIG_HOME = configHome; process.env.GIT_CONFIG_GLOBAL = "/dev/null";
   c = await seatScratchCustody("vessel-identity");
+  setMountedFace(undefined);
 });
 afterEach(async () => {
   await c.drop();
+  setMountedFace(undefined);
   if (priorHome === undefined) delete process.env.HOME; else process.env.HOME = priorHome;
   if (priorXdg === undefined) delete process.env.XDG_CONFIG_HOME; else process.env.XDG_CONFIG_HOME = priorXdg;
   if (priorGlobal === undefined) delete process.env.GIT_CONFIG_GLOBAL; else process.env.GIT_CONFIG_GLOBAL = priorGlobal;
@@ -90,8 +114,11 @@ describe("sealed vessel identity family", () => {
   test("V1 roster commits roots and public readers never open a root row", async () => {
     const minted = await generateOrLoadPersonaGroupRoot(0);
     expect(minted.created).toBe(true);
-    expect(readdirSync(c.homes.identity)).toContain(".persona-roster.json");
-    expect(read(".persona-roster.json").length).toBeGreaterThan(0);
+    expect(existsSync(at(rosterFile(0)))).toBe(true);
+    expect(read(rosterFile(0)).length).toBeGreaterThan(0);
+    const rosterRow = await c.holder.readRow("identity", rosterFile(0));
+    expect(rosterRow.reading).toBe("opens");
+    if (rosterRow.reading === "opens") expect(JSON.parse(new TextDecoder().decode(rosterRow.plaintext))).toEqual({ roots: [{ handleIndex: 0, verifyingKey: minted.verifyingKey }] });
     const lines = await listPersonaRosterLines();
     expect(lines).toEqual([{ handleIndex: 0, verifyingKey: minted.verifyingKey }]);
     expect(await listPersonaRoots()).toEqual([0]);
@@ -104,8 +131,8 @@ describe("sealed vessel identity family", () => {
 
   test("V2 an unrostered standing root has no readers and adoption preserves its bytes", async () => {
     const first = await generateOrLoadPersonaGroupRoot(2);
-    const roster = read(".persona-roster.json");
-    await c.holder.updateRow("identity", ".persona-roster.json", () => ({ plaintext: enc({ roots: [] }), value: undefined }));
+    const roster = read(rosterFile(2));
+    await c.holder.updateRow("identity", rosterFile(2), () => ({ plaintext: enc({ roots: [] }), value: undefined }));
     const orphan = read(rootFile(2));
     expect(await listPersonaRoots()).toEqual([]);
     expect(await personaRootExists(2)).toBe(false);
@@ -116,34 +143,43 @@ describe("sealed vessel identity family", () => {
     expect(adopted).toEqual({ verifyingKey: first.verifyingKey, created: false });
     expect(read(rootFile(2)).equals(orphan)).toBe(true);
     expect((await listPersonaRosterLines())[0]).toEqual({ handleIndex: 2, verifyingKey: first.verifyingKey });
-    expect(roster.equals(read(".persona-roster.json"))).toBe(false);
+    expect(roster.equals(read(rosterFile(2)))).toBe(false);
   });
 
   test("V3 missing and differently named committed roots refuse without minting", async () => {
     const minted = await generateOrLoadPersonaGroupRoot(0);
     const rootBytes = read(rootFile(0));
     rmSync(at(rootFile(0)));
-    const roster = read(".persona-roster.json");
+    const roster = read(rosterFile(0));
     await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(CustodyRowUnavailable);
     await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(/reads absent/);
     await expect(generateOrLoadPersonaGroupRoot(0)).rejects.toThrow(/reads absent/);
     expect(existsSync(at(rootFile(0)))).toBe(false);
-    expect(read(".persona-roster.json").equals(roster)).toBe(true);
+    expect(read(rosterFile(0)).equals(roster)).toBe(true);
     // control: the sealed bytes back at the path, the committed root opens again
     writeFileSync(at(rootFile(0)), rootBytes);
     expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
     const other = await generateOrLoadPersonaGroupRoot(1);
-    const kp = await cold<{ verifyingKey: string; signingKey: string }>(rootFile(1));
+    const kp = await wardCold<{ verifyingKey: string; signingKey: string }>(rootFile(1));
     const wrong = { verifyingKey: kp.verifyingKey, signingKey: kp.signingKey };
-    await c.holder.writeRow("identity", rootFile(0), enc(wrong));
+    await wardWrite(rootFile(0), enc(wrong));
     await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(/reads names-another-key/);
     await expect(generateOrLoadPersonaGroupRoot(0)).rejects.toThrow(/reads names-another-key/);
     expect(other.verifyingKey).not.toBe(minted.verifyingKey);
   });
 
-  test("V4 absent hot rows read empty", async () => {
+  test("V3b unlocked custody never reaches the face root row; the ward route opens it", async () => {
+    const minted = await generateOrLoadPersonaGroupRoot(0);
+    await expect(cold(rootFile(0))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    await expect(c.holder.readRow("identity", rootFile(0))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    await expect(c.holder.writeRow("identity", rootFile(0), enc({}))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    // control: the ward route opens it
+    expect((await wardCold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toBe(minted.verifyingKey);
+  });
+
+  test("V4 absent face rows read empty", async () => {
     expect(await listPersonaRoots()).toEqual([]);
-    expect(await loadActivePersonaIndex()).toBeUndefined();
+    expect(await (await makeNodeFsPersonaVault()).selector.load()).toBeUndefined();
     const pets = await makeNodePersonaPetnameStore(); const decl = await makeNodePersonaDeclarationStore(); const handles = await makeNodePublicHandleStore();
     expect(await pets.get(0)).toBeUndefined(); expect(await pets.entries()).toEqual([]);
     expect(await decl.get(0)).toBeUndefined(); expect(await decl.entries()).toEqual([]);
@@ -151,15 +187,14 @@ describe("sealed vessel identity family", () => {
   });
 
   test("V5 all standing rows refuse tampered, truncated, and bare bytes at every door", async () => {
-    await generateOrLoadPersonaGroupRoot(0); await wearPersona(0);
+    await generateOrLoadPersonaGroupRoot(0);
     const pets = await makeNodePersonaPetnameStore(); const decl = await makeNodePersonaDeclarationStore(); const handles = await makeNodePublicHandleStore();
     await pets.set(0, "private-label"); await decl.set(0, { handle: "declared" }); await handles.save({ handleIndex: 0, contextIndex: 0, nym: "public-nym", glamour: "G", heads: [] });
     const rows = [
-      [".persona-roster.json", () => listPersonaRoots(), () => generateOrLoadPersonaGroupRoot(0)],
-      [".active-persona.json", () => loadActivePersonaIndex(), () => wearPersona(0)],
-      [".persona-petnames.json", () => pets.get(0), () => pets.set(0, "replacement")],
-      [".persona-declarations.json", () => decl.get(0), () => decl.set(0, {})],
-      [".persona-public-handles.json", () => handles.load(0), () => handles.save({ handleIndex: 0, contextIndex: 0, nym: "replacement", glamour: "G", heads: [] })],
+      [rosterFile(0), () => listPersonaRoots(), () => generateOrLoadPersonaGroupRoot(0)],
+      [petFile(0), () => pets.get(0), () => pets.set(0, "replacement")],
+      [declarationFile(0), () => decl.get(0), () => decl.set(0, {})],
+      [publicFile(0), () => handles.load(0), () => handles.save({ handleIndex: 0, contextIndex: 0, nym: "replacement", glamour: "G", heads: [] })],
       [rootFile(0), () => loadPersonaGroupRootSeed(0), () => generateOrLoadPersonaGroupRoot(0)],
     ] as Array<[string, () => unknown, () => unknown]>;
     for (const [file, readDoor, writeDoor] of rows) {
@@ -177,7 +212,7 @@ describe("sealed vessel identity family", () => {
         await expect(Promise.resolve().then(readDoor), `${file} ${label} read name`).rejects.toThrow(reading);
         await expect(Promise.resolve().then(writeDoor), `${file} ${label} write`).rejects.toThrow(CustodyRowUnavailable);
         expect(read(file).equals(damaged), `${file} ${label} unchanged`).toBe(true);
-        expect(existsSync(`${at(file)}.vk-sealing`), `${file} ${label} leaves no sidecar`).toBe(false);
+        expect(existsSync(`${at(file)}.s-sealing`), `${file} ${label} leaves no sidecar`).toBe(false);
       }
       // control: the sealed bytes back at the path, both doors answer again
       writeFileSync(at(file), intact);
@@ -190,18 +225,18 @@ describe("sealed vessel identity family", () => {
     await generateOrLoadPersonaGroupRoot(0);
     const pets = await makeNodePersonaPetnameStore(); const decl = await makeNodePersonaDeclarationStore(); const handles = await makeNodePublicHandleStore();
     const cases: Array<[string, unknown[], () => unknown, () => unknown]> = [
-      [".persona-roster.json", ["not json", { roots: [0] }, { roots: [{ handleIndex: 0, verifyingKey: "a".repeat(63) }] }, { roots: [{ handleIndex: 0, verifyingKey: "a".repeat(64) }, { handleIndex: 0, verifyingKey: "b".repeat(64) }] }], () => listPersonaRoots(), () => generateOrLoadPersonaGroupRoot(0)],
-      [".active-persona.json", [{ handleIndex: -1 }, {}], () => loadActivePersonaIndex(), () => wearPersona(0)],
-      [".persona-petnames.json", [{ names: [] }, { names: { x: "a" } }, { names: { 0: 7 } }], () => pets.get(0), () => pets.set(0, "x")],
-      [".persona-declarations.json", [{ declarations: { 0: "s" } }, { declarations: { 0: { seat: "yes" } } }, { declarations: { 0: { handle: 7 } } }], () => decl.get(0), () => decl.set(0, {})],
-      [".persona-public-handles.json", [{ handles: { 0: { nym: "n" } } }, { handles: { 0: { nym: "n", heads: [] } } }, { handles: { 0: { handleIndex: 1, contextIndex: 0, nym: "n", glamour: "G", heads: [] } } }], () => handles.load(0), () => handles.save({ handleIndex: 0, contextIndex: 0, nym: "n", glamour: "G", heads: [] })],
+      [rosterFile(0), ["not json", { roots: [0] }, { roots: [{ handleIndex: 0, verifyingKey: "a".repeat(63) }] }, { roots: [{ handleIndex: 0, verifyingKey: "a".repeat(64) }, { handleIndex: 0, verifyingKey: "b".repeat(64) }] }], () => listPersonaRoots(), () => generateOrLoadPersonaGroupRoot(0)],
+      [petFile(0), [{ names: [] }, { names: { x: "a" } }, { names: { 0: 7 } }], () => pets.get(0), () => pets.set(0, "x")],
+      [declarationFile(0), [{ declarations: { 0: "s" } }, { declarations: { 0: { seat: "yes" } } }, { declarations: { 0: { handle: 7 } } }], () => decl.get(0), () => decl.set(0, {})],
+      [publicFile(0), [{ handles: { 0: { nym: "n" } } }, { handles: { 0: { nym: "n", heads: [] } } }, { handles: { 0: { handleIndex: 1, contextIndex: 0, nym: "n", glamour: "G", heads: [] } } }], () => handles.load(0), () => handles.save({ handleIndex: 0, contextIndex: 0, nym: "n", glamour: "G", heads: [] })],
       [rootFile(0), [{ verifyingKey: "zz", signingKey: "00" }, { verifyingKey: "ab".repeat(32), signingKey: "cd".repeat(32) }], () => loadPersonaGroupRootSeed(0), () => generateOrLoadPersonaGroupRoot(0)],
     ];
     for (const [file, shapes, readDoor, writeDoor] of cases) {
       // What stood before this row's cases returns after them, so each row's refusal names that row alone.
       const before = existsSync(at(file)) ? read(file) : null;
       for (const shape of shapes) {
-        await c.holder.writeRow("identity", file, typeof shape === "string" ? bytes(shape) : enc(shape));
+        const shaped = typeof shape === "string" ? bytes(shape) : enc(shape);
+        if (file === rootFile(0)) await wardWrite(file, shaped); else await c.holder.writeRow("identity", file, shaped);
         const standing = read(file);
         await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(CustodyRowUnavailable);
         await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(new RegExp(`${file.replace(/[.]/g, "\\.")} reads malformed`));
@@ -216,51 +251,68 @@ describe("sealed vessel identity family", () => {
   });
 
   test("V7 the custody floor closes every identity door", async () => {
-    const doors = [() => listPersonaRoots(), () => listPersonaRosterLines(), () => personaRootExists(0), () => loadPersonaGroupRootVerifyingKey(0), () => loadPersonaGroupRootSeed(0), () => generateOrLoadPersonaGroupRoot(0), () => loadActivePersonaIndex(), () => wearPersona(0), async () => (await makeNodePersonaPetnameStore()).entries(), async () => (await makeNodePersonaDeclarationStore()).entries(), async () => (await makeNodePublicHandleStore()).list()];
+    const doors = [() => listPersonaRoots(), () => listPersonaRosterLines(), () => personaRootExists(0), () => loadPersonaGroupRootVerifyingKey(0), () => loadPersonaGroupRootSeed(0), () => generateOrLoadPersonaGroupRoot(0), () => resolveFace(), async () => (await makeNodePersonaPetnameStore()).entries(), async () => (await makeNodePersonaDeclarationStore()).entries(), async () => (await makeNodePublicHandleStore()).list()];
     await c.holder.lock();
     for (const door of doors) await expect(Promise.resolve().then(door)).rejects.toThrow(CustodyLocked);
-    await expect(generateOrLoadVesselIdentity()).rejects.toThrow(VesselKeyMintRefused);
+    await expect(mintVessel()).rejects.toThrow(VesselKeyMintRefused);
     expect(existsSync(at(".vessel-key.json"))).toBe(false); expect(existsSync(at(".vessel-kel.json"))).toBe(false);
     expect(readdirSync(c.homes.identity).filter((f) => f.startsWith(".vessel-"))).toEqual([]);
   });
 
-  test("V8 vessel key mint commits no next key, and a second call preserves both files", async () => {
-    const first = await generateOrLoadVesselIdentity();
+  test("V8 vessel key mint commits a cold next key, and a second call preserves both files", async () => {
+    const first = await mintVessel();
     const kel = read(".vessel-kel.json"); const key = read(".vessel-key.json");
-    // The one signed inception: the key, its signature, and nothing that commits a next key or tells a time.
-    expect(Object.keys(JSON.parse(kel.toString())).sort()).toEqual(["k", "sig", "t"]);
-    const inception = decodeVesselKelInception(kel);
-    expect(inception).not.toBeNull();
-    expect(verifyVesselKelInception(inception!)).toBe(true);
-    expect(inception!.k).toEqual([first.verifyingKey]);
+    const inception = readKel(kel);
+    expect(kelOk(kel)).toBe(true);
+    expect(inception.key).toBe(first.verifyingKey);
+    expect(inception.next).toMatch(HEX);
     expect(kel.toString()).not.toMatch(/\d{4}-\d{2}-\d{2}T/);
     // No next-key seed stands, under any spelling, sealed or bare.
     expect(readdirSync(c.homes.identity).filter((f) => f.startsWith(".vessel-")).sort()).toEqual([".vessel-kel.json", ".vessel-key.json"]);
-    // The same seed mints the same inception, so the bytes on disk carry nothing but the key's own act.
-    const signing = JSON.parse(key.toString()) as { signingKey: string };
-    expect(Buffer.from(inceptVesselKel(Uint8Array.from(Buffer.from(signing.signingKey, "hex"))).bytes).equals(kel)).toBe(true);
+    expect(JSON.parse(key.toString()).verifyingKey).toBe(inception.key);
     const floorHolder = c.holder;
     await floorHolder.lock();
-    const locked = await generateOrLoadVesselIdentity();
+    const locked = await mintVessel();
     expect(locked.verifyingKey).toBe(first.verifyingKey);
-    await floorHolder.adopt(c.vk);
+    await floorHolder.adopt(c.treeKey);
     seatCustody(floorHolder);
-    expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(first.verifyingKey);
+    expect((await mintVessel()).verifyingKey).toBe(first.verifyingKey);
     expect(read(".vessel-kel.json").equals(kel)).toBe(true); expect(read(".vessel-key.json").equals(key)).toBe(true);
   });
 
-  test("V9 wear requires a committed persona root", async () => {
-    await expect(wearPersona(4)).rejects.toThrow(/cannot wear persona/);
+  test("V9 a mount requires a committed persona root", async () => {
+    const mounted = async () => (await makeNodeFsPersonaVault()).selector.load();
+    await generateOrLoadPersonaGroupRoot(5);
+    setMountedFace(4);                                 // no root held at h4: the composition does not stand
+    expect(sovereignStands()).toBe(false);
+    await expect(loadPersonaGroupRootSeed(4)).rejects.toThrow(/no persona-root at h4/);   // a root must be held to sign as it
+    expect(await loadPersonaGroupRootSeed(5)).toHaveLength(32);                            // CONTROL: the held root signs
     expect(existsSync(at(".active-persona.json"))).toBe(false);
-    await generateOrLoadPersonaGroupRoot(4); await wearPersona(4);
-    sealed(".active-persona.json"); expect(await loadActivePersonaIndex()).toBe(4);
+    setMountedFace(undefined);
+    await generateOrLoadPersonaGroupRoot(4);
+    expect(await mounted()).toBeUndefined();
+    setMountedFace(4);
+    expect(await mounted()).toBe(4);
+    expect(sovereignStands()).toBe(true);
+    await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed);   // a command never reads the mount
+    setMountedFace(undefined);
+    expect(await mounted()).toBeUndefined();
+    expect(sovereignStands()).toBe(false);
   });
 
-  test("V10 all three maps seal, sort, and clear", async () => {
+  test("V10 each face's three maps seal, sort, and clear", async () => {
     const pets = await makeNodePersonaPetnameStore(); const decl = await makeNodePersonaDeclarationStore(); const handles = await makeNodePublicHandleStore();
     for (const i of [2, 0, 1]) { await pets.set(i, `label-${i}`); await decl.set(i, { handle: `declaration-${i}` }); await handles.save({ handleIndex: i, contextIndex: 0, nym: `nym-${i}`, glamour: "G", heads: [] }); }
-    for (const file of [".persona-petnames.json", ".persona-declarations.json", ".persona-public-handles.json"]) sealed(file);
-    expect(read(".persona-petnames.json").includes(Buffer.from("label-0"))).toBe(false); expect(read(".persona-public-handles.json").includes(Buffer.from("nym-0"))).toBe(false);
+    for (const i of [0, 1, 2]) {
+      for (const file of [petFile(i), declarationFile(i), publicFile(i)]) sealed(file);
+      expect(read(petFile(i)).includes(Buffer.from(`label-${i}`))).toBe(false);
+      expect(read(publicFile(i)).includes(Buffer.from(`nym-${i}`))).toBe(false);
+      for (const [file, field] of [[petFile(i), "names"], [declarationFile(i), "declarations"], [publicFile(i), "handles"]] as const) {
+        const row = await c.holder.readRow("identity", file);
+        expect(row.reading, `${file} opens`).toBe("opens");
+        if (row.reading === "opens") expect(Object.keys(JSON.parse(new TextDecoder().decode(row.plaintext))[field]), `${file} carries only its face`).toEqual([String(i)]);
+      }
+    }
     expect(await pets.entries()).toEqual([[0, "label-0"], [1, "label-1"], [2, "label-2"]]);
     expect((await decl.entries()).map(([i]) => i)).toEqual([0, 1, 2]); expect(await handles.list()).toEqual([0, 1, 2]);
     await pets.clear(9); expect((await pets.entries()).length).toBe(3);
@@ -269,43 +321,40 @@ describe("sealed vessel identity family", () => {
     expect(await handles.load(1)).toEqual({ handleIndex: 1, contextIndex: 0, nym: "nym-1", glamour: "G", heads: [] });
   });
 
-  test("V11 retired and stranger keys cannot read or write sealed identity rows", async () => {
-    await generateOrLoadPersonaGroupRoot(0); await wearPersona(0); const pets = await makeNodePersonaPetnameStore(); await pets.set(0, "private");
-    const files = [".persona-roster.json", ".active-persona.json", ".persona-petnames.json", rootFile(0)];
-    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldVk: c.vk, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
-    const standing = files.map(read);
-    const reads = [() => listPersonaRoots(), () => loadActivePersonaIndex(), () => pets.get(0), () => loadPersonaGroupRootSeed(0)];
-    const writes = [() => generateOrLoadPersonaGroupRoot(0), () => wearPersona(0), () => pets.set(0, "changed"), () => generateOrLoadPersonaGroupRoot(0)];
-    for (const door of [...reads, ...writes]) await expect(Promise.resolve().then(door)).rejects.toThrow(/reads key-fails/);
-    // The root row's own doors, asked straight at the retired holder: the roster no longer stands in front of them.
-    await expect(cold(rootFile(0))).rejects.toThrow(/reads key-fails/);
-    // A decision that ignores the reading it got and a blind write both stop at the sealed writer: the tree commits to another key.
-    await expect(c.holder.updateColdRow("identity", rootFile(0), () => ({ plaintext: enc({ under: "retired" }), value: undefined }))).rejects.toThrow(TreeVkRefusal);
-    await expect(c.holder.writeRow("identity", rootFile(0), enc({ under: "retired" }))).rejects.toThrow(TreeVkRefusal);
-    const keyB = mintVk();
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]!;
-      await expect(writeSealedCarrier({ io: c.io, vk: keyB, treePath: vkSlotsPath(c.homes.identity), carrier: { name: `identity/${file}`, path: at(file), keyClass: null }, plaintext: enc({ under: "B" }) })).rejects.toThrow(TreeVkRefusal);
-      expect(read(file).equals(standing[i]!), `${file} never moved`).toBe(true); expect(existsSync(`${at(file)}.vk-sealing`)).toBe(false);
-    }
-    const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.vk); seatCustody(fresh);
-    expect(await listPersonaRoots()).toEqual([0]); expect(await loadActivePersonaIndex()).toBe(0); expect(await pets.get(0)).toBe("private"); expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
+  test("V11 S key rotation leaves face rows sealed under their own keys and the sole open face still resolves", async () => {
+    await generateOrLoadPersonaGroupRoot(0);
+    const pets = await makeNodePersonaPetnameStore(); await pets.set(0, "private");
+    const faceFiles = [rootFile(0), rosterFile(0), petFile(0)];
+    const faceBefore = faceFiles.map(read);
+    const rotated = await rotateCustody({ io: c.io, homes: c.homes, oldTreeKey: c.treeKey, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] }] });
+    faceFiles.forEach((file, i) => expect(read(file).equals(faceBefore[i]!), `${file} keeps its face seal through S key rotation`).toBe(true));
+    expect(await listPersonaRoots()).toEqual([0]);
+    expect(await pets.get(0)).toBe("private");
+    expect(await resolveFace()).toBe(0);
+    expect((await wardCold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toMatch(HEX);
+    const fresh = makeCustodyHolder({ io: c.io, homes: c.homes }); await fresh.adopt(rotated.treeKey);
+    await fresh.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]); seatCustody(fresh);
+    expect(await listPersonaRoots()).toEqual([0]); expect(await resolveFace()).toBe(0);
+    expect(await pets.get(0)).toBe("private"); expect(await loadPersonaGroupRootSeed(0)).toHaveLength(32);
     await fresh.lock(); seatCustody(c.holder);
   });
 
   test("V12 two holders update maps and raced root mint once", async () => {
     const pets = await makeNodePersonaPetnameStore();
     for (const i of [0, 1, 2]) await pets.set(i, `p${i}`);
-    const other = makeCustodyHolder({ io: c.io, homes: c.homes }); await other.adopt(c.vk);
-    const viaOther = (i: number) => other.updateRow("identity", ".persona-petnames.json", (row) => {
+    for (const i of [3, 4, 5]) await pets.clear(i); // found each face with an empty map before the second holder writes
+    const other = makeCustodyHolder({ io: c.io, homes: c.homes }); await other.adopt(c.treeKey);
+    await other.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
+    const viaOther = (i: number) => other.updateRow("identity", petFile(i), (row) => {
       const names = row.reading === "opens" ? JSON.parse(new TextDecoder().decode(row.plaintext)).names as Record<string, string> : {};
       names[String(i)] = `p${i}`; return { plaintext: enc({ names }), value: undefined };
     });
     await Promise.all([viaOther(3), viaOther(4), viaOther(5)]);
     expect((await pets.entries()).map(([i]) => i)).toEqual([0, 1, 2, 3, 4, 5]);
+    for (const i of [0, 1, 2, 3, 4, 5]) expect(await pets.get(i)).toBe(`p${i}`);
     const minted = await Promise.all([generateOrLoadPersonaGroupRoot(4), generateOrLoadPersonaGroupRoot(4)]);
     expect(new Set(minted.map((r) => r.verifyingKey)).size).toBe(1); expect(minted.filter((r) => r.created)).toHaveLength(1);
-    expect((await cold<{ verifyingKey: string }>(rootFile(4))).verifyingKey).toBe(minted[0]!.verifyingKey);
+    expect((await wardCold<{ verifyingKey: string }>(rootFile(4))).verifyingKey).toBe(minted[0]!.verifyingKey);
     expect(await listPersonaRosterLines()).toEqual([{ handleIndex: 4, verifyingKey: minted[0]!.verifyingKey }]);
     await other.lock();
   });
@@ -320,32 +369,32 @@ describe("sealed vessel identity family", () => {
   });
 
   test("V14 repeating a root mint writes no bytes", async () => {
-    const first = await generateOrLoadPersonaGroupRoot(0); const roster = read(".persona-roster.json"); const root = read(rootFile(0));
+    const first = await generateOrLoadPersonaGroupRoot(0); const roster = read(rosterFile(0)); const root = read(rootFile(0));
     expect((await generateOrLoadPersonaGroupRoot(0)).created).toBe(false);
-    expect(read(".persona-roster.json").equals(roster)).toBe(true); expect(read(rootFile(0)).equals(root)).toBe(true);
+    expect(read(rosterFile(0)).equals(roster)).toBe(true); expect(read(rootFile(0)).equals(root)).toBe(true);
     expect(first.created).toBe(true);
   });
 
   test("V15 two vessel-key mints race and the key and its inception name one mint", async () => {
-    const [a, b] = await Promise.all([generateOrLoadVesselIdentity(), generateOrLoadVesselIdentity()]);
+    const [a, b] = await Promise.all([mintVessel(), mintVessel()]);
     expect(a.verifyingKey).toBe(b.verifyingKey);
     const key = JSON.parse(read(".vessel-key.json").toString()) as { verifyingKey: string };
-    const kel = decodeVesselKelInception(read(".vessel-kel.json"));
+    const kel = readKel(read(".vessel-kel.json"));
     expect(key.verifyingKey).toBe(a.verifyingKey);
-    expect(kel?.k).toEqual([a.verifyingKey]); expect(verifyVesselKelInception(kel!)).toBe(true);
+    expect(kel.key).toBe(a.verifyingKey); expect(kelOk(read(".vessel-kel.json"))).toBe(true);
     // A mint over an inception whose key went missing: the fresh key lands beside a fresh inception that names it,
     // so a stale inception never outlives its key.
     expect(readdirSync(c.homes.identity).filter((f) => f.endsWith(".landing"))).toEqual([]);
     const firstKel = read(".vessel-kel.json");
     rmSync(at(".vessel-key.json"));
-    const again = await generateOrLoadVesselIdentity();
+    const again = await mintVessel();
     expect(again.verifyingKey).not.toBe(a.verifyingKey);
-    const kel2 = decodeVesselKelInception(read(".vessel-kel.json"));
+    const kel2 = readKel(read(".vessel-kel.json"));
     expect(read(".vessel-kel.json").equals(firstKel)).toBe(false);
-    expect(kel2?.k).toEqual([again.verifyingKey]); expect(verifyVesselKelInception(kel2!)).toBe(true);
+    expect(kel2.key).toBe(again.verifyingKey); expect(kelOk(read(".vessel-kel.json"))).toBe(true);
     // control: a key that stands ends a later mint with nothing written
     const standing = [".vessel-key.json", ".vessel-kel.json"].map(read);
-    expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(again.verifyingKey);
+    expect((await mintVessel()).verifyingKey).toBe(again.verifyingKey);
     [".vessel-key.json", ".vessel-kel.json"].forEach((f, i) => expect(read(f).equals(standing[i]!), f).toBe(true));
   });
 
@@ -384,18 +433,18 @@ describe("sealed vessel identity family", () => {
     const identityB = await import("../src/node-vessel-identity.js");
     expect(seatB.seatCustody).not.toBe(seatCustody);                         // the setup took: two graphs
     const second = holderB.makeCustodyHolder({ io: new ioB.FsCustodyIo(c.homes), homes: c.homes });
-    await second.adopt(c.vk);
+    await second.adopt(c.treeKey);
     seatB.seatCustody(gated(second as unknown as Holder, "b") as unknown as Parameters<typeof seatB.seatCustody>[0]);
     try {
-      const [a, b] = await Promise.all([generateOrLoadVesselIdentity(), identityB.generateOrLoadVesselIdentity()]);
+      const [a, b] = await Promise.all([mintVessel(), identityB.generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } })]);
       expect(asks).toEqual({ a: 1, b: 1 });                                   // control: both acts asked the claim
       expect(runs).toEqual({ a: 1, b: 1 });                                   // control: both mints ran inside it
       expect(order).toEqual([`${first}:in`, `${first}:out`, `${later}:in`, `${later}:out`]);   // the claim held them apart
       const key = JSON.parse(read(".vessel-key.json").toString()) as { verifyingKey: string };
-      const kel = decodeVesselKelInception(read(".vessel-kel.json"));
+      const kel = readKel(read(".vessel-kel.json"));
       expect(b.verifyingKey).toBe(a.verifyingKey);                            // both acts answer the one standing key
       expect(key.verifyingKey).toBe(a.verifyingKey);
-      expect(kel?.k).toEqual([a.verifyingKey]); expect(verifyVesselKelInception(kel!)).toBe(true);
+      expect(kel.key).toBe(a.verifyingKey); expect(kelOk(read(".vessel-kel.json"))).toBe(true);
       expect(readdirSync(c.homes.identity).filter((f) => f.endsWith(".landing"))).toEqual([]);
     } finally {
       await second.lock();
@@ -407,7 +456,7 @@ describe("sealed vessel identity family", () => {
   test("V16 an orphan root reads by its canonical name alone", async () => {
     const minted = await generateOrLoadPersonaGroupRoot(1);
     const sealedRoot = read(rootFile(1));
-    await c.holder.updateRow("identity", ".persona-roster.json", () => ({ plaintext: enc({ roots: [] }), value: undefined }));
+    await c.holder.updateRow("identity", rosterFile(1), () => ({ plaintext: enc({ roots: [] }), value: undefined }));
     writeFileSync(at(".persona-group-root-h01.json"), sealedRoot);
     expect(await orphanPersonaRoots()).toEqual([1]);          // control: the canonical spelling names the orphan
     rmSync(at(rootFile(1)));
@@ -416,25 +465,21 @@ describe("sealed vessel identity family", () => {
   });
 
   test("V18 a standing key whose inception fails to prove it refuses by name, and nothing moves", async () => {
-    const minted = await generateOrLoadVesselIdentity();
+    const minted = await mintVessel();
     const key = read(".vessel-key.json"); const kel = read(".vessel-kel.json");
-    const seedHex = (JSON.parse(key.toString()) as { signingKey: string }).signingKey;
-    const parsed = JSON.parse(kel.toString()) as { t: string; k: string[]; sig: string };
-    const foreign = inceptVesselKel(new Uint8Array(32).fill(9));
-    // An inception the floor key itself signed over a next-key commitment: a well-signed record of the retired shape.
-    const committingCore = { t: "icp", k: parsed.k, nt: "1", n: [createHash("sha256").update("next").digest("hex")] };
-    const committing = { ...committingCore, sig: await ed25519SignerFromSeed(Uint8Array.from(Buffer.from(seedHex, "hex")))(canonicalJsonBytes({ domain: VESSEL_KEL_DOMAIN, ...committingCore })) };
+    const parsed = readKel(kel);
+    const foreign = await foreignKel(new Uint8Array(32).fill(9));
     const cases: ReadonlyArray<readonly [string, Buffer | null, string]> = [
       ["no inception", null, "absent"],
       ["a torn inception", kel.subarray(0, kel.length - 3), "malformed"],
-      ["an inception of another key", Buffer.from(foreign.bytes), "names-another-key"],
-      ["a signature that fails", Buffer.from(JSON.stringify({ ...parsed, sig: foreign.inception.sig })), "signature-fails"],
-      ["an inception that commits a next key", Buffer.from(JSON.stringify(committing)), "malformed"],
+      ["an inception of another key", foreign, "names-another-key"],
+      ["a signature that fails", Buffer.from(JSON.stringify([{ ...parsed, sig: readKel(foreign).sig }])), "signature-fails"],
+      ["an unarmed inception", Buffer.from(JSON.stringify([{ ...parsed, next: undefined }])), "unarmed"],
     ];
     for (const [what, planted, reading] of cases) {
       if (planted === null) rmSync(at(".vessel-kel.json"));
       else { expect(planted.equals(kel), `${what}: the probe moved the bytes`).toBe(false); writeFileSync(at(".vessel-kel.json"), planted); }
-      const refused = await generateOrLoadVesselIdentity().then(() => null, (err: unknown) => err);
+      const refused = await mintVessel().then(() => null, (err: unknown) => err);
       expect(refused, what).toBeInstanceOf(VesselInceptionRefused);
       expect((refused as VesselInceptionRefused).reading, what).toBe(reading);
       expect(read(".vessel-key.json").equals(key), `${what}: the key stays`).toBe(true);
@@ -442,22 +487,22 @@ describe("sealed vessel identity family", () => {
       else expect(read(".vessel-kel.json").equals(planted), `${what}: nothing written over it`).toBe(true);
     }
     writeFileSync(at(".vessel-kel.json"), kel);
-    expect((await generateOrLoadVesselIdentity()).verifyingKey).toBe(minted.verifyingKey);        // control
+    expect((await mintVessel()).verifyingKey).toBe(minted.verifyingKey);        // control
   });
 
   test("V19 every load door of a standing key proves its inception, and writes nothing", async () => {
-    const minted = await generateOrLoadVesselIdentity();
+    const minted = await mintVessel();
     const key = read(".vessel-key.json"); const kel = read(".vessel-kel.json");
     const doors: ReadonlyArray<readonly [string, () => Promise<unknown>]> = [
       ["the boot's identity read", () => loadVesselIdentity()],
       ["the public key", () => loadVesselVerifyingKey()],
-      ["the signing seed", () => loadVesselSigningSeed()],
+      ["the scoped place signer", () => vesselPlaceSignerDoor()],
       ["the floor key's derive door", async () => (await vesselFloorKeyDoor()).derive(GATE_FLOOR_BUNDLE_INFO)],
     ];
     // control: over the intact inception every door answers
     for (const [what, door] of doors) await expect(door(), what).resolves.toBeDefined();
     expect(await loadVesselVerifyingKey()).toBe(minted.verifyingKey);
-    const foreign = Buffer.from(inceptVesselKel(new Uint8Array(32).fill(9)).bytes);
+    const foreign = await foreignKel(new Uint8Array(32).fill(9));
     for (const [planted, reading] of [[null, "absent"], [foreign, "names-another-key"]] as const) {
       if (planted === null) rmSync(at(".vessel-kel.json")); else writeFileSync(at(".vessel-kel.json"), planted);
       for (const [what, door] of doors) {
@@ -473,13 +518,13 @@ describe("sealed vessel identity family", () => {
   });
 
   test("V20 a key file whose seed derives another key refuses at every door, and nothing moves", async () => {
-    const minted = await generateOrLoadVesselIdentity();
+    const minted = await mintVessel();
     const key = read(".vessel-key.json"); const kel = read(".vessel-kel.json");
     const doors: ReadonlyArray<readonly [string, () => Promise<unknown>]> = [
-      ["the found act's load", () => generateOrLoadVesselIdentity()],
+      ["the found act's load", () => mintVessel()],
       ["the boot's identity read", () => loadVesselIdentity()],
       ["the public key", () => loadVesselVerifyingKey()],
-      ["the signing seed", () => loadVesselSigningSeed()],
+      ["the scoped place signer", () => vesselPlaceSignerDoor()],
       ["the floor key's derive door", async () => (await vesselFloorKeyDoor()).derive(GATE_FLOOR_BUNDLE_INFO)],
     ];
     for (const [what, door] of doors) await expect(door(), what).resolves.toBeDefined();          // control

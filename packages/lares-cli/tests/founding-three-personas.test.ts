@@ -19,6 +19,9 @@
  *   · the roll keeps the seed's rule unless the operator names one, and a rule past the roster refuses;
  *   · a re-seat over the hearth's seed charter refuses by name, and the AID stays.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { cpSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -30,9 +33,10 @@ import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome } from "../src/env.js";
 import {
   generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore,
-  listPersonaRoots, readNexusDoc, loadIdentityAnchors,
+  listPersonaRoots, readNexusDoc, loadIdentityAnchors, seatReadBackStandIn,
 } from "@lararium/node";
 import { ownPersonaPetname, declaredHandle, foundingQuorumSeated, nexusAidOf } from "@lararium/mesh";
+import { labelledRelations, readFaceLabel } from "../src/face-labels.js";
 
 // The room each test and hook takes, stated where the file loads: a founding derives a key and every seat seals a
 // row, so a case here runs for seconds. A timeout stated inside a hook reaches no case the runner already collected.
@@ -65,10 +69,10 @@ describe("a hearth's three founding faces (CLI, real vault + disk)", () => {
   let card = "";
   beforeEach(async () => {
     vi.setConfig({ testTimeout: 30_000, hookTimeout: 30_000 });
+    seatReadBackStandIn(true); // The harness explicitly stands in for the person reading each card back.
     root = mkdtempSync(join(tmpdir(), "lares-founding3-"));
     setEnv("LAR_ROOT", root);                       // isolates bags + vault-state + petname store under one tree
-    // A STAGED root, as a harness stages one: the marker beside custody under the published test route, so the
-    // card's read-back stands in.
+    // Stage the root as the harness does; the explicit stand-in above answers each card read-back.
     writeFileSync(join(root, ".lar-test-scratch"), "");
     vi.spyOn(console, "log").mockImplementation(() => {});
     vi.spyOn(console, "error").mockImplementation(() => {});
@@ -81,6 +85,7 @@ describe("a hearth's three founding faces (CLI, real vault + disk)", () => {
     expect(card).toMatch(/^[0-9a-f-]+$/);
   });
   afterEach(() => {
+    seatReadBackStandIn(false);
     vi.restoreAllMocks();
     for (const [k, v] of Object.entries(saved)) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     rmSync(root, { recursive: true, force: true });
@@ -92,7 +97,7 @@ describe("a hearth's three founding faces (CLI, real vault + disk)", () => {
       expect(await cmdPersona(personaArgs(["new", String(i)], { name: LABELS[i]!, handle: KAHU[i]! }, { seat: true }))).toBe(0);
     }
   }
-  const roll = (options: Record<string, string> = {}) => cmdNexus(nexusArgs(["seal", "rotate"], { "cold-key": card, ...options }));
+  const roll = (options: Record<string, string> = {}) => cmdNexus(nexusArgs(["seal", "rotate"], { "cold-key": card, face: "0", ...options }));
 
   test("the hearth's persona zero and persona new 1/2 → roster [0,1,2]; the private label and the declared Handle land SEPARATELY", async () => {
     await standThree();
@@ -178,6 +183,28 @@ describe("a hearth's three founding faces (CLI, real vault + disk)", () => {
     await roll({ threshold: "2" });
     const wire = JSON.stringify(readNexusDoc(larSealHome()));
     for (const label of LABELS) expect(wire).not.toContain(label);
+  });
+
+  test("★ FACES NAME THEMSELVES AT CREATION — the founding act and `persona new 1/2` each write the face's label (relation -> pet-name) ★", async () => {
+    // Persona zero labelled itself inside the Stable founding act, before any face read ran.
+    const afterFounding = labelledRelations(join(root, "projections"));
+    expect(afterFounding).toHaveLength(1);
+    expect(readFaceLabel(afterFounding[0]!, join(root, "projections"))).toMatchObject({ petname: LABELS[0], handleIndex: 0 });
+    for (let i = 1; i < KAHU.length; i++) {
+      expect(await cmdPersona(personaArgs(["new", String(i)], { name: LABELS[i]! }))).toBe(0);
+    }
+    const relations = labelledRelations(join(root, "projections"));
+    expect(relations).toHaveLength(3);
+    const labels = relations.map((r) => readFaceLabel(r, join(root, "projections"))!).sort((a, b) => a.handleIndex - b.handleIndex);
+    expect(labels.map((l) => [l.handleIndex, l.petname])).toEqual([[0, LABELS[0]], [1, LABELS[1]], [2, LABELS[2]]]);
+    expect(new Set(labels.map((l) => l.relation)).size).toBe(3);   // each face its own relation
+  });
+
+  test("★ `persona new 0` over the standing face RENAMES its label — the already-stood face reads its relation off its own stage ★", async () => {
+    const [relation] = labelledRelations(join(root, "projections"));
+    expect(await cmdPersona(personaArgs(["new", "0"], { name: "renamed" }))).toBe(0);
+    expect(labelledRelations(join(root, "projections"))).toEqual([relation]);
+    expect(readFaceLabel(relation!, join(root, "projections"))?.petname).toBe("renamed");
   });
 
   test("★ a MIRROR never fails the act it mirrors — no fleet answers, and the naming still lands ★", async () => {

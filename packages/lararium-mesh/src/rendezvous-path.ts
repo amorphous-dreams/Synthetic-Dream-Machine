@@ -21,7 +21,7 @@
  * "Herms/larariums at all scales serve as civic infrastructure": a lararium daemon MUST survive its
  * operator logging out. `/run/user/$UID` is destroyed at logout by contract, so a rendezvous that must be
  * found alive tomorrow cannot live there — whatever its length advantage. The practice in the field splits
- * along precisely this axis rather than along modern-vs-legacy, and this house has answered it.
+ * along precisely this axis, and this house answers it with a path that survives logout.
  *
  * ── WHY THE NAME DERIVES FROM THE ROOT ───────────────────────────────────────────────────────────────────
  * A shared short directory would be WORSE than a deep one: two throwaway roots would collide on a single

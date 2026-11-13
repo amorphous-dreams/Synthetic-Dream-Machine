@@ -10,6 +10,7 @@
 //   B5  the root's seed rests in NO document, outcome or log line of the standing vessel after a cut.
 //                                                               control: the opened body does carry it
 //   B6  the harness door refuses an unmarked root (rc 2) before any socket opens.
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
@@ -22,6 +23,7 @@ import { TEST_PASSPHRASE } from "./test-custody-route.mjs";
 import { custodyBreaches, custodyReading } from "./custody-census.mjs";
 import { backupTestCustody } from "./backup-test-custody.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
+import { daemonStood } from "./daemon-stood.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
@@ -57,7 +59,7 @@ async function stand(root) {
   child.stderr.on("data", (d) => { log += String(d); });
   await new Promise((resolve, reject) => {
     const poll = setInterval(() => {
-      if (/phase → live/.test(log)) { clearInterval(poll); resolve(); }
+      if (daemonStood(log)) { clearInterval(poll); resolve(); }
       else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`daemon exited ${child.exitCode} before live:\n${log.slice(-3000)}`)); }
     }, 200);
   });
@@ -91,6 +93,7 @@ function everyByte(root) {
 
 test("a standing vessel cuts one face's backup bundle through its custody door", { timeout: 900_000 }, async () => {
   const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
+  const { nativeKdf } = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/node.js")).href);
   const root = stageFounded("live");
   const outDir = mkdtempSync(join(tmpdir(), "lares-backup-out-"));
   let vessel = null;
@@ -129,7 +132,7 @@ test("a standing vessel cuts one face's backup bundle through its custody door",
     const read = mesh.readFaceBundle(bytes);
     assert.equal(read.reading, "readable");
     assert.deepEqual(mesh.faceBundleResidue(bytes), { length: bytes.length, slots: [{ t: 1, pins: ["passphrase"] }] });
-    const key = mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+    const key = await mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], nativeKdf);
     assert.equal(key.reading, "opens");
     const plain = mesh.openFaceBundleBody(read.sealedBody, key.bundleKey);
     assert.ok(plain, "the body opens under the bundle's own key");
@@ -140,7 +143,9 @@ test("a standing vessel cuts one face's backup bundle through its custody door",
     assert.equal(body.names.petname, "the gardener");
     assert.ok(body.kel.length >= 1 && body.kel[0].prefix === body.anchors.personaKelPrefix, "the body carries the face's key history from its inception");
     assert.equal((await mesh.verifyPersonaKelFull(body.kel)).ok, true);
-    assert.deepEqual(Object.keys(body).sort(), ["anchors", "faceProofKeys", "handleBook", "kel", "memory", "names", "root", "rosterLine"]);
+    assert.deepEqual(Object.keys(body).sort(), ["addressSecret", "anchors", "faceProofKeys", "handleBook", "kel", "memory", "names", "recoveryContactSet", "root", "rosterLine"]);
+    assert.match(body.addressSecret, /^[0-9a-f]{64}$/, "the face's address secret rides, so its working documents follow it");
+    assert.equal(body.recoveryContactSet, null, "a face that enrolled no recovery contacts carries no set");
     assert.deepEqual(Object.keys(body.anchors).sort(), ["personaKelPrefix", "signerDid"]);
     await vessel.said(/\[custody\] backup: done/);
     assert.match(vessel.log(), /\[custody\] backup: refused \(no-slot-opens\)/);

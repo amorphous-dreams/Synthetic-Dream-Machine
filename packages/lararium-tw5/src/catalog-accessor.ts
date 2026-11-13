@@ -30,13 +30,14 @@ import {
   type DocHandle,
   type LarDoc,
   type LarTiddlerRecord,
-  type LarTiddlerStore,
-} from "@lararium/mesh";
-import { plainRecordOrNull } from "@lararium/mesh";
+  type LarTiddlerStore, ownEntry, plainField} from "@lararium/mesh";
+import { catalogRowHalf, isHouseCanonBag, litFaceCatalogOf, makeCatalogView, plainRecordOrNull, realmStandingDocUrl } from "@lararium/mesh";
 
 export interface CatalogAccessor {
-  /** The `catalog` registry doc itself, resolved + cached. */
+  /** The `catalog` registry doc itself, resolved + cached (the floor with the face's rows laid over it, U1). */
   handle(): Promise<DocHandle<LarDoc>>;
+  /** The floor's catalog alone: its public rows, readable before the face's sealed catalog opens. */
+  floor?(): Promise<DocHandle<LarDoc>>;
   /** The AutomergeUrl a registry entry points at, or null if unregistered. */
   urlOf(bagUri: string): Promise<string | null>;
   /** The full registry RECORD at a title (e.g. a user wiki recipe), or null.
@@ -51,6 +52,13 @@ export interface CatalogAccessor {
    *  syncs — it MOUNTS nothing into a composite (access≠load). Authority rides
    *  the cap-gate upstream, never a composite read-only flag. */
   storeOf(bagUri: string): Promise<LarTiddlerStore | null>;
+  /**
+   * THE DIRECT ROAD to a private-synced home (the face's persona plane): `find`/`storeOf` pass such a row by, so no verb
+   * lookup, library mount or membership scan reaches it, and the home's own readers and writers (the face-join grant, the
+   * PersonaGroup ring) resolve it here by the url its row names. Any other row answers as `find`/`storeOf` would.
+   */
+  homeOf?(bagUri: string): Promise<DocHandle<LarDoc> | null>;
+  homeStoreOf?(bagUri: string): Promise<LarTiddlerStore | null>;
 }
 
 /**
@@ -65,30 +73,64 @@ export interface CatalogAccessor {
 // refusal (mesh's `findOrThrow`, the one bounded resolve) — never a forever-pending whenReady.
 export { findOrThrow };
 
-export function makeCatalogAccessor(repo: Repo, catalogUrl: string): CatalogAccessor {
+export function makeCatalogAccessor(repo: Repo, catalogUrl: string, faceCatalogUrl?: string | null): CatalogAccessor {
   let _catalog: Promise<DocHandle<LarDoc>> | null = null;
+  let _floor: Promise<DocHandle<LarDoc>> | null = null;
+  let _face: string | null = null;
+  // The floor alone, cached apart: a floor row never waits on the face's catalog, which rests sealed and hydrates only
+  // once the island's holder stands (sealed-store#/owed, T2).
+  const floorHandle = (): Promise<DocHandle<LarDoc>> => {
+    if (!_floor) {
+      const opened = findOrThrow(repo, catalogUrl, "catalog registry");
+      _floor = opened;
+      opened.catch(() => { if (_floor === opened) _floor = null; });
+    }
+    return _floor;
+  };
   const handle = (): Promise<DocHandle<LarDoc>> => {
-    if (!_catalog) {
-      _catalog = findOrThrow(repo, catalogUrl, "catalog registry");
+    // THE SPLIT CATALOG (sealed-store#/owed, U1): a lit face's own rows rest in its catalog, laid over the floor's; the
+    // view routes each write by its row's class. Unnamed, the face this process stands lit over the floor answers
+    // (`litFaceCatalogOf`); with none, the floor answers alone.
+    const face = faceCatalogUrl === undefined ? litFaceCatalogOf(catalogUrl) : faceCatalogUrl;
+    if (!_catalog || _face !== face) {
+      _face = face;
+      const opened: Promise<DocHandle<LarDoc>> = face
+        ? Promise.all([floorHandle(), findOrThrow(repo, face, "the face's catalog")]).then(([f, d]) => makeCatalogView(f, d))
+        : floorHandle();
+      _catalog = opened;
       // A failed resolve must not poison the cache — the next call retries.
-      _catalog.catch(() => { _catalog = null; });
+      opened.catch(() => { if (_catalog === opened) _catalog = null; });
     }
     return _catalog;
   };
+  return accessorOver(handle, catalogUrl, repo, floorHandle);
+}
 
+/** An accessor over a catalog handle this holder already stands (the vessel's own view), so its reads and writes route
+ *  through the same split as every other reader of that handle. */
+export function makeCatalogAccessorOver(repo: Repo, catalog: DocHandle<LarDoc>): CatalogAccessor {
+  const ready = Promise.resolve(catalog);
+  return accessorOver(() => ready, catalog.url, repo);
+}
+
+function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: string, repo: Repo, floorHandle?: () => Promise<DocHandle<LarDoc>>): CatalogAccessor {
+  // A row its class rests on the floor reads the floor alone (`catalogRowHalf`).
+  const halfFor = (title: string): Promise<DocHandle<LarDoc>> => (floorHandle && catalogRowHalf(title) === "floor" ? floorHandle() : handle());
   const urlOf = async (bagUri: string): Promise<string | null> => {
     if (bagUri === CATALOG_DOC_URI) return catalogUrl;
-    const cat = await handle();
-    return tiddlerText(cat.doc()?.tiddlers?.[bagUri]) ?? null;
+    const cat = await halfFor(bagUri);
+    return tiddlerText(ownEntry(cat.doc()?.tiddlers, bagUri)) ?? null;
   };
 
   const recordOf = async (title: string): Promise<LarTiddlerRecord | null> => {
-    const cat = await handle();
-    return plainRecordOrNull(cat.doc()?.tiddlers?.[title]);
+    const cat = await halfFor(title);
+    return plainRecordOrNull(ownEntry(cat.doc()?.tiddlers, title));
   };
 
   const find = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
     if (bagUri === CATALOG_DOC_URI) return handle();
+    const row = await recordOf(bagUri);
+    if (plainField(row, "kind") === "private-synced") return null;
     const url = await urlOf(bagUri);
     if (!url) return null;
     return findOrThrow(repo, url, `bag ${bagUri}`);
@@ -99,5 +141,27 @@ export function makeCatalogAccessor(repo: Repo, catalogUrl: string): CatalogAcce
     return h ? new AutomergeDocStore(h, bagUri) : null;
   };
 
-  return { handle, urlOf, recordOf, find, storeOf };
+  const homeOf = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
+    if (bagUri === CATALOG_DOC_URI) return handle();
+    const url = await urlOf(bagUri);
+    return url ? findOrThrow(repo, url, `home ${bagUri}`) : null;
+  };
+  const homeStoreOf = async (bagUri: string): Promise<LarTiddlerStore | null> => {
+    const h = await homeOf(bagUri);
+    return h ? new AutomergeDocStore(h, bagUri) : null;
+  };
+
+  return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf, homeOf, homeStoreOf };
+}
+
+/**
+ * The document a recipe's LIBRARY bag mounts from: the registry's entry, else — for a house canon bag (`isHouseCanonBag`),
+ * which no registry row names — the Kahu realm's standing registration read off this catalog. It names a
+ * url and grants no reach: every write into the document clears the Kahu predicate at its own door.
+ */
+export async function libraryDocUrl(catalog: CatalogAccessor, bagUri: string): Promise<string | null> {
+  if (plainField(await catalog.recordOf(bagUri), "kind") === "private-synced") return null;
+  const row = await catalog.urlOf(bagUri);
+  if (row !== null || !isHouseCanonBag(bagUri)) return row;
+  return realmStandingDocUrl((await (catalog.floor ?? catalog.handle)()).doc(), bagUri);
 }

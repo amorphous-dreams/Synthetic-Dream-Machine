@@ -16,96 +16,58 @@
  *   W1-W3 need only a browser — the web surface boots a sovereign island, "no node attached". A red here is
  *         browser-side and cannot be a crossing fault.
  *   W4-W5 need a node vessel — a red here cannot be a DOM fault, because W1-W3 already passed.
+ *   M1-M5 read the PERSON'S surface, the glass mirror (`#mirror`). Once it stands the page hides the worker-rendered floor
+ *         that W2-W4 drive, so W2-W4 prove the none-width return leg beneath it and M1-M5 prove what a person reads and
+ *         types: the settle, the stock theme and palette, the wiki's own default story, the pane's name, and a real edit
+ *         typed through Playwright's own mouse and keyboard, read back from the worker. A red reading whose source
+ *         `genesis/unbaked.json` declares reads as a gap naming the row (mirror-read.mjs).
  *
  * Nothing here retries or waits on a wall clock beyond a bounded settle: a vector that needs patience
  * says how much and why, so a slow machine reads as slow rather than as broken.
  */
 import { chromium } from "playwright";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../packages/lararium-node/dist/probes/browser-test-custody.js";
+import { workerTraceInitScript } from "./worker-trace.mjs";
+import { awaitPage, waitForWitness } from "./page-wait.mjs";
+import { readFileSync, existsSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { contentReading, handoffReading, labelReading, settleOf, styledReadings, unbakedSources } from "./mirror-read.mjs";
 
 const WEB = process.env.WELD_WEB_URL ?? "http://localhost:5173";
-const SETTLE_MS = Number(process.env.WELD_SETTLE_MS ?? 15_000);
 
 let failures = 0, gaps = 0;
+
+/**
+ * THE CONSOLE CAPTURE: every line the page AND its workers write (a worker's line reaches the page's console event,
+ * named by its worker's script), and every page error. A red run prints the whole capture into the weld's log, which the
+ * held-out artifact keeps, so a refusal that reached only a console names the exit that swallowed an act.
+ */
+const consoleCapture = [];
+const CONSOLE_CAPTURE_MAX = 4_000;
+function captureConsole(page) {
+  const keep = (line) => { consoleCapture.push(line); if (consoleCapture.length > CONSOLE_CAPTURE_MAX) consoleCapture.shift(); };
+  page.on("console", (m) => {
+    const worker = m.worker();
+    const from = worker ? `worker ${worker.url().split("/").pop()}` : "page";
+    keep(`${from} ${m.type()}: ${m.text()}`);
+  });
+  page.on("pageerror", (e) => keep(`page pageerror: ${String(e)}`));
+}
+function printConsoleCapture() {
+  console.log(`\n  ── console capture (page + workers, ${consoleCapture.length} line(s), last ${CONSOLE_CAPTURE_MAX} kept) ──`);
+  for (const line of consoleCapture) console.log(`  | ${line}`);
+}
 const ok   = (n, m) => console.log(`  \x1b[32mok\x1b[0m       ${n} — ${m}`);
 const bad  = (n, m) => { failures++; console.log(`  \x1b[31mFAILED\x1b[0m   ${n} — ${m}`); };
 const gap  = (n, m) => { gaps++;     console.log(`  \x1b[33mgap\x1b[0m      ${n} — ${m}`); };
 
-/** Poll a predicate to a bound. Returns the value or null — never throws, so a vector reports rather than dies. */
-async function until(fn, ms = SETTLE_MS, every = 250) {
-  const stop = Date.now() + ms;
-  for (;;) {
-    try { const v = await fn(); if (v) return v; } catch { /* a not-yet-mounted surface is not an error */ }
-    if (Date.now() > stop) return null;
-    await new Promise((r) => setTimeout(r, every));
-  }
-}
-
-/** The projected pane lives inside a shadow root; every read of it goes through this one accessor. */
-const paneHtml = (page) => page.evaluate(() =>
-  document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML ?? "");
-
 /**
  * Install before navigation: workers are the actual browser→island boundary, not an inference from
- * changed HTML. The trace records only protocol identifiers (never projection bodies or input values).
- * `dropDomEventRenderId` is an intentionally narrow test control: it drops one known click at that
- * boundary so W3 can prove its positive result depends on the return leg.
+ * changed HTML. The trace and its one drop control live in worker-trace.mjs.
  */
 async function installWorkerTrace(page) {
-  await page.addInitScript(() => {
-    const trace = {
-      events: [],
-      dropDomEventRenderId: null,
-    };
-    window.__weldWorkerTrace = trace;
-
-    const summarize = (data) => {
-      if (!data || typeof data !== "object") return { type: typeof data };
-      const msg = data;
-      const payload = msg.payload && typeof msg.payload === "object" ? msg.payload : null;
-      return {
-        type: typeof msg.type === "string" ? msg.type : "",
-        renderId: typeof msg.renderId === "string" ? msg.renderId : "",
-        eventType: typeof msg.eventType === "string" ? msg.eventType : "",
-        listenable: typeof msg.listenable === "string" ? msg.listenable : "",
-        wikiUri: typeof msg.wikiUri === "string" ? msg.wikiUri : "",
-        rev: typeof payload?.rev === "number" ? payload.rev : null,
-      };
-    };
-    const NativeWorker = window.Worker;
-    let nextWorkerId = 0;
-    function TracedWorker(...args) {
-      const worker = new NativeWorker(...args);
-      const url = String(args[0]);
-      const workerId = `worker-${++nextWorkerId}`;
-      let workerWikiUri = "";
-      const note = (direction, data) => {
-        const summary = summarize(data);
-        if (summary.wikiUri) workerWikiUri = summary.wikiUri;
-        trace.events.push({ direction, worker: url, workerId, ...summary, wikiUri: summary.wikiUri || workerWikiUri });
-      };
-      worker.addEventListener("message", (event) => {
-        note("from-worker", event.data);
-      });
-      worker.addEventListener("error", (event) => {
-        trace.events.push({ direction: "worker-error", worker: url, workerId, wikiUri: workerWikiUri, message: event.message || "" });
-      });
-      const post = worker.postMessage.bind(worker);
-      worker.postMessage = (data, transfer) => {
-        const before = trace.events.length;
-        note("to-worker", data);
-        const entry = trace.events[before];
-        if (entry.type === "wiki:dom-event" && entry.renderId === trace.dropDomEventRenderId) {
-          trace.events.push({ ...entry, direction: "dropped-to-worker" });
-          return;
-        }
-        return transfer === undefined ? post(data) : post(data, transfer);
-      };
-      return worker;
-    }
-    TracedWorker.prototype = NativeWorker.prototype;
-    Object.setPrototypeOf(TracedWorker, NativeWorker);
-    window.Worker = TracedWorker;
-  });
+  await page.addInitScript({ content: workerTraceInitScript() });
 }
 
 const traceMark = (page) => page.evaluate(() => window.__weldWorkerTrace?.events.length ?? 0);
@@ -113,7 +75,7 @@ const traceSince = (page, mark) => page.evaluate((from) => window.__weldWorkerTr
 const traceHas = (events, wanted) => events.some((event) =>
   Object.entries(wanted).every(([key, value]) => event[key] === value));
 const traceTail = (events) => events.slice(-4).map((event) =>
-  [event.direction, event.workerId, event.wikiUri, event.type, event.renderId, event.listenable]
+  [event.direction, event.workerId, event.envelope, event.surface || event.wikiUri, event.type, event.renderId, event.listenable]
     .filter(Boolean).join(":"),
 ).join(" | ");
 
@@ -143,9 +105,11 @@ const main = async () => {
   const browser = await chromium.launch();
   try {
     const page = await browser.newPage();
+    await armTestCustody(page, "browser-weld");
     const consoleErrors = [];
     page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
     page.on("pageerror", (e) => consoleErrors.push(String(e)));
+    captureConsole(page);
     await installWorkerTrace(page);
 
   console.log(`\n\x1b[1mBROWSER WELD — a tiddler edited in a browser, followed to the node's disk\x1b[0m`);
@@ -164,21 +128,49 @@ const main = async () => {
 
   // ── W1 · the vessel boots to a live sovereign island ──────────────────────────────────────────
   // The web surface writes its own verdict into #status / #vessel. Reading ITS words rather than inferring
-  // from the DOM keeps this vector honest about what the web surface itself claims.
-  const status = await until(async () => {
-    const t = await page.evaluate(() => document.getElementById("vessel")?.textContent ?? "");
-    return t.includes("live") ? t : null;
-  });
-  if (status) ok("W1 vessel-boots", "the island reports live");
-  else bad("W1 vessel-boots", `no "live" in #vessel within ${SETTLE_MS}ms — the browser vessel never stood`);
+  // from the DOM keeps this vector honest about what the web surface itself claims. The wait ends on the
+  // page's own events: #vessel reports "live" (arrival), or the page paints a terminal signal (a refusing or
+  // faulting phase, an err or warn status, a ceremony refusal, a refused mirror stand) or raises a page error.
+  // The boot's phase list growing is its progress: each new phase renews the LIVENESS bound, so a slow boot that keeps
+  // advancing is never cut, and one alive and silent refuses by name.
+  const booted = await awaitPage(page, ({ seen }) => {
+    const phases = [...document.querySelectorAll("#phases .phase")];
+    const phase = phases.find((p) => /refus|fault/i.test(p.textContent ?? ""));
+    if (phase) return { done: `phase: ${phase.textContent}` };
+    const st = document.querySelector("#status");
+    if (st?.classList.contains("err") || st?.classList.contains("warn")) return { done: `status: ${st.textContent}` };
+    const refusal = document.querySelector(".ceremony-ask[data-refusal]");
+    if (refusal) return { done: `ceremony refusal: ${refusal.getAttribute("data-refusal")}` };
+    const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+    if (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent") return { done: `mirror: ${mirror}` };
+    if ((document.getElementById("vessel")?.textContent ?? "").includes("live")) return { done: "arrived" };
+    return phases.length > seen ? { progress: phases.length } : false;
+  }, undefined, { livenessMs: 60_000, what: "the vessel boot" }); // LIVENESS: a boot alive and silent between two phases
+  const w1 = "refused" in booted ? booted.refused : booted.value;
+  if (w1 === "arrived") ok("W1 vessel-boots", "the island reports live");
+  else bad("W1 vessel-boots", `${w1} — the browser vessel never stood`);
 
   // ── W2 · the projection RENDERS, and carries render ids ───────────────────────────────────────
   // Two facts, one seam: the frame arrived AND it is addressable. A pane with html but no
   // `data-lar-rid` is a render leg that landed with the return leg unbound, which is a different
   // defect from an empty pane and must not read the same.
-  const html = await until(async () => { const h = await paneHtml(page); return h && h.length > 0 ? h : null; });
+  // The page's refusal/fault signals and a page error end this wait as they end the boot wait; a live vessel that
+  // never paints a frame refuses by name at the LIVENESS bound.
+  const projected = await awaitPage(page, () => {
+    const h = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML;
+    if (h) return { done: h };
+    const phase = [...document.querySelectorAll("#phases .phase")].find((p) => /refus|fault/i.test(p.textContent ?? ""));
+    const status = document.querySelector("#status");
+    const mirror = document.querySelector("#mirror")?.getAttribute("data-lar-mirror");
+    if (phase || status?.classList.contains("err") || status?.classList.contains("warn") ||
+        document.querySelector(".ceremony-ask[data-refusal]") ||
+        (mirror?.startsWith("none:") && mirror !== "none:mirror-inputs-absent")) return { done: null };
+    return false;
+  }, undefined, { livenessMs: 30_000, what: "the projection's first frame" }); // LIVENESS: a live vessel that never paints a frame
+  if ("refused" in projected) console.log(`  ${projected.refused}`);
+  const html = "refused" in projected ? null : projected.value;
   if (!html) {
-    bad("W2 projection-renders", "the projection shadow root stayed empty — no `projection:frame` applied");
+    bad("W2 projection-renders", "the projection shadow root stayed empty — no `lar:frame` applied");
   } else if (!html.includes("data-lar-rid")) {
     bad("W2 projection-renders", "a frame rendered but carries NO data-lar-rid — the return leg has nothing to address");
   } else {
@@ -198,33 +190,39 @@ const main = async () => {
     if (!initialTabs.open || !initialTabs.recent || !recentId) {
       bad("W3 Recent-tab", "missing exact data-tab-title Open or Recent rid-stamped sidebar target");
     } else if (!initialTabs.open.selected || initialTabs.recent.selected) {
-      bad("W3 Recent-tab", "expected initial Open selected and Recent unselected — fixture state no longer names the transition");
+      bad("W3 Recent-tab", "expected initial Open selected and Recent unselected — fixture state does not name the transition");
     } else {
-      // An unknown rendered id is sent through the same real host listener. The worker must safely drop it:
-      // the trace proves transport reached the worker boundary and the state must remain untouched.
+      // An unknown rendered id that declares a click binding is sent through the same real host listener (the page
+      // relays only what a `data-lar-on` stamp binds). The worker answers it stale and runs nothing: the trace
+      // proves transport reached the worker boundary and the state must remain untouched.
       const unknownId = `weld-unknown-rid-${Date.now()}`;
       const unknownMark = await traceMark(page);
+      // Listen before dispatch: the worker may refuse the unknown target before evaluate returns.
+      const unknownAnswer = waitForWitness(page, "unknown", unknownMark, unknownId);
       const unknownSent = await page.evaluate((rid) => {
         const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
         if (!pane) return false;
         const probe = document.createElement("button");
         probe.setAttribute("data-lar-rid", rid);
+        probe.setAttribute("data-lar-on", "click");
         pane.appendChild(probe);
         probe.dispatchEvent(new MouseEvent("click", { bubbles: true, composed: true }));
         probe.remove();
         return true;
       }, unknownId);
-      const unknownChanged = await until(async () => {
-        const tabs = await sidebarTabs(page);
-        return tabs.open?.selected === false || tabs.recent?.selected === true;
-      }, 8_000);
+      const unknownAnswered = await unknownAnswer;
+      const unknownTabs = await sidebarTabs(page);
+      const unknownChanged = unknownTabs.open?.selected === false || unknownTabs.recent?.selected === true;
       const unknownTrace = await traceSince(page, unknownMark);
       if (!unknownSent) {
         bad("W3 unknown-rid-drop", "projection disappeared before the unknown render-id control could run");
-      } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "wiki:dom-event", renderId: unknownId })) {
+      } else if (!traceHas(unknownTrace, { direction: "to-worker", type: "lar:control-event", renderId: unknownId })) {
         bad("W3 unknown-rid-drop", `unknown render id never reached a worker boundary — ${traceTail(unknownTrace)}`);
-      } else if (unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
-        bad("W3 unknown-rid-drop", `unknown render id changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
+      } else if (!unknownAnswered || unknownChanged || traceHas(unknownTrace, { direction: "worker-error" })) {
+        // The answer names its own reason: a refusal by another word (surface-unknown, event-malformed) says where it went.
+        const answer = unknownTrace.find((event) => event.direction === "from-worker" && event.type === "lar:control-result" && event.renderId === unknownId);
+        const answered = answer ? `answered ${answer.status}${answer.reason ? `: ${answer.reason}` : ""}` : "no control-result";
+        bad("W3 unknown-rid-drop", `unknown render id ${answered}, changed the named tab state or raised a worker error — ${traceTail(unknownTrace)}`);
       } else {
         ok("W3 unknown-rid-drop", "unknown render id crossed the host boundary and left Open/Recent unchanged");
       }
@@ -234,16 +232,15 @@ const main = async () => {
       const droppedMark = await traceMark(page);
       await page.evaluate((rid) => { window.__weldWorkerTrace.dropDomEventRenderId = rid; }, recentId);
       const droppedClick = await clickRenderId(page, recentId);
-      const transitionedWhileDropped = await until(async () => {
-        const tabs = await sidebarTabs(page);
-        return tabs.open?.selected === false && tabs.recent?.selected === true;
-      }, 8_000);
+      // The trace drops synchronously during dispatch; no worker can answer this control.
+      const droppedTabs = await sidebarTabs(page);
+      const transitionedWhileDropped = droppedTabs.open?.selected === false && droppedTabs.recent?.selected === true;
       const droppedTrace = await traceSince(page, droppedMark);
       await page.evaluate(() => { window.__weldWorkerTrace.dropDomEventRenderId = null; });
       if (!droppedClick) {
         bad("W3 return-leg-control", "Recent disappeared before its deliberately dropped click could run");
-      } else if (!traceHas(droppedTrace, { direction: "dropped-to-worker", type: "wiki:dom-event", renderId: recentId })) {
-        bad("W3 return-leg-control", `the fixture failed to drop Recent's outgoing wiki:dom-event — ${traceTail(droppedTrace)}`);
+      } else if (!traceHas(droppedTrace, { direction: "dropped-to-worker", type: "lar:control-event", renderId: recentId })) {
+        bad("W3 return-leg-control", `the fixture failed to drop Recent's outgoing lar:control-event — ${traceTail(droppedTrace)}`);
       } else if (transitionedWhileDropped) {
         bad("W3 return-leg-control", `Recent selected despite its return leg being dropped — ${traceTail(droppedTrace)}`);
       } else {
@@ -252,25 +249,22 @@ const main = async () => {
 
       const restoredMark = await traceMark(page);
       const restoredClick = await clickRenderId(page, recentId);
-      const restored = await until(async () => {
-        const tabs = await sidebarTabs(page);
-        return tabs.open?.selected === false && tabs.recent?.selected === true ? tabs : null;
-      }, 8_000);
+      const restored = restoredClick && await waitForWitness(page, "recent", restoredMark, recentId, null);
       const restoredTrace = await traceSince(page, restoredMark);
       const recentDispatch = restoredTrace.find((event) =>
-        event.direction === "to-worker" && event.type === "wiki:dom-event" && event.renderId === recentId);
+        event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === recentId);
       const sentRecent = !!recentDispatch;
       const projectedRecent = !!recentDispatch && traceHas(restoredTrace, {
-        direction: "from-worker", workerId: recentDispatch.workerId, wikiUri: recentDispatch.wikiUri,
-        type: "event", listenable: "projection:frame",
+        direction: "from-worker", workerId: recentDispatch.workerId, surface: recentDispatch.surface,
+        type: "lar:frame",
       });
       if (restored && restoredClick && sentRecent && projectedRecent) {
         ok("W3 Recent-tab", `rid ${recentId}: Open selected true→false; Recent false→true; worker re-projected`);
       } else {
         const missing = [
           !restoredClick && "Recent target",
-          !sentRecent && "outgoing wiki:dom-event",
-          !projectedRecent && "worker projection:frame",
+          !sentRecent && "outgoing lar:control-event",
+          !projectedRecent && "worker lar:frame",
           !restored && "Open→Recent state transition",
         ].filter(Boolean).join(", ");
         bad("W3 Recent-tab", `rid ${recentId}: missing ${missing}; ${traceTail(restoredTrace)}`);
@@ -280,7 +274,7 @@ const main = async () => {
     gap("W3 Recent-tab", "skipped — W2 gave it nothing to click");
   }
 
-  // The old first-click witness remains separately named. Its current failure is product evidence about
+  // The first-click witness remains separately named. Its failure is product evidence about
   // sidebar reveal, and must never be made green by replacing the ambiguous fixture above.
   const sidebarBefore = await page.evaluate(() => {
     const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
@@ -297,30 +291,23 @@ const main = async () => {
     const sidebarMark = await traceMark(page);
     const errorCount = consoleErrors.length;
     const hideClicked = await clickRenderId(page, sidebarBefore.renderId);
-    const hidden = await until(async () => page.evaluate(() => {
-      const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
-      const reveal = pane?.querySelector(".tc-sidebar-header > .tc-reveal");
-      return reveal?.hidden === true && !!pane?.querySelector(".tc-show-sidebar-btn[data-lar-rid]");
-    }), 8_000);
+    const hidden = hideClicked && await waitForWitness(page, "hidden", sidebarMark, sidebarBefore.renderId, null);
     const sidebarTrace = await traceSince(page, sidebarMark);
     const sidebarDispatch = sidebarTrace.find((event) =>
-      event.direction === "to-worker" && event.type === "wiki:dom-event" && event.renderId === sidebarBefore.renderId);
+      event.direction === "to-worker" && event.type === "lar:control-event" && event.renderId === sidebarBefore.renderId);
     const hideSent = !!sidebarDispatch;
     const sidebarProjection = !!sidebarDispatch && traceHas(sidebarTrace, {
-      direction: "from-worker", workerId: sidebarDispatch.workerId, wikiUri: sidebarDispatch.wikiUri,
-      type: "event", listenable: "projection:frame",
+      direction: "from-worker", workerId: sidebarDispatch.workerId, surface: sidebarDispatch.surface,
+      type: "lar:frame",
     });
     if (hideClicked && hideSent && sidebarProjection && hidden) {
       ok("W3 sidebar-hides", "$:/state/sidebar became no: sidebar reveal hidden=true and Show sidebar replaced Hide sidebar");
       const showId = await page.evaluate(() => document.getElementById("projection")?.shadowRoot
         ?.querySelector(".tc-show-sidebar-btn[data-lar-rid]")?.getAttribute("data-lar-rid") ?? null);
       if (showId) {
-        await clickRenderId(page, showId);
-        const shown = await until(async () => page.evaluate(() => {
-          const pane = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection");
-          const reveal = pane?.querySelector(".tc-sidebar-header > .tc-reveal");
-          return reveal?.hidden === false && !!pane?.querySelector(".tc-hide-sidebar-btn[data-lar-rid]");
-        }), 8_000);
+        const showMark = await traceMark(page);
+        const showClicked = await clickRenderId(page, showId);
+        const shown = showClicked && await waitForWitness(page, "shown", showMark, showId, null);
         if (!shown) bad("W3 sidebar-restores", "Show sidebar did not restore the W4 surface after a successful hide");
         else ok("W3 sidebar-restores", "Show sidebar restored the W4 surface");
       } else {
@@ -328,14 +315,14 @@ const main = async () => {
       }
     } else {
       const browserError = consoleErrors.slice(errorCount)[0];
-      const missing = [!hideSent && "outgoing wiki:dom-event", !sidebarProjection && "same-worker projection:frame", !hidden && "hidden sidebar reveal plus Show sidebar"]
+      const missing = [!hideSent && "outgoing lar:control-event", !sidebarProjection && "same-worker lar:frame", !hidden && "hidden sidebar reveal plus Show sidebar"]
         .filter(Boolean).join(", ");
       bad("W3 sidebar-hides", `expected sidebar reveal hidden=true and Show sidebar; ${browserError ? `browser error: ${browserError.slice(0, 120)}` : `missing ${missing}`}; ${traceTail(sidebarTrace)}`);
     }
   }
 
   // ── W4 · a KEYSTROKE reaches the wiki store ───────────────────────────────────────────────────
-  // The text leg relays the WHOLE value on `input`, so the assertion is that the wiki now holds it.
+  // The text leg relays the WHOLE value on `input`, so the assertion checks the wiki's value.
   // Reading it back out of the projection proves the round-trip rather than the dispatch.
   const typed = `weld-${Date.now()}`;
   const field = await page.evaluate(() => {
@@ -353,22 +340,25 @@ const main = async () => {
       el.dispatchEvent(new Event("input", { bubbles: true, composed: true }));
       el.dispatchEvent(new Event("change", { bubbles: true, composed: true }));
     }, typed);
-    const seen = await until(async () => (await paneHtml(page)).includes(typed), 8_000);
+    const seen = await waitForWitness(page, "input", inputMark, null, typed);
     const inputTrace = await traceSince(page, inputMark);
     const inputDispatch = inputTrace.find((event) =>
-      event.direction === "to-worker" && event.type === "wiki:dom-input" && event.eventType === "input");
+      event.direction === "to-worker" && event.type === "lar:control-event" && event.action === "lar:sense");
     const inputProjection = !!inputDispatch && traceHas(inputTrace, {
-      direction: "from-worker", workerId: inputDispatch.workerId, wikiUri: inputDispatch.wikiUri,
-      type: "event", listenable: "projection:frame",
+      direction: "from-worker", workerId: inputDispatch.workerId, surface: inputDispatch.surface,
+      type: "lar:frame",
     });
     if (seen && inputDispatch && inputProjection) {
       ok("W4 keystroke-lands", `"${typed}" reached ${inputDispatch.wikiUri} and re-projected from the same worker`);
     } else {
-      const missing = [!seen && "typed value", !inputDispatch && "outgoing wiki:dom-input", !inputProjection && "same-worker projection:frame"]
+      const missing = [!seen && "typed value", !inputDispatch && "outgoing lar:sense", !inputProjection && "same-worker lar:frame"]
         .filter(Boolean).join(", ");
       bad("W4 keystroke-lands", `input leg missing ${missing}; ${traceTail(inputTrace)}`);
     }
   }
+
+  // ── M1-M5 · the person's surface: the glass mirror ─────────────────────────────────────────────
+  await readMirror(page);
 
   // ── W5 · the edit reaches the NODE's disk ─────────────────────────────────────────────────────
   // The founding gate. Declared here and reported as a gap while unwired, so the vector exists and
@@ -384,9 +374,90 @@ const main = async () => {
   }
 };
 
+const report = (r) => (r.status === "ok" ? ok : r.status === "gap" ? gap : bad)(r.name, r.message);
+const UNBAKED = new URL("../../genesis/unbaked.json", import.meta.url);
+
+/**
+ * The mirror vectors. M1 waits on the product's own settle (`full`, or `skinny` with a named reason) through `settleOf`, whose
+ * source the page evaluates, so one implementation decides on both sides. M2-M4 read the shown mirror's shadow root and the
+ * engine's read-only reading (`larMirrorReading`); M6 reads off it that the engine booted from the port's own handoff. M5 types through Playwright's real mouse and keyboard into the mirror and
+ * reads the saved title back off the worker-rendered floor, the worker's own render of the same wiki.
+ */
+async function readMirror(page) {
+  const settled = await awaitPage(page, ({ arg: source, seen }) => {
+    const host = document.querySelector("#mirror");
+    const words = { mirror: host?.getAttribute("data-lar-mirror") ?? null, why: host?.getAttribute("data-lar-mirror-why") ?? null };
+    const verdict = new Function(`return (${source})`)()(words);
+    if (verdict) return { done: { ...verdict, shown: host?.getAttribute("data-lar-shown") ?? null } };
+    const step = (words.mirror ?? "").length + (words.why ?? "").length;
+    return step > seen ? { progress: step } : false;
+  }, settleOf.toString(), { livenessMs: 60_000, what: "the mirror's settle (full, or skinny with a named reason)" }); // LIVENESS: a mirror that never settles
+  const settle = "refused" in settled ? null : settled.value;
+  if (!settle) { bad("M1 mirror-settles", `${settled.refused ?? "no settle"} — data-lar-mirror never read full, a named skinny, or a floor`); gap("M2-M5 mirror-surface", "skipped — M1 found no settled mirror"); return; }
+  if (settle.settled === "floor") { bad("M1 mirror-settles", `the mirror tore down to the floor: ${settle.why}`); gap("M2-M5 mirror-surface", "skipped — the floor shows"); return; }
+  if (settle.shown !== "mirror") { bad("M1 mirror-settles", `the mirror settled ${settle.settled} but data-lar-shown reads ${settle.shown}: the person reads the floor`); return; }
+  ok("M1 mirror-settles", settle.settled === "full" ? "the mirror stands at full and shows" : `the mirror holds skinny and names why: ${settle.why}`);
+
+  const unbaked = unbakedSources(existsSync(UNBAKED) ? readFileSync(UNBAKED, "utf8") : null);
+  const probe = await page.evaluate(() => {
+    const host = document.querySelector("#mirror");
+    const root = host?.shadowRoot;
+    const sheet = [...(root?.querySelectorAll("style") ?? [])].map((style) => style.textContent ?? "").join("\n");
+    const sidebar = root?.querySelector(".tc-sidebar-scrollable");
+    const svg = root?.querySelector(".tc-tiddler-controls button svg, .tc-page-controls button svg");
+    const frame = root?.querySelector(".tc-story-river .tc-tiddler-frame");
+    const reading = host?.larMirrorReading ?? null;
+    const ground = root?.querySelector(".lar-mirror");
+    const box = (node) => { if (!node) return null; const r = node.getBoundingClientRect(); return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width), h: Math.round(r.height) }; };
+    return {
+      sheetHasSidebarRule: /\.tc-sidebar-scrollable\s*\{/.test(sheet),
+      sidebarPosition: sidebar ? getComputedStyle(sidebar).position : null,
+      sidebarBox: box(sidebar), hostBox: box(host), breakpoint: reading?.breakpoint ?? null,
+      groundBackground: ground ? getComputedStyle(ground).backgroundColor : null,
+      pageBackground: reading?.colours?.["page-background"] ?? null,
+      svgWidth: svg ? Math.round(svg.getBoundingClientRect().width) : null,
+      frameBackground: frame ? getComputedStyle(frame).backgroundColor : null,
+      paletteBackground: reading?.colours?.["tiddler-background"] ?? null,
+      firstTitle: frame?.getAttribute("data-tiddler-title") ?? null,
+      reading,
+      paneWiki: document.getElementById("projection-wiki")?.getAttribute("data-lar-pane-wiki") ?? null,
+      cardWiki: [...document.querySelectorAll("#vessel .row")].find((row) => row.querySelector(".k")?.textContent === "wiki")?.querySelector(".v")?.textContent ?? null,
+    };
+  });
+  for (const reading of styledReadings(probe, unbaked)) report(reading);
+  report(contentReading(probe.firstTitle, probe.reading, unbaked));
+  report(labelReading(probe.paneWiki, probe.cardWiki));
+  report(handoffReading(probe.reading?.handed ?? null));
+
+  // M5: a new tiddler typed through real input. Playwright's locators pierce the open shadow root; its clicks and keys are real
+  // input events, never a synthetic dispatch on a hidden node.
+  const title = `weld-mirror-${randomUUID().slice(0, 8)}`;
+  try {
+    await page.locator('#mirror button[aria-label="new tiddler"]').first().click({ timeout: 10_000 });
+    const titleField = page.locator("#mirror input.tc-titlebar").first();
+    await titleField.click({ timeout: 10_000 });
+    await page.keyboard.press("ControlOrMeta+A");
+    await page.keyboard.type(title);
+    await page.locator('#mirror .tc-tiddler-edit-frame button[aria-label="Confirm changes to this tiddler"]').first().click({ timeout: 10_000 });
+  } catch (error) {
+    bad("M5 mirror-edit", `the mirror's new-tiddler road refused real input: ${String(error).split("\n")[0].slice(0, 140)}`);
+    return;
+  }
+  const back = await awaitPage(page, ({ arg: wanted }) => {
+    const floor = document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.innerHTML ?? "";
+    if (floor.includes(wanted)) return { done: "worker" };
+    const refused = document.querySelector("#mirror")?.getAttribute("data-lar-mirror") ?? "";
+    if (refused.startsWith("none:")) return { done: `mirror tore down: ${refused}` };
+    return false;
+  }, title, { livenessMs: 20_000, what: "the typed title's read-back from the worker-rendered floor" }); // LIVENESS: a write that never reaches the worker
+  if (!("refused" in back) && back.value === "worker") ok("M5 mirror-edit", `"${title}" typed in the mirror reads back from the worker's own render`);
+  else bad("M5 mirror-edit", `"${title}" typed in the mirror never read back from the worker: ${"refused" in back ? back.refused : back.value}`);
+}
+
 function finish() {
+  if (failures > 0) printConsoleCapture();
   console.log(`\n  ── ${failures} failed · ${gaps} gap(s) ──\n`);
   process.exitCode = failures > 0 ? 1 : 0;
 }
 
-main().catch((e) => { console.error("weld driver threw:", e); process.exitCode = 1; });
+main().catch((e) => { printConsoleCapture(); console.error("weld driver threw:", e); process.exitCode = 1; });

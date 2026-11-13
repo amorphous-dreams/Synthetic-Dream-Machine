@@ -175,7 +175,7 @@ export const h1ObstructionTrace: NamedTrace<SheafAssignment> = {
 // ══ S1 ═══════════════════════════════════════════════════════════════════════════════════════════════
 // Two more order parameters ride the SAME α-sweep beside H¹: ΔF (model-comparison free energy) and the
 // complexity-entropy (excess entropy). Both plug into {@link sweepArl} over ONE combined corpus, so a
-// single sweep now carries three columns. Each trace OWNS how it reads α (the OrderParameter contract).
+// single sweep carries three columns. Each trace OWNS how it reads α (the OrderParameter contract).
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════
 
 /**

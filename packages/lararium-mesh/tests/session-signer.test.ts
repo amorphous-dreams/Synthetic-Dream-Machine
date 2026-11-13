@@ -31,7 +31,7 @@ function faceOf(c: Chain, group: string): SessionFace {
   if (verdict.verdict !== "verified") throw new Error(verdict.verdict);
   const supply = supplySessionFace({
     chain: verdict.chain, vesselFaceKey: c.vessel.key,
-    admit: { verdict: { state: "held", reason: "held", nym: c.scope.faceKey }, nexus: c.scope.nexus, admitRef: `admit-${group}`, revision: `heads-${group}` },
+    admit: { verdict: { state: "held", reason: "held", nym: c.scope.faceKey }, head: c.scope.faceKey, nexus: c.scope.nexus, admitRef: `admit-${group}`, revision: `heads-${group}` },
     grant: { personaGroup: group, faceKey: c.scope.faceKey, nexus: c.scope.nexus, revision: `group-${group}` },
   });
   if (!("face" in supply)) throw new Error(supply.refusal);

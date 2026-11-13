@@ -32,22 +32,22 @@ import { readCarrierShape } from "../src/carrier-shape.js";
 const carrier = (head: string) =>
   `<<!DOCTYPE memetic-wikitext+tiddlywiki lar:///g>>\n\n${head}\n` +
   "```toml meta\ncacheable = true\n```\n\n" +
-  `<<^ code="&#x0002;">>\n\nbody\n\n<<^ code="&#x0003;">>\n`;
+  `<<^ code=\`&#x0002;\`>>\n\nbody\n\n<<^ code=\`&#x0003;\`>>\n`;
 
 describe("the control head quotes its values", () => {
   test("a quoted code reads", () => {
-    expect(readCarrierShape(carrier('<<^ code="&#x0001;" from="?" -> to="lar:///x">>')).marks.head).toBe(true);
+    expect(readCarrierShape(carrier('<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>')).marks.head).toBe(true);
   });
 
   test("★ a namespace carrying a space needs its quotes — the value is two glyphs ★", () => {
     // The whole reason the head keeps one spelling. This value stands in 66 carriers.
-    const shape = readCarrierShape(carrier('<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///x">>'));
+    const shape = readCarrierShape(carrier('<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///x`>>'));
     expect(shape.marks.head).toBe(true);
   });
 
   test("★ the retired bare spelling names no address ★", () => {
-    expect(readCarrierShape(carrier('<<^ code="&#x0001;" from=? -> to=lar:///x>>')).marks.headUri).toBeNull();
-    expect(readCarrierShape(carrier('<<^ code="&#x0001;" from="?" -> to="lar:///x">>')).marks.headUri).toBe("lar:///x");
+    expect(readCarrierShape(carrier('<<^ code=`&#x0001;` from=? -> to=lar:///x>>')).marks.headUri).toBeNull();
+    expect(readCarrierShape(carrier('<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>')).marks.headUri).toBe("lar:///x");
   });
 
   test("★ the canonical emit quotes both ends ★", async () => {
@@ -56,7 +56,7 @@ describe("the control head quotes its values", () => {
     const records = memeticWikitextDeserializer("Body.\n", { title: URI });
     const map = new Map(records.map((r) => [String(r.title), r] as const));
     const out = expandMemeRefs((t) => map.get(t), URI)!;
-    expect(out).toContain(`from="?" -> to="${URI}"`);
-    expect(out).toMatch(/-> to="\?">>/);
+    expect(out).toContain(`from=\`?\` to=\`${URI}\``);
+    expect(out).toContain("to=`?`>>");
   });
 });

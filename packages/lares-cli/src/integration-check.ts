@@ -1,7 +1,7 @@
 /**
  * integration-check — verify (and, on demand, install) the mempalace integration
  * that `lares vessel stand` depends on. The CHECK is cheap and runs on every stand; the
- * INSTALL is one-time, behind `--install`, and touches the foundation.
+ * INSTALL is one-time, behind `lares mempalace install`, and touches the foundation.
  *
  * mempalace is a READ-ONLY sidecar submodule; we never edit it, only ensure it's
  * present and runnable so the witness organ is reachable.
@@ -105,13 +105,14 @@ export function checkMempalaceIntegration(): IntegrationReport {
       const probe = spawnSync(
         py,
         ["-c", "import importlib.util as u, sys; sys.exit(0 if (u.find_spec('mempalace') and u.find_spec('chromadb')) else 1)"],
+        // LIVENESS: the external Python import probe may hang without exiting.
         { cwd: MEMPALACE_DIR, timeout: 10_000 },
       );
       if (probe.error === undefined) {
         holderOk = probe.status === 0;
         holderDetail = holderOk
           ? `${py} -m mempalace.mcp_server importable`
-          : "holder deps absent — `lares vessel stand --install` (pip install -e ./mempalace)";
+          : "holder deps absent — `lares mempalace install` (pip install -e ./mempalace)";
       }
     } catch {
       /* leave the not-found default */
@@ -144,6 +145,7 @@ export function installMempalaceIntegration(): InstallStep[] {
 
   if (!mempalaceHolderPresent(MEMPALACE_DIR)) {
     try {
+      // LIVENESS: the external git network operation may hang without exiting.
       execFileSync("git", ["submodule", "update", "--init", "mempalace"], { cwd: repoRoot, stdio: "pipe", timeout: 120_000 });
       steps.push({ step: "submodule-init", ran: true, ok: mempalaceHolderPresent(MEMPALACE_DIR), detail: "git submodule update --init mempalace" });
     } catch (e) {
@@ -164,6 +166,7 @@ export function installMempalaceIntegration(): InstallStep[] {
     holderOk =
       spawnSync(py, ["-c", "import importlib.util as u,sys; sys.exit(0 if u.find_spec('chromadb') else 1)"], {
         cwd: MEMPALACE_DIR,
+        // LIVENESS: the external Python chromadb probe may hang without exiting.
         timeout: 10_000,
       }).status === 0;
   } catch {
@@ -171,6 +174,7 @@ export function installMempalaceIntegration(): InstallStep[] {
   }
   if (!holderOk) {
     try {
+      // LIVENESS: the external pip network operation may hang without exiting.
       execFileSync(py, ["-m", "pip", "install", "-e", "."], { cwd: MEMPALACE_DIR, stdio: "pipe", timeout: 600_000 });
       steps.push({ step: "pip-install", ran: true, ok: true, detail: `${py} -m pip install -e ./mempalace` });
     } catch (e) {

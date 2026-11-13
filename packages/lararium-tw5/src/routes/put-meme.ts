@@ -20,7 +20,7 @@ module-type: route
  * (`x-requested-with: TiddlyWiki`, or `csrf-disable`) stand in front of this route unchanged.
  *
  * `:bag` names a container the server resolves. `default` names THE HOST'S ANCHOR — the one wiki on a
- * plain server (TiddlyWeb's stub, where `recipes/default` reads the same); @daemon on a lares island.
+ * plain server (TiddlyWeb's stub, where `recipes/default` reads the same); daemon-plane on a lares island.
  * Any other name answers 404 before the body is read — a bag the server cannot name swallows nothing.
  *
  * Responses, by the gate's decision — the receipt rides as JSON on every one:

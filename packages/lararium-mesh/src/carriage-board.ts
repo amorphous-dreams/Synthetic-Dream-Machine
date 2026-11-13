@@ -42,8 +42,10 @@ import {
   type CarriageEntry,
   type CarriageAction,
   type RollAnchor,
+  type CarriageAncestry,
 } from "./carriage-registry.js";
 import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
+import type { SealEpoch } from "./wax-stamp.js";
 import { storedLarRecord } from "./stored-record.js";
 
 /**
@@ -58,7 +60,7 @@ export const CARRIAGE_ENTRY_PREFIX = "lar:///ha.ka.ba/dreamnet/carriage-registry
  * signed entry ACCRETES and NOTHING overwrites a standing entry. Concurrent branches therefore survive
  * storage and the causal fold, never the write, adjudicates.
  */
-export function carriageEntryKey(entry: Pick<CarriageEntry, "kind" | "nym" | "action" | "parents" | "sealEpochCid">): string {
+export function carriageEntryKey(entry: Pick<CarriageEntry, "kind" | "nym" | "action" | "parents" | "sealEpochCid" | "carriageCommit">): string {
   return `${CARRIAGE_ENTRY_PREFIX}${carriageEntryActCid(entry)}`;
 }
 
@@ -82,8 +84,9 @@ function coerceSignature(raw: unknown): QuorumSignature | null {
   return { signer: s["signer"], sig: s["sig"] };
 }
 
-/** A parsed board payload reads a carriage entry only at the exact `CarriageEntry` FLOOR shape — else null. */
-function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
+/** A parsed board payload reads a carriage entry only at the exact `CarriageEntry` FLOOR shape — else null. Exported for a
+ *  carried bundle's entries, which cross by hand rather than on a board (`carry-bundle`). */
+export function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
   if (typeof parsed !== "object" || parsed === null) return null;
   const p = parsed as Record<string, unknown>;
   if (p["kind"] !== CARRIAGE_ENTRY_DOMAIN) return null;                    // not a carriage tiddler → skip
@@ -107,6 +110,12 @@ function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
     if (cs === null) return null;
     contractSig = cs;
   }
+  // An admit's carriage commitment rides at its exact shape; a torn one reads the whole entry closed.
+  let carriageCommit: string | undefined;
+  if (p["carriageCommit"] !== undefined) {
+    if (typeof p["carriageCommit"] !== "string" || !/^[0-9a-f]{64}$/.test(p["carriageCommit"])) return null;
+    carriageCommit = p["carriageCommit"];
+  }
   // Copy the FLOOR fields ALONE — any extra field a forged tiddler smuggled in is dropped here, never carried
   // into the folded record (track contracts, never identities).
   const entry: CarriageEntry = {
@@ -117,7 +126,7 @@ function coerceCarriageEntry(parsed: unknown): CarriageEntry | null {
     sealEpochCid: p["sealEpochCid"],
     signatures,
   };
-  return contractSig ? { ...entry, contractSig } : entry;
+  return { ...entry, ...(contractSig ? { contractSig } : {}), ...(carriageCommit ? { carriageCommit } : {}) };
 }
 
 /**
@@ -183,6 +192,11 @@ export function rollAnchorsFromBoard(doc: LarDoc | undefined | null): RollAnchor
   return anchors;
 }
 
+/** The ancestry a board reader holds beside its charter; the fold verifies each anchor before counting it. */
+export function carriageAncestryFromBoard(sealLineage: readonly SealEpoch[] | undefined, board: LarDoc | undefined | null): CarriageAncestry {
+  return { sealLineage: sealLineage ?? [], anchors: rollAnchorsFromBoard(board) };
+}
+
 /**
  * THE ONE PRESENTER. Read a nym's presentation off ONE board doc: its carriage acts AND its roll anchors,
  * extracted together, so no caller can derive a presentation from the acts while forgetting the anchors that
@@ -194,10 +208,11 @@ export async function presentationFromBoardDoc(
   doc: LarDoc | undefined | null,
   nym: string,
   roster: KahuQuorumSeats,
+  sealLineage?: readonly SealEpoch[],
 ): Promise<BoardPresentation> {
   const anchors = rollAnchorsFromBoard(doc);
   return {
-    presentation: await readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, anchors),
+    presentation: await readBoardPresentation(carriageEntriesFromBoard(doc), nym, roster, anchors, sealLineage),
     findings:     await forksOnBoard(anchors, roster),
   };
 }
@@ -259,13 +274,15 @@ async function readBoardPresentation(
   nym: string,
   roster: KahuQuorumSeats,
   anchors: readonly RollAnchor[],
+  sealLineage?: readonly SealEpoch[],
 ): Promise<AdmitPresentation | null> {
   const want = nym.toLowerCase();
   const source = [...entries];
   const anchorList = anchors;
 
   const walk = async (at: KahuQuorumSeats, carried: readonly RollAnchor[], path: ReadonlySet<string>): Promise<AdmitPresentation | null> => {
-    const fold = await foldCarriageDetails(source, at);
+    const fold = await foldCarriageDetails(source, at,
+      at.sealEpochCid === roster.sealEpochCid && sealLineage ? { sealLineage, anchors: anchorList } : undefined);
     // The fold's details run in source order, one per entry — zip them to recover each counted act.
     const byCid = new Map<string, CarriageEntry>();
     fold.entries.forEach((detail, i) => {

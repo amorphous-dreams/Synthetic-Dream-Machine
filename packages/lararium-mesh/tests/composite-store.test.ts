@@ -19,6 +19,7 @@ import { CompositeStore, corpusBagId } from "../src/composite-store.js";
 import { BAG_IDS, LARARIUM_DOC_URI, CATALOG_DOC_URI, LARES_DOC_URI } from "../src/lar-uris.js";
 import { wikiBagUri } from "../src/wiki-recipe.js";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
+import { AtomicMemoryStore } from "../../lararium-tw5/tests/atomic-memory-store.js";
 import type { LarTiddlerChange, ChangeOrigin } from "../src/tiddler-store.js";
 
 // ---------------------------------------------------------------------------
@@ -41,6 +42,38 @@ function record(title: string, text: string, bag?: string) {
 // ---------------------------------------------------------------------------
 
 describe("CompositeStore — layer management", () => {
+  test("precheck refuses a non-atomic destination before any family member lands; CONTROL: atomic layer writes", async () => {
+    const plainBacking = new MemoryTiddlerStore();
+    const plain = new Proxy(plainBacking, { get(target, key) {
+      if (key === "writeFamily") return undefined;
+      const value = Reflect.get(target, key, target) as unknown;
+      return typeof value === "function" ? (value as (...args: unknown[]) => unknown).bind(target) : value;
+    } });
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: "plain", store: plain, writable: true });
+    await expect(composite.precheckFamily([record("One", "a"), record("Two", "b")], [], { bag: "plain" }))
+      .rejects.toMatchObject({ reason: "non-atomic-layer" });
+    expect(await plainBacking.get("One")).toBeNull();
+    expect(await plainBacking.get("Two")).toBeNull();
+    const atomic = new AtomicMemoryStore();
+    composite.addLayer({ bagId: "atomic", store: atomic, writable: true });
+    await composite.precheckFamily([record("One", "a"), record("Two", "b")], [], { bag: "atomic" });
+    await composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin(), { bag: "atomic" });
+    expect(await atomic.get("One")).not.toBeNull();
+    expect(await atomic.get("Two")).not.toBeNull();
+  });
+  test("composite-family-fire-synchronous: subscribers run before writeFamily resolves; CONTROL: written records persist", async () => {
+    const composite = new CompositeStore();
+    composite.addLayer({ bagId: TEST_WIKI_URI, store: new AtomicMemoryStore(), writable: true });
+    const seen: string[] = [];
+    const unsubscribe = composite.subscribe(change => { seen.push(change.title); });
+    const writing = composite.writeFamily([record("One", "a"), record("Two", "b")], [], wikiOrigin());
+    await writing;
+    expect(seen).toEqual(["One", "Two"]);
+    expect(await composite.get("One")).not.toBeNull();
+    expect(await composite.get("Two")).not.toBeNull();
+    unsubscribe();
+  });
   test("starts with zero layers", () => {
     const store = new CompositeStore();
     expect(store.layerCount).toBe(0);
@@ -559,5 +592,23 @@ describe("CompositeStore — the default writable under the recipe layer model",
     const working = composite.storeForBag(wikiSlotUri("w", "working"))!;
     expect((await working.get("lar:///floor-title"))?.tiddler.text).toBe("a person's edit");
     expect((await composite.get("lar:///floor-title"))?.tiddler.text).toBe("a person's edit");
+  });
+});
+
+describe("CompositeStore — a listener's fault stays its own", () => {
+  test("a throwing listener never starves a later one across a forwarded change, a populated add and a live remove; CONTROL: the later one hears all three", async () => {
+    const composite = new CompositeStore();
+    composite.subscribe(() => { throw new Error("earlier listener fault"); });
+    const heard: string[] = [];
+    composite.subscribe(change => heard.push(change.title));
+    const working = new MemoryTiddlerStore("w");
+    composite.addLayer({ bagId: "w", store: working, writable: true });
+    await working.put({ tiddler: { title: "Forwarded", text: "x" } }, wikiOrigin());
+    const library = new MemoryTiddlerStore("lib");
+    await library.put({ tiddler: { title: "Populated", text: "y" } }, wikiOrigin());
+    composite.addLayer({ bagId: "lib", store: library, writable: false });
+    await composite.removeLayerLive("lib");
+    expect(heard).toContain("Forwarded");
+    expect(heard.filter(title => title === "Populated").length).toBeGreaterThanOrEqual(2);
   });
 });

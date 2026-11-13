@@ -11,12 +11,12 @@ import {
   HandleBook, type HandleBookSnapshot, type OwnPersonaPetnameStore, type PersonaDeclaration, type PersonaDeclarationStore,
 } from "@lararium/mesh";
 import type { ArmedGenesis, ArmedRoll, SeatKept } from "@lararium/node";
+import { readBackStandInSeated } from "@lararium/node";
 import { sealedAct } from "./sealed-act-door.js";
 
-/** The roster as one read: each held root's index and public key, the worn index, and every orphan root. */
+/** The roster as one read: each held root's index and public key, and every orphan root. */
 export interface PersonaRoots {
   readonly roots:   ReadonlyArray<{ readonly handleIndex: number; readonly verifyingKey: string }>;
-  readonly active:  number | null;
   readonly orphans: readonly number[];
 }
 
@@ -53,24 +53,34 @@ export function sealedDeclarationStore(): PersonaDeclarationStore {
 }
 
 /**
- * The root key of the face this vessel wears, or undefined where it wears none it holds a root for. A recognition
- * made while a face stands worn rests under that face's tag in the handle-book, so that face's backup bundle
- * carries it; made under no worn face, it rests untagged and stays on this vessel.
+ * The root key of face `face`, or undefined where this vessel holds no root for it. A recognition made under a face whose root
+ * stands here rests under that face's tag in the handle-book, so that face's backup bundle carries it; made under a face held
+ * by no root here, it rests untagged and stays on this vessel.
  */
-export async function wornFaceKey(): Promise<string | undefined> {
-  const roster = await readPersonaRoots();
-  return roster.active === null ? undefined : roster.roots.find((r) => r.handleIndex === roster.active)?.verifyingKey;
+export async function faceRootKey(face: number): Promise<string | undefined> {
+  return (await readPersonaRoots()).roots.find((r) => r.handleIndex === face)?.verifyingKey;
 }
 
-/** Load the recogniser's handle-book: the snapshot crosses the recogniser's own verification on the way in. */
-export async function loadHandleBook(): Promise<HandleBook> {
-  const { snapshot } = await sealedAct<{ snapshot: HandleBookSnapshot }>("handle-book.load");
+/**
+ * The face whose recognition book a command reads and writes: `face`, refused by name where this vessel holds no root for it.
+ * Each face keeps its own recognition book in its own row.
+ */
+export async function bookFace(face: number): Promise<number> {
+  if (!(await readPersonaRoots()).roots.some((r) => r.handleIndex === face)) {
+    throw new Error(`recognition keeps its book in a face whose root this vessel holds, and it holds none at h${face}: name a face it founded (--face N)`);
+  }
+  return face;
+}
+
+/** Load a face's handle-book: the snapshot crosses the recogniser's own verification on the way in. */
+export async function loadHandleBook(face: number): Promise<HandleBook> {
+  const { snapshot } = await sealedAct<{ snapshot: HandleBookSnapshot }>("handle-book.load", { face });
   return HandleBook.restore(snapshot);
 }
 
-/** Seal the recogniser's handle-book as it stands. */
-export async function saveHandleBook(book: HandleBook): Promise<void> {
-  await sealedAct("handle-book.save", { snapshot: book.snapshot() });
+/** Seal a face's handle-book as it stands. */
+export async function saveHandleBook(face: number, book: HandleBook): Promise<void> {
+  await sealedAct("handle-book.save", { face, snapshot: book.snapshot() });
 }
 
 /**
@@ -124,9 +134,11 @@ export function armRollSeats(cards: readonly Uint8Array[], threshold?: number): 
   return sealedAct<ArmedRoll>("seat.arm-roll", threshold === undefined ? { cards: hex } : { cards: hex, threshold });
 }
 
-/** Whether a card's read-back stands in: a staged test root whose custody proves the published test route. */
+/** Whether the harness explicitly seated a card read-back stand-in in this CLI process. */
 export async function readBackStandsIn(): Promise<boolean> {
-  return (await sealedAct<{ standIn: boolean }>("seat.readback-stand-in")).standIn;
+  // The CLI prints and reads the card here. A standing vessel holds no authority over this terminal's
+  // read-back waiver; only the harness's explicit seat in this process can stand in. Production seats none.
+  return readBackStandInSeated();
 }
 
 /** Retire the seat keys among `keys` that nothing needs; the door's own licence decides, whatever this names. */

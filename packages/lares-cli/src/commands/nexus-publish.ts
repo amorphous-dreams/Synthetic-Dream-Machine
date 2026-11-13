@@ -2,7 +2,7 @@
  * nexus-publish — THE OFFERING DOOR: what THIS operator publishes for others to take.
  *
  * ── WHY IT STANDS APART FROM `kahuli` ────────────────────────────────────────────────────────────
- * `kahuli` overturns what the MESH must agree on: `engineCid` (the hearth true-name, signed into every
+ * `kahuli` overturns what the MESH must agree on: `engineCid` (the engine CID, signed into every
  * device-delegation edge) and `grammarCid` (the required memetic-wikitext grammar alone). Both ratchet,
  * and an operator who advances one moves everybody's reading.
  *
@@ -43,7 +43,7 @@ const PUBLISH_USAGE: readonly string[] = [
   "             descriptor this persona signs fresh, as PUBLISHER.",
   "",
   "  --source   the offering source directory (required).",
-  "  --apply    sign the offering (when unsigned) + announce it on the crossroads plane.",
+  "  --apply    sign the offering (when unsigned) + announce it on the Nexus's publication board.",
 ];
 
 /**
@@ -60,7 +60,7 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
 
   if (args.flags["apply"]) {
     try {
-      const result = (await storeVerb("nexus-publish", { source }, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
+      const result = (await storeVerb("nexus-publish", { source, ...(typeof args.options["face"] === "string" ? { handleIndex: Number(args.options["face"]) } : {}) }, NexusPublishError)).output as unknown as NexusPublishPluginsResult;
       emit(args, {
         ok: true,
         data: {
@@ -102,9 +102,8 @@ async function publishPlugins(args: ParsedArgs): Promise<number> {
   // fresh — the SAME fold `--apply` would sign, so a read never drifts from what applying would do.
   const pluginsCid = typeof parsed.sig === "string" && typeof parsed.pluginsCid === "string" ? parsed.pluginsCid : computePluginsCid(blobs);
 
-  // L-d: this read used to print raw human prose unconditionally — `--json` (or any non-TTY caller)
-  // got the SAME text instead of structured data. It now routes through the ONE choke point every
-  // other door answers through.
+  // L-d: this read routes through the ONE choke point every other door answers through, so `--json`
+  // (or any non-TTY caller) reads structured data, never the human prose.
   emit(args, {
     ok: true,
     data: {

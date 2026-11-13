@@ -3,7 +3,7 @@
  * one-shot CLI command AND the long-lived watcher daemon run the SAME path.
  *
  * Two legs live here; the third leg lives on the island:
- *   scan  — walk source for carriers, derive each uri by the loci law,
+ *   scan  — walk source for carriers, derive each uri by the address siting rule,
  *           NFC-assert at the shore, hash, diff the disk hash against the base's disk side
  *   submit — pack NEW+CHANGED carriers (hashes riding with the text) into one
  *            INGEST verb; the island's gate supplies currentRenderHash (leg 3)
@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionDir } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -72,6 +72,10 @@ export interface ScanRow {
    *  re-links records change-id-preserving, `pairRenames`), the source rides
    *  the wave as a rename-deletion, and the CLI moves the observation post-confirm. */
   readonly renameFrom?: string;
+  /** THE OVERRIDE BASE A CARRY RESTORES: the carrier identity (`carrierHash`, `sha256:…`) of the canon record a working copy forked from, as an export
+   *  read it off the record's meta envelope. The island stamps it on the record a working-layer wave lands, so a bundle's
+   *  override keeps its base across a re-founding. Absent for every disk scan: a base never projects. */
+  readonly overrideBase?: string;
 }
 
 export interface ScanResult {
@@ -82,12 +86,18 @@ export interface ScanResult {
    *  them and re-homes records. Absent on a partial (watcher) scan, which pairs
    *  its own vanished set by content (`pairedDeletions`). */
   readonly renameDeletions?: PendingDeletion[];
+  /** THE KĀPAE THE SOURCE SPEAKS: each title a shadow file (`<stem>.kapae`) names, where its bytes prove a
+   *  raise and agree with the title its siting derives. The wave raises a kāpae over each, and no row
+   *  carries a shadowed title (remove-wins inside one export). Absent where the source holds no shadow. */
+  readonly shadows?: string[];
+  /** The shadow files that proved no kāpae, each with the refusal that names why. */
+  readonly refusedShadows?: Array<{ readonly file: string; readonly refusal: string }>;
 }
 
-/** Open the Synced tree at the canonical projection-state path (larProjectionDir() —
- *  runtime vessel state, not corpus). */
+/** Open the Synced tree at the canonical projection checkpoint (larProjectionCheckpointDir() —
+ *  runtime vessel state inside the hearth, not corpus). */
 export function openSyncedTree(): SyncedTree {
-  return new SyncedTree(syncedTreeDir(larProjectionDir()));
+  return new SyncedTree(syncedTreeDir(larProjectionCheckpointDir()));
 }
 
 /**
@@ -115,6 +125,12 @@ export function readCarrierText(file: string): { text: string; binary: boolean }
  * work queue (Confluence: scan is truth, events are hints).
  */
 export function listCarriers(source: string): string[] | null {
+  const listed = listSourceFiles(source);
+  return listed === null ? null : listed.filter((f) => !f.endsWith(KAPAE_EXT));
+}
+
+/** Every file a source lists: the carriers and the kāpae shadow files beside them. */
+function listSourceFiles(source: string): string[] | null {
   let st;
   try { st = statSync(source); } catch { return null; }
   if (!st.isDirectory()) return [source];
@@ -135,15 +151,16 @@ export function listCarriers(source: string): string[] | null {
 
 /** Derive a file's carrier-root URI for one mirror plane (bags/ canon vs
  *  wikis/ working write-layer). The watcher and CLI both feed a source; this
- *  names which loci reverse-derivation a row carries. */
+ *  names which address reverse-derivation a row carries. */
 export type FileToUriFn = (root: string, file: string) => string | null;
 
-/** The two mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
- *  which may sit outside `LAR_ROOT`. */
-export interface MirrorDirs { readonly bags: string; readonly wikis: string }
+/** The mirror directories a vessel reads — `LAR_BAGS` / `LAR_WIKIS` (cli `larBagsDir()` / `larWikisDir()`),
+ *  which may sit outside `LAR_ROOT`, and the house's projections root (`<root>/projections`), whose `bags/` and
+ *  `wikis/` read the same way. */
+export interface MirrorDirs { readonly bags: string; readonly wikis: string; readonly projections?: string }
 
 /**
- * Pick the loci reverse-derivation by which mirror plane the source sits in.
+ * Pick the address reverse-derivation by which mirror plane the source sits in.
  * Under the wikis dir → the working write-layer ingest-back derivation
  * (the editing plane); else the bags dir canon derivation. Designation of the
  * target bag stays the caller's (`--to`); the plane only drives the URI.
@@ -154,9 +171,13 @@ export function fileToUriForSource(
   root: string, source: string,
   dirs: MirrorDirs = { bags: join(root, "bags"), wikis: join(root, "wikis") },
 ): FileToUriFn {
-  const wikisRoot = resolve(dirs.wikis);
   const abs = resolve(source);
-  const dir = abs === wikisRoot || abs.startsWith(wikisRoot + sep) ? dirs.wikis : dirs.bags;
+  const under = (dir: string): boolean => { const r = resolve(dir); return abs === r || abs.startsWith(r + sep); };
+  const projected = dirs.projections === undefined ? null
+    : under(join(dirs.projections, "wikis")) ? join(dirs.projections, "wikis")
+    : under(join(dirs.projections, "bags")) ? join(dirs.projections, "bags")
+    : null;
+  const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
   return (_root, file) => mirrorDirFileToUri(dir, file);
 }
 
@@ -175,10 +196,22 @@ export function scanFiles(
 ): ScanResult {
   const rows: ScanRow[] = [];
   const skipped: string[] = [];
+  const shadows = new Set<string>();
+  const refusedShadows: Array<{ file: string; refusal: string }> = [];
   for (const file of files) {
     const uri = fileToUri(root, file);
     if (!uri) { skipped.push(file); continue; }
     const ext = extname(file);
+    // A KĀPAE SHADOW speaks an exclusion: it names a title and carries no record of its own.
+    if (ext === KAPAE_EXT) {
+      let text: string;
+      try { text = readFileSync(file, "utf8"); } catch { continue; }   // a shadow gone from disk speaks nothing
+      const read = readKapaeShadow(text);
+      if ("refusal" in read) { refusedShadows.push({ file, refusal: read.refusal }); continue; }
+      if (read.title !== uri) { refusedShadows.push({ file, refusal: "kapae-shadow-title-disagrees-with-siting" }); continue; }
+      shadows.add(uri);
+      continue;
+    }
     let text: string;
     let binary: boolean;
     try { ({ text, binary } = readCarrierText(file)); } catch {
@@ -214,14 +247,19 @@ export function scanFiles(
     const base       = tree.baseAt(syncedTreeKey(toBag, uri), file);
     const syncedHash = base?.disk ?? null;
     const syncedRecordsHash = base !== null && !digestsEqual(base.disk, base.records) ? base.records : undefined;
-    // Both sides ride tagged now (`carrierHash` emits `sha256:…`; the tree stores
-    // the same tagged form) — `digestsEqual` still normalizes the two spellings a
-    // tagged digest can carry (canonical `:` vs legacy SRI `-`).
+    // Both sides ride tagged (`carrierHash` emits `sha256:…`; the tree stores the same
+    // tagged form); `digestsEqual` compares them as `(algo, hex)`.
     const status: ScanStatus =
       syncedHash === null ? "new" : digestsEqual(diskHash, syncedHash) ? "unchanged" : "changed";
     rows.push({ file, uri, text, diskHash, syncedHash, ...(syncedRecordsHash !== undefined ? { syncedRecordsHash } : {}), status, ext, binary, ...(meta !== undefined ? { meta } : {}) });
   }
-  return { rows, skipped };
+  // REMOVE-WINS INSIDE ONE EXPORT: a carrier standing beside the shadow of its own title carries nothing.
+  const kept = shadows.size > 0 ? rows.filter((row) => !shadows.has(row.uri)) : rows;
+  return {
+    rows: kept, skipped,
+    ...(shadows.size > 0 ? { shadows: [...shadows].sort() } : {}),
+    ...(refusedShadows.length > 0 ? { refusedShadows } : {}),
+  };
 }
 
 /**
@@ -353,7 +391,7 @@ export interface IngestSettlement {
   /** Each carrier whose records the gesture moved (`ingest`), with the hash its records render as the island
    *  named it, or as the one pure door read it where the rows stayed behind the cap. The settle word asks the
    *  projection after exactly these (`settle`, `shore-verb.ts`). */
-  readonly rendered: ReadonlyArray<{ readonly uri: string; readonly records: string }>;
+  readonly rendered: ReadonlyArray<{ readonly uri: string; readonly records: string; readonly heads?: readonly string[] }>;
   /** A later wave that ended in an error: the gesture stops there and names what stays unread. */
   readonly pageError?: { readonly message: string; readonly unread: number };
 }
@@ -504,6 +542,7 @@ export async function settleIngest(
   }
 
   const summary = summaryOutput(first) ?? {};
+  const waveHeads = headsNamed((summary as { heads?: unknown }).heads);
   const deletions = (summary as { deletions?: Record<string, unknown> }).deletions;
   const answer = readCarrierAnswer((summary as { carriers?: unknown }).carriers);
   const byUri = new Map(opts.candidates.map((c) => [c.uri, c] as const));
@@ -512,7 +551,9 @@ export async function settleIngest(
   const pages: SubmitResult[] = [];
   let recorded = 0;
   /** The records sides the pure door read for landed carriers no row named. */
-  const ownRendered: Array<{ uri: string; records: string }> = [];
+  const ownRendered: Array<{ uri: string; records: string; heads?: readonly string[] }> = [];
+  /** The wave heads each later page's summary named, by carrier: a row that names none rides its page's. */
+  const pageHeads = new Map<string, readonly string[]>();
   /** The carriers a later wave asked again: the first wave may have landed them, so their `noop` names a render. */
   const askedAgain = new Set<string>();
   let pageError: IngestSettlement["pageError"];
@@ -540,7 +581,7 @@ export async function settleIngest(
       for (const c of unnamed) {
         const records = ownRecordsSide(c);
         if (records === null) askAgain.push(c);
-        else { own.push({ uri: c.uri, decision: "ingest", canonicalHash: records }); ownRendered.push({ uri: c.uri, records }); }
+        else { own.push({ uri: c.uri, decision: "ingest", canonicalHash: records }); ownRendered.push({ uri: c.uri, records, ...(waveHeads !== undefined ? { heads: waveHeads } : {}) }); }
       }
       recorded += recordLandedCarriers(tree, opts.toBag, opts.candidates, own);
     }
@@ -554,8 +595,10 @@ export async function settleIngest(
         pageError = { message: result.errorMessage ?? "the daemon refused and named no reason", unread: askAgain.length - at };
         break;
       }
-      const rows = readCarrierAnswer((summaryOutput(result) as { carriers?: unknown } | undefined)?.carriers).rows;
-      for (const row of rows) named.set(String(row["uri"]), row);
+      const pageOut = summaryOutput(result) as { carriers?: unknown; heads?: unknown } | undefined;
+      const rows = readCarrierAnswer(pageOut?.carriers).rows;
+      const heads = headsNamed(pageOut?.heads);
+      for (const row of rows) { named.set(String(row["uri"]), row); if (heads !== undefined) pageHeads.set(String(row["uri"]), heads); }
       recorded += recordLandedCarriers(tree, opts.toBag, page, rows);
     }
   }
@@ -591,19 +634,28 @@ export async function settleIngest(
   }
   const askingUris = new Set([...refused, ...conflicts].map((r) => r.uri));
   const unanswered = asked.filter((uri) => !landed.has(uri) && !askingUris.has(uri));
-  const rendered = [...ownRendered];
+  const rendered: Array<{ uri: string; records: string; heads?: readonly string[] }> = [...ownRendered];
   for (const [uri, row] of named) {
     const records = row["canonicalHash"];
     // A later wave reads against the records the first wave left: a carrier the first wave landed answers
     // `noop` there, and its records moved all the same.
     const moved = row["decision"] === "ingest" || (row["decision"] === "noop" && askedAgain.has(uri));
-    if (moved && byUri.has(uri) && typeof records === "string" && records !== "") rendered.push({ uri, records });
+    // The row names the causal heads that carried the carrier's records when the island's store keeps history:
+    // the settle word follows them through the view and ends on the far side's close (G36).
+    // A row behind the audit cap names none of its own: it rides its page's wave heads, else the first wave's.
+    const rowHeads = headsNamed(row["heads"]) ?? pageHeads.get(uri) ?? waveHeads;
+    if (moved && byUri.has(uri) && typeof records === "string" && records !== "") rendered.push({ uri, records, ...(rowHeads !== undefined ? { heads: rowHeads } : {}) });
   }
   return {
     first, pages, submitted: asked.length, asked, askedDeletions, landed, unanswered,
     named, refused, conflicts, tallies, deletions, recorded, rendered,
     ...(pageError !== undefined ? { pageError } : {}),
   };
+}
+
+/** The heads a row or a summary names: a whole list of head hashes, or none. */
+function headsNamed(value: unknown): readonly string[] | undefined {
+  return Array.isArray(value) && value.length > 0 && value.every((h) => typeof h === "string" && h !== "") ? (value as string[]) : undefined;
 }
 
 /** The observation hash of a carrier file as it stands now (body plus `.meta` pairing), or null where unreadable. */
@@ -675,11 +727,15 @@ export function scanSource(
   tree:   SyncedTree,
   fileToUri: FileToUriFn = fileToUriForSource(root, source),
 ): ScanResult | null {
-  const files = listCarriers(source);
+  const files = listSourceFiles(source);
   if (files === null) return null;
   const scan = scanFiles(root, files, toBag, tree, fileToUri);
   const { rows, renameDeletions } = resolveRenames(scan.rows, toBag, tree);
-  return { rows, skipped: scan.skipped, ...(renameDeletions.length > 0 ? { renameDeletions } : {}) };
+  return {
+    rows, skipped: scan.skipped, ...(renameDeletions.length > 0 ? { renameDeletions } : {}),
+    ...(scan.shadows !== undefined ? { shadows: scan.shadows } : {}),
+    ...(scan.refusedShadows !== undefined ? { refusedShadows: scan.refusedShadows } : {}),
+  };
 }
 
 /** The rows an INGEST submission carries — NEW, CHANGED, and RENAMED. A `renamed`
@@ -741,6 +797,8 @@ export interface SubmitIngestOpts {
   /** Vanished carriers riding the same wave: the sources of renames the gesture paired by content, one
    *  vanished file to one arrived file. No gesture sends a deletion it did not pair. */
   readonly deletions?: readonly PendingDeletion[];
+  /** The titles the source's kāpae shadow files name: the island raises a kāpae over each in `toBag`. */
+  readonly kapae?: readonly string[];
   /**
    * Run the INGEST IN the active wiki island over ITS composite — the path
    * for `working` (the per-fingerprint write layer the daemon never reaches).
@@ -748,12 +806,17 @@ export interface SubmitIngestOpts {
    * executes daemon-side (canon bags).
    */
   readonly inWiki?: boolean;
+  /** With `inWiki`, the wiki the INGEST runs in by name (the `wiki-act` road's own `wiki`), never the active one. */
+  readonly wiki?: string;
   /**
    * NO PERSON STANDS BEHIND THIS WAVE. The watcher sets it on every wave it settles by itself; `lares
    * ingest` and every other gesture a person names leave it absent. The island's gate then never adopts
    * a file that holds no base over records that say something else: it answers `conflict`, `no-base`.
    */
   readonly unattended?: boolean;
+  /** THE FACE-NAMED WAVE (the lit set): the handle index of the open face whose own layer takes this wave. The island lands it
+   *  only where its device table names that face as the target document's owner; it never falls back to the worn face. */
+  readonly face?: number;
 }
 
 /**
@@ -766,7 +829,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
   const changeId = opts.changeId ?? newChangeId();
   const deletions = opts.deletions ?? [];
   const actionArgs: Record<string, unknown> = {
-    "source-uri": opts.source,
+    "source-uri": resolve(opts.source),
     "to-bag":     opts.toBag,
     "change-id":  changeId,
     // THE BLOB LAW (cas-stage.ts): a pointer-kind `type` (the `.meta` declaration first, else TW5's
@@ -785,17 +848,20 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
         ...(staged.staged ? { textCid: staged.cid } : { text: r.text }),
         ...(staged.skinny ? { skinny: true } : {}),
         ...(r.meta !== undefined ? { meta: r.meta } : {}),
+        ...(r.overrideBase !== undefined ? { overrideBase: r.overrideBase } : {}),
       };
     }),
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),
+    ...(opts.kapae !== undefined && opts.kapae.length > 0 ? { kapae: [...opts.kapae] } : {}),
     ...(opts.unattended === true ? { unattended: true } : {}),
+    ...(opts.face !== undefined ? { face: opts.face } : {}),
   };
   // --in-wiki: wrap the INGEST so it runs IN the active wiki island over its
   // composite (where working lives), mirroring `lares act --in-wiki`. The
   // default submits daemon-side for canon bags.
   const submitName = opts.inWiki ? "wiki-act" : "INGEST";
-  const submitArgs = opts.inWiki ? { verb: "INGEST", args: actionArgs } : actionArgs;
+  const submitArgs = opts.inWiki ? { verb: "INGEST", args: actionArgs, ...(opts.wiki !== undefined ? { wiki: opts.wiki } : {}) } : actionArgs;
   const requestId = await taskContentId({ subject: opts.toBag, command: submitName, args: submitArgs, nonce: "" });
-  const timeoutMs = Math.max(10_000, 10_000 + (opts.candidates.length + deletions.length) * 400);
+  const timeoutMs = Math.max(10_000, 10_000 + (opts.candidates.length + deletions.length + (opts.kapae?.length ?? 0)) * 400);
   return await runVerb(submitName, submitArgs, opts.did, { requestId, timeoutMs });
 }

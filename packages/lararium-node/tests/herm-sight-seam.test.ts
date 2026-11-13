@@ -13,7 +13,7 @@ import { join } from "node:path";
 
 const SRC = join(__dirname, "..", "src");
 /** The relay's own modules: where the observer is a parameter, never read off the environment. */
-const SEAM = new Set(["carriage-relay.ts", "authenticated-membership-relay.ts"]);
+const SEAM = new Set(["carriage-relay.ts", "herm-relay-port.ts"]);
 
 function sources(dir: string): string[] {
   return readdirSync(dir).flatMap((name) => {

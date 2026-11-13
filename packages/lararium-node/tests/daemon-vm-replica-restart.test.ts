@@ -54,7 +54,7 @@ async function openProbe(
   noSync = false,
 ): Promise<{ core: Awaited<ReturnType<typeof openDaemonVm>>; events: IslandMsg_Event[] }> {
   const events: IslandMsg_Event[] = [];
-  const core = await openDaemonVm({
+  const core = await openDaemonVm({ caps: {},
     repo,
     daemonUrl,
     coreHash: null,
@@ -93,7 +93,7 @@ describe("daemon VM Repo persistence fork", () => {
     repos.push(repo);
     const daemon = repo.create<LarDoc>(emptyLarDoc());
 
-    await expect(openDaemonVm({
+    await expect(openDaemonVm({ caps: {},
       repo,
       daemonUrl: daemon.url,
       coreHash: null,
@@ -108,7 +108,7 @@ describe("daemon VM Repo persistence fork", () => {
     repos.push(repo);
     const daemon = repo.create<LarDoc>(emptyLarDoc());
 
-    await expect(openDaemonVm({
+    await expect(openDaemonVm({ caps: {},
       repo,
       daemonUrl: daemon.url,
       coreHash: null,

@@ -6,7 +6,7 @@
  * holder already keyed and answers null for any id it lacks — so it names no realm the holder holds no key
  * to, standing clear of the roster 'a roster IS a global now' forbids. FACE-SCOPED: keyed under a persona
  * tag, so a compromise yields one face's realms, not a vessel's whole multitude (the persona planes' own
- * blast radius, exactly as a vessel-global @circles would correlate where a face-scoped one does not).
+ * blast radius, exactly as a vessel-global circles-plane would correlate where a face-scoped one does not).
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/cabal-realm-nexus-planes · persona-scoped-face-planes
  */

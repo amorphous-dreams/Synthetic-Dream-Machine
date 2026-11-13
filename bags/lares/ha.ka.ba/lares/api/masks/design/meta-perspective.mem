@@ -1,17 +1,13 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lares/api/masks/design/meta-perspective">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lares/api/masks/design/meta-perspective`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 created   = "Invalid Date"
 family    = "design"
-file-path = "bags/lares/ha.ka.ba/lares/api/masks/design/meta-perspective.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 14
-manaoio   = 12
 name      = "Meta-Perspective"
 namespace = "&#x0950; &#x0901;"
 rating    = "meme"
@@ -23,11 +19,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/masks/design/meta-perspective"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Meta-Perspective ~ the design lens
 
@@ -45,7 +39,7 @@ itself. What the room generates rides the play registers until blessed.
 
 <<~/ahu>>
 
-<<~ ahu #/the-step-in>>
+<<~ ahu slot=`#/the-step-in`>>
 
 !! The Step-In ~ the ring of keys
 
@@ -61,12 +55,12 @@ step-in licenses standpoints of ''place''; one discipline, two axes.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/noosphere-boot">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/noosphere-boot`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;6fpdEoORTzVNa_yC7NcCHZaP-v8PvAPiO8BoN8iE_WQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZBD3-7f7HgmQX-Nb28I6wdLuOLK2RtMRNcm4HXnn8iQ`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

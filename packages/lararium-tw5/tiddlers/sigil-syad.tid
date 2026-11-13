@@ -3,9 +3,9 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: metadata
 lar-pattern: <<~\s*syad\b([\s\S]*?)>>
 lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/syad
-lar-example: <<~ syad "maybe">>
+lar-example: <<~ syad value=`maybe`>>
 lar-render: literal
 type: text/vnd.tiddlywiki
 
-<!-- syad — the five-standpoints lens. HUD-frame sigil: recognized in the tree, rendered as plain literal
+<!-- syad — the five-standpoints lens. frame sigil: recognized in the tree, rendered as plain literal
      text for now. -->

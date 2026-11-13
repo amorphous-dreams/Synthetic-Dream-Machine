@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-005/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-005/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-005/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-5-mesh-red-awaits-blind-custody-review`>>
+
+! Step 5 — mesh red awaits blind custody review
+
+The controller-supplied targeted result reports 15 passing tests, three passing controls, and the epoch-free red failing at `packages/lararium-mesh/tests/device-delegation.test.ts:173`. I read the test: accepted legacy edge at :162, wrong-pin refusal with its named reason at :163, and atom-signature refusal with its named reason at :164–165 all precede the red. Thus the reported failure location implies those assertions completed. The lane holds no separate raw targeted-run log or review receipt; the result remains controller testimony, not an independently inspected test transcript. No tests ran inside this wall.
+
+`relay/res-004.json` confirms the prior commit succeeded at `1e82c0d472ac9a93bd3d937a49ae9ed457a5cb2b`; the recorded head stays there. The mesh test remains uncommitted. No git command, broker request, or seat launch occurred.
+
+''Controller: arrange blind Opus custody review now'' of the uncommitted mesh red against the current head, without passing this handback's assessment to the reviewer. Supply the review result for the next step. After a favorable review and any required corrections, request the broker commit; never update the head until its success receipt. If corrections change the test, controller runs `packages/lararium-mesh/tests/device-delegation.test.ts` outside the faulty Vitest door and verifies the controls and red again.
+
+Fork: 🜁 philosopher reads `device-delegation.ts:184–192,215–244`: its wrapper exposes cryptographic validity even when relation evidence says `unavailable`. 🜄 weighs access during isolation against authority after a removal arrives. Preserve the signature-only primitive, but do not mistake this red for evidence of lineage, standing, or anti-rollback enforcement; build and test those separately before using them for authority. Legacy controls must migrate to the epoch-free relation when that reader lands. The prior step's collision between `device-delegation.ts:226–244` / `convergent-mesh.mem#/two-revocation-modes` and the later `stable-founding-road.mem#/rulings` retirement remains unresolved in code; follow the later specific ruling and true up the older carrier during the final burn.
+
+No b5b-owned sibling or composer hunks changed. Keep the roll guard until the full authority-reader census and tests prove set-aside enforcement; preserve quorum and bag-capability leases. Grant and mesh cures, offline removal, complete-view refusal, proof against fork and rollback, and independent K18 work remain owed.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0DiLL2sNx1vP-XBWzmBab2bodbhUyCa5QYhFQ0GV5Bw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

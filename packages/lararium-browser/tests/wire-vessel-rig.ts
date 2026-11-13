@@ -9,6 +9,7 @@
 import { NetworkAdapter, generateAutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
 import type { PeerMetadata } from "@automerge/automerge-repo";
 import type { CarriedAdmitPayload } from "@lararium/keyhive";
+import type { HearthPinIndex } from "@lararium/mesh";
 import type { BrowserVesselOptions } from "../src/open-browser-vessel.js";
 
 type SharePolicy = (peerId: PeerId, documentId?: DocumentId) => boolean | Promise<boolean>;
@@ -65,26 +66,43 @@ export function admitNaming(hearthGatePubKey: string, hearthCanonDocs: Record<st
     hearthCanonDocs,
     personaGroupId: hex("a1"), meshCabalDocIdHex: hex("a3"),
     signerDid: "did:key:z6MkWireRig", personaKelPrefix: "EWireRigPrefix",
-    deviceEdge: { signed: true },
+    // The rig's edge carries the fields the sealed anchor commits to (root, device, hearth, epoch); no ceremony signs it.
+    deviceEdge: { signed: true, personaRootDid: `0x${hex("a5")}`, deviceVerifyingKey: hex("a7"), hearthTrueName: "wire-rig-hearth", boundEpoch: "0" },
+    personaActs: [], edgeFrontier: { records: [], snapshots: [] },
   } as unknown as CarriedAdmitPayload;
 }
 
 /** The result a faked admit ceremony returns: fresh document urls and a card, no ceremony run. */
-export function fakeAdmitResult(): Record<string, unknown> {
+export function fakeAdmitResult(input?: { readonly payload?: { readonly deviceEdge?: unknown } }): Record<string, unknown> {
   return {
-    identitiesUrl: generateAutomergeUrl(), circlesUrl: generateAutomergeUrl(), sessionsUrl: generateAutomergeUrl(),
+    // The complete edge the ceremony returns; the faked ceremony carries the payload's own.
+    ...(input?.payload?.deviceEdge ? { deviceEdge: input.payload.deviceEdge } : {}),
+    identitiesUrl: generateAutomergeUrl(), circlesUrl: generateAutomergeUrl(), sessionsUrl: generateAutomergeUrl(), intentsUrl: generateAutomergeUrl(),
     daemonUrl: generateAutomergeUrl(), personaUrl: generateAutomergeUrl(), personaBagId: "persona-wire-rig",
     contactCardJson: "{\"wire\":\"rig\"}", hearthDaemonUrl: null,
     archive: new Uint8Array([0x77, 0x69, 0x72, 0x65]),
   };
 }
 
-/** Options for a boot that dials `relayGatePubKey` after admission (none: no relay); the store name is unique per boot. */
-export function bootOptions(admit: CarriedAdmitPayload, relayGatePubKey: string | null): BrowserVesselOptions {
+/**
+ * The three inputs the sealed relay dial waits on, as the rig hands them: an index that holds, for any key, a pin whose
+ * signing key is `gateKey` (the gate the crossing pins), a Nexus, and a presentation. The relay transport is a fake
+ * beneath the vessel, so it reads none of the three; they let the vessel stand the dial the policy wire sits behind.
+ */
+function heldRelayDial(gateKey: string): NonNullable<BrowserVesselOptions["relayDial"]> {
+  return {
+    pins: { get: () => ({ tier: "sovereign", signingKey: gateKey }), put: () => false } as unknown as HearthPinIndex,
+    nexus: "ab".repeat(16),
+    presentation: {} as never,
+  };
+}
+
+/** Options for a boot that dials the gate `pinnedGateKey` names after admission (none: no relay); the store name is unique per boot. */
+export function bootOptions(admit: CarriedAdmitPayload, pinnedGateKey: string | null): BrowserVesselOptions {
   return {
     idbName: `wire-rig-${crypto.randomUUID()}`,
     admit,
-    ...(relayGatePubKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayGatePubKey } : {}),
+    ...(pinnedGateKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayDial: heldRelayDial(pinnedGateKey) } : {}),
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
   } as BrowserVesselOptions;
 }

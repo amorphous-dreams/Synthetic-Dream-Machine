@@ -3,8 +3,9 @@
  *
  *   LAR_ROOT  — the CORPUS/resource root of ONE daemon's holdings (bags · wikis · genesis).
  *               Explicit siting, never a silent global-tree default: an operator points each
- *               daemon at ITS resources. The VESSEL STATE roots separately, in the operator's
- *               home (~/.lares, see larHome); LAR_ROOT also isolates that state for staged pairs.
+ *               daemon at ITS resources. LAR_ROOT also names the HOUSE ROOT every vessel-state
+ *               resolver lays its classes beneath (hearth · library · projections · config · cache
+ *               · run, see vessel-paths); an unnamed root refuses there by name.
  *   LAR_BAGS · LAR_WIKIS · LAR_GENESIS · LAR_CAS — per-resource overrides. Each resource sites
  *               INDEPENDENTLY (composable #has caps); unset → it derives off LAR_ROOT.
  *   LAR_DEV_REPO_ROOT — the named repo DEV-PRESET switch. Truthy → the repo checkout stands as the
@@ -13,6 +14,7 @@
  *               zero-config feel. A fresh clone carries neither, and sites no default: every unit
  *               that reaches `larRoot()` sites its own scratch `LAR_ROOT` rather than leaning on it.
  *   LAR_PORT  — daemon WS port. Default 8080.
+ *               No env names a hearth's url, gate key or document: the dial rides the landed or taken admit's pin.
  *   LAR_TARGET — harness mode selector ("staged" | "live"); the CLI ignores it, the harness reads it.
  *
  * The vessel-path resolvers live ONCE in @lararium/node (so the CLI and the daemon agree on the
@@ -22,13 +24,13 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { larDataDir, loadVesselVerifyingKey, runtimeCasOverride } from "@lararium/node";
+import { HouseRootUnnamed, larDataDir, larProjectionsHome, loadLaresConfig, loadVesselVerifyingKey, resolveGenesis, runtimeCasOverride } from "@lararium/node";
 
 // The vessel runtime-state resolvers — defined once in @lararium/node, surfaced here.
 export {
-  larHome, larDataDir, larIdentityDir, larProjectionDir, larSealHome, larBootstrapPath,
-  larHarvestDir, larHarvestStageDir, larStructurePalaceDir, larFormPalaceDir,
-  larariumDataHome,
+  larHouseRoot, larDataDir, larIdentityDir, larProjectionCheckpointDir, larSealHome, larBootstrapPath,
+  larHarvestCheckpointDir, larHarvestStagingDir, larStructurePalaceDir, larFormPalaceDir,
+  larSensoriumsHome,
 } from "@lararium/node";
 
 /** The committed marker that opts a checkout in as the repo dev-preset corpus root. */
@@ -66,7 +68,7 @@ export function resolveLarRoot(opts: {
  * CORPUS/resource root — the base each daemon sites EXPLICITLY (bags · wikis · genesis derive off
  * it unless independently overridden). LAR_ROOT sites it; the named repo dev-preset opts the checkout
  * in; unconfigured throws a CLEAN error (mirroring vesselDid — no silent global-tree fallback).
- * The vessel STATE roots separately, in the home (see larHome).
+ * The vessel STATE lays its classes beneath the same LAR_ROOT (see larHouseRoot).
  */
 export function larRoot(): string {
   return resolveLarRoot({
@@ -90,10 +92,15 @@ export function larWikisDir(): string {
   return process.env["LAR_WIKIS"] ?? join(larRoot(), "wikis");
 }
 
+/** The house's projections root (`<root>/projections`), or undefined while LAR_ROOT names no house root. */
+export function larProjectionsDirOrNone(): string | undefined {
+  try { return larProjectionsHome(); } catch (err) { if (err instanceof HouseRootUnnamed) return undefined; throw err; }
+}
+
 /** The genesis dir — `LAR_GENESIS`, else `<corpus>/genesis`. TRACKED SEED ALONE (island + cas), identical
  *  for every vessel. The per-vessel bootstrap left it for the store — see larBootstrapPath. */
 export function larGenesisDir(): string {
-  return process.env["LAR_GENESIS"] ?? join(larRoot(), "genesis");
+  return resolveGenesis({ explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: larRoot(), shippedRoot: repoRoot }).dir;
 }
 
 /**
@@ -151,12 +158,12 @@ export async function personaRootDid(handleIndex = 0): Promise<string> {
   // The roster rests sealed, so the read rides the custody door (`sealed-rows`). It loads here, at the call:
   // this module stands under the store door, and the store door stands under that one.
   const { personaRootKey } = await import("./sealed-rows.js");
-  const vk = await personaRootKey(handleIndex);
-  if (!vk) {
+  const treeKey = await personaRootKey(handleIndex);
+  if (!treeKey) {
     throw new Error(
       `no persona root h${handleIndex} under ${larDataDir()} — this vessel custodies no operator root ` +
       `(found with \`lares vessel found\`, or read the pinned signer DID an admit payload carried)`,
     );
   }
-  return "0x" + vk;
+  return "0x" + treeKey;
 }

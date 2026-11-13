@@ -12,9 +12,16 @@
 #               challenge test server. The certificate names the wildcard alone and chains to Pebble's root.
 #   PER MACHINE a second run under another certificate name issues a second certificate with its own key.
 #   THE EDGE    the terminator serves the issued certificate for the household name, refuses another name's
-#               handshake, proxies `https` to the vessel, passes a socket upgrade (HTTP 101), and passes a
-#               `Sec-WebSocket-Protocol` header of 8192 bytes (a measured tablet's first gate message). CONTROL: a
-#               header line longer than the terminator's buffer draws nginx's own 400.
+#               handshake, proxies `https` to the vessel, and passes a socket upgrade carrying a first flight on the knock the
+#               vessel's sovereign sync gate stands, the path the vessel itself states (`[lar-gate] the sync gate for Nexus … stands on <path>`). The vessel founds a hearth
+#               and the witness opens its key through the test door: a hearth rests at its floor, standing no sync
+#               gate, until a person unlocks it. A flight no dialer sealed to the gate meets the gate's own refusal on its console
+#               (`flight-undecrypted`) and a destroyed socket (502) before any 101: the gate decrypts the flight
+#               before it answers the upgrade. A `Sec-WebSocket-Protocol` header of 8192 bytes passes the
+#               terminator and reaches the gate, which refuses it by name on its own console (`flight-overlong`)
+#               and destroys it before any 101 (502), never nginx's 400. CONTROLS: a knock no gate stood (a random
+#               path) and the stood knock with no flight each draw 502; a header line longer than the terminator's
+#               buffer draws nginx's own 400.
 #   THE WALL    the fake credential appears nowhere in the vessel's environment, mounts, `/state` or `/workspace`,
 #               nor in the terminator's. CONTROL: the same search finds it inside the issuer.
 #
@@ -38,7 +45,9 @@
 #   HOUSEHOLD_PROJECT   compose project name (default lares-household-https)
 #   HOUSEHOLD_TLS_PORT  loopback port the terminator publishes (default 5471; 5400-5499)
 #   HOUSEHOLD_PORT      loopback port the vessel publishes (default 5470; 5400-5499)
-#   HOUSEHOLD_IMAGE     the product image (default lares-surface:local; built when the tag stands absent)
+#   HOUSEHOLD_IMAGE     the product image. Unset, the witness builds lares-surface:local from THIS tree on every run (the
+#                       layer cache makes an unchanged tree cheap), so a stale local tag never meets newer code. Set, the
+#                       witness reads that image as given, and builds it from the tree only when the tag stands absent.
 #   HOUSEHOLD_TOOLS     the staging tools the test door mounts (default this checkout's tools/)
 #   HOUSEHOLD_PEBBLE_IMAGE / HOUSEHOLD_CHALLTESTSRV_IMAGE   the test authority (defaults pinned below)
 set -eu
@@ -49,6 +58,8 @@ PROJECT=${HOUSEHOLD_PROJECT:-lares-household-https}
 TLS_PORT=${HOUSEHOLD_TLS_PORT:-5471}
 PORT=${HOUSEHOLD_PORT:-5470}
 IMAGE=${HOUSEHOLD_IMAGE:-lares-surface:local}
+BUILD_FROM_TREE=yes
+[ -z "${HOUSEHOLD_IMAGE:-}" ] || BUILD_FROM_TREE=
 TOOLS=${HOUSEHOLD_TOOLS:-$ROOT/tools}
 PEBBLE_IMAGE=${HOUSEHOLD_PEBBLE_IMAGE:-ghcr.io/letsencrypt/pebble:2.10.1}
 CHALLTESTSRV_IMAGE=${HOUSEHOLD_CHALLTESTSRV_IMAGE:-ghcr.io/letsencrypt/pebble-challtestsrv:2.10.1}
@@ -96,7 +107,7 @@ if [ -n "$(docker ps -a -q --filter "label=com.docker.compose.project=$PROJECT" 
    || [ -n "$(docker network ls -q --filter "label=com.docker.compose.project=$PROJECT" 2>/dev/null)" ]; then
   printf 'household-https-witness: project %s already stands; pick another HOUSEHOLD_PROJECT\n' "$PROJECT" >&2; exit 2
 fi
-if ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
+if [ -n "$BUILD_FROM_TREE" ] || ! docker image inspect "$IMAGE" >/dev/null 2>&1; then
   docker build -f "$ROOT/Dockerfile" --target serve -t "$IMAGE" "$ROOT"
 fi
 
@@ -156,9 +167,24 @@ services:
         source: $SCRATCH/witness
         target: /witness
         read_only: true
+  # The scratch marker rests at the house root, which the surface binds no part of: the vessel and its offline door read
+  # it through this one read-only file bind, so the test route seats (seed-test-custody stages the file first).
+  lares:
+    volumes:
+      - type: bind
+        source: $SCRATCH/house/.lar-test-scratch
+        target: /lar/.lar-test-scratch
+        read_only: true
+  offline:
+    volumes:
+      - type: bind
+        source: $SCRATCH/house/.lar-test-scratch
+        target: /lar/.lar-test-scratch
+        read_only: true
 YAML
 
-export LARES_STATE="$SCRATCH/state" LARES_WORKSPACE="$SCRATCH/workspace"
+mkdir -p "$SCRATCH/house/hearth" "$SCRATCH/house/sensoriums" "$SCRATCH/house/projections" "$SCRATCH/house/library" "$SCRATCH/house/config"
+export LARES_HOUSE="$SCRATCH/house" LARES_WORKSPACE="$SCRATCH/workspace"
 export LARES_TLS_ZONE="$ZONE" LARES_TLS_NAME="$NAME"
 export LARES_TLS_DIR="$SCRATCH/tls" LARES_TLS_BIND=127.0.0.1 LARES_TLS_PORT="$TLS_PORT"
 export LARES_ISSUER_DNS=exec LARES_ACME_SERVER=https://pebble:14000/dir LARES_ISSUER_RESOLVERS=challtestsrv:8053
@@ -169,14 +195,14 @@ issue() { compose --profile issuer run --rm -T issuer 2>&1; }
 printf '── the issuer refuses by name\n'
 out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR= issue || :)
 result 'no credential directory: the issuer refuses by name'      contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR stands unset'
-mkdir -p "$SCRATCH/state/credential"
-out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/state/credential" issue || :)
-result 'a credential directory inside the state mount refuses'    contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE'
-out=$(LARES_STATE="$SCRATCH/state/" LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/state/credential/" issue || :)
-result 'trailing slashes hide no directory inside the state mount' contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_STATE'
-out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/workspace/../state/credential" issue || :)
+mkdir -p "$SCRATCH/house/credential"
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/house/credential" issue || :)
+result 'a credential directory inside the house root refuses'     contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_HOUSE'
+out=$(LARES_HOUSE="$SCRATCH/house/" LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/house/credential/" issue || :)
+result 'trailing slashes hide no directory inside the house root'  contains "$out" 'household-issuer: LARES_DNS_CREDENTIAL_DIR lies inside LARES_HOUSE'
+out=$(LARES_ACME_ACCEPT_TOS=yes LARES_DNS_CREDENTIAL_DIR="$SCRATCH/workspace/../house/credential" issue || :)
 result 'a dotted path refuses before any comparison'              contains "$out" 'holds a dot segment or a doubled slash'
-rmdir "$SCRATCH/state/credential"
+rmdir "$SCRATCH/house/credential"
 out=$(LARES_ACME_ACCEPT_TOS= LARES_DNS_CREDENTIAL_DIR="$SCRATCH/credential" issue || :)
 result 'terms not accepted: the issuer refuses by name'           contains "$out" 'household-issuer: LARES_ACME_ACCEPT_TOS'
 chmod 644 "$SCRATCH/credential/porkbun-secret-api-key"
@@ -241,10 +267,12 @@ result 'CONTROL: the issuer reads both fake credentials'          sh -c "printf 
 
 printf '── the vessel stands behind the terminator\n'
 docker run --rm --name "$PROJECT-seed" --user "$LARES_UID:$LARES_GID" \
-  -v "$LARES_STATE:/state" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
+  -v "$LARES_HOUSE:/lar" -v "$LARES_HOUSE/hearth:/lar/hearth" -v "$LARES_HOUSE/sensoriums:/lar/sensoriums" -v "$LARES_HOUSE/projections:/lar/projections" -v "$LARES_HOUSE/library:/lar/library" -v "$LARES_HOUSE/config:/lar/config" -v "$TOOLS:/app/tools:ro" --tmpfs /tmp:mode=1777 \
   --entrypoint sh "$IMAGE" -ec \
-  'node tools/test-scratch-marker.mjs /state && node tools/seed-test-custody.mjs /state' >/dev/null
-compose --profile offline run --rm -T offline vessel found --skip-build --root /state --genesis /app/genesis >/dev/null
+  'node tools/test-scratch-marker.mjs /lar && node tools/seed-test-custody.mjs /lar' >/dev/null
+# The founding's face route comes from the harness explicitly (the product founds no face from a marker): the test tools mount and
+# the import ride this one run alone (seat-harness#/the-ward).
+compose --profile offline run --rm -T -v "$TOOLS:/app/tools:ro" -e NODE_OPTIONS=--import=file:///app/tools/test-ward-route.mjs offline vessel found --hearth --name household-witness --skip-build --root /lar --genesis /app/genesis >/dev/null
 export LARES_TLS_CERT="$CERT" LARES_TLS_KEY="$KEY"
 compose --profile https up -d lares terminator >/dev/null 2>&1
 tries=0
@@ -267,21 +295,37 @@ result 'https to the household name verifies and reads ready'     test "$health"
 # curl exits 35 when the TLS handshake itself fails: the terminator rejected the name before any certificate.
 reach "other.$ZONE.invalid" -k -o /dev/null "https://other.$ZONE.invalid:$TLS_PORT/api/health" 2>/dev/null && other=0 || other=$?
 result 'CONTROL: another name meets a refused handshake'          test "$other" -eq 35
-# THE KNOCK. The vessel's gate answers an upgrade only on the path derived from its own gate key; every other
-# upgrade meets a destroyed socket before any HTTP 101. The witness reads the vessel's key off its own founded
-# store and derives the path with the image's own code, as a device holding a carried admission would.
+# THE KNOCK. Every socket opens through the sealed face gate (siege-resilience): a gate answers an upgrade only on
+# the path its own bundle derives, `<route>/<knock>`, and only when `Sec-WebSocket-Protocol` carries its first
+# flight, `lar-gate, <token>`; every other upgrade meets a destroyed socket before any HTTP 101. A hearth rests at its
+# floor, standing no sync gate, until a person unlocks it, so the witness opens the staged hearth's key through the
+# test door; the hearth composes and its sovereign sync gate states the path it stands on. The witness knocks there
+# with a flight that reads (96 bytes, 128 characters of unpadded base64url) and that no dialer sealed to the gate: the
+# gate decrypts the flight before any 101, so the knock meets a destroyed socket (502).
 VESSEL=$(compose ps -q lares)
-wspath=$(docker exec "$VESSEL" node --input-type=module -e \
-  'import { loadVesselVerifyingKey } from "/app/packages/lararium-node/dist/src/node-vessel-identity.js";
-   import { knockPath } from "/app/packages/lararium-mesh/dist/index.js";
-   process.stdout.write(knockPath(await loadVesselVerifyingKey(), "/ws"));' 2>/dev/null || :)
-result 'the vessel names a knocked socket path'                   sh -c "case '$wspath' in /ws/?*) exit 0 ;; *) exit 1 ;; esac"
-head_plain=$(knock "$wspath" lar.witness)
-result 'a wss knock through the terminator draws HTTP 101'        contains "$head_plain" 'HTTP/1.1 101'
-head_bare=$(knock /ws lar.witness)
-result 'CONTROL: an upgrade without the knock draws 502, never 101' contains "$head_bare" 'HTTP/1.1 502'
+unlocked=$("$HERE/unlock-staged-container.sh" "$VESSEL" 2>&1 || :)
+result 'the staged hearth opens its key and composes as a hearth' contains "$unlocked" '"standing":"hearth"'
+stood_knock() { docker logs "$VESSEL" 2>&1 | sed -n 's/.*\[lar-gate\] the sync gate for Nexus .* stands on \(\/[^ ]*\).*/\1/p' | tail -n 1; }
+tries=0
+until [ -n "$(stood_knock)" ] || [ "$tries" -ge 60 ]; do sleep 1; tries=$((tries + 1)); done   # the bound only bounds the wait
+wspath=$(stood_knock)
+result 'the vessel states the knock its sync gate stands on'      sh -c "case '$wspath' in /ws/?*) exit 0 ;; *) exit 1 ;; esac"
+flight="lar-gate, $(head -c 96 /dev/urandom | base64 | tr -d '\n=' | tr '+/' '-_')"
+result 'the flight spells the gate header (138 bytes)'            test "${#flight}" -eq 138
+vessel_refused() { docker logs "$VESSEL" 2>&1 | grep -q "refused before any 101 ($1)"; }
+head_plain=$(knock "$wspath" "$flight")
+result 'a flight no dialer sealed draws 502, never 101'           contains "$head_plain" 'HTTP/1.1 502'
+result 'the gate refused that flight by name'                     vessel_refused flight-undecrypted
+unstood="/ws/$(od -An -N16 -tx1 /dev/urandom | tr -d ' \n')"
+head_unstood=$(knock "$unstood" "$flight")
+result 'CONTROL: a knock no gate stood draws 502, never 101'      contains "$head_unstood" 'HTTP/1.1 502'
+head_noflight=$(knock "$wspath" lar.witness)
+result 'CONTROL: the stood knock without a flight draws 502'      contains "$head_noflight" 'HTTP/1.1 502'
 head_tablet=$(knock "$wspath" "$(bytes 8192)")
-result 'an 8192-byte Sec-WebSocket-Protocol passes the terminator' contains "$head_tablet" 'HTTP/1.1 101'
+# 502 is the vessel's refusal behind the terminator, and the vessel names it on its own console; 400 would be nginx's.
+result 'an 8192-byte Sec-WebSocket-Protocol passes the terminator (502)' contains "$head_tablet" 'HTTP/1.1 502'
+result 'the 8192-byte header meets the vessel, never nginx (no 400)' not_contains "$head_tablet" 'HTTP/1.1 400'
+result 'the gate refused the 8192-byte header by name'            vessel_refused flight-overlong
 head_over=$(knock "$wspath" "$(bytes 20000)")
 result 'CONTROL: a header line past the buffer draws nginx 400'   contains "$head_over" 'HTTP/1.1 400'
 

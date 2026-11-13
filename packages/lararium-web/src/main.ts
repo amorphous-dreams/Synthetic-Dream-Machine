@@ -1,72 +1,128 @@
+declare const __LAR_WALK_DOOR__: boolean;
 /**
  * lararium-web — the Web-surface assembly.
  *
  * This package owns page composition and the visible projection edge: it resolves served Worker assets,
- * opens the browser vessel, paints returned frames, and relays named DOM events and bounded input back to
- * the worker island. It does not own TW5 state or run a second engine in the page. Direct web-surface tests
- * remain small; the browser vessel and TW5 seams carry their own focused coverage.
+ * builds the vessel worker (the browser vessel runs there, on its own thread: `workers/vessel.worker.ts`), paints returned
+ * frames, and relays named DOM events and bounded input back over the vessel port (`vessel-port.ts`). It owns no TW5 truth: the one engine it runs in the page is the MIRROR (DreamDOM D3), unprivileged,
+ * holding no keys and no truth, booted through one private door that takes the D2 port binding and fed by that port alone.
+ * Direct web-surface tests remain small; the browser vessel and TW5 seams carry their own focused coverage.
  */
 
 /**
  * @lararium/web — DOM, Vite, and projection capability atoms for the Web-surface assembly.
  *
  * A sovereign causal island boots in the browser (its own key, IndexedDB, genesis
- * bytes) and — when a read-face is reachable — reads the public oracle read-face (the node-less
+ * bytes) and — when a hearth's porch is reachable — reads the Nexus's floor off it (the node-less
  * path: an anon browser vessel consuming the read-only substrate, the elyncia.app
- * story). Location-agnostic: served from localhost / LAN / elyncia.app, the vessel
- * always runs here; the origin is a static host, never an authority.
+ * story), verifying every step on the vessel worker's thread. Location-agnostic: served from localhost / LAN / elyncia.app,
+ * the vessel always runs in this browser; the origin is a static host, never an authority.
  */
+import { mountFleetRootDoor, mountFleetSeatDoor } from "./fleet/fleet-root-door.js";
+import { showCarriage, takeCarriage } from "./fleet/carriage-panel.js";
+import { createLoafBuffer } from "./loaf-buffer.js";
 import {
-  openBrowserVessel,
-  parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage,
-  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, readBrowserSeedWrap, loadBrowserActivePersona, vesselLockName,
-} from "@lararium/browser";
+  DAEMON_SURFACE_ID, requestDurableStorage, storageFloorReport, vesselLockName, type HearthFloorRead,
+} from "@lararium/browser/page";
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
-import type { DeviceAdmitPayload } from "@lararium/keyhive";
-import { DOM_INPUT_MAX_CHARS, didFromVerifyingKey, parseMeshPeer, type GenesisSeed, type MeshPeer, type OraclePullResult } from "@lararium/mesh";
+import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
+import type { VesselStatus } from "./vessel-protocol.js";
+import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker } from "./ceremony-page.js";
+import type { GenesisSeed } from "@lararium/mesh";
+import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
+import { readFloorCardCarriage, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
 import { createProjectionSink } from "./projection-sink.js";
-import { defaultReadFace, mountLiveStatus, resolveRelayUrl, sameOriginRelayUrl } from "./live-status.js";
-// The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json).
-// The vessel materializes the oracle CRDT fresh from it under the deterministic doc id
-// (node-parity). Boot imports this plain-data seed alone — no Automerge binary.
-import genesisSeed from "../../../genesis/seed.json";
+import { pageLifeOf, paintRest } from "./page-life.js";
+import { pagePortDelivery, standPagePort } from "./page-port.js";
+import { standPageMirror } from "./page-mirror.js";
+import { paintPaneLabel } from "./pane-label.js";
+import { standFloorTab } from "./floor-tab.js";
+import { defaultReadFace, keptFloorOf, readFloorCarriage, mountLiveStatus, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
+// The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
+// (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
+// arrival descriptor before it crosses (`genesis-anchor.ts`).
+import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedSeed } from "./genesis-anchor.js";
 // `?worker&url` — Vite builds each worker shim through its worker pipeline and yields the built
 // bundle's URL (a real /assets file). A standalone `new URL("./x.ts", import.meta.url)` passed
 // INDIRECTLY to the vessel got inlined as a `data:` URI, where the worker's dynamic imports
 // (keyhive-WASM-first, then the chain) cannot resolve — the daemon/wiki boot's silent death.
 import daemonWorkerUrlStr from "./workers/daemon.worker.ts?worker&url";
 import wikiWorkerUrlStr  from "./workers/wiki.worker.ts?worker&url";
-import sharedHolderUrlStr from "./workers/shared-holder.worker.ts?sharedworker&url";
+// The vessel worker: the browser vessel's own thread. The page builds it and talks to it over its port alone.
+import vesselWorkerUrlStr from "./workers/vessel.worker.ts?worker&url";
 
 const daemonWorkerUrl  = new URL(daemonWorkerUrlStr, import.meta.url);
 const workerScriptUrl = new URL(wikiWorkerUrlStr,  import.meta.url);
-// C4's explicit diagnostic flag travels only to the daemon Worker. Ordinary
-// browser boots create the exact same worker URL they carried before.
-if (new URL(location.href).searchParams.get("c4trace") === "1") {
+const vesselWorkerUrl = new URL(vesselWorkerUrlStr, import.meta.url);
+// C4's explicit diagnostic flag travels only to the daemon Worker, on that worker's own script URL. A harness raises it in this
+// tab's sessionStorage before the page loads; the page's address carries no switch (its query and fragment stay TW5's own).
+// Ordinary browser boots create the exact same worker URL they carried before.
+const C4_TRACE_KEY = "lares:c4trace";
+const c4TraceAsked = (): boolean => { try { return sessionStorage.getItem(C4_TRACE_KEY) === "1"; } catch { return false; } };
+if (c4TraceAsked()) {
   daemonWorkerUrl.searchParams.set("c4trace", "1");
 }
-// THE SHARED HOLDER, OPT-IN BY URL (`?holder`): one daemon island per origin inside a SharedWorker, a port per
-// tab. The holder's own URL carries the island script and the store's lock name. Absent the flag the vessel
-// boots its dedicated worker exactly as before — the holder's lifetime past the last tab stays measured, not
-// assumed, before it becomes the default.
-const sharedHolderUrl = (() => {
-  if (!new URL(location.href).searchParams.has("holder")) return undefined;
-  const u = new URL(sharedHolderUrlStr, import.meta.url);
-  u.searchParams.set("island", daemonWorkerUrl.href);
-  u.searchParams.set("lock", vesselLockName("lares:vessel"));
-  return u;
-})();
-
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
 
+const VESSEL_IDB = "lares:vessel";
+
+// Page instruments report what the browser exposes. They never decide whether a boot succeeds.
+const vesselLoaf = createLoafBuffer();
+const vesselLoafSupported = typeof PerformanceObserver !== "undefined"
+  && PerformanceObserver.supportedEntryTypes.includes("long-animation-frame");
+if (vesselLoafSupported) {
+  new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      const frame = entry as PerformanceEntry & { blockingDuration?: number };
+      vesselLoaf.push({ startTime: frame.startTime, duration: frame.duration, blockingDuration: frame.blockingDuration ?? 0 });
+    }
+  }).observe({ type: "long-animation-frame", buffered: true });
+}
+let firstPaintReported = false;
+let firstPaintHeap: number | null = null;
+const showPageInstruments = (): void => {
+  const vessel = document.getElementById("vessel");
+  if (!vessel || !firstPaintReported) return;
+  const show = (label: string, value: string): void => {
+    const existing = [...vessel.querySelectorAll<HTMLElement>(".row")]
+      .find((item) => item.querySelector(".k")?.textContent === label)?.querySelector<HTMLElement>(".v");
+    if (existing) existing.textContent = value;
+    else row(vessel, label, value);
+  };
+  show("LoAF", vesselLoafSupported ? `${vesselLoaf.observed()} observed` : "absent");
+  show("heap after first paint", firstPaintHeap === null ? "absent" : `${firstPaintHeap} bytes`);
+};
+function reportFirstPaint(): void {
+  if (firstPaintReported) return;
+  firstPaintReported = true;
+  requestAnimationFrame(() => {
+    const heap = (performance as Performance & { memory?: { usedJSHeapSize?: number } }).memory?.usedJSHeapSize;
+    firstPaintHeap = typeof heap === "number" ? heap : null;
+    const reading = {
+      longAnimationFrames: vesselLoafSupported ? { supported: true, observed: vesselLoaf.observed(), entries: [...vesselLoaf.entries()] } : { supported: false, reading: "absent" },
+      heapAfterFirstPaint: typeof heap === "number" ? { bytes: heap } : { reading: "absent" },
+    };
+    (window as Window & { __larVesselMetrics?: typeof reading }).__larVesselMetrics = reading;
+    console.log("[vessel] page instruments", reading);
+    showPageInstruments();
+  });
+}
 
 /**
- * The oracle read-face this page reads from, when no `?oracle=` names one.
- *
- * The page is served BY the vessel it reads, so the host that delivered it is the host that answers — a
- * literal `localhost` reads true only where the browser and the node share a machine, and silently points a
- * LAN or a phone at itself. `location.hostname` follows the page home wherever it was fetched from.
+ * THIS TAB'S CUSTODY DOOR (operator ruling 2026-10-18: each browser tab asks for its own unlock, and the shared holder
+ * carries no unlock between tabs; the ceremony, operator ruling 2026-11-05: "Approve"). The vessel worker raises the ask;
+ * the page paints its public words and one button, and the button opens the clean ceremony document, which takes the
+ * secret and sends its bytes down its own brokered port to the vessel worker. The page paints no secret form and holds
+ * no byte of a route. The broker stands at the floor, with no secret held.
  */
+const ceremonyBroker = standCeremonyBroker();
+
+function paintAsk(ask: VesselAsk, vessel: VesselPort): void {
+  paintCeremonyAsk(document, ask, { broker: ceremonyBroker, port: (port) => vessel.ceremonyPort(ask.askId, port), refused: (refusal) => vessel.ceremonyRefused(ask.askId, refusal) });
+}
+
+function settleAsk(askId: string): void { settleCeremonyAsk(document, askId); }
+
 function row(parent: HTMLElement, k: string, v: string, cls = ""): void {
   const d = document.createElement("div");
   d.className = "row";
@@ -79,100 +135,140 @@ function set(id: string, text: string, cls = ""): void {
   const el = $(id); el.textContent = text; el.className = "v " + cls;
 }
 
-// The oracle read-face — PEERS PROVE FIRST. The page reads a peer's oracle only through its own vessel, which
-// dials the knock the peer's gate key derives and proves its key there before any map crosses; an anon page
-// reads nothing, so the read waits on the vessel standing. Config-supplied via ?oracle=… (default the node that
-// served this page) and pinned by ?oracle-gate=… (default the ?gate= relay key — the same node's vessel key).
-// A face with no pinned key is not dialed: there is no gate to knock on.
-type OracleReader = <T>(baseUrl: string, gatePubKey: string) => Promise<OraclePullResult<T>>;
-async function readOracle(read: OracleReader): Promise<void> {
-  const params = new URLSearchParams(location.search);
-  const readFace = params.get("oracle") ?? defaultReadFace(location);
-  const pin = params.get("oracle-gate") ?? params.get("gate");
-  if (!pin) { set("oracle-status", "no gate key pinned for the read-face (?oracle-gate=…) — nothing to read", "warn"); return; }
-  set("oracle-status", `proving at ${readFace} …`);
+// The floor — the Nexus's one public answer. The page reads it only through its own vessel, which fetches the hearth's porch
+// (`/floor/<Nexus AID>`) and the head release's blobs by CID, and verifies every step here: the epoch lineage re-derives the
+// AID the floor card (or the admit) carries, the head release seals as a seat of its epoch under the cabal's approval of the
+// manifest's exact bytes, and each blob hashes to its CID. The read face is the node that served this page, and no URL
+// names another. The read records no acceptance: the page's running floor stays the genesis floor it booted on.
+type FloorReader = (baseUrl: string) => Promise<HearthFloorRead>;
+async function readFloor(read: FloorReader): Promise<void> {
+  const readFace = defaultReadFace(location);
+  const say = (text: string, cls = ""): void => set("floor-status", text, cls);
+  say(`reading the porch at ${readFace} …`);
   try {
-    const r = await read<{ tiddlers?: Record<string, unknown> }>(readFace, pin);
-    if (r.ok && r.pointer) {
-      const n = r.doc?.tiddlers ? Object.keys(r.doc.tiddlers).length : 0;
-      const oracleEl = $("oracle"); oracleEl.replaceChildren();
-      row(oracleEl, "status", "✓ verified + loaded", "ok");
-      row(oracleEl, "act", r.pointer.actCid.slice(0, 16) + "…");
-      row(oracleEl, "parents", String(r.pointer.parents.length));
-      row(oracleEl, "tiddlers", String(n));
-      row(oracleEl, "cid", r.cid ?? "—");
-      row(oracleEl, "publisher", r.pointer.pub.slice(0, 16) + "…");
+    const r = await read(readFace);
+    if (r.ok) {
+      const floorEl = $("floor"); floorEl.replaceChildren();
+      row(floorEl, "status", "✓ verified floor", "ok");
+      row(floorEl, "release", r.head.cid.slice(0, 16) + "…");
+      row(floorEl, "epoch", r.head.body.epoch.slice(0, 22) + "…");
+      row(floorEl, "prior", r.head.body.prior ? r.head.body.prior.slice(0, 16) + "…" : "(the Nexus's first release)");
+      row(floorEl, "manifest", r.head.body.manifest);
+      for (const [slug, rows] of Object.entries(r.snapshots).sort(([a], [b]) => (a < b ? -1 : 1))) row(floorEl, `${slug} rows`, String(Object.keys(rows).length));
+      for (const refused of r.refused) row(floorEl, "set aside", `${refused.keyCid.slice(0, 16)}… ${refused.reason}${refused.detail ? ` (${refused.detail})` : ""}`, "warn");
     } else {
-      set("oracle-status", `✗ ${r.reason ?? "unavailable"}`, "warn");
+      say(`✗ ${r.reason}${r.detail ? ` — ${r.detail}` : ""}`, "warn");
     }
   } catch (e) {
-    set("oracle-status", `✗ ${e instanceof Error ? e.message : String(e)}`, "warn");
+    say(`✗ ${e instanceof Error ? e.message : String(e)}`, "warn");
   }
 }
 
 // The projection-nalu sink: one pane, painted by whichever surface holds the vessel's projection gate. The
 // sink scopes revisions to a surface and stamps each returned event with the surface that painted its target
 // (`projection-sink`); boot arms its return leg once the vessel stands.
-const projectionSink = createProjectionSink($("projection"), { inputMaxChars: DOM_INPUT_MAX_CHARS });
+const projectionSink = createProjectionSink($("projection"), { inputMaxChars: LAR_WHOLE_VALUE_MAX_CHARS, addressBar: true });
 
 /**
- * Take a carried `device-admit/v1` payload off `location.hash`, and CLEAR the fragment once taken.
+ * The tab-local hand-off the fleet-join landing writes: a carriage waiting for the boot that consumes it.
+ * The admit enters the vessel at the identity seat — before the PersonaGroup, the relay caps, and the
+ * Handle stand — so a landed admission re-enters through boot rather than reaching behind a live cap stack. This page performs that re-entry itself; the human pastes and taps.
  *
- * The DECODE lives in `@lararium/browser` (parseAdmitCarriage) and is tested there against fixed bytes;
- * this half holds only what needs a browser: reading the fragment, and clearing it. Clearing matters —
- * a URL left holding a delegation leaves it in the address bar, the history, and every screenshot of the
- * tab, and the payload has already reached the vessel by then.
- */
-function takeAdmitFromLocation(): DeviceAdmitPayload | null {
-  const payload = parseAdmitCarriage(location.hash);
-  if (!payload) return null;
-  history.replaceState(null, "", location.pathname + location.search);
-  console.log("[vessel] ADMIT carried in — this vessel JOINS an existing PersonaGroup rather than founding one.");
-  return payload;
-}
-
-/**
- * The tab-local hand-off the PASTE door writes: a carriage the human handed to this page, waiting for the
- * boot that consumes it. The admit enters the vessel at the identity seat — before the PersonaGroup, the
- * relay caps, and the Handle stand — so a pasted admission re-enters through boot rather than reaching
- * behind a live cap stack. This page performs that re-entry itself; the human pastes and taps, once.
- *
- * The stash rides sessionStorage, never the URL: a fragment left in the address bar carries a signed
- * delegation into the history and into every screenshot of the tab. sessionStorage closes with the tab,
- * and this read REMOVES the entry — the carriage exists for exactly one boot.
+ * The stash rides sessionStorage, never the URL. sessionStorage closes with the tab,
+ * and this read REMOVES the entry — the carriage exists for exactly one boot. The vessel worker parses it.
  */
 const ADMIT_STASH_KEY = "lares:admit-carriage";
-function takeStashedAdmit(): DeviceAdmitPayload | null {
+function takeStashedAdmit(): string | null {
   let carriage: string | null = null;
   try { carriage = sessionStorage.getItem(ADMIT_STASH_KEY); } catch { return null; }
   if (!carriage) return null;
   try { sessionStorage.removeItem(ADMIT_STASH_KEY); } catch { /* the read already holds the bytes */ }
-  const payload = parseAdmitCarriage(carriage);
-  if (payload) console.log("[vessel] ADMIT taken from the paste door — this vessel JOINS an existing PersonaGroup.");
-  return payload;
+  return carriage;
 }
 
 /**
- * Mount the identity + admit surface: this vessel names its own key, writes the command that admits it,
- * and takes the answer back as a paste.
+ * The place AID a person handed across apart from the floor card, kept per origin so the next arrival anchors without handing it
+ * again. localStorage holds a per-viewer convenience: a private window or blocked storage reads none, and the card then refuses
+ * `place-unanchored` until the AID is handed again.
+ */
+const FLOOR_ANCHOR_KEY = "lares:floor-anchor";
+function keptFloorAnchor(): { readonly aid: string; readonly via: "transfer" } | null {
+  try {
+    const aid = localStorage.getItem(`${FLOOR_ANCHOR_KEY}:${location.origin}`);
+    return aid && /^[0-9a-f]{64}$/.test(aid) ? { aid, via: "transfer" } : null;
+  } catch { return null; }
+}
+function keepFloorAnchor(anchor: { readonly aid: string }): void {
+  try { localStorage.setItem(`${FLOOR_ANCHOR_KEY}:${location.origin}`, anchor.aid); } catch { /* nothing kept */ }
+}
+
+/**
+ * The hearth's floor card a person carried in at the carriage door, kept per origin beside the anchor so the next arrival reads
+ * under it without carrying it again. A public, signed claim: it opens nothing, and it files only against the anchor.
+ */
+const FLOOR_CARD_KEY = "lares:floor-card";
+function keptFloorCard(): string | null {
+  try { return localStorage.getItem(`${FLOOR_CARD_KEY}:${location.origin}`); } catch { return null; }
+}
+function keepFloorCard(text: string): boolean {
+  try { localStorage.setItem(`${FLOOR_CARD_KEY}:${location.origin}`, text); return true; } catch { return false; }
+}
+/**
+ * THE FLOOR'S CARRIAGE DOOR: the hearth's floor card and the place AID reach this device by a person's hand (paste, file or QR off
+ * the hearth's banner), each by its own act, and never by a URL (the fragment stays the wiki's own permalink). A card or an
+ * anchor that reads rests per origin and the page boots again under it.
+ */
+function mountFloorCarriageDoor(): void {
+  const host = document.getElementById("floor-carriage-door");
+  if (!host || host.dataset["larWired"]) return;
+  host.dataset["larWired"] = "1";
+  const said = document.getElementById("floor-carriage-status");
+  const say = (text: string, cls: string): void => { if (said) { said.textContent = text; said.className = cls; } };
+  takeCarriage(host, {
+    label: "the hearth's floor card, or its place AID",
+    onText: (text) => {
+      const carried = readFloorCarriage(text, { file: readFloorCardCarriage, card: readHearthFloorCard });
+      if (carried === null) { say("✗ neither a floor card file nor a place AID: carry the card the hearth's banner prints, then the AID on its own line.", "err"); return; }
+      if (carried.kind === "card" && carried.card === null) { say("✗ the floor card does not read: carry the whole card the hearth's banner prints.", "err"); return; }
+      const kept = carried.kind === "card" ? keepFloorCard(carried.text) : (keepFloorAnchor(carried), keptFloorAnchor()?.aid === carried.aid);
+      if (!kept) { say("✗ this browser withholds storage, so nothing carried rests here.", "err"); return; }
+      say(carried.kind === "card" ? "✓ floor card kept · booting under it" : "✓ place anchor kept · booting under it", "ok");
+      location.reload();
+    },
+  });
+}
+
+/** The fleet-join file a paste carries, by its `kind`: an offer to request against, an answer to land, or neither. */
+function fleetJoinFileOf(text: string): { readonly kind: "fleet-join-offer" | "fleet-join-answer"; readonly value: unknown } | null {
+  let value: unknown;
+  try { value = JSON.parse(text.trim()); } catch { return null; }
+  const kind = typeof value === "object" && value !== null ? (value as { kind?: unknown }).kind : undefined;
+  return kind === "fleet-join-offer" || kind === "fleet-join-answer" ? { kind, value } : null;
+}
+
+/**
+ * Mount the identity + admit surface: this vessel names its own key, writes the command that starts a fleet join,
+ * and takes the files back as pastes. THE FLEET-JOIN DOOR: the root holder's offer pastes in, and this browser
+ * answers with its request (its face-scoped keys mint here); the root holder's answer pastes in, and this browser
+ * lands it and re-enters boot on the admit it carried. The paste box reads a fleet-join offer or answer only.
  *
  * The alternative path costs a human a devtools console on a phone. The key, the command, and the door
  * all live on the page instead — the vessel says the one thing only it holds, and reads back the one
- * thing only the node can sign. `parseAdmitPaste` adjudicates: a refusal states itself and the page
+ * thing only the node can sign. `fleetJoinFileOf` adjudicates: a refusal states itself and the page
  * stands unchanged, because a garbled paste means the admit DID NOT ARRIVE, never that an attack landed.
  */
-function mountAdmitSurface(verifyingKeyHex: string): void {
+function mountAdmitSurface(verifyingKeyHex: string, vessel: VesselPort): void {
   const keyEl = $("vessel-key"), cmdEl = $("admit-cmd"), statusEl = $("admit-status");
   const paste = document.getElementById("admit-paste") as HTMLTextAreaElement | null;
   const apply = document.getElementById("admit-apply") as HTMLButtonElement | null;
   keyEl.textContent = verifyingKeyHex;
-  cmdEl.textContent = formatAdmitCommand(verifyingKeyHex);
+  cmdEl.textContent = "lares fleet join offer --out offer.json";
 
   // Copy where the platform grants a clipboard; SELECT where it does not (an insecure origin, an older
   // browser). A selected span is a thumb away from the OS copy affordance, so the path never dead-ends.
-  const copyFrom = (el: HTMLElement, btn: HTMLButtonElement): void => {
+  const copyFrom = (el: HTMLElement, btn: HTMLButtonElement, current: () => boolean): void => {
     const text = el.textContent ?? "";
-    const done = (label: string): void => { btn.textContent = label; setTimeout(() => { btn.textContent = btn.dataset["label"]!; }, 1400); };
+    const done = (label: string): void => { if (current()) btn.textContent = label; };
     void (async () => {
       try { await navigator.clipboard.writeText(text); done("copied ✓"); }
       catch {
@@ -186,150 +282,398 @@ function mountAdmitSurface(verifyingKeyHex: string): void {
     const btn = document.getElementById(btnId) as HTMLButtonElement | null;
     if (!btn) continue;
     btn.dataset["label"] = btn.textContent ?? "copy";
-    btn.addEventListener("click", () => copyFrom(srcEl, btn));
+    let generation = 0;
+    const restore = (): void => { generation++; btn.textContent = btn.dataset["label"]!; };
+    btn.addEventListener("pointerleave", restore);
+    btn.addEventListener("blur", restore);
+    btn.addEventListener("click", () => {
+      restore();
+      const copyGeneration = generation;
+      copyFrom(srcEl, btn, () => generation === copyGeneration);
+    });
   }
 
   if (!paste || !apply) return;
-  apply.addEventListener("click", () => {
-    const payload = parseAdmitPaste(paste.value);
-    if (!payload) {
-      statusEl.textContent = "✗ no admit read in that paste — carry the whole `#admit=…` line from the node.";
-      statusEl.className = "err";
-      return;
-    }
-    statusEl.textContent = `✓ admit read — signed by ${payload.signerDid.slice(0, 12)}… · re-entering boot`;
-    statusEl.className = "ok";
-    paste.value = "";
-    try { sessionStorage.setItem(ADMIT_STASH_KEY, toAdmitCarriage(payload)); }
+  const stashAndReboot = (carriage: string): void => {
+    try { sessionStorage.setItem(ADMIT_STASH_KEY, carriage); }
     catch {
-      statusEl.textContent = "✗ this browser withholds sessionStorage — the admit cannot be handed to boot here.";
+      statusEl.textContent = "✗ this browser withholds sessionStorage — the admit cannot reach boot here.";
       statusEl.className = "err";
       return;
     }
     location.reload();
+  };
+  apply.addEventListener("click", () => {
+    const file = fleetJoinFileOf(paste.value);
+    if (file) {
+      apply.disabled = true;
+      void (async () => {
+        try {
+          if (file.kind === "fleet-join-offer") {
+            // Another join standing pending would strand this page: the human may abandon it here, by name.
+            // A JOIN MINTS FACE SECRETS (the face-scoped key, then the address secret): the vessel binds the slot first, in this tab.
+            const text = paste.value;
+            const request = await vessel.joinOffer(text, false).catch(async (err: unknown) => {
+              if (!(err instanceof VesselRefused && err.refusal === "join-pending")) throw err;
+              if (!confirm("Another fleet join stands pending in this browser. Abandon it, and request against this offer instead?")) throw err;
+              return vessel.joinOffer(text, true);
+            });
+            paste.value = request.text;
+            paste.select();
+            // leaf-fleet (Leaf-Wright): the request also shows as a file to save and QR codes for the root holder's lens.
+            const shown = document.getElementById("admit-carriage");
+            if (shown) showCarriage(shown, { text: request.text, fileName: "request.json", label: "this browser's fleet-join request" });
+            statusEl.textContent = "✓ request minted — carry it back to the root holder (its page's fleet door takes it by paste, file or camera; a node takes `lares fleet join answer <request-file>`), then paste the answer here.";
+            statusEl.className = "ok";
+            return;
+          }
+          const landed = await vessel.joinAnswer(paste.value);
+          statusEl.textContent = `✓ answer landed — signed by ${landed.signerDid.slice(0, 12)}… · re-entering boot`;
+          statusEl.className = "ok";
+          paste.value = "";
+          vessel.selectFace(landed.face);
+          stashAndReboot(landed.carriage);
+        } catch (err) {
+          statusEl.textContent = err instanceof VesselRefused && err.refusal !== undefined ? `✗ refused — ${err.message}` : `✗ ${String(err)}`;
+          statusEl.className = "err";
+        } finally { apply.disabled = false; }
+      })();
+      return;
+    }
+    statusEl.textContent = "✗ not a fleet-join offer or answer — paste the whole offer or answer file.";
+    statusEl.className = "err";
   });
 }
 
+/**
+ * THE FOUNDING DOOR (the-veil-ladder#/the-base-model, in-house ruling 5): a person asks this vessel for a face of its own by
+ * an ACT on the page's own surface (the identity panel's button), never by a URL. A founding lands inside the vessel's boot,
+ * so the act re-enters boot the way a fleet-join landing does: the ask rides this tab's sessionStorage for exactly one boot
+ * (this read removes it) and the page boots again. No query string and no fragment selects a founding, so the address bar
+ * stays the wiki's own.
+ */
+const FOUND_STASH_KEY = "lares:found-face";
+/** What the person's founding act asked for: a face alone (the identity panel's button), or a face and then its first fleet offer. */
+type FoundingAsk = "face" | "offer";
+function takeStashedFounding(): FoundingAsk | null {
+  let asked: string | null = null;
+  try { asked = sessionStorage.getItem(FOUND_STASH_KEY); } catch { return null; }
+  if (!asked) return null;
+  try { sessionStorage.removeItem(FOUND_STASH_KEY); } catch { /* the read already holds the ask */ }
+  return asked === "offer" ? "offer" : "face";
+}
+/** Carry a person's founding act across one boot. Answers false where this browser withholds the stash. */
+function askFounding(ask: FoundingAsk): boolean {
+  try { sessionStorage.setItem(FOUND_STASH_KEY, ask); }
+  catch { set("status", "✗ this browser withholds sessionStorage, so the founding ask cannot reach boot here.", "err"); return false; }
+  location.reload();
+  return true;
+}
+/** Wire the identity panel's founding button: one tap stashes the ask and boots again. */
+function mountFoundingDoor(): void {
+  const button = document.getElementById("found-face");
+  if (!button || button.dataset["larWired"]) return;
+  button.dataset["larWired"] = "1";
+  button.addEventListener("click", () => { askFounding("face"); });
+}
+
+let pendingAdmit: string | null = null;
+/** A founding ask this page took off its stash and has not yet seen stand (a boot retry carries it). */
+let pendingFounding: FoundingAsk | null = null;
+/** This tab's place among the origin's tabs: stood once per page, before the first lead or follow. */
+let floorTab: ReturnType<typeof standFloorTab> | null = null;
+function offerBootRetry(): void {
+  if (document.getElementById("retry-unlock")) return;
+  const button = document.createElement("button");
+  button.id = "retry-unlock";
+  button.type = "button";
+  button.textContent = "Unlock and retry";
+  button.addEventListener("click", () => { button.remove(); void bootVessel(); });
+  $("status").insertAdjacentElement("afterend", button);
+}
+
+async function probeArrivalWithLocalButton(): Promise<string | undefined> {
+  const button = document.createElement("button");
+  button.id = "boot-local";
+  button.type = "button";
+  button.textContent = "Boot local";
+  const pressed = new Promise<void>((resolve) => { button.addEventListener("click", () => resolve(), { once: true }); });
+  $("status").insertAdjacentElement("afterend", button);
+  try { return await arrivalRelayUrl(location, (input, init) => fetch(input, init), pressed); }
+  finally { button.remove(); }
+}
+
 async function bootVessel(): Promise<void> {
+  document.getElementById("retry-unlock")?.remove();
   const phasesEl = $("phases");
+  phasesEl.replaceChildren();
   const paint = (p: string): void => {
     const d = document.createElement("div"); d.className = "phase"; d.textContent = p;
     phasesEl.appendChild(d);
   };
 
   set("status", "booting…");
-  // ?relay=ws://host:port/ws → the node↔browser spore crossing (opt-in; absent = pure local boot).
-  const relayParams = new URLSearchParams(location.search);
-  const relayUrl = resolveRelayUrl(location, relayParams);
-  // ?gate=<hex> → the RELAY GATE's verifying key. The V3 proof commits to it, and a leaf must hold it
-  // out-of-band: the challenge carries it on the wire, but trusting the wire copy would let any relay
-  // impersonate the gate. Absent, the leaf binds its proof to its OWN did, the gate recomputes against
-  // its own, and the proof fails closed — a correct refusal that looks exactly like a broken socket.
-  // The node vessel prints this key in its boot banner.
-  const relayGatePubKey = new URLSearchParams(location.search).get("gate") ?? undefined;
-  // #admit=<base64url> → a device-admit/v1 payload. It rides the FRAGMENT because a browser never
-  // transmits one: the bytes reach this vessel by whatever the human carried them with, and no server —
-  // not even the relay — sees them in transit. A signed capability needs no trusted channel; a carrier
-  // may withhold it, never forge it. Fetching it instead would make this vessel a client petitioning an
-  // authority for its own admission, and would demand that authority be reachable at the moment of asking.
-  // Two doors, one seat. A URL fragment carries an admit from a scan or a click; the on-page paste door
-  // stashes one for the next boot. The fragment leads (a human who just opened a carried link means that
-  // link), and the stash answers when no fragment stands.
-  const admit = takeAdmitFromLocation() ?? takeStashedAdmit();
+  // THE RELAY: an origin that answers as a lararium's Pronaos is dialled at its own relay; any other origin keeps the local boot.
+  // No URL names a relay. While the probe pends, a "boot local" button is the person's own word: its press resolves the race.
+  const relayUrl = await probeArrivalWithLocalButton();
+  // THE FLOOR CARD AND ITS ANCHOR come in at the carriage door (paste, file or QR), each by its own act, and rest per origin: the
+  // card is what a device at the floor reads under, and the place AID is conveyed apart from it (the card alone never anchors, so
+  // without one the card files nothing and says so). The address bar carries neither: its fragment stays the wiki's permalink.
+  const { floor, anchor: floorAnchor } = keptFloorOf({ card: keptFloorCard(), anchor: keptFloorAnchor() }, readHearthFloorCard);
+  mountFloorCarriageDoor();
+  // The fleet-join landing stashes the admit it carried; this boot takes it and the vessel opens on it.
+  const admit = pendingAdmit ?? takeStashedAdmit();
+  pendingAdmit = admit;
+  // The founding door stashed its ask; this boot takes it and the vessel founds a face over its floor.
+  const foundingAsk = pendingFounding ?? takeStashedFounding();
+  pendingFounding = foundingAsk;
+  const founding = foundingAsk !== null;
+  mountFoundingDoor();
+  // The seed and its CAS blobs come off the hearth's own /genesis alone; no URL key chooses them.
+  const genesisCasBaseUrl = genesisSeedBase(location.origin);
+  // THE SEED, then THE ANCHOR, before any crossing: a served seed whose CID differs from the one the hearth's own descriptor
+  // names refuses by name, in the vessel's status row and the console, and the relay stays undialled.
+  let served: Awaited<ReturnType<typeof readServedSeed>>;
+  try { served = await readServedSeed(genesisCasBaseUrl, (input) => fetch(input, { cache: "no-store" })); }
+  catch (error) {
+    const text = error instanceof Error ? error.message : String(error);
+    console.error(`[vessel] ${text}`);
+    set("status", text, "err");
+    return;
+  }
+  if (relayUrl) {
+    const verdict = genesisCrossingVerdict(served.cid, await arrivalSeedAnchor(relayUrl, (input) => fetch(input, { cache: "no-store" })), { pageOrigin: location.origin });
+    if (verdict.kind === "refuse") {
+      console.error(`[vessel] ${verdict.text}`);
+      set("status", verdict.text, "err");
+      const admitStatus = document.getElementById("admit-status");
+      if (admitStatus) { admitStatus.textContent = `✗ ${verdict.text}`; admitStatus.className = "err"; }
+      return;
+    }
+    if (verdict.kind === "uncompared") console.warn(`[vessel] ${verdict.text}`);
+  }
   // A local boot and a CROSSED boot look identical from the outside: both render, both say "ready". So
   // the vessel names which one it just performed. A shore nobody can see is a shore nobody watches, and an
   // absent crossing that reports nothing reads exactly like a crossing that worked.
   if (relayUrl) {
     console.log(`[vessel] CROSSING → ${relayUrl}`);
-    if (!relayGatePubKey) {
-      console.warn(
-        "[vessel] NO GATE KEY — the proof will bind to this vessel's OWN did and the gate will DENY it.\n" +
-        "         Add the node vessel's key:  &gate=<hex from the node's boot banner>",
-      );
-    }
+    if (floor && floor.card === null) console.warn("[vessel] the floor card this browser kept does not read: carry the card the hearth's banner prints in at the carriage door again");
+    else if (floor && !floorAnchor) console.warn("[vessel] the floor card carries no weight alone: carry the place AID the hearth's banner prints on its own line in at the carriage door");
   } else {
     console.log(
       "[vessel] PURE LOCAL BOOT — no node vessel dialled.\n" +
-      `         To cross:  ?relay=${sameOriginRelayUrl(location)}&gate=<node's gate key>`,
+      "         To cross: open the page a hearth's banner prints (the hearth's own origin answers with its relay); this device stands at its floor, and a face joins it by the fleet-join door.",
     );
   }
-  // ?genesis=<base> → where the static host serves genesis/ (seed + cas/). Default /genesis.
-  const genesisCasBaseUrl = new URLSearchParams(location.search).get("genesis") ?? "/genesis";
-  // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer oracle
-  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). Empty value
-  //   defaults to the ?oracle= read-face under its pin. An entry with no key is dropped: nothing to knock on.
-  //   The browser is a LEAF (no endpoint — carries-in, not dial-able).
-  const meshParam = new URLSearchParams(location.search).get("mesh");
-  const defaultPin = new URLSearchParams(location.search).get("oracle-gate") ?? new URLSearchParams(location.search).get("gate");
-  const meshLeaf = meshParam !== null
-    ? {
-        coordSeed: location.origin,
-        peers: meshParam
-          ? meshParam.split(",").map((s) => parseMeshPeer(s.trim())).filter((p): p is MeshPeer => p !== null)
-          : defaultPin ? [{ endpoint: new URLSearchParams(location.search).get("oracle") ?? defaultReadFace(location), gatePubKey: defaultPin.toLowerCase() }] : [],
-      }
-    : undefined;
-  try {
-    const result = await openBrowserVessel({
-      hostId: "elyncia-browser",
-      wikiId: "lares",
-      genesisSeed: genesisSeed as unknown as GenesisSeed,
-      genesisCasBaseUrl,
-      daemonWorkerUrl,
-      ...(sharedHolderUrl ? { sharedHolderUrl } : {}),
-      workerScriptUrl,
-      onPhase: paint,
-      onProjection: (frame) => { projectionSink.apply(frame); },
-      ...(relayUrl ? { relayUrl } : {}),
-      ...(relayGatePubKey ? { relayGatePubKey } : {}),
-      ...(admit ? { admit } : {}),
-      ...(meshLeaf ? { meshLeaf } : {}),
-    });
-    // Identity custody stays in the browser vessel. The web surface renders the public receipt returned
-    // by that opening instead of opening the key store a second time just to paint it.
-    const did = didFromVerifyingKey(result.identity.verifyingKey);
-    mountAdmitSurface(result.identity.verifyingKey);
-    if (relayUrl) {
-      console.log(`[vessel] this leaf's key: ${did}`);
-      console.log(`[vessel] to admit it, on the node:  ${formatAdmitCommand(did)}`);
-    }
-    void readOracle(result.readOracle);         // the vessel stands, so it can prove at the peer's gate
-    // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
-    projectionSink.arm({ sendDomEvent: result.sendDomEvent, sendDomInput: result.sendDomInput });
-    // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
-    // wiki, so this button + chord flips the projection gate to the daemon from any
-    // active surface — a pure gate flip (both surfaces already mounted), no reboot.
-    // Distinct from the daemon-scoped $:/lares/surface toggle inside the widget.
-    const summon = (): void => result.setActiveSurface(DAEMON_SURFACE_ID);
-    const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
-    if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
-    window.addEventListener("keydown", (e) => {
-      if (e.ctrlKey && e.shiftKey && (e.key === "D" || e.key === "d")) { e.preventDefault(); summon(); }
-    });
-    const vesselEl = $("vessel"); vesselEl.replaceChildren();
-    row(vesselEl, "status", "live — sovereign local island", "ok");
-    row(vesselEl, "did", did);
-    row(vesselEl, "origin", location.origin);
-    row(vesselEl, "relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
-    mountLiveStatus(vesselEl, result.connectionState);
-    row(vesselEl, "wiki", result.activeWikiId);
-    row(vesselEl, "wiki doc", result.wikiDocUrl);
-    row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
-    // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
-    // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed.
-    void requestDurableStorage().then((reading) => {
-      const floor = storageFloorReport(reading);
-      if (floor) { console.log(floor); row(vesselEl, "storage", floor.replace(/^\[vessel\] storage floor: /, ""), "warn"); }
-      const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
-      if (offer) row(vesselEl, "phone seat", offer, "warn");
-    }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
-    // THE SEED AT REST — the worn persona's root: cleartext, or wrapped under a passkey whose class the line names.
-    void loadBrowserActivePersona().then((h) => readBrowserSeedWrap(undefined, h ?? 0)).then((wrap) => {
-      row(vesselEl, "seed", seedRestStatus(wrap), wrap ? "ok" : "warn");
-    }).catch(() => { /* an unreadable slot reads as cleartext elsewhere; this line stays silent — never a fault */ });
-  } catch (e) {
-    set("status", `boot failed: ${e instanceof Error ? e.message : String(e)}`, "err");
+  const boot = { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed };
+  const broker = await ceremonyBroker;
+  if ("refusal" in broker || !navigator.locks) { await lead(boot); return; }
+  if (floorTab) {
+    if (floorTab.role() === "owner") await lead(boot);
+    else if (floorTab.role() === "follower") location.reload();
+    return;
   }
+  floorTab = standFloorTab({
+    locks: navigator.locks, lockName: `${vesselLockName(VESSEL_IDB)}:leader`, tabSession: crypto.randomUUID(),
+    broker: {
+      post: (m, t) => broker.worker.postMessage(m, t ?? []),
+      listen: (listener) => {
+        const receive = (e: MessageEvent): void => listener(e.data, e.ports);
+        navigator.serviceWorker.addEventListener("message", receive);
+        return () => navigator.serviceWorker.removeEventListener("message", receive);
+      },
+    },
+    pageLife: pageLifeOf(window, document),
+    lead: () => { void lead(boot); return { mintPort: (w, s) => leading ? leading.vessel.mintPort(w, s) : Promise.resolve(null) }; },
+    follow: (port) => { void lead(boot, port); },
+  });
+}
+
+/** The vessel this tab leads: its worker and the port the page talks to it through. A retry builds a fresh one. */
+let leading: { readonly vessel: VesselPort; readonly stopLife: () => void } | null = null;
+
+/** The vessel worker the page builds: the vessel's whole boot runs on that worker's own thread. */
+function standVessel(handlers: Parameters<typeof standVesselPort>[1], port?: MessagePort): VesselPort {
+  if (leading) { leading.stopLife(); leading.vessel.terminate(); leading = null; }
+  const vessel = standVesselPort(port ? vesselWorkerOfPort(port) : new Worker(vesselWorkerUrl, { type: "module", name: "lares-vessel" }), handlers);
+  // The page's life signals cross to the vessel (`page:life`): a hidden page asks the wiki islands to drain, a leaving one closes its holder session.
+  const stopLife = pageLifeOf(window, document)((life) => vessel.pageLife(life));
+  leading = { vessel, stopLife };
+  return vessel;
+}
+
+/** The seed's resting state as the page says it: the vessel names it, the page words it. */
+function seedRestLine(status: VesselStatus): { readonly text: string; readonly ok: boolean } | null {
+  if (status.seedRest === undefined) return null;
+  if (status.seedRest === "wrapped-passphrase") return { text: "sealed under this browser's passphrase slot", ok: true };
+  // THE VEIL FLOOR, SAID PLAINLY (the-veil-ladder: the throwaway rung): nothing asked this person for a passphrase, so nothing
+  // here outlives this browser's storage or resists someone who reads it.
+  if (status.seedRest === "open-veil") return { text: "open: an unbound veil at the throwaway rung. This browser's key and what it writes rest under no passphrase; join a face or bind a slot to keep them.", ok: false };
+  const wrap = status.seedRest === "wrapped-prf" ? { keyClass: status.seedWrapClass ?? "unnamed" } : null;
+  return { text: seedRestStatus(wrap), ok: wrap !== null };
+}
+
+async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof keptFloorOf>["floor"]; floorAnchor: ReturnType<typeof keptFloorOf>["anchor"];
+  admit: string | null; founding: boolean; foundingAsk: FoundingAsk | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed }, port?: MessagePort): Promise<void> {
+  const { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed } = boot;
+  $("mirror").setAttribute("data-lar-tab", port ? "follower" : "owner");
+  // The mirror stands once the first frame names the surface the page shows; the vessel's word that it stands comes after its open returns.
+  let mirrorTrigger: (() => void) | null = null;
+  let mirrorShownSync: (() => void) | null = null;
+  let seedLine: { readonly text: string; readonly ok: boolean } | null = null;
+  let paintSeed: (() => void) | null = null;
+  let openedYet = false;
+  let opened!: (vessel: NonNullable<VesselStatus["vessel"]>) => void;
+  let ended!: (why: { readonly why: string; readonly stage: "custody" | "open" }) => void;
+  const stood = new Promise<NonNullable<VesselStatus["vessel"]>>((resolve) => { opened = resolve; });
+  const stopped = new Promise<{ readonly why: string; readonly stage: "custody" | "open" }>((resolve) => { ended = resolve; });
+  const vessel = standVessel({
+    onPhase: (p) => { paint(p); projectionSink.setBreath("lares", { phase: p }); },
+    onFrame: (frame) => { if (projectionSink.apply(frame) === "painted" && frame.keys.some((key) => key.key === "lar:surface")) { reportFirstPaint(); mirrorTrigger?.(); } mirrorShownSync?.(); },
+    onControlResult: (_surface, result) => { projectionSink.applyResult(result); },
+    onControlPending: (_surface, eventId) => { projectionSink.applyPending(eventId); },
+    onPortMessage: (binding, islandKey, msg) => pagePortDelivery.onPortMessage(binding, islandKey, msg),
+    onStatus: (status) => {
+      if (status.rest) paintRest(document, status.rest);
+      if (status.vessel) opened(status.vessel);
+      // THE FACE'S LAST SESSION CLOSED (this page left) AND THE VESSEL RESTS AT ITS FLOOR: a page the browser restores from its
+      // back-forward cache holds a session that stands closed, so it boots afresh and asks for its unlock again.
+      if (status.floor === "floor" && openedYet) window.addEventListener("pageshow", (e) => { if (e.persisted) location.reload(); }, { once: true });
+      const line = seedRestLine(status);
+      if (line) { seedLine = line; paintSeed?.(); }
+    },
+    onAsk: (ask) => paintAsk(ask, vessel),
+    onAskSettled: settleAsk,
+    onEnded: (why, stage) => {
+      ended({ why, stage });
+      // A vessel that stood and then ended says so; the retry builds a fresh worker.
+      if (openedYet) { set("status", why, "err"); offerBootRetry(); }
+    },
+  }, port);
+  vessel.hello({
+    idbName: VESSEL_IDB, hostId: "elyncia-browser", wikiId: "lares", genesisSeed, genesisCasBaseUrl,
+    daemonWorkerUrl: daemonWorkerUrl.href, workerScriptUrl: workerScriptUrl.href,
+    ...(relayUrl ? { relayUrl } : {}),
+    ...(floor ? { floorCard: floor.text } : {}),
+    ...(floorAnchor ? { floorAnchor } : {}),
+    ...(admit ? { admitCarriage: admit } : {}),
+    // THE FOUNDING ACT ASKS FOR A FACE: the page's own door (the identity panel's button) carries the ask; a bare arrival stands the veil floor.
+    ...(founding ? { foundFace: true as const } : {}),
+  });
+  const outcome = await Promise.race([stood.then((v) => ({ kind: "stood" as const, v })), stopped.then((e) => ({ kind: "ended" as const, e }))]);
+  if (outcome.kind === "ended") {
+    // A leader whose vessel refused to open keeps the lead (no other tab could open the store either) and offers the retry; its
+    // followers hear `parked` and wait on its surface. A keystore left locked says so plainly.
+    set("status", outcome.e.why, outcome.e.stage === "custody" ? "warn" : "err");
+    offerBootRetry();
+    return;
+  }
+  openedYet = true;
+  const result = outcome.v;
+  // A harness-only door, compiled out of every default build.
+  if (__LAR_WALK_DOOR__) (window as Window & { __larRestartDaemonIsland?: (reason: string) => Promise<{ restarts: number; leg: string }> }).__larRestartDaemonIsland = (reason: string) => vessel.restartDaemonIsland(reason);
+  // and the walk's ward act: one ward act over `bytes`, its passphrase asked through the ceremony like every ward act.
+  if (__LAR_WALK_DOOR__) (window as Window & { __larWalkWardAct?: (bytes: number[]) => Promise<{ key: string; signature: string }> }).__larWalkWardAct = (bytes: number[]) => vessel.walkWardAct(Uint8Array.from(bytes));
+  pendingAdmit = null;
+  pendingFounding = null;
+  // Identity custody stays in the browser vessel. The web surface renders the public receipt the vessel reported.
+  const did = result.did;
+  mountAdmitSurface(result.verifyingKey, vessel);
+  // ── leaf-fleet (Leaf-Wright): the root holder's door. It paints a face only where this browser holds that face's root. ──
+  const fleetRootHost = document.getElementById("fleet-root-door");
+  // THE FIRST OFFER FOUNDS THE FACE: a veil's offer asks the founding door, and the boot that founded for it shows the offer.
+  if (fleetRootHost) mountFleetRootDoor(fleetRootHost, vessel.fleetRoot, { found: { ask: () => { askFounding("offer"); }, resume: foundingAsk === "offer" } });
+  // THE CARRIED SEAT: a face this browser joined asks its seat by file; a kept grant restarts the daemon island in place, and its seat reads it.
+  // A READ-ONLY INSTRUMENT (leaf-fleet): the active wiki's working layer as this vessel mounted it, beside `larMirrorReading`.
+  // Two leaves of one face read one workbench address for one slug; live convergence between them still needs a road.
+  Object.defineProperty($("vessel"), "larWorkbenchReading", { configurable: true, value: () => vessel.fleetSeat.workbench() });
+  const fleetSeatHost = document.getElementById("fleet-seat-door");
+  if (fleetSeatHost) mountFleetSeatDoor(fleetSeatHost, vessel.fleetSeat, { onKept: (face) => {
+    // The kept grant lifts the face at this browser's place, and the place session stands only at boot: re-enter it.
+    console.log(`[vessel] a carried seat grant rests for face ${face.slice(0, 12)}…; the page boots again, lifts the face at its place and seats it`);
+    location.reload();
+  } });
+  // ── /leaf-fleet ──
+  if (relayUrl) {
+    console.log(`[vessel] this leaf's key: ${did}`);
+    console.log("[vessel] to join a face's fleet: on the root holder, offer the face (a browser's fleet door, or a node's `lares fleet join offer --out offer.json`), then paste the offer here");
+  }
+  void readFloor(vessel.readFloor);           // the vessel stands, so it reads and verifies the hearth's floor
+  // Arm the interactivity RETURN leg (click and text halves): each event carries its source surface.
+  projectionSink.arm({ sendControlEvent: vessel.sendControlEvent });
+  // The page's port road: one transport over the vessel's port doors; replies reach it for its own binding alone.
+  // The mirror serves one wiki for its life: the binding's traffic follows the surface it stood on, never the projection's later switches.
+  let mirrorSurface: string | null = null;
+  const pageBinding = standPagePort(vessel.ports, () => mirrorSurface);
+  // The mirror: unprivileged, fed by this binding alone, booted from the inputs the vessel names for the shown surface.
+  // A floor leaves the none projection beneath exactly as it stands; the host element carries the outcome in `data-lar-mirror`.
+  let mirrorStanding = false;
+  let standingMirror: { pending(): number; unmount(): void } | null = null;
+  // The person reads the mirror only while the surface it serves is the surface shown: a summon of another surface (the daemon) shows the floor, and the way back shows the mirror again.
+  mirrorShownSync = () => {
+    paintPaneLabel($("projection-wiki"), projectionSink.surface());
+    const host = $("mirror");
+    const word = host.getAttribute("data-lar-mirror");
+    const standing = word === "skinny" || word === "full";
+    host.setAttribute("data-lar-shown", standing && mirrorSurface !== null && projectionSink.surface() === mirrorSurface ? "mirror" : "floor");
+  };
+  mirrorTrigger = () => {
+    const shown = projectionSink.surface();
+    if (mirrorStanding || shown === null) return;
+    mirrorStanding = true;
+    mirrorSurface = shown;
+    void standPageMirror({ port: pageBinding, host: $("mirror"), actor: did, surface: () => mirrorSurface,
+      mirrorInputs: vessel.mirrorInputs, onState: (state) => console.warn(`[mirror] ${state.kind}`, state),
+      // Stock's "refresh" boots the mirror afresh from a new handoff; the page itself stays. A write still waiting holds it, as it holds a leave.
+      reload: () => {
+        if (!standingMirror) throw new Error("no mirror stands");
+        if (standingMirror.pending() > 0) throw new Error("a write still waits for its answer");
+        standingMirror.unmount(); standingMirror = null; mirrorStanding = false; mirrorSurface = null;
+        queueMicrotask(() => mirrorTrigger?.());
+      } })
+      .then((stood) => {
+        if (stood.kind !== "floor") { standingMirror = stood; return; }
+        console.warn(`[mirror] the none projection stays: ${stood.why}`);
+        // Nothing to mirror yet (the daemon shows, or the vessel names no inputs): the next painted frame asks again.
+        if (stood.why === "mirror-inputs-absent") { mirrorStanding = false; mirrorSurface = null; }
+      })
+      .catch((err: unknown) => console.warn("[mirror] stand refused:", err));
+  };
+  mirrorTrigger();
+  // The UNIVERSAL summon (the reachability affordance): host chrome overlays EVERY
+  // wiki, so this button + chord flips the projection gate to the daemon from any
+  // active surface — a pure gate flip (both surfaces already mounted), no reboot.
+  // Distinct from the daemon-scoped $:/temp/lares/surface toggle inside the widget.
+  const summon = (): void => { projectionSink.awaitSurface(DAEMON_SURFACE_ID); vessel.setActiveSurface(DAEMON_SURFACE_ID); mirrorShownSync?.(); };
+  const summonBtn = document.getElementById("summon-daemon") as HTMLButtonElement | null;
+  if (summonBtn) { summonBtn.disabled = false; summonBtn.addEventListener("click", summon); }
+  window.addEventListener("keydown", (e) => {
+    if (e.ctrlKey && e.shiftKey && (e.key === "D" || e.key === "d")) { e.preventDefault(); summon(); }
+  });
+  const vesselEl = $("vessel"); vesselEl.replaceChildren();
+  row(vesselEl, "status", "live — sovereign local island", "ok");
+  row(vesselEl, "did", did);
+  row(vesselEl, "origin", location.origin);
+  row(vesselEl, "relay", relayUrl ?? `not pinned · ${sameOriginRelayUrl(location)}`);
+  mountLiveStatus(vesselEl, vessel.connectionState);
+  row(vesselEl, "wiki", result.activeWikiId);
+  if (result.wikiAwaits) row(vesselEl, "wiki awaits", result.wikiAwaits, "warn");
+  row(vesselEl, "wiki doc", result.wikiDocUrl);
+  row(vesselEl, "oracle doc", result.oracleDocUrl ?? "(local genesis)");
+  showPageInstruments();
+  // THE SEVEN-DAY CLOCK, REPORTED — the eviction class + estimate() as one line (never a fault), and the
+  // PHONE SEAT's offer beneath it, rendered only where the clock stands and the page is not yet installed. The page alone
+  // offers `navigator.storage.persist()`, so the page asks it.
+  void requestDurableStorage().then((reading) => {
+    const floor = storageFloorReport(reading);
+    if (floor) { console.log(floor); row(vesselEl, "storage", floor.replace(/^\[vessel\] storage floor: /, ""), "warn"); }
+    const offer = phoneSeatExplanation(ambientPhoneSeatHost(reading.persistence));
+    if (offer) row(vesselEl, "phone seat", offer, "warn");
+  }).catch(() => { /* an unreadable storage surface reports nothing — never a fault */ });
+  // THE SEED AT REST — the vessel names its resting state (sealed under this browser's slot tree, a passkey wrap and its class,
+  // or no wrap), and the page words it once the vessel reports it.
+  paintSeed = () => { if (seedLine) { row(vesselEl, "seed", seedLine.text, seedLine.ok ? "ok" : "warn"); seedLine = null; } };
+  paintSeed();
 }
 
 void bootVessel();

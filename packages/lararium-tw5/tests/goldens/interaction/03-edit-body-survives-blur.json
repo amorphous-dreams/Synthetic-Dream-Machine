@@ -1,0 +1,22 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/3",
+  "pins": "the textarea revert: a frame rendered before a keystroke never repaints over it, and the commit lands once as a write",
+  "world": {
+    "tiddlers": [{ "title": "lar:///t/edit/body", "text": "first" }],
+    "story": ["lar:///t/edit/body"],
+    "root": "<$edit-text tiddler=\"lar:///t/edit/body\" field=\"text\" tag=\"textarea\" class=\"body\"/>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "expect": { "page": { ".body": { "value": "first" } }, "frame": { "sensedRevision": {} } } },
+    { "sense": { "control": ".body", "wholeValue": "first typed", "localRev": 1 } },
+    { "deliver": "older" },
+    { "expect": { "page": { ".body": { "value": "first typed" } } } },
+    { "frame": "next" },
+    { "expect": { "frame": { "sensedRevision": { ".body": 1 } }, "page": { ".body": { "value": "first typed" } } } },
+    { "act": { "control": ".body", "action": "lar:commit", "wholeValue": "first typed" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/edit/body", "text": "first typed" }] } },
+    { "frame": "next" },
+    { "expect": { "page": { ".body": { "value": "first typed" } } } }
+  ]
+}

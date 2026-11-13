@@ -35,10 +35,12 @@ import {
   readRepoRegistry, registerRepo, unregisterRepo, repoRegistryPath,
 } from "@lararium/node";
 import {
-  parseCapTier, isBagHome, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
+  parseCapTier, isBagHome, bagUri, placeBag, BAG_HOMES, bagHomeTravelsWithAClone,
   type BagHome, type BagManifest,
 } from "@lararium/mesh";
-import { larBagsDir } from "../env.js";
+import { join } from "node:path";
+import { larBagsDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+import { runVerb, verbFailure } from "../verb-call.js";
 import { emit, exitFor } from "../render.js";
 import type { ParsedArgs } from "../parse-args.js";
 
@@ -47,6 +49,21 @@ class BagUsageError extends Error {}
 /** Where a bag's bytes are LOOKED FOR. A survey reads what stands; the declaration says where it belongs. */
 function surveyDir(args: ParsedArgs): string {
   return args.options["dir"] ?? larBagsDir();
+}
+
+/**
+ * One bag's sighting: the survey dir first, then (with no `--dir` named) the house's projected bags, where a bag with no
+ * canon source rests (`<root>/projections/bags`). Absent from both, it refuses naming each place it read.
+ */
+function findBag(args: ParsedArgs, bag: string, roots: ReturnType<typeof bagHomeRoots>): ReturnType<typeof surveyBags>[number] {
+  const dirs = [surveyDir(args)];
+  const projections = args.options["dir"] === undefined ? larProjectionsDirOrNone() : undefined;
+  if (projections !== undefined) dirs.push(join(projections, "bags"));
+  for (const dir of dirs) {
+    const found = surveyBags(dir, roots).find((s) => s.bag === bag);
+    if (found) return found;
+  }
+  throw new BagUsageError(`no bag "${bag}" stands under ${dirs.join(" or ")}`);
 }
 
 /** The bag name. The dispatcher already shifted its own verb off, so the name sits FIRST here. */
@@ -95,8 +112,7 @@ function existsDeclaration(dir: string, bag: string): boolean {
 export async function cmdBagShow(args: ParsedArgs): Promise<number> {
   const bag   = bagArg(args, "show");
   const roots = bagHomeRoots();
-  const found = surveyBags(surveyDir(args), roots).find((s) => s.bag === bag);
-  if (!found) throw new BagUsageError(`no bag "${bag}" stands under ${surveyDir(args)}`);
+  const found = findBag(args, bag, roots);
   const place = placeBag(found.manifest, roots);
 
   emit(args, {
@@ -128,8 +144,7 @@ export async function cmdBagShow(args: ParsedArgs): Promise<number> {
 export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   const bag   = bagArg(args, "declare");
   const roots = bagHomeRoots();
-  const found = surveyBags(surveyDir(args), roots).find((s) => s.bag === bag);
-  if (!found) throw new BagUsageError(`no bag "${bag}" stands under ${surveyDir(args)}`);
+  const found = findBag(args, bag, roots);
 
   const tierRaw = args.options["tier"];
   const homeRaw = args.options["home"];
@@ -151,12 +166,20 @@ export async function cmdBagDeclare(args: ParsedArgs): Promise<number> {
   // DECLARING NEVER MOVES BYTES. A declaration that relocated a bag as a side effect would make a
   // documentation edit into a filesystem act, and the two want different consent.
   const path  = writeBagManifest(found.dir, next);
+  // A STANDING DAEMON RE-STAMPS THE ROW AT ONCE. The declaration lands on disk alone; the catalog row a vessel registered
+  // keeps the `cap-tier` stamp it carried, so a public -> private declare would leave the bag on the floor catalog until the
+  // next registration. No daemon standing leaves nothing to re-stamp (the next boot stamps from this declaration).
+  let restamp: string = "no-daemon";
+  try {
+    const r = await runVerb("restamp-bag-tier", { bagUrl: bagUri(bag) }, await vesselDid(), { timeoutMs: 15_000 });
+    restamp = r.status === "error" ? `refused: ${r.errorMessage ?? "unknown"}` : "sent";
+  } catch (err) { restamp = verbFailure(err).code; }
   const place = placeBag(next, roots);
   const adrift = place.resolution.ok && `${place.resolution.dir}/${bag}` !== found.dir;
 
   emit(args, {
     ok: true,
-    data: { bag, path, manifest: next, adrift },
+    data: { bag, path, manifest: next, adrift, restamp },
     human: () => {
       console.log(`${bag} declares: cap-tier ${next.tier} · home ${next.home}${next.repository ? ` → "${next.repository}"` : ""}`);
       console.log(`  written: ${path}`);
@@ -173,8 +196,7 @@ export async function cmdBagHome(args: ParsedArgs): Promise<number> {
   const toRaw = (args.options["to"] ?? "").trim().toLowerCase();
   if (!isBagHome(toRaw)) throw new BagUsageError(`--to expects one of ${BAG_HOMES.join(" | ")}, got "${args.options["to"] ?? ""}"`);
   const roots = bagHomeRoots();
-  const found = surveyBags(surveyDir(args), roots).find((s) => s.bag === bag);
-  if (!found) throw new BagUsageError(`no bag "${bag}" stands under ${surveyDir(args)}`);
+  const found = findBag(args, bag, roots);
 
   const next = { home: toRaw as BagHome, ...(args.options["repo"] ? { repository: args.options["repo"] } : {}) };
   if (args.flags["approve"] !== true) {

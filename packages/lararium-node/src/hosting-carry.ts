@@ -12,8 +12,9 @@
  *   hearth → walker  `hosting/notice {pending: true}`  on a contact while the walker's carriage stands marked
  *
  * ONE RECORD PER LEAF, REACHED ONLY BY A GRANT THAT PROVES THAT LEAF. The hearth keys each guest's carriage under
- * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and its leaf proof
- * proves — so a record is reached by proof alone, whichever lineage the grant rides, and nothing the hearth hands
+ * `carryRecordKey(hearthLeafSeed, N, G)` — G the per-Nexus leaf the socket's grant names and a walker socket's leaf proof
+ * proves (the walker route ships SHUT by name, the shut-routes house ruling (stable-founding-road #/rulings)) — so a record is reached by proof alone,
+ * whichever lineage the grant rides, and nothing the hearth hands
  * out names it. A guest that lapsed and walks back in on a fresh invite under the same leaf reaches its carriage
  * again; a fresh leaf is a fresh carriage, and a kapae'd leaf reaches nothing through a new one. Every dial on G
  * is a CONTACT — the grant arm and the token arm alike (`socket-sorter`) — so the notice reaches a guest by a
@@ -63,8 +64,21 @@ import {
 } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow, writeCustodyRow } from "./custody-seat.js";
-import { hostingDir, hostingRowDir, readHostingState, liveEpochs } from "./hosting-store.js";
-import type { DaemonAuthGate } from "./daemon-auth-gate.js";
+import { readHostingState, liveEpochs } from "./hosting-store.js";
+import { hostingDirPath, hostingFaceOf, hostingRowDir } from "./hosting-face.js";
+import type { HostingGrant, LarSessionMsg, PeerClass } from "@lararium/mesh";
+
+/**
+ * THE WALKER'S SESSION DOOR: a gate's authenticated sessions, each with its class and the hosting grant it stands
+ * on. The walker arms ship SHUT by name (`socket-sorter` `SHUT_ARMS`), so no gate seats a walker and
+ * no composer stands this door; the carriage and mint servers keep their shape for the reader that opens them.
+ */
+export interface WalkerSessionDoor<S = unknown> {
+  onSession(listener: (socket: S, msg: LarSessionMsg) => void): () => void;
+  sendSession(socket: S, kind: string, body: unknown): boolean;
+  getClassForSocket(socket: S): PeerClass | undefined;
+  getGrantForSocket(socket: S): HostingGrant | undefined;
+}
 
 /** How much a hearth carries for walkers: per guest, and in all. */
 export interface CarryLimits {
@@ -103,10 +117,19 @@ function segment(key: string): string {
   if (!SEGMENT.test(key)) throw new Error("[hosting-carry] a record key names no carriage row");
   return key;
 }
-const guestRowDir = (nexusAid: string, key: string): string => `${hostingRowDir(nexusAid)}/carry/${segment(key)}`;
-const recordFile = (nexusAid: string, key: string): string => `${guestRowDir(nexusAid, key)}/record.json`;
+/** Where a Nexus's carriage rests: the face that holds its hosting, and the AID. */
+interface Home { readonly face: number; readonly nexusAid: string }
+const guestRowDir = (home: Home, key: string): string => `${hostingRowDir(home.face, home.nexusAid)}/carry/${segment(key)}`;
+const recordFile = (home: Home, key: string): string => `${guestRowDir(home, key)}/record.json`;
+/** The Nexus's carriage home when a face holds its hosting (`create` founds it under the face named, else the one face standing open); null where none does. */
+async function homeOf(nexusAid: string, create: boolean): Promise<Home | null> {
+  const face = await hostingFaceOf(nexusAid, create);
+  return face === null ? null : { face, nexusAid };
+}
+/** The directory path of one guest-side subtree of the carriage, inside the hosting face's own directory. */
+const carryPath = (home: Home, ...rest: string[]): string => join(hostingDirPath(home.face, home.nexusAid)!, "carry", ...rest);
 const unlistable = (row: string, err: unknown): CustodyRowUnavailable =>
-  new CustodyRowUnavailable("storage", row, `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
+  new CustodyRowUnavailable("identity", row, `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
 
 /** The names under one directory of the carriage; no directory holds none, and any other fault refuses by name. */
 function namesUnder(dir: string, row: string): string[] {
@@ -118,17 +141,17 @@ function namesUnder(dir: string, row: string): string[] {
 }
 
 /** The record keys standing under one Nexus's carriage root. */
-async function carriedKeys(nexusAid: string): Promise<string[]> {
-  return namesUnder(join(await hostingDir(nexusAid), "carry"), `${hostingRowDir(nexusAid)}/carry`).filter((key) => SEGMENT.test(key)).sort();
+async function carriedKeys(home: Home): Promise<string[]> {
+  return namesUnder(carryPath(home), `${hostingRowDir(home.face, home.nexusAid)}/carry`).filter((key) => SEGMENT.test(key)).sort();
 }
 
 interface StandingBlob { readonly digest: string; readonly bytes: number; readonly file: string }
 
 /** The blob rows one guest's carriage holds, read off their names. */
-async function standingBlobs(nexusAid: string, key: string): Promise<StandingBlob[]> {
-  const row = `${guestRowDir(nexusAid, key)}/blobs`;
+async function standingBlobs(home: Home, key: string): Promise<StandingBlob[]> {
+  const row = `${guestRowDir(home, key)}/blobs`;
   const out: StandingBlob[] = [];
-  for (const name of namesUnder(join(await hostingDir(nexusAid), "carry", key, "blobs"), row)) {
+  for (const name of namesUnder(carryPath(home, key, "blobs"), row)) {
     const m = BLOB_FILE.exec(name);
     if (m) out.push({ digest: m[1]!, bytes: Number(m[2]), file: `${row}/${name}` });
   }
@@ -138,7 +161,7 @@ async function standingBlobs(nexusAid: string, key: string): Promise<StandingBlo
 const bytesOf = (blobs: readonly StandingBlob[]): number => blobs.reduce((sum, b) => sum + b.bytes, 0);
 
 function parseRhythm(bytes: Uint8Array, file: string): CarryRhythm {
-  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("storage", file, "malformed");
+  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { throw malformed(); }
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw malformed();
@@ -149,9 +172,9 @@ function parseRhythm(bytes: Uint8Array, file: string): CarryRhythm {
   return { lastSeen, gap, pending };
 }
 
-async function readRhythm(nexusAid: string, key: string): Promise<CarryRhythm | null> {
-  const file = recordFile(nexusAid, key);
-  const bytes = await readCustodyRow("storage", file);
+async function readRhythm(home: Home, key: string): Promise<CarryRhythm | null> {
+  const file = recordFile(home, key);
+  const bytes = await readCustodyRow("identity", file);
   return bytes === null ? null : parseRhythm(bytes, file);
 }
 
@@ -161,17 +184,19 @@ async function readRhythm(nexusAid: string, key: string): Promise<CarryRhythm | 
  * whole refuses by name.
  */
 export async function readCarryRecord(nexusAid: string, key: string): Promise<CarryRecord | null> {
-  const rhythm = await readRhythm(nexusAid, key);
-  return rhythm === null ? null : { ...rhythm, bytes: bytesOf(await standingBlobs(nexusAid, key)) };
+  const home = await homeOf(nexusAid, false);
+  if (home === null) return null;
+  const rhythm = await readRhythm(home, key);
+  return rhythm === null ? null : { ...rhythm, bytes: bytesOf(await standingBlobs(home, key)) };
 }
 
 /** Read a guest's rhythm, decide and write it under one custody holder. `decide` answers the next rhythm, or null to leave it. */
 async function updateRhythm<T>(
-  nexusAid: string, key: string, decide: (standing: CarryRhythm | null) => { readonly next: CarryRhythm | null; readonly value: T },
+  home: Home, key: string, decide: (standing: CarryRhythm | null) => { readonly next: CarryRhythm | null; readonly value: T },
 ): Promise<T> {
-  const file = recordFile(nexusAid, key);
-  mkdirSync(join(await hostingDir(nexusAid), "carry", segment(key), "blobs"), { recursive: true, mode: 0o700 });
-  return updateCustodyRow("storage", file, (standing) => {
+  const file = recordFile(home, key);
+  mkdirSync(carryPath(home, segment(key), "blobs"), { recursive: true, mode: 0o700 });
+  return updateCustodyRow("identity", file, (standing) => {
     const d = decide(standing === null ? null : parseRhythm(standing, file));
     return { plaintext: d.next === null ? null : new TextEncoder().encode(JSON.stringify(d.next)), value: d.value };
   });
@@ -187,8 +212,9 @@ export function noteContact(nexusAid: string, key: string, depth: number): Promi
 }
 
 async function contactInTurn(nexusAid: string, key: string, depth: number): Promise<{ readonly notice: boolean }> {
-  if ((await readRhythm(nexusAid, key)) === null) return { notice: false };
-  return updateRhythm(nexusAid, key, (record) => {
+  const home = await homeOf(nexusAid, false);
+  if (home === null || (await readRhythm(home, key)) === null) return { notice: false };
+  return updateRhythm(home, key, (record) => {
     if (!record) return { next: null, value: { notice: false } };
     const renewed = depth > record.lastSeen;
     const next: CarryRhythm = {
@@ -201,9 +227,9 @@ async function contactInTurn(nexusAid: string, key: string, depth: number): Prom
 }
 
 /** Bytes carried in all, across every guest's blob rows. */
-async function totalCarried(nexusAid: string): Promise<number> {
+async function totalCarried(home: Home): Promise<number> {
   let total = 0;
-  for (const key of await carriedKeys(nexusAid)) total += bytesOf(await standingBlobs(nexusAid, key));
+  for (const key of await carriedKeys(home)) total += bytesOf(await standingBlobs(home, key));
   return total;
 }
 
@@ -214,10 +240,10 @@ async function totalCarried(nexusAid: string): Promise<number> {
  * gets discarded; one not yet marked gets MARKED and kept (notice first). A guest within its rhythm never gets
  * taken. Returns true when enough room stands.
  */
-async function reclaim(nexusAid: string, depth: number, need: number, limits: CarryLimits, except: string): Promise<boolean> {
-  const shortfall = await totalCarried(nexusAid) + need - limits.totalBytes;
+async function reclaim(home: Home, depth: number, need: number, limits: CarryLimits, except: string): Promise<boolean> {
+  const shortfall = await totalCarried(home) + need - limits.totalBytes;
   const read: { key: string; record: CarryRecord | null }[] = [];
-  for (const key of await carriedKeys(nexusAid)) if (key !== except) read.push({ key, record: await readCarryRecord(nexusAid, key) });
+  for (const key of await carriedKeys(home)) if (key !== except) read.push({ key, record: await readCarryRecord(home.nexusAid, key) });
   const lapsed = read
     .filter((r): r is { key: string; record: CarryRecord } => r.record !== null && r.record.bytes > 0)
     .map((r) => ({ ...r, ratio: lapseRatio(depth, r.record.lastSeen, r.record.gap) }))
@@ -228,14 +254,14 @@ async function reclaim(nexusAid: string, depth: number, need: number, limits: Ca
     if (covered >= shortfall) break;
     covered += record.bytes;
     if (record.pending === null) {
-      await updateRhythm(nexusAid, key, (standing) => ({ next: standing ? { ...standing, pending: depth } : null, value: undefined }));   // notice first
+      await updateRhythm(home, key, (standing) => ({ next: standing ? { ...standing, pending: depth } : null, value: undefined }));   // notice first
     } else if (lapseRatio(depth, record.pending, record.gap) > RECLAIM_RATIO) {
       // The blob rows leave first; the mark clears once they have left, so a discard that stops midway keeps its mark.
-      for (const blob of await standingBlobs(nexusAid, key)) await removeCustodyRow("storage", blob.file);
-      await updateRhythm(nexusAid, key, (standing) => ({ next: standing ? { ...standing, pending: null } : null, value: undefined }));
+      for (const blob of await standingBlobs(home, key)) await removeCustodyRow("identity", blob.file);
+      await updateRhythm(home, key, (standing) => ({ next: standing ? { ...standing, pending: null } : null, value: undefined }));
     }
   }
-  return await totalCarried(nexusAid) + need <= limits.totalBytes;
+  return await totalCarried(home) + need <= limits.totalBytes;
 }
 
 /** The carriage's acts in flight (contacts, deposits and the reclaims they trigger): each waits for the one before it. */
@@ -261,22 +287,23 @@ async function depositInTurn(opts: {
   const limits = opts.limits ?? DEFAULT_CARRY_LIMITS;
   const address = ADDRESS.exec(opts.cid);
   if (!address) throw new Error("[hosting-carry] a carried value's address reads `blake3:<64 hex>`");
-  const held = await standingBlobs(opts.nexusAid, opts.key);
+  const home = (await homeOf(opts.nexusAid, true))!;
+  const held = await standingBlobs(home, opts.key);
   const size = opts.ciphertext.byteLength;
   const twin = held.find((b) => b.digest === address[1]);
   if (twin) {
     // Already carried: idempotent. The row must open to the same bytes before this hearth says so; a row that
     // stands and does not open refuses by name, where an answer of `held` would promise bytes nobody can fetch.
-    const standing = await readCustodyRow("storage", twin.file);
+    const standing = await readCustodyRow("identity", twin.file);
     if (standing !== null && standing.length === size && standing.every((byte, i) => byte === opts.ciphertext[i])) return "held";
-    throw new CustodyRowUnavailable("storage", twin.file, "holds other bytes than its address names");
+    throw new CustodyRowUnavailable("identity", twin.file, "holds other bytes than its address names");
   }
   if (bytesOf(held) + size > limits.perGuestBytes) return "quota";
-  if (await totalCarried(opts.nexusAid) + size > limits.totalBytes
-      && !(await reclaim(opts.nexusAid, opts.depth, size, limits, opts.key))) return "pressure";
+  if (await totalCarried(home) + size > limits.totalBytes
+      && !(await reclaim(home, opts.depth, size, limits, opts.key))) return "pressure";
   // The rhythm stands before the blob, and counts nothing; the blob row then commits the deposit.
-  await updateRhythm(opts.nexusAid, opts.key, (standing) => ({ next: standing ? null : { lastSeen: opts.depth, gap: 0, pending: null }, value: undefined }));
-  await writeCustodyRow("storage", `${guestRowDir(opts.nexusAid, opts.key)}/blobs/${address[1]}.${size}`, opts.ciphertext);
+  await updateRhythm(home, opts.key, (standing) => ({ next: standing ? null : { lastSeen: opts.depth, gap: 0, pending: null }, value: undefined }));
+  await writeCustodyRow("identity", `${guestRowDir(home, opts.key)}/blobs/${address[1]}.${size}`, opts.ciphertext);
   return "held";
 }
 
@@ -287,8 +314,10 @@ async function depositInTurn(opts: {
 export async function fetchCarried(nexusAid: string, key: string, cid: string): Promise<Uint8Array | null> {
   const address = ADDRESS.exec(cid);
   if (!address || !SEGMENT.test(key)) return null;                              // a name no row could carry holds nothing
-  const blob = (await standingBlobs(nexusAid, key)).find((b) => b.digest === address[1]);
-  return blob ? readCustodyRow("storage", blob.file) : null;
+  const home = await homeOf(nexusAid, false);
+  if (home === null) return null;
+  const blob = (await standingBlobs(home, key)).find((b) => b.digest === address[1]);
+  return blob ? readCustodyRow("identity", blob.file) : null;
 }
 
 /**
@@ -296,8 +325,8 @@ export async function fetchCarried(nexusAid: string, key: string, cid: string): 
  * proven leaf keys. Nothing in a request names a record, and nothing in an answer hands one out. A fault (a key
  * that locked, a row that does not open) answers nothing, exactly as a refusal does.
  */
-export function serveHostingCarry(
-  gate: Pick<DaemonAuthGate, "onSession" | "sendSession" | "getClassForSocket" | "getGrantForSocket">,
+export function serveHostingCarry<S>(
+  gate: WalkerSessionDoor<S>,
   deps: { readonly leafSeedFor: (nexusAid: string) => Promise<Uint8Array | null>; readonly limits?: CarryLimits },
 ): () => void {
   return gate.onSession((socket, msg) => {

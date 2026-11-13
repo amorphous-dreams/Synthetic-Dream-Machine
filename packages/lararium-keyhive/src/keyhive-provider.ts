@@ -9,8 +9,8 @@
  *   - Peer DID = hex-encoded Identifier bytes (matches Keyhive.idString)
  *   - Access "read" / "admin" passes through verbatim
  *
- * Bag URL ↔ DocumentId mapping lives in-memory; TODO: persist it as
- * tiddler fields under each cap event so it survives daemon restart.
+ * The bag URL ↔ DocumentId mapping lives in memory here; `registerBagsDurably` (bag-doc-ledger.ts)
+ * persists it through a `BagDocLedger`, so it survives a daemon restart.
  *
  * Caveats (pre-alpha):
  *   - No security audit; not for adversarial multi-peer use
@@ -25,7 +25,7 @@
 // its wasm as CONTENT (off the module graph), the same law the engine bytes obey.
 import * as KH from "@keyhive/keyhive/slim";
 import { wasmBase64 } from "@keyhive/keyhive/wasm-base64";
-import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, webDigest } from "@lararium/mesh";
+import { adaptGate, PONO_FLUSH_GATE, hex as hexEncode, hexToBytes as hexDecode, sha256HexBytesSync, webDigest } from "@lararium/mesh";
 import { base64ToBytes } from "./bytes-base64.js";
 import { ingestTolerant } from "./ingest-tolerant.js";
 import { inSelfSlice } from "./event-store.js";
@@ -209,9 +209,9 @@ export class KeyhiveProvider implements CapabilityProvider {
       try {
         const variant = e.variant;
         const bytes   = e.toBytes();
-        // The in-memory store uses synthetic hashes here; a
-        // tiddler-backed store will compute content hashes itself.
-        const hash    = `${variant}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        // A row is named by its own bytes: keyhive fires this handler again for every event a restored
+        // Archive and a replay carry, so any other name lands the same event once more at every boot.
+        const hash    = sha256HexBytesSync(bytes);
         // CIV-3 — stamp the island (target Document): DELEGATED / REVOKED self-attribute off their
         // own bytes; CGKA_OPERATION borrows the doc-op's `_activeIsland` (synchronous, single-writer
         // safe); PREKEY_ROTATED stays unattributed (per-principal → co-loaded across every slice).
@@ -342,6 +342,10 @@ export class KeyhiveProvider implements CapabilityProvider {
     this.docIdToBag.set(docIdHex, bagUrl);
     this.hydratedIslands.add(docIdHex);   // CIV-2b — a freshly-minted island is live in memory, never deferred
     return { docId: docIdHex };
+  }
+
+  docIdOfBag(bagUrl: string): string | null {
+    return this.bagToDocId.get(bagUrl) ?? null;
   }
 
   /**
@@ -632,7 +636,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   async verify(args: VerifyArgs): Promise<VerifyResult> {
     const docIdHex = this.bagToDocId.get(args.bagUrl);
     if (!docIdHex) {
-      return { ok: false, reason: `bag not registered: ${args.bagUrl}` };
+      return { ok: false, kind: "bag-not-registered", bagUrl: args.bagUrl, reason: `bag not registered: ${args.bagUrl}` };
     }
     await this.ensureIsland(docIdHex);   // CIV-2b — first access materializes a boot-deferred island
     const docId = new KH.DocumentId(hexToBytes(docIdHex));
@@ -740,8 +744,11 @@ export class KeyhiveProvider implements CapabilityProvider {
    *                      that seat; a peer seated beside the party holds none, admin or not, and a junior never
    *                      revokes the founder (`tests/persona-group-substrate.test.ts`).
    *
-   * Any other fault rides out. The founder's own departure while it seated others throws, and its seat still
-   * leaves (the same file's canary): no door asks it.
+   * A THROW AFTER THE GROUP MOVED READS AS DONE. The founder's own departure while it seated others throws, and its
+   * seat still leaves (the same file's canary, G8). So any other fault reads the seat again: a direct seat that
+   * left answers `revoked`, and the roll the removal owes still reaches its subscribers
+   * (`persona-group-founder-removal.test.ts`); a seat that still stands names a refusal before any mutation, and
+   * the fault rides out.
    */
   async revokeGroupSeat(memberIdentifierHex: string, groupId: string): Promise<{ how: "revoked" | "gone" | "no-authority" }> {
     const kh = this.requireKh();
@@ -756,8 +763,16 @@ export class KeyhiveProvider implements CapabilityProvider {
     } catch (err) {
       const said = err instanceof Error ? err.message : String(err);
       if (/proof missing/i.test(said)) return { how: "no-authority" };
+      if (!(await this.directSeatStands(identifier, groupId))) return { how: "revoked" };
       throw err;
     }
+  }
+
+  /** Whether `identifier` holds a DIRECT seat in the group on this replica: a seat through a member group reads no. */
+  private async directSeatStands(identifier: KH.Identifier, groupId: string): Promise<boolean> {
+    const { group } = await this.requireGroup(groupId);
+    const want = bytesToHex(identifier.toBytes());
+    return (await group.members()).some(({ who }) => bytesToHex(who.id.toBytes()) === want);
   }
 
   /** Whether an agent reaches a group, directly or through a member group, on this replica. A group this replica
@@ -912,8 +927,8 @@ export class KeyhiveProvider implements CapabilityProvider {
    * PACED by the homeostatic depth SERVO (#13 — the boot-CPU spike): the replay ingests in chunks whose
    * depth SERVOS toward a per-chunk latency set-point (gate-tuning `adaptGate`, negative feedback) —
    * smaller batches when a chunk runs slow, larger when there is headroom — with an event-loop yield
-   * between them. A large N=1 keyhive replay no longer pegs the loop synchronously (243% → the
-   * vessel-ready → UDS signal breathes between chunks), and the pace ADAPTS to the load instead of a
+   * between them. A large N=1 keyhive replay never pegs the loop synchronously (the vessel-ready →
+   * UDS signal breathes between chunks), and the pace ADAPTS to the load instead of a
    * fixed guess. Keyhive resolves causality internally — order across ingest calls does not matter —
    * so chunking is byte-equivalent to one batch, only kinder to the loop.
    */

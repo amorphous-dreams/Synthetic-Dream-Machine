@@ -1,0 +1,52 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-4/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-4/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-4/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-4/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-4/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-4/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The round-4 changes close the reported message-file race and stale-reading gap, but the broker’s launch door still lets a lead redirect writes outside its lane. The watchdog’s error handling also does not establish the requested unconditional stop guarantee.
+
+All findings are ''LEAD'' conclusions from source and test inspection. I did not run tests or construct payloads. The green CI run and local 21/21 result are ''MEASURED reports supplied in the hand-off'', not measurements from this review; the reported CI runner skipped four bubblewrap proofs.
+
+# ''P1 — The launch door follows lead-controlled output paths with broker authority.'' The relay validates the seat directory and brief, then invokes the trusted launcher ([[commit-relay.mjs:119|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:119]]). The launcher subsequently creates or appends to fixed names in that lead-controlled directory using ordinary pathname operations, including `attempts.log`, `rollouts-before.json`, `marker.txt`, and `prompt.txt` ([[launch-codex.mjs:479|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:479]]); the supervisor likewise opens `run.log` ([[launch-codex.mjs:405|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:405]]). Those operations follow file symlinks and re-resolve replaceable parents. A lead can therefore redirect a broker-authority write to a path outside the lane. The [[relay launch test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:121]] uses a stub launcher and checks arguments; the [[launcher symlink test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:298]] checks the seat directory itself, not its output files or a later parent swap. This prevents confirming the lane-root boundary and the broader broker-authority claim.
+
+# ''P1 — A failed stop can leave a live child without supervision.'' `watchSeat` catches failures from both signals and returns a stop result even if the child remains alive ([[launch-codex.mjs:168|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:168]]). The supervisor then waits for the child’s exit; its rejection fallback does not run because the watch resolved ([[launch-codex.mjs:419|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:419]]). In the real supervisor the signal function also suppresses signal errors. The [[throwing-stop test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:724]] makes the simulated child exit during sleep, so it does not establish behavior when signaling fails and the child stays live. The note is also best effort, so an error does not guarantee `ceiling.md`.
+
+# ''P2 — The broker-state placement check is not before every creation.'' The relay creates `lane/relay` before checking `broker-iso` ([[commit-relay.mjs:35|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:35]], [[line 42|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:42]]). Thus an unsafe `broker-iso` configuration can refuse after changing a previously untouched lane. The [[new test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:497]] checks only that the symlink’s target remains empty; it does not check the whole lane. The realpath check does close the reported overlap for the actual isolated state directory, but the stronger “before creating anything; lane untouched” claim is unproved and false for a missing `relay` directory.
+
+The other round-4 cures have targeted support:
+
+* ''Message-file race:'' The request schema rejects `messageFile`, and the broker accepts inline text with a 16,384-byte cap and rejects NUL and malformed Unicode ([[commit-relay.mjs:88|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:88]], [[seat-broker.mjs:348|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:348]]). The [[unknown-field test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:84]] and [[message test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:508]] pin the relevant refusal and text handling. The former file-opening helper is gone.
+* ''Watch read errors:'' A thrown rollout read now enters the stop path; the [[injected-error test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:689]] and [[live supervisor test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:700]] exercise that change. Finding 2 limits the guarantee when the stop itself fails.
+* ''Stale totals:'' Freshness now requires a changed parsed total, and only freshness resets the blind counter ([[launch-codex.mjs:81|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:81]], [[line 179|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:179]]). The [[stale-watch|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:681]] and [[unchanged-total|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:713]] tests pin this cure. The stated cost is real: a legitimate seat with no //changed// total for 200 three-second ticks is stopped, even if it emits repeated unchanged events.
+
+The remaining checks are narrower than full confirmation. The relay rejects lead launches and binds push to a controller go naming branch and head; its commit uses an expected old head. The launcher arguments remove lead network access and Git-directory grants, but finding 1 leaves an indirect write outside the lane. Marker matching and the parent supervisor address ordinary overlapping rollouts and the earlier PID lookup issue; the [[matching|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:405]] and [[live supervisor|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:619]] tests support those cases, subject to finding 2.
+
+The receipt covers the tree, check names and definitions; the key and receipts are in memory, and the receipt is spent on commit. The [[forgery|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:393]] and [[read-only export|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:405]] tests cover those properties. Key secrecy still depends on the documented host ptrace and seat seccomp boundary, which I did not measure. Missing bubblewrap produces named refusals before check or install code runs, as pinned by [[the refusal test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:435]].
+
+I found no additional regression in the existing mode arguments or floors; [[mode tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:43]] and [[floor and threshold tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:361]] cover those intended behaviors. The diff also includes a change to [[anon-lift.ts|/home/joshu/.lares-scratch/seat-harness/wt/packages/lararium-keyhive/src/anon-lift.ts:278]] outside the listed harness paths; I identified no harness finding from that change.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bMWNAYD9npJ5m3xM5kl-7Asofyn8ze5v39GZaGJdH-s`>>
+
+<<^ code=`&#x0004;` to=`?`>>

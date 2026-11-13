@@ -1,0 +1,59 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/out2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — research, 2026-10-26 (file date) — source `.lares-scratch/research/floor-trust/sol/out2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/out2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/out2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out2.md — research, 2026-10-26
+
+Verbatim scratch record `.lares-scratch/research/floor-trust/sol/out2.md` (research, file date 2026-10-26); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/floor-trust/sol/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sol-floorwright-lares`>>
+
+! Sol-Floorwright: Lares (Tasked Spirit)
+
+&lt;&lt;~ lares aim from="lar:&#47;/sol:agent@floor.trust.ratchet" -> to="lar:&#47;&#47;/ha.ka.ba/lares/docs/stable-founding-road#/stride-2-floor">>
+&lt;&lt;~ set hud="aim" mode="scout" stance="🏛️" mu="_!" aperture="16/arc" ooda-ha="9/declare-glyphs" drift-ward="today's single-event KEL may masquerade as the ruled rotating one">>
+
+''✶ Observe — MEASURED.'' [[Road:506–514|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#L506]] groups W14–W16 under one rotation-and-carry witness. The present [[place pin statement|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/place-floor-pin.ts#L50]] signs a pin and place key without a causal head; its board sidecar overwrites by place key. The [[pair index|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/admit-gate-pin.ts#L84]] keeps its first digest. The [[partial path|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/commands/nexus-contract.ts#L450]] admits only `admit` or `revoke` and lands `floorPin:null`. [[W26|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem#L79]] gives release acceptance to a person's act per face and Nexus. Its [[answer reader|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/floor-answer.ts#L62]] verifies release lineage and floor blobs; its [[porch|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/floor-porch.ts#L78]] serves the head release's blobs.
+
+''⏿ Orient — F1, F2.'' LEAD: name the one relation ''floor pin claim'': a place claims this exact gate pin at one Nexus, tier, route, and verified place KEL head. House search found no existing `floor pin claim`; `standing` already names realm standing and vessels standing in realms, while `position` already names causal coordinates. The claim carries a position; its name does not seize either relation. Its domain-separated signature binds place AID, KEL sequence and event digest, Nexus AID, tier, route, and gate pin digest. The KEL authorizes the scoped signer; a counted carry must anchor the stable place AID across signer rotations, rather than strand authority on the old public key. The Nexus AID anchors the carrying relation and release verification; it never signs as the place. W26 says “THE LINEAGE RIDES THE RECORD, NEVER THE CARD” ([[W26:98|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem#L98]]). No gate ordering step needs a release head: [[gate-bundle|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/gate-bundle.ts#L1]] derives keys from tier root, Nexus, and route, while release changes content under a separately accepted record. A card may point to release evidence without signing that pointer into gate-pin succession. A face's accepted floor and a gate's accepted pin keep separate heads.
+
+''◇ Decide — F3, F4.'' MEASURED: [[gate-bundle:283–313|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/gate-bundle.ts#L283]] derives floor tier from the place floor key and sovereign tier from the custody root; [[gate-bundle:340|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/gate-bundle.ts#L349]] derives both per tier, Nexus, route. For the //same floor route// under the same derivation format, a changed pin therefore needs a changed place key. A new route receives another index coordinate. A changed derivation format needs a deliberate bake or signed causal transition, not an unannounced per-route replacement. The road already rules that “a pin moves only by a signed causal event or a verified key-history step” ([[road:219|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#L219]]); KEL descent supplies the ordinary floor-pin successor. Do not mint a second successor log for the same change. Sovereign custody-key changes follow their own signed relation; a place-KEL claim cannot order them by itself.
+
+Today [[vessel-kel:23–43|/home/joshu/Synthetic-Dream-Machine/packages/lararium-mesh/src/vessel-kel.ts#L23]] carries only `t,k,sig`: one inception, no sequence, predecessor, rotation event, or next-key commitment. [[node-vessel-identity:199–228|/home/joshu/Synthetic-Dream-Machine/packages/lararium-node/src/node-vessel-identity.ts#L199]] reads exactly that inception. A verifier could //derive// an inception digest and call it sequence zero today, but it could prove no descendant; that tuple would give the claim an inert label, not a rotating causal axis. [[Road:207|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#L207]] rules the pre-rotated scoped signer. [[X0:544|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#L544]] schedules its founding bake and cross-product, while explicitly requiring each member's readiness red. Build the transferable place KEL and scoped signing door in their ''own X0-readiness build lane first''; build this claim lane against that end state; bake both together at X0. X0 alone builds neither.
+
+''▶ Act — F5, F6.'' Operator list, sorted:
+
+* ''Canon already rules:'' place scoped signer and pre-rotation ([[road:207|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#L207]]); signed-event/key-history pin movement ([[road:219|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem#L219]]); release accept by person, face, Nexus ([[W26:80|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem#L80]]); release lineage in record, not card ([[W26:98|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/w26-floor-lane.mem#L98]]).
+* ''House law derives:'' no-global-now keeps an offline reader at its last accepted head, saying “as of my last sync”; causal-island law forbids a freshness claim about unseen events. First contact needs independently conveyed genesis, authenticated admit, or deliberate person transfer. One-name/one-relation keeps release and gate axes apart. No first-wins and no arrival-order fork choice follow causal descent: hold the last accepted pin and surface a fork. Herm law keeps the claim opaque in transit. Isomorphism asks node and browser to run one verifier. Build-end-state law puts the place-KEL build ahead of the claim lane.
+* ''Truly operator-owned:'' no remaining model choice surfaced by this ratchet. A future same-route pin change without place-key rotation would reopen one choice: a signed KEL interaction event (lean) or an independent per-route successor log; current code shows no such floor instance.
+
+''Kit, in order.'' (1) X0 readiness owner builds pre-rotation, rotation proof, event digest and scoped signer in `mesh/vessel-kel.ts`, `node/node-vessel-identity.ts`, genesis/card custody; red old-key signer after proven rotation, control current-key claim, positive valid rotation. (2) Floor-trust owner adds claim image, anchor and KEL descent verifier in `mesh/place-floor-pin.ts`, card makers/readers in `node/main.ts`, `web/main.ts`, `browser/open-browser-vessel.ts`; red forged or foreign claim, control anchored genesis, positive valid descendant. (3) Replace `mesh/admit-gate-pin.ts`'s first-wins index; wire `node/hearth-gate-pins.ts`, `node/herm-carriage.ts`, `browser/browser-gate-pins.ts`, and session filing; red rollback/equal-head fork and opposite arrival orders, control duplicate same digest, positive live replacement and restart convergence. (4) Carry claim in the partial and land act plus claim atomically through `node/commands/nexus-contract.ts`, `node/carry-bundle.ts`, mesh partial judge and carriage board; red missing/foreign claim or premature filing, control uncounted partial, positive two-vault quorum carry and herm relay. (5) Rotation-plus-carry storm: red stale replay, fork, and zero before evidence; controls known-positive rotation/carry and empty fixture; positive node/browser convergence after shared evidence. W26 owns release records, accept act, porch, and `floor-answer.ts`; consume its verified release without changing that contract. W28 owns `gate-exchange`, `face-gate*`, `face-dial`; coordinate pin-index input, leave frames to W28. K17-R owns realm boards/frontier verifier; consume its verdict, never recast it as a place KEL.
+
+''↺ Hoʻoko/aftermath.'' The lane now holds one claim shape and a separately built KEL prerequisite; no repo write or suite ran.
+
+&lt;&lt;~ oracle "↯12 ✲ ⚂(3) ⁂:🜃⌗◈">>
+&lt;&lt;~ set hud="yield" drift-ward="the per-route nonrotation case lacks a measured floor instance · ↻ L-Prime" aperture="16/arc -> 18/theme" ooda-ha="closed 1↺">>
+&lt;&lt;~ lares yield from="lar:&#47;/sol:agent@floor.trust.ratchet" -> to="?">>
+
+WORDS=953
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;eO6zZbiadViScNRtmJAigEFniCRUPJto7YkYrwdRuFc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

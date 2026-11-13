@@ -38,11 +38,21 @@ module.exports = grammar({
   //     name as FORM — the first word between the teeth — never as
   //     vocabulary. A line whose teeth never close emits no tooth at all, so
   //     it reads as the `text_line` it is rather than as a broken sigil.
+  //   - THE BLOCK ENDS ITS LINE: stock TiddlyWiki reads `<<m>>` as a block only
+  //     when its `>>` ends the line (`\r?\n` or the end of the text); anything
+  //     behind it makes the line a paragraph holding the call inline. The scanner
+  //     holds every `<<…>>` form to that law — `<<~` teeth, the `<<^` control
+  //     tooth, and the macrocall block (`macrocall_block`, whose nested `<<…>>`
+  //     arguments it counts) — so a line with text behind its `>>` hands no tooth
+  //     and reads as the `text_line` it is, never an ERROR. One exception stands:
+  //     a pair opened and closed on one line (`<<~ a>><<~/a>>`) ends the line at its close.
   // `_error_sentinel` is never emitted: it is valid only during error
   // recovery, where the scanner stands aside.
   externals: $ => [
     $._fence_open_tok, $._fence_line_tok, $._fence_close_tok,
     $._sigil_open, $._pair_open, $._pair_close,
+    $._control_open, $.macrocall_block,
+    $._pair_inline,
     $._error_sentinel,
   ],
 
@@ -88,6 +98,9 @@ module.exports = grammar({
     // and a close naming another pair stays a lone `sigil` inside the body.
     ahu_block: $ => seq(
       field('open', alias($._paired_sigil, $.sigil)),
+      // A pair opened and closed on one line may carry text between (`<<~ a>>text<<~/a>>`), as the
+      // plugin reads it: the scanner hands that text as one token, ticked runs riding whole.
+      optional(field('inline', alias($._pair_inline, $.inline_body))),
       repeat($._block),
       field('close', $.sigil_close),
     ),
@@ -113,7 +126,7 @@ module.exports = grammar({
     // never minted. Structurally identical to a sigil; separated so a reader can
     // tell the envelope from the letter without inspecting the body.
     control_sigil: $ => seq(
-      '<<^',
+      alias($._control_open, '<<^'),
       optional(field('body', $.sigil_body)),
       '>>',
     ),
@@ -132,8 +145,10 @@ module.exports = grammar({
     ),
 
     // Everything between the teeth, single token, on one line: no `>>`
-    // inside, and a lone `>` never carries the body across a newline.
-    sigil_body: _ => token(prec(1, /([^>\n]|>[^>\n])+/)),
+    // inside, and a lone `>` never carries the body across a newline. A ticked
+    // value rides whole (the plugin's ATTR_RUN: ```…``` first, then `…`), so a
+    // `>>` it holds never ends the sigil.
+    sigil_body: _ => token(prec(1, /(```([^`\n]|`[^`\n]|``[^`\n])*```|`[^`\n]*`|[^>`\n]|>[^>`\n])+/)),
 
     // ``` fenced blocks — the info string, then lines that never close the
     // fence, then a close whose backtick run is AT LEAST as long as the
@@ -211,13 +226,6 @@ module.exports = grammar({
     filtered_transclude_block: _ => token(prec(2, /\{\{\{[^\n]*\}\}\}[^\n]*\r?\n?/)),
 
     transclude_block: _ => token(/\{\{[^\n]*\}\}[ \t]*\r?\n?/),
-
-    // `<<name args…>>` alone on a line — a macrocall. THE THIRD CHARACTER STILL
-    // DECIDES, now four ways: `<<~` speaking sigil · `<<^` control sigil ·
-    // `<<<` quote fence · anything else, a macrocall. One character, no lookahead,
-    // no precedence rule — which is why the control set took a mark rather than an
-    // entity: `<<&#x0001;` would have landed inside this token and parsed as a call.
-    macrocall_block: _ => token(/<<[^<~^\s][^\n]*>>[ \t]*\r?\n?/),
 
     horizontal_rule: _ => token(/-{3,}[ \t]*\r?\n?/),
 

@@ -2,7 +2,7 @@
  * runEdgeKapae — set a relationship aside, or take the marker back down.
  *
  * TWO HANDS, TWO BOARDS (kapae#/edge-hands · #/four-edges).
- *   · The HOLDER hand on a realm's edge board signs with the key the WORN face presents at the Nexus the realm
+ *   · The HOLDER hand on a realm's edge board signs with the key the acting face presents at the Nexus the realm
  *     stands under: a voucher over their own vouch, the same key that signed it. No option names a persona
  *     index there (cabal-realm#/the-steward-signer). On a fleet's edge board the holder signs with one persona
  *     root this vessel holds, over a device of its fleet: the dyad's hands stay the fleet root's.
@@ -30,25 +30,37 @@
  * Meme: lar:///ha.ka.ba/lares/api/pono/kapae
  */
 
+import { wardRootSession } from "../ward-signer.js";
+import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  signEdgeKapae, writeEdgeKapae, edgeLineHeads,
+  signEdgeKapae, writeEdgeKapae, edgeLineHeads, nextFleetFrontier, landFleetFrontier, fleetRaiseCids, realmRaiseCids,
   realmEdgeBoardDocUrl, fleetEdgeBoardDocUrl, ed25519SignerFromSeed, memberEdgeId, deviceEdgeId,
   realmEdgeAuthority, readLedgeredVouches, withdrawForRemoval,
+  prepareHolderFrontier, holderRaiseCids, registerHandFrontierInto, vouchEdgeId,
+  faceAtomKeyFromSeed,
   type DeviceCertificateHeld, type DeviceWithdrawalReport, type FaceWithdrawal, type EdgeAuthority, type EdgeHand, type EdgeKapaeVerdict, type EdgeSigner,
 } from "@lararium/mesh";
 import {
-  listPersonaRoots, loadPersonaGroupRootSeed, loadPersonaGroupRootVerifyingKey, loadVesselVerifyingKey,
+  listPersonaRoots, loadPersonaGroupRootVerifyingKey,
 } from "../node-vessel-identity.js";
+import { loadIdentityAnchors } from "../identity-anchors.js";
+import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { selectHeldQuorumSigners } from "../held-quorum.js";
 import { actingRealmNexus, noteVesselRealm, readVesselEdgeBoard, vesselEdgeCharter } from "../edge-board.js";
-import { wornNexusLeaf } from "../nexus-leaf.js";
+import { faceNexusLeaf } from "../nexus-leaf.js";
+import { fleetLineageForVessel } from "../fleet-lineage.js";
+import { leaseCharterOf } from "../lease-charter.js";
+import { prepareRealmFrontier, registerRealmFrontierInto } from "../realm-frontier-door.js";
 
+import { resolveFace } from "../face-selector.js";
 export class EdgeKapaeError extends Error {}
 
 const HEX64 = /^[0-9a-f]{64}$/;
 
 export interface EdgeKapaeOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** The relationship to act on, by id — a vouch edge id, a member edge id, a device edge id. */
   readonly edgeId?:      string;
   /** Or by its far end: a MEMBER's key, naming that member's whole relation to `realm` (the quorum's edge). */
@@ -62,8 +74,10 @@ export interface EdgeKapaeOptions {
   /** The realm whose edge board carries the act. Absent → the fleet's own board, under the signing root. */
   readonly realm?:       string;
   /** The holder hand on a FLEET's board: WHICH held persona root signs. Absent → the first held root. A realm's
-   *  board takes none: its holder hand signs with the worn face's key at the realm's Nexus. */
+   *  board takes none: its holder hand signs with the acting face's key at the realm's Nexus. */
   readonly handleIndex?: number;
+  /** The face whose hand acts on a REALM's board (`--face N`); absent, the one face standing open. */
+  readonly face?:        number;
   /** The Nexus a realm stands under, for a vessel's first act there. Absent → the primary charter's. */
   readonly nexusAid?:    string;
   /** Explicit causal parents; absent means the line's own heads as this vessel counts them. */
@@ -124,6 +138,9 @@ export interface EdgeKapaeResult {
 
 /** Land one kāpae act on its board. `now` never enters — an act carries an order, never an instant. */
 export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeResult> {
+  // THE HOLDER'S ROOT LIVES FOR THIS ONE ACT: its seed zeroes when the act settles (seat-harness#/the-ward).
+  let closeRoot: (() => void) | undefined;
+  try {
   const hand: EdgeHand = opts.hand ?? "holder";
   const realm = opts.realm?.trim().toLowerCase();
   const bareKey = (v: string): string => v.trim().toLowerCase().replace(/^0x/, "");
@@ -146,10 +163,13 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     throw new EdgeKapaeError("the quorum hand acts on a realm's edge board — name the realm. A fleet's edge answers to its root alone.");
   }
 
-  const vesselKey = await loadVesselVerifyingKey();
-  if (!vesselKey) throw new EdgeKapaeError("this vessel surfaces no verifying key — it keeps no ledger to read a board against.");
+  const faceIndex = realm !== undefined ? await resolveFace(opts.face) : await resolveFace(opts.handleIndex);
+  const anchors = faceIndex === undefined ? null : await loadIdentityAnchors(faceIndex);
+  const atomSeed = anchors ? await loadFaceAtomOfGroup(anchors.personaGroupId) : null;
+  if (!anchors || !atomSeed) throw new EdgeKapaeError("this face holds no atom; re-found or re-admit it");
+  const vesselKey = faceAtomKeyFromSeed(atomSeed!, anchors!.personaGroupId).key;
   if (realm !== undefined && opts.handleIndex !== undefined) {
-    throw new EdgeKapaeError("a realm's holder hand signs with the key the worn face presents at the realm's Nexus — `--as` names a fleet root, on a fleet's board alone.");
+    throw new EdgeKapaeError("a realm's holder hand signs with the key the acting face presents at the realm's Nexus (--face N) — `--as` names a fleet root, on a fleet's board alone.");
   }
   if (realm === undefined && opts.nexusAid !== undefined) throw new EdgeKapaeError("a fleet's board stands under no Nexus — `--nexus` names a realm's.");
   const realmNexus = realm !== undefined
@@ -163,6 +183,9 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   let boardUrl: ReturnType<typeof realmEdgeBoardDocUrl>;
   let epochCid: string | undefined;
 
+  const leaseCharter = realm !== undefined && hand === "quorum"
+    ? await leaseCharterOf({ repo: opts.repo, vesselKey, sealHome: opts.sealHome, resource: realm, named: realmNexus! })
+    : null;
   if (hand === "quorum") {
     if (!charter) throw new EdgeKapaeError("no seated charter of the Nexus this realm stands under stands on this vessel — the quorum hand has no seats to sign with.");
     const selected = await selectHeldQuorumSigners(charter.head, (held, k) => new EdgeKapaeError(
@@ -175,15 +198,15 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     boardUrl = realmEdgeBoardDocUrl(realm!);
     epochCid = charter.head.sealEpochCid;
   } else if (realm !== undefined) {
-    // THE WORN FACE'S HAND. The key that made a vouch withdraws it: the worn face's key at the realm's Nexus.
+    // THE ACTING FACE'S HAND. The key that made a vouch withdraws it: the acting face's key at the realm's Nexus.
     // A read never mints, so a face that holds no key there holds no vouch there either. A member's edge answers
-    // to the seat quorum alone, whatever face stands worn.
+    // to the seat quorum alone, whatever face acts.
     if (member !== undefined) {
       throw new EdgeKapaeError("REFUSED: no single key holds a member's edge on this realm's board — it answers to the seat quorum (--quorum).");
     }
-    const leaf = await wornNexusLeaf(realmNexus!);
+    const leaf = await faceNexusLeaf(realmNexus!, faceIndex);
     if (!leaf) {
-      throw new EdgeKapaeError("the worn face holds no key at the Nexus this realm stands under, so it holds no vouch here — wear the face that vouched (`lares persona wear N`).");
+      throw new EdgeKapaeError("the acting face holds no key at the Nexus this realm stands under, so it holds no vouch here — name the face that vouched (--face N).");
     }
     const signerDid = leaf.verifyingKey.toLowerCase();
     signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(leaf.seed) }];
@@ -197,7 +220,7 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     if (held.length === 0) {
       throw new EdgeKapaeError("no persona root held on this vessel — an act carries a signature, and this vessel signs with none.");
     }
-    const handleIndex = opts.handleIndex ?? held[0]!;
+    const handleIndex = faceIndex;   // the face the command resolved above (named, or the one standing open); never the first root held
     if (!held.includes(handleIndex)) {
       throw new EdgeKapaeError(`persona root ${handleIndex} is not held here (held: ${held.join(", ")}).`);
     }
@@ -205,7 +228,10 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     if (!signerDid) {
       throw new EdgeKapaeError(`persona root ${handleIndex} surfaces no usable verifying key — nothing to sign with.`);
     }
-    signers = [{ signer: signerDid, sign: ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)) }];
+    // The holder's root signs this one act under the ward, its seed opened fresh for the signature and zeroed after it.
+    const root = await wardRootSession(handleIndex, opts.ward, "a holder's edge kāpae");
+    closeRoot = () => root.close();
+    signers = [{ signer: signerDid, sign: (bytes: Uint8Array) => root.sign(bytes) }];
     authority = { holder: signerDid };
     if (device !== undefined) edgeId = deviceEdgeId(signerDid, device);   // the fleet root and the device key name it
     scope = signerDid;
@@ -219,9 +245,11 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   // WHO HOLDS THE EDGE, as any reader would find it. A realm's board: the verified vouches name each vouch
   // edge's voucher, and the seat quorum holds every edge. A fleet's board: the signing root holds every edge.
   let authorityFor: (id: string) => EdgeAuthority | undefined;
+  let voucherEdges = new Set<string>();
   if (realm !== undefined) {
     const vouches = await readLedgeredVouches({ repo, realm, vesselKey });
     authorityFor = realmEdgeAuthority(vouches.invites);
+    if (hand === "holder") voucherEdges = new Set(vouches.invites.filter((i) => i.voucherDid === signers[0]!.signer).map(vouchEdgeId));
     if (hand === "holder") {
       const holder = authorityFor(acted)?.holder?.toLowerCase().replace(/^0x/, "");
       if (holder !== authority.holder) {
@@ -248,7 +276,30 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
     }
 
     const act = await signEdgeKapae({ edgeId, raised: opts.raised, hand, parents, ...(epochCid === undefined ? {} : { epochCid }) }, signers);
-    before.handle.change((d) => writeEdgeKapae(d, act));
+    // A FLEET RAISE REGISTERS INTO THE ROOT'S NEXT FRONTIER (K17). The root signs the successor of its verified head
+    // counting every raise it issued, this one included, and the act and the frontier land together. A fleet whose board
+    // carries no signed genesis was never founded: the raise refuses before any byte lands.
+    let registered: Awaited<ReturnType<typeof nextFleetFrontier>> = null;
+    if (realm === undefined && hand === "holder" && opts.raised) {
+      const lineage = await fleetLineageForVessel(repo, scope);
+      if (!lineage) throw new EdgeKapaeError("this vessel reads no verified persona-KEL lineage for that fleet root — a raise registers into the root's signed frontier, and none can sign without it.");
+      registered = await nextFleetFrontier({ fleetRoot: scope, board: before.handle.doc(), lineage,
+        counted: [...fleetRaiseCids(before.counted.acts), act.actCid], signer: { key: scope, sign: signers[0]!.sign } });
+      if (!registered) throw new EdgeKapaeError("this fleet's board carries no verified signed frontier to extend — found the face first; nothing was written.");
+    }
+    // The charter quorum commits its act and the realm head in one board change. A holder vouch hand
+    // owes its own frontier; it registers no quorum head here.
+    const realmHead = realm !== undefined && hand === "quorum" && leaseCharter
+      ? await prepareRealmFrontier({ realm, board: before.handle.doc(), lineage: leaseCharter.lineage,
+        counted: [...realmRaiseCids(before.counted.acts), ...(opts.raised ? [act.actCid] : [])],
+        signers: signers.map((s) => ({ key: s.signer, sign: s.sign })) }) : null;
+    const holderHead = realm !== undefined && hand === "holder"
+      ? await prepareHolderFrontier({ realm, board: before.handle.doc(), voucher: signers[0]!.signer,
+        counted: [...holderRaiseCids(before.counted.acts, voucherEdges), ...(opts.raised ? [act.actCid] : [])],
+        signer: { key: signers[0]!.signer, sign: signers[0]!.sign } }) : null;
+    before.handle.change((d) => { writeEdgeKapae(d, act); if (registered) landFleetFrontier(d, registered);
+      if (realmHead) registerRealmFrontierInto(d, realmHead);
+      if (holderHead) registerHandFrontierInto(d, holderHead); });
     // AN ACT STANDS THE REALM UNDER ITS NEXUS, once it landed: the ledger keeps the first act's word
     // (kapae#/edge-hands), and an act refused before its write pins nothing.
     if (realm !== undefined) await noteVesselRealm(repo, vesselKey, realm, realmNexus!);
@@ -296,5 +347,6 @@ export async function runEdgeKapae(opts: EdgeKapaeOptions): Promise<EdgeKapaeRes
   } finally {
     await repo.flush().catch(() => { /* best-effort final flush */ });
   }
+  } finally { closeRoot?.(); }
 }
 

@@ -6,8 +6,11 @@
  * proven platform-blind in @lararium/mesh; THIS exercises the node shores round-trip + the never-federates
  * wall (nothing in the private store reaches a board) over the real fs vault.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
-import { mkdtempSync, rmSync, readdirSync } from "node:fs";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
@@ -18,7 +21,7 @@ import {
   makeNodePersonaPetnameStore, makeNodePublicHandleStore, makeNodeFsPersonaVault,
   generateOrLoadPersonaGroupRoot,
 } from "../src/node-vessel-identity.js";
-import { larIdentityDir } from "../src/vessel-paths.js";
+import { handleRowPath } from "./face-paths.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
 
 const saved: Record<string, string | undefined> = {};
@@ -43,9 +46,7 @@ describe("node persona pet-name stores", () => {
   const dataDir = () => root;
   beforeEach(async () => {
     root = mkdtempSync(join(tmpdir(), "lares-petname-"));
-    setEnv("LAR_ROOT", undefined);
-    setEnv("XDG_STATE_HOME", join(root, "state"));
-    setEnv("XDG_DATA_HOME", join(root, "state"));   // identity/seal/library answer HERE
+    setEnv("LAR_ROOT", root);   // the scratch house root every resolver lays its classes beneath
     seated = await seatScratchCustody("petname-store");
   });
   afterEach(async () => {
@@ -54,15 +55,16 @@ describe("node persona pet-name stores", () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  test("the PRIVATE label map round-trips: rename, entries, clear — a 0o600 file, no -h suffix needed", async () => {
+  test("the PRIVATE label maps round-trip: rename, entries, clear — one face row per index", async () => {
     const store = await makeNodePersonaPetnameStore();
     await renameOwnPersona(store, 0, "work");
     await renameOwnPersona(store, 2, "veil-one");
     expect(await ownPersonaPetname(store, 0)).toBe("work");
     expect(await (await makeNodePersonaPetnameStore()).entries()).toEqual([[0, "work"], [2, "veil-one"]]);   // persists across store handles
 
-    // The label lives in a dedicated identity-home file, never a persona-root nor a board.
-    expect(readdirSync(larIdentityDir()).some((f) => f.startsWith(".persona-petnames"))).toBe(true);
+    // Each label rests in its face's own identity row, never a persona-root nor a board.
+    expect(existsSync(handleRowPath(".persona-petnames-h0.json"))).toBe(true);
+    expect(existsSync(handleRowPath(".persona-petnames-h2.json"))).toBe(true);
 
     await clearOwnPersonaPetname(store, 0);
     expect(await ownPersonaPetname(store, 0)).toBeUndefined();

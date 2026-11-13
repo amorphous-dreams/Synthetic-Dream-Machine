@@ -15,46 +15,46 @@ const HEAD = (soh: string, ns: string) =>
   "```toml meta\n" +
   `cacheable = true\n` +
   (ns === "" ? "" : `namespace = "${ns}"\n`) +
-  "```\n\nbody\n\n<<^ code=\"&#x0003;\">>\n";
+  "```\n\nbody\n\n<<^ code=`&#x0003;`>>\n";
 
 describe("normalizeMemeSource — SOH namespace embed", () => {
   test("homes the meta-declared namespace into a bare SOH (the oracle.md class)", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "&#x2299;");
+    const src = HEAD("<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>", "&#x2299;");
     const { text, changed, notes } = normalizeMemeSource(src);
     expect(changed).toBe(true);
-    expect(text).toContain("<<^ code=\"&#x0001;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>");
+    expect(text).toContain("<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///x`>>");
     expect(notes.join()).toMatch(/namespace homed to "⊙"/);
   });
 
   test("decodes a multi-glyph entity namespace (noosphere ॐ ँ)", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "&#x0950; &#x0901;");
+    const src = HEAD("<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>", "&#x0950; &#x0901;");
     const { text } = normalizeMemeSource(src);
-    expect(text).toContain("<<^ code=\"&#x0001;\" namespace=\"ॐ ँ\" from=\"?\" -> to=\"lar:///x\">>");
+    expect(text).toContain("<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///x`>>");
   });
 
   test("idempotent — a carrier already carrying its namespace is unchanged", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>", "&#x2299;");
+    const src = HEAD("<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///x`>>", "&#x2299;");
     const r1 = normalizeMemeSource(src);
     expect(r1.changed).toBe(false);
     expect(r1.text).toBe(src);
     // double-apply on the bare form converges and stays put
-    const r2 = normalizeMemeSource(normalizeMemeSource(HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "&#x2299;")).text);
+    const r2 = normalizeMemeSource(normalizeMemeSource(HEAD("<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>", "&#x2299;")).text);
     expect(r2.changed).toBe(false);
   });
 
   test("re-homes a STALE SOH namespace to match meta", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" namespace=\"ॐ ँ\" from=\"?\" -> to=\"lar:///x\">>", "&#x2299;");
+    const src = HEAD("<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///x`>>", "&#x2299;");
     const { text, changed } = normalizeMemeSource(src);
     expect(changed).toBe(true);
-    expect(text).toContain("<<^ code=\"&#x0001;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>");
+    expect(text).toContain("<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///x`>>");
     expect(text).not.toContain("ॐ ँ&#x0001;");
   });
 
   test("clears the SOH namespace when meta declares none", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" namespace=\"⊙\" from=\"?\" -> to=\"lar:///x\">>", "");
+    const src = HEAD("<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///x`>>", "");
     const { text, changed } = normalizeMemeSource(src);
     expect(changed).toBe(true);
-    expect(text).toContain("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>");
+    expect(text).toContain("<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>");
   });
 
   test("no SOH opener → no change (not a single-meme carrier)", () => {
@@ -65,42 +65,42 @@ describe("normalizeMemeSource — SOH namespace embed", () => {
 
 describe("normalizeMemeSource — SOH opener spacing", () => {
   test("idempotent — a correctly-spaced bare opener is left untouched", () => {
-    const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "");
+    const src = HEAD("<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>", "");
     expect(normalizeMemeSource(src).changed).toBe(false);
   });
 });
 
 // meta head with a register field, for the register-band class.
 const CLOSE_HEAD = (close: string) =>
-  `${DECLARATION}\n\n<<^ code="&#x0001;" from="?" -> to="lar:///x">>\n` +
+  `${DECLARATION}\n\n<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///x\`>>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
-  "```\n\n<<^ code=\"&#x0002;\">>\n\n" +
-  `<<~ ahu #/head${close}>>\n\nbody\n\n<<~/ahu${close}>>\n\n` +
-  "<<^ code=\"&#x0003;\">>\n";
+  "```\n\n<<^ code=`&#x0002;`>>\n\n" +
+  `<<~ ahu slot=\`#/head\`${close}>>\n\nbody\n\n<<~/ahu${close}>>\n\n` +
+  "<<^ code=`&#x0003;`>>\n";
 
 const SLOT_HEAD = (body: string) =>
-  `${DECLARATION}\n\n<<^ code="&#x0001;" from="?" -> to="lar:///x">>\n` +
+  `${DECLARATION}\n\n<<^ code=\`&#x0001;\` from=\`?\` to=\`lar:///x\`>>\n` +
   "```toml meta\n" +
   `cacheable = true\n` +
-  "```\n\n<<^ code=\"&#x0002;\">>\n\n" + body + "\n\n" +
-  "<<^ code=\"&#x0003;\">>\n";
+  "```\n\n<<^ code=`&#x0002;`>>\n\n" + body + "\n\n" +
+  "<<^ code=`&#x0003;`>>\n";
 
 describe("normalizeMemeSource — child-slot roots", () => {
   test("a bare slot roots at the carrier", () => {
-    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu #head>>\n\nbody\n\n<<~/ahu>>"));
+    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu slot=`#head`>>\n\nbody\n\n<<~/ahu>>"));
     expect(r.changed).toBe(true);
-    expect(r.text).toContain("<<~ ahu #/head>>");
+    expect(r.text).toContain("<<~ ahu slot=`#/head`>>");
     expect(r.notes.join()).toMatch(/child slot: 1 open rooted/);
   });
 
   test("a nested slot carries its whole path, never just its leaf", () => {
-    const src = SLOT_HEAD("<<~ ahu #orient>>\n\n<<~ ahu #ha-fields>>\n\nb\n\n<<~/ahu>>\n\n<<~/ahu>>");
+    const src = SLOT_HEAD("<<~ ahu slot=`#orient`>>\n\n<<~ ahu slot=`#ha-fields`>>\n\nb\n\n<<~/ahu>>\n\n<<~/ahu>>");
     const r = normalizeMemeSource(src);
-    expect(r.text).toContain("<<~ ahu #/orient>>");
+    expect(r.text).toContain("<<~ ahu slot=`#/orient`>>");
     // leaf-only rooting would make the child a sibling of its own parent
-    expect(r.text).toContain("<<~ ahu #/orient/ha-fields>>");
-    expect(r.text).not.toContain("<<~ ahu #/ha-fields>>");
+    expect(r.text).toContain("<<~ ahu slot=`#/orient/ha-fields`>>");
+    expect(r.text).not.toContain("<<~ ahu slot=`#/ha-fields`>>");
   });
 
   test("the English spelling roots the same way, then folds to its canonical head", () => {
@@ -110,30 +110,30 @@ describe("normalizeMemeSource — child-slot roots", () => {
     // mirror-fold suite's "PRESERVE" case); this test's own intent is the ROOTING, which the
     // English spelling takes identically to the sharktooth one — so the canonical result is the
     // rooted, folded form.
-    const r = normalizeMemeSource(SLOT_HEAD("<<fragment #head>>\n\nbody\n\n<</fragment>>"));
-    expect(r.text).toContain("<<ahu #/head>>");
-    expect(r.text).toContain("<</ahu>>");
+    const r = normalizeMemeSource(SLOT_HEAD("<<fragment slot=`#head`>>\n\nbody\n\n<</fragment>>"));
+    expect(r.text).toContain("<<~ ahu slot=`#/head`>>");
+    expect(r.text).toContain("<<~/ahu>>");
   });
 
 
   test("a slot shown inside a fence stays as authored — the operator is showing the grammar", () => {
-    const r = normalizeMemeSource(SLOT_HEAD("```\n<<~ ahu #shown>>\n```"));
-    expect(r.text).toContain("<<~ ahu #shown>>");
+    const r = normalizeMemeSource(SLOT_HEAD("```\n<<~ ahu slot=`#shown`>>\n```"));
+    expect(r.text).toContain("<<~ ahu slot=`#shown`>>");
   });
 
   test("a slot held inside a longer fence stays as authored past a shorter fence line it holds", () => {
-    const held = "````\n```shown-opener\n<<~ ahu #held-after>>\n````";
+    const held = "````\n```shown-opener\n<<~ ahu slot=`#held-after`>>\n````";
     const r = normalizeMemeSource(SLOT_HEAD(held));
-    expect(r.text).toContain("<<~ ahu #held-after>>");
+    expect(r.text).toContain("<<~ ahu slot=`#held-after`>>");
   });
 
   test("control — the same slot outside any fence roots", () => {
-    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu #held-after>>\n\nb\n\n<<~/ahu>>"));
-    expect(r.text).toContain("<<~ ahu #/held-after>>");
+    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu slot=`#held-after`>>\n\nb\n\n<<~/ahu>>"));
+    expect(r.text).toContain("<<~ ahu slot=`#/held-after`>>");
   });
 
   test("idempotent — root then re-run leaves it put", () => {
-    const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu #head>>\n\nbody\n\n<<~/ahu>>")).text;
+    const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu slot=`#head`>>\n\nbody\n\n<<~/ahu>>")).text;
     expect(normalizeMemeSource(once).changed).toBe(false);
   });
 
@@ -145,45 +145,45 @@ describe("normalizeMemeSource — child-slot roots", () => {
   // block never gets a second mint — the expansion refuses and reports instead.
 
   test("a flat path expands into its nested parent chain", () => {
-    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu #/a/b/c>>\n\nleaf body\n\n<<~/ahu>>"));
+    const r = normalizeMemeSource(SLOT_HEAD("<<~ ahu slot=`#/a/b/c`>>\n\nleaf body\n\n<<~/ahu>>"));
     expect(r.changed).toBe(true);
-    expect(r.text).toContain("<<~ ahu #/a>>");
-    expect(r.text).toContain("<<~ ahu #/a/b>>");
-    expect(r.text).toContain("<<~ ahu #/a/b/c>>");
+    expect(r.text).toContain("<<~ ahu slot=`#/a`>>");
+    expect(r.text).toContain("<<~ ahu slot=`#/a/b`>>");
+    expect(r.text).toContain("<<~ ahu slot=`#/a/b/c`>>");
     // three opens want three closes, in reverse nesting order.
     const closes = r.text.match(/<<~\/ahu>>/g) ?? [];
     expect(closes.length).toBe(3);
     // the leaf body sits inside the innermost (deepest) block.
-    expect(r.text.indexOf("<<~ ahu #/a/b/c>>")).toBeLessThan(r.text.indexOf("leaf body"));
+    expect(r.text.indexOf("<<~ ahu slot=`#/a/b/c`>>")).toBeLessThan(r.text.indexOf("leaf body"));
     expect(r.text.indexOf("leaf body")).toBeLessThan(r.text.lastIndexOf("<<~/ahu>>"));
   });
 
   test("flat expansion is idempotent — a second normalize changes nothing", () => {
-    const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu #/a/b/c>>\n\nleaf body\n\n<<~/ahu>>")).text;
+    const once = normalizeMemeSource(SLOT_HEAD("<<~ ahu slot=`#/a/b/c`>>\n\nleaf body\n\n<<~/ahu>>")).text;
     expect(normalizeMemeSource(once).changed).toBe(false);
   });
 
   test("a missing parent that already stands elsewhere as its OWN block refuses the expansion", () => {
     const src = SLOT_HEAD(
-      "<<~ ahu #/a>>\n\nother body\n\n<<~/ahu>>\n\n<<~ ahu #/a/b/c>>\n\nleaf body\n\n<<~/ahu>>",
+      "<<~ ahu slot=`#/a`>>\n\nother body\n\n<<~/ahu>>\n\n<<~ ahu slot=`#/a/b/c`>>\n\nleaf body\n\n<<~/ahu>>",
     );
     const r = normalizeMemeSource(src);
     // the flat open's bytes never move — no duplicate `#/a` block gets minted.
-    expect(r.text).toContain("<<~ ahu #/a/b/c>>");
-    expect((r.text.match(/<<~ ahu #\/a>>/g) ?? []).length).toBe(1);
+    expect(r.text).toContain("<<~ ahu slot=`#/a/b/c`>>");
+    expect((r.text.match(/<<~ ahu slot=`#\/a`>>/g) ?? []).length).toBe(1);
     expect(r.flags.join()).toMatch(/#\/a.*#\/a\/b\/c|#\/a\/b\/c.*#\/a/);
   });
 
   test("a carrier already nested one block per level is unchanged", () => {
-    const src = SLOT_HEAD("<<~ ahu #/a>>\n\n<<~ ahu #/a/b>>\n\n<<~ ahu #/a/b/c>>\n\nleaf\n\n<<~/ahu>>\n\n<<~/ahu>>\n\n<<~/ahu>>");
+    const src = SLOT_HEAD("<<~ ahu slot=`#/a`>>\n\n<<~ ahu slot=`#/a/b`>>\n\n<<~ ahu slot=`#/a/b/c`>>\n\nleaf\n\n<<~/ahu>>\n\n<<~/ahu>>\n\n<<~/ahu>>");
     const r = normalizeMemeSource(src);
     expect(r.changed).toBe(false);
   });
 
   test("a flat path shown inside a fence stays as authored", () => {
-    const r = normalizeMemeSource(SLOT_HEAD("```\n<<~ ahu #/a/b/c>>\n```"));
-    expect(r.text).toContain("<<~ ahu #/a/b/c>>");
-    expect(r.text).not.toContain("<<~ ahu #/a>>\n\n<<~ ahu #/a/b>>");
+    const r = normalizeMemeSource(SLOT_HEAD("```\n<<~ ahu slot=`#/a/b/c`>>\n```"));
+    expect(r.text).toContain("<<~ ahu slot=`#/a/b/c`>>");
+    expect(r.text).not.toContain("<<~ ahu slot=`#/a`>>\n\n<<~ ahu slot=`#/a/b`>>");
   });
 });
 
@@ -191,7 +191,7 @@ describe("normalizeMemeSource — sigil close spacing", () => {
   test("tightens a close carrying a space before the brackets", () => {
     const { text, changed, notes } = normalizeMemeSource(CLOSE_HEAD(" "));
     expect(changed).toBe(true);
-    expect(text).toContain("<<~ ahu #/head>>");
+    expect(text).toContain("<<~ ahu slot=`#/head`>>");
     expect(text).toContain("<<~/ahu>>");
     expect(notes.join()).toMatch(/sigil close spacing: 2 closes tightened/);
   });
@@ -212,9 +212,9 @@ describe("normalizeMemeSource — sigil close spacing", () => {
   });
 
   test("a close shown inside a fence keeps its space — held text moves no byte", () => {
-    const src = CLOSE_HEAD("").replace("body", "````\n<<~ ahu #shown >>\n```\ninner\n```\n<<~/ahu >>\n````");
+    const src = CLOSE_HEAD("").replace("body", "````\n<<~ ahu slot=`#shown`>>\n```\ninner\n```\n<<~/ahu >>\n````");
     const { text } = normalizeMemeSource(src);
-    expect(text).toContain("<<~ ahu #shown >>");
+    expect(text).toContain("<<~ ahu slot=`#shown`>>");
     expect(text).toContain("<<~/ahu >>\n````");
   });
 
@@ -282,7 +282,7 @@ describe("ClauseSeat — the class declares itself on the clause, never a caller
 });
 
 describe("normalizeMemeSource — the carrier bytes: UTF-8, LF, no BOM", () => {
-  const src = HEAD("<<^ code=\"&#x0001;\" from=\"?\" -> to=\"lar:///x\">>", "");
+  const src = HEAD("<<^ code=`&#x0001;` from=`?` to=`lar:///x`>>", "");
   test("a leading BOM and CRLF line endings fold to the canonical bytes, and the fold names itself", () => {
     const r = normalizeMemeSource(`\uFEFF${src.replace(/\n/g, "\r\n")}`);
     expect(r.text).toBe(normalizeMemeSource(src).text);

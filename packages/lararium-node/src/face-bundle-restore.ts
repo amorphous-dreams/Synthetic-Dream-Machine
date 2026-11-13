@@ -11,11 +11,13 @@
  *   2  PREFLIGHT   every target row and every relation, before any write (each refusal below).
  *   3  COMMIT      ONE cold row, `restore-pending`, holds everything the restore will land. Before it nothing
  *                  moved; after it the restore completes, in this run or the next.
- *   4  LAND        each row from the pending row: the proof keys, the names, the handle-book records, the root
- *                  and its roster line. Each lands only where nothing stands or where the same bytes stand.
+ *   4  LAND        each row from the pending row: the provisional mark, the proof keys, the names, the handle-book
+ *                  records, the recovery contact set, the root and its roster line. Each lands only where nothing stands or where the same bytes stand.
  *   5  RE-ADMIT    the carried key history seats on this vessel's own board and the face lights under this
  *                  vessel's own veil: a fresh key group, the same fixed prefix, a device edge the root signs for
- *                  this vessel's key. The pending row leaves once the face stands lit.
+ *                  this vessel's key, and the face's own address secret, landed from the bundle and never minted
+ *                  (a body that names none refuses `no-address-secret` before any write). The pending row leaves
+ *                  once the face stands lit.
  *
  * ── THE KEY HISTORY CHECK ───────────────────────────────────────────────────────────────────────
  * The root must derive the bundle's own inception, and the carried log must verify whole from it. Then every event
@@ -25,6 +27,15 @@
  * and so does a history that forks. A vessel reads no head it never received: the answer names the head the check
  * read and where it read it, and every honest reader that holds a newer head refuses the edge a superseded root
  * signed, at its own gate.
+ *
+ * ── AFTER RECOVERY CONTACT ENROLMENT ───────────────────────────────────────────────────────────────────
+ * A face's own bundle restores after it enrols recovery contacts (stable-founding-road#/rulings, "A restore after recovery contact
+ * enrolment"), so long as the newest event still reads as the typed first enrolment the root itself signed: the
+ * root still operates, and the rolling commitment names the set that event committed. A recovery contacts' rotation that
+ * moves the set ends that reach for every earlier bundle (`root-superseded`). A bundle cut after the enrolment
+ * carries the set, and its own log must commit it; the restore checks its keys against this vessel's other faces
+ * (no key guards two faces) and lands the face's sealed set row. A bundle cut before the enrolment still restores
+ * where the board holds the event, and says the set rode no bundle.
  *
  * ── A RESTORE LANDS ADDITIVELY ──────────────────────────────────────────────────────────────────
  * It never replaces a name, a label, a record or a key the vessel holds. A name fills only where the vessel holds
@@ -38,27 +49,34 @@
  * Node-main only: a worker never imports this module.
  * Canon: lar:///ha.ka.ba/lararium/mesh/custody#/the-restore
  */
+import { wardCredentialOfRoute, type WardCredential } from "./ward-credential.js";
 import { createPrivateKey, createPublicKey } from "node:crypto";
 import { existsSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  HANDLE_BOOK_SNAPSHOT_ERA, bundleMemoryKeypair, canonicalJsonBytes, deriveSelfRecoveryKey, mintPersonaInception,
-  foldPersonaContests, openFaceBundleBody, readFaceBundleBody, sealKeySetHash, sealMemorySecret, verifyPersonaKelFull,
+  RECOVERY_CONTACT_ENROLMENT_KIND, HANDLE_BOOK_SNAPSHOT_ERA, bundleMemoryKeypair, canonicalJsonBytes, deriveSelfRecoveryKey,
+  foldPersonaContests, recoveryContactCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, sealKeySetHash,
+  sealMemorySecret, verifyPersonaKelFull,
   type FaceBundleBody, type FaceBundleHolding, type PersonaKelEvent,
 } from "@lararium/mesh";
 import { faceStands, runFoundTheFace } from "./commands/init.js";
 import type { BackupDoor } from "./face-bundle-cut.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, removeColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
+import { openColdCustodyRow, removeColdCustodyRow, updateColdCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { recoveryContactKeysOfOtherFaces, recoveryContactSetFile, readRecoveryContactSet, type RecoveryContactSetRecord } from "./recovery-contact-enrolment.js";
+import { couldConfirm, markProvisional } from "./face-provisional.js";
 import { faceProofKeyStanding, landFaceProofKey } from "./face-key-custody.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
 import {
   landPersonaRoot, listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRootKey,
 } from "./node-vessel-identity.js";
-import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./persona-admit-flow.js";
-import { RESTORE_PENDING_FILE } from "./vault-carriers.js";
+import { readLocalPersonaKelEvents, seatLocalPersonaKelChain } from "./local-persona-kel.js";
+import { RESTORE_PENDING_FILE, restorePendingFile } from "./vault-carriers.js";
+import { faceFileNames } from "./face-index.js";
+import { ensureFaceCustodyAtHandle } from "./face-route.js";
+import { larIdentityDir } from "./vessel-paths.js";
 import { hearthAid } from "./hearth-aid.js";
 import { larBootstrapPath } from "./vessel-paths.js";
 
@@ -66,6 +84,7 @@ import { larBootstrapPath } from "./vessel-paths.js";
 export const RESTORE_REFUSALS = [
   "bundle-refused", "bundle-inconsistent", "root-superseded", "face-already-held", "restore-pending", "place-unfounded",
   "founding-face-unlit", "no-hearth", "index-held", "roster-names-another-key", "orphan-names-another-key", "row-conflict",
+  "recovery-contact-key-serves-another-face", "hearth-stands", "no-address-secret",
 ] as const;
 export type RestoreRefusal = (typeof RESTORE_REFUSALS)[number];
 
@@ -83,6 +102,14 @@ export interface FaceBundleRestored {
   readonly resumed:  boolean;
   /** The head the key history check read: its sequence, and whether this vessel's own board held a history for the face. */
   readonly checked:  { readonly seq: number; readonly from: "board" | "bundle" };
+  /**
+   * The face's recovery contact set: `none` where its log still stands one-of-one; `landed` where the bundle carried the set
+   * the log commits and its row landed here; `held` where this vessel already held that same row; `absent` where the
+   * log commits a set no part of this bundle carried (a bundle cut before the enrolment).
+   */
+  readonly recoveryContactSet: "none" | "landed" | "held" | "absent";
+  /** The face stands PROVISIONAL (custody#/the-restore): who could confirm it, in words a person reads. */
+  readonly provisional: { readonly couldConfirm: readonly string[] };
   readonly landed:   {
     readonly faceProofKeys: number; readonly petname: boolean; readonly handle: boolean;
     readonly handleBook: { readonly landed: number; readonly kept: number };
@@ -132,6 +159,13 @@ async function consistent(body: FaceBundleBody): Promise<{ readonly signerDid: s
   if (body.kel.some((e) => e.prefix !== inception.prefix)) inconsistent("the carried key history names another prefix");
   const verified = await verifyPersonaKelFull(body.kel);
   if (!verified.ok) inconsistent(`the carried key history fails to verify: ${verified.reason ?? "unverified"}`);
+  // A CARRIED RECOVERY CONTACT SET recomputes the digest it names, and the carried log's own typed first enrolment commits it.
+  const set = body.recoveryContactSet;
+  if (set !== null) {
+    const keys = set.recoveryContacts.map((g) => g.recoveryPubKey);
+    if (new Set(keys).size !== keys.length || sealKeySetHash(keys, set.threshold) !== set.recoveryContactSetHash) inconsistent("the carried recovery contact set does not recompute the digest it names");
+    if (!body.kel.some((e) => e.kind === RECOVERY_CONTACT_ENROLMENT_KIND && e.nextRecoverySetHash === set.recoveryContactSetHash)) inconsistent("the carried recovery contact set names a digest no enrolment in the carried key history commits");
+  }
   return { signerDid, recoveryCommit };
 }
 
@@ -142,7 +176,7 @@ async function consistent(body: FaceBundleBody): Promise<{ readonly signerDid: s
  * must begin at the root's own inception and must not fork; its newest event, a rotation still open to contest
  * among them, must name the root as the operating key and commit recovery to the root's own recovery key.
  */
-async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEvent[], repo: Repo, signerDid: string, recoveryCommit: string): Promise<FaceBundleRestored["checked"]> {
+async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEvent[], repo: Repo, signerDid: string, recoveryCommit: string): Promise<FaceBundleRestored["checked"] & { readonly enrolledSet: string | null; readonly eventCid: string }> {
   const board = await readLocalPersonaKelEvents(repo, body.anchors.personaKelPrefix);
   const fold = foldPersonaContests([...board, ...carried].sort((a, b) => a.seq - b.seq));
   const head = fold.kel[fold.kel.length - 1];
@@ -150,44 +184,60 @@ async function currentHead(body: FaceBundleBody, carried: readonly PersonaKelEve
   if (fold.fork !== null) {
     return refuse("root-superseded", `the key history this vessel reads for the face FORKS at sequence ${fold.fork.seq}: two verified events claim one seat, and no reader settles that by order. Nothing moved.`);
   }
-  if (bare(head.opKeyDid) !== bare(signerDid) || head.nextRecoverySetHash !== recoveryCommit) {
+  // THE ROOT STILL ANSWERS: it operates, and recovery rests with its own key, or with the set the root itself enrolled
+  // by the typed first event, which the one reader admits only over a one-of-one head under the same op-key.
+  const enrolled = head.kind === RECOVERY_CONTACT_ENROLMENT_KIND;
+  if (bare(head.opKeyDid) !== bare(signerDid) || (!enrolled && head.nextRecoverySetHash !== recoveryCommit)) {
     return refuse("root-superseded", `the newest key event this vessel reads for the face (sequence ${head.seq}) names another operating key or commits recovery to another key set: the face's current key history no longer accepts this root. Nothing moved.`);
   }
+  if (body.recoveryContactSet !== null && body.recoveryContactSet.recoveryContactSetHash !== head.nextRecoverySetHash) {
+    return refuse("root-superseded", `the newest key event this vessel reads for the face (sequence ${head.seq}) commits another recovery contact set than the one this bundle carries. Nothing moved.`);
+  }
   // WHERE THE HEAD CAME FROM: this vessel's own board where the board itself holds that event, the bundle otherwise.
-  return { seq: head.seq, from: board.some((event) => event.eventCid === head.eventCid) ? "board" : "bundle" };
+  return {
+    seq: head.seq, from: board.some((event) => event.eventCid === head.eventCid) ? "board" : "bundle",
+    enrolledSet: enrolled ? head.nextRecoverySetHash : null, eventCid: head.eventCid,
+  };
 }
 
 /** Read the pending row, or null where none stands. A row that stands and reads as no pending row refuses by name. */
 async function readPending(): Promise<Pending | null> {
-  try {
-    return await openColdCustodyRow("identity", RESTORE_PENDING_FILE, (bytes) => {
-      let raw: { target?: unknown; body?: unknown };
-      try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as typeof raw; }
-      catch { throw new CustodyRowUnavailable("identity", RESTORE_PENDING_FILE, "malformed"); }
-      const body = raw.body === undefined ? null : readFaceBundleBody(canonicalJsonBytes(raw.body));
-      if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null) throw new CustodyRowUnavailable("identity", RESTORE_PENDING_FILE, "malformed");
-      return { target: raw.target as number, body };
-    });
-  } catch (err) {
-    if (err instanceof CustodyRowUnavailable && err.reading === "absent") return null;
-    throw err;
-  }
+  // The pending row rests in its target face: the one file name any face holds names the target.
+  const standing = faceFileNames(larIdentityDir()).filter((n) => RESTORE_PENDING_FILE.test(n));
+  if (standing.length === 0) return null;
+  if (standing.length > 1) throw new RestoreRefused("restore-pending", "more than one face holds a restore pending on this vessel; run each face's own restore again, lowest handle index first. Nothing moved.");
+  const file = standing[0]!;
+  return await openColdCustodyRow("identity", file, (bytes) => {
+    let raw: { target?: unknown; body?: unknown };
+    try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as typeof raw; }
+    catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+    const body = raw.body === undefined ? null : readFaceBundleBody(canonicalJsonBytes(raw.body));
+    if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null || restorePendingFile(raw.target as number) !== file) throw new CustodyRowUnavailable("identity", file, "malformed");
+    return { target: raw.target as number, body };
+  });
+}
+
+/** The root key of the face whose restore stands pending on this vessel, or null where none stands. Writes nothing. */
+export async function restorePendingRoot(): Promise<string | null> {
+  return (await readPending())?.body.root.verifyingKey ?? null;
 }
 
 /** PREFLIGHT every target row and relation. Writes nothing. */
-async function preflight(body: FaceBundleBody, target: number): Promise<void> {
+async function preflight(body: FaceBundleBody, target: number, founding: boolean, ward: WardCredential | undefined): Promise<void> {
   if (!existsSync(larBootstrapPath())) refuse("place-unfounded", "no founded place stands here: a restore lands a face onto a vessel `lares vessel found` already stood. Nothing moved.");
   // A RESTORED FACE BINDS THE HEARTH IT LANDS ON: its device edge names this vessel's seed charter, so a place with
   // none holds no hearth for it. The person founds the fresh hearth first (`lares vessel found --hearth`), and the
   // restore lands beside persona zero at a free index.
-  if (hearthAid() === null) refuse("no-hearth", "no seed charter stands on this vessel, so no hearth stands for the restored face to bind to. Nothing moved; found the hearth with `lares vessel found --hearth --name '<label>'`, then restore at a free index (--as <N>).");
+  // The founding act's own restore seats that charter itself, after the root lands and before the face lights.
+  if (founding && hearthAid() !== null) refuse("hearth-stands", "a seed charter already stands on this vessel, so the founding act lands no restored face as its persona zero here. Nothing moved; restore beside persona zero with `lares vault restore <file> --as <N>`.");
+  if (!founding && hearthAid() === null) refuse("no-hearth", "no seed charter stands on this vessel, so no hearth stands for the restored face to bind to. Nothing moved; found the hearth FROM this bundle, its face as persona zero (`lares vessel found --hearth --restore <file>`), or found it with `lares vessel found --hearth --name '<label>'`, then restore at a free index (--as <N>).");
   const roster = await listPersonaRosterLines();
   if (roster.some((l) => l.verifyingKey === body.root.verifyingKey)) {
     refuse("face-already-held", "this vessel already holds this face's root, and no restore of it stands pending: a second restore over it. Nothing moved.");
   }
   const line = roster.find((l) => l.handleIndex === target);
   if (line) refuse("roster-names-another-key", `this vessel's roster names another root at h${target}. Nothing moved; name a free index with --as <N>.`);
-  const orphan = await orphanPersonaRootKey(target);
+  const orphan = await orphanPersonaRootKey(target, ward!);
   if (orphan !== null && orphan !== body.root.verifyingKey) refuse("orphan-names-another-key", `a root row stands at h${target} under another key, with no roster line. Nothing moved.`);
   if ((await loadIdentityAnchors(target)) !== null || (target === 0 && faceStands())) refuse("index-held", `a face already stands lit at h${target}. Nothing moved; name a free index with --as <N>.`);
   if (target > 0 && !faceStands()) refuse("founding-face-unlit", `no founding face stands on this vessel, and a face at h${target} rides beside one. Nothing moved; restore at index 0 (--as 0), or light the founding face first.`);
@@ -195,18 +245,36 @@ async function preflight(body: FaceBundleBody, target: number): Promise<void> {
   // refuses here, by its own name, before the commit row. The landing then meets no row it has not already read.
   await (await makeNodePersonaPetnameStore()).get(target);
   await (await makeNodePersonaDeclarationStore()).get(target);
-  await loadNodeHandleBook();
+  await loadNodeHandleBook(target);
   for (const key of body.faceProofKeys) {
     const secret = Uint8Array.from(Buffer.from(key.secret, "hex"));
     try {
       if ((await faceProofKeyStanding(key.scope, secret, target)) === "conflict") refuse("row-conflict", "a face proof key row the restore would write stands under other bytes, or under another face. Nothing moved.");
     } finally { secret.fill(0); }
   }
+  // THE RECOVERY CONTACT SET: no key guards two faces of one vessel (persona-policy#/distinct-recovery), and a set row at the
+  // target stands only for this same set.
+  if (body.recoveryContactSet !== null) {
+    const apart = recoveryContactCompartmentCheck({ offered: body.recoveryContactSet.recoveryContacts.map((g) => g.recoveryPubKey), heldByOtherFaces: await recoveryContactKeysOfOtherFaces(target) });
+    if (!apart.ok) refuse("recovery-contact-key-serves-another-face", `the carried recovery contact key ${apart.key.slice(0, 16)}… already guards the face at h${apart.handleIndex} on this vessel: a recovery contact holds a fresh key for each face. Nothing moved.`);
+  }
+  const standing = await readRecoveryContactSet(target);
+  if (standing !== null && (body.recoveryContactSet === null || standing.recoveryContactSetHash !== body.recoveryContactSet.recoveryContactSetHash || standing.prefix !== body.anchors.personaKelPrefix)) {
+    refuse("row-conflict", `a recovery-contact-set row stands at h${target} for another set or another face. Nothing moved.`);
+  }
+}
+
+/** The face's set row as the restore lands it: the carried set under the face's own prefix. */
+function recoveryContactRecordOf(body: FaceBundleBody): RecoveryContactSetRecord | null {
+  const set = body.recoveryContactSet;
+  return set === null ? null : { prefix: body.anchors.personaKelPrefix, recoveryContactSetHash: set.recoveryContactSetHash, threshold: set.threshold, recoveryContacts: set.recoveryContacts };
 }
 
 /** LAND each row a pending restore holds. Each lands only where nothing stands or where the same bytes stand. */
-async function land(pending: Pending): Promise<FaceBundleRestored["landed"]> {
+async function land(pending: Pending, head: { readonly seq: number; readonly eventCid: string; readonly from: "board" | "bundle" }, ward: WardCredential | undefined): Promise<FaceBundleRestored["landed"] & { readonly recoveryContactSet: "landed" | "held" | null }> {
   const { body, target } = pending;
+  // THE PROVISIONAL MARK lands first among the rows: a face never stands restored here without it.
+  await markProvisional(target, { prefix: body.anchors.personaKelPrefix, head: { seq: head.seq, eventCid: head.eventCid }, from: head.from });
   for (const key of body.faceProofKeys) {
     const secret = Uint8Array.from(Buffer.from(key.secret, "hex"));
     try { await landFaceProofKey(key.scope, secret, target); } finally { secret.fill(0); }
@@ -222,13 +290,26 @@ async function land(pending: Pending): Promise<FaceBundleRestored["landed"]> {
     const standing = await store.get(target);
     if (standing?.handle === undefined) { await store.set(target, { ...(standing ?? {}), handle: body.names.handle }); handle = true; }
   }
-  const book = await loadNodeHandleBook();
+  const book = await loadNodeHandleBook(target);
   const handleBook = await book.landFor(body.root.verifyingKey, { era: HANDLE_BOOK_SNAPSHOT_ERA, records: body.handleBook.records });
-  if (handleBook.landed > 0 || handleBook.kept > 0) await saveNodeHandleBook(book);
+  if (handleBook.landed > 0 || handleBook.kept > 0) await saveNodeHandleBook(target, book);
+  // THE RECOVERY CONTACT SET lands where none stands; the same set there stays as it stands.
+  let recoveryContactSet: "landed" | "held" | null = null;
+  const record = recoveryContactRecordOf(body);
+  if (record !== null) {
+    recoveryContactSet = await updateCustodyRow("identity", recoveryContactSetFile(target), (standing) => {
+      if (standing === null) return { plaintext: new TextEncoder().encode(JSON.stringify(record)), value: "landed" as const };
+      const held = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(standing)) as RecoveryContactSetRecord;
+      if (held.recoveryContactSetHash !== record.recoveryContactSetHash || held.prefix !== record.prefix) {
+        throw new RestoreRefused("row-conflict", `a recovery-contact-set row appeared at h${target} for another set while this restore landed; the pending row stays for a person to read`);
+      }
+      return { plaintext: null, value: "held" as const };
+    });
+  }
   // THE ROOT AND ITS ROSTER LINE LAND LAST among the rows: every reader that asks "does this vessel hold the face"
   // reads the roster, so a restore that stopped sooner still reads as one that owes.
-  await landPersonaRoot(target, { signingKey: body.root.signingKey, verifyingKey: body.root.verifyingKey });
-  return { faceProofKeys: body.faceProofKeys.length, petname, handle, handleBook };
+  await landPersonaRoot(target, { signingKey: body.root.signingKey, verifyingKey: body.root.verifyingKey }, ward!);
+  return { faceProofKeys: body.faceProofKeys.length, petname, handle, handleBook, recoveryContactSet };
 }
 
 /**
@@ -241,8 +322,42 @@ export async function restoreFaceBundle(args: {
   /** The handle-index the face lands at here; absent, the index the bundle's own roster line named. */
   readonly as?:        number;
   readonly withRepo:   <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
+  readonly genesisDir?: string;
+  readonly founding?:   () => Promise<void>;
+  readonly ward?:       WardCredential;
 }): Promise<FaceBundleRestored> {
-  const body = openRestoreBody(args.sealedBody, args.bundleKey);
+  const { sealedBody, bundleKey, ...rest } = args;
+  return restoreFaceBody({ body: openRestoreBody(sealedBody, bundleKey), ...rest });
+}
+
+/**
+ * Restore one face from a body already opened: the steps after OPEN, for every door that hands the restore a
+ * face (a bundle's sealed body, or a body another reader built). The body still passes every check a bundle's
+ * body passes, and lands through the same one commit row.
+ */
+export async function restoreFaceBody(args: {
+  readonly body:     FaceBundleBody;
+  /** The target face's ward route (seat-harness#/the-ward): landing a root is a ward act. Absent, the route the target face is born under. */
+  readonly ward?:    WardCredential;
+  readonly as?:      number;
+  readonly fromPaper?: boolean;
+  readonly withRepo: <T>(act: (repo: Repo) => Promise<T>) => Promise<T>;
+  /** The genesis the face's rite reads (the founding's own, where a founding act runs the restore). */
+  readonly genesisDir?: string;
+  /**
+   * THE FOUNDING ACT'S OWN STEP (a restore as persona zero, `found --hearth` from a bundle). Present, the face lands
+   * at h0 on a place that holds no seed charter yet, and this step runs after the rows land and the history seats
+   * and before the face lights: it seats the seed charter over the restored root, so the face lights bound to that
+   * charter's AID. A resumed restore runs it again, and it answers what an earlier run already wrote.
+   */
+  readonly founding?: () => Promise<void>;
+}): Promise<FaceBundleRestored> {
+  const { body } = args;
+  // THE ADDRESS SECRET RIDES THE BUNDLE: a restore lands the face's own, so its catalog document follows it here, and
+  // never mints a fresh one. A body that names none refuses by name; paper names null, and lands none.
+  if (body.addressSecret === undefined || (body.addressSecret === null && args.fromPaper !== true)) {
+    refuse("no-address-secret", "the bundle carries no address secret for the face, so the restored face could find no catalog document of its own: cut the bundle again on a vessel that wears the face; only the paper door may carry none. Nothing moved.");
+  }
   const { signerDid, recoveryCommit } = await consistent(body);
 
   let pending = await readPending();
@@ -251,6 +366,7 @@ export async function restoreFaceBundle(args: {
     refuse("restore-pending", "another face's restore stands pending on this vessel. Run that face's own restore again first: it completes, and this one follows. Nothing moved.");
   }
 
+  let ward: WardCredential | undefined = args.ward;
   return args.withRepo(async (repo) => {
     // The head check runs on every run, a resumed one too, over EVERY event in reach: this vessel's board, the
     // pending row's log, and the log of the bundle handed in now (another cut of the face may carry a newer head).
@@ -260,30 +376,41 @@ export async function restoreFaceBundle(args: {
     }
     if (pending === null) {
       const target = args.as ?? body.rosterLine.handleIndex;
-      await preflight(body, target);
+      if (args.founding && target !== 0) refuse("index-held", `the founding act lands its restored face as persona zero, at h0, never at h${target}. Nothing moved.`);
+      await preflight(body, target, args.founding !== undefined, ward);
       // ONE DURABLE COMMIT. Before this write nothing moved; after it the restore completes, in this run or the next.
       pending = { target, body };
       const row = canonicalJsonBytes(pending);
+      // THE TARGET FACE'S CUSTODY COMES FIRST: its slot and owner binding stand (reserved at the handle index, under the route
+      // the face asks for), and the pending row rests under that face's own key.
+      await ensureFaceCustodyAtHandle(target, `h${target}`, (slots) => { ward ??= wardCredentialOfRoute(slots) ?? undefined; });
       try {
-        await updateColdCustodyRow("identity", RESTORE_PENDING_FILE, (standing) => {
+        await updateColdCustodyRow("identity", restorePendingFile(target), (standing) => {
           if (standing !== null) throw new RestoreRefused("restore-pending", "a restore's commit row appeared while this one checked its rows. Run the restore again.");
           return { plaintext: row, value: undefined };
         });
       } finally { row.fill(0); }
     }
-    const landed = await land(pending);
+    const { recoveryContactSet: setLanded, ...landed } = await land(pending, checked, ward);
     // RE-ADMIT. The carried history seats on this vessel's own board, then the face lights under this vessel's own
     // veil. `runFoundTheFace` reads the root the roster now names and founds: the same fixed prefix, a fresh key
     // group, a device edge the root signs for this vessel's key. A face that already stands lit reads so and moves nothing.
     await seatLocalPersonaKelChain(repo, pending.body.kel);
-    const lit = await runFoundTheFace({ repo, handleIndex: pending.target });
+    if (args.founding) await args.founding();
+    const carried = pending.body.addressSecret ? Uint8Array.from(Buffer.from(pending.body.addressSecret, "hex")) : null;
+    let lit: Awaited<ReturnType<typeof runFoundTheFace>>;
+    try {
+      lit = await runFoundTheFace({ repo, handleIndex: pending.target, addressSecret: carried, ...(args.genesisDir ? { genesisDir: args.genesisDir } : {}), ...(ward ? { ward } : {}) });
+    } finally { carried?.fill(0); }
     if (!lit.alreadyStood && lit.personaKelPrefix !== pending.body.anchors.personaKelPrefix) {
       throw new Error(`face-bundle-restore: the face lit under prefix ${lit.personaKelPrefix}, and the bundle carried ${pending.body.anchors.personaKelPrefix}; the pending row stays for a person to read`);
     }
-    await removeColdCustodyRow("identity", RESTORE_PENDING_FILE);
+    await removeColdCustodyRow("identity", restorePendingFile(pending.target));
     return {
       face: { handleIndex: pending.target, verifyingKey: pending.body.root.verifyingKey },
-      prefix: pending.body.anchors.personaKelPrefix, resumed, checked, landed, holds: pending.body.memory.holds,
+      prefix: pending.body.anchors.personaKelPrefix, resumed, checked: { seq: checked.seq, from: checked.from }, landed,
+      recoveryContactSet: checked.enrolledSet === null ? "none" : setLanded ?? "absent", holds: pending.body.memory.holds,
+      provisional: { couldConfirm: await couldConfirm(pending.target) },
     };
   });
 }

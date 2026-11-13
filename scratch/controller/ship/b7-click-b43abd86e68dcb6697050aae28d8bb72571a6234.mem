@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/b7-click-b43abd86e68dcb6697050aae28d8bb72571a6234.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP b7-click b43abd86e68dcb6697050aae28d8bb72571a6234
+read: the controller (Lares-Kiaʻi) read the lane's whole diff over the span b8c325a19: tw5-projection.ts (B7's once-only re-resolve by stable control id, gated on the tiddler the last frame named; built by a Terra seat, read and run by the controller), glass-camera.ts and glass-mirror.ts (the cherry-picked keepsFocus from b1-lift d70dd8196: page-side focus, caret and scroll kept for the editor of the same record across a landing's refresh; no key, no custody row, no port), rest-before-reload.e2e (the cherry-picked read-back wait, 9f6e05190), projection-click-race.test.ts (the red), and packages/lararium-web/vitest.config.ts (the security-class path: one include added for glass-edit-under-promotion.e2e, a file this lane does not carry; the glob matches nothing on the span and b1-lift brings the file).
+verdict: no security-class behaviour moves; the config change widens a test include alone. CI green at b43abd86e68dcb6697050aae28d8bb72571a6234.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6EnZ5SDjPoJOiqMKwCuUBGms1ufoKOmd-8qkbpYFSYQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

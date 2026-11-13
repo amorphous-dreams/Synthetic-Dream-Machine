@@ -7,10 +7,11 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, expect, test } from "vitest";
 
 import { makeContentPalace, type ContentPalace } from "../src/sensorium.js";
 import { importGuestPalace } from "../src/guest-import.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 60_000;
 
@@ -23,7 +24,7 @@ function open(dir: string): ContentPalace {
 const palaceDir = (): Promise<string> => mkdtemp(join(tmpdir(), "guest-"));
 afterEach(async () => { await Promise.all(opened.splice(0).map((p) => p.close())); });
 
-describe("importGuestPalace (source → owned content palace, store-compatible)", () => {
+palaceSuite("importGuestPalace (source → owned content palace, store-compatible)", () => {
   test("copies every record with its vector; is idempotent on re-run", async () => {
     const source = open(await palaceDir());
     const target = open(await palaceDir());

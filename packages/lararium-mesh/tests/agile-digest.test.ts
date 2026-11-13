@@ -33,9 +33,9 @@ describe("parseDigest", () => {
     expect(parseDigest(`sha256:${HEX64}`)).toEqual({ algo: "sha256", hex: HEX64 });
   });
 
-  test("the legacy SRI / sourceCidOf `algo-hex` form parses", () => {
-    // `sourceCidOf` emits "sha256-" + hex; the dual-read must accept it.
-    expect(parseDigest(`sha256-${HEX64}`)).toEqual({ algo: "sha256", hex: HEX64 });
+  test("★ the writer's output parses; the dash spelling `algo-hex` refuses ★", () => {
+    expect(parseDigest(formatDigest("sha256", HEX64))).toEqual({ algo: "sha256", hex: HEX64 });
+    expect(() => parseDigest(`sha256-${HEX64}`)).toThrow(/not a tagged digest/);
   });
 
   test("a future algorithm rides free", () => {
@@ -68,7 +68,7 @@ describe("formatDigest / tagDigest", () => {
   test("tagDigest re-spells an accepted form as canonical, is idempotent, and refuses a bare value", () => {
     const tagged = `sha256:${HEX64}`;
     expect(tagDigest(tagged)).toBe(tagged);              // idempotent
-    expect(tagDigest(`sha256-${HEX64}`)).toBe(tagged);   // SRI spelling → canonical
+    expect(() => tagDigest(`sha256-${HEX64}`)).toThrow();   // a second spelling refuses
     expect(() => tagDigest(HEX64)).toThrow(/names no algorithm/);
   });
 });
@@ -84,8 +84,8 @@ describe("digestsEqual — one digest, every tagged spelling", () => {
     expect(digestsEqual(`sha256:${HEX64}`, `sha256:${HEX64}`)).toBe(true);
   });
 
-  test("the legacy `-` form equals the canonical `:` form", () => {
-    expect(digestsEqual(`sha256-${HEX64}`, `sha256:${HEX64}`)).toBe(true);
+  test("the dash spelling equals nothing", () => {
+    expect(digestsEqual(`sha256-${HEX64}`, `sha256:${HEX64}`)).toBe(false);
   });
 
   test("case-insensitive on the hex", () => {
@@ -143,14 +143,12 @@ describe("★ RFC 9530 `Repr-Digest` — the third form of one digest ★", () =
   test("CONTROL: `sha-256=:<base64>:` parses to the same (algo, hex) the tagged forms carry", () => {
     expect(parseDigest(`sha-256=:${b64}:`)).toEqual({ algo: "sha256", hex });
     expect(digestsEqual(`sha-256=:${b64}:`, `sha256:${hex}`)).toBe(true);
-    expect(digestsEqual(`sha-256=:${b64}:`, `sha256-${hex}`)).toBe(true);
     expect(digestsEqual(`sha-256=:${b64}:`, hex)).toBe(false);   // the bare side names no algorithm
   });
 
   test("reprDigestOf emits the header value from any tagged form; it round-trips through parseDigest", () => {
     const want = `sha-256=:${b64}:`;
     expect(reprDigestOf(`sha256:${hex}`)).toBe(want);
-    expect(reprDigestOf(`sha256-${hex}`)).toBe(want);
     expect(reprDigestOf(want)).toBe(want);
     expect(parseDigest(reprDigestOf(`sha256:${hex}`))).toEqual({ algo: "sha256", hex });
     expect(() => reprDigestOf(hex)).toThrow(/names no algorithm/);

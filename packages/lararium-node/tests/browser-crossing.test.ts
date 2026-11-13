@@ -1,347 +1,122 @@
 /**
- * browser-crossing.test.ts — the browser↔node auth crossing, end to end at the wire.
+ * browser-crossing.test.ts — the leaf↔node crossing, end to end at the wire, over the sealed gate.
  *
- * The two halves each had a test; the WIRING BETWEEN them did not. daemon-auth-gate.test proves the
- * real DaemonAuthGate against a STUB shore; lar-ws-client-adapter.test proves the real browser-shaped
- * LarWSClientAdapter + real verifyAuthProof against a MOCK gate. This composes all the real pieces:
+ * The two halves each had a test; the WIRING BETWEEN them did not. This composes the real pieces:
  *
- *   real DaemonAuthGate  ←ws←  real LarWSClientAdapter (light Ed25519 leaf, the browser's shape)
- *          │
- *   a real AuthVerifierShore that runs verifyAuthProof (V3 Ed25519 proof-of-possession) AND the
- *   CAPABILITY decision — is this leaf ADMITTED to the daemon bag? — the real barrier a browser hits.
+ *   a node's sovereign gate (`faceGateServer` over a sealed session table, read by the Repo's adapter)
+ *     ←ws←  a real LarWSClientAdapter (a leaf's shape: a Repo with no server, only the dial)
  *
- * It proves the crossing the scout found unproven: an ADMITTED leaf crosses the armed gate (the gate
- * emits its `connection` to the Automerge layer — the breath); a leaf with a valid proof but NO admit
- * (the freshly-FOUNDED anon vessel) is denied "insufficient capability" and never becomes a peer. The
- * capability is modeled as an admitted-key set — the faithful stand-in for the keyhive worker's grant
- * check (receiveContactCard + accessForDoc); the crypto (Ed25519 proof) is REAL, not stubbed.
+ * It proves the crossing: a leaf presenting an ADMIT the gate sorts crosses (the gate seats a session and the
+ * Automerge layer sees its peer — the breath); a leaf presenting NOTHING under PRIVATE (the freshly-FOUNDED anon
+ * vessel) meets silence and never becomes a peer; a leaf whose session signer is not the one its chain certified
+ * meets silence; a leaf that pinned ANOTHER gate's key never reaches this gate at all. The sort is modelled by the
+ * world's held admits, the faithful stand-in for the keyholder worker's reading; the crypto is REAL.
+ *
+ * The gate's own wire laws (the pinned verdict key, the flight, the deadline) live in the mesh and the gate-server
+ * suites; the session-message channel is proven in lar-ws-client-adapter-gate.test and gate-sync-server.test.
  *
  * Gate: lar:///ha.ka.ba/lararium/node/browser-crossing
  */
 
 import { describe, test, expect, afterEach } from "vitest";
-import { createServer, type Server } from "node:http";
-import { generateKeyPairSync } from "node:crypto";
-import { WebSocketServer } from "ws";
-import { ed25519SignerFromSeed, type LarWSClientAdapter } from "@lararium/mesh";
-import { Repo, type PeerId } from "@automerge/automerge-repo";
-import { NodeWSServerAdapter } from "@automerge/automerge-repo-network-websocket";
-import { type DaemonAuthGate, type SocketSorter, type GateKey } from "../src/daemon-auth-gate.js";
-import { armGate, dialGate, provingShore, standGate as standAuthGate } from "./gate-dial-fixture.js";
-/** Every proven key stands: this suite proves the crossing, never the sort (the sort has its own suite). */
-const admitProven: SocketSorter = async (input) => ({ class: input.sameOperator ? "same-operator" : "stranger" });
-import type { LeafIdentity } from "../src/leaf-identity.js";
-import { arrival } from "../../lararium-mesh/tests/handshake.js";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import type { PeerId } from "@automerge/automerge-repo";
+import { presenter } from "../../lararium-mesh/tests/face-gate-fixture.js";
+import { restEvery } from "./resting-repo.js";
+import { standGatedNode, type GatedNode } from "./gated-node-rig.js";
 
-const AUD = "lar:///ha.ka.ba/bags/daemon";
+const GREETING = "lar:///ha.ka.ba/bags/crossroads/greeting";
+const REPLY    = "lar:///ha.ka.ba/bags/personal/reply";
+type Doc = { tiddlers: Record<string, { text: string }> };
 
-/** An Ed25519 keypair (the node-vessel-identity pattern): raw 32-byte seed + verifying-key hex. */
-const SEED_OF = new Map<string, Uint8Array>();
-function genKey(): { seed: Uint8Array; pub: string } {
-  const { publicKey, privateKey } = generateKeyPairSync("ed25519");
-  const pub  = Buffer.from((publicKey.export({ format: "jwk" }) as { x: string }).x, "base64url").toString("hex");
-  const seed = new Uint8Array(Buffer.from((privateKey.export({ format: "jwk" }) as { d: string }).d, "base64url"));
-  SEED_OF.set(pub, seed);
-  return { seed, pub };
-}
-/** A gate's own key — the verifying key it advertises and the signer of its verdicts. */
-const gateKeyOf = (pub: string): GateKey => ({ pubKey: pub, sign: ed25519SignerFromSeed(SEED_OF.get(pub)!) });
-
-/** A browser-shaped leaf: a real Ed25519 signer + a ContactCard that carries its own verifying key
- *  (the faithful stand-in for keyhive.receiveContactCard deriving the peer key from the card). */
-function makeLeaf(): { identity: LeafIdentity; pub: string } {
-  const { seed, pub } = genKey();
-  return {
-    pub,
-    identity: { contactCard: JSON.stringify({ peerPubKey: pub }), peerPubKey: pub, sign: ed25519SignerFromSeed(seed) },
-  };
-}
-
-/**
- * The real shore the gate arms with: it runs the REAL V3 Ed25519 proof check, then the CAPABILITY
- * decision — a leaf crosses only if its key sits in the admitted set (the daemon-bag grant). A valid
- * proof is necessary but NOT sufficient; the un-admitted anon leaf is turned away here.
- */
-interface GateHarness {
-  gate: DaemonAuthGate;
-  port: number;
-  close: () => Promise<void>;
-}
-
-function standGate(): Promise<GateHarness> {
-  return new Promise((resolve, reject) => {
-    const http: Server = createServer();
-    const wss  = new WebSocketServer({ server: http });
-    const gate = standAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
-    http.listen(0, "127.0.0.1", () => {
-      const addr = http.address();
-      if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }
-      resolve({
-        gate, port: addr.port,
-        close: () => new Promise<void>((res) => { wss.close(() => http.close(() => res())); }),
-      });
-    });
-  });
-}
-
-describe("browser↔node crossing — real gate · real Ed25519 · real capability · real adapter", () => {
-  let harness: GateHarness | null = null;
-  let adapter: LarWSClientAdapter | null = null;
-
-  afterEach(async () => {
-    try { adapter?.disconnect(); } catch { /* never connected */ }
-    adapter = null;
-    await harness?.close();
-    harness = null;
-  });
-
-  test("an ADMITTED leaf crosses the armed gate and becomes a sync peer (the breath)", async () => {
-    harness = await standGate();
-    const gatePub = genKey().pub;
-    const { identity, pub } = makeLeaf();
-
-    const connectionSeen = new Promise<void>((resolve) => harness!.gate.once("connection", () => resolve()));
-    armGate(harness.gate, { gate: gateKeyOf(gatePub), aud: AUD, sort: admitProven, shore: provingShore(gatePub, { admits: (key) => new Set([pub]).has(key) }) });
-
-    adapter = dialGate({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: gatePub });
-    adapter.connect("browser-leaf" as PeerId);
-
-    await connectionSeen;                       // the gate handed the authed socket to Automerge
-    expect(harness.gate.clients.size).toBe(1);  // the leaf is a live peer
-  });
-
-  test("a FOUNDED anon leaf (valid proof, NO admit) is denied — insufficient capability", async () => {
-    harness = await standGate();
-    const gatePub = genKey().pub;
-    const { identity } = makeLeaf();
-
-    let crossed = false;
-    harness.gate.once("connection", () => { crossed = true; });
-    // admitted set is EMPTY — the leaf's proof will verify, but it holds no daemon grant.
-    armGate(harness.gate, { gate: gateKeyOf(gatePub), aud: AUD, sort: admitProven, shore: provingShore(gatePub, { admits: () => false }) });
-
-    adapter = dialGate({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: gatePub });
-    adapter.connect("anon-leaf" as PeerId);
-
-    // Give the handshake room to complete and be refused.
-    await new Promise<void>((r) => setTimeout(r, 300));
-    expect(crossed).toBe(false);                // never handed to Automerge
-    expect(harness.gate.clients.size).toBe(0);  // never a peer — the real barrier held
-  });
-
-  test("a leaf that CLAIMS an admitted key but signs with the wrong seed is denied (real Ed25519)", async () => {
-    harness = await standGate();
-    const gatePub = genKey().pub;
-    const claimed = genKey();        // the key the leaf claims + gets admitted
-    const impostor = genKey();       // a DIFFERENT seed actually signs the proof
-
-    let crossed = false;
-    harness.gate.once("connection", () => { crossed = true; });
-    // The claimed key IS admitted — so only the signature check can turn this leaf away.
-    armGate(harness.gate, { gate: gateKeyOf(gatePub), aud: AUD, sort: admitProven, shore: provingShore(gatePub, { admits: (key) => key === claimed.pub }) });
-
-    const identity: LeafIdentity = {
-      contactCard: JSON.stringify({ peerPubKey: claimed.pub }),
-      peerPubKey: claimed.pub,
-      sign: ed25519SignerFromSeed(impostor.seed),   // signs with the WRONG seed
-    };
-    adapter = dialGate({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: gatePub });
-    adapter.connect("impostor-leaf" as PeerId);
-
-    await new Promise<void>((r) => setTimeout(r, 300));
-    expect(crossed).toBe(false);                // the forged proof failed verifyAuthProof
-    expect(harness.gate.clients.size).toBe(0);
-  });
-
-  test("RED: a gate that answers auth-ok without the key the leaf pinned is refused by the LEAF", async () => {
-    harness = await standGate();
-    const pinned = genKey().pub;                // the gate key the leaf was provisioned with
-    const relay  = genKey().pub;                // the key the answering hand actually holds
-    const { identity, pub } = makeLeaf();
-    // The leaf's proof verifies (bound to the pinned key), so the answering gate ADMITS it — and signs the
-    // verdict with a key that is not the pin. Only the leaf's own check can refuse it.
-    armGate(harness.gate, { gate: gateKeyOf(relay), aud: AUD, sort: admitProven, shore: provingShore(pinned, { admits: (key) => key === pub }) });
-    // The leaf's own word carries the wait: it says its refusal the moment it anergizes.
-    const refused = arrival<string>("the leaf saying it anergized (`onAnergy`)");
-    adapter = dialGate({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned, onAnergy: (reason) => { refused.arrive(reason); } });
-    adapter.connect("pinned-leaf" as PeerId);
-
-    expect(await refused.arrived).toBe("the verdict carries no signature of the pinned gate key");
-    expect(adapter.anergized).toBe("the verdict carries no signature of the pinned gate key");
-  });
-
-  test("CONTROL: the gate that holds the pinned key passes the leaf's check", async () => {
-    harness = await standGate();
-    const pinned = genKey().pub;
-    const { identity, pub } = makeLeaf();
-    armGate(harness.gate, { gate: gateKeyOf(pinned), aud: AUD, sort: admitProven, shore: provingShore(pinned, { admits: (key) => key === pub }) });
-    adapter = dialGate({ url: `ws://127.0.0.1:${harness.port}`, identity, aud: AUD, gatePubKey: pinned });
-    adapter.connect("pinned-leaf" as PeerId);
-
-    await new Promise<void>((r) => setTimeout(r, 300));
-    expect(adapter.anergized).toBeNull();
-  });
+const dirs: string[] = [];
+let nodes: GatedNode[] = [];
+const mkDir = (): string => { const d = mkdtempSync(join(tmpdir(), "lar-crossing-")); dirs.push(d); return d; };
+afterEach(async () => {
+  for (const n of nodes) { try { await n.close(); } catch { /* already down */ } }
+  nodes = [];
+  await restEvery();
+  for (const d of dirs.splice(0)) { try { rmSync(d, { recursive: true, force: true }); } catch { /* gone */ } }
 });
 
-/**
- * Node-side Automerge readiness override (mirrors the production ListeningWSServerAdapter): upstream's
- * NodeWSServerAdapter declares ready only on its FIRST client, un-pono for a local-first vessel whose
- * readiness reads from local state. The 3-line override keeps the vessel ready from listen, not from a
- * peer's arrival — the same shape open-node-vessel wires in production.
- */
-class ReadyWSServerAdapter extends NodeWSServerAdapter {
-  override isReady(): boolean { return true; }
-  override whenReady(): Promise<void> { return Promise.resolve(); }
+const stand = async (opts: Parameters<typeof standGatedNode>[0]): Promise<GatedNode> => { const n = await standGatedNode(opts); nodes.push(n); return n; };
+
+/** Wait until `until()` holds, or fail naming `label` after `ms`. */
+async function waitFor(until: () => boolean, label: string, ms = 5_000): Promise<void> {
+  const deadline = Date.now() + ms;
+  while (!until()) {
+    if (Date.now() > deadline) throw new Error(`timeout: ${label}`);
+    await new Promise((r) => setTimeout(r, 25));
+  }
 }
 
-/**
- * Stand a node-side Automerge Repo behind the armed DaemonAuthGate — the production shape from
- * open-node-vessel: the gate forwards only authed sockets to the Repo's network, and the sharePolicy
- * shares a doc ONLY with a WS peer whose socket carries an admitted identifier (the gate ring). The
- * vessel's own in-process islands would share freely; here every peer arrives over the WS, so the ring
- * is the whole gate.
- */
-function standNodeRepo(opts: { gatePubKey: string; admitted: ReadonlySet<string> }): Promise<{
-  gate: DaemonAuthGate; repo: Repo; port: number; close: () => Promise<void>;
-}> {
-  return new Promise((resolve, reject) => {
-    const http: Server = createServer();
-    const wss  = new WebSocketServer({ server: http });
-    const gate = standAuthGate(wss, { authTimeoutMs: 300, onRefuse: () => {} });
-    const network = new ReadyWSServerAdapter(gate as unknown as WebSocketServer);
-    const peerIdentifierMap = new Map<string, string>();
-    network.on("peer-candidate", ({ peerId }: { peerId: string }) => {
-      queueMicrotask(() => {
-        const socket = (network.sockets as Record<string, unknown>)[peerId];
-        if (!socket) return;
-        const identHex = gate.getIdentifierForSocket(socket as Parameters<typeof gate.getIdentifierForSocket>[0]);
-        if (identHex) peerIdentifierMap.set(peerId, identHex);
-      });
-    });
-    const repo = new Repo({
-      network: [network],
-      // The gate ring: a WS peer shares only once its socket carries an admitted identifier.
-      sharePolicy: async (peerId) => {
-        const wsSocket = (network.sockets as Record<string, unknown> | undefined)?.[peerId];
-        return wsSocket ? peerIdentifierMap.has(peerId) : true;
-      },
-    });
-    armGate(gate, { gate: gateKeyOf(opts.gatePubKey), aud: AUD, sort: admitProven, shore: provingShore(opts.gatePubKey, { admits: (key) => opts.admitted.has(key) }) });
-    http.listen(0, "127.0.0.1", () => {
-      const addr = http.address();
-      if (!addr || typeof addr === "string") { reject(new Error("bad address")); return; }
-      resolve({
-        gate, repo, port: addr.port,
-        close: async () => { await repo.shutdown(); await new Promise<void>((res) => wss.close(() => http.close(() => res()))); },
-      });
-    });
-  });
+/** Does `leaf` hold a doc `url` carrying `key`, within `ms`? */
+async function leafReads(leaf: GatedNode, url: string, key: string, ms = 1_500): Promise<boolean> {
+  const found = await Promise.race([
+    leaf.repo.find<Doc>(url as never).then((h) => h, () => null),
+    new Promise<null>((r) => setTimeout(() => r(null), ms)),
+  ]);
+  if (!found) return false;
+  try { await waitFor(() => Boolean(found.doc()?.tiddlers?.[key]), "key", ms); return true; } catch { return false; }
 }
 
-describe("browser↔node doc replication — the mesh breathes over the crossed socket", () => {
-  let node: Awaited<ReturnType<typeof standNodeRepo>> | null = null;
-  let clientRepo: Repo | null = null;
-  let clientAdapter: LarWSClientAdapter | null = null;
+describe("leaf↔node crossing — real gate · real Noise IK · real admit · real adapter", () => {
+  test("an ADMITTED leaf crosses the gate and becomes a sync peer (the breath), and the gate proves itself back", async () => {
+    const node = await stand({ storageDir: mkDir() });
+    const leaf = await stand({ storageDir: mkDir(), nexus: "nexus-a.synthetic", dialOut: { node, label: "leaf" } });
+    await waitFor(() => node.seated() === 1, "the gate to seat the admitted leaf");
+    expect(leaf.client?.anergized).toBeNull();
+    const doc = node.repo.create<Doc>({ tiddlers: {} });
+    doc.change((d) => { d.tiddlers[GREETING] = { text: "the DreamNet breathes" }; });
+    expect(await leafReads(leaf, doc.url, GREETING, 5_000)).toBe(true);
+    // THE GATE PROVED ITSELF BACK: the node's peer, met on the socket whose verdict the pinned gate key signed, reads
+    // as that key. A peer this transport never met reads null.
+    expect(leaf.client!.provenKeyOf(node.repo.peerId)).toBe(node.world.pin.signingKey.toLowerCase());
+    expect(leaf.client!.provenKeyOf("a-stranger" as PeerId)).toBeNull();
+  }, 12_000);
 
-  afterEach(async () => {
-    if (clientRepo) { await clientRepo.shutdown(); clientRepo = null; }
-    try { clientAdapter?.disconnect(); } catch { /* never connected */ }
-    clientAdapter = null;
-    await node?.close();
-    node = null;
-  });
+  test("a FOUNDED anon leaf (no admit) is silence under PRIVATE — never a peer, never a doc", async () => {
+    const node = await stand({ storageDir: mkDir() });
+    const doc = node.repo.create<Doc>({ tiddlers: {} });
+    doc.change((d) => { d.tiddlers[GREETING] = { text: "not for the anon" }; });
+    const leaf = await stand({ storageDir: mkDir(), nexus: "nexus-a.synthetic", dialOut: { node, arm: null, label: "anon" } });
+    expect(await leafReads(leaf, doc.url, GREETING)).toBe(false);
+    expect(node.seated()).toBe(0);
+  }, 12_000);
 
-  test("a doc created on the NODE reaches an ADMITTED browser leaf via CRDT sync", async () => {
-    const gatePub = genKey().pub;
-    const { identity, pub } = makeLeaf();
-    node = await standNodeRepo({ gatePubKey: gatePub, admitted: new Set([pub]) });
+  test("a leaf whose session signer is NOT the one its chain certified is silence (real Ed25519)", async () => {
+    const node = await stand({ storageDir: mkDir() });
+    const p = await presenter(node.world, "claims the chain");
+    const other = await presenter(node.world, "holds another signer");
+    const leaf = await stand({ storageDir: mkDir(), nexus: "nexus-a.synthetic", dialOut: { node, presenter: { ...p, signer: other.signer } } });
+    await new Promise((r) => setTimeout(r, 1_500));
+    expect(node.seated()).toBe(0);
+    expect(leaf.repo.peers).toEqual([]);
+  }, 12_000);
 
-    // The node authors a doc — its AutomergeUrl is the capability token that crosses to the browser.
-    const nodeDoc = node.repo.create<{ tiddlers: Record<string, { text: string }> }>({ tiddlers: {} });
-    nodeDoc.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/crossroads/greeting"] = { text: "the DreamNet breathes" }; });
+  test("RED: a leaf that pinned ANOTHER gate's key never reaches this gate; CONTROL: the right pin crosses", async () => {
+    const node = await stand({ storageDir: mkDir() });
+    const impostorPin = (await stand({ storageDir: mkDir(), nexus: "nexus-b.synthetic" })).world.pin;
+    const wrong = await stand({ storageDir: mkDir(), nexus: "nexus-a.synthetic", dialOut: { node, pin: impostorPin } });
+    await new Promise((r) => setTimeout(r, 1_500));
+    expect(node.seated()).toBe(0);
+    expect(wrong.repo.peers).toEqual([]);
+    const right = await stand({ storageDir: mkDir(), nexus: "nexus-a.synthetic", dialOut: { node } });
+    await waitFor(() => node.seated() >= 1, "the right pin to cross");
+    expect(right.client?.anergized).toBeNull();
+  }, 12_000);
 
-    // The browser-shaped leaf crosses the armed gate, then finds + syncs the doc.
-    clientAdapter = dialGate({ url: `ws://127.0.0.1:${node.port}`, identity, aud: AUD, gatePubKey: gatePub });
-    clientRepo = new Repo({ network: [clientAdapter], sharePolicy: async () => true });
-
-    const found = await clientRepo.find<{ tiddlers: Record<string, { text: string }> }>(nodeDoc.url);
-    await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("timeout: the browser leaf never synced the node's doc")), 5_000);
-      const check = () => {
-        if (found.doc()?.tiddlers?.["lar:///ha.ka.ba/bags/crossroads/greeting"]) { clearTimeout(timer); resolve(); }
-      };
-      found.on("change", check);
-      check();
-    });
-
-    expect(found.doc()?.tiddlers?.["lar:///ha.ka.ba/bags/crossroads/greeting"]?.text).toBe("the DreamNet breathes");
-
-    // THE GATE PROVED ITSELF BACK: the node's peer, met on the socket whose verdict the pinned gate key
-    // signed, reads as that key — the proof source a leaf's PersonaGroup ring reads. A peer this transport
-    // never met reads null.
-    expect(clientAdapter.provenKeyOf(node.repo.peerId)).toBe(gatePub);
-    expect(clientAdapter.provenKeyOf("a-stranger" as PeerId)).toBeNull();
-  }, 8_000);
-
-  test("THE SESSION: session messages ride the verified socket both ways, beside the Automerge sync", async () => {
-    const gatePub = genKey().pub;
-    const { identity, pub } = makeLeaf();
-    node = await standNodeRepo({ gatePubKey: gatePub, admitted: new Set([pub]) });
-    const heard: Array<{ socket: unknown; kind: string; body: unknown }> = [];
-    node.gate.onSession((socket, msg) => {
-      heard.push({ socket, kind: msg.kind, body: msg.body });
-      node!.gate.sendSession(socket, "echo", { got: msg.body });
-    });
-    const nodeDoc = node.repo.create<{ tiddlers: Record<string, { text: string }> }>({ tiddlers: {} });
-
-    clientAdapter = dialGate({ url: `ws://127.0.0.1:${node.port}`, identity, aud: AUD, gatePubKey: gatePub });
-    expect(clientAdapter.sendSession("ask", 1)).toBe(false);                 // no verified socket yet: nothing sent
-    clientRepo = new Repo({ network: [clientAdapter], sharePolicy: async () => true });
-    const found = await clientRepo.find<{ tiddlers: Record<string, { text: string }> }>(nodeDoc.url);
+  test("the breath runs both ways — a leaf change propagates back to the node", async () => {
+    const node = await stand({ storageDir: mkDir() });
+    const nodeDoc = node.repo.create<Doc>({ tiddlers: {} });
+    const leaf = await stand({ storageDir: mkDir(), nexus: "nexus-a.synthetic", dialOut: { node, label: "leaf" } });
+    await waitFor(() => node.seated() === 1, "the leaf to cross");
+    const found = await leaf.repo.find<Doc>(nodeDoc.url);
     await found.whenReady();
-
-    const answered = new Promise<unknown>((resolve) => clientAdapter!.onSession((msg) => { if (msg.kind === "echo") resolve(msg.body); }));
-    expect(clientAdapter.sendSession("ask", { n: 7 })).toBe(true);
-    expect(await answered).toEqual({ got: { n: 7 } });
-    expect(heard).toHaveLength(1);
-    // Both sides hold the same session: the nonce the gate issued on THAT socket, and the pinned gate key.
-    const socket = heard[0]!.socket as Parameters<typeof node.gate.getChallengeForSocket>[0];
-    expect(clientAdapter.session).toEqual({ nonce: node.gate.getChallengeForSocket(socket)!.nonce, gatePubKey: gatePub });
-
-    // The Automerge sync still breathes on the same socket after the session frames crossed it.
-    found.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/personal/after-session"] = { text: "still syncing" }; });
-    await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("timeout: the sync stopped after a session message")), 5_000);
-      const check = () => { if (nodeDoc.doc()?.tiddlers?.["lar:///ha.ka.ba/bags/personal/after-session"]) { clearTimeout(timer); resolve(); } };
-      nodeDoc.on("change", check);
-      check();
-    });
-  }, 10_000);
-
-  test("the breath runs both ways — a browser-leaf change propagates back to the node", async () => {
-    const gatePub = genKey().pub;
-    const { identity, pub } = makeLeaf();
-    node = await standNodeRepo({ gatePubKey: gatePub, admitted: new Set([pub]) });
-
-    const nodeDoc = node.repo.create<{ tiddlers: Record<string, { text: string }> }>({ tiddlers: {} });
-
-    clientAdapter = dialGate({ url: `ws://127.0.0.1:${node.port}`, identity, aud: AUD, gatePubKey: gatePub });
-    clientRepo = new Repo({ network: [clientAdapter], sharePolicy: async () => true });
-    const found = await clientRepo.find<{ tiddlers: Record<string, { text: string }> }>(nodeDoc.url);
-    await found.whenReady();
-
-    // The browser writes; the node observes the change over the same crossed socket.
-    found.change((d) => { d.tiddlers["lar:///ha.ka.ba/bags/personal/reply"] = { text: "a citizen answers" }; });
-
-    await new Promise<void>((resolve, reject) => {
-      const timer = setTimeout(() => reject(new Error("timeout: the node never saw the browser-leaf's change")), 5_000);
-      const check = () => {
-        if (nodeDoc.doc()?.tiddlers?.["lar:///ha.ka.ba/bags/personal/reply"]) { clearTimeout(timer); resolve(); }
-      };
-      nodeDoc.on("change", check);
-      check();
-    });
-
-    expect(nodeDoc.doc()?.tiddlers?.["lar:///ha.ka.ba/bags/personal/reply"]?.text).toBe("a citizen answers");
-  }, 8_000);
+    found.change((d) => { d.tiddlers[REPLY] = { text: "a citizen answers" }; });
+    await waitFor(() => Boolean(nodeDoc.doc()?.tiddlers?.[REPLY]), "the node to see the leaf's change");
+    expect(nodeDoc.doc()?.tiddlers?.[REPLY]?.text).toBe("a citizen answers");
+  }, 12_000);
 });

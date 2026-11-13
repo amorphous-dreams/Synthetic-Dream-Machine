@@ -50,7 +50,6 @@ function allowAllSlot(): { slot: IdentitySlot; asks: string[] } {
   const asks: string[] = [];
   const slot: IdentitySlot = {
     did: "did:web:example/vessels/allow-all",
-    deriveActorId:      async () => "00000000-0000-4000-8000-000000000000",
     verifyCapability:   async (docUrl) => { asks.push(docUrl); return true; },   // unconditional grant
     delegateCapability: async () => null,
     verifyDelegation:   async () => false,

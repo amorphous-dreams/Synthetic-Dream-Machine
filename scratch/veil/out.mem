@@ -1,0 +1,308 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/veil/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-12 (file date) — source `.lares-scratch/veil/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/veil/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/veil/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-12
+
+Verbatim scratch record `.lares-scratch/veil/out.md` (hand-back, file date 2026-11-12); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/veil/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-4-veil-finisher-read-this-first`>>
+
+! RELAUNCH 4 (controller relaunch 2 of 3) — Veil-Finisher (Opus) — read this first
+
+Head 7b6edd045, pushed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-verb-door-refuses-by-name-already-true-now-p`>>
+
+!! (1) The verb door refuses by name — ALREADY TRUE, now pinned
+* `uds-locked-fails-closed` U1: unfounded place (stand-in `control-home-unnamed`), `init-wiki` over the channel → `{status:"error", refusal:{reason:"control-home-unnamed"}}`, nothing placed, well under 2s. Passed first run: uds-channel.ts floor branch refuses every verb outside FLOOR_VERBS at `controlHomeRefusal` before placement or wait.
+* CORRECTION of relaunch 3: W4's 600s hang was the vector asking `vessel.storeClaim.socketPath`, which `openNodeVessel` claims and never serves (only main.ts serves the verb front, `serveUdsFront`). W4 header and ladder trued.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/node-control-home-before-any-face-not-built-exac`>>
+
+!! (2) Node control home before any face — NOT BUILT; exact map
+The reorder is mechanically small (init.ts runInit: after `foundThePlace` (~l.425) call `standVesselSecretHome(repo)` then `nameControlHome(place.daemonHandle, secret.controlUrl)`, mirroring browser open-browser-vessel.ts ~l.972; `runFoundTheFace` l.657 then opens the standing home and the daemon's first name holds; fleet-join land l.319 opens it too). It is blocked by a RULING COLLISION, not code:
+* Operator ruling 2026-11-09, in code and canon: "THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT … both mint with the FACE … a herm that never lights a face holds neither" (init.ts l.421-424; floor-verbs.ts header; control-home.ts standControlHome doc).
+* On the node a herm is NOT a founding class: `runInit` founds one place; "herm" is a stand-time choice (`--recipe herm` → `askedStanding`, main.ts l.126) or the forced standing of any faceless/locked place (`standAs`, main.ts l.407). So "control home at place founding" makes EVERY node place, herm included, name one, against "a herm names none".
+* The fork to rule: (a) founding grows a class bit (`lares vessel found --herm` founds no control home; the default founds the veil floor's), or (b) the control home mints at the first unlock of a non-herm standing (composeHearthStanding over an open key and no face), or (c) the herm keeps a named home its composition never stands.
+* Tests that encode the 2026-11-09 ruling and must move by intent once ruled: secret-home-placement "RED (Gaia Thursday): a place founding (a herm, no face) mints no secret home and no control document"; uds-floor-answers F1/F2/F4 (Saltmere herm); direct-holder-refused-unlock U2; device-admit-face-edge; cabal-join; tools/mesh-scenarios-probe.test.mjs; tools/floor-unlock-door F1 (fresh boot then reads `vessel-locked` stand-in, not unnamed).
+* Runtime to verify after: open-node-vessel's faceless path ("working layer held in memory at the floor (control-home-unnamed)") should stand the floor working slot through keyhive `floorWorking` once control reads (shared code, browser-proven); the floor verb gate (keyhive veil-floor-verbs G1) then lets the unlocked veil mint.
+* (3) W4: drop `NODE_VEIL_STANDS`, and ask through a served front (start `serveUdsFront`/`makeUdsSeat` in the vector, or call the daemon's `placeVerb` and read the outcome from the control store), not `storeClaim.socketPath`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci`>>
+
+!! CI
+* Run 43229665534 (428b10875): witnesses green, test cells green; E2E 1/4 cancelled by the next push.
+* Run 43233970991 (7b6edd045): SUCCESS, every job green (all four E2E shards, web-tw5, node-a/b, cli-mesh, witnesses).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-3-veil-finisher-read-this-first`>>
+
+! RELAUNCH 3 (controller relaunch 1 of 3) — Veil-Finisher (Opus) — read this first
+
+All pushed; head 428b10875 (`lar:///census.names.door/node-veil-lift`: seed-census row counts the node veil-lift door).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci-2`>>
+
+!! CI
+* Run 43223856501 (f6600f42b): every test cell and E2E 1/4-4/4 green, golden included; red only seed-census (cured in 428b10875).
+* Run 43229665534 (428b10875): Quick gates, Witness cell rest, Witnesses, web-tw5, node-a, node-b green; E2E shards still running at hand-back (that commit changes only tools/seed-census.mjs). Vite stopped by its process group (scratch root root8).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits-this-round`>>
+
+!! Commits this round (oldest first)
+* `lar:///retry.counts.unacknowledged/control-pending` : ruling (a). vessel-host posts `{t:"control-pending", surface, eventId}` to a resend's sender and registers the act's id on arrival (before litFaceVessel answers); protocol/port/main carry it to `projectionSink.applyPending` (refunds the attempt). An act the bound ended stays named in `exhausted`; its late answer clears or paints. Reds watched: projection-sink-resend (two), vessel-host-surface pending case.
+* `lar:///verdict.reads.own/remarked-draft` : tw5 `dispatchEnded` reads `_whenAllRested`'s outcome: acked → kept, else owed members refuse. Red watched: tw5 tests/receipt-hold-remarked.test.ts (next draft under `Draft of 'New Tiddler'` typed during the rest).
+* `lar:///canon.carries.retry/control-pending` : dreamdom-port-contract #/retry-law.
+* `lar:///veil.signs.node/per-face-record` : node src/node-veil-lift.ts, `vesselVeilLiftDoor` in node-vessel-identity, carrier row `veil-lift` (face-hot, D, bundle stays), keeps at founding (init.ts settle) and fleet-join landing. Red watched NV1-4 (CustodyRowUnknown). Census tests moved by intent.
+* `lar:///canon.carries.twin/node-veil-lift` : ladder + identity + CHANGELOG.
+* `lar:///gap.holds.w4/node-veil-control` : CI ran W4 to 600s: node unfounded place has no control document (`control-home-unnamed`), so no unlocked node veil, and the verb channel ask hangs (outcome ledger lives in the absent control doc) instead of refusing. W4 held behind `NODE_VEIL_STANDS=false`; ladder owed line names it. Evergreen canon-history 99→98 ("no longer" reworded).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smoke`>>
+
+!! Smoke (stress, 8 tiddlers back to back)
+Before: faced `binding-unavailable@3`, then `receipt-refused@3`. After: 3 faced + 3 veil runs all `refusals []`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open-findings`>>
+
+!! Open findings
+* Node veil gap (above): the verb channel should refuse by name when the control home is unnamed, not wait.
+* Replica layer: gap named in canon, read not run.
+* Owed: lit set wider than one face; pins by PersonaGroup; real fleet-join over a floor.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-2-veil-finisher-read-this-first`>>
+
+! RELAUNCH 2 — Veil-Finisher (Opus) — read this first
+
+Head f9795875c, all pushed. Vite stopped by its process group.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci-3`>>
+
+!! CI
+* Run 43211620184 (5d1e5e57d): web-tw5 GREEN (golden-whole-road W1-W6 and record-port-boot pass), E2E 1/4-4/4 green, node-a/b and cli-mesh green. Red: only typecheck-tests-witness (tw5 220 over 219), which dfe6fd194 cures. floor-unlock-door F1w reads as a todo there, not a fail. The run on f9795875c had not been read when this was written.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits`>>
+
+!! Commits (oldest first)
+* `lar:///hold.names.replicas/volatile-plane` : THE OPEN DEFECT, confirmed by log. The island's receipt hold named the `temp` slot (a MemoryTiddlerStore no handle backs), `requestAsking` returned false silently, the page painted `receipt-refused`. Every vessel-side receipt read `issued`: the prior "draft/personal never reach the vessel" diagnosis was FALSE. Cure: tw5 `island-adaptor.ts` `dispatchEnded` filters bags by `receipt.holds` (the law `_ackDurably` already reads). Red watched: tw5 tests/receipt-volatile-plane.test.ts. Ladder line trued.
+* `lar:///wait.rides.arrival/port-boot-handed` : tw5 record-port-boot `handed` waited 200 pump turns on an off-thread digest; now waits for the snapshot (test timeout bounds). Shape reproduced with a 1-turn bound.
+* `lar:///census.guards.floor/mirror-rest` : browser src/mirror-rest-verdict.ts `mirrorInputsAt`; `mirrorInputs` passes through it (face from `sealedCells.face()`, restsSealed false until wired). Red MR1 watched under the naive verdict.
+* `lar:///canon.names.gap/burn-replica` : the replica layer's gap named in the-veil-ladder (the face's Keyhive Archive is a face row on both hosts, so keys leave with the tree; hydration also needs a session wearing the face).
+* `lar:///veil.mints.restarts/floor-user-w4` : node e2e W4 written, NOT run.
+* `lar:///canon.trues.lift/realm-and-identity` : cabal-realm, lararium-identity, ladder W4 line.
+* `lar:///witness.holds.ceiling/volatile-plane-test`, `lar:///changelog.names.fixes/veil-editor-census`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smoke-evidence`>>
+
+!! Smoke evidence (smoke/)
+* d1 (before cure, stress): `REFUSAL at 1 receipt-refused@3`; DIAG showed `no handle for lar:///ha.ka.ba/wikis/lares/temp`.
+* p6 (after, veil, human pace 1.5s): `S made 6 … refusals [] | rest 47/47/0`.
+* pf6 (faced via ?found, human pace): `refusals [] | rest 53/53/0`.
+* d3-d7 (veil, stress) AND f6/f7 (FACED, stress): `binding-unavailable@3` both — a PRE-EXISTING pacing fault, not veil (see below).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/finding-resend-exhaustion-under-a-slow-rest`>>
+
+!! FINDING (fork for the controller): resend exhaustion under a slow rest
+projection-sink resends every pending act at each fresh frame and each new relay (777ea3764, bound 3). vessel-host refuses a resend while the first still waits (55b631484, `control-event-pending`), and that refused resend still counts. An act's result waits on `receipt.held()` (every hold in flight), so under quick successive acts a close-click's answer arrives after 3 frames: the page ends it `binding-unavailable`, then the late `applied` arrives to nothing. Faced and veil alike. CI golden W6's plate (`binding-unavailable`) reads as this. Cure shapes (untried): (a) the vessel tells the page a resend met a pending act, and the page counts no attempt for it; (b) the page resends only at a re-arm (doors replaced), where an answer can actually be lost. Both move a deliberate law in vessel-host/projection-sink.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/still-owed`>>
+
+!! Still owed
+* Item 5, node veil-lift twin: add a `veil-lift` face row in node `vault-carriers.ts` (faceRowOf, face-hot, D, select group), a node keep fn beside face-atom-store (`withCustodyRows`), signed through the node's place key door (`vesselPlaceSignerDoor`; mesh `signVeilLift` takes a seed, so either a signer variant in mesh veil-lift.ts or the door's seed), called at node founding (`runFoundTheFace`) and admit landing. Expect carrier-census tests to move.
+* The replica layer (gap named in canon).
+* Run of node W4; lit set wider than one face; pins by PersonaGroup; real fleet-join over a floor.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/relaunch-1-final-state-read-this-first`>>
+
+! RELAUNCH 1 — FINAL STATE (2026-11-12 ~03:30 PST) — read this first
+
+All pushed. Branch head: the changelog commit atop 2f2ce0bed. Vite and the staged hearth stopped by their own process groups.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits-since-febe897bb`>>
+
+!! Commits since febe897bb (oldest first)
+* `lar:///weld.reads.hosts/floor-then-face` : keyhive `tests/floor-then-face-weld.test.ts` (W1 floor record names no face; W2 node `commands/init.ts` and the browser boot both call `foundThePlace` then `foundTheFace`, never `runFoundingCeremony`, red against the browser source at 62cb8d14b; W3 a face-0 landing over an unwritten floor lifts nothing).
+* `lar:///canon.carries.veil/seven-carriers` : seven carriers plus the-veil-ladder (why each face keeps a daemon document: seven singleton pin titles; the refusal a second lit face meets: `face-edge-absent` at `faceProviders.lit`).
+* `lar:///burn.falls.floor/overlay-severs` : boot reads `faceTreeStands` per overlay; a cleared face's overlay leaves; the vessel boots `bootstrap.floor`. Red VF5 watched.
+* `lar:///veil.signs.link/per-face-record` : mesh `src/veil-lift.ts`; browser `src/browser-veil-lift.ts`, face row `veil-lift/<G>`, `signBrowserVeilLift`. Red VF6 watched.
+* `lar:///welds.follow.veil/four-ci-reds` : seed-census, browser-share-config, nexus-board-climb-at-leaf, wiki-island-custody-rest.
+* `lar:///tab.waits.floor/faceless-over-lighting` : `vessel-sessions.ts` admit waits out a veil floor's light. Red FH0 watched. e2e ceremony K2 takes `?found`.
+* `lar:///changelog.names.veil/floor-and-overlay` : CHANGELOG entries.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ci-4`>>
+
+!! CI
+* Run 43197955697 (febe897bb): four unit reds (cured), e2e ceremony K2, glass-tabs, golden-whole-road W1-W6.
+* Run 43203654613 (2f2ce0bed): Quick gates, witnesses, cli-mesh, node-a, node-b, E2E 2/4 and 4/4 green; E2E 1/4 and 3/4 unread at this write. web-tw5 red on TWO tests:
+*# tw5 `record-port-boot.test.ts` "port-boot-hands-the-set-whole" (`expected 2 to be less than -1`): green on the run before, no tw5 source moved since; reads as a wait that lost a race. Unexamined.
+*# e2e golden-whole-road W6: a refusal plate (`binding-unavailable`, control 107) covered the click.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-open-defect`>>
+
+!! THE OPEN DEFECT (first thing for a successor)
+A veil floor refuses the receipt of an act made through the PROJECTION (the island's own editor, drafts included).
+* Repro, no e2e: vite on a scratch LAR_ROOT, then `node /home/joshu/.lares-scratch/veil/smoke/smoke6.mjs <out> http://localhost:5173/ 3`. It prints `REFUSAL at 1 receipt-refused@3`, the page logs `[vessel] a control event refused: control-event-pending …` on each resend, and three unanswered sends end as `binding-unavailable` (golden W6's plate; golden W1 on the first run was the same act never answered).
+* The mirror path stays whole (smoke2: write, rest 21/21/0, reload, read back).
+* Diagnosis, read off the code and NOT yet confirmed by naming the document: `receiptInStore` refuses when the vessel's copy never comes to hold the island's heads. A veil's DRAFT and PERSONAL slot documents stand as `vessel-only` binding documents (daemon-bag bindings, catalog floor drafts), and the share verdict keeps a vessel-only document from every wiki island unless `deviceDocs.floorWiki(documentId)` (browser `browserShareConfig`, node `vesselOnlyShareVerdict`). Only the floor's `working` and `canon` slots file there. So the wiki island's draft and personal documents never reach the vessel, and each act that touches one refuses its receipt.
+* The cure's shape: file the veil floor's draft and personal slots as the vessel's own, as `working` files (`slot-doc-resolver.ts` `floorWorking`: mint the id ahead, `announceFloor(slug, kind, id)`, control row `floor-slot/<slug>/<kind>`, THEN the first byte). NAMED BEFORE THE FIRST BYTE matters: a held bag refuses a clear chunk at rest (`held-clear-at-rest`), so naming an already-rested document would break its load. Then widen `announceFloor`'s kind in slot-doc-resolver.ts and its one wiring line in operator-daemon-behavior.ts (~line 490, away from Leaf-Wright's two sites), and have the Lift drop the two control rows when their bindings lift (anon-lift steps 2-3). Reds: a veil's projection act answers `applied`; the floor draft rests under the vessel's seal mark.
+* canon the-veil-ladder says "a draft and a personal margin rest beside it the same way"; the seal filing for those two never landed. True that line or build it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/other-notes-for-a-successor`>>
+
+!! Other notes for a successor
+* `?found` door: shape unchanged since afc469581. vessel-protocol.ts, vessel-host.ts, main.ts and operator-daemon-behavior.ts untouched in this relaunch.
+* golden-whole-road at a hearth-served veil: smoke/hearth.mts stands a staged hearth on a scratch root (`LAR_STAGE_DIR`, `LAR_SAME_ORIGIN=true`), smoke5.mjs walks golden's makeTiddler; it passed 4/4 locally, so the defect races.
+* Mirror census (item 4): finding, no code. `mirrorInputs` never answers `sealedRest`, so every browser mirror holds person-authored code plugins (`plugin-gate`), veil or faced. A guard belongs where someone first wires `sealedRest` true.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/still-owed-2`>>
+
+!! STILL OWED
+the open defect above; the burn's replica layer (re-seal the face's workbench rows under the vessel key before a clear, mount read-only beneath the fresh floor layer); the node's veil-lift twin (`vault-carriers.ts` face rows, signed through the node's place key door); the mirror-census guard; e2e floor-user-wiki-refuses W4; a lit set wider than one face per boot; pins keyed by PersonaGroup; a real fleet-join answer over a floor; cabal-realm and lararium-identity unread this round.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/first-round`>>
+
+! FIRST ROUND (history)
+
+Five commits atop 4bd65dc31, all pushed. Tree clean. Vite stopped by its own process group.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/commits-2`>>
+
+!! Commits
+* c64d6f36d `lar:///seal.refiles.inplace/canon-lift-half` : Ruling 2's Lift half.
+* 62cb8d14b `lar:///window.holds.key/veil-home-prebind` : `secret-home` row rests clear before the place tree binds (U6).
+* a047984ed `lar:///browser.stands.veil/floor-then-overlay` : browser veil floor, face as overlay keyed by PersonaGroup.
+* afc469581 `lar:///door.asks.face/found-over-floor` : the page's founding door (`?found`).
+* febe897bb `lar:///canon.trues.veil/built-and-owed` : canon, e2e header, test type ceiling.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/built`>>
+
+!! Built
+# Ruling 2 Lift half
+#* mesh `sealed-doc-store.ts`: port `vesselKey`; `#open` opens a vessel-key value under a face bag; `refileHeld(documentId)` re-seals in place. `sealed-rest.ts`: `composeSealedRest({vesselKey})`, `sealMapped` runs the re-file; `announceLiftedDoc`; slot notice carries `lifted`.
+#* mesh `device-daemon-docs.ts`: `release(documentId)` (+ `releaseFloor` io, sticky against a lagging control row). `secret-home.ts`: `SecretHomeRest.release`, `VesselHeldHomes.key()`, `releaseBesideSecretHome`.
+#* hosts: node `open-node-vessel.ts` `onSlotNamed(…, lifted)`; browser `open-browser-vessel.ts` `onSlot(…, lifted)`, `browser-device-filing.ts`.
+#* keyhive `anon-lift.ts` step 5 (canon leg), `slot-doc-resolver.ts` `announceLifted`, `operator-daemon-behavior.ts` wiring.
+# Lane B
+#* `browser-custody.ts`: pre-bind window admits `secret-home`.
+#* `open-browser-vessel.ts`: floor first (`standBrowserSecretHome` + `foundThePlace` + `nameControlHome`); `BrowserBootstrap.floor` and `.faces`; `overlayFace`, `overlaysOf`, `facedBootstrap`; face region inside one `faced` closure; faceless `daemonAuth`; `foundFace` option composing `foundTheFace` over the floor; place KEL arms only with an admit or the founding ask; hello selects an overlay; `readBrowserVesselFaces` lists every overlay; result `face: string | null`.
+#* web: `vessel-protocol.ts` (`SeedRest "open-veil"`, `VesselBoot.foundFace`), `workers/vessel-host.ts`, `main.ts` (seed line, `?found`), `index.html` (the door's link).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reds`>>
+
+!! Reds
+Watched fail, then green:
+* mesh `sealed-rest-refile` RF1 (`pointer-malformed`).
+* keyhive `veil-floor-lift` V8 (canon row never moved).
+* browser `browser-custody` BC32 (`no-custody-slot`).
+* the baseline smoke on 62cb8d14b: a fresh browser asked `card` then `bind-first` (the red for proof a).
+Written with the cure, never watched red: mesh `device-daemon-docs` V1e, `secret-home` release test, `sealed-rest-refile` RF2; browser `veil-floor-boot` VF1-VF4.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/smoke-2`>>
+
+!! Smoke (real browser, vite on scratch LAR_ROOT /home/joshu/.lares-scratch/veil/root1)
+Scripts: /home/joshu/.lares-scratch/veil/smoke/{smoke.mjs,smoke2.mjs,smoke3.mjs,smoke-found.mjs}
+* base (before): `[test-custody:kiai-smoke] ⚠ the vessel asked (card)` then `(bind-first)`, then live. smoke/base/
+* f4 (veil floor): `A live; custody asks before live: 0` · `B wrote Veil Note … rest before 2/2/0 after 21/21/0` · `B read back after reload: "veil floor words q7x9 written with no face" custody asks total: 0` · seed row `open: an unbound veil at the throwaway rung…` · census `lares:vessel:repo`: four documents `held` (vessel-key seal mark `facf2c4b`), `leak: 0` in every store · `[sealed-rest] save-unmapped: 37uUS8d8yLYc… waits in memory, never clear` (it later rests `held`). Screenshots smoke/f4/v1-live.png, v2-written.png, v3-reloaded.png; console smoke/f4/console.txt.
+* found (fresh `/?found`): asks `card`, `bind-first`, live. smoke/found/
+* f5 (veil writes, then `/?found`): `D after ?found: vessel key kept: true | seed: sealed under this browser's passphrase slot | floor note under the face: "veil floor words q7x9 written with no face"` · `[daemon] the seat landed: 4 floor record(s) moved under the face, 0 burn(s) finished` · `[sealed-rest] save-unsealed: 2RjUhe93zN2f… waits in memory` (pointers rest after) · leak 0. Screenshot smoke/f5/v4-found.png.
+The unknown settled: a wiki island's port writes pass with a faceless daemon (write, rest, reload, read back).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gates`>>
+
+!! Gates
+* `pnpm -r typecheck`: exit 0, zero errors (sensorium and node built first).
+* `tools/typecheck-tests-witness.sh`: every package at its ceiling (keyhive rose to 109, cured to 107).
+* `tools/genesis-parity-witness.sh`: genesis carries the engine and every packed plugin. Unbaked rows: none; genesis/unbaked.json stays absent.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/canon-trued`>>
+
+!! Canon trued
+the-veil-ladder #/the-base-model (ruling 5, the many-faces paragraph, built/owed), restamped by `lares meme normalize` under a scratch LAR_ROOT; the hook read it canonical.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/owed`>>
+
+!! Owed (precise map)
+* E2E FALLOUT, unrun: every browser e2e that waits for a founding ceremony at a bare arrival now meets a veil floor; each needs `?found` on its URL or a veil expectation. `rest-before-reload` likely passes as a veil.
+* Item 3: the burn fallback (boot on `bootstrap.floor` with the last-read replica read-only beneath a fresh floor layer) and the signed `veil-lift` record in each face's private planes. Neither started. The `floor` record gives the fallback its target.
+* Item 4: the mirror-census red (a veil-floor mirror runs no person-authored code); a node/browser parity weld through one fixture (both hosts already call `foundThePlace`; the floor-open/locked/herm decision lives in shared keyhive code, veil-floor-verbs G1-G3); e2e floor-user-wiki-refuses W4 (header trued only).
+* Item 5: k15-wave-d row 38, browser-vessel-lift, device-capabilities-2026 #/device-seats, session-contract, recipe-layer-model, disk-projection, w29-place-kel-lane, cabal-realm, lararium-identity. Untouched.
+* Addendum 1 remainder: a lit set wider than one face per browser boot (`faceProviders.lit` still refuses `face-edge-absent` for a second face); a later face's admit still founds a daemon document of its own (`firstOverlay` fork in the admit branch) since two faces' pins in one island stay unread; per-face `veil-lift` link.
+* Addendum 2: the node already composes `foundThePlace` then `foundTheFace` (ceremony-core `runFoundingCeremony`; the browser now calls the same two). Not verified here: whether `lares vessel found` runs a Lift at face 0's landing, and no parity red compares the two floor records. Forks that stand: the browser keeps `bootstrap.floor`/`.faces` in IndexedDB while the node reads its own stores; the browser's vessel key rests clear pre-bind while the node's custody differs.
+* Unread at boot level: no real fleet-join answer landed over a floor (the fleet-join door's bind and card at the offer); a canon re-file in a live vessel (the veil minted no wiki in the smoke); whether the island's catalog handle moves a lifted row between halves at once or the next face-catalog stand carries it; a replayed Lift in the browser (composition tests cover replay).
+* `vessel-sessions.ts` needed no change: a faceless session over clear custody admits `clear` and lights; vessel-face-sessions 9 green.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XulU4zzns2f8G_7JAy_Bu05leBfhPK9SKikqMbZ09sM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

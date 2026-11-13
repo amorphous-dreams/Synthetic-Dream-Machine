@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/docs/pono/recipe-layer-model.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 14
-manao             = 15
-manaoio           = 13
 namespace         = "&#x2299;"
 pattern-integrity = true
 revised-on        = "2026-09-13"
@@ -22,11 +18,9 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/docs/pono/recipe-layer-model"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/ruling>>
+<<~ ahu slot=`#/ruling`>>
 
 ! Recipe Layer Model ~ a scout against the ruling
 
@@ -48,7 +42,7 @@ The ruling names FOUR strata per recipe — ''canon bags'' ← ''named wiki bag'
 
 <<~/ahu>>
 
-<<~ ahu #/as-mounted>>
+<<~ ahu slot=`#/as-mounted`>>
 
 !! The layers exactly as three composites mount them
 
@@ -64,13 +58,13 @@ Laid by `expandRecipe` (`packages/lararium-mesh/src/wiki-recipe.ts`) walked bott
 |---|---|---|---|---|---|---|
 | `wikis/{slug}/temp` | `MemoryTiddlerStore` | yes | ''never'' (`slotLayerFlags`) | device | none — fresh per boot | none |
 | `wikis/{slug}/draft` | `AutomergeDocStore` | yes | no | fleet when seated · device when not | THE ONE slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`): `daemon/draft-bindings/{fingerprint}` (PersonaGroup × recipe-fingerprint) when the vessel holds a SEAT; else the floor doc `wikis/{slug}/drafts/{did}` in the catalog registry, `face-reach: vessel-only` | none |
-| `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | fleet | `daemon/personal-bindings/{fingerprint}` — its own layer by ruling | none |
-| `wikis/{slug}/working` | `AutomergeDocStore` | yes | ''YES'' — the ONE default | fleet | `daemon/working-bindings/{fingerprint}` (the address derives from a secret only that face's vessels hold; a seated face composes on top) | `wikis/{slug}/` via the `wikiSlot:"working"` grant (`open-node-vessel.ts`, `vessel-island-pool-core.ts`) |
+| `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | the face's own devices | `daemon/personal-bindings/{fingerprint}` — one face's view-state and its PRIVATE MARGIN over the shared workbench (operator ruling 2026-11-11: //"Personal can absorb the new caps."//) | `<projections>/personal/<F>/{slug}/` via the `wikiSlot:"personal"` grant's `faceFolder` |
+| `wikis/{slug}/working` | `AutomergeDocStore` | yes | ''YES'' — the ONE default | every member face | THE REALM WORKBENCH (cabal-realm#/the-workbench): the wiki's first stand under a face founds a private cabal of one and the vessel ledger notes it; the slot reads `realmWorkbenchDocUrl(realm, slug)`, and a share seats more faces without moving it. A vessel that wears no face stands none (`no-face`). The daemon wiki alone keeps its face-private device slot | `wikis/{slug}/`, or the workspace the wiki's share row names, via the `wikiSlot:"working"` grant (`open-node-vessel.ts`, `vessel-island-pool-core.ts`) |
 | `bags/{slug}` (canon) | `AutomergeDocStore` | yes | no | fleet | `grants.wikiUrl` = the catalog's `bags/{slug}` oracle | `bags/{slug}/` via the `selfCanon` grant |
-| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares and lararium bags share library-layer behavior), laid at boot and reconciled live (`recipe-watch.ts`); per-vessel `lares` and `lararium` pointers still ride `@oracle`; bootstrap/catalog relocation remains owed | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants |
+| `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares and lararium bags share library-layer behavior), laid at boot and reconciled live (`recipe-watch.ts`); recipe-watch resolves their document pointers from the vessel's `@catalog`, while genesis recipe seeds remain on `@oracle` | `bags/lares/`, `bags/lararium/`, `bags/crossroads/` for the literal grants |
 | `bags/oracle` (floor) | `AutomergeDocStore` | no | no | fleet · federatable | `grants.islandUrl` | none |
 
-Two facts the table hides. (1) ''Every CRDT slot except the oracle floor registers `writable:true`'' — the floor mounts read-only, and a write aimed there copies up into the wiki's working layer. A working layer always mounts (operator ruling); `defaultWritableSlot` (`packages/lararium-mesh/src/wiki-recipe.ts`) names the working slot alone. (2) ''A hand's DELETE shadows a lower layer from working.'' `island-adaptor.ts` routes every hand tombstone through `_tombstoneBag`: a title that landed in the working layer or above it (a draft, a personal record) takes its tombstone where it lives; a title that landed beneath the working layer (a canon bag, writable or read-only) or from an unmounted bag takes an ordinary tombstone where its save would land (the layer the cascade names at or above the working layer: the temp slot for session state, the personal slot for a person's view state; else the working layer), and the lower bag receives no write. ''A hand's SAVE lands at or above the working layer, never beneath it'' (`_settle`, `_saveBag`): the cascade and its pointers choose among the layers the composition mounts there; a title that already lives in a layer above the cascade's choice stays where it lives, so the wiki shows the edit; a verdict naming a lower layer or an unmounted bag refuses by name on the alert rail and writes nothing (`wiki-shore-route.test.ts`). The composite resolves a title's topmost record, a tombstone included (`CompositeStore.resolveLayered`), and the wiki shows what that composition resolves. A wiki that mounts no working layer refuses the delete by name on the alert rail. Witnesses: `packages/lararium-tw5/tests/wiki-shore-shadow.test.ts`; `tests/lar-kind.test.ts` (a draft's delete lands in the draft slot).
+Two facts the table hides. (1) ''Every CRDT slot except the oracle floor registers `writable:true`'' — the floor mounts read-only, and a write aimed there copies up into the wiki's working layer. A working layer always mounts (operator ruling); `defaultWritableSlot` (`packages/lararium-mesh/src/wiki-recipe.ts`) names the working slot alone. (2) ''A hand's DELETE shadows a lower layer from working.'' `island-adaptor.ts` routes every hand tombstone through `_tombstoneBag`: a title that landed in the working layer or above it (a draft, a personal record) takes its tombstone where it lives; a title that landed beneath the working layer (a canon bag, writable or read-only) or from an unmounted bag takes an ordinary tombstone where its save would land (the layer the cascade names at or above the working layer: the temp slot for session state, the personal slot for a person's view state; else the working layer), and the lower bag receives no write. ''A hand's SAVE lands at or above the working layer, never beneath it'' (`_settle`, `_saveBag`): the cascade and its pointers choose among the layers the composition mounts there; a title that already lives in a layer above the cascade's choice stays where it lives, so the wiki shows the edit; a verdict naming a lower layer or an unmounted bag refuses by name on the alert rail and writes nothing (`wiki-shore-route.test.ts`). The composite resolves a title's topmost record, a tombstone included (`CompositeStore.resolveLayered`), and the wiki shows what that composition resolves. A wiki that mounts no working layer refuses the delete by name on the alert rail. Witnesses: `packages/lararium-tw5/tests/wiki-shore-shadow.test.ts`; `tests/lar-kind.test.ts` (a draft's delete lands in the draft slot). (3) ''At a veil floor the working layer rests in the vessel's own floor slot'' (`floor-slot/<slug>/working` in the control document, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>> #/the-base-model): the cascade reads the same, the document seals under the vessel's key, and the seat's landing moves its rows into the face's workbench.
 
 !!! B. The daemon ISLAND composite (`recipe: { wikiSlug: "daemon" }`)
 
@@ -78,14 +72,16 @@ Same kernel (`packages/lararium-node/src/open-daemon-vm.ts`; browser `open-brows
 
 | layer (top wins) | writable | default | sync class | disk mirror |
 |---|---|---|---|---|
-| `wikis/daemon/temp` | yes | never | device | none |
-| `wikis/daemon/working` (late-attached) | yes | ''YES'' | fleet | `wikis/daemon/` (node) — `daemonWorkingMirror` (`packages/lararium-node/src/bag-paths.ts`) rides the daemon manifest's `diskMirrors` (`open-daemon-vm.ts`), mounted by `node-daemon-island.ts`'s `onBoot` → `mountDiskProjection` (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>, `#/daemon-mirror`) |
-| `bags/daemon` (the daemon bag: verbs, outcomes, bindings — the control plane) | yes | no | fleet (private plane) | none — excluded by design |
-| `bags/crossroads` | yes | no | fleet · federatable | `bags/crossroads/` (node) — the daemon designates it in its own mirror set (`open-daemon-vm.ts`), so a residency MOVE out of `wikis/daemon/working` publishes there |
+| `wikis/daemon/temp` | yes | never | device | `<projections>/wikis/daemon-<F>/temp/` only where the recipe designates it and the consent row names the slug (`daemonTempMirror`); else none |
+| `wikis/daemon/working` (late-attached) | yes | ''YES'' | fleet | `<projections>/wikis/daemon-<F>/` (node, the worn face's folder) — `daemonWorkingMirror` (`packages/lararium-node/src/bag-paths.ts`) rides the daemon manifest's `diskMirrors` (`open-daemon-vm.ts`), mounted by `node-daemon-island.ts`'s `onBoot` → `mountDiskProjection` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>, `#/daemon-mirror`) |
+| `bags/daemon-<F>` (the worn face's daemon canon, mounted while the face stands lit and proved) | yes | no | fleet (private plane) | `<projections>/bags/daemon-<F>/` — `daemonCanonMirror` |
+| `bags/kahua` (the face's lift-only stage) | yes | no | fleet (private plane) | `<projections>/bags/kahua-<F>/` — `kahuaStageMirror` |
+| `bags/daemon` (the daemon document: bindings; no control family rests here) | yes | no | fleet (private plane) | none — no mirror names it |
+| `bags/crossroads` | yes | no | fleet · federatable | the crossroads bag root by origin (`projectionRoots`: the canon source's `crossroads/` where it stands there, else `<projections>/bags/crossroads/`) (node) — the daemon designates it in its own mirror set (`open-daemon-vm.ts`), so a residency MOVE out of `wikis/daemon/working` publishes there |
 | `bags/lares` · `bags/lararium` | yes | no | fleet | none here |
 | `bags/oracle` | no | no | fleet · federatable | none |
 
-The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `wikis/daemon/` (`open-daemon-vm.ts` `diskMirrors`); the daemon's receipts, ward audits and summons follow the working layer and carry `disk-projection: no`, which the disk projector skips (`packages/lararium-node/src/disk-projector.ts`).
+The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:///ha.ka.ba/wikis/daemon/working`). A draft in the daemon wiki routes to `wikis/daemon/draft` — a bag with NO layer — and `composite.put` refuses loud; the daemon mounts `working` by ruling, never draft or personal. On a node the working layer projects to `<projections>/wikis/daemon-<F>/` (`open-daemon-vm.ts` `diskMirrors`, `daemonDiskMirrors` in `bag-paths.ts`); the daemon's receipts, ward audits and summons rest in the vessel control document (`packages/lararium-mesh/src/control-home.ts`), which no recipe composes and no mirror names, so the disk projector never meets them.
 
 !!! C. The HOST composite (VM-free, one per vessel)
 
@@ -98,7 +94,7 @@ The two-vessel e2e witnesses the attach (`[daemon] working layer attached: lar:/
 | `wikis/{slug}/working` | yes | ''yes'' — the host working layer | fleet | `wikis/{slug}/` |
 | `bags/{slug}` | yes | no | fleet | catalog `bags/{slug}` |
 | PersonaGroup · circles · identities · sessions · `bags/daemon` | yes | yes (no `defaultWritable` given → true; registered BELOW the wiki, so the wiki's canon shadows them) | fleet (private) | bootstrap |
-| `bags/lares` · `bags/lararium` | yes | no | fleet | oracle well-known tiddlers |
+| `bags/lares` · `bags/lararium` | yes | no | fleet | vessel's `@catalog` pointers |
 | `bags/oracle` | no | no | fleet · federatable | genesis |
 | `bags/catalog` | ''no'' | — | fleet (private) | catalog-url file |
 
@@ -106,7 +102,7 @@ The host mounts the wiki's working layer as its default writable (`mountWikiSlot
 
 <<~/ahu>>
 
-<<~ ahu #/as-routed>>
+<<~ ahu slot=`#/as-routed`>>
 
 !! The cascade ~ which KIND of tiddler lands where
 
@@ -122,7 +118,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | `lar:*` | `:16` | `current-wiki-bag` = `wikis/{slug}/working`, the daemon wiki included | fleet |
 | anything else, including a foreign-titled pack member (`HelloThere`) and every other `$:/` system tiddler | `:17` catch-all | `current-wiki-bag` | fleet |
 
-''The `draft.of` FIELD is the switch'' (operator ruling 2026-09-11, quote license: "Approve moving to `draft.of` as the switch (pono w/ TW5 server/client setups)"). TW5 decides draft-ness by that field (`TiddlyWiki5/core/modules/tiddler.js:20-22`) and mints the title through a LOCALIZED language string — `Draft/Title`, or `Draft/Attribution` when `$:/status/UserName` stands, yielding `Draft of 'X' by <user>` (`TiddlyWiki5/core/modules/wiki.js:1725-1735`) — so the title decides nothing: the cascade's draft rule reads `[is[draft]…]` and `lar-kind[]` reads `Tiddler.isDraft`, on a stock server and an island alike (`tests/lar-kind.test.ts`; the live-server witness in `tests/meme-routes.e2e.test.ts`). The ruling's spelling `draft-of` (hyphen) names no TW5 field; TW5 spells it `draft.of`. ''The delete path:'' a delete runs after the tiddler has gone, so the field cannot be read then. `_flushHandImpl` takes the bag of this shore's last acknowledged write of the title first, then the landed ledger's bag; for a title neither knows, it falls back to the cascade's title read. `_tombstoneBag` places the tombstone by layer order: a still-recorded title from working or above takes that layer, while a title from beneath working takes the cascade's eligible layer or working. A draft's own deletion in a save, rename or cancel starts from the draft book's bag (`_actBody`); `_tombstoneBag` chooses the layer, and `_handBaseFor` supplies that title's hand or landed base. Witness: `tests/lar-kind.test.ts` "deleting a draft tombstones in the DRAFT slot, not working".
+''The `draft.of` FIELD is the switch'' (operator ruling 2026-09-11, quote license: "Approve moving to `draft.of` as the switch (pono w/ TW5 server/client setups)"). TW5 decides draft-ness by that field (`TiddlyWiki5/core/modules/tiddler.js:20-22`) and mints the title through a LOCALIZED language string — `Draft/Title`, or `Draft/Attribution` when `$:/status/UserName` stands, yielding `Draft of 'X' by <user>` (`TiddlyWiki5/core/modules/wiki.js:1725-1735`) — so the title decides nothing: the cascade's draft rule reads `[is[draft]…]` and `lar-kind[]` reads `Tiddler.isDraft`, on a stock server and an island alike (`tests/lar-kind.test.ts`; the live-server witness in `tests/meme-routes.e2e.test.ts`). The ruling's spelling `draft-of` (hyphen) names no TW5 field; TW5 spells it `draft.of`. ''The delete path:'' a delete runs after the tiddler has gone, so the field cannot be read then. `_flushHand` takes the bag of this shore's last acknowledged write of the title first, then the landed ledger's bag; for a title neither knows, it falls back to the cascade's title read. `_tombstoneBag` places the tombstone by layer order: a still-recorded title from working or above takes that layer, while a title from beneath working takes the cascade's eligible layer or working. A draft's own deletion in a save, rename or cancel starts from the draft book's bag (`_actBody`); `_tombstoneBag` chooses the layer, and `_handBaseFor` supplies that title's hand or landed base. Witness: `tests/lar-kind.test.ts` "deleting a draft tombstones in the DRAFT slot, not working".
 
 ''What the nalu stamps.'' `toWikiFields` stamps `$origin-bag` from the envelope, and `_landOne` stamps it on shore landing (`packages/lararium-tw5/src/modules/nalu-engine.ts`; `packages/lararium-tw5/src/island-adaptor.ts`). The projector routes a flush by that stamp (`packages/lararium-node/src/disk-projector.ts` `flush`), and `_buildFamily` strips it before the put (`packages/lararium-tw5/src/island-adaptor.ts`). No field on a saved tiddler names its destination bag: `draft.of` selects the draft route, and a draft's store-only base fields record its target's base and route nothing.
 
@@ -147,7 +143,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/as-written>>
+<<~ ahu slot=`#/as-written`>>
 
 !! What the canon carriers say, and where they contradict the code or each other
 
@@ -159,7 +155,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | `personal-slot#/scoping-mechanism` | draft binds per (PersonaGroup × fingerprint) | ONE resolver: the binding when the vessel holds a SEAT, the DID floor when not (`slot-doc-resolver.ts`) | agrees where a seat stands; the DID floor serves unseated vessels |
 | `save-path#/invariants` SP-3 (`bags/lararium/ha.ka.ba/lararium/api/save-path.mem:82-94`) | "Current state: the `isDraft` guard in `saveTiddler` silently drops drafts" | no `isDraft` guard stands; the cascade routes | stale — HEALED (SP-3 now states the cascade rule) |
 | `save-path` SP-4 (`:96-99`) | "If `fields["bag"]` carries an explicit bag URI, `saveTiddler` MUST use it" | "no field names a bag" (`island-adaptor.ts` `_routeBag`); `bag` rides as the author's field, ignored for routing | contradicted the code — HEALED (SP-4 now states the envelope law) |
-| `disk-projection#/bag-roles` (`bags/lararium/ha.ka.ba/lararium/api/disk-projection.mem:54-60`) | `@draft` "none — runtime", `@personal` "none — mesh-synced", `@working` → `wikis/{slug}/`, canon → `bags/` | matches the grants (`open-node-vessel.ts:1631-1656`) | agrees |
+| `disk-projection#/bag-roles` (`bags/lararium/ha.ka.ba/lararium/api/disk-projection.mem:54-60`) | `@draft` "none — runtime", `@personal` → `personal/<F>/{slug}/` per face, `@working` (the realm workbench) → `wikis/{slug}/` or its workspace, canon → `bags/` | matches the grants (`open-node-vessel.ts`, the disk-mirror grant) | agrees |
 | `disk-projection#/projection-routing` rule 2 (`:141`) | "Every other tiddler follows the standard TW5 path … One tiddler, one file" | `carrierBaseRelPath` returns null for any non-`lar:///w.w.w/` title (`packages/lararium-node/src/bag-paths.ts:84-99`); a foreign-titled `.tid` never reaches disk; a pack rides `OriginalTiddlerPaths` + REPACK instead | contradicted the code for foreign titles — HEALED (rule 2 now names the siting requirement + REPACK) |
 | `disk-projection#/projection-routing` rule 3 (`:142`) | siting overrides ride `config/disk-paths` and `config/disk-extensions` | `makeTw5FileInfo` accepts `pathFilters`/`extFilters` (`packages/lararium-tw5/src/tw5-file-info.ts:46-48`) and `exportCarrierFile` passes neither (`packages/lararium-tw5/src/meme-write.ts:57`, `:76`); the only mention sits in a comment (`bag-paths.ts:30`) | designed, unwired — MARKED OWED on the carrier |
 | `bag-wiki-uri-split` (`bag-wiki-uri-split.mem`) | `wikis/{slug}` = the live wiki; the `@working`/`@draft`/`@personal` binding per (PersonaGroup × fingerprint) | host and island read ONE resolver; the draft floor stands when no seat does | agrees |
@@ -169,23 +165,23 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/the-blur>>
+<<~ ahu slot=`#/the-blur`>>
 
 !! The blur, named
 
 # ''`writable-bag` vs the mount's default'' — DISSOLVED. The record designates `wikis/{slug}/working`; `defaultWritableSlot` names that slot, and the mounted working layer receives default writes.
 # ''Two draft documents wear one slot name'' — DISSOLVED. THE ONE slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`, the law `resolveSlotDoc` in `@lararium/mesh`): the PersonaGroup × fingerprint binding WHEN the vessel holds a seated PersonaGroup cap, ELSE the device floor `wikis/{slug}/drafts/{did}` — and the record says which (`face-reach`). Every site reads through it: the island's slot grants, the host mount (by the daemon proxy), `wiki init`, `prune-stale`, `meme put --recipe`, `where`, the ACTION verbs. Weld witness: `packages/lararium-keyhive/tests/slot-doc-resolver.test.ts` S3 (five sites, one doc, seated and unseated). ⚠ THE MOUNT'S TRACE IS THE TRACE: a wiki the vessel mounted this session fingerprinted the canon doc it holds; a verb re-deriving the url from a registry pointer read a DIFFERENT doc when a peer's founding rewrote the shared oracle plane's `bags/lares` pointer mid-session (measured in the two-vessel e2e) — the resolver keeps the mount's trace per slug and reuses it.
 # ''Per-DID or per-PersonaGroup'' — RULED: both, by seat. Fleet when a PersonaGroup sync-fleet cap stands; the DID floor when not — a private device so far. A seat landing later resolves the face doc from then on; the floor stays the device's own (no migration).
-# ''What "volatile / per-device" holds: temp ALONE.'' Presence stands unbuilt — no `presence` slot, no `$:/status/` beyond what TW5 writes; `$:/status/*` and `$:/boot/*` and most `$:/state/*` route to temp (`lar-bag-paths.tid:8-10`, `:15`). `personal` fleet-syncs by design (view state), so the ruling's "all here don't [sync]" holds for temp and not for personal. Per-device state that MUST survive a reboot (a device's own window layout, a local-only bag pin) has no home: temp forgets at boot, personal follows the fleet.
-# ''A draft routes by its `draft.of` FIELD on SAVE; DELETE placement follows the landed ledger and layer order.'' RULED (the field drives the switch). The cascade's `[is[draft]…]` reads the tiddler the save carries; `_flushHandImpl` takes the bag of this shore's last acknowledged write of the title first, then the landed ledger's bag, and falls back to the cascade's title read when neither knows the title. `_tombstoneBag` chooses the eligible layer by composition order; a draft's own deletion in a save, rename or cancel starts from its draft-book bag (`_actBody`), and `_tombstoneBag` chooses the layer. Witness: `tests/lar-kind.test.ts`.
-# ''A non-meme file enters by three doors and leaves by one, and foreign titles leave by none.'' Enter: (a) `lares ingest --source --to` scans `.mem` and any extension, pairs a `.meta` sidecar, derives the URI by the loci law (`ingest-core.ts:83-88`, `:111-113`, `:171-181`); the island runs `tw5.parseFields(meta)` then `tw5.deserialize(ext, text, base)` (`action-handler.ts:863-873`) and packs foreign-titled members into `$:/config/OriginalTiddlerPaths` (`:815-833`). (b) `act LOAD --to` takes carriers with the verb, same registry route (`:641-707`). (c) the in-wiki drag-drop / `$:/Import` ride TW5's own DOM deserializer and then the cascade — no house code touches it. Leave: the ONE render shore `exportCarrierFile` (`meme-write.ts:40-77`) → `makeTw5FileInfo` (`tw5-file-info.ts:88-176`) picks `.tid` / content + `.meta` / `.json` exactly as `generateTiddlerFileInfo` does, base64 for a binary type (`:140`), and the projector sites it at `<uri-path><ext>` (`disk-projector.ts` `flush`). But `carrierBaseRelPath` sites only `lar:///w.w.w/…` names (`bag-paths.ts:84-99`): a `.png` ingested under a loci URI round-trips; a `HelloThere.tid` pack member reaches disk only through REPACK of its pack (`action-handler.ts:352-370`).
+# ''What "volatile / per-device" holds: temp ALONE.'' Presence stands unbuilt — no `presence` slot, no `$:/status/` beyond what TW5 writes; `$:/status/*` and `$:/boot/*` and most `$:/state/*` route to temp (`lar-bag-paths.tid:8-10`, `:15`). `personal` syncs across the face's own devices by design (its view state and private margin), so the ruling's "all here don't [sync]" holds for temp and not for personal. Per-device state that MUST survive a reboot (a device's own window layout, a local-only bag pin) has no home: temp forgets at boot, personal follows the face's devices.
+# ''A draft routes by its `draft.of` FIELD on SAVE; DELETE placement follows the landed ledger and layer order.'' RULED (the field drives the switch). The cascade's `[is[draft]…]` reads the tiddler the save carries; `_flushHand` takes the bag of this shore's last acknowledged write of the title first, then the landed ledger's bag, and falls back to the cascade's title read when neither knows the title. `_tombstoneBag` chooses the eligible layer by composition order; a draft's own deletion in a save, rename or cancel starts from its draft-book bag (`_actBody`), and `_tombstoneBag` chooses the layer. Witness: `tests/lar-kind.test.ts`.
+# ''A non-meme file enters by three doors and leaves by one, and foreign titles leave by none.'' Enter: (a) `lares ingest --source --to` scans `.mem` and any extension, pairs a `.meta` sidecar, derives the URI by the address siting rule (`ingest-core.ts:83-88`, `:111-113`, `:171-181`); the island runs `tw5.parseFields(meta)` then `tw5.deserialize(ext, text, base)` (`action-handler.ts:863-873`) and packs foreign-titled members into `$:/config/OriginalTiddlerPaths` (`:815-833`). (b) `act LOAD --to` takes carriers with the verb, same registry route (`:641-707`). (c) the in-wiki drag-drop / `$:/Import` ride TW5's own DOM deserializer and then the cascade — no house code touches it. Leave: the ONE render shore `exportCarrierFile` (`meme-write.ts:40-77`) → `makeTw5FileInfo` (`tw5-file-info.ts:88-176`) picks `.tid` / content + `.meta` / `.json` exactly as `generateTiddlerFileInfo` does, base64 for a binary type (`:140`), and the projector sites it at `<uri-path><ext>` (`disk-projector.ts` `flush`). But `carrierBaseRelPath` sites only `lar:///w.w.w/…` names (`bag-paths.ts:84-99`): a `.png` ingested under a `lar:` URI round-trips; a `HelloThere.tid` pack member reaches disk only through REPACK of its pack (`action-handler.ts:352-370`).
 # ''`meme get --recipe` reads the designated bag, not the stack'' — DISSOLVED by ruling ("The stack."). GET walks the whole cascade top-down and answers from the first bag holding a record under the root, where a tombstone answers the meme absent; PUT writes the designated bag alone. Witness: `tests/meme-verbs.test.ts` "READS THE STACK"; two-vessel e2e ⑦ ★ (canon answers through `--recipe` on B).
 # ''Two recipe shapes, one name'' — DISSOLVED. `recipeRecordFields` ⇆ `recipeFromRecord` (`@lararium/mesh` wiki-recipe.ts); `catalog` leaves the user stack; the lares bag is a library like the lararium bag (a record that names it mounts it). The libraries a record names lay at boot AND reconcile live.
 # ''`working` and `personal` against the four strata'' — RULED. "named wiki bag" = `working`; `personal` keeps its own layer. The daemon wiki also mounts a working layer.
 
 <<~/ahu>>
 
-<<~ ahu #/one-model>>
+<<~ ahu slot=`#/one-model`>>
 
 !! One model ~ the fewest changes that satisfy the ruling
 
@@ -207,7 +203,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/questions>>
+<<~ ahu slot=`#/questions`>>
 
 !! Questions the operator answered, and the one still open
 
@@ -223,7 +219,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/tw5-surfaces>>
+<<~ ahu slot=`#/tw5-surfaces`>>
 
 !! TW5 surfaces for non-meme workflows ~ what exists, what the house rides
 
@@ -236,7 +232,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 | `$tw.loadTiddlersFromFile` · `$tw.loadMetadataForFile` · `$tw.loadTiddlersFromPath` · `$tw.loadTiddlersFromSpecification` (`tiddlywiki.files`) · `$tw.loadPluginFolder` · `$tw.loadWikiTiddlers` | `boot.js:1941-1964`, `:1969-1976`, `:1988-2013`, `:2017`, `:2168`, `:2293` | node-only disk walkers; `.meta` sidecar merged onto the first tiddler; `maxEditFileSize` guard; `excludeRegExp` skips `*.meta` (`:1983`) | ''does not ride'' — the house walks disk in `ingest-core.ts` (`git ls-files`-shaped, declaration-read) and hands bytes to the registry; `tiddlywiki.files` specifications and `plugin.info` folders stay unread |
 | `$:/config/OriginalTiddlerPaths` | `boot.js:2369` | the file-path ↔ title map the folder loader keeps | rides the same title for pack provenance (`action-handler.ts:833`) |
 | `generateTiddlerFileInfo` · `generateTiddlerFilepath` · `saveTiddlerToFile(Sync)` · `deleteTiddlerFile` · `cleanupTiddlerFiles` | `TiddlyWiki5/core-server/filesystem.js:213`, `:322`, `:445`, `:487`, `:508`, `:549` | type selection (.tid / content+.meta / .json), path sanitizing, the write | ''re-implemented pure'' in `tw5-file-info.ts:88-176` (no `fs`); the projector writes (`disk-projector.ts` `flush`) |
-| `$:/config/FileSystemPaths` · `$:/config/FileSystemExtensions` | `plugins/tiddlywiki/filesystem/filesystemadaptor.js:59-65` | the siting and extension cascades | ''rides, one spelling'' — `exportCarrierFile` reads the two `$:/` tiddlers EXACTLY as the adaptor does (a REAL tiddler, `tiddlerExists`; `tw5-file-info.ts` `readSitingCascades`) and the projector sites a ruled path first, the loci law otherwise (`disk-projector.ts` `flush`, the `sited` memory = `$tw.boot.files`); no `lar:` twin — a spelling honoured by one door only is the disagreement. Parity against the fork's own `generateTiddlerFileInfo`: `tests/tw5-file-info-parity.test.ts` |
+| `$:/config/FileSystemPaths` · `$:/config/FileSystemExtensions` | `plugins/tiddlywiki/filesystem/filesystemadaptor.js:59-65` | the siting and extension cascades | ''rides, one spelling'' — `exportCarrierFile` reads the two `$:/` tiddlers EXACTLY as the adaptor does (a REAL tiddler, `tiddlerExists`; `tw5-file-info.ts` `readSitingCascades`) and the projector sites a ruled path first, the address siting rule otherwise (`disk-projector.ts` `flush`, the `sited` memory = `$tw.boot.files`); no `lar:` twin — a spelling honoured by one door only is the disagreement. Parity against the fork's own `generateTiddlerFileInfo`: `tests/tw5-file-info-parity.test.ts` |
 | the `filesystem` syncadaptor · `syncer.js` · `$:/config/SyncFilter` | `filesystemadaptor.js:86`; `core/modules/syncer.js:19`, `:67`; `core/wiki/config/SyncFilter.tid` | TW5's own save-to-disk loop and its total-minus-exclusions filter | ''does not ride'' the adaptor; the cascade takes SyncFilter's SHAPE (`island-adaptor.ts` `_routeBag`) |
 | `isSystemTiddler` · `isTemporaryTiddler` · `isVolatileTiddler` · `Tiddler.isDraft` · `generateDraftTitle` | `core/modules/wiki.js:222-232`, `:1725`; `core/modules/tiddler.js:20-22` | the kind predicates TW5 itself uses (`$:/` · `$:/temp/` · `$:/temp/volatile/` · the `draft.of` field · the localized draft title) | ''rides'' — `[lar-kind[]]` (`filters/lar-kind.ts`) answers `volatile` · `temporary` · `draft` · `personal` · `system` · `content` by calling these predicates plus the house's personal set; the cascade routes drafts by `[is[draft]…]` and personal by `[lar-kind[]match[personal]…]` (`lar-bag-paths.tid:11`, `:13`) |
 | `--load` · `--save` · `--savetiddlers` · `--savewikifolder` · `--render` · `--import` · `--unpackplugin` | `TiddlyWiki5/core-server/commands/` | the CLI legs for a folder wiki | `--render`'s law rides in `meme-project.ts:104`; the rest stay stubs the house never calls |
@@ -249,7 +245,7 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 
 <<~/ahu>>
 
-<<~ ahu #/one-bundle>>
+<<~ ahu slot=`#/one-bundle`>>
 
 !! One bundle ~ the caps decide what rings (operator ruling, 2026-09-11)
 
@@ -262,18 +258,18 @@ The in-wiki cascade `lar:///ha.ka.ba/lararium/config/bag-paths` (`packages/larar
 ''The three grounds the ruling rests on.''
 
 # ''One law shipped twice reads as two laws.'' The contract every skin carries VERBATIM already reads as ONE law. A split bundle carries it in two artifacts that must be tuned together, and the hand-derived enumeration drifts the way every hand-derived enumeration drifts. One casting rings the same law at the road, the gate and the sanctum; two castings drift by a hair a year and nobody notices until a reader does.
-# ''The keel already answers it, for free.'' <<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">> `#/absence-is-structural` rules that a Herm reads as //a cap-stack that never declares the wiki cap// and runs //blind by structure, never by a flag a later bug could flip// — //an absent cap grants no authority//. ''One keel, two `#has`-stacks: the same code, thinned by caps, never two codes.'' A bundle split by tier re-spells that thinning in packaging, where the composition root already spells it in wiring — and packaging cannot fail closed. This carrier's own cap posture reads the same direction at #/questions: //the cap-stack falls to the floor, never reds//.
+# ''The keel already answers it, for free.'' <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/composable-keel`>> `#/absence-is-structural` rules that a Herm reads as //a cap-stack that never declares the wiki cap// and runs //blind by structure, never by a flag a later bug could flip// — //an absent cap grants no authority//. ''One keel, two `#has`-stacks: the same code, thinned by caps, never two codes.'' A bundle split by tier re-spells that thinning in packaging, where the composition root already spells it in wiring — and packaging cannot fail closed. This carrier's own cap posture reads the same direction at #/questions: //the cap-stack falls to the floor, never reds//.
 # ''What travels stays a cap question, never a bundle question.'' Whether the road-bells — the HTTP route, the MCP tool — ring on a given vessel answers off that vessel's declared stack. A wayfarer that declares no sanctum rings no sanctum-bell, and it does so without a second artifact existing.
 
-''Where the bundle stands, measured.'' `packages/lararium-tw5/plugins/lares-memetic-wikitext.json` ships as ONE plugin tiddler carrying `nalu-engine` and `bag-paths` and no syncadaptor (<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>, `#/island-holds`). Road A of the bridge would have added a packed module to that same bundle, applying //the same law to the daemon island and the wiki island alike (one plugin)// (`outbound-bridge.mem` `#/back-parity`) — the ruling holds either road, because it rules the artifact count rather than the wire.
+''Where the bundle stands, measured.'' `packages/lararium-tw5/plugins/lares-memetic-wikitext.json` ships as ONE plugin tiddler carrying `nalu-engine` and `bag-paths` and no syncadaptor (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>, `#/island-holds`). Road A of the bridge would have added a packed module to that same bundle, applying //the same law to the daemon island and the wiki island alike (one plugin)// (`outbound-bridge.mem` `#/back-parity`) — the ruling holds either road, because it rules the artifact count rather than the wire.
 
-''Where the ruling was told.'' The stories that set the intent ride at <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">> `#/one-plugin-or-two`, and the moʻolelo carrying all eight clauses rides at that floor's `#/exit`. ''That floor holds the telling; this carrier holds the ruling.''
+''Where the ruling was told.'' The stories that set the intent ride at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>> `#/one-plugin-or-two`, and the moʻolelo carrying all eight clauses rides at that floor's `#/exit`. ''That floor holds the telling; this carrier holds the ruling.''
 
 ⚠ ''What the ruling does NOT settle.'' It fixes the artifact count at one. It says nothing about which caps gate which skin, nor about the manifest shape a thinned bundle presents to a vessel that declares less than the whole. Those stand open here.
 
 <<~/ahu>>
 
-<<~ ahu #/aftermath>>
+<<~ ahu slot=`#/aftermath`>>
 
 !! Aftermath ~ the blast-radius spiral (operator-approved)
 
@@ -283,32 +279,32 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme-api-surface">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/save-path">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-isomorphism">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/cap-tier">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/composable-keel">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/outbound-bridge">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/save-path`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/bag-wiki-uri-split`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-isomorphism`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/composable-keel`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/outbound-bridge`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/scale-stories-basket-one`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/island-adaptor">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/nalu#/the-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/island-adaptor`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes">> — anchors the shared oracle surface model
-<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split">> — sets the seed-named read-only floor
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — sets the seed-named read-only floor
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;p8plFbo7UPPA494xU1fH568BYWb2iKFRL_ZITHejHfU
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1PpBLQABWxMimF7-SmyHGGKqonSYQHzaV5ItWOIMRK0`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

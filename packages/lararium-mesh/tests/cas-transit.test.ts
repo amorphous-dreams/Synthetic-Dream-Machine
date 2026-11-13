@@ -12,7 +12,7 @@ import { describe, test, expect } from "vitest";
 import { randomBytes } from "node:crypto";
 import {
   sealPrivateBody, readContentKey,
-  fetchCidOverTransit, makeCidResolver,
+  fetchCidOverTransit, makeCidResolver, verifyCidBytes,
   type CasTransitTransport, type CasHolder,
 } from "../src/index.js";
 
@@ -154,5 +154,18 @@ describe("the fetch door — a CLEARTEXT cid crosses transit under its own verif
     expect(prefetchAllows(cap, "fleet-B", 1_000)).toBe(true);
     expect(prefetchAllows(cap, "fleet-C", 1_000)).toBe(false);                // another peer
     expect(prefetchAllows(cap, "fleet-B", 2_001)).toBe(false);                // the peer's own fence moved past it
+  });
+});
+
+describe("verifyCidBytes refuses an algorithm tag it does not implement", () => {
+  const bytes = new TextEncoder().encode("named under a tag nobody verified");
+  const hex = sha256HexBytesSync(bytes);
+  test("a blob named under an unknown tag with its SHA-256 digest refuses; sha256, bare and blake3 still verify", () => {
+    expect(verifyCidBytes(bytes, `md5:${hex}`)).toBe(false);
+    expect(verifyCidBytes(bytes, `sha512:${hex}`)).toBe(false);
+    // CONTROLS
+    expect(verifyCidBytes(bytes, `sha256:${hex}`)).toBe(true);
+    expect(verifyCidBytes(bytes, hex)).toBe(true);
+    expect(verifyCidBytes(sealed.ciphertext, sealed.cid)).toBe(true);
   });
 });

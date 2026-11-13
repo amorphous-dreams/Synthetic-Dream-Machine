@@ -1,0 +1,42 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-003/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-003/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-003/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-3-retirement-test-door-wall`>>
+
+! Step 3 — retirement test door wall
+
+Broker `res-002.json` reports commit success at `50350f4f4b8adff7f26ac5f779b8e6fcd8b7ab3d`; state head now records that success. `res-003.json` shows the first retirement red failed at line 292 (aside unexpectedly accepted), after its clear control passed at line 291. The second failed at line 308 (epoch-free edge unexpectedly refused), after its original changed-signature assertion returned false at line 307.
+
+That second control did not establish signature verification: `packages/lararium-keyhive/src/face-grant-record.ts:139` checks the edge before the record signature, and the next assertion demonstrates the epoch-free edge already fails. The refusal can therefore arise from the edge, not the altered signature. I changed the control to use a currently accepted edge, assert its valid grant passes, and require the explicit signature-failure reason for the altered grant. This temporary legacy-edge control must migrate to the epoch-free edge once the reader accepts it. No production code changed.
+
+''controller runs packages/lararium-keyhive/tests/face-grant-record.test.ts'' outside the faulty Vitest door. Please verify both controls pass and both retirement reds fail at their intended assertions, including the explicit signature reason. Until that evidence arrives, the requested verification wall holds and mesh implementation must not proceed. `relay/req-004.json` requests a commit of the control correction against the successful head; read its receipt before changing head.
+
+Fork: 🜁 philosopher examines the signature control; 🜄 considers the user losing a real signature rejection if a false control passes for an earlier reason. The current accepted-edge control tests that reason while preserving the red-first epoch-free contract; after migration the new shape should carry the same control. Causal islands do not allow inferring the target test result from the whole-package totals.
+
+No seats launched; no tests or git commands ran inside this wall. No sibling or composer hunks changed. Blind Opus custody review, b5b sequencing, reader census, anti-rollback and remove-wins proof, and the roll guard remain owed. Preserve the separate quorum and bag-capability leases.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2GV8Lv8pfbuB0dHREmP1kfOO4s2xyp1LlAPOsL-Scxo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -74,6 +74,26 @@ test("(ii) an edited source byte makes the child exit 2, naming the stale packag
   }
 });
 
+test("(viii) RED: a test-only edit leaves the package stamp fresh; CONTROL (ii): a src edit stales it", () => {
+  // No package builds tests/ into dist (each tsconfig.build.json extends a tsconfig that excludes or never includes it), so a
+  // test edit changes no byte of the build and must not stale it.
+  const repo = makeScratchRepo();
+  try {
+    mkdirSync(join(repo, "packages", "a", "tests"), { recursive: true });
+    writeFileSync(join(repo, "packages", "a", "tests", "x.test.ts"), "export {};\n");
+    writeFileSync(join(repo, "packages", "a", "src", "y.test.ts"), "export {};\n");
+    stampPackage(repo, "a");
+    stampPackage(repo, "b");
+    appendFileSync(join(repo, "packages", "a", "tests", "x.test.ts"), "// touched\n");
+    appendFileSync(join(repo, "packages", "a", "src", "y.test.ts"), "// touched\n");
+    const result = runAssertDistFresh(repo, join(repo, "packages", "a", "dist", "x.js"));
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /fresh/);
+  } finally {
+    rmSync(repo, { recursive: true, force: true });
+  }
+});
+
 test("(iii) guarding the DEPENDENT's dist still catches the dependency's edit, via the closure", () => {
   const repo = makeScratchRepo();
   try {

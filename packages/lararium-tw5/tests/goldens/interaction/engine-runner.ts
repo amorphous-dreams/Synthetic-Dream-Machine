@@ -1,0 +1,594 @@
+/**
+ * engine-runner — the ENGINE half of the interaction goldens: one script of acts over a frozen world, walked
+ * against the real engine through the camera contract's own doors.
+ *
+ * The runner boots each surface's world through `bootTestWiki` (the RootTemplate set to the script's root, the
+ * story list set), mounts the projection with a RECORDING post (every `lar:frame` and every
+ * `lar:control-result` the island sends), and walks the steps in the vocabulary the README beside it names.
+ * Every act, sense and resend crosses the projection cap's own door (`hasProjection().onSignal`), so the
+ * fail-closed reader and the routing stand inside the walk, never beside it.
+ *
+ * What the engine half reads, and what it leaves to the page half:
+ *
+ *   - `frame`   delivers the mount's first frame, or the newest frame the island emitted since the last delivery.
+ *   - `deliver: "older"` records that the frame the island emitted BEFORE the last sense carries a lower
+ *               `sensedRevision` for that sense's control than the sense's `localRev` (the page's veto rests on it).
+ *   - `sense` / `act` build a `lar:control-event` against the frame the harness last delivered for that surface:
+ *               the control resolves by `data-control-id` or by a selector read off that frame (a tag, classes and
+ *               `[attr=value]`, spaces for descendants; a class names its node and the nodes it wraps, since TW5's
+ *               checkbox and radio class the label around their input), and the event names the first named node's
+ *               render id or its nearest painted ancestor's (the node the act climbs from: the camera's top element
+ *               carries one); `checked` rides a toggle; `epoch: "stale"` carries the epoch that surface emitted
+ *               before the delivered one; a toolbar act carries its `selection`.
+ *   - `write`   lands a peer's whole records in the store through the island's own door (`TW5Engine.setTiddler`;
+ *               a tombstone deletes), the way a landed change reaches a wiki with no person's act behind it.
+ *   - `page`    a raw page gesture. The engine half relays what the page contract says the page relays for it,
+ *               and nothing else: a composition's end crosses once as a `lar:sense` with the composed value under
+ *               the control's next revision; an input while composing, a composition's start, and a keydown the
+ *               IME holds (`keyCode 229` or `isComposing`) cross nothing; any other keydown crosses as one
+ *               `lar:act` / `lar:key`. The one-task hold after `compositionend` rides the page half's real clock.
+ *   - `switch`  mounts the arriving surface's engine (first time) and sends it `lar:resend`; the frame the resend
+ *               answers becomes the delivered frame.
+ *   - `service-result` answers a `lar:service` ask (`requestId: "last"` names the latest) as the page would: a
+ *               control event of kind `lar:service-result` on the document leg (`controlId: "lar:document"`).
+ *   - A world's `manifest` opens the surface with it: the mount sends `lar:resend{manifest}` before its first
+ *               frame flushes, the way a page that opens names the doors it carries.
+ *   - `write`   lands a peer's whole records in the wiki, the way the island's landing door does; the world moved,
+ *               so the titles it wrote never count as an act's writes.
+ *   - `expect`  reads `answers` (the statuses posted since the last expect, in order), `writes` (each named record
+ *               stands with those fields, `tombstone: true` reading absent, and no title outside the named set took a
+ *               write since the last expect; a title that never persists, and the story and history lists the
+ *               `lar:story-order` key carries, stand outside that count), `messages` (the `tm-*` messages dispatched
+ *               into the widget tree since the last expect, each once, in order), `refused` (the act before never
+ *               crossed, since the wire's own bound refused it at the sending shore, or crossed and answered no
+ *               `applied`; a refusal word names the reason; nothing wrote),
+ *               `want` (the `want` the last answer since the last expect carried), `services` (the `lar:service` asks posted since the last expect, in order, each matching the script's
+ *               `kind` and every `args` field the script names), and `frame` (`sensedRevision` keyed back to the
+ *               script's control names, `surface`, `epoch: "fresh"`, `contains`, `keys` (per key, the newest payload the
+ *               surface delivered `contains` the text), `questions` (the modal dialogs painted, one per question the
+ *               wiki stands), `questionSubject`, `alert` (the alert the wiki raised), `attributes`: per selector, the
+ *               attribute the first named node paints, `null` for absent, and `stamps`: per selector, each named stamp
+ *               carries every token the script names, `null` none).
+ *               `page` belongs to the page half: the run records it as SKIPPED by name. Any other key fails closed,
+ *               so a script that grows a verb this half never learned reads red, never green.
+ *
+ * A control whose node binds no listener (a declared `lar-order-list`), or that the frame paints by no node (the
+ * page's document leg `lar:document`, a parked import's title), crosses by its own name as the event's `controlId`.
+ * A `wholeValue` reading `<oversize: N bytes>` stands for N bytes.
+ *
+ * Time rests on the caller's hand: the caller fakes `setTimeout`, and `advance` moves the coalesce window, so a
+ * frame flushes when the script says and never at the machine's speed.
+ *
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance
+ */
+import { readdirSync, readFileSync } from "node:fs";
+import path from "node:path";
+import {
+  LAR_CAMERA_STORY, LAR_CONTROL_EVENT, LAR_KEY_SURFACE, LAR_RESEND,
+  mkLarControlEvent, mkLarResend, readLarControlResult, readLarFrame, readLarService,
+  type LarGeometry, type LarKeyChord, type LarMsg_ControlEvent, type LarModifiers, type LarMsg_ControlResult, type LarMsg_Frame, type LarMsg_Service,
+  type LarServiceKind, type LarWholeValue,
+} from "@lararium/mesh";
+import { mountProjection } from "../../../src/tw5-projection.js";
+import { neverPersists } from "../../../src/island-adaptor.js";
+import { hasProjection } from "../../../src/has-island-watches.js";
+import type { IslandContext } from "../../../src/island-context.js";
+import type { TW5Engine } from "../../../src/tw5-vm.js";
+import { bootTestWiki } from "../../test-wiki.js";
+
+export const GOLDENS_DIR = path.dirname(new URL(import.meta.url).pathname);
+
+export interface GoldenWorld {
+  readonly tiddlers: readonly Record<string, string | string[]>[];
+  readonly story: readonly string[];
+  readonly root: string;
+  /** The service kinds the surface's manifest names at surface-open. */
+  readonly manifest?: { readonly services: readonly LarServiceKind[] };
+}
+export interface GoldenScript {
+  readonly golden: string;
+  readonly pins: string;
+  readonly world?: GoldenWorld;
+  readonly surfaces?: Readonly<Record<string, { readonly world: GoldenWorld }>>;
+  readonly steps: readonly Record<string, unknown>[];
+}
+
+/** Every script beside this runner, by file name: derived from the directory, never enumerated. */
+export function goldenScripts(): { file: string; script: GoldenScript }[] {
+  return readdirSync(GOLDENS_DIR).filter((f) => /^\d\d-.*\.json$/.test(f)).sort()
+    .map((file) => ({ file, script: JSON.parse(readFileSync(path.join(GOLDENS_DIR, file), "utf8")) as GoldenScript }));
+}
+
+export interface EngineRun {
+  /** Each disagreement between the script and the engine, by step. Empty reads green. */
+  readonly failures: string[];
+  /** Each step the engine half leaves to another half, by name. */
+  readonly skipped: string[];
+  /** What the walk did, step by step, for a reader of a red. */
+  readonly trace: string[];
+}
+
+export interface EngineRunHooks {
+  /** Move the faked clock (the coalesce window) and let TW5's change beat settle. */
+  readonly advance: () => Promise<void>;
+  /** Let TW5's change beat settle with no timer moved (so no frame flushes). */
+  readonly settle: () => Promise<void>;
+}
+
+interface Surface {
+  readonly id: string;
+  readonly world: GoldenWorld;
+  readonly engine: TW5Engine;
+  readonly ctx: IslandContext;
+  readonly frames: LarMsg_Frame[];
+  /** Titles written since the last expect. */
+  written: Set<string>;
+  /** The `tm-*` messages dispatched into the widget tree since the last expect. */
+  messages: string[];
+  delivered?: LarMsg_Frame;
+  stop?: () => void;
+}
+
+const ROOT_TEMPLATE = "$:/core/ui/RootTemplate";
+const SINGLE = "lar:single";
+
+/** One painted node of a frame, read back off its HTML. */
+interface PaintedNode { readonly tag: string; readonly attrs: Readonly<Record<string, string>>; readonly parent: PaintedNode | null }
+
+const VOID_TAGS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"]);
+const decode = (v: string): string => v.replace(/&(?:#(\d+)|#x([0-9a-f]+)|(quot|amp|lt|gt|apos));/gi, (_m, d, h, n) =>
+  d ? String.fromCodePoint(Number(d)) : h ? String.fromCodePoint(parseInt(h, 16)) : ({ quot: "\"", amp: "&", lt: "<", gt: ">", apos: "'" } as Record<string, string>)[n.toLowerCase()]!);
+
+/** The frame's element nodes in document order, each knowing its parent: the reads a script's selector makes. */
+function paintedNodes(html: string): PaintedNode[] {
+  const nodes: PaintedNode[] = [];
+  const open: PaintedNode[] = [];
+  for (const m of html.matchAll(/<!--[\s\S]*?-->|<(\/?)([a-zA-Z][\w-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g)) {
+    if (m[2] === undefined) continue;
+    const tag = m[2].toLowerCase();
+    if (m[1]) {
+      const at = open.map((n) => n.tag).lastIndexOf(tag);
+      if (at !== -1) open.length = at;
+      continue;
+    }
+    const attrs: Record<string, string> = {};
+    for (const a of m[3]!.matchAll(/([^\s=/>"']+)(?:\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+)))?/g)) attrs[a[1]!] = decode(a[2] ?? a[3] ?? a[4] ?? "");
+    const node: PaintedNode = { tag, attrs, parent: open.at(-1) ?? null };
+    nodes.push(node);
+    if (!VOID_TAGS.has(tag) && !/\/\s*$/.test(m[3]!)) open.push(node);
+  }
+  return nodes;
+}
+
+/**
+ * Whether one compound of a script's selector (`tag`, `.class`, `[attr=value]`, joined) names `node`. A class
+ * names the node that carries it and the nodes it wraps: TW5's checkbox and radio set their `class` on the label
+ * around the input they bind, so `input.cb` names the input inside `label.cb`.
+ */
+function compoundNames(compound: string, node: PaintedNode): boolean {
+  const m = /^([a-zA-Z][\w-]*)?((?:\.[\w-]+)*)((?:\[[\w-]+(?:=[^\]]*)?\])*)$/.exec(compound);
+  if (!m) throw new Error(`the engine half reads no selector compound ${compound}`);
+  if (m[1] && m[1].toLowerCase() !== node.tag) return false;
+  for (const [, name, value] of m[3]!.matchAll(/\[([\w-]+)(?:=([^\]]*))?\]/g)) {
+    const held = node.attrs[name!];
+    if (held === undefined || (value !== undefined && held !== value.replace(/^["']|["']$/g, ""))) return false;
+  }
+  for (const cls of m[2]!.split(".").filter(Boolean)) {
+    let carried = false;
+    for (let n: PaintedNode | null = node; n && !carried; n = n.parent) carried = (n.attrs["class"] ?? "").split(/\s+/).includes(cls);
+    if (!carried) return false;
+  }
+  return true;
+}
+
+/** Every painted node a selector names, in document order: compounds joined by spaces read as descendants. */
+function select(nodes: readonly PaintedNode[], selector: string): PaintedNode[] {
+  const compounds = selector.trim().split(/\s+/);
+  return nodes.filter((node) => {
+    if (!compoundNames(compounds.at(-1)!, node)) return false;
+    let at = compounds.length - 2;
+    for (let n = node.parent; n && at >= 0; n = n.parent) if (compoundNames(compounds[at]!, n)) at -= 1;
+    return at < 0;
+  });
+}
+
+/** A control names a selector when it opens on a class or on a tag that a class or an attribute narrows. */
+const isSelector = (control: string): boolean => control.startsWith(".") || /^[a-zA-Z][\w-]*[.[]/.test(control);
+
+/** The render id of the first painted node the control names: `data-control-id="x"`, or a selector the script's root template sets. */
+function ridOf(html: string, control: string): string | null {
+  const nodes = paintedNodes(html);
+  const named = isSelector(control)
+    ? select(nodes, control)
+    : nodes.filter((n) => n.attrs["data-control-id"] === control);
+  // The act names the first named node's own render id, or the nearest painted ancestor's: the node the act climbs
+  // from (the camera's top element carries one, so every painted node has a climb).
+  // A declared control (`data-control-id`) stands for its own bindings, as the page reads it: its own render id, or
+  // none, and then the act crosses by the control's name.
+  if (!isSelector(control)) return named.find((n) => n.attrs["data-lar-rid"] !== undefined)?.attrs["data-lar-rid"] ?? null;
+  for (const node of named) {
+    for (let n: PaintedNode | null = node; n; n = n.parent) if (n.attrs["data-lar-rid"] !== undefined) return n.attrs["data-lar-rid"]!;
+  }
+  return null;
+}
+
+/** Navigation and volatile state: the camera's own keys carry it, so a script's record writes never count it. */
+const outsideWrites = (title: string): boolean => neverPersists(title) || title === "$:/StoryList" || title === "$:/HistoryList";
+const OVERSIZE = /^<oversize: (\d+) bytes>$/;
+
+const surfaceRev = (f: LarMsg_Frame): number => f.keys.find((k) => k.key === LAR_KEY_SURFACE)?.rev ?? 0;
+const deepEqual = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
+const sortKeys = (o: Record<string, unknown>): Record<string, unknown> =>
+  Object.fromEntries(Object.entries(o).sort(([x], [y]) => x.localeCompare(y)));
+
+/**
+ * Walk one script against the engine. Boots every surface up front (a boot under faked timers would hang), and
+ * mounts each surface's projection at its first `frame` or `switch`, the way a vessel mounts a camera when a
+ * surface opens.
+ */
+export async function runEngineGolden(script: GoldenScript, hooks: EngineRunHooks): Promise<EngineRun> {
+  const failures: string[] = [], skipped: string[] = [], trace: string[] = [];
+  const cap = hasProjection();
+  const results: LarMsg_ControlResult[] = [];
+  let resultsSeen = 0;
+  /** Every `lar:service` ask the islands posted, in order. */
+  const services: LarMsg_Service[] = [];
+  let servicesSeen = 0;
+  /** The script's control names by the render id each one resolved to, so a frame's keys read back in the script's words. */
+  const nameOfRid = new Map<string, string>();
+  const surfaces = new Map<string, Surface>();
+  const worlds: [string, GoldenWorld][] = script.surfaces
+    ? Object.entries(script.surfaces).map(([id, s]) => [id, s.world])
+    : [[SINGLE, script.world!]];
+
+  for (const [id, world] of worlds) {
+    const engine = await bootTestWiki({ tiddlers: [...world.tiddlers] });
+    engine.setTiddler({ title: ROOT_TEMPLATE, type: "text/vnd.tiddlywiki", text: world.root });
+    engine.setTiddler({ title: "$:/StoryList", list: [...world.story] });
+    const frames: LarMsg_Frame[] = [];
+    const surface: Surface = {
+      id, world, engine, frames, written: new Set(), messages: [],
+      ctx: {
+        wikiUri: `lar:///golden/${id}`,
+        tw5: engine,
+        post: (msg: unknown) => {
+          const frame = readLarFrame(msg);
+          if (frame) { frames.push(frame); return; }
+          const result = readLarControlResult(msg);
+          if (result) { results.push(result); return; }
+          const service = readLarService(msg);
+          if (service) { services.push(service); return; }
+        },
+      } as unknown as IslandContext,
+    };
+    (engine.$tw as unknown as { wiki: { addEventListener(t: string, h: (c: Record<string, unknown>) => void): void } })
+      .wiki.addEventListener("change", (changes) => { for (const t of Object.keys(changes)) if (!outsideWrites(t)) surface.written.add(t); });
+    // Each message once, as it enters the tree: a re-dispatch of a stored message (the confirm road's yes) counts again.
+    const proto = Object.getPrototypeOf((engine.$tw as unknown as { rootWidget: object }).rootWidget) as { dispatchEvent(e: { type?: unknown }): unknown };
+    const dispatch = proto.dispatchEvent;
+    const inFlight = new Set<object>();
+    proto.dispatchEvent = function (this: unknown, e: { type?: unknown }): unknown {
+      const entering = !inFlight.has(e);
+      if (entering) { inFlight.add(e); if (typeof e.type === "string" && e.type.startsWith("tm-")) surface.messages.push(e.type); }
+      try { return dispatch.call(this, e); } finally { if (entering) inFlight.delete(e); }
+    };
+    surfaces.set(id, surface);
+  }
+  // The boot's own writes (the root, the story) belong to the world, never to a step.
+  await hooks.settle();
+  for (const s of surfaces.values()) { s.written.clear(); s.messages = []; }
+
+  let current: Surface = surfaces.values().next().value!;
+  const lastSense: { rid?: string; name?: string; localRev?: number; framesBefore?: number; surface?: Surface } = {};
+  let eventSeq = 0;
+  /** The reason the wire's own bound refused the last act at the sending shore, if it did. */
+  let refusedAtShore: string | undefined;
+  /** The revision the page would carry per control for the senses a `page` gesture relays. */
+  const pageRevs = new Map<string, number>();
+
+  const surfaceOf = (step: Record<string, unknown>, body?: Record<string, unknown>): Surface => {
+    const named = (body?.["surface"] ?? step["surface"]) as string | undefined;
+    if (named === undefined) return current;
+    const s = surfaces.get(named);
+    if (!s) throw new Error(`no surface named ${named}`);
+    return s;
+  };
+  const mount = async (s: Surface): Promise<void> => {
+    if (s.stop) return;
+    s.stop = mountProjection(s.ctx);
+    if (s.world.manifest && !cap.onSignal!(LAR_RESEND, mkLarResend(LAR_CAMERA_STORY, s.world.manifest), s.ctx)) {
+      failures.push(`the projection cap left the ${s.id} surface-open ${LAR_RESEND} unclaimed`);
+    }
+    await hooks.advance();
+  };
+  /** The epoch this surface emitted just before the one it last delivered. */
+  const staleEpoch = (s: Surface): number | undefined => {
+    const epochs = [...new Set(s.frames.map((f) => f.mountEpoch))];
+    const at = epochs.indexOf(s.delivered?.mountEpoch ?? -1);
+    return at > 0 ? epochs[at - 1] : undefined;
+  };
+  const send = (s: Surface, kind: "lar:act" | "lar:sense", body: Record<string, unknown>, at: string): string | null => {
+    const frame = s.delivered;
+    if (!frame) { failures.push(`${at}: no frame delivered on ${s.id} to act against`); return null; }
+    const html = frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "";
+    const control = String(body["control"]);
+    const rid = ridOf(html, control);
+    if (!rid && isSelector(control)) { failures.push(`${at}: control ${control} paints no render id on ${s.id}`); return null; }
+    if (rid) nameOfRid.set(rid, control);
+    const epoch = body["epoch"] === "stale" ? staleEpoch(s) : frame.mountEpoch;
+    if (epoch === undefined) { failures.push(`${at}: ${s.id} emitted no earlier epoch to carry as stale`); return null; }
+    const oversize = typeof body["wholeValue"] === "string" ? OVERSIZE.exec(body["wholeValue"]) : null;
+    const wholeValue = oversize ? new Uint8Array(Number(oversize[1])) : body["wholeValue"] as LarWholeValue | undefined;
+    let ev: ReturnType<typeof mkLarControlEvent>;
+    try { ev = mkLarControlEvent({
+      eventId: `golden-${++eventSeq}`, cameraId: frame.cameraId, mountEpoch: epoch, kind,
+      ...(rid ? { renderId: rid } : { controlId: control }),
+      action: kind === "lar:sense" ? "lar:sense" : String(body["action"]),
+      seenFrameRev: surfaceRev(frame),
+      ...(body["controlType"] !== undefined ? { controlType: String(body["controlType"]) } : {}),
+      ...(body["localRev"] !== undefined ? { localRev: Number(body["localRev"]) } : {}),
+      ...(wholeValue !== undefined ? { wholeValue } : {}),
+      ...(body["checked"] !== undefined ? { checked: Boolean(body["checked"]) } : {}),
+      ...(body["selection"] !== undefined ? { selection: body["selection"] as { start: number; end: number } } : {}),
+      ...(body["modifiers"] !== undefined ? { modifiers: body["modifiers"] as LarModifiers } : {}),
+      ...(body["key"] !== undefined ? { key: body["key"] as LarKeyChord } : {}),
+      ...(body["geometry"] !== undefined ? { geometry: body["geometry"] as LarGeometry } : {}),
+    }); } catch (error) {
+      // The sending shore's own bound: a value past it never crosses.
+      if (!/exceeds its bound/.test(String(error))) throw error;
+      refusedAtShore = "input-too-long";
+      trace.push(`${at}: ${kind} ${String(body["action"])} ${control} refused at the sending shore (input-too-long)`);
+      return null;
+    }
+    if (!cap.onSignal!(LAR_CONTROL_EVENT, ev, s.ctx)) failures.push(`${at}: the projection cap left ${LAR_CONTROL_EVENT} unclaimed`);
+    trace.push(`${at}: ${kind} ${ev.action} ${control}→${rid ?? `controlId ${control}`} epoch=${epoch}${body["epoch"] === "stale" ? " (stale)" : ""}`);
+    return rid;
+  };
+
+  try {
+    for (const [index, step] of script.steps.entries()) {
+      const at = `step ${index + 1}`;
+      if ("frame" in step) {
+        const s = surfaceOf(step);
+        await mount(s);
+        current = s;
+        if (step["frame"] === "first") {
+          if (!s.frames[0]) { failures.push(`${at}: ${s.id} emitted no first frame`); continue; }
+          s.delivered = s.frames[0];
+        } else {
+          await hooks.advance();
+          const from = s.delivered ? s.frames.indexOf(s.delivered) + 1 : 0;
+          const next = s.frames.slice(from).at(-1);
+          if (!next) { failures.push(`${at}: ${s.id} emitted no frame after the one delivered`); continue; }
+          s.delivered = next;
+        }
+        trace.push(`${at}: deliver ${s.id} frame epoch=${s.delivered.mountEpoch} surfaceRev=${surfaceRev(s.delivered)} sensed=${JSON.stringify(s.delivered.sensedRevision)}`);
+      } else if ("deliver" in step) {
+        if (step["deliver"] !== "older") { failures.push(`${at}: the engine half knows no delivery "${String(step["deliver"])}"`); continue; }
+        const s = lastSense.surface;
+        if (!s || lastSense.rid === undefined || lastSense.localRev === undefined) { failures.push(`${at}: no sense precedes an older delivery`); continue; }
+        const older = s.frames[(lastSense.framesBefore ?? 0) - 1];
+        if (!older) { failures.push(`${at}: ${s.id} emitted no frame before the sense`); continue; }
+        const sensed = older.sensedRevision[lastSense.rid];
+        if (sensed !== undefined && sensed >= lastSense.localRev) {
+          failures.push(`${at}: the frame rendered before the sense names sensedRevision ${sensed} for ${lastSense.name}, not below the sense's localRev ${lastSense.localRev}`);
+        }
+        trace.push(`${at}: older frame (surfaceRev=${surfaceRev(older)}) names ${lastSense.name} at ${sensed ?? "none"} < localRev ${lastSense.localRev}`);
+      } else if ("sense" in step) {
+        const body = step["sense"] as Record<string, unknown>;
+        const s = surfaceOf(step, body);
+        const framesBefore = s.frames.length;
+        const rid = send(s, "lar:sense", body, at);
+        await hooks.settle();
+        if (rid) Object.assign(lastSense, { rid, name: String(body["control"]), localRev: Number(body["localRev"]), framesBefore, surface: s });
+      } else if ("act" in step) {
+        const body = step["act"] as Record<string, unknown>;
+        refusedAtShore = undefined;
+        send(surfaceOf(step, body), "lar:act", body, at);
+        await hooks.settle();
+      } else if ("write" in step) {
+        const body = step["write"] as { records?: { title: string; fields?: Record<string, string | string[]>; tombstone?: boolean }[] };
+        if (!Array.isArray(body.records)) { failures.push(`${at}: a write names no records`); continue; }
+        const s = surfaceOf(step, body as Record<string, unknown>);
+        for (const r of body.records) {
+          if (r.tombstone) (s.engine.$tw as unknown as { wiki: { deleteTiddler(t: string): void } }).wiki.deleteTiddler(r.title);
+          else s.engine.setTiddler({ ...(r.fields ?? {}), title: r.title });
+        }
+        await hooks.settle();
+        // The world moved under the island: a peer's records never count as an act's writes.
+        s.written.clear();
+        trace.push(`${at}: peer write ${body.records.map((r) => r.title).join(",")}`);
+      } else if ("page" in step) {
+        const body = step["page"] as { control: string; composition?: string; value?: string; input?: string; composing?: boolean; keydown?: { key: string; code: string; keyCode: number; isComposing?: boolean; ctrlKey?: boolean; metaKey?: boolean; altKey?: boolean; shiftKey?: boolean } };
+        const s = surfaceOf(step, body as Record<string, unknown>);
+        if (body.composition === "end") {
+          if (typeof body.value !== "string") { failures.push(`${at}: a composition's end names no value`); continue; }
+          const localRev = (pageRevs.get(body.control) ?? 0) + 1;
+          pageRevs.set(body.control, localRev);
+          send(s, "lar:sense", { control: body.control, wholeValue: body.value, localRev }, at);
+        } else if (body.keydown) {
+          const k = body.keydown;
+          if (k.keyCode === 229 || k.isComposing) { trace.push(`${at}: the IME holds ${k.key} (keyCode ${k.keyCode}); nothing crosses`); continue; }
+          send(s, "lar:act", {
+            control: body.control, action: "lar:key",
+            key: { key: k.key, code: k.code, keyCode: k.keyCode, repeat: false },
+            modifiers: { ctrl: !!k.ctrlKey, meta: !!k.metaKey, alt: !!k.altKey, shift: !!k.shiftKey },
+          }, at);
+        } else {
+          trace.push(`${at}: a page gesture that crosses nothing (${body.composition ? `composition ${body.composition}` : "input while composing"})`);
+          continue;
+        }
+        await hooks.settle();
+      } else if ("service-result" in step) {
+        const body = step["service-result"] as Record<string, unknown>;
+        const s = surfaceOf(step, body);
+        const asked = body["requestId"] === "last" ? services.at(-1)?.requestId : String(body["requestId"]);
+        const frame = s.delivered;
+        if (!asked || !frame) { failures.push(`${at}: no ${asked ? "frame" : "lar:service ask"} stands to answer`); continue; }
+        const ev = mkLarControlEvent({
+          eventId: `golden-${++eventSeq}`, cameraId: frame.cameraId, mountEpoch: frame.mountEpoch, kind: "lar:service-result",
+          controlId: "lar:document", action: "lar:service-result", seenFrameRev: surfaceRev(frame),
+          requestId: asked, status: body["status"] as NonNullable<LarMsg_ControlEvent["status"]>,
+        });
+        if (!cap.onSignal!(LAR_CONTROL_EVENT, ev, s.ctx)) failures.push(`${at}: the projection cap left ${LAR_CONTROL_EVENT} unclaimed`);
+        trace.push(`${at}: service-result ${asked} ${String(body["status"])}`);
+        await hooks.settle();
+      } else if ("switch" in step) {
+        const body = step["switch"] as Record<string, unknown>;
+        const s = surfaceOf(step, body);
+        await mount(s);
+        const before = s.frames.length;
+        if (!cap.onSignal!(LAR_RESEND, mkLarResend(LAR_CAMERA_STORY), s.ctx)) failures.push(`${at}: the projection cap left ${LAR_RESEND} unclaimed`);
+        await hooks.advance();
+        current = s;
+        const answer = s.frames.slice(before).at(-1);
+        if (!answer) { failures.push(`${at}: ${s.id} answered lar:resend with no frame`); continue; }
+        s.delivered = answer;
+        trace.push(`${at}: switch → ${s.id}, resend answered epoch=${answer.mountEpoch} keys=${answer.keys.map((k) => k.key).join(",")}`);
+      } else if ("expect" in step) {
+        const expect = step["expect"] as Record<string, unknown>;
+        for (const [key, want] of Object.entries(expect)) {
+          if (key === "page") { skipped.push(`${at}: expect.page (the page half)`); continue; }
+          if (key === "answers") {
+            const got = results.slice(resultsSeen).map((r) => r.status === "refused" ? `refused:${r.reason}` : r.status);
+            if (!deepEqual(got, want)) failures.push(`${at}: answers ${JSON.stringify(got)}, the script expects ${JSON.stringify(want)}`);
+            continue;
+          }
+          if (key === "want") {
+            const got = results.slice(resultsSeen).map((r) => r.want).filter((w) => w !== undefined).at(-1);
+            if (!deepEqual(got, want)) failures.push(`${at}: the answer wants ${JSON.stringify(got)}, the script expects ${JSON.stringify(want)}`);
+            continue;
+          }
+          if (key === "services") {
+            const got = services.slice(servicesSeen);
+            const wanted = want as { kind: string; args?: Record<string, unknown> }[];
+            const named = (ask: LarMsg_Service, w: { kind: string; args?: Record<string, unknown> }): boolean =>
+              ask.kind === w.kind && Object.entries(w.args ?? {}).every(([k, v]) => ask.args[k] === v);
+            if (got.length !== wanted.length || !wanted.every((w, i) => named(got[i]!, w))) {
+              failures.push(`${at}: services ${JSON.stringify(got.map((a) => ({ kind: a.kind, args: a.args })))}, the script expects ${JSON.stringify(wanted)}`);
+            }
+            continue;
+          }
+          if (key === "writes") {
+            const records = want as Record<string, string>[];
+            const expected = new Set(records.map((r) => r.title));
+            const written = [...surfaces.values()].flatMap((s) => [...s.written]);
+            const stray = written.filter((t) => !expected.has(t));
+            if (stray.length) failures.push(`${at}: writes landed on ${JSON.stringify(stray)}, outside the script's ${JSON.stringify([...expected])}`);
+            for (const record of records) {
+              const holder = [...surfaces.values()].find((s) => s.world.tiddlers.some((t) => t["title"] === record.title)) ?? current;
+              const fields = (holder.engine.$tw as unknown as { wiki: { getTiddler(t: string): { fields: Record<string, unknown> } | undefined } })
+                .wiki.getTiddler(record.title)?.fields;
+              if ((record as Record<string, unknown>)["tombstone"] === true) {
+                if (fields !== undefined) failures.push(`${at}: ${record.title} still stands, the script expects it deleted`);
+                if (!written.includes(record.title)) failures.push(`${at}: ${record.title} took no write, the script expects its deletion`);
+                continue;
+              }
+              for (const [field, value] of Object.entries(record)) {
+                if (field === "title") continue;
+                if (!deepEqual(fields?.[field], value)) failures.push(`${at}: ${record.title} holds ${field}=${JSON.stringify(fields?.[field])}, the script expects ${JSON.stringify(value)}`);
+              }
+            }
+            continue;
+          }
+          if (key === "messages") {
+            const got = [...surfaces.values()].flatMap((s) => s.messages);
+            if (!deepEqual(got, want)) failures.push(`${at}: messages ${JSON.stringify(got)}, the script expects ${JSON.stringify(want)}`);
+            continue;
+          }
+          if (key === "refused") {
+            const since = results.slice(resultsSeen);
+            const applied = since.filter((r) => r.status === "applied");
+            if (applied.length) failures.push(`${at}: the act before crossed and answered applied; the script expects a refusal (${String(want)})`);
+            if (/^[a-z]+(?:-[a-z]+)*$/.test(String(want))) {
+              const reasons = [...(refusedAtShore ? [refusedAtShore] : []), ...since.map((r) => r.reason ?? r.status)];
+              if (!reasons.includes(String(want))) failures.push(`${at}: the refusals read ${JSON.stringify(reasons)}, the script expects ${String(want)}`);
+            }
+            const written = [...surfaces.values()].flatMap((s) => [...s.written]);
+            if (!("writes" in expect) && written.length) failures.push(`${at}: a refused act wrote ${JSON.stringify(written)}`);
+            continue;
+          }
+          if (key === "frame") {
+            const w = want as Record<string, unknown>;
+            const s = w["surface"] !== undefined ? surfaces.get(String(w["surface"])) : current;
+            const frame = s?.delivered;
+            if (!s || !frame) { failures.push(`${at}: no frame delivered on ${String(w["surface"] ?? current.id)}`); continue; }
+            if (w["surface"] !== undefined && current !== s) failures.push(`${at}: the delivered frame belongs to ${current.id}, the script expects ${String(w["surface"])}`);
+            for (const [fk, fv] of Object.entries(w)) {
+              if (fk === "surface") continue;
+              if (fk === "sensedRevision") {
+                const named = sortKeys(Object.fromEntries(Object.entries(frame.sensedRevision).map(([id, rev]) => [nameOfRid.get(id) ?? id, rev])));
+                if (!deepEqual(named, sortKeys(fv as Record<string, unknown>))) failures.push(`${at}: the frame names sensedRevision ${JSON.stringify(named)}, the script expects ${JSON.stringify(fv)}`);
+              } else if (fk === "epoch" && fv === "fresh") {
+                const earlier = s.frames.slice(0, s.frames.indexOf(frame)).map((f) => f.mountEpoch);
+                if (earlier.length === 0) failures.push(`${at}: ${s.id}'s delivered frame stands alone; no earlier epoch to read it fresh against`);
+                else if (!earlier.every((e) => frame.mountEpoch > e)) failures.push(`${at}: ${s.id}'s frame carries epoch ${frame.mountEpoch}, not fresh against ${JSON.stringify([...new Set(earlier)])}`);
+              } else if (fk === "stamps") {
+                const painted = paintedNodes(frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "");
+                for (const [selector, stamps] of Object.entries(fv as Record<string, Record<string, string | null>>)) {
+                  const node = select(painted, selector)[0];
+                  if (!node) { failures.push(`${at}: the frame paints no ${selector}`); continue; }
+                  for (const [name, wantStamp] of Object.entries(stamps)) {
+                    const got = node.attrs[name];
+                    if (wantStamp === null) { if (got !== undefined) failures.push(`${at}: ${selector} carries ${name}="${got}", the script expects none`); continue; }
+                    const tokens = new Set((got ?? "").split(/\s+/).filter(Boolean));
+                    const missing = wantStamp.split(/\s+/).filter((t) => t && !tokens.has(t));
+                    if (got === undefined || missing.length) failures.push(`${at}: ${selector} carries ${name}=${got === undefined ? "none" : `"${got}"`}, the script expects "${wantStamp}"`);
+                  }
+                }
+              } else if (fk === "contains") {
+                const html = frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "";
+                if (!html.includes(String(fv))) failures.push(`${at}: the frame paints no ${JSON.stringify(fv)}`);
+              } else if (fk === "keys") {
+                const upTo = s.frames.slice(0, s.frames.indexOf(frame) + 1);
+                for (const [name, spec] of Object.entries(fv as Record<string, { contains?: string }>)) {
+                  const held = upTo.map((f) => f.keys.find((k) => k.key === name)).filter((k) => k !== undefined).at(-1);
+                  if (!held) { failures.push(`${at}: ${s.id} delivered no ${name} key`); continue; }
+                  if (spec.contains !== undefined && !JSON.stringify(held).includes(spec.contains)) failures.push(`${at}: the ${name} key reads ${JSON.stringify(held)}, the script expects it to contain ${JSON.stringify(spec.contains)}`);
+                }
+              } else if (fk === "questions" || fk === "questionSubject" || fk === "alert") {
+                const wiki = (s.engine.$tw as unknown as { wiki: { getTiddlersWithTag(t: string): string[]; getTiddler(t: string): { fields: Record<string, unknown> } | undefined } }).wiki;
+                const standing = wiki.getTiddlersWithTag("$:/tags/Confirmation");
+                const html = frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "";
+                if (fk === "questions") {
+                  const dialogs = paintedNodes(html).filter((n) => n.attrs["aria-modal"] === "true").length;
+                  if (dialogs !== fv) failures.push(`${at}: the frame paints ${dialogs} modal question(s), the script expects ${String(fv)}`);
+                  if (standing.length !== fv) failures.push(`${at}: the wiki stands ${standing.length} question(s), the script expects ${String(fv)}`);
+                } else if (fk === "questionSubject") {
+                  const subjects = standing.map((t) => wiki.getTiddler(t)?.fields["confirm-title"]);
+                  if (!deepEqual(subjects, [fv])) failures.push(`${at}: the standing question asks of ${JSON.stringify(subjects)}, the script expects ${JSON.stringify(fv)}`);
+                  if (!decode(html).includes(String(fv))) failures.push(`${at}: the frame's question names no ${String(fv)}`);
+                } else if (!wiki.getTiddler(String(fv))) {
+                  failures.push(`${at}: the wiki raised no alert ${String(fv)}`);
+                }
+              } else if (fk === "attributes") {
+                const painted = paintedNodes(frame.keys.find((k) => k.key === LAR_KEY_SURFACE)?.html ?? "");
+                for (const [selector, named] of Object.entries(fv as Record<string, Record<string, string | null>>)) {
+                  const node = select(painted, selector)[0];
+                  if (!node) { failures.push(`${at}: the frame paints no ${selector}`); continue; }
+                  for (const [attr, value] of Object.entries(named)) {
+                    const held = node.attrs[attr] ?? null;
+                    if (held !== value) failures.push(`${at}: the frame paints ${selector} ${attr}=${JSON.stringify(held)}, the script expects ${JSON.stringify(value)}`);
+                  }
+                }
+              } else {
+                failures.push(`${at}: the engine half reads no frame.${fk}`);
+              }
+            }
+            continue;
+          }
+          failures.push(`${at}: the engine half reads no expect.${key}`);
+        }
+        resultsSeen = results.length;
+        servicesSeen = services.length;
+        refusedAtShore = undefined;
+        for (const s of surfaces.values()) { s.written.clear(); s.messages = []; }
+      } else {
+        failures.push(`${at}: the engine half knows no verb ${Object.keys(step).join(",")}`);
+      }
+    }
+  } finally {
+    for (const s of surfaces.values()) { s.stop?.(); s.engine.dispose(); }
+  }
+  return { failures, skipped, trace };
+}

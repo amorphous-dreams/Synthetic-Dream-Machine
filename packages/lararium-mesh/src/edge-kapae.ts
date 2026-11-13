@@ -43,6 +43,7 @@ import type { StoredLarRecord } from "./stored-value.js";
 import type { KahuQuorumSeats, QuorumSignature } from "./kapae-antigen.js";
 import { sealKeySetHash, verifySealLineage, type SealEpoch } from "./wax-stamp.js";
 import { verifyEd25519 } from "./ed25519-door.js";
+import { ownEntry } from "./stored-value.js";
 
 export { EDGE_KAPAE_DOMAIN, EDGE_ROLL_ANCHOR_DOMAIN } from "./domains.js";
 /** The tiddler-key prefix every kāpae act rides under. */
@@ -213,7 +214,7 @@ function quorumOf(bytes: Uint8Array, signatures: readonly QuorumSignature[], ros
  *  Call INSIDE a `handle.change()` callback. */
 export function writeEdgeKapae(draft: LarDoc, act: EdgeKapae): void {
   const key = edgeKapaeKey(act);
-  const standing = edgeKapaeActsFromRecords(draft.tiddlers[key] !== undefined ? [draft.tiddlers[key]!] : []);
+  const standing = edgeKapaeActsFromRecords(ownEntry(draft.tiddlers, key) !== undefined ? [ownEntry(draft.tiddlers, key)!] : []);
   const [merged] = mergeEdgeActs([...standing.filter((a) => a.actCid === act.actCid), act]);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(merged) }, act.epochCid ?? act.hand);
 }
@@ -368,7 +369,7 @@ export function edgeRollAnchorKey(anchor: EdgeRollAnchor): string {
 /** Land an anchor on a board draft. Call INSIDE a `handle.change()` callback. */
 export function writeEdgeRollAnchor(draft: LarDoc, anchor: EdgeRollAnchor): void {
   const key = edgeRollAnchorKey(anchor);
-  const standing = edgeRollAnchorsFromRecords(draft.tiddlers[key] !== undefined ? [draft.tiddlers[key]!] : []);
+  const standing = edgeRollAnchorsFromRecords(ownEntry(draft.tiddlers, key) !== undefined ? [ownEntry(draft.tiddlers, key)!] : []);
   const [merged] = mergeEdgeRollAnchors([...standing.filter((a) => edgeRollAnchorCid(a) === edgeRollAnchorCid(anchor)), anchor]);
   draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(merged) }, anchor.sealEpochCid);
 }
@@ -594,15 +595,19 @@ export interface EdgeReading {
   readonly raiseCids: readonly string[];
 }
 
-function foldOneHand(group: readonly EdgeKapae[]): EdgeKapaeVerdict {
+export function foldCausalHeads(group: readonly { readonly actCid: string; readonly raised: boolean; readonly parents: readonly string[] }[]): EdgeKapaeVerdict {
   const ids = new Set(group.map((a) => a.actCid));
   if (group.some((a) => a.parents.some((p) => !ids.has(p)))) return "unavailable";
-  if (group.some((a) => { const { signatures: _s, actCid, ...u } = a; return actCid !== edgeKapaeActCid(u); })) return "rejected";
   const covered = new Set(group.flatMap((a) => a.parents));
   const heads = group.filter((a) => !covered.has(a.actCid));
   if (heads.length === 0) return "unavailable";
   if (heads.some((a) => a.raised) && heads.some((a) => !a.raised)) return "unsettled";
   return heads[0]!.raised ? "held" : "withdrawn";
+}
+
+function foldOneHand(group: readonly EdgeKapae[]): EdgeKapaeVerdict {
+  if (group.some((a) => { const { signatures: _s, actCid, ...u } = a; return actCid !== edgeKapaeActCid(u); })) return "rejected";
+  return foldCausalHeads(group);
 }
 
 const GRAVITY: readonly EdgeKapaeVerdict[] = ["withdrawn", "unavailable", "rejected", "unsettled", "held"];
@@ -719,8 +724,12 @@ export function edgeLineHeads(counted: readonly EdgeKapae[], edgeId: string, han
  *                  seat leave for every raise: an earlier seat still owes its roll;
  *   · `returned` — the lift stands and every raise got answered. Standing holds again, and the seat that
  *                  follows stands FRESH: no key and no content of the span it missed returns with it.
+ *   · `unknown`  — no signed frontier of the board's raising hands qualifies (`readWideningFrontier`): absence
+ *                  proves no clean history, so a widening act waits and the door seats nobody.
  */
-export type EdgeStanding = "clear" | "aside" | "owing" | "returned";
+export type EdgeStanding = "clear" | "aside" | "owing" | "returned" | "unknown";
+
+/** `unknown` is the reading of a relation no qualifying signed frontier covers: it widens nothing and waits. */
 
 /**
  * Read one edge's standing off its fold. An edge no counted act names reads `clear`: absent never shadows.
@@ -733,4 +742,10 @@ export function edgeStandingOf(reading: EdgeReading | undefined, rolled?: Readon
   if (reading.stands) return "aside";
   if (reading.raiseCids.length === 0) return "clear";
   return rolled !== undefined && reading.raiseCids.some((cid) => !rolled.has(cid)) ? "owing" : "returned";
+}
+
+/** The standing as of the board's signed frontier: where none qualifies the relation reads `unknown`, never `clear`. */
+export function edgeStandingAsOf(reading: EdgeReading | undefined, rolled: ReadonlySet<string> | undefined, frontierKnown: boolean): EdgeStanding {
+  if (reading?.stands) return "aside";                       // a shadow narrows at once, frontier or none
+  return frontierKnown ? edgeStandingOf(reading, rolled) : "unknown";
 }

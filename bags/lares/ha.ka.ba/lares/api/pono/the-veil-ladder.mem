@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/the-veil-ladder">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/the-veil-ladder`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable         = true
-file-path         = "bags/lares/ha.ka.ba/lares/api/pono/the-veil-ladder.mem"
 hydrate           = true
 l-space           = "stable"
-mana              = 17
-manao             = 16
-manaoio           = 16
 namespace         = "&#x2299;"
 pattern-integrity = true
 role              = "the-veil-ladder — the WHO-plane as myth-as-infrastructure: a self on the DreamNet is a LADDER of veils (throwaway anon → lived anon → pledged Handle), climbed by choice, held by feeding; reputation born bottom-up, rep⊥anonymity reconciled by rotation, trust distributed on the FLOW-map, defended by immune systems. ShadowTalk pre-SIN ⊕ Mage Digital Web ⊕ Earthdawn True-Names, made literal."
@@ -20,7 +16,7 @@ type              = "text/memetic-wikitext+tiddlywiki"
 uri-path          = "ha.ka.ba/lares/api/pono/the-veil-ladder"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Veil-Ladder ~ from throwaway to true-name, a self on the fed mesh
 
@@ -28,7 +24,7 @@ A self on the DreamNet reads not as a row in a registry but as a ''ladder of vei
 
 <<~/ahu>>
 
-<<~ ahu #/the-three-rungs>>
+<<~ ahu slot=`#/the-three-rungs`>>
 
 !! The Three Rungs ~ where a self can stand
 
@@ -42,18 +38,30 @@ The pledge marks the shore where distributed trust (a vouch) mints a public thin
 
 <<~/ahu>>
 
-<<~ ahu #/the-base-model>>
+<<~ ahu slot=`#/the-base-model`>>
 
 !! The Base Model ~ anon floor, Handle overlay, burn falls back
 
 The rungs name where a self CAN stand; this names what EVERY vessel holds. Anon reads as the ''ground, not a tier'': every vessel — anon, known, operator-with-node-infra, admin alike — stands anon at its floor (its own veiled-key, its own local content, no group) and ''MUST always fall back there''. Caps and node infrastructure stack ABOVE the floor; they never dissolve it.
 
-A ''PersonaGroup rides as an OVERLAY, never a promotion that consumes the anon''. A vessel MAY accept an invite into one, gaining ''shared doc-syncs'' between its human's own devices atop each vessel's floor (the @catalog crossing, `persona-crossing`). The overlay adds; the floor persists beneath, untouched. ''The Handle rides a DISTINCT layer above'': the veiled-user pseudonym the PersonaGroup CARRIES and ''announces'' on the DreamNet via its `handle-card` (mesh/handle-card). Binding the vessels (the PersonaGroup, content-sync) and announcing the identity (the Handle, social recognition) never collapse into one act — a PersonaGroup that syncs but never publishes stays unannounced; whichever vessels carry a Handle can announce it.
+A ''PersonaGroup rides as an OVERLAY, never a promotion that consumes the anon''. A vessel MAY accept an invite into one, gaining ''shared doc-syncs'' between its human's own devices atop each vessel's floor (the catalog-plane crossing, `persona-crossing`). The overlay adds; the floor persists beneath, untouched. ''The Handle rides a DISTINCT layer above'': the veiled-user pseudonym the PersonaGroup CARRIES and ''announces'' on the DreamNet via its `handle-card` (mesh/handle-card). Binding the vessels (the PersonaGroup, content-sync) and announcing the identity (the Handle, social recognition) never collapse into one act — a PersonaGroup that syncs but never publishes stays unannounced; whichever vessels carry a Handle can announce it.
+
+''Where the floor's content rests, and how it rises.'' A wiki's working layer at the floor rests in a document of the vessel's own, named by the floor's registry and sealed under the floor's rest key; a draft and a personal margin rest beside it, each in a floor document the same registry names (`floor/slot/<slug>/draft`, `floor/slot/<slug>/personal`) and the same key seals, announced as the floor's own before its first byte. The catalog names no floor draft and the daemon's binding rows name no faceless margin wherever the floor's key stands; a floor whose key does not stand (a locked hearth, a herm) keeps the faceless binding rows, since it stands no floor document at all. The island's own editor writes all three, and each act's receipt names only the documents the island holds a replica of, so a title on the volatile plane never asks the vessel for heads. A join adds a face as an overlay and runs the ''Lift'' once, at the seat's landing: the floor's draft and personal rows carry into the face's own binding of that kind (additively; a row another face's pinned label minted stays for that face's own seat), and each working row moves into the face's realm workbench for that wiki (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>> #/the-workbench), so the face's other devices reach it. The floor that persists names the vessel's standing: its key, its floor record and its capability to stand alone. The Lift reads as the continuity path of a living design, never a migration: floor and workbench both stand in the end state, and every vessel that ever joins a face runs it.
+
+''Rulings held in-house, each open to the operator's overrule'' (2026-11-12, after the operator's word: //"an anon face acting to join a PersonaGroup fleet as an upgraded capability, not as a seperate A+B faces"//). (1) The join mints a fresh atom for the face and links the veil by a private record that atom signs; no device-wide key signs a face's proof or any act that names a face. (2) The Lift MOVES content into the workbench the face derives. (3) An unbound veil arms no place KEL until its first bind or join: it stands at the throwaway rung, and a leaked open key loses that veil, which names the rung's price. (4) A title the workbench already holds otherwise stays at the floor, named. (5) The founding act asks for a face, and no host trait founds one: a browser arrives as a veil, and its page's own door (a button in the identity panel) founds a face over that floor, as the node's `vessel found` then `persona new 0` compose a place and then a face. ''No URL selects a founding'' (the operator's word, 2026-11-12: a query string as an override interrupts TW5's native URI handling): the tap carries its ask across one boot in the tab's own session storage, and the address bar stays the wiki's. (6) Before a bind, the vessel's key and its floor's rest seed rest open and the page says so; the secret home's address never rests there.
+
+''Two further rulings, held in-house and open to overrule'' (2026-11-12). (7) ''The floor's verb gate names the floor key.'' The wiki-minting and composing verbs (`init-wiki`, `prune-stale`, `add-bag`, `remove-bag`) pass where a face stands seated, and with no face they pass where the floor's rest key stands: an unlocked veil floor mints and composes as the veil, and its writes seal under that key. A locked floor (`vessel-locked`) and a herm (`floor-unkeyed`: it never unlocks, so it derives no floor key and registers no floor row) cannot seal, so each still refuses by naming the lift. The law the refusal guards reads "a floor that cannot seal writes nothing", and it holds beside "the floor holds its own content". (8) ''A wiki's canon document never moves at the Lift.'' Its catalog row lifts with the same address, so the recipe fingerprint that the draft and personal bindings key by stays put; only the document's seal re-files, from the vessel's key to the face's. The working layer alone moves, since the workbench address derives from the face and the slug.
+
+''The floor's home, held in-house and open to overrule'' (the controller's rulings, 2026-11-12). ''The operator's ruling of 2026-11-09 holds whole on both hosts'': no place mints a secret home or a control document until a face lands, a browser's veil among them. So the floor stands on a key of its own. ''The floor's rest key'' comes from one helper (`floorRestKey`) through each host's own door: a node derives it from its custody root, which answers only while the custody stands unlocked and holds across a rotation of the S key and across every face that lands; a browser derives it from a random `floor-rest` seed among its place rows, never from its place KEL seed, since a rotation there would strand what the floor wrote. The floor's key and the secret home's key differ, and neither opens the other's documents; the Lift opens floor values with the floor's key after the face mints its secret home. ''The floor's registry rests in the place's daemon document'' (`floor/slot/<slug>/<kind>`, `floor/daemon-slot/<kind>`): a row names a document id and nothing of its content, and the daemon document reaches no plaintext mirror. (9) ''A face's first bind closes the place's open window.'' The one route a person gives for a joined face's first slot also binds the place tree where it still stands clear, as a founder's first bind does, so the secret home's address a landing mints rests under that tree and never clear.
+
+''A human carries many faces, each an overlay of its own'' (the controller's addendum, 2026-11-12, open to overrule). The floor record stays the base and never rewrites; each face a human joins adds its own overlay, keyed by PersonaGroup, beside any face already worn, and never replaces one. The Lift runs once, into whichever face the veil joins first; a later face finds an empty floor, lifts nothing and takes a fresh atom of its own. No record links one face to another: a quorum MUST NOT form across one human's own faces. A session's hello names the face it wears. ''Each face keeps its pins in a daemon document of its own.'' A face's landing writes seven pins under singleton titles there (the group id, the signer, the persona-KEL prefix, the device's own delegation edge, the cabal sentinel, the hearth's true name and its daemon address), so two faces in one island would overwrite each other. The first face lands in the floor's own daemon document; every later face founds one beside it, and the floor record still names the first alone. One island for many faces waits on pins keyed by PersonaGroup.
+
+''Built and owed.'' Built: the floor's working slot, its draft and personal margins beside it in the same registry, its seal filing under the vessel's key on node and browser, the Lift's working leg and its daemon-memory leg, the floor's verb gate, and the veil's own wiki mint (the row's mark and the canon document's filing in one act); the canon's Lift half (the face takes the bag's cap, the row's mark leaves with the same address, and the seal re-files in place from the vessel's key to the face's, on both hosts); the browser's veil floor (a fresh browser stands its place and asks nobody, its key resting in the open pre-bind window that the page names); the founding act as the page's own door; and the boot record's overlays by PersonaGroup above a floor record written once, so a second face leaves the first standing (a second face founds through the same door where the ask names the faces that stand, `foundFace: { beside }`, and its root rests under its own custody tree); and a weld that reads the node's founding and the browser's boot as one composition (the place, then the face). Built since: the signed veil-lift record under each face's own custody on both hosts (the browser's face row `veil-lift/<PersonaGroup>`, the node's `veil-lift` face row, each signed by that face's atom at the founding and at a fleet join's landing; the place key signs no face act, so the record names the veil's public key and takes no signature from it), the browser's burn fall back (a face whose tree left drops its overlay and the vessel stands at its floor record), and the mirror's guard (a veil floor's answer carries no `sealedRest`, so its mirror runs no person-authored code). Owed: the last-read replica beneath the fallen floor, by a named gap: a face's workbench replica rests sealed in the vessel's own store, but the lockboxes that deliver its content keys open only through that face's Keyhive identity, and that identity's Archive rests as a face row (`veil-archive-g<PersonaGroup>` on the browser, the `veil-archive` face row on the node) under the face's custody tree, so a burn takes the keys with the tree, and hydration besides answers only a session that wears the bag's face (`session-face-foreign`), which a severed face cannot stand. Keeping what the vessel already decrypted needs a re-file of those rows under the vessel's key before the tree leaves (a tree cleared outside the vessel gives that act no moment), or a read-only door at the floor for a severed face's bags, and neither stands; the Hold gesture's choice at the join door; a lit set wider than one face per browser boot (a second face's provider refuses `face-edge-absent` at `faceProviders.lit`), and pins keyed by PersonaGroup so that many faces share one island; the fleet-join door's bind and card asked at the offer, read against a real hearth (built for a leaf: a veil's first fleet offer founds its face inside the offer, by the founding door's own one-boot ask, and the boot that founded for it shows the offer with no second tap; a replay founds nothing, and an offer under a standing face founds nothing new); the draft and personal margins of a floor whose key does not stand (they still ride the faceless binding rows there, and the mount's contract keeps both urls whole); and the arrival URL's move off the query string and the fragment (the relay from the Pronaos descriptor, the floor card and anchor through the carriage door). The node's unlocked veil stands: an unfounded node place whose custody stands open derives its floor key, its daemon wiki's working layer rests in a floor document, and its verb door passes the veil's four verbs.
 
 ''THE FLOOR CARRIES TWO OCCASIONS, and only one of them follows a choice.'' This section names the floor a BURN
 falls to — a deliberate shedding. A vessel that WAKES unable to open its sealed archive falls to the same
 floor by an ''unchosen'' absence, and the rule reads identically: it has lost its CAPS, never its FLOOR, so
-it stands rather than refuses. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/waking-floor">>
+it stands rather than refuses. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>
 
 ''Burning the Handle severs the overlay FORWARD, never the floor.'' The vessels lose sync over //new// shared content until the user or operator resolves it (re-invite, re-key), and drop back to their anon floor — keeping their own content AND whatever shared content they ''already decrypted''. keyhive (BeeKEM) carries ''post-compromise security'' but NOT forward secrecy: revoke re-keys the group so the burned vessel reads nothing shared //after// the burn, yet it never erases the past it already read. The cut runs one-way — future, not history (`persona-content-crossing`, the burn test). That forward severance names the DreamNet's ''risk / reward / cost''.
 
@@ -61,7 +69,7 @@ Two reversibilities stay distinct: ''doc-syncs revoke and restore'' (an overlay 
 
 <<~/ahu>>
 
-<<~ ahu #/the-tightrope>>
+<<~ ahu slot=`#/the-tightrope`>>
 
 !! The Tightrope ~ rep ⊥ anonymity, reconciled by rotation
 
@@ -71,7 +79,7 @@ The lived rung stretches as a ''tightrope'': reputation and anonymity pull again
 
 <<~/ahu>>
 
-<<~ ahu #/the-circle>>
+<<~ ahu slot=`#/the-circle`>>
 
 !! The Circle ~ a self holds a place, not a row
 
@@ -79,7 +87,7 @@ A human holds one-or-more ''virtual places'' — each a single-principal ''Circl
 
 <<~/ahu>>
 
-<<~ ahu #/the-distributed-trust>>
+<<~ ahu slot=`#/the-distributed-trust`>>
 
 !! The Distributed Trust ~ the FLOW-map, not a blind oracle
 
@@ -92,7 +100,7 @@ Threshold-blind crypto (Coconut/FROST, k-of-n — a lone kahu stays strictly wea
 
 <<~/ahu>>
 
-<<~ ahu #/the-immune-systems>>
+<<~ ahu slot=`#/the-immune-systems`>>
 
 !! The Immune Systems ~ context licenses, anergy not ban
 
@@ -100,7 +108,7 @@ Immune systems meet bad actors ''one vessel-veil at a time'' — some automated,
 
 <<~/ahu>>
 
-<<~ ahu #/the-price>>
+<<~ ahu slot=`#/the-price`>>
 
 !! The Price ~ burn, not watch
 
@@ -110,7 +118,7 @@ Reputation across a break goes ''priced, not policed''. ''Positive'' rep the hol
 
 <<~/ahu>>
 
-<<~ ahu #/the-bounds>>
+<<~ ahu slot=`#/the-bounds`>>
 
 !! The Bounds ~ the mesh holds mechanism, the members hold meaning
 
@@ -125,22 +133,22 @@ For a thing with ''no king'', this marks no gap — it stands as the only honest
 
 <<~/ahu>>
 
-<<~ ahu #/the-recovery>>
+<<~ ahu slot=`#/the-recovery`>>
 
 !! The Recovery ~ the involuntary-loss flip-side of the burn (the lone 1-vessel citizen)
 
-The burn (#/the-price) reads as a //chosen// shedding; ''involuntary key-loss'' makes the same cut by accident — and it lands hardest on the ''lone 1-vessel citizen'' (one device, no Circle) whose declared Handle, unlike a cheap anon-veil, carries accreted standing a dead key forfeits. The floor, held: recovery ''re-admits, never escrows a secret at rest'' (device re-admission, the G-recovery keel). The one bound that governs all of it: ''the recovery quorum and the impersonation quorum stand as ONE quorum'' (Camenisch-Lysyanskaya) — no party can restore you without the power to //become// you, so there reads ''no safe custodial escrow, only priced quorums'' (raise k · hide guardians · time-delay + live-key veto).
+The burn (#/the-price) reads as a //chosen// shedding; ''involuntary key-loss'' makes the same cut by accident — and it lands hardest on the ''lone 1-vessel citizen'' (one device, no Circle) whose declared Handle, unlike a cheap anon-veil, carries accreted standing a dead key forfeits. The floor, held: recovery ''re-admits, never escrows a secret at rest'' (device re-admission, the G-recovery keel). The one bound that governs all of it: ''the recovery quorum and the impersonation quorum stand as ONE quorum'' (Camenisch-Lysyanskaya) — no party can restore you without the power to //become// you, so there reads ''no safe custodial escrow, only priced quorums'' (raise k · hide recovery contacts · time-delay + live-key veto).
 
-For the citizen with ''no quorum yet'', the floor rests on a ''standalone recorded code as the FIRST non-device share'' of their own threshold (not a vault-key — the one recovery act a lone citizen performs alone, Apple-shape blind escrow; Google/Samsung both need a second device and fail the lone case). Birth quorum = `{device, recorded-code}`; a peer node MAY hold one share (Delivery-Service) but ''never a quorum'' (never Auth-Root). The quorum grows `code → +2nd device → +Circle guardians → FROST/TSS` (no reconstruction window), retiring imported trust as the Circle forms. Across every migration the ''anonymity ⊥ non-transferability'' bound holds (the same law that prices the burn, #the-price): ''positive rep rides holder-continuity proofs'' (no watcher), ''negative marks bind to the RETIRED key as anergy'' — tolerated-inert, ''never laundered'' by a recovery. Recovery restores the seat + earned standing, never a clean slate. <<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-recovery-keel">>
+For the citizen with ''no quorum yet'', the floor rests on a ''standalone recorded code as the FIRST non-device share'' of their own threshold (not a vault-key — the one recovery act a lone citizen performs alone, Apple-shape blind escrow; Google/Samsung both need a second device and fail the lone case). Birth quorum = `{device, recorded-code}`; a peer node MAY hold one share (Delivery-Service) but ''never a quorum'' (never Auth-Root). The quorum grows `code → +2nd device → +Circle guardians → FROST/TSS` (no reconstruction window), retiring imported trust as the Circle forms. Across every migration the ''anonymity ⊥ non-transferability'' bound holds (the same law that prices the burn, #the-price): ''positive rep rides holder-continuity proofs'' (no watcher), ''negative marks bind to the RETIRED key as anergy'' — tolerated-inert, ''never laundered'' by a recovery. Recovery restores the seat + earned standing, never a clean slate. ''The lone citizen's second device needs no node.'' The growth step `+2nd device` runs on leaves alone: the device that founded the face holds its root under a ward and answers the second device's fleet join by three files the person carries by hand (a paste, a file, QR codes), and no server stands between them (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/device-seats). The second device receives no root bytes; it mints its own atom, and the root's signed edge seats it. A citizen who never runs a node still grows the quorum's second share. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-recovery-keel`>>
 
 <<~/ahu>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm#/two-roots">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/multi-fractal">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/attestation-plane">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/two-roots`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/attestation-plane`>>
 
-<<^ code="&#x0003;">>ni:///sha-256;4G-1P7HRKfUPhx8__fC95dIX6f1YnmktBepWGIgKvqM
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ceD2LaeF__FC69TyargoeX4_nEBDOmsURQsOI08Pue0`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

@@ -2,21 +2,21 @@
 /**
  * live-wiki — the shore walk: a served page in real Chromium against a standing node.
  *
- * Run each walk through the host driver, which answers every fresh profile's admit request:
+ * Run each walk through the host driver, which carries the node's half of every fresh profile's fleet join:
  *
- *   info=$(tools/browser-ci.sh info)                       # gateKey, wikiDoc.url
- *   LIVE_WIKI_CROSSING_URL=http://localhost:4321/ LIVE_WIKI_GATE_PUBKEY=<info.gateKey> LIVE_WIKI_NODE_DOC=<info.wikiDoc.url> \
- *     tools/browser-ci.sh qa-admit node packages/lararium-web/tests/live-wiki.mjs <walk>
+ *   info=$(tools/browser-ci.sh info)                       # wikiDoc.url
+ *   LIVE_WIKI_CROSSING_URL=http://localhost:4321/ LIVE_WIKI_NODE_DOC=<info.wikiDoc.url> \
+ *     tools/browser-ci.sh qa-join node packages/lararium-web/tests/live-wiki.mjs <walk>
  *
- *   crossing           rung 0: a wrong pin names the unreachable gate; the right pin stays silent until a
- *                      host-issued admit lands, then shows the proven gate key; the daemon surface summons
+ *   crossing           rung 0: the page stays silent at the gate until the node's fleet-join answer lands, then
+ *                      shows the gate key its crossing proved; the daemon surface summons
  *   render-aki         rung 1: the admitted leaf mounts the node's wiki document, opens Lady Aki (ingested into
  *                      the node's default bag first), and shows her title, the typed field at 2 in the standard
  *                      field editor, an ahu section with its heading and a followed lar: link.
  *                      CONTROL: a title never ingested reads absent by name
  *   edit-aki           rung 2, the page half: 2 -> 3 through the standard field editor, saved and read back; no
  *                      refusal stands on the alert rail; the SAME profile, reloaded, reads 3 from its own store
- *   fresh-profile-aki  rung 2, the far half: a new profile with its own key and admit reads the stored field
+ *   fresh-profile-aki  rung 2, the far half: a new profile with its own key and fleet join reads the stored field
  *                      (LIVE_WIKI_EXPECT_LEVEL, default 3)
  *   confirm-roads      the wiki asks its own questions in the frame: a typed draft's Discard shows TiddlyWiki's
  *                      dialog with focus on the declining button and the rest of the frame inert; Escape keeps
@@ -32,7 +32,9 @@
  */
 import assert from "node:assert/strict";
 import { chromium } from "playwright";
-import { requestAdmit } from "../../../tools/browser-ci-admit.mjs";
+import { joinThroughPage, pasteAnswer } from "../../../tools/browser-ci-join.mjs";
+// The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
+import { armTestCustody } from "../../lararium-node/dist/probes/browser-test-custody.js";
 
 function required(name) {
   const value = process.env[name];
@@ -43,12 +45,12 @@ function required(name) {
 const WALK_SETTLE_MS = 3_000;
 
 /**
- * The crossing URL: the served origin plus the gate pin. The page derives its relay from the origin that
- * served it, so the walk names no relay.
+ * The crossing page: the served origin's own URL. The page dials the relay that origin answers with (its arrival descriptor), so
+ * the URL names no relay and no gate key; a face crosses the sovereign gate under the pin its fleet join carries.
  */
-function withGate(source, gate) {
+function crossingAt(source) {
   const url = new URL(source);
-  return `${url.origin}${url.pathname}?gate=${gate}`;
+  return `${url.origin}${url.pathname}`;
 }
 
 /** Load a crossing URL and require the vessel's own page; a refused or foreign answer names itself. */
@@ -87,13 +89,14 @@ async function persistedFace(page) {
 }
 
 /**
- * Rung 0, as every walk enters: silence before admission, a host-issued admit for THIS profile's key, then the
- * proven gate key and the mounted document, both read as data off the connection row.
+ * Rung 0, as every walk enters: silence before admission, a fleet join through the page's paste door (the node
+ * offers, THIS profile mints its request, the node answers, the page lands it), then the proven gate key and the
+ * mounted document, both read as data off the connection row.
  */
-async function admit(page, vesselUrl, gatePubKey) {
+async function joinFace(page, vesselUrl) {
   const nodeWikiDoc = process.env.LIVE_WIKI_NODE_DOC;
   assert.ok(nodeWikiDoc, "LIVE_WIKI_NODE_DOC must be supplied by the standing-vessel fixture");
-  await open(page, withGate(vesselUrl, gatePubKey));
+  await open(page, crossingAt(vesselUrl));
   await waitForLive(page);
   // The gate answers an unvouched leaf with silence, and silence has no single face on the page: the row reads
   // pinned or authenticating while the dial stands, and gate-unreachable once the silent socket closes. The
@@ -105,44 +108,44 @@ async function admit(page, vesselUrl, gatePubKey) {
     "before admission the row names no proven gate key");
 
   const browserKey = (await page.locator("#vessel-key").textContent())?.trim();
-  assert.match(browserKey ?? "", /^[0-9a-f]{64}$/, "the page prints the joinee key for the host admit door");
-  const carriage = (await requestAdmit(browserKey, { timeoutMs: 60_000 })).trim();
-  assert.match(carriage, /^#admit=\S+/, "the host fixture supplies the node-issued admit carriage to the QA runner");
-  const admitted = JSON.parse(Buffer.from(carriage.slice("#admit=".length), "base64url").toString("utf8"));
-  // A taken admit stashes the carriage and RELOADS the page; the marker below dies with the old document, so
-  // the walk reads the re-entered boot and never the standing one.
-  await page.evaluate(() => { globalThis.__walkBeforeAdmit = true; });
-  await page.locator("#admit-paste").fill(carriage);
-  await page.locator("#admit-apply").click();
+  assert.match(browserKey ?? "", /^[0-9a-f]{64}$/, "the page prints its own vessel key");
+  const { answer } = await joinThroughPage(page, { timeoutMs: 60_000 });
+  assert.equal(answer.kind, "fleet-join-answer", "the host fixture supplies the node's signed fleet-join answer to the QA runner");
+  const admitted = answer.edge;
+  assert.equal(admitted?.kind, "device-admit", "the answer carries the device edge the page founds on");
+  // A landed answer stashes the admit it carries and RELOADS the page; the marker below dies with the prior
+  // document, so the walk reads the re-entered boot and never the standing one.
+  await page.evaluate(() => { globalThis.__walkBeforeLand = true; });
+  await pasteAnswer(page, answer);
   await page.waitForFunction(() => {
-    if (globalThis.__walkBeforeAdmit === true) {
+    if (globalThis.__walkBeforeLand === true) {
       return (document.querySelector("#admit-status")?.textContent ?? "").startsWith("\u2717");
     }
     const failed = document.querySelector("#status")?.textContent ?? "";
     return failed.startsWith("boot failed:") || [...document.querySelectorAll("#phases .phase")]
       .some((phase) => phase.textContent === "live");
   }, undefined, { timeout: 90_000 });
-  const stop = await page.evaluate(() => globalThis.__walkBeforeAdmit === true
+  const stop = await page.evaluate(() => globalThis.__walkBeforeLand === true
     ? document.querySelector("#admit-status")?.textContent ?? ""
     : document.querySelector("#status")?.textContent ?? "");
-  if (stop.startsWith("\u2717") || stop.startsWith("boot failed:")) throw new Error(`browser admit stop: ${stop}`);
+  if (stop.startsWith("\u2717") || stop.startsWith("boot failed:")) throw new Error(`browser join stop: ${stop}`);
   await page.waitForFunction(() => {
     const text = document.querySelector('[data-live-status="connection"]')?.textContent ?? "";
     return text.includes("connected — gate");
   }, undefined, { timeout: 60_000 });
 
-  // The admit was TAKEN: the vessel persisted the face binding the carriage named.
+  // The join TOOK: the vessel persisted the face binding the answer's device edge named.
   const face = await persistedFace(page);
-  assert.equal(face?.personaKelPrefix, admitted.personaKelPrefix, "the vessel persisted the carried persona-KEL prefix");
-  assert.equal(face?.signerDid, admitted.signerDid, "the vessel persisted the carried signer");
-  assert.equal(face?.personaUrl, admitted.personaUrl, "the vessel persisted the carried persona plane");
+  assert.equal(face?.personaKelPrefix, admitted.personaKelPrefix, "the vessel persisted the answer's persona-KEL prefix");
+  assert.equal(face?.signerDid, admitted.signerDid, "the vessel persisted the answer's signer");
+  assert.equal(face?.personaUrl, admitted.personaUrl, "the vessel persisted the answer's persona plane");
 
   // The row publishes what it proved and what it mounted as data; the walk reads those, never the prose.
   const shown = await page.locator('[data-live-status="connection"]').evaluate((row) => ({
     gateKey: row.getAttribute("data-gate-key"),
     wikiDocUrl: row.getAttribute("data-wiki-doc-url"),
   }));
-  assert.equal(shown.gateKey, gatePubKey.toLowerCase(), "the connection row names the gate key the relay proved");
+  assert.match(shown.gateKey ?? "", /^[0-9a-f]{64}$/, "the connection row names the gate key the crossing proved");
   assert.match(shown.wikiDocUrl ?? "", /^automerge:/, "the connection row names the mounted wiki document");
   assert.equal(shown.wikiDocUrl, nodeWikiDoc,
     `the admitted leaf mounts the node's wiki document (leaf ${shown.wikiDocUrl ?? "(unreported)"}, node ${nodeWikiDoc})`);
@@ -155,6 +158,7 @@ const TRACE = /\[vessel\]|\[face-join\]|\[lararium-browser\]|\[browser-genesis\]
 async function withBrowser(run) {
   const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
   const context = await browser.newContext();
+  await armTestCustody(context, "live-wiki");
   const page = await context.newPage();
   const errors = [];
   const trace = [];
@@ -188,23 +192,13 @@ async function withBrowser(run) {
 
 async function crossing() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
-  await withBrowser(async (page) => {
-    await open(page, withGate(vesselUrl, "00".repeat(32)));
-    await page.waitForFunction(() => (document.querySelector('[data-live-status="connection"]')?.textContent ?? "")
-      .startsWith("gate-unreachable — "), undefined, { timeout: 90_000 });
-    const refusal = await readConnection(page);
-    assert.match(refusal, /^gate-unreachable — .+/, "a wrong pin names the local unreachable gate without inventing a peer verdict");
-    console.log(`wrong-pin OK — local ${refusal}`);
-  });
-
   await withBrowser(async (page, errors) => {
-    const mount = await admit(page, vesselUrl, gatePubKey);
+    const mount = await joinFace(page, vesselUrl);
     const origin = new URL(page.url()).origin;
     const rowValue = (label) => page.locator(`#vessel .row:has(> .k:text-is("${label}")) > .v`).innerText();
     assert.equal(await rowValue("origin"), origin, "the served page names its actual origin");
     assert.equal(await rowValue("relay"), `ws://${new URL(origin).host}/ws`, "the page derives its relay from the origin that served it");
-    // Both islands booted in real Chromium: the wiki worker painted the projection the admit read, and the
+    // Both islands booted in real Chromium: the wiki worker painted the projection the join read, and the
     // daemon worker paints its surface on the summon (a surface whose revisions count from its own start).
     assert.ok(await page.locator("#projection .tc-site-title").count(), "the wiki island painted its page template");
     await page.locator("#summon-daemon").click();
@@ -269,9 +263,8 @@ const unroutedAlerts = (page) => page.locator("#projection .tc-alert").filter({ 
 
 async function renderAki() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   await withBrowser(async (page, errors) => {
-    const mount = await admit(page, vesselUrl, gatePubKey);
+    const mount = await joinFace(page, vesselUrl);
     await openAki(page);
     const shown = await viewFrame(page, AKI).evaluate((frame) => ({
       title: frame.querySelector(".tc-title")?.textContent?.trim() ?? "",
@@ -320,9 +313,8 @@ async function renderAki() {
 
 async function editAki() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   await withBrowser(async (page, errors) => {
-    await admit(page, vesselUrl, gatePubKey);
+    await joinFace(page, vesselUrl);
     await openAki(page);
     const level = await openLevelEditor(page);
     assert.equal(await level.inputValue(), "2", "the typed field begins at 2");
@@ -340,7 +332,7 @@ async function editAki() {
     await page.waitForTimeout(WALK_SETTLE_MS);
 
     // The SAME profile, reloaded: the wiki island boots from this vessel's own store and reads the saved field.
-    await open(page, withGate(vesselUrl, gatePubKey));
+    await open(page, crossingAt(vesselUrl));
     await waitForLive(page);
     await openAki(page);
     await assertNoDraft(page, AKI, "reload after save");
@@ -357,10 +349,9 @@ async function editAki() {
 
 async function freshProfileAki() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   const expected = process.env.LIVE_WIKI_EXPECT_LEVEL ?? "3";
   await withBrowser(async (page, errors) => {
-    const mount = await admit(page, vesselUrl, gatePubKey);
+    const mount = await joinFace(page, vesselUrl);
     await openAki(page);
     const level = await openLevelEditor(page);
     assert.equal(await level.inputValue(), expected, `a fresh browser profile reads the stored typed field at ${expected}`);
@@ -386,11 +377,10 @@ async function awaitQuestion(page, declineWord, acceptWord) {
 
 async function confirmRoads() {
   const vesselUrl = required("LIVE_WIKI_CROSSING_URL");
-  const gatePubKey = required("LIVE_WIKI_GATE_PUBKEY");
   await withBrowser(async (page, errors) => {
     const prompts = [];
     page.on("dialog", async (dialog) => { prompts.push(dialog.message()); await dialog.dismiss(); });
-    await admit(page, vesselUrl, gatePubKey);
+    await joinFace(page, vesselUrl);
     await openAki(page);
 
     // CONTROL: an untouched draft's Discard asks nothing.
@@ -453,7 +443,7 @@ async function confirmRoads() {
     await page.waitForTimeout(WALK_SETTLE_MS);
 
     // The SAME profile, reloaded: the deleted title stays gone.
-    await open(page, withGate(vesselUrl, gatePubKey));
+    await open(page, crossingAt(vesselUrl));
     await waitForLive(page);
     await page.locator("#projection .tc-site-title").first().waitFor({ state: "visible", timeout: 60_000 });
     // The words "New Tiddler" stand inside other tiddlers' text, so the search may count body matches; the

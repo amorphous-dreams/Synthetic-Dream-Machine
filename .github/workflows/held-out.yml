@@ -4,9 +4,12 @@ name: Held-out witnesses
 # families, the crossing matrix, the Herm mesh across three hops, and every mesh scenario. The per-push CI
 # fleet names these witnesses but cannot raise their browser and Docker substrates, so they ride here.
 #
-# EVERY PUSHED HEAD GETS READ. This workflow runs on each push to a feature branch and to `main`, on a
-# weekly clock, and by hand. `tools/ci-verdict.mjs` prints its verdict as the third reading beside the CI
-# workflow's own, so a head these drivers never measured reads UNREAD and never green.
+# HELD-OUT RUNS PER TRAIN, NOT PER LANE PUSH. This workflow runs on each push to the span and to `main`, on a
+# weekly clock, and by hand; a lane branch (`feature/green-jello-dinosaur-5--*`) never fires it, so a lane
+# reads GREEN on its CI alone and these drivers measure the merged tree after each land. `tools/ci-verdict.mjs`
+# still prints its verdict as the third reading beside the CI workflow's own, so a head these drivers never
+# measured reads UNREAD (a lane reads `held-out: not run (per train)`) and never green; the vigil on the span
+# reads both.
 #
 # FOUR JOBS, ONE VERDICT.
 #   plan      prints the cell matrix. `tools/held-out-cells.mjs` derives it: one cell per whole driver, and one
@@ -28,7 +31,14 @@ name: Held-out witnesses
 # `max-parallel` holds the cells to eight.
 on:
   push:
-    branches: ["feature/**", main]
+    branches: ["feature/**", "!feature/green-jello-dinosaur-5--**", main]
+    # Meme, docs and wiki paths raise no run on a push (tools/ci-ignored-paths.json; a test pins these globs equal
+    # to it). A push that changes only these leaves the in-flight run alone. pull_request stays un-ignored.
+    paths-ignore:
+      - "bags/**/*.mem"
+      - "**/*.md"
+      - "wikis/**"
+      - "CHANGELOG.md"
   schedule:
     - cron: "17 6 * * 0"
   workflow_dispatch:
@@ -46,6 +56,9 @@ env:
   # ONE pnpm, exact: the same string as package.json `packageManager` and the Dockerfile. A lock
   # written by any other pnpm rewrites its peer suffixes on its next write.
   PNPM_VERSION: "11.28.5"
+  # THE BROWSER LIBRARIES COME IN THE IMAGE, NEVER FROM APT (`playwright install-deps` timed out in the browser cells six times in one
+  # day). The same string as ci.yml's; tools/workflow-law.test.mjs holds both to the repo's `playwright` version.
+  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:2f05f8a734509a7b3f26a912639488ee08f58a7b292d14d62271bcff9038768f"
 
 jobs:
   plan:
@@ -172,9 +185,15 @@ jobs:
         run: |
           echo "COMPOSE_PROJECT_NAME=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
           echo "MESH_PROJECT=held-${{ matrix.cell }}" >> "$GITHUB_ENV"
-      - name: Install Playwright Chromium
+      # The browser weld's two drivers run inside the pinned official Playwright image (the driver step names it
+      # `WELD_PW_IMAGE`, for tools/browser-weld-witness.sh alone: its entry-contract test runs fakes and must see none), so the system libraries and Chromium are already there and no apt or download step runs. The pull
+      # is its own step, so a stall names itself.
+      - name: Pull the pinned Playwright image and find its Chromium
         if: matrix.driver == 'browser-weld'
-        run: pnpm exec playwright install --with-deps chromium
+        timeout-minutes: 12
+        run: |
+          export PW_IMAGE="$PLAYWRIGHT_IMAGE"
+          tools/pw-container.sh node -e 'const p = require("playwright"); const e = p.chromium.executablePath(); require("node:fs").accessSync(e); console.log("chromium:", e, "playwright", require("playwright/package.json").version)'
 
       # Regression for the status bug that held this runner back. The fake Docker seam runs no
       # container and checks both a quiet failed compose result and a quiet successful one.
@@ -187,20 +206,26 @@ jobs:
       # The mesh witnesses' readers hold to a known positive: a field the pointer builder stops minting
       # reds here, before a mesh run can read every act as one frozen default.
       - name: Herm mesh readers read a known positive
-        if: matrix.driver == 'herm-mesh'
+        if: matrix.driver == 'herm-mesh' || matrix.driver == 'herm-mesh-roll'
         run: node --test tools/herm-mesh-reader.test.mjs
       - name: Mesh pins stand in the order the compose file derives
         if: matrix.mesh == 'true'
         run: node --test tools/mesh-pins.test.mjs
 
-      # PINS ARE GENERATED, NEVER COPIED. Every bootstrap peer knocks with the gate key its target founded in its
-      # own container, so the herms stand one wave at a time and each wave boots against the keys read off the
-      # wave before it. A bare `compose up` stands relays whose peer entries carry no key, and those refuse aloud.
+      # PINS ARE GENERATED, NEVER COPIED. Every bootstrap peer names the PUBLISHER key its target founded in its own
+      # container (`<url>#<vessel verifying key>`: the key a pulled FLOW-map pointer must verify under, `carriage-caps`;
+      # the knock itself rides the floor pin the carry join files), so the herms stand one wave at a time and each wave
+      # boots against the keys read off the wave before it. A bare `compose up` stands relays whose peer entries carry
+      # no key, and those refuse aloud.
       - name: Stand the Herm mesh in pin order
-        if: matrix.driver == 'herm-mesh'
+        if: matrix.driver == 'herm-mesh' || matrix.driver == 'herm-mesh-roll'
         shell: bash
         run: |
-          timeout --kill-after=60s 10m node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 2>&1 \
+          # AN EXPLICIT NEXUS OPENS THE HERM RELAY (house ruling "Routes at the cutover"): a herm stands its floor gate only
+          # where a quorum counted its carry, so lararium-a, which seats the founding kahu, stands with the herms and the
+          # witness joins every herm and its reader to A's Nexus by hand (tools/herm-mesh-witness.sh).
+          if [ "${{ matrix.driver }}" = herm-mesh-roll ]; then export LAR_A_KAHU=; fi
+          timeout --kill-after=60s 10m node tools/mesh-pins.mjs --up herm-source herm-relay herm-relay-2 lararium-a 2>&1 \
             | tee "$ARTIFACT_DIR/mesh-setup.log"
 
       - name: Run ${{ matrix.cell }}
@@ -222,7 +247,7 @@ jobs:
           SECONDS=0
           case "${{ matrix.driver }}" in
             browser-weld)
-              run_logged 40m bash tools/browser-weld-witness.sh
+              WELD_PW_IMAGE="$PLAYWRIGHT_IMAGE" run_logged 40m bash tools/browser-weld-witness.sh
               status=$?
               ;;
             civic)
@@ -233,10 +258,13 @@ jobs:
               run_logged 25m bash tools/crossing-witness.sh
               status=$?
               ;;
-            herm-mesh)
+            herm-mesh|herm-mesh-roll)
               # PEERS PROVE FIRST: a hop's oracle answers no stranger, so the witness dials as a READER
               # vessel founded in a scratch root. Its own attempt loop waits out the mesh coming up.
               reader_root="$(mktemp -d)"
+              # One explicit host-reader seat covers founding and later CLI ward acts for both Herm cells.
+              # The shared module still requires the CLI process, marked scratch root and no storage override.
+              export NODE_OPTIONS="${NODE_OPTIONS:+$NODE_OPTIONS }--import=$(node --input-type=module -e 'import { pathToFileURL } from "node:url"; import { resolve } from "node:path"; console.log(pathToFileURL(resolve("tools/test-ward-route.mjs")).href)')"
               # A FOUNDING GATHERS ITS ROUTE FROM A TERMINAL, AND A RUNNER HOLDS NONE. The harness stages the
               # root as scratch and founds its custody through the test door first; the founding then meets a
               # standing slot tree and asks for no credential. The reader dials with the key file its founding
@@ -254,7 +282,11 @@ jobs:
                 echo "the witness's reader vessel did not found" | tee -a "$ARTIFACT_DIR/driver.log"
                 status=1
               else
-                LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-witness.sh
+                if [ "${{ matrix.driver }}" = herm-mesh-roll ]; then
+                  LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-roll-witness.sh
+                else
+                  LAR_ROOT="$reader_root" WITNESS_ATTEMPTS=120 run_logged 5m bash tools/herm-mesh-witness.sh
+                fi
                 status=$?
               fi
               rm -rf "$reader_root"
@@ -275,7 +307,7 @@ jobs:
           exit "$status"
 
       # A mesh driver's own trap tears down on a clean exit; a job timeout signals past it, so this step holds
-      # the evidence and the teardown either way. The pins file names public gate keys only.
+      # the evidence and the teardown either way. The pins file names public publisher keys only.
       - name: Capture and tear down the mesh
         if: always() && matrix.mesh == 'true'
         shell: bash

@@ -53,7 +53,7 @@ function loadForkFilesystem($tw: { utils: object }): ForkFilesystem {
   return exports as unknown as ForkFilesystem;
 }
 
-/** The siting rule the house's loci law spells as a filter: a `lar:///w.w.w/…` root sites at its uri-path. */
+/** The siting rule the house's address siting rule spells as a filter: a `lar:///w.w.w/…` root sites at its uri-path. */
 const LOCI_PATH_RULE = "[prefix[lar:///]regexp[^lar:///\\w+\\.\\w+\\.\\w+/(?:(?!#).)*$]removeprefix[lar:///]]";
 
 const PATH_CASCADES: ReadonlyArray<readonly string[]> = [

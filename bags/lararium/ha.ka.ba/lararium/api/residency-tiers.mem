@@ -1,33 +1,27 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="ॐ ँ" from="?" -> to="lar:///ha.ka.ba/lararium/api/residency-tiers">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`ॐ ँ` from=`?` to=`lar:///ha.ka.ba/lararium/api/residency-tiers`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 approved-on   = "2026-06-01"
 cacheable     = true
-file-path     = "bags/lararium/ha.ka.ba/lararium/api/residency-tiers.mem"
 hydrate       = true
 l-space       = "stable"
-mana          = 17
-manao         = 17
-manaoio       = 15
 namespace     = "&#x0950; &#x0901;"
 revised-on    = "2026-06-01"
 revision-note = "warm (mahana) tier CUT after adversarial+kupono+YIN research; two states (wela/anu) only"
 role          = "load-bearing architectural invariant — ONE island-owned residency model: two-state ʻōlelo thermal axis wela/anu + orthogonal pin-flag; bag residency DERIVED from referencing islands"
 status-why    = "rides the residency substrate; the tier read stands with it"
-tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lar:///ha.ka.ba/lares/api/pono/loci", "lifecycle/standing"]
+tags          = ["lar:///ha.ka.ba/lares/api/pono/meme", "lifecycle/standing"]
 title         = "lar:///ha.ka.ba/lararium/api/residency-tiers"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lararium/api/residency-tiers"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/core-claim>>
+<<~ ahu slot=`#/core-claim`>>
 
 ! Residency Tiers — One Island-Owned Thermal Model
 
@@ -50,7 +44,7 @@ Bag residency lives in the Island Pool concepts (operator ruling): one manager -
 
 <<~/ahu>>
 
-<<~ ahu #/thermal-axis>>
+<<~ ahu slot=`#/thermal-axis`>>
 
 !! Temperature axis — wela / anu
 
@@ -63,7 +57,7 @@ Two states. An island runs live (`wela`) or stands torn down (`anu`). UNBUILT: r
 
 <<~/ahu>>
 
-<<~ ahu #/pin-flag>>
+<<~ ahu slot=`#/pin-flag`>>
 
 !! Pin — the orthogonal sticky flag
 
@@ -81,7 +75,7 @@ Operator pin/unpin gestures move the flag; they do not carry a Hawaiian transiti
 
 <<~/ahu>>
 
-<<~ ahu #/derived-bag-residency>>
+<<~ ahu slot=`#/derived-bag-residency`>>
 
 !! Derived bag residency — the collapse
 
@@ -106,7 +100,7 @@ Two disciplines survive the collapse as bag-level mechanism (driven by the pool,
 
 <<~/ahu>>
 
-<<~ ahu #/transition-verbs>>
+<<~ ahu slot=`#/transition-verbs`>>
 
 !! Transition verbs — Hawaiian
 
@@ -121,7 +115,7 @@ Pin/unpin gestures carry no verb name (the state change describes itself). `hoʻ
 
 <<~/ahu>>
 
-<<~ ahu #/third-tier-gate>>
+<<~ ahu slot=`#/third-tier-gate`>>
 
 !! Third tier — the gate
 
@@ -129,15 +123,15 @@ The model holds two tiers (`wela` live / `anu` torn down). A third (warm / froze
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/residency-model">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
-<<~ loulou "lar:///ha.ka.ba/lararium/api/living-grammar-palace">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/alignment-architecture`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/living-grammar-palace`>>
 
 ''Tie ~ apertures, not tiers.'' The living-grammar memory-palace ([[living-grammar-palace|lar:///ha.ka.ba/lararium/api/living-grammar-palace]]) selects a
 retrieval APERTURE (turn → session → arc) where this model selects a THERMAL tier (wela/anu) — adjacent
@@ -152,6 +146,6 @@ through #third-tier-gate, and only after the research that meme charges.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;9-MKPTSQAbibdMFiUtKg7QI38S7u0nYQk1EOrT1KncE
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jDzI8USX0p-GXWz_NePDbPCjc__f1ApggwYVYXK3FLQ`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

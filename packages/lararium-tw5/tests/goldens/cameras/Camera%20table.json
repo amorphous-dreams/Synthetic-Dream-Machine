@@ -1,0 +1,4 @@
+{
+  "html": "<table><tbody><tr class=\"evenRow\"><td>left</td><td>right</td></tr><tr class=\"oddRow\"><td>one</td><td>two</td></tr></tbody></table>",
+  "text": "leftrightonetwo"
+}

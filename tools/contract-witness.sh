@@ -31,9 +31,9 @@
 # lineage, derived off A's board by `presentationFromBoardDoc` — the same derivation a dial presents after
 # sync. A small node helper (written to the transfer dir, importing the BUILT dist of @lararium/mesh and
 # @lararium/node) reads it against A's own replica with `verifyPresentedAdmit`: HELD after the admit, DENIED
-# after a descending revoke. It checks that only B's leaf proves the
-# admit to a socket, and that the wire guard refuses the admit beside a root edge. The raise door then
-# walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
+# after a descending revoke. It checks that B's own leaf opens a socket through the sealed face gate, that a stranger
+# carrying the same admit draws `arm-other-key`, and that the admit beside a root edge draws the gate's silence.
+# The raise door then walks: `lares raise sign` signs as a held persona's LEAF with the leaf's admit attached, and
 # `verifyRaiseGrant` raises it against A's readings; a foreign signer carrying the same admit refuses.
 #
 # ── ANCHORED ANCESTRY ──────────────────────────────────────────────────────────────────────────────────
@@ -155,7 +155,7 @@ stage_custody() {
 assert_founded() {
   step "$2's founding left an identity on disk"
   # The social bootstrap is the founding's invariant artifact: it stands under every identity name, with or without a git email.
-  if [ -f "$1/data/lares/vessel/social-bootstrap.json" ]; then ok
+  if [ -f "$1/hearth/vessel/social-bootstrap.json" ]; then ok
   else bad "NoIdentityAfterFounding"; say "ABANDONED — $2's founding wrote no identity; every check below would measure an unfounded vessel."; exit 2; fi
 }
 
@@ -173,7 +173,7 @@ if FOUND=$(as_a vessel found --hearth --name adc-0 --skip-build --json 2>&1) && 
   A_AID=$(printf '%s' "$FOUND" | grep -oE '"nexusAid":"nexus-[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
   if [ -n "$SEEDCARD" ]; then ok; else bad "the founding printed no seed card on a staged root"; fi
 else bad "$(printf '%s' "$FOUND" | tail -3 | tr '\n' ' ')"; fi
-run_a "A stands"                        vessel stand --install --skip-build
+run_a "A stands"                        vessel stand --init --skip-build
 unlock_root "$A_ROOT" A || exit 1
 assert_founded "$A_ROOT" A
 # A FAILED FOUNDING ENDS THE RUN. Many verbs below answer off disk, so a broken founding fills the report
@@ -192,7 +192,7 @@ for spec in "0:adc-0:Kahu Alpha" "1:adc-1:Kahu Beta" "2:adc-2:Kahu Gamma"; do
 done
 step "A rolls its seed charter to the three chairs (the seed card reveals; the roll prints each chair's card)"
 CARDS=""
-if SEAT=$(as_a nexus seal rotate --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
+if SEAT=$(as_a nexus seal rotate --face 0 --cold-key "$SEEDCARD" --threshold 2 --json 2>&1) && printf '%s' "$SEAT" | grep -q '"ok":true'; then
   CARDS=$(printf '%s' "$SEAT" | grep -oE '"code":"[0-9a-f-]+"' | cut -d'"' -f4 | paste -sd, -)
   if [ -n "$CARDS" ]; then ok; else bad "the roll printed no card on a staged root"; fi
 else bad "$(printf '%s' "$SEAT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
@@ -216,7 +216,7 @@ step "B names its own persona"
 if B_MINT=$(as_b persona new 0 --name "$B_PROBE" --handle 'Independent Operator' --json 2>&1); then
   ok; B_PERSONA_KEY=$(printf '%s' "$B_MINT" | grep -oE '"verifyingKey":"[0-9a-f]{64}"' | head -1 | cut -d'"' -f4)
 else bad "$?"; printf '%s\n' "$B_MINT" | tail -4 | sed 's/^/      /'; B_PERSONA_KEY=""; fi
-run_b "B stands"                              vessel stand --install --skip-build
+run_b "B stands"                              vessel stand --init --skip-build
 unlock_root "$B_ROOT" B || exit 1
 if [ "$FAILED" -ne "$BEFORE" ]; then
   say "ABANDONED — B's founding failed; the handshake has no second vessel to cross to."
@@ -236,7 +236,7 @@ step "★ B's key is FOREIGN to A — no shared seed on disk ★"
 # keys A minted, and the two vessels' own floor keys differ.
 # UNMEASURED HERE: whether a sealed copy of B's seed rests under A's root. Nothing in this run carries one there,
 # and no reading of A's sealed rows by this harness could tell B's seed from A's own.
-vessel_key_of() { cat "$1"/data/lares/identity/.vessel-key*.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
+vessel_key_of() { cat "$1"/hearth/identity/.vessel-key.json 2>/dev/null | grep -oE '"verifyingKey": *"[0-9a-f]{64}"' | head -1 | grep -oE '[0-9a-f]{64}'; }
 A_LIST=$(as_a persona list --json 2>/dev/null); B_LIST=$(as_b persona list --json 2>/dev/null)
 A_VESSEL=$(vessel_key_of "$A_ROOT"); B_VESSEL=$(vessel_key_of "$B_ROOT")
 if ! printf '%s' "$B_LIST" | grep -qs '"ok":true'; then bad "B's persona list gave no answer"
@@ -249,8 +249,16 @@ elif [ -z "$A_VESSEL" ] || [ -z "$B_VESSEL" ]; then bad "a vessel key went unrea
 elif [ "$A_VESSEL" = "$B_VESSEL" ]; then bad "the two vessels share one floor key"
 elif [ -d "$A_ROOT" ] && ! grep -rqs "$B_PROBE" "$A_ROOT" 2>/dev/null; then ok
 else bad "B's material reachable from A's root"; fi
-step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root"
-if grep -rqs "$B_PROBE" "$B_ROOT" 2>/dev/null; then bad "B's pet-name reads in the clear at rest"; else ok; fi
+# THE FACE LABEL: projections/face-labels/<relation>.json carries the face's pet-name in the clear by ruling, so the
+# seed adopts a former face's folders by label (operator ruling 2026-11-10, verbatim: `"pet-names in plain text"
+# reads fine for now.`); every other cleartext occurrence reads red: hearth/, config/, every other projection.
+# RE-ENTRY: "for now" holds the door open; a ruling that seals the label retires this exclusion, and the control
+# then reads the whole root again.
+cleartext_outside_label() { grep -rls "$1" "$2" 2>/dev/null | grep -vE "^$2/projections/face-labels/[0-9a-f-]+\.json\$"; }
+step "CONTROL: B's sealed pet-name rests in no cleartext file of B's own root, the face label aside"
+if [ -n "$(cleartext_outside_label "$B_PROBE" "$B_ROOT")" ]; then
+  bad "B's pet-name reads in the clear at rest: $(cleartext_outside_label "$B_PROBE" "$B_ROOT" | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
+else ok; fi
 
 # ── ③ THE PREREQUISITE — carry A's public charter to B ───────────────────────────────────────────
 say "③ the prerequisite the one-vessel run hid"
@@ -306,7 +314,7 @@ fi
 ln -s "$REPO_ROOT/packages/lararium-node/node_modules" "$XFER/node_modules"
 S6="$XFER/s6.mjs"
 cat > "$S6" <<'JSEOF'
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
 import * as M from "@lararium/mesh";
 import { Repo } from "@automerge/automerge-repo";
@@ -327,6 +335,7 @@ seatCustodyWhenNeeded(
   async (holder) => {
     const opened = await holder.unlock([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
     if (opened.reading !== "opens" && opened.reading !== "already-unlocked") throw new Error(`the staged custody reads ${opened.reading} under the test route`);
+    await holder.unlockFaces([{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
   },
 );
 
@@ -399,24 +408,86 @@ switch (mode) {
     console.log(`minted anchors=${anchors.length}`);
     break;
   }
-  case "leafproof": {          // only the admit's own leaf proves it to a socket
-    const p = json(a1);
-    // The Nexus the admit names: the one passed (a charter this vessel carries), else the primary charter's.
-    const aid = a2 || M.nexusAidOf(readNexusDoc(larSealHome()));
-    const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
-    if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
-    const bind = { nonce: hex32(), gatePubKey: hex32(), vesselKey: await loadVesselVerifyingKey() };
-    const arm = { kind: "admit", ...p };
-    const proof = async (seed) => M.signLeafProof({ presented: arm, ...bind, sign: M.ed25519SignerFromSeed(seed) });
-    const honest = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(leaf.seed) }, ...bind });
-    const forged = await M.verifyLeafProof({ presented: { ...arm, leafProof: await proof(randomBytes(32)) }, ...bind });
-    console.log(`honest=${honest} forged=${forged}`);
+  case "snapshot": {          // A's held root as the gate rig reads it: public bytes only (charter, deny board, antigen)
+    const r = await reading();
+    writeFileSync(a1, JSON.stringify({ aid: r.aid, doc: r.doc, denyBoard: r.denyBoard, antigen: r.antigen }));
+    console.log("snapshot");
     break;
   }
-  case "wire": {               // one socket, one face: the admit never rides beside a root edge
-    const p = json(a1);
-    const base = { type: "lar:auth", contactCard: "{}", nonce: hex32(), leafNonce: hex32(), presented: { kind: "admit", ...p, leafProof: "ab".repeat(64) } };
-    console.log(`alone=${M.isLarAuthMsg(base)} beside-edge=${M.isLarAuthMsg({ ...base, edge: { deviceVerifyingKey: hex32() } })}`);
+  case "gate": {              // one socket opens through the SEALED FACE GATE; the presentation is the admit riding inside it
+    // Run in the vessel that holds the leaf. A gate stands over A's held root (the snapshot), B's leaf seeds the face,
+    // and `dialFaceGate` speaks the real exchange over an in-process wire. Variants: honest | stranger | stranger-honest | edge.
+    const [presentedFile, snapFile, variant] = [a1, a2, process.argv[5]];
+    const ed = await import("@noble/ed25519");
+    const p = json(presentedFile), snap = json(snapFile);
+    const aid = snap.aid, AUD = "lar:///ha.ka.ba/bags/daemon";
+    const leaf = (await heldNexusLeaves(aid)).find((l) => l.verifyingKey === p.admit.nym.toLowerCase());
+    if (!leaf) { console.log("no-held-leaf"); process.exit(1); }
+    const root = M.heldNexusRoot({ nexus: aid, charter: snap.doc, denyBoard: snap.denyBoard, antigen: snap.antigen,
+      antigenVerifier: M.makeMultiSigQuorumVerifier() });
+    if ("absent" in root) { console.log(`no-held-root ${root.absent}`); process.exit(1); }
+    const reader = M.presentedAdmitReader(() => root);
+    // The gate's root door is the vessel's OWN custody seat (only a seat mints a gate root door; gate-root-door-minters).
+    const { custodyGateDoor, openedCustody } = await import(`${D}/index.js`);
+    await openedCustody();
+    const bundle = M.deriveGateBundle(
+      M.sovereignGateRoot(custodyGateDoor()),
+      new TextEncoder().encode(aid), M.sovereignRoute("/ws"));
+    // THE FACE: B's own leaf for the honest and edge runs, a key nobody admitted for the stranger runs.
+    const faceSeed = variant === "honest" || variant === "edge" ? leaf.seed : randomBytes(32);
+    const faceKey = M.hex(await ed.getPublicKeyAsync(faceSeed));
+    const scope = { faceKey, nexus: aid };
+    const fold = M.foldWithdrawals(scope);
+    if (!("memory" in fold)) { console.log(`history ${fold.refusal}`); process.exit(1); }
+    const vessel = await M.mintVesselFaceKey();
+    const req = await M.requestCertificate({ scope, vesselFaceKey: vessel.publicKey, apart: [],
+      custody: { signAsVesselFace: (_s, _k, image) => ed.signAsync(image, vessel.secret) } });
+    const cert = "request" in req ? await M.issueCertificate({ request: req.request, history: fold.memory, apart: [],
+      custody: { signAsFace: (_s, image) => ed.signAsync(image, faceSeed) } }) : req;
+    if (!("certificate" in cert)) { console.log(`certificate ${cert.refusal}`); process.exit(1); }
+    // The admit as the held-root reader reads it. A stranger that wants its own session open must SPELL the reading
+    // with its own key at the head; `stranger-honest` leaves the reading as the reader gave it.
+    const honestReading = await reader.read({ admit: p.admit, lineage: p.lineage });
+    const reading = variant === "stranger" ? { ...honestReading, head: faceKey } : honestReading;
+    const opened = await M.openJoinedFaceSession({
+      table: new M.SessionTable("contract-witness-owner-epoch"), binding: M.sessionBinding("socket"), profile: "face",
+      admitted: scope, certificate: cert.certificate, memory: fold.memory, vesselFaceKey: vessel.publicKey, admit: reading,
+      grant: { personaGroup: "0xb7f1c2a9d4e60381", faceKey, nexus: aid, revision: "contract-witness-1" },
+      apart: [], custody: { signAsVesselFace: (_s, _k, image) => ed.signAsync(image, vessel.secret) } });
+    if (!("signer" in opened)) { console.log(`refused=${opened.refusal}`); break; }
+
+    // The wire: both ends in this process. A queue per direction; the gate's end is a GateSocket.
+    const queue = () => { const held = [], waiting = []; let ended = false;
+      return { push(f) { if (ended) return; if (f === null) ended = true; const w = waiting.shift(); if (w) w(f); else held.push(f);
+                 if (f === null) for (const r of waiting.splice(0)) r(null); },
+               take() { if (held.length) return Promise.resolve(held.shift()); if (ended) return Promise.resolve(null); return new Promise((r) => waiting.push(r)); } }; };
+    const toGate = queue(), toDialer = queue();
+    let accept; const accepted = new Promise((r) => { accept = r; });
+    const dialSocket = {
+      open(flight) { accept({ flight: { knock: flight.knock, message1: Uint8Array.from(flight.message1) },
+        send: (f) => toDialer.push(Uint8Array.from(f)), recv: () => toGate.take(),
+        cut() { toDialer.push(null); toGate.push(null); } }); },
+      send: (f) => toGate.push(Uint8Array.from(f)), recv: () => toDialer.take(),
+      close() { toGate.push(null); toDialer.push(null); } };
+    const hand = () => { const lapses = new Set(); return { draw(l) { lapses.add(l); return { cancel() { lapses.delete(l); } }; },
+      fire() { for (const l of [...lapses]) { lapses.delete(l); l(); } } }; };
+    const gateHand = hand(), dialHand = hand();
+    const gate = M.makeFaceGate({
+      bundle, nexus: aid, audience: AUD, deadlines: gateHand, withdrawals: M.memoryBackedWithdrawals(), admits: reader,
+      shadows: { consult: () => ({ aside: false, fleetAside: true }), consultPlace: () => ({ aside: false }) },
+      grants: { grantFor: () => null },
+      sorter: { sort: async (i) => (i.admit ? { class: "contracted", standing: { nym: i.scope.faceKey, aid } } : null) },
+      sessions: { attach: () => ({ open() {}, abandon() {} }) } });
+    // ONE ARM per presentation: the admit alone, or (the edge run) the admit with a root edge written beside it.
+    const arm = { kind: "admit", admit: p.admit, lineage: p.lineage };
+    const dialing = M.dialFaceGate({ pin: bundle.pin, tier: "sovereign", socket: dialSocket, audience: AUD,
+      certificate: cert.certificate, signer: opened.signer,
+      arm: variant === "edge" ? { ...arm, edge: { deviceVerifyingKey: hex32() } } : arm,
+      history: fold.memory, deadlines: dialHand });
+    const outcome = await (await accepted.then((sock) => gate.accept(sock)).then(async (g) => { gateHand.fire(); dialHand.fire(); await dialing; return g; }));
+    console.log(outcome.outcome === "attached" ? `attached=${outcome.class}`
+      : outcome.outcome === "silence" ? `silence=${outcome.reason}` : `answered=${outcome.state}`);
+    leaf.seed.fill(0);
     break;
   }
   case "challenge": {          // what a herm carrying this Nexus would emit
@@ -466,15 +537,34 @@ step "★ (1) B's presented admit reads HELD at A ★"
 if [ -s "$PRESENTED" ] && [ "$(s6_a verdict "$PRESENTED" 2>&1)" = "held" ]; then ok
 else bad "$(s6_a verdict "$PRESENTED" 2>&1 | tail -1)"; fi
 
-step "★ (2) a leaf proof by ANOTHER key refuses — B's own leaf proves ★"
-# CONTROL inside the check: the honest proof by B's own leaf (derived in B's environment) must verify,
-# or a refusing forged proof would measure a verifier that refuses everything.
-LP=$(s6_b leafproof "$PRESENTED" "$A_AID" 2>&1)
-if [ "$LP" = "honest=true forged=false" ]; then ok; else bad "$LP"; fi
+# THE SOCKET IS THE SEALED FACE GATE. The old leaf proof over a socket's nonce and the old auth frame's guard are gone;
+# the presentation a gate reads is the admit riding INSIDE the sealed exchange (`dialFaceGate` -> `makeFaceGate`), read
+# against the root the gate's vessel holds. The rig runs in B's environment (B's own leaf is the face key) over A's
+# held root, which A copies out as public bytes.
+SNAP="$XFER/held-root.json"
+step "A's held root (charter, deny board, antigen) copies out to the gate rig"
+SN=$(s6_a snapshot "$SNAP" 2>&1)
+if [ "$SN" = "snapshot" ]; then ok; else bad "$(printf '%s' "$SN" | tail -1)"; fi
 
-step "★ (5) the admit beside a root edge fails the wire guard ★"
-WG=$(s6_a wire "$PRESENTED" 2>&1)
-if [ "$WG" = "alone=true beside-edge=false" ]; then ok; else bad "$WG"; fi
+step "★ (2) a presentation by ANOTHER key refuses — B's own leaf is held ★"
+# CONTROL inside the check: B's own leaf, presenting its admit through the gate, must attach as a contracted peer, or a
+# refusing stranger would measure a gate that refuses everything. The stranger carries the SAME admit under a key the Nexus
+# never admitted; the gate names the refusal `arm-other-key`. Its own dial side refuses `admit-other-face` before a byte
+# leaves, when the stranger leaves the held-root reading as the reader gave it.
+GATE_HONEST=$(s6_b gate "$PRESENTED" "$SNAP" honest 2>&1 | tail -1)
+GATE_STRANGER=$(s6_b gate "$PRESENTED" "$SNAP" stranger 2>&1 | tail -1)
+GATE_STRANGER_HONEST=$(s6_b gate "$PRESENTED" "$SNAP" stranger-honest 2>&1 | tail -1)
+if [ "$GATE_HONEST" = "attached=contracted" ] && [ "$GATE_STRANGER" = "silence=arm-other-key" ] \
+   && [ "$GATE_STRANGER_HONEST" = "refused=admit-other-face" ]; then ok
+else bad "honest=$GATE_HONEST stranger=$GATE_STRANGER stranger-honest=$GATE_STRANGER_HONEST"; fi
+
+step "★ (5) the admit beside a root edge draws the gate's silence ★"
+# One socket, one face, ONE ARM: a presentation reads under exact keys, so an admit arm with a root edge written beside it
+# reads as no presentation (`presentation-none`), and the presentation has no slot for an edge at all. CONTROL: the same
+# admit arm alone (above) attaches.
+GATE_EDGE=$(s6_b gate "$PRESENTED" "$SNAP" edge 2>&1 | tail -1)
+if [ "$GATE_HONEST" = "attached=contracted" ] && [ "$GATE_EDGE" = "silence=presentation-none" ]; then ok
+else bad "alone=$GATE_HONEST beside-edge=$GATE_EDGE"; fi
 
 # ── ⑥ THE REFUSALS ───────────────────────────────────────────────────────────────────────────────
 say "⑥ the refusals — a gate only shown saying yes is no gate"
@@ -505,10 +595,11 @@ step "a challenge names A's Nexus by its AID"
 if s6_a challenge > "$CHALLENGE" 2>&1 && grep -q '"nexus"' "$CHALLENGE"; then ok; else bad "$(tail -1 "$CHALLENGE")"; fi
 
 step "lares raise sign signs as the LEAF, carrying its admit"
-if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2>&1 \
+# stdout alone is the JSON: a runtime warning on stderr (node:sqlite's experimental notice) must not corrupt it.
+if as_a raise sign "$(cat "$CHALLENGE")" --as 0 --json > "$XFER/raise-sign.out" 2> "$XFER/raise-sign.err" \
    && node -e 'const o=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8")); if(!o.ok) process.exit(1); require("fs").writeFileSync(process.argv[2], JSON.stringify(o.data));' "$XFER/raise-sign.out" "$GRANT" \
    && grep -q "\"byNym\":\"$A_LEAF\"" "$GRANT"; then ok
-else bad "$(tail -c 300 "$XFER/raise-sign.out")"; fi
+else bad "$(tail -c 300 "$XFER/raise-sign.out") $(tail -c 300 "$XFER/raise-sign.err")"; fi
 
 step "★ the door RAISES the leaf's grant ★"
 RAISE=$(s6_a raise "$CHALLENGE" "$GRANT" 2>&1)
@@ -546,7 +637,7 @@ if [ -n "$B_NYM" ] && [ -n "$B_SIG" ] && SC=$(s6_a sign-closing "$B_NYM" "$B_SIG
 else bad "${SC:-no token}"; fi
 
 step "A rotates the charter (the committed reveal)"
-if ROT=$(as_a nexus seal rotate --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
+if ROT=$(as_a nexus seal rotate --face 0 --cold-key "$CARDS" --json 2>&1) && printf '%s' "$ROT" | grep -q '"ok":true'; then ok
 else bad "$(printf '%s' "$ROT" | grep -oE '"message":"[^"]+"' | head -1)"; fi
 
 step "the rotate landed a ROLL ANCHOR on A's board"
@@ -610,9 +701,9 @@ run_b "B stops, so its Repo's writes reach rest"       vessel stop
 step "CONTROL: the search reads B's own root"
 if [ -n "$B_VESSEL" ] && grep -rqs "$B_VESSEL" "$B_ROOT" 2>/dev/null; then ok
 else bad "B's own vessel key reads nowhere under B's root"; fi
-step "★ B's re-lit label rests in no cleartext file of B's own root ★"
-if grep -rqs "$B_RELIT" "$B_ROOT" 2>/dev/null; then
-  bad "the re-lit label reads in the clear at rest: $(grep -rls "$B_RELIT" "$B_ROOT" 2>/dev/null | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
+step "★ B's re-lit label rests in no cleartext file of B's own root, the face label aside ★"
+if [ -n "$(cleartext_outside_label "$B_RELIT" "$B_ROOT")" ]; then
+  bad "the re-lit label reads in the clear at rest: $(cleartext_outside_label "$B_RELIT" "$B_ROOT" | sed "s|^$B_ROOT/||" | head -3 | tr '\n' ' ')"
 else ok; fi
 
 say "═══ RESULT ═══"

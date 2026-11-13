@@ -19,6 +19,8 @@
  *     blob no source builds, a packed file the seed lacks) reads red, and no declaration covers it;
  *   · RED: an absent engine blob reads red, never skipped;
  *   · RED: a genesis file git does not track reads red inside a git tree.
+ *   · FLOOR: a coherent release reads green; a mismatched snapshot or release witness reads red;
+ *     a seed with no floor release remains green.
  */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -42,6 +44,55 @@ const CORE_PATH = `packages/lararium-tw5/tw5-core/${CORE_NAME}`;
 const ENGINE = "/* the engine */\n";
 const GRAMMAR = JSON.stringify({ title: GRAMMAR_ID, version: "0.0.1", text: "{\"tiddlers\":{}}" });
 const SHADOWS = JSON.stringify([{ title: "a shadow" }]);
+const WITNESS_PREFIX = "lar:///ha.ka.ba/bags/oracle/genesis-cid-";
+const REGION_CIDS = { engine: "engine-cid", grammar: "grammar-cid", plugins: "plugins-cid" };
+const FLOOR_LARES = "floor lares snapshot";
+const FLOOR_LARARIUM = "floor lararium snapshot";
+
+function seedFixture(floor = null) {
+  const blobs = {
+    tiddlywikicore: { id: "tiddlywikicore", sha256: sha(ENGINE) },
+    "boot-shadows": { id: "boot-shadows", sha256: sha(SHADOWS) },
+    [GRAMMAR_ID]: { id: GRAMMAR_ID, sha256: sha(GRAMMAR) },
+  };
+  const tiddlers = {};
+  if (floor) {
+    for (const [field, cid] of Object.entries(REGION_CIDS)) {
+      tiddlers[WITNESS_PREFIX + field] = { tiddler: { cid } };
+    }
+    tiddlers[WITNESS_PREFIX + "floor"] = { tiddler: { cid: floor.witnessCid ?? floor.manifestCid } };
+    for (const [id, cid] of Object.entries(floor.rows)) {
+      blobs[id] = { id, sha256: cid, kind: "floor" };
+    }
+  }
+  return JSON.stringify({ format: "lararium-genesis-seed", blobs, tiddlers });
+}
+
+const FLOOR_SDM = "floor sdm snapshot";
+
+const FLOOR_FORMAT = "lararium-floor";
+function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = FLOOR_FORMAT, pairKeyed = false } = {}) {
+  // The floor keys one snapshot per house-canon slug, sorted; a pair-keyed plant keys lares and lararium alone, a shape
+  // that lacks `snapshots` and that the witness refuses by its fields.
+  const manifest = pairKeyed
+    ? JSON.stringify({ format, ...REGION_CIDS, lares, lararium: sha(FLOOR_LARARIUM) })
+    : JSON.stringify({ format, ...REGION_CIDS, snapshots: { lararium: sha(FLOOR_LARARIUM), lares, sdm: sha(FLOOR_SDM) } });
+  const manifestCid = sha(manifest);
+  const rows = {
+    "floor-manifest": manifestCid,
+    "floor-lares": sha(FLOOR_LARES),
+    "floor-lararium": sha(FLOOR_LARARIUM),
+    ...(pairKeyed ? {} : { "floor-sdm": sha(FLOOR_SDM) }),
+  };
+  if (omitRow) delete rows[omitRow];
+  return {
+    "genesis/seed.json": seedFixture({ manifestCid, witnessCid, rows }),
+    [`genesis/cas/${manifestCid}`]: manifest,
+    [`genesis/cas/${sha(FLOOR_LARES)}`]: FLOOR_LARES,
+    [`genesis/cas/${sha(FLOOR_LARARIUM)}`]: FLOOR_LARARIUM,
+    [`genesis/cas/${sha(FLOOR_SDM)}`]: FLOOR_SDM,
+  };
+}
 
 /** A git environment that reads no inherited repository (a hook's `GIT_DIR` would win discovery). */
 function cleanEnv(extra = {}) {
@@ -62,14 +113,7 @@ async function withTree(plant, check, { git = false } = {}) {
     [GRAMMAR_PATH]: GRAMMAR,
     [SHADOWS_PATH]: SHADOWS,
     "packages/lararium-tw5/plugins/standalone/nested.json": JSON.stringify({ title: "lar:///t/never-packed" }),
-    "genesis/seed.json": JSON.stringify({
-      format: "lararium-genesis-seed/v1",
-      blobs: {
-        tiddlywikicore: { id: "tiddlywikicore", sha256: sha(ENGINE) },
-        "boot-shadows": { id: "boot-shadows", sha256: sha(SHADOWS) },
-        [GRAMMAR_ID]: { id: GRAMMAR_ID, sha256: sha(GRAMMAR) },
-      },
-    }),
+    "genesis/seed.json": seedFixture(),
     [`genesis/cas/${sha(ENGINE)}`]: ENGINE,
     [`genesis/cas/${sha(SHADOWS)}`]: SHADOWS,
     [`genesis/cas/${sha(GRAMMAR)}`]: GRAMMAR,
@@ -92,7 +136,7 @@ async function withTree(plant, check, { git = false } = {}) {
   }
 }
 
-const declaration = (rows) => JSON.stringify({ format: "lararium-genesis-unbaked/v1", unbaked: rows });
+const declaration = (rows) => JSON.stringify({ format: "lararium-genesis-unbaked", unbaked: rows });
 const MOVED_GRAMMAR = JSON.stringify({ title: GRAMMAR_ID, version: "0.0.1", text: "{\"tiddlers\":{\"a cure\":{}}}" });
 
 await test("CONTROL: a genesis that carries the tree's bytes reads green and lists what it compared", async () => {
@@ -104,6 +148,67 @@ await test("CONTROL: a genesis that carries the tree's bytes reads green and lis
     assert.match(out, /ok\s+tiddlywikicore/);
     assert.match(out, /tracked-ness unread/);
     assert.doesNotMatch(out, /never-packed/);
+  });
+});
+
+await test("FLOOR: a coherent manifest, snapshot rows and release witness read green", async () => {
+  await withTree(floorPlant(), (run, out) => {
+    assert.equal(run.status, 0, out);
+    assert.match(out, /3 source artifact\(s\) compared against 7 genesis blob\(s\)/);
+    assert.doesNotMatch(out, /NO SOURCE|FLOOR\s+|RED:/);
+  });
+});
+
+await test("FLOOR RED: the manifest's lares CID differs from its snapshot row", async () => {
+  await withTree(floorPlant({ lares: sha("another lares cut") }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+floor-manifest lares .* differs from floor-lares row/);
+  });
+});
+
+await test("FLOOR RED: the seed's release witness names another manifest", async () => {
+  await withTree(floorPlant({ witnessCid: sha("another manifest") }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+genesis-cid-floor .* differs from floor-manifest row/);
+  });
+});
+
+await test("FLOOR RED: a manifest keyed by lares and lararium alone refuses by the fields it lacks; one naming another format refuses too", async () => {
+  await withTree(floorPlant({ pairKeyed: true }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest does not read as canonical lararium-floor: fields or order differ/);
+  });
+  await withTree(floorPlant({ format: `${FLOOR_FORMAT}-keyed` }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest does not read as canonical lararium-floor: format differs/);
+  });
+  await withTree(floorPlant({ omitRow: "floor-sdm" }), (run, out) => {
+    assert.notEqual(run.status, 0, out);
+    assert.match(out, /FLOOR\s+floor-manifest names floor-sdm but the seed holds no floor snapshot row/);
+  });
+});
+
+await test("FLOOR CONTROL: a pre-floor seed with no floor witness reads green", async () => {
+  await withTree({ "genesis/seed.json": seedFixture() }, (run, out) => {
+    assert.equal(run.status, 0, out);
+    assert.doesNotMatch(out, /FLOOR\s+|RED:/);
+  });
+});
+
+await test("FLOOR RED: missing manifest or snapshot rows, and an orphan release witness, read red by name", async () => {
+  await withTree(floorPlant({ omitRow: "floor-manifest" }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+floor-manifest row stands absent/);
+  });
+  await withTree(floorPlant({ omitRow: "floor-lares" }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+floor-manifest names floor-lares but the seed holds no floor snapshot row/);
+  });
+  const orphan = JSON.parse(seedFixture());
+  orphan.tiddlers[WITNESS_PREFIX + "floor"] = { tiddler: { cid: sha("orphan") } };
+  await withTree({ "genesis/seed.json": JSON.stringify(orphan) }, (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+genesis-cid-floor names a release but the seed holds no floor rows/);
   });
 });
 
@@ -171,7 +276,7 @@ await test("RED: a declaration standing over a genesis that carries the source r
 await test("RED: a row with no reason reads as no declaration, and the drift stays red", async () => {
   await withTree({
     [GRAMMAR_PATH]: MOVED_GRAMMAR,
-    "genesis/unbaked.json": JSON.stringify({ format: "lararium-genesis-unbaked/v1", unbaked: [{ source: GRAMMAR_PATH, sha256: sha(MOVED_GRAMMAR) }] }),
+    "genesis/unbaked.json": JSON.stringify({ format: "lararium-genesis-unbaked", unbaked: [{ source: GRAMMAR_PATH, sha256: sha(MOVED_GRAMMAR) }] }),
   }, (run, out) => {
     assert.equal(run.status, 1, out);
     assert.match(out, /does not read as a declaration/);
@@ -233,4 +338,37 @@ await test("RED: a genesis file git does not track reads red inside a git tree; 
     assert.equal(run.status, 1, out);
     assert.match(out, new RegExp(`UNTRACKED\\s+genesis/cas/${sha(GRAMMAR)}`));
   }, { git: ["genesis/seed.json", cas[0], cas[1]] });
+});
+
+// ── ONE SERVED SEED: the web dist carries no genesis copy; the hearth's Pronaos serves its own ──────────────────────
+const ACTOR = sha("the fixture actor");
+const seedWithActor = () => JSON.stringify({ ...JSON.parse(seedFixture()), actorSeed: ACTOR });
+
+await test("WEB COPY CONTROL: a web dist that carries no genesis reads green and says so", async () => {
+  await withTree({
+    "genesis/seed.json": seedWithActor(),
+    "packages/lararium-web/dist/index.html": "<!doctype html>",
+    "packages/lararium-web/dist/assets/index-1.js": "export const page = 1;\n",
+  }, (run, out) => {
+    assert.equal(run.status, 0, out);
+    assert.match(out, /web dist carries no genesis copy/);
+    assert.doesNotMatch(out, /WEB COPY/);
+  });
+});
+
+await test("WEB COPY RED: a genesis directory inside the web dist reads red", async () => {
+  await withTree({ "packages/lararium-web/dist/genesis/seed.json": seedFixture() }, (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /WEB COPY\s+packages\/lararium-web\/dist\/genesis stands/);
+  });
+});
+
+await test("WEB COPY RED: a dist asset that bundles the seed (its actorSeed) reads red", async () => {
+  await withTree({
+    "genesis/seed.json": seedWithActor(),
+    "packages/lararium-web/dist/assets/index-1.js": `const seed = {"actorSeed":"${ACTOR}"};\n`,
+  }, (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /WEB COPY\s+packages\/lararium-web\/dist\/assets\/index-1\.js carries the genesis seed/);
+  });
 });

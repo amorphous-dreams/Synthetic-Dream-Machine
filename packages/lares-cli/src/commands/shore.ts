@@ -6,6 +6,8 @@
  *   lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]
  *   lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
  *   lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]
+ *   lares shore settle  --bag <bagUri|slug> --pending
+ *   lares shore lift-kahua --count <n>
  *
  * The disk projector decides nothing a person owns.
  *
@@ -26,6 +28,14 @@
  * The verb rides two lines over the daemon's sock: into the active wiki's island (`wiki-act`) and into the
  * daemon island (the `shore` verb itself), each answering for the mirrors it holds (`askShore`). The list
  * reads both as one shore and names each row's island; an answer goes to the island that holds its state.
+ *
+ * `settle --pending` resumes a settle word that stalled: `lares ingest --apply` leaves the carriers still
+ * waiting as the bag's record under the house's run dir (`settlePendingPath`), and this act asks the word
+ * again over them alone, then clears the record (settled whole) or rewrites it (still waiting).
+ *
+ * `lift-kahua --count <n>` lifts the kahua items a seed previewed and left pending (`seed-mirrors.ts`): it runs the seed's
+ * mirror leg again, and lifts only where n equals the count the preview reads now; a wrong count refuses and lifts nothing.
+ * `list` names each pending item (face, title, body digest) beside the shore's own rows.
  */
 
 import { createInterface } from "readline/promises";
@@ -34,13 +44,15 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, wantsJson } from "../render.js";
 import { verbFailure } from "../verb-call.js";
 import { vesselDid } from "../env.js";
-import { askShore, readShoreList, type ShoreAnswer } from "../shore-core.js";
+import { askShore, askSettle, readShoreList, readSettlePending, type ShoreAnswer } from "../shore-core.js";
 import { takeDisk } from "../shore-take-disk.js";
 import { openSyncedTree } from "../ingest-core.js";
 import { larRoot } from "../env.js";
+import { readKahuaPending, LIVE_MIRROR_DOORS } from "../seed-mirrors.js";
+import { runMirrors } from "../seed-mirror-leg.js";
 
 /** The acts this door carries. */
-export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove"] as const;
+export const SHORE_ACTS = ["list", "take-records", "take-disk", "restore", "remove", "settle", "lift-kahua"] as const;
 export type ShoreAct = (typeof SHORE_ACTS)[number];
 
 function printUsage(): void {
@@ -49,11 +61,15 @@ function printUsage(): void {
   console.log("       lares shore take-disk    <uri> --key <key> [--bag <bagUri>] [--yes]");
   console.log("       lares shore restore (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
   console.log("       lares shore remove  (<uri>… | --all --count <n>) [--bag <bagUri>] [--yes]");
+  console.log("       lares shore settle  --bag <bagUri|slug> --pending");
+  console.log("       lares shore lift-kahua --count <n>");
   console.log("  list          look at the disk, then name each standoff with its key and each pending removal;");
   console.log("  take-records  write the records' render over the file of one standoff, named by its key;");
   console.log("  take-disk     land the file's words in the records for one standoff, named by its key;");
   console.log("  restore       write a vanished file back from the records;");
   console.log("  remove        delete the vanished carrier in the wiki (its tombstone lands in the working layer);");
+  console.log("  settle        resume a settle word that stalled, over the carriers its record names (--pending);");
+  console.log("  lift-kahua    lift the kahua items a seed left pending, each under its face's grant (--count names the preview's count);");
   console.log("  an answer over more than one carrier names the count that stands pending (--count).");
 }
 
@@ -62,6 +78,15 @@ export function shoreArgs(act: ShoreAct, args: ParsedArgs): { readonly args: Rec
   const bag = args.options["bag"];
   const withBag = bag ? { bag } : {};
   if (act === "list") return { args: { op: "list", ...withBag } };
+  if (act === "lift-kahua") {
+    const countText = args.options["count"];
+    if (countText === undefined || !/^(?:0|[1-9][0-9]*)$/.test(countText)) return { usage: "lift-kahua names the count of pending kahua items `lares shore` lists: lares shore lift-kahua --count <n>" };
+    return { args: { op: "lift-kahua", count: Number(countText) } };
+  }
+  if (act === "settle") {
+    if (!bag || !args.flags["pending"]) return { usage: "settle resumes a stalled settle word from its record: lares shore settle --bag <bagUri|slug> --pending" };
+    return { args: { op: "settle", bag, pending: true } };
+  }
   if (act === "take-records" || act === "take-disk") {
     const uri = args.positional[1];
     const key = args.options["key"];
@@ -98,8 +123,13 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     return exitFor("usage");
   }
 
+  // LIFT-KAHUA: the count IS the confirmation, so it asks nothing more; the mirror leg refuses a count that moved.
+  if (act === "lift-kahua") {
+    return runMirrors({ apply: true, liftKahua: String(shaped.args["count"]), json: wantsJson(args) }, LIVE_MIRROR_DOORS);
+  }
+
   // An act that writes asks first (a person at a TTY), or carries `--yes` (an agent).
-  if (act !== "list" && !args.flags["yes"]) {
+  if (act !== "list" && act !== "settle" && !args.flags["yes"]) {
     if (wantsJson(args)) {
       emit(args, { ok: false, error: { code: "usage", message: "confirmation required", hint: "pass --yes for non-interactive (agent) invocation" }, human: () => { /* unreachable */ } });
       return exitFor("usage");
@@ -109,6 +139,9 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     rl.close();
     if (!/^y(es)?$/i.test(answer.trim())) { console.log("aborted"); return 1; }
   }
+
+  // SETTLE --PENDING resumes the word a stalled settle left as the bag's record, over those carriers alone.
+  if (act === "settle") return resumeSettle(args, String(shaped.args["bag"]));
 
   let did: string;
   try { did = await vesselDid(); } catch (err) {
@@ -177,11 +210,17 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
       return exitFor("verb-error");
     }
     const { standoffs, pending } = listed;
+    const kahua = readKahuaPending();
     emit(args, {
       ok: true, ...(listed.requestId !== undefined ? { requestId: listed.requestId } : {}),
-      data: { op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length },
+      data: { op: "list", standoffs, standoffCount: standoffs.length, pending, pendingCount: pending.length, kahuaPending: kahua, kahuaPendingCount: kahua.length },
       human: () => {
-        if (standoffs.length === 0 && pending.length === 0) { console.log("the disk shore holds nothing for a hand"); return; }
+        if (kahua.length > 0) {
+          console.log(`${kahua.length} kahua item(s) wait for a hand: a seed previewed them and nothing lifted on --yes alone`);
+          for (const k of kahua) console.log(`  h${k.handleIndex}${k.petname ? ` ("${k.petname}")` : ""}  ${k.title}  sha256:${k.digest.slice(0, 16)}  ${k.state === "differs" ? "differs from the standing head" : "new"}`);
+          console.log(`  lift them under each face's grant: \`lares shore lift-kahua --count ${kahua.length}\``);
+        }
+        if (standoffs.length === 0 && pending.length === 0) { if (kahua.length === 0) console.log("the disk shore holds nothing for a hand"); return; }
         if (standoffs.length > 0) {
           console.log(`${standoffs.length} standoff(s): the disk and the records say different things, and nothing writes`);
           for (const s of standoffs) console.log(`  ${String(s["uri"])}  bag ${String(s["bagId"])}${s["island"] === "daemon" ? " (daemon island)" : ""}  key ${String(s["standoff"])}${s["reason"] ? `\n      ${String(s["reason"])}` : ""}`);
@@ -240,6 +279,50 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
   });
   // An answer that left a carrier pending did not take everything it named.
   return answeredRows(answer.output).leftCount > 0 ? exitFor("verb-error") : 0;
+}
+
+/** Resume a stalled settle word from the bag's record: counts out, the record cleared or rewritten. */
+async function resumeSettle(args: ParsedArgs, bagNamed: string): Promise<number> {
+  const record = readSettlePending(bagNamed);
+  if (record === null) {
+    emit(args, { ok: true, data: { op: "settle", bag: bagNamed, record: null }, human: () => console.log(`no settle record stands for ${bagNamed}: nothing waits to resume`) });
+    return 0;
+  }
+  let did: string;
+  try { did = await vesselDid(); } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    emit(args, { ok: false, error: { code: "not-found", message: msg }, human: () => console.error(`lares shore: ${msg}`) });
+    return exitFor("not-found");
+  }
+  let read;
+  try {
+    read = await askSettle((a) => askShore(a, did), record.bag, record.carriers, { record: true });
+  } catch (err) {
+    const f = verbFailure(err);
+    emit(args, {
+      ok: false, ...(f.requestId !== undefined ? { requestId: f.requestId } : {}),
+      error: { code: f.code, message: f.message, ...(f.hint !== undefined ? { hint: f.hint } : {}) },
+      human: () => { console.error(`lares shore settle: ${f.message}`); if (f.hint !== undefined) console.error(`  ${f.hint}`); },
+    });
+    return exitFor(f.code);
+  }
+  const counts = { op: "settle", bag: record.bag, asked: record.carriers.length, ...read };
+  if (!read.settled && !read.stalled) {
+    emit(args, { ok: false, data: counts, error: { code: read.refusal ?? "verb-error", message: read.why ?? "the island refused" }, human: () => console.error(`lares shore settle: ${read.refusal}: ${read.why}; the record still stands`) });
+    return exitFor("verb-error");
+  }
+  emit(args, {
+    ok: read.settled, data: counts,
+    ...(read.stalled ? { error: { code: "outcome-unknown", message: read.why ?? "the settle stalled" } } : {}),
+    human: () => {
+      console.log(`settled ${read.settledCount} · ${read.pendingCount} pending · ${read.stalledCount} stalled (${record.bag}, ${record.carriers.length} asked)${read.elsewhereCount > 0 ? `; ${read.elsewhereCount} project from a higher bag` : ""}`);
+      if (read.stalled) {
+        for (const uri of read.pendingUris) console.error(`  pending: ${uri}`);
+        console.error(`  ⚠ ${read.pendingCount} carrier(s) still wait; the record stands at ${read.recordPath ?? "(unwritten)"}: \`lares shore settle --bag ${record.bag} --pending\` asks again`);
+      } else console.log("  the record clears: every carrier it named settled");
+    },
+  });
+  return read.stalled ? exitFor("outcome-unknown") : 0;
 }
 
 /**

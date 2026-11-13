@@ -75,6 +75,19 @@ const CLI_FORMS = {
   meme_list:    "meme list",
   meme_delete:  "meme delete",
   meme_project: "meme project",
+  // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
+  // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
+  // holds no MCP tool, the way `kahua lift` holds none.
+  meme_offer:      "meme offer",
+  meme_offer_list: "meme offer list",
+  meme_offer_show: "meme offer show",
+  // The KAHUA seat verbs — an AI seat proposes, stages and reads its face's kahua stage; each mirrors `lares kahua <sub>`
+  // (the host `kahua` is a real top-level CLI command). `lares kahua lift|withdraw|carry|mint` stay the operator's hand
+  // and hold no MCP tool, the way the LOCAL seats hold none: no tool spells them.
+  kahua_propose: "kahua propose",
+  kahua_stage:   "kahua stage",
+  kahua_list:    "kahua list",
+  kahua_get:     "kahua get",
   // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
   // routed over the @daemon wire to the pure manifest.json reducer. Reads + reversible re-settle seat HOTL;
   // promote·retire·purge carry HITL (the operator-approval capability, the twin of the CLI's `--approve`).

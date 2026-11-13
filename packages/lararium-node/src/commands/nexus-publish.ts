@@ -10,7 +10,7 @@
  *
  * TWO SOURCE SHAPES (offerings-handoff.md "Who signs"):
  *   - A SIGNED GIFT (`offering.json` already carries `sig`/`offeror`/`pluginsCid`): a friend's offering,
- *     carried here to republish toward this Nexus's own Crossroads. `verifyPluginOffering` must pass,
+ *     carried here to republish toward this Nexus's own publication board. `verifyPluginOffering` must pass,
  *     and it is announced EXACTLY as signed — never re-signed, never re-derived (the friend's-gift law).
  *     Its blobs' bytes sit at `<dir>/<sha256>` (content-addressed; the signed record itself carries no
  *     filename field to ride unsigned on the same CID).
@@ -24,16 +24,17 @@
  * own CAS, so `nexus offering inspect` reads them held and a joinee can take them. A boot-set id never
  * verifies (`boot-set-collision`); an empty source never verifies (`empty-offering`).
  *
- * The active persona is explicit custody. A faceless Node can carry a Crossroads board, but it cannot
+ * The active persona is explicit custody. A faceless Node can carry a publication board, but it cannot
  * publish in a human's name; an unset selector therefore refuses instead of choosing handle zero.
  */
 
+import { wardRootSigner } from "../ward-signer.js";
+import type { WardCredential } from "../ward-credential.js";
 import { existsSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  crossroadsDocUrl,
-  ed25519SignerFromSeed,
+  publicationDocUrl,
   materializeSharedLarDoc,
   pluginOfferingCid,
   signPluginOffering,
@@ -47,10 +48,9 @@ import {
   type PluginProvenance,
 } from "@lararium/mesh";
 import { readGenesisCasManifest } from "../genesis-artifact.js";
+import { FaceNotNamed, resolveFace } from "../face-selector.js";
 import { casDirForStorage, writeCasEntriesFs } from "../node-cas.js";
 import {
-  loadActivePersonaIndex,
-  loadPersonaGroupRootSeed,
   loadPersonaGroupRootVerifyingKey,
   loadVesselVerifyingKey,
   personaRootExists,
@@ -60,6 +60,8 @@ import { nodeNexusIsland } from "../nexus-standing.js";
 export class NexusPublishError extends Error {}
 
 export interface NexusPublishPluginsOptions {
+  /** The face's ward route for this act (seat-harness#/the-ward): the root signs only under a fresh ward unlock. */
+  readonly ward?: WardCredential;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo: Repo;
   /** This vessel's own storage root — where the publisher's CAS (`casDirForStorage`) lives. */
@@ -68,6 +70,8 @@ export interface NexusPublishPluginsOptions {
   readonly source: string;
   /** The genesis directory whose blob ids `boot-set-collision` reads; absent, the vessel's own (`readGenesisSeed`'s default). */
   readonly genesisDir?: string;
+  /** The face that signs the offering: named by the caller, else the one face standing open. */
+  readonly handleIndex?: number;
 }
 
 export interface NexusPublishPluginsResult {
@@ -101,16 +105,15 @@ function sourceBlobPath(sourceDir: string, blob: { readonly sha256: string; read
   return join(sourceDir, blob.file ?? blob.sha256);
 }
 
-/** Sign and announce an offering source on this vessel's Nexus Crossroads. */
+/** Sign and announce an offering source on this vessel's Nexus publication board. */
 export async function runNexusPublishPlugins(
   opts: NexusPublishPluginsOptions,
 ): Promise<NexusPublishPluginsResult> {
-  const handleIndex = await loadActivePersonaIndex();
-  if (handleIndex === undefined) {
-    throw new NexusPublishError(
-      "publishing requires an active persona — wear a held persona before offering a collection",
-    );
-  }
+  // The face the act names, else the one face standing open; several and none named refuse by name (--face N).
+  const handleIndex = await resolveFace(opts.handleIndex).catch((e: unknown) => {
+    if (e instanceof FaceNotNamed) throw new NexusPublishError(`publishing requires a face to sign as — ${e.message}`);
+    throw e;
+  });
   if (!(await personaRootExists(handleIndex))) {
     throw new NexusPublishError(
       `the active persona h${handleIndex} is not held by this vessel — publishing refuses without root custody`,
@@ -199,7 +202,8 @@ export async function runNexusPublishPlugins(
     const pluginsCid = computePluginsCid(blobs);
     offering = await signPluginOffering(
       { offeror: offeror.toLowerCase(), pluginsCid, blobs },
-      ed25519SignerFromSeed(await loadPersonaGroupRootSeed(handleIndex)),
+      // The root signs this one offering under the ward, its seed opened fresh and zeroed after the signature.
+      (await wardRootSigner(handleIndex, opts.ward, "a nexus publish")).sign,
     );
   }
 
@@ -213,10 +217,10 @@ export async function runNexusPublishPlugins(
   writeCasEntriesFs(offering.blobs.map((b) => ({ cid: b.sha256, bytes: bytesByCid.get(b.sha256)! })), casDir);
 
   const vesselKey = await loadVesselVerifyingKey();
-  const boardUrl = crossroadsDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
+  const boardUrl = publicationDocUrl(nodeNexusIsland({ ownVesselKey: vesselKey }));
   const repo = opts.repo;
   try {
-    const board = await materializeSharedLarDoc(repo, boardUrl, "board:crossroads");
+    const board = await materializeSharedLarDoc(repo, boardUrl, "board:publication");
     // The key is the complete signed offering CID. Re-running therefore replaces only the same exact
     // projection; a changed collection or signing hand receives a distinct additive address.
     board.change((draft) => writeOfferingAnnounce(draft, offering));

@@ -14,6 +14,7 @@
 import { describe, test, expect } from "vitest";
 import { resolveDiskMirrors, type DiskMirrorGrant } from "../src/vessel-island-pool-core.js";
 import { wikiSlotUri, wikiBagUri } from "@lararium/mesh";
+import { personaScopedBagIds } from "../src/persona-scope.js";
 
 const LARES = "lar:///ha.ka.ba/bags/lares";
 
@@ -33,6 +34,16 @@ const canonGrant: DiskMirrorGrant = [
 ];
 
 describe("resolveDiskMirrors — authority ∩ designation + per-wiki slug expansion", () => {
+  test("RED: a face intents bag never gains a mirror root, even when designated; CONTROL: the same grant projects a wiki", () => {
+    const intents = personaScopedBagIds("founded-face").intents;
+    const wiki = wikiBagUri("garden");
+    const roots = resolveDiskMirrors([
+      { bagId: intents, mirrorRoot: "/root/bags/intents", scope: "literal" },
+      { bagId: wiki, mirrorRoot: "/root/bags/garden", scope: "literal" },
+    ], [intents, wiki], "garden");
+    expect(roots.some((r) => r.bagId === intents)).toBe(false);
+    expect(roots.find((r) => r.bagId === wiki)?.mirrorRoot).toBe("/root/bags/garden");
+  });
   test("a wikiSlot grant (working) slug-expands its bag + leaf to wikis/{slug}", () => {
     const workingSlot = wikiSlotUri("myproject", "working");
     const out = resolveDiskMirrors(grant, [LARES, workingSlot], "myproject");
@@ -63,6 +74,18 @@ describe("resolveDiskMirrors — authority ∩ designation + per-wiki slug expan
       expect(out.find((m) => m.bagId === wikiSlotUri(slug, "working"))?.mirrorRoot).toBe("/root/wikis/my-world");
     });
 
+    test("★ bags/ projects on the Kahu's vessel alone: with no literal grant, a system wiki's canon never reaches disk by self-canon ★", () => {
+      // A vessel the Kahu cabal did not admit grants neither literal mirror (the node vessel's grant omits them), so the
+      // lares wiki's designated canon finds only the self-canon entry, which refuses system canon.
+      for (const slug of ["lares", "lararium"]) {
+        const out = resolveDiskMirrors(canonGrant.filter((g) => g.bagId !== LARES), [wikiBagUri(slug), wikiSlotUri(slug, "working")], slug);
+        expect(out.some((m) => m.bagId === wikiBagUri(slug))).toBe(false);
+        expect(out.find((m) => m.bagId === wikiSlotUri(slug, "working"))?.mirrorRoot).toBe(`/root/wikis/${slug}`);      // its working layer still projects
+      }
+      // CONTROL: a user wiki of the same shape projects its canon.
+      expect(resolveDiskMirrors(canonGrant.filter((g) => g.bagId !== LARES), [wikiBagUri("garden")], "garden").some((m) => m.bagId === wikiBagUri("garden"))).toBe(true);
+    });
+
     test("a system wiki (literal grant covers its slug) never double-projects", () => {
       // the lares wiki designates its own canon (lares) but a literal grant
       // already covers it → self-canon yields nothing, only the literal root.
@@ -79,4 +102,36 @@ describe("resolveDiskMirrors — authority ∩ designation + per-wiki slug expan
       expect(out.map((m) => m.bagId)).toEqual([workingSlot]);
     });
   });
+});
+
+// THE MIRROR ROOT SPLITS BY ORIGIN (operator ruling, 2026-11-01): a wiki whose bag stands in the canon source projects back
+// beside that source (the checkout, for source control); a wiki the house minted for itself projects under the state root.
+describe("resolveDiskMirrors — a per-wiki grant's root splits by the slug's origin", () => {
+  const split: DiskMirrorGrant = [
+    { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working", sourcedRoots: { elyncia: "/workspace/wikis" } },
+    { bagId: "self", mirrorRoot: "/state/bags", scope: "self", perWikiSlug: true, selfCanon: true, sourcedRoots: { elyncia: "/workspace/bags" } },
+  ];
+  test("RED: a sourced slug's working layer and canon project under the source's roots", () => {
+    const out = resolveDiskMirrors(split, [wikiSlotUri("elyncia", "working"), wikiBagUri("elyncia")], "elyncia");
+    expect(out.find((m) => m.bagId === wikiSlotUri("elyncia", "working"))?.mirrorRoot).toBe("/workspace/wikis/elyncia");
+    expect(out.find((m) => m.bagId === wikiBagUri("elyncia"))?.mirrorRoot).toBe("/workspace/bags/elyncia");
+  });
+  test("CONTROL: a slug with no source stays under the state roots", () => {
+    const out = resolveDiskMirrors(split, [wikiSlotUri("notes", "working"), wikiBagUri("notes")], "notes");
+    expect(out.find((m) => m.bagId === wikiSlotUri("notes", "working"))?.mirrorRoot).toBe("/state/wikis/notes");
+    expect(out.find((m) => m.bagId === wikiBagUri("notes"))?.mirrorRoot).toBe("/state/bags/notes");
+  });
+});
+
+test("a recovery grant sites designated drafts separately from working", () => {
+  const draft = wikiSlotUri("garden", "draft");
+  const working = wikiSlotUri("garden", "working");
+  const recoveryGrant = [
+    { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working" as const },
+    { bagId: "draft", mirrorRoot: "/state/wikis", scope: "draft", wikiSlot: "draft" as const, mirrorClass: "recovery" as const },
+  ];
+  const mirrors = resolveDiskMirrors(recoveryGrant, [draft, working], "garden");
+  expect(mirrors.find((m) => m.bagId === draft)?.mirrorRoot).toBe("/state/wikis/garden/recovery");
+  expect(mirrors.find((m) => m.bagId === working)?.mirrorRoot).toBe("/state/wikis/garden");
+  expect(resolveDiskMirrors(recoveryGrant.slice(0, 1), [draft], "garden")).toEqual([]);
 });

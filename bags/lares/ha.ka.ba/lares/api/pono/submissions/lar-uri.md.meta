@@ -1,8 +1,8 @@
-title: lar:///ha.ka.ba/lares/api/pono/submissions/lar-uri
-type: text/markdown
-source: lar:///ha.ka.ba/lares/docs/pono/lar-uri
-source-check: ni:///sha-256;uZ6j-LdWKxhdqvUU3PeEOFPlqEiH4Vfw0TFya07ZrsQ
-variant: kramdown-rfc2629
-tongue: en
-projected-by: weave (lares meme project --to md · meme-project)
 law: projected artifact — hand edits do not survive re-projection
+projected-by: weave (lares meme project --to md · meme-project)
+source: lar:///ha.ka.ba/lares/docs/pono/lar-uri
+source-check: ni:///sha-256;sO5-xMXFfxgjg3o3B7SnQl6OsYiywza8RbrIR-x6-HU
+title: lar:///ha.ka.ba/lares/api/pono/submissions/lar-uri
+tongue: en
+type: text/markdown
+variant: kramdown-rfc2629

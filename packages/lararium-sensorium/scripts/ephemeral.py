@@ -1,8 +1,9 @@
 """ephemeral — the EPHEMERAL skip verdict for the python capture path.
 
-Witness-spirits, `LAR_ROOT` sandbox runs, and scratch sessions never enter the rhizome. A session
+Witness-spirits, harness-staged sandbox runs, and scratch sessions never enter the rhizome. A session
 reads ephemeral when (a) its recorded cwd sits under a recognized scratch root (the OS tmpdir /
-`/tmp` / `<larHome>/.corpus` / a `LAR_ROOT` sandbox), or (b) a `.ephemeral` sibling marker sits beside
+`/tmp`, or a root carrying the harness's `.lar-test-scratch` marker; a house root reads scratch by that
+marker alone, never because `LAR_ROOT` names it), or (b) a `.ephemeral` sibling marker sits beside
 the transcript, or a `.lar-ephemeral` marker sits in the session's recorded cwd. The verdict reads off
 the transcript's CONTENT (grain a + the cwd half of b), so a staged copy carries the same verdict as
 the original. The TS capture leg reads `ephemeral.ts`; this holds the same gate, so both skip alike.
@@ -13,19 +14,10 @@ import tempfile
 from wing_derive import read_cwd_from_transcript  # the same cwd row the wing law reads
 
 
-def _lar_home():
-    """The `~/.lares` vessel home — `LAR_ROOT` (isolated instance) or `~/.lares`. Mirrors
-    `vessel-paths.ts::larHome`."""
-    return os.environ.get("LAR_ROOT") or os.path.join(os.path.expanduser("~"), ".lares")
-
-
 def scratch_roots():
     """The recognized scratch roots — a session whose recorded cwd sits under one reads ephemeral.
     Mirrors `ephemeral.ts::scratchRoots` (abspath-normalized, deduped, no symlink follow)."""
-    roots = [tempfile.gettempdir(), "/tmp", os.path.join(_lar_home(), ".corpus")]
-    lar_root = os.environ.get("LAR_ROOT")
-    if lar_root:
-        roots.append(lar_root)  # a LAR_ROOT sandbox — the isolated-instance tree
+    roots = [tempfile.gettempdir(), "/tmp"]
     seen, out = set(), []
     for r in roots:
         rr = os.path.abspath(r)  # path.resolve twin: absolute + normalized, symlinks unfollowed
@@ -33,6 +25,22 @@ def scratch_roots():
             seen.add(rr)
             out.append(rr)
     return out
+
+
+SCRATCH_MARKER = ".lar-test-scratch"
+
+
+def marked_scratch_root(dir_):
+    """The nearest ancestor of `dir_` (itself included) carrying the scratch marker, or None. Mirrors
+    `ephemeral.ts::markedScratchRoot`."""
+    cur = os.path.abspath(dir_)
+    while True:
+        if os.path.exists(os.path.join(cur, SCRATCH_MARKER)):
+            return cur
+        parent = os.path.dirname(cur)
+        if parent == cur:
+            return None
+        cur = parent
 
 
 def _under_root(dir_, root):
@@ -59,4 +67,7 @@ def session_ephemeral(transcript):
     for root in scratch_roots():
         if _under_root(cwd, root):
             return f"derived: cwd {cwd} under scratch root {root}"
+    marked = marked_scratch_root(cwd)
+    if marked is not None:
+        return f"derived: cwd {cwd} under marked scratch root {marked}"
     return None

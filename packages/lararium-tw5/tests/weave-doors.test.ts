@@ -44,7 +44,7 @@ describe("profileOf / recordedTargetOf / resolveWeaveTarget / pinTargetsOf", () 
   test("submissionTitleOf names the `submissions/<name>` shelf title projectSubmission's own default uses", () => {
     expect(submissionTitleOf("lar:///t/x")).toBe("lar:///ha.ka.ba/lares/api/pono/submissions/x");
     expect(submissionTitleOf("lar:///ha.ka.ba/lares/docs/pono/lar-uri")).toBe("lar:///ha.ka.ba/lares/api/pono/submissions/lar-uri");
-    const p = projectSubmission('<<^ code="&#x0001;" from="?" -> to="lar:///t/x">>\n<<^ code="&#x0002;">>\n\nbody\n<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to="?">>\n');
+    const p = projectSubmission('<<^ code=`&#x0001;` from=`?` to=`lar:///t/x`>>\n<<^ code=`&#x0002;`>>\n\nbody\n<<^ code=`&#x0003;`>>\n<<^ code=`&#x0004;` to=`?`>>\n');
     expect(p.meta).toContain("title: lar:///ha.ka.ba/lares/api/pono/submissions/x\n");
   });
 
@@ -83,18 +83,18 @@ describe("profileOf / recordedTargetOf / resolveWeaveTarget / pinTargetsOf", () 
   });
 
   const AKA_CARRIER = [
-    '<<^ code="&#x0001;" from="?" -> to="lar:///t/akas">>',
-    '<<^ code="&#x0002;">>',
+    '<<^ code=`&#x0001;` from=`?` to=`lar:///t/akas`>>',
+    '<<^ code=`&#x0002;`>>',
     "",
-    '<<~ aka "lar:///t/one">>',
-    '<<~ kanawai "lar:///t/two#/slot">>',
+    '<<~ aka uri=`lar:///t/one`>>',
+    '<<~ kanawai uri=`lar:///t/two#/slot`>>',
     "",
     "```memetic-wikitext",
-    '<<~ aka "lar:///t/fenced-out">>',
+    '<<~ aka uri=`lar:///t/fenced-out`>>',
     "```",
     "",
-    '<<^ code="&#x0003;">>',
-    '<<^ code="&#x0004;" -> to="?">>',
+    '<<^ code=`&#x0003;`>>',
+    '<<^ code=`&#x0004;` to=`?`>>',
     "",
   ].join("\n");
 
@@ -103,7 +103,7 @@ describe("profileOf / recordedTargetOf / resolveWeaveTarget / pinTargetsOf", () 
   });
 
   test("CONTROL: a carrier with no aka/kanawai pins answers an empty list", () => {
-    expect(pinTargetsOf('<<^ code="&#x0001;" from="?" -> to="lar:///t/none">>\nbody\n')).toEqual([]);
+    expect(pinTargetsOf('<<^ code=`&#x0001;` from=`?` to=`lar:///t/none`>>\nbody\n')).toEqual([]);
   });
 });
 
@@ -111,7 +111,7 @@ describe("profileOf / recordedTargetOf / resolveWeaveTarget / pinTargetsOf", () 
 const URI = "lar:///t/weave-doors";
 const PINNED_URI = "lar:///t/weave-doors-pinned";
 const meme = (uri: string, body: string): string =>
-  `<<^ code="&#x0001;" from="?" -> to="${uri}">>\n<<^ code="&#x0002;">>\n\n\`\`\`toml meta\nuri-path = "${uri.replace(/^lar:\/\/\//, "")}"\n\`\`\`\n\n${body}\n<<^ code="&#x0003;">>\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.replace(/^lar:\/\/\//, "")}"\n\`\`\`\n\n${body}\n<<^ code=\`&#x0003;\`>>\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 describe.skipIf(wikiSkip)(`the meme-project filter's dialect/tongue operands + live resolver${skipNote}`, () => {
   let engine: TW5Engine;
@@ -120,7 +120,7 @@ describe.skipIf(wikiSkip)(`the meme-project filter's dialect/tongue operands + l
     engine = await bootTestWiki();
     face = (engine.$tw as unknown as { lares: { meme: LaresMemeFace } }).lares.meme;
     await face.place(PINNED_URI, meme(PINNED_URI, "! pinned content\n"));
-    await face.place(URI, meme(URI, `! root\n\n<<~ aka "${PINNED_URI}">>\n`));
+    await face.place(URI, meme(URI, `! root\n\n<<~ aka uri=\`${PINNED_URI}\`>>\n`));
   });
 
   // A SECOND/THIRD operand of one operator rides its OWN bracket after a comma (`op[a],[b]`) — TW5's
@@ -155,7 +155,7 @@ describe.skipIf(wikiSkip)(`the meme-project filter's dialect/tongue operands + l
 
   test("CONTROL: an absent pin target falls back unresolved even with a live resolver attached", async () => {
     const lonely = "lar:///t/weave-doors-lonely";
-    await face.place(lonely, meme(lonely, '! lonely\n\n<<~ aka "lar:///t/nowhere-at-all">>\n'));
+    await face.place(lonely, meme(lonely, '! lonely\n\n<<~ aka uri=`lar:///t/nowhere-at-all`>>\n'));
     const md = (engine.wiki.filterTiddlers(`[[${lonely}]] +[meme-project[md]]`) as string[])[0] ?? "";
     expect(md).toContain("(unresolved — no corpus to pin)");
   });
@@ -202,7 +202,7 @@ describe("makeMemeProjectReactor — dialect/tongue args", () => {
     const { opts } = verbRig();
     const PIN_URI = "lar:///t/verb-pinned";
     await makeMemePutReactor(opts)({ bag: "sdm", uri: PIN_URI, text: meme(PIN_URI, "! pin target\n") }, ctx());
-    await makeMemePutReactor(opts)({ bag: "sdm", uri: VERB_URI, text: meme(VERB_URI, `! root\n\n<<~ aka "${PIN_URI}">>\n`) }, ctx());
+    await makeMemePutReactor(opts)({ bag: "sdm", uri: VERB_URI, text: meme(VERB_URI, `! root\n\n<<~ aka uri=\`${PIN_URI}\`>>\n`) }, ctx());
     const out = await makeMemeProjectReactor(opts)({ bag: "sdm", uri: VERB_URI, to: "md", dialect: "GFM" }, ctx()) as { text: string };
     expect(out.text.startsWith("---\n")).toBe(true);
     expect(out.text).toContain("pin target");

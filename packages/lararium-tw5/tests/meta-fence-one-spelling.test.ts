@@ -38,16 +38,22 @@ import { memeticWikitextDeserializer } from "../src/deserializer.js";
 import { META_OPEN_CANON } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 
-const DECL = "<<!DOCTYPE \"memetic-wikitext+tiddlywiki\" \"lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\">>";
-const HEAD = '<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/x/y">>';
+/** The corpus walk reads every carrier once: measured 3.1 s on an idle box (2026-11-06, ~850 carriers, ~3.7 ms each), and it
+ *  timed out at vitest's 5 s default under load. The budget is the measured cost per carrier times a loaded box's tenfold
+ *  slowdown, with a 15 s floor: it moves with the corpus instead of standing as a blind raise. */
+const CORPUS_BUDGET_MS = Math.max(15_000, Math.ceil(carrierFiles(REPO).length * 3.7 * 10));
+
+
+const DECL = "<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>";
+const HEAD = '<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/x/y`>>';
 
 /**
  * A whole carrier whose meta opener is spelled `open`. Everything else is held constant. The root meta
  * opens the BODY, directly after STX — where the canon seats a carrier's identity.
  */
 const carrier = (open: string) =>
-  `${DECL}\n\n${HEAD}\n<<^ code="&#x0002;">>\n\n${open}\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n` +
-  `<<~ ahu #a>>\n\nbody\n\n<<~/ahu>>\n\n<<^ code="&#x0003;">>\n\n<<^ code="&#x0004;" -> to="?">>\n`;
+  `${DECL}\n\n${HEAD}\n<<^ code=\`&#x0002;\`>>\n\n${open}\nuri-path = "ha.ka.ba/x/y"\ntype = "${CARRIER_TYPE}"\n\`\`\`\n\n` +
+  `<<~ ahu slot=\`#a\`>>\n\nbody\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 /**
  * The five readers that must agree, each reached through its own door.
@@ -179,5 +185,5 @@ describe("a deviant spelling is ADMITTED and then FAULTED", () => {
       .filter(([, faults]) => faults.some((x) => /meta fence/i.test(x)))
       .map(([f]) => f);
     expect(faulted).toEqual([]);
-  });
+  }, CORPUS_BUDGET_MS);
 });

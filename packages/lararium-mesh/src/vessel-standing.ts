@@ -146,7 +146,7 @@ export function standAs(asked: VesselClass, archiveOpens: boolean): VesselClass 
 export interface NexusEpoch {
   /** Whose epoch this is — the Nexus key. An epoch value means nothing outside the Nexus that rolls it. */
   readonly nexus:     string;
-  /** The effective lease epoch — `effectiveLeaseEpoch` over that Nexus's per-writer slots. */
+  /** The effective lease epoch — `quorumLeaseEpoch` over that Nexus's signed quorum slots. */
   readonly effective: number;
 }
 

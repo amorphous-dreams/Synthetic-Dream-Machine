@@ -19,6 +19,9 @@
  *   · a Handle the reader never met refuses NOT-FOUND rather than guessing a chain,
  *   · every refusal rides `emit`, so an agent under `--json` reads a verdict and never bare prose.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { describe, test, expect, vi, afterEach, beforeEach } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -30,6 +33,7 @@ import {
   type HandleKelEvent, type HandleAttestation, type HandleClaim,
 } from "@lararium/mesh";
 import { dispatch } from "../src/bin/lares.js";
+import { generateOrLoadPersonaGroupRoot } from "@lararium/node";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 
 afterEach(() => vi.restoreAllMocks());
@@ -44,6 +48,7 @@ beforeEach(async () => {
   priorRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
   custody = await seatScratchCustody();
+  await generateOrLoadPersonaGroupRoot(0);   // each face keeps its own recognition book: a recognition needs a face standing
 });
 afterEach(async () => {
   await custody.drop();

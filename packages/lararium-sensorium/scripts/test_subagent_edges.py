@@ -55,8 +55,9 @@ def test_subagent_edges_derives_the_two_pairs(tmp_path):
     # the SPAWN triple — subject=run, prov:Delegation, object=handle, turnKey=first spirit turn uuid
     assert p["spawn"] == {"subject": run, "predicate": "prov:Delegation",
                           "object": f"{run}.aaa", "turnKey": "s00"}
-    # the HANDBACK close — subject/predicate/object mirror the spawn (the twin-reunion of the interval)
-    assert p["handback"] == {"subject": run, "predicate": "prov:Delegation", "object": f"{run}.aaa"}
+    # the HANDBACK close — subject/predicate/object mirror the spawn (the twin-reunion of the interval),
+    # and its parentKey names the spawn it follows, so replay orders it by that link, never by a time
+    assert p["handback"] == {"subject": run, "predicate": "prov:Delegation", "object": f"{run}.aaa", "parentKey": "s00"}
     # clock-purity: no timestamp rides the edge (the compare verdict is timestamp-invariant for siblings)
     assert "valid_from" not in p["spawn"] and "ended" not in p["handback"]
 

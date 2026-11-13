@@ -8,7 +8,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fsSealedStoreRest, sealedStoreDir } from "../src/sealed-store-fs.js";
-import { isRestKind, restDigest, SealedStore, type RestKind } from "@lararium/mesh";
+import { isRestKind, mintOutboxKey, readsAsOutboxSeal, restDigest, SealedStore, type RestKind } from "@lararium/mesh";
 
 const root = () => mkdtempSync(join(tmpdir(), "sealed-fs-"));
 const tree = (path: string): string[] => {
@@ -98,6 +98,31 @@ describe("filesystem writes land whole and portable", () => {
         expect(readdirSync(join(dir, kind))).toEqual([name]); expect([...((await fsSealedStoreRest(dir).get(kind, name))!)]).toEqual([...bytes]);
       }
       expect(sealedStoreDir("/x/store")).toBe("/x/store/sealed");
+    } finally { rmSync(base, { recursive: true, force: true }); }
+  });
+});
+
+describe("the outbox's crash law on disk (custody#/the-table, the outbox)", () => {
+  it("a parcel stands sendable only once its one rename lands: a leftover temporary file never lists, and the parcel opens again after a restart under the same key", async () => {
+    const base = root(), dir = join(base, "sealed");
+    try {
+      const key = mintOutboxKey();
+      const parcel = new TextEncoder().encode("PARCEL-SEARCH-ME for reader-one");
+      // A stop before the commit leaves the temporary file alone: it carries a name the rule refuses.
+      mkdirSync(join(dir, "outbox"), { recursive: true });
+      writeFileSync(join(dir, "outbox", "TMP-00aa11bb"), parcel);
+      expect(await new SealedStore(fsSealedStoreRest(dir), { outboxKey: key }).outbox()).toEqual([]);
+      const name = await new SealedStore(fsSealedStoreRest(dir), { outboxKey: key }).putOutbox("reader-one", parcel);
+      // On disk: one sealed file under the random name, beside the leftover; no file holds the parcel's text but the leftover.
+      expect(readdirSync(join(dir, "outbox")).sort()).toEqual([name, "TMP-00aa11bb"].sort());
+      const resting = new Uint8Array(readFileSync(join(dir, "outbox", name)));
+      expect(readsAsOutboxSeal(resting)).toBe(true);
+      expect(Buffer.from(resting).includes(Buffer.from("SEARCH-ME"))).toBe(false);
+      // RESTART: a fresh rest over the same directory, handed the same stable key, lists and opens the parcel.
+      const reopened = await new SealedStore(fsSealedStoreRest(dir), { outboxKey: Uint8Array.from(key) as typeof key }).outbox("reader-one");
+      expect(reopened.map((p) => [p.name, new TextDecoder().decode(p.parcel)])).toEqual([[name, "PARCEL-SEARCH-ME for reader-one"]]);
+      // CONTROL: another key opens nothing over the same files.
+      expect(await new SealedStore(fsSealedStoreRest(dir), { outboxKey: mintOutboxKey() }).outbox()).toEqual([]);
     } finally { rmSync(base, { recursive: true, force: true }); }
   });
 });

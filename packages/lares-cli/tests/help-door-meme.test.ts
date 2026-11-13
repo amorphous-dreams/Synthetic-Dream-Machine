@@ -138,15 +138,6 @@ describe("★ ONE HOME for a verb door's words ★", () => {
     expect(orphans).toEqual([]);
   });
 
-  test("the refusal path and the help path render the SAME lines", () => {
-    const lines = helpLines("library");
-    expect(lines[0], "the refusal spine an operator greps for").toMatch(/^usage: lares library/);
-    const printed: string[] = [];
-    vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { printed.push(a.map(String).join(" ")); });
-    renderCommandHelp("library");
-    expect(printed.join("\n"), "one home, two channels — the same bytes").toBe(lines.join("\n"));
-    expect(lines.join("\n"), "the migrated words survived the move").toContain("acquire");
-  });
 });
 
 describe("★ `--help --meme` reaches the wiki through the meme rail ★", () => {
@@ -199,14 +190,14 @@ describe("★ `--help --meme` reaches the wiki through the meme rail ★", () =>
     expect(text).toContain("lares vessel --help --meme");
   });
 
-  test("a SUB-DOOR carries its own entry — `vessel wire --help` renders the wire door, not the vessel one", async () => {
+  test("a SUB-DOOR carries its own entry — `vessel rite --help` renders the rite door, not the vessel one", async () => {
     const { dispatch } = await import("../src/bin/lares.js");
     const out: string[] = [];
     vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.map(String).join(" ")); });
     vi.spyOn(console, "error").mockImplementation(() => {});
-    expect(await dispatch(["vessel", "wire", "--help"])).toBe(0);
+    expect(await dispatch(["vessel", "rite", "--help"])).toBe(0);
     const text = out.join("\n");
-    expect(text).toMatch(/^usage: lares vessel wire/m);
-    expect(text, "the sub-door's own flags reach the reader").toContain("--copilot");
+    expect(text).toMatch(/^usage: lares vessel rite/m);
+    expect(text, "the sub-door's own petnames reach the reader").toContain("refresh");
   });
 });

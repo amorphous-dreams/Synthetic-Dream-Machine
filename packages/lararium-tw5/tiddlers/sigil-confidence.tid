@@ -3,9 +3,9 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: metadata
 lar-pattern: <<~\s*confidence\b([\s\S]*?)>>
 lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/l-prime
-lar-example: <<~ confidence Synthesis 11/20>>
+lar-example: <<~ confidence value=`Synthesis 11/20`>>
 lar-render: literal
 type: text/vnd.tiddlywiki
 
-<!-- confidence — the certainty vow (register N/20). HUD-frame sigil: recognized in the tree, rendered as
+<!-- confidence — the certainty vow (register N/20). frame sigil: recognized in the tree, rendered as
      plain literal text for now. -->

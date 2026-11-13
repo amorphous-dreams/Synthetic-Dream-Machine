@@ -43,9 +43,13 @@ import { join, isAbsolute } from "node:path";
 import type { ParsedArgs } from "../parse-args.js";
 import { exitFor, emit } from "../render.js";
 import { udsAlive, udsSocketPath } from "../local-connector.js";
-import { larRoot, larBagsDir, larWikisDir, vesselDid } from "../env.js";
+import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
+
+/** The projections root when one stands, as the optional `MirrorDirs` field. */
+const projectionsDirs = (): { projections?: string } => { const p = larProjectionsDirOrNone(); return p === undefined ? {} : { projections: p }; };
 import { openSyncedTree, scanFiles, fileToUriForSource, candidatesOf, deletionsOf, settleIngest, applyConfirmedRenames, standingAfterWave, standingAfterFault, standsClean, renamedSources, absentSources, NO_STANDING_ASKS, type ArmedDeletion, type StandingAsks } from "../ingest-core.js";
 import { askShore } from "../shore-core.js";
+import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 
 const DEFAULT_DEBOUNCE_MS = 400;   // twillm's field-tested trailing window
 const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well under this
@@ -53,7 +57,7 @@ const COOKIE_TIMEOUT_MS   = 2_000; // a live backend echoes our own write well u
 /**
  * Editor litter, our own observation state, and the `.meta` field-sidecar never
  * count as carrier events. The watcher fires on EVERY filetype the mirror holds
- * (the ruling: bags/wikis hold all TW5 filetypes); the scan's loci derivation
+ * (the ruling: bags/wikis hold all TW5 filetypes); the scan's address derivation
  * (`fileToUri`) skips anything that carries no stable name — no extension gate
  * here decides the filetype. A `.meta` rides with its content file, so its own
  * write never opens a fresh wave.
@@ -176,7 +180,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
     buffer.clear();
 
     const tree = openSyncedTree();     // fresh read — the projection moves under us
-    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir() }));
+    const { rows, skipped } = scanFiles(root, [...files], toBag, tree, fileToUriForSource(root, source, { bags: larBagsDir(), wikis: larWikisDir(), ...projectionsDirs() }));
     const candidates = candidatesOf(rows);
 
     // A vanished address whose path scans present again has RETURNED (a checkout that re-creates the
@@ -247,7 +251,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
       // R2: a confirmed rename moves its observation to the new location, so a moved
       // carrier reads `unchanged` next settle instead of re-landing (echo-survival).
       applyConfirmedRenames(tree, toBag, candidates, del);
-      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit lar:///ha.ka.ba/bags/daemon/outcomes/${result.requestId}`);
+      console.log(`  wave ${n}: ${candidates.length} change(s) + ${ride.length} rename(s) submitted · audit ${OUTCOME_URI_PREFIX}${result.requestId}`);
       for (const c of carriers) console.log(`    ${String(c["decision"]).toUpperCase().padEnd(10)} ${c["uri"]}`);
       for (const r of [...settled.refused, ...settled.conflicts]) console.error(`    ⚠ ${r.decision} ${r.uri}: ${r.why}`);
       if (settled.conflicts.length > 0) console.error(`    ${settled.conflicts.length} carrier(s) stand off: nothing landed for them; \`lares shore\` names each with its key`);
@@ -276,6 +280,7 @@ export async function cmdWatch(args: ParsedArgs): Promise<number> {
 
   const scheduleDrain = (): void => {
     if (timer) clearTimeout(timer);
+    // PACING: debounce coalesces file changes before draining them.
     timer = setTimeout(kick, debounceMs);
   };
 
@@ -356,6 +361,7 @@ function cookieSelfTest(source: string, watcher: FSWatcher): Promise<boolean> {
       if (fn && fn.toString().includes(cookieName)) finish(true);
     };
     watcher.on("change", onChange);
+    // LIVENESS: a dead watch backend may never echo the cookie.
     const timeout = setTimeout(() => finish(false), COOKIE_TIMEOUT_MS);
     try { writeFileSync(cookiePath, "cookie"); } catch { finish(false); }
   });

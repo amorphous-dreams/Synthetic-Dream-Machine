@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-25 (file date) — source `.lares-scratch/crud/sol-a/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/crud/sol-a/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-25
+
+Verbatim scratch record `.lares-scratch/crud/sol-a/brief.md` (brief, file date 2026-10-25); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/crud/sol-a/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Read /home/joshu/.lares-scratch/crud/common.md first; it holds the ruling, the crud definition, the apertures and the output shape.
+
+YOUR GROUND (seat A): CODE AND TESTS. packages/*/src, packages/*/plugins (house-authored source only), tools/, packages/*/tests, tests/ (e2e and harness), package.json scripts, and the Wave D branch's src and tests via git show/git grep on origin/feature/green-jello-dinosaur-5&#45;-k15-wave-d. Your twin, seat B, takes canon, CI, docker and config; leave those to it unless code depends on them.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Xf1E0DQAWqlv4QhdK5-ZhLi7jcVvqilMuYKL6-VcnYo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

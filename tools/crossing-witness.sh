@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # crossing-witness — the civic-protocol CROSSING matrix across a real container boundary. Runs each
-# scenario through docker-compose.crossing.yml (a real DaemonAuthGate daemon + a browser-shaped leaf),
+# scenario through docker-compose.crossing.yml (a sealed-gate daemon + a browser-shaped face),
 # asserting the gate does the RIGHT thing: crosses the admitted, denies the rest, and lets a denied
 # anon still stand whole on its own floor. The client's EXIT CODE is the verdict (0 = correct).
 #
 #   admitted    (X1/X5)  an admitted leaf crosses + syncs the doc both ways.
-#   anon        (X2/A1)  a valid-but-ungranted leaf is denied, then founds its own island standalone.
-#   impostor    (X3)     a leaf that signs with the wrong seed (forged proof) is denied.
-#   wrong-bind  (X4)     a leaf binding the wrong audience is denied.
+#   anon        (X2/A1)  an admitted face at a gate that admits nobody is denied, then founds its own island standalone.
+#   impostor    (X3)     a presentation signed by another face's session signer is denied.
+#   wrong-bind  (X4)     a presentation bound to the wrong audience is denied.
 #
 # Usage:  tools/crossing-witness.sh
 # Meme:   lar:///ha.ka.ba/lares/api/pono/the-veil-ladder + browser-crossing
@@ -68,7 +68,7 @@ run() {  # run <role> <admit-policy>
   echo
 }
 
-echo "═══ CROSSING MATRIX — the civic-protocol gate, across containers ═══"
+echo "═══ CROSSING MATRIX — the sealed gate, across containers ═══"
 run admitted   from-file
 run anon       none
 run impostor   from-file

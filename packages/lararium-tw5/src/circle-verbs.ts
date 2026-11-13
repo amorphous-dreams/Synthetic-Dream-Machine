@@ -8,14 +8,13 @@
  * One graph, every device of the one human, no stranger — "the only surface human eyes have on the crypto
  * layer" for friends + wanderers.
  *
- * THE PER-NYM OBSERVED-REMOVE SET (M5, replacing a Lamport-counter race). A single shared counter per
- * tiddler cannot tell concurrent from later — a remove stamped by replica A at height 1 and a re-follow
- * stamped by replica B at height 3 (more unrelated history, no causal relation to A's remove) compared as
- * plain strings, and the higher height always "won", present or not. Worse: `cold-boot-ceremony`'s own
- * genesis follow stamped an ISO wall-clock string, which lexically outranks every zero-padded decimal
- * counter forever (`'0' < '2'`), so the operator's OWN follow could never be unfollowed at all.
+ * THE PER-NYM OBSERVED-REMOVE SET (M5). A single shared counter per tiddler cannot tell concurrent from
+ * later — a remove stamped by replica A at height 1 and a re-follow stamped by replica B at height 3 (more
+ * unrelated history, no causal relation to A's remove) compare as plain strings, and the higher height
+ * "wins", present or not; an ISO wall-clock stamp lexically outranks every zero-padded decimal counter
+ * forever (`'0' < '2'`). So no stamp here is a counter or a clock.
  *
- * Membership now rides DOTTED per-nym fields: an add writes `mbr+:<nym>#<replica>.<n>` (`replica` is the
+ * Membership rides DOTTED per-nym fields: an add writes `mbr+:<nym>#<replica>.<n>` (`replica` is the
  * minting vessel's own device key; `n` is one past that replica's own highest dot in THIS tiddler — see
  * `nextDotForReplica`); a remove writes `mbr-:<nym>#<replica>.<n>` the same way. Each stamp's VALUE is not a
  * clock reading at all — it is the comma-joined set of opposite-kind dots this write OBSERVED locally at
@@ -29,14 +28,10 @@
  * observed each other at all, the fold names the nym in a separate `concurrent` list rather than silently
  * picking a winner.
  *
- * EVERGREEN (gp25-SW2): a legacy, UN-DOTTED `mbr+:<nym>` / `mbr-:<nym>` (any value — the old Lamport counter,
- * the old ISO string, cold-boot-ceremony's former genesis stamp) is RETIRED, never read as a shim. It no
- * longer parses as a dot at all (not even a reserved placeholder) — `parseDotKey` ignores it outright and
- * logs it by name, so a stray pre-M5 key neither grants nor blocks membership; it simply never counts.
- * `cold-boot-ceremony.ts` mints the DOTTED form at genesis (confirmed below, M5), so no fresh write this
- * house makes ever lands undotted again — only truly ancient, pre-M5 data can still carry one, and the
- * operator's evergreen ruling gives that data a fresh start by hand (a fresh, dotted re-follow), never a
- * compatibility read.
+ * ONLY THE DOTTED SHAPE IS A MEMBERSHIP KEY (gp25-SW2). A field `mbr+:<nym>` / `mbr-:<nym>` with no dot (any
+ * value) is not a dot at all, not even a reserved placeholder: `parseDotKey` reads it as nothing, so it
+ * neither grants nor blocks membership and the fold says nothing about it. Every writer of this house mints
+ * the DOTTED form, `cold-boot-ceremony.ts` at genesis included (confirmed below, M5).
  *
  * Because every dot is its own key, a concurrent follow and unfollow of DIFFERENT nyms — or an add and a
  * remove of the SAME nym from different replicas — touch disjoint field keys, so Automerge's field-merge
@@ -47,7 +42,7 @@
  * writes ONLY the circles doc; NO crossroads plane / board / announce shore is reachable here, so the graph never federates
  * by SHAPE. The ONE federated surface stays the glamour a human DELIBERATELY publishes — a separate act.
  *
- * The recognition layer (the handle-book: others' nyms + private petnames) stays LOCAL for now — a follow of
+ * The recognition layer (the handle-book: others' nyms + private petnames) stays LOCAL — a follow of
  * an unknown nym fails-closed CLIENT-side (composeFollow) BEFORE the membership write reaches this verb. The
  * handle-book + petname co-move onto the circles doc is the operator-named fork (see the handback finding).
  *
@@ -82,8 +77,8 @@ export interface CircleVerbOptions {
   readonly replica: string;
 }
 
-/** The per-nym unfollow stamp: `mbr-:<nym>#<dot>` holds the remove DOT (the undotted `mbr-:<nym>` shape is
- *  retired — see the EVERGREEN note above `parseDotKey`). */
+/** The per-nym unfollow stamp: `mbr-:<nym>#<dot>` holds the remove DOT (only the dotted shape is a key —
+ *  see `parseDotKey`). */
 const MEMBER_RM_PREFIX = "mbr-:";
 
 /** Separates a dotted field key's nym from its dot: `mbr+:<nym>#<replica>.<n>`. */
@@ -96,8 +91,8 @@ function strArg(args: Record<string, unknown>, key: string): string {
 /** The circle tiddler's mutable field bag (title + arbitrary fields, incl. the per-nym stamps). */
 type CircleFields = Record<string, unknown>;
 
-/** One parsed add- or remove-dot for a nym (DOTTED stamps only — `parseDotKey` never mints an entry for a
- *  legacy, undotted key) and the set of opposite-kind dots it OBSERVED at write time. */
+/** One parsed add- or remove-dot for a nym (DOTTED stamps only — `parseDotKey` never mints an entry for an
+ *  undotted field) and the set of opposite-kind dots it OBSERVED at write time. */
 interface DotEntry {
   readonly dot:      string;
   readonly observed: ReadonlySet<string>;
@@ -110,28 +105,14 @@ function parseObservedSet(value: unknown): ReadonlySet<string> {
   return new Set(value.split(",").filter((s) => s.length > 0));
 }
 
-/** Keys already logged by `parseDotKey` this process — one log line per retired, undotted key, no matter
- *  how many folds observe it. Module-level by design: the noise this guards against is a REPEATED fold over
- *  the same stale field, not a one-shot read. */
-const loggedRetiredKeys = new Set<string>();
-
 /** Split a field key on its prefix, returning the nym and its dot — ONLY the DOTTED shape
- *  (`<prefix><nym>#<replica>.<n>`) parses. EVERGREEN (gp25-SW2): a legacy, undotted key (`<prefix><nym>`,
- *  no `#dot` — the shape every pre-M5 writer minted) is RETIRED; it is ignored and logged by name ONCE PER
- *  PROCESS (via `loggedRetiredKeys`), never parsed as a dot at all (not even a reserved placeholder). It
- *  therefore neither grants nor blocks membership — a stray pre-M5 key simply does not count, until a fresh,
- *  dotted write supersedes it. */
+ *  (`<prefix><nym>#<replica>.<n>`) parses. A field with no `#dot` reads as nothing (gp25-SW2), never as a
+ *  dot, so it neither grants nor blocks membership. */
 function parseDotKey(key: string, prefix: string): { nym: string; dot: string } | null {
   if (!key.startsWith(prefix)) return null;
   const rest = key.slice(prefix.length);
   const i = rest.indexOf(DOT_SEP);
-  if (i === -1) {
-    if (!loggedRetiredKeys.has(key)) {
-      loggedRetiredKeys.add(key);
-      console.log(`[circle-verbs] ignoring retired, undotted membership key "${key}" — evergreen sweep (gp25-SW2): legacy stamps no longer parse`);
-    }
-    return null;
-  }
+  if (i === -1) return null;
   return { nym: rest.slice(0, i), dot: rest.slice(i + DOT_SEP.length) };
 }
 
@@ -261,7 +242,7 @@ export function makeCircleAddReactor(opts: CircleVerbOptions): VerbReactor {
     const added = !prev.includes(nym);
     const dot = nextDotForReplica(prevFields, replica);
     // This add's observed-set: every remove-dot presently on THIS nym (only the dotted shape ever parses — a
-    // retired, undotted key is ignored, never an entry). A later fold that
+    // field with no dot is never an entry). A later fold that
     // reads this add's dot will treat it as dominant only if that set still covers every remove the nym
     // carries then — a remove this write never saw (because it lands concurrently, or strictly after) is
     // NOT in this set, so it is never silently absorbed.
@@ -308,7 +289,7 @@ export function makeCircleRemoveReactor(opts: CircleVerbOptions): VerbReactor {
     // absent — so the tombstone outranks a concurrent add a fleet-mate made off-device that this replica
     // has not yet merged. An absent circle stays uncreated (nothing to unfollow). Only this one key is
     // touched; the dot's observed-set names every add-dot presently on this nym (only the dotted shape ever
-    // parses — a retired, undotted key is ignored, never an entry).
+    // parses — a field with no dot is never an entry).
     let members = prev.filter((m) => m !== nym);
     if (record) {
       const dot = nextDotForReplica(prevFields, replica);

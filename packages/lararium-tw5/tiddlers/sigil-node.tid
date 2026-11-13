@@ -1,0 +1,15 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-node
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: frame
+lar-pono-uri: lar:///ha.ka.ba/lares/api/noosphere-boot#/worker-swarm
+lar-pattern: <<~\s*node\s+action=`([^`]*)`\s*>>
+lar-example: <<~ node action=`refreshes the libation dish, the shrine incense burns`>>
+type: text/vnd.tiddlywiki
+
+<!-- node — the node's own act, a verb phrase. The worker libation opens a tasked spirit's brief with
+     one: `<<~ node action=`refreshes the libation dish, the shrine incense burns`>> {MaskName} (Tasked
+     Spirit) …`. The action rides as ONE ticked value and reads as the verb the node performs. -->
+
+\procedure ~node(action:"")
+<span class="lar-node"><$text text=<<action>>/></span>
+\end

@@ -16,6 +16,9 @@
  *
  * Scratch roots, synthetic names and keys. Canon: lar:///ha.ka.ba/lararium/mesh/custody
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { cpSync, existsSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -25,15 +28,16 @@ import {
   MEMORY_CUT_SHADOW_READ, bundleMemoryKeypair, hex, hexToBytes, isVerbRefusal, mintBundleKey, openFaceBundleBody, openMemorySection, readFaceBundleBody,
 } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/commands/init.js";
-import { custodyVeilKeys, seatedCustody, unseatCustody } from "../src/custody-seat.js";
+import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
+import { loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
 import { IslandVerbRefused } from "../src/island-verb-ask.js";
-import { listPersonaRosterLines, loadVesselSigningSeed, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
+import { listPersonaRosterLines, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { readVerifiedCasBlobFromFs, casDirForStorage } from "../src/node-cas.js";
 import { ownedStore } from "../src/owned-store.js";
-import { readLocalPersonaKelChain } from "../src/persona-admit-flow.js";
+import { readLocalPersonaKelChain } from "../src/local-persona-kel.js";
 import { larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
@@ -128,8 +132,8 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   const rootKey = (await listPersonaRosterLines())[0]!.verifyingKey;
   const anchorsA = (await loadIdentityAnchors(0))!;
   const oldSeats = [
-    await identityOf(await loadVesselSigningSeed()),
-    await identityOf(hexToBytes((await custodyVeilKeys(anchorsA.veilTag!)).signingKey)),
+    await loadVesselVerifyingKey(),
+    await identityOf((await loadFaceAtomOfGroup(anchorsA.personaGroupId))!),
   ];
   const vesselKeyA = await loadVesselVerifyingKey();
   const bundleKey = mintBundleKey();
@@ -159,18 +163,18 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   const pair = bundleMemoryKeypair(bundleKey);
   const entries = openMemorySection(Uint8Array.from(Buffer.from(body.memory.section, "base64")), pair.secret)!;
   const carried: Uint8Array[] = [
-    hexToBytes(body.root.signingKey), ...body.faceProofKeys.map((k) => hexToBytes(k.secret)), Uint8Array.from(bundleKey), Uint8Array.from(pair.secret),
+    hexToBytes(body.root.signingKey), ...body.faceProofKeys.map((k) => hexToBytes(k.secret)), hexToBytes(body.addressSecret!), Uint8Array.from(bundleKey), Uint8Array.from(pair.secret),
     ...entries.map((e) => Uint8Array.from(e.key)),
   ];
   expect(entries).toHaveLength(1);
   expect(carried.length).toBeGreaterThanOrEqual(4);
   const stood = await Promise.all(carried.map(identityOf));
   // CONTROL: the hunt finds a seat where one stands (the vessel's own seed stands as an old seat).
-  expect(oldSeats).toContain(await identityOf(await loadVesselSigningSeed()));
+  expect(oldSeats).toContain(await loadVesselVerifyingKey());
   expect(stood.filter((id) => oldSeats.includes(id))).toEqual([]);
-  // And no word of the vessel's own seat rides the body: not its key, its veil tag, its key group or its device edge.
+  // No word of the vessel's own seat rides the body: its place key, atom seed, group or device edge.
   const text = JSON.stringify(body).toLowerCase();
-  for (const word of [vesselKeyA, anchorsA.veilTag!, anchorsA.personaGroupId, anchorsA.meshCabalDocIdHex]) {
+  for (const word of [vesselKeyA, hex((await loadFaceAtomOfGroup(anchorsA.personaGroupId))!), anchorsA.personaGroupId, anchorsA.meshCabalDocIdHex]) {
     expect(text.includes(word.toLowerCase()), `the body names ${word.slice(0, 16)}…`).toBe(false);
   }
 
@@ -217,7 +221,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   expect(await said(restoreFaceBundle({ sealedBody: a.cut.sealedBody, bundleKey, withRepo }))).toBe("face-already-held");
 
   // ── ANOTHER IDENTITY REFUSES ────────────────────────────────────────────────────────────────────────────────
-  // A second face, cut on a vessel of its own, meets the vessel that wears the restored face.
+  // A second face, cut on a vessel of its own, meets the vessel that mounts the restored face.
   await foundVessel("c");
   const otherKey = mintBundleKey();
   const other = await withRepo(async (repo) => {
@@ -226,7 +230,7 @@ test("THE REHEARSAL — found, light, seal, cut, destroy, found fresh, restore, 
   });
   expect(other.face.verifyingKey).not.toBe(rootKey);
   await leave();
-  // Back on vessel B, which wears the restored face.
+  // Back on vessel B, which mounts the restored face.
   process.env["LAR_ROOT"] = roots.find((r) => r.includes("lar-rehearsal-b-"))!;
   const { openTestCustody } = await import("./found-route.js");
   await openTestCustody();

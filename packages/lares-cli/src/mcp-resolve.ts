@@ -23,16 +23,15 @@
  *
  * The guest `~/.mempalace` holds no seat here. An operator raises it deliberately (`lares mempalace
  * setup`) and imports FROM it (`guest-import.ts`); the vessel never binds into it.
- *
- * `reaped` / `absent`: a wire leg removes any mempalace registration it finds beside registering the
- * lares one, so a harness config converges on the one owner whatever state it arrives in.
  */
 
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { homedir } from "node:os";
+import { isAbsolute, join } from "node:path";
 import { resolveLaresMcpSpawn } from "@lararium/mempalace";
-import { memorySensoriumDir } from "@lararium/node";
+import { HouseRootUnnamed, larHouseRoot, memorySensoriumDir } from "@lararium/node";
 
-export type WireAction = "wired" | "present" | "missing-script" | "reaped" | "absent";
+export type WireAction = "wired" | "present" | "missing-script";
 
 /** The resolved MCP server command a harness config records: argv + the env its import needs. */
 export interface LaresMcpCommand {
@@ -41,22 +40,97 @@ export interface LaresMcpCommand {
   readonly env: Record<string, string>;
 }
 
+/** The surface env the operator's `~/.lares` holds when the hearth stands in the surface container. */
+export const SURFACE_ENV = "lares-surface.env";
+/** The surface deployment's compose file, at the clone's root. */
+export const SURFACE_COMPOSE = "docker-compose.surface.yml";
+/** The seat inside the product image: the image's working root (`WORKDIR /app`) plus the repo-relative path. */
+export const IMAGE_SEAT = "/app/packages/lararium-sensorium/scripts/lares_mcp.py";
+
+/** The house root LAR_ROOT names, or null while it names none. A seat binds one house, so an unnamed root
+ *  resolves no seat at all, and {@link seatAbsentCause} says so. */
+function namedRoot(): string | null {
+  try {
+    return larHouseRoot();
+  } catch (err) {
+    if (err instanceof HouseRootUnnamed) return null;
+    throw err;
+  }
+}
+
+/** The surface env (`~/.lares/lares-surface.env`, outside every bind of the house) when the hearth stands in the
+ *  surface container, else null. The ONE signal the resolver and the catalog's refusal both read
+ *  (`tools/lares-container.sh` reads the same file). It names host config, never house state, so it reads the
+ *  operator's home whether or not this shell names a house root. */
+export function hearthSurfaceEnv(): string | null {
+  const file = join(homedir(), ".lares", SURFACE_ENV);
+  return existsSync(file) ? file : null;
+}
+
+/** The house root when it reads RELATIVE, else null. A seat a harness spawns resolves a relative path against
+ *  that harness's own cwd, a project the house never chose, so a relative root names no seat at all. */
+function relativeHearth(): string | null {
+  const root = namedRoot();
+  return root === null || isAbsolute(root) ? null : root;
+}
+
+/** Why no seat resolves, in the form the hearth stands in: the refusal a missing seat reads. */
+export function seatAbsentCause(): string {
+  if (hearthSurfaceEnv() !== null) return `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`;
+  if (namedRoot() === null) return new HouseRootUnnamed().message;
+  const relative = relativeHearth();
+  if (relative !== null) return `LAR_ROOT names a relative hearth (${relative}); name it by an absolute path`;
+  return "lares_mcp.py, python or the sensorium stands absent; `lares mempalace install` and `lares sense setup` lay them down";
+}
+
+/** The vessel's root inside the surface container, as the compose file's environment names it. */
+function containerRoot(compose: string): string | null {
+  if (!existsSync(compose)) return null;
+  // Every vessel service takes the one `&roots` block, so the first `LAR_ROOT:` names the root they share.
+  const value = /^\s+LAR_ROOT:\s*(\S+)\s*$/m.exec(readFileSync(compose, "utf8"))?.[1];
+  return value === undefined ? null : value.replace(/^(["'])(.*)\1$/, "$2");
+}
+
 /**
- * Resolve the `lares` MCP server invocation, or null when the pieces are not on disk (no python, no
- * script — `lares mempalace install` lays them down).
+ * Resolve the `lares` MCP server invocation that binds THE HEARTH, or null when its pieces stand absent.
  *
- * ABSOLUTE by construction: a harness spawns this with no venv active and no cwd guarantee, so the
- * interpreter, the script and the palace all resolve to full paths, and PYTHONPATH carries the
- * mempalace submodule so `import mempalace` resolves from anywhere (the sensorium consumes it as a
- * LIBRARY — that dependency stays, it is only the guest STORE that was demoted).
+ * THE ENTRY NAMES THE HEARTH'S ROOT. The seat routes every verb over the daemon socket, and `lares_uds.py`
+ * derives that socket from `LAR_ROOT`. A harness spawns the seat with its own environment, which names no
+ * root, so an entry without one binds no house at all. The house root reads `larHouseRoot()` (`LAR_ROOT`
+ * alone; unnamed resolves no seat), and the entry carries it in BOTH forms:
+ *
+ *   container  the operator's `~/.lares` holds the surface env (`lares-surface.env`), so the hearth stands in the
+ *              surface container. The entry execs the image's seat there through the clone's compose file
+ *              and forwards `LAR_ROOT` by name (`exec -e LAR_ROOT`), its value the container's own root as
+ *              the compose file names it. The image carries its own interpreter and pinned `mcp`.
+ *   native     the entry spawns the clone's `lares_mcp.py` on THE venv (`~/.venv`, or `LARES_PYTHON`),
+ *              with `LAR_ROOT` and the mempalace import root in its env; null while no sensorium stands
+ *              under the hearth (`lares sense setup` stands it) or no interpreter holds mempalace.
+ *
+ * `clone` names the MAIN clone (`mainCloneOf`), never the worktree a command runs from, so a lane's removal
+ * strands no seat. Every path runs absolute: a harness spawns this with no venv active and no cwd guarantee.
  */
-export function resolveLaresMcp(): LaresMcpCommand | null {
-  const { python, script, submoduleRoot, scriptPresent } = resolveLaresMcpSpawn();
+export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
+  const surfaceEnv = hearthSurfaceEnv();
+  if (surfaceEnv !== null) {
+    const compose = join(clone, SURFACE_COMPOSE);
+    const root = containerRoot(compose);
+    if (root === null) return null;
+    return {
+      command: "docker",
+      args: ["compose", "--env-file", surfaceEnv, "-f", compose, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", IMAGE_SEAT],
+      env: { LAR_ROOT: root },
+    };
+  }
+  // NATIVE: the seat binds the house root this shell names, absolute.
+  const hearth = namedRoot();
+  if (hearth === null || relativeHearth() !== null) return null;
+  const { python, script, submoduleRoot, scriptPresent } = resolveLaresMcpSpawn(clone);
   if (python === null || !scriptPresent) return null;
   if (!existsSync(memorySensoriumDir())) return null; // no sensorium stood — `lares sense setup` stands it
   return {
     command: python,
     args: [script],   // ROUTED: no --palace. The surface opens no store; it speaks to the daemon.
-    env: { PYTHONPATH: submoduleRoot },
+    env: { PYTHONPATH: submoduleRoot, LAR_ROOT: hearth },
   };
 }

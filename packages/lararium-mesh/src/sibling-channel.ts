@@ -83,9 +83,7 @@ import { NetworkAdapter, cbor, type Message, type PeerId, type PeerMetadata, typ
 import { hmac } from "@noble/hashes/hmac.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJsonBytes, hex } from "./crypto.js";
-import { MEMBERSHIP_RELAY_DOMAIN, SIBLING_CHANNEL_INFO, SIBLING_PEER_ID_INFO } from "./domains.js";
-import { runPeerHandshake, isLarSessionMsg, mkLarSessionMsg } from "./auth-wire.js";
-import { knockedUrl, pinnedRelayAddress } from "./gate-knock.js";
+import { SIBLING_CHANNEL_INFO, SIBLING_PEER_ID_INFO } from "./domains.js";
 import {
   startLeafPeerProof, answerLeafPeerProof, finishLeafPeerProof, acceptLeafPeerProof, isLeafSessionFrame,
   type LeafPeerSelf, type LeafPeerState, type LeafPeerFrame, type LeafPeerSession, type LeafSessionFrame,
@@ -99,8 +97,8 @@ import {
 import {
   depositPersonaKelChain, httpPersonaKelDropHerm, pullPersonaKelSuccessors, type PersonaKelDropHerm, type PersonaKelPull,
 } from "./persona-kel-drop.js";
+import { shoreInbound } from "./prototype-key-shore.js";
 
-const KEY_RE = /^[0-9a-f]{64}$/;
 
 /** The session kind a leaf joins its channel under. Body: `{ channels }` — a later join REPLACES the set. */
 export const SIBLING_JOIN_KIND = "sibling/join";
@@ -195,72 +193,23 @@ export function siblingPeerIdOf(deviceKey: string): PeerId {
 }
 
 /**
- * Dial a herm's relay as a leaf: open the knock the pinned gate key derives, prove this leaf's device key through
- * the one handshake (`runPeerHandshake` against the relay's audience, the verdict read only under the pin).
- * Resolves the transport, or rejects with the reason the handshake gave — a herm that meets a leaf with silence
- * rejects "no answer". The transport's `join` keys each channel tag with the pinned gate key.
- *
- * @param address the herm's pinned relay address, `ws://host:port#<gate key hex>`.
+ * THE SIBLING DIAL SHIPS SHUT BY NAME (the shut-routes house ruling, stable-founding-road #/rulings): walker arms, the
+ * sibling dial and the herm membership relay ship SHUT by name, and a closed route grants no silent authority. A
+ * sibling frame rides the herm's membership relay alone, so no sibling transport opens until a proven gate-native
+ * caller flips the route. The channel says so as `pins` on every dial.
  */
-export function dialSiblingHerm(opts: {
+export const SIBLING_ROUTE_SHUT = "sibling-route-shut: the sibling dial ships shut by name (the shut-routes house ruling, stable-founding-road #/rulings); no sibling channel opens until a gate-native caller flips it";
+
+/** The refusal a channel names when the face reading it stands under names no lease epoch. */
+export const SIBLING_LEASE_UNREAD = "lease-unread: the face reading names no lease epoch, so no sibling edge licenses against it";
+
+/** Dial a herm's relay as a leaf: SHUT. It opens no socket and rejects with `SIBLING_ROUTE_SHUT`. */
+export function dialSiblingHerm(_opts: {
   readonly address: string;
   readonly deviceKey: string;
   readonly sign: (bytes: Uint8Array) => Promise<string> | string;
 }): Promise<SiblingTransport> {
-  return new Promise((resolve, reject) => {
-    let pinned: { url: string; gatePubKey: string };
-    try { pinned = pinnedRelayAddress(opts.address); } catch (err) { reject(err); return; }
-    const ws = new WebSocket(knockedUrl(pinned.url, pinned.gatePubKey));
-    const frameListeners = new Set<(from: string, frame: unknown) => void>();
-    const closeListeners = new Set<() => void>();
-    const pending: unknown[] = [];
-    const waiters: Array<(v: unknown) => void> = [];
-    let verified = false;
-    let settled = false;
-    const settleReject = (err: Error): void => { if (!settled) { settled = true; reject(err); } };
-    ws.addEventListener("error", () => settleReject(new Error("the herm's socket faulted before a verdict")));
-    ws.addEventListener("close", () => {
-      while (waiters.length) waiters.shift()!(undefined);
-      settleReject(new Error("the herm's socket closed before a verdict"));
-      if (verified) for (const l of closeListeners) { try { l(); } catch { /* one listener never silences another */ } }
-    });
-    ws.addEventListener("message", (event: MessageEvent) => {
-      if (typeof event.data !== "string") return;
-      let msg: unknown;
-      try { msg = JSON.parse(event.data); } catch { return; }
-      if (!verified) { const w = waiters.shift(); if (w) w(msg); else pending.push(msg); return; }
-      if (!isLarSessionMsg(msg) || msg.kind !== SIBLING_FRAME_KIND) return;
-      const body = msg.body as { from?: unknown; frame?: unknown } | null;
-      if (!body || typeof body.from !== "string" || !KEY_RE.test(body.from)) return;
-      for (const l of frameListeners) { try { l(body.from, body.frame); } catch { /* isolated */ } }
-    });
-    const sendSession = (kind: string, body: unknown): void => {
-      if (ws.readyState !== WebSocket.OPEN) return;
-      try { ws.send(JSON.stringify(mkLarSessionMsg(kind, body))); } catch { /* closed */ }
-    };
-    ws.addEventListener("open", () => {
-      void (async () => {
-        const deviceKey = opts.deviceKey.toLowerCase();
-        const verdict = await runPeerHandshake({
-          recv: () => pending.length ? Promise.resolve(pending.shift()) : new Promise((r) => waiters.push(r)),
-          send: (m) => { try { ws.send(JSON.stringify(m)); } catch { /* closed */ } },
-          contactCard: deviceKey, peerPubKey: deviceKey, gatePubKey: pinned.gatePubKey, aud: MEMBERSHIP_RELAY_DOMAIN,
-          sign: opts.sign,
-        });
-        if (settled) return;
-        if (!verdict.ok) { settled = true; try { ws.close(); } catch { /* closed */ } reject(new Error(verdict.reason)); return; }
-        verified = true;
-        settled = true;
-        resolve({
-          join: (secrets) => sendSession(SIBLING_JOIN_KIND, { channels: secrets.map((s) => siblingChannelTag(s, pinned.gatePubKey)) }),
-          send: (to, frame) => sendSession(SIBLING_FRAME_KIND, { to, frame }),
-          onFrame: (l) => { frameListeners.add(l); return () => { frameListeners.delete(l); }; },
-          onClose: (l) => { closeListeners.add(l); return () => { closeListeners.delete(l); }; },
-          close: () => { try { ws.close(); } catch { /* closed */ } },
-        });
-      })();
-    });
-  });
+  return Promise.reject(new Error(SIBLING_ROUTE_SHUT));
 }
 
 /** One sibling, as this leaf holds it. */
@@ -276,14 +225,21 @@ interface SiblingSlot {
 }
 
 /** What the adapter reads a leaf off a KEL: its device key and signer, every enrolment it holds under that KEL, and
- *  the lease epoch it holds. The adapter stands it under the enrolment the KEL's head op-key sealed. */
+ *  the reader of the lease epoch it holds. The adapter stands it under the enrolment the KEL's head op-key sealed. */
 export interface SiblingLeaf {
   readonly deviceKey: string;
   readonly sign: (bytes: Uint8Array) => Promise<string> | string;
   readonly kel: readonly PersonaKelEvent[];
   readonly standing: LeafStanding;
-  readonly expectedEpoch?: number;
+  /** THE LEASE READER, consulted at every licensing act (a relicense, each proof), never once at compose: a roll that
+   *  lands after the leaf stood refuses an edge bound below it at the next act. A null reading licenses no edge. Absent:
+   *  the leaf holds no lease, and an edge's signature and pin decide alone. */
+  readonly expectedEpoch?: () => number | null;
 }
+
+/** A null lease reading at a licensing act: every bound epoch reads below it, so no edge licenses against a reading
+ *  nobody made. */
+const LEASE_UNREAD_EPOCH = Number.POSITIVE_INFINITY;
 
 /** A leaf's pinned herms' successor drops, as the adapter reaches them. */
 export interface SiblingKelDrops {
@@ -425,6 +381,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
   }
 
   isReady(): boolean { return this.#ready; }
+  isStopped(): boolean { return this.#stopped; }
 
   whenReady(): Promise<void> {
     return this.#ready ? Promise.resolve() : new Promise((r) => this.#readyResolvers.push(r));
@@ -549,8 +506,11 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     const self: LeafPeerSelf = {
       deviceKey: leaf.deviceKey.toLowerCase(), sign: leaf.sign, edge: under.edge, kel,
       secret: { opKeyDid: under.opKeyDid, secret: under.secret },
-      ...(leaf.expectedEpoch !== undefined ? { expectedEpoch: leaf.expectedEpoch } : {}),
     };
+    // The proof reads the lease AT THE ACT: a getter over the leaf's reader, so a roll between two relicenses reaches the
+    // next proof (never a spread, which would read it once here).
+    const lease = leaf.expectedEpoch;
+    if (lease !== undefined) Object.defineProperty(self, "expectedEpoch", { enumerable: true, get: () => lease() ?? LEASE_UNREAD_EPOCH });
     this.#self = self;
     this.#revoked = false;
     if (this.#selfCause !== "fork") this.#selfCause = null;
@@ -666,7 +626,9 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
       } else {
         await this.#catchUp();
       }
+      if (this.#stopped) { this.#markReady(); return; }
       await this.#deposit(this.#kel);
+      if (this.#stopped) { this.#markReady(); return; }
       await Promise.all(due.map((i) => this.#stand(i)));
     } finally {
       for (const i of due) this.#standing.delete(i);
@@ -707,6 +669,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
 
   #scheduleRedial(i: number): void {
     if (this.#stopped || this.#retries.has(i)) return;
+    // PACING: redials recur because a returning herm gives no event; readiness follows its response.
     this.#retries.set(i, setTimeout(() => { this.#retries.delete(i); void this.#dial([i]); }, this.#opts.retryInterval ?? 5000));
   }
 
@@ -946,6 +909,25 @@ function chainKey(kel: readonly PersonaKelEvent[]): string {
 }
 
 /**
+ * THE LEAF THE ONE COMPOSITION READS at every licensing act: this device's key and signer, its standing under the KEL
+ * handed, and the lease READER (never a number captured at compose), so a roll that lands after the channel stood
+ * reaches the next relicense and the next proof alike.
+ */
+export function siblingLeafOf(opts: {
+  readonly deviceKey: string;
+  readonly sign: (bytes: Uint8Array) => Promise<string> | string;
+  readonly enrolment: PersonaGroupEnrolment;
+  readonly open: GroupSecretOpener;
+  readonly expectedEpoch: () => number | null;
+}): (kel: readonly PersonaKelEvent[]) => Promise<SiblingLeaf> {
+  const deviceKey = opts.deviceKey.toLowerCase();
+  return async (kel) => ({
+    deviceKey, sign: opts.sign, kel, expectedEpoch: opts.expectedEpoch,
+    standing: await leafStandingUnder({ kel, deviceKey, enrolment: opts.enrolment, open: opts.open }),
+  });
+}
+
+/**
  * STAND THE SIBLING CHANNEL on a vessel — the ONE composition both vessel shores call (isomorphism by
  * composition: only the seed custody differs, and it rides in as `sign` and `open`).
  *
@@ -964,7 +946,7 @@ function chainKey(kel: readonly PersonaKelEvent[]): string {
  *
  * A peer this channel yields is a device of THIS vessel's own PersonaGroup, proven over the session. It holds
  * STANDING and nothing more: the vessel's share policy hands it to the PersonaGroup ring, which admits it to its
- * face's own planes and the public boards — never the vessel's @daemon, never another face's planes.
+ * face's own planes and the public boards — never the vessel's daemon-plane, never another face's planes.
  */
 export async function standSiblingChannel(opts: {
   readonly repo: Repo;
@@ -981,8 +963,11 @@ export async function standSiblingChannel(opts: {
   readonly enrolment: PersonaGroupEnrolment;
   /** Opens a secret sealed to this device — its own seed's custody, carried as a function. */
   readonly open: GroupSecretOpener;
-  /** The lease epoch this vessel holds for the PersonaGroup; a sibling's edge bound below it reads as lapsed. */
-  readonly expectedEpoch: number;
+  /** THE LEASE READER: the epoch this vessel's face reading holds for the PersonaGroup, read at every licensing act; a
+   *  sibling's edge bound below it reads as lapsed. Null where the face reading names no epoch: at compose the channel
+   *  then refuses `lease-unread`, and at a later act no edge licenses against a reading nobody made (an epoch of 0 would
+   *  read every lapsed edge current). */
+  readonly expectedEpoch: () => number | null;
   /** How long a drop request waits on one herm before the leaf reads it as unanswered. */
   readonly dropDeadlineMs?: number;
   /** Delay before re-dialing a dropped herm. Paces a socket; decides nothing. */
@@ -1008,12 +993,15 @@ export async function standSiblingChannel(opts: {
   } catch (err) {
     refusal = `a pinned herm address reads no gate key, so the channel pins nothing it can dial: ${(err as Error).message}`;
   }
+  // A face reading that names no lease epoch licenses no edge: the channel refuses by name before any pin reads.
+  if (opts.expectedEpoch() === null) {
+    refusal = `${SIBLING_LEASE_UNREAD}${refusal === undefined ? "" : `; ${refusal}`}`;
+  }
+  // The route is shut: the adapter dials nothing, and says why on every dial and in `status()`.
+  refusal = `${SIBLING_ROUTE_SHUT}${refusal === undefined ? "" : ` (${refusal})`}`;
   const adapter = new SiblingNetworkAdapter({
     kel: eventsNow(),
-    leaf: async (kel) => ({
-      deviceKey, sign: opts.sign, kel, expectedEpoch: opts.expectedEpoch,
-      standing: await leafStandingUnder({ kel, deviceKey, enrolment: opts.enrolment, open: opts.open }),
-    }),
+    leaf: siblingLeafOf({ deviceKey, sign: opts.sign, enrolment: opts.enrolment, open: opts.open, expectedEpoch: opts.expectedEpoch }),
     transports: refusal === undefined ? opts.herms.map((address) => () => dialSiblingHerm({ address, deviceKey, sign: opts.sign })) : [],
     ...(refusal === undefined
       ? { drops: siblingKelDropsOf(drops, (events) => { board.change((draft) => { for (const e of events) writePersonaKelEvent(draft, e); }); }) }
@@ -1023,7 +1011,7 @@ export async function standSiblingChannel(opts: {
     ...(opts.onRefusal ? { onRefusal: opts.onRefusal } : {}),
   });
   if (refusal === undefined) board.on("change", () => { void adapter.relicense(eventsNow()); });
-  opts.repo.networkSubsystem.addNetworkAdapter(adapter);
+  opts.repo.networkSubsystem.addNetworkAdapter(shoreInbound(adapter));
   adapter.bindRepo(opts.repo);
   return adapter;
 }

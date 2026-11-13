@@ -10,18 +10,12 @@ import { describe, expect, test } from "vitest";
 import * as ed25519 from "@noble/ed25519";
 import {
   buildDeviceDelegation,
-  buildAuthResponse,
   DEFAULT_JOIN_POLICY,
-  mintEnrollmentOffer,
-  sealPersonaGrant,
-  openPersonaGrant,
   signCabalInvite,
   signHandleCard,
-  verifyAuthProof,
   verifyDeviceDelegation,
   verifyHandleCard,
   mintHandleInception,
-  ed25519SignerFromSeed,
   type AdmissionDials,
   type DeviceDelegationTiddler,
 } from "@lararium/mesh";
@@ -37,7 +31,6 @@ type AuditRow = {
 const auditRows: AuditRow[] = [];
 const opSeed = new Uint8Array(32).fill(31);
 const deviceSeed = new Uint8Array(32).fill(32);
-const peerSeed = new Uint8Array(32).fill(33);
 const realm = "a".repeat(64);
 const joiner = "b".repeat(64);
 const dials: AdmissionDials = { epsilon: 0.15, beta: 0.9, rho: 1, supply: 1, alpha: 0.5 };
@@ -48,7 +41,7 @@ const signWith = (seed: Uint8Array) => (bytes: Uint8Array): Promise<string> => e
 async function delegation(boundEpoch = 5): Promise<DeviceDelegationTiddler> {
   return buildDeviceDelegation({
     personaRootSeed: opSeed,
-    deviceVerifyingKey: await pubOf(deviceSeed),
+    atomSeed: deviceSeed,
     hearthTrueName: "",
     boundEpoch,
   });
@@ -76,61 +69,6 @@ describe("P1 authority relations — characterization witness", () => {
     expect(withEpoch.ok).toBe(true);
     expect(staleWithEpoch).toMatchObject({ ok: false });
     expect(omittedEpoch).toMatchObject({ ok: true });
-  });
-
-  test("records daemon PoP: the gate's single-use nonce is its only freshness", async () => {
-    const peerPubKey = await pubOf(peerSeed);
-    const challenge = {
-      nonce: "ab12cd",
-      gatePubKey: "00".repeat(32),
-      peerPubKey,
-      aud: "lar:///ha.ka.ba/bags/daemon",
-    };
-    const proof = await buildAuthResponse({
-      ...challenge,
-      contactCard: "audit-card",
-      leafNonce: "ef".repeat(32),
-      sign: signWith(peerSeed),
-    });
-    const fresh  = await verifyAuthProof({ ...challenge, sig: proof.sig });
-    const replay = await verifyAuthProof({ ...challenge, nonce: "cd34ef", sig: proof.sig });
-    auditRows.push({
-      relation: "daemon-proof-of-possession",
-      inputs: { nonce: challenge.nonce, audience: challenge.aud },
-      outcome: {
-        fresh:  fresh.ok,
-        replay: replay.ok,
-        seam: "no clock on the wire; a proof binds the gate's nonce alone",
-      },
-    });
-    expect(fresh).toMatchObject({ ok: true });
-    expect(replay).toMatchObject({ ok: false });
-  });
-
-  test("records persona admission as a local KEL-head relation bound by nonce, never a clock", async () => {
-    const persona = new Uint8Array(32).fill(34);
-    const device = await pubOf(deviceSeed);
-    const personaKey = await pubOf(persona);
-    const prefix = "persona-audit-prefix";
-    const { offer, secret } = mintEnrollmentOffer({ targetVesselId: device });
-    const { sealed } = await sealPersonaGrant({
-      offer,
-      personaRef: { prefix, verifyingKey: personaKey },
-      personaSigner: ed25519SignerFromSeed(persona),
-    });
-    const admitted = await openPersonaGrant({
-      sealed,
-      secret,
-      resolveHeadOpKey: (candidate) => candidate === prefix ? personaKey : null,
-    });
-    const unknownHead = await openPersonaGrant({ sealed, secret, resolveHeadOpKey: () => null });
-    auditRows.push({
-      relation: "persona-admission",
-      inputs: { prefix, targetVessel: device, headResolver: "local KEL" },
-      outcome: { admitted: admitted.ok, unknownHead: unknownHead.reason, authority: "prefix head + nonce (consume-once); no clock on the wire" },
-    });
-    expect(admitted.ok).toBe(true);
-    expect(unknownHead).toMatchObject({ ok: false });
   });
 
   test("records handle recognition from a self-certifying causal act", async () => {
@@ -186,11 +124,9 @@ describe("P1 authority relations — characterization witness", () => {
   });
 
   test("keeps the audit rows machine-readable and relation-scoped", () => {
-    expect(auditRows).toHaveLength(5);
+    expect(auditRows).toHaveLength(3);
     expect(auditRows.map((row) => row.relation)).toEqual([
       "device-face-delegation",
-      "daemon-proof-of-possession",
-      "persona-admission",
       "handle-recognition",
       "cabal-vouch-admission",
     ]);

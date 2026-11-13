@@ -1,0 +1,120 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-ruling`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-10 (file date) — source `.lares-scratch/controller/placement-plans/homes/PLACE-RULING.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-ruling"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/place-ruling"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! PLACE-RULING.md — plan, 2026-11-10
+
+Verbatim scratch record `.lares-scratch/controller/placement-plans/homes/PLACE-RULING.md` (plan, file date 2026-11-10); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/placement-plans/homes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/placement-ruling-persona-act-custody`>>
+
+! Placement ruling — persona-act custody
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/fork`>>
+
+!! Fork
+
+Persona acts form a group-owned, peer-synchronized log. A vessel-private document cannot serve as its sole source without changing replication, founding, and admission semantics. The current persona plane already holds the canonical log, while admission duplicated each act into the local daemon document.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lean`>>
+
+!! Lean
+
+Treat the PersonaGroup plane as the secret home for persona acts: it remains a separately held group document, never a disk mirror, and must leave every page recipe. Keep one authoritative copy there; retire the admission copy in the daemon document. Keep vessel-private group-secret seals, dyads, and Keyhive cap bytes in the distinct vessel secret document. This preserves peer replay while keeping secrets off plaintext disk. Any recipe or mirror currently exposing the persona plane must be removed before this ruling fully takes effect.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/secret-document-custody`>>
+
+!! Secret document custody
+
+`ownedStore()` creates the secret document in raw Automerge storage, and the vessel's sealed-bag map does not yet classify `SECRET_HOME_ID`. Writing seals, dyads, or cap bytes through that handle would put their plaintext fields on disk. The safe lean is to require the secret document to enter the existing `SealedDocumentStore` map and save session before its first secret write. Keep the Keyhive event store fail-closed while the bootstrap, founding, admission, replay, peer-sync and browser paths gain that grant. Do not substitute plaintext persistence to complete the wiring.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/working-layer-mirror-while-control-writers-remai`>>
+
+!! Working-layer mirror while control writers remain
+
+The daemon working layer still receives swarm controls and ward audits. Removing their title filters while keeping `wikis/daemon-<F>` mirrored would write those control records to plaintext. Keep that layer unmirrored until the control-home migration moves every writer and reader; the independent kahua and crossroads mirrors continue to follow their selected bags.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/remaining-consequence`>>
+
+!! Remaining consequence
+
+The shared persona plane currently participates in recipe composition and browser boot. The recipe and browser construction still need to stop mounting it for page reads while Keyhive replay retains direct document access. The sealed-rest enrollment also remains unimplemented; neither boundary counts as satisfied by the current code.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/moolelo-operator-ruling`>>
+
+!! MOʻOLELO — operator ruling (2026-11-09, verbatim)
+"Full feature lands now before founding, no more 'build step 1 now, the rest later'."
+
+The feature must land as one whole placement migration. This ruling does not authorize ending on a partial inventory. The homes and every writer/reader route must land together before founding. The daemon wiki mirror stays lit in the completed tree only after every control writer leaves `wikis/daemon-<F>`.
+
+Consequences for the build:
+* Three non-mirrored homes, three classes: minted (control document), secret (sealed secret document), private-synced (persona plane). The residency witness and the canon name all three.
+* The page/tiddler recipe stops mounting the persona plane; browser boot's proof readers and Keyhive replay keep direct document access (a face must still seat).
+* Founding order: card read-back, custody, secret-document enrollment in the SealedDocumentStore with its save session, THEN the first seal/dyad/cap write. Red tests on that order.
+* `wikis/daemon-<F>` keeps its mirror in the landed tree. The control-home migration (swarm controls, ward audits, outcomes, receipts, mailbox, delegate, face-row, lease-epoch, ledger/*) completes inside this leap; a tree with a control writer still in the working layer does not land.
+
+Current safe hold: the implementation has withheld the daemon working mirror because its control writers still write there. This is an incomplete intermediate state, not a landed interpretation of the operator ruling. Do not found from it; finish the control-home routing, then restore the daemon mirror as part of the same reviewed feature.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-taken-while-building-b-c-f-each-awaits-the`>>
+
+!! Forks taken while building B, C, F (Homes-Wright seat, 2026-11-09) — each awaits the operator's word; the lean stands built
+
+# ''The control document's rest (U1).'' The outcome ledger and the receipt facts rested in the daemon working slot because that slot seals under the lit face. A clear control document would have put their bodies on disk at rest. Lean taken: `CONTROL_HOME_ID` joins the worn face's sealed and registered set beside the daemon wiki's slots (`wornFaceWikiBags`), and the node's sealed map names the control document (`docsOf`). At the floor it rests clear, as the working floor did. Consequence: a vessel that changes its worn face reads chunks sealed under the earlier face only under that face. The cleaner home is item A's vessel-scoped sealed custody: once A lands, the control document should seal there beside the secret document rather than under one face.
+# ''Where the vessel holds the control document's handle.'' Lean taken: the daemon document names it under the control home's own bag coordinate (the pointer shape the daemon document keeps for itself), minted at the first stand (`standControlHome`). Reason: this keeps founding (`commands/init.ts`, item A's ground) untouched and works the same way on node and browser. Alternative: a bootstrap entry beside the daemon url, written at founding.
+# ''The daemon bag's observe render (`observe/daemon/`).'' It rendered the control families to plaintext JSON, which this ruling forbids. Lean taken: nothing mounts it (no mirror list grants it). `daemon-observe.ts` and the `projection.observeDaemon` toggle stay as dead code until the operator rules whether to retire them or re-aim them at the face's daemon canon (which now carries its own two-way mirror).
+# ''When the face's daemon canon mints.'' Lean taken: at the face's first worn and proved stand (`standFaceDaemonCanon`, a row in the face's own catalog), not inside the founding ceremony (item A's ground). At merge, the founding could mint it eagerly; that changes nothing downstream.
+# ''The daemon document in the daemon recipe.'' It still holds vessel state (bindings, the bag-doc ledger, the active-wiki marker, wiki mints, the proof ledger). Lean taken: it rides below every canon as the wiki's own bag, with no canon role and no mirror. A faceless floor keeps the old shape: the daemon document is the canon slot, and no mirror names it.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings-on-the-b-c-f-forks`>>
+
+!! RULINGS on the B/C/F forks (operator 2026-11-09, verbatim: "Approve all five, flow on in OODA-HA")
+# The control document seals under VESSEL-scoped sealed custody beside the secret document (item A), not under one face; the per-face seal stands only as a bridge until A lands (Custody-Wright builds it into A).
+# The daemon document names the control document (minted at first stand), as built.
+# The daemon observe render (`observe/daemon/`, `daemon-observe.ts`, the `projection.observeDaemon` toggle) RETIRES; the face canon two-way mirror serves memory observability; control records stay off disk; a read-only control view (`lares vessel read --control`) follows as a post-walk row.
+# `bags/daemon-<F>` mints at the face first worn and proved stand, as built.
+# The daemon document keeps its vessel state below canon for this leap; moving that state into the control document follows as a post-walk row.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/rulings-wiki-device-scope-control-document-now`>>
+
+!! RULINGS — wiki++ device scope (operator 2026-11-09, answers verbatim: "Working, draft and canon (Recommended)" · "Control document now")
+* The daemon wiki stays on one device: its working, draft and personal slots (`wikis/daemon-<F>`) AND its canon (`bags/daemon-<F>`) bind VESSEL-ONLY even with a seated face. Only `kahua-<F>` crosses the face's devices, by signed lift with human eyes. The general slot law keeps syncing user wikis across the fleet.
+* Each device keeps the pointer to its own `bags/daemon-<F>` in the vessel CONTROL document (under item A's vessel custody), keyed by face relation — never in the face catalog (which every device of the face derives and shares).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Vb7tjwy7f6Ums3RMAuKlXi_GNQbu4O5pRm6ZfM-8Bfc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

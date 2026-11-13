@@ -32,6 +32,7 @@ import {
   META_OPEN_RE,
   META_OPEN_CANON,
   isCanonicalMetaOpen,
+  rootMetaFence,
 } from "@lararium/memetic-frame";
 import { metaFenceAt, metaValueRaw } from "./root-meta.js";
 
@@ -46,7 +47,7 @@ export interface CarrierMarks {
   readonly stx:     boolean;
   readonly etx:     boolean;
   readonly eot:     boolean;
-  readonly check:   "ok" | "mismatch" | "unchecked" | "torn";
+  readonly check:   "ok" | "head-unbound" | "mismatch" | "unchecked" | "torn";
 }
 
 export interface CarrierShape {
@@ -147,7 +148,7 @@ export function readCarrierShape(text: string): CarrierShape {
   // word so no carrier goes invisible over whitespace, and the canon is one space — how every emitter
   // writes it and how 733 of 733 openers in the corpus stand. Without this fault the tolerance would
   // BE the canon: a deviant spelling parses, so nothing would ever say otherwise, and the corpus would
-  // drift one file at a time until the strict readers this collapse retired were needed again.
+  // drift one file at a time until strict readers were needed again.
   const openLine = metaOpenLine(text, spans, bodyFrom);
   if (openLine !== null && !isCanonicalMetaOpen(openLine)) {
     faults.push(`meta fence opens \`${openLine}\` — canon is \`${META_OPEN_CANON}\`, one space and nothing after`);
@@ -157,7 +158,11 @@ export function readCarrierShape(text: string): CarrierShape {
   // but spacing stands between STX and it — a later block belongs to the slot it sits in.
   const firstMeta = metaOpenFrom(text, spans, 0);
   const bodyMeta = metaOpenFrom(text, spans, bodyFrom);
-  const rootMeta = bodyMeta !== null && (!frame.stx || text.slice(frame.stx.end, bodyMeta.index).trim() === "");
+  // THE FENCE OPENS THE BODY, by the frame's one rule where a text frame stands (`rootMetaFence`), the rule
+  // the deserializer splits by and the head binds by.
+  const rootMeta = frame.stx && frame.etx
+    ? rootMetaFence(text, spans) !== null
+    : bodyMeta !== null && (!frame.stx || text.slice(frame.stx.end, bodyMeta.index).trim() === "");
   const metaAboveStx = frame.stx !== null && firstMeta !== null && firstMeta.index < frame.stx.index;
   // THE ROOT META AGREES WITH THE HEAD. The head is the address; a root `title` or `uri-path` naming
   // another one states two identities, and the carrier check refuses the pair until a hand settles it.
@@ -184,7 +189,7 @@ export function readCarrierShape(text: string): CarrierShape {
   }
   // The slot after ETX carries the check alone (memetic-frame `check.ts`); payload there reaches no reader.
   if (frame.etx && frame.eot && classifyPostamble(text.slice(frame.etx.end, frame.eot.index)).kind === "foreign") {
-    faults.push("content stands between ETX and EOT — the text ends at ETX; that slot carries the block check alone");
+    faults.push("content stands between ETX and EOT — the text ends at ETX, whose `bcc` slot carries the block check; nothing stands after it");
   }
 
   if (!marks.meta) {
@@ -200,7 +205,9 @@ export function readCarrierShape(text: string): CarrierShape {
   if (marks.check === "mismatch") faults.push("block check does not match the body it follows");
   // A torn frame reads as a truncated transmission, never as an unchecked one — the conflation would
   // let a file cut ahead of its closer pass as lawful absence-of-check.
-  if (marks.check === "torn") faults.push("the frame opens and never closes — STX stands without ETX; torn reads as truncated, never unchecked");
+  // Keyed on the missing close ITSELF: a torn check also covers the frame faults named just below (a
+  // second frame, an ETX after EOT), and those read in the span reader's own words, never as truncation.
+  if (marks.check === "torn" && marks.stx && !marks.etx) faults.push("the frame opens and never closes — STX stands without ETX; torn reads as truncated, never unchecked");
   // ONE TEXT FRAME PER CARRIER, ONE CLOSE PER FRAME. A second STX, a second live ETX, an ETX ahead of
   // the STX: the span reader names each, and the gradient carries the reader's own words rather than
   // re-deriving them — a second count here would be a second reader.

@@ -76,6 +76,7 @@ export class IslandKernel {
     wikiUri:          string,
     coreBlob:         Uint8Array,
     preloadedTiddlers?: readonly Record<string, unknown>[],
+    options?: { onInstance?: (instance: import("./types/tiddlywiki.js").TW5Instance) => void; grantedDigests?: ReadonlySet<string> },
   ): Promise<void> {
     this._wikiUri = wikiUri;
     if (coreBlob.byteLength === 0) {
@@ -84,11 +85,11 @@ export class IslandKernel {
     }
     this._tw5 = new TW5Engine();
     const tiddlers = preloadedTiddlers?.length ? (preloadedTiddlers as Array<Record<string, unknown>>) : undefined;
-    await this._tw5.boot(coreBlob, tiddlers);
+    await this._tw5.boot(coreBlob, tiddlers, undefined, options);
 
     this._liveHandles.add({
       cancel: this._tw5.onVerseEvent({
-        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>) => {
+        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>, origin?: "surface" | "content") => {
           // Structured summon args ride the GP-2-flat island wire as ONE `verb-args` JSON
           // string (the payload admits only scalars); the vessel re-parses it (#48).
           this._post({
@@ -97,6 +98,7 @@ export class IslandKernel {
             listenable,
             payload: {
               uri,
+              origin: origin ?? "content",
               ...(verb    !== undefined && { verb }),
               ...(fromUri !== undefined && { fromUri }),
               ...(args    !== undefined && { [LARES_VERB_ARGS_WIRE_FIELD]: JSON.stringify(args) }),

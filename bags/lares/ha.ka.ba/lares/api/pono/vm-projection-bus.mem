@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/vm-projection-bus">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/vm-projection-bus`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable   = true
-file-path   = "bags/lares/ha.ka.ba/lares/api/pono/vm-projection-bus.mem"
 l-space     = "stable"
-mana        = 18
-manao       = 18
-manaoio     = 17
 namespace   = "&#x2299;"
 role        = "invariant doctrine: VmPool→Projection Messaging Standard; dispatchEvent/addEventListener pattern; TW5Engine.onVerseEvent design"
 status-date = "2026-05-02"
@@ -19,7 +15,7 @@ type        = "text/memetic-wikitext+tiddlywiki"
 uri-path    = "ha.ka.ba/lares/api/pono/vm-projection-bus"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! VM Pool → Projection Messaging Bus
 
@@ -33,7 +29,7 @@ itself onto TW5Engine at runtime. The direction of dependency runs:
 
 <<~/ahu>>
 
-<<~ ahu #/event-contract>>
+<<~ ahu slot=`#/event-contract`>>
 
 !! Event Contract
 
@@ -83,7 +79,7 @@ on `ReactionEngine` directly. The interface is defined in `@lararium/mesh`.
 
 <<~/ahu>>
 
-<<~ ahu #/vm-pool-wiring>>
+<<~ ahu slot=`#/vm-pool-wiring`>>
 
 !! VmPool Wiring
 
@@ -115,40 +111,30 @@ propagate to slot 1 — the wiki event buses are per-VM, not shared.
 
 <<~/ahu>>
 
-<<~ ahu #/migration-from-hook>>
+<<~ ahu slot=`#/per-vm-registration`>>
 
-!! Migration from `_larKukaliHook`
+!! Per-VM Registration
 
-The old pattern:
-
-```typescript
-// ✗ web2 pattern — global singleton, reverse dependency
-TW5Engine._larKukaliHook = (uri, trigger) => {
-  reactionEngine.handleKukali(uri, trigger);
-};
-```
-
-Problems with this pattern:
-# Global mutable state — breaks with multiple VMs in the pool
-# Reverse dependency direction — TW5Engine references ReactionEngine type
-# Not isomorphic — browser and node had different hook installation sites
-# Non-cancellable — no teardown path; leaked on VM disposal
-
-The pattern:
+A reaction engine registers on each VM it serves:
 
 ```typescript
-// ✓ web3 pattern — per-VM registration, correct dependency direction
+// per-VM registration, correct dependency direction
 const teardown = vm.onVerseEvent(reactionEngine);
 // ... later, on pool slot deactivation:
 teardown();
 ```
 
-''MUST:'' `_larKukaliHook` MUST NOT exist in any non-web2 file.
-Any file referencing `_larKukaliHook` outside a `*.web2.*` path FAILS FPI-1.
+Properties of the registration:
+# Per-VM state — each VM in the pool holds its own registration
+# The dependency points from the reaction engine to the VM; `TW5Engine` references no `ReactionEngine` type
+# Isomorphic — browser and node install it through the same call
+# Cancellable — `teardown()` ends it on VM disposal
+
+''MUST:'' a VM's verse events reach the reaction engine through `vm.onVerseEvent(...)`, never through a global mutable hook on `TW5Engine`.
 
 <<~/ahu>>
 
-<<~ ahu #/verse-alignment>>
+<<~ ahu slot=`#/verse-alignment`>>
 
 !! Verse Alignment
 
@@ -167,7 +153,7 @@ The asymmetry is preserved:
 
 <<~/ahu>>
 
-<<~ ahu #/scope-1-networking>>
+<<~ ahu slot=`#/scope-1-networking`>>
 
 !! Scope 1 ~ the mesh projection surface [surgical 2026-07-03]
 
@@ -175,16 +161,16 @@ The projection bus serves as a ''Scope-1'' mesh surface under the two-scopes rul
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/verse-event-lattice">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/local-first">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/verse-event-lattice`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/local-first`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;fNar_xFHgtnqv6wY7kI9eYf0w5h715Z4Z2mZy_nnKwc
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bWTgk_8ON1Kat1vOCF_JrzH04BmxDQYin0zpAWy4S5c`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

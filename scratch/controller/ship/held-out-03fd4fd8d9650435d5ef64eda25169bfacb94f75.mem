@@ -1,0 +1,34 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/held-out-03fd4fd8d9650435d5ef64eda25169bfacb94f75.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP held-out 03fd4fd8d9650435d5ef64eda25169bfacb94f75
+read: six blind Opus custody reads over the lane's deltas (/home/joshu/.lares-scratch/held-out/blind-warden-3.md to -6.md; reads 3 and 6 LAND, reads 4 and 5 LAND-AFTER-CURES, each P2 cured red-first: the fold outliving the lock, the late onLocked retiring a new light; read 3's certificate-scope P3 raised and cured); the controller's diff read of every step and of 03fd4fd8d (W1 event-only, witness only); CI green run 42305609305; held-out green run 42305608867, every driver.
+owed (before the rite): the era check before admission completes; holderPost on a dropped lighting tab; the weld fault route's disposed-response catch; a lock body that never settles; carriage-pull's swallowed refusal names; the fleet-join verify-first DoS note; the weld's other until() clocks (M6).
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GITFpDftrdqZD9ZVK4pp29aZg7z9bbffwxhVZ1P_-BE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

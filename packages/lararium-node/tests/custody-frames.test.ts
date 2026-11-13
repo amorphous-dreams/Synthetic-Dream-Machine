@@ -31,6 +31,11 @@
  *   B5  a cut that refuses answers its own name; a custody fault answers the row it met.
  *   B6  the door logs how the cut ended and never the route, the bundle key or the sealed body.
  *   B7  a door with no cut wired refuses `backup-unavailable`.
+ *
+ * The `face-route` frame: the human route the next new face binds, parked for one founding.
+ *   R1  a passphrase route parks, and the next face founding takes it once; a second founding finds none.   control: nothing parked refuses by name
+ *   R2  a frame missing its shape, carrying a stray key, or carrying a paper pin refuses whole and parks nothing.
+ *   R3  the door logs that a route parked and never the route.
  */
 import { EventEmitter } from "node:events";
 import type { Socket } from "node:net";
@@ -39,6 +44,9 @@ import { custodyFrameHandler, CUSTODY_LINE } from "../src/custody-frames.js";
 import { CustodyRowUnavailable, type CustodyHolder, type HolderProof, type HolderUnlock } from "../src/custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "../src/face-bundle-cut.js";
 import { runSealedAct } from "../src/sealed-acts.js";
+import { mountedFaceOrdinal, setMountedFace } from "../src/node-vessel-identity.js";
+import { listFaceCustodyIds } from "../src/identity-anchors.js";
+import { faceRouteBindDigest, FaceRouteAbsent, FaceRouteRefused, gatherFaceRoute, seatFaceRoute, withFaceRoute } from "../src/face-route.js";
 
 const RIGHT = "frames-test-passphrase-right";
 
@@ -75,6 +83,10 @@ function harness(opts: {
       return { reading: "no-slot-opens", attemptsLeft: 3 - spent };
     },
     lock: async () => { unlocked = false; },
+    unlockFace: async (_face: unknown) => ({ reading: "opens", fcid: "00".repeat(16), ordinal: 0, slot: "face-slot" }),
+    unlockFaces: async () => [],
+    unlockedFaces: () => [],
+    faceStanding: async () => null,
     isUnlocked: () => unlocked,
     attemptsLeft: () => 3 - spent,
     openedSlot: () => (unlocked ? "slot-1" : null),
@@ -188,11 +200,11 @@ describe("the custody door", () => {
     const first = h.send(unlockFrame(RIGHT));                       // holds the chain while it recomposes
     await new Promise((r) => setTimeout(r, 5));                     // its turn began: it no longer waits in line
     const gone = h.send({ op: "lock" }, true);                      // its caller left before its turn
-    const waiting = Array.from({ length: CUSTODY_LINE - 1 }, () => h.send({ op: "custody" }));
-    const over = await h.send({ op: "custody" }).answer;            // one past the line
+    const waiting = Array.from({ length: CUSTODY_LINE - 1 }, () => h.send({ op: "lock", face: 99 }));
+    const over = await h.send({ op: "lock", face: 99 }).answer;            // one past the line
     expect(over).toMatchObject({ status: "error", refusal: { reason: "custody-door-busy" } });
     await first.answer;
-    for (const w of waiting) expect(await w.answer).toMatchObject({ op: "custody", unlocked: true });
+    for (const w of waiting) expect(await w.answer, "a waiting frame ran its turn and answered").toMatchObject({ op: "lock", locked: true, was: "locked", face: 99 });
     void gone;
     expect(h.recomposed, "the departed caller's lock never ran").toEqual([true]);
     expect(h.holder.isUnlocked()).toBe(true);
@@ -311,7 +323,7 @@ describe("the custody door's backup frame", () => {
   const cut: FaceBundleCut = {
     sealedBody: BODY, holds: [{ bagId: "lar:///ha.ka.ba/@test/bags/garden-notes", founding: "11".repeat(32), keyVersion: "22".repeat(32) }],
     face: { handleIndex: 2, verifyingKey: "ab".repeat(32) },
-    carries: { keyEvents: 1, faceProofKeys: 0, handleBookRecords: 0, petname: false, handle: false },
+    carries: { keyEvents: 1, faceProofKeys: 0, handleBookRecords: 0, petname: false, handle: false, recoveryContacts: 0 },
   };
   const backupFrame = (passphrase: string, over: Record<string, unknown> = {}) => ({ op: "backup", credentials: [{ kind: "passphrase", passphrase }], face: 2, key: KEY, ...over });
   function cutting(run?: (face: number, bundleKey: Uint8Array) => Promise<FaceBundleCut>) {
@@ -404,5 +416,148 @@ describe("the custody door's backup frame", () => {
     await h.send(unlockFrame(RIGHT)).answer;
     expect(await h.send(backupFrame(RIGHT)).answer).toMatchObject({ op: "backup", status: "error", refusal: { reason: "backup-unavailable" } });
     expect(h.proved).toEqual([]);
+  });
+});
+
+describe("the face-route frame", () => {
+  const DIGEST = faceRouteBindDigest("persona-new", { handleIndex: 1 });
+  const ROUTE = { op: "face-route", purpose: "persona-new", argsDigest: DIGEST, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: "face-route-secret" }] }] };
+
+  test("a route serves only its intended operation, once", async () => {
+    seatFaceRoute(null);
+    const h = harness();
+    const answer = await h.send(ROUTE).answer;
+    const ref = (answer as { ref: string }).ref;
+    expect(ref).toMatch(/^[0-9a-f]{64}$/);
+    // Another founding, even at the same label, cannot consume the parked route.
+    await expect(gatherFaceRoute("h1")).rejects.toBeInstanceOf(FaceRouteAbsent);
+    await expect(withFaceRoute(ref, "bundle.restore", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    await expect(withFaceRoute(ref, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    const wrongIndex = (await h.send(ROUTE).answer as { ref: string }).ref;
+    await expect(withFaceRoute(wrongIndex, "persona-new", faceRouteBindDigest("persona-new", { handleIndex: 2 }), () => gatherFaceRoute("h2"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    await expect(withFaceRoute(wrongIndex, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    // CONTROL: a fresh reference reaches its own operation and spends once.
+    const own = (await h.send(ROUTE).answer as { ref: string }).ref;
+    expect(await withFaceRoute(own, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).toEqual(ROUTE.slots);
+    await expect(withFaceRoute(own, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    await expect(withFaceRoute(ref, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+  });
+
+  test("a restore binds the same sealed bundle bytes and target at both ends", async () => {
+    seatFaceRoute(null);
+    const h = harness();
+    const body = Buffer.from("a sealed body");
+    const bind = faceRouteBindDigest("bundle.restore", { body: body.toString("base64"), as: 3 });
+    const park = async () => (await h.send({ ...ROUTE, purpose: "bundle.restore", argsDigest: bind }).answer as { ref: string }).ref;
+    const own = await park();
+    expect(await withFaceRoute(own, "bundle.restore", faceRouteBindDigest("bundle.restore", { body, as: 3 }), () => gatherFaceRoute("h3"))).toEqual(ROUTE.slots);
+    for (const args of [{ body: Buffer.from("another bundle"), as: 3 }, { body, as: 4 }]) {
+      const ref = await park();
+      await expect(withFaceRoute(ref, "bundle.restore", faceRouteBindDigest("bundle.restore", args), () => gatherFaceRoute("h3"))).rejects.toBeInstanceOf(FaceRouteRefused);
+      await expect(withFaceRoute(ref, "bundle.restore", bind, () => gatherFaceRoute("h3"))).rejects.toBeInstanceOf(FaceRouteRefused);
+    }
+    await expect(withFaceRoute(own, "bundle.restore", bind, () => gatherFaceRoute("h3"))).rejects.toBeInstanceOf(FaceRouteRefused);
+  });
+
+  test("abandoned routes fall out of bounded storage and refuse by name", async () => {
+    const h = harness();
+    const first = (await h.send(ROUTE).answer as { ref: string }).ref;
+    for (let i = 0; i < 4; i++) await h.send(ROUTE).answer;
+    await expect(withFaceRoute(first, "persona-new", DIGEST, () => gatherFaceRoute("h1"))).rejects.toBeInstanceOf(FaceRouteRefused);
+  });
+
+  test("R2 — a bad shape, a stray key or a paper pin refuses whole and parks nothing", async () => {
+    seatFaceRoute(null);
+    const h = harness();
+    for (const bad of [
+      { op: "face-route" }, { op: "face-route", slots: [] }, { ...ROUTE, credentials: [] }, { ...ROUTE, argsDigest: undefined }, { ...ROUTE, argsDigest: "bad" },
+      { op: "face-route", slots: [{ t: 1, pins: [{ kind: "paper", sheets: ["a"] }] }] },
+      { op: "face-route", slots: [{ t: 0, pins: [{ kind: "passphrase", passphrase: "x" }] }] },
+    ]) {
+      expect(await h.send(bad).answer).toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
+    }
+    await expect(gatherFaceRoute("h1")).rejects.toBeInstanceOf(FaceRouteAbsent);
+  });
+
+  test("R3 — the log names that a route parked and never the route", async () => {
+    seatFaceRoute(null);
+    const h = harness();
+    await h.send(ROUTE).answer;
+    expect(h.logs.join("\n")).toContain("face-route: parked");
+    expect(h.logs.join("\n")).not.toContain("face-route-secret");
+  });
+});
+
+describe("the unlock frame names the face the composition mounts", () => {
+  test("U1 — an unlock that opens and names a face mounts it for the life of the unlock; CONTROL: a bad index refuses before the holder hears, and mounts nothing", async () => {
+    setMountedFace(undefined);
+    const h = harness();
+    await h.send({ ...unlockFrame(RIGHT), face: 2 }).answer;
+    expect(mountedFaceOrdinal()).toBe(2);
+    setMountedFace(undefined);
+    const bad = await harness().send({ ...unlockFrame(RIGHT), face: -1 }).answer;
+    expect(bad).toMatchObject({ status: "error", refusal: { reason: "bad-custody-frame" } });
+    expect(mountedFaceOrdinal()).toBeUndefined();
+    setMountedFace(undefined);
+  });
+});
+
+describe("the custody state query answers beside the chain (L7)", () => {
+  test("RED: a custody query sent mid-unlock answers at once with composing true; after the unlock it reads composing false", async () => {
+    const h = harness({ slowMs: 200 });
+    const unlocking = h.send(unlockFrame(RIGHT));
+    await new Promise((r) => setTimeout(r, 20));
+    const t0 = Date.now();
+    const mid = await h.send({ op: "custody" }).answer;
+    expect(Date.now() - t0, "the query never waits behind the recomposition").toBeLessThan(100);
+    expect(mid).toMatchObject({ op: "custody", composing: true });
+    await unlocking.answer;
+    expect(await h.send({ op: "custody" }).answer).toMatchObject({ op: "custody", unlocked: true, composing: false });
+  });
+});
+
+/**
+ * The `census` frame: the saves the standing composition holds in memory, read before a stop.
+ *   N1  it answers at once with each held document by id and refusal, beside the chain and with no credential.
+ *   N2  while no composition sits it answers `held: null`, never an empty list.     control: no census wired reads null too
+ */
+describe("the census frame", () => {
+  // A held key opens every standing face unless the row names otherwise (`allFacesOpen: false`): the census reads the
+  // standing faces off this house's identity store, so the fake's open set follows that store.
+  const door = (heldSaves?: () => readonly import("@lararium/mesh").HeldSaves[] | null, unlocked = false, allFacesOpen = true) => custodyFrameHandler({
+    holder: {
+      isUnlocked: () => unlocked, openedSlot: () => null, attemptsLeft: () => 3,
+      unlockedFaces: () => (unlocked && allFacesOpen ? listFaceCustodyIds().map((f) => f.fcid) : []),
+    } as unknown as CustodyHolder,
+    testScratch: false, standing: () => "hearth", recompose: async () => ({ standing: "hearth" }), onLog: () => {},
+    ...(heldSaves ? { heldSaves } : {}),
+  });
+  const ask = (handle: ReturnType<typeof door>) => { const { sock, answer } = fakeSock(); expect(handle({ op: "census" }, sock)).toBe(true); return answer; };
+
+  test("N1 — each held document answers by id, refusal, count and bag, and never a body", async () => {
+    const held = [{ documentId: "doc-a", refusal: "save-unbooked" as const, saves: 2, bagId: "lar:///ha.ka.ba/bags/notes" }];
+    expect(await ask(door(() => held))).toEqual({ op: "census", held, standing: "hearth", locked: true });
+  });
+
+  test("N2 — no composition sitting answers held null; CONTROL: a door with no census wired answers null", async () => {
+    expect(await ask(door(() => null))).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
+    expect(await ask(door())).toEqual({ op: "census", held: null, standing: "hearth", locked: true });
+  });
+
+  test("N3 — the census names whether the key stands shut, so a stop can say unlock first", async () => {
+    // Under a held key every standing face reads lit (the fake opens them all), so `facesLit` names each; none standing leaves it absent.
+    const lit = listFaceCustodyIds().map((f) => f.ordinal);
+    expect(await ask(door(() => [], true))).toEqual({ op: "census", held: [], standing: "hearth", locked: false, ...(lit.length > 0 ? { facesLit: lit } : {}) });
+    expect(await ask(door(() => [], false))).toMatchObject({ locked: true });
+    expect(await ask(door(() => [], false)), "a shut node key lights no face").not.toHaveProperty("facesLit");
+  });
+
+  test("N4 — under a held key, each standing face whose key stays shut answers in facesLocked; none shut leaves the field absent", async () => {
+    const shut = listFaceCustodyIds().map((f) => f.ordinal);
+    const answer = await ask(door(() => [], true, false));
+    if (shut.length > 0) expect(answer).toMatchObject({ locked: false, facesLocked: shut });
+    else expect(answer).not.toHaveProperty("facesLocked");
+    expect(await ask(door(() => [], true))).not.toHaveProperty("facesLocked");
+    expect(await ask(door(() => [], false)), "a shut node key names no face: the whole key stands locked").not.toHaveProperty("facesLocked");
   });
 });

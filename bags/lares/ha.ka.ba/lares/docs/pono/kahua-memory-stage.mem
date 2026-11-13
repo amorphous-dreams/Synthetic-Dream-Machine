@@ -1,0 +1,362 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable         = true
+hydrate           = true
+l-space           = "stable"
+namespace         = "&#x2299;"
+pattern-integrity = true
+role              = "kahua-memory-stage — the fleet stage: a face-scoped wiki that syncs across one operator's device fleet and holds distilled items alone, written only by a signed lift; the four organs it stands among (sensorium, daemon, kahua, lares canon), the recipe that stacks it, the pins that keep one stage per face and one parent per lift, the lift act and its provenance, graded forgetting without a clock, separation at lift, the lōkahi cap stack, the calls the operator still owes, and the research that shaped it."
+status-why        = "BUILT 2026-11-01, lane l4-stage: the stage doc, its pin and adoption, the fold read on every device, the lift, withdraw and carry acts under the operator's hand, the proposals by digest, the lōkahi cap and the disk layout stand as #/as-built names them; the design sections above keep the reasoning. Calls 1 and 4 stand ruled; calls 3 and 5 and the lost-founder recovery row stay owed (#/calls-owed). PROMOTE and the kāpae brake stand as the promote as-built entry names them (lane promote, 2026-11-02); the staged lift binds each lift to a row of the face's local canon (lane prewalk, 2026-11-11)."
+tags              = ["api/pono/meme", "lifecycle/standing"]
+title             = "lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage"
+type              = "text/memetic-wikitext+tiddlywiki"
+uri-path          = "ha.ka.ba/lares/docs/pono/kahua-memory-stage"
+written           = "2026-11-01"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/entry`>>
+
+! Kahua ~ the fleet's working-memory stage
+
+''What this carrier holds.'' The design for `kahua`, a wiki and recipe that carries one face's distilled working memory across every device that face wears. The daemon wiki keeps each device's private working memory; the kahua carries what the operator chose to share across the fleet; the lares canon stays read-only beneath both; the Memory Sensorium keeps the verbatim record at the hearth and never enters any of them.
+
+''The word.'' Pukui-Elbert (1986) glosses //kahua// as //"Foundation, base, site, location, ground, background, platform, as of a house; an open place, as for camping or for sports … playground, arena, stand, stage, courtyard …"//. The stage sense carries the office: an open, levelled ground where the fleet's working pieces stand in view. The word already rides one line of house prose in its foundation sense (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/config`>>, "The kahua holds."), and the two senses agree.
+
+''The rulings that shape it'' (operator, 2026-11-01):
+
+* //"Mu my choice then, we want a 'working memory stage' wiki that syncs across a fleet. If daemon stays device-local as we previously ruled-after-research (pono, actually, each device needs its own 'private working memory/controller wiki' as long as the AI-Operator pair can reach all of them via sync'd actions)…"//
+* //"Approve `kahua` as wiki/recipe name."//
+* //"'sensorium' takes the local-only-never-networked place. This is a different animal."// (⌜1⌝ quoted)
+* //"projections under ~/.lares/state"// — the kahua projects under the house root (`<root>/projections`), never into the tracked checkout.
+
+''Marks.'' A line marked SOURCED rests on a file, a page or a ruling named beside it; a line marked INFERRED rests on a reading across sources. The research marks at #/research keep the scouts' own S and I tags.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-four-organs`>>
+
+!! The four organs
+
+The Two Organs law binds the quine and the Memory Sensorium as cortex and hippocampus, //"mutually referential, never sequential"//, and holds that //"No drawer promotes to canon"// (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/two-organs`>>). The kahua joins as a ''third organ'' beside those two: a shared working stage, neither cortex nor hippocampus, nearer a commons the fleet tends together. The daemon holds the sovereign Seat's office on each device. Together they stand four:
+
+|! organ |! reach |! what it holds |! who writes it |! what it never does |
+| ''sensorium'' | local-only, never networked | raw captures and verbatim drawers, the PLACE record | the capture drain at its own hearth | enters a synced doc; promotes into the kahua or the canon |
+| ''daemon'' | device-local, private | each device's controller and working wiki in two tiers: the working top (drafts, marks, proposals, the AI's own notes) and the face's local canon `bags/daemon-<F>` | the operator's hand and the AI seat on that device, freely and unsigned | syncs as a doc; it answers the fleet only through synced actions on the intents plane |
+| ''kahua'' | the face's fleet, every device wearing the face | distilled items alone, each with its provenance | a signed lift, and nothing else | holds a drawer; writes into the canon |
+| ''lares canon'' | the mesh, at `≥meme` | authored law, rulings, the standing graph | the authored drain alone (`@working`, then a cap-gated `MOVE`) | takes a write from the kahua |
+
+''The kahua never writes into canon.'' A kahua item serves the canon the way a drawer serves it: as grounds the operator weighs while authoring, never as material that crosses the shore on its own. A ruling that starts life on the stage reaches canon only when the operator authors it through `@working` and the residency `MOVE`. The Two Organs law holds unbent.
+
+''The sensorium stays a different animal.'' The kahua carries no verbatim record, no drawer and no raw capture, so the sensorium's rule (it never enters an Automerge doc, unfederatable by design) needs no exception. INFERRED from the AI-memory survey: no surveyed system keeps a verbatim tier out of shared memory by design, and the house keeps that edge.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-recipe`>>
+
+!! The recipe ~ the house lean, CONSUME
+
+''The ruled stack'' (operator, 2026-11-01: //"We enact this design now, no 'A now, b later' for the live Lararium standing."//). The `kahua` wiki and recipe stack three layers over the floor, the topmost shadowing those beneath it:
+
+# ''the working top'' — draft and private, writable on this device alone; it projects as flat files to `<projections>/wikis/daemon-<F>`, as every wiki's working layer projects;
+# ''`bags/daemon-<F>`'' — the face's LOCAL canon on this device: minted at the face's first worn stand, named in the vessel's control home (`daemon-canon/<F>`), sealed under the face (`standFaceDaemonCanon`), projected at `<projections>/bags/daemon-<F>`;
+# ''`bags/kahua`'' — ONE fleet-synced, lift-only bag, projected at `<projections>/bags/kahua-<F>`; a project rides inside it as `$(project)$/**` tiddler paths, never as a bag of its own; no hand edits it in place;
+# ''the lares canon'' — read-only, the floor.
+
+''The daemon document has no disk residency.'' It carries vessel control and secret records in CRDT storage; the daemon wiki reads its selected working and canon layers according to its recipe. Disk projection follows each layer's mirror grant, never title patterns. The control home and sealed secret home stay outside page recipes and every mirror.
+
+''The face rides the wiki's name'' (operator, 2026-11-01, after two scouts collided the multi-face device). One tree, no per-face root: each face's daemon wiki and stage stand in their own folders, `<projections>/wikis/daemon-<F>` and `<projections>/bags/kahua-<F>`, where `<F>` names the face's opaque relation UUID, pinned as a root-signed `plane` act (`FACE_PLANE="face"`) in the founding log; a generated `<projections>/kahua-index.toml` maps each `F` to its tag and label: stable across the face's devices, the index generated and never stored as canon, never the Handle, never a device-local custody id, never an ordinal. Two faces on one device project two folders side by side, each session leasing its own wiki; nothing swaps. A rotation or a recovery under the face's fixed identifier keeps its group, so its tag and folders hold still; a new identity yields a new tag by design, and its stage carries forward only by a deliberate carry or re-lift. The bag ids stay; the folders alone carry the tag. ''Private layers project under the projections root alone'' (`<root>/projections`, outside the hearth a re-founding clears); workspace canon writes back to `/workspace/bags/<bag>` and `/workspace/wikis/<slug>`, and no private layer writes there.
+
+''A new identity's seed adopts the old folders by pet-name, and lifts kahua by hand'' (operator, 2026-11-10). After a re-founding the old face's folders still rest under the old `<F>`. The seed adopts them onto the ONE face that carries the pet-name the old face's label names (`<projections>/face-labels/<F>.json`), as an import maps a bundle face, and refuses by name where none or two do. It lays the working and canon folders back through `INGEST`'s three-way gate; it never pours a stage file into the stage. It previews each kahua item (face, title, body digest; `differs` where a standing head says otherwise) and stages each into the new face's local canon and lifts it under the new face's grant, keyed by title and body digest and signed by the new face, only on a typed count at a terminal or `--lift-kahua <N>` naming that count. A bare `--yes` lifts none, and an unconfirmed item stands pending (`lares shore`, `lares shore lift-kahua --count <N>`). Once nothing waits, the old folders move to `<projections>/ashes/<F>/` (`packages/lares-cli/src/seed-mirrors.ts`).
+
+One wiki then reads the device's drafts, its local canon, the fleet's lifted items and the lares canon in one cascade, and a session opens by reading one index rather than four.
+
+''Two tiers of daemon memory, two crossings.'' Memory climbs by two acts that weigh differently, because only one of them leaves the device:
+
+* ''working -> `daemon-<F>`: the AI promotes, unsigned.'' The AI seat settles what it learns into the face's local canon by the residency `MOVE`, beside the operator's hand, with no signed act: the canon stays on this device and under this face, so a promotion there steers only the spirit that wrote it. The store door's hand-only table names no `MOVE` (`STORE_DOOR_HAND_ONLY_ACTS`, `store-door-verbs.ts`), so a seat session carries it.
+* ''`daemon-<F>` -> `kahua-<F>`: the human lifts, signed.'' A lift crosses to every device the face wears, so it rides the human's eyes and the face's signed grant alone: the operator reads each staged row's preview, and the lift act signs under the operator's grant behind the ward (#/the-lift, #/the-hearth-lane). A seat session refuses every lift row (`beyond-profile`).
+
+''The lift names a staged row.'' A lift carries a row of `bags/daemon-<F>` by its title and content digest, never a body from the hand, so a signed lift lands only what the local canon held when the person read it (#/as-built, the staged lift).
+
+''The shadow shows its diff.'' A daemon draft that carries the same title as a kahua item shadows it on this device alone. That "local draft over shared" state MUST render visibly, with a diff against the kahua item it covers, so no device reads its own draft as the fleet's record. A re-lift of the draft supersedes the kahua item (#/the-lift) and the shadow clears; discarding the draft clears it too.
+
+''The cascade names its layer.'' The house's composite store answers which layer a title came from (`resolveTopmost`, `resolveAll`: each record beside the bag that holds it), so the shadow renders against the kahua record it covers and a lift names its source bag. A red-first probe pinned that reading before the build.
+
+''Where it projects.'' Under the house root's state, beside the house's other projections, and never into `bags/` or `wikis/` in the tracked checkout (operator, 2026-11-01).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pinning`>>
+
+!! Pinning ~ one stage per face, one parent per lift
+
+''The stage pin.'' The face mints its kahua doc once and pins it in the face's plane, the way a gate pin binds one claim to one head: a signed `plane` act on `@persona` names the doc's url, as `@intents-<tag>` registers today (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane`>>; SOURCED). A device that joins the face adopts that url from the verified plane act and never mints its own, so no two devices stand two stages. The floor's law, one owner per registry (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane`>>), holds: the face owns the kahua registry, and it travels no wider than the face.
+
+''The lift pin.'' Each lift names the revision of the item it supersedes, or names none for a first lift. Three things follow:
+
+* a ''supersede chain'' forms, each item pointing at its parent, and recall reads the chain's head;
+* two lifts that name the same parent surface as ''siblings'', both kept visible, never resolved by arrival order — the same SET fold the floor-pin index runs, where a descendant replaces, two claims at one head surface as a fork, and arrival order never selects (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane`>>; SOURCED for the index, INFERRED for the fit);
+* a ''withdraw'' names its target revision, so it retires exactly the item the hand read.
+
+The operator rules pinning in both senses (#/calls-owed, call 2).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-lift`>>
+
+!! The lift ~ mark, replay, propose, lift
+
+''Mark.'' Any write in the daemon MAY carry a cheap `candidate` mark. The mark costs nothing and cools by itself (#/forgetting); significance may arrive after the write, the way a later strong event captures an earlier tagged trace (#/research, tagging and capture).
+
+''Replay.'' An ''aftermath pass'' runs device-local, on the daemon alone. It fires on a count — marked items held, or summed weight crossing a threshold — never on a clock. It replays the marked items, weighs each (re-use, operator touch, adjacency to a lifted item, a mismatch with the kahua item it echoes), merges duplicates inside the daemon, and ranks. It writes proposals; it lifts nothing. The name keeps Letta's "sleep-time" term at a distance, and rhymes with the house's own deferred low-load flush (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/facets`>>).
+
+''Propose.'' The pass posts ''one batch'' of proposals on the face's intents plane, `@intents-<tag>` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>), taint flags up front. One batch per pass keeps the operator's reading cost bounded: a wave shows its shape, and approval fatigue grows with a stream of singles.
+
+''Lift.'' A hand holding the operator's grant signs the lift. Each lifted item carries:
+
+* its ''origin'' — the seat that proposed it (the operator's hand or an AI seat, by key), the device, the session;
+* a ''taint list'' — every input from outside the face (a web page, tool output, pasted text, another operator's content); an AI summary inherits the taint of what it summarised, and summarising never cleans it;
+* ''pointers back'' to the daemon sources it distils, so the operator can audit one hop down.
+
+''Corroboration counts hands, never devices.'' Two devices of one AI agreeing count as one witness. Corroboration counts only from a separate hand.
+
+''Withdraw, never delete.'' A signed `withdraw` act tombstones an item: recall drops it at once on every device, and the doc's history keeps it with its provenance — invalidate, not delete. A CRDT merge cannot tell a poisoned item from a true one, so retiring by act stays the one cure.
+
+''Supersede, never edit.'' No hand edits a kahua item in place. A change lifts a new item naming its parent (#/pinning); concurrent edits never merge inside one item's body.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forgetting`>>
+
+!! Forgetting ~ graded, clockless, never a burn
+
+''Decay counts the house's own motion.'' An item cools by ''sessions since last cited'' or ''lifts since last touched'', never by hours: no global now decides what fades (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>).
+
+''Two tags carry the grade.'' A live item reads `lifecycle/standing`; a cooled one reads `lifecycle/folded`. Cooling changes rank and visibility alone: recall lists a folded item low, its body stays whole, and a citation or a re-lift warms it back to standing. INFERRED from the forgetting research: inaccessible first, erased last, recoverable with the right cue. The otakiage reading of `folded` (pointers alone) runs narrower than this one; a distinct tag stays open to the operator.
+
+''O-takiage stays a called rite.'' Nothing in the kahua burns on decay. A burn fires only on the operator's call, exactly as the fire runs today (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-fire`>>).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/separation`>>
+
+!! Separation ~ complete the same, separate the near
+
+At each lift the act compares the item against the kahua:
+
+* ''Near-duplicates complete.'' Two devices proposing the same item yield one kahua item carrying two provenances, the way recurrent recall completes a partial cue.
+* ''Related but different items stay separate.'' Each keeps its own item, and a contrast link names how they differ, the way the dentate gyrus pulls similar inputs apart.
+
+Keyed identity (origin plus content) supplies the separation; a similarity probe supplies the completion. A blind merge would blur two memories into one, the field collision the house already tracks (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/caps`>>
+
+!! Caps ~ the lōkahi stack
+
+''The word.'' Pukui-Elbert (1986) glosses //lōkahi// as //"Unity, agreement, accord, unison, harmony; agreed, in unity."// The stack takes the unity and agreement sense. It never reads as "alignment": that word names the house's trust and reputation plane (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/alignment-layer#/two-planes`>>), and the two stay apart.
+
+''Two questions, two records.'' The alignment layer already splits who CAN act from whom a peer CHOOSES to act with. The lōkahi stack carries the same split onto the stage:
+
+* ''capability'' — a device or an AI seat CAN lift into `kahua/<face>`: the face's grant, held in Keyhive's plane;
+* ''the lift'' — records that the operator CHOSE to take this item, signed by a hand holding the operator's grant.
+
+A held capability MUST NOT stand in for the operator's choice. An AI seat holding the cap still proposes until the operator rules otherwise (#/calls-owed, call 4).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/as-built`>>
+
+!! As built ~ lane l4-stage, 2026-11-01
+
+Each line names what the code does today and where its law lives; the verifier holds the law, never the verb.
+
+* ''The stage address.'' The face derives its stage doc from its group (`kahuaStageDocUrl(group)`, `lar:///ha.ka.ba/bags/kahua`) and pins it by a signed `plane` act on `@persona`; `kahuaPlaneUrl(projection, group)` reads the pin only where it names the derived address. ''The face's founding act mints the stage'', inside the founding log beside the intents plane and under the founding hand, whichever device founds the face, node or browser (operator, 2026-11-01: //"What about user cap class fleets that have no self-owned node hearth, just a fleet of devices?"//). No other device of the face exists at founding, so no fork arises, and the stage stands from the face's first moment. A device that joins later only adopts the pinned act; a mint outside the founding act refuses by name.
+* ''Adoption.'' A device mounts the stage its verified projection pins: the joinee reads it off the admit bundle's verified `personaActs` (`kahuaUrl`), every boot reads it after the face proof (`adoptKahuaPlane`), and the island takes it from its grant (`IslandGrants.kahuaUrl`) alone. A catalog row stays a mount hint that decides nothing: a row naming another doc reads stale by name, and the pin mounts.
+* ''Read through the fold.'' The `bags/kahua` layer serves what `readKahuaStage` folds under the worn face (`kahuaStageStore`, through the seam `kahuaLayerStore`), on node and in the page alike: a plain tiddler any synced member writes into the stage doc reads as nothing, siblings name both cids on every device, a withdrawn item drops, and the layer refuses every write.
+* ''Who CAN, who CHOSE.'' The lōkahi cap: the face door mints the stage bag to the face's group in Keyhive's plane, and the daemon's `kahua-cap` verb answers. The lift and withdraw acts ride the stage doc, signed under the operator's grant (the face root of the current epoch). ''Current-only, with a carry.'' An act stands while its signer sits in the current roster, or while a `carry` act the current root signed names its cid; carries never chain. After a rotation, the earlier items fall back to history (never deleted) until the operator's hand carries them (`lares kahua carry <cid>…|--all`), a batch re-lift and the same deliberate choice as one lift; a backdated lift by a rotated-out root never stands. The layer re-folds live when the face's lineage moves.
+* ''The stage follows selected placement.'' A kahua lift may only carry content selected from a bag whose owner grants the lift; a title alone never classifies a control record. Control and secret homes grant no page or lift access.
+* ''A stylesheet lifts.'' The lift law refuses executable types (their mime parameters read off first), `module-type` and `kahua-*` fields, and refuses no tag: lifting a stylesheet or raw markup to the stage stands as the user's choice, and no guard blocks a user's choice.
+* ''The cap's `ensure` comes from its caller.'' The island verb `kahua-cap` mints only where its caller asks `ensure` and the verify missed; the store door asks it from the write rows alone.
+* ''Proposals.'' One `kahua-lift` batch per pass on `@intents-<tag>`, digests and taint alone, pinned to the proposing atom; a page proposes its drafts through the daemon verb `kahua-propose`, and `lares kahua lift <title> --proposal <id>` binds the staged row's body by digest. A proposal whose issuer the face never admitted refuses.
+* ''The hand.'' `lares kahua` carries mint, lift, withdraw and carry on a person's hand alone, re-reading sealed custody per call; a seat session (the AI, MCP) proposes, stages and reads, and a pin, lift or withdraw from it refuses `beyond-profile`.
+* ''The face fence.'' The stage rides its own face's facet on the read-only `library` layer; `bridgeBooks` never bridges `bags/kahua`, so a face switch on one vessel never hands one face's stage to another's sessions.
+* ''Homes follow placement.'' The daemon recipe mounts the worn face's `bags/daemon-<F>` as its canon slot (`daemonFaceCanonBag`, `open-daemon-vm.ts`, the browser's `open-browser-daemon-vm.ts`); at the floor, or before the face proves, the daemon wiki reads no canon, and the daemon document keeps no canon role. The vessel control document and the sealed secret document stay outside every recipe; the daemon document carries no disk mirror.
+* ''Disk.'' A layer projects through its own mirror grant (`daemonDiskMirrors`): the worn face's working top under `<projections>/wikis/daemon-<F>`, its local canon under `<projections>/bags/daemon-<F>`, its lift-only stage under `<projections>/bags/kahua-<F>`, and the public crossroads bag; a vessel wearing no face projects no private layer. The control document and the daemon document hold no mirror.
+
+''Pattern integrity: the address derives from a public id.'' Anyone who knows the group computes the stage doc's id, so the facet and the share gate stay its only fence; the fold makes any foreign write read as nothing.
+
+''The lift and the AI, a held tension'' (operator, 2026-11-02). The house exists to improve AI–operator alignment: when the operator drives, the AI lifts with them and for them. The security pull stays a valid capability tension all the same: a prompt injection, or an AI holding a shell with custody unlocked, can reach `lares kahua lift`, and the session refusal (`beyond-profile`) reads advisory since a client names its own hand. Enforcement through code or identity (a hand-only key, a per-call gesture) stays deferred; the tension rides as an open loop, `` ooda-ha=`open 1φ◇:lift.capability-tension` ``, held in view, never a planned block. The ward closes it for the daemon and kahua wikis, and the kahua lift joins the ward (#/the-hearth-lane); the loop stays open for a user's own wiki, where the advisory label holds by ruling.
+
+!! As built ~ the staged lift, lane prewalk, 2026-11-11
+
+The second crossing names its row. Memory climbs working -> `daemon-<F>` (unsigned) -> `kahua-<F>` (signed), and the signed step now binds to what the first step left.
+
+* ''Stage.'' `lares kahua stage <title> --text <body> | --file <path> [--fields <json>]` rides the store row `kahua-stage`: it writes one row into the face's local canon `bags/daemon-<F>`, unsigned and local, and answers the row's digest. Any seat may stage; a row that already reads the same digest takes no write. The law lives in `kahua-staged.ts` (mesh): `kahuaRowDigest` hashes the body beside the carried fields, key-sorted, so a moved field moves the digest.
+* ''The lift names the row.'' The door's lift takes `{title, digest}` and no body (`kahua-door.ts`). It reads the row back from `bags/daemon-<F>` through the vessel's `faceCanon` port (the control document's `daemon-canon/<F>` names the document), and refuses by name: `kahua-lift-unstaged` where no row stands, the face names no relation, or no canon opens (a direct act); `kahua-lift-digest-moved` where the row moved since its preview. The act carries the row's own body and fields, and its signed `sources` carry `staged:<digest>`, so the grant covers the digest.
+* ''Lift with eyes.'' `lares kahua lift <title>` first reads the row's preview (`kahua-read` `staged`: title, digest, fields, body, and whether a standing head already carries it), then lifts only on the digest's first eight hex typed back at a terminal, or on `--digest <hex>` naming the digest the preview printed. A bare `--yes` names no digest and lifts nothing (`kahua-lift-unconfirmed`); a lift handed `--text`, `--file` or `--fields` refuses and sends the hand to stage first.
+* ''A replay lands nothing.'' A lift whose staged row the item's one head already carries answers that head, signs nothing and opens no root.
+* ''Re-lifts stage first.'' An import or a seed re-lift stages each former head into the new face's local canon, then lifts it by the digest the stage answered; the typed count or `--lift-kahua <N>` still carries the person's eyes.
+
+!! As built ~ promote and kāpae, lane promote, 2026-11-02
+
+Promote enacts the face intent-plane law a second time (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>): decisions cross devices, never motion. A lift carries intent across the fleet; a promotion keeps activation island-local, one device's hand at a time.
+
+* ''One capability, every wiki.'' The edge reads (face, wiki, digest): a promotion trusts code in ONE wiki on ONE device, and a kāpae sets aside one digest in one wiki across the face's devices. A shared wiki changes nothing for another person: my promotion runs on my devices alone and my kāpae shadows my face's devices alone. The kahua stage is the first wearer; the law lives in `promote.ts`, `promote-board.ts`, `promote-kapae.ts`, `promote-door.ts`, `promote-boot.ts` (mesh, platform-blind). The class derives from what a loader on the island would run (module-type, executable types, StartupAction, RawMarkup, module-gate fields, plugin bundles, wasm); a kāpae shadows any digest, code or not.
+* ''Lift is inert.'' The lift law admits `module-type` and executable types as data (the old refusal burned). Lifted bytes join the wiki after TW5 boots, so they execute nowhere until a hand promotes them; the live probe (`tests/e2e/promote-probe.test.ts`) restarts the hearth twice over a lifted startup module and a StartupAction and reads that neither ran.
+* ''The trust record is the device's own.'' The ledger (rows of wiki, digest, title, revision, hand, a local counter and the preload bytes) and the kāpae cache rest as sealed custody rows (`promoted-g<digest>.bin`, `kapae-g<digest>.bin`; browser: keystore rows `promoted/<group>`, `kapae/<group>`) and ride no CRDT document and no face bundle. A locked vessel or a torn row loads NO promoted code and never falls back to stage bytes.
+* ''The board is pinned in the founding act.'' Prepare, flag, raise and lower ride ONE face-private board (`promoteBoardDocUrl(group)`), minted and pinned inside the face's founding act on every vessel class, adopted from the verified pin alone; a later mint refuses `promote-mint-outside-founding`. A device atom signs a prepare or a flag (the AI's seat); the face grant signs a raise or a lower (a hand). The fold reuses `foldCausalHeads`: remove-wins, no clock, only a lower that cites every raise lifts, and a racing lower leaves the shadow up.
+* ''The boot crossing.'' stage bytes, then the hand's commit, then the sealed local copy, then a hash check, then the CAS (put and pin), then the wiki's `pluginCids` through the one shared selector (`resolveRecipePluginCids`, which re-hashes each promoted digest from the local store; a digest that fails drops out and is named, the rest boot), then TW5's preload, then the VM. The module gate reads the preloaded set alone, never the composite. An item the wiki dropped reads orphaned, keeps running and is named at boot until the hand keeps or drops it; an item whose source changed reads `update-waits` and the promoted bytes keep running.
+* ''A kāpae restarts the island.'' On arrival a device restarts every wiki whose loaded edges meet the current shadow, each on its own; a failed restart is named and tried again at the next read. Pool wikis restart live, and the daemon island re-opens in process through its holder, so the shadowed code unloads at once on both vessels.
+* ''The panel is tiddlers.'' The promote panel lives in the daemon surface as born-from-source wikitext (`$:/lares/ui/promote*`, never projected to disk), one section per wiki. Its buttons summon six island verbs (`promote-commit`, `-drop`, `-keep`, `-orphan-drop`, `kapae-raise`, `kapae-lower`). The island's dispatcher admits them ONLY for an ask that arrived on the surface's own control-event path: a seat's session call, a `meme put` verb tiddler and a synced verb tiddler refuse by the verb's own code and dispatch nothing. A scripted click is NOT blocked (operator, 2026-11-02: the AI drives the browser beside the operator). The store-door rows (`lares promote`, `lares kapae`) refuse a `seat` session `promote-needs-hand` or `kapae-needs-hand`.
+* ''Residuals, named.'' (1) M1: a local process holding unlocked custody can run `lares promote commit` as a hand; the refusal is advisory, as the lift's. (2) A promoted module running in the daemon's thread, or any writer that can produce a surface-path control event, can summon the same six verbs; this joins the held loop `` ooda-ha=`open 1φ◇:lift.capability-tension` ``, enforcement deferred, and a host consent strip that must not block AI-driven clicks stays an open research question. (3) The node CAS and the browser's OPFS hold a cleartext copy of promoted bytes so the island can read them (the house-wide sealed-CAS train is owed, not new). (4) `pin` has no unpin. (5) The browser vessel has no successful-shutdown hook, so its board watcher lives as long as the page. (6) A contracted founding signs no log of its own; it adopts the board pin through the admit bundle, as the stage's pin does.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/promote`>>
+
+!! Promote ~ the end-state for code on the stage
+
+''Approved design'' (operator, 2026-11-02); no code stands for it yet.
+
+''One house capability.'' Promote and kāpae form one capability every wiki wears, and the kahua wears it first. Its edge reads (face, wiki, digest); its acts ride one face-private fleet board, never a shared wiki's doc; and the code class derives from what a loader would run or trust. The promote lane writes the as-built.
+
+* ''Code lifts as inert data.'' Any item may ride the stage, code included, as data the island never runs.
+* ''Each device's own hand promotes.'' A person on a device promotes one digest into that device's local preload set, which never syncs. A digest that no longer matches the item voids the promotion. The island takes it the way TW5 imports a plugin and reloads: one reload per island.
+* ''The floor until then.'' The lift refuses `module-type` and executable types today. That refusal BURNS when promote lands (the alpha line keeps no back-compat).
+* ''The code class.'' `module-type`; the executable types; `$:/tags/StartupAction*`; RawMarkup (on the save path alone); the fields the tw5-module gate reads (a `stack` naming `tw5-module`, beside `source-sha256`).
+* ''The module gate reads genesis and the promoted set alone.'' The gate that defines tw5 modules reads genesis-sourced tiddlers and the device's own preloaded set, never the composite, so no stage or wiki layer seeds a module (the promote lane builds it).
+* ''StartupAction rides inert by layer.'' The daemon island and the kahua stage run a StartupAction only from genesis or the promoted set, both preloads the boot pass ran; the seed pass runs none, so a StartupAction in any other layer (working, stage, with or without `kahua-cid`) rides inert and names itself in the boot log. A user's own wiki keeps full caps and runs its StartupActions (operator, 2026-11-04). The code: `startupGated` in `island-recipe.ts`.
+
+* ''Kāpae, the emergency cap.'' A `kāpae` cap on the edge (face, wiki, digest), raised on the face's board, shadows every device's promotion of that digest: remove wins, the hand raises it and the AI prepares it, and a device restarts its island when the cap arrives. Withdraw stays a separate act.
+
+''Kept dissent (Stranger).'' A stage that spans more than one person's hands, a household Nexus for one, reopens the fork toward refusing code at the lift (option A), per the TiddlySpace precedent the operator named.
+
+''Owed: the live probe.'' On a scratch `LAR_ROOT`, lift a marked StartupAction and a module-typed tiddler, restart the vessel twice, and confirm neither runs.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-hearth-lane`>>
+
+!! The hearth lane ~ L4f, L17, L19, L21 and the act ward
+
+The lane runs after the founding, since `L4p` needs a stood hearth (road rows `L4f`, `L17`, `L19` and `L21` in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/stride-0-hearth`>>). Its slices, numbered as stage slices so they never collide with row 7's `S1` to `S6`, land in this order, each red-first with its control, every red shown failing on the old code first.
+
+# ''Stage slice 1, `L4f`: the page gate and the mount.'' When the page's face proof carries `ownHearth`, the gate admits the hearth daemon document through the face-proven path, and the page's daemon island takes `hearthDaemonUrl` as its working top. Its own `social.daemonUrl` stays the control plane. Every other crossing stays as it stands. Then the `L4p` walk.
+# ''Stage slice 2: one code classifier.'' `codeClassOf(fields, title)` lands once in `@lararium/mesh` and names the module type, the executable types, `StartupAction*`, RawMarkup and the module-gate fields. The lift, `meme_act` and promote all read it; the slice moves no behaviour.
+# ''Stage slice 3, `L17`: the anchor verbs.'' `meme-filter`, `meme-render` and `meme-act` on `recipe:"default"`, as MCP tools and as `lares meme filter|render|act`, with the field forms on put and get. A paged answer bounds itself to `AUDIT_ARRAY_CAP` and carries a `next` cursor.
+# ''Stage slice 4: named-wiki routing.'' A filter, render or act aimed at a named wiki routes through the `wiki-act` envelope, mounting the wiki or refusing (`W27`), and reuses `mountAimedWiki`.
+# ''Stage slice 5, `L21`: the batch lift.'' `door.liftBatch` and the hand row `kahua-lift-batch`, with `--filter --from-wiki`. All items preflight before any lands, then one flush follows; the epoch pins once per batch; each item still signs its own lift act; a drifted digest refuses by name. One fresh ward unlock covers the batch (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>, 2026-11-05).
+
+''House decisions'' (talked out):
+* The face proof's SIGNED projection names `hearthDaemonUrl`, so the gate never opens an unproven URL.
+* `default` stays the daemon wiki on the page, backed by the hearth's document.
+* A named-wiki filter reuses `mountAimedWiki` and `W27`.
+* The lares MCP reads down until a hearth stands, so the MCP parity tests run after the standing.
+* Lane law: a bwrap PID namespace for every process test, no pid 0 or 1 fakes, single test files only, e2e in CI, a cold Terra read at the punctures, and a blind Opus reader colliding on custody paths.
+
+!!! The lift rides the ward
+
+The lift amends the 2026-11-04 line that named it free (operator, 2026-11-05, after the four-scale talk-story). The working top stays the free local floor the AI writes on. A lift crosses devices, because the stage syncs to every device the face wears, so it takes the face's own hand: one fresh passphrase unlock per verified batch, each item signing its own act. Memory steers the spirit, so it weighs as code does. Civic and shared stages compose several warded hands by threshold, each plane's count resting on its own civic ruling, unbuilt. The ward travels with the face across temples, and the batch lift serves as the household's feeding rite on a cadence the person sets, with no timer and no nudge. The tension of #/as-built closes for the daemon and kahua wikis with the ward (row 7, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices`>>) and stays open for a user's own wiki.
+
+!!! The act ward ~ code-bearing actions on the daemon and kahua wikis
+
+A user's wiki runs actions live with full caps. On the daemon and kahua wikis, `meme-act` stands under these laws:
+* A code-bearing action there REFUSES outright until row 7's ward stands, then rides it. It never rides the advisory hand label.
+* The action string runs in a THROWAWAY COPY of the wiki (a cloned store with its own root widget; plugin shadows read-only). The copy records every create, change and delete, and every message the action dispatched (captured, never executed).
+* The recorded diff gets judged. Any touch to the code class (`codeClassOf`), to a control family (whose records rest in the vessel's control document alone, which no wiki composes, so a diff touching one names a breach) or to a custody verb refuses the whole act by name. Any captured `tm-*` message outside an allowlist refuses; the allowlist starts EMPTY, and a message joins it only when a real act needs it, by name.
+* A clean diff APPLIES AS ITSELF in one batch and never re-runs, which closes the gap between check and use (a transcluded value can change between two runs). Non-determinism such as `<<now>>` stays fine, since the diff records the one result.
+* A static parse never serves as the ward. The slice's first red MEASURES the copy's cost on a realistic daemon wiki.
+
+!!! `L19`, the memory o-takiage ~ its shape
+
+Memory stage rows REST in the face-bound daemon wiki's working layer (`wikis/daemon/working`, on disk at `<projections>/wikis/daemon-<F>`), under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` (the slug holds the filename stem, hyphenated; fields `name`, `description`, `type`, `source-file`, `source-sha256`). Dangling links report and stay uninvented. The flat files stay the source of truth until each file's receipt stands; a stale memory burns instead of moving; the pointer file shrinks last. Verification runs in the working top (a `meme_get` round trip against `source-sha256`, a receipt tiddler per file, the filter view, a cold-session sample), the AI promotes what holds into `bags/daemon-<F>` (#/the-recipe, two tiers), and `L21` then lifts the verified batches under the ward: lifted canon lands in `bags/kahua` by a signed lift alone (`kahua-door.ts`: the lokahi cap plus the operator's root grant). The store measured 286 files (87 feedback, 192 project, 5 reference, 2 user) at 2.2 MB with 464 `[[...]]` links on 2026-11-04. Narration follows the memory into the wiki (`L18`), and the flat store keeps its seat for the harness's own loader until then.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/calls-owed`>>
+
+!! Calls owed
+
+Each call names the fork and the house lean as a lean only; the operator rules each.
+
+# ''Consume or parallel.'' RULED: consume, one cascaded `kahua` recipe over the daemon (operator's layout ruling, 2026-11-01; #/the-recipe).
+# ''Pinning in both senses.'' The stage pinned once per face in its plane; each lift pinned to its parent revision (#/pinning). Lean: yes to both. The build enacts both under the operator's word to enact the design whole; no ruling names this call by itself.
+# ''An AI low-authority note lane.'' A lane where an AI seat writes on its own, which never seeds a boot, never drives an action, and decays unless a hand confirms it. Open; no lean. No source tests it.
+# ''Whether the AI seat lifts or only proposes.'' RULED: the AI seat proposes; the operator's hand lifts, through `lares kahua lift` under the operator's grant (operator, 2026-11-01). A narrow schema-conformant self-lift class stays open for a later ruling.
+# ''A face's founding device lost.'' The face's founding act mints the stage, so no face founded from 2026-11-01 on stands without its stage pinned and no later mint stands at all. Losing the founding device reads as a RECOVERY act, never a kahua-only one; any re-pin belongs with the recovery design (the recovery-contact and layered-recovery rulings). Owed there; no door stands.
+# ''Re-mount on the recovery path.'' A stage pinned after a device boots mounts at that device's next boot, since the island holds no persona-log reader of its own. The founding act mints the stage before the first `up`, so only a recovery path meets this.
+# ''A returning browser on a re-baked genesis.'' RULED for the next lane: the browser re-pins by the person's own act, paired with W26 slice 5 (the accept act); it never refuses forever and never silently follows the hearth. It waits on a genesis pin the browser holds: today its `hearthTrueName` names the Nexus AID, not the engine CID, so nothing a browser holds names its seed. Tonight the page reads SELF-CONSISTENCY alone: the seed its hearth serves against the hearth's own arrival descriptor (`genesis-mismatch`, `arrival-descriptor-missing` on the hearth's own origin).
+# ''Restore against burn.'' RULED (operator, 2026-11-02: //"Approve both"//): a face's private names (its persona planes, its kahua stage, its `daemon-<F>` and `kahua-<F>` folders) key off the FACE, derived from its address secret, never the seat group, so a restore keeps them and a burn stays a new face; a revoke-only cold recovery seat takes its own design lane. Built in the lane right after this one: `kahuaStageDocUrl` and the folder tag re-derive from the face there. Until then a bundle restore re-mints the group (`restoreFaceBundle`), and a strict known-red pins the gap.
+# ''The lift capability tension.'' Closes for the daemon and kahua wikis with the ward, which binds the kahua lift (#/the-hearth-lane); held open for a user's own wiki: `open 1φ◇:lift.capability-tension`, with no enforcement planned there.
+# ''Proposal taint.'' A proposal lifts once (a second lift citing it refuses `proposal-spent`); its taint list still rides the proposing device's own word, noted.
+# ''A scratch root writing the checkout.'' A scratch `LAR_ROOT` beside `LAR_BAGS` at a checkout writes live canon edits into the tracked tree by design (the origin split); the isolation line for the house's own instructions waits for the operator's hand.
+# ''Genesis from another origin, or by CID.'' The page reads its seed off the hearth's own /genesis alone and reads no genesis key (operator, 2026-11-02); a seed served elsewhere or named by CID waits for the next lane's verify law.
+# ''A tag index.'' A human-readable index beside the folders (tag → the face's display label, written locally, never in a path). Owed: the mirror seam reads no face label yet.
+# ''The Law-of-5s register count once the kahua joins.'' The memory model counts five registers (RAM · DreamDeckSurface · Agent.MEMORY · Memory Sensorium · quine; <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/head`>>). A meshed, distilled, face-scoped stage reads as a sixth unless the count re-reads. Open.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/research`>>
+
+!! Research ~ two scouts, 2026-11-01
+
+Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻo-Scout through AI-memory work. S marks a claim read in a source; I marks a reading across sources. ''The brain analogy guides; it proves nothing.''
+
+!!! The biological lens
+
+* ''Complementary learning systems'' (Kumaran, Hassabis, McClelland, TICS 2016). S: a fast hippocampal learner and a slow neocortical learner, with replay carrying content across and goal-weighted replay in the update. I: the daemon learns fast, the canon slowly, and the lift rhymes with replay — but biology replays repeatedly where the design lifts once, and biology holds two systems where the house holds three.
+* ''Sleep replay and sharp-wave ripples.'' S: disrupting sleep ripples impairs memory and boosting helps; a 2025 review argues awake replay tags memories before sleep. The boosting result (Shin & Frank 2025) sits on bioRxiv, unreviewed. I: an offline, batched, priority-weighted pass — the aftermath pass.
+* ''Reconsolidation'' (Nader, Schafe, LeDoux 2000). S: recall can make a memory labile; boundary conditions hold, human replications have failed, and the field stays contested. I: an update lifts against the recalled parent, triggered by a mismatch, never a blind overwrite.
+* ''Pattern separation and completion'' (Knierim & Neunuebel 2016; Yassa & Stark 2011). S: the dentate gyrus separates, CA3 completes. I: #/separation.
+* ''Prefrontal gating'' (O'Reilly & Frank 2006; Hazy, Frank, O'Reilly 2006). S: an input gate and an output gate, both learned. I: the lift acts as the input gate; what a seat reads from the kahua into its context forms a second, unnamed gate.
+* ''Synaptic tagging and capture'' (Moncada, Ballarini, Viola 2015). S: a weak input sets a transient tag that a later strong event captures. I: the `candidate` mark, and significance arriving late.
+* ''Forgetting as a feature'' (Ryan & Frankland 2022). S: forgetting switches engrams from accessible to inaccessible; a contested reading (Gisquet-Verrier 2022) calls it retrieval failure. I: #/forgetting.
+* ''Schemas speed consolidation'' (Tse et al., Science 2007). S: a built schema let new associates consolidate in about 48 h. I: the strongest license for a narrow, schema-conformant AI self-lift class (call 4).
+* ''Stigmergy.'' S: Grassé 1959; recent agent work sits in preprints, and one claimed gain stays unverified. I: keep decay and provenance from stigmergy; keep the signature from the house.
+* ''The strongest critique.'' I, on S ground: an explicit-lift-only rule loses late salience, makes the operator the sole replay engine, promotes unreplayed items, and grows without forgetting. Counter: an unchecked auto-lift reads as Confabulation-as-Canon, and the brain faces no adversary, so the signature keeps its place.
+
+!!! The AI-memory lens
+
+* ''Field layering.'' S: Letta/MemGPT (context blocks, recall, archival), Zep/Graphiti (episodic, semantic and community subgraphs; bi-temporal), Generative Agents (one stream, reflections pointing back at sources), A-MEM (linked notes that evolve), Anthropic's memory tool (a client-side directory). I: the daemon matches the field's working tier and the canon its slow tier; the kahua has no clean twin, and CRDT-replicated agent memory appears unstudied.
+* ''Poisoning.'' S: MINJA (NeurIPS 2025) injects memory through queries alone; a 2026 study found detection and sanitisation largely ineffective. TMA-NM (arXiv 2606.24322, one author, preprint, abstract only) names three laundering channels — the agent's own summary, a trusted tool's echo, manufactured corroboration — and binds origin at write time. I: the AI seat stands as exactly that laundering channel, and the CRDT fans one bad lift out to the whole fleet; so the seat proposes, the operator's hand lifts, taint rides every item, and two devices of one AI never corroborate.
+* ''Collaborative Memory'' (arXiv 2505.18279, abstract). S: private and shared tiers with immutable per-fragment provenance. I: the closest cousin to the kahua, minus replication.
+* ''Consolidation patterns.'' S: reflection with pointers back; a summed-importance trigger (secondary claim); Letta's sleep-time agent (experimental); Zep's invalidation stamp. I: pointer-back provenance, a count trigger, a device-local aftermath pass, withdraw by tombstone, supersede over edit, and decay by house motion rather than wall time.
+
+!!! Caveats
+
+* Both scouts read search results, abstracts and secondary summaries; neither opened a paper's full text. Quoted figures come from those summaries.
+* Reconsolidation and engram forgetting stay contested; the ripple-boosting result and TMA-NM sit in preprints; several 2026 arXiv ids came from search results unopened and want confirming before any citation leaves this carrier.
+* The `lares` MCP server failed to connect during the AI read, so the memegraph read went by file.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/two-organs`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-memory#/head`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/projection-nalu#/facets`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/otakiage#/the-fire`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/alignment-layer#/two-planes`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-intent-plane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/i1-intent-lane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w14-floor-pin-lane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/config`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/mu/the-law-of-5s`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;b2qMw7klfdr3_wbfN29oPBY22p2qfBsIjbdZJMa4dJA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

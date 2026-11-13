@@ -7,10 +7,11 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 
 import { makeEmbedCap, type EmbedCap } from "../src/embed-cap.js";
 import { composePalaceCaps, type PalaceCaps } from "../src/sensorium.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 120_000;
 
@@ -19,7 +20,7 @@ beforeAll(() => { process.env["MEMPALACE_EMBEDDING_MODEL"] = "minilm"; });
 const closers: Array<() => Promise<void>> = [];
 afterEach(async () => { await Promise.all(closers.splice(0).map((c) => c())); });
 
-describe("composePalaceCaps (the uniform cap-stack over one palace, live)", () => {
+palaceSuite("composePalaceCaps (the uniform cap-stack over one palace, live)", () => {
   test("content · search · kg · graph all flow over the SAME palace dir", async () => {
     const dir = await mkdtemp(join(tmpdir(), "palacecaps-"));
     const embed: EmbedCap = makeEmbedCap();

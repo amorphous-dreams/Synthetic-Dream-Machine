@@ -15,13 +15,12 @@
  *     the slot documents). Every vessel holds the oracle under ONE derived document id, and a hearth boots
  *     from its own copy; a leaf that synced it would merge its writes into the registry its hearth reads.
  *
- * The leaf mounts by its OWN oracle replica, as every vessel does: `seatHearthCanon` writes the admitted
- * pointers there, and that replica never leaves the leaf.
+ * The leaf mounts by its own catalog: `seatHearthCanon` writes the admitted pointers there.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/hearth-canon
  */
 import { interpretAsDocumentId, isValidAutomergeUrl, type AutomergeUrl, type DocumentId, type PeerId } from "@automerge/automerge-repo";
-import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc } from "@lararium/mesh";
+import { DeterministicFederationGate, LARES_DOC_URI, LARARIUM_DOC_URI, storedLarRecord, oracleGenesisDocUrl, tiddlerText, type FederationGate, type LarDoc, ownEntry } from "@lararium/mesh";
 
 /** The canon titles an admit may name: the bags a leaf's wiki reads from its hearth. */
 export const HEARTH_CANON_TITLES: readonly string[] = [LARES_DOC_URI, LARARIUM_DOC_URI];
@@ -45,7 +44,7 @@ export function isOwnHearthCrossing(at: {
 /**
  * What a carried admit's `hearthCanonDocs` may name, read as DATA: the canon titles alone, each with a
  * well-formed document url. Any other title, a torn url or a non-string falls out, so a carriage names
- * neither a private plane nor a key of the leaf's oracle beyond the two canon pointers.
+ * neither a private plane nor a key of the leaf's catalog beyond the two canon pointers.
  *
  * A CANON TITLE NEVER NAMES A SYSTEM PLANE. The carried fields ride the unsigned part of the admit, so a url
  * whose document id DERIVES (the oracle genesis document, and every board the Nexus boards gate federates
@@ -81,16 +80,50 @@ export function hearthCanonDocIds(named: HearthCanonDocs): ReadonlySet<DocumentI
 export class HearthCanonGate implements FederationGate {
   readonly #outer: FederationGate;
   readonly #canon: ReadonlySet<DocumentId>;
+  readonly #planes = new Set<DocumentId>();
 
   constructor(outer: FederationGate, named: HearthCanonDocs) {
     this.#outer = outer;
     this.#canon = hearthCanonDocIds(named);
   }
 
+  /** The joined face's own plane documents, by id, which the own-hearth crossing opens beside the canon once the face proof names them. */
+  admitPlanes(planes: ReadonlySet<DocumentId>): void {
+    for (const id of planes) this.#planes.add(id);
+  }
+
   mayFederate(documentId: DocumentId, peerId?: PeerId): boolean | Promise<boolean> {
-    if (this.#canon.has(documentId)) return true;
+    if (this.#canon.has(documentId) || this.#planes.has(documentId)) return true;
     return this.#outer.mayFederate(documentId, peerId);
   }
+}
+
+/**
+ * THE FACE'S OWN PLANES CROSS AT ITS OWN HEARTH, AS ITS SIGNED LOG NAMES THEM (the Founding Walk, W4). The hearth's view
+ * federates a same-operator session's planes (`face-fleet-view`); the leaf's side of that law is this list. The
+ * bootstrap rests unsealed, so a plane url read from it proves nothing alone: the crossing opens a plane only once the
+ * face proof's projection names it (`provenCrossingPlanes`), and never a reserved document (the oracle, a board).
+ */
+export function facePlaneDocIds(planes: readonly unknown[] | undefined, nexusPubkey: string): ReadonlySet<DocumentId> {
+  const ids = new Set<DocumentId>();
+  if (!planes) return ids;
+  const oracleId = interpretAsDocumentId(oracleGenesisDocUrl());
+  const boards = new DeterministicFederationGate(nexusPubkey);
+  for (const url of planes) {
+    if (typeof url !== "string" || !isValidAutomergeUrl(url)) continue;
+    const docId = interpretAsDocumentId(url as AutomergeUrl) as DocumentId;
+    if (docId === oracleId || boards.mayFederate(docId)) continue;
+    ids.add(docId);
+  }
+  return ids;
+}
+
+/** Of the plane urls a vessel carries for its worn face, exactly those the face proof's projection names, plane by plane. */
+export function provenCrossingPlanes(
+  projection: { readonly planes: Readonly<Record<string, string | undefined>> },
+  carried: Readonly<Record<string, string | null | undefined>>,
+): readonly string[] {
+  return Object.entries(carried).flatMap(([plane, url]) => (url && projection.planes[plane] === url ? [url] : []));
 }
 
 /**
@@ -105,33 +138,43 @@ export function hearthCrossingOf(at: {
   readonly hearthGatePubKey: string | null | undefined;
   readonly holdsDeviceEdge:  boolean;
   readonly hearthCanonDocs:  unknown;
-  readonly relayGatePubKey:  string | null | undefined;
   readonly nexusPubkey:      string;
-}): { readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null } {
+}): {
+  readonly ownHearth: boolean; readonly hearthCanon: HearthCanonDocs; readonly gate: FederationGate | null;
+  /** Open the worn face's proven planes at the own-hearth crossing (`provenCrossingPlanes`); true where the gate widened. */
+  readonly openFacePlanes: (urls: readonly unknown[]) => boolean;
+} {
   const ownHearth = isOwnHearthCrossing(at);
   const hearthCanon: HearthCanonDocs = ownHearth ? admittedCanonDocs(at.hearthCanonDocs, at.nexusPubkey) : {};
-  if (!at.relayGatePubKey) return { ownHearth, hearthCanon, gate: null };
+  if (!at.pinnedGatePubKey) return { ownHearth, hearthCanon, gate: null, openFacePlanes: () => false };
   const boards = new DeterministicFederationGate(at.nexusPubkey);
-  return { ownHearth, hearthCanon, gate: ownHearth ? new HearthCanonGate(boards, hearthCanon) : boards };
+  if (!ownHearth) return { ownHearth, hearthCanon, gate: boards, openFacePlanes: () => false };
+  const gate = new HearthCanonGate(boards, hearthCanon);
+  const openFacePlanes = (urls: readonly unknown[]): boolean => {
+    const ids = facePlaneDocIds(urls, at.nexusPubkey);
+    gate.admitPlanes(ids);
+    return ids.size > 0;
+  };
+  return { ownHearth, hearthCanon, gate, openFacePlanes };
 }
 
-/** The slice of an oracle handle the seating reads and writes. */
-export interface OracleReplica {
+/** The slice of a vessel catalog handle the seating reads and writes. */
+export interface CatalogRegistry {
   doc(): LarDoc | null | undefined;
   change(fn: (doc: LarDoc) => void): void;
 }
 
 /**
- * Seat the admitted canon on this vessel's OWN oracle replica: each named title points at the document the
- * admit named. The keel and every island resolve `@lares` and `@lararium` off that replica, so the leaf's
+ * Seat the admitted canon on this vessel's own catalog: each named title points at the document the
+ * admit named. The keel and every island resolve `@lares` and `@lararium` off that catalog, so the leaf's
  * wiki mounts the hearth's canon. One change carries every pointer that differs; a replica that already
  * names them takes no write.
  */
-export function seatHearthCanon(oracle: OracleReplica, named: HearthCanonDocs): void {
+export function seatHearthCanon(registry: CatalogRegistry, named: HearthCanonDocs): void {
   const owed = Object.entries(admittedCanonDocs(named))
-    .filter(([title, url]) => tiddlerText(oracle.doc()?.tiddlers?.[title]) !== url);
+    .filter(([title, url]) => tiddlerText(ownEntry(registry.doc()?.tiddlers, title)) !== url);
   if (owed.length === 0) return;
-  oracle.change((doc) => {
+  registry.change((doc) => {
     for (const [title, url] of owed) doc.tiddlers[title] = storedLarRecord(title, { text: url }, "hearth-canon");
   });
 }

@@ -4,7 +4,7 @@
  * WHY THIS EXISTS (the daemon-spawn whack-a-mole):
  *   Warm mempalace write-daemons spawn ON-DEMAND — a client `mempalace … mine
  *   --daemon` HANDS OFF to a per-palace write-daemon (`python -m mempalace.daemon
- *   serve --palace <p>`), auto-starting it if absent (capture-flush.ts). The
+ *   serve --palace <p>`), auto-starting it if absent. The
  *   `lares` capture + subagents + telemetry legs of the ingest hook fire on every
  *   Stop / SessionEnd / subagent-dispatch → each mints a daemon. Killing the
  *   CHILDREN (daemons) never stops the SPAWNER (the hook). The cure is to make the

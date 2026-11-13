@@ -1,0 +1,92 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-008/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-008/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-008/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lead-step-8`>>
+
+! Lead step 8 (fresh; read this brief whole, then do ONE step)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lane-state`>>
+
+!! Lane state (from /home/joshu/.lares-scratch/lease-end/state.json)
+* head: cd299ae214d92f118a12a77676eb1048acf23d0b
+* next step: Step 8: read relay/res-006.json and update head only on success; read controller results for every file named in steps/step-007/out.md and blind custody review if available. Fix grant regressions and missing-proof test controls red-first; audit signature-only callers and sealed-frontier anti-rollback before any mesh/grant cure lands. Keep b5b overlap after b5b; request blind Opus review before land.
+
+!!! Owed rows
+* Controller (2026-11-07): `pnpm build` of the worktree FAILS TYPECHECK on the committed mesh cure 4860e2bb7: packages/lararium-mesh/src/device-delegation.ts(197,5) TS2375: '{ ok: false; reason: string | undefined }' not assignable to '{ ok: boolean; reason?: string }' under exactOptionalPropertyTypes. vitest does not typecheck, so 17/17 hid it. Cure it first (omit the key when undefined, or type reason?: string | undefined where the contract allows), commit, then the controller builds and runs your grant files. Every cure step names 'pnpm build' as a check: the dist guard and the typecheck both ride it.
+* Step 7: res-005 succeeded at cd299ae214d92f118a12a77676eb1048acf23d0b. req-006 requests commit of controller-passing mesh cure and retirement test against that head; read res-006 next step and update head only on success. Lane commit does not authorize land; blind Opus custody review and authority-caller cure block land.
+* Step 7: uncommitted grant cure requires founder KEL and founder dyad in face-grant-record, passes founder proof from writer/daemon and ring, and makes unavailable seat proof retryable. Controller runs named files in step-007/out.md. Old tests assume missing proof succeeds and need deliberate control migration; grant cure has not been validated or committed. Missing-proof, rollback, fork, founder-versus-joinee, seat retry, and no-mutation reds need red-first evidence. Anchoring chain inception alone does not establish anti-rollback or a complete live frontier.
+* Step 7: signature-only callers beyond grant remain: ceremony-core.ts:560,1036; mesh/leaf-peer-proof.ts:188,397; mesh/holder-session-proof.ts:55; mesh/persona-group-secret.ts:288,341. Classify each by its actual authority role; do not assume signature verification alone authorizes. b5b owns sibling wiring, sequence overlap after b5b. No b5b composer hunks changed.
+* PACE (controller, 2026-11-07): one step may carry several moves. Do the commit request AND the next cure in the same step when the cure does not depend on the commit's receipt (the broker serializes requests in order; set expectHead to the head the commit will produce only after reading its receipt). Stop at the controller test wall only once per step, with every file you need named together.
+* CORRECTION (controller, 2026-11-07): the blind Opus custody read runs before a SLICE LANDS (the land of a cure onto the span), never before a red gets committed on the lane. The controller already ran device-delegation.test.ts and verified the controls and the red: commit the mesh red now through the broker, then cure the mesh slice: the epoch-free signed edge shape verifies under the pinned root, with the signature-only primitive kept separate from authority.
+* Controller ran (2026-11-07) packages/lararium-mesh/tests/device-delegation.test.ts on the uncommitted tree over 1e82c0d47: RED VALID. 15 pass; the three controls pass (legacy edge accepted, wrong pin refused with 'operator is not the pinned root', atom signature refused); the red fails at :173 (the epoch-free edge: expected {ok:false,...} to deeply equal {ok:true}). Commit it through the broker, then cure the mesh slice.
+* Controller ran (2026-11-07, single file, bwrap, scratch HOME/LAR_ROOT) packages/lararium-keyhive/tests/face-grant-record.test.ts at 1e82c0d47: REDS VALID, red-first proven. 18 pass; RED 1 fails at :292 ('aside' accepted: expected true to be false) after its clear control passed at :291; RED 2 fails at :313 (the epoch-free edge refused: expected false to be true) after its controls passed at :310-312 (an accepted grant passes, and an altered signature refuses with the named reason). Proceed to cure slice (1) per LUNA SLICES; the controller runs each named vitest file until the door fix lands.
+* TEST DOOR FAULT (controller, 2026-11-07, cause read in vitest 5.0.5's cac parser): the broker's vitest door passes the named files after `--`, which cac moves into options['&#45;-'], so vitest gets NO filter and runs the WHOLE package (lease-end res-003 ran 94 files / 544 tests; l27 res-001 ran the whole lares-cli suite, 1751 tests). The controller stopped l27 res-002 (whole lararium-node suite, a daemon-side package: single files only). UNTIL the door's fix lands: request NO vitest tests through the door; name the vitest files you need in out.md as 'controller runs &lt;file>' and the controller runs them outside. The node runner (`node --test`) door stays usable. Read each existing receipt's FAIL lines for your named file only: the pass/fail totals cover the whole package.
+* LUNA SLICES (wave 2, confirmed against code), in cure order: (1) fail closed: the grant writer calls verifyFaceGrantRecord without expectedEpoch (face-join-operation.ts:65-77) and the verifier's freshness stays optional (face-grant-record.ts:136-152, device-delegation.ts:226-244), so a stale grant can count; the sibling `?? 0` fallback (open-browser-vessel.ts:1836-1844, open-node-vessel.ts:3250-3261) is b5b's ground (b5b's lane already cures it to `?? null` + lease-unread refusal; collide after b5b lands, never edit those hunks here); define a device's effect on receiving a removal while isolated. (2) The dyad census with refusal on an incomplete view. (3) K18 wiring rides K18's own row; this lane never depends on it. (4) Burn the lease and true up canon.
+* PENTABARF V (operator, 2026-11-07): believe nothing in canon, the road, these owed rows or research handbacks on their word alone; the system and its docs grew fast. Where a canon claim meets code, measure the code and collide the two; on drift take the most pono side under the house laws and name it (file:line vs carrier#section) in out.md.
+* HOUSE LAW at every fork (operator, 2026-11-07): never stop to hold a fork for the operator. Talk it out: Mu tools and Stances, weigh against No global now, no back-compat in early alpha (burn old shapes outright, re-genesis freely), causal islands, identity-as-relation, Infrastructure-as-Myth; read what a user loses each side; DECIDE, build, and name the fork + reason in out.md. Only a residual uncertainty that survives the talk-out surfaces, as a note.
+* RULING (controller Lares-Awakens, 2026-11-07, RESHAPED after the Luna two-wave collide, seats/luna-w1+w2/final.md: HOLDS-WITH-SLICES): the face delegation lease RETIRES. Every authority reader replaces its epoch freshness check with anchor-pinned persona lineage plus remove-wins standing, and refuses by name when proof is absent, forked or rolled back (never a fallback). The fleet-wide epoch roll is accepted as lost (it assumes a global now). RESHAPE: 'a kapae over the face' DROPS, because canon names four marked edges (dyad, vouch, member, carriage; kapae.mem:110-125) and no face-wide marker; adding a fifth needs a house ruling. Whole-fleet removal stands as set-asides on each KNOWN device-face dyad (a census that refuses when it cannot establish a complete view), or the K18 root re-anchor once K18's production door lands (it does not yet: road :752). No back-compat: epoch fields, readers, the roll command and its guard burn together, last.
+* ROAD (stable-founding-road #/rulings 2026-11-06 'The face lease's end state', row M6): the roll guard (packages/lararium-node/src/commands/persona-lease.ts ~:93) stands UNTIL a census proves every authority reader enforces set-aside; it burns last.
+* RESEARCH (Terra, read whole first): /home/joshu/.lares-scratch/recovery-research/lease-end-state/final.md — names the readers: device-delegation.ts:228, face-reading.ts:43, face-anchor.ts:80 (mesh); ceremony-core.ts:781, face-grant-record.ts:139, face-join.ts:159, face-seat.ts:149, operator-daemon-behavior.ts:439, boot-daemon-keyhive.ts:158, recovery-core.ts:22 (keyhive); open-browser-vessel.ts:1349; device-admit.ts:144 (node). Lines drift: re-measure.
+* OVERLAP: lane b5b (in flight) holds sibling expectedEpoch reader wiring (standSiblingChannel, SiblingLeaf.expectedEpoch) and open-browser-vessel.ts / open-node-vessel.ts composer hunks; touch those files only where a reader must change, and name each such hunk in out.md so the controller sequences the land after b5b.
+* CUSTODY: authority readers count as custody; every slice of this lane gets a blind Opus read before land (controller). Reds land red-first with a control each.
+* Inside the wall a lead step cannot spawn git or run tests: request named tests through the broker's test door, or mark 'controller runs'.
+* Grant authority cure, offline removal behavior, complete-view census, fork and rollback defenses remain owed. Migrate legacy controls on coordinated shape burn, sequence b5b-owned hunks after b5b, keep roll guard and unrelated quorum and bag-capability leases.
+
+!!! Live seats
+* (none)
+
+!!! Worktrees
+* lane: /home/joshu/.lares-scratch/lease-end/wt
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-law`>>
+
+!! STEP LAW
+* ONE step per launch: do the next step above, then stop. A step stays under about 10 to 15 minutes or 40 tool calls.
+* Before you stop, rewrite /home/joshu/.lares-scratch/lease-end/state.json (same keys; keep the step counter as it stands) with the new head, the owed rows, the live seats, the worktree map and the next step, and write your hand-back to /home/joshu/.lares-scratch/lease-end/steps/step-008/out.md.
+* A seat you start runs outside your context: record it in the state and stop; never poll for it. The next step reads its result path.
+* Stop at a wall, at a design question that needs an operator ruling (name it with its options and your lean), or at the push go.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lead-law`>>
+
+!! LEAD LAW (appended by tools/launch-codex.mjs to a lead brief; it binds this lead)
+* You hold no git write access and no credential. Every git act goes through the broker: write a request file `req-<id>.json` (zero-padded, in order) into `<lane-root>/relay/` and read its `res-<id>.json` on your next step. The doors are `commit` (`paths`, the commit message as inline `message` text up to 16 KiB, and `expectHead`), `push` (only when the controller's go names the branch and the head), `worktree`, `worktree-remove`, `install` and `launch`.
+* A commit message follows the `lar:///w1.w2.w3 — summary` convention and ends with the two trailers the session's attribution reminder gives. No `git stash` in any form, no `--no-verify`, no `git push -u`, no force-push, no edit of .git/config.
+* Never write the main checkout (~/Synthetic-Dream-Machine) or its submodule worktrees; work in your own worktree under ~/.lares-scratch only.
+* Never read a credential file or the controller's directory.
+* Never boot a daemon in-tree bare; any boot uses a scratch LAR_ROOT and no global LAR_BAGS.
+* No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
+* Seats start only through the broker's launch door; a Sol seat only through the controller.
+* A stop that needs more than this wall names itself in out.md and stops.
+* Report to the controller (final.md) for any push beyond the lane's go, and never push without its go.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BtcJaKXCbMA8C2v4qxDzi0zKdoUOUq1_9KlvBgeEXyw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

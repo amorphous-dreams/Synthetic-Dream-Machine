@@ -33,6 +33,7 @@ import { interpretAsDocumentId, type AutomergeUrl, type NetworkAdapterInterface,
 import { defaultCryptoProvider } from "./crypto.js";
 import { GatedSyncLeg, LEG_PASS, PortSyncAdapter, carriesChanges, type LegMessage, type LegRefusal, type LegVerdict, type SyncLegGate } from "./gated-sync-leg.js";
 import { isCapabilityProfile, refuseBeyondProfile, type CapabilityProfile, type ProfileRefusal } from "./session-contract.js";
+import { markIslandArrival } from "./island-repo.js";
 
 /** A programming fault against the view: malformed facets, an unknown profile, a second leg. */
 export class SessionViewError extends Error {}
@@ -228,8 +229,13 @@ export class SessionDocumentView {
       this.#maxInboundBytes !== undefined ? { maxInboundBytes: this.#maxInboundBytes } : {},
     );
     this.#leg = leg;
+    // The view's own peer is the house's island peer (road `P26`), proven by its ARRIVAL on this leg: the leg marks it before
+    // the leg joins the network, so the mark precedes the subsystem's `peer` event.
+    let unseat: (() => void) | null = null;
+    leg.on("peer-candidate", ({ peerId }) => { unseat?.(); unseat = markIslandArrival(repo, peerId, leg); });
+    leg.on("peer-disconnected", () => { unseat?.(); unseat = null; });
     repo.networkSubsystem.addNetworkAdapter(leg);
-    this.#detach = () => { repo.networkSubsystem.removeNetworkAdapter(leg); };
+    this.#detach = () => { unseat?.(); unseat = null; repo.networkSubsystem.removeNetworkAdapter(leg); };
   }
 
   /** End the view: the leg stands down and every gate refuses from here on. */

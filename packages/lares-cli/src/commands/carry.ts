@@ -1,0 +1,958 @@
+/**
+ * `lares export <dest>` · `lares import <dest>` — the operator's AUTHORED memory carried across a re-founding.
+ *
+ * A re-founding clears `<root>/hearth` and mints new keys, so the daemon wiki's working layer and each face's kahua
+ * stage come up empty under a new face relation F. This pair carries what the operator wrote across that line as
+ * CONTENT, never as identity: no key, signature, CRDT history or AID travels, and the import writes NEW changes under
+ * the new face's authority. The sensoriums (captured conversation memory, `<root>/sensoriums`) survive by where they
+ * stand and never enter a bundle. Control records rest in the vessel control document and never travel in a bundle;
+ * the daemon wiki travels through the face's working (`wikis/daemon-<F>`) and canon (`bags/daemon-<F>`) mirrors,
+ * and kahua travels through `bags/kahua-<F>`.
+ *
+ * EXPORT (a vessel that holds a disk store and wears its faces, standing):
+ *   1. refuses a dest inside the house root or the workspace, or one that already stands;
+ *   2. reads the census (`lares vessel census`): an unsettled carrier, a held save or an unanswered line refuses by name,
+ *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
+ *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
+ *      memory and no pet-name, or two that share one, refuses;
+ *   4. copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
+ *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
+ *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
+ *   5. writes `manifest.json` and `re-declare.json`, reads every byte back against the manifest, and only then moves
+ *      the bundle into place.
+ *
+ * IMPORT (previews by default; `--apply` writes):
+ *   1. verifies the whole bundle before touching anything (`verifyBundle`);
+ *   2. replays the re-declare list as fresh acts (pet-name, Handle, seat and chair) where the vessel's face holds none;
+ *   3. maps each bundle face's pet-name to the ONE face on this vessel that carries it, refusing by name where none or
+ *      two do (never a silent merge into another face's memory);
+ *   4. re-pours working rows into the new face's daemon wiki through the ingest gesture (unattended, so a diverged id
+ *      stands off through the Confluence gate and never overwrites), raising each kāpae a shadow speaks;
+ *   5. re-lifts each kahua head under the new face's grant, keyed by title + body digest (a title already holding that
+ *      digest reads landed, a title holding a body the bundle never carried stands off);
+ *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
+ *      into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
+ *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview.
+ *   A journal under `<root>/config/carry-journal/<bundle-id>.<faces>.ndjson` (the bundle and the target faces' relations) records
+ *   each landed act: an interrupted import re-enters to the same end, a second import of the same bundle onto the same faces
+ *   lands nothing, and the same bundle walked onto fresh faces after a re-founding imports afresh.
+ *
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
+ */
+import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
+import { randomBytes } from "node:crypto";
+import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { repoRoot } from "@lararium/mesh/node";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf } from "@lararium/mesh";
+import {
+  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
+  KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
+  listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier,
+} from "@lararium/node";
+import type { ParsedArgs } from "../parse-args.js";
+import { emit, exitFor } from "../render.js";
+import { readCensus, censusLine, type CensusReading } from "./census.js";
+import { scanFiles, candidatesOf, settleIngest, openSyncedTree, type ScanRow } from "../ingest-core.js";
+import { discoverHoldings, canonIsDisk } from "../holdings.js";
+import { summaryOutput } from "../verb-result.js";
+import { vesselDid, larBagsDir } from "../env.js";
+import { runVerb } from "../verb-call.js";
+import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
+import { storeVerb, storeFailure } from "../store-door.js";
+import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
+import { writeFaceLabels, readFaceLabel, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
+import { moveFaceToAshes } from "../ashes.js";
+import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
+import {
+  CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, CarryBundleRefused,
+  type CarryFace, type CarryFile, type CarryKahuaHead, type CarryManifest, type CarryOmission, type CarryRedeclare,
+  type CarryRedeclareFace, type CarryRow, type VerifiedBundle,
+} from "../carry-manifest.js";
+
+
+/** One face this vessel wears, as the doors read it. */
+export interface CarryVesselFace {
+  readonly handleIndex: number;
+  readonly petname: string | null;
+  /** The face relation F its private folders carry, read off its verified log; null where the log pins none. */
+  readonly relation: string | null;
+  readonly handle: string | null;
+  readonly seat: boolean;
+  readonly chair: string | null;
+  /** The stage's standing heads, or null where the stage would not read (`kahuaRefusal` says why). */
+  readonly kahua: readonly CarryKahuaHead[] | null;
+  readonly kahuaRefusal?: string;
+  /** The store door's name for that refusal (`storeFailure`): `vessel-locked`, `daemon-unreachable`, … */
+  readonly kahuaRefusalCode?: string;
+  /**
+   * Whether the standing composition WEARS this face (lit and proved): the daemon's working layer holds this face's document
+   * alone. Absent where the door answered no such reading (a direct holder).
+   */
+  readonly worn?: boolean;
+}
+
+/**
+ * THE WORN FACE: the one face whose private mirrors lay through the ordinary wave (the daemon's working layer holds its document);
+ * every other OPEN face lays through a wave that names it (the lit set), and a shut face waits until it opens (`lares vault unlock
+ * --face N`). No face's private memory ever lands in another face. Where the vessel named which face it wears, that face (or none);
+ * where no door answered the reading (a direct holder), the one face carrying a relation, else none.
+ */
+export function litFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | null {
+  const worn = faces.filter((f) => f.worn === true && f.relation !== null);
+  if (worn.length === 1) return worn[0]!;
+  if (faces.some((f) => f.worn !== undefined)) return null;
+  const related = faces.filter((f) => f.relation !== null);
+  return related.length === 1 ? related[0]! : null;
+}
+
+/** The words a SHUT face reads: unlock it, then seed (or import) again. A named expected state, never a stand-off, and it
+ *  never blocks the faces that stand open (THE LIT SET: one seed lays every open face, each in its own layer). */
+export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "seed" | "import"): string {
+  return `${face.petname ?? `h${face.handleIndex}`} stays shut: \`lares vault unlock --face ${face.handleIndex}\`, then ${verb} again`;
+}
+
+/** What one ingest wave settled, as the carry verbs read it. */
+export interface CarryIngestAnswer {
+  readonly landed: readonly string[];
+  readonly conflicts: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
+  readonly refused: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
+  readonly unanswered: readonly string[];
+  readonly kapaeRaised: readonly string[];
+  readonly kapaeRefused: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
+}
+
+/** The doors the two verbs reach a vessel through, injectable so a test drives them with no vessel standing. */
+export interface CarryDoors {
+  readonly census: () => Promise<CensusReading>;
+  readonly faces: () => Promise<CarryVesselFace[]>;
+  readonly tempConsented: () => readonly string[];
+  readonly rename: (handleIndex: number, petname: string) => Promise<void>;
+  readonly declareHandle: (handleIndex: number, handle: string) => Promise<void>;
+  readonly standSeat: (handleIndex: number, chair: string | null) => Promise<void>;
+  /** `face`: THE FACE-NAMED WAVE, the open face (not the worn one) whose own layer takes it; the island lands it only where that
+   *  face owns the document (`face-unresolved`, `ingest-face-foreign` otherwise), never on the worn face. */
+  readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[]; readonly inWiki?: boolean; readonly wiki?: string; readonly face?: number }) => Promise<CarryIngestAnswer>;
+  /** The wiki slugs this vessel's catalog registers. */
+  readonly heldSlugs: () => Promise<ReadonlySet<string>>;
+  /** Mint a bag (and the wiki it opens as) through the existing CREATE road. */
+  readonly mintBag: (bagUri: string) => Promise<void>;
+  /**
+   * The disk-sourced holdings whose canon this vessel never seeded (no synced base stands for any carrier of the bag).
+   * An import lands its rows over seeded canon alone, so it refuses while one stands unseeded. Absent: no guard.
+   */
+  readonly unseeded?: () => readonly string[];
+  /**
+   * The override base (`meta.overrideBase`) each working copy of one layer names, by title: the export carries them
+   * beside the files, since a base never projects. Absent: rows carry none.
+   */
+  readonly overrideBases?: (workingBag: string) => Promise<Readonly<Record<string, string>>>;
+  readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
+}
+
+// ── the live doors ─────────────────────────────────────────────────────────────────────────────────────────────
+
+function fleetStores() {
+  return { petnames: makeFleetPetnameStore(sealedPetnameStore()), declarations: makeFleetDeclarationStore(sealedDeclarationStore()) };
+}
+
+async function liveFaces(): Promise<CarryVesselFace[]> {
+  const { petnames, declarations } = fleetStores();
+  const out: CarryVesselFace[] = [];
+  for (const { handleIndex } of (await readPersonaRoots()).roots) {
+    const declaration = await declarations.get(handleIndex);
+    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, worn: boolean | undefined;
+    try {
+      const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
+      relation = typeof output["relation"] === "string" ? output["relation"] : null;
+      if (typeof output["worn"] === "boolean") worn = output["worn"];
+      const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
+      kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as CarryKahuaHead[] : []))
+        .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
+    } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); kahuaRefusalCode = storeFailure(e).code; }
+    out.push({
+      handleIndex, petname: (await petnames.get(handleIndex)) ?? null, relation,
+      handle: declaration?.handle ?? null, seat: declaration?.seat === true,
+      chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(handleIndex) : null,
+      kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
+      ...(worn !== undefined ? { worn } : {}),
+    });
+  }
+  // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a seed after a
+  // re-founding adopts a former face's folders by pet-name from disk alone (`face-labels.ts`).
+  writeFaceLabels(out);
+  return out;
+}
+
+export const LIVE_CARRY_DOORS: CarryDoors = {
+  census: () => readCensus(),
+  faces: liveFaces,
+  tempConsented: () => tempConsentedSlugs(loadLaresConfig()),
+  rename: async (i, petname) => {
+    const formerPetname = await ownPersonaPetname(fleetStores().petnames, i).catch(() => undefined) ?? null;
+    await renameOwnPersona(fleetStores().petnames, i, petname);
+    // A carried rename names the face too: its label follows the pet-name it now wears.
+    await labelFaceAtNaming({ handleIndex: i, petname, formerPetname }, faceRelationOnStage);
+  },
+  declareHandle: async (i, handle) => declarePersonaHandle(fleetStores().declarations, i, handle),
+  standSeat: async (i, chair) => standForKahuSeat(fleetStores().declarations, i, true, chair ?? undefined),
+  ingest: async (wave) => {
+    // A tree held in memory: the gesture pins no base at a bundle path, and the projector pins its own where it writes.
+    const settled = await settleIngest({ source: wave.source, toBag: wave.toBag, candidates: wave.candidates, did: await vesselDid(), unattended: true,
+      ...(wave.inWiki === true ? { inWiki: true } : {}), ...(wave.wiki !== undefined ? { wiki: wave.wiki } : {}),
+      ...(wave.kapae.length > 0 ? { kapae: wave.kapae } : {}), ...(wave.face !== undefined ? { face: wave.face } : {}) }, new SyncedTree(null));
+    if (settled.first.status === "error") throw new Error(settled.first.errorMessage ?? "INGEST refused");
+    const kapae = (summaryOutput(settled.first) as { kapae?: { raised?: unknown; standing?: unknown; refused?: unknown } } | null)?.kapae;
+    const list = (x: unknown): string[] => (Array.isArray(x) ? x.map(String) : []);
+    return {
+      landed: [...settled.landed], unanswered: [...settled.unanswered],
+      conflicts: settled.conflicts.map((c) => ({ uri: c.uri, why: c.why })), refused: settled.refused.map((c) => ({ uri: c.uri, why: c.why })),
+      kapaeRaised: [...list(kapae?.raised), ...list(kapae?.standing)],
+      kapaeRefused: (Array.isArray(kapae?.refused) ? kapae.refused as Array<Record<string, unknown>> : []).map((r) => ({ uri: String(r["uri"]), why: String(r["code"]) })),
+    };
+  },
+  heldSlugs: async () => {
+    const r = await runVerb("list-wikis", {}, await vesselDid());
+    if (r.status === "error") throw new Error(r.errorMessage ?? "list-wikis refused");
+    const wikis = (summaryOutput(r) as { wikis?: Array<{ slug?: unknown }> } | null)?.wikis ?? [];
+    return new Set(wikis.map((w) => String(w.slug)));
+  },
+  mintBag: async (bagUri) => {
+    // The CREATE road `lares act CREATE --bag` walks (`act.ts`): the catalog plane, a fresh change nonce in the effect key.
+    const actionArgs = { bag: bagUri, plane: "catalog" };
+    const effectKey = await taskContentId({ subject: bagUri, command: "CREATE", args: actionArgs, nonce: newChangeId() });
+    const r = await runVerb("CREATE", actionArgs, await vesselDid(), { requestId: newRequestId(), effectKey });
+    if (r.status === "error") throw new Error(r.errorMessage ?? `CREATE ${bagUri} refused`);
+  },
+  unseeded: () => {
+    const tree = openSyncedTree();
+    const seededBags = new Set(tree.rows().map((r) => r.bagId));
+    return discoverHoldings(larBagsDir()).filter((h) => { try { return canonIsDisk(h); } catch { return false; } })
+      .filter((h) => !seededBags.has(h.toBag)).map((h) => h.holding);
+  },
+  overrideBases: async (workingBag) => {
+    const out: Record<string, string> = {};
+    let after: string | null = null;
+    for (;;) {
+      const r = await runVerb("override-bases", { bag: workingBag, ...(after !== null ? { after } : {}) }, await vesselDid());
+      if (r.status === "error") throw new Error(r.errorMessage ?? "override-bases refused");
+      const page = (summaryOutput(r) ?? {}) as { bases?: Array<{ title?: unknown; base?: unknown }>; next?: unknown };
+      for (const b of page.bases ?? []) if (typeof b.title === "string" && typeof b.base === "string") out[b.title] = b.base;
+      if (typeof page.next !== "string" || page.next === after) return out;
+      after = page.next;
+    }
+  },
+  // A RE-LIFT STAGES FIRST: the head lands in the new face's local canon (bags/daemon-<F>, unsigned), and the lift names
+  // that staged row by its digest, as every lift does; the person's eyes rode the preview and its typed count upstream.
+  kahuaLift: async (face, lift) => {
+    const staged = (await storeVerb("kahua-stage", { face, title: lift.title, text: lift.text, fields: lift.fields })).output;
+    if (typeof staged["digest"] !== "string") throw new Error(`kahua-stage answered no digest for ${lift.title}`);
+    const { output } = await storeVerb("kahua-lift", { face, title: lift.title, digest: staged["digest"], taint: lift.taint, sources: lift.sources, parent: lift.parent });
+    if (typeof output["cid"] !== "string") throw new Error(`kahua-lift answered no cid for ${lift.title}`);
+    return { cid: output["cid"] };
+  },
+};
+
+// ── shared ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** A refusal the verbs raise by name; the message carries the cure. */
+export class CarryRefused extends Error {
+  override readonly name = "CarryRefused";
+  constructor(readonly code: string, message: string) { super(`${code}: ${message}`); }
+}
+
+/** A path as the filesystem resolves it: the nearest standing ancestor's real path, with the rest appended, so a link
+ *  that leads into the house reads as inside it. */
+function realish(path: string): string {
+  let head = resolve(path);
+  const tail: string[] = [];
+  for (;;) {
+    try { return join(realpathSync(head), ...tail.reverse()); } catch { /* not standing yet */ }
+    const parent = dirname(head);
+    if (parent === head) return resolve(path);
+    tail.push(basename(head));
+    head = parent;
+  }
+}
+const inside = (base: string, path: string): boolean => {
+  const b = realish(base), p = realish(path);
+  return p === b || p.startsWith(b + sep);
+};
+
+/** Every plain file under `dir` (posix rel paths, sorted), each link or special file named apart; an absent dir reads empty. */
+function plainFiles(dir: string): { files: string[]; odd: string[] } {
+  const files: string[] = [], odd: string[] = [];
+  const visit = (abs: string, rel: string): void => {
+    let names: string[];
+    try { names = readdirSync(abs).sort(); } catch { return; }
+    for (const name of names) {
+      const a = join(abs, name), r = rel === "" ? name : `${rel}/${name}`;
+      const st = lstatSync(a);
+      if (st.isDirectory()) visit(a, r);
+      else if (st.isFile()) files.push(r);
+      else odd.push(r);
+    }
+  };
+  visit(dir, "");
+  return { files, odd };
+}
+
+const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
+
+// ── export ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** What an export wrote. */
+export interface CarryExportResult { readonly dest: string; readonly manifest: CarryManifest }
+
+/**
+ * Write a bundle at `dest`. Throws {@link CarryRefused} naming what stays unsettled, unclaimed or unkeyed; with
+ * `acceptOmissions` an unsettled census and an unclaimed folder land in the manifest's omissions instead.
+ */
+export async function carryExport(dest: string, opts: { readonly acceptOmissions: boolean; readonly doors: CarryDoors }): Promise<CarryExportResult> {
+  const { doors, acceptOmissions } = opts;
+  const target = resolve(dest);
+  const house = larHouseRoot();
+  // THE CONFIG HOME TAKES A BUNDLE: a reset clears the hearth alone and keeps config, and the container binds config to the host
+  // (`/lar/config` ← `$LARES_HOUSE/config`), so a bundle exported through the shim rests where the host reads it and the
+  // re-founding never reaches (the vault backup's own precedent). Every other house class refuses.
+  if (inside(house, target) && !inside(larConfigHome(), target)) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house, or under its config home ${resolve(larConfigHome())}, which a reset keeps`);
+  if (inside(repoRoot, target)) throw new CarryRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
+  if (existsSync(target)) throw new CarryRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
+  const omissions: CarryOmission[] = [];
+
+  // A SETTLED PROJECTION FIRST: what the census names would leave out of the copy.
+  const census = await doors.census();
+  if (!census.clean) {
+    const lines = [...census.items.map(censusLine), ...census.unanswered.map((u) => `unanswered  ${u.part}: ${u.why}`)];
+    if (!acceptOmissions) throw new CarryRefused("carry-unsettled", `the census names ${lines.length} item(s) the projection has not settled, so a copy now would leave them out:\n  ${lines.join("\n  ")}\nsettle them (unlock the vault, let the projector drain) and export again, or pass --accept-omissions for an explicitly partial bundle`);
+    const held = census.items.filter((i) => i.kind === "held-save").map(censusLine);
+    const carriers = census.items.filter((i) => i.kind === "carrier").map(censusLine);
+    if (held.length > 0) omissions.push({ kind: "held-saves", detail: "saves the sealed rest holds in memory, never on disk", items: held, count: held.length });
+    if (carriers.length > 0) omissions.push({ kind: "unsettled-carriers", detail: "carriers the disk projector had not settled", items: carriers, count: carriers.length });
+    if (census.unanswered.length > 0) omissions.push({ kind: "census-unanswered", detail: "census lines that could not answer", items: census.unanswered.map((u) => `${u.part}: ${u.why}`) });
+  }
+
+  const faces = await doors.faces();
+  const byRelation = new Map<string, CarryVesselFace>();
+  for (const f of faces) if (f.relation !== null) byRelation.set(f.relation, f);
+  const projections = larProjectionsHome();
+  const wikisDir = join(projections, "wikis"), bagsDir = join(projections, "bags");
+  const folders = (dir: string): string[] => { try { return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(); } catch { return []; } };
+  const faceFolderOf = (name: string): CarryVesselFace | null => {
+    const relation = isDaemonFaceFolder(name) ? name.slice("daemon-".length) : isKahuaFaceFolder(name) ? name.slice("kahua-".length) : null;
+    return relation === null ? null : byRelation.get(relation) ?? null;
+  };
+  // A RE-FOUNDING KEEPS PROJECTIONS (survive-refound ruling), so a former face's folders stay under the projections root,
+  // claimed by no face this vessel wears. The refusal names each folder and the step that clears it.
+  const unclaimedFolders: string[] = [];
+  for (const name of folders(wikisDir).filter(isDaemonFaceFolder)) if (faceFolderOf(name) === null) unclaimedFolders.push(join(wikisDir, name));
+  for (const name of folders(bagsDir).filter((name) => isKahuaFaceFolder(name) || isDaemonFaceFolder(name))) if (faceFolderOf(name) === null) unclaimedFolders.push(join(bagsDir, name));
+  const unclaimed = unclaimedFolders.length;
+  if (unclaimed > 0) {
+    if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) belong to no face this vessel wears:\n  ${unclaimedFolders.join("\n  ")}\n`
+      + `each holds a face's private memory in cleartext: a face whose key stands shut (unlock every face and export again), or a former face a re-founding left behind (projections survive a re-founding). `
+      + `For a former face whose bundle you already imported, move each folder out of the house root (\`mv <folder> <a place outside ${resolve(house)}>\`) and export again; `
+      + `or export with --accept-omissions to leave them where they stand, out of the bundle`);
+    omissions.push({ kind: "unclaimed-face-folders", detail: "face folders no face this vessel wears claims; they stay under the projections root", items: unclaimedFolders, count: unclaimed });
+  }
+
+  // THE FACES KEY BY PET-NAME. A face that carries memory needs one, and no two may share it.
+  const carries = (f: CarryVesselFace): boolean => f.relation !== null && (existsSync(join(wikisDir, daemonFaceFolder(f.relation))) || existsSync(join(bagsDir, `kahua-${f.relation}`)) || existsSync(join(bagsDir, daemonFaceFolder(f.relation))) || (f.kahua?.length ?? 0) > 0);
+  for (const f of faces) {
+    if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new CarryRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
+    if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new CarryRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
+    if (f.kahuaRefusal !== undefined) omissions.push({ kind: "face-unread", detail: `the face at h${f.handleIndex} would not read its stage: ${f.kahuaRefusal}` });
+  }
+  const named = faces.filter((f) => f.petname !== null && f.petname.trim() !== "").sort((a, b) => a.handleIndex - b.handleIndex);
+  const seenNames = new Map<string, number>();
+  for (const f of named) {
+    const prior = seenNames.get(f.petname!);
+    if (prior !== undefined) throw new CarryRefused("carry-face-duplicate-petname", `the faces at h${prior} and h${f.handleIndex} both carry the pet-name "${f.petname}", and a bundle keys each face by its pet-name alone: rename one and export again`);
+    seenNames.set(f.petname!, f.handleIndex);
+  }
+  const bundleFaces: CarryFace[] = named.map((f, i) => ({ key: `f${i}`, petname: f.petname! }));
+  const keyOf = new Map(named.map((f, i) => [f.handleIndex, `f${i}`] as const));
+
+  // THE OVERRIDE BASES: a base rides the record's meta envelope and never projects, so the export reads it by title and
+  // carries it on the working row. Each face's daemon working rows read that FACE's bases sidecar (the vessel keeps it off the
+  // working slots the owner table files under the face's group), never the face the daemon wears now; another wiki's working
+  // rows read the daemon's override-bases read.
+  const basesOf = new Map<string, Readonly<Record<string, string>>>();
+  const baseFor = async (workingBag: string): Promise<Readonly<Record<string, string>>> => {
+    if (!doors.overrideBases) return {};
+    const held = basesOf.get(workingBag);
+    if (held) return held;
+    let read: Readonly<Record<string, string>> = {};
+    try { read = await doors.overrideBases(workingBag); }
+    catch (e) { omissions.push({ kind: "override-bases-unread", detail: `the daemon's override-bases read did not answer for ${workingBag} (${e instanceof Error ? e.message : String(e)}): the daemon may not reach that layer, or may run a build without the read. Its working rows travel WITHOUT their override bases, and each copy forks a fresh base off the canon standing where it lands, so canon's fresher-than-the-copy warning may stay silent for them after the import` }); }
+    basesOf.set(workingBag, read);
+    return read;
+  };
+  const withBase = (row: Omit<CarryRow, "sha256" | "path">, bases: Readonly<Record<string, string>>): Omit<CarryRow, "sha256" | "path"> => {
+    const base = row.title !== null ? bases[row.title] : undefined;
+    return base !== undefined ? { ...row, overrideBase: base } : row;
+  };
+
+  // THE COPY PLAN: source abs path -> bundle rel path, with the row each file makes.
+  const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
+  const tempBytes: Record<string, number> = {};
+  const consented = new Set(doors.tempConsented());
+  let strays = 0, odd = 0;
+  const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<CarryRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
+    const listed = plainFiles(srcDir);
+    odd += listed.odd.length;
+    for (const rel of listed.files) {
+      if (skipTop.includes(rel.split("/")[0]!)) continue;
+      if (isStray(rel)) { strays++; continue; }
+      const abs = join(srcDir, ...rel.split("/"));
+      plan.push({ from: abs, to: `${toDir}/${rel}`, row: rowOf(rel, abs) });
+    }
+  };
+  for (const name of folders(wikisDir)) {
+    const src = join(wikisDir, name);
+    const face = faceFolderOf(name);
+    if (isDaemonFaceFolder(name)) {
+      if (face === null) continue;
+      const fk = keyOf.get(face.handleIndex)!, pet = face.petname!;
+      const faceBases = readFaceBases(face.relation!, projections);
+      addTree(src, `faces/${fk}/working`, (rel, abs) => {
+        if (rel.endsWith(KAPAE_EXT)) {
+          const read = readKapaeShadow(readFileSync(abs, "utf8"));
+          return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
+        }
+        return withBase({ face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, faceBases);
+      }, [TEMP_LAYER_DIR, "recovery"]);
+      addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
+      if (consented.has("daemon")) {
+        addTree(join(src, TEMP_LAYER_DIR), `faces/${fk}/temp`, (_rel, abs) => {
+          const bag = wikiSlotUri("daemon", "temp");
+          tempBytes[bag] = (tempBytes[bag] ?? 0) + lstatSync(abs).size;
+          return { face: pet, bag, layer: "temp", title: null, rowKey: null };
+        });
+      } else if (existsSync(join(src, TEMP_LAYER_DIR))) omissions.push({ kind: "temp-unconsented", detail: `the daemon wiki's temp folder stands with no consent row (projection.temp.daemon); it stays behind` });
+      continue;
+    }
+    if (isPrivateProjectionSlug(name)) continue;
+    addTree(join(src, "recovery"), `wikis/${name}/drafts`, () => ({ face: null, bag: wikiSlotUri(name, "draft"), layer: "draft", title: null, rowKey: null }));
+    if (consented.has(name)) {
+      addTree(join(src, TEMP_LAYER_DIR), `wikis/${name}/temp`, (_rel, abs) => {
+        const bag = wikiSlotUri(name, "temp");
+        tempBytes[bag] = (tempBytes[bag] ?? 0) + lstatSync(abs).size;
+        return { face: null, bag, layer: "temp", title: null, rowKey: null };
+      });
+    }
+    const wikiBases = await baseFor(wikiSlotUri(name, "working"));
+    addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
+  }
+  for (const name of folders(bagsDir)) {
+    const src = join(bagsDir, name);
+    if (isDaemonFaceFolder(name)) {
+      const face = faceFolderOf(name);
+      if (face === null) continue;
+      const fk = keyOf.get(face.handleIndex)!;
+      addTree(src, `faces/${fk}/canon`, (_rel, abs) => ({ face: face.petname!, bag: daemonFaceCanonBag(face.relation!), layer: "daemon-canon", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
+      continue;
+    }
+    if (isKahuaFaceFolder(name)) {
+      const face = faceFolderOf(name);
+      if (face === null) continue;
+      const fk = keyOf.get(face.handleIndex)!;
+      addTree(src, `faces/${fk}/kahua`, () => ({ face: face.petname!, bag: KAHUA_BAG, layer: "kahua-carrier", title: null, rowKey: null }));
+      continue;
+    }
+    if (name === "daemon") {
+      // This directory has no disk mirror grant, so its files stay out of the carry bundle.
+      continue;
+    }
+    if (isPrivateProjectionSlug(name)) continue;
+    addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
+  }
+  if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
+  if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
+  omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
+
+  // WRITE BESIDE THE DEST, VERIFY, THEN MOVE INTO PLACE.
+  const staging = join(dirname(target), `.${basename(target)}.lar-tmp-${randomBytes(6).toString("hex")}`);
+  mkdirSync(staging, { recursive: true });
+  try {
+    const files: CarryFile[] = [];
+    const rows: CarryRow[] = [];
+    const counts = zeroCounts();
+    const put = (rel: string, bytes: Buffer | string): CarryFile => {
+      const abs = join(staging, ...rel.split("/"));
+      mkdirSync(dirname(abs), { recursive: true });
+      writeFileSync(abs, bytes, { flag: "wx" });
+      const buf = typeof bytes === "string" ? Buffer.from(bytes, "utf8") : bytes;
+      const file = { path: rel, sha256: sha256Hex(buf), bytes: buf.length };
+      files.push(file);
+      return file;
+    };
+    for (const p of plan) {
+      const abs = join(staging, ...p.to.split("/"));
+      mkdirSync(dirname(abs), { recursive: true });
+      copyFileSync(p.from, abs);
+      const buf = readFileSync(abs);
+      files.push({ path: p.to, sha256: sha256Hex(buf), bytes: buf.length });
+      if (p.row !== null && !p.to.endsWith(".meta")) { rows.push({ ...p.row, sha256: sha256Hex(buf), path: p.to }); counts[p.row.layer]++; }
+    }
+    for (const f of named) {
+      if (!f.kahua || f.kahua.length === 0) continue;
+      const fk = keyOf.get(f.handleIndex)!;
+      const heads = [...f.kahua].sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : a.cid < b.cid ? -1 : 1));
+      const file = put(`faces/${fk}/${KAHUA_HEADS_FILE}`, `${JSON.stringify(heads, null, 2)}\n`);
+      for (const h of heads) { rows.push({ face: f.petname, bag: KAHUA_BAG, layer: "kahua-head", title: h.title, rowKey: h.cid, sha256: sha256Hex(h.text), path: file.path }); counts["kahua-head"]++; }
+    }
+    const redeclare: CarryRedeclare = {
+      schema: CARRY_SCHEMA,
+      faces: named.map((f): CarryRedeclareFace => ({ face: keyOf.get(f.handleIndex)!, handleIndex: f.handleIndex, petname: f.petname!, handle: f.handle, seat: f.seat, chair: f.seat ? f.chair : null })),
+    };
+    put(REDECLARE_FILE, `${JSON.stringify(redeclare, null, 2)}\n`);
+    files.sort((a, b) => (a.path < b.path ? -1 : 1));
+    const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing() };
+    writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
+    verifyBundle(staging);      // every byte read back against the manifest before the bundle takes its name
+    renameSync(staging, target);
+    return { dest: target, manifest };
+  } catch (e) {
+    rmSync(staging, { recursive: true, force: true });
+    throw e;
+  }
+}
+
+/**
+ * What the acquired library held, by collection, with its index carrier's digest. The originals survive a re-founding in
+ * place (`<root>/library`, outside the hearth) and never enter a bundle; this listing lets a reader see what stood there.
+ */
+function libraryListing(): Array<{ readonly collection: string; readonly indexSha256: string | null }> {
+  let collections: string[];
+  try { collections = listCollections(); } catch { return []; }
+  return collections.map((collection) => {
+    let indexSha256: string | null = null;
+    try { indexSha256 = sha256Hex(readFileSync(join(libraryCollectionDir(collection), "index.mem"))); } catch { /* no index yet */ }
+    return { collection, indexSha256 };
+  });
+}
+
+
+/**
+ * The record a carrier file holds, as the fields its carrier form reads, or null where the bytes name no record this reader
+ * parses: a `.tid` (its block, then the text), a `.json` (a one-element array of field strings), or a content file beside its
+ * `.meta` sidecar (the sidecar's block, the file as the text). One trailing newline the projector writes never counts.
+ */
+export function carrierRecordOf(file: string, bytes: Buffer, meta: Buffer | null): Record<string, string> | null {
+  const text = bytes.toString("utf8");
+  const trim = (t: string): string => t.replace(/\n$/, "");
+  if (file.endsWith(".tid")) {
+    const fields = parseTidCarrier(text);
+    return fields === null ? null : { ...fields, text: trim(fields["text"] ?? "") };
+  }
+  if (file.endsWith(".json")) {
+    try {
+      const v = JSON.parse(text) as unknown;
+      const one = Array.isArray(v) && v.length === 1 ? v[0] : null;
+      if (one === null || typeof one !== "object") return null;
+      return Object.fromEntries(Object.entries(one as Record<string, unknown>).map(([k, x]) => [k, String(x)]));
+    } catch { return null; }
+  }
+  if (meta === null) return null;
+  const fields = parseTidCarrier(`${meta.toString("utf8").replace(/\n+$/, "")}\n\n`);
+  return fields === null ? null : { ...fields, text: trim(text) };
+}
+
+/** Whether two carrier files hold one record: their carrier forms (`carrierFormOf`) agree. Bytes that parse to no record read false. */
+export function sameCarrierRecord(a: Record<string, string> | null, b: Record<string, string> | null): boolean {
+  if (a === null || b === null) return false;
+  const fa = carrierFormOf(a), fb = carrierFormOf(b);
+  return fa.body === fb.body && (fa.meta ?? null) === (fb.meta ?? null);
+}
+
+// ── import ─────────────────────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * `<root>/config/carry-journal/<bundle-id>.<faces>.ndjson`. The config class survives a restart (the run class stands in tmpfs
+ * inside the container, and an interrupted import must find its journal again) and never sits in the hearth.
+ *
+ * THE JOURNAL KEYS BY THE BUNDLE AND THE FACES IT LANDS ON: `<faces>` digests the sorted relations of the target faces. A reset
+ * keeps config, so a journal keyed by the bundle alone would read every act landed when the same bundle walks onto FRESH faces
+ * after a re-founding, and the import would land nothing; keyed by the target relations too, a re-walk imports afresh, while
+ * a second import onto the same faces still lands nothing.
+ */
+export function carryJournalPath(bundleId: string, targetRelations: readonly string[]): string {
+  const faces = sha256Hex([...targetRelations].sort().join("\n")).slice(0, 16);
+  return join(larConfigHome(), "carry-journal", `${bundleId}.${faces}.ndjson`);
+}
+
+interface Journal { readonly done: Map<string, string>; mark(key: string, value: string): void }
+
+function openJournal(bundleId: string, targetRelations: readonly string[], write: boolean): Journal {
+  const path = carryJournalPath(bundleId, targetRelations);
+  const done = new Map<string, string>();
+  try {
+    for (const line of readFileSync(path, "utf8").split("\n")) {
+      if (line.trim() === "") continue;
+      try { const r = JSON.parse(line) as { key?: unknown; value?: unknown }; if (typeof r.key === "string") done.set(r.key, String(r.value ?? "")); } catch { /* a torn last line */ }
+    }
+  } catch { /* no journal yet */ }
+  return {
+    done,
+    mark(key, value) {
+      done.set(key, value);
+      if (!write) return;
+      mkdirSync(dirname(path), { recursive: true });
+      appendFileSync(path, `${JSON.stringify({ key, value })}\n`);
+    },
+  };
+}
+
+/** One class's outcome. */
+export interface CarryTally { landed: number; already: number; stoodOff: string[]; refused: string[]; planned: number }
+const tally = (): CarryTally => ({ landed: 0, already: 0, stoodOff: [], refused: [], planned: 0 });
+
+export interface CarryImportResult {
+  readonly bundleId: string;
+  readonly applied: boolean;
+  /** Bundle face pet-name -> the handle index it lands on. */
+  readonly faceMap: Readonly<Record<string, number>>;
+  readonly redeclare: readonly string[];
+  readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
+  /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
+  readonly minted: readonly string[];
+  readonly skipped: readonly string[];
+  /** The former faces' folders this import moved under `projections/ashes/<relation>/`, by relation. */
+  readonly ashes: ReadonlyArray<{ readonly relation: string; readonly moved: readonly string[] }>;
+  /** The former faces' folders left standing, each with why (a partial landing). */
+  readonly ashesLeft: ReadonlyArray<{ readonly relation: string; readonly why: string }>;
+  /** The bundle faces whose face here stands SHUT: nothing of theirs laid into any layer; unlock each and import again. */
+  readonly waiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
+  /** What a preview names that the apply would refuse (an unseeded canon), each with its cure. */
+  readonly warnings: readonly string[];
+}
+
+/**
+ * Import the bundle at `src`. The bundle verifies whole before anything moves; preview (`apply` false) reads the vessel
+ * and plans every act, and writes nothing. Throws {@link CarryRefused} (or {@link CarryBundleRefused}) by name.
+ */
+/** The store door's names for a vessel that stands down or locked: a face reads no relation under any of them. */
+const SHUT_VESSEL_CODES: ReadonlySet<string> = new Set(["vessel-locked", "daemon-unreachable", "vessel-composing"]);
+
+export async function carryImport(src: string, opts: { readonly apply: boolean; readonly doors: CarryDoors }): Promise<CarryImportResult> {
+  const { doors, apply } = opts;
+  const bundle: VerifiedBundle = verifyBundle(resolve(src));
+  const { manifest, redeclare } = bundle;
+  // THE ORDER GUARD: the walk runs found -> up -> seed -> import. An import lands its rows over the canon the seed
+  // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over
+  // an unseeded canon the import's rows would land as the canon itself, and the seed after would stand off against
+  // them. It refuses by name rather than seeding itself: a seed asks the operator to grade new canon, and an import
+  // never takes that answer for them.
+  // A PREVIEW READS THE SAME GUARD AS A WARNING: it names what the apply would refuse, and plans on.
+  const unseeded = doors.unseeded ? doors.unseeded() : [];
+  const unseededWhy = `the canon of ${unseeded.join(", ")} stands unseeded on this vessel, and an import lands over seeded canon alone: run \`lares vessel seed --apply\` first, then import again`;
+  if (apply && unseeded.length > 0) throw new CarryRefused("carry-canon-unseeded", unseededWhy);
+  const warnings: string[] = unseeded.length > 0 ? [`carry-canon-unseeded: ${unseededWhy}`] : [];
+  const projections = larProjectionsHome();
+  let faces = await doors.faces();
+
+  // RE-DECLARE FIRST: each bundle face finds the ONE face here that carries its pet-name, or names one by its index.
+  const acts: string[] = [];
+  const planned: Array<{ row: CarryRedeclareFace; handleIndex: number; rename: boolean; handle: boolean; seat: boolean }> = [];
+  for (const row of redeclare.faces) {
+    const matches = faces.filter((f) => f.petname === row.petname);
+    if (matches.length > 1) throw new CarryRefused("carry-face-duplicate-petname", `faces ${matches.map((m) => `h${m.handleIndex}`).join(" and ")} on this vessel both carry the pet-name "${row.petname}"; the bundle's memory for it lands on one face alone, so rename one and import again`);
+    let target = matches[0];
+    let rename = false;
+    if (target === undefined) {
+      const at = faces.find((f) => f.handleIndex === row.handleIndex);
+      if (at === undefined) throw new CarryRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and none stands at h${row.handleIndex} to carry it: found it (\`lares persona new ${row.handleIndex} --name '${row.petname}'\`) and import again`);
+      if (at.petname !== null) throw new CarryRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and the face at h${row.handleIndex} carries "${at.petname}"; the bundle never merges one face's memory into another's: name the face that should carry "${row.petname}" and import again`);
+      target = at;
+      rename = true;
+    }
+    if (row.handle !== null && target.handle !== null && target.handle !== row.handle) throw new CarryRefused("carry-redeclare-diverged", `the face "${row.petname}" declares the Handle "${target.handle}" here and "${row.handle}" in the bundle; the import never overwrites a declaration`);
+    if (row.seat && target.seat && row.chair !== null && target.chair !== null && target.chair !== row.chair) throw new CarryRefused("carry-redeclare-diverged", `the face "${row.petname}" stands for the chair "${target.chair}" here and "${row.chair}" in the bundle; the import never overwrites a declaration`);
+    planned.push({ row, handleIndex: target.handleIndex, rename, handle: row.handle !== null && target.handle === null, seat: row.seat && !target.seat });
+  }
+  for (const p of planned) {
+    if (p.rename) acts.push(`h${p.handleIndex}: pet-name "${p.row.petname}"`);
+    if (p.handle) acts.push(`h${p.handleIndex}: Handle "${p.row.handle}"`);
+    if (p.seat) acts.push(`h${p.handleIndex}: stands for the chair "${p.row.chair ?? defaultChairLabel(p.handleIndex)}"`);
+  }
+  if (apply) {
+    for (const p of planned) {
+      if (p.rename) await doors.rename(p.handleIndex, p.row.petname);
+      if (p.handle) await doors.declareHandle(p.handleIndex, p.row.handle!);
+      if (p.seat) await doors.standSeat(p.handleIndex, p.row.chair);
+    }
+    if (planned.some((p) => p.rename || p.handle || p.seat)) faces = await doors.faces();
+  }
+
+  // THE FACE MAP: pet-name -> the face here, which must wear a relation for its folders.
+  const faceMap: Record<string, number> = {};
+  const target = new Map<string, CarryVesselFace>();
+  for (const bf of manifest.faces) {
+    const p = planned.find((x) => x.row.face === bf.key)!;
+    const face = faces.find((f) => f.handleIndex === p.handleIndex)!;
+    // A face that reads no relation while ANOTHER face stands worn waits its turn (the lit-face gate below), never refuses.
+    if (face.relation === null && litFaceOf(faces) === null) {
+      // A face reads no relation while its vessel stands down or locked: the cure reads "up, then unlock", before anything else.
+      const shut = face.kahuaRefusalCode !== undefined && SHUT_VESSEL_CODES.has(face.kahuaRefusalCode);
+      throw new CarryRefused("carry-face-unworn", shut
+        ? `the face h${face.handleIndex} ("${bf.petname}") reads no face relation because the vessel's key stands shut or no vessel answers (${face.kahuaRefusal}): run up and vault unlock first (\`tools/lares-container.sh up\` or \`lares vessel stand\`, then \`lares vault unlock\`), and import again`
+        : `the face h${face.handleIndex} ("${bf.petname}") pins no face relation, so its daemon wiki has no folder to land in: stand the vessel wearing it and import again${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}`);
+    }
+    faceMap[bf.petname] = face.handleIndex;
+    target.set(bf.key, face);
+  }
+  // The journal opens once the faces it lands on stand named: the bundle and the target relations key it.
+  const journal = openJournal(manifest.bundleId, [...target.values()].map((f) => f.relation).filter((r): r is string => r !== null), apply);
+  if (apply) for (const p of planned) journal.mark(`redeclare:${p.row.face}`, `h${p.handleIndex}`);
+
+  // THE LIT SET, as the seed reads it: every bundle face whose face here stands OPEN lands its working and face-canon rows (and
+  // its drafts and temp) in that face's own layer: the worn face's through the ordinary wave, each other open face's through a
+  // wave naming it (the island lands it only where that face owns the document, never on the worn face). A bundle face whose
+  // face here stands SHUT waits, named; nothing of its memory lands anywhere. Kahua heads lift each under its own face's grant.
+  const litRelation = litFaceOf(faces)?.relation ?? null;
+  const unworn = new Set(manifest.faces.filter((bf) => target.get(bf.key)!.relation === null).map((bf) => bf.key));
+  const faceArgOf = (bf: { readonly key: string }): { face?: number } => {
+    const face = target.get(bf.key)!;
+    return face.relation === litRelation ? {} : { face: face.handleIndex };
+  };
+  const waiting = manifest.faces.filter((bf) => unworn.has(bf.key)).map((bf) => ({ petname: bf.petname, handleIndex: target.get(bf.key)!.handleIndex }));
+
+  const tallies = { working: tally(), kapae: tally(), faceCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
+  const minted: string[] = [];
+  const skipped: string[] = [];
+
+  // THE OVERRIDE BASE TRAVELS: a working row names the carrier identity of the canon record its copy forked from, and its carrier carries it, so the
+  // island stamps it on the copy it lands and canon's fresher-than-the-copy warning still reads after the round trip.
+  const baseByFile = new Map<string, string>();
+  for (const row of manifest.rows) if (row.overrideBase !== undefined) baseByFile.set(join(bundle.root, ...row.path.split("/")), row.overrideBase);
+
+  // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
+  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
+    if (files.length === 0) return;
+    const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(uriDir, file));
+    for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
+    for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
+    const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
+    let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; })
+      .map((r): ScanRow => { const base = baseByFile.get(r.file); return base !== undefined ? { ...r, overrideBase: base } : r; });
+    for (const r of scan.rows) if (r.status === "non-nfc") workTally.refused.push(`${r.uri} (non-NFC bytes)`);
+    const shadowTally = kapaeTally ?? workTally;
+    let kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { shadowTally.already++; return false; } return true; });
+    const wanted = new Set([...candidates.map((r) => r.uri), ...kapae]);
+    // A MIRROR FILE THAT DIFFERS IN BYTES reads by the RECORD it holds, never by its bytes: one record in another framing
+    // (a field order, a trailing newline) reads already landed, and a different record rides on to INGEST's three-way gate
+    // with the mirror's file left as it stands. No stand-off ever rests on byte drift alone. A preview reads the same.
+    const differing = new Map<string, { from: string; to: string }>();
+    const pending: Array<{ uri: string; to: string; bytes: Buffer }> = [];
+    /** Each wanted uri, and whether the mirror holds every one of its files. */
+    const held = new Map<string, boolean>();
+    for (const f of files) {
+      const from = join(bundle.root, ...f.split("/"));
+      const uri = mirrorDirFileToUri(uriDir, from.endsWith(".meta") ? from.slice(0, -5) : from);
+      if (!uri || !wanted.has(uri)) continue;
+      const to = join(mirrorDir, relative(sourceDir, from));
+      const bytes = readFileSync(from);
+      if (existsSync(to)) {
+        held.set(uri, held.get(uri) ?? true);
+        if (!readFileSync(to).equals(bytes)) differing.set(uri, from.endsWith(".meta") ? { from: from.slice(0, -5), to: to.slice(0, -5) } : { from, to });
+      } else { held.set(uri, false); pending.push({ uri, to, bytes }); }
+    }
+    const readMeta = (path: string): Buffer | null => (existsSync(`${path}.meta`) ? readFileSync(`${path}.meta`) : null);
+    // The mirror holding every file of a row byte for byte holds its record: already landed (the seed laid it), never planned.
+    // A LAYER THIS IMPORT MINTS (a slug the vessel did not hold) holds nothing yet, so its mirror vouches for no record: every
+    // row rides to INGEST, and the mirror's own file still stands unwritten over.
+    const already = new Set<string>(freshLayer ? [] : [...held].filter(([uri, all]) => all && !differing.has(uri)).map(([uri]) => uri));
+    for (const [uri, { from, to }] of differing) {
+      if (freshLayer) break;
+      if (!existsSync(to)) continue;
+      if (from.endsWith(KAPAE_EXT)) {
+        const a = readKapaeShadow(readFileSync(from, "utf8")), b = readKapaeShadow(readFileSync(to, "utf8"));
+        if ("title" in a && "title" in b && a.title === b.title) already.add(uri);
+        continue;
+      }
+      if (sameCarrierRecord(carrierRecordOf(from, readFileSync(from), readMeta(from)), carrierRecordOf(to, readFileSync(to), readMeta(to)))) already.add(uri);
+    }
+    for (const r of candidates) if (already.has(r.uri)) { workTally.already++; if (apply) journal.mark(keyed(r), "landed"); }
+    for (const t of kapae) if (already.has(t)) { shadowTally.already++; if (apply) journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
+    candidates = candidates.filter((r) => !already.has(r.uri));
+    kapae = kapae.filter((uri) => !already.has(uri));
+    workTally.planned += candidates.length;
+    shadowTally.planned += kapae.length;
+    if (!apply || (candidates.length === 0 && kapae.length === 0)) return;
+    for (const { uri, to, bytes } of pending) {
+      if (differing.has(uri)) continue;                 // the mirror holds this record in its own file; nothing writes over it
+      mkdirSync(dirname(to), { recursive: true });
+      atomicWriteFileSync(to, bytes, undefined, { mode: 0o600 });
+    }
+    const answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}), ...faceArg });
+    const landed = new Set(answer.landed);
+    for (const r of candidates) if (landed.has(r.uri)) { workTally.landed++; journal.mark(keyed(r), "landed"); }
+    for (const c of answer.conflicts) workTally.stoodOff.push(`${c.uri} (${c.why})`);
+    for (const c of answer.refused) workTally.refused.push(`${c.uri} (${c.why})`);
+    for (const u of answer.unanswered) workTally.refused.push(`${u} (no answer; import again)`);
+    for (const t of answer.kapaeRaised) { shadowTally.landed++; journal.mark(`${keyPrefix}:kapae:${t}`, "raised"); }
+    for (const k of answer.kapaeRefused) shadowTally.refused.push(`${k.uri} (${k.why})`);
+  };
+  for (const bf of manifest.faces) {
+    if (unworn.has(bf.key)) continue;
+    const relation = target.get(bf.key)!.relation!;
+    for (const kind of ["working", "canon"] as const) {
+      const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/${kind}/`));
+      const mirror = join(projections, kind === "working" ? "wikis" : "bags", daemonFaceFolder(relation));
+      await wave(join(bundle.root, "faces", bf.key, kind), join(bundle.root, "faces", bf.key), mirror,
+        kind === "working" ? wikiSlotUri("daemon", "working") : daemonFaceCanonBag(relation), files,
+        `${kind}:${bf.key}`, kind === "working" ? tallies.working : tallies.faceCanon, kind === "working" ? tallies.kapae : null, null, false, faceArgOf(bf));
+    }
+  }
+
+  // KAHUA HEADS: re-lifted under the new face's grant, keyed by title + body digest.
+  for (const bf of manifest.faces) {
+    const face = target.get(bf.key)!;
+    const heads = bundle.heads.get(bf.key) ?? [];
+    if (heads.length === 0) continue;
+    if (face.kahua === null && unworn.has(bf.key)) continue;              // a shut face that waits its turn: its heads lift once it opens
+    if (face.kahua === null) { tallies.kahua.refused.push(`the stage of h${face.handleIndex} would not read (${face.kahuaRefusal ?? "unread"}); ${heads.length} head(s) wait`); continue; }
+    const byTitle = new Map<string, CarryKahuaHead[]>();
+    for (const h of heads) byTitle.set(h.title, [...(byTitle.get(h.title) ?? []), h]);
+    for (const [title, bundleHeads] of byTitle) {
+      const bundleDigests = new Set(bundleHeads.map((h) => sha256Hex(h.text)));
+      const standing = face.kahua.filter((h) => h.title === title);
+      const foreign = standing.filter((h) => !bundleDigests.has(sha256Hex(h.text)));
+      if (foreign.length > 0) { tallies.kahua.stoodOff.push(`${title} (the stage here holds a body the bundle never carried; lift by hand to settle it)`); continue; }
+      const here = new Set(standing.map((h) => sha256Hex(h.text)));
+      for (const h of bundleHeads) {
+        const digest = sha256Hex(h.text), key = `kahua:${bf.key}:${title}:${digest}`;
+        if (here.has(digest) || journal.done.has(key)) { tallies.kahua.already++; continue; }
+        tallies.kahua.planned++;
+        if (!apply) continue;
+        try {
+          // A FIRST LIFT, or a sibling beside a head this bundle carried: never a supersede of a body the stage holds.
+          const { cid } = await doors.kahuaLift(face.handleIndex, { title, text: h.text, fields: h.fields, taint: h.taint, sources: h.sources, parent: null });
+          journal.mark(key, cid);
+          here.add(digest);
+          tallies.kahua.landed++;
+        } catch (e) { tallies.kahua.refused.push(`${title} (${e instanceof Error ? e.message : String(e)})`); }
+      }
+    }
+  }
+
+  // DRAFTS AND TEMP: files land back beside the new face's working folder, where none stands.
+  const consented = new Set(doors.tempConsented());
+  const place = (from: string, to: string, sha: string, t: CarryTally): void => {
+    const key = `file:${to}:${sha}`;
+    if (existsSync(to)) {
+      if (sha256Hex(readFileSync(to)) === sha) { t.already++; return; }
+      t.stoodOff.push(`${to} (a different file stands there; the import never writes over it)`);
+      return;
+    }
+    if (journal.done.has(key)) { t.already++; return; }
+    t.planned++;
+    if (!apply) return;
+    mkdirSync(dirname(to), { recursive: true });
+    const tmp = `${to}.lar-tmp-${randomBytes(4).toString("hex")}`;
+    copyFileSync(from, tmp);
+    try { renameSync(tmp, to); } finally { rmSync(tmp, { force: true }); }
+    journal.mark(key, "placed");
+    t.landed++;
+  };
+  for (const f of manifest.files) {
+    const m = /^faces\/(f[0-9]+)\/(drafts|temp)\/(.+)$/.exec(f.path) ?? /^wikis\/([^/]+)\/(drafts|temp)\/(.+)$/.exec(f.path);
+    if (!m) continue;
+    const [, owner, kind, rest] = m as unknown as [string, string, "drafts" | "temp", string];
+    const isFace = f.path.startsWith("faces/");
+    if (isFace && unworn.has(owner)) continue;
+    const folder = isFace ? daemonFaceFolder(target.get(owner)!.relation!) : owner;
+    const slug = isFace ? "daemon" : owner;
+    const t = kind === "drafts" ? tallies.draft : tallies.temp;
+    if (kind === "temp" && !consented.has(slug)) { t.stoodOff.push(`${f.path} (no consent row names projection.temp.${slug} on this vessel)`); continue; }
+    const to = join(projections, "wikis", folder, kind === "drafts" ? "recovery" : TEMP_LAYER_DIR, ...rest.split("/"));
+    place(join(bundle.root, ...f.path.split("/")), to, f.sha256, t);
+  }
+
+  // EVERY OTHER WIKI AND HOUSE-MINTED BAG, by slug: a slug this vessel does not hold mints first, through CREATE.
+  const slugsOf = (re: RegExp): string[] => [...new Set(manifest.files.map((f) => re.exec(f.path)?.[1]).filter((s): s is string => s !== undefined))].sort();
+  const bagSlugs = slugsOf(/^bags\/([^/]+)\//), wikiSlugs = slugsOf(/^wikis\/([^/]+)\/working\//);
+  /** The slugs this vessel did not hold before the import: their layers mint fresh, so no mirror file reads already landed there. */
+  const freshSlugs = new Set<string>();
+  if (bagSlugs.length + wikiSlugs.length > 0) {
+    const held = await doors.heldSlugs();
+    for (const slug of [...new Set([...bagSlugs, ...wikiSlugs])].sort()) {
+      if (held.has(slug)) continue;
+      freshSlugs.add(slug);
+      minted.push(wikiBagUri(slug));
+      if (!apply || journal.done.has(`mint:${slug}`)) continue;
+      try { await doors.mintBag(wikiBagUri(slug)); journal.mark(`mint:${slug}`, "minted"); }
+      catch (e) { tallies.bag.refused.push(`${wikiBagUri(slug)} (mint refused: ${e instanceof Error ? e.message : String(e)})`); }
+    }
+  }
+  for (const slug of bagSlugs) {
+    const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
+    await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null, null, freshSlugs.has(slug));
+  }
+  for (const slug of wikiSlugs) {
+    const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`wikis/${slug}/working/`));
+    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug, freshSlugs.has(slug));
+  }
+
+  // THE FORMER FACES' FOLDERS: every face folder under the projections root that no face here wears.
+  const worn = new Set(faces.map((f) => f.relation).filter((r): r is string => r !== null));
+  const faceDirs = (r: string): Array<{ dir: string; kind: "working" | "canon" | "kahua" }> => [
+    { dir: join(projections, "wikis", daemonFaceFolder(r)), kind: "working" as const },
+    { dir: join(projections, "bags", daemonFaceFolder(r)), kind: "canon" as const },
+    { dir: join(projections, "bags", `kahua-${r}`), kind: "kahua" as const },
+  ].filter((d) => existsSync(d.dir));
+  const former = (() => {
+    const rels = new Set<string>();
+    for (const [dir, test] of [[join(projections, "wikis"), isDaemonFaceFolder], [join(projections, "bags"), isDaemonFaceFolder], [join(projections, "bags"), isKahuaFaceFolder]] as const) {
+      let names: string[] = [];
+      try { names = readdirSync(dir).filter(test); } catch { /* no such dir */ }
+      for (const n of names) rels.add(n.slice(n.indexOf("-") + 1));
+    }
+    return [...rels].filter((r) => !worn.has(r)).sort();
+  })();
+  /** A former folder's files against one bundle face's: how many stand byte-identical, and how many the bundle never carried. */
+  const weigh = (r: string, fk: string): { same: number; beyond: number } => {
+    let same = 0, beyond = 0;
+    for (const { dir, kind } of faceDirs(r)) {
+      for (const rel of plainFiles(dir).files.filter((x) => !isStray(x))) {
+        if (kind === "working" && (rel.startsWith("recovery/") || rel.startsWith(`${TEMP_LAYER_DIR}/`))) continue;
+        const sha = sha256Hex(readFileSync(join(dir, ...rel.split("/"))));
+        const carried = manifest.files.find((f) => f.path === `faces/${fk}/${kind}/${rel}`);
+        if (carried !== undefined && carried.sha256 === sha) same++; else beyond++;
+      }
+    }
+    return { same, beyond };
+  };
+
+  // ASHES: a former face whose label names a bundle face's pet-name moves out of the live mirror set once this import landed
+  // with NOTHING pending AND its folders hold nothing the bundle never carried (the seed adopts the rest first).
+  const ashes: Array<{ relation: string; moved: string[] }> = [];
+  const ashesLeft: Array<{ relation: string; why: string }> = [];
+  const left = Object.values(tallies).reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
+  for (const bf of manifest.faces) {
+    for (const r of former.filter((x) => readFaceLabel(x, projections)?.petname === bf.petname)) {
+      if (unworn.has(bf.key)) { ashesLeft.push({ relation: r, why: unlockItLine({ handleIndex: target.get(bf.key)!.handleIndex, petname: bf.petname }, "import") }); continue; }
+      if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
+      const { beyond } = weigh(r, bf.key);
+      if (beyond > 0) { ashesLeft.push({ relation: r, why: `its folders hold ${beyond} file(s) the bundle never carried: \`lares vessel seed --apply\` adopts them by pet-name first` }); continue; }
+      if (!apply) continue;
+      const moved = moveFaceToAshes(projections, r);
+      if ("left" in moved) ashesLeft.push({ relation: r, why: moved.left }); else ashes.push({ relation: r, moved: [...moved.moved] });
+    }
+  }
+
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting, warnings };
+}
+
+// ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────
+
+/** Emit a carry refusal by name; anything else rethrows. */
+export function carryRefusal(args: ParsedArgs, verb: string, err: unknown): number {
+  if (err instanceof CarryRefused || err instanceof CarryBundleRefused) {
+    const code = err instanceof CarryRefused ? err.code : "carry-bundle-refused";
+    emit(args, { ok: false, error: { code, message: err.message }, human: () => console.error(`lares ${verb}: ${err.message}`) });
+    return exitFor("usage");
+  }
+  throw err;
+}
+

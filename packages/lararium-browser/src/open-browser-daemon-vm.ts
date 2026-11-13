@@ -19,11 +19,15 @@
 
 import {
   emptyLarDoc,
+  daemonFaceCanonBag,
+  standControlHome,
   type Repo, type AutomergeUrl, type LarDoc,
   type WikiRecipe,
   type IslandMsg_Manifest,
   type IslandGrants,
   type VesselWorkerHandle,
+  type CapabilityRecord,
+  answerIslandAsks,
 } from "@lararium/mesh";
 import {
   openDaemonVmCore,
@@ -47,6 +51,7 @@ export interface BrowserDaemonVmOptions {
   pluginCids?:      readonly string[];
   /** Canonical one-recipe model for the daemon island. */
   recipe:           WikiRecipe;
+  faceRelation?:    string | null;
   /** Typed structural capabilities (engine doc, daemon bag, the lares bag, catalog registry access). */
   grants:           IslandGrants;
   /**
@@ -59,9 +64,14 @@ export interface BrowserDaemonVmOptions {
   /** URL of the compiled browser daemon island Worker script. */
   workerScriptUrl:  URL;
   /** The spawn seam. ABSENT → a dedicated module Worker at `workerScriptUrl` (today's path). PRESENT → the
-   *  shared holder's port wrapped as the handle (shared-holder.ts): the island stands once per origin and
+   *  shared holder's port wrapped as the handle (shared-holder.ts): the island stands once per house and
    *  this tab attaches to it; no worker spawns here. */
   spawnWorker?:     (url: URL) => VesselWorkerHandle;
+  /** THE CAPABILITY RECORD this vessel hands its daemon island (`browser-island-caps.ts`): the vessel worker answers the
+   *  island's `cas:want`, `receipt:request`, `dyad:ask`, `custody:write` and `session:sign` through it, read at ask time. */
+  caps:             CapabilityRecord;
+  /** The holder path installs this factory for a replacement manifest after a late floor swap. */
+  onManifestReplay?: (rePost: () => { msg: IslandMsg_Manifest; transfer: MessagePort[]; afterPost?: () => void }) => void;
 }
 
 export { VerbTable };
@@ -82,10 +92,35 @@ export interface BrowserVerbPlacementRequest {
   listenable?:  string;
 }
 
+/**
+ * A spawned daemon island asks through the record (`answerIslandAsks`), and its answers, the document store's door
+ * among them, leave with the island. A browser Worker gives no exit event, so the island's leaving reads off every event
+ * it does give, the way the daemon VM core ends its own asks: its `fault` frame, its error (a crash), its exit (the
+ * handle's own terminate). Each detaches the door's cell, so every seal or open still waiting refuses by name at once,
+ * and a later one refuses at once (no island answers the door).
+ */
+export function islandAskingThroughRecord(handle: VesselWorkerHandle, caps: CapabilityRecord): VesselWorkerHandle {
+  const stop = answerIslandAsks(handle, caps);
+  let ended = false;
+  const offs: Array<() => void> = [];
+  const end = (): void => {
+    if (ended) return;
+    ended = true;
+    for (const off of offs.splice(0)) off();
+    stop();
+  };
+  offs.push(handle.onError(() => end()));
+  if (handle.onExit) offs.push(handle.onExit(() => end()));
+  offs.push(handle.listen((raw) => { if ((raw as { type?: unknown } | null)?.type === "fault") end(); }));
+  return { ...handle, terminate: () => { end(); handle.terminate(); } };
+}
+
 export async function openBrowserDaemonVm(
   opts: BrowserDaemonVmOptions,
 ): Promise<DaemonVmCore> {
-  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker } = opts;
+  const { repo, daemonUrl, personaUrl, personaBagId, coreHash, pluginCids, recipe, grants, daemonAuth, ownedDocument = false, workerScriptUrl, spawnWorker, onManifestReplay, caps } = opts;
+  const canonBag = opts.faceRelation && grants.canonUrl ? daemonFaceCanonBag(opts.faceRelation) : undefined;
+  const daemonRecipe: WikiRecipe = { ...recipe, ...(canonBag ? { canonBag } : {}) };
 
   // ── Daemon doc handle (browser strategy: find-or-create) ────────────────────
   const daemonHandle = await (async () => {
@@ -96,6 +131,8 @@ export async function openBrowserDaemonVm(
       return repo.create<LarDoc>(emptyLarDoc());
     }
   })();
+  // ── The vessel's control document, named by the daemon document (`control-home`) ──
+  const controlHandle = await standControlHome(repo, daemonHandle);
   // ── Persona doc handle (same find-or-create) — the one VM tends both bags ────
   const personaHandle = await (async () => {
     try {
@@ -108,14 +145,16 @@ export async function openBrowserDaemonVm(
   const host: DaemonVmHost = {
     newSyncChannel: browserNewSyncChannel,
     ...(ownedDocument ? { newOwnedSyncChannel: browserNewSyncChannel } : {}),
-    spawnWorker:    spawnWorker ?? browserSpawnWorker,
+    // Each island this VM spawns asks through the record, and its answers leave with the worker.
+    spawnWorker:    (url) => islandAskingThroughRecord((spawnWorker ?? browserSpawnWorker)(url), caps),
     awaitReady:     true,
+    ...(onManifestReplay ? { onManifestReplay } : {}),
   };
 
   // The wrapper IS the shore — host pieces + find-or-create daemonHandle; the lifecycle and the
   // whole result surface (DaemonVmCore) live once in the core. Return it directly, no re-spread.
   return openDaemonVmCore(host, {
-    repo, daemonHandle, recipe, grants, coreHash,
+    repo, daemonHandle, controlHandle, recipe: daemonRecipe, grants, coreHash,
     ...(personaHandle ? { personaHandle } : {}),
     ...(personaBagId  ? { personaBagId }  : {}),
     ...(pluginCids?.length ? { pluginCids } : {}),

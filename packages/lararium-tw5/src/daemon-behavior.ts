@@ -16,40 +16,40 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/daemon-behavior
  */
 
+import { makeDelegationBook } from "./delegation-book.js";
 import {
-  mkDaemonDelegateVerb,
-  mkDaemonVerifyResult,
+  PROMOTE_PANEL_HAND_CODES,
+  SWARM_VERB_HAND_CODES,
   mkDaemonResolveBindingResult,
-  mkDaemonDeriveSkeletonResult,
+  mkDaemonGateVerbResult,
   mkDaemonWorldlineCompareResult,
   mkDaemonWorldlineTrajectoryResult,
   type DaemonMsg_PlaceVerb,
   type DaemonMsg_VerbResult,
-  type DaemonMsg_VerifyRequest,
+  type DaemonMsg_FaceLit,
+  type DaemonMsg_FaceDrop,
+  type DaemonMsg_FaceBags,
   type DaemonMsg_ResolveBindingRequest,
-  type DaemonMsg_DeriveSkeletonRequest,
+  type DaemonMsg_GateVerbRequest,
   type DaemonMsg_WorldlineCompareRequest,
   type DaemonMsg_WorldlineTrajectoryRequest,
-  type AuthProofWire,
-  type DeviceDelegationTiddler,
-  type PeerClass,
   type BatchMode,
   type Verb,
   type CapabilityVerifier,
   type CaptureEngine,
   type CapturePost,
-  LARES_VERB_ARGS_WIRE_FIELD,
 } from "@lararium/mesh";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
-import { hasEngineWatch, hasProjection } from "./has-island-watches.js";
+import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
 import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
-import type { IslandContext, IslandBehavior } from "./island-context.js";
+import type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
+import { controlOf } from "./island-context.js";
 import type { RunnableHulls } from "@lararium/mesh";
 import { seedDaemonProtocol } from "./daemon-protocol-seed.js";
-import { wikiSlotUri } from "@lararium/mesh";
+import { canonicalJson, wikiSlotUri, VERB_URI_PREFIX } from "@lararium/mesh";
 
 const WRITE_LAYER_POINTER = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
 
@@ -82,6 +82,9 @@ function writeLayerPointerStands(ctx: IslandContext): Promise<void> {
 export interface DaemonBehaviorOptions {
   /** A ready verifier (e.g. tests, or a host-provided one). */
   verifier?: CapabilityVerifier;
+  /** Stand the daemon working route during the writable startup marker. */
+  onWritable?: (ctx: IslandContext) => Promise<WritableOutcome>;
+  onHostMessage?: (msg: DaemonMsg_FaceLit | DaemonMsg_FaceDrop | DaemonMsg_FaceBags, ctx: IslandContext) => Promise<void>;
   /**
    * Projection mount shore — the daemon INHERITS the wiki's render cap (hasProjection). When the worker
    * entry supplies onBoot (mountProjection), the daemon becomes a surfaceable wiki like any other: the user
@@ -99,15 +102,11 @@ export interface DaemonBehaviorOptions {
    */
   verifierFactory?: (ctx: IslandContext) => Promise<CapabilityVerifier>;
   /**
-   * Inbound-peer verification for the host's AuthVerifierShore (path b). The host
-   * has no keyhive after Stage 1, so it posts `daemon:verify-request` and the
-   * daemon worker answers here. Opaque by design — peer verification needs
-   * `receiveContactCard` (a @lararium/keyhive method, not in mesh), so the
-   * platform entry supplies this closing over the booted keyhive; tw5 stays
-   * keyhive-free.
+   * Who a verb presents as, resolved once per invocation for every cap check; absent: its `requestedBy`. `local` reads
+   * true for a verb that arrived over the vessel's own presence channel (`daemon:place-verb`), false for one a synced
+   * summons carried: the channel decides authority, never the unsigned `requestedBy` claim.
    */
-  verifyPeer?: (cardBytes: Uint8Array, bagUrl: string, access: "read" | "admin", proof?: AuthProofWire, edge?: DeviceDelegationTiddler)
-    => Promise<{ ok: boolean; identifier?: string; reason?: string; proofVerified?: boolean }>;
+  presenterOf?: (invocation: Verb, local: boolean) => string;
   /**
    * Resolve (or mint+delegate) the personal/draft binding pair island-side —
    * the mint needs keyhive + the island Repo. The platform entry supplies this
@@ -119,7 +118,7 @@ export interface DaemonBehaviorOptions {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; workingDoc?: Uint8Array }>;
   /**
    * Sovereign-worker data-plane: register the residency / wiki / where / resolve
    * reactors into the worker's VerbDispatcher, in-worker, over the IslandContext.
@@ -145,37 +144,32 @@ export interface DaemonBehaviorOptions {
    * all three flows. ABSENT → no seed (a non-operator makeDaemonBehavior caller keeps its old behavior).
    */
   runnableHulls?: RunnableHulls;
+  /** Seed the read-only face pane only when this vessel wears a face. */
+  faceIntents?: boolean;
 }
 
 export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBehavior {
   let _dispatcher: VerbDispatcher | null = null;
+  /** The requests that came in over the vessel's own presence channel or a surface leg, while each one stands. */
+  const localAsks = makeLocalAskBook();
 
-  const _pendingDelegations = new Map<string, {
-    resolve: (result: Record<string, unknown>) => void;
-    reject:  (err: Error) => void;
-  }>();
-
-  function _routeToMain(invocation: Verb, post: IslandContext["post"]): Promise<Record<string, unknown>> {
-    return new Promise((resolve, reject) => {
-      _pendingDelegations.set(invocation.requestId, { resolve, reject });
-      post(mkDaemonDelegateVerb({
-        requestId:   invocation.requestId,
-        verb:        invocation.action,
-        args:        invocation.args as Record<string, unknown>,
-        requestedBy: invocation.requestedBy,
-        ...(invocation.targets?.length ? { targets: [...invocation.targets] } : {}),
-        ...(invocation.batchMode       ? { batchMode: String(invocation.batchMode) } : {}),
-      }));
-    });
-  }
+  // The asks to main wait here until main answers; `post` binds with the island's context at its first ea.
+  let _post: IslandContext["post"] = () => {};
+  const delegations = makeDelegationBook((msg) => _post(msg));
 
   // The daemon island is a nameless cap stack: #has engine-watch + #has daemon-dispatch (the
   // VerbDispatcher + the daemon:* signal family). The dispatch cap below holds what once was the
   // whole behavior, minus the engine-watch (now its own shared cap).
   const dispatchCap: IslandCap = {
     name: "daemon-dispatch",
+    async onWritable(ctx: IslandContext) {
+      const outcome = await opts.onWritable?.(ctx) ?? { state: "standing" as const };
+      if (outcome.state === "standing" && opts.onWritable) await writeLayerPointerStands(ctx);
+      return outcome;
+    },
     async onEa(ctx: IslandContext) {
       const { tw5, composite, post } = ctx;
+      _post = post;
       // Resolve the verifier: the async factory (bootDaemonKeyhive over the daemon
       // composite, then the working-layer attach) wins; else a ready verifier; else none (delegated-verb path).
       const verifier = opts.verifierFactory ? await opts.verifierFactory(ctx) : opts.verifier;
@@ -184,49 +178,37 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
       // The ONE cap-gated daemon protocol seed (the isomorphic seed lift): Ui+Persona+Circle+Flow, once,
       // on the hook BOTH boots reach — so neither entry re-seeds. Gated on `runnableHulls` (absent → skip,
       // preserving old behavior for non-operator callers). Idempotent (each seed setTiddler-overwrites).
-      if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls);
+      if (opts.runnableHulls) seedDaemonProtocol(tw5, opts.runnableHulls, opts.faceIntents === true);
       const registry = new VerbTable();
+      // The panel's six verbs, the store door's `promote-orphan` row and the swarm's hand-only rows answer an ask that arrived on the surface path alone; every other
+      // origin (a session call, a meme put, a synced verb tiddler) refuses by the verb's own code before anything routes to main.
+      registry.handOnly(DAEMON_HAND_ONLY_CODES);
       // Sovereign-worker: the data-plane reactors register HERE, in-worker, over the
       // IslandContext (ctx.composite/ctx.repo) — so they ride the dispatcher's
       // verify-then-delegate gate FOR FREE (a gate a main-thread jobRegistry
       // lacks). Pool-touching reactors command main via ctx.post (daemon:evict-request).
       opts.wireWorkerVerbs?.(registry, ctx);
+      // The control families rest in the vessel's control document alone; a daemon island granted none stands no dispatcher.
       _dispatcher = new VerbDispatcher({
         daemonVm:  tw5,
         daemon:    composite,
+        control:   controlOf(ctx),
         registry,
-        routeFn:  (invocation) => _routeToMain(invocation, post),
+        routeFn:  (invocation, signal) => delegations.route(invocation, signal),
         ...(verifier ? { verifier } : {}),
+        ...(opts.presenterOf ? { presenterOf: (inv: Verb) => opts.presenterOf!(inv, localAsks.has(inv)) } : {}),
+        localOf: (inv: Verb) => localAsks.has(inv),
+        surfaceOf: (inv: Verb) => localAsks.isSurface(inv),
       });
       _dispatcher.start();
-      // The daemon's OWN verb OUT-path (the twin of the pool island-kernel's wiring):
-      // a projected switcher click writes a verb-carrying summon tiddler, whose
-      // reaction-router fires a tm-verse-event. Forward it to main as an IslandMsg_Event
-      // — main's daemon-vm listener routes it to placeVerb (verify-then-delegate → the
-      // main registry, e.g. wiki-switch). Without this, daemon-origin verbs never leave
-      // the worker (projection frames reach main, but verse-events had no bridge).
-      const cancelVerse = tw5.onVerseEvent({
-        handleVerseEvent: (uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>) => {
-          // The reaction-router already gates on the `lares-dispatch` marker, so ONLY a
-          // genuine summon reaches here (the verb machinery's own invocation/outcome
-          // writes never carry the marker → router-inert, the marker alone gating this
-          // bridge, no URI-prefix allowlist). The structured args ride
-          // the GP-2-flat island wire as ONE `verb-args` JSON string; main re-parses.
-          post({
-            type:           "event",
-            wikiUri:        ctx.wikiUri,
-            listenable,
-            payload: {
-              uri,
-              ...(verb    !== undefined ? { verb }    : {}),
-              ...(fromUri !== undefined ? { fromUri } : {}),
-              ...(args    !== undefined ? { [LARES_VERB_ARGS_WIRE_FIELD]: JSON.stringify(args) } : {}),
-            },
-          });
-        },
-      });
+      // A local id serves its own invocation alone: it retires once the verb concludes and its tiddler leaves the VM.
+      const onVerbsChange = (changes: Record<string, { deleted?: boolean }>) => localAsks.onWikiChange(changes);
+      tw5.$tw.wiki.addEventListener("change", onVerbsChange);
+      // The daemon's verb OUT-path rides the kernel: `IslandKernel.bootTw5` forwards every `tm-verse-event` the
+      // reaction router fires (a projected switcher click, a summon button) as ONE island `event`, for the daemon as
+      // for every pool wiki; main's daemon-vm listener routes it to placeVerb. A forwarder here posts each summon a
+      // second time and main places the verb twice.
       return () => {
-        cancelVerse();
         _dispatcher?.stop();
         _dispatcher = null;
       };
@@ -234,10 +216,23 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
 
     onSignal(type: string, raw: unknown, ctx: IslandContext): boolean {
       const { tw5, post } = ctx;
+      if (type === "daemon:face-lit" || type === "daemon:face-drop" || type === "daemon:face-bags") {
+        const msg = raw as DaemonMsg_FaceLit | DaemonMsg_FaceDrop | DaemonMsg_FaceBags;
+        const atomKey = msg.type === "daemon:face-lit" ? msg.entry.atom.key : msg.atomKey;
+        const op = msg.type === "daemon:face-lit" ? "lit" : msg.type === "daemon:face-bags" ? "bags" : "dropped";
+        void Promise.resolve().then(() => {
+          if (!opts.onHostMessage) throw new Error("face handler unavailable");
+          return opts.onHostMessage(msg, ctx);
+        }).then(
+          () => post({ type: "daemon:face-settled", atomKey, op, ok: true }),
+          (error) => post({ type: "daemon:face-settled", atomKey, op, ok: false, reason: error instanceof Error ? error.message : String(error) }),
+        );
+        return true;
+      }
       if (type === "daemon:place-verb") {
         const msg = raw as DaemonMsg_PlaceVerb;
         if (tw5) {
-          placeVerb(tw5, {
+          const placed = placeVerb(tw5, {
             verb:        msg.verb,
             args:        msg.args,
             requestedBy: msg.requestedBy,
@@ -247,66 +242,17 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
             ...(msg.fromUri   ? { fromUri:    msg.fromUri               } : {}),
             ...(msg.listenable? { listenable: msg.listenable            } : {}),
             ...(msg.effectKey ? { effectKey:  msg.effectKey             } : {}),
+            ...(msg.face      ? { face:       msg.face                  } : {}),
           });
+          if (placedAskIsLocal(msg)) localAsks.add({ requestId: placed, action: msg.verb, args: msg.args, requestedBy: msg.requestedBy, origin: msg.origin === "surface" ? "surface" : "channel" });
         }
         return true;
       }
 
       if (type === "daemon:verb-result") {
         const msg = raw as DaemonMsg_VerbResult;
-        const pending = _pendingDelegations.get(msg.requestId);
-        if (pending) {
-          _pendingDelegations.delete(msg.requestId);
-          if (msg.error) pending.reject(new Error(msg.error));
-          else           pending.resolve(msg.result ?? {});
-        }
+        delegations.answer(msg.requestId, { ...(msg.error ? { error: msg.error } : {}), ...(msg.result ? { result: msg.result } : {}) });
         void post;
-        return true;
-      }
-
-      if (type === "daemon:verify-request") {
-        const msg = raw as DaemonMsg_VerifyRequest;
-        const answer: Promise<{ ok: boolean; identifier?: string; reason?: string; proofVerified?: boolean; peerClass?: PeerClass }> = opts.verifyPeer
-          ? opts.verifyPeer(msg.cardBytes, msg.bagUrl, msg.access, msg.proof, msg.edge)
-          : Promise.resolve({ ok: false, reason: "no verifyPeer configured" });
-        answer
-          .then((r) => post(mkDaemonVerifyResult({
-            requestId: msg.requestId, ok: r.ok,
-            ...(r.identifier ? { identifier: r.identifier } : {}),
-            ...(r.reason ? { reason: r.reason } : {}),
-            ...(r.proofVerified !== undefined ? { proofVerified: r.proofVerified } : {}),
-            // Forward the self-slot class VERBATIM — the worker owns the classification (only it holds
-            // the cap-verify + the pinned-root edge check). The host fails closed on an absent class.
-            ...(r.peerClass !== undefined ? { peerClass: r.peerClass } : {}),
-          })))
-          .catch((err: unknown) => post(mkDaemonVerifyResult({
-            requestId: msg.requestId, ok: false, reason: err instanceof Error ? err.message : String(err),
-          })));
-        return true;
-      }
-
-      if (type === "daemon:derive-skeleton-request") {
-        // The recall twin of the telemetry capture: derive the query's move-skeleton IN this island's
-        // TW5 VM, against the full self-hosted grammar + the LIVE grammar-cache basis — the SAME
-        // Move→Vec functor capture runs. The in-VM fn lives on $tw.lares (query-derive-vm startup);
-        // we reach it across ctx.tw5.$tw, identical to the capture annotate path. One runtime, no
-        // node-side fallback. Plugin absent / parse fault → a graceful null (→ recall fuses content-only).
-        const msg = raw as DaemonMsg_DeriveSkeletonRequest;
-        try {
-          const $tw = (tw5 as { $tw?: { lares?: { deriveQuerySkeletonVm?: (q: string) => { skeleton: unknown; basis: unknown } | null } } } | undefined)?.$tw;
-          const fn = $tw?.lares?.deriveQuerySkeletonVm;
-          if (!fn) {
-            console.warn("[daemon-behavior] $tw.lares.deriveQuerySkeletonVm absent (plugin not loaded) — recall degrades to content-only (drop-honesty)");
-            post(mkDaemonDeriveSkeletonResult({ requestId: msg.requestId }));
-          } else {
-            const d = fn(msg.query);
-            post(mkDaemonDeriveSkeletonResult(
-              d ? { requestId: msg.requestId, skeleton: d.skeleton, basis: d.basis } : { requestId: msg.requestId },
-            ));
-          }
-        } catch (err) {
-          post(mkDaemonDeriveSkeletonResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) }));
-        }
         return true;
       }
 
@@ -366,6 +312,29 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         return true;
       }
 
+      if (type === "daemon:gate-verb-request") {
+        // A SESSION'S FACE ROW MEETS THE ROUTED CLEARANCE ALONE: local, as the presenter the session door verified (read
+        // through this island's presenter mapping), never placed and never dispatched, so no outcome follows; main runs
+        // the row once it clears. The clearance takes its locality as given, so no ask the island holds lends it.
+        const msg = raw as DaemonMsg_GateVerbRequest;
+        const dispatcher = _dispatcher;
+        if (!dispatcher) {
+          post(mkDaemonGateVerbResult({ requestId: msg.requestId, error: "the daemon's dispatcher does not stand yet" }));
+          return true;
+        }
+        // The invocation never rests and never dispatches, so it carries no clock.
+        const invocation = {
+          title: `${VERB_URI_PREFIX}${msg.requestId}`, requestId: msg.requestId, action: msg.verb, args: msg.args,
+          requestedBy: msg.requestedBy, requestedAt: "", targets: [], batchMode: "best-effort" as const, status: "pending" as const,
+        } as Verb;
+        const presenter = opts.presenterOf ? opts.presenterOf(invocation, true) : msg.requestedBy;
+        dispatcher.clearRouted(invocation, { local: true, presenter }).then(
+          () => post(mkDaemonGateVerbResult({ requestId: msg.requestId })),
+          (err: unknown) => post(mkDaemonGateVerbResult({ requestId: msg.requestId, error: err instanceof Error ? err.message : String(err) })),
+        );
+        return true;
+      }
+
       if (type === "daemon:resolve-binding-request") {
         const msg = raw as DaemonMsg_ResolveBindingRequest;
         if (!opts.resolveBinding) {
@@ -373,7 +342,9 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
         } else {
           opts.resolveBinding(ctx, msg.fingerprint, msg.recipeTrace, msg.wikiSlug)
             .then((r) => post(mkDaemonResolveBindingResult({
-              requestId: msg.requestId, personalUrl: r.personalUrl, draftUrl: r.draftUrl, workingUrl: r.workingUrl,
+              requestId: msg.requestId, personalUrl: r.personalUrl, draftUrl: r.draftUrl, ...(r.workingUrl ? { workingUrl: r.workingUrl } : {}),
+              // The stood working document crosses WITH its name, so the vessel holds it before the mount reads it.
+              ...(r.workingUrl && r.workingDoc ? { workingDoc: r.workingDoc } : {}),
             })))
             .catch((err: unknown) => post(mkDaemonResolveBindingResult({
               requestId: msg.requestId, error: err instanceof Error ? err.message : String(err),
@@ -393,6 +364,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   // shore, not the worker. Inert when no sink is wired (makeCaptureEngine absent) — every daemon
   // carries the cap; whether it breathes depends on a wired sink + feed.
   return composeIsland([
+    // A person's hand in the daemon surface lands on the same boundary a pool wiki's does; claims nothing, stands first.
+    hasHandBoundary(),
     dispatchCap,
     // Inherit the wiki's render cap — inert until a worker entry wires onBoot (mountProjection), at which
     // point the daemon surfaces like any pinned wiki (same VM, same path).
@@ -404,3 +377,41 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     }),
   ]);
 }
+
+/** One placed ask, as the local book reads it: its id and the act it names. */
+export interface LocalAsk { readonly requestId: string; readonly action: string; readonly args: unknown; readonly requestedBy: string; readonly origin?: "channel" | "surface" }
+
+/**
+ * THE LOCAL ASKS, each the exact invocation the vessel's channel or a surface leg placed, standing only while it does
+ * (Sol's reads): an id lends locality only to the act placed under it (its verb, its args, its claim), and retires once
+ * its verb tiddler leaves the VM, so a summons reusing or overwriting an id reads as the synced claim it is. Kept to a
+ * bound; an evicted id reads non-local, which refuses rather than lends.
+ */
+/**
+ * The verbs the daemon island answers to a hand's surface gesture alone, each with the code it refuses under elsewhere: the promote panel's
+ * six, the store door's `promote-orphan`, and the swarm's three that set or issue (`swarm-show` stays open). A session-cleared face row
+ * passes (the socket already refused a seat); a channel ask, a meme put and a synced verb tiddler refuse by code.
+ */
+export const DAEMON_HAND_ONLY_CODES: Readonly<Record<string, string>> = { ...PROMOTE_PANEL_HAND_CODES, "promote-orphan": "promote-needs-hand", ...SWARM_VERB_HAND_CODES };
+
+export function makeLocalAskBook(bound = 4096): {
+  add(ask: LocalAsk): void;
+  has(ask: LocalAsk): boolean;
+  isSurface(ask: LocalAsk): boolean;
+  onWikiChange(changes: Record<string, { deleted?: boolean }>): void;
+} {
+  const acts = new Map<string, { act: string; origin?: "channel" | "surface" }>();
+  const actOf = (ask: LocalAsk): string => canonicalJson([ask.action, JSON.parse(JSON.stringify(ask.args ?? {})), ask.requestedBy]);
+  return {
+    add: (ask) => { acts.delete(ask.requestId); acts.set(ask.requestId, { act: actOf(ask), ...(ask.origin ? { origin: ask.origin } : {}) }); if (acts.size > bound) acts.delete(acts.keys().next().value as string); },
+    has: (ask) => acts.get(ask.requestId)?.act === actOf(ask),
+    isSurface: (ask) => { const entry = acts.get(ask.requestId); return entry?.origin === "surface" && entry.act === actOf(ask); },
+    onWikiChange: (changes) => {
+      for (const [title, change] of Object.entries(changes)) {
+        if (change?.deleted && title.startsWith(VERB_URI_PREFIX)) acts.delete(title.slice(VERB_URI_PREFIX.length));
+      }
+    },
+  };
+}
+
+export function placedAskIsLocal(msg: Pick<DaemonMsg_PlaceVerb, "origin">): boolean { return msg.origin === "channel" || msg.origin === "surface"; }

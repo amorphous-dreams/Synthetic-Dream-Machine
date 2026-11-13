@@ -49,31 +49,22 @@ for (const f of files) {
     const wrong = new RegExp(`^<<~[^>\\n]*${code}`, "gm");
     if ([...maskedExecAll(t, wrong)].length > 0) faults.push([f, `${name} rides <<~ — the frame takes <<^`]);
   }
-  // THE BEARING ARROW IS STRUCTURE, so a frame that lost it is malformed rather than terse.
+  // THE BEARING PAIR IS STRUCTURE, so a frame that lost it is malformed rather than terse.
   //
-  // `from="?" -> to=uri` at the heading and `-> to="?"` at the close carry ONE relation read from two ends — source
-  // unresolved and target known, then source known and target unresolved. A named parameter would state
-  // a PROPERTY; the arrow states a RELATION, and the control-soh scan captures its target as a group.
-  // Drop it and the capture returns nothing while every other check here still reads the frame as sound.
+  // ``from=`?` to=`uri` `` at the heading and ``to=`?` `` at the close carry ONE relation read from two ends —
+  // source unresolved and target known, then source known and target unresolved. The pair carries the
+  // relation (the kupono cut): no arrow stands between the ends, and the control-soh scan captures the
+  // target by its name. Drop either end and the capture returns nothing while every other check here
+  // still reads the frame as sound.
   const masked = (re) => [...maskedExecAll(t, re)];
   const soh = masked(SOH_LINE_RE).length > 0;
   if (soh && masked(carrierHeadPattern("gm")).length === 0) {
-    faults.push([f, "SOH carries no `from=\"?\" -> to=uri` — the heading states no bearing"]);
+    faults.push([f, "SOH carries no ``from=`?` to=`uri` `` — the heading states no bearing"]);
   }
-  // THE CLOSE NAMES ITS SLOT. The frame's ends took `from=` and `to=`, so an EOT reads `-> to="?"`.
+  // THE CLOSE NAMES ITS SLOT: an EOT reads ``to=`?` ``.
   const eot = masked(EOT_LINE_RE).length > 0;
   if (eot && masked(carrierReleasePattern("gm")).length === 0) {
-    faults.push([f, "EOT carries no `-> to=\"?\"` — the close resolves a bearing it cannot know"]);
-  }
-  // EARLY ALPHA, NO BACK-COMPAT: the bare `-> to=?` spelling is retired outright. TiddlyWiki reads
-  // `to=?` and `to="?"` as the same value, but this gate now names the unquoted spelling a fault on
-  // its own, additive to whatever the shared frame package's own pattern still tolerates.
-  const BARE_EOT_BEARING_RE = /->\s*to=\?(?!")/;
-  for (const line of masked(EOT_LINE_RE)) {
-    if (BARE_EOT_BEARING_RE.test(line[0])) {
-      faults.push([f, "EOT closes on a bare `-> to=?` — the retired unquoted spelling, never a tolerated one"]);
-      break;
-    }
+    faults.push([f, "EOT carries no ``to=`?` `` — the close resolves a bearing it cannot know"]);
   }
 
   // AN OPENED BODY CLOSES — and a carrier that never opens one carries no fault. The frame acts as a

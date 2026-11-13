@@ -7,7 +7,8 @@
  * reader undoes it. A text holding no such ahu reads as itself.
  */
 
-const AHU_OPEN = /^<<~ ahu #\/[\w/-]+>>$/;
+// The kupono opener names its slot=; the frozen specimens keep the opener they were written with.
+const AHU_OPEN = /^<<~ ahu (?:slot=`#\/[\w/-]+`|#\/[\w/-]+)>>$/;
 const META_OPEN = "```toml meta";
 const TYPE_KEY = /^type\s*=\s*"([^"]+)"\s*$/;
 const FENCE = /^(`{3,})[ \t]*$/;

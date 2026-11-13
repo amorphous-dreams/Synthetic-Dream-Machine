@@ -8,7 +8,7 @@
  * Meme: lar:///ha.ka.ba/lares/api/wiki-coherence-projection
  */
 
-import type { CoherenceFrameWithRev } from "@lararium/browser";
+import type { CoherenceFrameWithRev } from "@lararium/browser/page";
 
 export interface CoherenceIndicatorSink {
   apply(frame: CoherenceFrameWithRev): void;

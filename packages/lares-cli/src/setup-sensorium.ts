@@ -16,8 +16,8 @@
  *   5. meshpalace — stood LAST (it couples to a live node); the directory wiring is all we do here,
  *      the meshpalace doc's feed/federation logic lives in the mesh domain.
  *
- * Per-project mining + the lar_* harvest are NOT done here (kept fast + idempotent); they accumulate
- * live via the ingest hook, or run on demand via `lares sense pour`.
+ * Per-project mining is NOT done here (kept fast + idempotent); it accumulates live via the ingest
+ * hook, or runs on demand via `lares sense pour --all`.
  */
 
 export { setupPalaceOrgans as setupSensorium } from "@lararium/node";

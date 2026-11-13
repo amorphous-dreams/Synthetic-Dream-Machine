@@ -1,0 +1,1822 @@
+[
+  {
+    "id": "preserved-001-literal-0",
+    "filter": "[[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-002-literal-1",
+    "filter": "[[Beta]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-003-literal-2",
+    "filter": "[[Gamma]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-004-literal-3",
+    "filter": "[[Delta]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-005-literal-4",
+    "filter": "[[$:/config/pono-small]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-006-literal-5",
+    "filter": "[[$:/Shadow/Example]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-007-literal-6",
+    "filter": "[[Missing]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-008-field-7",
+    "filter": "[[Alpha]get[title]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-009-field-8",
+    "filter": "[[Alpha]get[text]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-010-field-9",
+    "filter": "[[Alpha]get[tags]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-011-field-10",
+    "filter": "[[Alpha]get[category]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-012-field-11",
+    "filter": "[[Alpha]get[rank]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-013-field-12",
+    "filter": "[[Alpha]get[list]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-014-field-13",
+    "filter": "[[Beta]get[title]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-015-field-14",
+    "filter": "[[Beta]get[text]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-016-field-15",
+    "filter": "[[Beta]get[tags]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-017-field-16",
+    "filter": "[[Beta]get[category]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-018-field-17",
+    "filter": "[[Beta]get[rank]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-019-field-18",
+    "filter": "[[Beta]get[list]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-020-field-19",
+    "filter": "[[Missing]get[title]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-021-field-20",
+    "filter": "[[Missing]get[text]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-022-field-21",
+    "filter": "[[Missing]get[tags]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-023-field-22",
+    "filter": "[[Missing]get[category]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-024-field-23",
+    "filter": "[[Missing]get[rank]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-025-field-24",
+    "filter": "[[Missing]get[list]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-026-tag-topic",
+    "filter": "[tag[topic]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-027-tag-reference",
+    "filter": "[tag[reference]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-028-tag-listed",
+    "filter": "[tag[listed]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-029-tag-system",
+    "filter": "[tag[system]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-030-tag-missing",
+    "filter": "[tag[missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-031-has-title",
+    "filter": "[all[tiddlers]has[title]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-032-has-text",
+    "filter": "[all[tiddlers]has[text]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-033-has-tags",
+    "filter": "[all[tiddlers]has[tags]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-034-has-category",
+    "filter": "[all[tiddlers]has[category]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-035-has-rank",
+    "filter": "[all[tiddlers]has[rank]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-036-has-list",
+    "filter": "[all[tiddlers]has[list]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-037-has-missing",
+    "filter": "[all[tiddlers]has[missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-038-category-guide",
+    "filter": "[all[tiddlers]field:category[guide]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-039-category-1",
+    "filter": "[all[tiddlers]field:category[1]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-040-category-2",
+    "filter": "[all[tiddlers]field:category[2]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-041-category-3",
+    "filter": "[all[tiddlers]field:category[3]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-042-category-missing",
+    "filter": "[all[tiddlers]field:category[missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-043-match-42",
+    "filter": "[all[tiddlers]match[Alpha]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-044-prefix-43",
+    "filter": "[all[tiddlers]prefix[Alpha]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-045-suffix-44",
+    "filter": "[all[tiddlers]suffix[Alpha]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-046-contains-45",
+    "filter": "[all[tiddlers]contains[Alpha]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-047-match-46",
+    "filter": "[all[tiddlers]match[Beta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-048-prefix-47",
+    "filter": "[all[tiddlers]prefix[Beta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-049-suffix-48",
+    "filter": "[all[tiddlers]suffix[Beta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-050-contains-49",
+    "filter": "[all[tiddlers]contains[Beta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-051-match-50",
+    "filter": "[all[tiddlers]match[Gamma]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-052-prefix-51",
+    "filter": "[all[tiddlers]prefix[Gamma]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-053-suffix-52",
+    "filter": "[all[tiddlers]suffix[Gamma]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-054-contains-53",
+    "filter": "[all[tiddlers]contains[Gamma]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-055-match-54",
+    "filter": "[all[tiddlers]match[Delta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-056-prefix-55",
+    "filter": "[all[tiddlers]prefix[Delta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-057-suffix-56",
+    "filter": "[all[tiddlers]suffix[Delta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-058-contains-57",
+    "filter": "[all[tiddlers]contains[Delta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-059-match-58",
+    "filter": "[all[tiddlers]match[A]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-060-prefix-59",
+    "filter": "[all[tiddlers]prefix[A]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-061-suffix-60",
+    "filter": "[all[tiddlers]suffix[A]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-062-contains-61",
+    "filter": "[all[tiddlers]contains[A]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-063-match-62",
+    "filter": "[all[tiddlers]match[a]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-064-prefix-63",
+    "filter": "[all[tiddlers]prefix[a]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-065-suffix-64",
+    "filter": "[all[tiddlers]suffix[a]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-066-contains-65",
+    "filter": "[all[tiddlers]contains[a]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-067-match-66",
+    "filter": "[all[tiddlers]match[Missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-068-prefix-67",
+    "filter": "[all[tiddlers]prefix[Missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-069-suffix-68",
+    "filter": "[all[tiddlers]suffix[Missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-070-contains-69",
+    "filter": "[all[tiddlers]contains[Missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-071-all-tiddlers",
+    "filter": "[all[tiddlers]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-072-all-shadows",
+    "filter": "[all[shadows]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-073-all-system",
+    "filter": "[all[system]sort[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "all[] carries no `system` source and answers nothing; [all[tiddlers]is[system]] reads system titles"
+  },
+  {
+    "id": "preserved-074-all-current",
+    "filter": "[all[current]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-075-is-system",
+    "filter": "[all[tiddlers]is[system]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-076-is-shadow",
+    "filter": "[all[tiddlers]is[shadow]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-077-is-missing",
+    "filter": "[all[tiddlers]is[missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-078-list-sort",
+    "filter": "[enlist[Gamma Alpha Beta Alpha]sort[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-079-list-reverse",
+    "filter": "[enlist[Gamma Alpha Beta Alpha]reverse[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-080-list-unique",
+    "filter": "[enlist[Gamma Alpha Beta Alpha]unique[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-081-list-first",
+    "filter": "[enlist[Gamma Alpha Beta Alpha]first[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-082-list-last",
+    "filter": "[enlist[Gamma Alpha Beta Alpha]last[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-083-list-count",
+    "filter": "[enlist[Gamma Alpha Beta Alpha]count[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-084-pipeline-83",
+    "filter": "[tag[topic]sort[]limit[2]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-085-pipeline-84",
+    "filter": "[tag[topic]reverse[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-086-pipeline-85",
+    "filter": "[tag[topic]unique[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-087-pipeline-86",
+    "filter": "[tag[topic]first[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-088-pipeline-87",
+    "filter": "[tag[topic]last[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-089-pipeline-88",
+    "filter": "[tag[topic]count[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-090-pipeline-89",
+    "filter": "[tag[topic]limit[2]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-091-pipeline-90",
+    "filter": "[tag[topic]limit[-2]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "a negative limit drops that many from the end rather than keeping the last ones"
+  },
+  {
+    "id": "preserved-092-relation-91",
+    "filter": "[[Alpha]tags[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-093-relation-92",
+    "filter": "[[Alpha]tagging[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-094-relation-93",
+    "filter": "[[Alpha]links[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-095-relation-94",
+    "filter": "[[Alpha]backlinks[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-096-relation-95",
+    "filter": "[[Alpha]listed[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-097-relation-96",
+    "filter": "[[Alpha]listing[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "`listing` stands as no stock operator here; the answer passes the input through or answers nothing"
+  },
+  {
+    "id": "preserved-098-relation-97",
+    "filter": "[[Beta]tags[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-099-relation-98",
+    "filter": "[[Beta]tagging[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-100-relation-99",
+    "filter": "[[Beta]links[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-101-relation-100",
+    "filter": "[[Beta]backlinks[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-102-relation-101",
+    "filter": "[[Beta]listed[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-103-relation-102",
+    "filter": "[[Beta]listing[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "`listing` stands as no stock operator here; the answer passes the input through or answers nothing"
+  },
+  {
+    "id": "preserved-104-relation-103",
+    "filter": "[[Gamma]tags[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-105-relation-104",
+    "filter": "[[Gamma]tagging[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-106-relation-105",
+    "filter": "[[Gamma]links[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-107-relation-106",
+    "filter": "[[Gamma]backlinks[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-108-relation-107",
+    "filter": "[[Gamma]listed[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-109-relation-108",
+    "filter": "[[Gamma]listing[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "`listing` stands as no stock operator here; the answer passes the input through or answers nothing"
+  },
+  {
+    "id": "preserved-110-relation-109",
+    "filter": "[[Missing]tags[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-111-relation-110",
+    "filter": "[[Missing]tagging[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-112-relation-111",
+    "filter": "[[Missing]links[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-113-relation-112",
+    "filter": "[[Missing]backlinks[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-114-relation-113",
+    "filter": "[[Missing]listed[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-115-relation-114",
+    "filter": "[[Missing]listing[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "`listing` stands as no stock operator here; the answer passes the input through or answers nothing"
+  },
+  {
+    "id": "preserved-116-string-115",
+    "filter": "[[Alpha Beta]addprefix[pre-]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-117-string-116",
+    "filter": "[[Alpha Beta]addsuffix[-post]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-118-string-117",
+    "filter": "[[Alpha Beta]join[, ]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-119-string-118",
+    "filter": "[[Alpha Beta]split[ ]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-120-string-119",
+    "filter": "[[Alpha Beta]uppercase[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-121-string-120",
+    "filter": "[[Alpha Beta]lowercase[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-122-string-121",
+    "filter": "[[Alpha Beta]trim[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-123-search-122",
+    "filter": "[all[tiddlers]search[Alpha]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-124-search-123",
+    "filter": "[all[tiddlers]search[Beta]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-125-search-124",
+    "filter": "[all[tiddlers]search[topic]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-126-search-125",
+    "filter": "[all[tiddlers]search[reference]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-127-search-126",
+    "filter": "[all[tiddlers]search[body]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-128-search-127",
+    "filter": "[all[tiddlers]search[missing]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-129-regexp-128",
+    "filter": "[all[tiddlers]regexp:title[^A]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-130-regexp-129",
+    "filter": "[all[tiddlers]regexp:title[a$]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-131-regexp-130",
+    "filter": "[all[tiddlers]regexp:title[^\\$:/]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-132-regexp-131",
+    "filter": "[all[tiddlers]regexp:title[[A-Z]]sort[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "a regexp operand cannot carry ']' inside square-bracket delimiters; the filter parser faults"
+  },
+  {
+    "id": "preserved-133-sortby-132",
+    "filter": "[enlist[Gamma Alpha Beta]sortby[Alpha]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-134-sortby-133",
+    "filter": "[enlist[Gamma Alpha Beta]sortby[Beta]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-135-sortby-134",
+    "filter": "[enlist[Gamma Alpha Beta]sortby[Gamma]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-136-ordering-135",
+    "filter": "[tag[topic]sort[title]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-137-ordering-136",
+    "filter": "[tag[topic]sort[rank]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-138-ordering-137",
+    "filter": "[tag[topic]sortan[rank]]",
+    "tags": [
+      "host-bound",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-139-ordering-138",
+    "filter": "[tag[topic]sortcs[title]]",
+    "tags": [
+      "host-bound",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-140-facet",
+    "filter": "[tag[topic]sort[title]limit[2]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-141-facet",
+    "filter": "[tag[topic]sort[rank]limit[2]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-142-facet",
+    "filter": "[tag[reference]sort[title]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-143-facet",
+    "filter": "[all[tiddlers]has[plugin-type]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-144-facet",
+    "filter": "[all[tiddlers]has[module-type]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-145-facet",
+    "filter": "[all[tiddlers]field:type[application/json]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "preserved-146-facet",
+    "filter": "[[Alpha]get[list]join[,]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-147-facet",
+    "filter": "[[Alpha]get[category]addprefix[category:]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-148-facet",
+    "filter": "[[Beta]get[rank]addprefix[rank:]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-149-facet",
+    "filter": "[[Delta]get[rank]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-150-facet",
+    "filter": "[[Alpha]tags[]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-151-facet",
+    "filter": "[[Alpha]links[]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-152-facet",
+    "filter": "[[Alpha]listing[]sort[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "`listing` stands as no stock operator here; the answer passes the input through or answers nothing"
+  },
+  {
+    "id": "preserved-153-facet",
+    "filter": "[[Beta]backlinks[]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-154-facet",
+    "filter": "[enlist[Alpha Beta Gamma]limit[1]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-155-facet",
+    "filter": "[enlist[Alpha Beta Gamma]limit[2]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-156-facet",
+    "filter": "[enlist[Alpha Beta Gamma]limit[-1]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "a negative limit drops that many from the end rather than keeping the last ones"
+  },
+  {
+    "id": "preserved-157-facet",
+    "filter": "[enlist[Alpha Beta Gamma]reverse[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-158-facet",
+    "filter": "[enlist[Alpha Beta Gamma]unique[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-159-facet",
+    "filter": "[enlist[Alpha Beta Gamma]join[|]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-160-facet",
+    "filter": "[enlist[Alpha Beta Gamma]count[]]",
+    "tags": [
+      "core",
+      "set",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-161-facet",
+    "filter": "[all[tiddlers]search:title[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "preserved-162-facet",
+    "filter": "[all[tiddlers]search:text[Beta]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  }
+]

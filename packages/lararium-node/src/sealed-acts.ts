@@ -17,7 +17,8 @@
  *   · The table names every act. A name outside it refuses `unknown-act`, by name.
  *   · Each row names its arguments and their types. An argument the row does not name refuses `bad-args`, so a
  *     frame carries nothing a row did not ask for; no row asks for a credential of this vessel, and nothing a row
- *     takes opens the vessel key. The restore's two rows take a BUNDLE's own key, which a person's route already
+ *     takes opens the vessel key. A row that reads a face's root takes that face's WARD route for its one act (`ward`),
+ *     which opens the face's ward key alone and refuses by name where it does not. The restore's two rows take a BUNDLE's own key, which a person's route already
  *     opened in the command's process: it opens that one bundle's body and nothing this vessel holds.
  *   · An act answers a plain record for its caller to print. The door logs the act's name and how it ended, and
  *     never an argument, an answer or a refusal's own words.
@@ -35,21 +36,21 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
+import { wardCredentialOfArgs, type WardCredential } from "./ward-credential.js";
+import { FaceNotNamed, resolveFace } from "./face-selector.js";
+import { rewrapWardCustody, unlockedFaceOrdinals } from "./custody-seat.js";
 import {
-  HandleBook, ed25519SignerFromSeed,
-  type HandleBookSnapshot, type PersonaDeclaration, type PersonaRef,
+  HandleBook,
+  type HandleBookSnapshot, type PersonaDeclaration,
 } from "@lararium/mesh";
 import { CarriedCharterError, carriedReadings } from "./carried-set.js";
 import { acceptCofound, joinCofound, openCofound, sealCofoundAct } from "./cofound-ceremony.js";
-import { NexusContractError, runNexusAcceptCarriage } from "./commands/nexus-contract.js";
+import { abandonRollCircleAct, cardOf, fileRollCircleAct, joinRollCircleAct, openRollCircleAct, signRollCircleAct } from "./roll-circle-ceremony.js";
+import { NexusContractError, runNexusAcceptCarriage, runNexusRollPriorAnchorCheck } from "./commands/nexus-contract.js";
 import { loadNodeHandleBook, saveNodeHandleBook } from "./node-circle-store.js";
-import { clearPersonaAdmitPending, listAdmittedPersonas } from "./node-persona-admit-store.js";
 import {
-  acceptAdmitFlow, grantAdmitFlow, offerAdmitFlow, openAdmitFlow, withdrawGrantFlow, withdrawOfferFlow,
-} from "./persona-admit-flow.js";
-import {
-  listPersonaRosterLines, loadActivePersonaIndex, loadPersonaGroupRootSeed, loadVesselSigningSeed,
-  loadVesselVerifyingKey, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots, wearPersona,
+  listPersonaRosterLines, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore, orphanPersonaRoots,
 } from "./node-vessel-identity.js";
 import type { Repo } from "@automerge/automerge-repo";
 import type { BackupDoor } from "./face-bundle-cut.js";
@@ -57,7 +58,8 @@ import { ImportRefused, RestoreRefused, importFaceBundleMemory, restoreFaceBundl
 import { HostRefusal, runHostInvite, runHostRoll, runHostState } from "./commands/host.js";
 import { runWalkInvite, runWalkState, runWalkTake, WalkRefusal } from "./commands/walk.js";
 import { NexusKeyReissueRefused, runNexusKeyReissue } from "./nexus-key-reissue.js";
-import { GuardianEnrolmentRefused, guardianStanding, runGuardianEnrolment } from "./guardian-enrolment.js";
+import { RecoveryContactEnrolmentRefused, recoveryContactStanding, runRecoveryContactEnrolment } from "./recovery-contact-enrolment.js";
+import { ConfirmRefused, FaceProvisional, boardHeadOf, chairLogView, confirmProvisional, couldConfirm, readProvisionalMark } from "./face-provisional.js";
 import {
   SealCeremonyRefusal, armGenesis, armRoll, bindCrossing, heldSeatsAmong, openCrossing, readBackStandsIn, readCrossing, retireSeats,
   sealCrossing, signCrossing, signLicensedInception, signLicensedSealRoll, witnessCrossing,
@@ -68,7 +70,8 @@ import { larSealHome } from "./vessel-paths.js";
 export interface SealedActContext {
   /**
    * One read of a persona KEL's head off the local board: its operating key and its sequence, both null when the
-   * board holds no such KEL. `null` where no board stands to read (a vessel at its herm floor).
+   * board holds no such KEL. `null` where no board stands to read (a vessel at its herm floor). No act reads it:
+   * `lares fleet join` carries a persona's admission.
    */
   readonly kelHead: ((prefix: string) => Promise<{ readonly head: string | null; readonly seq: number | null }>) | null;
   /**
@@ -99,6 +102,8 @@ export interface SealedActContext {
    * there refuses by name.
    */
   readonly backup: BackupDoor | null;
+  /** The standing composition lends its island; a command in its own process holds null and refuses by name. */
+  readonly island: { readonly state: () => Promise<{ restarts: number; leg: string }>; readonly restart: (reason: string) => Promise<{ restarts: number; leg: string }> } | null;
 }
 
 /** One own persona as the persona plane holds it: the two names that ride a face's fleet. */
@@ -136,7 +141,7 @@ export interface PersonaSelvesPlane {
     Promise<{ readonly written: boolean; readonly plane: boolean }>;
 }
 
-export type SealedActRefusalReason = "unknown-act" | "bad-args" | "act-refused";
+export type SealedActRefusalReason = "unknown-act" | "bad-args" | "act-refused" | "face-provisional";
 
 /** An act that refuses: the table names no such act, the arguments miss the row's shape, or the row said no. */
 export class SealedActRefused extends Error {
@@ -237,7 +242,15 @@ const foundingFile: Kind<Record<string, unknown>> = {
     return spelled.length <= TEXT_ARG_LIMIT ? (v as Record<string, unknown>) : undefined;
   },
 };
+/** The seat fingerprints a person typed as heard, one per other chair of a roll circle. */
+const heardSeats: Kind<string[]> = {
+  label: `a list of seat fingerprints as heard, each a non-empty string, ${SEAT_KEYS_ARG_LIMIT} at most`,
+  read: (v) => (Array.isArray(v) && v.length <= SEAT_KEYS_ARG_LIMIT && v.every((h) => typeof h === "string" && h.length > 0 && h.length <= LABEL_ARG_LIMIT) ? [...(v as string[])] : undefined),
+};
 const optional = <T>(k: Kind<T>): Kind<T> & { readonly optional: true } => ({ ...k, optional: true });
+/** A face's WARD route for this one act (seat-harness#/the-ward): a passphrase or paper credentials. It opens the face's ward key for
+ *  the act and nothing else; no vessel key, no face key. A row that reads the root seed takes it, and refuses by name without it. */
+const ward: Kind<WardCredential> = { label: "the face's ward route for this act (passphrase or paper credentials)", read: (v) => wardCredentialOfArgs(v) };
 
 type Shape = Readonly<Record<string, Kind<unknown>>>;
 type ArgsOf<S extends Shape> = {
@@ -302,30 +315,63 @@ async function hostOrRefuse<T>(run: Promise<T>): Promise<T> {
   catch (err) { if (err instanceof HostRefusal) throw refuse(err.message); throw err; }
 }
 
+/**
+ * A ROLL WAITS ON ITS PRIOR ANCHOR at this door too (operator ruling 2026-10-15). The roll's two opens, `seat.arm-roll`
+ * and `roll-circle.open`, ask the check the store row answers, against the store the composition lends, before any
+ * card reads; so a caller who drives either act straight through this door meets the same refusal the command's own
+ * open meets. A door that lends no store (a herm floor, a vector's bare context) reads no board, and the command's
+ * open still asks its store row.
+ */
+async function priorAnchorOrRefuse(ctx: SealedActContext, aid?: string): Promise<void> {
+  const store = ctx.hosting;
+  if (!store) return;
+  try {
+    await store.withRepo((repo) => runNexusRollPriorAnchorCheck({ sealHome: larSealHome(), repo, ...(aid !== undefined ? { aid } : {}) }));
+  } catch (err) {
+    if (err instanceof NexusContractError) throw refuse(err.message);
+    throw err;
+  }
+}
+
 async function reissueOrRefuse<T>(run: Promise<T>): Promise<T> {
   try { return await run; }
   catch (err) { if (err instanceof NexusKeyReissueRefused) throw refuse(err.message); throw err; }
 }
 
 /** A flow that answers `{ error }` refuses the act with those words; any other answer passes through. */
-/** A guardian enrolment's refusal reaches the caller by its own name. */
+/** A recovery contact enrolment's refusal reaches the caller by its own name. */
 async function enrolOrRefuse<T>(run: Promise<T>): Promise<T> {
   try { return await run; } catch (err) {
-    if (err instanceof GuardianEnrolmentRefused) throw refuse(`${err.refusal}: ${err.message}`);
+    if (err instanceof RecoveryContactEnrolmentRefused) throw refuse(`${err.refusal}: ${err.message}`);
     throw err;
   }
 }
 
-function orRefuse<T extends object>(r: T | { readonly error: string }): T {
-  if ("error" in r && typeof (r as { error: unknown }).error === "string") throw refuse((r as { error: string }).error);
-  return r as T;
-}
+/**
+ * THE ACTS THAT ACT AS A FACE: each signs, reads or writes as one face (its key or root, its handle book, its own
+ * plane), so on a running vessel each rides a session of that face (`session:act`) and its receipt binds to the face;
+ * the custody door's own `act` frame refuses them `face-act-rides-a-session`. Every other act stays at the custody
+ * door, acting as the place under a human unlock (hands-spine-lane#/watch names each and why):
+ * `face.resolve` chooses the face and cannot ride the session it chooses; the seat, seal, cofound and roll-circle
+ * acts are the charter's seats; petname.* and declaration.* write the place's sealed rows naming its faces (the face's
+ * plane takes a name only by `selves.carry`); the persona reads (`roots`, `recovery-contact.show`, `provisional`, `head`) and
+ * `selves.read`, `walk.state`, `host.state`, `carriage.readings` and `crossing.state` sign no face's key, and
+ * `persona.view` signs as a held chair (a seat key), never as a face; crossing.open/bind/seal are the charter's rite; `walk.invite` and `host.invite` hand the place's wallet;
+ * and `bundle.restore`/`bundle.import` land a face anew as recovery.
+ */
+export const SESSION_ACTS: ReadonlySet<string> = new Set([
+  // Sign under the face's key or root: its Nexus credential, its walk record, its hosting epoch, its hand and witness in
+  // a crossing, its consent to a Nexus's carriage, its first recovery contacts, and its confirm of its own restored standing.
+  "persona.reissue", "walk.take", "host.roll", "crossing.sign", "crossing.witness", "carriage.accept", "persona.recovery-contact.enrol", "persona.confirm",
+  // Read or write what the face alone keeps: its handle book, and its names on its own persona plane.
+  "handle-book.load", "handle-book.save", "selves.carry", "selves.clear",
+]);
 
 /**
  * THE TABLE. Each row: the arguments it takes, and the act. A row answers what its command prints.
  *
- *   persona.roots         the roster: each held handle-index with its root's public key, the worn index, the orphans
- *   persona.wear          wear the face at an index this vessel holds a root for
+ *   persona.roots         the roster: each held handle-index with its root's public key, and the orphans
+ *   face.resolve          the face a command acts as: the one named, else the one face standing open (`worn`: else the mounted face)
  *   seat.held             which of the public keys asked this vessel holds a seat key for: a reading of row names
  *   seat.arm-genesis      give each chair that stands a seat key minted behind this door, and answer the roster;
  *                         the command mints each chair's next key as a card in its own process; it writes no charter
@@ -344,6 +390,15 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *   cofound.seal          judge a join against the recorded offer and the joining seat's fingerprint as heard, record
  *                         the judged image, sign as the seat and the hearth, and file the joint charter under its AID
  *   cofound.accept        judge a sealed inception against the image this vessel joined, and file the joint charter
+ *   roll-circle.open      roll a joint charter across its vaults: name the head and the new rule, and contribute
+ *                         this vault's chair (the successor its card reveals, or a seat key minted fresh for an added
+ *                         chair, beside the digest of the fresh successor card the command read back); record it
+ *   roll-circle.join      contribute this vault's chair to a circle another vault opened, from the same head
+ *   roll-circle.sign      sign the circle's one image with every seat this vault contributed, once the person typed
+ *                         the rule and every other chair's fingerprint as heard, and the circle carries exactly the
+ *                         chairs and the rule this vault recorded
+ *   roll-circle.abandon   drop this vault's open circle for one Nexus, and retire the seats it contributed
+ *   roll-circle.file      file the rolled charter a complete circle mints, beside the seed, and retire the closed seats
  *   crossing.*            the growth rite's steps over the crossing that stands open: state, open, bind, sign,
  *                         witness, seal. A hand names itself; the row reads what it signs off its own sealed row
  *   carriage.accept       sign this operator's own consent to one Nexus's carriage, under the face's leaf for it
@@ -356,13 +411,14 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *                         sealed row holds. `fill` lands it only where the plane never held that name. A plane whose
  *                         rest stands clear takes no name, and the carry refuses by that rest
  *   selves.clear          clear ONE name of one held face on its plane, once its sealed row holds that name no more
+ *   island.state          read the standing daemon island
+ *   island.restart        reopen the standing daemon island
  *   walk.state            where this vessel walks: per hearth, the Nexus, the grant it holds and its wallet's count
  *   walk.take             keep a carried invite on the walk record of the hearth it names
  *   walk.invite           hand the newest invite out of the wallet of the hearth this vessel walks at
  *   host.state            what this hearth hosts: per Nexus, the live epochs, the cap and the redemption counts
  *   host.roll             roll the hosting epoch in one Nexus and land the new act on this hearth's hosting doc
  *   host.invite           mint this hearth's own invite at the current epoch; the answer returns to the one caller
- *   admit.*               the persona admission's hops and its pending rows
  *   handle-book.load|save the recogniser's private memory, as one snapshot
  *   bundle.restore        bring ONE face back from its backup bundle, as a recovery act: the row takes the bundle's
  *                         body still sealed and the bundle key, opens the body behind this door, and lands the face
@@ -372,18 +428,23 @@ function orRefuse<T extends object>(r: T | { readonly error: string }): T {
  *                         face, hands the section to its daemon island's import door. A command running the act in
  *                         its own process holds no island, and refuses by name
  */
+
 export const SEALED_ACTS = Object.freeze({
   "persona.roots": act({}, async () => {
     const lines = await listPersonaRosterLines();
     return {
       roots: lines.map((l) => ({ handleIndex: l.handleIndex, verifyingKey: l.verifyingKey })),
-      active: (await loadActivePersonaIndex()) ?? null,
       orphans: await orphanPersonaRoots(),
     };
   }),
-  "persona.wear": act({ handleIndex: index }, async ({ handleIndex }) => {
-    await wearPersona(handleIndex);
-    return { active: handleIndex };
+  // WHICH FACE A COMMAND ACTS AS: the one it names, else the one face standing open (`face-selector`); several and none
+  // named refuse by name. A command's own process asks this; nothing the composition mounts answers it.
+  // `orNone`: a vessel with no face open answers `face: null` (an act that may act as no face, as a seal roll), never a refusal.
+  // `worn`: the seat's reading (an AI seat acts as the face the operator wears): several open and none named resolve to the
+  // MOUNTED face, and a named face answers only while it stands open (`face-selector`).
+  "face.resolve": act({ face: optional(index), orNone: optional(flag), worn: optional(flag) }, async (a) => {
+    if (a.orNone === true && a.face === undefined && (await unlockedFaceOrdinals()).length === 0) return { face: null };
+    return { face: await resolveFace(a.face, a.worn === true ? { worn: true } : {}) };
   }),
   // THE SEATS' OWN KEYS (`seal-ceremony`, `seat-key-store`). A chair's keys mint behind this door and never cross
   // it: the arming rows answer public halves, the roster to write and a digest, and the charter's own writer stays
@@ -392,8 +453,9 @@ export const SEALED_ACTS = Object.freeze({
   "seat.arm-genesis": act({ threshold: optional(count) }, async (a) => ({
     ...(await ceremonyOrRefuse(armGenesis(a.threshold !== undefined ? { threshold: a.threshold } : {}))),
   })),
-  "seat.arm-roll": act({ cards: coldCards, threshold: optional(count) }, async (a) => {
+  "seat.arm-roll": act({ cards: coldCards, threshold: optional(count) }, async (a, ctx) => {
     try {
+      await priorAnchorOrRefuse(ctx);
       return { ...(await ceremonyOrRefuse(armRoll({ cards: a.cards, ...(a.threshold !== undefined ? { threshold: a.threshold } : {}) }))) };
     } finally { for (const card of a.cards) card.fill(0); }
   }),
@@ -424,6 +486,26 @@ export const SEALED_ACTS = Object.freeze({
   "cofound.accept": act({ inception: foundingFile }, async (a) => ({
     ...(await foundingOrRefuse(acceptCofound({ inception: a.inception }))),
   })),
+  // THE ROLL CIRCLE (`roll-circle-ceremony`). Each vault speaks for its own chairs and signs one image; the cards a
+  // person typed back cross this door once and zero-fill here.
+  "roll-circle.open": act({ aid: text, face: index, cards: optional(coldCards), next: digest, threshold: count }, async (a, ctx) => {
+    try {
+      await priorAnchorOrRefuse(ctx, a.aid);
+      const card = cardOf(a.cards);
+      return { ...(await foundingOrRefuse(openRollCircleAct({ aid: a.aid, face: a.face, next: a.next, threshold: a.threshold, ...(card ? { card } : {}) }))) };
+    } finally { for (const c of a.cards ?? []) c.fill(0); }
+  }),
+  "roll-circle.join": act({ circle: foundingFile, face: index, cards: optional(coldCards), next: digest }, async (a) => {
+    try {
+      const card = cardOf(a.cards);
+      return { ...(await foundingOrRefuse(joinRollCircleAct({ circle: a.circle, face: a.face, next: a.next, ...(card ? { card } : {}) }))) };
+    } finally { for (const c of a.cards ?? []) c.fill(0); }
+  }),
+  "roll-circle.sign": act({ circle: foundingFile, heardThreshold: count, heard: heardSeats }, async (a) => ({
+    ...(await foundingOrRefuse(signRollCircleAct({ circle: a.circle, heardThreshold: a.heardThreshold, heard: a.heard }))),
+  })),
+  "roll-circle.abandon": act({ aid: text }, async (a) => ({ ...(await foundingOrRefuse(abandonRollCircleAct({ aid: a.aid }))) })),
+  "roll-circle.file": act({ circle: foundingFile }, async (a) => ({ ...(await foundingOrRefuse(fileRollCircleAct({ circle: a.circle }))) })),
   "crossing.state": act({}, async () => {
     const { pending, kept } = await readCrossing();
     return {
@@ -437,7 +519,7 @@ export const SEALED_ACTS = Object.freeze({
   "crossing.open": act({}, async () => ({ ...(await ceremonyOrRefuse(openCrossing())) })),
   "crossing.bind": act({}, async () => ({ ...(await ceremonyOrRefuse(bindCrossing())) })),
   "crossing.sign": act({ handleIndex: index }, async (a) => ({ ...(await ceremonyOrRefuse(signCrossing(a.handleIndex))) })),
-  "crossing.witness": act({ handleIndex: index, note: label }, async (a) => ({ ...(await ceremonyOrRefuse(witnessCrossing(a.handleIndex, a.note))) })),
+  "crossing.witness": act({ handleIndex: index, note: label, ward: optional(ward) }, async (a) => ({ ...(await ceremonyOrRefuse(witnessCrossing(a.handleIndex, a.note, a.ward))) })),
   "crossing.seal": act({}, async () => ({ ...(await ceremonyOrRefuse(sealCrossing())) })),
   "carriage.accept": act({ handleIndex: index, aid: optional(text) }, async (a) => {
     try {
@@ -505,10 +587,18 @@ export const SEALED_ACTS = Object.freeze({
   // THE WALK RECORDS. A record holds bearer invites, the hearth's grant and one key per carried document, so it
   // rests sealed (`node-walk-store`) and its three acts ride this door: a carried invite as a verb's argument, or
   // an invite as a verb's outcome, would rest in the daemon's document in the clear.
+  "island.state": act({}, async (_a, ctx) => {
+    if (!ctx.island) throw refuse("no daemon island stands here");
+    return { ...await ctx.island.state() };
+  }),
+  "island.restart": act({ reason: text }, async (a, ctx) => {
+    if (!ctx.island) throw refuse("no daemon island stands here");
+    return { ...await ctx.island.restart(a.reason) };
+  }),
   "walk.state": act({}, async () => ({ walks: (await runWalkState()).map((w) => ({ ...w })) })),
-  "walk.take": act({ carried: text }, async (a, ctx) => {
+  "walk.take": act({ carried: text, face: optional(index) }, async (a, ctx) => {
     const dialGate = ctx.walk?.dialGate()?.toLowerCase() ?? null;
-    const taken = await walkOrRefuse(runWalkTake({ carried: a.carried, dialGate }));
+    const taken = await walkOrRefuse(runWalkTake({ carried: a.carried, dialGate, ...(a.face !== undefined ? { face: a.face } : {}) }));
     // A fresh invite for the hearth this vessel's walk dial stands to re-presents at once.
     const represent = taken.gatePubKey === dialGate ? (ctx.walk?.represent ?? null) : null;
     if (represent) await represent();
@@ -520,11 +610,12 @@ export const SEALED_ACTS = Object.freeze({
   // `hosting-carry`), so its three doors ride this door: a bearer invite as a verb's outcome would rest in the
   // daemon's document in the clear. A roll lands its act on the store the composition lends, and tells it so.
   "host.state": act({}, async () => ({ nexuses: (await runHostState({ sealHome: larSealHome() })).map((n) => ({ ...n })) })),
-  "host.roll": act({ nexusAid: optional(text), cap: optional(count) }, async (a, ctx) => {
+  "host.roll": act({ nexusAid: optional(text), cap: optional(count), face: optional(index) }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to land a hosting act on");
     const rolled = await hostOrRefuse(store.withRepo((repo) => runHostRoll({
       sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.cap !== undefined ? { cap: a.cap } : {}),
+      ...(a.face !== undefined ? { face: a.face } : {}),
     })));
     await store.rolled(rolled.nexusAid);
     return { ...rolled };
@@ -537,98 +628,75 @@ export const SEALED_ACTS = Object.freeze({
 
   // THE FACE'S KEY AT ONE NEXUS. The key rests sealed and cold, and the re-issue lands its signed hand-over on the
   // Nexus's carriage board through the store the composition lends; the answer names public keys alone.
-  "persona.reissue": act({ nexusAid: optional(text) }, async (a, ctx) => {
+  "persona.reissue": act({ nexusAid: optional(text), face: optional(index) }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to land a hand-over on");
     return { ...(await reissueOrRefuse(store.withRepo((repo) => runNexusKeyReissue({
-      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}),
+      sealHome: larSealHome(), repo, ...(a.nexusAid !== undefined ? { nexusAid: a.nexusAid } : {}), ...(a.face !== undefined ? { face: a.face } : {}),
     })))) };
   }),
 
-  // THE FACE'S FIRST GUARDIANS. The face's own root signs the typed first enrolment; its record rests sealed and
+  // THE FACE'S FIRST RECOVERY CONTACTS. The face's own root signs the typed first enrolment; its record rests sealed and
   // the event lands on the face's KEL board through the store the composition lends. The answer names the set's
   // digest and counts alone.
-  "persona.guardian.enrol": act({ handleIndex: index, offers: text, threshold: count }, async (a, ctx) => {
+  "persona.recovery-contact.enrol": act({ handleIndex: index, offers: text, threshold: count, ward: optional(ward) }, async (a, ctx) => {
     const store = ctx.hosting;
-    if (!store) throw refuse("no store stands here to land a guardian enrolment on");
-    return { ...(await enrolOrRefuse(store.withRepo((repo) => runGuardianEnrolment({
-      repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold,
+    if (!store) throw refuse("no store stands here to land a recovery contact enrolment on");
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => runRecoveryContactEnrolment({
+      repo, handleIndex: a.handleIndex, offers: a.offers.split(/\s+/).filter((o) => o.length > 0), threshold: a.threshold, ...(a.ward ? { ward: a.ward } : {}),
     })))) };
   }),
 
-  "persona.guardian.show": act({ handleIndex: index }, async (a, ctx) => {
+  "persona.recovery-contact.show": act({ handleIndex: index }, async (a, ctx) => {
     const store = ctx.hosting;
     if (!store) throw refuse("no store stands here to read the face's key history from");
-    return { ...(await enrolOrRefuse(store.withRepo((repo) => guardianStanding(repo, a.handleIndex)))) };
+    return { ...(await enrolOrRefuse(store.withRepo((repo) => recoveryContactStanding(repo, a.handleIndex)))) };
   }),
 
-  "admit.offer": act({ maxPendingOffers: optional(count) }, async (a) => ({
-    ...(await offerAdmitFlow({
-      deviceVerifyingKey: await loadVesselVerifyingKey(),
-      ...(a.maxPendingOffers !== undefined ? { maxPendingOffers: a.maxPendingOffers } : {}),
-    })),
-  })),
-  "admit.grant": act({ offerCarriage: text, prefix: text, handleIndex: index }, async (a) => {
-    // A grant SIGNS with a held root; it never stands one up. An index this vessel holds no root for refuses.
-    const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === a.handleIndex);
-    if (!line) throw refuse(`this vessel holds no persona root at h${a.handleIndex} — a grant signs only as a persona it carries`);
-    const personaRef: PersonaRef = { prefix: a.prefix, verifyingKey: line.verifyingKey };
-    const seed = await loadPersonaGroupRootSeed(a.handleIndex);
-    try {
-      return { ...orRefuse(await grantAdmitFlow({ offerCarriage: a.offerCarriage, personaRef, personaSigner: ed25519SignerFromSeed(seed) })) };
-    } finally { seed.fill(0); }
+  // THE PROVISIONAL STANDING of a restored face (custody#/the-restore): the mark and who could confirm; a party's own
+  // view confirms it; and a chair this vessel holds signs its own view of a face's head for another vessel.
+  "persona.provisional": act({ handleIndex: index }, async (a) => {
+    const mark = await readProvisionalMark(a.handleIndex);
+    return { handleIndex: a.handleIndex, provisional: mark !== null, ...(mark ? { head: { ...mark.head }, from: mark.from, couldConfirm: await couldConfirm(a.handleIndex) } : {}) };
   }),
-  "admit.open": act({ grantCarriage: text, onlyEphemeral: optional(text) }, async (a, ctx) => {
-    const kelHead = ctx.kelHead;
-    if (!kelHead) throw refuse("no board stands here to read the persona's KEL head from, so a grant cannot be checked against it");
-    // ONE board read per verification: the head read keeps the sequence the same read carried, and the sequence
-    // resolver hands that one back, so a head never pairs with the sequence of a later key.
-    const seqOf = new Map<string, number | null>();
-    const seed = await loadVesselSigningSeed();
-    try {
-      return { ...orRefuse(await openAdmitFlow({
-        grantCarriage: a.grantCarriage,
-        deviceSigner: ed25519SignerFromSeed(seed),
-        resolveHeadOpKey: async (prefix) => {
-          const read = await kelHead(prefix);
-          seqOf.set(prefix, read.seq);
-          return read.head;
-        },
-        resolveHeadSeq: async (prefix) => {
-          const seq = seqOf.get(prefix) ?? null;
-          seqOf.delete(prefix);
-          return seq;
-        },
-        ...(a.onlyEphemeral !== undefined ? { onlyEphemeral: a.onlyEphemeral } : {}),
-      })) };
-    } finally { seed.fill(0); }
+  "persona.confirm": act({ handleIndex: index, view: text }, async (a) => {
+    try { return { ...(await confirmProvisional({ handleIndex: a.handleIndex, view: a.view })) }; }
+    catch (err) { if (err instanceof ConfirmRefused) throw refuse(`${err.reason}: ${err.message}`); throw err; }
   }),
-  "admit.accept": act({ ackCarriage: text }, async (a) => ({ ...orRefuse(await acceptAdmitFlow({ ackCarriage: a.ackCarriage })) })),
-  "admit.list": act({}, async () => ({ admitted: (await listAdmittedPersonas()).map((j) => ({ ...j })) })),
-  "admit.reset": act({}, async () => {
-    await clearPersonaAdmitPending();
-    return { reset: true };
+  // The head a recovery contact's own view names, off this vessel's own board; the recovery contact signs it in its own process.
+  "persona.head": act({ prefix: text }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to read the face's key history from");
+    return { prefix: a.prefix, ...(await store.withRepo((repo) => boardHeadOf(repo, a.prefix))) };
   }),
-  "admit.withdraw-offer": act({ target: text }, async (a) => ({ withdrawn: await withdrawOfferFlow(a.target) })),
-  "admit.withdraw-grant": act({ nonceA: text }, async (a) => ({ withdrawn: await withdrawGrantFlow(a.nonceA) })),
+  "persona.view": act({ prefix: text, seat: seatKey }, async (a, ctx) => {
+    const store = ctx.hosting;
+    if (!store) throw refuse("no store stands here to read the face's key history from");
+    const view = await store.withRepo((repo) => chairLogView({ repo, prefix: a.prefix, seatKey: a.seat }));
+    return { view: { ...view } };
+  }),
 
-  "handle-book.load": act({}, async () => ({ snapshot: (await loadNodeHandleBook()).snapshot() })),
-  "handle-book.save": act({ snapshot }, async (a) => {
+  "handle-book.load": act({ face: index }, async (a) => ({ snapshot: (await loadNodeHandleBook(a.face)).snapshot() })),
+  "handle-book.save": act({ face: index, snapshot }, async (a) => {
     // The snapshot crosses the recogniser's own verification before it seals: a record whose causal closure does
     // not verify drops there, exactly as it would on a load.
-    await saveNodeHandleBook(await HandleBook.restore(a.snapshot));
+    await saveNodeHandleBook(a.face, await HandleBook.restore(a.snapshot));
     return {};
   }),
 
   // A NAMED REFUSAL ANSWERS, IT DOES NOT THROW: the command prints the refusal's own name (custody#/the-restore),
   // and the door's log carries the act's name and how it ended, never the name of a face or a word of a bundle.
-  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index) }, async (a, ctx) => {
+  // THE WARD'S REWRAP (seat-harness#/the-ward): a face founded before the ward moves its root under one, over the route this act carries.
+  "ward.rewrap": act({ handleIndex: index, ward }, async (a) => ({ ...(await rewrapWardCustody({ ordinal: a.handleIndex }, a.ward)) })),
+  "bundle.restore": act({ body: sealedBody, key: bundleKey, as: optional(index), ward: optional(ward), faceRouteRef: optional(text) }, async (a, ctx) => {
     try {
       if (!ctx.hosting) throw refuse("no store stands to land a face on: stand the vessel, or run the restore with no vessel standing");
-      const restored = await restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: ctx.hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}) });
+      const hosting = ctx.hosting;
+      const restored = await withFaceRoute(a.faceRouteRef, "bundle.restore", faceRouteBindDigest("bundle.restore", { body: a.body, as: a.as }), () => restoreFaceBundle({ sealedBody: a.body, bundleKey: a.key, withRepo: hosting.withRepo, ...(a.as !== undefined ? { as: a.as } : {}), ...(a.ward ? { ward: a.ward } : {}) }));
       return { ...restored };
     } catch (err) {
       if (err instanceof RestoreRefused) return { refused: err.reason, message: err.message };
+      if (err instanceof FaceRouteRefused) return { refused: "face-route-refused", message: err.message };
       throw err;
     } finally { a.key.fill(0); }
   }),
@@ -685,5 +753,12 @@ export async function runSealedAct(name: unknown, rawArgs: unknown, ctx: SealedA
   }
   const row: ActRow = SEALED_ACTS[name];
   const args = readArgs(name, row.shape, rawArgs);
-  return row.run(args as never, ctx);
+  // A RESTORED FACE that still stands provisional refuses every authority-changing act by one name, from any row.
+  // An act that resolves no face among several refuses by that name too: the command names one (`--face N`).
+  try { return await row.run(args as never, ctx); }
+  catch (err) {
+    if (err instanceof FaceProvisional) throw new SealedActRefused("face-provisional", err.message);
+    if (err instanceof FaceNotNamed) throw refuse(err.message);
+    throw err;
+  }
 }

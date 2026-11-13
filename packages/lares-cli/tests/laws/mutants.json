@@ -1,0 +1,28 @@
+{
+  "about": "Named mutants each law must kill: a law's strength reads as the mutants it kills, never as a count of its cases. tools/law-mutants-witness.sh applies each in turn and reads the laws red. Law: lar:///ha.ka.ba/lares/docs/pono/cli-test-laws#/the-measure",
+  "mutants": [
+    { "law": "L6", "why": "the key-path walker wipes an operator's sibling keys", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/kinds.ts",
+      "find": "    if (next === null || typeof next !== \"object\" || Array.isArray(next)) node[k] = {};", "replace": "    if (true) node[k] = {};" },
+    { "law": "L5", "why": "a pointer line reads as prose, so no seed pointer ever lifts", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/kinds.ts",
+      "find": "  line.includes(\"[noosphere-boot.mem](\") || /^\\s*@\\S*noosphere-boot\\S*\\s*$/.test(line) || /^\\s*\\S*noosphere-boot\\.mem\\s*$/.test(line);", "replace": "  false;" },
+    { "law": "L6", "why": "a TOML value of the wrong shape reads as the house's to change", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/kinds.ts",
+      "find": "  const fits = shape === \"number\" ? typeof held === \"number\" : held !== null && typeof held === \"object\" && !Array.isArray(held);", "replace": "  const fits = true;" },
+    { "law": "L5", "why": "a Claude hook the house owes never lands", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/kinds.ts",
+      "find": "    if (!placed) next.push({ hooks: [command] });", "replace": "" },
+    { "law": "memory guard", "why": "the TOML floor lowers a value above it", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/kinds.ts",
+      "find": "  if (typeof held === \"number\" && held >= floor) return cur;", "replace": "  if (typeof held === \"number\" && held <= floor) return cur;" },
+    { "law": "L5", "why": "tend rewrites a target that already holds its tunnel", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/engine.ts",
+      "find": "        if (want === cur) continue;", "replace": "" },
+    { "law": "L13", "why": "a foreign target writes despite the refusal", "tests": ["tests/laws/reality-tunnel.law.test.ts", "tests/reality-tunnel.test.ts"], "file": "src/reality-tunnel/engine.ts",
+      "find": "        if (foreign && !opts.force) { refusedPaths.add(path); continue; }", "replace": "" },
+    { "law": "L11", "why": "a standing carrier a hand edited into a vanished carrier's bytes stops counting, so an ambiguous pair renames", "tests": ["tests/laws/moves-need-evidence.law.test.ts"], "file": "src/ingest-core.ts",
+      "find": "if ((r.status === \"new\" || r.status === \"changed\") && r.diskHash !== \"\")", "replace": "if (r.status === \"new\" && r.diskHash !== \"\")" },
+    { "law": "L11", "why": "a copy whose source still stands reads as a rename and sends the source's deletion", "tests": ["tests/laws/moves-need-evidence.law.test.ts"], "file": "src/ingest-core.ts",
+      "find": " || liveUris.has(src) || ", "replace": " || " },
+    {"law": "L7", "why": "a bag verb's change-id leaks onto the wire args", "tests": ["tests/laws/attempt-apart-from-effect.law.test.ts"], "file": "src/commands/act.ts", "find": "    nonce = changeId;\n    actionArgs[\"bag\"] = bag;", "replace": "    nonce = changeId;\n    actionArgs[\"bag\"] = bag;\n    actionArgs[\"change-id\"] = changeId;"},
+    {"law": "L8", "why": "a transfer routes right but carries its source bag as its destination", "tests": ["tests/laws/routing-follows-declaration.law.test.ts"], "file": "src/commands/act.ts", "find": "    actionArgs[\"to-bag\"]     = toBag;\n    actionArgs[\"change-id\"]  = changeId;\n    if (verb === \"MOVE\"", "replace": "    actionArgs[\"to-bag\"]     = fromBag;\n    actionArgs[\"change-id\"]  = changeId;\n    if (verb === \"MOVE\""},
+    {"law": "L16", "why": "the card gate admits any kind, so a whole card from another domain decodes", "tests": ["tests/laws/identity-rides-verified-bytes.law.test.ts"], "file": "src/handle-carriage.ts", "find": "  if (p[\"kind\"] !== HANDLE_CARD_DOMAIN) return null;", "replace": "  if (typeof p[\"kind\"] !== \"string\") return null;"},
+    {"law": "L9", "why": "a held store falls to the fallback code and loses its cause", "tests": ["tests/laws/outcome-keeps-cause.law.test.ts"], "file": "src/store-door.ts", "find": "  if (err instanceof StoreHeld) return { code: \"store-held\",", "replace": "  if (err instanceof StoreHeld) return { code: \"error\","},
+    {"law": "L10", "why": "a fragile roster's reading names the wrong count", "tests": ["tests/laws/readiness-follows-evidence.law.test.ts"], "file": "src/roster-standing.ts", "find": "           reading: `${r.threshold} of ${r.seated} seated kahu — EVERY chair must sign", "replace": "           reading: `${r.seated} of ${r.threshold} seated kahu — EVERY chair must sign"}
+  ]
+}

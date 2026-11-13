@@ -1,27 +1,21 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/failure-states/the-empty-subject.mem"
-mana      = 16
-manao     = 16
-manaoio   = 14
 namespace = "&#x2299;"
 role      = "craft failure law — a gate that RAN, measured NOTHING, and reported SUCCESS. The detector question a hand asks before building any instrument (if its subject vanished tomorrow, would this go red?), the three sanctioned cure shapes, and the measured instances that paid for the law."
-tags      = ["api/pono/meme", "api/pono/loci"]
+tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/api/pono/failure-states/the-empty-subject"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/failure-states/the-empty-subject"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Empty Subject
 
@@ -33,7 +27,7 @@ It wears no defect of its own. The logic holds, the assertion stands correct, th
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ detect any gate, witness, weld or `--check` that WALKS a set, SCANS for a spelling, or refuses a condition.
 ⏿ orient by the one question below — never by reading the assertion, which reads correct in every instance.
@@ -43,7 +37,7 @@ It wears no defect of its own. The logic holds, the assertion stands correct, th
 
 <<~/ahu>>
 
-<<~ ahu #/the-question>>
+<<~ ahu slot=`#/the-question`>>
 
 !! The one question
 
@@ -61,7 +55,7 @@ Three answers sort every instrument:
 
 <<~/ahu>>
 
-<<~ ahu #/cures>>
+<<~ ahu slot=`#/cures`>>
 
 !! The three cure shapes
 
@@ -75,7 +69,7 @@ The house sanctions three and wants no fourth. They compose; the strongest cures
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! The law
 
@@ -93,7 +87,7 @@ A cure MUST ship its planted red, quoted. The node MUST NOT claim a cure it has 
 
 <<~/ahu>>
 
-<<~ ahu #/diagnostic>>
+<<~ ahu slot=`#/diagnostic`>>
 
 !! The tells, each measured
 
@@ -114,7 +108,7 @@ Every coat below was worn by a live instrument in this tree.
 
 <<~/ahu>>
 
-<<~ ahu #/worked>>
+<<~ ahu slot=`#/worked`>>
 
 !! Worked examples, by commit
 
@@ -131,12 +125,12 @@ Each cure below planted its red, quoted it, and reverted it.
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional">> · <<~ loulou "lar:///ha.ka.ba/lares/docs/pono/corpus-conformance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/failure-states/protective-optional`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/corpus-conformance`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;x8gq25rtYRIC5FKk2lEXUN9HRMMWXeHZKQBhfXZp79E
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8jcseKSPxdVOgGsoqiyrwx5gjvwD8cP90ZRFcyv8KRM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

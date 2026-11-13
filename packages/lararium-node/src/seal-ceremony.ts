@@ -35,6 +35,7 @@
  *
  * Node-main only: a worker never imports this module.
  */
+import type { WardCredential } from "./ward-credential.js";
 import {
   CHARTER_SEAT_ROLL_DOMAIN, canonicalJsonBytes, charterInceptionBytes, readCharterInceptionImage, coldKeyFromSeed, seatNextDigest, charterSealState, ed25519SignerFromSeed, emptyFoundingCharterDoc, foundingRoster,
   majorityThreshold, nexusAidOf, personasStandingForSeat, sealKeySetHash, sealLineageHead, seatFingerprint, seatedKahuKeys, weakSeatOf,
@@ -44,7 +45,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { primaryNexusAid, readCarriedCharters } from "./carried-set.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openedCustody, readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { openedCustody } from "./custody-seat.js";
 import { nexusCharterStands, readNexusDoc } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
 import { listPersonaRosterLines, loadPersonaGroupRootSeed, makeNodePersonaDeclarationStore } from "./node-vessel-identity.js";
@@ -54,8 +55,10 @@ import {
   type ReserveTransition, type ReserveTransitionCore, type TransitionWitness,
 } from "./reserve-transition.js";
 import { larSealHome } from "./vessel-paths.js";
+import { readPlainRow, removePlainRow, updatePlainRow } from "./plain-rows.js";
 import { aFaceBinds } from "./hearth-aid.js";
 import { recordedJointImage, sameInceptionImage } from "./cofound-record.js";
+import { RollCircleRecordTorn, readRollCircleRecords } from "./roll-circle-record.js";
 
 /** The row a crossing stands open in (it prepares), relative to the seal home. */
 export const TRANSITION_PENDING_FILE = "transition-pending.json";
@@ -108,8 +111,8 @@ async function heldRoot(handleIndex: number): Promise<string> {
 }
 
 /** Sign `bytes` as the persona root at `handleIndex`; the seed opens for this one signature and zero-fills. */
-async function signAsRoot(handleIndex: number, bytes: Uint8Array): Promise<string> {
-  const seed = await loadPersonaGroupRootSeed(handleIndex);
+async function signAsRoot(handleIndex: number, bytes: Uint8Array, ward: WardCredential | undefined): Promise<string> {
+  const seed = await loadPersonaGroupRootSeed(handleIndex, ward);
   try { return await ed25519SignerFromSeed(seed)(bytes); } finally { seed.fill(0); }
 }
 
@@ -199,7 +202,7 @@ export async function armGenesis(opts: { readonly threshold?: number } = {}): Pr
   const sealHome = larSealHome();
   const standingDoc = readNexusDoc(sealHome);
   if (standingDoc === null && nexusCharterStands(sealHome)) {
-    throw refuse("charter-torn", "the charter doc stands here but reads TORN or in an earlier shape — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
+    throw refuse("charter-torn", "the charter doc stands here but reads TORN — refusing to seat over it (a re-seat would re-genesis a chain that may already have rotated). Repair or move it, then seat.");
   }
   const doc = standingDoc ?? emptyFoundingCharterDoc();
   if ((doc.sealLineage?.length ?? 0) > 1) {
@@ -321,21 +324,14 @@ export async function armRoll(opts: { readonly cards: readonly Uint8Array[]; rea
   };
 }
 
-/** The marker a harness writes at a root it staged, and the route a staged root's custody founds under (both published). */
-const TEST_SCRATCH_MARKER = ".lar-test-scratch";
-const TEST_ROUTE_PASSPHRASE = "test-founding-passphrase";
-
-/**
- * WHETHER A CARD'S READ-BACK STANDS IN. A person reads each cold-key card back on a terminal before the charter moves;
- * a harness can type nothing, so on a STAGED test root the read-back stands in. A marker alone proves nothing: a
- * marker copied onto a root sealed under another passphrase stands in for nothing, so the custody this vessel holds
- * must also prove under the published test route. A miss there spends one unlock attempt, as any miss does.
- */
+/** A harness explicitly seats its read-back stand-in in this process; disk markers grant no authority. */
+let readBackStandIn = false;
+export function seatReadBackStandIn(seated: boolean): void { readBackStandIn = seated; }
+/** Read this process's explicit harness seat without opening custody or asking another process. */
+export function readBackStandInSeated(): boolean { return readBackStandIn; }
 export async function readBackStandsIn(): Promise<boolean> {
-  const root = process.env["LAR_ROOT"];
-  if (!root || !existsSync(join(root, TEST_SCRATCH_MARKER))) return false;
-  const proof = await (await openedCustody()).proves([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
-  return proof.reading === "proves";
+  await openedCustody();
+  return readBackStandInSeated();
 }
 
 /** Which seat keys this vessel holds among `keys`, lower-case, in the order asked. Reads names alone. */
@@ -344,7 +340,7 @@ export function heldSeatsAmong(keys: readonly string[]): string[] {
 }
 
 /** Why a seat key asked to retire stays. */
-export type SeatKept = "seated" | "crossing-open";
+export type SeatKept = "seated" | "crossing-open" | "roll-circle-open";
 
 /** The seat keys some standing record still needs, by why. Refuses where a record that might name one reads unwhole. */
 async function neededSeats(): Promise<ReadonlyMap<string, SeatKept>> {
@@ -365,6 +361,11 @@ async function neededSeats(): Promise<ReadonlyMap<string, SeatKept>> {
   const needed = new Map<string, SeatKept>();
   const pending = await readPending();
   for (const key of [...(pending?.oldKeys ?? []), ...(pending?.newKeys ?? [])]) needed.set(lower(key), "crossing-open");
+  // A seat this vault contributed to a roll circle that stands open signs that circle yet (`roll-circle-record`).
+  let records: ReturnType<typeof readRollCircleRecords>;
+  try { records = readRollCircleRecords(); }
+  catch (err) { if (err instanceof RollCircleRecordTorn) throw refuse("roll-circle-record-torn", err.message); throw err; }
+  for (const r of records) for (const c of r.chairs) needed.set(lower(c.seat), "roll-circle-open");
   for (const carried of readCarriedCharters(sealHome).values()) {
     for (const key of seatedKahuKeys(carried)) needed.set(lower(key), "seated");
   }
@@ -600,7 +601,7 @@ const sealPending = (p: PendingCrossing): Uint8Array => utf8.encode(JSON.stringi
 
 /** Read the pending row, decide over it and seal the next one, under one custody holder. `null` from `decide` writes nothing. */
 function updatePending<T>(decide: (standing: PendingCrossing | null) => { readonly next: PendingCrossing | null; readonly value: T }): Promise<T> {
-  return updateCustodyRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
+  return updatePlainRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
     const d = decide(bytes === null ? null : parsePending(bytes));
     return { plaintext: d.next === null ? null : sealPending(d.next), value: d.value };
   });
@@ -608,14 +609,14 @@ function updatePending<T>(decide: (standing: PendingCrossing | null) => { readon
 
 /** The crossing that stands open, or null. */
 async function readPending(): Promise<PendingCrossing | null> {
-  const pending = await readCustodyRow("seal", TRANSITION_PENDING_FILE);
+  const pending = await readPlainRow("seal", TRANSITION_PENDING_FILE);
   return pending === null ? null : parsePending(pending);
 }
 
 /** The crossing that stands open (or null), and how many sealed records this vessel keeps. */
 export async function readCrossing(): Promise<{ readonly pending: PendingCrossing | null; readonly kept: number }> {
   const pending = await readPending();
-  const kept = await readCustodyRow("seal", TRANSITIONS_FILE);
+  const kept = await readPlainRow("seal", TRANSITIONS_FILE);
   return { pending, kept: kept === null ? 0 : parseKept(kept).length };
 }
 
@@ -667,7 +668,7 @@ export function keepCrossingMark<T>(core: ReserveTransitionCore, apply: (standin
  * Answers whether the row left.
  */
 export function dropPendingCrossing(transitionCid: string): Promise<boolean> {
-  return removeCustodyRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
+  return removePlainRow("seal", TRANSITION_PENDING_FILE, (bytes) => {
     const core = boundCore(parsePending(bytes));
     return core !== null && reserveTransitionCidOf(core) === transitionCid;
   });
@@ -711,7 +712,7 @@ export async function signCrossing(handleIndex: number): Promise<{ readonly as: 
 }
 
 /** WITNESS the bound crossing as the persona root at `handleIndex`: a face that holds a seat in NEITHER set, with a note of what it observed. */
-export async function witnessCrossing(handleIndex: number, note: string): Promise<{ readonly by: string }> {
+export async function witnessCrossing(handleIndex: number, note: string, ward?: WardCredential): Promise<{ readonly by: string }> {
   const { pending, core } = await boundCrossing("no bound crossing stands — a witness attests a closed byte-image");
   if (note.length === 0) throw refuse("no-note", "a witness mark carries a note — what stood observed (--note)");
   const witness = await heldRoot(handleIndex);
@@ -720,7 +721,7 @@ export async function witnessCrossing(handleIndex: number, note: string): Promis
       || [...pending.oldKeys, ...(pending.newKeys ?? [])].some((k) => lower(k) === witness)) {
     throw refuse("keyholder-witness", "a keyholder attests as a party — `grow sign`, never witness");
   }
-  const mark: TransitionWitness = { witness, note, sig: await signAsRoot(handleIndex, witnessSignBytes(core, note)) };
+  const mark: TransitionWitness = { witness, note, sig: await signAsRoot(handleIndex, witnessSignBytes(core, note), ward) };
   return keepCrossingMark(core, (p) => ({
     next: { ...p, witnesses: [...p.witnesses.filter((w) => lower(w.witness) !== witness), mark] }, value: { by: witness },
   }));
@@ -743,7 +744,7 @@ export async function sealCrossing(): Promise<{ readonly transitionCid: string; 
   });
   if (!verdict.ok) throw refuse("crossing-unverified", `crossing REFUSED (fail-closed): ${verdict.reason} — the pending crossing stands; nothing written.`);
   // THE COMMIT POINT: the record rests in `transitions.json`, once.
-  const resumed = await updateCustodyRow("seal", TRANSITIONS_FILE, (bytes) => {
+  const resumed = await updatePlainRow("seal", TRANSITIONS_FILE, (bytes) => {
     const kept = bytes === null ? [] : parseKept(bytes);
     if (kept.some((r) => r.transitionCid === record.transitionCid)) return { plaintext: null, value: true };
     return { plaintext: utf8.encode(JSON.stringify([...kept, record])), value: false };

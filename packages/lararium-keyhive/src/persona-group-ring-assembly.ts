@@ -5,7 +5,7 @@
  * records. `makePersonaGroupIdentityRing` (mesh) holds that verdict; this function hands it the inputs every
  * vessel reads the same way:
  *
- *   · `governs`         — the face's four plane doc-ids, resolved off the vessel's own catalog
+ *   · `governs`         — the face's five plane doc-ids, resolved off the vessel's own catalog
  *                         (`governedPlaneDocIds`, the resolution `DeterministicFederationGate` runs);
  *   · `provenVesselKey` — the trailing 64 hex of what the peer PROVED (`provenVesselKeyOf`), never a claim;
  *   · `isOwnHand`       — the vessel's own in-process hand, never questioned;
@@ -13,8 +13,9 @@
  *                         `verifyFaceGrantRecord` the joinee's own kit runs (the ring re-cuts no seal).
  *
  * ONE FUNCTION, TWO SHORES. Node and browser both call this; only the PROOF SOURCE differs. A node vessel
- * reads the identifier its inbound `DaemonAuthGate` proved; a browser leaf reads the gate key its outbound
- * transport proved when that gate SIGNED its verdict (`LarWSClientAdapter.provenKeyOf`). Neither source is
+ * reads the key its inbound FACE GATE proved at the seat (the session's proven face key, `gate-sync-server`); a
+ * browser leaf reads the gate key its outbound dial proved when that gate SIGNED its verdict
+ * (`LarWSClientAdapter.provenKeyOf`). Neither source is
  * a claim the peer made about itself. Both read the device key a SIBLING proved over the face's sibling
  * session (`siblingKeyOf`), a separate path: a sibling holds standing, so `composeSiblings` admits it to the
  * face's own planes and never through a grant.
@@ -73,9 +74,10 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
     deviceAside: input.deviceAside,
     ...(input.siblingKeyOf ? { siblingKeyOf: (peerId: RingPeerId) => provenVesselKeyOf(input.siblingKeyOf!(peerId)) } : {}),
     grants: {
-      // The records resting on the face's own plane — the SAME store `takeFaceGrantIfPublished` reads.
+      // The records resting on the face's own plane — the SAME plane the joinee's seat act reads (`face-seat`).
       records: async () => {
-        const store = await input.catalog.storeOf(planeBag);
+        // The plane rests as a private-synced home: the catalog's store road passes it by, its own readers take the home road.
+        const store = input.catalog.homeStoreOf ? await input.catalog.homeStoreOf(planeBag) : await input.catalog.storeOf(planeBag);
         if (!store) return [];
         const titles = (await store.listVisible()).filter((t) => t.startsWith(prefix));
         const out: unknown[] = [];
@@ -96,6 +98,7 @@ export async function assemblePersonaGroupRing(input: PersonaGroupRingInput): Pr
           selfVerifyingKey: joineeVesselKey,
           groupId: group,
           personaKel: input.personaKel,
+          dyad: (key) => input.deviceAside(key) ? "aside" : "clear",
         });
         return verdict.ok;
       },

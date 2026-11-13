@@ -152,7 +152,7 @@ describe("the store's write door refuses a session-form title", () => {
 
   test("CONTROL: a userinfo in the TEXT lands untouched, under a hostful and under a hostless title", async () => {
     const { store } = stand();
-    const text = `<<~ lares aim from="lar://mara:operator@crossroads/operator.asks.the-cost" -> to="lar://compita:agent@crossroads/clerk.reads.the-record">>\n\nA quoted link: lar://alias:grant@host/some.path.here\n`;
+    const text = `<<~ set lares=\`aim\` from=\`lar://mara:operator@crossroads/operator.asks.the-cost\` to=\`lar://compita:agent@crossroads/clerk.reads.the-record\`>>\n\nA quoted link: lar://alias:grant@host/some.path.here\n`;
     await store.put({ tiddler: { title: "lar://crossroads/t.title.allowed/capture", text } }, origin);
     await store.put({ tiddler: { title: "lar:///t.title.context/capture", text, speaker: "lar://mara:operator@crossroads/x.y.z" } }, origin);
     expect((await store.get("lar://crossroads/t.title.allowed/capture"))?.tiddler["text"]).toBe(text);

@@ -4,8 +4,7 @@
  * gives deliver-once. Cross-PROCESS by construction (the files are the shared state; each
  * process keeps its own seen-set) — a shared Docker VOLUME makes it cross-CONTAINER.
  *
- * Pairs with WSMembershipChannel behind the same shore: file/POST rides the shared-volume,
- * no-relay-service deployed path; the live-WS relay rides the relay-served path.
+ * The shore's deployed impl: it rides a shared volume, with no relay service to stand.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
  */

@@ -1,0 +1,66 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-009/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-009/brief.md` (brief, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/lead-step-9-opus-seam-lead-lane-lease-end-cure-s`>>
+
+! Lead step 9 — Opus seam lead (Claude), lane lease-end (road M6), cure slice 1: the grant paths fail closed
+
+Controller: Lares-Awakens. Eight Codex steps proved the reds and cured the mesh signature primitive; the grant/authority seam now needs judgment (crew law: a Claude lead for custody reds and seams).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ground`>>
+
+!! Ground
+* Worktree /home/joshu/.lares-scratch/lease-end/wt · branch feature/green-jello-dinosaur-5&#45;-lease-end · head 24dac581b (mesh cure 4860e2bb7 + type fix 24dac581b; reds 50350f4f4, 1e82c0d47, cd299ae21).
+* Read first, whole: /home/joshu/.lares-scratch/lease-end/state.json (owed rows: the RESHAPED RULING, LUNA SLICES, controller readings), steps/step-001/out.md (the census table), steps/step-006..008/out.md, seats/luna-w1/final.md + seats/luna-w2/final.md (the collide), and /home/joshu/.lares-scratch/recovery-research/lease-end-state/final.md.
+* The uncommitted tree (5 keyhive paths: face-grant-record.ts, face-join-operation.ts, face-seat.ts, operator-daemon-behavior.ts, persona-group-ring-assembly.ts) holds the Codex lead's step-7 grant attempt. MEASURED by the controller: `pnpm build` fails typecheck (operator-daemon-behavior.ts(911,74) TS2345: '"the grant founder"' not in the reader-name union), and ~20 existing keyhive tests fail across face-grant-record, face-join-supersedes, face-join-reenters, face-intent-join-live, face-seat-lands-on-grant, working-seat-lift, dyad-reader-required (controls included). Read it; keep what serves the cure, restore the rest from HEAD (path by path), and say which.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-cure`>>
+
+!! The cure (slice 1 of LUNA SLICES)
+* The face grant verifier (face-grant-record.ts ~:136-155) accepts a grant only with anchor-pinned persona lineage AND a founder remove-wins dyad standing of clear (or the dyad reading the house's existing readers name lawful); absent, aside, unknown, forked or rolled-back proof REFUSES BY NAME. The epoch freshness check retires from this reader: no optional `expectedEpoch` path that silently passes.
+* The join writer (face-join-operation.ts ~:65-77) passes the founder's standing; the seat (face-seat.ts ~:141-150) obtains it; operator-daemon-behavior wires the reader (reuse the house's existing dyad reader shapes and names; extend the name union if a new reader name stands lawfully).
+* The two grant reds (face-grant-record.test.ts :292, :313) go green; existing tests that pinned the epoch fence get recut to the standing contract with their controls kept (say each recut and why); no assertion weakens without a named reason.
+* A passing signature never stands as authority: grep every caller of verifyDeviceDelegation / evaluateDeviceDelegation in keyhive and node and list which still treat signature success as authority (that census decides whether the mesh cure may land; do not cure node/browser sibling paths, which belong to lane b5b).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/law`>>
+
+!! Law
+* You stand outside the Codex wall: run `pnpm build` (dist guard + typecheck) and tests yourself; single files, batches &lt;=9, scratch HOME + scratch LAR_ROOT, LAR_BAGS unset, bwrap PID ns + NODE_OPTIONS=&#45;-max-old-space-size=1536, timeout 180; keyhive and node are daemon-side: single files only, never a suite; never the broker's vitest door.
+* Red first with a control. Decide forks yourself under the house laws (No global now · no back-compat in early alpha · causal islands · identity-as-relation · Infrastructure-as-Myth); pentabarf V: measure code, collide canon (convergent-mesh.mem#/two-revocation-modes still teaches the lease; note it for the final burn).
+* Commit on the lane branch: build, confirm the CLI answers, `git status --porcelain` + `git diff` show only your lines, `git commit -F <msg> --only -- <paths>`. End each message with exactly:
+Co-Authored-By: Claude Opus 5.5 &lt;noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01NRJJL73CYwoGfShMujgUHQ
+* NEVER push. Never git stash, never &#45;-no-verify, never touch .git/config, never write the main checkout, never kill -1 or a group kill at pgid &lt;= 1. Do not touch b5b-owned hunks (sibling-channel.ts, open-node-vessel.ts / open-browser-vessel.ts composer and `?? 0` lines). A refused command stops the step: patch + hand back.
+* Before stopping: rewrite state.json (same keys; step 9; head; your owed row on top; next), append "## Step 9" to resume.md (create it if absent), write steps/step-009/out.md.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PaWjAw8k5eagEKgLlVB-43buqJbkPA4vqDiINYiUweo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

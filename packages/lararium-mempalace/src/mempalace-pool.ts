@@ -16,7 +16,7 @@
 
 import { MempalaceClient } from "./mempalace-client.js";
 import { resolveMempalaceSpawn } from "./spawn-resolve.js";
-import { memorySensoriumContentDir } from "./xdg-base.js";
+import { memorySensoriumContentDir } from "./house-root.js";
 
 let pooled: MempalaceClient | null = null;
 let starting: Promise<MempalaceClient> | null = null;

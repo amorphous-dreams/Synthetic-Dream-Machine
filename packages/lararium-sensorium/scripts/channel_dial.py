@@ -56,8 +56,8 @@ projector's own stable record order (source_file, cid); no wall-clock anywhere; 
 comparator ward holds (~/.mempalace refused).
 
 Usage (the mempalace venv):
-  ~/.venv/bin/python3 channel_dial.py sweep --sensorium <lararium>/sensoriums/kumulipo-wrapped \
-      [--extracted-sensorium <lararium>/sensoriums/kumulipo-extracted] \
+  ~/.venv/bin/python3 channel_dial.py sweep --sensorium <root>/sensoriums/kumulipo-wrapped \
+      [--extracted-sensorium <root>/sensoriums/kumulipo-extracted] \
       [--lambdas 0,0.25,0.5,0.75,1.0] [--out <dir>]
   ~/.venv/bin/python3 channel_dial.py compare --sensorium-a <place> --sensorium-b <place>
 
@@ -442,7 +442,7 @@ def sweep_lambdas(root: str, *, lambdas=None, extracted_root: "str | None" = Non
 def _red_form_dimension(root: str) -> "int | None":
     """The wrapped bed's induced-constructicon size, read off the durable form store's
     own pinned dimension (the count the membership vectors carry)."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
 
     store = FormPalaceStore(os.path.join(root, "form"))
     got = store._col.get(limit=1, include=["metadatas"])  # noqa: SLF001 — the dial reads the raw plane

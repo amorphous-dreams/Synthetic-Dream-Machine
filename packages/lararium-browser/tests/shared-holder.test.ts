@@ -1,5 +1,5 @@
 /**
- * shared-holder.test — ONE DAEMON ISLAND PER ORIGIN, TABS GET A MessagePort (device-capabilities-2026 #/moves 5:
+ * shared-holder.test — ONE DAEMON ISLAND PER HOUSE, TABS GET A MessagePort (device-capabilities-2026 #/moves 5:
  * "the daemon island could stand ONCE per origin and hand each tab a MessagePort — move 2's lock becomes the door,
  * this becomes the house behind it").
  *
@@ -15,6 +15,7 @@ import { describe, expect, test } from "vitest";
 import { makeSharedHolderCore, type HolderIsland } from "../src/shared-holder-core.js";
 import { attachSharedHolder, holderWorkerHandle, type SharedWorkerHost } from "../src/shared-holder.js";
 import { holdVesselLock, vesselLockName, type LockHost } from "../src/vessel-lock.js";
+import { faceFixture } from "./holder-session-fixture.js";
 
 /** In-memory Web Locks: one exclusive holder per name; `ifAvailable` answers at once; query names the client. */
 function fakeLocks(clientId: string, shared: Map<string, string>): LockHost {
@@ -31,16 +32,23 @@ function fakeLocks(clientId: string, shared: Map<string, string>): LockHost {
   };
 }
 
-/** A fake island: counts boots, echoes every post back as `{ echo }`. */
+/** A fake island: counts boots and answers wiki verb requests. */
 function fakeIslandFactory(): { spawn: () => HolderIsland; boots: () => number } {
   let boots = 0;
   return {
     boots: () => boots,
-    spawn: () => {
+    spawn: (_group?: string, personaRoot?: string, edgeDigest?: string) => {
       boots++;
       const listeners = new Set<(raw: unknown) => void>();
+      // The island's Binding Gate clears for the edge the first session presented.
+      queueMicrotask(() => { for (const l of listeners) l({ type: "gate:clear", edgeDigest, personaRoot }); });
       return {
-        post:      (msg) => { for (const l of listeners) l({ echo: msg }); },
+        post:      (msg) => {
+          const request = msg as { type?: string; requestId?: string };
+          if (request.type === "wiki:place-verb") {
+            for (const l of listeners) l({ type: "wiki:verb-result", requestId: request.requestId, result: { ok: true } });
+          }
+        },
         listen:    (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
         onError:   () => () => {},
         terminate: () => {},
@@ -49,7 +57,7 @@ function fakeIslandFactory(): { spawn: () => HolderIsland; boots: () => number }
   };
 }
 
-/** A fake SharedWorker: one core per URL (the platform's one-per-origin-per-URL), a fresh port pair per tab. */
+/** A fake SharedWorker: one core per URL (the platform's one-per-name-and-URL), a fresh port pair per tab. */
 function fakeSharedWorkerHost(coreFor: (url: string) => ReturnType<typeof makeSharedHolderCore>): SharedWorkerHost {
   class FakeSharedWorker {
     readonly port: MessagePort;
@@ -76,13 +84,16 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     };
     const host = fakeSharedWorkerHost(coreFor);
 
-    const a = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
-    const b = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
+    const a = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
+    const b = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host });
     expect(a.kind).toBe("attached"); expect(b.kind).toBe("attached");
     if (a.kind !== "attached" || b.kind !== "attached") return;
 
-    expect(island.boots()).toBe(1);                       // ONE island
-    expect(a.hello.islandBoots).toBe(1); expect(b.hello.islandBoots).toBe(1);
+    expect(island.boots()).toBe(0);                       // a port that admitted no session stands no house
+    expect(a.hello.islandBoots).toBe(0); expect(b.hello.islandBoots).toBe(0);
+    expect(a.hello).toMatchObject({ ownerEpoch: expect.any(String), sessionId: expect.any(String), generation: 0 });
+    expect(b.hello.ownerEpoch).toBe(a.hello.ownerEpoch);
+    expect(b.hello.sessionId).not.toBe(a.hello.sessionId);
     expect(a.hello.tabs).toBe(1);        expect(b.hello.tabs).toBe(2);
     expect(a.port).not.toBe(b.port);                      // two ports
     expect(lockTable.get(vesselLockName(IDB))).toBe("holder-1");   // the holder took the lock
@@ -95,17 +106,58 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     // A tab that finds the lock held by ANOTHER TAB still refuses loud (the collision the lock exists to stop).
     await expect(holdVesselLock(IDB, fakeLocks("tab-3", lockTable), { attachToHolder: "some-other-holder" })).rejects.toThrow(/already held/);
 
-    // The port speaks to the ONE island: a post from tab A echoes to BOTH tabs.
-    const ha = holderWorkerHandle(a.port); const hb = holderWorkerHandle(b.port);
-    const seenB = new Promise<unknown>((r) => hb.listen((m) => r(m)));
+    // The port speaks to the ONE island: its reply returns to the asking tab alone.
+    const face = await faceFixture("face:holder-test");
+    const session = { personaGroup: face.group, edge: face.edge, atom: face.atom };
+    const ha = holderWorkerHandle(a.port, session); const hb = holderWorkerHandle(b.port, session);
     const seenA = new Promise<unknown>((r) => ha.listen((m) => r(m)));
-    ha.post({ ping: 1 });
-    expect(await seenA).toEqual({ echo: { ping: 1 } });
-    expect(await seenB).toEqual({ echo: { ping: 1 } });
+    ha.post({ type: "wiki:place-verb", requestId: "from-a" });
+    // The handle stamps the tab's envelope going out and reads it off coming in: the daemon core sees the bare message.
+    expect(await seenA).toEqual({ type: "wiki:verb-result", requestId: "from-a", result: { ok: true } });
+    expect(island.boots()).toBe(1);                       // ONE island for the face, however many tabs wear it
+    const seenB: unknown[] = [];
+    hb.listen((message) => seenB.push(message));
+    expect(seenB).toEqual([]);
+  });
+
+  test("the tab's handle hears only its own session: another session or generation under its owner's epoch drops by name", async () => {
+    const hello = { kind: "holder:hello", islandBoots: 1, tabs: 1, lockClientId: "holder-x", ownerEpoch: "epoch-x", sessionId: "session-mine", generation: 0, nonce: "00" };
+    let holderSide!: MessagePort;
+    class GreetingSharedWorker {
+      readonly port: MessagePort;
+      constructor() {
+        const { port1, port2 } = new MessageChannel();
+        this.port = port1; holderSide = port2;
+        port2.postMessage(hello);
+      }
+    }
+    const attached = await attachSharedHolder({ houseName: "lares:house:test", 
+      holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
+      host: { SharedWorker: GreetingSharedWorker as unknown as SharedWorkerHost["SharedWorker"] },
+    });
+    if (attached.kind !== "attached") throw new Error("the fake holder did not attach");
+    const heard: unknown[] = [];
+    const drops: unknown[] = [];
+    const warn = console.warn;
+    console.warn = (...line: unknown[]) => { drops.push(line.join(" ")); };
+    try {
+      holderWorkerHandle(attached.port).listen((m) => heard.push(m));
+      const envelope = { ownerEpoch: "epoch-x", sessionId: "session-mine", generation: 0 };
+      holderSide.postMessage({ type: "breath", wikiUri: "other-session", ...envelope, sessionId: "session-theirs" });
+      holderSide.postMessage({ type: "breath", wikiUri: "other-generation", ...envelope, generation: 1 });
+      holderSide.postMessage({ type: "breath", wikiUri: "other-owner", ...envelope, ownerEpoch: "epoch-y" });
+      holderSide.postMessage({ type: "breath", wikiUri: "mine", ...envelope });
+      await expect.poll(() => heard.length).toBe(1);
+      expect(heard).toEqual([{ type: "breath", wikiUri: "mine" }]);
+      expect(drops).toEqual(["[shared-holder] dropped unknown-session", "[shared-holder] dropped stale-generation", "[shared-holder] dropped stale-owner-epoch"]);
+    } finally {
+      console.warn = warn;
+      holderSide.close();
+    }
   });
 
   test("CONTROL — no SharedWorker on the host: the floor, named; the lock refuses as today with no holder to attach to", async () => {
-    const r = await attachSharedHolder({ holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: {} });
+    const r = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: {} });
     expect(r.kind).toBe("floor");
     if (r.kind === "floor") expect(r.why).toMatch(/SharedWorker/);
     const lockTable = new Map<string, string>([[vesselLockName(IDB), "tab-1"]]);
@@ -140,10 +192,9 @@ describe("the shared holder — one island per origin, a port per tab", () => {
       spawnIsland: () => { throw new Error("a refused holder must not boot an island"); },
     }));
 
-    await expect(attachSharedHolder({
+    await expect(attachSharedHolder({ houseName: "lares:house:test", 
       holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
       host,
-      helloTimeoutMs: 5_000,
     })).rejects.toMatchObject({
       name: "SharedHolderRefusal",
       storeName: vesselLockName(IDB),
@@ -159,16 +210,16 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     const host = fakeSharedWorkerHost(() => core);
     const holderUrl = new URL("https://vessel.test/shared-holder.worker.js");
 
-    await expect(attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 }))
+    await expect(attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host }))
       .rejects.toMatchObject({ name: "SharedHolderRefusal", storeName: lockName });
     expect(island.boots()).toBe(0);
 
     lockTable.delete(lockName);
-    const recovered = await attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 });
+    const recovered = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host });
     expect(recovered.kind).toBe("attached");
     if (recovered.kind !== "attached") return;
-    expect(recovered.hello.islandBoots).toBe(1);
-    expect(island.boots()).toBe(1);
+    expect(recovered.hello.islandBoots).toBe(0);
+    expect(island.boots()).toBe(0);
     recovered.port.close();
   });
 
@@ -179,38 +230,38 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     const host: SharedWorkerHost = {
       SharedWorker: SharedWorker as unknown as SharedWorkerHost["SharedWorker"],
     };
-    const first = await attachSharedHolder({ holderUrl, host });
-    const second = await attachSharedHolder({ holderUrl, host });
+    const first = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host });
+    const second = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host });
     expect(first.kind).toBe("attached");
     expect(second.kind).toBe("attached");
     if (first.kind !== "attached" || second.kind !== "attached") return;
-    expect(first.hello.islandBoots).toBe(1);
-    expect(second.hello.islandBoots).toBe(1);
     expect(first.port).not.toBe(second.port);
+    const face = await faceFixture("face:live");
+    const session = { personaGroup: face.group, edge: face.edge, atom: face.atom };
 
-    const firstHandle = holderWorkerHandle(first.port);
-    const secondHandle = holderWorkerHandle(second.port);
-    const firstRead = new Promise<unknown>((resolve) => firstHandle.listen(resolve));
-    firstHandle.post({ kind: "read" });
-    expect(await firstRead).toEqual({ kind: "wiki", title: "Lady Aki", level: "2" });
-
-    const secondEdit = new Promise<unknown>((resolve) => secondHandle.listen((message) => {
-      if ((message as { level?: unknown }).level === "3") resolve(message);
-    }));
-    firstHandle.post({ kind: "change", level: "3" });
-    expect(await secondEdit).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+    // Each tab asks the one island by its own request and hears its own answer; the edit one tab made reads back
+    // through another tab's own request, never through an echo of the first tab's traffic.
+    let n = 0;
+    const ask = (handle: ReturnType<typeof holderWorkerHandle>, verb: "read" | "change", level?: string) => new Promise<unknown>((resolve) => {
+      const requestId = `t-${++n}`;
+      const stop = handle.listen((message) => {
+        const m = message as { type?: unknown; requestId?: unknown; output?: unknown };
+        if (m.type === "wiki:verb-result" && m.requestId === requestId) { stop(); resolve(m.output); }
+      });
+      handle.post({ type: "wiki:place-verb", requestId, verb, args: level ? { level } : {} });
+    });
+    const firstHandle = holderWorkerHandle(first.port, session);
+    const secondHandle = holderWorkerHandle(second.port, session);
+    expect(await ask(firstHandle, "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "2" });
+    expect(await ask(firstHandle, "change", "3")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+    expect(await ask(secondHandle, "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
 
     second.port.close();
-    const reattached = await attachSharedHolder({ holderUrl, host });
+    const reattached = await attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host });
     expect(reattached.kind).toBe("attached");
     if (reattached.kind !== "attached") return;
     expect(reattached.hello.islandBoots).toBe(1);
-    const reattachedHandle = holderWorkerHandle(reattached.port);
-    const retained = new Promise<unknown>((resolve) => reattachedHandle.listen((message) => {
-      if ((message as { level?: unknown }).level === "3") resolve(message);
-    }));
-    reattachedHandle.post({ kind: "read" });
-    expect(await retained).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
+    expect(await ask(holderWorkerHandle(reattached.port, session), "read")).toEqual({ kind: "wiki", title: "Lady Aki", level: "3" });
 
     first.port.close();
     reattached.port.close();
@@ -233,7 +284,7 @@ describe("the shared holder — one island per origin, a port per tab", () => {
       SharedWorker: SharedWorker as unknown as SharedWorkerHost["SharedWorker"],
     };
     try {
-      await expect(attachSharedHolder({ holderUrl, host, helloTimeoutMs: 5_000 }))
+      await expect(attachSharedHolder({ houseName: "lares:house:test",  holderUrl, host }))
         .rejects.toMatchObject({ name: "SharedHolderRefusal", storeName: lockName });
     } finally {
       releaseLock?.();
@@ -241,19 +292,65 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     }
   }, 10_000);
 
-  test("a delayed holder greeting cannot open an unguarded fallback", async () => {
-    const noGreeting: SharedWorkerHost = {
+  test("RED: a SharedWorker that greets LATE still holds the house — no clock chooses the floor", async () => {
+    const lockTable = new Map<string, string>();
+    const island = fakeIslandFactory();
+    const core = makeSharedHolderCore({ lockName: vesselLockName(IDB), locks: fakeLocks("late-holder", lockTable), spawnIsland: island.spawn });
+    let release!: () => void;
+    const started = new Promise<void>((r) => { release = r; });
+    const lateHost: SharedWorkerHost = {
       SharedWorker: class {
-        readonly port = new MessageChannel().port1;
+        readonly port: MessagePort;
+        constructor() {
+          const { port1, port2 } = new MessageChannel();
+          this.port = port1;
+          void started.then(() => core.connect(port2));   // the worker's script starts only when released
+        }
       } as unknown as SharedWorkerHost["SharedWorker"],
     };
-    const attached = await attachSharedHolder({
-      holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
-      host: noGreeting,
-      helloTimeoutMs: 1,
-    });
-    expect(attached.kind).toBe("floor");
+    const settled: string[] = [];
+    const attaching = attachSharedHolder({ houseName: "lares:house:test", holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: lateHost })
+      .then((r) => { settled.push(r.kind); return r; });
+    await new Promise((r) => setTimeout(r, 25));     // far past any greeting a timer of this suite's scale would allow
+    expect(settled, "a worker that has not greeted keeps the house waiting; nothing floored it").toEqual([]);
+    release();
+    const attached = await attaching;
+    expect(attached.kind).toBe("attached");
+    if (attached.kind === "attached") attached.port.close();
+  });
+
+  test("a worker that neither greets nor errors waits on its own events; only the CALLER's cancellation floors it", async () => {
+    const silent: SharedWorkerHost = { SharedWorker: class { readonly port = new MessageChannel().port1; } as unknown as SharedWorkerHost["SharedWorker"] };
+    const cancel = new AbortController();
+    const settled: string[] = [];
+    const attaching = attachSharedHolder({ houseName: "lares:house:test", holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: silent, signal: cancel.signal })
+      .then((r) => { settled.push(r.kind); return r; });
+    await new Promise((r) => setTimeout(r, 25));
+    expect(settled, "the door sets no deadline of its own").toEqual([]);
+    cancel.abort();
+    expect(await attaching).toMatchObject({ kind: "floor" });
+  });
+
+  test("a worker whose own error event fires falls to the floor at once; CONTROL: a construct-time refusal floors by name", async () => {
+    const listeners: Array<(e: unknown) => void> = [];
+    const erroring: SharedWorkerHost = {
+      SharedWorker: class {
+        readonly port = new MessageChannel().port1;
+        addEventListener(_t: "error", fn: (e: unknown) => void): void { listeners.push(fn); }
+      } as unknown as SharedWorkerHost["SharedWorker"],
+    };
+    const attaching = attachSharedHolder({ houseName: "lares:house:test", holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: erroring });
+    await Promise.resolve();
+    for (const fn of listeners) fn(new Error("script failed to load"));
+    const floor = await attaching;
+    expect(floor).toMatchObject({ kind: "floor", why: expect.stringMatching(/raised an error or was cancelled before it greeted/) });
     await expect(holdVesselLock(IDB, null)).rejects.toThrow(/Web Locks/);
+
+    const refusing: SharedWorkerHost = {
+      SharedWorker: class { constructor() { throw new Error("no nested Worker in a SharedWorker"); } } as unknown as SharedWorkerHost["SharedWorker"],
+    };
+    const refused = await attachSharedHolder({ houseName: "lares:house:test", holderUrl: new URL("https://vessel.test/shared-holder.worker.js"), host: refusing });
+    expect(refused).toMatchObject({ kind: "floor", why: expect.stringMatching(/refused to start \(no nested Worker/) });
   });
 
   test.fails("MEASURED-NOT-ASSUMED — the holder survives the last tab closing for N seconds (Safari / Firefox lifetime)", async () => {
@@ -264,5 +361,40 @@ describe("the shared holder — one island per origin, a port per tab", () => {
     // stand in for the platform's reaper, so this stays red until `tools/mesh-scenarios.sh` gains the walk.
     const measured: { islandBootsAfterReopen: number } | null = null;
     expect(measured).not.toBeNull();
+  });
+});
+
+describe("the page's life feed closes a tab's session", () => {
+  test("a fed pagehide posts the session's close and unsubscribes; a hidden page posts nothing", async () => {
+    const hello = { kind: "holder:hello", islandBoots: 0, tabs: 1, lockClientId: "holder-x", ownerEpoch: "epoch-x", sessionId: "session-life", generation: 0, nonce: "00" };
+    let holderSide!: MessagePort;
+    class GreetingSharedWorker {
+      readonly port: MessagePort;
+      constructor() {
+        const { port1, port2 } = new MessageChannel();
+        this.port = port1; holderSide = port2;
+        port2.postMessage(hello);
+      }
+    }
+    let feed: ((life: "hidden" | "pagehide") => void) | null = null;
+    let stops = 0;
+    const attached = await attachSharedHolder({
+      houseName: "lares:house:test", holderUrl: new URL("https://vessel.test/shared-holder.worker.js"),
+      host: { SharedWorker: GreetingSharedWorker as unknown as SharedWorkerHost["SharedWorker"] },
+      pageLife: (listener) => { feed = listener; return () => { stops++; feed = null; }; },
+    });
+    expect(attached.kind).toBe("attached");
+    expect(feed, "the attach subscribed to the page's life").not.toBeNull();
+    const heard: unknown[] = [];
+    holderSide.onmessage = (event) => heard.push(event.data);
+
+    feed!("hidden");
+    feed!("pagehide");
+    // barrier: the pagehide's close rides the same port after anything the hidden signal posted, so its arrival bars both.
+    await expect.poll(() => heard.length).toBeGreaterThan(0);
+    expect(heard).toHaveLength(1);
+    expect(heard[0]).toMatchObject({ type: "session:close", ownerEpoch: "epoch-x", sessionId: "session-life", generation: 0 });
+    expect(stops, "the close unsubscribes from the feed").toBe(1);
+    if (attached.kind === "attached") attached.port.close();
   });
 });

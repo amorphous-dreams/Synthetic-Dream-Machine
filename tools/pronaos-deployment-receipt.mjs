@@ -40,7 +40,7 @@ function idAt(value, label) {
  */
 export function validatePronaosDeploymentReceipt(input) {
   const receipt = objectAt(input, "receipt");
-  if (receipt.schema !== "lararium-pronaos-deployment/v1") fail("schema is unsupported");
+  if (receipt.schema !== "lararium-pronaos-deployment") fail(`schema ${JSON.stringify(receipt.schema)} lacks the deployment receipt shape ("lararium-pronaos-deployment")`);
 
   const artifact = objectAt(receipt.artifact, "artifact reference");
   const artifactPath = textAt(artifact.recordPath, "artifact.recordPath");

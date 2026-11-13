@@ -6,7 +6,7 @@
  *
  * ── IT BELONGS TO THE HOUSE, AND THAT IS THE WHOLE POINT ─────────────────────────────────────────
  * A shelf is the LARARIUM's, never any Lar's — a family's books outlast whoever reads them. So it homes in
- * `<lararium>`, and everything else follows: the runtime CAS under `<lares>/vessel` is licensed for the wipe by
+ * `<root>/library`, and everything else follows: the runtime CAS under `<root>/hearth/vessel` is licensed for the wipe by
  * one premise, that its blobs rebuild from the bags carriers on each seed, and that premise holds for
  * DERIVED blobs while failing completely for acquired ones — a book regenerates from nothing. Standing in
  * its own house rather than one directory aside from a house every rite pares is what makes that structural.
@@ -42,27 +42,26 @@ import {
   mediaTypeFromExt, niUriSha256FromHex, sha256HexBytesSync, type LibraryEntryMeta,
 } from "@lararium/mesh";
 import { kv, metaFieldsFromBody, renderCarrier } from "./carrier-render.js";
-import { larariumDataHome } from "./vessel-paths.js";
+import { larLibraryRoot } from "./vessel-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { metaFenceAt } from "@lararium/tw5/root-meta";
 
 /**
- * The acquired tier's home — `<lararium>/library`, which reads `~/.local/share/lararium/library`
- * loose and `<root>/data/lararium/library` under LAR_ROOT. `LAR_LIBRARY` overrides both.
+ * The acquired tier's home — `<root>/library`, beside (never inside) the hearth. `LAR_LIBRARY` overrides it.
  *
  * BOTH ISOLATION ARMS MATTER. A rehearsal that set only `LAR_LIBRARY` and a rehearsal that set only
- * `LAR_ROOT` are equally isolated; a comment naming one would send a reader to reach the operator's
+ * `LAR_ROOT` stand equally isolated; a comment naming one would send a reader to reach the operator's
  * real shelf while believing otherwise.
  *
- * IT STANDS IN THE SHRINE, NOT THE SPIRIT. Runtime vessel documents and acquired bodies have different
- * owners. The acquired tier lives under `lararium/`, outside the vessel store, so its bytes do not depend
- * on the vessel's runtime records.
+ * IT STANDS OUTSIDE THE HEARTH. The library holds originals the house acquired, which no render or
+ * re-founding re-makes, so it sits at the root's first level where a re-founding never reaches, and its
+ * bytes never depend on the vessel's runtime records.
  *
  * The env override exists because a shelf grows without bound and an operator may want it on another
  * disk — the one resource here likely to outgrow its default.
  */
 export function larLibraryHome(): string {
-  return process.env["LAR_LIBRARY"] ?? join(larariumDataHome(), "library");
+  return process.env["LAR_LIBRARY"] ?? larLibraryRoot();
 }
 
 /** Where one collection's bodies stand. Resolution of a `library:<name>` reference, and the only mapping. */
@@ -155,7 +154,7 @@ export function readLibraryMeta(entryDir: string): LibraryEntryMeta | null {
 
 /** One top-level `#/<cid>` ahu entry block, open tag through its own close — never nested (the index
  *  mints every entry flat, one slot per body). */
-const AHU_ENTRY_RE = /<<~\s*ahu\s+#\/([0-9a-f]{64})\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
+const AHU_ENTRY_RE = /<<~\s*ahu\s+slot=`#\/([0-9a-f]{64})`\s*>>([\s\S]*?)<<~\/ahu\s*>>/g;
 
 /**
  * Read a collection's index carrier back into entries, keyed by the SLOT ADDRESS (never by whatever cid
@@ -271,7 +270,7 @@ function renderLibraryIndex(collection: string, entries: readonly LibraryEntryMe
   const total = rows.reduce((n, e) => n + e.size, 0);
   const uri = `lar:///ha.ka.ba/library/${collection}`;
   const entryBlock = (e: LibraryEntryMeta): string => [
-    `<<~ ahu #/${e.cid}>>`,
+    `<<~ ahu slot=\`#/${e.cid}\`>>`,
     "",
     "```toml meta",
     kv("type", "application/json"),

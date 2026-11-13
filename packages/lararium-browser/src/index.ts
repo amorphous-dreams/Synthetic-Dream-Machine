@@ -10,13 +10,23 @@
  */
 
 export { BrowserVesselIslandPool } from "./browser-vessel-island-pool.js";
-export type { BrowserVesselIslandPoolOptions } from "./browser-vessel-island-pool.js";
+export type { BrowserVesselIslandPoolOptions, PageLife, PageLifeFeed } from "./browser-vessel-island-pool.js";
 
-export { openBrowserVessel, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
+export { openBrowserVessel, readBrowserVesselFaces, DAEMON_SURFACE_ID } from "./open-browser-vessel.js";
+export { readHearthFloor, floorNexusOf, porchOriginOf, type HearthFloorRead } from "./browser-floor-read.js";
 export { holdVesselLock, vesselLockName, ambientLocks } from "./vessel-lock.js";
 export type { LockHost, VesselLockHold } from "./vessel-lock.js";
+export { standVesselHouse, sessionLifetimeLock, VesselSessionRefused } from "./vessel-sessions.js";
+export type { VesselHouse, VesselSession, VesselFloorState, VesselLockReport, VesselHouseCensus, LitVessel, SessionKeyHolder, VesselSessionRefusal, HouseAsk, FaceProviderDoor, FaceBooking, FaceSwitchOptions } from "./vessel-sessions.js";
+export {
+  FaceCustodyRefused, checkFaceName, readFaceCustody, readFaceCustodyPasskeys, bindFirstFaceSlot, unlockFaceCustody, lockFaceCustody,
+  writeFaceRow, readFaceRow, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, standUnnamedFace, heldUnnamedFace,
+} from "./browser-face-custody.js";
+export type { FaceCustodyStatus, FaceCustodyUnlock, FaceCustodyClear, FaceCustodyRefusalReading } from "./browser-face-custody.js";
+export { mintEmber, answerEmberAsk, emberAskBytes, EmberRefused } from "./browser-ember.js";
+export type { EmberExchange, EmberAsk } from "./browser-ember.js";
 // The house behind the lock: one daemon island per origin inside a SharedWorker holder, a port per tab.
-export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle } from "./shared-holder.js";
+export { attachSharedHolder, ambientSharedWorkerHost, holderWorkerHandle, houseName } from "./shared-holder.js";
 export type { SharedWorkerHost, SharedHolderAttach } from "./shared-holder.js";
 export { makeSharedHolderCore } from "./shared-holder-core.js";
 export type { SharedHolderCore, SharedHolderCoreOptions, HolderHello, HolderIsland, HolderPort } from "./shared-holder-core.js";
@@ -26,22 +36,39 @@ export { composeBrowser } from "./browser-caps.js";
 export type { BrowserVesselOptions, BrowserVesselResult, ProjectionSurfaceFrame } from "./open-browser-vessel.js";
 export { makeSurfaceReturnLeg } from "./surface-return-leg.js";
 export type { SurfaceReturnLeg, ReturnLegVerdict, DaemonReturnDoor, PoolReturnDoor } from "./surface-return-leg.js";
-export { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, isOwnHearthCrossing, seatHearthCanon } from "./hearth-canon.js";
+export { HearthCanonGate, admittedCanonDocs, hearthCanonDocIds, isOwnHearthCrossing, provenCrossingPlanes, seatHearthCanon } from "./hearth-canon.js";
 export type { HearthCanonDocs } from "./hearth-canon.js";
 
 export type { CoherenceFrameWithRev } from "./wiki-coherence-frame.js";
 
-export { createBrowserConnectionState, observeRelayConnection } from "./browser-connection-state.js";
+export { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
 export type {
-  BrowserConnectionSnapshot, BrowserConnectionListener, BrowserConnectionState, RelayConnectionAdapter,
+  BrowserConnectionSnapshot, BrowserConnectionListener, BrowserConnectionState, CrossingInputs, RelayConnectionAdapter,
 } from "./browser-connection-state.js";
 
 export {
-  generateOrLoadBrowserVesselIdentity, loadBrowserSigningSeed, loadBrowserDeviceKey,
+  generateOrLoadBrowserVesselIdentity, foundBrowserPlaceKel, loadBrowserPlaceKel, readBrowserPlaceHead,
   openVesselIdb, idbGet, idbPut, idbDelete, idbKeys,
   readBrowserSeedWrap, writeBrowserSeedWrap, loadBrowserActivePersona, SEED_WRAP_STORE,
 } from "./browser-vessel-identity.js";
-// The opt-in PRF wrap of a persona-root seed at rest — beside the cleartext finding, never the mint.
+export { browserVesselFaceTagDoor } from "./browser-face-atom.js";
+// THE WARD DIALOG'S WORDS, by the ask's kind (`open`, `bind`, `retype`): a page names each ward ask truly.
+export { wardAskWords, type WardAskKind } from "./browser-ward.js";
+// BROWSER CUSTODY: a passphrase, paper or passkey slot (a passkey never alone) wraps the keystore's device seed and Keyhive Archives; the
+// clear-password act asks through the confirm door.
+export {
+  sealBrowserKeystore, unlockBrowserCustody, lockBrowserCustody, readBrowserCustody, bindBrowserCustodySlot,
+  unbindBrowserCustodySlot, clearBrowserCustody, BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, readBrowserCustodyPasskeys,
+} from "./browser-custody.js";
+export type {
+  CustodyBindRoute, BrowserCustodyStatus, BrowserCustodyUnlock, BrowserCustodyClear, BrowserCustodyRefusalReading, ConfirmDoor,
+} from "./browser-custody.js";
+// ONE WARD ACT: the face root signs in a per-act worker, fresh from the passphrase the ceremony took for it.
+export { browserWardSign, BrowserWardRefused } from "./browser-ward.js";
+// THE BOOT'S CUSTODY STEP: each tab asks the person for its own unlock, or for a first slot before a face secret mints.
+export { standBrowserCustody } from "./browser-boot-custody.js";
+export type { CustodyAsk, CustodyAnswer, BootCustodyVerdict, StandBrowserCustodyOptions } from "./browser-boot-custody.js";
+// The opt-in PRF wrap of a persona-root seed — beside the slot tree's seal, never the mint.
 export { detectPrf, ambientPrfHost, wrapSeed, unwrapSeed, SeedWrapRefused, SEED_WRAP_HKDF_INFO } from "./seed-wrap-prf.js";
 export type { PrfHost, PrfDetection, SeedWrapRecord, SeedWrapKeyClass } from "./seed-wrap-prf.js";
 export type { BrowserVesselIdentity } from "./browser-vessel-identity.js";
@@ -63,7 +90,19 @@ export type {
   BrowserDaemonVmOptions,
   BrowserVerbTable, VerbReactor, BrowserVerbPlacementRequest,
 } from "./open-browser-daemon-vm.js";
-export { parseAdmitCarriage, parseAdmitPaste, formatAdmitCommand, toAdmitCarriage, ADMIT_KIND } from "./admit-carriage.js";
+export { parseAdmitCarriage, toAdmitCarriage, ADMIT_KIND, StaleAdmitCarriage } from "./admit-carriage.js";
+// THE FLEET-JOIN DOOR's joining half: this browser requests a face's fleet, then lands the answer into an admit.
+export {
+  browserFleetJoinRequest, browserFleetJoinLand, browserFleetJoinSettle, browserFleetJoinAbandon, browserVesselFaceKeyCustody, BrowserFleetJoinRefused,
+} from "./browser-fleet-join.js";
+// THE FLEET-JOIN DOOR's ROOT-HOLDER half: a face this browser founded offers and answers, with no node in the walk.
+export { openBrowserSecretHome } from "./browser-secret-home.js";
+// THE CARRIED SEAT: the second round of two files that seats a joined leaf with no road.
+export { browserSeatRequest, browserSeatGrant, browserSeatGrantLand, browserJoinedFaces } from "./browser-fleet-seat.js";
+export {
+  browserFleetJoinOffer, browserFleetJoinAnswer, browserSeatDevice, browserRootFaces, browserFleetRootDoor, browserStandingFaceScopes, BrowserFleetRootRefused, issuedRow,
+  type BrowserRootFace, type BrowserSeatFace, type BrowserSeatInput,
+} from "./browser-fleet-root.js";
 
 // The mint-time context gate — refuse where a browser withholds, and name the cause and the cure.
 export type {
@@ -74,4 +113,7 @@ export {
 } from "./secure-context-gate.js";
 export { SharedHolderRefusal } from "./shared-holder.js";
 export type { HolderRefused } from "./shared-holder-core.js";
-export { browserIdentityContinuityKey } from "./browser-vessel-identity.js";
+export { BROWSER_IDENTITY_CONTINUITY_DB, readBrowserIdentityContinuity } from "./browser-vessel-identity.js";
+export type { BrowserIdentityContinuity } from "./browser-vessel-identity.js";
+// THE FACE LABEL in this browser's origin-private file system (`face-labels/<F>.json`), the node's record by the shared seam.
+export { writeBrowserFaceLabel, readBrowserFaceLabel, opfsFaceLabelShelf, browserOpfsRoot, BROWSER_LABEL_NO_OPFS, type OpfsDirectoryLike } from "./browser-face-labels.js";

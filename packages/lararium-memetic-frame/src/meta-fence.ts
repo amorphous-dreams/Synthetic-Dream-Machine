@@ -58,3 +58,11 @@ export const PLAIN_OPEN_RE = /```toml[ \t]*\n/;
 export function isCanonicalMetaOpen(line: string): boolean {
   return line === META_OPEN_CANON;
 }
+
+/**
+ * THE FENCE, WHOLE: the opener, then a body that closes at the FIRST tick run after it, mid-line or not,
+ * taking one newline after the close. This is the deserializer's close (`findMetaFence`), and every reader
+ * of a meta fence's BODY composes it (`rootMetaFence` below, the frame's head binding, carrier-shape and the
+ * tw5 root-meta locator), so no reader closes a fence where another reads on. Capture 1 holds the body.
+ */
+export const META_FENCE_RE = new RegExp(META_OPEN_RE.source + "([\\s\\S]*?)```\\n?");

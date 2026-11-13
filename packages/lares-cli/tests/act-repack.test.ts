@@ -55,7 +55,7 @@ const actArgs = (positional: string[], options: Record<string, string> = {}, fla
 const dirs: string[] = [];
 afterEach(() => { for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true }); h.calls.length = 0; h.result = null; h.throwLWE = false; h.receipt = null; vi.restoreAllMocks(); });
 
-/** A bundle file under a `bags/<holding>/<w.w.w>/…` mirror tree, so the loci derivation names it. */
+/** A bundle file under a `bags/<holding>/<w.w.w>/…` mirror tree, so the address derivation names it. */
 const bundleUnderBags = (): { root: string; bundle: string } => {
   const root = mkdtempSync(join(tmpdir(), "lares-repack-")); dirs.push(root);
   const dir = join(root, "bags", "sdm", "ha.ka.ba", "packs");

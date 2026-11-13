@@ -4,7 +4,7 @@
  * A face's planes ride the bootstrap the founding wrote and register in the catalog at boot. A document
  * every holder may rewrite never answers for them: this function takes the bootstrap's tiddlers and the
  * worn PersonaGroup id, and no other source, so no value of the shared oracle can reach a face.
- * The worn face stays a parameter; nothing here reads a vault pointer.
+ * The mounted face stays a parameter; nothing here reads a vault pointer.
  */
 
 import {
@@ -20,6 +20,7 @@ export interface BootFacePlanes {
   readonly identitiesUrl:  string | null;
   readonly circlesUrl:     string | null;
   readonly sessionsUrl:    string | null;
+  readonly intentsUrl:     string | null;
 }
 
 export function bootFacePlanes(
@@ -35,7 +36,7 @@ export function bootFacePlanes(
   // would mount a second writable layer over the first.
   const planesFault = personaPlanes.length ? personaPlanesFault(personaPlanes) : null;
   if (planesFault) throw new Error(`[lararium] the PersonaGroup planes this vessel carries do not stand: ${planesFault}`);
-  // The WORN face decides which plane mounts; the bootstrap pin names the founding face where no
+  // The mounted face decides which plane mounts; the bootstrap pin names the founding face where no
   // switch is owed.
   const personaGroupId = wornPersonaGroupId ?? bootstrapTiddlers[PERSONA_GROUP_ID_TIDDLER]?.text ?? null;
   // A vessel standing in compartments but told to wear none it carries halts rather than wearing
@@ -44,7 +45,7 @@ export function bootFacePlanes(
     ? mountedPlaneBagId(personaPlanes, personaGroupId)
     : null;
   const personaUrl = personaPlanes.find((p) => p.personaGroupId === personaGroupId)?.url ?? null;
-  // The three planes that travel with the face derive from the plane id: the name is the index.
+  // The four sibling planes that travel with the face derive from the plane id: the name is the index.
   const siblings = personaBagId ? personaSiblingBagIds(personaBagId) : null;
   const readPlane = (bagId: string | undefined): string | null =>
     bagId ? (bootstrapTiddlers[bagId]?.text ?? null) : null;
@@ -53,6 +54,7 @@ export function bootFacePlanes(
     identitiesUrl: readPlane(siblings?.identities),
     circlesUrl:    readPlane(siblings?.circles),
     sessionsUrl:   readPlane(siblings?.sessions),
+    intentsUrl:    readPlane(siblings?.intents),
   };
 }
 

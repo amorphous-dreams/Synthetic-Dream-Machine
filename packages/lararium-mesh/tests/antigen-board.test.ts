@@ -47,14 +47,14 @@ async function banEntry(nym: string, seeds = [SEEDS.guru, SEEDS.telarus]): Promi
 function boardWith(texts: Record<string, string>): LarDoc {
   const tiddlers: LarDoc["tiddlers"] = {};
   for (const [title, text] of Object.entries(texts)) tiddlers[title] = mutableLarRecord(title, { text }, "test");
-  return { schemaVersion: "0.1", tiddlers };
+  return { tiddlers };
 }
 
 describe("antigenEntriesFromBoard — extract, skip the torn/foreign", () => {
   test("an absent / empty board surfaces no entries (fail closed)", () => {
     expect(antigenEntriesFromBoard(undefined)).toEqual([]);
     expect(antigenEntriesFromBoard(null)).toEqual([]);
-    expect(antigenEntriesFromBoard({ schemaVersion: "0.1", tiddlers: {} })).toEqual([]);
+    expect(antigenEntriesFromBoard({ tiddlers: {} })).toEqual([]);
   });
 
   test("a well-formed antigen tiddler extracts; foreign + torn + non-JSON are skipped", async () => {
@@ -123,7 +123,7 @@ describe("writeAntigenEntry — the RAISE side lands what the reader reads (#65)
   }
 
   test("a written ban ROUND-TRIPS through the reader and FOLDS to Kapae'd against the seated roster", async () => {
-    const doc: LarDoc = { schemaVersion: "0.1", tiddlers: {} };
+    const doc: LarDoc = { tiddlers: {} };
     const entry = await banEntry(VICTIM);   // 2-of-3 signed founded kapae act
     // writeAntigenEntry mutates a draft exactly as a handle.change would.
     writeAntigenEntry(doc, entry);
@@ -139,14 +139,14 @@ describe("writeAntigenEntry — the RAISE side lands what the reader reads (#65)
   });
 
   test("a causal descendant lift withdraws; concurrent contradictory heads remain unsettled", async () => {
-    const doc: LarDoc = { schemaVersion: "0.1", tiddlers: {} };
+    const doc: LarDoc = { tiddlers: {} };
     const ban = await banEntry(VICTIM);
     writeAntigenEntry(doc, ban);
     const lift = await liftEntry(VICTIM, [ban.actCid]);
     writeAntigenEntry(doc, lift);
     expect((await foldAntigenSet(antigenEntriesFromBoard(doc), await roster(), verifier)).has(VICTIM)).toBe(false);
 
-    const concurrentDoc: LarDoc = { schemaVersion: "0.1", tiddlers: {} };
+    const concurrentDoc: LarDoc = { tiddlers: {} };
     const concurrentRoot = await banEntry(VICTIM);
     const concurrentBanChild = await signAntigenEntry(
       { nym: VICTIM, action: "kapae", parents: [concurrentRoot.actCid], sealEpochCid: EPOCH },
@@ -162,7 +162,7 @@ describe("writeAntigenEntry — the RAISE side lands what the reader reads (#65)
   });
 
   test("a SUB-QUORUM written entry extracts but the FOLD ignores it (1-of-3 never bans)", async () => {
-    const doc: LarDoc = { schemaVersion: "0.1", tiddlers: {} };
+    const doc: LarDoc = { tiddlers: {} };
     const lone = await banEntry(VICTIM, [SEEDS.guru]);   // only ONE signer
     writeAntigenEntry(doc, lone);
     expect(antigenEntriesFromBoard(doc)).toHaveLength(1);               // extraction is permissive

@@ -66,7 +66,7 @@ describe("the sensorium stratifier reads a quoted sigil as prose", () => {
     const teaching = `Shown, never opened.
 
 ${TICKS}
-<<~ ahu #example>>
+<<~ ahu slot=\`#example\`>>
 body of the example
 <<~/ahu>>
 ${TICKS}

@@ -13,8 +13,8 @@ type: text/vnd.tiddlywiki
      never its direct children alone:
 
          <<~ holo>>
-           <<~ lele "lar:///target-a">>
-           <<~ lele "lar:///target-b">>
+           <<~ lele to=`lar:///target-a`>>
+           <<~ lele to=`lar:///target-b`>>
          <<~/holo>>
 
      `puka` keeps the other discipline: there a loser runs on until the enclosing scope exits.

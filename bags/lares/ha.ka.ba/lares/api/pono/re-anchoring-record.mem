@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/re-anchoring-record">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/re-anchoring-record`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = false
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/re-anchoring-record.mem"
 l-space       = "stable"
-mana          = 12
-manao         = 12
-manaoio       = 12
 revision-note = "the artifact that records THAT a re-anchoring happened and never what made it valid. Carries the three mechanisms that survive alignment with prior art, the six classes that refuse, and the rulings each refusal breaks"
 role          = "the re-anchoring record — one artifact folded two ways: an EVENT on write, accrued DEPTH on read. Holds the un-thresholded attestor bundle, the grounds-free boundary, and the attester⊥minter split, each with its shipped prior art and what it cost to align"
 tags          = ["api/pono/meme"]
@@ -18,11 +14,9 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/re-anchoring-record"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Re-Anchoring Record ~ that it happened, never what made it valid
 
@@ -34,7 +28,7 @@ A guest dwells WITH a host — a dyad, one edge, and the historically fatal shap
 
 <<~/ahu>>
 
-<<~ ahu #/three-mechanisms>>
+<<~ ahu slot=`#/three-mechanisms`>>
 
 !! Three mechanisms that survive alignment ~ each shipped, none whole
 
@@ -57,7 +51,7 @@ Enforced by ''which key signs what'', never by convention. That restates the //n
 
 <<~/ahu>>
 
-<<~ ahu #/the-refusals>>
+<<~ ahu slot=`#/the-refusals`>>
 
 !! Six classes refuse, and one pattern runs under them all
 
@@ -77,7 +71,7 @@ Enforced by ''which key signs what'', never by convention. That restates the //n
 
 <<~/ahu>>
 
-<<~ ahu #/the-open-tension>>
+<<~ ahu slot=`#/the-open-tension`>>
 
 !! The plural-attestor tension ~ two cures pulling opposite ways
 
@@ -91,7 +85,7 @@ Applied here: ''as the attestor count rises, the intersection of realms whose dw
 
 <<~/ahu>>
 
-<<~ ahu #/what-the-record-refuses>>
+<<~ ahu slot=`#/what-the-record-refuses`>>
 
 !! What the type must refuse, in the type
 
@@ -105,13 +99,13 @@ Applied here: ''as the attestor count rises, the intersection of realms whose dw
 
 <<~/ahu>>
 
-<<~ ahu #/the-depth-fold>>
+<<~ ahu slot=`#/the-depth-fold`>>
 
 !! The depth fold ~ PROPOSED: the history IS the reading, and reducing it mints what the plane forbids
 
 The record folds two ways — an EVENT on write, accrued DEPTH on read (#/head) — and the write half stands built. Reaching for the read half turns up ''a fold no hand should write''.
 
-`dwellingHistory` already hands back the verified, attested, chain-ordered acts: which epochs this dwelling stood re-anchored at, and who marked each. ''The obvious next move reduces that to a scalar'' — a depth, a standing, a number. ''Three standing rulings each forbid it independently'':
+`dwellingHistory` already hands back the verified, attested acts, the anchored ones in the held seal lineage's order with their position and the unanchored ones apart: which epochs this dwelling stood re-anchored at, and who marked each. ''The obvious next move reduces that to a scalar'' — a depth, a standing, a number. ''Three standing rulings each forbid it independently'':
 
 # ''No FROZEN rank.'' A scalar depth across dwellers IS a total order, and a total order needs a global now. A partial order — which the history already carries — needs none.
 # ''Standing computed from standing drifts from merit and then locks'' (three literatures, no cure found). A depth that later gates anything becomes an input to itself.
@@ -127,14 +121,14 @@ And the EROSION half needs a rate nobody has seated. Two candidate shapes stand 
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/the-thing-event">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/cabal-realm">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/kapae">> · <<~ loulou "lar:///ha.ka.ba/lares/api/pono/shelter-against-empire">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/the-thing-event`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/identity-enacts-relation`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae`>> · <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/shelter-against-empire`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;E3xwhYlwm_4-VB5xqL7TXDGk4KCzEPyFh_EWrSNI9yA
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n6cUCDmilqgxsMXy_NVwt7y-IdKWLuyvVaz93nW0oW4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

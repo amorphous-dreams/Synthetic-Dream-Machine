@@ -54,7 +54,7 @@ function preparedWeb(): Record<string, string> {
   writeFileSync(join(web, "index.html"), '<!doctype html><title>arrival</title><script type="module" src="/assets/wiki.worker-arrival.js"></script>');
   writeFileSync(join(web, "assets/wiki.worker-arrival.js"), "self.postMessage('arrival')");
   const record = {
-    schema: "lararium-pronaos-artifact/v1",
+    schema: "lararium-pronaos-artifact",
     routes: files.map(([path, file, contentType, cache]) => ({
       path, file, contentType, cache,
       sha256: createHash("sha256").update(readFileSync(join(web, file))).digest("hex"),
@@ -129,7 +129,7 @@ describe.skipIf(gaps.length > 0)("★ the arrival surfaces — the house's own o
     const custody = await seatStagedCustody(device);
     const repo = new Repo({ sharePolicy: async () => true });
     try {
-      const k = await kindleFromBulb({ bulb: fire, repo, storageDir: join(device, "store") });
+      const k = await kindleFromBulb({ placeFoundingCard: { readBack: async () => {} }, bulb: fire, repo, storageDir: join(device, "store") });
       expect(k.did).toBe(didKeyFromVerifyingKey(k.deviceVerifyingKey));
       const houseKey = await awaitOwnGateKey(hearth!);
       expect(k.deviceVerifyingKey).not.toBe(houseKey);

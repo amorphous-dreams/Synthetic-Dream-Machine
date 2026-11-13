@@ -2,18 +2,28 @@
  * vault-carriers — THE ONE CARRIER TABLE. Every carrier a vessel keeps at rest names its home, its custody
  * class, its secret kind and its writer in exactly one row here.
  *
- * ── FIVE CUSTODY CLASSES ────────────────────────────────────────────────────────────────────────
- *   `floor`       — outside the vessel KEK (VK): the floor key, its own log, the slot tree that wraps the VK, and
- *                   the serving tree that wraps the serving key (SK). The floor signs and unlocks before any VK
+ * ── SIX CUSTODY CLASSES ─────────────────────────────────────────────────────────────────────────
+ *   `floor`       — outside the S key: the floor key, its own log, the slot tree that wraps the S key, and
+ *                   the serving tree that wraps the serving key (SK). The floor signs and unlocks before any S key
  *                   opens, so nothing here may need one.
  *   `floor-plain` — plain bytes the floor reads (the gate, the arrival page, the raise door), bytes public by
- *                   construction, or bytes sealed under a key the VK never wraps (the sealed store's rests).
+ *                   construction, or bytes sealed under a key the S key never wraps (the sealed store's rests).
  *                   Sealing them would lock the floor out of its own door, or wrap what a blind carrier holds.
- *   `serving`     — sealed under SK, which the VK's entry in the serving tree wraps (ember#/the-serving-key). It
- *                   holds the serving rows and nothing beside them; no VK rotation re-seals one. No serving row
+ *   `serving`     — sealed under SK, which the S key's entry in the serving tree wraps (ember#/the-serving-key). It
+ *                   holds the serving rows and nothing beside them; no S key rotation re-seals one. No serving row
  *                   stands yet: the rows move under SK with the ember's serving tier.
- *   `hot`         — sealed under the VK, opened once at unlock and held for the process life.
- *   `cold`        — sealed under the VK, opened for one act and then dropped.
+ *   `hot`         — sealed under the S key, opened once at unlock and held for the process life.
+ *   `cold`        — sealed under the S key, opened for one act and then dropped.
+ *   `outbox`      — sealed under the outbox key, which the S key wraps in its own hot row (`outbox-key`); an unlock hands
+ *                   that key to the daemon island, which seals and opens the parcels for the life of the unlock. The
+ *                   bytes frame as the outbox seal and never as the S key's, so no S key rotation re-seals one: it re-seals
+ *                   the outbox key's row alone (custody#/the-table, the outbox).
+ *   `face-hot`    — a D row sealed under ONE face's custody key (FCK) and resting in that face's own directory
+ *                   (`faces/<fcid>/`). Opened once when its face unlocks, held while the face stays unlocked.
+ *   `face-cold`   — as `face-hot`, opened for one act and then dropped.
+ *   `ward-cold`   — a D row sealed under ONE face's WARD key, never its FCK: the face root seed. The ward key stays sealed while
+ *                   the face stands unlocked and opens fresh from a human route for one hand act (`withWardKey`), then zeroes. No
+ *                   unlocked custody reads or writes such a row; its bytes frame as the ward's own seal (`lares-ward-seal`).
  * A private file the floor never reads rides `hot`: sealing costs it nothing and closes the social graph
  * at rest (petnames, the handle book, the anchors).
  *
@@ -25,25 +35,25 @@
  * never enter it.
  *
  * ── ONE TABLE, EVERY READER DERIVES ─────────────────────────────────────────────────────────────
- * The custody status (`custody-session`), the VK rotation, the backup bundle's cut and the custody shape reader
+ * The custody status (`custody-session`), the S key rotation, the backup bundle's cut and the custody shape reader
  * (`custody-shape`) all read these rows. A second list of filenames anywhere else would drift from this one,
  * and the drift costs in both directions: a carrier a sweep omits stays unsealed while the sweep reports
  * success; a carrier a sweep invents gets written over by an act nobody owns.
  *
  * ── A ROW OUTSIDE THE VESSEL KEY NAMES ITS LAW ──────────────────────────────────────────────────
- * Every `floor` and `floor-plain` row states, in its `bare` column, why its bytes rest outside the VK. A serving,
- * hot or cold row states none: such a file that reads bare reads as a fault.
+ * Every `floor` and `floor-plain` row states, in its `bare` column, why its bytes rest outside the S key. A serving,
+ * hot, cold or outbox row states none: such a file that reads bare reads as a fault.
  *
  * ── THE CENSUS NAMES WHAT STANDS OUTSIDE THE TABLE ──────────────────────────────────────────────
  * `outsideTheTable` walks the three homes whole and names each file there that reads private and matches no row:
- * an owner-only file, a file under the VK's seal, a sidecar a writer left. `vault status` prints the list and the
+ * an owner-only file, a file under the S key's seal, a sidecar a writer left. `vault status` prints the list and the
  * custody census witness refuses a vessel that holds one. Its reach ends at the three homes, and its mode sign
  * reads what a writer chose: under a umask that strips group and other from every file it names files no writer
  * marked, so it errs toward naming more and never less.
  *
  * ── A FILE SPELLED LIKE A ROW ANSWERS TO THAT ROW'S LAW ─────────────────────────────────────────
  * A row never excuses the file it matched. A hot or cold file that reads anything but sealed reads as a fault; a
- * floor or floor-plain file under the VK's seal reads as a fault, since no rotation re-seals it; and a row whose
+ * floor or floor-plain file under the S key's seal reads as a fault, since no rotation re-seals it; and a row whose
  * law reads off the bytes (`holds`) faults a file that fails it. A row with no such check (a note, a chunk, a
  * card, a charter, a consent, an admit pin) takes any bytes under its exact spelling: the census reads the
  * vessel's own writers, and catches no secret a hand plants under one of those spellings.
@@ -55,28 +65,38 @@
  * destroys a share.
  *
  * Where a writer exports its own path function, the row spells its filename through it, so a writer that
- * moves takes the row with it. Login-keyed identity filenames carry an optional `-<login>` segment.
+ * moves takes the row with it.
  *
- * ── THE VK ROTATION READS THESE ROWS ────────────────────────────────────────────────────────────
- * Every `hot` and `cold` carrier standing is a VK-sealed carrier (`vkSealedCarriers`), named by its home and
- * its file, and `rotateVesselVk` hands exactly that list to the sealed writer's rotation. No caller picks the
+ * ── THE S key ROTATION READS THESE ROWS ────────────────────────────────────────────────────────────
+ * Every `hot` and `cold` carrier standing is a S-sealed carrier (`sSealedCarriers`), named by its home and
+ * its file, and `rotateNodeKey` hands exactly that list to the sealed writer's rotation. No caller picks the
  * carriers a rotation re-seals; the writer then checks the list against every file the homes hold, so a
- * VK-sealed file no row names refuses the rotation rather than staying behind under a retired VK.
+ * S-sealed file no row names refuses the rotation rather than staying behind under a retired S key.
  */
 
 import { closeSync, openSync, readdirSync, readSync, statSync, type Dirent } from "node:fs";
 import { basename, join } from "node:path";
 import {
-  REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, VK_SEAL_MIN_LENGTH,
-  readCarriedRecord, readIndexRow, readKeyParcel, readLockboxRecord, readVkCarrier, restNameHolds, rotateVk,
-  type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type VesselKey,
+  REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, S_SEAL_MIN_LENGTH,
+  readCarriedRecord, readIndexRow, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
+  type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
+import { nativeKdf } from "@lararium/mesh/node";
 import { custodyRootPath } from "./custody-root.js";
-import { archivePath, VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
+import { VEIL_ARCHIVE_FILE } from "./identity-anchors.js";
+import { FACE_ATOM_GROUP_FILE, FACE_ATOM_ASK_FILE } from "./face-atom-store.js";
+import { VEIL_LIFT_GROUP_FILE } from "./node-veil-lift.js";
+import { FACES_DIR, FACE_INDEX_FILE, WARD_TREE_FILE } from "./face-index.js";
+import { FACE_ANCHOR_GROUP_FILE } from "./face-anchor-store.js";
+import { PROMOTED_FILE, KAPAE_FILE } from "./promoted-store.js";
+import { OUTBOX_KEY_FILE } from "./outbox-key.js";
 import { larDataDir, larIdentityDir, larSealHome } from "./vessel-paths.js";
+import { RELAY_GATE_SEED_FILE } from "./relay-gate-seed.js";
+import { SWITCH_ACTS_FILE } from "./switch-act-log.js";
+import { SECRET_HOME_FILE } from "./secret-home-store.js";
 
 /** The custody classes, closed. */
-export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold"] as const;
+export const CUSTODY_CLASSES = ["floor", "floor-plain", "serving", "hot", "cold", "outbox", "face-hot", "face-cold", "ward-cold"] as const;
 export type CustodyClass = (typeof CUSTODY_CLASSES)[number];
 
 /** The homes a row may name. */
@@ -89,9 +109,9 @@ export interface CustodyHomes {
   readonly seal:     string;
 }
 
-/** The slot tree's path: the one file outside the VK that wraps it. */
-export function vkSlotsPath(identityDir: string = larIdentityDir()): string {
-  return join(identityDir, "vk-slots.bin");
+/** The slot tree's path: the one file outside the S key that wraps it. */
+export function sSlotsPath(identityDir: string = larIdentityDir()): string {
+  return join(identityDir, "s-slots.bin");
 }
 
 /** The serving tree's path: the one file outside every key that wraps SK (ember#/the-serving-key). */
@@ -100,9 +120,9 @@ export function skSlotsPath(identityDir: string = larIdentityDir()): string {
 }
 
 /**
- * The suffix of the serving tree a VK rotation re-wraps: it lands beside `sk-slots.bin` before the rotation commits,
- * and the next opening of SK settles it (`openServingTree`). Its own suffix: the VK rotation's settle sweeps every
- * `.vk-rotating` file, and this one must outlive that sweep.
+ * The suffix of the serving tree an S key rotation re-wraps: it lands beside `sk-slots.bin` before the rotation commits,
+ * and the next opening of SK settles it (`openServingTree`). Its own suffix: the S key rotation's settle sweeps every
+ * `.s-rotating` file, and this one must outlive that sweep.
  */
 export const SK_REWRAP_SUFFIX = ".sk-rewrap";
 
@@ -111,8 +131,19 @@ export function vesselCustodyHomes(): CustodyHomes {
   return { identity: larIdentityDir(), storage: larDataDir(), seal: larSealHome() };
 }
 
-/** Whose a carrier is: one face's own (its handle-index), or the vessel's (every face, or none). */
-export type CarrierFace = number | "vessel";
+/** Whose a carrier is: a handle index, a group digest, or the vessel. */
+export type CarrierFace = number | "vessel" | `group:${string}` | `fcid:${string}`;
+
+/** How a face row names the face it belongs to, read off the row's own file name: by group digest, founding-ask digest or ordinal. */
+export type FaceSelector = { readonly group: string } | { readonly ask: string } | { readonly ordinal: number } | null;
+
+/** The part of a face row the holder resolves a logical `(home, file)` by: the file's own spelling inside the face's directory. */
+export interface FaceRowAddress {
+  /** Matched against the file name inside `faces/<fcid>/` (what callers pass as `file`). */
+  readonly inner:  RegExp;
+  /** Which face the matched file names; `null` marks a row only the holder addresses, by the directory it already stands in. */
+  readonly select: (m: RegExpExecArray) => FaceSelector;
+}
 
 /**
  * How a face's backup bundle treats a row (custody#/the-table): `whole`, the row rides as it rests; `lines`, the
@@ -120,6 +151,26 @@ export type CarrierFace = number | "vessel";
  */
 export const BUNDLE_TREATMENTS = ["whole", "lines", "stays"] as const;
 export type BundleTreatment = (typeof BUNDLE_TREATMENTS)[number];
+
+/** The K15 custody classes a row sorts into: D dissolves into per-face rows sealed under that face's FCK, F is public by design, S is a named node-only secret. */
+export const CUSTODY_PARTS = ["D", "F", "S"] as const;
+export type CustodyPart = (typeof CUSTODY_PARTS)[number];
+
+/**
+ * Where a row goes under K15 (`docs/pono/k15-custody-step-zero`). `classes` holds the row's one class or the parts of
+ * its named split, in the spec's order. `lead` marks a target whose payload, selector or owner the spec has not
+ * proved, so no bytes move for it. `joint` names the spec's open joint the row waits on, else null. The column
+ * moves no bytes and no reader consults it.
+ */
+export interface CustodyTarget {
+  readonly classes: readonly CustodyPart[];
+  readonly lead:    boolean;
+  readonly joint:   string | null;
+}
+
+const LEAD = true;
+const tgt = (classes: readonly CustodyPart[], lead = false, joint: string | null = null): CustodyTarget =>
+  Object.freeze({ classes: Object.freeze([...classes]), lead, joint });
 
 /** One row of the table. */
 export interface CarrierRow {
@@ -149,15 +200,19 @@ export interface CarrierRow {
    */
   readonly holds:    ((file: string, bytes: Uint8Array) => boolean) | null;
   /**
-   * Whose this match is. A file that names one face and holds nothing of another answers that face's
-   * handle-index; every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
+   * Whose this match is. A file that names one face answers its handle index or group digest;
+   * every other row answers `"vessel"`. A bundle of one face's custody derives from this column.
    */
   readonly face:     (m: RegExpExecArray) => CarrierFace;
+  /** Present on a `face-hot`, `face-cold` or `ward-cold` row: how a logical file name resolves to its face's directory. */
+  readonly faceRow?: FaceRowAddress;
   /**
    * How a face's backup bundle treats this row. A row that names none `stays`. The bundle's cut and the restore's
    * check both derive from this column (`bundleRows`), so no hand picks the rows a bundle carries.
    */
   readonly bundle:   BundleTreatment;
+  /** The K15 target class of this row. Required: a new row cannot land without one. */
+  readonly target:   CustodyTarget;
 }
 
 /** One carrier standing on disk, named by the row it matched. */
@@ -183,19 +238,17 @@ export const DEVICE_SHARE_FILE = /^recovery-device-share-h(\d+)\.bin$/;
 const escape = (s: string): string => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 /** A filename the writer's own path function spells. */
 const exact = (path: string): RegExp => new RegExp(`^${escape(basename(path))}$`);
-/** A login-keyed identity filename: `.<stem>.json` or `.<stem>-<login>.json`. */
-const loginKeyed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}(?:-[^./]+)?\\.json$`);
+/** A face's own row: `.<stem>-h<N>.json`, the handle index in the first capture. */
+const faceIndexed = (stem: string): RegExp => new RegExp(`^\\.${escape(stem)}-h(0|[1-9]\\d*)\\.json$`);
 /** A plain filename. */
 const file = (name: string): RegExp => new RegExp(`^${escape(name)}$`);
-/** A hosting directory: `hosting/<the 32-hex digest of a Nexus AID>/`. */
-const HOSTING = "hosting/[0-9a-f]{32}/";
 
 /**
  * A row as its line of the table spells it. The custody class decides the `bare` column at the type: a row
  * outside the vessel key states its law, and a row under it states none.
  */
-type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds">>
-  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" });
+type RowSpec = Omit<CarrierRow, "name" | "face" | "bundle" | "bare" | "custody" | "holds" | "faceRow"> & Partial<Pick<CarrierRow, "name" | "face" | "bundle" | "holds" | "faceRow">>
+  & ({ readonly custody: "floor" | "floor-plain"; readonly bare: string } | { readonly custody: "serving" | "hot" | "cold" | "outbox" | "face-hot" | "face-cold" | "ward-cold" });
 
 /** A row of the identity home's top level: the same line with its home and subtree left to the helper. */
 type IdentityRowSpec = RowSpec extends infer R ? (R extends unknown ? Omit<R, "home" | "under"> : never) : never;
@@ -210,160 +263,269 @@ const REST_CARRIED = REST_KINDS.filter((kind) => kind !== "own" && kind !== "out
 const REST_NAME = "[0-9a-z][0-9a-z.-]{0,254}";
 /**
  * A rest file holds its row's law: the digest at the end of its name commits to its bytes, and the bytes read whole
- * as the kind its shelf names (a lockbox, a record of that kind, an index row, a key parcel). Bytes of any other
- * shape under a rest's spelling, a clear key named by its own digest among them, fail it.
+ * as the kind its shelf names (a lockbox, a record of that kind, an index row, an outbox seal). Bytes of any other
+ * shape under a rest's spelling, a clear key or a clear parcel named by its own digest among them, fail it.
  */
 const restFileHolds = (file: string, bytes: Uint8Array): boolean => {
   const [, kind, name] = file.split("/");
   if (kind === undefined || name === undefined || !restNameHolds(name, bytes)) return false;
   if (kind === "lockbox") return readLockboxRecord(bytes) !== null;
   if (kind === "index") return readIndexRow(bytes) !== null;
-  if (kind === "outbox") return readKeyParcel(bytes) !== null;
+  if (kind === "outbox") return readsAsOutboxSeal(bytes);
   return readCarriedRecord(bytes)?.kind === kind;
 };
 
 /** The restore's commit row: what one restore still owes this vessel (`face-bundle-restore`). */
-export const RESTORE_PENDING_FILE = ".restore-pending.json";
+/** A restore's commit row rests in its TARGET face, named by the handle index it lands at. */
+export const RESTORE_PENDING_FILE = /^\.restore-pending-h(0|[1-9]\d*)\.json$/;
+export const restorePendingFile = (target: number): string => `.restore-pending-h${target}.json`;
 
 /** The face a per-face filename names: its first capture, a handle-index. */
 const faceOf = (m: RegExpExecArray): CarrierFace => Number(m[1]);
 
+/**
+ * A D row: sealed under its face's custody key and resting in `faces/<fcid>/<file>`. `inner` spells the file as callers name it;
+ * the row's census match spells the whole path under the identity home. `select` names the face the file belongs to.
+ */
+function faceRowOf(spec: {
+  readonly row: string; readonly inner: RegExp; readonly select: FaceRowAddress["select"]; readonly custody: "face-hot" | "face-cold" | "ward-cold";
+  readonly keyClass: KeyClass | null; readonly writer: string; readonly target: CustodyTarget; readonly bundle?: BundleTreatment;
+  readonly name: (m: RegExpExecArray) => string; readonly face?: (m: RegExpExecArray) => CarrierFace;
+}): CarrierRow {
+  const body = spec.inner.source.replace(/^\^/, "").replace(/\$$/, "");
+  const match = new RegExp(`^${FACES_DIR}/([0-9a-f]{32})/(${body})$`);
+  /** The census match, re-read as the inner file's own match: the captures after the directory and the file. */
+  const innerOf = (m: RegExpExecArray): RegExpExecArray => {
+    const view = [m[2]!, ...m.slice(3)] as unknown as RegExpExecArray;
+    view.index = 0; view.input = m[2]!;
+    return view;
+  };
+  return row({
+    row: spec.row, home: "identity", under: FACES_DIR, match, custody: spec.custody, keyClass: spec.keyClass, writer: spec.writer, target: spec.target,
+    name: (m) => spec.name(innerOf(m)), face: (m) => (spec.face ? spec.face(innerOf(m)) : (`fcid:${m[1]}` as const)),
+    faceRow: { inner: new RegExp(`^(?:${body})$`), select: spec.select },
+    ...(spec.bundle ? { bundle: spec.bundle } : {}),
+  });
+}
+
 function buildTable(): readonly CarrierRow[] {
   const id = (r: IdentityRowSpec): CarrierRow => row({ home: "identity", under: "", ...r });
   return Object.freeze([
-    // ── floor: outside the VK ──────────────────────────────────────────────────────────────────
-    id({ row: "vessel-key", match: loginKeyed("vessel-key"), custody: "floor", keyClass: "device-minted",
+    // ── floor: outside the S key ──────────────────────────────────────────────────────────────────
+    id({ row: "vessel-key", target: tgt(["S"], LEAD, "place-signer"), match: file(".vessel-key.json"), custody: "floor", keyClass: "device-minted",
          writer: "node-vessel-identity (founding)",
          bare: "the floor signs with it before any person unlocks, so no vessel key may stand between a boot and it" }),
-    id({ row: "vessel-kel", match: loginKeyed("vessel-kel"), custody: "floor", keyClass: null,
-         writer: "node-vessel-identity (founding)",
-         bare: "the vessel key's own inception names that key and carries its signature: it stands public and proves itself, and a load of the key reads it before any person unlocks" }),
-    id({ row: "vk-slots", match: exact(vkSlotsPath()), custody: "floor", keyClass: null,
+    id({ row: "relay-gate-seed", target: tgt(["S"]), match: file(RELAY_GATE_SEED_FILE), custody: "floor", keyClass: "device-minted",
+         writer: "relay-gate-seed (relay standing and explicit rotation)", holds: (_file, bytes) => /^[0-9a-f]{64}\n?$/.test(Buffer.from(bytes).toString("utf8")),
+         bare: "the relay service stands before a person unlocks; its random gate seed grants only the relay handshake" }),
+    id({ row: "vessel-kel", target: tgt(["F"]), match: file(".vessel-kel.json"), custody: "floor", keyClass: null,
+         writer: "node-vessel-identity (founding and rotation)",
+         bare: "the place KEL names the online signer and its next cold commitment; every standing-key load verifies its head" }),
+    id({ row: "vessel-rotating", target: tgt(["S"], LEAD, "place-signer"), match: file(".vessel-rotating.json"), custody: "floor", keyClass: "device-minted",
+         writer: "node-vessel-identity (rotation)",
+         bare: "a read-back replacement card permits this staged signer to finish the KEL and key commit after a restart" }),
+    id({ row: "s-slots", target: tgt(["D", "S"], LEAD, "place-signer"), match: exact(sSlotsPath()), custody: "floor", keyClass: null,
          writer: "vault bind",
          bare: "the slot tree wraps the vessel key under each human route, so the key it wraps cannot seal it" }),
-    id({ row: "sk-slots", match: exact(skSlotsPath()), custody: "floor", keyClass: null,
+    id({ row: "sk-slots", target: tgt(["S"], LEAD), match: exact(skSlotsPath()), custody: "floor", keyClass: null,
          writer: "custody-session (founding)",
          bare: "the serving tree wraps the serving key under the vessel key's entry, so the key it wraps cannot seal it, and a raise reads it before any key opens" }),
 
+    row({ row: "fk-slots", target: tgt(["D"]), home: "identity", under: FACES_DIR, match: new RegExp(`^${FACES_DIR}/[0-9a-f]{32}/fk-slots\\.bin$`),
+          custody: "floor", keyClass: null, writer: "face-custody (founding)",
+          bare: "a face's slot tree wraps the face custody key under each human route of that face, so the key it wraps cannot seal it" }),
+    row({ row: "ward-slots", target: tgt(["D"]), home: "identity", under: FACES_DIR, match: new RegExp(`^${FACES_DIR}/[0-9a-f]{32}/${escape(WARD_TREE_FILE)}$`),
+          custody: "floor", keyClass: null, writer: "custody-holder (founding, ward rewrap)",
+          bare: "a face's ward tree wraps the ward key under each human route of that face; the ward key opens only fresh from a route, so neither the face key nor the vessel key may wrap it" }),
+
     // ── floor-plain: the floor reads it, or it reads public ────────────────────────────────────
-    id({ row: "vessel-card", match: loginKeyed("vessel-card"), custody: "floor-plain", keyClass: null,
-         writer: "node-vessel-identity (founding)",
-         bare: "a contact card holds public keys alone, and the vessel hands it to every peer it meets" }),
-    row({ row: "charter", home: "seal", under: "", match: file("founding-roster.mem"), custody: "floor-plain",
+    id({ row: "face-index", target: tgt(["F"]), match: file(FACE_INDEX_FILE), custody: "floor-plain", keyClass: null,
+         writer: "face-index",
+         bare: "the node names the faces it can unlock before any face opens; the index holds the count of faces, each group's digest, each founding ask's digest and each random directory name, and no other byte" }),
+    row({ row: "charter", target: tgt(["F"]), home: "seal", under: "", match: file("founding-roster.mem"), custody: "floor-plain",
           keyClass: null, writer: "nexus seal",
           bare: "the floor's gate reads the charter before any key opens, and a charter stands public and signed" }),
-    row({ row: "carried-charter", home: "seal", under: "carried", match: /^carried\/[A-Za-z0-9][A-Za-z0-9._-]*\/founding-roster\.mem$/,
+    row({ row: "carried-charter", target: tgt(["F"]), home: "seal", under: "carried", match: /^carried\/[A-Za-z0-9][A-Za-z0-9._-]*\/founding-roster\.mem$/,
           custody: "floor-plain", keyClass: null, writer: "carried-set",
           bare: "the floor's gate reads each carried charter before any key opens, and a charter stands public and signed" }),
-    row({ row: "carriage-consent", home: "seal", under: "nexus", match: /^nexus\/carriage-consent\/[^/]+\.json$/,
+    row({ row: "carriage-consent", target: tgt(["F"]), home: "seal", under: "nexus", match: /^nexus\/carriage-consent\/[^/]+\.json$/,
           custody: "floor-plain", keyClass: null, writer: "carried-set",
           bare: "the floor reads a kept consent to carry a Nexus before any key opens; it names a charter and holds no key" }),
-    row({ row: "nexus-key-line", home: "seal", under: "nexus", match: /^nexus\/key-line\/[^/]+\.json$/,
+    row({ row: "nexus-key-line", target: tgt(["F"]), home: "seal", under: "nexus", match: /^nexus\/key-line\/[^/]+\.json$/,
           custody: "floor-plain", keyClass: null, writer: "carried-set",
           bare: "a key hand-over names two public keys and both their signatures, and it stands public on the Nexus's carriage board" }),
-    row({ row: "carriage-admit", home: "seal", under: "nexus", match: /^nexus\/carriage-admit\/[^/]+\.json$/,
+    row({ row: "carriage-admit", target: tgt(["F"]), home: "seal", under: "nexus", match: /^nexus\/carriage-admit\/[^/]+\.json$/,
           custody: "floor-plain", keyClass: null, writer: "admit-bundle",
           bare: "the floor's gate reads the admit pin before any key opens; it holds a reach and a gate's public key" }),
     // The sealed store's rest (`sealed-store-fs`): lockboxes, signed records and index rows, one file per name. Each
     // name ends in a digest of its own bytes and each value reads as its shelf's kind, so a file that fails either
     // reads as a fault.
-    row({ row: "sealed-rest", home: "storage", under: "sealed", match: new RegExp(`^sealed/(?:${REST_CARRIED.join("|")})/${REST_NAME}$`),
+    row({ row: "sealed-rest", target: tgt(["F"]), home: "storage", under: "sealed", match: new RegExp(`^sealed/(?:${REST_CARRIED.join("|")})/${REST_NAME}$`),
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds,
           bare: "a lockbox, a record and an index row hold ciphertext, opaque ids and addresses, and no secret, name or key in the clear; a blind carrier may hold every one" }),
     // The vessel's own notes for its sealed store: an opaque id under an opaque name, where the latest write replaces.
-    row({ row: "sealed-own", home: "storage", under: "sealed", match: new RegExp(`^sealed/own/${REST_NAME}$`),
+    row({ row: "sealed-own", target: tgt(["F"], LEAD), home: "storage", under: "sealed", match: new RegExp(`^sealed/own/${REST_NAME}$`),
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs",
           bare: "a note holds opaque ids of the sealed store, a one-byte mark or nothing, under an opaque name, and no secret, name or key" }),
-    // The parcels a vessel wrapped for a reader, until the member lane takes them. They stay on their vessel.
-    row({ row: "sealed-outbox", home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
-          custody: "floor-plain", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds,
-          bare: "a parcel holds no key: it holds public Keyhive operations that name reader identifiers, it stays on its vessel, and the island that writes it holds no vessel key" }),
     // The Keyhive chunks a provider tracks per bag (`sealed-store-fs`): one ciphertext per content reference.
-    row({ row: "sealed-chunk", home: "storage", under: "sealed", match: /^sealed\/keyhive-chunks\/[0-9a-f]{1,128}\/[0-9a-f]{1,128}$/,
+    row({ row: "sealed-chunk", target: tgt(["F"]), home: "storage", under: "sealed", match: /^sealed\/keyhive-chunks\/[0-9a-f]{1,128}\/[0-9a-f]{1,128}$/,
           custody: "floor-plain", keyClass: null, writer: "sealed-store-fs",
           bare: "a chunk rests as Keyhive ciphertext under an opaque name, and a blind carrier may hold every one" }),
 
-    // ── hot: sealed under the VK, opened at unlock ─────────────────────────────────────────────
-    id({ row: "custody-root", match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
+    // ── hot: sealed under the S key, opened at unlock ─────────────────────────────────────────────
+    id({ row: "gate-root", target: tgt(["D"], LEAD), match: exact(custodyRootPath()), custody: "hot", keyClass: "device-minted",
          writer: "custody-root (founding)" }),
-    id({ row: "keyhive-archive", match: exact(archivePath()), custody: "hot", keyClass: "device-minted",
-         writer: "identity-anchors" }),
-    id({ row: "veil-archive", match: VEIL_ARCHIVE_FILE, custody: "hot", keyClass: "device-minted",
-         writer: "identity-anchors", name: (m) => `veil-archive-h${m[1]}`, face: faceOf }),
-    id({ row: "enroll-pending", match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
-         writer: "node-persona-admit-store" }),
-    id({ row: "grant-pending", match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",
-         writer: "node-persona-admit-store" }),
-    id({ row: "admissions", match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
-         writer: "node-persona-admit-store" }),
-    id({ row: "anchors", match: /^anchors-h(\d+)\.json$/, custody: "hot", keyClass: null,
+    faceRowOf({ row: "veil-archive", target: tgt(["D"], LEAD, "archive-row-selector"), inner: VEIL_ARCHIVE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "identity-anchors", name: (m) => `veil-archive-g${m[1]}`, face: (m) => `group:${m[1]}` }),
+    // A face's private veil-lift link (`node-veil-lift`): the vessel's key signed {veil, face, atom}, so it names THIS vessel's veil and
+    // stays on it; it rests under its face alone and leaves with that face's tree.
+    faceRowOf({ row: "veil-lift", target: tgt(["D"]), inner: VEIL_LIFT_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: null,
+         writer: "node-veil-lift", name: (m) => `veil-lift-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    // A group digest owns this local atom row; bundles leave its seed on this vessel.
+    faceRowOf({ row: "face-atom", target: tgt(["D"]), inner: FACE_ATOM_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "face-atom-store", name: (m) => `face-atom-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    faceRowOf({ row: "face-anchor", target: tgt(["D"]), inner: FACE_ANCHOR_GROUP_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "face-anchor-store", name: (m) => `face-anchor-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    // A founding ask holds a seed until its group row keeps it.
+    faceRowOf({ row: "face-atom-ask", target: tgt(["D"]), inner: FACE_ATOM_ASK_FILE, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "face-atom-store", name: (m) => `face-atom-ask-${m[1]}`, bundle: "stays" }),
+    faceRowOf({ row: "promoted", target: tgt(["D"]), inner: PROMOTED_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "promoted-store", name: (m) => `promoted-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    faceRowOf({ row: "kapae-local", target: tgt(["D"]), inner: KAPAE_FILE, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "promoted-store", name: (m) => `kapae-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    // The face's own custody label: its fcid and the digest of its PersonaGroup. The holder reads it to check the floor index it unlocked by.
+    faceRowOf({ row: "face-owner", target: tgt(["D"]), inner: /face-owner\.bin/, select: () => null, custody: "face-hot", keyClass: null,
+         writer: "custody-holder", name: () => "face-owner" }),
+    // The face's ward signing key's public half on this device: the `wardKey` its admission into the face carries. No secret; it lands with the ward.
+    faceRowOf({ row: "face-ward-key", target: tgt(["D"]), inner: /face-ward-key\.bin/, select: () => null, custody: "face-hot", keyClass: null,
+         writer: "custody-holder", name: () => "face-ward-key" }),
+    // A session switch's acts name two faces together, so they rest on this vessel alone and never in a document.
+    id({ row: "switch-acts", target: tgt(["D"]), match: file(SWITCH_ACTS_FILE), custody: "hot", keyClass: null,
+         writer: "switch-act-log (the session socket's switch acts)" }),
+    // These reserved rows have no writer; a vessel holding one still recognises its carrier at unlock.
+    id({ row: "enroll-pending", target: tgt(["D"], LEAD), match: file(".persona-enroll-pending.json"), custody: "hot", keyClass: "relation",
+         writer: "none (reserved carrier)" }),
+    id({ row: "grant-pending", target: tgt(["D"], LEAD), match: file(".persona-grant-pending.json"), custody: "hot", keyClass: "relation",
+         writer: "none (reserved carrier)" }),
+    id({ row: "admissions", target: tgt(["D"], LEAD), match: file(".persona-admissions.json"), custody: "hot", keyClass: "relation",
+         writer: "none (reserved carrier)" }),
+    faceRowOf({ row: "anchors", target: tgt(["D"]), inner: /^anchors-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "identity-anchors", name: (m) => `anchors-h${m[1]}`, face: faceOf, bundle: "lines" }),
-    id({ row: "anchor-roster", match: file("anchor-roster.json"), custody: "hot", keyClass: null,
-         writer: "identity-anchors" }),
-    id({ row: "persona-roster", match: loginKeyed("persona-roster"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "active-persona", match: loginKeyed("active-persona"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity" }),
-    id({ row: "persona-petnames", match: loginKeyed("persona-petnames"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "persona-declarations", match: loginKeyed("persona-declarations"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity", bundle: "lines" }),
-    id({ row: "public-handles", match: loginKeyed("persona-public-handles"), custody: "hot", keyClass: null,
-         writer: "node-vessel-identity" }),
+    // The roster of a vessel's roots, its pet-names, declarations and published records: one row per face, in that face's own
+    // directory, named by the handle index. No shared roster names the faces: the floor index does, by ordinal alone.
+    faceRowOf({ row: "persona-roster", target: tgt(["D"]), inner: faceIndexed("persona-roster"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-roster-h${m[1]}`, face: faceOf, bundle: "lines" }),
+    faceRowOf({ row: "persona-petnames", target: tgt(["D"]), inner: faceIndexed("persona-petnames"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-petnames-h${m[1]}`, face: faceOf, bundle: "lines" }),
+    faceRowOf({ row: "persona-declarations", target: tgt(["D"]), inner: faceIndexed("persona-declarations"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-declarations-h${m[1]}`, face: faceOf, bundle: "lines" }),
+    faceRowOf({ row: "public-handles", target: tgt(["D"]), inner: faceIndexed("persona-public-handles"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-vessel-identity", name: (m) => `persona-public-handles-h${m[1]}`, face: faceOf }),
     // This vessel's own face-scoped key under one face at one Nexus (`face-key-custody`, the face proof's library
     // names the row). It stays on its vessel: no bundle carries it.
-    id({ row: "vessel-face-key", match: /^vessel-face-key-([0-9a-f]{32})\.bin$/, custody: "hot", keyClass: "device-minted",
-         writer: "face-key-custody", name: (m) => `vessel-face-key-${m[1]}` }),
-    id({ row: "handle-book", match: file(".handle-book.json"), custody: "hot", keyClass: null,
-         writer: "node-circle-store", bundle: "lines" }),
-    // One face's guardian set as its typed first enrolment committed it (`guardian-enrolment`): the keys a later
-    // rotation reveals, and what another face's enrolment reads to refuse a shared key. It stays on its vessel
-    // until the bundle's body carries a guardian set.
-    id({ row: "guardian-set", match: /^guardian-set-h(\d+)\.json$/, custody: "hot", keyClass: null,
-         writer: "guardian-enrolment", name: (m) => `guardian-set-h${m[1]}`, face: faceOf }),
-    row({ row: "hosting-state", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}state\\.json$`),
-          custody: "hot", keyClass: null, writer: "hosting-store" }),
-    row({ row: "hosting-spent", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}spent-[^/]+$`),
-          custody: "hot", keyClass: null, writer: "hosting-store" }),
-    row({ row: "hosting-carry", home: "storage", under: "hosting", match: new RegExp(`^${HOSTING}carry/.+$`),
-          custody: "hot", keyClass: null, writer: "hosting-carry" }),
-    row({ row: "walk", home: "storage", under: "walk", match: /^walk\/[^/]+\.json$/,
-          custody: "hot", keyClass: null, writer: "node-walk-store" }),
+    faceRowOf({ row: "vessel-face-key", target: tgt(["D"]), inner: /^vessel-face-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
+         writer: "face-key-custody", name: (m) => `vessel-face-key-h${m[1]}-${m[2]}`, face: faceOf }),
+    // One face's address secret (`fleet-join-custody`): minted once on the root holder, carried to each joined
+    // vessel by the fleet-join door. Its file names a digest of the face's PersonaGroup. A bundle carries it whole;
+    // a paper restore carries none, through the fromPaper door.
+    faceRowOf({ row: "face-address-secret", target: tgt(["D"]), inner: /^face-address-secret-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `face-address-secret-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "whole" }),
+    // One face's tag secret (`vessel-face-tag-store`): 32 random bytes minted on this vessel at the face's founding or its
+    // first join request, under no seed. A re-join on the face presents the tag it stands behind. It stays on this vessel:
+    // a bundle restored onto another device never wears this one's tag.
+    faceRowOf({ row: "vessel-face-tag", target: tgt(["D"]), inner: /^vessel-face-tag-g([0-9a-f]{64})\.bin$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "vessel-face-tag-store", name: (m) => `vessel-face-tag-g${m[1]}`, face: (m) => `group:${m[1]}`, bundle: "stays" }),
+    // A founding face's tag secret while its ask names the face; the founding's settle moves it onto the group's row.
+    faceRowOf({ row: "vessel-face-tag-ask", target: tgt(["D"]), inner: /^vessel-face-tag-ask-([0-9a-f]{64})\.bin$/, select: (m) => ({ ask: m[1]! }), custody: "face-hot", keyClass: "device-minted",
+         writer: "vessel-face-tag-store", name: (m) => `vessel-face-tag-ask-${m[1]}`, bundle: "stays" }),
+    // A joining vessel's half-done fleet join (`fleet-join-custody`): its request and the X25519 secret its
+    // answer seals to. The landing removes it.
+    faceRowOf({ row: "fleet-join-pending", target: tgt(["D"]), inner: /^fleet-join-pending-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `fleet-join-pending-g${m[1]}`, face: (m) => `group:${m[1]}` }),
+    // A joined face's record (`fleet-join-custody`): its root key, the certificates over this vessel's face-scoped
+    // keys and the root's grants, as the fleet-join answer carried them. It stays on its vessel.
+    faceRowOf({ row: "face-join-record", target: tgt(["D"]), inner: /^face-join-record-g([0-9a-f]{64})\.json$/, select: (m) => ({ group: m[1]! }), custody: "face-hot", keyClass: "relation",
+         writer: "fleet-join-custody", name: (m) => `face-join-record-g${m[1]}`, face: (m) => `group:${m[1]}` }),
+    // One face's recognition book, in that face's own row: the nyms it recognised and the private labels it keeps for them.
+    faceRowOf({ row: "handle-book", target: tgt(["D"]), inner: /^\.handle-book-h(0|[1-9]\d*)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-circle-store", name: (m) => `handle-book-h${m[1]}`, face: faceOf, bundle: "whole" }),
+    // One face's recovery contact set as its typed first enrolment committed it (`recovery-contact-enrolment`): the keys a later
+    // rotation reveals, and what another face's enrolment reads to refuse a shared key. That face's bundle carries
+    // it whole wherever the face's log commits it, and a restore lands it beside the root.
+    faceRowOf({ row: "recovery-contact-set", target: tgt(["D"]), inner: /^recovery-contact-set-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "recovery-contact-enrolment", name: (m) => `recovery-contact-set-h${m[1]}`, face: faceOf, bundle: "whole" }),
+    // One restored face's provisional mark (`face-provisional`): the head its restore read, until a party to its
+    // relation agrees. It belongs to the vessel that restored the face: no bundle carries it.
+    faceRowOf({ row: "face-provisional", target: tgt(["D"]), inner: /^face-provisional-h(\d+)\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "face-provisional", name: (m) => `face-provisional-h${m[1]}`, face: faceOf }),
+    faceRowOf({ row: "hosting-state", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/state\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "hosting-store", name: (m) => `hosting-state-h${m[1]}-${m[2]}`, face: faceOf }),
+    faceRowOf({ row: "hosting-spent", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/spent-[^/]+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "hosting-store", name: (m) => `hosting-spent-h${m[1]}-${m[2]}`, face: faceOf }),
+    faceRowOf({ row: "hosting-carry", target: tgt(["D"]), inner: /^hosting-h(0|[1-9]\d*)\/([0-9a-f]{32})\/carry\/.+$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "hosting-carry", name: (m) => `hosting-carry-h${m[1]}-${m[2]}`, face: faceOf }),
+    faceRowOf({ row: "walk", target: tgt(["D"]), inner: /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "node-walk-store", name: (m) => `walk-h${m[1]}-${m[2]}`, face: faceOf }),
     // A sovereign gate's withdrawal memory, one row per face key named by its proof-subject digest
     // (`gate-memory-rows`). It belongs to its vessel: no face's bundle carries it.
-    row({ row: "gate-memory", home: "storage", under: "gate-memory", match: /^gate-memory\/[0-9a-f]{64}\.bin$/,
-          custody: "hot", keyClass: null, writer: "gate-memory-rows" }),
+    // A gate's withdrawal memory rests in the face whose gate learned it: the file name's handle index only spells the face, the face's own directory is the location.
+    faceRowOf({ row: "gate-memory", target: tgt(["D"]), inner: /^gate-memory-h(0|[1-9]\d*)-([0-9a-f]{64})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "gate-memory-rows", name: (m) => `gate-memory-h${m[1]}-${m[2]}`, face: faceOf }),
     // The growth rite's two rows (`seal-ceremony`): the first prepares a crossing, the second commits its record.
-    row({ row: "transition-pending", home: "seal", under: "", match: file("transition-pending.json"),
-          custody: "hot", keyClass: null, writer: "seal-ceremony" }),
-    row({ row: "transitions", home: "seal", under: "", match: file("transitions.json"),
-          custody: "hot", keyClass: null, writer: "seal-ceremony" }),
+    row({ row: "transition-pending", target: tgt(["F"]), home: "seal", under: "", match: file("transition-pending.json"),
+          custody: "floor-plain", keyClass: null, writer: "seal-ceremony",
+          bare: "a crossing in progress carries public key-sets, signatures and witnesses and no secret: any holder of the charter verifies it, and no seat key or card rests in it" }),
+    row({ row: "transitions", target: tgt(["F"]), home: "seal", under: "", match: file("transitions.json"),
+          custody: "floor-plain", keyClass: null, writer: "seal-ceremony",
+          bare: "sealed crossing records carry public key-sets, signatures and witnesses and no secret: each record verifies from the charter alone" }),
     // One joint founding's record (`cofound-record`): the offer this vessel made or answered, its seat and hearth
     // cadence keys' public halves, and the image it judged. The inception door licenses a joint signature by it.
-    row({ row: "cofound", home: "seal", under: "", match: /^cofound-([0-9a-f]{64})\.json$/,
-          custody: "hot", keyClass: null, writer: "cofound-record" }),
+    faceRowOf({ row: "cofound", target: tgt(["D"]), inner: /^cofound-h(0|[1-9]\d*)-([0-9a-f]{64})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
+         writer: "cofound-record", name: (m) => `cofound-h${m[1]}-${m[2]}`, face: faceOf }),
 
-    // ── cold: sealed under the VK, opened per act ──────────────────────────────────────────────
-    id({ row: "persona-root", match: /^\.persona-group-root(?:-[^./]+?)?-h(\d+)\.json$/, custody: "cold", keyClass: "seed",
+    // The vessel's outbox key (`outbox-key`): minted once, at the first unlocked composition, and handed to the daemon
+    // island at each unlock. It seals the outbox's parcels and nothing beside them; it stays on its vessel.
+    faceRowOf({ row: "outbox-key", target: tgt(["D"]), inner: OUTBOX_KEY_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: "device-minted",
+         writer: "outbox-key", name: (m) => `outbox-key-h${m[1]}`, face: faceOf }),
+
+    // ── outbox: sealed under the outbox key the S key wraps ───────────────────────────────────────
+    // The parcels a vessel wrapped for a reader, until the member lane takes them: each sealed whole, its reader
+    // inside the seal, under a random name (`sealed-store-rest`). They stay on their vessel.
+    row({ row: "sealed-outbox", target: tgt(["D"]), home: "storage", under: "sealed", match: new RegExp(`^sealed/outbox/${REST_NAME}$`),
+          custody: "outbox", keyClass: null, writer: "sealed-store-fs", holds: restFileHolds }),
+
+    // ── ward-cold: the face root seed, under the face's ward key alone (seat-harness#/the-ward) ──
+    faceRowOf({ row: "persona-root", target: tgt(["D"]), inner: faceIndexed("persona-group-root"), select: (m) => ({ ordinal: Number(m[1]) }), custody: "ward-cold", keyClass: "seed",
          writer: "node-vessel-identity", name: (m) => `persona-root-h${m[1]}`, face: faceOf, bundle: "whole" }),
+    // ── cold: sealed under the S key, opened per act ──────────────────────────────────────────────
     // One face's proof key at one Nexus, held by the root-holding vessel alone (`face-key-custody`). Its file names
     // the face, so that face's bundle carries it.
-    id({ row: "face-proof-key", match: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "face-proof-key", target: tgt(["D"]), inner: /^face-proof-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "face-key-custody", name: (m) => `face-proof-key-h${m[1]}-${m[2]}`, face: faceOf, bundle: "whole" }),
     // A seat's own key, minted at random and apart from every root and leaf (`seat-key-store`). Its file names the
     // face whose seat claim stood for the chair and a digest of the seat's public key. It stays on its vessel: a
     // bundle carries no key of any seat.
-    id({ row: "seat-key", match: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "seat-key", target: tgt(["D"]), inner: /^seat-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "seat-key-store", name: (m) => `seat-key-h${m[1]}-${m[2]}`, face: faceOf }),
+    // Principal: intent-admission service. Opener: intent-relay-key-store alone, through its scoped cold custody door.
+    id({ row: "intent-relay-key", target: tgt(["S"]), match: file("intent-relay-key.bin"), custody: "cold", keyClass: "device-minted",
+         writer: "intent-relay-key-store", holds: (_file, bytes) => bytes.length === 32 }),
+    // An operator's per-face relay switches rest sealed; an absent row leaves every face off. Principal: intent-admission service; opener: intent-relay-ring.
+    id({ row: "intent-relay-faces", target: tgt(["S"]), match: file("intent-relay-faces.json"), custody: "hot", keyClass: null,
+         writer: "intent-relay-ring" }),
+    // The vessel's secret home's address (`secret-home-store`): its document id and the held key its rest seals it under. A
+    // node-only secret of the vessel, never one face's: it never leaves its vessel. Principal and opener: secret-home-store.
+    id({ row: "secret-home", target: tgt(["S"]), match: file(SECRET_HOME_FILE), custody: "hot", keyClass: "device-minted",
+         writer: "secret-home-store" }),
     // A hearth's own cadence key and its next key, minted at random on the device for one joint founding
     // (`cadence-key-store`): apart from every root, leaf, seat and serving or floor key. It stays on its vessel.
-    id({ row: "cadence-key", match: /^cadence-key-([0-9a-f]{32})\.bin$/, custody: "cold", keyClass: "device-minted",
-         writer: "cadence-key-store", name: (m) => `cadence-key-${m[1]}` }),
+    faceRowOf({ row: "cadence-key", target: tgt(["D"]), inner: /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "device-minted",
+         writer: "cadence-key-store", name: (m) => `cadence-key-h${m[1]}-${m[2]}`, face: faceOf }),
     // A restore's own commit row: everything one restore will land, sealed in ONE write before any row moves. It
     // holds a root for the length of that restore and leaves once the face stands lit; no bundle carries it.
-    id({ row: "restore-pending", match: file(RESTORE_PENDING_FILE), custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "restore-pending", target: tgt(["D"]), inner: RESTORE_PENDING_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed", name: (m) => `restore-pending-h${m[1]}`,
          writer: "face-bundle-restore" }),
-    id({ row: "device-share", match: DEVICE_SHARE_FILE, custody: "cold", keyClass: "seed",
+    faceRowOf({ row: "device-share", target: tgt(["D"]), inner: DEVICE_SHARE_FILE, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-cold", keyClass: "seed",
          writer: "recovery-share-store", name: (m) => `recovery-device-share-h${m[1]}`, face: faceOf }),
   ]);
 }
@@ -429,42 +591,53 @@ export function carrierCensus(homes: CustodyHomes): CarrierEntry[] {
   ];
 }
 
-// ── the VK-sealed carriers, derived from the rows ────────────────────────────────────────────────
+// ── the S-sealed carriers, derived from the rows ────────────────────────────────────────────────
 
 /**
  * Every hot and cold carrier standing in `homes`, as the sealed writer names it: `<home>/<file>`. Each carries its
  * row's key class, so a refusal over a `relation` carrier says no rotation regenerates it.
  */
-export function vkSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
+export function sSealedCarriers(homes: CustodyHomes): SealedCarrier[] {
   // The hot and cold rows alone get walked: a rotation and an unlock never list a subtree only a plain row names.
   const sealed = carrierTable().filter((r) => r.custody === "hot" || r.custody === "cold");
-  return (["identity", "storage", "seal"] as const)
-    .flatMap((home) => censusHome(home, homes[home], sealed))
-    .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }));
+  return [
+    ...(["identity", "storage", "seal"] as const)
+      .flatMap((home) => censusHome(home, homes[home], sealed))
+      .map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass })),
+  ];
 }
 
 /**
- * Rotate the vessel's VK over every VK-sealed carrier the table names in `homes`, binding `slots` over the new
- * VK at the identity home's slot tree. The sealed writer proves `oldVk` against the standing tree and refuses a
- * VK-sealed file the census omits, before any write.
+ * Every carrier whose standing, with no slot tree, makes a store occupied: the S-sealed rows plus the face rows. A founding
+ * over any of them refuses before a byte lands; the face rows ride this list and no rotation, since a face key seals them.
  */
-export async function rotateVesselVk(args: {
+export function occupantCarriers(homes: CustodyHomes): SealedCarrier[] {
+  const faceRows = carrierCensus(homes).filter((e) => e.custody === "face-hot" || e.custody === "face-cold" || e.custody === "ward-cold");
+  return [...sSealedCarriers(homes), ...faceRows.map((e) => ({ name: `${e.home}/${e.file}`, path: e.path, keyClass: e.keyClass }))];
+}
+
+/**
+ * Rotate the vessel's S key over every S-sealed carrier the table names in `homes`, binding `slots` over the new
+ * S key at the identity home's slot tree. The sealed writer proves `oldTreeKey` against the standing tree and refuses a
+ * S-sealed file the census omits, before any write.
+ */
+export async function rotateNodeKey(args: {
   readonly io:     CustodyIo;
   readonly homes:  CustodyHomes;
-  readonly oldVk:  VesselKey;
-  readonly newVk:  VesselKey;
+  readonly oldTreeKey:  TreeKey;
+  readonly newTreeKey:  TreeKey;
   readonly slots:  readonly SlotSpec[];
 }): Promise<SlotTree> {
-  return rotateVk({
-    io: args.io, treePath: vkSlotsPath(args.homes.identity), carriers: vkSealedCarriers(args.homes),
-    oldVk: args.oldVk, newVk: args.newVk, slots: args.slots,
+  return rotateTreeKey({
+    io: args.io, treePath: sSlotsPath(args.homes.identity), carriers: sSealedCarriers(args.homes),
+    oldTreeKey: args.oldTreeKey, newTreeKey: args.newTreeKey, slots: args.slots, kdf: nativeKdf,
   });
 }
 
 // ── what stands outside the table ────────────────────────────────────────────────────────────────
 
 /** Why a file outside the table reads private. */
-export type OutsideWhy = "sidecar" | "vk-seal" | "owner-only";
+export type OutsideWhy = "sidecar" | "s-seal" | "owner-only";
 
 /** One file that reads private and matches no row. */
 export interface OutsideFile {
@@ -478,12 +651,12 @@ export interface OutsideFile {
 /** A name a writer gives a file it has not landed yet: the sealed writer's two sidecars, the serving tree's re-wrap, a port's or a rest's temporary file. */
 const SIDECAR_NAME = new RegExp(`(?:${escape(SEALING_SUFFIX)}|${escape(ROTATING_SUFFIX)}|${escape(SK_REWRAP_SUFFIX)}|\\.io-tmp)$|(?:^|/)TMP-[0-9a-f]+$`);
 
-/** The first bytes of a file, enough to read a VK frame's magic and its least length; nothing on any fault. */
+/** The first bytes of a file, enough to read an S key frame's magic and its least length; nothing on any fault. */
 function headOf(path: string): Uint8Array {
   let fd: number;
   try { fd = openSync(path, "r"); } catch { return new Uint8Array(0); }
   try {
-    const buf = Buffer.alloc(VK_SEAL_MIN_LENGTH);
+    const buf = Buffer.alloc(S_SEAL_MIN_LENGTH);
     return new Uint8Array(buf.subarray(0, readSync(fd, buf, 0, buf.length, 0)));
   } catch { return new Uint8Array(0); }
   finally { closeSync(fd); }
@@ -492,7 +665,7 @@ function headOf(path: string): Uint8Array {
 /**
  * Every file in `homes` that reads private and that no row of the table names. It walks each home WHOLE, the
  * subtrees no row names among them, and reads three signs: a writer's unlanded name (`sidecar`), the vessel
- * key's seal in the first bytes (`vk-seal`), and a mode that admits the owner alone (`owner-only`). A file a row
+ * key's seal in the first bytes (`s-seal`), and a mode that admits the owner alone (`owner-only`). A file a row
  * names never lists, whatever its bytes: the row's own reading answers for it. It only reads; an absent home
  * names nothing.
  */
@@ -510,8 +683,8 @@ export function outsideTheTable(homes: CustodyHomes): OutsideFile[] {
       let why: OutsideWhy | null = null;
       if (SIDECAR_NAME.test(rel)) why = "sidecar";
       else {
-        const reading = readVkCarrier(headOf(path));
-        if (reading === "sealed" || reading === "torn") why = "vk-seal";
+        const reading = readSCarrier(headOf(path));
+        if (reading === "sealed" || reading === "torn") why = "s-seal";
         else {
           try { if ((statSync(path).mode & 0o077) === 0) why = "owner-only"; } catch { /* a file that left mid-walk names nothing */ }
         }

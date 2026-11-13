@@ -1,0 +1,60 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/staged-memes/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-28 (file date) — source `.lares-scratch/controller/staged-memes/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/staged-memes/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/staged-memes/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/controller/staged-memes/brief.md` (brief, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/staged-memes/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/two-research-memes-for-lares-docs-research`>>
+
+! Two research memes for lares/docs/research (Sonnet seat, Ink-Clerk)
+
+Write exactly two files, and nothing else anywhere:
+* /home/joshu/.lares-scratch/controller/staged-memes/model-roster-2026.mem  (title `lar:///ha.ka.ba/lares/docs/research/model-roster-2026`, file-path `bags/lares/ha.ka.ba/lares/docs/research/model-roster-2026.mem`)
+* /home/joshu/.lares-scratch/controller/staged-memes/dreamdom-capability-default-2026.mem  (title `lar:///ha.ka.ba/lares/docs/research/dreamdom-capability-default-2026`, file-path `bags/lares/ha.ka.ba/lares/docs/research/dreamdom-capability-default-2026.mem`)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/format`>>
+
+!! Format
+Copy the carrier shape of /home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/research/evergreen-sweep-2026.mem exactly: the <code>&lt;&lt;!DOCTYPE ...>></code> line, the <code>&lt;&lt;^ code="&amp;#x0001;" from="?" -> to="&lt;title>">></code> and <code>&lt;&lt;^ code="&amp;#x0002;">></code> lines, the &#96;&#96;&#96;toml meta block (cacheable, l-space "lares", role, status, tags, file-path, title, type, uri-path), <code>&lt;&lt;~ ahu #/head>></code> ... <code>&lt;&lt;~/ahu>></code> sections, and the closing <code>&lt;&lt;^ code="&amp;#x0003;">></code> / <code>&lt;&lt;^ code="&amp;#x0004;" ...>></code> lines as that file ends them (read its tail; leave any `ni:///sha-256;` hash line out or copy its shape with a placeholder: the controller's normalize pass stamps it). Read two more carriers in that folder (e.g. edge-frontier-2026.mem, codex-controller-2026.mem) for the house register.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/register`>>
+
+!! Register
+The canon's L-Prime register (/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem #/l-prime): present tense, no narrated history, a copula left standing owns its warrant; no lane or wave names; every claim keeps its SOURCED (URL, date) or REASONED mark from the research. Rulings quote the operator.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/sources`>>
+
+!! Sources (read whole)
+* Roster: /home/joshu/.lares-scratch/research/model-roster/out.md (round one, Terra-6.1) and out2.md (round two, Opus, with this crew's measured spend), and the rulings in /home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/feedback_mixed_model_swarm.md (the blocks "SPEND LEVERS RULED", "DEFAULT CODEX CREW, BUDGET SHIFT", "SWARM REFINEMENTS"). Sections: #/head; #/rulings (the operator's, dated 2026-10-28, including: Codex default Episkopos + Terra builder + Luna reader at high; Sol-6.1 high also on caps/custody/crypto/gate/keyhive slices; gpt-6-sol retired; no Opus builder by default; subagent cache 1h; Copilot keeps a capable reader (GPT-5.3-Codex), the operator: "Haiku really can't follow the strange context as well as the more recent generations"; a 20% weekly Codex pool floor; spend read from the tools' own logs); #/the-models (per provider: ids, prices, positioning, SOURCED); #/the-plans (how each plan meters; corrections round two made); #/what-this-crew-measured (round two's measured findings); #/the-roster (per role: first choice, fallback, effort, plan); #/experiments (E1-E3); #/open.
+* Capability: /home/joshu/.lares-scratch/research/capability-default/out.md and out2.md, and the rulings in /home/joshu/.claude/projects/-home-joshu-Synthetic-Dream-Machine/memory/project_dreamdom_mirror_ruling.md (both blocks). Sections: #/head; #/rulings (the mirror approved; `glass=` unapproved, with the operator's words; group B's six); #/what-the-platform-offers (SOURCED findings with round two's HOLDS/OVERSTATED verdicts); #/the-design (the D2 grant as handle, the boot as probe, step-down events, no clocks, multi-tab, persistence); #/red-tests (round two's, each plants / must read); #/open.
+
+Keep each file under 220 lines. Reply with each file's line count when done. Never read a credential file.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M-pfoknfWqhb5cmYgjgzs1Ycfi4HeVA7HIrbWz_4Hj4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

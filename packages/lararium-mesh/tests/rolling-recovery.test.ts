@@ -1,10 +1,10 @@
 /**
- * rolling-recovery — A GUARDIAN CAN ROTATE (the Genesis-Walker's KERI cure, approved 2026-09-06).
+ * rolling-recovery — A RECOVERY CONTACT CAN ROTATE (the Genesis-Walker's KERI cure, approved 2026-09-06).
  *
  * The prefix keeps binding the GENESIS recovery set (anti-swap survives: no attacker incepts a
  * different set under the same name), while the CURRENT recovery authority becomes the head event's
  * ROLLING commitment: each rotation reveals against its predecessor's `nextRecoverySetHash` and
- * commits the next. Wren's guardians graft log-wise — 1-of-1-self → 2-of-3-friends → a fresh set
+ * commits the next. Wren's recovery contacts graft log-wise — 1-of-1-self → 2-of-3-friends → a fresh set
  * when a friend churns phones — each transition a signed, public, board-walkable event.
  */
 import { describe, test, expect } from "vitest";
@@ -16,7 +16,7 @@ import {
 } from "../src/persona-kel.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
 import { provisionThresholdRecoveryAtFounding, attestAndRotate } from "../src/recovery-keel-core.js";
-import { guardianRecoveryRegistrationCard } from "../src/recovery-registration.js";
+import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
 
 const SEEDS = {
   op:    new Uint8Array(32).fill(11),
@@ -36,7 +36,7 @@ async function selfArmedInception() {
   const selfPub = await pubOf(SEEDS.self);
   const prov = provisionThresholdRecoveryAtFounding({
     foundingOpKeyDid,
-    guardians: [guardianRecoveryRegistrationCard("mine", selfPub, null)],
+    recoveryContacts: [recoveryContactRegistrationCard("mine", selfPub, null)],
     recoveryThreshold: 1,
   });
   return { foundingOpKeyDid, selfPub, prov };
@@ -44,23 +44,23 @@ async function selfArmedInception() {
 
 async function friendSet() {
   const keys = await Promise.all([pubOf(SEEDS.g1), pubOf(SEEDS.g2), pubOf(SEEDS.g3)]);
-  const slots = ["mine", "guardian-a", "guardian-b"] as const;
-  const guardians = keys.map((k, i) => guardianRecoveryRegistrationCard(slots[i]!, k, null));
-  return { keys, guardians, hash: sealKeySetHash(keys, 2) };
+  const slots = ["mine", "contact-a", "contact-b"] as const;
+  const recoveryContacts = keys.map((k, i) => recoveryContactRegistrationCard(slots[i]!, k, null));
+  return { keys, recoveryContacts, hash: sealKeySetHash(keys, 2) };
 }
 
 describe("the rolling recovery commitment", () => {
-  test("★ A ROTATION GRAFTS THE NEXT GUARDIAN SET — 1-of-1-self commits 2-of-3-friends ★", async () => {
+  test("★ A ROTATION GRAFTS THE NEXT RECOVERY CONTACT SET — 1-of-1-self commits 2-of-3-friends ★", async () => {
     const { selfPub, prov } = await selfArmedInception();
     const friends = await friendSet();
 
     const rot = await attestAndRotate({
       head:                 prov.inception,
       freshOpKeyDid:        await didOf(SEEDS.fresh),
-      guardianRecoveryKeys: [selfPub],
+      recoveryContactKeys: [selfPub],
       recoveryThreshold:    1,
-      guardianSigners:      [await gsigner(SEEDS.self)],
-      next:                 { guardians: friends.guardians, threshold: 2 },
+      recoveryContactSigners:      [await gsigner(SEEDS.self)],
+      next:                 { recoveryContacts: friends.recoveryContacts, threshold: 2 },
     });
     expect(rot.ok, rot.ok ? "" : rot.reason).toBe(true);
     if (!rot.ok) return;
@@ -76,9 +76,9 @@ describe("the rolling recovery commitment", () => {
     const friends = await friendSet();
     const mid = await attestAndRotate({
       head: prov.inception, freshOpKeyDid: await didOf(SEEDS.fresh),
-      guardianRecoveryKeys: [selfPub], recoveryThreshold: 1,
-      guardianSigners: [await gsigner(SEEDS.self)],
-      next: { guardians: friends.guardians, threshold: 2 },
+      recoveryContactKeys: [selfPub], recoveryThreshold: 1,
+      recoveryContactSigners: [await gsigner(SEEDS.self)],
+      next: { recoveryContacts: friends.recoveryContacts, threshold: 2 },
     });
     expect(mid.ok).toBe(true);
     if (!mid.ok) return;
@@ -86,18 +86,18 @@ describe("the rolling recovery commitment", () => {
     // two friends rotate — the graft holds authority now
     const onward = await attestAndRotate({
       head: mid.event, freshOpKeyDid: await didOf(SEEDS.op),
-      guardianRecoveryKeys: friends.keys, recoveryThreshold: 2,
-      guardianSigners: [await gsigner(SEEDS.g1), await gsigner(SEEDS.g2)],
-      next: { guardians: friends.guardians, threshold: 2 },
+      recoveryContactKeys: friends.keys, recoveryThreshold: 2,
+      recoveryContactSigners: [await gsigner(SEEDS.g1), await gsigner(SEEDS.g2)],
+      next: { recoveryContacts: friends.recoveryContacts, threshold: 2 },
     });
     expect(onward.ok, onward.ok ? "" : onward.reason).toBe(true);
 
     // the retired self-set refuses past its graft
     const stale = await attestAndRotate({
       head: mid.event, freshOpKeyDid: await didOf(SEEDS.op),
-      guardianRecoveryKeys: [selfPub], recoveryThreshold: 1,
-      guardianSigners: [await gsigner(SEEDS.self)],
-      next: { guardians: friends.guardians, threshold: 2 },
+      recoveryContactKeys: [selfPub], recoveryThreshold: 1,
+      recoveryContactSigners: [await gsigner(SEEDS.self)],
+      next: { recoveryContacts: friends.recoveryContacts, threshold: 2 },
     });
     expect(stale.ok).toBe(false);
   });
@@ -107,9 +107,9 @@ describe("the rolling recovery commitment", () => {
     const friends = await friendSet();
     const rot = await attestAndRotate({
       head: prov.inception, freshOpKeyDid: await didOf(SEEDS.fresh),
-      guardianRecoveryKeys: [selfPub], recoveryThreshold: 1,
-      guardianSigners: [await gsigner(SEEDS.self)],
-      next: { guardians: friends.guardians, threshold: 2 },
+      recoveryContactKeys: [selfPub], recoveryThreshold: 1,
+      recoveryContactSigners: [await gsigner(SEEDS.self)],
+      next: { recoveryContacts: friends.recoveryContacts, threshold: 2 },
     });
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;
@@ -125,8 +125,8 @@ describe("the rolling recovery commitment", () => {
     const { selfPub, prov } = await selfArmedInception();
     const rot = await attestAndRotate({
       head: prov.inception, freshOpKeyDid: await didOf(SEEDS.fresh),
-      guardianRecoveryKeys: [selfPub], recoveryThreshold: 1,
-      guardianSigners: [await gsigner(SEEDS.self)],
+      recoveryContactKeys: [selfPub], recoveryThreshold: 1,
+      recoveryContactSigners: [await gsigner(SEEDS.self)],
     });
     expect(rot.ok).toBe(true);
     if (rot.ok) expect(rot.event.nextRecoverySetHash).toBe(prov.recoverySetHash);

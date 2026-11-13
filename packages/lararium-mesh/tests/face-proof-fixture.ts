@@ -9,9 +9,9 @@ import * as ed25519 from "@noble/ed25519";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { hex, utf8Bytes } from "../src/crypto.js";
 import {
-  certificateImage, certificateRequestImage, genesisFrontier, sessionCertificateImage, sessionSignatureImage,
+  certificateImage, certificateRequestImage, genesisFrontier, placeSessionCertificateImage, sessionCertificateImage, sessionSignatureImage,
   withdrawalHead, withdrawalImage, withdrawnKeyDigest,
-  type Digest, type FaceKey, type FaceScope, type FaceWithdrawal, type NexusAid, type SessionCertificate,
+  type Digest, type FaceKey, type FaceScope, type PlaceScope, type PlaceSessionCertificate, type FaceWithdrawal, type NexusAid, type SessionCertificate,
   type SessionKey, type SessionSigningPurpose, type Signature, type VesselFaceCertificate,
   type VesselFaceCertificateRequest, type VesselFaceKey,
 } from "../src/face-proof-subjects.js";
@@ -55,6 +55,24 @@ export async function chain(label: string, nexus: string, profile: CapabilityPro
       scope, vesselFaceKey, sessionKey, profile,
       signature: await signHex(sessionCertificateImage(scope, vesselFaceKey, sessionKey, profile), vessel),
     },
+  };
+}
+
+/** One face at its own vessel's place: the face's atom, a session beneath it, and the atom's certificate. */
+export interface PlaceChain {
+  readonly atom:    Pair;
+  readonly session: Pair;
+  readonly scope:   PlaceScope;
+  readonly certificate: PlaceSessionCertificate;
+}
+export async function placeChain(label: string, place: string, profile: CapabilityProfile = "face"): Promise<PlaceChain> {
+  const atom = await pair(`${label} atom`);
+  const session = await pair(`${label} place session`);
+  const scope: PlaceScope = { atomKey: atom.key as FaceKey, place };
+  const sessionKey = session.key as SessionKey;
+  return {
+    atom, session, scope,
+    certificate: { scope, sessionKey, profile, signature: await signHex(placeSessionCertificateImage(scope, sessionKey, profile), atom) },
   };
 }
 

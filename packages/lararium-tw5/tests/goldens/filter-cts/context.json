@@ -1,0 +1,614 @@
+[
+  {
+    "id": "context-001-current-0",
+    "filter": "[<currentTiddler>]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "context-002-current-1",
+    "filter": "[<currentTiddler>get[title]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "get",
+            "operands": [
+              {
+                "text": "title"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "context-003-current-2",
+    "filter": "[<currentTiddler>get[tags]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "get",
+            "operands": [
+              {
+                "text": "tags"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "topic listed"
+    ]
+  },
+  {
+    "id": "context-004-current-3",
+    "filter": "[<currentTiddler>tag[topic]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "tag",
+            "operands": [
+              {
+                "text": "topic"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "context-005-current-4",
+    "filter": "[<currentTiddler>has[rank]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "has",
+            "operands": [
+              {
+                "text": "rank"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "context-006-current-5",
+    "filter": "[<currentTiddler>lar-kind[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "lar-kind",
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "content"
+    ]
+  },
+  {
+    "id": "context-007-current-6",
+    "filter": "[<currentTiddler>lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "parent",
+            "suffixes": [
+              [
+                "parent"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "context-008-current-7",
+    "filter": "[<currentTiddler>lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "lar-uri",
+            "suffix": "depth",
+            "suffixes": [
+              [
+                "depth"
+              ]
+            ],
+            "operands": [
+              {
+                "text": ""
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "0"
+    ]
+  },
+  {
+    "id": "context-009-current-8",
+    "filter": "[<currentTiddler>addprefix[pre-]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "addprefix",
+            "operands": [
+              {
+                "text": "pre-"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "pre-Alpha"
+    ]
+  },
+  {
+    "id": "context-010-current-9",
+    "filter": "[<currentTiddler>then[yes]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "then",
+            "operands": [
+              {
+                "text": "yes"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "yes"
+    ]
+  },
+  {
+    "id": "context-011-current-10",
+    "filter": "[<currentTiddler>else[no]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "else",
+            "operands": [
+              {
+                "text": "no"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "context-012-current-11",
+    "filter": "[<currentTiddler>match[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "match",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": [
+      "Alpha"
+    ]
+  },
+  {
+    "id": "context-013-current-12",
+    "filter": "[<currentTiddler>!match[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "prefix": "!",
+            "operator": "match",
+            "operands": [
+              {
+                "text": "Alpha"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "context-014-current-13",
+    "filter": "[<currentTiddler>get[missing]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "get",
+            "operands": [
+              {
+                "text": "missing"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  },
+  {
+    "id": "context-015-current-14",
+    "filter": "[<currentTiddler>is[missing]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {
+      "currentTiddler": "Alpha"
+    },
+    "host-bound": false,
+    "world": "pono-small",
+    "parse": [
+      {
+        "prefix": "",
+        "operators": [
+          {
+            "operator": "title",
+            "operands": [
+              {
+                "variable": true,
+                "text": "currentTiddler"
+              }
+            ]
+          },
+          {
+            "operator": "is",
+            "operands": [
+              {
+                "text": "missing"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "results": []
+  }
+]

@@ -35,8 +35,9 @@ import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
-/** The recogniser's serialised handle-book: others' nyms and the private labels the reader keeps for them. */
-export const HANDLE_BOOK_FILE = ".handle-book.json";
+/** The recogniser's serialised handle-book of ONE face: others' nyms and the private labels that face keeps for them, in that face's own row. */
+export const HANDLE_BOOK_FILE = /^\.handle-book-h(0|[1-9]\d*)\.json$/;
+export const handleBookFile = (face: number): string => `.handle-book-h${face}.json`;
 
 const utf8 = new TextEncoder();
 function parseJson(bytes: Uint8Array, file: string): unknown {
@@ -45,9 +46,9 @@ function parseJson(bytes: Uint8Array, file: string): unknown {
 }
 
 /** The snapshot a row's plaintext carries: this era, a record list, and every record shaped as a record. Any other shape refuses. */
-function parseSnapshot(bytes: Uint8Array): HandleBookSnapshot {
-  const bad = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", HANDLE_BOOK_FILE, "malformed");
-  const snapshot = parseJson(bytes, HANDLE_BOOK_FILE) as Partial<HandleBookSnapshot> | null;
+function parseSnapshot(bytes: Uint8Array, file: string): HandleBookSnapshot {
+  const bad = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+  const snapshot = parseJson(bytes, file) as Partial<HandleBookSnapshot> | null;
   if (!snapshot || typeof snapshot !== "object" || snapshot.era !== HANDLE_BOOK_SNAPSHOT_ERA || !Array.isArray(snapshot.records)) throw bad();
   for (const raw of snapshot.records as unknown[]) {
     const record = raw as { nym?: unknown; accepted?: unknown } | null;
@@ -65,10 +66,11 @@ function parseSnapshot(bytes: Uint8Array): HandleBookSnapshot {
  * the path reads as a book that recognises nobody. A row that does not open, or opens to anything but a snapshot
  * of this era whose every record holds a record's shape, refuses by name.
  */
-export async function loadNodeHandleBook(): Promise<HandleBook> {
-  const bytes = await readCustodyRow("identity", HANDLE_BOOK_FILE);
+export async function loadNodeHandleBook(face: number): Promise<HandleBook> {
+  const file = handleBookFile(face);
+  const bytes = await readCustodyRow("identity", file);
   if (bytes === null) return new HandleBook();
-  return HandleBook.restore(parseSnapshot(bytes));
+  return HandleBook.restore(parseSnapshot(bytes, file));
 }
 
 /**
@@ -76,11 +78,12 @@ export async function loadNodeHandleBook(): Promise<HandleBook> {
  * stands inside its own custody hold and lands only over nothing or over a snapshot that reads whole, so a row
  * that turned unreadable since the caller loaded its book keeps its bytes.
  */
-export async function saveNodeHandleBook(book: HandleBook): Promise<void> {
+export async function saveNodeHandleBook(face: number, book: HandleBook): Promise<void> {
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
+  const file = handleBookFile(face);
   const next = utf8.encode(JSON.stringify(book.snapshot(), null, 2));
-  await updateCustodyRow("identity", HANDLE_BOOK_FILE, (bytes) => {
-    if (bytes !== null) parseSnapshot(bytes);
+  await updateCustodyRow("identity", file, (bytes) => {
+    if (bytes !== null) parseSnapshot(bytes, file);
     return { plaintext: next, value: undefined };
   });
 }

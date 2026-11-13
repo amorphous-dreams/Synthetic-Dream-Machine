@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/p27-wire/` — 5 record(s) here, 21 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/p27-wire/`
+
+The scratch planning records of `.lares-scratch/p27-wire/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 5 record(s) stand here and 21 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[blind-opus/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/blind-opus/index]] | 3 |
+| [[seats/|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/seats/index]] | 13 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[cure-1-brief|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-brief]] | brief | 2026-11-07 | `cure-1-brief.md` |
+| [[cure-1-out|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-1-out]] | hand-back | 2026-11-07 | `cure-1-out.md` |
+| [[cure-2-out|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/cure-2-out]] | hand-back | 2026-11-07 | `cure-2-out.md` |
+| [[pr|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/pr]] | PR body | 2026-11-07 | `pr.md` |
+| [[sol-read-verdict|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/sol-read-verdict]] | research | 2026-11-07 | `sol-read-verdict.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RlmJJiubM-pRpxiEEfBwJQdeqVEnjJYPLMfL_41IFFs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

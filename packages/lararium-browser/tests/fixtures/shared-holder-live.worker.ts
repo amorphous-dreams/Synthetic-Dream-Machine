@@ -12,15 +12,18 @@ let mountedWiki = { title: "Lady Aki", level: "2" };
 const core = makeSharedHolderCore({
   lockName,
   locks: scope.navigator?.locks ?? null,
-  spawnIsland: (): HolderIsland => {
+  spawnIsland: (_group, personaRoot, edgeDigest): HolderIsland => {
     const listeners = new Set<(message: unknown) => void>();
+    // The fixture island's Binding Gate clears for the edge the first session presented.
+    queueMicrotask(() => { for (const listener of listeners) listener({ type: "gate:clear", edgeDigest, personaRoot }); });
     return {
+      // The fixture island answers each verb with its result under the asker's request id, as the daemon does; the
+      // holder routes that answer to the asking tab alone.
       post(message) {
-        const request = message as { kind?: unknown; level?: unknown };
-        if (request.kind === "change" && typeof request.level === "string") mountedWiki = { ...mountedWiki, level: request.level };
-        if (request.kind === "read" || request.kind === "change") {
-          for (const listener of listeners) listener({ kind: "wiki", ...mountedWiki });
-        }
+        const request = message as { type?: unknown; requestId?: unknown; verb?: unknown; args?: { level?: unknown } };
+        if (request.type !== "wiki:place-verb" || typeof request.requestId !== "string") return;
+        if (request.verb === "change" && typeof request.args?.level === "string") mountedWiki = { ...mountedWiki, level: request.args.level };
+        for (const listener of listeners) listener({ type: "wiki:verb-result", requestId: request.requestId, output: { kind: "wiki", ...mountedWiki } });
       },
       listen(listener) { listeners.add(listener); return () => listeners.delete(listener); },
       onError() { return () => {}; },

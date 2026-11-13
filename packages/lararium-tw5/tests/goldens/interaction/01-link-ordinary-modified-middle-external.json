@@ -1,0 +1,24 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/1",
+  "pins": "the blanket preventDefault: an ordinary click navigates and answers applied; a modified or middle click leaves the browser default standing; an external href never relays; an unbound node raises no act",
+  "world": {
+    "tiddlers": [
+      { "title": "lar:///t/link/alpha", "text": "see [[lar:///t/link/beta]] and [ext[outside|https://example.test/]] and <span class=\"plain\">plain</span>" },
+      { "title": "lar:///t/link/beta", "text": "beta" }
+    ],
+    "story": ["lar:///t/link/alpha"],
+    "root": "<$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\">{{lar:///t/link/alpha}}</$navigator>"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "expect": { "frame": { "stamps": { "a.tc-tiddlylink-resolves": { "data-lar-on": "click", "data-lar-cancel": "click:ordinary" } } }, "page": { "a.tc-tiddlylink-external": { "relays": false }, "span.plain": { "relays": false } } } },
+    { "act": { "control": "a.tc-tiddlylink-resolves", "action": "lar:click", "modifiers": { "ctrl": false, "meta": false, "alt": false, "shift": false, "button": 0 }, "geometry": { "top": 20, "left": 40, "right": 140, "bottom": 36, "width": 100, "height": 16 } } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "$:/StoryList", "list": ["lar:///t/link/beta", "lar:///t/link/alpha"] }, { "title": "$:/HistoryList", "current-tiddler": "lar:///t/link/beta" }], "page": { "a.tc-tiddlylink-resolves": { "defaultPrevented": true } } } },
+    { "act": { "control": "a.tc-tiddlylink-resolves", "action": "lar:click", "modifiers": { "ctrl": true, "meta": false, "alt": false, "shift": false, "button": 0 }, "geometry": { "top": 20, "left": 40, "right": 140, "bottom": 36, "width": 100, "height": 16 } } },
+    { "expect": { "answers": ["applied"], "page": { "a.tc-tiddlylink-resolves": { "defaultPrevented": false } } } },
+    { "act": { "control": "a.tc-tiddlylink-resolves", "action": "lar:click", "modifiers": { "ctrl": false, "meta": false, "alt": false, "shift": false, "button": 1 }, "geometry": { "top": 20, "left": 40, "right": 140, "bottom": 36, "width": 100, "height": 16 } } },
+    { "expect": { "answers": ["applied"], "page": { "a.tc-tiddlylink-resolves": { "defaultPrevented": false } } } },
+    { "act": { "control": "span.plain", "action": "lar:click" } },
+    { "expect": { "answers": ["refused:unclaimed"], "page": { "span.plain": { "defaultPrevented": false } } } }
+  ]
+}

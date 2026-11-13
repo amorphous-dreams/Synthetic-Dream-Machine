@@ -1,0 +1,143 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-009/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-009/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-009/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-9-lease-wright-the-grant-paths-fail-closed`>>
+
+! Step 9 — Lease-Wright (Opus seam lead): the grant paths fail closed on founder standing
+
+STATUS: GREEN ON THE LANE. Head 3b9cac44d (over 24dac581b). Build passes with typecheck (build1/build2.log). 11 single test files green. Nothing pushed; no stash; no b5b hunks touched.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/uncommitted-tree-kept-or-restored`>>
+
+!! Uncommitted tree: kept or restored
+I kept all 5 paths and rewrote them. Nothing was restored from HEAD.
+* face-grant-record.ts: rewritten around a new exported `verifyFounderAuthority`, shared by the verifier and the writer.
+* face-join-operation.ts: `founderProof` is now REQUIRED. The check moved to the shared helper and now runs after a completed-op replay. Records from other founders are skipped.
+* face-seat.ts: the `readLease`/`leasePrefix` ports are replaced by a `founderStanding` port.
+* operator-daemon-behavior.ts: the founder dyad read is kept. The union gains "the grant founder", which cures TS2345. The seat's verify is plain `verifyFaceGrantRecord` again.
+* persona-group-ring-assembly.ts: kept as written.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-cure`>>
+
+!! The cure
+* `face-grant-record.ts:114-150` `verifyFounderAuthority`:
+** A missing KEL or a missing dyad refuses, pending.
+** The standing goes through the house's `standingOfReading`. Clear, owing and returned stand. Aside refuses, final. Unknown refuses, pending.
+** Refuses when the chain's prefix differs from the pinned one or a stray prefix rides the chain.
+** Refuses when the inception is not at the pinned root.
+** The KEL-head walk runs with no epoch. A fork refuses as "founder lineage forked: …".
+* `expectedEpoch`, `freshnessOpts` and the pinned-root-only path are burned from this reader.
+* `FaceGrantVerdict` gains `pending?: true`, which replaces the regex on the reason.
+* Writer, `face-join-operation.ts:108-112`: the founder's authority is checked before any provider call or custody write.
+* Seat, `face-seat.ts:139-160`: it asks the founder's standing per record. An unknown reading stays unjudged and verify never runs. A pending verdict never memoizes. An aside refusal judges once.
+* Reds, `face-grant-record.test.ts`:
+** RED 1 (aside) is at :322.
+** RED 2 (epoch-free edge) is at :333, and its controls pass.
+** Both are green with no edits.
+* New reds, each run against the HEAD source by swapping files and then restoring them:
+** grant file: 7 fail at HEAD, 23/23 cured.
+** reenters: the founder red fails at HEAD ("promise resolved instead of rejecting"), 6/6 cured.
+** seat file: 13 fail at HEAD (port shape plus R7-R9), 26/26 cured.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/recut-tests`>>
+
+!! Recut tests (every control kept)
+* face-grant-record.test.ts:
+** The legacy contexts gain real proof (`proofOf`: KEL inception plus a clear dyad), because a pinned-root-only grant now refuses by design.
+** The "lease fence" describe is recut to "the founder's own standing decides". It covers: any epoch grants while standing, with an aside control; the lawful readings; absent proof refusing by name and pending, with a both-present control; founder versus joinee; fork, with an unforked control; stray prefix.
+* face-join-supersedes / reenters / intent-join-live: the fixtures carry a genuine founder KEL plus a clear dyad. reenters adds a red: aside, unknown, absent and another-root all refuse with 0 provider calls and 0 writes. The control seats.
+* face-seat-lands-on-grant: the fixture moves from lease to founder standing, and R2 is renamed to match. It adds R7 (only the founder's key is asked), R8 (aside judges once, with a control) and R9 (pending never memoizes).
+* working-seat-lift: port rename only; the grant stub now carries a founder edge.
+* lease-epoch-doors-wired: the three grant welds now pin the founder-standing wiring, with lease absent from the grant path. The control is kept.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/census-callers-that-treat-a-signature-as-authori`>>
+
+!! Census: callers that treat a signature as authority
+* `face-grant-record.ts:145`: CURED.
+* `face-join.ts:158`, the joinee's gate: signature under the pinned root, plus the lease, plus the dyad (aside and unknown refused). Not signature-only. It has no KEL-head lineage and still reads the lease, so it is owed next.
+* `boot-daemon-keyhive.ts:162`: KEL walk, plus the anchor-floored epoch, plus the dyad. Not signature-only; the lease read is owed.
+* `ceremony-core.ts:560`: inception proof at founding. Not authority over an existing face.
+* `ceremony-core.ts:1036` `runApplyAdmitPayload` (node `init.ts:317`, browser `open-browser-vessel.ts:843`): ''SIGNATURE-AS-AUTHORITY.'' It pins a signer the payload itself carries, and its writes to the identities and circles docs (:1013-1030) come before the edge check.
+* `leaf-peer-proof.ts:188,397`: ''SIGNATURE-AS-AUTHORITY.'' A KEL-head walk with an optional epoch and no dyad standing licenses sibling sessions. This is b5b ground.
+* `holder-session-proof.ts:55`: ''SIGNATURE-AS-AUTHORITY.'' It pins the root the edge itself names, and `shared-holder-core.ts:419-445` admits a port on that.
+* `persona-group-secret.ts:288,341`: proves possession under the head. It is a component, not a gate, and its consumers still need an audit.
+* Node has no direct callers.
+
+Verdict on the mesh cure: it may land with this grant slice. No live minter makes an epoch-free edge, so the new shape needs fresh root-signed bytes. Callers that pass `expectedEpoch` refuse such edges as "unavailable". Callers that omit it already accepted legacy edges at any epoch. The cure opens no new hole. The minter-side burn must wait until the 3 sites marked SIGNATURE-AS-AUTHORITY gain standing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/forks-decided`>>
+
+!! Forks decided
+# `owing` counts as standing, by the house's `standingOfReading`; the old tree allowed only clear or returned.
+# An unknown standing short-circuits in the seat, and pending is a typed flag.
+# An aside refusal memoizes. Remove-wins: a returned founder re-issues fresh and never resurrects an old grant.
+# The writer's authority check comes after a completed-op replay (answering a record mutates nothing) and before issue or publish.
+# `standingSerial` skips other founders' records (serial 0, no proof asked), so one hearth never blocks on another's standing.
+# The seat burns `readLease`/`leasePrefix` outright with no back-compat. It wakes on any daemon-layer change while proof is pending.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/drift-and-residuals`>>
+
+!! Drift and residuals
+* No sealed KEL frontier exists, so a rollback by a withheld successor goes unseen: an old-key edge with a truncated chain passes. The anchor owes a KEL-head pin.
+* Fleet-board changes land off the daemon layer, so a pending seat may wait for an unrelated change. A board wake is owed.
+* RED 1 still carries an ignored `expectedEpoch: 3`, left so the green-unedited proof holds. Burn it at the shape cut.
+* `tsconfig` covers only src, so tests are not typechecked.
+* The ring maps "no reading" to aside, a final refusal; it fails closed, not pending.
+* `convergent-mesh.mem#/two-revocation-modes` still teaches the lease, and the lease-door weld header carries some lease prose. Both go at the final burn.
+* The joinee gate and boot still read the lease.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-9-follow-up`>>
+
+!! Step 9 follow-up (CI red on 3b9cac44d)
+Head 5ba18c736. Reworded the device-delegation.ts header (:23-27) to state the two signed strings verification reads, with no slice or legacy narration. Evergreen witness: narration 164/164, rc 0. Dropped the dead `expectedEpoch: 3` and the stale "migrate this control" comment from face-grant-record.test.ts. Build green. face-grant-record 23/23, device-delegation 16/16, device-delegation-retirement 1/1. Not pushed. The E2E shard 3/4 red (boot-holds-the-store) was left for a rerun, as triaged.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-9-follow-up-2`>>
+
+!! Step 9 follow-up 2 (CI shard-3 red: e2e face-join)
+Head 8b0c2d818. The grant verifier now requires founder proof, so the e2e helper `recordedGrant` (tests/e2e/face-join.test.ts) gets a new `founderProof` helper. It reads the proof off the hearth's own storage, the way the daemon reads it:
+* the persona-KEL chain that incepts at the hearth's root, from the KEL board of the island the boot resolves (`nodeNexusIsland` over the root's seal home and bootstrap);
+* the founder's dyad standing, through `boardDyadReader` under that chain's lineage.
+
+The assertion keeps its meaning and now also names the founder's standing. Build green. The single e2e run (bwrap, 580 s cap) reads 6/6, with V1/V2/V3 green (log: e2e-face-join.log). Evergreen 164/164. No other test or e2e caller passes the old context; the mesh and node mentions are comments only. Not pushed.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RtBndCLYoPqZYGnrSx6Lzqt5HO_5D5VHO3H1omW90n4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

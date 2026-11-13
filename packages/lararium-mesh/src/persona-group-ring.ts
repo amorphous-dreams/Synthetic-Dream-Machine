@@ -10,7 +10,7 @@
  * allow-all sat as dead code behind an unwired socket. Retiring it costs nothing and removes the shape that
  * would have gone live the day someone wired the socket naively.
  *
- * WHAT DECIDES INSTEAD. A grant record on this face's PersonaGroup plane (`face-join-grant/v1` —
+ * WHAT DECIDES INSTEAD. A grant record on this face's PersonaGroup plane (`face-join-grant` —
  * `@lararium/keyhive`'s `face-grant-record.ts`), naming the asking peer's OWN vessel key and verifying against
  * the published seal. That record is the joinee's own act of taking a seat, written where both vessels already
  * sync it. The ring never re-cuts a seal: the verify rides in as a function, so the ONE implementation the
@@ -83,7 +83,11 @@ export function makePersonaGroupIdentityRing(opts: {
     const key = opts.provenVesselKey(peerId);
     if (!key) return false;                       // proved nothing → fail-closed
     if (opts.deviceAside(key)) return false;      // set aside from the fleet → no seat
-    for (const record of await opts.grants.records()) {
+    // THE PLANE THAT CANNOT BE READ WITHHOLDS, as a torn record does (the Founding Walk, W4): on a leaf the plane under
+    // decision is the one the records rest on, and a decision that rejects syncs nothing, ever.
+    let records: Iterable<unknown>;
+    try { records = await opts.grants.records(); } catch { return false; }
+    for (const record of records) {
       let ok = false;
       try { ok = await opts.grants.verify(record, key); } catch { ok = false; }   // a torn record withholds
       if (ok) return true;
@@ -122,6 +126,8 @@ export function makePersonaGroupIdentityRing(opts: {
 export interface PlaneCatalog {
   urlOf(bagUri: string): Promise<string | null>;
   storeOf(bagUri: string): Promise<{ listVisible(): Promise<string[]>; get(title: string): Promise<unknown> } | null>;
+  /** The direct road to a private-synced home (the persona plane rests as one): its own readers take it. */
+  homeStoreOf?(bagUri: string): Promise<{ listVisible(): Promise<string[]>; get(title: string): Promise<unknown> } | null>;
 }
 
 /**
@@ -135,13 +141,13 @@ export function provenVesselKeyOf(identifier: string | null | undefined): string
 }
 
 /**
- * The face's four plane bags resolved to the doc-ids a ring decides over, off the vessel's own catalog — the
+ * The face's five plane bags resolved to the doc-ids a ring decides over, off the vessel's own catalog — the
  * SAME resolution `DeterministicFederationGate` runs for its own set. An absent plane falls out (fail-closed).
  */
 export async function governedPlaneDocIds(catalog: PlaneCatalog, personaGroupId: string): Promise<ReadonlySet<DocumentId>> {
   const planes = personaScopedBagIds(personaGroupId);
   const ids = new Set<DocumentId>();
-  for (const bag of [planes.persona, planes.circles, planes.identities, planes.sessions]) {
+  for (const bag of [planes.persona, planes.circles, planes.identities, planes.sessions, planes.intents]) {
     const url = await catalog.urlOf(bag);
     if (url) ids.add(interpretAsDocumentId(url as AutomergeUrl) as DocumentId);
   }

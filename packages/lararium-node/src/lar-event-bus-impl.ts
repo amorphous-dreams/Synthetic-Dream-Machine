@@ -66,6 +66,7 @@ export class LarEventBusImpl implements LarEventBus {
   start(): void {
     if (this.tickHandle !== null) return;
     const intervalMs = Math.floor(1000 / this.tickRateHz);
+    // PACING: the interval schedules simulation ticks without deciding readiness or refusal.
     this.tickHandle = setInterval(() => this._runTick(), intervalMs);
   }
 

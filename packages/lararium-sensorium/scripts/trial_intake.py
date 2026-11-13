@@ -23,7 +23,7 @@ from trial_inventory import event_time
 
 DB_NAME = "trial-intake-v2.sqlite3"
 MAX_EVIDENCE_BYTES = 32 * 1024 * 1024  # first bounded chat slice; widen only after measuring
-PARSER_VERSION = "claude-blocks-trial-v1"
+PARSER_VERSION = "claude-blocks-trial-v2"
 
 
 class IntentConflict(ValueError):
@@ -100,6 +100,51 @@ CREATE TABLE IF NOT EXISTS projection_block (
 CREATE TABLE IF NOT EXISTS projection_receipt (
     observation_id INTEGER PRIMARY KEY REFERENCES observation(observation_id),
     receipt_json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS semantic_projection (
+    observation_id INTEGER NOT NULL REFERENCES observation(observation_id),
+    view_key TEXT NOT NULL,
+    sensorium_root TEXT NOT NULL,
+    model_basis_sha256 TEXT NOT NULL,
+    status TEXT NOT NULL CHECK (status IN ('pending', 'landed')),
+    receipt_json TEXT,
+    PRIMARY KEY (observation_id, view_key)
+);
+CREATE TABLE IF NOT EXISTS semantic_frontier (
+    source_key TEXT NOT NULL REFERENCES source(source_key),
+    view_key TEXT NOT NULL,
+    frontier INTEGER NOT NULL,
+    observation_id INTEGER NOT NULL REFERENCES observation(observation_id),
+    PRIMARY KEY (source_key, view_key)
+);
+CREATE TABLE IF NOT EXISTS li_basis (
+    basis_sha256 TEXT PRIMARY KEY,
+    corpus_sha256 TEXT NOT NULL,
+    manifest_json TEXT NOT NULL,
+    receipt_json TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS li_parse (
+    parser_identity_sha256 TEXT NOT NULL,
+    occurrence_id TEXT NOT NULL REFERENCES typed_content(cid),
+    text_sha256 TEXT NOT NULL,
+    shape_sha256 TEXT NOT NULL,
+    tree_json TEXT NOT NULL,
+    parser_tier TEXT NOT NULL,
+    PRIMARY KEY (parser_identity_sha256, occurrence_id)
+);
+CREATE TABLE IF NOT EXISTS li_shape (
+    basis_sha256 TEXT NOT NULL REFERENCES li_basis(basis_sha256),
+    occurrence_id TEXT NOT NULL REFERENCES typed_content(cid),
+    shape_sha256 TEXT NOT NULL,
+    tree_json TEXT NOT NULL,
+    parser_tier TEXT NOT NULL,
+    PRIMARY KEY (basis_sha256, occurrence_id)
+);
+CREATE TABLE IF NOT EXISTS li_idiom (
+    basis_sha256 TEXT NOT NULL REFERENCES li_basis(basis_sha256),
+    occurrence_id TEXT NOT NULL REFERENCES typed_content(cid),
+    membership_json TEXT NOT NULL,
+    PRIMARY KEY (basis_sha256, occurrence_id)
 );
 """
 
@@ -319,7 +364,7 @@ def _verified_stored(conn: sqlite3.Connection, source_key: str, digest: str,
 def intake_status(state_root: Path | str) -> dict:
     empty = {"sources": 0, "revisions": 0, "observations": 0,
              "source_manifests": 0, "receipts": 0, "projection_pending": 0,
-             "source_frontiers": {}, "content_frontiers": {}}
+             "source_frontiers": {}, "content_frontiers": {}, "semantic_frontiers": {}}
     conn = _read_connection(state_root)
     if conn is None:
         return empty
@@ -331,7 +376,12 @@ def intake_status(state_root: Path | str) -> dict:
         empty["projection_pending"] = conn.execute(
             "SELECT count(*) FROM projection_intent WHERE status='pending'").fetchone()[0]
         empty["source_frontiers"] = dict(conn.execute("SELECT source_key,frontier FROM intake_cursor"))
-        empty["content_frontiers"] = dict(conn.execute("SELECT source_key,observation_id FROM content_frontier"))
+        empty["content_frontiers"] = dict(conn.execute(
+            "SELECT f.source_key,o.frontier FROM content_frontier f "
+            "JOIN observation o ON o.observation_id=f.observation_id"))
+        for source_key, view_key, frontier in conn.execute(
+                "SELECT source_key,view_key,frontier FROM semantic_frontier"):
+            empty["semantic_frontiers"].setdefault(view_key, {})[source_key] = frontier
         return empty
     finally:
         conn.close()

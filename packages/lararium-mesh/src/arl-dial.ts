@@ -54,8 +54,7 @@ export const ARL0_REFERENCE = 20;
  *  linearity value-thresholds) rides the deferred surrogate-null sprint, never this constant. */
 export const REFERENCE_ALPHA = 1 / ARL0_REFERENCE;
 
-/** The single home for the dedup grain. NOTE: this carried the NUMBER of the retired grid `quantum` (0.1),
- *  NOT its meaning — quantum set a per-axis CELL width (±0.05/axis); this sets a Euclidean RADIUS on the raw
- *  agreement vector, so across d planes the effective dedup tightens ~√d. A placeholder until the deferred
+/** The single home for the dedup grain. NOTE: 0.1 is a Euclidean RADIUS on the raw agreement vector, never
+ *  a per-axis CELL width (±0.05/axis), so across d planes the effective dedup tightens ~√d. A placeholder until the deferred
  *  closure-distance null makes the grain emerge per-island. The minter reads it through the dial. */
 export const DEFAULT_BASIN_RADIUS = 0.1;

@@ -122,6 +122,11 @@ export function sigilFromFields(title: string, fields: Readonly<Record<string, u
   if (fields["lar-default-family"])  rule.defaultFamily  = str(fields["lar-default-family"]);
   const layer = str(fields["lar-layer"]);
   if (layer === "compile" || layer === "render" || layer === "both") rule.layer = layer;
+  // BLOCK-ONLY: the head's meaning needs its own line (`lar-flow: block` — the frame marks, the
+  // child-slot opener and closer). Text after its `>>` raises the graceful floor's warning; every
+  // other head with text after it reads inline in its paragraph, as TW5 builds `<<m>> text`.
+  if (str(fields["lar-flow"]) === "block") rule.flow = "block";
+  if (fields["lar-code"]) rule.code = str(fields["lar-code"]);
   // Self-defined failure-gradient: the sigil declares how it degrades when unclosed.
   const recoverAs = str(fields["lar-recover-as"]);
   if (recoverAs === "water" || recoverAs === "repaired") rule.recoverAs = recoverAs;

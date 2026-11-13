@@ -16,7 +16,7 @@
  * kinds (e.g. OPFS export) than a node vessel (filesystem write).
  */
 
-import type { LarVessel } from "./lar-vessel.js";
+import type { LarTiddlerStore } from "./tiddler-store.js";
 
 /** TW5 tag that identifies a projection-config tiddler in the daemon wiki. */
 export const LARARIUM_PROJECTION_TAG = "lar:///ha.ka.ba/tags/lararium-projection";
@@ -39,14 +39,12 @@ export interface LarProjectionConfig {
 /**
  * Factory for a projection kind.
  *
- * The factory owns its own attachment style — some projections want
- * MemeProvider's coalesced URI events (vessel.addProjection); others want raw
- * per-change subscription (vessel.store.subscribe). The factory wires whichever
- * fits and returns a `stop` that tears down everything it attached.
+ * The factory subscribes to the store itself (`store.subscribe`) and returns a
+ * `stop` that tears down everything it attached.
  */
 export type LarProjectionKind = (
   config: LarProjectionConfig,
-  vessel: LarVessel,
+  store: LarTiddlerStore,
 ) => Promise<{ stop: () => void }>;
 
 export class LarProjectionRegistry {
@@ -63,15 +61,15 @@ export class LarProjectionRegistry {
   hasKind(kind: string): boolean { return this.kinds.has(kind); }
 
   /**
-   * Instantiate a projection from config and attach it to the vessel.
+   * Instantiate a projection from config and attach it to the store.
    * No-op if id is already running. No-op if config.enabled === false.
    */
-  async enable(config: LarProjectionConfig, vessel: LarVessel): Promise<void> {
+  async enable(config: LarProjectionConfig, store: LarTiddlerStore): Promise<void> {
     if (!config.enabled)            return;
     if (this.running.has(config.id)) return;
     const factory = this.kinds.get(config.kind);
     if (!factory) throw new Error(`[projection] no kind registered: ${config.kind}`);
-    const { stop } = await factory(config, vessel);
+    const { stop } = await factory(config, store);
     this.running.set(config.id, stop);
   }
 

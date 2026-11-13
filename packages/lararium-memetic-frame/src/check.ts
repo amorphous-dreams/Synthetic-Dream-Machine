@@ -12,14 +12,15 @@
  * over the bytes in front of it. Two computations of one fact, never a copy of one.
  *
  * ── THE SPAN, PER THE RECEIVED FRAMING ──────────────────────────────────────────────────────────
- * A block runs `STX -> text -> ETX -> BCC`: the terminator comes first and the check follows it
- * directly (IBM BSC, 1967). The span runs from the first character of the STX sigil to the last
- * character of the ETX sigil, inclusive — so the check covers the marks that bound it and never covers
- * itself, which is what lets it sit after ETX with no self-exclusion rule.
+ * A block runs `STX -> text -> ETX -> BCC` (IBM BSC, 1967): the terminator comes first and its check
+ * rides with it. The span runs from the first character of the STX sigil to the last character of the
+ * ETX sigil, inclusive, so the check covers the marks that bound it. The check rides the ETX mark's own
+ * `bcc` slot, inside that span, so one self-exclusion rule stands, DKIM's: the digest reads the span
+ * with the ` bcc=`…`` run deleted (see THE SLOT, AND ITS ONE DELETION, below).
  *
  * ── TWO ALTITUDES: HEX TRAVELS, GLYPHS RENDER ───────────────────────────────────────────────────
- * The slot the check occupies — after ETX, before EOT — carries it in the received framing and in this
- * grammar alike, so one form serves both and the check needs no wrapper of its own.
+ * The slot the check occupies — the ETX mark's `bcc` value — carries it as a named value like every
+ * other value in the grammar, so the check needs no wrapper of its own.
  *
  * What the check LOOKS like splits by artifact class rather than by layer.
  *
@@ -42,7 +43,7 @@
  * One lexical scan — the frame recogniser read through the fence mask, so a quoted mark never frames.
  * No grammar, no rendering, no canonicaliser: the scan reads the carrier's QUOTING, never its meaning.
  * A Herm holding `pull` and not `read` runs that scan without opening what the carrier says — the
- * relay-law exception in `ability-implies` is exactly the capability this instrument was shaped to fit.
+ * relay-law exception is exactly the capability this instrument was shaped to fit.
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/memetic-wikitext
  */
@@ -54,8 +55,9 @@ import { sha256 } from "@noble/hashes/sha2.js";
 import { bytesToHex } from "@noble/hashes/utils.js";
 
 import { fencedSpans, maskedExec } from "./fence-mask.js";
-import { frameAlt } from "./marks.js";
-import { checkSpan, frameStanding } from "./span.js";
+import { FRAME_MARKS, frameAlt } from "./marks.js";
+import { checkSpan, frameStanding, readFrame, type FrameFault, type MarkHit } from "./span.js";
+import { headBinding } from "./head-bind.js";
 
 /** UTF-8 hex digest. TextEncoder stands in every context the frame runs in (a sandbox lends one). */
 function sha256Hex(text: string): string {
@@ -92,7 +94,7 @@ function hexToB64u(hex: string): string {
  *
  * The form is the shelves' own: an algorithm, then the full digest of the bytes it covers. A shelf's
  * name says the string it names lives elsewhere; this one says the string is the body directly above
- * it. Position is what tells them apart, and a resolver MUST NOT follow one found after ETX.
+ * it. Its slot is what tells them apart, and a resolver MUST NOT follow one found in the ETX `bcc` slot.
  *
  * FULL WIDTH, never truncated. Every system that stores a digest for machine verification stores all
  * of it and shortens only for a reader — and every truncation that got hurt had been sized against
@@ -124,7 +126,83 @@ export function nihOfSpan(span: string): string {
 /** The check a whole carrier should carry, or null where it holds no framed body. */
 export function bccOf(text: string): string | null {
   const span = checkSpan(text);
-  return span ? bccOfSpan(text.slice(span.start, span.end)) : null;
+  return span ? bccOfSpan(canonicalSpan(text.slice(span.start, span.end))) : null;
+}
+
+/*
+ * THE SLOT, AND ITS ONE DELETION (Train R, operator approved 2026-11-01).
+ *
+ * The check rides the ETX mark's declared `bcc` slot as a named value:
+ *
+ *     <<^ code=`&#x0003;` bcc=`ni:///sha-256;…`>>
+ *
+ * The span still runs STX sigil through ETX sigil inclusive, so the check now stands INSIDE what it
+ * covers. DKIM met the same knot and cut it the same way (RFC 6376 §3.7: the `b=` value is emptied
+ * before the hash): the digest reads the span with the ETX sigil's ` bcc=`…`` run DELETED, leading
+ * space included. What remains reads ``<<^ code=`&#x0003;`>>`` — the exact bytes every check minted in
+ * the trailer form already covered, so the value moves into the slot and never changes.
+ *
+ * ONE DELETION, ANCHORED, AND NO OTHER SLACK. The run deletes only where it closes the ETX sigil, in
+ * the one lawful spelling; every other ETX spelling (a doubled run, a run off its final seat, a foreign
+ * param, an unticked or double-ticked value, an ill-shaped value, a doubled space) tears before any
+ * digest runs (`etxFaults`). So two byte-different carriers share a verdict only where they differ in
+ * the run's value, and that value must equal the recomputed string, canonical or reject.
+ *
+ * The deletion stays lexical, inside the one sigil the span scan already found: a relay still reads
+ * raw bytes in one scan, with no parser.
+ */
+
+// THE CODE SET COMES FROM THE DECLARATION (marks.ts): a mark the family gains reaches this reader too.
+const ETX_ALT = frameAlt("ETX");
+/** The canonical ETX entity, for messages — the declaration's own spelling. */
+const ETX_CODE = FRAME_MARKS.find((m) => m.name === "ETX")!.code;
+/** The ETX sigil in its two lawful spellings: bare, or carrying one final `bcc` run of check shape. */
+const ETX_LAWFUL_RE = new RegExp(`^<<\\^ code=\`${ETX_ALT}\`(?: bcc=\`(ni:\\/\\/\\/([a-z0-9-]+);([A-Za-z0-9_-]+))\`)?>>$`);
+/** The one deletion: the final `bcc` run, leading space included. */
+const BCC_RUN_RE = / bcc=`[^`]*`>>$/;
+/** A check standing after the ETX `>>` on its line, adjacent or spaced — the trailer form the slot retired. */
+const TRAILER_RE = /^[ \t]*ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+/;
+
+/**
+ * A checked span's canonical bytes: the closing ETX sigil's ` bcc=`…`` run deleted, nothing else.
+ * A span whose ETX carries no lawful run comes back unchanged.
+ */
+export function canonicalSpan(span: string): string {
+  const at = span.lastIndexOf("<<^");
+  if (at < 0) return span;
+  const sigil = span.slice(at);
+  const m = ETX_LAWFUL_RE.exec(sigil);
+  return m && m[1] !== undefined ? span.slice(0, at) + sigil.replace(BCC_RUN_RE, ">>") : span;
+}
+
+/**
+ * The faults an ETX mark's own spelling and its foot carry: a spelling outside the two lawful ones,
+ * and (for the closing mark) a check standing after its `>>`, the retired trailer.
+ */
+export function etxFaults(text: string, etx: MarkHit, closing: boolean): FrameFault[] {
+  const sigil = text.slice(etx.index, etx.end);
+  const faults: FrameFault[] = [];
+  if (!ETX_LAWFUL_RE.test(sigil)) {
+    faults.push({
+      kind: "torn-spelling",
+      message: `\`${sigil}\` reads outside the frame grammar — ETX reads \`\`<<^ code=\`${ETX_CODE}\`>>\`\` or carries one final \`\`bcc=\`ni:///…\`\`\` run; nothing repairs it`,
+    });
+  }
+  // RETIRED-TRAILER — this named refusal lives one commit on the alpha line, then the pyre burns it
+  // and the bytes read as what they are: foreign content between ETX and EOT.
+  if (closing && TRAILER_RE.test(text.slice(etx.end))) {
+    faults.push({
+      kind: "retired-trailer",
+      message: "a block check stands after the ETX `>>` — the trailer form retired; the check rides ``bcc=`…` `` inside the ETX mark (re-cut with `node tools/grammar-cut.mjs`)",
+    });
+  }
+  return faults;
+}
+
+/** Every ETX fault a carrier carries, read through the one span reader. */
+export function etxFaultsOf(text: string): FrameFault[] {
+  const etx = readFrame(text).etx;
+  return etx ? etxFaults(text, etx, true) : [];
 }
 
 /**
@@ -133,14 +211,24 @@ export function bccOf(text: string): string | null {
  * A carrier holding NO check reads `unchecked` rather than `false` — absence of a check and a failed
  * check are different facts, and collapsing them would make the reading useless exactly where it
  * matters. The caller decides what an unchecked carrier may do; graceful parsing says it still parses.
+ *
+ * `head-unbound` reads where the check verifies and the head names an end the sealed meta never names;
+ * a head that SPLITS from its sealed meta reads `torn` (head-bind.ts), exactly as the verdict tears it.
  */
-export function verifyBcc(text: string): "ok" | "mismatch" | "unchecked" | "torn" {
+export function verifyBcc(text: string): "ok" | "head-unbound" | "mismatch" | "unchecked" | "torn" {
   const st = frameStanding(text);
   if (st.kind === "absent") return "unchecked";
   if (st.kind === "torn") return "torn";
+  // ONE READING OF A FAULT: the frame faults the span reader names (a second ETX, an ETX after EOT, a
+  // release out of order …) tear here exactly as they tear the verdict, so the two never disagree.
+  if (st.faults.length > 0 || etxFaultsOf(text).length > 0) return "torn";
+  // THE SEAL BINDS THE HEAD (head-bind.ts): a head split from its sealed meta tears here as in the verdict.
+  const binding = headBinding(text);
+  if (binding.kind === "split") return "torn";
   const check = standingCheck(text, st);
   if (!check) return "unchecked";
-  return check.verifies ? "ok" : "mismatch";
+  if (!check.verifies) return "mismatch";
+  return binding.kind === "unbound" ? "head-unbound" : "ok";
 }
 
 /**
@@ -151,36 +239,38 @@ export function standingCheck(
   text: string,
   span: { readonly start: number; readonly end: number },
 ): { readonly stored: string; readonly computed: string; readonly verifies: boolean } | null {
-  // ADJACENT, exactly. The check follows the closed sigil with nothing between — the emitter mints it
-  // so, and slack here would let two byte-different files share one verdict. A shifted check reads as
-  // postamble content: it does not verify, and the projection re-mints it adjacent.
-  const trailing = /^(ni:\/\/\/([a-z0-9-]+);([A-Za-z0-9_-]+))/.exec(text.slice(span.end));
-  if (!trailing) return null;
-  const stored = trailing[1]!;
-  const computed = bccOfSpan(text.slice(span.start, span.end));
+  // THE SLOT, exactly: the closing ETX sigil's one lawful `bcc` run. A sigil in any other spelling
+  // carries no standing check here; `etxFaults` tears it before a verdict reads this far.
+  // ANCHORED on the span reader's own ETX hit, never on a scan backward from the span's end.
+  const etx = readFrame(text).etx;
+  const m = etx && etx.end === span.end && etx.index >= span.start ? ETX_LAWFUL_RE.exec(text.slice(etx.index, etx.end)) : null;
+  if (!m || m[1] === undefined) return null;
+  const stored = m[1];
+  const computed = bccOfSpan(canonicalSpan(text.slice(span.start, span.end)));
   // The message names its algorithm; this reader decides whether to accept it. CANONICAL OR REJECT:
   // base64url admits several spellings of a value whose bit-length is not a multiple of six, so a
   // comparator that tolerated them would call two different strings one check. Re-encoding what we
   // computed and comparing whole refuses every non-canonical spelling for free.
-  return { stored, computed, verifies: ACCEPTED_ALGS.has(trailing[2]!) && stored === computed };
+  return { stored, computed, verifies: ACCEPTED_ALGS.has(m[2]!) && stored === computed };
 }
 
 /*
- * The BCC slot — what may stand between ETX and EOT, and nothing else.
+ * Between ETX and EOT — nothing stands there.
  *
  * ── THE SLOT IS OCCUPIED, AND BY ONE THING ──────────────────────────────────────────────────────
  * The frame glyphs are ASCII C0 as IBM BSC (1967) and ISO 1745 (1975) used them: SOH opens the
  * heading, STX opens the text, ETX ends the text, EOT ends the transmission. A block reads
  *
- *     [SOH heading] STX text ETX BCC        …        EOT
+ *     [SOH heading] STX text ETX(bcc)        …        EOT
  *
- * The BCC — block check character — is an integrity trailer, and it sits AFTER ETX for a reason that
- * is not stylistic: it cannot live inside the span it checks. Its coverage runs from STX through the
- * ETX **inclusive**, so the terminator is part of what the check attests.
+ * The BCC — block check character — rode as a trailer after ETX in BSC, because a byte cannot live
+ * inside the span it checks. This grammar seats it in the ETX mark's named `bcc` slot instead and
+ * deletes that one run before hashing, so its coverage still runs from STX through the ETX
+ * **inclusive**: the terminator stays part of what the check attests.
  *
  * ETX is also where a verdict falls. In BSC it "calls for a reply": the receiver checks the BCC and
  * answers ACK or NAK. That is exactly the ingest gate's boundary — ingest · noop · conflict · refuse —
- * so the trailer belongs to the same moment the gate already decides in.
+ * so the check belongs to the same moment the gate already decides in.
  *
  * EOT then ends the transmission in BOTH directions: nothing further is expected from or to the far
  * side. Content addressed after that is addressed to nobody.
@@ -199,36 +289,29 @@ export function standingCheck(
 
 // THE SLOT READER KEEPS ITS OWN SCAN (marks.ts). It reads an EOT sigil DECORATED — `(?:\s*\S+)?\s*`
 // admits namespace glyphs and a `code=` binding alike — and strips to the line's end, because `[^>]*`
-// cannot cross the `>` inside `-> ?`. Only the entity alternation travels.
+// cannot cross a `>` a value carries. Only the entity alternation travels.
 const DECOR = "(?:\\s*\\S+)?\\s*";
 const EOT_STRIP_SRC = `<<\\^${DECOR}${frameAlt("EOT")}[^\\n]*?>>`;
 
 
 /**
- * The check as the spec writes it: `ni:///<alg>;<base64url>`, standing directly after the ETX sigil.
+ * The check's value shape as the spec writes it: `ni:///<alg>;<base64url>`, the ETX mark's `bcc` value.
  * The namespace rides the heading, never the check — the digest binds bytes, and bytes carry no
- * vibration.
- *
- * A block runs `STX -> text -> ETX -> BCC` and the check follows the terminator with nothing between —
- * the position a receiver has always read it from. The value derives; `bccOfSpan` computes it over the
- * framed span, and the slot classifier only says whether one STANDS. Present and CORRECT are different
- * questions, and a classifier that answered the first under the name of the second would invite the
- * reading that a present postamble is a verified one.
+ * vibration. The value derives; `bccOf` computes it over the canonical span.
  */
 export const BCC_RE = /^(ni:\/\/\/[a-z0-9-]+;[A-Za-z0-9_-]+)$/;
 
 /**
  * What a carrier wrote between ETX and EOT.
  *
- *   · `empty`   — whitespace only. The overwhelmingly common case, and legal: the BCC is OPTIONAL,
- *                 exactly as BSC allowed blocks to run without one on a trusted link.
- *   · `bcc`     — a well-formed block check. Legal, and checkable.
- *   · `foreign` — anything else. Payload stranded past the end of text, which no reader will ever
- *                 render; the caller receives its text and line count.
+ *   · `empty`   — whitespace only (an EOT sigil strips). The one legal reading: the check rides the
+ *                 ETX mark's `bcc` slot, so nothing stands here.
+ *   · `foreign` — anything else, a bare check included (the retired trailer). Payload stranded past
+ *                 the end of text, which no reader will ever render; the caller receives its text and
+ *                 line count.
  */
 export type Postamble =
   | { readonly kind: "empty" }
-  | { readonly kind: "bcc";     readonly digest: string }
   | { readonly kind: "foreign"; readonly text: string; readonly lines: number };
 
 export function classifyPostamble(postamble: string): Postamble {
@@ -236,15 +319,12 @@ export function classifyPostamble(postamble: string): Postamble {
 
   // EOT and any trailing whitespace belong to the frame, never to the slot — strip them before
   // judging what the operator actually wrote there.
-  // `[^>]*` cannot cross the `>` inside `-> ?`, so the EOT sigil's own arrow defeats a naive strip.
+  // `[^>]*` cannot cross a `>` a value carries, so a naive strip stops short inside the sigil.
   // Match to the line's end instead — a frame sigil never spans lines.
   const body = postamble
     .replace(new RegExp(EOT_STRIP_SRC, "g"), "")
     .trim();
   if (body.length === 0) return { kind: "empty" };
-
-  const m = BCC_RE.exec(body);
-  if (m) return { kind: "bcc", digest: m[1] as string };
 
   return { kind: "foreign", text: body, lines: body.split("\n").length };
 }
@@ -252,9 +332,8 @@ export function classifyPostamble(postamble: string): Postamble {
 /**
  * Read the bytes after the carrier's terminating EOT mark.
  *
- * A postamble between ETX and EOT is the BCC slot and may be empty or carry one BCC. Bytes after
- * EOT have no carrier boundary left to receive them. Keep this as a separate reading: a shifted
- * BCC with legitimate EOT still has a recoverable slot, while content after EOT is boundary drift
+ * Bytes between ETX and EOT read through `classifyPostamble`; bytes after EOT have no carrier
+ * boundary left to receive them. Keep this as a separate reading: content after EOT is boundary drift
  * that normalization must refuse to guess over.
  */
 export function classifyPostEot(text: string): Postamble | null {

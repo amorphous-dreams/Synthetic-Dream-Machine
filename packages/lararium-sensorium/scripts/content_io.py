@@ -23,7 +23,7 @@ Protocol — NDJSON over stdin/stdout, one JSON object per line (only JSON to st
     <- {"id":4,"ok":true,"result":{"matches":[{cid,distance,metadata},…]}}
 
 Run with the mempalace CLI's interpreter (it has the package + chroma):
-  PYTHONPATH=<repo>/mempalace  ~/.venv/bin/python3 content_io.py serve --palace <lararium>/sensoriums/<target>/content
+  PYTHONPATH=<repo>/mempalace  ~/.venv/bin/python3 content_io.py serve --palace <root>/sensoriums/<target>/content
 """
 from __future__ import annotations
 
@@ -200,6 +200,18 @@ class ContentStore:
         if raw is None:
             return None
         return {"cid": raw["cid"], "document": raw["document"] or "", "metadata": raw["metadata"]}
+
+    def get_with_vector(self, cid: str) -> "dict | None":
+        """Read back the whole durable row for a projection receipt or restart witness."""
+        got = self._col.get(ids=[cid], include=["documents", "metadatas", "embeddings"])
+        ids = got.get("ids") or []
+        if not ids:
+            return None
+        vectors = got.get("embeddings")
+        vector = ([float(x) for x in vectors[0]] if vectors is not None and len(vectors)
+                  and vectors[0] is not None else None)
+        return {"cid": ids[0], "document": (got.get("documents") or [""])[0] or "",
+                "metadata": (got.get("metadatas") or [{}])[0] or {}, "embedding": vector}
 
     def put(self, cid: str, text: str, embedding: list, metadata: dict) -> dict:
         """Durable write of ONE record — validate its floors, then upsert. The floor raises land verbatim: a

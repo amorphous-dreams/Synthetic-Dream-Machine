@@ -1,0 +1,13 @@
+// An unchanged-state assertion behind a waitForFunction that reads the island's answer to a sentinel act.
+describe("the island", () => {
+  test("a span with no binding raises no act and the story stands unchanged", async () => {
+    await page.locator("span.plain").first().click();
+    await page.waitForFunction(() => (globalThis as any).__sentinelAck === true, undefined, { timeout: 20_000 });
+    expect(await story()).toEqual([ALPHA]);
+  });
+  test("the same state read through a poll on the very value the assertion reads", async () => {
+    await page.locator("span.plain").first().click();
+    await expect.poll(() => story(), { timeout: 20_000 }).toEqual([ALPHA]);
+    expect(await story()).toEqual([ALPHA]);
+  });
+});

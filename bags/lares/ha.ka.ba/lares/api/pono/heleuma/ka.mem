@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/heleuma/ka">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/heleuma/ka`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/heleuma/ka.mem"
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "invariant capability: heleuma-ka — soul/fire anchor; promotion-eligible compiled artifact with quine record and ceremony path"
 tags      = ["api/pono/heleuma"]
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/heleuma/ka"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Heleuma-Ka (Soul / Fire)
 
@@ -27,7 +23,7 @@ A heleuma-ka anchor exists outside the corpus ''by current necessity, not by nat
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ locate the compiled artifact and its extractable symbol; confirm it has a standalone function boundary.
 ⏿ orient: could `_bootModules()` load this function from a corpus meme? If yes, this counts as ka.
@@ -37,7 +33,7 @@ A heleuma-ka anchor exists outside the corpus ''by current necessity, not by nat
 
 <<~/ahu>>
 
-<<~ ahu #/required-fields>>
+<<~ ahu slot=`#/required-fields`>>
 
 !! Required Fields (SHALL)
 
@@ -60,11 +56,11 @@ This forms gate layer 2 (content integrity). `sync-heleuma --commit` writes it o
 
 Gate layer 3 (operator authorization) will take the form of a ''keyhive capability proof'' — an Ed25519-signed capability from a keyhive principal authorizing corpus injection. Layer 3 stands planned, unbuilt; as built, the gate passes on layers 1–2 only.
 
-Signal fields (`mana`, `manao`, `manaoio`) SHALL approach 16 / 16 / 15 as the source matures. The boot gate reads these fields directly.
+Maturity shows in the carrier's `confidence` and its verified `source-sha256`; admission to load rides a local grant (the promote ledger), never a field value.
 
 <<~/ahu>>
 
-<<~ ahu #/promotion-path>>
+<<~ ahu slot=`#/promotion-path`>>
 
 !! Promotion Path
 
@@ -76,12 +72,12 @@ When `source-sha256` stands present and the signals meet every threshold, `_boot
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/modules/boot-gate">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/modules/boot-gate`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;c9fXfl_-XupfUInZetXmP0KUJadyqrzFmAfNz-_z9M0
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FYgdfytv00OmcKUMuq_kLz4wfpO1jA8i5qK_tUmv5W4`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

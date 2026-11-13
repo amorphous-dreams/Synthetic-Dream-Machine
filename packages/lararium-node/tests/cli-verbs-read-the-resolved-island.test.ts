@@ -16,6 +16,9 @@
  * this test measures the SOURCE STRUCTURE (the same class of proof the device-admit weld already
  * trusts) rather than driving each verb's full ceremony.
  *
+ * `nexus-kapae.ts` carries ONE `kapaeAntigenDocUrl(` call (`antigenBoardFor`), which the raise, the list and the
+ * two-vault kapae door share, so a ban and its read land on one board.
+ *
  * `nexus-contract.ts` carries THREE `carriageDocUrl(` calls - the admit and revoke WRITE (`carriageBoardFor`, which
  * `runNexusContract` and the two-vault door share), the
  * roll-anchor WRITE (`runNexusRollAnchor`) and the members-list READ (`runNexusMembersList`). All read the
@@ -38,9 +41,9 @@ function read(rel: string): string {
 /** Every island-scoped door name, keyed by the file that calls it. Captures the ARGUMENT. */
 const SITES: Array<{ file: string; door: RegExp; count: number }> = [
   { file: "commands/handle.ts",         door: /whoBoardDocUrl\(([^)]*)\)/g,        count: 2 },
-  { file: "commands/handle.ts",         door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 2 },
-  { file: "persona-admit-flow.ts",      door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
-  { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 2 },
+  { file: "commands/handle.ts",         door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
+  { file: "local-persona-kel.ts",       door: /personaKelBoardDocUrl\(([^)]*)\)/g, count: 1 },
+  { file: "commands/nexus-kapae.ts",    door: /kapaeAntigenDocUrl\(([^)]*)\)/g,    count: 1 },
   { file: "commands/nexus-contract.ts", door: /carriageDocUrl\(([^)]*)\)/g,        count: 3 },
 ];
 
@@ -66,7 +69,7 @@ describe("CLI island-scoped board sites use the island resolved at boot", () => 
   }
 
   test("CONTROL - the module composes `nodeNexusIsland`, imported from nexus-standing", () => {
-    for (const file of ["commands/handle.ts", "persona-admit-flow.ts", "commands/nexus-kapae.ts",
+    for (const file of ["commands/handle.ts", "local-persona-kel.ts", "commands/nexus-kapae.ts",
                          "commands/nexus-contract.ts"]) {
       const src = read(file);
       expect(src, `${file} does not import nodeNexusIsland`).toMatch(/nodeNexusIsland/);
@@ -81,9 +84,10 @@ describe("CLI island-scoped board sites use the island resolved at boot", () => 
     }
   });
 
-  test("CONTROL - nexus-contract.ts reads the vessel key once per board feed and once for the carry-for nym", () => {
+  test("CONTROL - nexus-contract.ts reads the vessel key once per board feed and once for the carry-for nym; the edge ledger takes the acting face's atom", () => {
     // Three reads FEED the island resolution (the admit write, the roll-anchor write, the members-list read);
-    // one is the carry-for nym, a bystander that names a place rather than a board. Pinned so a refactor that
+    // one reads the carry-for nym, a bystander that names a place rather than a board. The realm edge anchors' ledger
+    // takes the acting face's atom and addresses no carriage board. Pinned so a refactor that
     // adds a bare read updates this test rather than silently drifting the count.
     const code = stripComments(read("commands/nexus-contract.ts"));
     const bareReads = [...code.matchAll(/loadVesselVerifyingKey\(\)/g)];
@@ -96,8 +100,8 @@ describe("CLI island-scoped board sites use the island resolved at boot", () => 
     const code = stripComments(read("commands/host.ts"));
     expect(code).toMatch(/hostingDocUrl\(aid, await loadVesselVerifyingKey\(\)\)/);
     expect(code, "the hosting door writes no carriage board").not.toMatch(/carriageDocUrl\(/);
-    // The act is signed by the WORN face's per-Nexus leaf, never the vessel key and never the roster's first.
-    expect(code).toMatch(/wornNexusLeaf\(/);
+    // The act is signed by the acting face's per-Nexus leaf, never the vessel key and never the roster's first.
+    expect(code).toMatch(/faceNexusLeaf\(/);
     expect(code).not.toMatch(/heldNexusLeaves\(/);
     expect(code).not.toMatch(/loadVesselSigningSeed/);
   });

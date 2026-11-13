@@ -16,7 +16,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, test, expect } from "vitest";
 import {
-  CAPABILITY_PROFILES, HAND_PROFILES, SESSION_SCHEMA_VERSION, SessionContractError, isCapabilityProfile, refuseBeyondProfile, SessionTable, sessionBinding,
+  CAPABILITY_PROFILES, HAND_PROFILES, SessionContractError, isCapabilityProfile, refuseBeyondProfile, SessionTable, sessionBinding,
   sessionTransitionLegal, validateSessionEnvelope, validateSessionFace,
   type SessionFace, type SessionState,
 } from "../src/session-contract.js";
@@ -24,9 +24,9 @@ import {
 const face = (suffix = "a"): SessionFace => ({
   personaGroup: `persona-${suffix}`, proofSubject: `proof-${suffix}`, admitRef: `admit-${suffix}`,
   causalRevision: `revision-${suffix}`,
-  planes: { persona: `plane-persona-${suffix}`, circles: `plane-circles-${suffix}`, identities: `plane-identities-${suffix}`, sessions: `plane-sessions-${suffix}` },
+  planes: { persona: `plane-persona-${suffix}`, circles: `plane-circles-${suffix}`, identities: `plane-identities-${suffix}`, sessions: `plane-sessions-${suffix}`, intents: `plane-intents-${suffix}` },
 });
-const envelope = (sessionId: string, ownerEpoch = "epoch-a", generation = 0) => ({ schemaVersion: SESSION_SCHEMA_VERSION, ownerEpoch, sessionId, generation });
+const envelope = (sessionId: string, ownerEpoch = "epoch-a", generation = 0) => ({ ownerEpoch, sessionId, generation });
 const opened = (table: SessionTable, binding = sessionBinding("port"), wearing: SessionFace = face()) => {
   const result = table.open(binding, wearing, "face");
   if (!result.ok) throw new Error(result.refusal);
@@ -53,6 +53,9 @@ describe("session contract", () => {
     table.transition(session.sessionId, "switching");
     const advanced = table.advance(session.sessionId, 0, face("b"));
     expect(advanced.ok).toBe(true);
+    // The advanced session stays switching until its commit steps it live: no call routes to it before then.
+    expect(table.check(envelope(session.sessionId, "epoch-a", 1), binding)).toEqual({ ok: false, refusal: "session-not-live" });
+    table.transition(session.sessionId, "live");
     expect(table.check(envelope(session.sessionId, "epoch-a", 0), binding)).toEqual({ ok: false, refusal: "stale-generation" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 2), binding)).toEqual({ ok: false, refusal: "stale-generation" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 1), binding).ok).toBe(true);
@@ -75,8 +78,10 @@ describe("session contract", () => {
     expect(table.check(envelope(session.sessionId), binding)).toEqual(switching);
     expect(switching).toEqual({ ok: false, refusal: "session-not-live" });
     const committed = table.advance(session.sessionId, 0, face("b"));
-    expect(committed).toMatchObject({ ok: true, session: { generation: 1, face: face("b"), state: "live" } });
-    // A committed switch spends its generation: the same commit asked again finds a live session and changes nothing.
+    expect(committed).toMatchObject({ ok: true, session: { generation: 1, face: face("b"), state: "switching" } });
+    // An advance spends its generation: the same advance asked again changes nothing, before or after the step live.
+    expect(table.advance(session.sessionId, 0, face("c"))).toEqual({ ok: false, refusal: "stale-generation" });
+    table.transition(session.sessionId, "live");
     expect(table.advance(session.sessionId, 0, face("c"))).toEqual({ ok: false, refusal: "session-not-switching" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 1), binding)).toMatchObject({ ok: true, session: { generation: 1, face: face("b") } });
   });
@@ -132,7 +137,7 @@ describe("session contract", () => {
     const binding = sessionBinding("port");
     const other = sessionBinding("port");
     const session = opened(table, binding);
-    expect(table.check({ ...envelope(session.sessionId), schemaVersion: 99 }, other)).toMatchObject({ refusal: "malformed-message" });
+    expect(table.check({ ...envelope(session.sessionId), ownerEpoch: "" }, other)).toMatchObject({ refusal: "malformed-message" });
     expect(table.check(envelope("absent", "epoch-b"), other)).toMatchObject({ refusal: "stale-owner-epoch" });
     expect(table.check(envelope("absent"), other)).toMatchObject({ refusal: "unknown-session" });
     expect(table.check(envelope(session.sessionId, "epoch-a", 1), other)).toMatchObject({ refusal: "unbound-session" });
@@ -260,16 +265,23 @@ describe("session contract", () => {
     const lawful = envelope("session-a");
     expect(validateSessionEnvelope(lawful)).toEqual(lawful);
     for (const invalid of [
-      { ...lawful, schemaVersion: 2 }, { ...lawful, generation: -1 }, { ...lawful, generation: 0.5 },
+      { ...lawful, ownerEpoch: "" }, { ...lawful, generation: -1 }, { ...lawful, generation: 0.5 },
       { ...lawful, generation: "0" }, { ...lawful, sessionId: "" },
     ]) expect(validateSessionEnvelope(invalid)).toBeNull();
   });
 
-  test("the public barrel does not export the private session contract", () => {
+  // "A pure library names its caller. A module built ahead of its consumer stays out of the package barrel until the
+  // commit that consumes it" (stable-founding-road, the rulings). The node's dial consumes the table and the binding a
+  // session opens on (`open-node-vessel`, `dialSessions`); the barrel names those three and no other part of the contract.
+  test("the public barrel names only the session table and binding its dialer consumes", () => {
     const here = dirname(fileURLToPath(import.meta.url));
     const barrel = readFileSync(resolve(here, "../src/index.ts"), "utf8");
     expect(barrel).toContain("island-protocol");
-    expect(barrel).not.toContain("session-contract");
+    const named = [...barrel.matchAll(/^export (?:type )?\{([^}]*)\} from "\.\/session-contract\.js";$/gm)].flatMap((m) => m[1]!.split(",").map((n) => n.trim()).filter(Boolean));
+    expect(named.sort()).toEqual(["SessionBinding", "SessionTable", "sessionBinding"]);
+    expect(barrel.match(/session-contract/g)?.length).toBe(2);
+    const caller = readFileSync(resolve(here, "../../lararium-node/src/open-node-vessel.ts"), "utf8");
+    expect(caller).toMatch(/\bSessionTable, sessionBinding\b[^;]*from "@lararium\/mesh"/);
   });
 
   test("session source has no clock, timer, or platform imports", () => {

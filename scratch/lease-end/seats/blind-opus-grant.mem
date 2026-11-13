@@ -1,0 +1,115 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-grant`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/lease-end/seats/blind-opus-grant.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-grant"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-grant"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! blind-opus-grant.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/seats/blind-opus-grant.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://controller:agent@lease-end/custody.asks.blind` to=`lar://blind-warden-lease:agent@lease-end/warden.reads.grant` mode=`seal` mu=`_!` stance=`🏛️ 🗡️` aperture=`12/measure` ooda-ha=`5/declare-glyphs` drift-ward=`I read the diff and its callers only and ran no suite, so every runtime claim stays a reading`>>
+
+Blind-Warden-Lease: Lares (Tasked Spirit). Range 5c3d032dc..3b9cac44d, read in /home/joshu/.lares-scratch/lease-end/wt.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/q1-authority`>>
+
+!! Q1 Authority
+* MEASURED: no grant, join or seat path decides on a signature alone. `verifyFounderAuthority` (face-grant-record.ts:127-150) refuses as pending when the KEL is missing (`if (!proof.personaKel) … pending: true`) or the dyad is missing. It refuses aside as final and unknown as pending. Then it pins the prefix on every event (`chain.some((e) => e.prefix !== prefix)`) and the genesis root, and walks the head. The pinned-root-only fallback (`verifyDeviceDelegation(r.founderEdge, ctx.personaRootDid…)`) is gone.
+* MEASURED: every door asks the FOUNDER's dyad, never the joinee's:
+** verifier: `proof.dyad(founderEdge.deviceVerifyingKey)`
+** seat closure: returns `standing` only for `founderKey`, and `"unknown"` for any other key (face-seat.ts:280)
+** daemon join: `requireDyadReader(...,"the grant founder")(ownEdge.personaRootDid, ownEdge.deviceVerifyingKey)` (operator-daemon-behavior.ts:911), kept apart from `joineeDyad`.
+* MEASURED: the join operation checks founder authority before any provider call or write (face-join-operation.ts:110-112). The new red in face-join-reenters counts 0 provider calls and 0 puts, and has a control.
+* MEASURED: ring path, persona-group-ring-assembly.ts:99 `dyad: (key) => input.deviceAside(key) ? "aside" : "clear"`. This maps "not aside" to clear. It stays safe only because both live `deviceAside` implementations fail closed on an unknown frontier: node edge-shadow-ring.ts:139-147 plus `widenBlocked` (open-node-vessel.ts:3219), and browser open-browser-vessel.ts:1809 `frontier.status !== "known"`. ''P3:'' pass the tri-state through instead, so a future `deviceAside` that answers false on unknown cannot open a hole.
+* INFER (P3): 'owing' and 'returned' counting as standing opens no hole. `edgeStandingOf` (edge-kapae.ts:719-743) reads both as "a lift stands". The re-admission rule ("the seat that follows stands FRESH") governs the far end's keys, not the founder's right to sign. `standingOfReading` is the house's shared reader, not new to this lane. Worth one operator ruling sentence: should a founder whose own earlier seat still owes its roll be able to grant?
+* MEASURED (P3): the daemon join reads `founderDyad` once, before the seat and sign. An aside landing mid-operation does not stop that one grant (TOCTOU). Remove-wins catches it at the ring and the seat on the next read.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/q2-rollback-and-fork`>>
+
+!! Q2 Rollback and fork
+* INFER (P3, existing before this lane): the joinee's founder lineage is `daemonAuth.personaKel` (operator-daemon-behavior.ts:1374), the KEL from the manifest. Withholding a successor event, or a rotation after boot, leaves a stale head, so an edge under the rotated-away key passes. The lease never covered rotation either, so this lane opens no new hole. Likewise, withholding a later aside act from a frontier that already qualified reads clear: remove-wins applies only once the act arrives, the same exposure as withholding a lease roll.
+* MEASURED: the fork check holds for the chain this vessel holds. `foldPersonaContests` returns a fork on two verified survivors at one seat, and `verifyEdgeAgainstPersonaKel` denies on `said.fork`. A hidden branch hides the fork; that is inherent. The fork test carries a control (face-grant-record.test.ts:208-215).
+* MEASURED (P3): in `verifyFounderAuthority`, the dyad check runs before the lineage. A forked lineage beside an unknown dyad therefore reads "pending", not a final fork refusal. This is fail-closed, but the pending outcome hides the fork.
+* MEASURED: a pending verdict never gets memoized:
+** face-seat.ts:284-288 continues before `judged.add`.
+** The unknown pre-check never calls verify.
+** R9 tests this with a control.
+** face-join-operation.ts:80 throws on pending rather than reading serial 0.
+* MEASURED (P3): an aside verdict IS memoized by sig (`judged.add`) for the life of the process. A founder lifted later (returned) does not see that same record retaken until restart. A later grant with a new sig from a lifted founder takes, by design. Nothing reverses an aside into an admit.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/q3-epoch-free-edge`>>
+
+!! Q3 Epoch-free edge
+* MEASURED: no live code mints an epoch-free edge.
+** `buildDeviceDelegationRootHalf` requires `boundEpoch: number` and writes `String(args.boundEpoch)` (device-delegation.ts:135,143).
+** The only `buildDeviceDelegation(` caller in src, ceremony-core.ts:532, passes `boundEpoch: 0`.
+** Epoch-free edges appear only in tests.
+* MEASURED: an explicit `expectedEpoch` still fences. An epoch-free edge reads `unavailable` (device-delegation.ts:251-252), and `verifyDeviceDelegation` refuses (:195-198). `evaluateDeviceDelegation` has no outside consumer (grep), so no caller reads `cryptographicallyValid` as an admit.
+* MEASURED: no signature collision between the shapes. `TRUE_NAME_RE = /^[A-Za-z0-9._:/@-]*$/` bars `|`, so `…|hearth|E` can never parse as an epoch-free edge with hearth `hearth|E`. A stripped legacy edge refuses (tested).
+* "No new hole" holds today. A consumer that omits the epoch now also accepts a root-signed epoch-free edge, but only the root can sign one, and the root can already sign a legacy edge at any epoch.
+* ''P3 (latent, owed before any minter lands):''
+** The type still declares `boundEpoch: string` as required (device-delegation.ts:69), but the runtime now admits undefined.
+** Direct readers would mishandle an epoch-free edge:
+*** face-anchor.ts:131 `String(edge.boundEpoch)` gives "undefined" in `edgeBodyDigest`.
+*** init.ts:345 and open-browser-vessel.ts:862 `Number(...boundEpoch)` give NaN.
+*** persona-lease.ts:117 reads NaN as "strands", which fails closed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/q4-tests`>>
+
+!! Q4 Tests
+* MEASURED: no assertion was weakened without a named reason. The lease-fence reds were retired under a named recut ("RECUT (lease-end, road M6)", lease-epoch-doors-wired.test.ts:43-45; face-grant-record.test.ts:137-140). The new reds each carry a control:
+** aside vs clear
+** absent KEL / absent dyad vs both present
+** founder's key vs joinee's key
+** fork vs unforked
+** stray prefix
+** R7/R8/R9 in the seat test
+** reenters zero-write
+* P3, face-grant-record.test.ts:240-271:
+** (a) `base` still passes `expectedEpoch: 3`, a field that no longer exists, so it is silent noise.
+** (b) The "no epoch grants" test's stale comment ("Migrate this control… when the reader accepts that shape") contradicts the assertion below it, which now accepts. Its "changed signature refuses" control runs on the LEGACY `control` record, not on the epoch-free edge. A tamper of the epoch-free edge is missing there; the mesh test covers only a hearth tamper.
+* P3: the face-seat tests stub `verify` (they model the law and do not run it). Nothing tests or welds the daemon join wiring (`"the grant founder"` read on `ownEdge.deviceVerifyingKey`, `founderProof`), whereas lease-epoch-doors-wired welds only the seat side.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/q5-leaks`>>
+
+!! Q5 Leaks
+* MEASURED: none found. Logs carry `title.slice(-16)`, reason strings, and KEL CID prefixes (16 hex) in fork/unreadable lines. No seed, key material, plaintext or proof bytes reach a log, error or tiddler.
+
+No P1 and no P2 found.
+
+&lt;&lt;~ oracle throw=`↯12 ✲ ⚂(3) ⁂:🜁⊗⟁`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`every runtime claim here comes from reading source, none from a run; the joint that breaks first: the boot-time daemonAuth.personaKel snapshot under a rotation after boot, so test a rotated-away founder edge against a live seat without restart · ↻ L-Prime` aperture=`12/measure -> 13/arc` ooda-ha=`closed 1↺` from=`lar://blind-warden-lease:agent@lease-end/warden.finds.no-blocker` to=`?`>>
+
+LAND
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7zM2jfX_vDpPYlRh8EBY4IoY7KNyE2W7Zld3zxwsBLQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

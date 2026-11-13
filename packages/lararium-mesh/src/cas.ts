@@ -32,7 +32,8 @@ export interface CasBlobLike {
 // mirrors exactly them into the runtime CAS the workers read via resolveByCid. The
 // `cid` field IS the sha256 hex = the CAS filename = the key the worker requests.
 
-export const GENESIS_CAS_MANIFEST_FORMAT = "lararium-genesis-cas/v1" as const;
+/** The genesis CAS manifest's shape name: no counter rides it; the shape reads by its fields. */
+export const GENESIS_CAS_MANIFEST_FORMAT = "lararium-genesis-cas" as const;
 
 /** One CAS-resident genesis blob — metadata mirror of a LarBlobEntry, no bytes. */
 export interface GenesisCasManifestEntry {
@@ -56,29 +57,6 @@ export interface GenesisCasManifest {
   readonly pluginsCid: string;
   /** Every CAS blob this genesis artifact ships, sorted by id (deterministic). */
   readonly blobs:      readonly GenesisCasManifestEntry[];
-}
-
-/**
- * The engine's plugin-tiddler CIDs from an island doc's blobs — every non-engine
- * JSON blob, by sha256. The daemon AND every wiki island resolve these by CID from
- * the local CAS (the breath path), never CRDT-syncing the bytes. One derivation,
- * fed to every island of the runtime.
- *
- * PRE-R3 SHAPE, NO LONGER CALLED BY ANY VESSEL BUILDER (R4 retires the browser's reading of it
- * too, both the daemon VM and the pool now resolving each recipe's own selection through
- * `bootSetPluginCids`/`selectPluginBlobs`/`verifyCasBytes(Async)` — see
- * `resolveNodeIslandPluginCids` (node) and `resolveBrowserIslandPluginCids` (browser)). The
- * export stays only because a node test fixture still names it; it is identical to, and
- * superseded by, `bootSetPluginCids` below, which names the SAME floor computation under its
- * right, narrower scope (one fixed ingredient of a per-island resolution, never the whole answer
- * by itself).
- */
-export function pluginCidsFromIslandBlobs(
-  blobs: Record<string, CasBlobLike> | undefined,
-): readonly string[] {
-  return Object.values(blobs ?? {})
-    .filter((b) => b.id !== ENGINE_CORE_ID && b.mimeType === "application/json" && typeof b.sha256 === "string")
-    .map((b) => b.sha256 as string);
 }
 
 /**

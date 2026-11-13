@@ -12,6 +12,7 @@
  * the recovery quorum IS the impersonation quorum (recovery-share enforces it at the TYPE wall).
  */
 
+import type { WardCredential } from "./ward-credential.js";
 import type { RandomProvider, ReadmissionSecret } from "@lararium/mesh";
 import {
   reconstructAndReadmit as coreReconstructAndReadmit,
@@ -37,7 +38,7 @@ export { splitRootAtFounding, type FoundingShares } from "@lararium/mesh";
  * future CLI door (a `lares device-readmit` verb or similar) wiring this MUST read the PersonaGroup's live
  * lease epoch itself before calling — the exact composition `device-admit.ts`'s `runDeviceAdmit` already
  * runs at its admit door: `leaseEpochPrefix(personaGroupId)` → filter the daemon doc's tiddler map to
- * that prefix → `effectiveLeaseEpoch(leaseSlotValues)`. That door does not exist today (this file has no
+ * that prefix → `signedLeaseEpoch(leaseSlotValues)`. That door does not exist today (this file has no
  * live CLI consumer — `reconstructAndReadmit` is presently exercised only by `recovery-keel.test.ts`); this
  * comment is the wiring's future caller's reminder, not a restatement of a read this file performs.
  */
@@ -68,29 +69,31 @@ export async function provisionRecoveryAtFounding(
   recoveryEpoch = 1,
   handleIndex = 0,
   handOut?: (off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>,
+  ward?: WardCredential,
 ): Promise<{ recordedCode: string; escrowCarrier: string }> {
-  return coreProvisionRecoveryAtFounding(await makeNodeFsPersonaVault(), rng, recoveryEpoch, handleIndex, handOut);
+  return coreProvisionRecoveryAtFounding(await makeNodeFsPersonaVault(ward), rng, recoveryEpoch, handleIndex, handOut);
 }
 
-export type { GuardianCard, RecoveryCardsAtFounding } from "@lararium/mesh";
+export type { CustodianCard, RecoveryCardsAtFounding } from "@lararium/mesh";
 
 /**
- * Provision identity recovery at founding as the SHARED guardian cards — the pattern-integrity twin of the
+ * Provision identity recovery at founding as the SHARED custodian cards — the pattern-integrity twin of the
  * charter reserve's card ceremony. Binds the node FS PersonaVault to the core flow: the PersonaGroup root
- * splits 2-of-3 into "Recovery-card mine + guardian-A/B", the "mine" (device) share seals into the identity
- * home, and the three cards return for the operator to place BY HAND (web3-pure). The two guardian cards
+ * splits 2-of-3 into "Recovery-card mine + custodian-A/B", the "mine" (device) share seals into the identity
+ * home, and the three cards return for the operator to place BY HAND (web3-pure). The two custodian cards
  * recover the identity WITHOUT the operator, IDENTICAL in shape to the reserve. Recovery rides the existing
  * `reconstructAndReadmit` — the reconstruct-to-readmit semantics stay unchanged (canon).
  */
 export async function provisionRecoveryCardsAtFounding(
   _dataDir: string,
-  guardianA: string | null,
-  guardianB: string | null,
+  custodianA: string | null,
+  custodianB: string | null,
   rng: RandomProvider,
   recoveryEpoch = 1,
   handleIndex = 0,
+  ward?: WardCredential,
 ): Promise<RecoveryCardsAtFounding> {
   return coreProvisionRecoveryCardsAtFounding(
-    await makeNodeFsPersonaVault(), guardianA, guardianB, rng, recoveryEpoch, handleIndex,
+    await makeNodeFsPersonaVault(ward), custodianA, custodianB, rng, recoveryEpoch, handleIndex,
   );
 }

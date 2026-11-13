@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/nym-map/report`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/scouts/nym-map/report.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/nym-map/report"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/scouts/nym-map/report"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! report.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/scouts/nym-map/report.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/scouts/nym-map/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/peercontractnymmap-cold-read-2026-10-31-controll`>>
+
+! peerContractNymMap cold read (Nym-Tracker, Sonnet), 2026-10-31. Controller spot-checked the declaration, road :251, doctrine #/two-maps :182, zero .set writes.
+VERDICT: parked seat held by ruling; half-wired, fails CLOSED (empty map -> null nym -> stranger; never widens).
+* Declared open-node-vessel.ts:876; no writer anywhere. Readers: :1366 realmNymOfPeer -> edge-shadow-ring.ts:179/191; :2226 makeRealmCharterConsult; nexus-carriage.ts:566-568 contractNymOfPeer (null on empty / bad NYM_RE), :584 carrierPeer refuses a peer the root map names; realm-bag.ts:686, realm-plane.ts:267.
+* Tests: nexus-carriage.test.ts:178 (empty), :191 (filled rootMap, test-only).
+* No browser twin. First named 7271d4574 (the-realm.decides.its-own-crossings); 9586c5f06 followed; no removed filler found.
+* Canon: membership-doctrine.mem #/two-maps (167-190, operator-ruled): root map filled only by a root edge proven at the seat, else honest null. Road :251 house ruling 2026-10-16 (flips if a root edge proven at the reading seat comes to fill a realm map). vessel-regions.mem:52, :94.
+* No owed road row fills it (testimony: not every row grepped). Nearest: face-scoped gate proof cutover (doctrine clause 5).
+LEAN: keep; do NOT cut in C4. Name an owed road row "a root edge proven at the reading seat fills the root map". Evergreen: restate the :873-875 comment as law (drop "nothing fills it" tense).
+Flips to CUT: an operator ruling that a root edge never proves at any seat -> burn map, contractNymOfPeer, realmNymOfPeer, carrierPeer guard, tests, doctrine clause together. Flips to WIRE: face-scoped proof cutover lands with a root-edge verifier.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k2Roi6gV_8FgXWXLHbVETSs2uGUJqt4GAdLy8TyUhyg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

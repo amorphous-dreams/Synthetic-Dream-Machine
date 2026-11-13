@@ -1,0 +1,657 @@
+[
+  {
+    "id": "added-001-lar-uri-0",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-002-lar-uri-1",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-003-lar-uri-2",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-004-lar-uri-3",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-005-lar-uri-4",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-006-lar-uri-5",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-007-lar-uri-6",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-008-lar-uri-7",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-009-lar-uri-8",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-010-lar-uri-9",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-011-lar-uri-10",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-012-lar-uri-11",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-013-lar-uri-12",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-014-lar-uri-13",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-015-lar-uri-14",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-016-lar-uri-15",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-017-lar-uri-16",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-018-lar-uri-17",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "lar-uri:parent of a two-step fragment writes `#head`, dropping the slash its input carries"
+  },
+  {
+    "id": "added-019-lar-uri-18",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-020-lar-uri-19",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-021-lar-uri-20",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-022-lar-uri-21",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-023-lar-uri-22",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-024-lar-uri-23",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme#/head/child]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-025-lar-uri-24",
+    "filter": "[[Alpha]lar-uri:fragment[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-026-lar-uri-25",
+    "filter": "[[Alpha]lar-uri:parent[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-027-lar-uri-26",
+    "filter": "[[Alpha]lar-uri:bare[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-028-lar-uri-27",
+    "filter": "[[Alpha]lar-uri:depth[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-029-lar-uri-28",
+    "filter": "[[Alpha]lar-uri:root[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-030-lar-uri-29",
+    "filter": "[[Alpha]lar-uri:path[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-031-lar-uri-30",
+    "filter": "[[Alpha]lar-uri:authority[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-032-lar-uri-31",
+    "filter": "[[Alpha]lar-uri:scheme[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-033-house-32",
+    "filter": "[[Alpha]lar-kind[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-034-house-33",
+    "filter": "[[Alpha]bagPath[lares]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-035-house-34",
+    "filter": "[[Alpha]bagPath[engine]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-036-house-35",
+    "filter": "[[Alpha]bagPath[wiki-shadow]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-037-house-36",
+    "filter": "[[$:/config/pono-small]lar-kind[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-038-house-37",
+    "filter": "[[$:/config/pono-small]bagPath[lares]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-039-house-38",
+    "filter": "[[$:/config/pono-small]bagPath[engine]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-040-house-39",
+    "filter": "[[$:/config/pono-small]bagPath[wiki-shadow]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-041-house-40",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]lar-kind[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-042-house-41",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]bagPath[lares]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-043-house-42",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]bagPath[engine]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "bagPath answers nothing for this title and bag; only the wiki-shadow bag maps a lar: title in the frozen world"
+  },
+  {
+    "id": "added-044-house-43",
+    "filter": "[[lar:///ha.ka.ba/lares/api/pono/meme]bagPath[wiki-shadow]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-045-sense-44",
+    "filter": "[wikisense:recall:title[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-046-sense-45",
+    "filter": "[wikisense:recall:title:ordinary[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-047-sense-46",
+    "filter": "[wikisense:recall:structure[ahu]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "wikisense recall by structure finds nothing in the frozen world"
+  },
+  {
+    "id": "added-048-sense-47",
+    "filter": "[wikisense:recall:form[Alpha]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "wikisense recall by form reaches the engine's language shadows, not only the world"
+  },
+  {
+    "id": "added-049-sense-48",
+    "filter": "[wikisense:cohere:ordinary[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "added-050-operator-49",
+    "filter": "[[Alpha]stack[]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "stack[] over a world tiddler with no stack answers nothing"
+  },
+  {
+    "id": "added-051-operator-50",
+    "filter": "[[Alpha]stack:has[topic]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "stack:has[] over a world tiddler with no stack answers nothing"
+  },
+  {
+    "id": "added-052-operator-51",
+    "filter": "[[Alpha]toml:field[title]]",
+    "tags": [
+      "core",
+      "reviewed",
+      "strange"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false,
+    "why": "toml:field over a non-TOML tiddler answers nothing"
+  },
+  {
+    "id": "added-053-operator-52",
+    "filter": "[[Alpha]meme-pin[kind]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-054-all-memes",
+    "filter": "[all[memes]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "added-055-all-memes-shadows",
+    "filter": "[all[memes+shadows]sort[]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": true
+  },
+  {
+    "id": "added-056-meme-project-missing",
+    "filter": "[[Alpha]meme-project[mem]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  },
+  {
+    "id": "added-057-toml-rank",
+    "filter": "[all[tiddlers]toml:rank[2]]",
+    "tags": [
+      "core",
+      "reviewed"
+    ],
+    "since": "5.5.0-prerelease",
+    "context": {},
+    "host-bound": false
+  }
+]

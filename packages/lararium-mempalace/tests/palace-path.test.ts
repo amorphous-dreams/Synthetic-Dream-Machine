@@ -48,7 +48,6 @@ describe("palace-path canonicalization (the daemon pile-up cure)", () => {
 
   it("defaultPalacePath honors MEMPALACE_PALACE_PATH, else the upstream-default ~/.mempalace/palace", () => {
     const prevMp = process.env["MEMPALACE_PALACE_PATH"];
-    const prevData = process.env["XDG_DATA_HOME"];
     const prevRoot = process.env["LAR_ROOT"];
     const prevHome = process.env["HOME"];
     const prevProfile = process.env["USERPROFILE"];
@@ -63,16 +62,15 @@ describe("palace-path canonicalization (the daemon pile-up cure)", () => {
       expect(defaultPalacePath()).toBe(join(root, "custom"));
 
       // No override → the upstream-default parent. Per the content-cap-home ruling the content cap stays
-      // EXTERNAL at `~/.mempalace` (never strangled into the XDG tree), so the chroma dir is
-      // `~/.mempalace/palace` regardless of XDG_DATA_HOME.
+      // EXTERNAL at `~/.mempalace` (never strangled into the house tree), so the chroma dir reads
+      // `~/.mempalace/palace` whatever house root LAR_ROOT names.
       delete process.env["MEMPALACE_PALACE_PATH"];
-      process.env["XDG_DATA_HOME"] = join(root, "xdg-data");
+      process.env["LAR_ROOT"] = join(root, "house");
       expect(defaultPalacePath()).toBe(
         join(root, "home", ".mempalace", "palace"),
       );
     } finally {
       if (prevMp === undefined) delete process.env["MEMPALACE_PALACE_PATH"]; else process.env["MEMPALACE_PALACE_PATH"] = prevMp;
-      if (prevData === undefined) delete process.env["XDG_DATA_HOME"]; else process.env["XDG_DATA_HOME"] = prevData;
       if (prevRoot === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prevRoot;
       if (prevHome === undefined) delete process.env["HOME"]; else process.env["HOME"] = prevHome;
       if (prevProfile === undefined) delete process.env["USERPROFILE"]; else process.env["USERPROFILE"] = prevProfile;

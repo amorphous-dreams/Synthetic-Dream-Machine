@@ -234,7 +234,7 @@ describe.skipIf(wikiSkip)(`lar-kind — the adaptor lands a draft where the fiel
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
     const fields = { title: "Draft of 'X' by Alice", "draft.of": "X", "draft.title": "X", text: "drafting" };
     wiki.addTiddler(new Tiddler(fields));
-    await adaptor.saveTiddler({ fields });
+    await Promise.all([adaptor.saveTiddler({ fields }), adaptor.boundary()]);
     expect(store.putBags.get(fields.title)).toBe(SLOT_DRAFT);
   });
 
@@ -244,9 +244,9 @@ describe.skipIf(wikiSkip)(`lar-kind — the adaptor lands a draft where the fiel
     const Tiddler = (engine.$tw as never as { Tiddler: new (f: unknown) => unknown }).Tiddler;
     const fields = { title: "Draft of 'Y' by Alice", "draft.of": "Y", "draft.title": "Y", text: "drafting" };
     wiki.addTiddler(new Tiddler(fields));
-    await adaptor.saveTiddler({ fields });
+    await Promise.all([adaptor.saveTiddler({ fields }), adaptor.boundary()]);
     (wiki as never as { deleteTiddler(t: string): void }).deleteTiddler(fields.title);
-    await adaptor.deleteTiddler(fields.title);
+    await Promise.all([adaptor.deleteTiddler(fields.title), adaptor.boundary()]);
     expect(store.tombstoneBags).toEqual([{ title: fields.title, bag: SLOT_DRAFT }]);
   });
 });

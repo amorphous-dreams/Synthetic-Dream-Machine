@@ -1,26 +1,32 @@
 /**
- * device-delegation — the signed capability edge that binds a vessel to its operator.
+ * device-delegation — the signed capability edge from a PersonaGroup root to one face atom.
  *
  * Under capability-is-identity (lar:///ha.ka.ba/lares/api/pono/lararium-identity
  * #capability-and-petnames), the DELEGATION EDGE *is* the relationship and the capability:
- * the operator root signs "Operator O delegates to Device D at place P", and any peer
+ * the operator root signs "Operator O delegates to Atom A at place P", and any peer
  * verifies it offline against a PINNED operator root (CAPABILITY-LAYER, Plane 0→1).
+ *
+ * BOTH HALVES, EACH SIGNED BY ITS OWN SUBJECT. The root delegates to the atom, and the atom countersigns its own
+ * half over the root's proof string and the root's signature: `{DEVICE_ATOM_COUNTERSIGN_DOMAIN}|{root proof}|{root
+ * signature}`. A record carrying the root's half alone is a `DeviceDelegationRootHalf` and verifies nowhere as an
+ * edge; only the countersigned `DeviceDelegationTiddler` counts.
  *
  * The edge is a STANDING MEMBERSHIP grant (long-lived, revocable), NOT a per-use proof:
  * per-use replay defense (nonce + short exp + seen-cache) rides a separate INVOCATION
  * (the UCAN delegation/invocation split) — a follow-on, not this module. Revocation rides
  * the CRDT membership graph (observed-remove — the PRIMARY targeted revoke). NON-renewal
- * rides the `boundEpoch` LEASE below: the grant names a per-resource max-register epoch and
- * goes stale when that epoch rolls past it (coordinator-free; the epoch is a LEASE, not a
+ * rides the `boundEpoch` LEASE below: the face grant names its verified signed lease epoch and
+ * goes stale when that epoch rolls past it (the epoch is a LEASE, not a
  * targeted revoker — api/pono/convergent-mesh).
  *
- * Canonical signed string (opens on `DEVICE_DELEGATION_DOMAIN` for separation — a FROZEN
- * registry name, read whole: its `/v1` tail names nothing and no successor will exist;
- * every field strict-charset so no `|` can shift a boundary):
+ * Signature verification reads two signed strings: the minted one ending at boundEpoch, and the
+ * epoch-free one ending at hearthTrueName. An epoch-free signature alone supplies no standing and
+ * no epoch witness; a caller that asks for the epoch reads it as unavailable.
+ * The minted signed string (every field strict-charset so no `|` shifts a boundary):
  *   {DEVICE_DELEGATION_DOMAIN}|{personaRootDid}|{deviceDid}|{deviceVerifyingKey}|{hearthTrueName}|{boundEpoch}
  *
  * NO CLOCK rides the edge — no issue instant, no expiry. It decays by its LEASE alone (`boundEpoch`
- * against the resource's max-register epoch) and is withdrawn by the membership graph; a wall-clock
+ * against the face's verified signed epoch) and is withdrawn by the membership graph; a wall-clock
  * window would make an unreliable narrator a party to the grant. Two mints of one binding at one
  * lease are the same bytes.
  *
@@ -31,20 +37,21 @@
  * surface (@noble/ed25519 v3 + ./crypto hex).
  */
 
-import { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
+import { DEVICE_DELEGATION_DOMAIN, DEVICE_ATOM_COUNTERSIGN_DOMAIN } from "./domains.js";
 import * as ed25519 from "@noble/ed25519";
 import { hex } from "./crypto.js";
+import { sha256 } from "@noble/hashes/sha2.js";
 import { LAR_DID_RE as DID_RE, didFromVerifyingKey, verifyingKeyFromDid, type LarDid } from "./lar-did.js";
 import type { AuthorityEvidenceVerdict } from "./authority-verdict.js";
 import { acceptEd25519Key, verifyEd25519 } from "./ed25519-door.js";
 
 export { DEVICE_DELEGATION_DOMAIN } from "./domains.js";
-const VK_RE   = /^[0-9a-f]{64}$/;          // raw 32-byte verifying-key hex, lowercase
+const S_SEAL_RE   = /^[0-9a-f]{64}$/;          // raw 32-byte verifying-key hex, lowercase
 const SIG_RE  = /^[0-9a-f]{128}$/;         // 64-byte Ed25519 signature hex, lowercase
 const TRUE_NAME_RE = /^[A-Za-z0-9._:/@-]*$/;   // CID / lar:-name safe; no `|`, no whitespace; "" allowed (place-agnostic)
 const EPOCH_RE = /^\d{1,15}$/;             // decimal lease epoch; 1-15 digits, bounded < Number.MAX_SAFE_INTEGER
 
-export interface DeviceDelegationTiddler {
+export interface DeviceDelegationRootHalf {
   readonly kind:                "device-delegation";
   /** "0x"+hex — the operator root that SIGNED this edge; the verifier checks against it AND the pin. */
   readonly personaRootDid:         LarDid;
@@ -52,10 +59,10 @@ export interface DeviceDelegationTiddler {
   readonly deviceDid:           LarDid;
   /** raw 32-byte Ed25519 verifying-key hex (64, lowercase) of the delegate vessel. */
   readonly deviceVerifyingKey:  string;
-  /** the hearth true-name this edge binds the vessel TO — the engine blob's public True Name
-   *  (the genesis engineCid), or "" if hearth-agnostic. The binding IS (vessel × hearthTrueName). */
+  /** the hearth true name this edge binds the vessel TO: the seed-charter Nexus AID of the hearth it stands at, or ""
+   *  on a gateless leaf (no hearth stands there, by design). Never an engine CID: an engine move leaves every edge whole. */
   readonly hearthTrueName:             string;
-  /** the LEASE epoch this grant binds to — a per-resource max-register value (1-15 decimal digits).
+  /** the FACE LEASE epoch this grant binds to — a verified signed value (1-15 decimal digits).
    *  The grant goes stale when the resource's epoch rolls past it (non-renewal). The epoch is a
    *  LEASE, never a targeted revoker (targeted revoke rides the Keyhive membership graph). */
   readonly boundEpoch:          string;
@@ -63,18 +70,32 @@ export interface DeviceDelegationTiddler {
   readonly signature:           string;
 }
 
+export interface DeviceDelegationTiddler extends DeviceDelegationRootHalf {
+  /** The delegate atom signs the root proof and its signature. */
+  readonly atomSignature: string;
+}
+
 export type DeviceDelegationEvidence = AuthorityEvidenceVerdict<"device-face-delegation">;
 
 
 type ProofFields = Pick<
-  DeviceDelegationTiddler,
+  DeviceDelegationRootHalf,
   "personaRootDid" | "deviceDid" | "deviceVerifyingKey" | "hearthTrueName" | "boundEpoch"
 >;
 
 function delegationProofBytes(d: ProofFields): Uint8Array {
   return new TextEncoder().encode(
-    `${DEVICE_DELEGATION_DOMAIN}|${d.personaRootDid}|${d.deviceDid}|${d.deviceVerifyingKey}|${d.hearthTrueName}|${d.boundEpoch}`,
+    `${DEVICE_DELEGATION_DOMAIN}|${d.personaRootDid}|${d.deviceDid}|${d.deviceVerifyingKey}|${d.hearthTrueName}${d.boundEpoch === undefined ? "" : `|${d.boundEpoch}`}`,
   );
+}
+
+/** The digest a gate names an edge by: SHA-256 hex over its signed fields and signatures. A house clears and admits for this signed proof; unsigned extras on the presented object leave the edge unchanged. */
+export function deviceEdgeDigest(edge: DeviceDelegationTiddler): string {
+  return hex(sha256(new TextEncoder().encode(`${new TextDecoder().decode(deviceAtomProofBytes(edge))}|${edge.atomSignature}`)));
+}
+
+export function deviceAtomProofBytes(edge: DeviceDelegationRootHalf): Uint8Array {
+  return new TextEncoder().encode(`${DEVICE_ATOM_COUNTERSIGN_DOMAIN}|${new TextDecoder().decode(delegationProofBytes(edge))}|${edge.signature}`);
 }
 
 /**
@@ -82,10 +103,10 @@ function delegationProofBytes(d: ProofFields): Uint8Array {
  * untrusted CRDT input). Strict-charset on EVERY field closes delimiter injection entirely
  * (no field can carry `|`) and honors verify's "never throws" contract via typeof guards.
  */
-function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
+function fieldError(d: Partial<DeviceDelegationRootHalf>, complete = true): string | null {
   if (d.kind !== "device-delegation")                            return "not a device-delegation";
   if (typeof d.personaRootDid !== "string" || !DID_RE.test(d.personaRootDid))                 return "personaRootDid not 0x+32-byte lowercase hex";
-  if (typeof d.deviceVerifyingKey !== "string" || !VK_RE.test(d.deviceVerifyingKey))    return "deviceVerifyingKey not 32-byte lowercase hex";
+  if (typeof d.deviceVerifyingKey !== "string" || !S_SEAL_RE.test(d.deviceVerifyingKey))    return "deviceVerifyingKey not 32-byte lowercase hex";
   if (typeof d.deviceDid !== "string" || d.deviceDid !== didFromVerifyingKey(d.deviceVerifyingKey)) return "deviceDid not bound to deviceVerifyingKey";
   // Both keys the edge names pass the door before the edge reads: a small-order DEVICE key would let everyone
   // prove as that device, and a small-order root would let everyone edge a device under that persona.
@@ -94,8 +115,9 @@ function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
   const device = acceptEd25519Key(d.deviceVerifyingKey);
   if (!device.ok) return `deviceVerifyingKey refuses at the Ed25519 door (${device.refusal})`;
   if (typeof d.hearthTrueName !== "string" || !TRUE_NAME_RE.test(d.hearthTrueName))                       return "hearthTrueName has illegal characters";
-  if (typeof d.boundEpoch !== "string" || !EPOCH_RE.test(d.boundEpoch))                 return "boundEpoch not a 1-15 digit decimal";
+  if (d.boundEpoch !== undefined && (typeof d.boundEpoch !== "string" || !EPOCH_RE.test(d.boundEpoch))) return "boundEpoch not a 1-15 digit decimal";
   if (typeof d.signature !== "string" || !SIG_RE.test(d.signature))                     return "signature not 64-byte lowercase hex";
+  if (complete && (typeof (d as Partial<DeviceDelegationTiddler>).atomSignature !== "string" || !SIG_RE.test((d as Partial<DeviceDelegationTiddler>).atomSignature!))) return "atom countersignature missing";
   return null;
 }
 
@@ -105,12 +127,12 @@ function fieldError(d: Partial<DeviceDelegationTiddler>): string | null {
  * `boundEpoch` are caller-supplied (pure, no clock). Throws on malformed inputs — it is the
  * controlled minter, never fed untrusted data.
  */
-export async function buildDeviceDelegation(args: {
+export async function buildDeviceDelegationRootHalf(args: {
   personaRootSeed:    Uint8Array; // the PERSONA ROOT's 32-byte Ed25519 seed — the HUMAN's side, and the signer
   deviceVerifyingKey: string;     // raw Ed25519 verifying-key hex (64, lowercase) of the delegate
-  hearthTrueName:            string;     // hearth true-name (genesis CID), or "" if place-agnostic
-  boundEpoch:         number;     // the per-resource lease epoch this grant binds to (non-negative integer)
-}): Promise<DeviceDelegationTiddler> {
+  hearthTrueName:            string;     // hearth true name (the seed-charter Nexus AID), or "" on a gateless leaf
+  boundEpoch:         number;     // the face's signed lease epoch this grant binds to (non-negative integer)
+}): Promise<DeviceDelegationRootHalf> {
   const personaRootDid = didFromVerifyingKey(hex(await ed25519.getPublicKeyAsync(args.personaRootSeed)));
   const fields: ProofFields = {
     personaRootDid,
@@ -120,10 +142,32 @@ export async function buildDeviceDelegation(args: {
     boundEpoch:         String(args.boundEpoch),
   };
   const candidate = { kind: "device-delegation" as const, ...fields, signature: "0".repeat(128) };
-  const err = fieldError(candidate);
+  const err = fieldError(candidate, false);
   if (err) throw new Error(`[device-delegation] cannot mint: ${err}`);
   const signature = hex(await ed25519.signAsync(delegationProofBytes(fields), args.personaRootSeed));
   return { ...candidate, signature };
+}
+
+export async function countersignDeviceDelegation(
+  half: DeviceDelegationRootHalf,
+  sign: (bytes: Uint8Array) => Promise<string>,
+): Promise<DeviceDelegationTiddler> {
+  const err = fieldError(half, false);
+  if (err) throw new Error(`[device-delegation] cannot countersign: ${err}`);
+  const atomSignature = await sign(deviceAtomProofBytes(half));
+  if (!SIG_RE.test(atomSignature)) throw new Error("[device-delegation] atom countersignature malformed");
+  return { ...half, atomSignature };
+}
+
+export async function buildDeviceDelegation(args: {
+  personaRootSeed: Uint8Array;
+  atomSeed: Uint8Array;
+  hearthTrueName: string;
+  boundEpoch: number;
+}): Promise<DeviceDelegationTiddler> {
+  const deviceVerifyingKey = hex(await ed25519.getPublicKeyAsync(args.atomSeed));
+  const half = await buildDeviceDelegationRootHalf({ ...args, deviceVerifyingKey });
+  return countersignDeviceDelegation(half, async (bytes) => hex(await ed25519.signAsync(bytes, args.atomSeed)));
 }
 
 /**
@@ -134,8 +178,9 @@ export async function buildDeviceDelegation(args: {
  * carries authority, no ambient fallback. (verify proving only "someone signed" was the
  * confused-deputy bait the verification swarm flagged; the pin is now a required argument.)
  *
- * Lease: pass `opts.expectedEpoch` (the resource's current max-register epoch) to enforce
- * non-renewal; omit it to check signature + pin alone. Strict RFC8032 verify
+ * Lease: pass `opts.expectedEpoch` (the face's verified signed lease epoch) to enforce
+ * non-renewal; an epoch-free edge then refuses because it carries no lease proof.
+ * Omit it to check signature + pin alone, which does not establish standing. Strict RFC8032 verify
  * (`zip215:false`) → strongly-binding signatures (exclusive ownership; safe to key dedup on
  * canonical content, never on the malleable signature bytes).
  */
@@ -145,6 +190,11 @@ export async function verifyDeviceDelegation(
   opts?: { expectedEpoch?: number },
 ): Promise<{ ok: boolean; reason?: string }> {
   const evidence = await evaluateDeviceDelegation(edge, expectedOperatorDid, opts);
+  // Until standing replaces the lease at every authority gate, an epoch-free
+  // proof cannot satisfy a caller explicitly requesting the lease fence.
+  if (opts?.expectedEpoch !== undefined && evidence.state === "unavailable") {
+    return { ok: false, ...(evidence.reason !== undefined ? { reason: evidence.reason } : {}) };
+  }
   return evidence.cryptographicallyValid
     ? { ok: true }
     : { ok: false, ...(evidence.reason ? { reason: evidence.reason } : {}) };
@@ -153,7 +203,7 @@ export async function verifyDeviceDelegation(
 /**
  * Read the device edge with an explicit relation-scoped evidence state.
  *
- * `expectedEpoch` is the authority witness. When it is absent, a valid
+ * `expectedEpoch` is the interim lease witness. When it or the signed epoch is absent, a valid
  * signature is still reported as cryptographically valid, but the evidence is
  * `unavailable`; callers that mutate authority must choose a named local
  * refusal or pending path rather than treating omission as a current lease.
@@ -182,20 +232,23 @@ export async function evaluateDeviceDelegation(
   }
 
   // Lease (non-renewal) — the epoch the grant binds to must not have rolled past. OPTIONAL:
-  // pass expectedEpoch (the resource's current max-register epoch the verifier holds) to enforce
+  // pass expectedEpoch (the face's verified signed lease epoch the verifier holds) to enforce
   // the lease; omit to check signature + pin alone. The epoch is the edge's only decay.
   // Targeted revocation rides the Keyhive membership graph, never this counter.
-  if (opts?.expectedEpoch !== undefined) {
+  if (opts?.expectedEpoch !== undefined && edge.boundEpoch !== undefined) {
     const bound = Number(edge.boundEpoch);
     if (!Number.isFinite(bound))        return verdict("malformed", false, "unparseable boundEpoch");
     if (bound < opts.expectedEpoch)     return verdict("stale", false, "delegation lease stale (resource epoch rolled past boundEpoch)");
   }
 
   try {
+    if (!verifyEd25519(edge.atomSignature, deviceAtomProofBytes(edge), edge.deviceVerifyingKey)) {
+      return verdict("rejected", false, "atom countersignature mismatch");
+    }
     const ok = verifyEd25519(edge.signature, delegationProofBytes(edge), verifyingKeyFromDid(edge.personaRootDid));
     if (!ok) return verdict("rejected", false, "signature mismatch");
-    return opts?.expectedEpoch === undefined
-      ? verdict("unavailable", true, "current resource epoch unavailable")
+    return opts?.expectedEpoch === undefined || edge.boundEpoch === undefined
+      ? verdict("unavailable", true, edge.boundEpoch === undefined ? "delegation lease proof unavailable" : "current resource epoch unavailable")
       : verdict("checked-valid", true);
   } catch (e) {
     return verdict("malformed", false, e instanceof Error ? e.message : "ed25519 verify threw");

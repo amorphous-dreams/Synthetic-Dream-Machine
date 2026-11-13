@@ -40,8 +40,8 @@
  * it rolls each bag the roll's scope reaches, keys its work on the scope and each raise, tolerates a repeat,
  * and REJECTS a roll it could not finish, so the vessel hands the same roll over again.
  *
- * Pure: no I/O, no clock, no timer, no random source. Stands specified in code until a composition subscribes
- * the sink and the lockbox store mints a key; out of the package barrel till then.
+ * Pure: no I/O, no clock, no timer, no random source. Called by `content-key-holder` and `sealed-records`; no
+ * composition subscribes the sink yet, and it stands for the lockbox store's key mint. The package barrel names it.
  * Canon: lar:///ha.ka.ba/lararium/mesh/sealed-store#/epochs · #/siblings
  */
 import { isWellFormedText, readKeyVersionId, type KeyVersionId } from "./sealed-chunk.js";

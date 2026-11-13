@@ -5,7 +5,7 @@
  *   - the store's one holder (`repo`): the direct holder's for a founding (`ownedStore`), with no vessel
  *     standing; the standing vessel's own Repo, or the direct holder's, for a face
  *   - generateOrLoadVesselIdentity / loadVesselSigningSeed (disk keypair)
- *   - writeFileSync for the social bootstrap (<lares>/vessel — see larBootstrapPath)
+ *   - writeFileSync for the social bootstrap (<root>/hearth/vessel — see larBootstrapPath)
  *   - the composable genesis cap (daemonGenesisDir) for default directory resolution
  *
  * All ceremony logic lives in @lararium/keyhive (foundThePlace, foundTheFace,
@@ -18,14 +18,20 @@
  * on disk, the function returns early without re-seeding.
  */
 
+import { keepNodeVeilLift } from "../node-veil-lift.js";
+import { wardCredentialOfRoute, type WardCredential } from "../ward-credential.js";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds,
+  DAEMON_BAG_ID, personaMembershipEntries, personaScopedBagIds, nameControlHome,
+  seedDaemonDoc,
   PERSONA_GROUP_ID_TIDDLER, MESH_CABAL_DOC_ID_TIDDLER,
   nexusIdentity, nexusScopeOrThrow, nexusAidOf,
+  mintFaceAnchor, raiseFaceFrontier,
 } from "@lararium/mesh";
-import { daemonGenesisDir } from "../lares-config.js";
+import { daemonGenesisDir, daemonCorpusRoot, loadLaresConfig } from "../lares-config.js";
+import { repoRoot } from "@lararium/mesh/node";
+import { genesisFoundingLine, genesisResolutionAt, pinGenesisSeed } from "../genesis-resolve.js";
 import { larDataDir, larBootstrapPath, larSealHome, larIdentityDir } from "../vessel-paths.js";
 import { FsCustodyIo } from "../custody-io.js";
 import { assertFoundingRoute, custodyTreeStands, foundCustody } from "../custody-session.js";
@@ -33,38 +39,48 @@ import { hearthDialTiddlers, readHearthDialPin } from "../hearth-dial-pin.js";
 import { hearthAid } from "../hearth-aid.js";
 import { readNexusDoc, nexusCharterStands } from "../nexus-doc.js";
 import { admittedJoineeIsland } from "../nexus-standing.js";
-import type { CarriedAdmitPayload } from "./device-admit.js";
+import type { CarriedAdmitPayload } from "@lararium/keyhive";
 import { listPersonaRoots } from "../node-vessel-identity.js";
-import { persistIdentityAnchors, loadIdentityAnchors, loadIdentityArchive, persistIdentityArchive, persistVeilArchive, loadVeilArchive } from "../identity-anchors.js";
-import { custodyVeilKeys, openedCustody, seatCustody } from "../custody-seat.js";
+import { persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas, persistVeilArchive, loadVeilArchive, type IdentityAnchors } from "../identity-anchors.js";
+import { faceStandingCustody, openedCustody, seatCustody } from "../custody-seat.js";
+import { personaGroupDigest } from "../persona-group-file.js";
+import { ensureFaceCustodyOfAsk, settleFaceCustody } from "../face-route.js";
+import { foundingVesselFaceTagDoor, settleFoundingVesselFaceTag } from "../vessel-face-tag-store.js";
+import { landFaceAddressSecret, mintFaceAddressSecret } from "../fleet-join-custody.js";
+import { foundingAskDigest, loadFaceAtomOfGroup, loadPendingFoundingSeed, recoverFoundingSeedFromGroup, standPendingFoundingSeed, keepAndRetireFoundingSeed, retirePendingFoundingSeed, sweepFoundingSeeds, type FoundingAtomAsk } from "../face-atom-store.js";
+import { keepFaceAnchorOfGroup, loadFaceAnchorOfGroup } from "../face-anchor-store.js";
 import { makeCustodyHolder } from "../custody-holder.js";
 import { loadRecoveryDeviceShare } from "../recovery-share-store.js";
 import { provisionRecoveryAtFounding } from "../recovery-keel.js";
 import {
-  generateOrLoadVesselIdentity, loadVesselSigningSeed, persistVesselCard,
+  generateOrLoadVesselIdentity,
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed,
 } from "../node-vessel-identity.js";
 import type { AutomergeUrl } from "@automerge/automerge-repo";
 import type { LarDoc, SlotSpec } from "@lararium/mesh";
+import type { RandomProvider } from "@lararium/mesh";
+import type { PlaceFoundingCard } from "@lararium/mesh";
 import { GENESIS_ENGINE_CID } from "../genesis-artifact.js";
 import {
-  foundThePlace, foundTheFace, runApplyAdmitPayload,
+  foundThePlace, foundTheFace, runApplyAdmitPayload, archiveIsOf,
+  retireFaceCheckpoint, retireApplyCheckpoint, DEVICE_ADMIT_KIND,
 } from "@lararium/keyhive";
 import { SOCIAL_BOOTSTRAP_PLUGIN_TITLE } from "../open-node-vessel.js";
+import { openVesselSecretHome, standVesselSecretHome } from "../secret-home-store.js";
 
 export interface InitOptions {
+  readonly placeFoundingCard?: PlaceFoundingCard;
+  readonly entropy?: RandomProvider;
   /** The direct holder's Repo (`ownedStore`) over this vessel's store — a founding runs with no vessel standing. */
   readonly repo:        Repo;
   /** The directory `repo` holds. Defaults to `larDataDir()`. */
   readonly storageDir?: string;
   readonly genesisDir?: string;
   readonly force?:      boolean;
-  /**
-   * Path to a device-admit/v1 JSON payload. When provided, skips the founding
-   * ceremony and admits this vessel to the operator's existing PersonaGroup + MeshCabal.
-   * Use for same-operator second vessel. A second OPERATOR joins by carriage contract-receive.
-   */
-  readonly admitPayloadPath?: string;
+  /** A device-admit payload the fleet-join door's landing read out of a verified answer: it skips the founding
+   *  ceremony and joins this vessel, a place that stands (with `force`), to the face's PersonaGroup. A second
+   *  OPERATOR joins by carriage contract-receive. */
+  readonly admitPayload?: CarriedAdmitPayload;
   /**
    * The human route the founding binds. REQUIRED: a founding seals the slot tree and the custody root from birth,
    * and a vessel with no passphrase or paper route has no way back in, so a founding without one refuses by name.
@@ -81,8 +97,8 @@ export interface InitResult {
 
 function defaultDirs(): { storageDir: string; genesisDir: string } {
   return {
-    storageDir: larDataDir(),        // the vessel substrate → <lares>/vessel
-    // Baked seed rides the composable genesis cap (LAR_GENESIS → ~/.lares/config.json →
+    storageDir: larDataDir(),        // the vessel substrate → <root>/hearth/vessel
+    // Baked seed rides the composable genesis cap (LAR_GENESIS → <root>/config/config.json →
     // repo-relative <corpus>/genesis). Checked-in by default; a no-config boot lands on the repo seed.
     genesisDir: daemonGenesisDir(),
   };
@@ -110,14 +126,14 @@ function placeTiddlers(daemonUrl: string): PackedTiddlers {
 }
 
 /**
- * A FACE'S REGISTER-MANY PLANE ENTRY — the four social planes, all named off the one tag this PersonaGroup's
+ * A FACE'S REGISTER-MANY PLANE ENTRY — the five social planes, all named off the one tag this PersonaGroup's
  * doc id yields, plus the membership that names the group. This is what the boot's `readPersonaPlanes`
  * consumes to hold a compartment in the family (register-many), and it carries NO singular mount pin — so
  * one shape serves both the mounted founding face and every additional compartment a multitude holds.
  * A vessel-wide circles plane would name one shelf where a multitude needs one per face.
  */
 function facePlaneTiddlers(
-  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
+  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, intentsUrl: string, personaUrl: string,
   personaGroupId: string,
 ): PackedTiddlers {
   const face = personaScopedBagIds(personaGroupId);
@@ -125,6 +141,7 @@ function facePlaneTiddlers(
     [face.identities]: { title: face.identities, text: identitiesUrl, kind: "oracle" },
     [face.circles]:    { title: face.circles,    text: circlesUrl,    kind: "oracle" },
     [face.sessions]:   { title: face.sessions,   text: sessionsUrl,   kind: "oracle" },
+    [face.intents]:    { title: face.intents,    text: intentsUrl,    kind: "oracle" },
     // The PersonaGroup plane and the membership that names it — written through the same pair a vessel
     // standing in a SECOND compartment would add, so founding and admission lay down one shape. The boot
     // path reads the family back by derivation; nothing here holds an order or an index.
@@ -138,12 +155,12 @@ function facePlaneTiddlers(
 /** What the MOUNTED FACE adds: its register-many plane entry PLUS the singular sentinel pins the boot reads
  *  to run the ONE mounted face's Binding Gate. Only the founding face (h0) writes these. */
 function faceTiddlers(
-  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, personaUrl: string,
+  identitiesUrl: string, circlesUrl: string, sessionsUrl: string, intentsUrl: string, personaUrl: string,
   personaGroupId: string, meshCabalDocIdHex: string,
 ): PackedTiddlers {
   return {
     [MESH_CABAL_DOC_ID_TIDDLER]: { title: MESH_CABAL_DOC_ID_TIDDLER, text: meshCabalDocIdHex, kind: "sentinel-id" },
-    ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl, personaGroupId),
+    ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl, personaGroupId),
     [PERSONA_GROUP_ID_TIDDLER]: { title: PERSONA_GROUP_ID_TIDDLER, text: personaGroupId, kind: "persona-group-id" },
   };
 }
@@ -155,20 +172,41 @@ function readPackedTiddlers(path: string): PackedTiddlers {
   return packed.tiddlers ?? {};
 }
 
+/**
+ * The founding act, then the genesis pin. The pin moves ONLY when a founding succeeds (`skipped: false`): a founding
+ * that refuses (custody locked, an occupied store) leaves the earlier pin standing, so the store it left unchanged
+ * still boots against the seed it was founded on.
+ */
 export async function runInit(opts: InitOptions): Promise<InitResult> {
+  const result = await runInitAct(opts);
+  if (!result.skipped) {
+    pinGenesisSeed(result.storageDir, genesisResolutionAt(result.genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot }));
+  }
+  return result;
+}
+
+async function runInitAct(opts: InitOptions): Promise<InitResult> {
   const defaults   = defaultDirs();
   const storageDir = opts.storageDir ?? defaults.storageDir;
   const genesisDir = opts.genesisDir ?? defaults.genesisDir;
   const bootstrap  = larBootstrapPath();
 
-  if (existsSync(bootstrap) && !opts.force) {
+  if (existsSync(bootstrap) && !opts.force && (!opts.admitPayload || readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text === opts.admitPayload.personaGroupId)) {
+    if (opts.admitPayload) {
+      const group = readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text;
+      const atomSeed = group ? await loadFaceAtomOfGroup(group) : null;
+      if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+      // THE CHECKPOINT RESTS IN THE SECRET HOME (operator ruling A5): it retires there.
+      await retireApplyCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
+      await opts.repo.flush();
+    }
     console.log(`[lares vessel found] ${bootstrap} already exists — skipping.`);
     console.log("  Pass --force or delete the file to re-seed.");
     return { skipped: true, bootstrapPath: bootstrap, storageDir, genesisDir };
   }
 
   // THE ROUTE IS CHECKED BEFORE THE FIRST MUTATION: a founding that binds no human route writes nothing. A tree
-  // already standing needs no new route (the VK and its slots stay), so only a founding of custody demands one.
+  // already standing needs no new route (the S key and its slots stay), so only a founding of custody demands one.
   const custodyHomes = { identity: larIdentityDir(), storage: storageDir, seal: larSealHome() };
   const custodyIo = new FsCustodyIo(custodyHomes);
   const custodyStands = await custodyTreeStands(custodyIo, custodyHomes);
@@ -178,16 +216,20 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   mkdirSync(genesisDir, { recursive: true });
 
   // ── THE PRECONDITION RUNS BEFORE THE FIRST MUTATION ──────────────────────────────────────────
-  // A founding binds (device × hearthTrueName), so an absent engine CID means there is nothing to bind
-  // TO and no founding can complete. Checked LATER, this same refusal arrived after the vessel keypair
+  // A founding stands on the genesis engine, so an absent engine CID means no engine to boot
+  // and no founding can complete. Checked LATER, this same refusal arrived after the vessel keypair
   // and the PersonaGroup root had already been minted — a tree carrying keys and no charter, which reads
   // like damage even though both mints load-or-create and a re-run heals them.
   //
   // A gate that fires after the act it guards teaches the operator to distrust a clean refusal.
-  const hearthTrueName = GENESIS_ENGINE_CID(genesisDir);
-  if (!hearthTrueName) {
+  const engineCid = GENESIS_ENGINE_CID(genesisDir);
+  const genesisUsed = genesisResolutionAt(genesisDir, { explicit: process.env["LAR_GENESIS"], configured: loadLaresConfig().resources?.genesis, corpusRoot: daemonCorpusRoot(), shippedRoot: repoRoot });
+  if (engineCid) {
+    console.log(`[lares vessel found] ${genesisFoundingLine(genesisUsed)}`);
+  }
+  if (!engineCid) {
     throw new Error(
-      "[lares vessel found] cannot found: hearth true-name (engine CID) absent from " + genesisDir + " —\n" +
+      "[lares vessel found] cannot found: the genesis engine CID reads absent from " + genesisDir + " —\n" +
       "  the genesis seed carries it. In this repo: `pnpm --filter @lararium/node build:genesis`.\n" +
       "  Founding an ISOLATED root (LAR_ROOT)? Seed the tracked genesis into it first:\n" +
       "    (cd <repo> && git ls-files -z genesis/ | xargs -0 -I{} cp --parents \"{}\" \"$LAR_ROOT/\")",
@@ -196,8 +238,8 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 
   // ── CUSTODY SEALS FROM BIRTH, BEFORE THE FIRST IDENTITY FILE ─────────────────────────────────
   // The slot tree and the custody root land first, so a store that already holds a carrier refuses
-  // (`OldShapeRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
-  // sealed custody: the VK stays, and nothing here re-mints it.
+  // (`OccupiedStoreRefusal`) with the identity home untouched. A tree already standing means a re-seed over a
+  // sealed custody: the S key stays, and nothing here re-mints it.
   //
   // THE FOUNDING HOLDS THE KEY IT MINTED. Every identity row this act writes rests sealed under the vessel key,
   // so the founding seats a fresh holder over the key `foundCustody` hands back and asks nobody for it. Over a
@@ -207,7 +249,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
     // THE KEY COMES FIRST: this act seals rows under the standing key, so it opens the seat before it mints or
     // writes anything. A vessel whose key stays shut refuses here, by name, with the identity home untouched.
     await openedCustody();
-    console.log("[lares vessel found] custody already sealed (vk-slots.bin stands) — the VK and its slots stay as they are.");
+    console.log("[lares vessel found] custody already sealed (s-slots.bin stands) — the S key and its slots stay as they are.");
     // A FRESH BOOTSTRAP NAMES NO FACE, AND `faceStands` READS ONLY THE BOOTSTRAP. So re-seeding over a vessel
     // whose persona roots stand drops it to the waking floor while every other reading still answers that the
     // face stands — `persona list` reads the ROSTER and keeps naming it. The root stays held (`persona new <i>`
@@ -223,43 +265,69 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   } else {
     const founded = await foundCustody({ io: custodyIo, homes: custodyHomes, slots: opts.custody.slots });
     const holder = makeCustodyHolder({ io: custodyIo, homes: custodyHomes });
-    await holder.adopt(founded.vk);
-    founded.vk.fill(0);
+    await holder.adopt(founded.treeKey);
+    founded.treeKey.fill(0);
     seatCustody(holder);
-    console.log("[lares vessel found] custody sealed from birth: vk-slots.bin and the custody root.");
+    console.log("[lares vessel found] custody sealed from birth: s-slots.bin and the custody root.");
   }
 
-  const operatorIdentity = await generateOrLoadVesselIdentity();
+  const operatorIdentity = await generateOrLoadVesselIdentity({ ...(opts.placeFoundingCard ? { placeFoundingCard: opts.placeFoundingCard } : {}), ...(opts.entropy ? { entropy: opts.entropy } : {}) });
   console.log(`[lares vessel found] operator verifyingKey  ${operatorIdentity.verifyingKey.slice(0, 16)}…`);
 
   const repo = opts.repo;
 
-  if (opts.admitPayloadPath) {
+  if (opts.admitPayload !== undefined) {
     // ── Vessel-admission path = the UPGRADE event (a fresh vessel joins a PersonaGroup) ──
     // The joinee's vessel key (above) is the DELEGATE; the payload carries the pinned signer +
     // the root→joinee edge (the founder's PersonaGroup root signed it). The joinee writes that
     // binding into its OWN daemon doc and boots through its Binding Gate — no Beelay, no cap events.
-    if (!existsSync(opts.admitPayloadPath)) {
-      throw new Error(`[lares vessel found --admit] payload file not found: ${opts.admitPayloadPath}`);
+    const payload = opts.admitPayload;
+    // The admit supplies the binding; the joinee's selected face atom supplies its own Keyhive card.
+    if (payload.kind !== DEVICE_ADMIT_KIND) {
+      throw new Error(`[lares fleet join land] the payload names the kind ${JSON.stringify(payload.kind)}: it lacks the device admit shape (${JSON.stringify(DEVICE_ADMIT_KIND)})`);
     }
-    const payload = JSON.parse(readFileSync(opts.admitPayloadPath, "utf8")) as CarriedAdmitPayload;
-    if (payload.kind !== "device-admit/v1") {
-      throw new Error(`[lares vessel found --admit] unexpected payload kind: ${payload.kind}`);
+    // The ceremony mints the selected face's card from its atom; the public place key remains an equality guard.
+    const mountedGroup = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[PERSONA_GROUP_ID_TIDDLER]?.text : undefined;
+    const landsBeside = Boolean(mountedGroup && mountedGroup !== payload.personaGroupId);
+    const anchored = landsBeside ? await listAnchoredPersonas() : [];
+    const stoodIndex = landsBeside ? (await Promise.all(anchored.map(async (index) => ({ index, anchors: await loadIdentityAnchors(index) }))))
+      .find(({ anchors }) => anchors?.personaGroupId === payload.personaGroupId)?.index : undefined;
+    // A face's handle index IS its ordinal in the floor index: the joinee took it when its request founded the face's custody.
+    const standingFace = await faceStandingCustody({ group: personaGroupDigest(payload.personaGroupId) });
+    const handleIndex = standingFace?.ordinal ?? stoodIndex ?? (landsBeside ? Math.max(0, ...anchored) + 1 : 0);
+    const admitSeed = await loadFaceAtomOfGroup(payload.personaGroupId);
+    if (!admitSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+    if (stoodIndex !== undefined) {
+      await retireApplyCheckpoint((await openVesselSecretHome(repo)).handle, admitSeed);
+      await repo.flush();
+      return { skipped: true, bootstrapPath: bootstrap, storageDir, genesisDir };
     }
-    // The joinee's OWN seed — the admit supplies the BINDING; the vessel supplies the SELF. The ceremony
-    // mints this vessel's self-certifying ContactCard from it, and a cardless vessel cannot speak at a gate.
-    const admitSeed = await loadVesselSigningSeed();
     // An archive already at rest restores into the admit's provider, so the archive written back keeps what it held.
-    const standingAdmitArchive = await loadIdentityArchive();
-    const { contactCardJson, archive, identitiesUrl, circlesUrl, sessionsUrl, daemonUrl, personaUrl } = await runApplyAdmitPayload({
+    const keptArchive = await loadVeilArchive(payload.personaGroupId);
+    const standingAdmitArchive = keptArchive && await archiveIsOf(admitSeed, keptArchive) ? keptArchive : null;
+    const priorDaemonUrl = existsSync(bootstrap) ? readPackedTiddlers(bootstrap)[DAEMON_BAG_ID]?.text : undefined;
+    const admitDaemon = priorDaemonUrl
+      ? await repo.find<LarDoc>(priorDaemonUrl as AutomergeUrl)
+      : seedDaemonDoc(repo);
+    if (!priorDaemonUrl) {
+      await repo.flush();
+      writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin(placeTiddlers(admitDaemon.url))), "utf8");
+    }
+    // THE SECRET HOME STANDS BEFORE THE ADMISSION'S FIRST SECRET WRITE: the joinee's dyad, its group-secret seal and the
+    // cap events it ingests rest in this vessel's own sealed home, enrolled on the holder's rest (custody stood above).
+    const secret = await standVesselSecretHome(repo);
+    // THE CONTROL DOCUMENT the founding minted beside the home: the daemon document names it, for the floor's stand.
+    if (secret.controlUrl) nameControlHome(admitDaemon, secret.controlUrl);
+    const { archive, identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, daemonUrl, personaUrl, deviceEdge } = await runApplyAdmitPayload({
       repo,
-      vesselSeed: admitSeed,
-      // The joinee's veil derives from ITS OWN sealed custody root.
-      deriveVeil: custodyVeilKeys,
+      atomSeed: admitSeed,
+      daemonHandle: admitDaemon,
+      secretHandle: secret.handle,
+      secretRest:   secret.rest,
       ...(standingAdmitArchive ? { archiveBytes: standingAdmitArchive } : {}),
-      vesselVerifyingKey: operatorIdentity.verifyingKey,
       vesselDisplayName:  operatorIdentity.displayName ?? "operator",
       payload,
+      ...(landsBeside ? { mount: false } : {}),
       // THE ISLAND. An admit carries a SNAPSHOT of the founder's own RESOLVED NexusIdentity — `kind` +
       // `scope`, minted from the SAME `nexusIdentity` ruling the boot composes (device-admit.ts). A
       // `charter` kind re-enters as a genesis epoch (every charter holder derives the identical scope);
@@ -275,40 +343,68 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
         ownVesselKey:      operatorIdentity.verifyingKey,
       }),
     });
+    await repo.flush();
+
+    const priorAnchor = await loadFaceAnchorOfGroup(payload.personaGroupId);
+    const admittedAnchor = mintFaceAnchor({
+      personaGroup: payload.personaGroupId, personaKelPrefix: payload.personaKelPrefix,
+      personaRootDid: deviceEdge.personaRootDid, edge: deviceEdge, leaseEpoch: Number(deviceEdge.boundEpoch),
+    });
+    await keepFaceAnchorOfGroup(priorAnchor
+      ? raiseFaceFrontier(admittedAnchor, priorAnchor.frontier) : admittedAnchor);
+
+    if (landsBeside) {
+      await persistVeilArchive(archive, payload.personaGroupId);
+      await persistIdentityAnchors({
+        personaGroupId: payload.personaGroupId,
+        meshCabalDocIdHex: payload.meshCabalDocIdHex,
+        signerDid: payload.signerDid,
+        personaKelPrefix: payload.personaKelPrefix,
+        deviceEdge,
+      }, handleIndex);
+      writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
+        ...readPackedTiddlers(bootstrap),
+        ...facePlaneTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl, payload.personaGroupId),
+      }), null, 2), "utf8");
+      await retireApplyCheckpoint(secret.handle, admitSeed);
+      await repo.flush();
+      return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
+    }
 
     // An admit lands a place AND a contracted face in one act — the contracting operator already signed
     // the edge, so nothing waits on a later ceremony here.
-    // THE PIN NAMES THE DIAL: the hearth's sync url + gate key land beside the sentinel ids, so the boot dials
-    // the hearth with no `LAR_JOIN_*` set by hand (hearth-dial-pin.ts). A payload naming no dial pins none.
-    writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
-      ...placeTiddlers(daemonUrl),
-      ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, personaUrl,
-                      payload.personaGroupId, payload.meshCabalDocIdHex),
-      ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
-        kind:  payload.hearthIslandKind,
-        scope: payload.hearthIslandScope,
-      }),
-    }), null, 2), "utf8");
-    // The joinee's self-certifying ContactCard lands in its identity home exactly as a founder's does —
-    // the daemon's nexus-join dial-out reads it, and a cardless vessel never speaks at a gate.
-    await persistVesselCard(contactCardJson);
-    // The archive behind that card rests sealed beside it: the prekey secrets the card names, and the membership
-    // this vessel absorbed. A stand that restores from it presents the same card the hearth admitted.
-    await persistIdentityArchive(archive);
+    // THE PIN NAMES THE DIAL: the hearth's sync url + gate key, and the document the admit named, land beside the
+    // sentinel ids, so the boot dials the hearth by that pin (hearth-dial-pin.ts). A payload naming no dial pins none.
+    // The joinee's face Archive rests under its own atom. Its card carries that face's prekeys and membership;
+    // a faceless vessel presents only the public place floor card and pin.
+    await persistVeilArchive(archive, payload.personaGroupId);
     // A joined vessel persists the SAME anchors from the admit payload — its identity home
     // now backstops the veiled Handle exactly as the founder's does.
     await persistIdentityAnchors({
       personaGroupId:          payload.personaGroupId,
       meshCabalDocIdHex:       payload.meshCabalDocIdHex,
+      signerDid:               payload.signerDid,
+      personaKelPrefix:        payload.personaKelPrefix,
+      deviceEdge,
     });
+    writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({
+      ...placeTiddlers(daemonUrl),
+      ...faceTiddlers(identitiesUrl, circlesUrl, sessionsUrl, intentsUrl, personaUrl,
+                      payload.personaGroupId, payload.meshCabalDocIdHex),
+      ...hearthDialTiddlers(payload.syncUrl, payload.hearthGatePubKey, {
+        kind:  payload.hearthIslandKind,
+        scope: payload.hearthIslandScope,
+      }, payload.hearthGatePin, payload.islandDocUrl),
+    }), null, 2), "utf8");
+    await retireApplyCheckpoint(secret.handle, admitSeed);
     await repo.flush();
 
-    console.log(`[lares vessel found --admit] vessel ${operatorIdentity.verifyingKey.slice(0, 16)}… admitted`);
+    console.log(`[lares fleet join land] vessel ${operatorIdentity.verifyingKey.slice(0, 16)}… admitted`);
     console.log(`  persona plane ${personaUrl}${payload.personaUrl ? " (synced from founder)" : " (fresh local — payload carried none)"}`);
     console.log(`  PersonaGroup ${payload.personaGroupId.slice(0, 20)}…`);
     console.log(`  signer pin   ${payload.signerDid.slice(0, 20)}…`);
     console.log(`  hearth-name  ${payload.hearthTrueName.slice(0, 20)}…  (binding: device × hearthTrueName)`);
-    console.log("[lares vessel found --admit] done — joined the PersonaGroup. Start with: lares vessel stand --with-web");
+    console.log("[lares fleet join land] done — joined the PersonaGroup. Start with: lares vessel stand --with-web");
     return { skipped: false, bootstrapPath: bootstrap, storageDir, genesisDir };
   }
 
@@ -322,20 +418,10 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
   // The FACE lands later, by an operator act: `lares persona new 0 --name '<label>'` runs `runFoundTheFace`
   // below. A hearth whose operator stands right here types two commands instead of one, and a crossroads
   // never types the second at all.
-  const vesselSeed = await loadVesselSigningSeed();
-
-  // A PLACE FOUNDED AGAIN KEEPS ITS ARCHIVE. An archive already at rest (a re-seed over a kept identity) holds the
-  // prekey secrets behind the vessel's card and everything the vessel individual created; the founding provider
-  // restores from it, so the archive written back below still carries all of it. A row that stands and does not
-  // open refuses here, before anything lands.
-  const standingArchive = await loadIdentityArchive();
-  const place = await foundThePlace({ repo, vesselSeed, hearthTrueName, ...(standingArchive ? { archiveBytes: standingArchive } : {}) });
-
-  // Cache the vessel's ContactCard for the light leaf-identity path — a CLI/agent
-  // re-presents it on every peer handshake without booting keyhive (OP-AP5).
-  await persistVesselCard(place.contactCardJson);
-  // The vessel's own keyhive archive rests sealed from this act on: the prekey secrets behind that card.
-  await persistIdentityArchive(place.archive);
+  // THE PLACE MINTS NO SECRET HOME AND NO CONTROL DOCUMENT (operator ruling 2026-11-09): both mint with the FACE, where its
+  // founding or its admission lands (`runFoundTheFace`, the fleet-join land above). The place writes nothing secret and
+  // holds no control family; a herm that never lights a face holds neither, and its custody row names none.
+  const place = await foundThePlace({ repo });
 
   // THE FLUSH COMES FIRST, and the catalog pointer already carries the reason: a pointer written
   // after its referent is durable can be stale; one written BEFORE can be a LIE. Automerge saves ride
@@ -351,7 +437,7 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 
   console.log(`[lares vessel found] ${bootstrap} written`);
   console.log(`  daemon-doc    ${place.daemonUrl}`);
-  console.log(`  hearth-name   ${hearthTrueName.slice(0, 20)}…  (the place this vessel stands at)`);
+  console.log(`  engine        ${engineCid.slice(0, 20)}…  (the genesis engine this place boots)`);
   console.log("[lares vessel found] the PLACE stands — carrying, serving the public shelf, faceless.");
   console.log("  stand it:      lares vessel stand");
   console.log("  light a face:  lares persona new 0 --name '<label>'");
@@ -365,6 +451,8 @@ export async function runInit(opts: InitOptions): Promise<InitResult> {
 // ---------------------------------------------------------------------------
 
 export interface FoundFaceOptions {
+  /** The face's ward route for this founding (seat-harness#/the-ward). Absent, the founding rides the route its face's custody was born under; a face that already stood names one here. */
+  readonly ward?: WardCredential;
   /** The store's one holder: the standing vessel's own Repo, or the direct holder's (`ownedStore`). */
   readonly repo:        Repo;
   readonly genesisDir?: string;
@@ -374,6 +462,21 @@ export interface FoundFaceOptions {
    *  inception + veil + `anchors-hN`, and writes a register-many bootstrap PLANE ENTRY the boot's
    *  `readPersonaPlanes` consumes — but no singular mount pins, so the mounted face stands byte-unchanged. */
   readonly handleIndex?: number;
+  /**
+   * THE FACE'S ADDRESS SECRET, where a restore carries it. Absent, the founding mints one where none stands. Bytes land
+   * as the face's own (the same bytes again change nothing; others refuse `names-another-key`). Null (a face restored
+   * from paper) lands none and mints none. The caller owns the bytes.
+   */
+  readonly addressSecret?: Uint8Array | null;
+}
+
+/**
+ * Settle a face's address secret at its founding: mint where none stands, or land the bytes a restore carried, or
+ * (null) leave the row as it stands. A restore never mints.
+ */
+async function settleAddressSecret(personaGroup: string, carried: Uint8Array | null | undefined): Promise<void> {
+  if (carried === undefined) { (await mintFaceAddressSecret(personaGroup)).fill(0); return; }
+  if (carried !== null) await landFaceAddressSecret(personaGroup, carried);
 }
 
 /** Whether a face already stands on this place — a pure read that founds nothing. */
@@ -388,6 +491,12 @@ export interface FoundFaceResult {
   readonly personaGroupId: string;
   readonly personaKelPrefix:     string;
   readonly signerDid:            string;
+  /**
+   * The face's relation (F), the uuid its founding log pins on the `face` plane — what its label, its mirror folders and its
+   * bases sidecar key on. A fresh founding names it, so the face names itself the moment it stands; an already-standing face
+   * reads null here, and its caller reads the relation off the face's own stage (`kahua-read`).
+   */
+  readonly faceRelation:         string | null;
 }
 
 /** What arming recovery at a founding hands back: whether THIS act split the root, and the two carriers
@@ -416,13 +525,15 @@ export interface RecoveryArmed {
  */
 export async function armRecoveryAtFounding(
   storageDir: string, handleIndex: number,
-  handOut?: (off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>,
+  handOut: ((off: { readonly recordedCode: string; readonly escrowCarrier: string }) => void | Promise<void>) | undefined,
+  /** The face's ward route: the split reads the root seed, a ward act (seat-harness#/the-ward). */
+  ward: WardCredential | undefined,
 ): Promise<RecoveryArmed> {
   if (await loadRecoveryDeviceShare(handleIndex)) return { minted: false, recordedCode: "", escrowCarrier: "" };
   // THE PERSON HOLDS THE TWO OFF-DEVICE SHARES BEFORE THE DEVICE SHARE RESTS (`handOut`). A run that stops between
   // the two leaves no device share, and the same command splits afresh; no run leaves a sealed share whose two
   // partners nobody received.
-  const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(storageDir, globalThis.crypto, 1, handleIndex, handOut);
+  const { recordedCode, escrowCarrier } = await provisionRecoveryAtFounding(storageDir, globalThis.crypto, 1, handleIndex, handOut, ward);
   return { minted: true, recordedCode, escrowCarrier };
 }
 
@@ -441,6 +552,7 @@ export async function armRecoveryAtFounding(
  * it writes no mount pin, so the mounted face stands byte-unchanged. Wearing it is a later act.
  */
 export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFaceResult> {
+  await sweepFoundingSeeds();
   const defaults    = defaultDirs();
   const genesisDir  = opts.genesisDir ?? defaults.genesisDir;
   const handleIndex = opts.handleIndex ?? 0;
@@ -461,17 +573,36 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   if (mounts) {
     const already = packed[PERSONA_GROUP_ID_TIDDLER]?.text;
     if (already) {
-      return { alreadyStood: true, personaGroupId: already, personaKelPrefix: "", signerDid: "" };
+      const atomSeed = await loadFaceAtomOfGroup(already);
+      if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+      // A founding that stopped after its atom kept completes its address secret here (minted where none stands).
+      await settleAddressSecret(already, opts.addressSecret);
+      const daemonUrl = packed[DAEMON_BAG_ID]?.text;
+      if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
+      await retireFaceCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
+      const hearthTrueName = hearthAid();
+      if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
+      await opts.repo.flush();
+      return { alreadyStood: true, personaGroupId: already, personaKelPrefix: "", signerDid: "", faceRelation: null };
     }
   } else {
     // A COMPARTMENT STANDS WHEN ITS PLANE ENTRY STANDS. The bootstrap entry lands last (below), so anchors with no
     // entry mark a founding that stopped midway: the act runs again and completes, re-deriving the same veil.
     if (priorAnchors && packed[personaScopedBagIds(priorAnchors.personaGroupId).identities]?.text) {
-      return { alreadyStood: true, personaGroupId: priorAnchors.personaGroupId, personaKelPrefix: "", signerDid: "" };
+      const atomSeed = await loadFaceAtomOfGroup(priorAnchors.personaGroupId);
+      if (!atomSeed) throw new Error("this face holds no atom; re-found or re-admit it");
+      await settleAddressSecret(priorAnchors.personaGroupId, opts.addressSecret);
+      const daemonUrl = packed[DAEMON_BAG_ID]?.text;
+      if (!daemonUrl) throw new Error("[lares persona new] the bootstrap names no daemon doc");
+      await retireFaceCheckpoint((await openVesselSecretHome(opts.repo)).handle, atomSeed);
+      const hearthTrueName = hearthAid();
+      if (hearthTrueName) await retirePendingFoundingSeed({ hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex });
+      await opts.repo.flush();
+      return { alreadyStood: true, personaGroupId: priorAnchors.personaGroupId, personaKelPrefix: "", signerDid: "", faceRelation: null };
     }
     // A compartment rides BESIDE the mounted face — the founding face must stand first.
     if (!packed[PERSONA_GROUP_ID_TIDDLER]?.text) {
-      throw new Error("[lares persona new] no founding face stands yet — light it with `lares persona new 0 --name '<label>'` first.");
+      throw new Error("[lares persona new] no founding face stands yet — found the hearth and its first face with `lares found --hearth --name '<label>'` first.");
     }
   }
 
@@ -493,30 +624,56 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
   }
 
   const vesselIdentity = await generateOrLoadVesselIdentity();
-  const vesselSeed     = await loadVesselSigningSeed();
   const repo           = opts.repo;
   const daemonHandle   = await repo.find<LarDoc>(daemonUrl as AutomergeUrl);
 
   // The persona ROOT for THIS face — the human's side. It only ever SIGNS; the per-vessel key stays the
   // Individual. Each compartment carries its OWN sovereign signing key at its handle-index; the founding
   // face seats at h0.
-  await generateOrLoadPersonaGroupRoot(handleIndex);
-  const signerSeed = await loadPersonaGroupRootSeed(handleIndex);
-
-  // The founder-veil derives from (the sealed custody root, veilTag). Identity anchors carry the tag, so founding
-  // the same identity against a fresh store derives the same veil, and that veil restores from its own archive. A
-  // founding with no identity anchors carries no tag and mints one — recovery never fabricates a veil.
-  const priorVeilTag = priorAnchors?.veilTag;
-  const priorVeilArchive = priorVeilTag ? await loadVeilArchive(handleIndex) : null;
-
+  // The pending row keeps an interrupted ask. A completed group's atom stays with that group; only an
+  // authenticated checkpoint can recover a seed after the ask row moves into a group row.
+  const foundingAsk: FoundingAtomAsk = {
+    hearthTrueName, bindingMode: "self-stood", personaKelPrefix: null, mount: mounts, handleIndex,
+  };
+  // THE FACE'S CUSTODY STANDS BEFORE ITS ROOT: the root, like every private row of this face, rests under the face's own key,
+  // at the ordinal that is its handle index. The face asks the route it binds (never the vessel's).
+  // ONE PROMPT, ONE ACT: the route the face's custody was born under (or the one the caller carried) opens the face's ward for this
+  // founding's root acts; nothing holds it once the founding settles.
+  let born: WardCredential | null = null;
+  await ensureFaceCustodyOfAsk(foundingAskDigest(foundingAsk), `h${handleIndex}`, handleIndex, (slots) => { born = wardCredentialOfRoute(slots); });
+  const ward = opts.ward ?? born ?? undefined;
+  await generateOrLoadPersonaGroupRoot(handleIndex, ward!);
+  const signerSeed = await loadPersonaGroupRootSeed(handleIndex, ward);
+  // THE ROOT SEED LIVES FOR THIS ONE ACT: it zero-fills when the act settles, whatever it answered (seat-harness#/the-ward).
+  try {
+  // The ask's first row founds the face's own custody (never the vessel's route), keyed by this ask until its group exists;
+  // an interrupted founding re-enters the face it already holds.
+  const askDigest = foundingAskDigest(foundingAsk);
+  // THE SECRET HOME STANDS BEFORE THE FACE'S FIRST SEAL, DYAD OR CAP EVENT, minted here with the face (or opened where an
+  // interrupted founding already minted it) on this holder's rest (the direct holder's, or the standing vessel's), mapped
+  // sealed before the Repo reads a byte of it. Its founding checkpoint rests there (A5), so an interrupted founding
+  // recovers its seed from the home.
+  const secret = await standVesselSecretHome(repo);
+  // THE CONTROL DOCUMENT MINTS WITH THE FACE, beside the secret home (operator ruling 2026-11-09): the daemon document names
+  // it, so a locked floor's stand finds it before the custody row opens. The first name the daemon document took holds.
+  if (secret.controlUrl) nameControlHome(daemonHandle, secret.controlUrl);
+  const atomSeed = (await loadPendingFoundingSeed(foundingAsk))
+    ?? await recoverFoundingSeedFromGroup(foundingAsk, secret.handle.doc()?.tiddlers ?? {})
+    ?? await standPendingFoundingSeed(foundingAsk);
   const face = await foundTheFace({
     repo,
     daemonHandle,
-    vesselSeed,
-    vesselVerifyingKey: vesselIdentity.verifyingKey,
+    secretHandle: secret.handle,
+    secretRest:   secret.rest,
+    atomSeed,
+    askDigest: foundingAskDigest(foundingAsk),
+    placeVerifyingKey: vesselIdentity.verifyingKey,
     vesselDisplayName:  vesselIdentity.displayName ?? "operator",
     binding: { mode: "self-stood", signerSeed },
     hearthTrueName,
+    // The face's tag secret mints at random in its own row under the ask, and the settle below moves it onto the group's; the
+    // founding's own route opens the ward for the ward key's pop.
+    vesselTag: foundingVesselFaceTagDoor(askDigest, ward),
     // THE ISLAND, resolved by the SAME mesh ruling the boot composes — the charter this vessel holds, then
     // the hearth it dials, then its own key as a private nexus of one. A face seated on one board while the
     // boot walks another cannot reach a head, and the Binding Gate HALTS.
@@ -536,38 +693,44 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
         ownVesselKey:    vesselIdentity.verifyingKey,
       }));
     })(),
-    ...(priorVeilTag ? { veilTag: priorVeilTag } : {}),
-    ...(priorVeilArchive ? { veilArchiveBytes: priorVeilArchive } : {}),
-    // The veil derives from this vessel's sealed custody root, never the floor key.
-    deriveVeil: custodyVeilKeys,
     // The founding face MOUNTS; an added compartment does not. Omit for h0 so its path is byte-unchanged.
     ...(mounts ? {} : { mount: false }),
   });
+  await settleFaceCustody(askDigest, face.personaGroupId, async () => {
+    await keepAndRetireFoundingSeed(face.personaGroupId, foundingAsk, atomSeed);
+    // THE VEIL-LIFT LINK: a founding over the floor links the veil to its first face as a join does, under the face's custody alone.
+    await keepNodeVeilLift(face.personaGroupId, atomSeed);
+    await settleFoundingVesselFaceTag(askDigest, face.personaGroupId);
+  });
+  // THE FACE'S ADDRESS SECRET MINTS AT ITS FOUNDING, beside its atom and behind its custody: the face's catalog document
+  // derives its address from it from the first boot, and no later read mints one. A founding that runs again finds it standing.
+  // A restore lands the secret its bundle carried in place of the mint.
+  await settleAddressSecret(face.personaGroupId, opts.addressSecret);
+  await keepFaceAnchorOfGroup(mintFaceAnchor({
+    personaGroup: face.personaGroupId, personaKelPrefix: face.personaKelPrefix,
+    personaRootDid: face.founderEdge.personaRootDid, edge: face.founderEdge, leaseEpoch: 0,
+  }));
+  await repo.flush();
 
   // The mounting face writes the sentinel pins + its plane entry; an added compartment writes ONLY the
   // register-many plane entry the boot's `readPersonaPlanes` consumes, merged over the mounted face's pins.
   const faceEntry = mounts
-    ? faceTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
+    ? faceTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.intentsUrl, face.personaUrl,
                    face.personaGroupId, face.meshCabalDocIdHex)
-    : facePlaneTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.personaUrl,
+    : facePlaneTiddlers(face.identitiesUrl, face.circlesUrl, face.sessionsUrl, face.intentsUrl, face.personaUrl,
                         face.personaGroupId);
-  // THREE WRITES, ONE COMMIT POINT. The veil's archive rests first, under this face's own row; the anchors and
+  // THREE WRITES, ONE COMMIT POINT. The atom's archive rests first, under this face's own row; the anchors and
   // their roster line follow; the bootstrap entry lands LAST and commits the face. Every "already stood" reading
   // above reads that entry, so a founding that stops anywhere before it runs again whole. An entry never stands
   // over a missing archive or missing anchors.
   //
-  // WHAT AN UNCOMMITTED FOUNDING LEFT BELONGS TO NO FACE. The run that completes mints its own PersonaGroup and
-  // MeshCabal and writes this face's archive, anchors and (for the mounting face) pins over whatever the stopped
-  // run left; the stopped run's group stays in the store named by nothing, since only the entry written here makes
-  // a group a face. Where the stopped run reached its anchors, the tag they carry re-derives the same veil and that
-  // veil restores from its own archive; where it stopped sooner, a fresh tag derives a fresh veil and its archive
-  // replaces the row.
-  await persistVeilArchive(face.veilArchive, handleIndex);
-  await persistIdentityAnchors({
+  // WHAT AN UNCOMMITTED FOUNDING LEFT BELONGS TO NO FACE. Only the bootstrap entry written here makes a group a
+  // face. The checkpoint and group row let the same ask re-enter with its seed, group, cabal, and archive.
+  // Another ask mints its own PersonaGroup and keeps its archive in another group row.
+  await persistVeilArchive(face.veilArchive, face.personaGroupId);
+  const founderAnchors: IdentityAnchors = {
     meshCabalDocIdHex:      face.meshCabalDocIdHex,
     personaGroupId:   face.personaGroupId,
-    // The persisted veil tag and doc ids let the same identity re-derive its founder-veil on a fresh store.
-    veilTag:                face.veilTag,
     // THE WEAR-REBOOT MOUNT MATERIAL. A non-active persona (mount:false) pins NONE of these into the daemon
     // doc, so a reboot could never mount-switch to it. Persisted here — all PUBLIC (a signer DID, a KEL
     // prefix, a signed grant record; no secret) — a reboot re-pins its mount from its own anchors, and the
@@ -575,14 +738,19 @@ export async function runFoundTheFace(opts: FoundFaceOptions): Promise<FoundFace
     signerDid:              face.signerDid,
     personaKelPrefix:       face.personaKelPrefix,
     deviceEdge:             face.founderEdge,
-  }, handleIndex);
-  await repo.flush();
+    foundingAskDigest:      foundingAskDigest(foundingAsk),
+  };
+  await persistIdentityAnchors(founderAnchors, handleIndex);
   writeFileSync(bootstrap, JSON.stringify(bootstrapPlugin({ ...packed, ...faceEntry }), null, 2), "utf8");
+  await retireFaceCheckpoint(secret.handle, atomSeed);
+  await repo.flush();
 
   return {
     alreadyStood: false,
     personaGroupId: face.personaGroupId,
     personaKelPrefix:     face.personaKelPrefix,
     signerDid:            face.signerDid,
+    faceRelation:         face.faceRelation,
   };
+  } finally { signerSeed.fill(0); }
 }

@@ -1,16 +1,12 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/causal-islands">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/causal-islands`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable     = true
-file-path     = "bags/lares/ha.ka.ba/lares/api/pono/causal-islands.mem"
 heleuma       = "ba"
 l-space       = "stable"
-mana          = 18
-manao         = 17
-manaoio       = 17
 namespace     = "&#x2299;"
 role          = "invariant law: causal island doctrine — three structural axes (access × scale × powers) + alignment plane; authority-first sync order; visibility gate; edge island lifecycle"
 source-symbol = "ABILITY_LADDER AUTHORITY_FIRST_ORDER CAUSAL_ISLAND_MUST CAUSAL_ISLAND_MAY AuthorityFirstGuard visibilityGate"
@@ -21,7 +17,7 @@ type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/api/pono/causal-islands"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Causal Islands
 
@@ -37,7 +33,7 @@ this model separates them.
 
 <<~/ahu>>
 
-<<~ ahu #/model>>
+<<~ ahu slot=`#/model`>>
 
 !! The model — three axes + one plane
 
@@ -70,7 +66,7 @@ homogeneous-trust (those devices already hold `admin` on `@daemon`, so marginal 
 (2026-06-29 cohere); above it the mesh scales on the orthogonal ''INFRA axis'' — `Nexus` and
 `DreamNet` join by ''treaty / mutual-carriage contract'' (who relays whose sealed bytes), never by
 delegation-up, a relay carrying without reading
-(<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology">>). "DreamNet"
+(<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/two-axis-topology`>>). "DreamNet"
 names no registry and no canonical graph; it emerges as the transitive closure of who-relays-to-whom
 under everyone's local stances. Neighborhood, city, nexus and DreamNet
 ride the INFRA shrine-tiers and join by treaty, never as delegation-nested WHO rings.
@@ -92,7 +88,7 @@ capability structurally cannot express it. Lives in its own invariant
 
 <<~/ahu>>
 
-<<~ ahu #/law>>
+<<~ ahu slot=`#/law`>>
 
 !! Law
 
@@ -106,7 +102,7 @@ imply every level below them. (We stand strictly stronger than ATProto here: the
 a plaintext firehose; ours forwards ciphertext it cannot open — the correct boundary for a
 private mesh of households rather than a public broadcast medium.)
 
-''Visibility gate'': ALL six conditions must hold for a meme to federate across an edge island.
+''Visibility gate'': ALL five conditions must hold for a meme to federate across an edge island. No scalar a carrier declares about itself counts among them: disclosure rides the recipe, the holder's capability, revocation and kapu, and a threshold dropped from this list never widens what leaves a node without a local sharing grant.
 Stage band serves as a UX annotation — NOT a gate condition.
 
 ''Shore law'' (Scale axis): joining a ''social'' ring (≤ Cabal) requires a capability delegation
@@ -129,7 +125,7 @@ pretending to a global now reads as the managing failure
 
 <<~/ahu>>
 
-<<~ ahu #/two-clocks>>
+<<~ ahu slot=`#/two-clocks`>>
 
 !! Two clocks, orthogonal — causal ⊥ rhythmic
 
@@ -163,7 +159,7 @@ membership-removal) name authority/liveness mechanisms, never clocks. Full rhyth
 
 <<~/ahu>>
 
-<<~ ahu #/schema>>
+<<~ ahu slot=`#/schema`>>
 
 !! Schema (machine-readable)
 
@@ -245,11 +241,10 @@ causal-island-may = [
   "peer-sync-state",
 ]
 
-# Visibility gate — ALL six conditions must hold to federate a meme across an edge island
+# Visibility gate — ALL five conditions must hold to federate a meme across an edge island
 [visibility-gate]
 conditions = [
   "rating(meme) >= meme",
-  "manaoio(meme) >= wiki.minManaoio",
   "recipe(wiki).matches(meme)",
   "subjectCanSync(subject, edge.id)",      # holds pull on the edge (forward ciphertext)
   "!edge.revoked",
@@ -259,7 +254,7 @@ conditions = [
 
 <<~/ahu>>
 
-<<~ ahu #/source>>
+<<~ ahu slot=`#/source`>>
 
 !! Source (TypeScript — compiled-in)
 
@@ -303,7 +298,6 @@ export const CAUSAL_ISLAND_MAY = [
 // even ahead of live consumers — it is the cross-ring sync protocol for Axis 2.
 export function visibilityGate(input: VisibilityGateInput): boolean {
   if (!FEDERABLE_RATINGS.has(input.memeRating.toLowerCase())) return false;
-  if (input.memeManaoio < input.wikiMinManaoio)                return false;
   if (!input.recipeMatches)                                    return false;
   if (!input.subjectCanSync)                                   return false;  // holds pull on edge
   if (input.edgeRevoked)                                       return false;
@@ -314,7 +308,7 @@ export function visibilityGate(input: VisibilityGateInput): boolean {
 
 <<~/ahu>>
 
-<<~ ahu #/the-model-key>>
+<<~ ahu slot=`#/the-model-key`>>
 
 !! A time value MAY enter as a KEY, never as an arbiter
 
@@ -338,7 +332,7 @@ Two parties holding positions at different epochs cannot reconcile them by compa
 
 <<~/ahu>>
 
-<<~ ahu #/reject>>
+<<~ ahu slot=`#/reject`>>
 
 !! Reject-list — the re-concentration traps
 
@@ -363,12 +357,12 @@ meant to escape):
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
-<<~ loulou "lar:///ha.ka.ba/lararium/api/mandate-activity-provenance">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/mandate-activity-provenance`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;PlBbmobFmcS-UdprzIC4fZyo0RLlFbJgMWRvFNxMEYo
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NKvteFnGWrdC4bTzAXCqibz9vJwDUUP-nG1SEhk8Dfw`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

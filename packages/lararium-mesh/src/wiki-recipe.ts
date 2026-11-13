@@ -15,13 +15,17 @@
  *   wikis/{slug}/working  — the SAVED live write layer, CRDT; normal edits route here
  *   bags/{slug}           — the wiki's CANON bag (read-only from the wiki), published
  *                            to only by a promotion MOVE (shore-law)
- *   libraryBags[]          — optional content libraries, CRDT, read-only from wiki
- *                            (the lares wiki-recipe carries the lararium and lares bags here)
- *   oracle                 — runtime system island: engine core + plugins + grammar +
- *                            bag-oracle; the UNIVERSAL FLOOR of every recipe, CRDT, required
+ *   libraryBags[]          — optional content libraries, CRDT; each lays its flags from
+ *                            `slotLayerFlags`, which writes every slot but the floor
+ *                            (the lares wiki-recipe carries the live lararium bag here)
+ *   oracle                 — the floor's read-face, READ-ONLY, under every recipe: the pinned
+ *                            history-free lares and lararium snapshots a manifest CID names
+ *                            (`floor-manifest.ts`), over the live seed rows (engine core,
+ *                            plugins, grammar, bag-oracle)
  *
- * The lares bag (personality) and the lararium bag (engine corpus) never stand as the floor — they
- * ride a wiki's libraryBags. The lares wiki-recipe = oracle floor + lararium bag + lares bag.
+ * Every wiki reads the lares and lararium carriers through the floor, and an edit aimed there copies
+ * up into the wiki's working layer. The system wikis themselves still compose their live documents:
+ * the lares wiki-recipe = oracle floor + live lararium + its own live lares canon.
  * The memetic-wikitext plugin rides the oracle island (CID-frozen), so it is universal.
  *
  * Above-stack projections defer (separate concern). When they land they will
@@ -32,7 +36,7 @@
 
 import type { Heads } from "@automerge/automerge";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
+import { ORACLE_DOC_URI, LARARIUM_DOC_URI, LARES_DOC_URI, CROSSROADS_DOC_URI, KAHUA_DOC_URI, bagUri, wikiUri } from "./lar-uris.js";
 import { bagStackFromRec } from "./bag-stack-from-rec.js";
 import { requireLarDid, type LarDid } from "./lar-did.js";
 
@@ -67,6 +71,9 @@ export const LARARIUM_BAG = LARARIUM_DOC_URI;
 export const ORACLE_BAG   = ORACLE_DOC_URI;
 /** crossroads — the public oracle plane; a recipe library bag whose pointer the oracle plane serves (public infra). */
 export const CROSSROADS_BAG = CROSSROADS_DOC_URI;
+/** kahua — the face's lift-only fleet stage; a library bag a recipe mounts read-only, so a hand write aimed at it
+ *  copies UP into the default writable and only a signed lift lands in it. */
+export const KAHUA_BAG = KAHUA_DOC_URI;
 
 /** The SYSTEM bags — their doc pointers ride the oracle plane's well-known tiddlers, never the catalog
  *  registry. Every other bag resolves from the catalog. The one spelling the island kernel, recipe-watch
@@ -92,8 +99,8 @@ export function wikiDraftBagUri(slug: string): SlotUri {
  *  `resolveSlotDoc`). ONE spelling for the resolver and every reader. The DID carries the one
  *  spelling (`didFromVerifyingKey`); any other refuses loud, so no host keys a floor under a name the
  *  others cannot find. */
-export function wikiDraftDocKey(slug: string, vesselDid: LarDid): SlotUri {
-  return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(vesselDid, "wikiDraftDocKey"))}`;
+export function wikiDraftDocKey(slug: string, placeDid: LarDid): SlotUri {
+  return `${wikiUri(slug)}/drafts/${encodeURIComponent(requireLarDid(placeDid, "wikiDraftDocKey"))}`;
 }
 
 /** Who reaches a slot's doc — the `face-reach` field every binding record carries: `face` when the
@@ -117,6 +124,7 @@ export interface SlotDocPorts {
  * cap-stack falls to the floor, never reds. A seat that lands later resolves the face doc from then
  * on; the floor stays what it was, a private device's own.
  */
+// The working kind of every wiki but the daemon's rests in its realm workbench (cabal-realm#/the-workbench).
 export async function resolveSlotDoc(ports: SlotDocPorts): Promise<{ url: string; reach: SlotReach }> {
   const seated = await ports.seated().catch(() => false);
   if (seated) return { url: await ports.faceDoc(), reach: "face" };
@@ -190,6 +198,12 @@ export interface WikiRecipe {
    * libraryBags[0] wins ties over libraryBags[1]. Read-only from this wiki.
    */
   readonly libraryBags?: readonly SlotUri[];
+  /**
+   * THE WIKI'S CANON, where it is not `bags/<wikiSlug>`: the daemon wiki's canon follows the worn face
+   * (`daemonFaceCanonBag`), so its recipe names that bag here, and the daemon document beneath (`bags/daemon`) keeps no
+   * canon role. Absent: the canon reads `wikiBagUri(wikiSlug)`.
+   */
+  readonly canonBag?: SlotUri;
   /**
    * Canon bag URIs this wiki DESIGNATES for local disk projection (write-back).
    * A synced, platform-neutral *wish* (the shape half of disk-mirroring). The
@@ -317,13 +331,63 @@ export function expandRecipe(r: WikiRecipe): readonly SlotUri[] {
     // the read-only library member, published to only by a promotion MOVE
     // (wiki-layer-ontology#shore-law). Working (live) and canon stay distinct layers.
     wikiSlotUri(slug, "working"),
-    wikiBagUri(slug),
+    wikiCanonOf(r),
     ...(r.libraryBags ?? []),
+    // A wiki whose canon follows its face keeps its own bag beneath the libraries, below every canon: the daemon
+    // document, the vessel's own state, in no canon role.
+    ...(r.canonBag !== undefined ? [wikiBagUri(slug)] : []),
     // oracle = the universal floor (engine + grammar + bag-oracle). The lares and
     // lararium bags never stand as the floor — they ride a wiki's libraryBags (the lares
     // wiki-recipe = oracle floor + lararium bag + lares bag).
     ORACLE_BAG,
   ])];
+}
+
+/**
+ * WHERE A SLOT MOUNTED LATE SEATS: the composite index (`addLayer`'s `at`, lowest priority = 0) that lays `slot` just above
+ * the nearest slot beneath it in the recipe's order that the composite already mounts, else at the foot. A layer that mounts
+ * after the boot (the daemon's working and edit slots, the face canon after ea) reads its place off the recipe, never off one
+ * neighbour that may not stand yet: an index read off an absent neighbour seats the slot beneath every library (the kahua
+ * stage then shadows each working edit of a lifted title).
+ */
+export function recipeLayerIndex(composite: { layerIndexOf(bagId: string): number }, recipe: WikiRecipe, slot: SlotUri): number {
+  const order = expandRecipe(recipe);
+  const from = order.indexOf(slot);
+  for (const below of from < 0 ? [] : order.slice(from + 1)) {
+    const index = composite.layerIndexOf(below);
+    if (index >= 0) return index + 1;
+  }
+  return 0;
+}
+
+/** The bag a recipe reads as its wiki's canon: `canonBag` where it names one, else `bags/<wikiSlug>`. */
+export function wikiCanonOf(r: Pick<WikiRecipe, "wikiSlug" | "canonBag">): SlotUri {
+  return r.canonBag ?? wikiBagUri(r.wikiSlug);
+}
+
+const FACE_RELATION = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+
+/**
+ * THE DAEMON WIKI'S CANON FOR ONE FACE: `bags/daemon-<F>`, F the relation the face's verified founding record pins (the
+ * same F its `wikis/daemon-<F>` and `bags/kahua-<F>` folders carry). Minted at the face's first worn stand and named in
+ * that face's own catalog; the daemon document (`bags/daemon`) keeps no canon role.
+ */
+export const DAEMON_WIKI_SLUG = "daemon";
+
+export function daemonFaceCanonBag(faceRelation: string): SlotUri {
+  if (!FACE_RELATION.test(faceRelation)) throw new Error(`daemon face canon: invalid relation ${JSON.stringify(faceRelation)}`);
+  return bagUri(`daemon-${faceRelation}`);
+}
+
+/**
+ * The kahua stack over a recipe: the face's kahua bag leads the library bags, so the layers read TOP-DOWN as the
+ * wiki's private slots (working on top), its own bag, the kahua bag, any other library, then the oracle floor
+ * (the lares canon). A recipe already carrying the kahua bag returns as it stands. A device whose face holds no
+ * registered kahua bag mounts the stack without that layer: the slot resolver skips an unregistered library bag.
+ */
+export function kahuaRecipe(r: WikiRecipe): WikiRecipe {
+  if ((r.libraryBags ?? []).includes(KAHUA_BAG)) return r;
+  return { ...r, libraryBags: [KAHUA_BAG, ...(r.libraryBags ?? [])] };
 }
 
 /** The working slot is the only default writable; an absent handle leaves no default writable. */
@@ -332,14 +396,14 @@ export function defaultWritableSlot(slug: string): SlotUri {
 }
 
 /**
- * The layer flags a slot registers with. Every slot is writable except the oracle floor: the floor is
+ * The layer flags a slot registers with. Every slot is writable except the oracle floor and the kahua bag (lift-only): the floor is
  * the system island every vessel shares, so a wiki mounts it read-only and an edit aimed at it copies
  * UP into the wiki's default writable (Law 4) — the floor's one writer is the node home, by handle.
  * `defaultWritable` marks `defaultWritableSlot` alone; every other layer registers `false` so the
  * last-registered temp store never takes the office.
  */
 export function slotLayerFlags(slot: SlotUri, slug: string): { writable: boolean; defaultWritable: boolean } {
-  return { writable: slot !== ORACLE_BAG, defaultWritable: slot === defaultWritableSlot(slug) };
+  return { writable: slot !== ORACLE_BAG && slot !== KAHUA_BAG, defaultWritable: slot === defaultWritableSlot(slug) };
 }
 
 /** The four INSTANCE slots — minted per (PersonaGroup × fingerprint) by the resolver, threaded

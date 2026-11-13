@@ -26,8 +26,8 @@
  * dial. A `verified` verdict states that two certificates verify and no learned denial names the vessel's
  * key; it states nothing of possession.
  *
- * Stands specified in code until the join door, the removal door and the gate consume it; out of the
- * package barrel till then.
+ * Called by the gate (`face-gate`, `gate-exchange`), the dial (`face-dial`), the join door (`fleet-join`), the
+ * removal door (`device-removal`), the session face and signer, and the browser adapter; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */

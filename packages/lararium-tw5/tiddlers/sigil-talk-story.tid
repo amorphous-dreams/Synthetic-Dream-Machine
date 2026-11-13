@@ -1,0 +1,11 @@
+title: lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-talk-story
+tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
+lar-kind: metadata
+lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/talk-story
+lar-pattern: <<~\s*talk-story(?=[\s>])(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sslot=`([^`]*)`)|)(?:(?=(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*?\sground=`([^`]*)`)|)(?:```(?:(?!```)[\s\S])*```|`[^`]*`|[^`>]|>(?!>))*>>
+lar-example: <<~ talk-story slot=`#test-recut-forks` ground=`eight forks the cut reads left owed`>>
+lar-render: literal
+type: text/vnd.tiddlywiki
+
+<!-- talk-story — a convened floor: its `slot` fragment and the `ground` it convened on. Recognized in the tree, rendered as plain literal text
+     for now. The prose line form (`talk-story · ground: … · telling: … · exit: …`) is not a call. -->

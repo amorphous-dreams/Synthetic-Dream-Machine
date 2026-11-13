@@ -37,7 +37,7 @@ import {
   inMask,
   maskedExec,
   maskedExecAll,
-  META_OPEN_RE,
+  META_FENCE_RE,
   PLAIN_OPEN_RE,
   frameHex,
   readFrame,
@@ -61,7 +61,7 @@ import {
 // The heading is the one head reader's (`carrierHeadPattern`); the STX/ETX/EOT division the one span
 // reader's (`readFrame`). What stays here reads the head's NAMED code binding.
 /** The SOH variant a head names through its `code=` binding, captured. */
-const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*"&#x(${frameHex("SOH")});"`);
+const SOH_CODE_PARAM_RE = new RegExp(`^<<\\^[^>\\n]*?\\bcode=\\s*\`&#x(${frameHex("SOH")});\``);
 import { parseTaploFields } from "./toml-ast.js";
 import { CARRIER_TYPE, CARRIER_TYPES, isCarrierType } from "@lararium/mesh/carrier-type";
 import { HANDLE_ONLY_FIELDS } from "@lararium/mesh/content-handle";
@@ -149,7 +149,7 @@ export function deserializeCarrier(
   const arrived = text;
   const floor = shape.kind === "bare"
     ? null
-    : layFloor(baseUri, text, read, () => verdictOf(arrived, shape).kind === "match");
+    : layFloor(baseUri, text, read, () => { const k = verdictOf(arrived, shape).kind; return k === "match" || k === "head-unbound"; });
   if (floor) {
     text = floor.text;
     stream = readStream(text);
@@ -166,17 +166,17 @@ export function deserializeCarrier(
     const root = String(tiddlers[0]!["title"]);
     if (prologue.length > 0) carriage.push(...carriageRecord(root, "prologue", prologue));
     // The head names its namespace and its code by NAMED params, the one spelling a head is read in;
-    // a head in a retired spelling (glyphs before the code) is the frame verdict's tear, never read
-    // here. The Kapu SOH variant (&#x0011; DC1) carries its own semantics — the code survives on the
+    // the frame verdict's tear stays unread here. The Kapu SOH variant (&#x0011; DC1)
+    // carries its own semantics — the code survives on the
     // parent as `$carrier-soh`, never normalized away.
-    const namespace = (/^<<\^[^>\n]*?\bnamespace="([^"]*)"/.exec(carrier.text)?.[1] ?? "").trim();
+    const namespace = (/^<<\^[^>\n]*?\bnamespace=`([^`]*)`/.exec(carrier.text)?.[1] ?? "").trim();
     if (namespace.length > 0) for (const t of tiddlers) t["namespace"] = namespace;
     if (SOH_CODE_PARAM_RE.exec(carrier.text)?.[1] === "0011") tiddlers[0]!["$carrier-soh"] = "0011";
-    // WHAT MAY STAND BETWEEN ETX AND EOT — the BCC, and nothing else. ETX ends the text; the slot after
-    // it carries the block check, never payload (@lararium/memetic-frame check.ts holds the why). Foreign
-    // content in that slot is the carrier check's to refuse (`carrier-check.ts`); this reader stamps no
-    // reading onto a record, and an arriving check needs no record — the emitter mints one over every
-    // framed body.
+    // WHAT MAY STAND BETWEEN ETX AND EOT — nothing. ETX ends the text and carries its own check in its
+    // `bcc` slot (@lararium/memetic-frame check.ts holds the why). Content after ETX is the carrier
+    // check's to refuse (`carrier-check.ts`), and a retired trailer check there tears the frame; this
+    // reader stamps no reading onto a record, and an arriving check needs no record — the emitter mints
+    // one over every framed body.
     if (postamble.trim().length > 0 || slotText.trim().length > 0) {
       carriage.push(...carriageRecord(root, "postamble", postamble));
     }
@@ -394,8 +394,8 @@ function safeSplitMeme(read: CarrierRead, fields: TiddlerFields): TiddlerFields[
 // ---------------------------------------------------------------------------
 
 // The head line, stripped at ingest. Control sigils live on ONE line by law — the shore's line pattern
-// never crosses one (a greedy multi-line match once swallowed from a quoted `<<~` mention down to the
-// real closer; found on loci.md).
+// never crosses one (a greedy multi-line match swallows from a quoted `<<~` mention down to the real
+// closer).
 const SOH_LINE_RE = carrierHeadLinePattern();
 
 function stripLeadingNewlines(text: string): string {
@@ -537,8 +537,7 @@ function splitRecursive(
     const childStructure = extractSlotStructure(inner.rewrittenText);
 
     const childUriPath  = childUri.startsWith("lar:///") ? childUri.slice(7) : childUri;
-    // Record hygiene (carrier-whole at rest): children carry NO `file-path` —
-    // a fragment record never owns a disk file; its carrier root does.
+    // Record hygiene: no record carries a `file-path`, root or child — residency rides the envelope.
 
     allChildren.push({
       // Default carrier type; a child slot's OWN declared meta `type` (e.g. text/markdown) rides in
@@ -554,7 +553,7 @@ function splitRecursive(
       "$slot":            slot,
     });
     // MINT ON DIFFERENCE, NEVER ON DEFAULT. The render (expandRefs below) already falls back to the
-    // canonical spelling — `<<~ ahu ${slot}>>` / `<<~/ahu>>` — whenever no worksite carriage record
+    // canonical spelling — the ahu opener naming the slot and its plain closer — whenever no worksite carriage record
     // exists for a slot. So the split side must NOT mint one when the authored bytes already ARE that
     // canonical spelling: a record there would be a derived value stored, re-deriving the same bytes
     // the render would have emitted for free. Only authored bytes that DIFFER from the canonical
@@ -562,13 +561,13 @@ function splitRecursive(
     const openBytes  = text.slice(block.openStart, block.bodyStart);
     const closeBytes = text.slice(block.bodyEnd, block.closeEnd);
     allChildren.push(
-      ...(openBytes  === `<<~ ahu ${slot}>>` ? [] : carriageRecord(childUri, "worksite-open",  openBytes)),
+      ...(openBytes  === `<<~ ahu slot=\`${slot}\`>>` ? [] : carriageRecord(childUri, "worksite-open",  openBytes)),
       ...(closeBytes === `<<~/ahu>>`         ? [] : carriageRecord(childUri, "worksite-close", closeBytes)),
       ...carriageRecord(childUri, "preamble",  childStructure.preamble  ?? ""),
       ...carriageRecord(childUri, "postamble", childStructure.postamble ?? ""),
     );
     allChildren.push(...inner.children);
-    rewritten += `<<~ kahea ahu ${slot}>>`;
+    rewritten += `<<~ kahea ahu slot=\`${slot}\`>>`;
     cursor = block.closeEnd;
   }
   rewritten += text.slice(cursor);
@@ -580,10 +579,10 @@ function splitRecursive(
 // Used by both header-region and slot-body TOML extraction.
 // ---------------------------------------------------------------------------
 
-// THE OPENER IS SHARED, THE CLOSE IS THIS READER'S OWN. `findMetaFence` hands back `start`/`end` and
-// the render rests on those offsets, so the ```\n? close stays exactly as it stands — a close fused
-// with carrier-shape's `\n``` would move `content` and `end` and byte-exact round-trip with it.
-const META_FENCE_RE  = new RegExp(META_OPEN_RE.source  + "([\\s\\S]*?)```\\n?");
+// THE FENCE IS SHARED, WHOLE: opener and close (`META_FENCE_RE`, memetic-frame). `findMetaFence` hands back
+// `start`/`end` and the render rests on those offsets, so the close stays the first tick run and `\n?`;
+// the frame's head binding, carrier-shape and the root-meta locator read the body by the same close, so no
+// reader binds against bytes this split never parses (blind security read A3).
 const PLAIN_FENCE_RE = new RegExp(PLAIN_OPEN_RE.source + "([\\s\\S]*?)```\\n?");
 
 export function findMetaFence(text: string, allowPlain = false): MetaFence | null {
@@ -607,7 +606,7 @@ export function findMetaFence(text: string, allowPlain = false): MetaFence | nul
 //     law (memetic-wikitext-framing #authoring: the fence that OPENS a carrier heads it) reaches every slot the same way.
 //
 //     Post-meta content in the head STANDS — that is the bindings zone, authored, and it re-emits
-//     between the meta and the body. Pre-meta content does not, and `preamble` retires with it: a zone
+//     between the meta and the body. Pre-meta content does not, and no `preamble` field stands: a zone
 //     that names a shape the grammar forbids holds bytes nothing should have written.
 //   - fields    = parsed from the meta toml block (operator-authored keys).
 //   - text      = body proper — from the first inner kahea ref to the last
@@ -802,6 +801,9 @@ const META_DENY: ReadonlySet<string> = new Set([
   // The host's two, and the record stratum they arrive with. TiddlyWiki restricts no field name;
   // MultiWikiServer overwrites `title` and `revision` on every read.
   "text", "modified", "revision",
+  // Residency rides the envelope (Train Q): the bag holds where a carrier rests and the title names
+  // content, so `file-path` never re-emits, on a root or a child.
+  "file-path",
   // The skinny handle's pointer internals (content-handle): a recomposed carrier carries its body
   // inline, so a `_canonical_uri` or `_integrity` re-emitted here would lie about the bytes beneath it.
   ...HANDLE_ONLY_FIELDS,
@@ -818,15 +820,13 @@ const META_DENY: ReadonlySet<string> = new Set([
 // for the same reason: 71 doc memes author it to name the TS source they
 // document; the shore path stamps it nowhere.
 
-// Children additionally drop ingest-stamped coordinates: `uri-path` is
-// derived from the title, and `file-path` on a child is the burned
-// fragment-file leak (carrier-whole at rest — a fragment never owns a file).
+// Children additionally drop the derived coordinate: `uri-path` comes from the title.
 // Everything ELSE the author wrote re-emits verbatim (deny holds MACHINE
 // stamps only): `type` self-describes the child's content family, `namespace`,
 // `created`, `source-file`, `tags` all round-trip = identity, exactly as on
 // the parent — a child that authored them keeps them.
 const CHILD_META_DENY: ReadonlySet<string> = new Set([
-  ...META_DENY, "title", "uri-path", "file-path",
+  ...META_DENY, "title", "uri-path",
 ]);
 
 function fmtTomlValue(v: string | string[]): string {
@@ -1002,7 +1002,8 @@ function expandRefs(reader: FieldsReader, rootUri: string, text: string, parentF
     const spelt = slot;
     const open = carriageText(reader, rootUri + slotPath, "worksite-open");
     const close = carriageText(reader, rootUri + slotPath, "worksite-close");
-    return `${open || `<<~ ahu ${spelt}>>`}${opened}\n\n${close || "<<~/ahu>>"}`;
+    const canonicalOpen = "<<~ ahu slot=`" + spelt + "`>>";
+    return `${open || canonicalOpen}${opened}\n\n${close || "<<~/ahu>>"}`;
   });
 }
 

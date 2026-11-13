@@ -16,9 +16,33 @@
       "import": "./dist/bures-metric.js",
       "types": "./dist/bures-metric.d.ts"
     },
+    "./wire-names": {
+      "import": "./dist/wire-names.js",
+      "types": "./dist/wire-names.d.ts"
+    },
+    "./record-port": {
+      "import": "./dist/record-port.js",
+      "types": "./dist/record-port.d.ts"
+    },
+    "./port-lease": {
+      "import": "./dist/port-lease.js",
+      "types": "./dist/port-lease.d.ts"
+    },
+    "./lar-camera": {
+      "import": "./dist/lar-camera.js",
+      "types": "./dist/lar-camera.d.ts"
+    },
     "./carrier-type": {
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
+    },
+    "./cas": {
+      "import": "./dist/cas.js",
+      "types": "./dist/cas.d.ts"
+    },
+    "./cas-transit": {
+      "import": "./dist/cas-transit.js",
+      "types": "./dist/cas-transit.d.ts"
     },
     "./content-handle": {
       "import": "./dist/content-handle.js",
@@ -40,9 +64,17 @@
       "import": "./dist/capture/harvest.js",
       "types": "./dist/capture/harvest.d.ts"
     },
+    "./plane-labels": {
+      "import": "./dist/plane-labels.js",
+      "types": "./dist/plane-labels.d.ts"
+    },
     "./lar-uris": {
       "import": "./dist/lar-uris.js",
       "types": "./dist/lar-uris.d.ts"
+    },
+    "./hearth-floor-pins": {
+      "import": "./dist/hearth-floor-pins.js",
+      "types": "./dist/hearth-floor-pins.d.ts"
     },
     "./linearity-gate": {
       "import": "./dist/linearity-gate.js",
@@ -59,6 +91,26 @@
     "./node": {
       "import": "./dist/node.js",
       "types": "./dist/node.d.ts"
+    },
+    "./face-proof-subjects": {
+      "import": "./dist/face-proof-subjects.js",
+      "types": "./dist/face-proof-subjects.d.ts"
+    },
+    "./session-face": {
+      "import": "./dist/session-face.js",
+      "types": "./dist/session-face.d.ts"
+    },
+    "./session-signer": {
+      "import": "./dist/session-signer.js",
+      "types": "./dist/session-signer.d.ts"
+    },
+    "./holder-session-proof": {
+      "import": "./dist/holder-session-proof.js",
+      "types": "./dist/holder-session-proof.d.ts"
+    },
+    "./session-contract": {
+      "import": "./dist/session-contract.js",
+      "types": "./dist/session-contract.d.ts"
     },
     "./rank-te": {
       "import": "./dist/rank-te.js",
@@ -99,6 +151,10 @@
     "./worldline": {
       "import": "./dist/worldline.js",
       "types": "./dist/worldline.d.ts"
+    },
+    "./projection-filter": {
+      "import": "./dist/projection-filter.js",
+      "types": "./dist/projection-filter.d.ts"
     }
   },
   "main": "./dist/index.js",
@@ -107,15 +163,16 @@
     "clean": "node ../../tools/clean-output.mjs dist",
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
+    "typecheck:tests": "tsc --noEmit -p tsconfig.tests.json",
     "test": "vitest run",
     "dev": "tsx src/index.ts"
   },
   "devDependencies": {
     "tsx": "4.23.15",
-    "vitest": "5.0.3"
+    "vitest": "5.0.5"
   },
   "dependencies": {
-    "@automerge/automerge": "3.4.1",
+    "@automerge/automerge": "3.5.0",
     "@automerge/automerge-repo": "2.6.0-alpha.5",
     "@automerge/automerge-repo-network-messagechannel": "2.6.0-alpha.5",
     "@automerge/automerge-repo-network-websocket": "2.6.0-alpha.5",

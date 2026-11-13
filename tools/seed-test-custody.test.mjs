@@ -1,5 +1,6 @@
 // The custody test door acts only on a root a harness STAGED: the scratch marker is the one proof, and nothing the
 // caller asserts from its environment (TMPDIR, LAR_STAGE_DIR, a `.mesh-test` path) stands in for it.
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
@@ -69,7 +70,7 @@ const orphanCarrierRoot = () => {
   const root = fresh();
   assert.equal(run(STAGER, root).status, 0);
   assert.equal(run(DOOR, root).status, 0);
-  rmSync(join(root, "data", "lares", "identity", "vk-slots.bin"));
+  rmSync(join(root, "hearth", "identity", "s-slots.bin"));
   return root;
 };
 
@@ -89,14 +90,14 @@ test("the stager refuses a root that holds identity carriers and no tree", () =>
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
 
-test("the door names OldShapeRefusal on one line over a marked root with carriers and no tree, and writes nothing", () => {
+test("the door names OccupiedStoreRefusal on one line over a marked root with carriers and no tree, and writes nothing", () => {
   const root = orphanCarrierRoot();
-  const identity = join(root, "data", "lares", "identity");
+  const identity = join(root, "hearth", "identity");
   try {
     const before = readdirSync(identity).sort();
     const r = run(DOOR, root);
     assert.equal(r.status, 2, r.stderr);
-    assert.match(r.stderr, /^OldShapeRefusal: /);
+    assert.match(r.stderr, /^OccupiedStoreRefusal: /);
     assert.equal(r.stderr.trim().split("\n").length, 1, r.stderr);
     assert.deepEqual(readdirSync(identity).sort(), before);
   } finally { rmSync(root, { recursive: true, force: true }); }

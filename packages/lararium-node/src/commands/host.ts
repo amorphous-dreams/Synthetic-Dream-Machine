@@ -12,7 +12,7 @@
  *     so blindness against it is moot), and hand back the one carried string. Nothing is written: no record
  *     of the invite stays here to name whom it was for.
  *
- * A hearth hosts through the face it WEARS: that face's leaf in N signs the act and seeds the act's key, the same
+ * A hearth hosts through its hosting face (the one named at the first roll, else the one face standing open): that face's leaf in N signs the act and seeds the act's key, the same
  * face its walks present. A vessel wearing no face hosts no one, and says so. Before its first act in N, a roll
  * reads the hosting doc: an act this face signed there that no local state holds refuses the roll.
  *
@@ -25,6 +25,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
+import { hostingFaceHolding } from "../hosting-face.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   hostingDocUrl, materializeSharedLarDoc, writeHostingAct, hostingActsFromBoard, hostingActCid, mintHostToken, encodeInvite,
@@ -41,7 +42,7 @@ async function signedActsOf(doc: LarDoc | undefined | null, hearthLeaf: string, 
   return signed;
 }
 import { primaryNexusAid, carriedSet, charterHomeFor } from "../carried-set.js";
-import { mintWornNexusLeaf, wornNexusLeaf, type NexusLeaf } from "../nexus-leaf.js";
+import { mintFaceNexusLeaf, faceNexusLeaf, type NexusLeaf } from "../nexus-leaf.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import {
   readHostingState, rollHosting, liveEpochs, redeemedCount, HostingStateMoved, type HostingState,
@@ -89,14 +90,16 @@ async function hostedNexus(sealHome: string, nexusAid?: string): Promise<string>
   return aid;
 }
 
-/** The key the face this vessel WEARS presents to N — the face that hosts. Nothing worn hosts no one. A roll
- *  presents the face at N and mints its key where none stands; every other door reads the key that stands. */
-async function hostingLeaf(aid: string, mint: boolean): Promise<NexusLeaf> {
-  const leaf = mint ? await mintWornNexusLeaf(aid) : await wornNexusLeaf(aid);
+/** The key the hosting face presents to N: the face that holds this Nexus's hosting, else the face the act names, else the
+ *  one face standing open. A roll presents the face at N and mints its key where none stands; every other door reads the
+ *  key that stands. */
+async function hostingLeaf(aid: string, mint: boolean, face?: number): Promise<NexusLeaf> {
+  const acting = hostingFaceHolding(aid) ?? face;
+  const leaf = mint ? await mintFaceNexusLeaf(aid, acting) : await faceNexusLeaf(aid, acting);
   if (!leaf) {
     throw new HostRefusal(mint
-      ? "this vessel wears no face — a hearth hosts as the face it wears: `lares persona wear <N>` first"
-      : "the face this vessel wears holds no key in this Nexus, or this vessel wears no face — `lares host roll` opens hosting here");
+      ? "this vessel holds no root for the face that would host — a hearth hosts as a face it founded: name one (--face N)"
+      : "the hosting face holds no key in this Nexus — `lares host roll` opens hosting here");
   }
   return leaf;
 }
@@ -148,10 +151,12 @@ export interface HostRollResult {
  */
 export async function runHostRoll(opts: {
   readonly sealHome: string; readonly nexusAid?: string; readonly cap?: number; readonly repo: Repo;
+  /** The face the first roll hosts under (`--face N`); absent, the one face standing open. */
+  readonly face?: number;
 }): Promise<HostRollResult> {
   const aid = await hostedNexus(opts.sealHome, opts.nexusAid);
   if (!charterHomeFor(opts.sealHome, aid)) throw new HostRefusal(`no charter for ${aid.slice(0, 18)}… stands here`);
-  const leaf = await hostingLeaf(aid, true);
+  const leaf = await hostingLeaf(aid, true, opts.face);
   const docUrl = hostingDocUrl(aid, await loadVesselVerifyingKey());
   const land = async (repo: Repo): Promise<{ act: HostingAct; state: HostingState; unswept: readonly string[] }> => {
     const handle = await materializeSharedLarDoc(repo, docUrl, "hosting");
@@ -165,7 +170,7 @@ export async function runHostRoll(opts: {
     if (!(await readHostingState(aid)) && (await signedActsOf(handle.doc(), leaf.verifyingKey, aid)).length > 0) {
       throw new HostRefusal("this face already hosts in this Nexus from another store — its act stands on the hosting doc and no local state holds it; nothing was written");
     }
-    const rolled = await rollHosting({ nexusAid: aid, leafSeed: leaf.seed, ...(opts.cap !== undefined ? { cap: opts.cap } : {}) }).catch((err: unknown) => {
+    const rolled = await rollHosting({ nexusAid: aid, leafSeed: leaf.seed, ...(opts.cap !== undefined ? { cap: opts.cap } : {}), ...(opts.face !== undefined ? { face: opts.face } : {}) }).catch((err: unknown) => {
       if (err instanceof HostingStateMoved) throw new HostRefusal(err.message);
       throw err;
     });

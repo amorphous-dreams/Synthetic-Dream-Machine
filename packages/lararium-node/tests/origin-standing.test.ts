@@ -1,7 +1,7 @@
 /**
  * origin-standing — the vessel's standing is an input to its origin composition.
  *
- * A lararium composes relay + read (oracle) + Web. A herm is a waystone: it composes relay + read, and its
+ * A lararium composes relay + read (flow) + Web. A herm is a waystone: it composes relay + read, and its
  * Web origin is absent by law — typed absent, never a refused value the boot must route around. The read
  * origin stays explicit for both standings: declared, or covered by `sameOrigin`. `sameOrigin` reads "every
  * surface this standing has shares the relay face's origin", so it spans relay = read for a herm and all
@@ -12,9 +12,11 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  originCompositionForFace, oracleOriginForFace, crossingBannerLines, assertWaystoneCustody,
+  originCompositionForFace, flowOriginForFace, crossingBannerLines, floorCarriageBannerLines, assertWaystoneCustody,
   OriginCustodyRefusal, type ReachFace,
 } from "../src/lan-address.js";
+import { floorCardCarriageText, readFloorCardCarriage } from "@lararium/mesh";
+import { pronaosShoreBootNotice } from "../src/pronaos-composition.js";
 
 const FACE: ReachFace = { kind: "lan", host: "192.168.1.42:8080", origin: "http://192.168.1.42:8080" };
 const DECLARED: ReachFace = { kind: "declared", host: "waystone.example", origin: "https://waystone.example" };
@@ -22,25 +24,25 @@ const WAYSTONE = /a waystone serves no arrival page; light a Pronaos on a larari
 
 describe("herm (waystone) origin composition", () => {
   test("a herm with no Web declaration resolves to relay + read and no Web origin", () => {
-    const composition = originCompositionForFace(FACE, { oracleOrigin: "http://oracle.local:8081" }, "herm");
-    expect(composition).toEqual({ relayOrigin: "http://192.168.1.42:8080", oracleOrigin: "http://oracle.local:8081" });
+    const composition = originCompositionForFace(FACE, { flowOrigin: "http://flow.local:8081" }, "herm");
+    expect(composition).toEqual({ relayOrigin: "http://192.168.1.42:8080", flowOrigin: "http://flow.local:8081" });
     expect("webOrigin" in composition).toBe(false);
-    expect(oracleOriginForFace(FACE, { oracleOrigin: "http://oracle.local:8081" }, "herm")).toBe("http://oracle.local:8081");
+    expect(flowOriginForFace(FACE, { flowOrigin: "http://flow.local:8081" }, "herm")).toBe("http://flow.local:8081");
   });
 
   test("a herm with sameOrigin reads relay = read, and still no Web origin", () => {
     const composition = originCompositionForFace(DECLARED, { sameOrigin: true }, "herm");
-    expect(composition).toEqual({ relayOrigin: "https://waystone.example", oracleOrigin: "https://waystone.example" });
+    expect(composition).toEqual({ relayOrigin: "https://waystone.example", flowOrigin: "https://waystone.example" });
     expect("webOrigin" in composition).toBe(false);
   });
 
   test("a herm's read origin stays explicit — neither the relay face nor a port stands in for it", () => {
-    expect(() => originCompositionForFace(FACE, {}, "herm")).toThrow(/oracle origin must be declared/);
-    expect(() => originCompositionForFace(FACE, { sameOrigin: false }, "herm")).toThrow(/oracle origin must be declared/);
+    expect(() => originCompositionForFace(FACE, {}, "herm")).toThrow(/flow origin must be declared/);
+    expect(() => originCompositionForFace(FACE, { sameOrigin: false }, "herm")).toThrow(/flow origin must be declared/);
   });
 
   test("a herm handed a Web origin refuses with the waystone message", () => {
-    expect(() => originCompositionForFace(FACE, { webOrigin: "http://web.local", oracleOrigin: "http://oracle.local" }, "herm"))
+    expect(() => originCompositionForFace(FACE, { webOrigin: "http://web.local", flowOrigin: "http://flow.local" }, "herm"))
       .toThrow(WAYSTONE);
     expect(() => originCompositionForFace(FACE, { webOrigin: "http://web.local", sameOrigin: true }, "herm")).toThrow(WAYSTONE);
     expect(() => assertWaystoneCustody("herm", { webOrigin: "http://web.local" }, {})).toThrow(OriginCustodyRefusal);
@@ -55,20 +57,20 @@ describe("herm (waystone) origin composition", () => {
 
   test("a herm with only relay/read declarations, and no Pronaos input, passes custody", () => {
     expect(() => assertWaystoneCustody("herm", {}, {})).not.toThrow();
-    expect(() => assertWaystoneCustody("herm", { sameOrigin: true, oracleOrigin: undefined }, { LAR_PUBLIC_URL: "https://w.example" })).not.toThrow();
-    expect(() => assertWaystoneCustody("herm", { oracleOrigin: "http://oracle.local" }, { LAR_PRONAOS_WEB_ROOT: undefined })).not.toThrow();
+    expect(() => assertWaystoneCustody("herm", { sameOrigin: true, flowOrigin: undefined }, { LAR_PUBLIC_URL: "https://w.example" })).not.toThrow();
+    expect(() => assertWaystoneCustody("herm", { flowOrigin: "http://flow.local" }, { LAR_PRONAOS_WEB_ROOT: undefined })).not.toThrow();
   });
 });
 
 describe("lararium controls — the composition stays as it stood", () => {
   test("CONTROL: a lararium with no Web declaration still refuses", () => {
-    expect(() => originCompositionForFace(FACE, { oracleOrigin: "http://oracle.local" }, "lararium")).toThrow(/Web origin must be declared/);
+    expect(() => originCompositionForFace(FACE, { flowOrigin: "http://flow.local" }, "lararium")).toThrow(/Web origin must be declared/);
     expect(() => originCompositionForFace(FACE, {}, "lararium")).toThrow(/Web origin/);
   });
 
   test("CONTROL: a lararium with sameOrigin gets all three surfaces on the relay face", () => {
     expect(originCompositionForFace(DECLARED, { sameOrigin: true }, "lararium")).toEqual({
-      webOrigin: "https://waystone.example", relayOrigin: "https://waystone.example", oracleOrigin: "https://waystone.example",
+      webOrigin: "https://waystone.example", relayOrigin: "https://waystone.example", flowOrigin: "https://waystone.example",
     });
   });
 
@@ -85,23 +87,79 @@ describe("lararium controls — the composition stays as it stood", () => {
       expect(() => originCompositionForFace(portOnly, {}, standing)).toThrow();
       expect(() => assertWaystoneCustody(standing, {}, env)).not.toThrow();
     }
-    const herm = originCompositionForFace(portOnly, { oracleOrigin: "http://oracle.local" }, "herm");
+    const herm = originCompositionForFace(portOnly, { flowOrigin: "http://flow.local" }, "herm");
     expect(Object.values(herm)).not.toContain("https://public.example");
     expect(herm.relayOrigin).toBe("http://localhost:5173");
-    expect(herm.oracleOrigin).toBe("http://oracle.local");
+    expect(herm.flowOrigin).toBe("http://flow.local");
   });
 });
 
-describe("the crossing banner (Web origin + relay + gate key) speaks only for a lararium", () => {
+describe("the crossing banner (the page's own URL, never a gate key, a query string or a fragment) speaks only for a lararium", () => {
   test("a herm composition yields no crossing line", () => {
     const herm = originCompositionForFace(DECLARED, { sameOrigin: true }, "herm");
-    expect(crossingBannerLines("herm", [{ face: DECLARED, composition: herm }], "beef")).toEqual([]);
+    expect(crossingBannerLines("herm", [{ face: DECLARED, composition: herm }])).toEqual([]);
   });
 
-  test("CONTROL: a lararium composition yields one crossing line per face", () => {
+  test("RED: a lararium composition yields one page URL per face, with no relay key and no fragment", () => {
     const lar = originCompositionForFace(DECLARED, { sameOrigin: true }, "lararium");
-    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }], "beef")).toEqual([
-      "https://waystone.example/?relay=wss://waystone.example/ws&gate=beef   (declared)",
+    expect(crossingBannerLines("lararium", [{ face: DECLARED, composition: lar }])).toEqual([
+      "https://waystone.example/   (declared)",
     ]);
+  });
+
+  test("RED: the floor card travels as a carriage file on its own line and the anchor apart from it; CONTROL: no floor gate, no line", () => {
+    const AID = "ab".repeat(32);
+    const lines = floorCarriageBannerLines({ cardFile: floorCardCarriageText("Y2FyZA"), aid: AID });
+    expect(lines[1]!.trim()).toBe('{"kind":"floor-card","card":"Y2FyZA"}');
+    expect(readFloorCardCarriage(lines[1]!.trim())).toBe("Y2FyZA");
+    expect(lines[1], "the card's line names no anchor").not.toContain(AID);
+    expect(lines[2]).toMatch(new RegExp(`^floor anchor: ${AID} `));
+    expect(lines.join("\n")).not.toMatch(/#floor=|#anchor=|\?relay=/);
+    expect(floorCarriageBannerLines(null)).toEqual([]);
+  });
+});
+
+describe("the founding walk, W2 — a refused declaration names its cure", () => {
+  // Measured 2026-10-29 on a desk: `lares vessel stand` after `vessel found --hearth` attested
+  // `origin composition refused for http://localhost:18231: [origin composition] Web origin must be declared`
+  // and nothing in the refusal, the stand's note, the runbook or the vessel door named what to declare.
+  // The compose files alone carried `LAR_SAME_ORIGIN: "true"`. A refusal names its declaration, both the
+  // environment variable and the config key, so a person at a terminal cures it from the line itself.
+  test("a lararium with no Web declaration refuses naming LAR_WEB_ORIGIN, origins.web and LAR_SAME_ORIGIN", () => {
+    let message = "";
+    try { originCompositionForFace(FACE, { flowOrigin: "http://flow.local" }, "lararium"); } catch (err) { message = String((err as Error).message); }
+    expect(message).toMatch(/Web origin must be declared/);
+    expect(message).toMatch(/LAR_WEB_ORIGIN/);
+    expect(message).toMatch(/origins\.web/);
+    expect(message).toMatch(/LAR_SAME_ORIGIN/);
+  });
+
+  test("a herm with no read declaration refuses naming LAR_FLOW_ORIGIN, origins.flow and LAR_SAME_ORIGIN", () => {
+    let message = "";
+    try { originCompositionForFace(FACE, {}, "herm"); } catch (err) { message = String((err as Error).message); }
+    expect(message).toMatch(/flow origin must be declared/);
+    expect(message).toMatch(/LAR_FLOW_ORIGIN/);
+    expect(message).toMatch(/origins\.flow/);
+    expect(message).toMatch(/LAR_SAME_ORIGIN/);
+  });
+
+  // CONTROL: a declaration that stands composes as before, with no notice in the way.
+  test("CONTROL: the sameOrigin declaration composes all three surfaces unchanged", () => {
+    expect(originCompositionForFace(DECLARED, { sameOrigin: true }, "lararium").webOrigin).toBe("https://waystone.example");
+  });
+});
+
+describe("the founding walk, W4 — a lararium with no Pronaos shore says so at boot", () => {
+  // Measured 2026-10-29: with the origin declared, the hearth stood and answered `GET /` with 404
+  // `route unavailable`, and its boot log carried no line about the shore it never composed. The browser
+  // leaf of the walk has no page to open until LAR_PRONAOS_WEB_ROOT and LAR_PRONAOS_ARTIFACT_RECORD stand.
+  test("a lararium composing no shore gets a notice naming both declarations; a herm gets none", () => {
+    const lararium = pronaosShoreBootNotice("lararium", null);
+    expect(lararium).toMatch(/LAR_PRONAOS_WEB_ROOT/);
+    expect(lararium).toMatch(/LAR_PRONAOS_ARTIFACT_RECORD/);
+    expect(pronaosShoreBootNotice("herm", null)).toBeNull();
+  });
+  test("CONTROL: a lararium that composed its shore gets no notice", () => {
+    expect(pronaosShoreBootNotice("lararium", { dispose() {} } as never)).toBeNull();
   });
 });

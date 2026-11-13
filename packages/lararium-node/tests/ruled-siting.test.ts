@@ -6,7 +6,7 @@
  * `$tw.boot.files` memory), unlinks the previous files when a rule moves a carrier (each read first:
  * `shore-unlink-reads-first.test.ts`), and unlinks
  * at the remembered path on delete — when the tiddler is gone and no rule can be re-run. With no
- * rule the loci law sites `lar:///w.w.w/…` at its uri-path, as before.
+ * rule the address siting rule sites `lar:///w.w.w/…` at its uri-path, as before.
  *
  * Meme: lar:///ha.ka.ba/lararium/api/disk-projection
  */
@@ -34,7 +34,7 @@ function rig(file: () => CarrierFile | null): { projector: Flushable; root: stri
 }
 
 describe("ruled siting — the projector sites where the FileSystemPaths rule says", () => {
-  test("★ a ruled relPath wins over the loci law ★", async () => {
+  test("★ a ruled relPath wins over the address siting rule ★", async () => {
     const { projector, root } = rig(() => ({ ext: ".md", body: "# note", metaBody: "type: text/markdown\n", relPath: "notes/note.md" }));
     await projector.flush("lares", URI);
     expect(existsSync(join(root, "notes/note.md"))).toBe(true);
@@ -42,7 +42,7 @@ describe("ruled siting — the projector sites where the FileSystemPaths rule sa
     expect(existsSync(join(root, "ha.ka.ba/lares/parity/note.md"))).toBe(false);
   });
 
-  test("no rule: the loci law sites the uri-path, as before", async () => {
+  test("no rule: the address siting rule sites the uri-path, as before", async () => {
     const { projector, root } = rig(() => ({ ext: ".md", body: "# note", metaBody: "type: text/markdown\n" }));
     await projector.flush("lares", URI);
     expect(readFileSync(join(root, "ha.ka.ba/lares/parity/note.md"), "utf8")).toBe("# note");

@@ -32,7 +32,7 @@ describe.skipIf(wikiSkip)(`a sigil renders on a gradient${skipNote}`, () => {
     // A carrier's block BODY rides in child tiddlers — the deserializer splits it before TW5 parses,
     // so a raw wikitext render shows the slot's own frame and not its text. The frame must reach the
     // page: an ahu rendering nothing means the slot vanished.
-    const html = r("<<~ ahu #/entry>>\nbody text\n<<~/ahu>>");
+    const html = r("<<~ ahu slot=`#/entry`>>\nbody text\n<<~/ahu>>");
     expect(html, "an ahu that renders nothing has lost its slot").not.toBe("");
     expect(html).toContain("lar-ahu");
     expect(html).toContain("#/entry");
@@ -111,7 +111,7 @@ describe.skipIf(wikiSkip)(`a sigil renders on a gradient${skipNote}`, () => {
   });
 
   test("CONTROL — the Hawaiian original renders its definition", () => {
-    expect(rendered('<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme">>')).toBe(true);
+    expect(rendered('<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>')).toBe(true);
   });
 
   test("CONTROL — and a truly unknown sigil ECHOES, which is the gradient working", () => {

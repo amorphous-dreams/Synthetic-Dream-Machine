@@ -1,0 +1,619 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/spec`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-10-29 (file date) — source `.lares-scratch/research/mirror-realm/spec.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/spec"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/spec"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! spec.md — plan, 2026-10-29
+
+Verbatim scratch record `.lares-scratch/research/mirror-realm/spec.md` (plan, file date 2026-10-29); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/mirror-realm/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-mirror-realm-build-spec-for-mirror-wright`>>
+
+! The mirror realm: build spec for Mirror-Wright
+
+Spec-Scout: Lares (Tasked Spirit), 2026-10-29. This seat was read-only.
+
+''Trees''
+* ''WT'' = the D3 lane worktree, `~/.lares-scratch/d3-glass/wt` &#64; `afa95922e`. The glass code lives here.
+* ''M'' = the main tree, `~/Synthetic-Dream-Machine` &#64; `2d6864b26`. The custody code lives here.
+* `TiddlyWiki5/` sits at `ea94ca840` (`5.5.0-prerelease`), and its `boot/` and `core/` bytes match in both trees.
+* A cite with no tree mark reads WT for `packages/lararium-tw5` and `packages/lararium-web/src/glass`, and M for `packages/lararium-browser` and `packages/lararium-web/src/main.ts`. The two `main.ts` files differ by about 90 lines, so re-anchor before editing.
+
+''Citation marks''
+* Web claims carry their URL.
+* ''UNVERIFIED'' marks a claim whose page this seat never opened, or opened without finding the claim on it.
+* ''⚑'' marks a place where a ruling meets a platform fact and the two do not fit. Each one goes to the operator; none gets smoothed over here.
+
+''Inputs read''
+* the ruling memo (`project_dreamdom_mirror_ruling`: MIRROR DEFAULT, WIDTH, REALM, PAGE NEVER A VESSEL)
+* Realm-Scout's `out.md`
+* `d3-glass-lane.mem` (#/the-mirror-realm and #/owed)
+* `dreamdom.mem` (#/the-layers, #/the-crossings host services, #/what-a-replacement-un-skips, #/conformance, #/open-rulings)
+* `dreamdom-roadmap.mem` (D3, D4, D5)
+* `sealed-store.mem` (#/keys, #/the-store, #/what-the-code-holds, #/owed)
+* `stable-founding-road.mem` (#/rulings, and the sealed store's five steps at :396-421)
+* `secure-context.mem` (#/two-key-classes, #/storage-that-vanishes, #/custody-leans)
+* `session-unlock-2026.mem`
+* `project_browser_key_custody`
+* `train-s3-launch.mem`
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/0-the-order-at-a-glance`>>
+
+!! 0. The order, at a glance
+
+```
+A1 page boot env ─ A2 startup set + savers ─ A3 syncadaptor census ─ A4 window claims + alert rail
+      └─ A5 camera under $tw.rootWidget + hooks ─ A6 lar-root-services in browser mode (G3 doors) ─ A7 route door (#:safe burns)
+B1 custody into the daemon worker ─ B2 signers into the worker; device key non-extractable in memory, sealed at rest
+      └─ B3 no clear row under the mirror; `?holder` burns or is re-cut ─ B4 the clean-realm ask (ceremony)
+C1 browser rest + holder seat (step 2 rows) ─ C2 sealed repos + face-checked hydration (step 3 rows) ─ C3 the plugin gate opens
+D  goldens 1–13 at full · G6 walk incl. WebKit · G7 phone measures · D4 the Wiki Actor
+```
+
+''How the lanes depend on each other''
+* ''A and B share no files, so they run in parallel.''
+** A touches `lararium-tw5` and `lararium-web/src/glass`.
+** B touches `lararium-browser` and the custody half of `main.ts`.
+* ''C waits on B1 and B2.'' The content-key holder must live in the same worker as the opened tree key.
+* ''C3 waits on A3 and C2.''
+* ''D runs after A.'' D's WebKit and phone rows may start once A5 stands.
+
+''How nothing stages "a now, b later"''
+* A ships the mirror at full with the ''plugin gate closed'': core plus house plugins only. The gate reads a capability the vessel's port grant carries. It never reads a flag.
+* C3 opens the gate. No slice ships an interim shape that a later slice has to undo.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a-the-page-mirror-boots-in-tw5-s-own-browser-mod`>>
+
+!! A. The page mirror boots in TW5's own browser mode
+
+!!! A0. What the code does today, and what changes
+
+''The boot chain'' (WT): `main.ts:523` `standPageMirror` → `page-mirror.ts:28` → `glass/stand.ts:177` `bootGlass(width:"skinny",deferPaint:true)` → `glass/boot.ts:21` `openMirror` → `lararium-tw5/src/glass-mirror.ts:45` `TW5Engine.boot(core, preloads, MIRROR_TOKEN)` → `tw5-vm.ts:54` `prepareHostBootInstance` → `tw5-vm.ts:65` `bootWithHostBridge` → `instance.boot.boot()` (`tw5-host-bridge.ts:568`).
+
+| Today (WT) | Changes to |h
+| `makeBrowserWorkerBootEnv` serves the page too: `preSeedTw={boot:{suppressBoot:true}, node:{}, browser:null}` (`tw5-host-bridge.ts:302`), a `process` shim (`:306`, body `:167-175`), and a scoped `window` Proxy (`:195,226-247,346`) | A page env of its own (A1) |
+| `configureIslandRuntime` runs on the page: nulls `node`/`browser` (`:397-398`), stubs the DOM store reader (`:401-402`) and decrypt (`:405`), sets `tasks` (`:408`), sends `utils.error` to the alert rail (`:424-431`) | Off the page path. Only the alert-rail `utils.error` lend survives, as its own function (A4) |
+| The page branch lends `global`, `Buffer`, `process`, `setImmediate`, `clearImmediate` (`:453-473`) and releases them only at `releaseGlass()` (`tw5-vm.ts:40,63`) | Burns: no lends (A1) |
+| `nextTick = queueMicrotask` (`:479`) | ''Kept.'' It is a `$tw` property, not a byte change, and keeps event batching the same as the island (Realm-Scout A2) |
+| The camera mints its own root widget and swaps `tw.rootWidget` (`glass-camera.ts:33-34`), lends `browser`, `pageScroller` and `popup` (`:40-49`), refreshes directly on `change` (`:61-66`), and emits no hook | It parents under the boot-time `$tw.rootWidget` and emits TW5's hooks and actions (A5) |
+| `lar-root-services` returns when `$tw.browser` is truthy (M `lararium-tw5/src/modules/lar-root-services.ts:94`; header `:37` says "a browser page that runs stock TW5 keeps stock's own listeners") | Binds in browser mode on the mirror; its guard reads a capability (A6) |
+| No `disabledStartupModules`, no `$:/config/*` overrides, no hook emission and no safe-mode handling anywhere in lane source | A2, A5, A7 |
+| The unload hold (`page-mirror.ts:32-35`, `beforeunload` + `preventDefault` while `pending()>0`) | Kept, now beside a TW5 `onbeforeunload` that A4 retires |
+| The width probe, its five steps, one step-down and the crash records (`glass/stand.ts:24-28,41-200,58-62,84-91,96-106,122-127`) | Unchanged. A1's boot runs inside step L3 |
+| `flag.ts` / `?glass=` / `{glass:true}` | Already absent from both trees |
+| The route door | Unbuilt (lane kit G3 owed, `d3-glass-lane.mem:58`); A7 builds the part the mirror needs |
+
+''One bug the walk found.'' Both conditions below hold today, in WT and M:
+* `lar-root-services` binds only where `$tw.browser` is null.
+* The camera swaps in a fresh root widget.
+
+So even an island-mode `lar-root-services` listener would sit on a root the mirror's widgets never bubble to. A5 and A6 cure both together.
+
+!!! A1. The page boot env: browser mode, with no forge and no lends
+
+''Platform facts''
+* `bootprefix.js:29-34`: `$tw.browser` comes from `typeof window/document`, unless `"browser" in $tw`. `$tw.node` comes from `typeof process === "object"`, unless `"node" in $tw`.
+* `bootprefix.js:39-42` overwrites `$tw.boot.tasks` without condition.
+* `boot.js:2777-2779`: autoboot runs only when `!suppressBoot`.
+* `boot.js:862` passes `Buffer` only when `$tw.browser` is falsy. The browser module executor runs `Function("return "+code)` (`boot.js:617`). So in browser mode ''no `Buffer`, `global` or `process` name gets read.'' That is the cure Realm-Scout named (out.md A0).
+
+''Build''
+# Add `makePageBootEnv()` beside `makeBrowserWorkerBootEnv` (`tw5-host-bridge.ts:288`):
+#* `preSeedTw = {boot:{suppressBoot:true}, node:null}`. `node:null` states a measured fact and closes the bundler-`process` hazard (out.md :26). Do ''not'' pre-seed `browser`; let `bootprefix` detect it.
+#* no `processArg`, no `fs`/`vm` shims, and the real `window` passed as the `window` parameter.
+# `prepareHostBootInstance` page branch (`:453-485`): delete the lends (`:455-473`), the `release` hold (`:474`) and the `configureIslandRuntime` call. Keep `MIRROR_TOKEN` (`:447-451`) and `nextTick` (`:479`).
+# `bootWithHostBridge` (`:529-575`): the page path lends no `require`. Browser-mode modules resolve through `$tw.modules.execute`.
+# The `process` parameter of the loader's `new Function` (`:353-354`) gets `undefined` on the page path.
+
+''Tests: red first, each with its CONTROL''
+* `mirror-boots-browser-mode` (vitest-browser or Playwright, Chromium and Firefox)
+** Red today: after `openMirror`, `$tw.browser` is a truthy object and `$tw.node === null`.
+** Control: the island boot (`makeBrowserWorkerBootEnv` in a Worker) still reads `browser === null && node === null`.
+* `mirror-leaves-no-lends`
+** Red today: while the mirror stands, `'Buffer' in window`, `'global' in window`, `'process' in window`, `'setImmediate' in window` and `'clearImmediate' in window` all read `false`.
+** Control: those same five names, taken as a snapshot before the mirror boots, match after.
+* `mirror-process-hazard-closed`
+** Red: define `globalThis.process = {}` before boot and expect `$tw.node === null`.
+** Control: drop the `node:null` pre-seed in a test-only env and `$tw.node` reads `{}`. This proves the instrument can see the hazard.
+
+!!! A2. Which startup modules stand, which stay out, and the saver path
+
+''TW5's two mechanisms, both CID-neutral''
+* `$tw.boot.disabledStartupModules`: defaulted at `boot.js:2579`, honoured at `boot.js:2692,2699`.
+* The shadow-module skip: `defineShadowModules` skips a shadow module whose title an ordinary tiddler holds (`boot.js:1539-1543`). A later plugin's shadow overrides an earlier one.
+
+''⚑ Why the house cannot simply out-register stock handlers.'' Root-widget listeners ''accumulate'':
+* `Widget.prototype.addEventListener` pushes onto an array (`core/modules/widgets/widget.js:708-713`).
+* `dispatchEvent` calls ''every'' handler (`:731-756`).
+
+So a house `tm-http-request` handler beside stock `rootwidget`'s would run ''with'' it, not instead of it. Any stock module whose root handlers must stay out has to be disabled by name.
+
+''The startup walk'' (`core/modules/startup/*.js`; platforms and ordering from each file)
+
+| Module | Platforms · order | Disposition | Evidence |h
+| `load-modules` | — | ''stands'': builds `$tw.rootWidget` over the real `document` (`load-modules.js:46-51`) | the camera parents under it (A5) |
+| `info` | — · before startup | ''stands'' (`$:/info`; the adaptor keeps `$:/info/browser` local, `glass-port-adaptor.ts:37`) | — |
+| `plugins` | — · before startup | ''stands'' | — |
+| `startup` | — | ''stands'': UA, language, theme, keyboard manager on `document`, StartupActions incl. `/Browser`, popup, anim. Its tail builds the Syncer only if a `syncadaptor` module exists (`startup.js:103-116`; A3 keeps the count at zero) and builds `SaverHandler` ''unconditionally'' (`:118-122`; made inert below) | — |
+| `confirm` | — | ''stands'' (the confirm road per tab, ruled 2026-10-16) | `dreamdom.mem` #/open-rulings |
+| `eventbus` | browser · before windows | ''stands'': an in-page bus, no window claim | — |
+| `story` | — · after startup | ''disabled by name'' and replaced by a house module `lar-story` (see the note after this table) | `story.js:36-110` |
+| `rootwidget` | browser · after startup, before story | ''disabled by name''. Its kinds move to `lar-root-services` (A6) | `rootwidget.js:31,57,61-111` |
+| `render` | browser · after story | ''disabled by name''. The camera takes its behaviour (A5) | `render.js:23-118` |
+| `password` | browser | ''disabled by name'': the house seals | `password.js:19-34` |
+| `favicon` | browser | ''disabled by name''. The page belongs to the surface, and the surface sets its own icon | `favicon.js:21-36` |
+| `windows` | browser | ''disabled by name''. `tm-open-window` crosses as the `open-surface` door (D4, roadmap :119) | `windows.js:25-110` (`window.open` with its own widget tree; an unload task) |
+| `browser-messaging` | browser | ''disabled by name''. `tm-load-plugin-library` and friends refuse by name on the alert rail | `browser-messaging.js:94-158` (iframes to a web2 library URL; `window.addEventListener("message")`) |
+
+''Why `story` gets replaced rather than kept'' (`story.js`):
+* It opens the default tiddlers (`:36-39`), which the mirror wants.
+* It also does five things the mirror refuses:
+** writes `location.hash` on every StoryList change (`:40-48`, `updateLocationHash` ~`:227-230`);
+** adds a window `hashchange` listener (`:50-58`);
+** binds `tm-browser-refresh` (a reload), `tm-print`, `tm-open-external-window`, `tm-permalink` and `tm-permaview` on the root (`:60-110`). Those bypass the door law, and they ''cannot be out-registered'' (the ⚑ above).
+* Setting `$:/config/Navigation/UpdateAddressBar` to `no` stops only the first of the five.
+* So `lar-story` keeps `openStartupTiddlers` and `tm-home` (story and history only). It answers the other four kinds through doors:
+** `print` and `open-external` as `lar:service` kinds;
+** `tm-browser-refresh` as a `route` reload under the unload hold;
+** permalink and permaview as `route` writes the route door owns (A7).
+* This is house code beside unchanged core bytes, not a patch. Its witness compares `lar-story`'s opening of `$:/DefaultTiddlers` to stock `story` over the same world.
+
+''The saver path, by config and override (no core byte)''
+* ''What happens with no cure:'' `SaverHandler` runs `initSavers` in browser mode (`saver-handler.js:26-27,122-140`), which ''constructs every saver''. `put.js`'s constructor fires OPTIONS (`put.js:49-51`) and HEAD (`:17-24,59`) at the page URL whenever `canSave` reads `http(s):` (`:126-128`). An empty `SaverFilter` does ''not'' stop the constructor (Realm-Scout §A3; TiddlyPWA shadows `put.js` for the same reason, https://codeberg.org/valpackett/tiddlypwa).
+* The cure, shipped as tiddlers of the ''house plugin'' with a plugin priority above core:
+*# One tiddler per saver title, all fifteen of them (`$:/core/modules/savers/{andtidwiki,custom,download,fsosaver,gitea,github,gitlab,manualdownload,msdownload,postmessage,put,tiddlyfox,tiddlyie,twedit,upload}.js`). Each carries ''no `module-type`'', so the core shadow gets overridden and nothing gets defined.
+*# `$:/config/SaverFilter` with empty text. The dirty listener then counts nothing, `tc-dirty` never lands on `document.body`, and the unload task returns nothing (`saver-handler.js:30-91,115,203-208`).
+*# `$:/config/AutoSave` set to `no` (`:116,159`).
+* ''Why a plugin shadow and not ordinary preload tiddlers:'' an ordinary tiddler would appear in the person's wiki and fire a `change` event that the port adaptor posts as a write.
+* ''UNVERIFIED in this fork:'' that a house-plugin shadow beats core's shadow for `defineShadowModules`. The red test below settles it. If it fails, ship the fifteen as ''ordinary'' preloads and add their titles to the adaptor's local-only set (`glass-port-adaptor.ts:37,72-74`).
+* `tm-download-file` still lives on the inert `SaverHandler` (`:103`). The house wants download as a door, so `lar-root-services` binds the download door. ''⚑ Both handlers would then run.'' The stock one calls the `download` saver, which A2 removed, so it finds no saver and does nothing. The witness proves that.
+
+''Tests''
+* `mirror-boot-makes-no-request` (Playwright, a page served over `http://127.0.0.1`)
+** Red today: zero OPTIONS or HEAD requests from boot to first paint.
+** ''Control:'' a stock TW5 HTML of the same commit, served the same way, makes them.
+* `mirror-disabled-set-holds`: after boot, `$tw.boot.disabledStartupModules` equals the named set, and `$tw.pageContainer` belongs to the camera. ''Control:'' a stock boot defines `$tw.titlePublisher` and the mirror leaves it undefined.
+* `mirror-saver-handler-inert`: edit 10 tiddlers. `document.body.classList.contains("tc-dirty") === false` and `$tw.unloadTasks.every(t => !t({}))`. ''Control:'' with the house plugin's three tiddlers removed, `tc-dirty` lands.
+* `mirror-no-root-double-handler`: `$tw.rootWidget.eventListeners["tm-http-request"]` holds exactly one handler, `lar-root-services`'s. Likewise `tm-modal`, `tm-notify`, `tm-print` and `tm-open-window`.
+
+!!! A3. The syncadaptor refusal at mount
+
+''Fact.'' A Syncer exists if any module of type `syncadaptor` exports `adaptorClass` (`startup.js:103-116`). It gets built inside `startup`, so a check made after boot is already too late. The census therefore runs ''before'' boot, over the mirror's preloads.
+
+''Build''
+* `censusPreloads(preloads)` lives in `lararium-tw5/src/glass-mirror.ts`, before `TW5Engine.boot` (`:45`).
+* For every plugin tiddler it parses the plugin JSON and counts shadow tiddlers whose `module-type` reads `syncadaptor` or `saver`, keyed by plugin title.
+* ''The ruling's words'' ("a person's syncadaptor plugin refused at mount by name"): the counted ''plugin'' leaves the mirror's preloads.
+** An alert tiddler `$:/temp/lares/alert/refused/plugin-syncadaptor/<plugin title>` lands on the ''island's'' rail through the port's alert road. The mirror has not stood yet, so the island raises it.
+** `data-lar-mirror` names `refused-plugin:<count>` beside the width.
+** ''The mirror then stands without that plugin.'' This reads the ruling as refusing the plugin, not the mirror. See Q-A1 for the other reading.
+* ''Belt after boot:'' `$tw.syncer === undefined && $tw.syncadaptor === undefined`, else the mirror takes teardown with `syncer-stood`. That catches a plugin whose own startup module builds a Syncer.
+
+''Tests''
+* `mirror-refuses-syncadaptor-plugin-by-name`: preload a fixture plugin carrying a `module-type: syncadaptor` tiddler (the tiddlyweb adaptor's shape). The alert names that plugin, `$tw.syncer` stays undefined, and the mirror paints. ''Control:'' the same plugin with the tiddler's module-type changed to `library` loads, and no alert appears.
+* `mirror-refuses-saver-plugin-by-name`: likewise for `module-type: saver`.
+
+!!! A4. Every page-window claim browser mode still makes, each with its disposition
+
+| Claim | Site | Disposition |h
+| `window.onerror` | `boot.js:252-257` runs at blob eval when `tasks.trapErrors` (set at `bootprefix.js:39-42`, which overwrites any pre-seed) | ''Uninstalled.'' Snapshot `window.onerror` before eval and restore it right after eval. Also set `$tw.boot.tasks.trapErrors=false`. No core byte changes |
+| Error forms on `document.body` | `$tw.utils.error` paints only when `$tw.browser && !$tw.node` (`boot.js:203-242`) | Re-lent: `$tw.utils.error` is assigned the alert-rail writer now inside `configureIslandRuntime` (`tw5-host-bridge.ts:424-431`), extracted as `lendAlertRailError(tw)`. Assign it right after eval and before `boot.boot` |
+| `window.onbeforeunload` | `initStartup`, `boot.js:2524-2536` | ''Restored'' to its prior value after boot. With `windows` disabled and the savers inert, `$tw.unloadTasks` stays empty. The house hold (`page-mirror.ts:32-35`) stays the one leave guard |
+| `PasswordPrompt` div | built in `boot.boot` (`boot.js:2765-2767`), appended at `:644-650` | ''Detached'' after boot (`$tw.passwordPrompt.promptWrapper.remove()`), and `$tw.passwordPrompt` gets replaced by a stub whose `createPrompt` raises `refused/password` on the alert rail. Neither `password` nor any `#encryptedStoreArea` ever summons it |
+| `window.sjcl` | read at `boot.js:785` when `$tw.Crypto` is built, then kept at `$tw.sjcl` (`:801`) | ''Deleted'' from `window` after `boot.boot` returns. ''UNVERIFIED:'' that no core path re-reads `window.sjcl` after boot. A grep witness pins it |
+| `window.$tw` | the house loader passes `exports`, so `bootprefix.js:123` and `boot.js:2787-2791` take the exports branch; the loader reads `$tw` off the lend (`tw5-host-bridge.ts:349-355`) | ''Kept'' while the mirror stands: people's plugins name `$tw` bare from inline handlers. Removed at unmount. A stock claim, documented |
+| `document.title` | `render.js:27-42` | `render` is disabled. The camera renders `$:/core/wiki/title` on `$tw.fakeDocument`, as stock does, and hands the text to the ''route door'', which owns `document.title` (A7) |
+| `<style>` in `document.head` | `render.js:44-59` | `render` is disabled. The stylesheet goes into the shadow root's `<style>` (`glass-camera.ts:9-13,57-60`) |
+| The DOM store-area reader | `loadTiddlersBrowser`, `boot.js:1846-1866`, reads `#storeArea` and `script.tiddlywiki-tiddler-store` off the ''page'' document | ''Stock, inert by witness.'' The page carries none of those selectors. The witness asserts it. No stub, since the stub at `tw5-host-bridge.ts:402` belongs to the forge |
+| `keydown` on `document` | `startup.js:84-90` (the keyboard manager) | ''Stock.'' Global shortcuts belong to the surface the mirror paints. The none floor's own key road stays separate |
+| `#:safe` and `location.hash` reads | `boot.js:2396-2401` | A7 |
+
+''Tests''
+* `mirror-window-claims-dispositioned`: after boot, `window.onerror`, `window.onbeforeunload` and `'sjcl' in window` equal their pre-boot snapshot. `document.body` gains no child from the engine. `#storeArea` is absent. ''Control:'' a stock TW5 page of the same commit shows all four claims.
+* `mirror-fault-reaches-alert-rail`: a fixture plugin throws in a startup module. An alert tiddler `boot-fault/N` lands, and no `.tc-error-form` appears in `document.body`. ''Control:'' the same plugin on stock TW5 paints the error form.
+
+!!! A5. The camera under `$tw.rootWidget`, with TW5's hooks
+
+`render.js` gives the behaviour the camera has to match:
+* `th-page-refreshing`, then refresh, then `th-page-refreshed` (`:79-85`);
+* the draft throttle off `$:/config/Drafts/TypingTimeout`, default 400 (`:23-24,88-113`);
+* `$:/tags/StartupAction/PostRender` after the first render (`:118`);
+* the `rootWidget.domNodes` and `children` fix-up (`:115-116`);
+* `$tw.pageWidgetNode`, `$tw.pageContainer` and `$tw.styleWidgetNode`/`styleElement` set as globals that plugins read. `modal.js:245` reads `$tw.pageContainer`.
+
+''Build'' (`glass-camera.ts`)
+* Drop the minted root (`:33-34`) and the `browser`/`pageScroller`/`popup` lends (`:40-49`). `load-modules` built the real `$tw.rootWidget`, `startup` built `$tw.popup`, and A6 builds `$tw.pageScroller`.
+* Render `$:/core/ui/RootTemplate` with `parentWidget: $tw.rootWidget` into the shadow container.
+* Set `$tw.pageWidgetNode`, `$tw.pageContainer = container`, `$tw.styleWidgetNode` and `$tw.styleElement = shadowStyle`.
+* Run the `domNodes`/`children` fix-up, emit both hooks around every refresh, and apply the draft throttle as `render.js:88-113` does.
+* Invoke `PostRender` once after first paint.
+* ''No global now:'' the throttle's `setTimeout` paces paint and decides no truth (out.md C8). Write that line in the code.
+
+''Tests''
+* `camera-emits-page-refresh-hooks`: a hook counter tiddler module records `th-page-refreshing` and `th-page-refreshed` once per change batch. ''Control:'' stock TW5 records the same counts over the same edit script.
+* `camera-runs-postrender-once`: a `$:/tags/StartupAction/PostRender` action writes a temp tiddler exactly once.
+* `camera-draft-throttle`: typing into a draft refreshes the river at most once per `TypingTimeout`. ''Control:'' a non-draft edit refreshes at once.
+
+!!! A6. `lar-root-services` binds in browser mode: the modal, notify and switcher root layer, and the G3 doors
+
+''Ruled:'' modals and notifications paint in the surface root layer, `lar-root-services` owns the mirror's doors, and stock rootwidget would bypass the Web3-only http door.
+
+''Why stock Modal and Notifier cannot simply re-route''
+* They append to `document.body` (`modal.js:30-32,224`; `notifier.js:58`), outside the shadow root and its stylesheet.
+* `rootwidget` would also install `$tw.httpClient`, and with it `tm-http-request` (`rootwidget.js:31-57`).
+
+''Build'' (`M packages/lararium-tw5/src/modules/lar-root-services.ts`, plus its `tiddlers/src/lar-root-services.js` twin and the plugin JSON)
+# ''The guard'' (`:94`) reads a capability, never the host: install where `$tw.rootWidget` exists and the boot handed a surface capability (`$tw.larSurface`, set by the mirror's boot inputs or by the island's camera). The header (`:37`) gets rewritten.
+# ''Mirror half:'' set `$tw.modal`, `$tw.notifier` and `$tw.pageScroller` to house objects that paint into the camera's ''root layer''.
+#* The root layer is a `<div class="lar-root-layer">` inside the shadow root. A modal uses a shadow-root `<dialog>` opened with `showModal()`, so it reaches the ''top layer'' and inherits the shadow stylesheet (https://html.spec.whatwg.org/multipage/interactive-elements.html#dom-dialog-showmodal).
+#* Each renders its template through widgets parented to `$tw.rootWidget`, as `modal.js` does.
+#* `tm-modal`, `tm-show-switcher` and `tm-notify` bind here. `tm-rename-tiddler`, `tm-relink-tiddler`, `tm-focus-selector` and `tm-scroll` bind as `rootwidget.js:81-109` binds them, as pure wiki logic.
+# ''Door half'', as the island's door law already reads (`dreamdom.mem` #/the-crossings, host services):
+#* ''Through `lar:service`:'' clipboard, download (`tm-download-file`), `open-surface` (`tm-open-window`), `print`, `open-external`, `fullscreen` and `route`.
+#* ''Refused by name:'' `http-request`, until D15 builds it.
+#* A kind outside the surface's manifest raises `$:/temp/lares/alert/refused/<kind>` (`:107`).
+
+''Tests''
+* `mirror-modal-paints-in-root-layer`: `tm-modal` puts a `dialog[open]` inside the shadow root, and `document.body` gains nothing. ''Control:'' the island camera's `tm-modal` still writes the frame hint.
+* `mirror-http-request-refused-by-name`: `tm-http-request` makes no network request, and the alert reads `refused/http-request`. ''Control:'' stock TW5 fires the request.
+* `mirror-services-doors`: covers golden 12 at full, with copy and download `applied` and print refused.
+
+!!! A7. The route door owns the URL, and `#:safe` burns
+
+''Facts''
+* `initStartup` reads `location.hash` before any config can speak. `#:safe` sets `$tw.safeMode` (`boot.js:2396-2401`), and that changes the Wiki's indexers and plugin registration (`:2517,2556,2559`).
+* `getLocationHash` feeds `$tw.locationHash`.
+* `#:safe` is the only `:safe` site in `boot/` and `core/`.
+
+''Cure, with no patch''
+# The route door stands before any mirror boot. It reads the full URL into its own route state and calls `history.replaceState` to drop any fragment. So `initStartup` always reads an empty hash.
+# The route door adds the ''first'' `hashchange` listener on `window` and calls `stopImmediatePropagation()`. With `story` disabled (A2), no TW5 listener stands anyway, and this holds the line against a person's plugin.
+# `#:safe` burns. A safe mode, if wanted, rides a face intent (ruled).
+# `lar-story`'s permalink and permaview write through `route`.
+
+''Tests''
+* `route-door-burns-safe-hash`: open `…/#:safe`. `$tw.safeMode` stays falsy and the URL keeps no fragment. ''Control:'' a stock TW5 page at `#:safe` reads `safeMode === true`.
+* `route-door-owns-hashchange`: setting `location.hash = "#Foo"` opens nothing in the story and lands in the route state. ''Control:'' stock TW5 opens `Foo`.
+* `mirror-story-never-writes-hash`: navigating ten tiddlers leaves `location.hash` empty.
+
+!!! A8. The five `isTiddlyWikiFakeDom` sites at full width
+
+The roster (`dreamdom.mem` #/what-a-replacement-un-skips; re-anchored at `ea94ca840`):
+* `editor/factory.js:211` (the toolbar, and FramedEngine over SimpleEngine)
+* `editor/engines/framed.js:126,161` and `simple.js:72,105` (`setText`, auto-height)
+* `widgets/list.js:58` (storyviews)
+* `widgets/reveal.js:45,279` (popup placement and `tc-popup`)
+
+Seven plugin sites also check the flag: `dynannotate.js:68`, `geomap.js:53`, `highlightblock.js:33,39`, `twitter-widget.js:112`, `innerwiki.js:61,95,108,130`, `codemirror/engine.js:112` and `katex/wrapper.js:58`.
+
+''What browser mode changes.'' A1 hands the camera the real `document` (shadow root). `isTiddlyWikiFakeDom` is then falsy at every site, and all five un-skip ''together''.
+
+''What is new compared with the existing G6 walk witness:''
+* FramedEngine's iframe now sits inside a shadow root. Its `contentDocument` is a real document that the shadow stylesheet does not reach. ''UNVERIFIED:'' whether the framed editor copies styles into its iframe through `$tw.styleElement`. Watch `framed.js`'s style copy after A5 sets `styleElement` to the shadow `<style>`.
+* Popup placement reads `getBoundingClientRect` inside the shadow tree.
+
+''Test'' `mirror-five-sites-walk`: Chromium, Firefox ''and WebKit'' (see D). For each site, one act and one observed effect: the toolbar bold wraps the selection; auto-height grows; a navigate scrolls to and animates the target; a popup's position lands within 2 px of stock TW5's; the framed editor keeps its selection across a click-away. ''Control:'' the same script on stock TW5 of the same commit produces the same effects.
+
+!!! A9. Echo discipline at the port, both directions
+
+The house already holds the end-state (`glass-port-adaptor.ts`):
+* ''Out:'' one `port:write` per title, one in flight, the latest image deferred behind it (`:108-143,130-131,150-154`).
+* ''In:'' `land()` tags the wire image and the TW5-normalised image (`:78-124`).
+* ''Own echo:'' comes back under `causedBy` and marks the write `echoed` (`:176-181`).
+* ''Local-only titles'' never cross (`:37,72-74`).
+
+''What browser mode moves''
+* `nextTick`: stock goes back to `setTimeout(fn,0)` once no `process` stands (`utils.js:706-714`). A1 keeps `queueMicrotask`.
+* ''New titles appear:'' `$:/info/browser/*` (already local, `:37`), and anything a now-standing browser module writes. `startup.js` writes `$:/info/*` and language/theme `$:/state`, all of which `:37` covers. The A1 control lists every title written between boot and first paint.
+
+''Build''
+* Add a changeCount second witness: record `wiki.getChangeCount(title)` after each `land()`, and drop any `change` event for that title at or below the record.
+* Keep the image tag as the primary witness. It survives TW5's tag and list normalisation, where TidGi found timestamps unreliable (out.md §A3).
+* Add the A2 saver titles to the local-only set ''only if'' they ship as ordinary preloads.
+
+''Tests''
+* `glass-echo-lands-once` (exists): re-run under browser mode.
+* `mirror-boot-writes-nothing`: from boot to first paint, the port sees zero `port:write`. ''Control:'' one edit after paint posts exactly one.
+* `mirror-landing-normalised-no-echo`: a landing whose `tags` field TW5 re-orders posts no write. ''Control:'' a local edit of the same field posts one.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b-page-never-a-vessel-the-anon-device-browser-ve`>>
+
+!! B. Page never a vessel: the anon-device browser vessel
+
+!!! B0. Today's unlock path, mapped
+
+''Threads''
+* ''Page main thread:'' `main.ts`, `openBrowserVessel`, `standBrowserCustody`, `browser-custody.ts`, `browser-vessel-identity.ts`, `browser-face-atom.ts`, `browser-keyhive-archive.ts`, `browser-face-anchor.ts`, `browser-face-presentation.ts`, `browser-fleet-join.ts`, `browser-walk.ts` and `browser-handle-verbs.ts`.
+* ''Dedicated island Workers:'' spawned at `lararium-browser/src/worker-handle.ts:39`.
+** The daemon island: `main.ts:42,46` → `workers/daemon.worker.ts:18` → `daemon-island-start.ts`.
+** The wiki islands: `main.ts:43,47` → `browser-wiki-worker.ts`, spawned at `browser-vessel-island-pool.ts:72`.
+* ''SharedWorker holder:'' `shared-holder.ts:85`, opt-in by the `?holder` URL query (`main.ts:53-62`).
+* ''No worker-side module imports `browser-custody.ts`.''
+
+''The opened tree key''
+* It is a raw 32-byte `Uint8Array` (`lararium-mesh/src/tree-key.ts:37`), ''not'' a CryptoKey.
+* It lives in a page-module `Map` (`browser-custody.ts:96`).
+* Minted at `:546` and stored at `:551`, or opened through `openTreeKey` (`:565`; scrypt N=2^17 in `lararium-mesh/src/keyslot.ts:55,165`, HKDF at `:159`, XChaCha unwrap at `:276`) and stored at `:580`.
+* Dropped at `lockBrowserCustody` (`:99-102`) and at clear (`:684`).
+* Rows seal with `sealUnderS` (`tree-key.ts:84-87`).
+
+''Every page-side reader of the opened key''
+* Direct readers in `browser-custody.ts`: `readKeystoreRowHeld` `:383`, `writeKeystoreRowHeld` `:412`, `withCustodyRows().delete` via `heldOrRefuse` `:437,587` (bind `:595`, unbind `:613`), and `settleClearRows` (`:552,581`).
+* Indirect readers of the opened ''rows'' (seeds in page memory):
+** `browser-vessel-identity.ts:202,207,219,224,366,377`
+** `browser-face-atom.ts:35,40,87,98`
+** `browser-keyhive-archive.ts:39,52`
+** `browser-face-anchor.ts:13,17`
+** `browser-face-presentation.ts:102`
+** `browser-fleet-join.ts:85,98,110,153,163,211`
+** `browser-walk.ts:52,53,70`
+
+''The ask'' is a page `<form>` in `askCustody` (`main.ts:115-142`). Its call sites are boot `:399`, fleet join `:303` and persona-mint (`open-browser-vessel.ts:1592-1593`, via `main.ts:408`). Only the passphrase and paper kinds exist (`browser-custody.ts:42-43`).
+
+''The device key''
+* Generated ''extractable'' (`browser-vessel-identity.ts:183-193`), exported to JWK, then kept as hex `{verifyingKey, signingKey}` (`:77-82`).
+* Rests at IDB `lares:vessel/keystore/vessel-key` (`:45,216-227`), in the clear until a slot binds (`browser-custody.ts:405-408`).
+* Signs through <code>&#64;noble/ed25519</code> on the page: `browser-fleet-join.ts:24,103`, `browser-walk.ts:15`, `browser-face-presentation.ts:25`, `browser-handle-verbs.ts:17`.
+* The PRF wrap (`seed-wrap-prf.ts`) has ''no caller''.
+
+''Secrets that cross a port today.'' The daemon `manifest` built on the page carries `daemonAuth.atom.seed` (hex of the worn atom seed), `faceAddressSecret` and `veilArchiveBytes` (`open-browser-vessel.ts:1324-1359,1335-1338,1443`; built in `open-browser-daemon-vm.ts:121-131`). All of them were read from custody rows under the unlock (`:1206,1213`).
+
+''⚑ The holder carries unlock-derived secrets.'' Under `?holder`, that manifest flows ''through the SharedWorker holder into an island running in the holder's realm'' (`shared-holder-core.ts:494-528`, `shared-holder.worker.ts:26-44`). The ruling reads "the shared holder still carries no unlock". The tree key never goes there, but the seeds it opened do. Separately, `?holder` selects a topology by URL query, the same class as the refused `?glass=`.
+
+''Stores at rest that nothing seals''
+* page `${idbName}:repo` (`open-browser-vessel.ts:565`)
+* island stores (`browser-sovereign-island-model.ts:39-41`)
+* the edge ledger (`daemon-island-start.ts:17`)
+* the holder's house repo (`shared-holder.worker.ts:61`)
+
+''Clear rows'' are allowed before a slot only for `vessel-key` and `veil-archive-g*` (`browser-custody.ts:61,205-224,405-408`). They get sealed and settled at first seal and at every unlock (`:511-535`). Clear goes back to clear rows (`:645-687,707-732`).
+
+''Stale headers owed'' (ruling 8): `seed-wrap-prf.ts:5-11`; `secure-context.mem` #/custody-leans "What the code holds"; `phone-seat.ts` `seedRestStatus(undefined)` ("seed: cleartext at rest", per the memo update of 2026-10-29).
+
+!!! B1. The move: custody into the tab's own daemon worker
+
+''The end-state.'' The daemon island worker (dedicated, one per tab, spawned at `worker-handle.ts:39`) becomes the ''vessel'': the slot tree, the opened tree key, every custody row, every signer. The page keeps a surface, a port, the ask's DOM, and nothing it opened.
+
+''Build''
+# A `custody` door on the daemon worker. These kinds join `island-protocol.ts`'s vessel↔island unions (`:705-733` and `holder-routes.ts:6-45`):
+#* `custody:status` → `{state: none|clear|sealed|unsettled, slots:[kinds]}`
+#* `custody:open{route}` → `opened` | `refused:<why>`
+#* `custody:seal{route}`, `custody:bind`, `custody:unbind`, `custody:lock`, `custody:clear`
+#* `custody:row-read{row}` and `custody:row-write`, ''for the worker's own use only''. No page caller exists, and a test pins that.
+# Move `browser-custody.ts`, its `CustodyIo` and `keyslot` calls, and `settleClearRows` into the worker's import graph. The page imports ''no'' `browser-custody` export. A census test greps the page bundle's graph.
+# ''The daemon manifest stops carrying secrets.'' The worker reads the atom seed, `faceAddressSecret` and the veil archive itself, under its own opened key. `daemonAuth` loses `atom.seed`, `faceAddressSecret` and `veilArchiveBytes` (`open-browser-vessel.ts:1335-1338`).
+# ''The per-tab ask stands.'' Each tab's worker opens its own tree key. Nothing posts the key or any opened row to another tab, the BroadcastChannel bus or the holder.
+
+''What crosses the port instead of key bytes''
+* the route material, ''once'', page → worker (see B4);
+* custody ''verdicts'' (`opened`, `refused:<why>`, `status`);
+* ''signatures'', never signers: `sign{purpose, bytes}` → `{signature}`. Purposes come from a closed set, and each act's whole bytes are composed ''inside'' the worker (see B2), never chosen by the page;
+* public keys and addresses.
+
+''Tests''
+* `custody-key-never-in-page` (Playwright): after unlock, a heap snapshot of the ''page'' realm (`page.evaluate` + CDP `HeapProfiler`, Chromium) holds no 32-byte buffer equal to the tree key. The worker receives the key's fingerprint through a test-only door that answers `sha256(key)` and nothing else. ''Control:'' run the same probe today, before B1, and it finds the key in the page heap. Run this control first.
+* `page-imports-no-custody`: a bundle-graph census of `lararium-web`'s page entry reads zero imports of `browser-custody`, `keyslot` or `tree-key`. ''Control:'' the census run on today's graph lists them.
+* `manifest-carries-no-secret`: the posted `manifest` holds no field named `seed`, `faceAddressSecret` or `veilArchiveBytes`. ''Control:'' today's manifest holds all three.
+* `per-tab-ask-holds`: two tabs, and the second tab asks again. No message on the bus or holder carries 32 high-entropy bytes. ''Control:'' an entropy probe flags a planted key.
+
+!!! B2. Signers into the worker; the device key non-extractable in memory and sealed at rest
+
+''⚑ Two readings of "device key non-extractable"'', measured in `project_browser_key_custody` §②:
+* ''(i) Rest a non-extractable `CryptoKey` handle in IndexedDB.''
+** It persists as ''raw seed bytes on disk'' in Chromium and Firefox (measured).
+** ''Any same-origin script can `get` the handle and `sign` with it'': a live signing oracle. A person's plugin on the mirror page is same-origin.
+** `wrapKey` throws on it, so it ''cannot be sealed'' under the tree key.
+** So reading (i) contradicts "no clear rows under the full mirror" and "no key on a surface". The surface's realm can reach the handle through origin storage.
+* ''(ii) Rest the seed sealed (`sealed/vessel-key`, which already exists after a slot binds, `browser-custody.ts:311-323`), and import it `extractable:false` into the **worker's memory'' at each unlock.**
+** It is non-extractable in every live realm, sealed at rest, and leaves no oracle in storage.
+** It loses the "paper-free, device-bound" property, which §⑤ says costs nothing for the device key.
+* ''Recommendation: (ii).'' It is the only reading that satisfies rulings (6), (7) and "no key on a surface" together. What overturns it: the operator naming device-binding against profile-copy as the goal. Then (i) stands, and its oracle residual gets written down.
+
+''Build''
+# In the worker: `importKey('pkcs8', 302e020100300506032b657004220420‖seed32, {name:'Ed25519'}, false, ['sign'])`. That is the RFC 8410 prefix from §⑨. Zero the seed buffer after the import.
+# Every page signing site becomes a worker act whose bytes the worker composes:
+#* `browser-fleet-join.ts:103`
+#* `browser-walk.ts` (`:15` and its callers)
+#* `browser-face-presentation.ts:25`
+#* `browser-handle-verbs.ts:17`
+#* `auth-wire.ts:219` `ed25519SignerFromSeed`
+#* `device-delegation.ts:138`
+#* `oracle-substrate.ts:135`
+#* `boot-invite-burn.ts:81`
+
+These are the §⑨ list, re-anchored before editing. The seam already exists (`AdmitSigner = (bytes) => Promise<string>`, `persona-admit.ts:68`). It moves into the worker, and the page receives signatures.
+# ''Persona roots stay seeds'' (SLIP-0010 needs bytes; `secure-context.mem` #/two-key-classes). They are read and derived ''inside the worker'' only, and rest sealed (already ruled).
+# ''Test hazard:'' Safari's Ed25519 signatures come out randomized, so no test may compare a WebCrypto signature byte-for-byte with noble's (§⑨.6). Tests verify signatures; they never compare bytes.
+# Platform support: Ed25519 WebCrypto ships in Chrome/Edge 137, Firefox 129 and Safari 17 (https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/sign#ed25519, via §①; mdn browser-compat-data). The secure context is required (https://w3c.github.io/webcrypto/).
+
+''Tests''
+* `device-key-opaque-in-worker`: the worker's handle reports `extractable === false`, and `exportKey` throws `InvalidAccessError`. ''Control:'' today's keygen at `browser-vessel-identity.ts:186` holds `extractable:true`.
+* `device-key-no-handle-at-rest`: after lock, no IDB object store holds a `CryptoKey`, which a structured-clone walk of every store checks. ''Control:'' plant one and the walk finds it.
+* `page-cannot-sign`: the page bundle holds no <code>&#64;noble/ed25519</code> import. A page-side `sign{purpose:"arbitrary"}` refuses `purpose-unknown`. ''Control:'' `sign{purpose:"fleet-join"}` from the worker's own flow verifies.
+
+!!! B3. No clear row under the full mirror; the holder re-cut
+
+''Build''
+# ''Sequence:'' the mirror's ''plugin gate'' (C3) reads `custody:status === sealed && settled`. A vessel with `clear` or `unsettled` rows stands the mirror with core and house plugins only, plus an alert reading `plugins-await-seal`.
+# ''Clear stays a person's act'' (`clearBrowserCustody`, `:645-687`). Taking it closes the plugin gate in this tab and in every tab that next reads status.
+# ''The `?holder` road'' (⚑ B0) is re-cut to the ruling:
+#* The holder relays ''ciphertext and store coordination only''.
+#* No island that holds an opened key or seed runs in the holder's realm.
+#* The query flag ''burns''. Topology is measured or ruled, never read from a URL, as with `?glass=`.
+#* If the operator wants the holder topology kept, it becomes a capability-measured choice under the same rule.
+#* Until ruled, B3 deletes the flag and keeps the dedicated-worker topology, which is the shipped default.
+
+''Tests''
+* `mirror-plugins-wait-on-seal`: with a clear `vessel-key` row, a person's plugin does not load into the mirror and the alert names `plugins-await-seal`. ''Control:'' a sealed and settled vessel loads it.
+* `holder-carries-no-secret`: if the holder topology stays, an entropy census over every `MessagePort` frame through the holder finds no seed. ''Control:'' today's manifest trips it.
+
+!!! B4. Where the person types the secret: the unlock ceremony
+
+''The problem.'' The surface owns the screen. A person's plugin, running in the mirror on the page realm, can paint a perfect copy of the house's ask and read what the person types into it.
+
+''Platform facts''
+# ''No worker owns a UI.'' `WorkerNavigator` carries no `credentials` member. Its properties are `appCodeName` … `userAgentData`, plus `locks`, `permissions`, `storage` and `serviceWorker`, but not `credentials` (https://developer.mozilla.org/en-US/docs/Web/API/WorkerNavigator, read 2026-10-29). Workers hold no DOM (https://html.spec.whatwg.org/multipage/workers.html). So ''WebAuthn runs only from a Window'', and a "worker-owned ceremony the page can't fake" ''does not exist on the web platform.''
+# ''`<dialog>.showModal()` paints in the top layer'', but the page's own script controls that layer (https://html.spec.whatwg.org/multipage/interactive-elements.html#the-dialog-element). It gives stacking order, not authority.
+# ''WebAuthn's prompt'' is drawn by the browser or OS, so the PIN or biometric never enters web content.
+#* Its assertion and PRF output land in the ''calling Window's JS'' (W3C WebAuthn L3 §10.1.4, https://www.w3.org/TR/webauthn-3/#prf-extension, via `session-unlock-2026.mem`).
+#* Any same-origin script can call `navigator.credentials.get` for the same rpId with the same salt. The salt is readable from origin storage.
+#* Default allowlists are `self` for `publickey-credentials-get` and `-create`. A cross-origin iframe needs `allow=`, and `create()` there also needs transient activation (https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Permissions-Policy/publickey-credentials-create; …/publickey-credentials-get; both marked "Limited availability". Per-browser versions UNVERIFIED, since the compat table did not render).
+#* ''PRF support:'' Chrome 132 (iCloud Keychain) / 147 (Windows create); Safari 18 platform, 26.4 for create and get; Firefox 139, Windows Hello 148 (`device-capabilities-2026.mem:93`, house-sourced). Cross-device PRF stays unmeasured (`secure-context.mem` #/custody-leans).
+# ''Chrome storage partitioning'' (on since Chrome 115) keys storage by origin + top-level site + an ancestor bit. A fully same-site chain stays unpartitioned. IndexedDB, Web Storage, OPFS, Storage Buckets, BroadcastChannel, SharedWorker and Web Locks all partition (https://privacysandbox.google.com/cookies/storage-partitioning, read 2026-10-29).
+# ''WebKit:'' "Third-party LocalStorage and IndexedDB are partitioned per first-party website and also made ''ephemeral''", which the page defines as storage that "does not persist to disk and goes away with the application". ITP deletes all script-writeable storage after 7 days without interaction, and "the first-party domain of home screen web applications is exempt" (https://webkit.org/tracking-prevention/, read 2026-10-29).
+#* ''WebKit bug 225297 (NEW, open):'' a same-eTLD+1 subdomain iframe also "gets a unique partition" (https://bugs.webkit.org/show_bug.cgi?id=225297).
+#* One commenter there says such a frame gets "partitioned + ephemeral" storage. That claim is ''UNVERIFIED'', as a question in the thread rather than a finding.
+# ''Firefox State Partitioning'' keys by top-level site. A Storage Access grant lasts 30 days (https://hacks.mozilla.org/2021/02/introducing-state-partitioning/, via out.md; ''UNVERIFIED'' this pass).
+# ''A sibling subdomain cannot reach another origin's DOM'' unless both opt in through `document.domain`, which origin-keyed agent clusters disable (`Origin-Agent-Cluster: ?1`; https://developer.mozilla.org/en-US/docs/Web/API/Document/domain, ''UNVERIFIED'' this pass).
+
+''The options, weighed''
+
+| Shape | Where the secret is typed | Can a live plugin harvest it? | Storage under partitioning / ITP | Against the rulings |h
+| ''W. A worker-owned ceremony'' | — | — | — | ''Does not exist'' (facts 1–2) |
+| ''D. A house `<dialog>` on the app origin'' | page DOM | yes: a fake dialog, or a hook on `HTMLInputElement` | first-party; fine | allowed, but the surface paints the ask, so it fails "a ceremony the surface cannot paint" |
+| ''P. WebAuthn/PRF on the app origin's rpId'' | the OS/browser prompt; nothing typed into web content | ''partly'': a plugin can call `credentials.get` itself and receive the PRF output if the person approves a real OS prompt | first-party; fine | the secret never enters web content; the residual is a deceived approval |
+| ''K-frame. A custody origin in a cross-origin iframe'' (Privy's shape) | the custody frame, or WebAuthn under the custody rpId | a plugin cannot read the frame's DOM or claim its rpId, ''but'' can paint a lookalike //beside// the frame, and nothing in browser chrome tells the two apart | ⚑ ''WebKit: third-party IndexedDB stays ephemeral'' (fact 5). A cross-site custody frame ''loses its slot tree at session end on Safari'', and a same-site sibling still partitions (225297). Chrome cross-site partitions too, but consistently under one top-level site | ⚑ conflicts with RECOVERY and with the iOS seat, the phone being a family's main surface (`device-capabilities-2026.mem:137`) |
+| ''K-popup. A custody origin opened top-level'' | the custody origin's own window, with the address bar naming it | phishing only (a lookalike domain); the origin is real browser chrome | first-party for the custody origin, but top-level storage ''differs'' from any framed copy (fact 4) and runs on Safari's 7-day clock unless used. ''UNVERIFIED:'' how a Home Screen app on iOS opens a popup (an in-app browser view with separate storage?) | the result must reach the app's worker ''through the app page'' (the opener), so it rides encrypted to a worker key. A live plugin can MITM the worker's key by using the device key as an oracle, unless the ask runs before any plugin (see R). Costs a second origin (DNS-01 and TLS, `secure-context.mem` #/why-dns-01) |
+| ''S. The surface in a sandboxed / cross-origin iframe; vessel and ask top-level'' (lean B of the lane kit) | the top-level house page | ''no'': the platform walls the plugin realm off from the vessel origin's storage and DOM | the vessel origin stays first-party everywhere; the mirror needs no storage | ⚑ ''the operator ruled Mu'' on the iframe menu ("not as user friendly") |
+
+''⚑ The conflict to rule.'' "An unlock ceremony the surface cannot paint" holds by platform only in two shapes:
+* shape ''S'' (the surface in another realm), which the operator ruled Mu on;
+* a ''second origin'', whose framed variant WebKit's ephemeral third-party storage breaks on Safari.
+
+''Within one origin, no ceremony exists that a person's plugin cannot imitate.'' The platform walls realms apart, not pixels.
+
+''Recommended shape: R, "the ask lives in a clean realm, and its daily secret never enters web content."''
+
+# ''Clean realm.'' The ask runs only in a page realm where ''no person's code has ever run'':
+#* The page holds a one-way `realmTainted` latch, set at the first person's-plugin boot. The ask refuses in a tainted realm.
+#* ''Lock and re-ask'' go through a ''navigation'' (`location.reload()` under the unload hold) to a fresh realm, and the mirror boots only after the worker answers `opened`.
+#* So the legitimate ask ''never appears over a painted wiki''. That gives the person one rule to check: //"if your wiki shows, any ask is fake."// The house writes this in plain words beside the ask.
+# ''The daily secret is a passkey (P), held as one keyslot'' (the `custody-leans` condition: a passkey opens ONE keyslot and names no person).
+#* The page calls `navigator.credentials.get` with PRF in the clean realm, posts the 32-byte output to the worker ''once'', and zeroes its buffer.
+#* The worker derives the slot's KEK and opens the tree key.
+#* The transit is named: the PRF output exists in the clean page realm for one task and never rests.
+# ''Passphrase and paper stay'' as the recovery slots, as ruled. They are typed only in the clean realm (shape D, sequenced), with the plain-words rule beside them. Where PRF reads absent (measured, never assumed: `device-capabilities-2026.mem:153` names Firefox-on-Android gaps), the passphrase serves as the daily route under the same clean-realm rule.
+# ''The opened key lives in the dedicated worker (B1).'' The shared holder carries no unlock (B3). The per-tab ask stands (each tab's fresh realm asks).
+
+''Why R reads isomorphic by intent''
+* Custody reads by ''capability'': "the realm that opens keys runs no person's code, and the ask runs where no person's code has run."
+** On the node box, that realm is the node process, and the browser holds a port.
+** On the anon-device vessel, it is the dedicated worker plus a clean ask.
+** On a fleet, it is each vessel's own.
+* No host check decides it. The vessel's grant says which custody capability it offers.
+
+''What R leaves open, named for the record''
+* ''(a) A deceived approval.'' A live plugin can trigger a ''real'' passkey prompt for the app's rpId (fact 3) and read the PRF output if the person approves it while the wiki is painted. The plain-words rule is the only guard.
+* ''(b) A fake passphrase box'' painted over the wiki. Same guard.
+* ''(c) The served-page hole.'' Whoever serves the code owns everything (§③). No shape cures this, and R leaves it as it stands.
+
+''What overturns R''
+* ''The operator lifts the Mu for the custody path alone (shape S).'' The platform then enforces what R leaves to a plain-words rule. That costs the iframe UX the operator named, and re-measures G7.
+* ''A measured Safari fact:'' a same-site sibling-origin frame's IndexedDB ''persists'' (bug 225297's partition without ephemerality). Then K-frame survives Safari, and a custody origin becomes viable as a phishing cure for typed secrets. That needs a second origin served on every setup (Q-B3 of out.md).
+* ''Measured PRF breakage'' on the phone seat. The passphrase then becomes the daily route everywhere, and residual (b) widens.
+
+''Tests (B4)''
+* `ask-refuses-in-tainted-realm`: after the mirror boots one person's plugin, `custody:open` called from that realm refuses `realm-tainted`, and the lock path navigates. ''Control:'' a fresh realm's ask opens.
+* `lock-reloads-the-realm`: `custody:lock` from the surface ends in a navigation (Playwright `waitForNavigation`), and the new realm shows no mirror before `opened`. ''Control:'' the old realm's `window` marker is gone.
+* `prf-output-never-rests`: after unlock, no page-heap buffer equals the PRF output (heap probe as in B1). ''Control:'' a deliberately retained copy is found.
+* `passkey-slot-binds-and-opens` (virtual authenticator, Chromium CDP `WebAuthn.addVirtualAuthenticator` with PRF): bind a PRF slot beside a passphrase slot, open by either one, and see that refusing one destroys nothing. ''Control:'' a wrong PRF salt refuses `slot-refused`. The slot tree today builds only passphrase and paper (`secure-context.mem` #/custody-leans, "What the code holds"), so the passkey kind lands in `lararium-mesh/src/keyslot.ts` with its own vectors.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/c-the-gate-sealed-store-steps-2-and-3-for-the-br`>>
+
+!! C. The gate: sealed-store steps 2 and 3 for the browser store
+
+''Ruled:'' the full mirror runs people's plugins only after steps 2 and 3 land for the browser store.
+
+''What the browser path owes'', taken from `sealed-store.mem` #/owed ("the browser shore": "the browser's island still owes a rest for this store and a caller that seats its holder") and `stable-founding-road.mem:401-403`:
+
+| Step | Row the browser owes | Node twin to mirror | Depends on |h
+| 2 | ''C1a. The browser rest:'' lockboxes, signed records and chunk-index rows at rest, by names their own bytes derive, written whole and once. IndexedDB or OPFS sits behind the `sealed-store-rest.ts` port | `packages/lararium-node/src/sealed-store-fs.ts` | B1 (the worker owns storage I/O) |
+| 2 | ''C1b. The caller that seats the holder:'' the browser daemon island stands `content-key-holder` beside its Keyhive identities once `custody:open` answers, over its own `sealed/` and `cad/` tiers. It answers the `sealed-*` verbs and refuses each by name when no identity stands | `node-daemon-island.ts`, `sealed-store-island.ts`, `content-key-seat.ts` | B1 and B2 (the holder lives where the Keyhive seat and the opened key live) |
+| 2 | ''C1c. The outbox key's row and hand-off'', under the browser's S key (the tree key) | `custody#/what-the-code-holds` | C1b |
+| 2 | ''C1d. The Archive writer'' rides the worker's slot tree (`browser-custody.ts` `CustodyIo`, now worker-side) | — | B1 |
+| 2 | ''C1e. The session signer.'' Shared with node: "no content key mints on a production vessel until a production path opens a session signer" (`sealed-store.mem` #/what-the-code-holds). ''The browser cannot finish step 2 alone.'' It waits on O1 / the wire cutover's session open (`train-s3-launch.mem:31`) | — | ⚑ cross-lane blocker |
+| 3 | ''C2a. Sealed repos.'' Each Automerge store value seals as a `change` or `checkpoint` value through the holder: the island stores (`browser-sovereign-island-model.ts:39-41`), the edge ledger (`daemon-island-start.ts:17`) and, if kept, the holder's house repo (`shared-holder.worker.ts:61`). ''The page repo `${idbName}:repo` (`open-browser-vessel.ts:565`) leaves the page entirely'', since page never a vessel means the page holds no repo | `train-s3-launch` walk 3 | C1b, C1e |
+| 3 | ''C2b. Face-checked hydration:'' every fetch, write, catalog lookup and content read in the worker is checked against the session's face. A wrong face learns no change and no catalog name, even when it holds the key | `train-s3-launch` walk 2 | C2a; O1's verified face |
+| 3 | ''C2c. `freshBase` from the browser document store'', cut before any from-now change seals | `content-key-holder.ts` port | C2a |
+| 3 | ''C2d. Persona planes rest sealed'' (`selves.carry` stops refusing on the browser) | `persona-selves-plane.ts` | C2a |
+| 3 | ''C2e. The re-seal record'' at a roll (ruled; lands with step 3) | `stable-founding-road.mem:228` | C2a |
+
+''The order'' (no "a now, b later"; each row lands in its end-state): B1 → B2 → C1a, C1d → C1b → C1c → [O1 session signer] → C2a → C2b, C2c → C2d, C2e → ''C3''.
+
+''C3. The plugin gate opens.'' The mirror's boot reads one capability off the port grant: `sealedRest: true`. The vessel sets it only when C2a and C2b stand and custody reads `sealed && settled`. With it, person's plugins join the preloads, after the A3 census. Without it, the mirror boots core and house plugins and shows `plugins-await-seal`.
+* It is a field of `port:open`'s grant (MIRROR DEFAULT: "the handle = the D2 port grant"), never a URL value and never a stored flag.
+
+''C tests''
+* `browser-holder-refuses-unadmitted-port`: row `B1` of `session-unlock-2026.mem`. An unadmitted port asking for a sealed body refuses by name. ''Control:'' the admitted session's port opens it.
+* `browser-repo-rests-sealed`: after an edit, every IDB value in the island stores parses as a sealed value (step-1 format) and none contains the edit's text. ''Control:'' today's stores hold the text in the clear. Run this first.
+* `browser-wrong-face-learns-nothing`: two faces on one vessel. Face B, even holding the content key, gets no change and no catalog name for face A's bag. ''Control:'' face A reads it.
+* `plugin-gate-reads-the-grant`: without `sealedRest`, no person's plugin loads. With it, the plugin loads. No URL or storage value changes the outcome, and a census holds the glass sources to the grant field.
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/d-the-owed-dreamdom-rows-the-fable-lane-carries`>>
+
+!! D. The owed DreamDOM rows the Fable lane carries next
+
+| Row | Fits after | What changes because of A to C |h
+| ''Goldens 1–13 at full against stock TW5'' (roadmap D3 "Proves"; `dreamdom.mem` #/conformance) | A complete (A1–A9) | The oracle is a stock TW5 HTML of `ea94ca840` in Playwright. The mirror is now stock in browser mode (no forge), so most goldens should read identical writes and messages. Expected deliberate diffs: golden 12 (doors: print refused, download as a door), golden 7 (global shortcuts on the shadow surface), and permalink/route behaviour. Each diff records a named refusal per `page-controls#/refusals`, never a silent skip. Golden 14 waits on D4 |
+| ''G3 doors'' | A6 and A7 | A6 builds modal, notify, switcher, clipboard, download, open-surface, print and fullscreen. A7 builds route. `http-request` stays refused until ''D15'' (door law, a per-face allowlist, private ranges refused, the response as a sensed snapshot), with goldens on a recorded fixture |
+| ''G6 walk on WebKit'' | A8 | WebKit refuses to launch on this WSL host for want of two system libraries (`d3-glass-lane.mem:58`). Run it in the official Playwright Docker image (`mcr.microsoft.com/playwright`, version-matched to the repo's <code>&#64;playwright/test</code>), or on a Mac for real Safari. ''Re-anchor the image tag before use; UNVERIFIED here.'' The walk adds A8's shadow-root FramedEngine check. Safari's randomized Ed25519 signatures do not touch this walk, but they do touch any WebKit run of B2 |
+| ''G7 phone measures'' | A5 (paint path final) and B1 (worker owns custody) | Re-run the shipped-setup table: process RSS against the +25% / 150 MiB gate, first paint, keystroke p95, peer write, echo, hot swap. ''Browser mode changes the inputs'' (stock `startup` UI managers, no `render`), so the WSL figures re-measure too. Phones: iOS 26 Safari, ''as a tab and as a Home Screen app'' (two storage regimes, `secure-context.mem` #/storage-that-vanishes), and Android Chrome, through `tools/capability-probe/`. Add the B4 clean-realm reload cost (the time from the lock to a re-asked first paint) |
+| ''D4 the Wiki Actor'' | C3 (custody and seal in the worker), and the session contract's surface-open | The actor's attachments `{cursor, subscriptions, width, actorKey, localFilter, cameraMount}` now include the mirror's grant fields (`sealedRest`, width). The in-memory txId ledger of a G4 hand-off (`d3-glass-lane.mem` #/owed) moves into the actor's per-port attachments, resting ''sealed'' in the worker (C2a). `tm-open-window` → `open-surface` (A2 disables `windows`). Golden 14 and the seven D4 witnesses (roadmap D4 "Proves") follow |
+
+---
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/questions-only-the-operator-can-rule`>>
+
+!! Questions only the operator can rule
+
+# ''Q-A1. Refuse the plugin or the mirror.'' A person's syncadaptor or saver plugin: A3 reads "refused at mount by name" as dropping ''the plugin'', alert named, mirror standing. The other reading refuses ''the mirror'' (`none:plugin-syncadaptor`).
+# ''Q-A2. The plugin library door.'' `browser-messaging` disabled means `tm-load-plugin-library` (a web2 iframe fetch) refuses by name. Does the house owe a Web3 plugin-library road (an offering through `nexus publish`) as the people-customize path?
+# ''Q-B1 ⚑. The ceremony boundary.'' Within one origin, no ceremony exists that a live plugin cannot imitate (facts 1–3). Choose one:
+#* ''R'', the recommendation: clean-realm ask, passkey daily, passphrase and paper recovery, with the residuals named;
+#* lift the Mu for the custody path alone (''S'', platform-enforced);
+#* a ''custody origin'' (K), whose framed variant WebKit's ephemeral third-party storage breaks on Safari.
+# ''Q-B2 ⚑. "Device key non-extractable".'' Reading (ii), the recommendation: sealed at rest and an opaque handle in worker memory per unlock. Or reading (i): a persisted opaque handle, which any same-origin script can use as a signing oracle and which can never be sealed.
+# ''Q-B3 ⚑. The `?holder` topology.'' It carries unlock-derived seeds through the shared holder and is selected by URL query. B3 burns the flag and keeps dedicated workers. Does the holder topology return later as a measured capability carrying ciphertext only?
+# ''Q-C1 ⚑. The browser seal and O1.'' The browser's steps 2 and 3 wait on the production session signer (O1), the same blocker node has. Does the plugin gate stay closed until O1 lands, or does the operator name an order that brings O1 forward?
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oA8jv6rvGK8EC6TDST8tQqIhSRNyXMisbd2fKn6fSqE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

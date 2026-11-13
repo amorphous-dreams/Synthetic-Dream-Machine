@@ -1,0 +1,35 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-common`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-05 (file date) — source `.lares-scratch/b1-lift/collide-common.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-common"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/collide-common"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! collide-common.md — plan, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/b1-lift/collide-common.md` (plan, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+THE DESIGN UNDER COLLISION: `git -C /home/joshu/.lares-scratch/b1-lift/wt show 9bfa4c127:bags/lares/ha.ka.ba/lares/docs/pono/browser-vessel-lift.mem` (the B1 lift: the browser vessel leaves the page's main thread for its own worker; the clean ceremony document, operator-APPROVED 2026-11-05, takes the secret and sends its bytes down a service-worker-brokered port to the vessel worker; each tab carries its own live session with its own unlock and one face; one vessel worker per house; typed port payloads; the vessel reads its own durability; every slice lands before the rite).
+Operator rulings 2026-11-05: "Browser + Node is part of founding"; "Land all before the rite, no 'build a now, b later'"; "Multiple tabs will carry live sessions, and later can change face (one face per session)"; "realm" stays reserved for the DreamNet (a JavaScript execution context reads as a thread); the ceremony document approved.
+TASK: read each carrier below (canon at the span: `/home/joshu/Synthetic-Dream-Machine/bags/...`) for every design statement about the page, the browser, workers, the surface, unlock/ceremony, passphrase/passkey/PRF, keystore, seeds/keys, custody, sealing, sessions, tabs. COLLIDE each against the B1 design. Report each collision: carrier:line, the quoted statement, the B1 slot it meets, and the kind: CONTRADICTS (one must change; say which side the newer rulings favor) / EXTENDS (the carrier adds a constraint B1 must carry; name it) / STALE (the carrier describes a shape B1 dissolves; it needs truing when B1 lands) / AGREES (one line, only for load-bearing agreement). Also name any carrier statement that B1 forgot (a law, a refusal, a residual) that a slice must keep. Ignore lore and grammar that touch none of these.
+OUTPUT (final message, under 900 words): grouped by carrier, CONTRADICTS first, then EXTENDS, then STALE; a closing list of the 3-6 changes B1's carrier most needs.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7F57VdxhqYyLTiUabFWQZhtUdRADLT0IuzGyHPShjlc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

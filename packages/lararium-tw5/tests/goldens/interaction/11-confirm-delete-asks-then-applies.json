@@ -1,0 +1,33 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/11",
+  "pins": "the confirm road: a delete parks one question; a second ask withdraws the first; yes re-dispatches; a subject changed since the ask answers nothing and says so",
+  "world": {
+    "tiddlers": [
+      { "title": "lar:///t/confirm/x", "text": "landed" },
+      { "title": "lar:///t/confirm/y", "text": "landed too" }
+    ],
+    "story": ["lar:///t/confirm/x", "lar:///t/confirm/y"],
+    "root": "<$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\"><$button class=\"del-x\" message=\"tm-delete-tiddler\" param=\"lar:///t/confirm/x\">delete x</$button><$button class=\"del-y\" message=\"tm-delete-tiddler\" param=\"lar:///t/confirm/y\">delete y</$button></$navigator>{{$:/core/ui/Confirmations}}"
+  },
+  "steps": [
+    { "frame": "first" },
+    { "act": { "control": "button.del-x", "action": "lar:click" } },
+    { "expect": { "answers": ["applied"], "writes": [], "messages": ["tm-delete-tiddler"] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "contains": "aria-modal=\"true\"", "questions": 1 } } },
+    { "act": { "control": "button.del-y", "action": "lar:click" } },
+    { "frame": "next" },
+    { "expect": { "answers": ["applied"], "frame": { "questions": 1, "questionSubject": "lar:///t/confirm/y" } } },
+    { "act": { "control": "button.tc-confirm-accept", "action": "lar:click" } },
+    { "expect": { "answers": ["applied"], "writes": [{ "title": "lar:///t/confirm/y", "tombstone": true }], "messages": ["tm-confirm", "tm-delete-tiddler", "tm-auto-save-wiki"] } },
+    { "frame": "next" },
+    { "expect": { "frame": { "questions": 0 } } },
+    { "act": { "control": "button.del-x", "action": "lar:click" } },
+    { "frame": "next" },
+    { "write": { "txId": "peer-1", "records": [{ "title": "lar:///t/confirm/x", "fields": { "text": "changed by a peer" } }] } },
+    { "frame": "next" },
+    { "act": { "control": "button.tc-confirm-accept", "action": "lar:click" } },
+    { "frame": "next" },
+    { "expect": { "answers": ["applied", "applied"], "writes": [], "frame": { "questions": 0, "alert": "$:/temp/alerts/confirm" } } }
+  ]
+}

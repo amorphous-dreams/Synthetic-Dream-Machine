@@ -7,11 +7,12 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeAll, describe, expect, test } from "vitest";
+import { afterEach, beforeAll, expect, test } from "vitest";
 
 import { makeEmbedCap, type EmbedCap } from "../src/embed-cap.js";
 import { makeContentPalace, type ContentPalace } from "../src/sensorium.js";
 import { makeLaresQuery, type LaresQuery } from "../src/lares-query.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 120_000;
 
@@ -20,7 +21,7 @@ beforeAll(() => { process.env["MEMPALACE_EMBEDDING_MODEL"] = "minilm"; });
 const closers: Array<() => Promise<void>> = [];
 afterEach(async () => { await Promise.all(closers.splice(0).map((c) => c())); });
 
-describe("makeLaresQuery (verb-first, lens-parameterized, live)", () => {
+palaceSuite("makeLaresQuery (verb-first, lens-parameterized, live)", () => {
   test("search · relate · structure · status all dispatch by lens over one palace", async () => {
     const dir = await mkdtemp(join(tmpdir(), "laresq-"));
     // seed the "content" lens via the caller-vector chain; KEEP it open — composeHolder ref-counts,

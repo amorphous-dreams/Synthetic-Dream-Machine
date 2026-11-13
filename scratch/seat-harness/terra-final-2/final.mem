@@ -1,0 +1,51 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-2/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-04 (file date) — source `.lares-scratch/seat-harness/terra-final-2/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-2/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-2/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-04
+
+Verbatim scratch record `.lares-scratch/seat-harness/terra-final-2/final.md` (hand-back, file date 2026-11-04); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/seat-harness/terra-final-2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''HOLD.'' The round-2 changes close several specific gaps, but the broker still follows lead-controlled pathnames with its own authority, and the watchdog’s process and rollout identification are not strong enough to support the requested guarantees. Findings are ''LEAD'' conclusions from source and test inspection; I did not run tests or construct payloads. The supplied 21/21 local result is a ''MEASURED report from the hand-off'', not an independent measurement.
+
+# ''P1 — Relay responses can be written outside the lane.'' [[commit-relay.mjs:34|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:34]] creates `lane/relay`, but [[poll|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:122]] subsequently reads requests and creates responses through that pathname without anchoring the directory. A lead able to replace `relay` can redirect those operations outside the lane; `wx` prevents overwriting an existing response but does not prevent creation in a redirected directory. The path-validation tests exercise request arguments, not replacement of the relay directory. This fails the broker’s lane-root boundary.
+
+# ''P1 — The worktree move still has a parent-swap window.'' [[seat-broker.mjs:487|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:487]] checks the parent, then passes the pathname to `git worktree move`; the parent can change between those operations. The later check can detect some swaps only after Git has acted, and rollback itself uses the mutable pathname ([[seat-broker.mjs:491|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-broker.mjs:491]]). The new [[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:408]] swaps the parent ''before'' the second validation, so it fails without that validation but does not cover a swap during the move or one restored before the final check. Staging reduces the exposure; it does not establish that the broker never writes outside the lane.
+
+# ''P1 — The watchdog can still signal a reused process group or miss a live seat.'' [[launch-codex.mjs:412|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:412]] captures a start tick after spawn, but the child can exit and its PID be reused before that read. The separate `alive()` check and group signal at [[launch-codex.mjs:334|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:334]] and [[launch-codex.mjs:339|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:339]] also leave a check-to-signal interval. If the initial tick cannot be read, the launcher reports success and starts no watchdog ([[launch-codex.mjs:413|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:413]]); failure to read `/proc` is not proof that the seat exited. The [[test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:600]] pins the argument and the no-watchdog behavior, not those races.
+
+# ''P1 — Rollout matching remains fallible.'' The marker fixes the ordinary same-worktree overlap shown in [[the new test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:400]], but [[findRollout|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs:93]] searches only the first 256 KiB and matches text with a role regex rather than parsing the event and checking its prompt field. A valid prompt beyond that prefix is never found, so its ceiling is never enforced; a matching line that satisfies the regex is not necessarily the intended prompt event. There is no fail-closed response when no rollout is found.
+
+# ''P1 — The trusted launcher is not required to be outside the lead’s writable worktree.'' [[commit-relay.mjs:29|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:29]] excludes the launcher from the lane root only. The relay separately permits a worktree elsewhere in scratch, so a configuration can place the supposed trusted launcher in that lead-writable worktree. [[The launch door|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:93]] then executes it with broker authority. The existing launch test checks forwarded arguments, not this placement. The controller can avoid the issue through placement, but the broker does not enforce the claimed boundary.
+
+The other round-2 cures have useful targeted evidence:
+
+* ''P0-1, partial:'' lead arguments no longer add the Git common directory and explicitly disable network access; [[the argument test|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:64]] would catch those options returning. It does not prove the entire lead authority boundary or prevent the launcher-placement issue above.
+* ''P0-2:'' the relay generates a per-run in-memory key and keeps receipts in memory ([[commit-relay.mjs:38|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.mjs:38]]); [[tests|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:373]] cover absence of key files and stale or guessed keys. Receipts bind the tree, check names and definitions, and are evicted on commit. This conclusion depends on the stated host ptrace and seccomp boundary, which I did not independently measure.
+* ''P1-3:'' checks bind the exported tree read-only with separate writable scratch ([[seat-walls.mjs:105|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:105]]); the [[mutation test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:397]] directly exercises the fix when bubblewrap is available.
+* ''P2-6:'' missing-wall refusals name the checks or install, and return before launching them ([[seat-walls.mjs:70|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:70]], [[seat-walls.mjs:161|/home/joshu/.lares-scratch/seat-harness/wt/tools/seat-walls.mjs:161]]); [[the test|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:422]] pins the names.
+
+The planted-hook, filter, submodule and poisoned-environment tests cover the specific broker paths they exercise ([[commit-relay.test.mjs:180|/home/joshu/.lares-scratch/seat-harness/wt/tools/commit-relay.test.mjs:180]]). They do not establish the broader “never executes lane-controlled bytes” claim in light of the launcher placement. I found no additional regression in the existing mode arguments or floors; their tests cover the floors and new used-percent thresholds ([[launch-codex.test.mjs:356|/home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs:356]]). The bubblewrap-dependent conclusions remain subject to the hand-off’s reported local run because those proofs skipped on the stated CI runner.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-zvGV6xq2SHprTcr7O80ThoseXC9O4BpjADsrv2AKCQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -12,12 +12,10 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-genesis
  */
 
-import {
-  cidV1Sha256,
-  casBlobEntries, type CasBlobLike,
-  type GenesisCasManifest,
-  sha256HexBytesSync,
-} from "@lararium/mesh";
+// The narrow subpaths, never the mesh barrel: the page's mirror reads the OPFS store through this module (`@lararium/browser/page`).
+import { cidV1Sha256, sha256HexBytesSync } from "@lararium/mesh/crypto";
+import { casBlobEntries, type CasBlobLike, type GenesisCasManifest } from "@lararium/mesh/cas";
+import { verifyCidBytes } from "@lararium/mesh/cas-transit";
 
 // ── OPFS content-addressed store (CAS) — engine + plugin bytes by CID ──────────
 //
@@ -26,7 +24,7 @@ import {
 // worker via resolveByCid — NEVER CRDT-synced over the port. OPFS is origin-shared, so a
 // worker reads what the main thread wrote. Canon: lararium-identity#the-oracle-plane.
 
-const OPFS_CAS_DIR = "cas";
+export const OPFS_CAS_DIR = "cas";
 
 /** Write each blob entry to the OPFS CAS, keyed by its sha256 (CID). No-ops if OPFS is
  *  unavailable. Returns the count written. */
@@ -56,7 +54,7 @@ export async function writeBlobsToCasOpfs(
 /**
  * Fetch each CAS blob named by the seed-derived logical inventory over HTTP (`baseUrl`/cas/<cid>)
  * and write it to the OPFS CAS — the browser face of the byte SOURCE the genesis CRDT
- * no longer carries (mirrors the node `mirrorGenesisCasFs`). The genesis static host
+ * does not carry (mirrors the node `mirrorGenesisCasFs`). The genesis static host
  * serves genesis/seed.json + genesis/cas/<cid>; the worker later resolves each by
  * the SAME cid via readCasBlobFromOpfs. Existing files are re-verified before reuse;
  * fetched bytes are verified before they enter OPFS. A missing, unavailable, or
@@ -106,14 +104,17 @@ export interface CasFileHandleLike {
 /** Read content-addressed bytes by CID from the OPFS CAS. Null if absent/unavailable.
  *  This IS the worker's resolveByCid shore (OPFS origin-shared, no IPC). */
 export async function readCasBlobFromOpfs(cid: string): Promise<Uint8Array | null> {
+  let bytes: Uint8Array | null;
   try {
     const root  = await navigator.storage.getDirectory();
     const cas   = await root.getDirectoryHandle(OPFS_CAS_DIR);
     const fileH = await cas.getFileHandle(cid);
-    return await readCasFileBytes(fileH as unknown as CasFileHandleLike);
+    bytes = await readCasFileBytes(fileH as unknown as CasFileHandleLike);
   } catch {
     return null;
   }
+  if (bytes && !verifyCidBytes(bytes, cid)) throw new Error(`corrupt-bytes: CID mismatch for ${cid}`);
+  return bytes;
 }
 
 /**

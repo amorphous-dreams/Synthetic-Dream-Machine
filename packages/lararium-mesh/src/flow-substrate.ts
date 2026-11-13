@@ -1,0 +1,223 @@
+/**
+ * flow-substrate — the read-only PUBLIC substrate of the FLOW map: a content-addressed snapshot
+ * + a signed causal pointer (the ratchet face).
+ *
+ * The floor of house canon answers by a different road: the Nexus's release names a floor manifest by CID
+ * (`floor-release`), and no pointer signs a floor. This substrate carries what a herm relays (the public flow map) and
+ * nothing more. Canon: lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane (the Two-Faced Substrate).
+ * The read face serves the flow doc as an IMMUTABLE blob — `Automerge.save(doc)` bytes named by their content hash — so
+ * write-refusal needs no check: a hash-named blob holds no mutable surface, no sync
+ * session, no inbound frame to refuse. The thin signed pointer carries currency:
+ * a reader verifies semantic act identity and causal ancestry locally (no global now).
+ * Real-time streaming (Hypercore, read-only by keypair) rides ABOVE this floor as the
+ * named end-goal — deferred.
+ *
+ * This module is the PURE core (isomorphic, no I/O): export a snapshot, build/sign a
+ * pointer, and run the reader rule. Hardened like device-delegation — it NEVER throws
+ * on untrusted input; `verifyFlowPointer` returns a verdict, never an exception.
+ * Wiring (serve the blob over the node's HTTP server, publish the pointer on the
+ * existing channel) rides a separate, node-side module.
+ */
+
+import { frameFloorDuty, type PlaceSigner } from "./place-signer.js";
+import { FLOW_POINTER_DOMAIN } from "./domains.js";
+import { save, getHeads, type Doc } from "@automerge/automerge";
+import { sha256Hex, utf8Bytes, defaultCryptoProvider, type DigestProvider } from "./crypto.js";
+import { verifyEd25519 } from "./ed25519-door.js";
+
+export { FLOW_POINTER_DOMAIN } from "./domains.js";
+const HEX64_RE = /^[0-9a-f]{64}$/;   // sha256 hex / ed25519 verifying-key hex / automerge head
+const SIG_RE   = /^[0-9a-f]{128}$/;  // 64-byte ed25519 signature hex
+
+function canonicalHeads(heads: readonly string[]): string[] {
+  return [...new Set(heads)].sort();
+}
+
+/** A point-in-time export of a served doc — the immutable read-face artifact. */
+export interface FlowSnapshot {
+  /** sha256(bytes) hex — THE content address; the reader rehashes to verify. */
+  readonly cid:   string;
+  /** Automerge heads of the doc at export — the local document frontier. */
+  readonly heads: readonly string[];
+  /** `Automerge.save(doc)` output — the whole doc, history included. */
+  readonly bytes: Uint8Array;
+}
+
+/** The signed causal pointer to a snapshot. */
+export interface FlowPointer {
+  readonly cid:     string;             // content address of the current snapshot
+  readonly heads:   readonly string[];  // its automerge heads
+  readonly actCid:  string;             // semantic identity, excluding signature
+  readonly parents: readonly string[];  // causal pointer identities
+  readonly pub:     string;             // signer verifying-key hex (self-describing)
+  readonly sig:     string;             // ed25519 sig over the canonical signing string
+}
+
+/** Export a doc as a content-addressed snapshot (the read-face artifact). */
+export async function exportFlowSnapshot<T>(
+  doc: Doc<T>,
+  provider: DigestProvider = defaultCryptoProvider,
+): Promise<FlowSnapshot> {
+  const bytes = save(doc);
+  const cid   = await sha256Hex(bytes, provider);
+  const heads = canonicalHeads(getHeads(doc) as string[]);
+  return { cid, heads, bytes };
+}
+
+/** A downloaded blob is the named snapshot iff its hash matches the cid. */
+export async function verifyFlowSnapshotBytes(
+  bytes: Uint8Array,
+  cid: string,
+  provider: DigestProvider = defaultCryptoProvider,
+): Promise<boolean> {
+  if (!HEX64_RE.test(cid)) return false;
+  return (await sha256Hex(bytes, provider)) === cid;
+}
+
+/**
+ * The pointer's IDENTITY string — the content and causal fields, excluding only the
+ * signature. Domain+schema tagged, `|`-delimited, every
+ * field strict-charset so no separator can shift a boundary (device-delegation pattern).
+ */
+function pointerIdentityString(p: Pick<FlowPointer, "cid" | "heads" | "actCid" | "parents" | "pub">): string {
+  return [
+    FLOW_POINTER_DOMAIN,
+    p.cid,
+    p.heads.join(","),
+    p.actCid,
+    [...new Set(p.parents)].sort().join(","),
+    p.pub,
+  ].join("|");
+}
+
+/**
+ * The SIGNED string — the identity itself; the signature covers every pointer field
+ * except the signature.
+ */
+export function flowPointerSigningImage(p: Omit<FlowPointer, "sig">): Uint8Array {
+  return frameFloorDuty(FLOW_POINTER_DOMAIN, utf8Bytes(pointerIdentityString(p)));
+}
+
+/**
+ * The pointer's stable semantic id. A changed content or causal field changes it.
+ */
+export async function flowPointerId(
+  p: FlowPointer,
+  provider: DigestProvider = defaultCryptoProvider,
+): Promise<string> {
+  void provider;
+  return p.actCid;
+}
+
+/** Build + sign a pointer. Parent sets are canonicalized; no scalar sequence is minted. */
+export async function buildFlowPointer(args: {
+  readonly snapshot: FlowSnapshot;
+  readonly parents:  readonly string[];
+  /** The scoped place signer at the publisher's KEL head. */
+  readonly signer: PlaceSigner;
+}): Promise<FlowPointer> {
+  const pub = args.signer.key;
+  const base = {
+    cid:     args.snapshot.cid,
+    heads:   canonicalHeads(args.snapshot.heads),
+    parents: [...new Set(args.parents)].sort(),
+    pub,
+  };
+  const actCid = await sha256Hex(utf8Bytes(pointerIdentityString({ ...base, actCid: "" })), defaultCryptoProvider);
+  const fields: Omit<FlowPointer, "sig"> = { ...base, actCid };
+  const sig = await args.signer.signFloor(FLOW_POINTER_DOMAIN, flowPointerSigningImage(fields));
+  return { ...fields, sig };
+}
+
+export interface PointerVerdict {
+  readonly ok:     boolean;
+  readonly reason?: string;
+}
+
+/**
+ * The reader rule — never throws. Pass what the reader remembers:
+ *   - `verifyingKey`: pin the publisher; reject a pointer signed by anyone else.
+ *   - `knownPointerIds`: locally held causal ancestors; missing parents are unavailable.
+ *   - concurrent heads are surfaced by `foldFlowPointerVerdict`, never ordered by arrival.
+ *     local observation/liveness policy stays outside this safety verdict.
+ */
+export async function verifyFlowPointer(
+  p: FlowPointer,
+  opts: {
+    readonly verifyingKey?:     string;
+    readonly knownPointerIds?: readonly string[];
+  } = {},
+): Promise<PointerVerdict> {
+  // Shape — reject malformed input without throwing.
+  if (!p || typeof p !== "object")                              return { ok: false, reason: "malformed pointer" };
+  if (!HEX64_RE.test(p.cid))                                    return { ok: false, reason: "bad cid" };
+  if (!HEX64_RE.test(p.pub))                                    return { ok: false, reason: "bad pub" };
+  if (!SIG_RE.test(p.sig))                                      return { ok: false, reason: "bad sig format" };
+  if (!HEX64_RE.test(p.actCid))                                return { ok: false, reason: "bad act cid" };
+  if (!Array.isArray(p.parents) || !p.parents.every((h) => HEX64_RE.test(h))) return { ok: false, reason: "bad parents" };
+  const canonicalParents = [...new Set(p.parents)].sort();
+  if (canonicalParents.length !== p.parents.length || canonicalParents.some((parent, i) => parent !== p.parents[i]))
+    return { ok: false, reason: "rejected non-canonical parents" };
+  if (!Array.isArray(p.heads) || !p.heads.every((h) => HEX64_RE.test(h)))
+    return { ok: false, reason: "bad heads" };
+  const canonical = canonicalHeads(p.heads);
+  if (canonical.length !== p.heads.length || canonical.some((head, i) => head !== p.heads[i]))
+    return { ok: false, reason: "rejected non-canonical heads" };
+
+  // Pinned publisher.
+  if (opts.verifyingKey !== undefined && p.pub !== opts.verifyingKey)
+    return { ok: false, reason: "unpinned publisher" };
+
+  const derived = await sha256Hex(utf8Bytes(pointerIdentityString({ ...p, actCid: "" })), defaultCryptoProvider);
+  if (p.actCid !== derived) return { ok: false, reason: "rejected semantic act cid" };
+
+  // Signature.
+  let sigOk = false;
+  try {
+    sigOk = verifyEd25519(p.sig, flowPointerSigningImage(p), p.pub);
+  } catch { sigOk = false; }
+  if (!sigOk) return { ok: false, reason: "signature verify failed" };
+
+  if (opts.knownPointerIds && p.parents.some((parent) => !opts.knownPointerIds!.includes(parent)))
+    return { ok: false, reason: "unavailable (missing causal parent)" };
+
+  return { ok: true };
+}
+
+export type FlowPointerVerdict = "held" | "unsettled" | "unavailable" | "rejected";
+
+/** Fold locally verified pointers; concurrent heads never choose by arrival order. */
+export async function foldFlowPointerVerdict(
+  pointers: readonly FlowPointer[], opts: { readonly verifyingKey?: string } = {},
+): Promise<FlowPointerVerdict> {
+  const ids = new Set(pointers.map((p) => p.actCid));
+  let admissible: FlowPointer[] = [];
+  let rejected = false;
+  let unavailable = false;
+  for (const p of pointers) {
+    const v = await verifyFlowPointer(p, { ...(opts.verifyingKey ? { verifyingKey: opts.verifyingKey } : {}), knownPointerIds: [...ids] });
+    if (!v.ok) {
+      if (v.reason?.includes("unavailable")) unavailable = true;
+      else rejected = true;
+      continue;
+    }
+    admissible.push(p);
+  }
+  // A locally present immediate parent is insufficient when its own ancestry is
+  // absent.  Close the admissible set to a fixed point before computing heads.
+  for (;;) {
+    const closedIds = new Set(admissible.map((p) => p.actCid));
+    const closed = admissible.filter((p) => p.parents.every((parent) => closedIds.has(parent)));
+    if (closed.length === admissible.length) break;
+    admissible = closed;
+  }
+  // Inspect every record before deciding: rejection has precedence over
+  // unavailable evidence so a forged record cannot disappear behind a gap.
+  if (rejected) return "rejected";
+  if (unavailable) return "unavailable";
+  if (admissible.length !== pointers.length) return "unavailable";
+  const covered = new Set(admissible.flatMap((p) => p.parents));
+  const heads = admissible.filter((p) => !covered.has(p.actCid));
+  if (!heads.length) return "unavailable";
+  return heads.length > 1 ? "unsettled" : "held";
+}

@@ -16,9 +16,9 @@
  * durable  — the climax state; commitment has become hard-to-reverse (the Mempalace stands here).
  * tombstone — retired with recorded grounds (MUSTIE); no byte-delete (causal-islands: move-not-delete).
  *
- * THE READER-DEFAULT (lossless migration): a manifest with no declared `lifecycle` reads one DERIVED from
- * its existing `ephemeral`+`halfLife` — so every sensorium already on disk carries a lifecycle the moment
- * this ships, zero manifest edit. {@link deriveLifecycle} is that derivation.
+ * THE DECLARED FIELD: both writers put `lifecycle` in every manifest. The TS builder and Python writer
+ * derive the mint-time state from `ephemeral`+`halfLife` ({@link deriveLifecycle}); a reader refuses
+ * a missing or unknown state. A judged tombstone remains declared until un-retire.
  *
  * THE REDUCER ({@link nextLifecycle}) is PURE — (state, evidence) → next state. A `reconcile` runs it and
  * writes only on change. The SIGNAL that feeds `survivorAge` (real recall-traffic over the hardening
@@ -38,15 +38,13 @@ export const LIFECYCLE_LADDER: readonly SensoriumLifecycleState[] = ["pioneer", 
 /** Every valid state (the ladder + the terminal tombstone) — a read-time validator for a declared field. */
 export const LIFECYCLE_STATES: readonly SensoriumLifecycleState[] = [...LIFECYCLE_LADDER, "tombstone"] as const;
 
-/** Does a raw value name a lifecycle state? (a declared field validator — an unknown value re-derives). */
+/** Does a raw value name a lifecycle state? (the declared field's validator — an unknown value refuses). */
 export function isLifecycleState(value: unknown): value is SensoriumLifecycleState {
   return typeof value === "string" && (LIFECYCLE_STATES as readonly string[]).includes(value);
 }
 
 /**
- * The reader-default: DERIVE a lifecycle from the manifest's existing `ephemeral`+`halfLife`, so a
- * manifest that predates the declared field still reads a state (lossless migration). The rule, ephemeral
- * winning as the strongest exploratory signal:
+ * DERIVE the mint-time lifecycle from `ephemeral`+`halfLife`. The rule, ephemeral winning as the strongest exploratory signal:
  *   - `ephemeral === true`               → pioneer   (the exploratory scratch, whatever its halfLife)
  *   - a FINITE positive `halfLife`       → hardening (a maturing standing that still cools)
  *   - else (halfLife null / absent)      → durable   (append-only-witness authority; never cools)

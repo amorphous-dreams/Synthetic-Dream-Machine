@@ -2,14 +2,15 @@
  * nexus-carriage.test.ts — the CARRIER-vs-STRANGER consult reads the LEAF MAP, and nothing else.
  *
  * Proven:
- *   · a presented admit whose leaf proof verifies for this socket, which `verifyPresentedAdmit` reads HELD
- *     against a CARRIED Nexus's deny board and antigen, seats the verdict's leaf nym → MEMBER;
+ *   · a presented admit, read HELD by `verifyPresentedAdmit` against a CARRIED Nexus's deny board and antigen, on a
+ *     session whose PROVEN face key (the key the gate's chain verified) heads the admitted line, seats the verdict's
+ *     leaf nym → MEMBER;
  *   · CONTROL A — a wire key equal to a nym the board admits, presenting NO admit, reads STRANGER: no board
  *     admit is folded into an allow set and no raw wire key is read as a nym;
  *   · CONTROL B — an admit for a Nexus outside the carried readings reads STRANGER (and the real carried set
  *     leaves out a charter this vessel holds but never contracted into);
  *   · CONTROL C — a revoke descending from the admit lands, the refold drops the peer to STRANGER, `onRefold` fires;
- *   · CONTROL D — the same admit and proof replayed under another vessel key reads STRANGER;
+ *   · CONTROL D — the same admit on a session whose proven face key is another key, or the persona ROOT, reads STRANGER;
  *   · a concurrent revoke (unsettled) and an admit at another epoch (wrong-epoch) stay STRANGER;
  *   · ROOT ⊥ LEAF — a held leaf leaves `contractNymOfPeer` null, and a root-map entry naming a board member
  *     seats nobody in the leaf map;
@@ -31,18 +32,14 @@ import {
   type CarriedNexusReading, type SocketBinding,
 } from "../src/nexus-carriage.js";
 import { writeNexusDoc } from "../src/nexus-doc.js";
-import { socketProof, socketUnderTest } from "./gate-dial-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 
 const SEEDS = [new Uint8Array(32).fill(1), new Uint8Array(32).fill(2), new Uint8Array(32).fill(3)];
 const LEAF_SEED   = new Uint8Array(32).fill(5);
 const ROOT_SEED   = new Uint8Array(32).fill(6);
-const VESSEL_SEED = new Uint8Array(32).fill(11);
-const OTHER_VESSEL_SEED = new Uint8Array(32).fill(12);
+const OTHER_FACE_SEED = new Uint8Array(32).fill(12);
 const pubOf    = (seed: Uint8Array) => ed.getPublicKeyAsync(seed).then(hex);
 const signerOf = (seed: Uint8Array) => (bytes: Uint8Array) => ed.signAsync(bytes, seed).then(hex);
-const GATE  = "ee".repeat(32);
-const NONCE = "ab".repeat(32);
 
 async function rosterAt(): Promise<KahuQuorumSeats> {
   const keys = await Promise.all(SEEDS.map(pubOf));
@@ -59,13 +56,10 @@ async function act(action: "admit" | "revoke", parents: readonly string[], epoch
 function reading(aid: string, roster: KahuQuorumSeats, denyBoard: CarriageEntry[] = [], antigen: KapaeAntigenEntry[] = []): CarriedNexusReading {
   return { nexus: aid, aid, revision: "fixture", via: "consent", island: `island-${aid}`, roster, sealLineage: [], denyBoard, antigen, antigenRoster: roster, antigenVerifier: makeMultiSigQuorumVerifier() };
 }
-async function bind(admit: CarriageEntry, opts: { lineage?: CarriageEntry[]; signer?: Uint8Array; vessel?: Uint8Array; wireVessel?: Uint8Array } = {}): Promise<SocketBinding> {
-  const vesselKey = await pubOf(opts.vessel ?? VESSEL_SEED);
-  const leafProof = await socketProof(socketUnderTest(vesselKey, { nonce: NONCE, gatePubKey: GATE }), { kind: "admit", admit, lineage: [] }, signerOf(opts.signer ?? LEAF_SEED));
-  return {
-    presentedAdmit: { admit, lineage: opts.lineage ?? [], leafProof },
-    nonce: NONCE, gatePubKey: GATE, vesselKey: await pubOf(opts.wireVessel ?? opts.vessel ?? VESSEL_SEED),
-  };
+/** The binding a gate's session hands the consult: the presented admit, and the face key the gate's chain PROVED
+ *  (the admitted leaf's key unless `face` names another seed). */
+async function bind(admit: CarriageEntry, opts: { lineage?: CarriageEntry[]; face?: Uint8Array } = {}): Promise<SocketBinding> {
+  return { presentedAdmit: { admit, lineage: opts.lineage ?? [] }, faceKey: await pubOf(opts.face ?? LEAF_SEED) };
 }
 
 describe("the leaf map — a presented, proven, HELD admit for a carried Nexus reads MEMBER", () => {
@@ -90,7 +84,7 @@ describe("the leaf map — a presented, proven, HELD admit for a carried Nexus r
     await holder.present("peer-wire-is-nym", null);
     expect(holder.membership.holdsCarriagePeer("peer-wire-is-nym")).toBe(false);
     // CONTROL of the control: the SAME admit, presented and proven, seats the peer.
-    await holder.present("peer-wire-is-nym", await bind(admit, { vessel: LEAF_SEED }));
+    await holder.present("peer-wire-is-nym", await bind(admit));
     expect(holder.membership.holdsCarriagePeer("peer-wire-is-nym")).toBe(true);
   });
 
@@ -125,15 +119,15 @@ describe("the leaf map — a presented, proven, HELD admit for a carried Nexus r
     expect(fired).toBeGreaterThan(before);
   });
 
-  test("CONTROL D: the same admit and proof replayed under another vessel key reads STRANGER", async () => {
+  test("CONTROL D: the same admit on a session whose proven face key is another key reads STRANGER", async () => {
     const roster = await rosterAt();
     const admit  = await act("admit", [], roster.sealEpochCid);
     const holder = makeNexusMembership({ readCarried: async () => [reading("N", roster)] });
     await holder.refold();
-    await holder.present("peer-replay", await bind(admit, { wireVessel: OTHER_VESSEL_SEED }));
+    await holder.present("peer-replay", await bind(admit, { face: OTHER_FACE_SEED }));
     expect(holder.membership.holdsCarriagePeer("peer-replay")).toBe(false);
-    // A proof the persona ROOT signed binds nothing either.
-    await holder.present("peer-root-proof", await bind(admit, { signer: ROOT_SEED }));
+    // A session proven under the persona ROOT binds nothing either.
+    await holder.present("peer-root-proof", await bind(admit, { face: ROOT_SEED }));
     expect(holder.membership.holdsCarriagePeer("peer-root-proof")).toBe(false);
   });
 

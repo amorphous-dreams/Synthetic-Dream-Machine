@@ -26,7 +26,7 @@
  */
 
 import { LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
-import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, SEED_OFF_DISK } from "./daemon-ui-tiddlers.js";
+import { LARES_SURFACE_STATE, LARES_SURFACE_TAG, seedShadows } from "./daemon-ui-tiddlers.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
@@ -74,6 +74,10 @@ const SURFACE_BODY = `\\whitespace trim
 <p class="lares-persona-note">A mint adds a private face at the next index and names it for you; rename it off-surface. Wearing dons that face for the mesh — the switch lands on the next reboot (one face at a time).</p>
 </div>
 
+<$list filter="[{${PERSONA_STATE_TITLE}!!custody}match[sealed]]" variable="_">
+<div class="lares-persona-custody"><$button class="lares-persona-clear-btn" message="tm-clear-password" param={{${PERSONA_STATE_TITLE}!!custodyClears}} data-lares-clear-password="1">Clear the passphrase</$button></div>
+</$list>
+
 </div>`;
 
 /** The sidebar button names the persona surface as the active panel — the same in-place
@@ -99,12 +103,12 @@ export const DAEMON_PERSONA_TIDDLERS: readonly TiddlerSpec[] = [
 ];
 
 /**
- * Seed the born-from-source persona-panel tiddlers into the live daemon TW5 wiki. Idempotent
- * (setTiddler overwrites). MUST run alongside seedDaemonUiTiddlers, BEFORE the projection
+ * Seed the born-from-source persona-panel tiddlers into the live daemon TW5 wiki's shadow layer. Idempotent
+ * (each call re-lays the shadow plugin). MUST run alongside seedDaemonUiTiddlers, BEFORE the projection
  * camera's first render (a headless node daemon simply rests these, never painting).
  */
 export function seedDaemonPersonaTiddlers(tw5: TW5Engine): void {
-  for (const spec of DAEMON_PERSONA_TIDDLERS) tw5.setTiddler({ ...spec, ...SEED_OFF_DISK } as Record<string, string>);
+  seedShadows(tw5, "persona", DAEMON_PERSONA_TIDDLERS);
 }
 
 // ── The persona-state worker verb (the IN path: main → LOCAL push) ────────────

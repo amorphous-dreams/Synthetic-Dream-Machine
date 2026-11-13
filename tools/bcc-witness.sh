@@ -9,7 +9,8 @@
 # witness imports `verifyBcc` from the built package, so the reader that gates the corpus IS the
 # reader the emitter answers to. One algorithm, one authority.
 #
-# Readings per carrier: ok · mismatch · unchecked. `unchecked` is LEGAL (the BCC is optional; a
+# Readings per carrier: ok · head-unbound · mismatch · unchecked · torn. `head-unbound` is LEGAL and
+# named (the check verifies; the head names an end the sealed meta never names). `unchecked` is LEGAL (the BCC is optional; a
 # carrier declaring no uri-path names no meme to check) — only `mismatch` fails the witness.
 # A run that checked nothing must not read as a run that found nothing: the summary always prints
 # counts, and zero carriers scanned is itself a failure.
@@ -28,14 +29,15 @@ const { verifyBcc } = await distModule(
 // and walks untracked scratch besides; the law asks which files DECLARE.
 const { carrierFiles } = await distCarrierFiles(process.cwd(), "bcc-witness");
 const files = carrierFiles(process.cwd());
-let ok = 0, mismatch = 0, unchecked = 0, torn = 0;
+let ok = 0, unbound = 0, mismatch = 0, unchecked = 0, torn = 0;
 for (const f of files) {
   const verdict = verifyBcc(readFileSync(f, "utf8"));
   if (verdict === "ok") ok++;
+  else if (verdict === "head-unbound") { unbound++; console.error(`  HEAD-UNBOUND ${f}`); }
   else if (verdict === "unchecked") unchecked++;
   else if (verdict === "torn") { torn++; console.error(`  TORN ${f}`); }
   else { mismatch++; console.log(`  MISMATCH ${f}`); }
 }
-console.log(`bcc-witness: ok ${ok} · mismatch ${mismatch} · unchecked ${unchecked} · torn ${torn} (of ${files.length})`);
+console.log(`bcc-witness: ok ${ok} · head-unbound ${unbound} · mismatch ${mismatch} · unchecked ${unchecked} · torn ${torn} (of ${files.length})`);
 if (files.length === 0 || mismatch > 0 || torn > 0) process.exit(1);
 '

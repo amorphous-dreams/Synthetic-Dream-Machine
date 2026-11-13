@@ -13,17 +13,15 @@
  * ## Recipe law — one model across all wikis
  *
  *   Manifest carries `recipe: WikiRecipe + grants: IslandGrants`. Structural
- *   slots arrive as typed grants; the bag-oracle resolves from the oracle doc's
- *   well-known tiddlers (protocol-invariant plane); library bags resolve from
- *   the catalog registry ONLY (boot = first reconcile — the same path recipe-watch walks
- *   live). `buildIslandRecipe()` lays the stack:
+ *   slots arrive as typed grants; bag document pointers resolve through the
+ *   vessel catalog, while the oracle supplies the read-only seed floor.
+ *   `buildIslandRecipe()` lays the stack:
  *
  *     temp        (MemoryTiddlerStore, volatile)
  *     draft       (CRDT, high-churn drafts)
  *     @<wikiSlug>  (CRDT, operator's edits)
- *     libraryBags[]  (CRDT, optional content libraries — the lares persona bag +
- *                     lararium corpus ride here, resolved island-side from the catalog registry)
- *     oracle       (CRDT, required — the universal floor: engine core + grammar + bag-oracle)
+ *     libraryBags[]  (CRDT, optional content libraries resolved from the catalog registry)
+ *     oracle       (read-only floor snapshots over the live oracle seed)
  *
  *   Write routing happens via the in-wiki cascade
  *   (`lar:///ha.ka.ba/lararium/config/bag-paths`), not by behavior config.
@@ -44,21 +42,25 @@
 import {
   CompositeStore,
   ENGINE_CORE_ID,
-  LARES_BAG,
-  LARARIUM_BAG,
   ORACLE_BAG,
-  CROSSROADS_BAG,
-  tiddlerText,
   wikiBagUri,
   wikiSlotUri,
   expandRecipe,
+  recipeLayerIndex,
   mkBreath,
   mkFault,
   isVesselToIslandMsg,
   mkTeardownAck,
+  TEARDOWN_FAULT,
   makeIslandRepo,
   replicaHeads,
   sha256HexBytesSync,
+  GENESIS_FLOOR_TIDDLER,
+  plainRecordOrNull,
+  resolveFloor,
+  floorRowsInOrder,
+  islandSecretHome,
+  type KahuaStageFace,
   type Repo,
   type DocHandle,
   type AutomergeUrl,
@@ -67,15 +69,49 @@ import {
   type IslandMsg_Manifest,
   type IslandToVesselMsg,
   type SlotUri,
-} from "@lararium/mesh";
+  type LarTiddlerRecord, ownEntry, CONTROL_HOME_ID, controlStoreOf, floorAnswerStore, mkDaemonFloorAnswer, ControlHomeUnavailable,
+  AutomergeDocStore, slotLayerFlags } from "@lararium/mesh";
 import { IslandKernel } from "./island-kernel.js";
 import { waitForSlotDocument } from "./slot-wait.js";
 import { buildIslandRecipe, seedDrained } from "./island-recipe.js";
-import { makeCatalogAccessor } from "./catalog-accessor.js";
+import { openIslandStory } from "./island-story.js";
+import { preloadsFromCasBlob } from "./cas-preloads.js";
+import { makeCatalogAccessor, libraryDocUrl } from "./catalog-accessor.js";
+import { librarySlotUrl, liveKahuaFace } from "./kahua-layer.js";
 import { installLazyResolver } from "./lazy-resolver.js";
 import { bridgeWikiToAdaptor } from "./outbound-bridge.js";
 import { makeViewChannel, type ViewChannel } from "./view-channel.js";
+import { makeReceiptCapability, type ReceiptCapability } from "./receipt.js";
 import type { IslandContext, IslandBehavior } from "./island-context.js";
+import { PLANE_LABELS } from "@lararium/mesh/plane-labels";
+
+/** Detach a failed writable shore before its scheduler task settles. */
+/**
+ * An island's teardown ALWAYS ANSWERS: `teardown:ack` once it came down, or a `fault` named `teardown-fault: …` when a
+ * step threw. The vessel's teardown wait ends on that answer, never on a clock.
+ */
+export async function answerTeardown(run: () => Promise<void>, post: (msg: IslandToVesselMsg) => void, wikiUri: () => string): Promise<void> {
+  try { await run(); }
+  catch (err) {
+    post(mkFault(wikiUri(), `${TEARDOWN_FAULT} the island could not tear down: ${err instanceof Error ? err.message : String(err)}`));
+    return;
+  }
+  post(mkTeardownAck());
+}
+
+export async function guardWritableStand<T>(run: () => Promise<T>, detach: () => Promise<void>): Promise<T> {
+  try { return await run(); }
+  catch (error) {
+    try { await detach(); } catch (cleanupError) { console.warn("[writable] detach failed:", cleanupError); }
+    throw error;
+  }
+}
+
+export async function detachFaultedWritable(adaptor: import("./island-adaptor.js").IslandAdaptor | null, unsub: (() => void) | null): Promise<void> {
+  adaptor?.dropResidency();
+  unsub?.();
+  await adaptor?.stop();
+}
 
 // ── The host shore — platform divergence as composition ──────────────────────
 
@@ -86,6 +122,9 @@ export interface IslandHostShore {
   listen(onMessage: (raw: unknown) => void): void;
   /** Build the Repo storage adapter for this manifest (undefined = in-memory). */
   storage(msg: IslandMsg_Manifest): StorageAdapterInterface | undefined;
+  /** Ask the vessel's rest whether it holds a document sealed (`vesselRestAsker`); the daemon's secret home asks it before
+   *  each secret act. Absent: the island reaches no secret home. */
+  restsAtVessel?: (documentId: string) => Promise<boolean>;
   /** Optional IoC handshake fired after the listener registers (browser mkReady). */
   ready?(): void;
   /**
@@ -107,7 +146,7 @@ const BREATH_INTERVAL_MS = 1_000;
 export function runSovereignKernel(
   host: IslandHostShore,
   behaviorOrFactory: IslandBehavior | ((manifest: IslandMsg_Manifest) => IslandBehavior),
-  opts?: { breathEveryMs?: number },
+  opts?: { breathEveryMs?: number; caps?: { receipt?: true } },
 ): void {
   const breathEveryMs = opts?.breathEveryMs ?? BREATH_INTERVAL_MS;
   const _post = (msg: IslandToVesselMsg) => host.post(msg);
@@ -125,7 +164,13 @@ export function runSovereignKernel(
   let _repo:      Repo | null                    = null;
   let _ownedRepo: Repo | null                   = null;
   let _handles:   Map<string, DocHandle<LarDoc>> = new Map();
+  let _receipt:   ReceiptCapability | null = null;
+  let _receiptDoorClosed = false;
+  /** This island has said `receipt:asks-done`: only then may the vessel's `receipt:close` end its receipts. */
+  let _asksDonePosted = false;
   let _composite: CompositeStore | null = null;
+  /** The daemon island's control store (`grants.controlUrl`); null on every wiki island. */
+  let _control: CompositeStore | null = null;
   let _ctx:       IslandContext | null  = null;
   let _lazyUnsub: (() => void) | null   = null;
   let _bridgeUnsub: (() => void) | null = null;   // the outbound bridge (Road B) — one listener, cancelled at teardown
@@ -133,6 +178,14 @@ export function runSovereignKernel(
   let _activeWikiUri                    = "";
   // A session island's two asked gates (catalog names, content addresses) ride this channel; null outside a session.
   let _view: ViewChannel | null         = null;
+  // THE SECRET HOME rides the daemon manifest alone (`daemonAuth.secretUrl`), and only where the host can ask the vessel's
+  // rest; a wiki island's manifest carries no daemonAuth and reaches none.
+  const secretHomeOf = (msg: IslandMsg_Manifest): Pick<IslandContext, "secretStore" | "secretRest"> => {
+    const url = msg.daemonAuth?.secretUrl;
+    if (!url || !host.restsAtVessel || !_repo) return {};
+    const home = islandSecretHome(_repo, url, host.restsAtVessel);
+    return { secretStore: home.store, secretRest: home.rest };
+  };
 
   // Live CRDT patches flow through AutomergeDocStore.handle.on("change") →
   // MemeProvider → IslandAdaptor → the shore queue. The packed engine is a synchronous applier;
@@ -142,7 +195,11 @@ export function runSovereignKernel(
 
   host.listen((raw: unknown) => {
     if (!isVesselToIslandMsg(raw)) return;
+    // The vessel's close answers THIS island's asks-done, and nothing else: a bare close mid-life (a forwarded tab's, a replay)
+    // ends no receipt. The sync port closing stays the local event that ends them at any time.
+    if (raw.type === "receipt:close") { if (_asksDonePosted) { _receiptDoorClosed = true; _receipt?.close(); } return; }
     if (_view?.settleAnswer(raw)) return;
+    if (_receipt?.answer(raw)) return;
 
     if (raw.type === "manifest") {
       void _handleManifest(raw as IslandMsg_Manifest);
@@ -150,7 +207,7 @@ export function runSovereignKernel(
     }
 
     if (raw.type === "teardown" || raw.type === "hooanu") {
-      void _handleTeardown();
+      void answerTeardown(_handleTeardown, _post, () => _activeWikiUri);
       return;
     }
 
@@ -185,6 +242,7 @@ export function runSovereignKernel(
       breathe();
     };
     breathe();
+    // PACING: this emits breaths; the vessel judges their progress and silence.
     const breathTimer = setInterval(() => breathe(), breathEveryMs);
     // Any throw during init (incl. a behavior.onEa gate failure, e.g.
     // bootDaemonKeyhive Gate A/B/C) posts fault so the vessel times out cleanly
@@ -221,9 +279,11 @@ export function runSovereignKernel(
   const SLOT_POLL_MS            = 250;
   const mono = (): number => performance.now();
   const defer = (): Promise<void> =>
+    // PACING: defer yields to the host task queue without deciding readiness.
     new Promise((res) => (typeof setImmediate === "function" ? setImmediate(res) : setTimeout(res, 0)));
   let _lastSyncHeardAt = mono();
-  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); };
+  const _syncWakes = new Set<() => void>();
+  const _markSyncHeard = (): void => { _lastSyncHeardAt = mono(); for (const wake of _syncWakes) wake(); };
 
   async function _resolveSlot(
     repo: Repo,
@@ -243,8 +303,14 @@ export function runSovereignKernel(
       absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
       now:       mono,
       lastHeard: () => _lastSyncHeardAt,
+      // LIVENESS: slot waits use this for peer-silence and hard-cap bounds as well as polling.
       sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
       defer,
+      onWake: (wake) => {
+        _syncWakes.add(wake);
+        repo.networkSubsystem.on("peer", wake);
+        return () => { _syncWakes.delete(wake); repo.networkSubsystem.off("peer", wake); };
+      },
       budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
     });
     if (out.outcome === "ready") return out.handle;
@@ -284,6 +350,11 @@ export function runSovereignKernel(
     // tap whichever face the platform holds (both coexist with the adapter's own).
     if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("message", _markSyncHeard);
     else tapPort.on?.("message", _markSyncHeard);
+    _receiptDoorClosed = false;
+    _asksDonePosted = false;
+    const closeReceipts = (): void => { _receiptDoorClosed = true; _receipt?.close(); };
+    if (typeof tapPort.addEventListener === "function") tapPort.addEventListener("close", closeReceipts);
+    else tapPort.on?.("close", closeReceipts);
     // A SESSION ISLAND (`msg.view`) holds an EPHEMERAL replica on every platform: no storage adapter stands
     // behind its Repo whatever the host would offer, and its Repo announces the one peer ID its scoped view
     // admits. The vessel's owner alone persists.
@@ -328,40 +399,55 @@ export function runSovereignKernel(
     // answered at surface mount, and this island lays what it names.
     const resolved   = msg.resolved ?? null;
     const catalogUrl = resolved ? null : msg.grants.catalogUrl ?? null;
-    const catalog    = catalogUrl ? makeCatalogAccessor(_repo, catalogUrl) : null;
+    const faceCatalogUrl = resolved ? null : msg.grants.faceCatalogUrl ?? null;
+    const catalog    = catalogUrl ? makeCatalogAccessor(_repo, catalogUrl, faceCatalogUrl) : null;
 
-    // Three oracle planes, three authorities: system bags (lares, lararium)
-    // resolve from the oracle doc's well-known tiddlers — the system plane the
-    // island already holds; user library bags resolve from the catalog registry; public bags
-    // will resolve from the crossroads plane. Structural instance slots arrive as typed
-    // grants.
+    // The catalog names each vessel's document pointers; the oracle supplies seed rows.
+    // Structural instance slots arrive as typed grants.
     const slug = msg.recipe.wikiSlug;
     const slotUrl = async (slot: SlotUri): Promise<string | null> => {
       if (resolved) return slot === ORACLE_BAG ? msg.grants.islandUrl : resolved[slot] ?? null;
       if (slot === wikiSlotUri(slug, "draft"))    return msg.grants.draftUrl    ?? null;
       if (slot === wikiSlotUri(slug, "working"))  return msg.grants.workingUrl  ?? null;
       if (slot === wikiSlotUri(slug, "personal")) return msg.grants.personalUrl ?? null;
+      // A canon that follows the face (`canonBag`) mounts from its own grant; the wiki's own bag then rides as vessel state.
+      if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) return msg.grants.canonUrl ?? null;
       if (slot === wikiBagUri(slug))              return msg.ownedDocument?.documentUrl ?? msg.grants.wikiUrl ?? null;
       if (slot === ORACLE_BAG)                 return msg.grants.islandUrl;
-      // System bags (lares, lararium) resolve from the oracle doc's well-known
-      // tiddlers — the system plane the island already holds. User library
-      // bags fall through to the catalog registry.
-      if (slot === LARES_BAG)                    return tiddlerText(laraiumHandle.doc()?.tiddlers?.[LARES_BAG]) ?? null;
-      if (slot === LARARIUM_BAG)                 return tiddlerText(laraiumHandle.doc()?.tiddlers?.[LARARIUM_BAG]) ?? null;
-      // crossroads — the PUBLIC oracle plane; its pointer rides the oracle plane (public infra), resolved the same
-      // well-known-tiddler way as the system bags. Public bags in turn resolve FROM the crossroads plane.
-      if (slot === CROSSROADS_BAG)               return tiddlerText(laraiumHandle.doc()?.tiddlers?.[CROSSROADS_BAG]) ?? null;
-      return catalog ? await catalog.urlOf(slot) : null;   // user library bags
+      // `bags/kahua` answers from the grant the face proof filled, never from a catalog row (`kahua-layer`).
+      return librarySlotUrl(slot, msg.grants, catalog ? (s) => libraryDocUrl(catalog, s) : null);
     };
+
+    // THE CONTROL DOCUMENT, an access grant the daemon island alone carries: resolved here and held as its own store, never
+    // laid into the recipe's composite, so no control record reaches the engine's wiki or a mirrored layer.
+    _control = null;
+    if (msg.grants.controlRefusal) {
+      // A LOCKED (or faceless) VESSEL FAILS CLOSED: the island resolves no control document and every control act refuses by name.
+      // The floor still answers the acts that write no control fact: each answer crosses to the vessel's own floor store, the
+      // memory the verb door waits on, and rests nowhere.
+      _control = floorAnswerStore(new ControlHomeUnavailable("the vessel cannot read its control document now", msg.grants.controlRefusal),
+        (record) => _post(mkDaemonFloorAnswer({ tiddler: { ...record.tiddler }, ...(record.meta ? { meta: { ...record.meta } } : {}) })));
+    } else if (msg.grants.controlUrl) {
+      const controlHandle = await _resolveSlot(_repo, msg.grants.controlUrl, CONTROL_HOME_ID, msg.wikiUri);
+      if (!controlHandle) return;
+      _handles.set(CONTROL_HOME_ID, controlHandle);
+      _control = controlStoreOf(controlHandle);
+    }
 
     const slots = expandRecipe(msg.recipe);
     const ready: Array<{ slot: SlotUri; handle: DocHandle<LarDoc> }> = [];
+    // THE FACE'S CANON MOUNTS AFTER EA. It rests sealed under the face, and its values open only through this island's own
+    // document-store door, which stands with the island's holder at `onEa`: a restart that waited on it here, before ea,
+    // would wait on itself (the vessel's load refuses `holder-locked` until the door answers). So it mounts once ea lands,
+    // the way the daemon's working slot lifts onto the face's document after the seat stands.
+    let deferredCanon: { readonly slot: SlotUri; readonly url: string } | null = null;
 
     for (const slot of slots) {
       if (slot === wikiSlotUri(slug, "temp")) continue;
       if (slot === ORACLE_BAG) { ready.push({ slot, handle: laraiumHandle }); continue; }
       const docUrl = await slotUrl(slot);
       if (!docUrl) continue;   // ungranted/unregistered slot — in-memory or absent
+      if (msg.recipe.canonBag !== undefined && slot === msg.recipe.canonBag) { deferredCanon = { slot, url: docUrl }; continue; }
       const handle = await _resolveSlot(
         slot === wikiBagUri(slug) && _ownedRepo ? _ownedRepo : _repo,
         docUrl, slot, msg.wikiUri,
@@ -371,19 +457,18 @@ export function runSovereignKernel(
       ready.push({ slot, handle });
       tick();                  // one slot resolved — real progress evidence
     }
+    tick("slot-ready");
 
     // ── Resolve the TW5 engine + plugin tiddlers ──────────────────────────────
     // The CID plane: the kernel, plugin blobs, and every large blob ride the local CAS,
     // pulled by CID (host.resolveByCid) — immutable bytes fetched by content-address +
     // verified by rehash, off the sync port. The CRDT plane carries no bytes. A missing
     // resolver, a missing coreHash, or a CAS miss faults the boot.
-    // The booted engine version rides the SAME genesis blob entry the post-boot
-    // engine-watch later compares against (blobs[ENGINE_CORE_ID].version on the
-    // oracle doc). Sourcing it here — not a hardcoded "" — arms the anti-rollback
-    // check: a later genesis pointing at a LOWER version reads as BACKWARD instead
-    // of being silently presented as an upgrade (an empty booted-version made every
-    // incoming version sort as newer).
-    const coreVersion = String(laraiumHandle.doc()?.blobs?.[ENGINE_CORE_ID]?.version ?? "");
+    // The booted engine's display label: the version string on the genesis blob entry
+    // (blobs[ENGINE_CORE_ID].version on the oracle doc). The engine's identity is the
+    // sha256 of the bytes this kernel eval's; the label rides the engine-watch alert text
+    // and nothing compares it.
+    const coreVersion = String(ownEntry(laraiumHandle.doc()?.blobs, ENGINE_CORE_ID)?.version ?? "");
     const pluginTiddlers: Record<string, unknown>[] = [];
 
     if (!resolveByCid || !msg.coreHash) {
@@ -401,9 +486,14 @@ export function runSovereignKernel(
         _post(mkFault(msg.wikiUri, `island cannot resolve plugin tiddler by CID ${cid.slice(0, 12)}… from the local CAS`));
         return;
       }
+      let preloads: Record<string, unknown>[];
       try {
-        pluginTiddlers.push(JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>);
-      } catch { /* malformed — skip */ }
+        preloads = preloadsFromCasBlob(bytes);
+      } catch (err) {
+        _post(mkFault(msg.wikiUri, `island cannot read plugin tiddler ${cid.slice(0, 12)}… as JSON: ${err instanceof Error ? err.message : String(err)}`));
+        return;
+      }
+      for (const t of preloads) pluginTiddlers.push(t);
     }
 
     // §6 integrity gate, enforced: the manifest's coreHash names the engine the vessel
@@ -422,50 +512,167 @@ export function runSovereignKernel(
       return;
     }
 
+    // THE FLOOR THE VESSEL ACCEPTED (`floor-pin`): the manifest names it where the vessel's pin moved past genesis; absent,
+    // the genesis seed's own floor witness.
+    const floorCidField = msg.floorCid ?? plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+    let floorRows: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];
+    if (typeof floorCidField === "string" && floorCidField.length > 0) {
+      const floor = await resolveFloor(floorCidField, resolveByCid);
+      if ("refusal" in floor) {
+        _post(mkFault(msg.wikiUri, `${PLANE_LABELS.oracle} mount refused (${floor.refusal}): ${floor.reason}`));
+        return;
+      }
+      floorRows = floorRowsInOrder(floor);
+    } else {
+      console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);
+    }
     tick("tw5-boot");
+    let bootInstance: Record<string, unknown> | undefined;
+    let used = false;
     try {
-      await handler.bootTw5(msg.wikiUri, coreBytes, pluginTiddlers);
+      await handler.bootTw5(msg.wikiUri, coreBytes, pluginTiddlers, {
+        grantedDigests: new Set(msg.pluginCids ?? []),
+        onInstance(instance) {
+          bootInstance = instance as unknown as Record<string, unknown>;
+          Object.defineProperty(instance, "larariumWritableStand", {
+            configurable: true, enumerable: false,
+            value: async () => {
+              // Only the marker's take (delete before call) opens this door.
+              if (used || Object.hasOwn(bootInstance!, "larariumWritableStand")) return;
+              used = true;
+              return guardWritableStand(async () => {
+              const tw5 = handler.tw5()!;
+              // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
+              // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
+              // the seed replay on the shore's quota-bounded host-task queue.
+              tick("recipe");
+              // THE KAHUA LAYER READS UNDER THE FACE THIS MANIFEST WEARS: its group names the stage, its verified KEL roster the grant
+              // every lift's signer must hold. A manifest wearing no face reads an empty stage. The lineage reads LIVE off the
+              // island's replica of the KEL board the manifest names, so a rotation merged after boot re-folds the layer.
+              const auth = msg.daemonAuth;
+              const kel = auth?.personaKel;
+              const liveFace = auth?.personaGroupId && kel ? liveKahuaFace({
+                group: auth.personaGroupId, prefix: kel.prefix, bootChain: kel.chain, anchor: auth.faceAnchor ?? null,
+                board: kel.board ? _repo!.find<LarDoc>(kel.board as never) : null,
+              }) : null;
+              const kahuaFace = (): KahuaStageFace | null => liveFace?.read() ?? null;
+              const kahuaFaceWatch = (fn: () => void): (() => void) => liveFace?.watch(fn) ?? (() => {});
+              const { adaptor } = buildIslandRecipe({
+                tw5,
+                composite: _composite!,
+                recipe: msg.recipe,
+                ready,
+                floorRows,
+                kahuaFace,
+                kahuaFaceWatch,
+              });
+              _adaptor = adaptor;
+              // THE RECEIPT CAPABILITY, for a host whose vessel declares it. A save act's result waits for the vessel to hold and flush
+              // what the act wrote; a session island keeps no store and settles through its view at teardown instead.
+              _receipt = view || opts?.caps?.receipt !== true ? null : makeReceiptCapability({
+                post: _post,
+                handles: () => _handles,
+                flushOwn: async () => { await Promise.all([_ownedRepo?.flush(), _repo?.flush()]); },
+              });
+              if (_receiptDoorClosed) _receipt?.close();
+              adaptor.caps = { receipt: _receipt };
+              adaptor.receiptRequired = opts?.caps?.receipt === true && view === null;
+              // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
+              _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
+              // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
+              // landed by the shore's queue in host-task slices.
+              tick("seed-drain");
+              await seedDrained(tw5);
+              // THE STORY OPENS AT THE ISLAND'S FIRST WHOLE SNAPSHOT, never inside engine boot: the wiki's own landing has landed
+              // by now, and a personal `$:/StoryList` the seed carried stays (`default-story.ts`). A composition with no layer for the
+              // story keeps it in the engine alone, so the island owes no save it cannot make (`island-story.ts`).
+              openIslandStory(tw5, adaptor);
+
+              // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a
+              // load slot — the catalog registry is absent from expandRecipe). Worker behaviors build
+              // a CatalogAccessor over it to reach any registered bag; recipe-watch keeps
+              // reconciling the SAME path boot just walked.
+              // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
+              // behaviors: a residency handler resolves a carrier body a verb rode by reference.
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), ...(msg.grants.floorKey ? { floorKey: msg.grants.floorKey } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(msg.coreHash ? { bootSet: { engineCid: msg.coreHash, pluginCids: [...(msg.pluginCids ?? [])] } } : {}), diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
+              // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
+              // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
+              // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
+              // splice runs through the guarded nalu rail, so a rehydrated body never echoes back to the CRDT
+              // (content-resolution.mem #tw5-shore). The boot above already refused an island with no CAS resolver.
+              _lazyUnsub = installLazyResolver(tw5, resolveByCid);
+              return await behavior.onWritable?.(_ctx!) ?? { state: "standing" };
+              }, async () => {
+                const unsub = _bridgeUnsub;
+                _bridgeUnsub = null;
+                _lazyUnsub?.();
+                _lazyUnsub = null;
+                await detachFaultedWritable(_adaptor, unsub);
+                _adaptor = null;
+                _ctx = null;
+                _receipt = null;
+              });
+            },
+          });
+        },
+      });
     } catch (err) {
       const stack = err instanceof Error ? (err.stack ?? String(err)) : String(err);
       _post(mkFault(msg.wikiUri, `bootTw5 threw: ${stack}`));
       return;
     }
-
-    const tw5 = handler.tw5()!;
-    // One recipe model — buildIslandRecipe walks expandRecipe(msg.recipe),
-    // wires temp + every resolved CRDT slot, registers the adaptor, and ARMS
-    // the seed replay on the shore's quota-bounded host-task queue.
-    tick("recipe");
-    const { adaptor } = buildIslandRecipe({
-      tw5,
-      composite: _composite,
-      recipe: msg.recipe,
-      ready,
-    });
-    _adaptor = adaptor;
-    // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
-    _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
-    // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
-    // landed by the shore's queue in host-task slices.
-    await seedDrained(tw5);
-
-    // Isomorphic base: the catalog registry's grant rides into ctx (access entry, NOT a
-    // load slot — the catalog registry is absent from expandRecipe). Worker behaviors build
-    // a CatalogAccessor over it to reach any registered bag; recipe-watch keeps
-    // reconciling the SAME path boot just walked.
-    // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
-    // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-    _ctx = { wikiUri: msg.wikiUri, composite: _composite, tw5, handles: _handles, post: _post, repo: _repo!, catalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}) };
-    // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
-    // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
-    // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
-    // splice runs through the guarded nalu rail, so a rehydrated body never echoes back to the CRDT
-    // (content-resolution.mem #tw5-shore). The boot above already refused an island with no CAS resolver.
-    _lazyUnsub = installLazyResolver(tw5, resolveByCid);
+    if (bootInstance?.larariumWritableFault) {
+      const error = bootInstance.larariumWritableFault;
+      _post(mkFault(msg.wikiUri, `lararium-writable failed: ${error instanceof Error ? error.message : String(error)}`));
+      return;
+    }
+    if (!used || !_ctx) {
+      _post(mkFault(msg.wikiUri, "lararium-writable startup marker did not stand the backing"));
+      return;
+    }
     tick("behavior");
     await behavior.onEa(_ctx);
 
+    tick("ea");
     handler.sendEa(msg.wikiUri);
+    if (deferredCanon) void _mountDeferredCanon(msg, deferredCanon.slot, deferredCanon.url);
+  }
+
+  /**
+   * Mount the face's canon once ea stands (see `deferredCanon`): resolve its document, then splice its layer in just above the
+   * nearest layer the recipe lays beneath it. A canon that never arrives, or an island torn down meanwhile, mounts nothing and
+   * says so; the daemon wiki stands on its other layers.
+   */
+  async function _mountDeferredCanon(msg: IslandMsg_Manifest, slot: SlotUri, docUrl: string): Promise<void> {
+    const composite = _composite;
+    const repo = _repo;
+    if (!composite || !repo) return;
+    const out = await waitForSlotDocument<DocHandle<LarDoc>>({
+      find:      () => repo.find<LarDoc>(docUrl as AutomergeUrl),
+      peerCount: () => repo.peers.length,
+      absence:   (rejection) => rejection instanceof Error && /is unavailable/.test(rejection.message),
+      now:       mono,
+      lastHeard: () => _lastSyncHeardAt,
+      sleep:     (ms) => new Promise((res) => setTimeout(res, ms)),
+      defer,
+      onWake: (wake) => {
+        _syncWakes.add(wake);
+        repo.networkSubsystem.on("peer", wake);
+        return () => { _syncWakes.delete(wake); repo.networkSubsystem.off("peer", wake); };
+      },
+      budgets:   { silenceMs: SLOT_SILENCE_TIMEOUT_MS, hardCapMs: SLOT_READY_HARD_CAP_MS, pollMs: SLOT_POLL_MS },
+    }).catch((error: unknown) => ({ outcome: "refused" as const, why: error instanceof Error ? error.message : String(error) }));
+    if (_composite !== composite) return;
+    if (out.outcome !== "ready") {
+      console.warn(`[island] the face's canon ${slot} did not mount after ea (${out.outcome}${"why" in out ? `: ${String(out.why)}` : ""}): the daemon wiki stands on its other layers`);
+      return;
+    }
+    if (composite.hasBag(slot)) return;
+    const store = new AutomergeDocStore(out.handle, slot);
+    composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
+    _handles.set(slot, out.handle);
+    store.emitInitialReplay();
+    store.markSyncComplete();
   }
 
   // ── Teardown / Demote (OTP terminate) ──────────────────────────────────────
@@ -476,7 +683,31 @@ export function runSovereignKernel(
     if (_adaptor) await _adaptor.awaitWikiDispatch();
     _bridgeUnsub?.();
     _bridgeUnsub = null;
-    if (_adaptor) await _adaptor.stop();
+    // THE SETTLEMENT ROUND (L29, no island clock). The receipt door stays open while stop submits every owed write; the vessel
+    // answers each ask as it comes. Once every ask has left (owed writes, removals behind their targets, acts), the island says
+    // `receipt:asks-done`; the vessel answers what remains and sends `receipt:close`. That close, the sync port closing, or the worker
+    // leaving ends every wait still out: a refused wait leaves its title owed and named unsaved. A worker wedged alive meets the
+    // vessel's own force-kill, the one liveness.
+    const receipt = _receipt;
+    let unsaved: readonly string[] = [];
+    let asksDone = false;
+    const announce = async (): Promise<void> => {
+      if (!receipt) return;
+      await receipt.asked();
+      if (asksDone || _receiptDoorClosed) return;
+      asksDone = true;
+      _asksDonePosted = true;
+      try { host.post({ type: "receipt:asks-done" }); } catch { /* the vessel went away: its close ends the waits */ }
+    };
+    try {
+      if (_adaptor) unsaved = (await _adaptor.stop(() => { void announce(); })) ?? [];
+      await announce();
+      await receipt?.idle();
+      // A port write or act whose receipt refused or closed never reached durable storage either: it joins the drain's titles by name.
+      if (receipt) unsaved = [...new Set([...unsaved, ...receipt.unrested()])];
+    } finally {
+      receipt?.close();
+    }
     _adaptor = null;
     _lazyUnsub?.();
     _lazyUnsub = null;
@@ -490,7 +721,7 @@ export function runSovereignKernel(
     // "working never arrived over syncPort" gap. flush() resolves once the bytes
     // are durable. We await it BEFORE posting teardown:ack, so the vessel's
     // disposeAll() handshake only completes after every island's write is on disk
-    // (flush-then-force; the vessel's force-timer is the only escape if THIS jams).
+    // (flush-then-ack; answerTeardown acks once this body returns, or names a fault when a step throws).
     if (_repo) {
       try { await _repo.flush(); }
       catch (err) { console.warn(`[sovereign-kernel] teardown flush failed: ${String(err)}`); }
@@ -512,6 +743,7 @@ export function runSovereignKernel(
 
     _view?.close();
     _view = null;
+    _receipt = null;
     _handles.clear();
     _composite = null;
     _ctx       = null;
@@ -522,6 +754,8 @@ export function runSovereignKernel(
     _repo      = null;
     _ownedRepo = null;
 
-    host.post(mkTeardownAck());
+    // Every durable step above ran. A title that never reached durable storage reaches the vessel BY NAME, never a silent ack:
+    // the throw becomes answerTeardown's named `teardown-fault`, which ends the vessel's teardown wait unacked.
+    if (unsaved.length > 0) throw new Error(`unsaved at teardown: ${unsaved.map((title) => JSON.stringify(title)).join(", ")}`);
   }
 }

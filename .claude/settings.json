@@ -1,0 +1,18 @@
+{
+  "claudeMdExcludes": [
+    "**/.claude/rules/lares-seed-seat.md"
+  ],
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/tools/stash-guard.mjs\""
+          }
+        ]
+      }
+    ]
+  }
+}

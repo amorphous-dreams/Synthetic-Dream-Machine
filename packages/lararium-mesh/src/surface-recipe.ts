@@ -28,16 +28,18 @@
  */
 import { interpretAsDocumentId, type AutomergeUrl } from "@automerge/automerge-repo";
 import { tiddlerText } from "./base-doc.js";
-import type { StoredLarRecord } from "./stored-value.js";
+import { plainRecordOrNull, type StoredLarRecord } from "./stored-value.js";
+import type { LarTiddlerRecord } from "./tiddler-store.js";
 import { bootSetIds, bootSetPluginCids, verifyCasBytesAsync, type CasBlobLike } from "./cas.js";
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
+import { GENESIS_FLOOR_TIDDLER, floorBlobCids, readFloorManifest } from "./floor-manifest.js";
 import { wikiUri } from "./lar-uris.js";
 import { selectPluginBlobs, selectedPluginCids, type OfferingLookup } from "./plugin-offering-selector.js";
 import { effectiveRecipe, type RecipePlane } from "./recipe-planes.js";
 import { isCapabilityProfile, type CapabilityProfile } from "./session-contract.js";
 import type { DocumentFacet, FacetLayer, SessionDocumentFacets } from "./session-document-view.js";
 import {
-  CROSSROADS_BAG, ORACLE_BAG, SYSTEM_BAGS, expandRecipe, recipeFromRecord, wikiBagUri, wikiSlotKindOf,
+  ORACLE_BAG, expandRecipe, recipeFromRecord, wikiBagUri, wikiCanonOf, wikiSlotKindOf,
   type SlotUri, type WikiRecipe, type WikiSlotKind,
 } from "./wiki-recipe.js";
 
@@ -68,16 +70,22 @@ export interface SurfacePluginInputs {
   readonly islandBlobs: Record<string, CasBlobLike> | undefined;
   readonly lookup:      OfferingLookup;
   readBytes(cid: string): Uint8Array | null | Promise<Uint8Array | null>;
+  promoted?: (wikiSlug: string) => Promise<readonly string[]>;
+  /** Promoted digests whose bytes failed the local store check: dropped from the union and named here. */
+  onPromotedVoided?: (wikiSlug: string, digests: readonly string[]) => void;
 }
 
 export interface SurfaceRecipeInput {
   readonly wikiSlug: string;
+  readonly recipe?: WikiRecipe;
   readonly planes:   VesselRecipePlanes;
   readonly face:     SurfaceFace;
   /** May this face read the bag? The grant's answer; the recipe never widens it. */
   mayRead(bag: SlotUri): boolean;
   readonly plugins:  SurfacePluginInputs;
   readonly profile:  CapabilityProfile;
+  /** The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`); absent or null, the genesis floor. */
+  readonly floorCid?: string | null;
 }
 
 /** One slot of the cascade with the document it resolved to. `temp` and an unregistered library carry null. */
@@ -104,6 +112,7 @@ export interface SurfaceRecipe {
   readonly unresolved:  readonly SlotUri[];
   readonly coreHash:    string | null;
   readonly pluginCids:  readonly string[];
+  readonly floorCids:   readonly string[];
   readonly revision:    string;
 }
 
@@ -119,6 +128,31 @@ export type SurfaceRecipeVerdict =
 
 const refused = (refusal: SurfaceRecipeRefusal, detail: string): SurfaceRecipeVerdict => Object.freeze({ ok: false, refusal, detail });
 
+export type WikiRecipeDerivation =
+  | { readonly ok: true; readonly recipe: WikiRecipe; readonly source: "record" | "floor" }
+  | { readonly ok: false; readonly cause: "no-such-bag" | "record-unparsable"; readonly detail: string };
+
+/** Derive one standing record or the floor; every wiki names a resolving canon bag. */
+export function deriveWikiRecipe(input: { slug: string; record: LarTiddlerRecord | null | undefined; canonUrl: string | null }): WikiRecipeDerivation {
+  if (!input.canonUrl) return { ok: false, cause: "no-such-bag", detail: wikiBagUri(input.slug) };
+  if (!input.record || input.record.meta?.deleted === true) return { ok: true, recipe: { wikiSlug: input.slug }, source: "floor" };
+  if (typeof input.record.tiddler["bag-stack"] !== "string") {
+    return { ok: false, cause: "record-unparsable", detail: `torn bag-stack: ${input.slug}` };
+  }
+  try {
+    const recipe = recipeFromRecord(input.record, input.slug);
+    return { ok: true, recipe, source: "record" };
+  } catch (error) {
+    return { ok: false, cause: "record-unparsable", detail: String(error) };
+  }
+}
+
+/** Name the wiki that owns a slot or canon bag URI. */
+export function wikiSlugOfBag(bagUri: string): string | null {
+  const match = /^lar:\/\/\/ha\.ka\.ba\/(?:wikis\/([^/]+)\/(?:temp|draft|personal|working)|bags\/([^/]+))$/.exec(bagUri);
+  return match?.[1] ?? match?.[2] ?? null;
+}
+
 function documentIdOf(document: string): string | null {
   try { return interpretAsDocumentId(document as AutomergeUrl); } catch { return null; }
 }
@@ -126,10 +160,11 @@ function documentIdOf(document: string): string | null {
 /**
  * The plugin CIDs one recipe selects: the fixed floor's own, then the recipe's verified offerings whose bytes
  * the local content store holds whole. The one selection both platforms run.
+ * A promoted hook adds the wiki’s promoted digests that pass the local byte check; one that fails drops out and is named.
  */
 export async function resolveRecipePluginCids(
   recipe: Pick<WikiRecipe, "wikiSlug" | "pluginOfferings" | "pluginOfferingsFault">,
-  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes">,
+  inputs: Pick<SurfacePluginInputs, "islandBlobs" | "lookup" | "readBytes" | "promoted" | "onPromotedVoided">,
 ): Promise<{ readonly ok: true; readonly pluginCids: readonly string[] } | { readonly ok: false; readonly error: string }> {
   if (recipe.pluginOfferingsFault) {
     return { ok: false, error: `${recipe.wikiSlug}: malformed-offerings-field: ${recipe.pluginOfferingsFault}` };
@@ -140,7 +175,16 @@ export async function resolveRecipePluginCids(
   const selectedCids = selectedPluginCids(selection.blobs);
   const bytes = await verifyCasBytesAsync(selectedCids, async (cid) => inputs.readBytes(cid), (b) => sha256HexBytesSync(b));
   if (!bytes.ok) return { ok: false, error: `${recipe.wikiSlug}: ${JSON.stringify(bytes.failure)}` };
-  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids])] };
+  const promoted = [...new Set(await inputs.promoted?.(recipe.wikiSlug) ?? [])];
+  // A promoted digest stands or falls alone: one whose bytes fail the local check drops out of the union and is named, so a bad
+  // promoted blob never takes the floor and the selected plugins down with it.
+  const sound: string[] = [], voided: string[] = [];
+  for (const cid of promoted) {
+    const checked = await verifyCasBytesAsync([cid], async (c) => inputs.readBytes(c), (b) => sha256HexBytesSync(b));
+    (checked.ok ? sound : voided).push(cid);
+  }
+  if (voided.length > 0) inputs.onPromotedVoided?.(recipe.wikiSlug, voided);
+  return { ok: true, pluginCids: [...new Set([...floorCids, ...selectedCids, ...sound])] };
 }
 
 /** Resolve a session's effective recipe for one surface mount. */
@@ -157,19 +201,18 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   const standing = effectiveRecipe(slug, (plane, title) => planes.read(plane, title));
   // A record that stands names its stack as a list string. A `bag-stack` torn away, or one that fails to read
   // as that string, would lay the recipe with its bags missing; it refuses, and never reads as a narrower recipe.
-  if (standing && typeof standing.record.tiddler["bag-stack"] !== "string") return refused("recipe-malformed", standing.title);
-  const recipe: WikiRecipe = standing ? recipeFromRecord(standing.record, slug) : { wikiSlug: slug };
 
-  // A name resolves on the plane that owns it: the system bags and the public board on the oracle plane,
-  // every other bag on the catalog.
+  // A name resolves on the plane that owns it: the oracle seed on its own plane, and each vessel document pointer in the catalog.
   const documentOf = (bag: SlotUri): string | null => {
     if (bag === ORACLE_BAG) return planes.oracleDocument;
-    const plane: RecipePlane = SYSTEM_BAGS.has(bag) || bag === CROSSROADS_BAG ? "oracle" : "catalog";
+    const plane: RecipePlane = "catalog";
     return tiddlerText(planes.read(plane, bag));
   };
 
-  const canon = wikiBagUri(slug);
-  if (!standing && documentOf(canon) === null) return refused("wiki-unknown", wikiId);
+  const canon = wikiCanonOf(input.recipe ?? { wikiSlug: slug });
+  const derived = deriveWikiRecipe({ slug, record: standing?.record, canonUrl: documentOf(canon) });
+  if (!derived.ok) return refused(derived.cause === "no-such-bag" ? "wiki-unknown" : "recipe-malformed", derived.detail);
+  const recipe = input.recipe ?? derived.recipe;
 
   const slots: SurfaceSlot[] = [];
   const unresolved: SlotUri[] = [];
@@ -217,11 +260,27 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
   const plugins = await resolveRecipePluginCids(recipe, input.plugins);
   if (!plugins.ok) return refused("plugins-refused", plugins.error);
 
+  // The seed's floor witness admits the manifest and each house-canon snapshot it keys to the session's content view.
+  const floorCid = input.floorCid ?? plainRecordOrNull(planes.read("oracle", GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
+  const floorCids: string[] = [];
+  if (typeof floorCid === "string" && floorCid.length > 0) {
+    let bytes: Uint8Array | null;
+    try { bytes = await input.plugins.readBytes(floorCid); }
+    catch (error) { return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${String(error)}`); }
+    if (!bytes) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: manifest bytes absent: ${floorCid}`);
+    if (sha256HexBytesSync(bytes) !== floorCid) {
+      return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: manifest bytes differ from CID: ${floorCid}`);
+    }
+    const opened = readFloorManifest(bytes);
+    if ("refusal" in opened) return refused("floor-unresolved", `${GENESIS_FLOOR_TIDDLER}: ${opened.refusal}: ${opened.reason}`);
+    floorCids.push(...floorBlobCids(floorCid, opened.manifest));
+  }
+
   const coreHash = input.plugins.coreHash;
   const revision = sha256HexBytesSync(canonicalJsonBytes({
     slots: slots.map((s) => [s.slot, s.layer, s.document]),
     planes: facePlanes.map((p) => [p.name, p.document]),
-    unresolved, coreHash, pluginCids: plugins.pluginCids,
+    unresolved, coreHash, pluginCids: plugins.pluginCids, floorCids,
   }));
   return Object.freeze({
     ok: true,
@@ -229,7 +288,7 @@ export async function resolveSurfaceRecipe(input: SurfaceRecipeInput): Promise<S
       wikiId, wikiSlug: slug, facePlaneId: face.facePlaneId, profile: input.profile, recipe,
       slots: Object.freeze(slots.map((s) => Object.freeze(s))),
       planes: Object.freeze(facePlanes), unresolved: Object.freeze(unresolved),
-      coreHash, pluginCids: Object.freeze([...plugins.pluginCids]), revision,
+      coreHash, pluginCids: Object.freeze([...plugins.pluginCids]), floorCids: Object.freeze(floorCids), revision,
     }),
   });
 }
@@ -242,7 +301,7 @@ export function facetsOfSurfaceRecipe(recipe: SurfaceRecipe): SessionDocumentFac
     documents.push({ name: slot.slot, document: slot.document, layer: slot.layer });
   }
   documents.push(...recipe.planes);
-  return { documents, content: [...(recipe.coreHash ? [recipe.coreHash] : []), ...recipe.pluginCids] };
+  return { documents, content: [...(recipe.coreHash ? [recipe.coreHash] : []), ...recipe.pluginCids, ...recipe.floorCids] };
 }
 
 /** The absolute id of every slot that holds a document, by slot name: what an island's manifest carries. */

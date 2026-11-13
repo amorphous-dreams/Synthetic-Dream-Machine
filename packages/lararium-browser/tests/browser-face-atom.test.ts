@@ -1,0 +1,105 @@
+import { placeSeed } from "./browser-place-seed.fixture.js";
+/**
+ * K15 step 2c, the browser half's first act — a browser vessel meets each face through that face's atom, and the
+ * atom rests in the face's own custody row.
+ *
+ *   A1  the first ask for a face mints an atom seed and seals it in `face-atom/<PersonaGroup>`; the next ask
+ *       answers the same key; the row holds 32 bytes and reads under the slot tree only.
+ *   A2  two faces hold two atoms.
+ *   A3  THE ISOLATION RED, mirrored from the mesh row: a thief holding the browser's device seed derives no atom
+ *       and opens no group secret sealed to one. CONTROL: a secret sealed to the device key opens for the device
+ *       seed, so the red bites.
+ *   A4  a vessel with no slot mints no atom: a face's secret rows take a slot first.
+ */
+import { describe, expect, test } from "vitest";
+import {
+  FaceAtomConflict,
+  FaceAtomMissing,
+  groupSecretOpenerFromSeed, sealGroupSecret,
+} from "@lararium/mesh";
+import { bindSyntheticBrowserCustodySlot, bindSyntheticFace } from "./browser-custody-fixture.js";
+import { readKeystoreRow } from "../src/browser-custody.js";
+import {
+  browserFaceAtom, faceAtomRow, keepBrowserFaceAtomSeed, readBrowserFaceAtom, requireBrowserFaceAtomSeed,
+} from "../src/browser-face-atom.js";
+import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
+
+const GROUP_A = "group-a";
+const GROUP_B = "group-b";
+const opSeed = new Uint8Array(32).fill(0x22);
+
+async function vessel(): Promise<string> {
+  const idbName = `face-atom-${crypto.randomUUID()}`;
+  await bindSyntheticBrowserCustodySlot(idbName);
+  for (const group of [GROUP_A, GROUP_B, "no-face"]) await bindSyntheticFace(idbName, group);
+  return idbName;
+}
+
+describe("the browser's face atom", () => {
+  test("A1 — the first ask mints and seals an atom; the next ask answers the same key; CONTROL: a face never asked reads none", async () => {
+    const idbName = await vessel();
+    expect(await readBrowserFaceAtom(idbName, GROUP_A), "CONTROL: nothing stands before the first ask").toBeUndefined();
+    const first = await browserFaceAtom(idbName, GROUP_A);
+    const again = await browserFaceAtom(idbName, GROUP_A);
+    expect(again.key).toBe(first.key);
+    expect(first.personaGroup).toBe(GROUP_A);
+    const row = await readKeystoreRow(idbName, faceAtomRow(GROUP_A));
+    expect(row).toBeInstanceOf(Uint8Array);
+    expect((row as Uint8Array).length).toBe(32);
+    expect((await readBrowserFaceAtom(idbName, GROUP_A))?.key).toBe(first.key);
+  });
+
+  test("A2 — two faces hold two atoms", async () => {
+    const idbName = await vessel();
+    const a = await browserFaceAtom(idbName, GROUP_A);
+    const b = await browserFaceAtom(idbName, GROUP_B);
+    expect(a.key).not.toBe(b.key);
+  });
+
+  test("A3 — isolation red: the device seed derives no atom and opens no group secret sealed to one; CONTROL: it opens one sealed to its own key", async () => {
+    const idbName = await vessel();
+    await generateOrLoadBrowserVesselIdentity(idbName, "face-atom fixture");
+    const deviceSeed = await placeSeed(idbName);
+    const atom = await browserFaceAtom(idbName, GROUP_A);
+    const seal = await sealGroupSecret({ opSeed, prefix: "prefix-a", deviceVerifyingKey: atom.key });
+    expect(atom.opener.seal(seal)).not.toBeNull();
+
+    const thief = groupSecretOpenerFromSeed(deviceSeed);
+    expect(thief.seal(seal)).toBeNull();
+    expect(thief.deviceKey).not.toBe(atom.key);
+    expect(thief.seal({ ...seal, deviceKey: thief.deviceKey })).toBeNull();
+    const other = await browserFaceAtom(idbName, GROUP_B);
+    expect(other.opener.seal(seal), "face B cannot open A's seal").toBeNull();
+    await expect(requireBrowserFaceAtomSeed(idbName, "no-face")).rejects.toMatchObject({ name: "FaceAtomMissing" });
+
+    const own = await sealGroupSecret({ opSeed, prefix: "prefix-a", deviceVerifyingKey: thief.deviceKey });
+    expect(thief.seal(own), "CONTROL: sealed to the device key, the device seed opens it").not.toBeNull();
+  });
+
+  test("A4 — a face with no tree of its own mints no atom", async () => {
+    const idbName = await vessel();
+    await expect(browserFaceAtom(idbName, "a-face-never-bound")).rejects.toMatchObject({ reading: "no-custody-slot" });
+    await expect(readKeystoreRow(idbName, faceAtomRow("a-face-never-bound")), "the refused call left no row and no tree").rejects.toMatchObject({ reading: "no-custody-slot" });
+  });
+
+  test("A5 — requiring a face seed with no row refuses FaceAtomMissing with the same text", async () => {
+    const idbName = await vessel();
+    await expect(requireBrowserFaceAtomSeed(idbName, GROUP_A)).rejects.toMatchObject({
+      name: "FaceAtomMissing",
+      message: `this face holds no atom; re-found or re-admit it (${GROUP_A})`,
+      personaGroup: GROUP_A,
+    } satisfies Pick<FaceAtomMissing, "name" | "message" | "personaGroup">);
+  });
+
+  test("A6 — keeping another seed refuses FaceAtomConflict", async () => {
+    const idbName = await vessel();
+    const first = new Uint8Array(32).fill(0x31);
+    const other = new Uint8Array(32).fill(0x32);
+    await keepBrowserFaceAtomSeed(idbName, GROUP_A, first);
+    await expect(keepBrowserFaceAtomSeed(idbName, GROUP_A, other)).rejects.toMatchObject({
+      name: "FaceAtomConflict",
+      message: `the atom row for ${GROUP_A} holds another seed`,
+      personaGroup: GROUP_A,
+    } satisfies Pick<FaceAtomConflict, "name" | "message" | "personaGroup">);
+  });
+});

@@ -4,11 +4,11 @@
  * One printer serves every act that commits a chair's next key to a card: the seal rite's seat and roll, and the
  * Stable founding act (`lares vessel found --hearth`). A card a person mis-copies would freeze the chair at its
  * next roll, so the printer asks each one back on the terminal and the act writes nothing until every card reads
- * true. On a staged test root whose custody opens under the published test route the read-back stands in, and the
- * JSON answer carries each card's code; anywhere else the answer carries the digest and the confirm phrase alone.
+ * true. A harness can explicitly seat a read-back stand-in in this CLI process; then the JSON answer carries each
+ * card's code. With no seat the answer carries the digest and the confirm phrase alone.
  * Every seed zero-fills before the printer returns.
  */
-import { coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
+import { COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
 import type { ParsedArgs } from "./parse-args.js";
 import { readBackStandsIn } from "./sealed-rows.js";
 import { canPromptSecret, promptSecret } from "./prompt-secret.js";
@@ -21,11 +21,36 @@ export class CardReadBackRefused extends Error {
   override readonly name = "CardReadBackRefused";
 }
 
+/** A card's code holds 72 characters once its dashes and spaces drop. */
+const CODE_CHARACTERS = 72;
+const CARD_LINES = 3;
+const LINE_CHARACTERS = CODE_CHARACTERS / CARD_LINES;
+
+/**
+ * One read-back attempt gathers the card's three lines: typed one per line, pasted as three lines (the terminal
+ * hands them over one line at a time), or pasted onto one line. It stops once 72 characters stand, after three
+ * lines, on an empty line, or on a line that cannot be one card row (24 characters), so a wrong line never waits for
+ * more. The input stays hidden, so each further line names how many characters it still needs.
+ */
+async function readCardLines(chair: string): Promise<string> {
+  let code = "";
+  for (let line = 0; line < CARD_LINES; line++) {
+    const label = line === 0
+      ? `type or paste ${chair}'s three code lines (dashes and spaces optional), not the confirm words; the input stays hidden\n  `
+      : `  line ${line + 1} of ${CARD_LINES} (${CODE_CHARACTERS - code.length} characters to go): `;
+    const typed = (await promptSecret(label)).replace(/[\s-]/g, "");
+    if (typed.length === 0) break;
+    code += typed;
+    if (code.length >= CODE_CHARACTERS || typed.length !== LINE_CHARACTERS) break;
+  }
+  return code;
+}
+
 /**
  * Print each card and read it back. A card a person mis-copies would freeze the
  * chair at its next roll, so the rite asks each one back on the terminal and writes nothing until every card reads
- * true. On a staged test root whose custody opens under the published test route the read-back stands in, and the
- * JSON answer carries each card's code; anywhere else the answer carries the digest and the confirm phrase alone.
+ * true. A harness can explicitly seat a read-back stand-in in this CLI process; then the JSON answer carries each
+ * card's code. With no seat the answer carries the digest and the confirm phrase alone.
  * Every seed zero-fills before this returns.
  */
 export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], generation: number, charterFingerprint: string): Promise<Array<Record<string, string>>> {
@@ -40,21 +65,32 @@ export async function readBack(args: ParsedArgs, cards: readonly ColdCard[], gen
         : "the rite prints each chair's cold-key card and asks it back on a terminal; run it on one. Nothing was written.");
     }
     const say = (line: string): void => { process.stdout.write(`${line}\n`); };
+    // A card names the fields its caller holds: a chair whose charter does not stand yet (a joint Nexus at `cofound
+    // open` and `join`, a seat with no inception image) prints the three it holds and no charter line, never a refusal.
+    const fields = charterFingerprint === "" ? (["purpose", "chairLabel", "generation"] as const) : COLD_KEY_CARD_DEFAULT_FIELDS;
+    if (!json && cards.length > 1) say(`${cards.length} cards print in order: ${cards.map((card) => card.chair).join(", ")}.`);
     for (const card of cards) {
       if (!json) {
         say(`── cold-key card · ${card.chair} ──`);
-        for (const line of coldKeyCardLines(card.seed, { purpose: "the next key of one chair; it rolls the charter once", chairLabel: card.chair, generation, charterFingerprint })) say(`  ${line}`);
+        for (const line of coldKeyCardLines(card.seed, { purpose: "the next key of one chair; it rolls the charter once", chairLabel: card.chair, generation, charterFingerprint }, fields)) say(`  ${line}`);
       }
       if (standIn) continue;
       for (let tries = 0; ; tries++) {
-        const typed = (await promptSecret(`type the card for ${card.chair} back`)).trim();
+        const typed = await readCardLines(card.chair);
         let back: Uint8Array | null = null;
-        try { back = coldKeySeedFromCode(typed); } catch { back = null; }
+        let reason = "reads as another card";
+        try { back = coldKeySeedFromCode(typed); } catch (err) {
+          const fault = err instanceof Error ? err.message : "";
+          if (fault.endsWith(": length")) reason = `${typed.replace(/[\s-]/g, "").length} of 72 characters`;
+          else if (fault.endsWith(": character")) reason = "a character outside 0-9 a-f";
+          else if (fault.endsWith(": checksum")) reason = "a typo somewhere (checksum)";
+          else throw err;
+        }
         const same = back !== null && Buffer.from(back).equals(Buffer.from(card.seed));
         back?.fill(0);
         if (same) break;
-        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair} read back three times and never matched — nothing was written; run the rite again`);
-        say("  that card reads otherwise — try again");
+        if (tries >= 2) throw new CardReadBackRefused(`the card for ${card.chair}: ${reason}; three attempts never matched — nothing was written; run the rite again. A new run prints new cards: discard these and write down the new ones`);
+        say(`  ${reason} — try again`);
       }
     }
     return cards.map((card) => {

@@ -1,0 +1,38 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/pr`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — PR body, 2026-11-07 (file date) — source `.lares-scratch/p27-wire/pr.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/pr"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/p27-wire/pr"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! pr.md — PR body, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/p27-wire/pr.md` (PR body, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/p27-wire/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+P27 wiring: the declared-tier share gate takes all four crossings through ONE tighten predicate (ShareBoundary over tightenShare): node repo share, browser repo share, the bulb and HTTP /cas faces, and the island CAS floor. The CAS audience reads off the asking island's relation (daemon island in-process, pool wiki island its plane, herm shore and HTTP world); an unreadable relation refuses by name. Groundwork (secrets registry, the predicate) carried from the parked secrets-store lane; the operator's vault commits stay there.
+
+Local: 42/42 node+mesh files alone in bwrap; 9 browser-runner files ride CI. Sol read and blind Opus read before land.
+
+🤖 Generated with [[Claude Code|https://claude.com/claude-code]]
+
+https://claude.ai/code/session_01V63vwNsTbwswaievYNJosw
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;D80SIqRFXRHlEF_9N29HPFM3AZKmaF5VXTif3MFc-T0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

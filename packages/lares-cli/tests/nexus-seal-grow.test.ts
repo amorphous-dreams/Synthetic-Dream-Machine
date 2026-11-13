@@ -8,6 +8,9 @@
  * record sealed beside the charter. This is the verb that makes a second operator's arrival an event with an
  * artifact instead of an improvisation.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 import { afterEach, beforeEach, describe, test, expect, vi } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -20,7 +23,7 @@ import {
   type ReserveTransition,
 } from "@lararium/node";
 import {
-  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealLineageHead, readVkCarrier,
+  renameOwnPersona, declarePersonaHandle, standForKahuSeat, sealLineageHead, readSCarrier,
 } from "@lararium/mesh";
 import { seatScratchCustody, type ScratchCustody } from "./support/scratch-custody.js";
 import { sealRite, type SealRite } from "./seal-rite-fixture.js";
@@ -84,7 +87,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     // Arm the succession: the four-key set, pre-committed an epoch ahead.
     const rt3 = await generateOrLoadPersonaGroupRoot(3);
     const fourKeys = [...founders, rt3.verifyingKey];
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     const fromHead = sealLineageHead(readNexusDoc(larSealHome()))!;
 
     // ── OPEN: capture the standing hands BEFORE anything moves.
@@ -92,7 +95,7 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
 
     // The fourth stands; the succession rotate seats the four (matching the armed pre-commit).
     await stand(["Kahu Freyja"], 3);
-    expect((await rite.rotate()).code).toBe(0);
+    expect((await rite.rotate({ face: "0" })).code).toBe(0);
     const toHead = sealLineageHead(readNexusDoc(larSealHome()))!;
     expect(toHead.epochCid).not.toBe(fromHead.epochCid);
 
@@ -111,9 +114,9 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
     // ── SEAL: the crossing verifies whole and lands beside the charter.
     expect((await cmdNexus(args(["seal", "grow", "seal"])))).toBe(0);
 
-    // The record rests SEALED beside the charter: the file reads as no JSON, and the custody seat opens it.
-    expect(readVkCarrier(readFileSync(join(larSealHome(), "transitions.json")))).toBe("sealed");
-    const kept = JSON.parse(new TextDecoder().decode((await readCustodyRow("seal", "transitions.json"))!)) as ReserveTransition[];
+    // A crossing record is public: it rests in the clear as a plain list, readable with no key.
+    expect(Array.isArray(JSON.parse(readFileSync(join(larSealHome(), "transitions.json"), "utf8")))).toBe(true);
+    const kept = JSON.parse(readFileSync(join(larSealHome(), "transitions.json"), "utf8")) as ReserveTransition[];
     expect(kept).toHaveLength(1);
     expect(kept[0]!.fromEpochCid).toBe(fromHead.epochCid);
     expect(kept[0]!.toEpochCid).toBe(toHead.epochCid);
@@ -124,9 +127,9 @@ describe("lares nexus seal grow — the crossing record ceremony", () => {
   test("★ AN UNSIGNED CROSSING REFUSES TO SEAL — and writes nothing ★", async () => {
     const founders = await stand(KAHU);
     await rite.seat();
-    await rite.rotate();
+    await rite.rotate({ face: "0" });
     expect((await cmdNexus(args(["seal", "grow", "open"])))).toBe(0);
-    await rite.rotate();
+    await rite.rotate({ face: "0" });
     expect((await cmdNexus(args(["seal", "grow", "bind"])))).toBe(0);
 
     expect((await cmdNexus(args(["seal", "grow", "seal"])))).not.toBe(0);

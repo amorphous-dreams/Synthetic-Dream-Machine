@@ -31,26 +31,22 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
  */
 
-import { readdirSync } from "node:fs";
-import { join } from "node:path";
 import { decodeInvite, isWalkRecord, sha256HexSync, type WalkRecord, type WalkStore } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openedCustody, readCustodyRow, updateCustodyRow } from "./custody-seat.js";
-import { ownerOnlyDir } from "./fs-atomic.js";
+import { readCustodyRow, unlockedFaceOrdinals, updateCustodyRow } from "./custody-seat.js";
+import { faceFileNames } from "./face-index.js";
+import { larIdentityDir } from "./vessel-paths.js";
 
-const WALK_FILE = /^[0-9a-f]{32}\.json$/;
+/** A walk row: `walk-h<N>-<32 hex of the hearth's gate key digest>.json`, in the face that walks; the handle index spells the face. */
+const WALK_FILE = /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/;
 
-/** The row one hearth's walk record rests in, relative to the storage home: keyed by a digest of its gate key. */
-export function walkRowFile(gatePubKey: string): string {
-  return `walk/${sha256HexSync(gatePubKey.toLowerCase()).slice(0, 32)}.json`;
+/** The row one hearth's walk record rests in for face `face`: keyed by a digest of its gate key. */
+export function walkRowFile(face: number, gatePubKey: string): string {
+  if (!Number.isSafeInteger(face) || face < 0) throw new RangeError(`node-walk-store: handle-index out of range: ${face}`);
+  return `walk-h${face}-${sha256HexSync(gatePubKey.toLowerCase()).slice(0, 32)}.json`;
 }
 
 interface WalkFile { readonly gatePubKey: string; readonly record: WalkRecord }
-
-/** The `walk/` directory under the storage home of the custody this vessel holds open. */
-async function walkDir(): Promise<string> {
-  return join((await openedCustody()).homes.storage, "walk");
-}
 
 /**
  * Whether a whole record AGREES with the hearth its row names: a carried invite names that hearth's gate key and
@@ -73,43 +69,42 @@ export class WalksElsewhere extends Error {
 }
 
 /** A row's plaintext as a whole walk record filed under its own hearth; any other shape refuses `malformed`. */
-function parseWalkFile(bytes: Uint8Array, file: string): WalkFile {
-  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("storage", file, "malformed");
+function parseWalkFile(bytes: Uint8Array, file: string, face: number): WalkFile {
+  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { throw malformed(); }
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw malformed();
   const { gatePubKey, record, ...rest } = raw as Record<string, unknown>;
   if (Object.keys(rest).length > 0 || typeof gatePubKey !== "string" || !isWalkRecord(record)) throw malformed();
   // The row's name derives from the hearth it names: a record filed under another hearth's name refuses.
-  if (gatePubKey !== gatePubKey.toLowerCase() || walkRowFile(gatePubKey) !== file) throw malformed();
+  if (gatePubKey !== gatePubKey.toLowerCase() || walkRowFile(face, gatePubKey) !== file) throw malformed();
   if (!agrees(gatePubKey, record)) throw malformed();
   return { gatePubKey, record };
 }
 
 /**
- * The walk store over this vessel's own sealed rows. `oneHearth` makes each update refuse `WalksElsewhere` when a
- * row for any OTHER hearth stands: the check reads the `walk/` directory inside the same custody hold that seals
- * the row, so two takes for two hearths, in one process or in two, keep one hearth.
+ * The walk store of face `face` over its own sealed rows. `oneHearth` makes each update refuse `WalksElsewhere` when a row for
+ * any OTHER hearth stands in ANY face: the check reads the faces' file names inside the same custody hold that seals the
+ * row, so two takes for two hearths, in one process or in two, keep one hearth.
  */
-export function nodeWalkStore(opts: { readonly oneHearth?: boolean } = {}): WalkStore {
+export function nodeWalkStore(opts: { readonly face: number; readonly oneHearth?: boolean }): WalkStore {
+  const { face } = opts;
   return {
     async read(gatePubKey) {
-      const file = walkRowFile(gatePubKey);
-      const bytes = await readCustodyRow("storage", file);
-      return bytes === null ? null : parseWalkFile(bytes, file).record;
+      const file = walkRowFile(face, gatePubKey);
+      const bytes = await readCustodyRow("identity", file);
+      return bytes === null ? null : parseWalkFile(bytes, file, face).record;
     },
     async update(gatePubKey, decide) {
       const gate = gatePubKey.toLowerCase();
-      const file = walkRowFile(gate);
-      const dir = await walkDir();
-      ownerOnlyDir(dir);
-      return updateCustodyRow<WalkRecord | null>("storage", file, (standing) => {
-        const next = decide(standing === null ? null : parseWalkFile(standing, file).record);
+      const file = walkRowFile(face, gate);
+      return updateCustodyRow<WalkRecord | null>("identity", file, (standing) => {
+        const next = decide(standing === null ? null : parseWalkFile(standing, file, face).record);
         if (next === null) return { plaintext: null, value: null };
         // The row takes a whole record that agrees with its hearth, so the next read opens what this write sealed.
         if (!isWalkRecord(next) || !agrees(gate, next)) throw new Error(`[node-walk-store] the walk record for ${file} reads malformed; nothing sealed`);
         // A row's name alone says a hearth stands there, readable or not: a take never lands beside one.
-        if (opts.oneHearth && readdirSync(dir).some((name) => WALK_FILE.test(name) && `walk/${name}` !== file)) throw new WalksElsewhere();
+        if (opts.oneHearth && faceFileNames(larIdentityDir()).some((name) => WALK_FILE.test(name) && name !== file)) throw new WalksElsewhere();
         const row: WalkFile = { gatePubKey: gate, record: next };
         return { plaintext: new TextEncoder().encode(JSON.stringify(row)), value: next };
       });
@@ -118,24 +113,17 @@ export function nodeWalkStore(opts: { readonly oneHearth?: boolean } = {}): Walk
 }
 
 /**
- * Every hearth this vessel walks at: its gate key and its record, ascending by gate key. No `walk/` directory
- * reads as walking nowhere; a directory that stands and refuses its listing refuses the list by name, and so does
- * a row that stands and does not read whole. A file no walk row could carry (a sidecar, a stray name) reads as no
- * hearth, and a row that left between the listing and its read reads as the absence it became.
+ * Every hearth the UNLOCKED faces walk at: the face, the gate key and the record, ascending by gate key. A face that rests
+ * locked walks unread. A row that stands and does not read whole refuses the list by name; a file no walk row could carry reads as no hearth.
  */
-export async function listWalkRecords(): Promise<ReadonlyArray<{ readonly gatePubKey: string; readonly record: WalkRecord }>> {
-  const dir = await walkDir();                                 // a locked seat refuses here, by its own name
-  let names: string[];
-  try { names = readdirSync(dir); }
-  catch (err) {
-    if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw new CustodyRowUnavailable("storage", "walk", `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
-  }
-  const out: WalkFile[] = [];
-  for (const name of names.filter((n) => WALK_FILE.test(n)).sort()) {
-    const file = `walk/${name}`;
-    const bytes = await readCustodyRow("storage", file);
-    if (bytes !== null) out.push(parseWalkFile(bytes, file));
+export async function listWalkRecords(): Promise<ReadonlyArray<{ readonly face: number; readonly gatePubKey: string; readonly record: WalkRecord }>> {
+  const open = new Set(await unlockedFaceOrdinals());          // a locked seat refuses here, by its own name
+  const out: Array<WalkFile & { face: number }> = [];
+  for (const name of faceFileNames(larIdentityDir()).sort()) {
+    const m = WALK_FILE.exec(name);
+    if (!m || !open.has(Number(m[1]))) continue;
+    const bytes = await readCustodyRow("identity", name);
+    if (bytes !== null) out.push({ ...parseWalkFile(bytes, name, Number(m[1])), face: Number(m[1]) });
   }
   return out.sort((a, b) => a.gatePubKey.localeCompare(b.gatePubKey));
 }

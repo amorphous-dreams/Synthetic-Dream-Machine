@@ -1,0 +1,59 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/brief`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/copilot-train-t2/brief.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/brief"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/brief"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief.md — brief, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/copilot-train-t2/brief.md` (brief, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/copilot-train-t2/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Train-Reader T2 (Copilot): Lares (Tasked Spirit). The operator approved ONE Copilot read (Sol was refused twice by its provider) over this whole train before it lands. The read pool runs low, so read the delta in /home/joshu/.lares-scratch/controller/seats/copilot-train-t2 and nothing wider. The repo at /home/joshu/Synthetic-Dream-Machine holds the span. Read files there for context. Your seat reads files and git alone; it runs no code. Trace each answer through the source by file:line, and mark a claim you could not trace as UNTRACED rather than guessing.
+
+The train, in order:
+# #140 u1, custody class (u1-140.patch; threat sketch u1-threat-sketch.md). A face's session seals through a sign door (no key crosses into the island; a booked call's own signer signs). The sealed-* verbs gate on the invocation's face. Only Nexus-anchored sessions seal. holdsWrite accepts only certificates under the vessel's own chain. F7: owed removal rolls settle before a seal.
+# #138 recut-custody, custody class (recut-custody-138.patch, design recut-custody-design.md). Custody files carry fixed names inside one home: no source recognises the old `-<login>` names, a host fact (git global email) never picks a file, and boot over an old tree refuses with "no key file" and mints nothing.
+
+The prior train read (prior-read-excerpt.md in /home/joshu/.lares-scratch/controller/seats/copilot-train-t2) MEASURED one HIGH in #140 before its provider stopped it. A seal in flight when a seat roll lands and its raise is counted completed under the OLD key version, and the removed reader opened the post-removal plaintext. This held on a founding bag and on an existing bag, and the F7 guard exempted a founding bag. That read found the bookings sound: unknown ids, wrong verbs, released bookings and dropped sessions refused, and a duplicate id kept its first signer. u1 has since committed a red for that race and a cure (u1-rev.patch, the commits after 4ca92a0bb).
+
+Answer:
+(a) Does the race close, traced through the cured code along the prior probe's shape? Trace both bags, plus a roll landing at every await inside the seal, above all a pause between the manifest signature and the value write (the lead names that joint as untested). Does the founding exemption close? The cure re-reads owed raises before any key mints and at the commit point in mesh content-key-holder.ts sealBlob; a founding refuses while any raise in its scope stays owed.
+(b) Any other HIGH in #140: a foreign face through any sealed-* verb, a booking outliving its session, a non-session invocation reaching a live booking?
+(c) Any HIGH in #138: can any path still derive a custody file name from a host fact, or mint over an old tree?
+(d) Cross-lane: u1 adds a fifth door in worker-handle.ts; #138 touches node-vessel-identity.ts and vault-carriers.ts. Do they meet (the signer's identity load, a custody path the sign door reads)?
+Name each finding HIGH, MEDIUM or LOW with file:line. End with SHIP or HOLD.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-law`>>
+
+!! SEAT LAW (appended by tools/launch-codex.mjs to every brief; it binds this seat)
+* Stay inside the wall. Approval never escalates; a build seat has no network, loopback included; only a research seat takes `--search`. A step that needs more than the wall stops and names itself in `out.md`; the wall holds by refusal.
+* Never commit and never run a git write. The lead commits each red, then each fix.
+* Never build (`pnpm build`), never run vitest browser mode, never stand a vessel, socket or daemon. Typecheck (`tsc -p … --noEmit`) and run single test files that open no socket; mark any test that needs a socket "lead runs".
+* A "stale build" from the dist guard stops the run; name it, and the lead builds.
+* Write `out.md` and every note in the seat directory alone. `-o` names `final.md`; stdin closes (`< /dev/null`); `TMPDIR` and `TMPPREFIX` sit inside the seat directory.
+* Never run the battery; the lead holds its lock. Never read a credential file.
+* Launch without `--ephemeral`: each seat keeps its rollout, so the spend tally counts it.
+* The lead runs `pnpm build` in its worktree after every span merge and before each build seat; a verdict read off a stale dist counts as unread.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hu-du9Ne3HQ8W7XVB87OUl_hyMDfL7S3Zryg2nqqpnU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

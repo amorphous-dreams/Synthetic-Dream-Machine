@@ -15,6 +15,7 @@
  */
 
 import type { CrossedVeil } from "./veil-crossing.js";
+import { HOLDER_CONTINUITY_DOMAIN } from "./domains.js";
 import { carryRepAcrossHold, type RepCarry, type Voucher } from "./veil-vouch.js";
 
 /** The retired key's signed naming of its successor — "I, the retired key, vouch for this fresh key." */
@@ -28,7 +29,7 @@ export interface ContinuityAssertion {
 
 /** The canonical bytes the retired key signs to name its successor (strict `|`-delimited, no injection). */
 export function continuityProofBytes(a: Omit<ContinuityAssertion, "proofSig">): Uint8Array {
-  return new TextEncoder().encode(`lar-holder-continuity/v1|${a.retiredKeyHex}|${a.freshKeyHex}|${a.epoch}`);
+  return new TextEncoder().encode(`${HOLDER_CONTINUITY_DOMAIN}|${a.retiredKeyHex}|${a.freshKeyHex}|${a.epoch}`);
 }
 
 /**

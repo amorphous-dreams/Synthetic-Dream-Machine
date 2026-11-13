@@ -1,14 +1,10 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/for">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/for`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/lares/ha.ka.ba/lares/api/pono/for.mem"
-mana      = 18
-manao     = 17
-manaoio   = 17
 namespace = "&#x2299;"
 role      = "English alias pointer — \\for redirects to huli; canonical spec lives at pono/huli"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-for"]
@@ -17,19 +13,19 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/for"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! \for
 
 English alias for `huli`. See canonical spec:
 
-<<~ aka "lar:///ha.ka.ba/lares/api/pono/huli">>
+<<~ aka uri=`lar:///ha.ka.ba/lares/api/pono/huli`>>
 
 `\for` and `huli` share identical semantics. Both iterate a TW5 filter result set,
 rendering a body template once per result. Use whichever reads more naturally in context.
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;r1KOXz_Mh9B27cuBxLdAd3JJDToyZpkrIMgr9a21c_s
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Atu6_jzHFpd2x6sA9ZEbPhDXaFtHcuCqKfQxJOD-tqM`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

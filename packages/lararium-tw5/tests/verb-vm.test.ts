@@ -323,7 +323,7 @@ describe("verb-vm", () => {
       // The digest matches the SAME computation the dispatcher re-derives for arbitration —
       // a stale/duplicated formula here would silently desync the two readers.
       const expected = await verbInputDigest({
-        verb: invocation.action, args: invocation.args, requestedBy: invocation.requestedBy,
+        verb: invocation.action, args: invocation.args, face: invocation.face,
       });
       expect(stamped).toBe(expected);
     });

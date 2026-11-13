@@ -1,17 +1,13 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⚕" from="?" -> to="lar:///ha.ka.ba/lararium/mesh/founding-runbook">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⚕` from=`?` to=`lar:///ha.ka.ba/lararium/mesh/founding-runbook`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable  = true
-file-path  = "bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem"
 l-space    = "lararium"
-mana       = 15
-manao      = 15
-manaoio    = 14
 namespace  = "&#x2695;"
-revised-on = "2026-10-14"
+revised-on = "2026-11-10"
 role       = "a household walk for founding a fresh Dockerized node, establishing custody, and naming the built and owed browser, membership, and aftercare steps"
 status-why = "a fresh household founding walk with explicit built steps and owed reach and browser work"
 tags       = ["mesh/carry-contract", "api/pono/persona-policy", "mesh/siege-resilience", "mesh/kahu", "kind/rite"]
@@ -22,60 +18,96 @@ written    = "2026-07-20"
 ```
 
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
 ! Founding Runbook ~ one household walk
 
-<<~ ahu #/the-rite>>
+<<~ ahu slot=`#/the-rite`>>
 
 !! 1 · What founding makes
 
-A node founded by one operator stands as a SEED. A Nexus stands when two operators each seat their own key in a fresh charter (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">>). One act founds the household's node, the Stable founding act (`lares vessel found --hearth`): under one human route it mints the custody, the place and persona zero, and a PRIVATE seed charter with one seat at threshold one, whose next key rests on a cold-key card; persona zero's face binds that charter's Nexus AID. No keyring rides it. The node then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
+A node founded by one operator stands as a SEED. A Nexus stands when two operators each seat their own key in a fresh charter (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>). One act founds the household's node, the Stable founding act (`lares vessel found --hearth`): under one human route it mints the custody, the place and persona zero, and a PRIVATE seed charter with one seat at threshold one, whose next key rests on a cold-key card; persona zero's face binds that charter's Nexus AID. No keyring rides it. The node then seeds its corpus from the tracked bags. No prior CRDT document needs to survive. Each operator founds their own node on their own machine. A browser counts as a leaf of its human's Lararium; each device mints its own key, one face per device, and no device receives a seed.
 
 <<~/ahu>>
 
-<<~ ahu #/fresh-state>>
+<<~ ahu slot=`#/fresh-state`>>
 
 !! Fresh state
 
-A fresh founding needs only a fresh state mount and this household's tracked repository checkout at `/workspace`. For an older installation, move its homes aside by hand before founding again, as the stable founding road directs. No CLI pave or wipe command stands.
+A fresh founding needs only a fresh house root (`LARES_HOUSE`) and this household's tracked repository checkout at `/workspace`. For an older installation, move its homes aside by hand before founding again, as the stable founding road directs. No CLI pave or wipe command stands.
 
-''Do'': prepare the first operator's fresh per-vessel `/state` directory and point `/workspace` at the household repository checkout, then follow this walk.
+''Do'': prepare the first operator's fresh house root (`LARES_HOUSE`, bound at `/lar`) and point `/workspace` at the household repository checkout, then follow this walk.
 
-''See'': the repo carries the corpus and genesis; the new state directory holds no prior vessel home.
+''See'': the repo carries the corpus and genesis; the new house root holds no prior vessel home.
 
 ''Proves'': founding needs no old CRDT document, migration, clear, or rebirth.
 
 <<~/ahu>>
 
-<<~ ahu #/prepare>>
+<<~ ahu slot=`#/prepare`>>
 
 !! 2 · Prepare the machine
 
-All code runs in Docker. The host keeps the shell shim, hooks, mounts, editor, and custody copies. Use a local filesystem for both mounts; keep `/state` outside the repository and separate from `/workspace`, which points at the household repository checkout. The vessel image carries code and genesis, never household state. The app receives no Docker socket.
+All code runs in Docker. The host keeps the shell shim, hooks, mounts, editor, and custody copies. Use a local filesystem for every mount; keep the house root outside the repository and separate from `/workspace`, which points at the household repository checkout. The vessel image carries code and genesis, never household state. The app receives no Docker socket.
 
-Set `LARES_STATE` to the first operator's vessel-home directory and `LARES_WORKSPACE` to the household's git checkout of this repository, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands; alternatively, create the literal paths named in `lares-surface.env`. On Windows, keep both mounts inside the WSL distro. Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
+Set `LARES_HOUSE` to the first operator's house root (an absolute path; its `hearth/`, `sensoriums/`, `projections/`, `library/` and `config/` bind at `/lar` in the container) and `LARES_WORKSPACE` to the household's git checkout of this repository, which holds tracked `bags/` and receives `wikis/`. Export both paths in this shell before running the host preparation commands, or name them in `~/.lares/lares-surface.env`, which rests outside every bind (the checkout carries none; the shim refuses an env file inside one of the house's binds). On Windows, keep every mount inside the WSL distro. Keep a terminal attached for founding and custody credentials; the CLI refuses a credential act without a TTY.
 
-''Do'': build the product image and create the two host directories.
+''Do'': build the product image and create the house root.
 
 ```sh
-export LARES_STATE="$HOME/lares-state"
+export LARES_HOUSE="$HOME/lares-house"
 export LARES_WORKSPACE="$PWD"
-mkdir -p "$LARES_STATE"
-docker build -f Dockerfile --target serve -t lares-surface:local .
+mkdir -p "$LARES_HOUSE"
+tools/lares-container.sh build
 ```
 
-Run these from the root of the household checkout; the state path shown stands as an example, and any local directory outside the checkout serves. Under PowerShell, assign `$env:LARES_STATE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
+Run these from the root of the household checkout; the house path shown stands as an example, and any local directory outside the checkout serves. `build` rebuilds the vessel image, every package the vessel runs, from the committed checkout: it runs `docker compose build lares` through the env file (a bare `docker compose build` reads no `lares-surface.env` and refuses on `LARES_HOUSE`) and bakes the checkout's HEAD into the image's revision label; a checkout holding uncommitted tracked changes refuses, so commit first. The shim makes the house's five bound classes before a container stands. Under PowerShell, assign `$env:LARES_HOUSE` and `$env:LARES_WORKSPACE` before calling the `.ps1` shim.
 
 Use `tools/lares-container.sh` on Unix-like hosts or `tools/lares-container.ps1` on Windows. The shims read the same environment or `lares-surface.env` and route CLI work through the image.
 
-''See'': Docker reports a successful image build; the state path exists and the workspace checkout holds tracked `bags/`.
+''The host `lares` answers through the container house.'' With `LAR_ROOT` unset and `~/.lares/lares-surface.env` standing, the host's own `lares <verb>` hands every vessel verb to the checkout's `tools/lares-container.sh` with the same argv, so `lares up`, `lares vessel read` and `lares meme get … --json | jq` work from the WSL shell as the shim lines below do; the exit code and stdout pass through untouched, and no socket crosses the container wall. Host verbs stay on the host: `home`, `repo`, `help` and every `--help`, `wing-of`, `mempalace`, and `meme normalize|check|project <file> --to md`; `lares --help` marks each verb `host`, `vessel` or `mixed`. A credential verb (`vault unlock|bind|unbind`, `found`) refuses by name without a terminal. With neither `LAR_ROOT` nor the env file, a vessel verb refuses in two lines naming both cures. A path argument (`export <dest>`, `import <bundle>`, `vault backup --out <file>`, `ingest --source <dir>`, …) reads from the host, relative paths and `~` included, and crosses in the vessel's spelling: `$LARES_HOUSE/<class>` reads at `/lar/<class>` and `$LARES_WORKSPACE` at `/workspace`; a path already spelled `/lar/…` or `/workspace/…` passes as written, and a host path outside those mounts refuses by name before docker runs, so `lares export "$LARES_HOUSE/config/carry/bundle-one"` and the shim's `/lar/config/carry/bundle-one` name one place. A Ctrl+C or a lone SIGTERM stops the act inside the vessel too: the shim stops the tagged process it exec'd, or the run container it named. A shell that names `LAR_ROOT` (a scratch house, a suite, the container itself) never forwards. Windows runs `lares` inside WSL.
+
+''See'': Docker reports a successful image build; the house root exists and the workspace checkout holds tracked `bags/`.
 
 ''Proves'': the host has the image and durable homes required by the compose surface.
 
 <<~/ahu>>
 
-<<~ ahu #/decisions>>
+<<~ ahu slot=`#/pre-rite`>>
+
+!! 2b · The pre-rite, three acts before the first `found`
+
+Three acts stand between a landed head and the first `found --hearth`. Each one closes a failure the walks measured, and each one waits for the one before it.
+
+# ''Rebuild the image LAST, at the landed head.'' Land every branch the rite needs, then check out that head, and only then run `tools/lares-container.sh build` (under PowerShell: `tools/lares-container.ps1 build`); the shim reads the env file, passes the checkout's HEAD as `GIT_REV` into the image's revision label, and refuses a dirty checkout by name, so the label always names a real commit. An image built before the last landing runs older code than the checkout holds, and nothing else tells the operator. The image carries `org.opencontainers.image.revision`; `tools/lares-container.sh up` compares that label to `git rev-parse HEAD` and warns, naming both, when they differ. A warning means the rebuild stays owed: rebuild with `tools/lares-container.sh build`, the command the warning prints, then `up` again. A dirty checkout warns too and `build` refuses it, so commit first.
+# ''Move old homes aside by RENAME alone.'' Stop the vessel first (`tools/lares-container.sh down`). `down` asks the standing vessel's census first (`lares vessel census`: saves its sealed rest holds in memory, carriers its disk projector has not settled); a clean census stops at once, and any item, or a census that cannot answer (a wedged vessel, an image older than the census door), lists what it learned and stops only after `vault unlock` lets it settle or after `accept-loss` typed on the terminal. A house root or workspace mirror from an earlier walk then gets a new name (`mv ~/lares-house ~/lares-house.before-rite`), never a delete, never an overwrite. The rename keeps the old bytes readable for a repair or a comparison, and the fresh `LARES_HOUSE` starts empty so the founding reads no leftover. Nothing in this runbook removes a home; `tools/lares-container.sh reset` clears `$LARES_HOUSE/hearth` alone, after a typed `re-found`, and leaves the sensoriums, projections, library and config standing.
+# ''Check the projection before trusting the layout.'' The canon source (`bags/` under the checkout) sources no `daemon` slug, and the face's working top projects under `$LARES_HOUSE/projections/wikis/daemon-<F>`, never under `wikis/daemon/`. After the first `persona new 0`, look for `$LARES_HOUSE/projections/wikis/daemon-<F>` and for `$LARES_HOUSE/projections/bags/kahua-<F>`; `$LARES_HOUSE/projections/bags/daemon-<F>` holds the face daemon canon and its authored memory; a control or house record there (a `bags/control/**`, `bags/persona/**` or `dreamnet/**` path) means a control record rested in a mirrored bag, and the rite stops there. Placement keeps control records off disk: they rest in the vessel control document, which no mirror names. The bag-paths suite pins both placements (`projectionRoots` over this checkout's real `bags/`, and `daemonWorkingMirror`), so a mismatch on a live disk names a stale image first.
+
+''Proves'': the image names the revision the checkout holds, the old bytes rest beside the new home under their own names, and the projection lands where the ruled layout says.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-hands`>>
+
+!! 2a · The operator's hands before the two-hearth day
+
+Each act below waits on a person and a machine; no session performs one. Check each off in order, and read its ''See'' before the next.
+
+# ''The registrar key'': limit it to the one household domain, switch on its API access, and place the two credential files outside both mounts on the always-on node. ''See'': the one-shot issuer completes its first live issuance.
+# ''The router'': hand out the node's resolver address to the LAN. ''See'': a LAN device resolves the household names through it.
+# ''The node's ports'': 53 (UDP and TCP), 443 (TCP) and 5353 (UDP, mDNS) stand free on the node's LAN interface (`ss -lntup`). ''See'': nothing else listens there.
+# ''A WSL2 node'': WSL runs with `networkingMode=mirrored` and `dnsTunneling=false` in `%USERPROFILE%\.wslconfig`, so the node sits on the real LAN; with `firewall=true`, Windows Firewall governs WSL traffic, so inbound allow rules for UDP and TCP 53, TCP 443 and UDP 5353 stand on the private LAN profile. ''See'': the second machine pings the node's LAN address and reaches its port 443.
+# ''The devices'': run `tools/capability-probe/` on the tablet and on one phone before browser custody hardens. ''See'': each device's measured row.
+# ''One real-LAN discovery run'': mDNS offers its unauthoritative candidates on the household LAN. ''See'': the second machine lists the node.
+# ''The second machine'': docker stands, and it pulls the product image by the digest the release manifest names. ''See'': `docker image inspect` shows that digest.
+# ''The ember's anchor'': choose a hardware freshness anchor for unattended raises, or accept that every raise asks a person's confirm; the day needs neither, since reach stays LAN only.
+# ''The release index'': push and sign it after the last genesis re-bake and the last wire change.
+# ''The fresh start'', on both machines: move the old homes aside by rename, never delete (#/fresh-state).
+# ''The dress rehearsal'' with synthetic names, every cold-key card read back with `lares nexus seal cold rehearse`; then the ceremony (#/second-operator).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/decisions`>>
 
 !! 3 · Decide names and custody before typing
 
@@ -91,7 +123,7 @@ Synthetic examples below use `operator-one`, `Operator One`, and `hearth.home.ex
 
 <<~/ahu>>
 
-<<~ ahu #/rehearse>>
+<<~ ahu slot=`#/rehearse`>>
 
 !! 4 · Rehearse in an isolated Docker project
 
@@ -103,13 +135,13 @@ The harbor witness gives each leg fresh scratch state and workspace, chooses its
 HARBOR_PROJECT=founding-rehearsal tools/harbor-walk-witness.sh
 ```
 
-''See'': `PASS` lines for both legs: the hearth founded before `up` (`found --hearth`, then `persona wear 0`, then `up`), the floor that holds no key, the unlock that composes a Lararium wearing the face, workspace projection, a place lifted to a hearth after `up` (a face refuses on a place with no seed charter; `found --hearth` lifts it once the vessel stops), and a final `PASS harbor walk`.
+''See'': `PASS` lines for both legs: the hearth founded before `up` (`found --hearth`, then `up`, the founding face standing open), the floor that holds no key, the unlock that composes a Lararium wearing the face, workspace projection, a place lifted to a hearth after `up` (a face refuses on a place with no seed charter; `found --hearth` lifts it once the vessel stops), and a final `PASS harbor walk`.
 
 ''Proves'': the shim routes a TTY-safe founding, persona, and corpus walk through the image under review. This rehearsal creates no keeper state.
 
 <<~/ahu>>
 
-<<~ ahu #/found>>
+<<~ ahu slot=`#/found`>>
 
 !! 5 · Found the first node
 
@@ -122,7 +154,6 @@ One act founds the hearth, before `up`: `found --hearth`. Under ONE human route,
 ```sh
 tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
 tools/lares-container.sh persona new 0 --name 'operator-one' --handle 'Operator One'
-tools/lares-container.sh persona wear 0
 tools/lares-container.sh up
 tools/lares-container.sh vessel seed --apply --yes
 tools/lares-container.sh vessel read
@@ -131,21 +162,23 @@ tools/lares-container.sh nexus seal show
 tools/lares-container.sh meme list --recipe default --json
 ```
 
-The second line declares persona zero's public Handle; skip it for a face that keeps none. The label and the Handle land on the sealed rows alone, before `up` or on a standing vessel: a face's persona plane rests in the clear on disk, so no name rides onto it until its rest seals (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed">>).
+The second line declares persona zero's public Handle; skip it for a face that keeps none. The label and the Handle land on the sealed rows alone, before `up` or on a standing vessel: a face's persona plane rests in the clear on disk, so no name rides onto it until its rest seals (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/owed`>>).
 
 The host shim starts the container at `up`. The vessel stands holding no vessel key, so `up` then runs `vault unlock` on the attached terminal: type the custody passphrase, and the vessel opens its key, opens the serving key through the vessel key's own entry, and composes with what the keys open. Every restart returns the vessel to the floor; the shim unlocks again after each restart it performs, and with no terminal attached it names the command (`tools/lares-container.sh vault unlock`). `tools/lares-container.sh vault lock` drops the key by hand. A face created after `up` triggers the shim's automatic restart when the CLI reports `restand`; the operator never types a restart flag.
 
-''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite), and `found --admit <file>` founds a joiner.
+''A place that stands already lifts the same way.'' Stop the vessel (`tools/lares-container.sh vessel stop`), run `found --hearth` over the standing place, then `up`. A face on a place with no seed charter refuses by name and names the act. Bare `found` still founds a place with no face (a herm's rite). `lares fleet join` carries a joiner through offer, request, answer and land.
 
-''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou "lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles">>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
+''The seed feeds canon through one road.'' Seed lays every disk mirror back into the layer it mirrors; import carries a bundle onto this hearth's faces by pet-name. Each holding whose canon source stands on disk (its dir under the canon source the daemon reads; a private plane never) takes `CREATE`, which converges on the bag that stands and mints nothing over it, then the diff-gated `INGEST` into `bags/<slug>`; no name list picks the road, so `crossroads`, `sdm` and `lares` ride it alike. The seed never writes a wiki's working layer and never walks `LOAD` + `MOVE`. The recipe stack alone decides what shows, so a working copy keeps shadowing the canon under it; where the seed moved canon past the record a copy forked from, it warns "canon is fresher than the working copy above it" with the count and the first eight titles, and nothing writes (the daemon's `fresher-canon` read lists them all; remove a copy with the ordinary verbs to take the fresher canon). A working-only title never promotes, and a file gone from disk stands pending at the shore. The settle word waits while pages keep settling and stops only after two minutes with none; a stall prints one ⚠ and `lares shore settle --bag <bag> --pending` finishes it without a re-seed. A branch switch that drops files floods the shore with pending removals (a wave tombstones no carrier); the seed counts them per bag and prints the one batch answer, `lares shore remove --all --count <n> --bag <bag>`.
 
-''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
+''The seed leaves the checkout as it stood.'' A carrier whose bytes say what its records render stands unchanged, whatever framing a hand gave it, so a first `vessel seed` writes no tracked file and `git status` in the checkout reads clean. The unlock adds no untracked file either: the records the daemon seeds from source never project (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles`>>), so `wikis/` receives a file only where a person writes one. A later change to a record writes that one carrier in its canonical render.
+
+''See'': the act prints `the hearth stands: nexus-<sha>`, the seed charter at one seat and threshold one, PRIVATE, the seat's fingerprint, and persona zero's edge bound to this hearth. `vessel seed` names each holding under `/workspace/bags` and ends `6/6 holding(s) converged` (the count follows the holdings the checkout carries); the two infrastructure holdings ride the diff-gated ingest, and every other holding walks the island's named road: the act creates the bag, loads the carriers onto that wiki's working layer, then moves each landed record into canon, since a write lands on a working layer and canon takes it by promotion (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/bag-roles`>>); a second run submits nothing for a bag that already matches. `vessel read` reports the live node; `persona list` marks index zero active; `nexus seal show` reads SEED with one seated key; the daemon recipe list returns seeded wiki entries.
 
 ''Proves'': one act founds the hearth's custody, place, persona zero and seed charter, the vessel seeds its corpus from the tracked bags, and it serves as the first operator's live node.
 
 <<~/ahu>>
 
-<<~ ahu #/reserve>>
+<<~ ahu slot=`#/reserve`>>
 
 !! 6 · Establish custody
 
@@ -157,16 +190,16 @@ Keep a recovery route for the persona root and for the seed charter. The CLI pri
 tools/lares-container.sh vault status
 tools/lares-container.sh nexus seal show
 tools/lares-container.sh nexus seal cold rehearse
-tools/lares-container.sh vault backup --face 0 --out /state/face-0.bundle
+tools/lares-container.sh vault backup --face 0 --out /lar/config/face-0.bundle
 ```
 
-The seed's seat holds its own key, sealed on the node, and its NEXT key rests on the card alone. Rehearse the card before the paper leaves the room: `nexus seal cold rehearse` asks for one or more cards on the terminal (a blank line skips a chair), reads each against the digests the head committed, names the chair each would roll, and moves nothing. A card that answers no digest refuses by its place in the typing and never by a byte of its code. The charter grows or rolls only by the roll its card arms (`nexus seal rotate`, which asks each card back the same way); the quorum rite (`nexus rite quorum`) refuses on a hearth, `hearth-bound`, since a re-seat would mint another AID and orphan every relation bound to the first (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale">>).
+The seed's seat holds its own key, sealed on the node, and its NEXT key rests on the card alone. Rehearse the card before the paper leaves the room: `nexus seal cold rehearse` asks for one or more cards on the terminal (a blank line skips a chair), reads each against the digests the head committed, names the chair each would roll, and moves nothing. A card that answers no digest refuses by its place in the typing and never by a byte of its code. The charter grows or rolls only by the roll its card arms (`nexus seal rotate`, which asks each card back the same way); the quorum rite (`nexus rite quorum`) refuses on a hearth, `hearth-bound`, since a re-seat would mint another AID and orphan every relation bound to the first (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-scale`>>).
 
-''The backup bundle carries one face.'' `vault backup --face <N> --out <file>` runs on the standing vessel, unlocked and wearing that face. It asks the vessel's own route again, then a NEW route for the bundle (a passphrase typed twice, or a paper sheet read back), and writes the file; it never writes over a standing one. The bundle carries the face's root with its own lines, its key history and its content keys, and no key of any seat; the serving tree stays on its hearth. Move the file off the machine. Its memory section holds keys alone: the sealed bytes they open must survive elsewhere, and on a production vessel that section stands empty until the wire cutover opens a session signer (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-cut">>).
+''The backup bundle carries one face.'' `vault backup --face <N> --out <file>` runs on the standing vessel, unlocked and wearing that face. It asks the vessel's own route again, then a NEW route for the bundle (a passphrase typed twice, or a paper sheet read back), and writes the file (`/lar/config` binds `$LARES_HOUSE/config`, which a reset never clears, so the host reads the file there); it never writes over a standing one. The bundle carries the face's root with its own lines, its key history and its content keys, and no key of any seat; the serving tree stays on its hearth. Move the file off the machine. Its memory section holds keys alone: the sealed bytes they open must survive elsewhere, and on a production vessel that section stands empty until the wire cutover opens a session signer (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-cut`>>).
 
-''A restore brings the face back as a recovery act'' onto a fresh hearth: found it first (`found --hearth`, which stands its own persona zero), then, on the standing vessel, `vault restore <file> --as 1`. The restored face takes a new seat under its fixed prefix and binds that hearth's seed charter. It lands at the handle-index its bundle named only where no root stands there; persona zero holds index zero, so a persona-zero bundle takes `--as <N>` at a free index and lands beside persona zero, never as it (`V5` of the roadmap's loops). `vault restore <file> --memory` lands the bundle's content keys once the vessel wears that face (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/custody#/the-restore">>).
+''A restore brings the face back as a recovery act'' onto a fresh hearth: found it first (`found --hearth`, which stands its own persona zero), then, on the standing vessel, `vault restore <file> --as 1`. The restored face takes a new seat under its fixed prefix and binds that hearth's seed charter. It lands at the handle-index its bundle named only where no root stands there; persona zero holds index zero, so a persona-zero bundle takes `--as <N>` at a free index and lands beside persona zero, never as it (`V5` of the roadmap's loops). `vault restore <file> --memory` lands the bundle's content keys once the vessel wears that face (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-restore`>>).
 
-The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. For the whole vessel, stop it, then make one consistent copy of the full state mount, including its custody slots and relation carriers; that copy plus the custody passphrase (or paper pin) restores the vessel whole.
+The credential prompts need the attached terminal. The vessel key seals the keyhive archive, each face's veil archive and each face's anchors where they rest, and the custody slot tree travels with them. For the whole vessel, stop it, then make one consistent copy of the whole house root (`LARES_HOUSE`: the hearth with its custody slots and relation carriers, and the sensoriums, projections, library and config beside it); that copy plus the custody passphrase (or paper pin) restores the vessel whole.
 
 ''See'': `vault status` reports held slots, names each sealed row, and reads the serving tree among the rows that rest bare by law; `nexus seal show` names the one seat and the head; the rehearsal names the chair the card would roll; the backup prints which bags and versions the bundle holds.
 
@@ -174,13 +207,13 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 <<~/ahu>>
 
-<<~ ahu #/threshold-attest-recovery>>
+<<~ ahu slot=`#/threshold-attest-recovery`>>
 
-!! Recovery cards and the guardian signing boundary
+!! Recovery cards and the recovery contact signing boundary
 
-`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Guardians and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery">>).
+`persona new` splits no root by default. `persona new <index> --name '<label>' --split-root` opts into the 2-of-3 memory split. No card restores a charter. Recovery contacts and paper restore a face's key lineage; only key material restores its private documents (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery`>>).
 
-`persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. `lares persona guardian show <index>` reads a face's prefix and set. `lares persona guardian offer --prefix <prefix>` cuts one guardian key for that face; the guardian keeps its card and hands over its offer. `lares persona guardian enrol <index> --threshold <k> <offer>…` lets the face's current key sign its typed first enrolment. The vessel keeps that set in a sealed `guardian-set` row and refuses a key another face holds. A later guardian rotation needs the guardian quorum; the root-card reader and the bundle's carriage of an enrolled set still stand owed.
+`persona new` prints no recovery material by default; `--split-root` opts into self-custody reconstruction material and prints its own warning about shares. `lares persona recovery-contact show <index>` reads a face's prefix and set. `lares persona recovery-contact offer --prefix <prefix>` cuts one recovery contact key for that face; the recovery contact keeps its card and hands over its offer. `lares persona recovery-contact enrol <index> --threshold <k> <offer>…` lets the face's current key sign its typed first enrolment. The vessel keeps that set in a sealed `recovery-contact-set` row and refuses a key another face holds. A later recovery contact rotation needs the recovery contact quorum; the root-card reader and the bundle's carriage of an enrolled set still stand owed.
 
 ▢ ''OWED — the catastrophe rite.'' A lost card at a two-seat Nexus ends that Nexus (#/reserve holds the cold-key rite). `stable-founding-road.mem` and `kahu.mem#/seed-and-nexus` track charter replacement and Nexus founding.
 
@@ -192,7 +225,7 @@ The credential prompts need the attached terminal. The vessel key seals the keyh
 
 <<~/ahu>>
 
-<<~ ahu #/household-reach>>
+<<~ ahu slot=`#/household-reach`>>
 
 !! 7 · Establish household reach
 
@@ -215,13 +248,13 @@ Household HTTPS uses a DNS-01 wildcard certificate for a Kahu-held domain and on
 
 <<~/ahu>>
 
-<<~ ahu #/gather-the-fleet>>
+<<~ ahu slot=`#/gather-the-fleet`>>
 
 !! 8 · Add the first operator's browser, then tablet or phone leaves
 
-The first operator starts with a browser leaf; a tablet or phone forms a separate leaf. Each device mints its own key and receives admission for that key. Admission never transfers a seed. `device-admit` accepts a public verifying key and prints a signed carry payload; it does not supply the complete browser onboarding path.
+The first operator starts with a browser leaf; a tablet or phone forms a separate leaf. Each device mints its own key and receives one face's fleet-join answer for that key. The answer transfers no seed; it carries the internal `device-admit` edge, that face's certificates and grants, and its sealed address secret.
 
-▢ ''OWED — browser and phone leaf ceremony.'' Browser crossing and render rungs run, and a leaf-side edit survives a reload. Node-side durability and the complete household phone admission walk remain OWED: secure-origin boot, on-device key minting, payload transfer, admission, and a verified live leaf. Do not use a desktop seed on a phone or call an HTTP LAN page a secure context. Measure actual device capabilities with `tools/capability-probe/`. Carriers: `stable-founding-road.mem` (browser rungs and HARBOR), `secure-context.mem`, `persona-circle.mem`, and `packages/lares-cli/src/commands/device-admit.ts`.
+▢ ''OWED — browser and phone leaf ceremony.'' Browser crossing and render rungs run, and a leaf-side edit survives a reload. Fleet join runs on node and browser. The complete household phone walk still needs secure-origin boot, on-device key minting and a verified live leaf. Do not use a desktop seed on a phone or call an HTTP LAN page a secure context. Measure actual device capabilities with `tools/capability-probe/`. Carriers: `stable-founding-road.mem` (browser rungs and HARBOR), `secure-context.mem`, and `persona-circle.mem`.
 
 ''See'': no supported command sequence can yet show a household phone leaf online.
 
@@ -229,7 +262,7 @@ The first operator starts with a browser leaf; a tablet or phone forms a separat
 
 <<~/ahu>>
 
-<<~ ahu #/second-operator>>
+<<~ ahu slot=`#/second-operator`>>
 
 !! 9 · The second operator founds a seed, then both found the Nexus
 
@@ -273,7 +306,7 @@ tools/lares-container.sh nexus admit-take /workspace/admit-bundle.json
 
 <<~/ahu>>
 
-<<~ ahu #/hosted-family-member>>
+<<~ ahu slot=`#/hosted-family-member`>>
 
 !! 10 · Host a family member's phone leaf
 
@@ -287,11 +320,11 @@ A further family member may ride as a user leaf under an operator's Nexus. That 
 
 <<~/ahu>>
 
-<<~ ahu #/aftercare>>
+<<~ ahu slot=`#/aftercare`>>
 
 !! 11 · Aftercare and the next road
 
-Keep `/state` and `/workspace` backups distinct. The state backup holds vessel homes and custody; the workspace holds the editable corpus. Keep the custody passphrase or paper pin away from both. Renew the DNS-01 certificate through the operator-owned renewal route when that path lands. Keep the host shim and its hooks on the host; keep vessel code in the image.
+Keep house-root and `/workspace` backups distinct. The house-root backup holds vessel homes and custody; the workspace holds the editable corpus. Keep the custody passphrase or paper pin away from both. Renew the DNS-01 certificate through the operator-owned renewal route when that path lands. Keep the host shim and its hooks on the host; keep vessel code in the image.
 
 A live vessel may continue with its local corpus while household HTTPS, browser leaves, or user admission remain owed. The road carries these build steps and the two-household live check. The sensorium runbook carries a separate later walk.
 
@@ -303,7 +336,113 @@ A live vessel may continue with its local corpus while household HTTPS, browser 
 
 <<~/ahu>>
 
-<<~ ahu #/key-replacement-cost>>
+<<~ ahu slot=`#/carry-across-refound`>>
+
+!! 11a · Carry memory across a re-founding
+
+A re-founding clears `$LARES_HOUSE/hearth` alone; the face's memory crosses as content, by `lares export` and `lares import`, onto the new face that carries the same pet-name.
+
+''Do'': in this order.
+
+```sh
+tools/lares-container.sh export /lar/config/carry/bundle-one    # the host reads it at $LARES_HOUSE/config/carry/bundle-one
+tools/lares-container.sh down                                    # a locked hearth's census says: vault unlock, then down
+tools/lares-container.sh reset                                   # type re-found; projections stay
+tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
+tools/lares-container.sh up                                      # up unlocks on the attached terminal: no separate unlock step
+tools/lares-container.sh vessel seed --apply --yes               # canon first, then every mirror; the old face's folders adopt by pet-name
+tools/lares-container.sh vessel seed --apply --lift-kahua <N>    # the kahua items the seed previewed, on their count alone
+tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
+tools/lares-container.sh import /lar/config/carry/bundle-one --apply
+```
+
+''The bundle rests unencrypted.'' Export copies a face's private memory as plain files and says so on its closing line. It refuses a destination inside the workspace or inside the house root, save the house's config home: a reset keeps `config/`, and the container binds `/lar/config` to `$LARES_HOUSE/config`, so the bundle rests where the host reads it (the vault backup's own precedent). Keep it on a disk only the operator holds, and remove it once the import reads back.
+
+''Seed comes before import.'' The walk runs found -> up -> seed -> import. The seed lays the checkout's canon; the import's bag rows then meet it at the same `INGEST` three-way gate and stand off where they diverge, never a silent overwrite either way. An applied import over a disk-sourced holding the vessel never seeded refuses `carry-canon-unseeded` and names `vessel seed --apply`.
+
+''The seed lays every mirror back into its one layer.'' After canon, the seed reads the projections root: each face's working folder (`wikis/daemon-<F>`) into that face's daemon working layer (a kāpae shadow raises as a kāpae), its canon folder (`bags/daemon-<F>`) into its daemon canon, each house bag into its canon, each other wiki's folder into its working layer, through the one `INGEST` three-way gate: a file equal to its base lands nothing, a moved one lands, and one whose records moved too stands off at the shore within that one layer. A second seed lands nothing. Canon never writes working; the top layer always shadows, and where canon moved past a copy's base the seed warns and writes nothing. `projections/ashes/` stays out of every walk.
+
+''The seed adopts the old face by pet-name.'' Each face's pet-name rests on a face label (`projections/face-labels/<relation>.json`): a face names itself when it is created (`lares found --hearth --name`, `lares persona new N --name`), and the vessel writes it again whenever a face stands and the CLI whenever a door reads the faces. After reset -> found, the old face's folders adopt onto the ONE face here that carries the label's pet-name, as an import maps a bundle face: none or two such faces refuse THAT folder by name and land nothing of it, and the seed goes on for every other folder. A face folder no label names reads as no face's mirror: the seed refuses `seed-face-unlabelled`, says the folder carries no face label, and adopts nothing from it; move it aside or remove it. So a tear-out with no export recovers from disk alone.
+
+''One seed restores every open face.'' Unlock every face your one passphrase opens and wear the engineer (`lares vault unlock --all --face 1`), then seed once: each OPEN face's working and face-canon folders land in that face's own layer, the worn face's through the ordinary wave and every other open face's through an INGEST that names it, which the island lands in that face's own document (its device slots under its group, its daemon canon by its relation) only where the control document names that face as owner, never on the worn face (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>). Each open face stands its own session, so its memory seals under its own key. A face that stays SHUT waits by name (`<pet-name> stays shut: lares vault unlock --face N, then seed again`), its folders kept out of ashes until its own seed lands them, and it never blocks the rest; unlock it and seed again, and that face lands alone. The import reads the same. No face's memory ever lands in another face.
+
+''Share a bag by name.'' A custom bag stays its owner's; `lares bag share notes --read joshua-fontany-referee --write joshua-fontany` shares it by pet-name (`hN` and `--face N` resolve to one), writes `config/share.tid`, and lands it by reference and delegation while both faces stand lit; `lares bag share --list` reads who reads and writes each bag (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config`>>). House canon takes no row: no share lifts a write into it.
+
+''House canon: the steward writes it, every other face reads the floor.'' Every disk-sourced holding but the public board (`lares`, `lararium`, `sdm`, `elyncia`, `elyncia-referee`; `crossroads` stays the Nexus's board) rests in the Kahu realm at contract and takes no catalog row, so no face can fork it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/house-canon`>>). The Kahu steward (h0) writes it live: the founding lands each bag in the realm, and the steward's boot lands a bag the checkout gained since. Every other face reads it as the floor snapshot every DreamNet user receives by CID; its seed reads clean and names each such holding `house canon, written by the Kahu steward (h0); this face reads the floor`, and an edit there copies up into that wiki's working layer. Admitting another face to write canon stays the operator's deliberate act: `lares nexus cabal admit <group>` at the seat quorum.
+
+''The vessel moves its floor by the hand.'' The VESSEL pins the floor, one pin per Nexus, in its control home; a face pins nothing, so wearing another face moves no floor. `lares vessel floor status` names the pinned release, the newest the board shows, whether it fast-forwards along `prior`, and any fork; `lares vessel floor accept [<release>]` moves the pin to a descendant, refuses a fork or a release that does not descend, and either swaps the floor live or raises the reboot-pending alert in each live wiki (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin`>>).
+
+''Kahua lifts by the operator's hand, with eyes.'' The seed previews each kahua item it would lift (face, title, body digest; `differs` where a standing head says otherwise), and lifts them under the new face's grant only on a typed count at the terminal or `--lift-kahua <N>` naming that count; a bare `--yes` lifts none, and a wrong count refuses before anything writes. Items left unconfirmed stand pending: `lares shore` lists them and `lares shore lift-kahua --count <N>` lifts them later.
+
+''Up and unlock come before import.'' `up` on a terminal runs the unlock itself; only an `up` with no terminal attached names `vault unlock` for a terminal afterwards. The import lands each face's memory in that face's own folders, named by the face relation the standing, unlocked vessel reads; on a vessel that stands down or locked it refuses `carry-face-unworn` and names `up` and `vault unlock`.
+
+''The old face's folders go to ashes once nothing waits.'' The reset keeps `projections/` (survive-refound ruling), and with it the former face's cleartext folders (`projections/wikis/daemon-<old relation>`, `projections/bags/daemon-<old relation>`, `projections/bags/kahua-<old relation>`). Once a seed's adoption or an import landed that face's memory with NOTHING pending (no stand-off, no refusal, no kahua item waiting), the act moves them, with the face label and its bases, to `projections/ashes/<old relation>/` and prints each move: plaintext still, out of the live mirror set, never read back and never projected into. A partial landing leaves them and says why. A folder still standing outside ashes makes the next export refuse `carry-unclaimed-face-folder` and name it; settle what waits and seed again, move the folder out of the house root, or pass `--accept-omissions`.
+
+''The override base travels.'' A working copy's base (the carrier identity, `carrierHash` tagged `sha256:<hex>`, of the canon record it forked from) rests beside the face label (`projections/face-labels/<relation>.bases.json`), kept by the vessel off that face's own working slots; the seed stamps each base back on the copy it lays, and the bundle's working row carries the same base for the import, so canon's fresher-than-the-copy warning still reads after found -> up -> seed, with or without an export.
+
+''See'': `import --apply` prints each wave's tallies; the AI's memories read back through MCP (`meme_get`) on the new face.
+
+''Proves'': a face's authored memory survives a re-founding as content, under a new relation and a new grant.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-three-face-rite`>>
+
+!! 11b · The three-face dogfood rite
+
+One human, three faces, one passphrase: the steward `joshua-fontany` (face 0, the Kahu chair), the engineer (face 1) and the referee (face 2). The rite stands the hearth, writes memory, shares a wiki, moves canon through the offering door, crosses a browser in, and carries everything across a re-founding. Run it on a span head CI holds green, after `tools/lares-container.sh build` stamps the image at that head and `$LARES_HOUSE/hearth` stands empty.
+
+''Stand.''
+
+```sh
+lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'   # the veil floor first, then face 0 lands over it; its seed charter AID names the hearth
+lares up                                                                  # up unlocks on the attached terminal
+lares persona new 1 --name 'joshua-fontany-engineer'                      # the same passphrase; no --seat (the engineer holds no Kahu chair)
+lares persona new 2 --name 'joshua-fontany-referee'                       # the same passphrase
+lares vault unlock --all --face 1                                         # opens all three, wears the engineer
+lares vessel seed --apply --yes                                           # canon, then every mirror
+lares vessel floor status                                                 # the pin reads the genesis floor
+```
+
+''Memory.'' The `lares` MCP server runs inside the standing container (`docker compose exec`), so `/mcp` connects only after `up`. Reconnect `/mcp`, and the AI writes memories into the worn face's daemon wiki. The AI stages a row for the fleet (`lares kahua stage <title> --face 1 --text …`); the hand lifts it: `lares kahua lift <title> --face 1 --taint none` prints the staged row and lifts only on its digest's first 8 hex typed back (a bare `--yes` lifts nothing). To write as the referee: `lares vault unlock --face 2`, then reconnect `/mcp`.
+
+''A shared workbench.''
+
+```sh
+lares wiki init notes
+lares wiki share notes --write joshua-fontany-engineer --read joshua-fontany-referee --face 0
+lares wiki share notes --list
+```
+
+Write from two faces and watch one merged working layer; each face's `personal` margin stays its own.
+
+''Offer, promote, release, accept.'' Wearing the engineer: `lares meme offer <uri> --bag lares` (canon stays unmoved). Wearing the steward (`lares vault unlock --face 0`): `lares meme offer list --bag lares`, then `lares meme offer promote <cid>`, then `lares nexus release <file> --cut` with its approval. Then `lares vessel floor accept`; every accept raises the reboot alert until a live floor swap lands.
+
+''A browser crosses in.'' Open the page URL the banner prints (it carries no query and no fragment). The page boots a veil with no ask. Carry the banner's floor card in at the page's carriage door (paste or file), and the anchor as its own act. To join the engineer: `lares fleet join offer --face 1 --out offer.json` → paste the offer → the page answers a request file → `lares fleet join answer request.json --out answer.json` → paste the answer. The browser's veil wikis lift into the face, and the mirror opens full, styled, on the welcome landing.
+
+''Carry across a re-founding'' (11a's law; this walk adds the three faces):
+
+```sh
+lares export ~/.lares/config/carry-2
+lares down && lares reset
+lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'
+lares up
+lares persona new 1 --name 'joshua-fontany-engineer'                      # the same names, the same passphrase
+lares persona new 2 --name 'joshua-fontany-referee'
+lares vault unlock --all --face 1
+lares vessel seed --apply --yes                                           # adopts the engineer; names the steward and referee: wear each and seed again
+lares vault unlock --face 0 && lares vessel seed --apply --yes
+lares vault unlock --face 2 && lares vessel seed --apply --yes
+lares vessel seed --apply --lift-kahua <N>                                # the kahua items the seed previewed, on their count alone
+```
+
+Read back per face: each face's memories through `/mcp`, the shared wiki, the promoted record on the floor. Then `lares import ~/.lares/config/carry-2 --apply` lands nothing, and a final seed lands nothing.
+
+''Proves'': three faces of one human stand on one hearth, write face-private memory, share one workbench, move canon by offer and release, take a browser in by carried files, and carry all of it across a re-founding by content.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/key-replacement-cost`>>
 
 !! Key replacement cost
 
@@ -311,15 +450,17 @@ Relationships acquired after founding raise the cost of replacing keys. Preserve
 
 <<~/ahu>>
 
-<<~ ahu #/the-growth-rite>>
+<<~ ahu slot=`#/the-growth-rite`>>
 
 !! Charter succession crossing
 
 The built `nexus seal grow` ceremony records a later charter crossing. It spans key rotation and operator signatures; this founding stops before that crossing.
 
+''Owed, the next leap: found a hearth as an existing face'' (the operator's approval, 2026-11-12; not built). `lares vessel found` composes a place and `lares persona new 0` then mints a fresh face 0 over its floor. A person who already wears a face F on their leaves and becomes an operator needs another road: the node stands its veil floor, joins F through the carriage (the same seat door the leaves use, with the node's own seat verbs on its command line), and seals the seed charter as F. Until that road stands, a new hearth founds a new face.
+
 <<~/ahu>>
 
-<<~ ahu #/identity-classes>>
+<<~ ahu slot=`#/identity-classes`>>
 
 !! Identity classes
 
@@ -327,34 +468,34 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
 !!! The founding and custody surface ~ where each part reads
 
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus">> seed and Nexus readings, quorum admission and open rulings
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle">> Nexus life stages, succession, liveness and quiet
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite">> hosted introductions, admission and three bound dials
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/identity-classes">> identity classes and their promotion paths
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-policy">> persona custody, guardians and face rules
-<<~ loulou "lar:///ha.ka.ba/lararium/api/personal-slot">> personal slot bindings and Keyhive registration
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology">> wiki layers, working writes and canon promotion
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout">> recovery custody evidence, reserve rehearsal and open work
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/harbor">> host boundary, vessel shim and household reach
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/secure-context">> secure origins and browser custody boundaries
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road">> founding acts, order and household road
-<<~ loulou "lar:///ha.ka.ba/lares/cli/vessel-door">> vessel command doors and host shim surface
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026">> browser capability measurements and device limits
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/bag-home-axes">> bag read tier, residency and byte home, declared on disk
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/siege-resilience">> compromise resistance and what nothing reconstructs
-<<~ loulou "lar:///ha.ka.ba/lararium/mesh/first-realm-arc">> the joins beyond one vessel: fleet, realm, dwelling
-<<~ loulou "lar:///ha.ka.ba/lararium/api/sensorium-runbook">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start">> the roadmap carries the instruments and the cold-start steps
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/persona-circle">>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>> seed and Nexus readings, quorum admission and open rulings
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/nexus-lifecycle`>> Nexus life stages, succession, liveness and quiet
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite`>> hosted introductions, admission and three bound dials
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/identity-classes`>> identity classes and their promotion paths
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>> persona custody, recovery contacts and face rules
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/personal-slot`>> personal slot bindings and Keyhive registration
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology`>> wiki layers, working writes and canon promotion
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recovery-custody-scout`>> recovery custody evidence, reserve rehearsal and open work
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/harbor`>> host boundary, vessel shim and household reach
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>> secure origins and browser custody boundaries
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>> founding acts, order and household road
+<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>> vessel command doors and host shim surface
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> browser capability measurements and device limits
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/bag-home-axes`>> bag read tier, residency and byte home, declared on disk
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/siege-resilience`>> compromise resistance and what nothing reconstructs
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/first-realm-arc`>> the joins beyond one vessel: fleet, realm, dwelling
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start`>> the roadmap carries the instruments and the cold-start steps
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;AZKLCOXxQhO6ftRFogkMue9xZ_ZxBNBZ2R9BcFAXcEw
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_Esose03BqIoAu3s4uFX8UzLkLZnMSnF_8atO3SYIhQ`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

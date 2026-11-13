@@ -23,7 +23,7 @@ import { hex } from "../src/crypto.js";
 import {
   presentOffering, verifyOfferingPresentation,
   signOfferingKapae, foldOfferingAntigen, foldOfferingAntigenVerdicts, auditOfferingAntigen, offeringStandsAside,
-  type OfferingKapaeEntry,
+  type OfferingKapaeEntry, type OfferingReader,
 } from "../src/offering-antigen.js";
 import { OFFERING_PRESENTATION_DOMAIN, OFFERING_KAPAE_DOMAIN, KAPAE_ANTIGEN_DOMAIN } from "../src/domains.js";
 import type { KahuQuorumSeats } from "../src/kapae-antigen.js";
@@ -34,13 +34,17 @@ const signWith = (n: number) => async (b: Uint8Array): Promise<string> => hex(aw
 const OFFERING_CID = "bafyOfferingRegion";
 const EPOCH = "epoch-cid-0";
 
-async function roster(threshold: number): Promise<KahuQuorumSeats> {
-  return { keys: [await keyOf(1), await keyOf(2), await keyOf(3)], threshold, sealEpochCid: EPOCH };
+/** The Nexus every act here names, and the reader one receiver folds with: one epoch, its seats. */
+const SCOPE = `nexus-${"ab".repeat(32)}`;
+const readerOf = (seats: KahuQuorumSeats): OfferingReader => ({ scope: SCOPE, seatsAt: (cid) => (cid === seats.sealEpochCid ? seats : null) });
+
+async function roster(threshold: number): Promise<OfferingReader> {
+  return readerOf({ keys: [await keyOf(1), await keyOf(2), await keyOf(3)], threshold, sealEpochCid: EPOCH });
 }
 
 async function kapae(signers: readonly number[], parents: readonly string[] = [], action: "kapae" | "un_kapae" = "kapae"): Promise<OfferingKapaeEntry> {
   return signOfferingKapae(
-    { pluginsCid: OFFERING_CID, action, parents, sealEpochCid: EPOCH },
+    { scope: SCOPE, pluginsCid: OFFERING_CID, action, parents, sealEpochCid: EPOCH },
     await Promise.all(signers.map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))),
   );
 }
@@ -91,7 +95,7 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
     expect(await offeringStandsAside(OFFERING_CID, banned)).toBe(true);
 
     const lift = await signOfferingKapae(
-      { pluginsCid: OFFERING_CID, action: "un_kapae", parents: [ban.actCid], sealEpochCid: EPOCH },
+      { scope: SCOPE, pluginsCid: OFFERING_CID, action: "un_kapae", parents: [ban.actCid], sealEpochCid: EPOCH },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
     expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([ban, lift], r))).toBe(false);
 
@@ -100,25 +104,25 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
   });
 
   test("CONTROL — an UNBOUND roster condemns nothing, however many signatures arrive", async () => {
-    const unbound: KahuQuorumSeats = { keys: [], threshold: 2, sealEpochCid: EPOCH };
+    const unbound = readerOf({ keys: [], threshold: 2, sealEpochCid: EPOCH });
     expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([await kapae([1, 2, 3])], unbound))).toBe(false);
   });
 
   test("CONTROL — an entry rooting on ANOTHER charter epoch condemns nothing", async () => {
     const r = await roster(2);
     const elsewhere = await signOfferingKapae(
-      { pluginsCid: OFFERING_CID, action: "kapae", parents: [], sealEpochCid: "epoch-cid-OTHER" },
+      { scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", parents: [], sealEpochCid: "epoch-cid-OTHER" },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
     expect(await offeringStandsAside(OFFERING_CID, await foldOfferingAntigen([elsewhere], r))).toBe(false);
   });
 
   test("canonical parents are deduplicated and sorted at signing; self-parenting is refused", async () => {
     const entry = await signOfferingKapae(
-      { pluginsCid: OFFERING_CID, action: "kapae", parents: ["z", "a", "z"], sealEpochCid: EPOCH },
+      { scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", parents: ["z", "a", "z"], sealEpochCid: EPOCH },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
     expect(entry.parents).toEqual(["a", "z"]);
     const unknownParent = await signOfferingKapae(
-      { pluginsCid: OFFERING_CID, action: "kapae", parents: ["sha256:will-be-unknown"], sealEpochCid: EPOCH },
+      { scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", parents: ["sha256:will-be-unknown"], sealEpochCid: EPOCH },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
     expect(unknownParent.parents).toEqual(["sha256:will-be-unknown"]);
     const r = await roster(2);
@@ -129,7 +133,7 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
   test("a parent from another offering relation family is rejected", async () => {
     const r = await roster(2);
     const foreign = await signOfferingKapae(
-      { pluginsCid: "bafyOtherOffering", action: "kapae", parents: [], sealEpochCid: EPOCH },
+      { scope: SCOPE, pluginsCid: "bafyOtherOffering", action: "kapae", parents: [], sealEpochCid: EPOCH },
       await Promise.all([1, 2].map(async (n) => ({ signer: await keyOf(n), sign: signWith(n) }))));
     const child = await kapae([1, 2], [foreign.actCid]);
     expect(await foldOfferingAntigenVerdicts([foreign, child], r)).toEqual(new Map([["bafyOtherOffering", "held"]]));
@@ -184,12 +188,12 @@ describe("a tender PRESENTS; only a quorum CONDEMNS", () => {
   test("public-wire malformed records never throw and remain outside authority", async () => {
     const r = await roster(2);
     const malformed = [
-      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parents-null", parents: null, sealEpochCid: EPOCH, signatures: [] },
-      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parents-type", parents: "nope", sealEpochCid: EPOCH, signatures: [] },
-      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parent-element", parents: [1], sealEpochCid: EPOCH, signatures: [] },
-      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-signatures-null", parents: [], sealEpochCid: EPOCH, signatures: null },
-      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-signature-field", parents: [], sealEpochCid: EPOCH, signatures: [{}] },
-      { kind: OFFERING_KAPAE_DOMAIN, pluginsCid: 42, action: "kapae", actCid: "bad-scalar", parents: [], sealEpochCid: EPOCH, signatures: [] },
+      { kind: OFFERING_KAPAE_DOMAIN, scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parents-null", parents: null, sealEpochCid: EPOCH, signatures: [] },
+      { kind: OFFERING_KAPAE_DOMAIN, scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parents-type", parents: "nope", sealEpochCid: EPOCH, signatures: [] },
+      { kind: OFFERING_KAPAE_DOMAIN, scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-parent-element", parents: [1], sealEpochCid: EPOCH, signatures: [] },
+      { kind: OFFERING_KAPAE_DOMAIN, scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-signatures-null", parents: [], sealEpochCid: EPOCH, signatures: null },
+      { kind: OFFERING_KAPAE_DOMAIN, scope: SCOPE, pluginsCid: OFFERING_CID, action: "kapae", actCid: "bad-signature-field", parents: [], sealEpochCid: EPOCH, signatures: [{}] },
+      { kind: OFFERING_KAPAE_DOMAIN, scope: SCOPE, pluginsCid: 42, action: "kapae", actCid: "bad-scalar", parents: [], sealEpochCid: EPOCH, signatures: [] },
     ] as unknown as OfferingKapaeEntry[];
     await expect(foldOfferingAntigenVerdicts(malformed, r)).resolves.toEqual(new Map());
     const audit = await auditOfferingAntigen(malformed, r);

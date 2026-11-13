@@ -31,19 +31,19 @@
  * one of `VALUE_OR_FLAG`.
  */
 export const BOOLEAN_FLAGS: ReadonlySet<string> = new Set([
-  "all", "all-strata", "apply", "approve", "cosign", "confirm", "cut", "detach", "drain",
-  "dry-run", "executable", "force", "foreground", "from-persona", "held", "help", "help-mempalace",
-  "hearth", "hold", "in-wiki", "init", "install", "join", "json", "keep", "keep-hooks", "keyhive-trace", "list", "meme", "memory", "observe", "orphans",
-  "pair", "palaces", "paper", "partial", "passphrase", "quorum", "repour", "restart", "rotate", "seat", "shadow", "skip-build", "spectral", "split-root",
-  "sweep", "tag-blobs", "tree", "with-web", "writeback", "yes",
+  "accept-omissions", "added", "all", "all-strata", "apply", "approve", "brief", "cards", "cosign", "confirm", "cut", "drain",
+  "deny", "drop", "dry-run", "edge", "ephemeral", "every", "executable", "force", "foreground", "from-persona", "held", "help", "help-mempalace", "history",
+  "hearth", "hold", "in-wiki", "init", "join", "json", "keep", "keep-hooks", "keyhive-trace", "list", "meme", "memory", "observe", "orphans", "over-fresher",
+  "page", "pair", "palaces", "paper", "partial", "passphrase", "pending", "probe", "quorum", "repour", "restart", "rotate", "seat", "shadow", "skip-build", "spectral", "split-root",
+  "staged", "sweep", "tag-blobs", "tree", "verbose", "wait", "with-web", "writeback", "yes",
 ]);
 
 /**
  * Names a command reads as a flag in one spelling and as a valued option in another (`meme project --check`
- * alone or `--check <x>`; `--grammar`; `--ephemeral`). The parser cannot tell which spelling comes, so these
- * stay greedy.
+ * alone or `--check <x>`; `--grammar`). The parser cannot tell which spelling comes, so these
+ * stay greedy. `--face` takes a value (`fleet join offer --face 1`); its flag read only refuses the bare spelling.
  */
-export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "ephemeral", "grammar"]);
+export const VALUE_OR_FLAG: ReadonlySet<string> = new Set(["check", "face", "grammar"]);
 
 
 /** A command line the grammar itself refuses (`--no-key=…`, `--=v`); the dispatcher turns it into exit 2. */

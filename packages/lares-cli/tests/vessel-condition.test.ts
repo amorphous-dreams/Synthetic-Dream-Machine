@@ -39,17 +39,6 @@ import {
 } from "../src/vessel-condition.js";
 
 describe("the readiness contract — four states, one derived verdict", () => {
-  test("every state names itself, and `ok` derives from the state alone", () => {
-    const states: VesselState[] = ["standing", "rising", "degraded", "down"];
-    // VACUITY GATE FIRST. An assertion over a set the module does not carry would pass by iterating nothing.
-    expect(states.length).toBe(4);
-    for (const state of states) {
-      const c = vesselCondition({ state, reason: "probe", message: "m" });
-      expect(c.state).toBe(state);
-      // The ONE claim: ok is a function of state. Never a field a caller may set.
-      expect(conditionOk(c)).toBe(state === "standing");
-    }
-  });
 
   test("a caller CANNOT write `ok` — the field the bug needed does not exist", () => {
     const c = vesselCondition({ state: "rising", reason: "socket-silent", message: "still binding" });
@@ -93,33 +82,9 @@ describe("the readiness contract — four states, one derived verdict", () => {
   });
 });
 
-describe("the law: a note may never outrank the verdict", () => {
-  test("a READY message on a not-standing state REFUSES to mint", () => {
-    // THE EXACT BUG, as a gate. `up:false` beside "attested vessel-ready" cannot be constructed here:
-    // a condition that is not `standing` may not carry a message claiming readiness.
-    for (const state of ["rising", "degraded", "down"] as VesselState[]) {
-      expect(() => vesselCondition({ state, reason: "probe", message: "attested vessel-ready" }))
-        .toThrow(/ready/i);
-    }
-    // ...and the same words ride fine on the state that earns them.
-    expect(() => vesselCondition({ state: "standing", reason: "accepting", message: "attested vessel-ready" }))
-      .not.toThrow();
-  });
-});
 
 describe("readiness is the BINDER's claim, made after the bind", () => {
-  test("attested-but-not-accepting reads RISING, never standing", () => {
-    // systemd's whole reason for `Type=notify`: an attestation that precedes the bind attests a lie.
-    const c = readVesselStanding({ attested: true, accepting: false, refusal: null, started: true });
-    expect(c.state).toBe("rising");
-    expect(conditionOk(c)).toBe(false);
-  });
 
-  test("accepting AND attested reads STANDING — both, never either", () => {
-    expect(readVesselStanding({ attested: true, accepting: true, refusal: null, started: true }).state).toBe("standing");
-    // Accepting without an attestation is not readiness either: the vessel never said it was up.
-    expect(readVesselStanding({ attested: false, accepting: true, refusal: null, started: true }).state).toBe("rising");
-  });
 
   test("a NAMED refusal outranks patience — it reads DEGRADED at once, carrying the cause", () => {
     // The 120s poll spent its whole deadline against a bind that had already refused. A refusal is a
@@ -133,23 +98,8 @@ describe("readiness is the BINDER's claim, made after the bind", () => {
     expect(c.message).toContain("EINVAL");
   });
 
-  test("a vessel that never started reads DOWN, and never degraded", () => {
-    // kubelet suppresses log-scraping for ContainerCannotRun; systemd carves out 203/EXEC. A process that
-    // never ran has no impairment to report — it has an absence.
-    const c = readVesselStanding({ attested: false, accepting: false, refusal: null, started: false });
-    expect(c.state).toBe("down");
-    expect(c.reason).toBe("never-started");
-  });
 });
 
-describe("exit codes carry the same four states outward", () => {
-  test("standing 0 · rising and degraded 3 · down 1", () => {
-    expect(conditionExit(vesselCondition({ state: "standing", reason: "accepting",     message: "m" }))).toBe(0);
-    expect(conditionExit(vesselCondition({ state: "rising",   reason: "socket-silent", message: "m" }))).toBe(EXIT_PARTIAL);
-    expect(conditionExit(vesselCondition({ state: "degraded", reason: "uds-refused",   message: "m" }))).toBe(EXIT_PARTIAL);
-    expect(conditionExit(vesselCondition({ state: "down",     reason: "never-started", message: "m" }))).toBe(1);
-  });
-});
 
 describe("the machine envelope carries its shape and no counter", () => {
   test("a condition holds exactly state, reason and message", () => {

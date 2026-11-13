@@ -1,9 +1,9 @@
 // vault-restore-door — one face's RESTORE, driven live against the BUILT tree, end to end: a scratch vessel the
 // built `lares` founded lights a face and cuts its bundle; its whole root gets destroyed; a second scratch vessel,
-// founded fresh, restores through its standing custody door, stands again, and wears the face at a NEW seat.
+// founded fresh, restores through its standing custody door, stands again, and opens the face at a NEW seat.
 //
 //   R1  the restore lands through the standing vessel's `act` frame: the face stands under the SAME root and fixed
-//       prefix, and the vessel that stands again WEARS it lit (it cuts that face's bundle from its own seat).
+//       prefix, and the vessel that stands again opens it lit (it cuts that face's bundle from its own seat).
 //   R2  the root's seed and the bundle's key rest in no clear file under the restored vessel's root.
 //                                                              control: the opened body does carry the seed
 //   R3  a second restore over the face refuses `face-already-held`; a locked vessel refuses `custody-locked`; a
@@ -11,6 +11,7 @@
 //   R4  `--memory` on a production vessel refuses `signer-unavailable`: no session signer stands yet, so a
 //       production import stands SPECIFIED.   `--memory` with another face's bundle refuses `another-face`.
 //   R5  the harness door refuses an unmarked root (rc 2) before any socket opens.
+import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
 import assert from "node:assert/strict";
 import { spawn, spawnSync } from "node:child_process";
 import { cpSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
@@ -24,6 +25,7 @@ import { custodyBreaches, custodyReading } from "./custody-census.mjs";
 import { backupTestCustody } from "./backup-test-custody.mjs";
 import { restoreTestCustody } from "./restore-test-custody.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
+import { daemonStood } from "./daemon-stood.mjs";
 
 const repo = fileURLToPath(new URL("../", import.meta.url));
 const cli = join(repo, "packages/lares-cli/dist/src/bin/lares.js");
@@ -61,7 +63,7 @@ async function stand(root) {
   child.stderr.on("data", (d) => { log += String(d); });
   await new Promise((resolve, reject) => {
     const poll = setInterval(() => {
-      if (/phase → live/.test(log)) { clearInterval(poll); resolve(); }
+      if (daemonStood(log)) { clearInterval(poll); resolve(); }
       else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`daemon exited ${child.exitCode} before live:\n${log.slice(-3000)}`)); }
     }, 200);
   });
@@ -72,9 +74,9 @@ async function stand(root) {
   });
   return { log: () => log, stop, env };
 }
-async function standUnlocked(root) {
+async function standUnlocked(root, face = undefined) {
   const vessel = await stand(root);
-  const unlocked = await unlockTestCustody(root);
+  const unlocked = await unlockTestCustody(root, "unlock", face);
   if (unlocked?.reading !== "opens" || unlocked?.held !== true) { await vessel.stop(); throw new Error(`the vessel did not unlock: ${JSON.stringify(unlocked)}\n${vessel.log().slice(-2000)}`); }
   return vessel;
 }
@@ -94,12 +96,13 @@ function everyByte(root) {
 
 test("a face cut on one vessel restores onto a fresh one through its custody door, and stands there at a new seat", { timeout: 1_800_000 }, async () => {
   const mesh = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/index.js")).href);
+  const { nativeKdf } = await import(pathToFileURL(join(repo, "packages/lararium-mesh/dist/node.js")).href);
   const outDir = mkdtempSync(join(tmpdir(), "lares-restore-out-"));
   const roots = [];
   let vessel = null;
-  const openBody = (file) => {
+  const openBody = async (file) => {
     const read = mesh.readFaceBundle(new Uint8Array(readFileSync(file)));
-    const key = mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }]);
+    const key = await mesh.openBundleKey(read.tree, [{ kind: "passphrase", passphrase: TEST_PASSPHRASE }], nativeKdf);
     return { body: mesh.readFaceBundleBody(mesh.openFaceBundleBody(read.sealedBody, key.bundleKey)), bundleKey: Buffer.from(key.bundleKey).toString("hex") };
   };
   try {
@@ -112,7 +115,7 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     assert.equal(cut.ok, true, JSON.stringify(cut));
     await vessel.stop();
     vessel = null;
-    const a = openBody(bundle);
+    const a = await openBody(bundle);
     rmSync(rootA, { recursive: true, force: true });
     assert.equal(existsSync(rootA), false, "vessel A's whole home stands destroyed");
 
@@ -142,15 +145,13 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     const second = await restoreTestCustody(rootB, { file: bundle });
     assert.equal(second.answer.reason, "face-already-held", JSON.stringify(second.answer));
 
-    // ── THE VESSEL STANDS AGAIN and wears the restored face at its own seat ────────────────────────────────────
+    // ── THE VESSEL STANDS AGAIN and opens the restored face at its own seat ────────────────────────────────────
     await vessel.stop();
-    const worn = spawnSync(process.execPath, [cli, "persona", "wear", "1"], { cwd: repo, encoding: "utf8", env: { ...process.env, LAR_ROOT: rootB } });
-    assert.equal(worn.status, 0, `the hearth wears the restored face: ${worn.stderr}`);
-    vessel = await standUnlocked(rootB);
+    vessel = await standUnlocked(rootB, 1);   // the unlock NAMES the face it opens: nothing at rest remembers a choice
     const again = join(outDir, "gardener-from-b.bundle");
     const recut = await backupTestCustody(rootB, { face: 1, out: again });
-    assert.equal(recut.ok, true, `the restored vessel wears the face lit, and cuts it from its own seat: ${JSON.stringify(recut)}`);
-    const b = openBody(again);
+    assert.equal(recut.ok, true, `the restored vessel holds the face lit, and cuts it from its own seat: ${JSON.stringify(recut)}`);
+    const b = await openBody(again);
     assert.equal(b.body.root.verifyingKey, a.body.root.verifyingKey, "the same root");
     assert.equal(b.body.root.signingKey, a.body.root.signingKey);
     assert.equal(b.body.anchors.personaKelPrefix, a.body.anchors.personaKelPrefix, "the same fixed prefix");
@@ -175,7 +176,7 @@ test("a face cut on one vessel restores onto a fresh one through its custody doo
     assert.ok(custody.rows.some((r) => r.row === "persona-root" && r.reading === "sealed"), "CONTROL: the reading names the restored root's own row");
     assert.equal(custody.rows.some((r) => r.row === "restore-pending"), false, "the restore's commit row left once the face stood lit");
 
-    // ── R4: another face's bundle meets the vessel that wears this one ─────────────────────────────────────────
+    // ── R4: another face's bundle meets the vessel that holds this one ─────────────────────────────────────────
     const rootC = stageFounded("c", "the potter");
     roots.push(rootC);
     vessel = await standUnlocked(rootC);

@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" namespace="⊙" from="?" -> to="lar:///ha.ka.ba/lares/api/pono/meme">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` namespace=`⊙` from=`?` to=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable      = true
 control-glyphs = ["&#x0001;", "&#x0002;", "&#x0003;", "&#x0004;", "&#x0005;", "&#x0006;"]
-file-path      = "bags/lares/ha.ka.ba/lares/api/pono/meme.mem"
-mana           = 17
-manao          = 17
-manaoio        = 14
 namespace      = "&#x2299;"
 role           = "meme invariant law, copy-shape authority, and rating posture root — nameless-entity / has-stack ontology (interfaces-and-implements REJECTED 2026-06-12)"
 title          = "lar:///ha.ka.ba/lares/api/pono/meme"
@@ -17,11 +13,9 @@ type           = "text/memetic-wikitext+tiddlywiki"
 uri-path       = "ha.ka.ba/lares/api/pono/meme"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>⊙:5de4551845d0a7b9
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>⊙:5de4551845d0a7b9
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Meme Law (Kānāwai)
 
@@ -40,7 +34,7 @@ through a social network.
 
 <<~/ahu>>
 
-<<~ ahu #/ooda-ha>>
+<<~ ahu slot=`#/ooda-ha`>>
 
 ✶ read the surface in document order; detect identity, thresholds, phases, edges, and residue before judgment lands.
 ⏿ orient each finding against the copy-shape; required structure, optional depth, and outward type laws stay distinct.
@@ -48,11 +42,11 @@ through a social network.
 ▶ write or revise the meme so the minimum lawful shape appears early and the governing role stays explicit.
 ↺ verify opener, `#meta`, body thresholds, phase map, edges, and return throat before the file crosses into use; close with residue named; declared depth and unresolved paths remain visible rather than implied away.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme/SKILL`>>
 
 <<~/ahu>>
 
-<<~ ahu #/copy-shape>>
+<<~ ahu slot=`#/copy-shape`>>
 
 !! Copy-Shape Law
 
@@ -81,7 +75,7 @@ Optional depth raises yield; it does not replace the minimum shape.
 
 <<~/ahu>>
 
-<<~ ahu #/retirement>>
+<<~ ahu slot=`#/retirement`>>
 
 !! Retirement ~ deprecate, never redefine, and the CADENCE scopes it
 
@@ -95,11 +89,11 @@ Optional depth raises yield; it does not replace the minimum shape.
 | the authored grammar | ''fast'' — drifts with use | any author, any pour |
 | the engine | ''slow'' — a rejim cadence | the engine's own cadence threshold, never a single hand |
 
-''So a grammar may retire an address between pours'', while the engine that parses it ratchets on its own slower cadence and optional plugins travel as signed offerings a wiki recipe selects — and a reader that carried the old parse keeps reading correctly until the slower ratchet moves beneath it. The two rates ride the genesis artifact already (<<~ loulou "lar:///ha.ka.ba/lararium/mesh/genesis-doc">>): a plugin change must never perturb the engine, and neither perturbs what an author wrote yesterday.
+''So a grammar may retire an address between pours'', while the engine that parses it ratchets on its own slower cadence and optional plugins travel as signed offerings a wiki recipe selects — and a reader that carried the old parse keeps reading correctly until the slower ratchet moves beneath it. The two rates ride the genesis artifact already (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/genesis-doc`>>): a plugin change must never perturb the engine, and neither perturbs what an author wrote yesterday.
 
 <<~/ahu>>
 
-<<~ ahu #/rating-posture>>
+<<~ ahu slot=`#/rating-posture`>>
 
 !! Rating Posture
 
@@ -113,14 +107,14 @@ Five structural buckets — law-of-5s. Rating derives from schema compliance, no
 
 Rating runs as a ''predicate'': a bucket names a query that succeeds or fails on the carrier — typing = running the query, never consulting a class.
 `confidence` gives the operator-facing band.
-`mana`, `manao`, and `manaoio` stay distinct and should not collapse into one blended score.
+No scalar field carries house-wide meaning: a wiki operator may omit any field name or give it a local meaning and type, and no gate, panel or federation check derives authority from one.
 An ano meme may wear several components at once; a bare (declared-unresolved) entry reads fertile, not broken.
 Promotion to lares/ canon follows a separate ceremony and carries no change to rating.
 Subtype predicates belong in the component definitions themselves.
 
 <<~/ahu>>
 
-<<~ ahu #/depth-and-resolution>>
+<<~ ahu slot=`#/depth-and-resolution`>>
 
 !! Depth and Resolution
 
@@ -135,43 +129,48 @@ Hold declared-unresolved distinct from absent.
 Treat a link as depth only when it carries real pressure, backlog, or adjacency.
 Use outward callouts only when they carry real pressure, real backlog, or real adjacency.
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
 
 <<~/ahu>>
 
-<<~ ahu #/handoff-boundary>>
+<<~ ahu slot=`#/handoff-boundary`>>
 
 !! Handoff Boundary
 
 This root governs meme shape.
 `memetic-wikitext` governs the authoring surface.
-`loci` governs stable-address coherence — the one mandatory component, held by title.
+`lar-uri` governs address syntax and local resolution; the title carries identity without adding a has-stack component.
 `has-stack` governs composition — what a carrier wears and how short names qualify.
 `invariant` governs compressed constitutional pressure.
 Procedure, skeleton blocks, conformance checklists, and research backlog move outward.
 
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+Keep metadata fields only where they change identity, parsing, routing, execution, or truth.
+Derive repeated facts where possible; do not mint a new field to hide an unresolved
+claim. A rating derives from a carrier's structure, while promotion to canon follows
+its own ceremony.
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/meme/SKILL">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/pono/meme">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/loci">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/has-stack">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tiddler">>
-<<~ loulou "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-meme">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme/SKILL`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-tiddler`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-meme`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;L9fu6UTHRicOFXdD1_XL1uqzksYcmCZLDcV93szqpv8
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fikLj4X2-99vN2nA08zoDvvWuv-nr-boxzPsKk5-mBo`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

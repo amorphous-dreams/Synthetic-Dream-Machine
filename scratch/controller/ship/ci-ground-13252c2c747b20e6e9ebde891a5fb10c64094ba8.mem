@@ -1,0 +1,33 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-06 (file date) — source `.lares-scratch/controller/ship/ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/ship/ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8.md — plan, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/ship/ci-ground-13252c2c747b20e6e9ebde891a5fb10c64094ba8.md` (plan, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/ship/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+SHIP ci-ground 13252c2c747b20e6e9ebde891a5fb10c64094ba8
+read: the controller's own diff read of G55 (tools/browser-node-boundary.mjs, reds 8a98f07bb, green 07e50957a) and G56 (gate-sync-server adapterConnected hold, open-node-vessel ListeningWSServerAdapter.connected; red 85159c043, green 56f68280c; the dial-listener-order, nexus-client-dial and gate-sync-server suites run outside the wall), the heavy roster line (13252c2c7); CI green run 42279007041.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;z6iIaAI9yIvy0YSK9WtFtxUekyIVQmt-IyInQD18yAM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

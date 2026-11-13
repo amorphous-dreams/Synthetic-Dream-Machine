@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
-file-path = "bags/elyncia-referee/ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet.mem"
 l-space   = "stable"
-mana      = 13
-manao     = 13
-manaoio   = 13
 rating    = "kapu"
 role      = "referee worksheet — the Caverns of Neo-Thracia: geography canon, water-road law, watershed villages, guide Burdens"
 title     = "lar:///ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet"
@@ -17,7 +13,7 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/elyncia/nexuses/neo-thracia/caverns-worksheet"
 ```
 
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! The Caverns of Neo-Thracia ~ Worksheet
 
@@ -26,7 +22,7 @@ untouched; md table separator rows dropped.//
 
 <<~/ahu>>
 
-<<~ ahu #/body>>
+<<~ ahu slot=`#/body`>>
 
 ```shell
 Local Lares node: Enyalios-lararium // DreamNet link: stable (wet limestone, green light, distant water-thunder)
@@ -255,6 +251,6 @@ Each result yields: ''texture'' (3–5 sensory lines) · ''movement modifier'' �
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;IsRPScfBEAjsW7W1VowZGnNWKLWylycqt97Yc1rOZ2I
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wReYKeBvYda2u9toIsIAFYxPWlCDnOXNxkTi_cHRLWo`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

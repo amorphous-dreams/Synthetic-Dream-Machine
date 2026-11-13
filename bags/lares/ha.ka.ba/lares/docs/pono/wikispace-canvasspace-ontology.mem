@@ -1,15 +1,11 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = false
-file-path = "bags/lares/ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology.mem"
 l-space   = "stable"
-mana      = 16
-manao     = 16
-manaoio   = 15
 role      = "doctrine: one meme-graph model, two surface projections (Story-River + DreamDOM canvas); graph-primacy; view-state as its own lar-URI-addressed region; the nine families classified by surface; transclusion's surface-split. CARRIES THE SURFACE CORRECTION (2026-09-02): the canvas camera is a DOM-HOSTING DreamDOM document, never a rasterising OffscreenCanvas, and TLDraw is a STUDIED model rather than a named dependency — its licence forbids the deployment shape this house is"
 tags      = ["api/pono/meme"]
 title     = "lar:///ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
@@ -17,11 +13,9 @@ type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/docs/pono/wikispace-canvasspace-ontology"
 ```
 
-<<~ kanawai "lar:///ha.ka.ba/lares/ref/RFC-2119">>
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
 
-
-
-<<~ ahu #/head>>
+<<~ ahu slot=`#/head`>>
 
 ! Wikispace × Canvasspace Ontology
 
@@ -29,7 +23,7 @@ Lares fuses three traditions nobody has fused whole: a ''transclude-capable wiki
 
 <<~/ahu>>
 
-<<~ ahu #/one-model-two-cameras>>
+<<~ ahu slot=`#/one-model-two-cameras`>>
 
 !! One Model, Two Cameras
 
@@ -42,7 +36,7 @@ The worn family component carries the ''meaning''; the surface picks the ''rende
 
 <<~/ahu>>
 
-<<~ ahu #/the-surface-law>>
+<<~ ahu slot=`#/the-surface-law`>>
 
 !! ⚠ The surface law ~ the camera hosts DOM, never rasterises
 
@@ -66,7 +60,7 @@ The worn family component carries the ''meaning''; the surface picks the ''rende
 
 <<~/ahu>>
 
-<<~ ahu #/semantic-zoom>>
+<<~ ahu slot=`#/semantic-zoom`>>
 
 !! Semantic zoom ~ MEANING chooses the level of detail, never scale
 
@@ -86,7 +80,7 @@ The worn family component carries the ''meaning''; the surface picks the ''rende
 
 <<~/ahu>>
 
-<<~ ahu #/graph-primacy>>
+<<~ ahu slot=`#/graph-primacy`>>
 
 !! Graph-Primacy — the Inversion
 
@@ -96,7 +90,7 @@ A reader may drag two node-shapes adjacent without intending a relation; bare pr
 
 <<~/ahu>>
 
-<<~ ahu #/the-proposal-channel>>
+<<~ ahu slot=`#/the-proposal-channel`>>
 
 !! The proposal channel ~ arrangement may SPEAK, and still never assert
 
@@ -126,7 +120,7 @@ The system that first built a spatial parser promoted by ''destructive edit''. H
 
 <<~/ahu>>
 
-<<~ ahu #/model-view-boundary>>
+<<~ ahu slot=`#/model-view-boundary`>>
 
 !! The Model/View Boundary — Both Sides Addressed
 
@@ -141,7 +135,7 @@ TW5 already proves the pattern — `$:/StoryList`, `$:/HistoryList`, and palette
 
 <<~/ahu>>
 
-<<~ ahu #/a-place-is-a-scope>>
+<<~ ahu slot=`#/a-place-is-a-scope`>>
 
 !! A place stands as a scope over the corpus ~ never a partition of it
 
@@ -153,7 +147,7 @@ A named place — a room, a board, a shelf — ''carries a capability-and-view s
 
 <<~/ahu>>
 
-<<~ ahu #/ownership-is-a-graph-fact>>
+<<~ ahu slot=`#/ownership-is-a-graph-fact`>>
 
 !! Containment stands as a graph fact ~ never the surface's parent hierarchy
 
@@ -170,7 +164,7 @@ A meme owns its blocks, and a block owns its ports. ''The model carries that con
 
 <<~/ahu>>
 
-<<~ ahu #/family-classification>>
+<<~ ahu slot=`#/family-classification`>>
 
 !! The Nine Families by Surface
 
@@ -184,7 +178,7 @@ A meme owns its blocks, and a block owns its ports. ''The model carries that con
 
 <<~/ahu>>
 
-<<~ ahu #/transclusion>>
+<<~ ahu slot=`#/transclusion`>>
 
 !! Transclusion — Surface-Split
 
@@ -197,7 +191,7 @@ The ''split falls at the content-position'':
 
 <<~/ahu>>
 
-<<~ ahu #/wires>>
+<<~ ahu slot=`#/wires`>>
 
 !! The Wire Ontology (Visual Scripting)
 
@@ -210,7 +204,7 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<~ ahu #/spatial>>
+<<~ ahu slot=`#/spatial`>>
 
 !! The Spatial Family + Watch-Outs
 
@@ -224,7 +218,7 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<~ ahu #/forks-resolved>>
+<<~ ahu slot=`#/forks-resolved`>>
 
 !! Forks — Resolved (operator 2026-06-06)
 
@@ -237,17 +231,17 @@ When `nalu` / `\tick` lands, the tick wire reads `reaction:triggers` (the frame-
 
 <<~/ahu>>
 
-<<~ ahu #/edges>>
+<<~ ahu slot=`#/edges`>>
 
 !! Edges
 
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/pranala-families">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/render-pipeline">>
-<<~ loulou "lar:///ha.ka.ba/lares/api/pono/lar-uri">>
-<<~ loulou "lar:///ha.ka.ba/lares/docs/alignment-architecture">>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/pranala-families`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/render-pipeline`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lar-uri`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/alignment-architecture`>>
 
 <<~/ahu>>
 
-<<^ code="&#x0003;">>ni:///sha-256;ajvBSx_yUahdSObKDWxAE-DUyQogfM-eXvKfeGhJ_fQ
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_be3P_V7p31J8NxkL0Im3oSLLG7m0mef0xH04Pw-M2I`>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0004;` to=`?`>>

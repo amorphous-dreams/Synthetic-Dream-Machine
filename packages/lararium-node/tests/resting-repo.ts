@@ -17,7 +17,8 @@
  * A vector that wants the store held the way a direct CLI act holds it uses `direct-store.ts` instead: that
  * path claims the store's name as well.
  */
-import { Repo, type RepoConfig } from "@automerge/automerge-repo";
+import { Repo, type RepoConfig, type StorageAdapterInterface } from "@automerge/automerge-repo";
+import { SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 
 /** A Repo over a store on disk, with the one act that lets its directory leave. */
@@ -31,9 +32,19 @@ export type RestingRepo = Repo & {
 const standing = new Set<RestingRepo>();
 
 /** Open a Repo over `storageDir`. `config` carries everything a Repo takes except its storage. */
-export function restingRepo(storageDir: string, config: Omit<RepoConfig, "storage"> = {}): RestingRepo {
+export function restingRepo(storageDir: string, config: Omit<RepoConfig, "storage"> = {}, opts: { readonly heldHomes?: boolean } = {}): RestingRepo {
   const storage = new DurableNodeFSStorageAdapter(storageDir);
-  const repo = new Repo({ ...config, storage }) as RestingRepo;
+  // `heldHomes`: the Repo holds the vessel's held homes the way a standing vessel does (the secret home and the control
+  // document map sealed under the vessel's key, opened through its custody on demand), so a fence read reaches them.
+  const held = opts.heldHomes ? vesselHeldHomes() : null;
+  const refuse = async () => ({ refusal: "signer-unavailable" }) as never;
+  const sealed = held ? new SealedDocumentStore({ inner: storage, bagOf: (id) => held.bagOf(id), sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse, refuseClearOverSealed: true }) : null;
+  const repo = new Repo({ ...config, storage: (sealed ?? storage) as StorageAdapterInterface }) as RestingRepo;
+  if (held && sealed) {
+    bindSecretHomeRest(repo, held.rest((id) => sealed.holdsSealed(id), undefined, async () => {
+      try { await (await import("../src/secret-home-store.js")).openVesselSecretHome(repo); return true; } catch { return false; }
+    }));
+  }
   let resting: Promise<void> | null = null;
   Object.defineProperty(repo, "restingStorage", { value: storage });
   Object.defineProperty(repo, "rest", {

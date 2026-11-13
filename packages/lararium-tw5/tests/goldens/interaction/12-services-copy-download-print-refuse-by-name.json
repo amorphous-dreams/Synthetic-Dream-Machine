@@ -1,0 +1,22 @@
+{
+  "golden": "lar:///ha.ka.ba/lares/docs/pono/dreamdom#/conformance/interaction/12",
+  "pins": "host services: clipboard and download answer applied on a surface whose manifest carries them, and print refuses page-action-unavailable with the alert",
+  "world": {
+    "tiddlers": [{ "title": "lar:///t/services/text", "text": "copy me" }],
+    "story": [],
+    "root": "<$button class=\"copy\" message=\"tm-copy-to-clipboard\" param=\"copy me\">copy</$button><$button class=\"dl\" message=\"tm-download-file\" param=\"lar:///t/services/text\">download</$button><$button class=\"print\" message=\"tm-print\">print</$button>",
+    "manifest": { "services": ["clipboard", "download"] }
+  },
+  "steps": [
+    { "frame": "first" },
+    { "act": { "control": "button.copy", "action": "lar:click" } },
+    { "expect": { "answers": ["applied"], "services": [{ "kind": "clipboard", "args": { "text": "copy me" } }] } },
+    { "service-result": { "requestId": "last", "status": "ok" } },
+    { "frame": "next" },
+    { "expect": { "frame": { "contains": "Copied" } } },
+    { "act": { "control": "button.dl", "action": "lar:click" } },
+    { "expect": { "answers": ["applied"], "services": [{ "kind": "download", "args": { "filename": "lar:///t/services/text" } }] } },
+    { "act": { "control": "button.print", "action": "lar:click" } },
+    { "expect": { "answers": ["refused:page-action-unavailable"], "services": [], "writes": [{ "title": "$:/temp/lares/alert/refused/print" }], "page": { "button.print": { "refusal": "page-action-unavailable" } } } }
+  ]
+}

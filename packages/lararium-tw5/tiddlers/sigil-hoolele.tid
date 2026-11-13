@@ -3,14 +3,14 @@ tags: $:/tags/Global lar:///ha.ka.ba/tags/SharktoothSigil
 lar-kind: concurrency
 lar-pono-uri: lar:///ha.ka.ba/lares/api/pono/hoolele
 lar-see-also: \spawn
-lar-pattern: <<~\s*hoolele\s+"?((?:[^"\s>]|>(?!>))+)"?\s*>>
-lar-example: <<~ hoolele "lar:///a.b.c/x">>
+lar-pattern: <<~\s*hoolele\s+to=`([^`]*)`\s*>>
+lar-example: <<~ hoolele to=`lar:///a.b.c/x`>>
 type: text/vnd.tiddlywiki
 
 <!-- hoolele — a NEW TASK ROOT at a target, outside the tree that launched it. THE TARGET RIDES AS
-     THE FIRST POSITIONAL and it rides QUOTED:
+     `to`, one NAMED, TICKED value:
 
-         <<~ hoolele "lar:///a.b.c/x">>
+         <<~ hoolele to=`lar:///a.b.c/x`>>
 
      //hoʻolele// causes to fly — the kite released, the canoe with no line back to shore. The task
      outlives the scope that created it; no scope exit reaches it, and only an explicit Cancel() on
@@ -20,12 +20,12 @@ type: text/vnd.tiddlywiki
      PREFER `lele` FOR ANYTHING LOSABLE. hoolele answers the three cases whose work MUST land —
      persistence across scope destruction, cross-island work, a background daemon loop.
 
-     AN UNQUOTED ADDRESS REACHES NOTHING. `lar:///x` standing bare in a positional slot binds a
-     parameter named `lar`, and the slot receives nothing; one pair of quotes fills it.
+     A BARE ADDRESS REACHES NOTHING. `lar:///x` standing bare binds a parameter named `lar` and the
+     slot receives nothing; `to=` and one pair of ticks fill it.
 
      THE PAGE STAYS CLEAR. A launch governs execution and never layout, so the definition hands the
      compile layer a data annotation carrying the target and renders nothing. -->
 
-\procedure ~hoolele(p1:"")
-<span class="lar-hoolele" data-hoolele-target=<<p1>> data-cancellation="explicit" hidden="true"/>
+\procedure ~hoolele(to:"")
+<span class="lar-hoolele" data-hoolele-target=<<to>> data-cancellation="explicit" hidden="true"/>
 \end

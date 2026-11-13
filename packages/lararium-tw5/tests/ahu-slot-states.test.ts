@@ -33,7 +33,7 @@ describe.skipIf(wikiSkip)(`an ahu slot names which nothing it holds${skipNote}`,
    */
   const callWith = (child: Record<string, string> | null): string => {
     if (child) e.setTiddler(child);
-    return renderWikitext(e, `<$tiddler tiddler="${PARENT}">\n\n<<~ kahea ahu #/b>>\n\n</$tiddler>`, PARENT);
+    return renderWikitext(e, `<$tiddler tiddler="${PARENT}">\n\n<<~ kahea ahu slot=\`#/b\`>>\n\n</$tiddler>`, PARENT);
   };
 
   test("UNRESOLVED · no record stands at the child's address — the mark says the pointer is dead", () => {

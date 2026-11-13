@@ -176,13 +176,13 @@ describe.skipIf(wikiSkip)(
   test("CONTROL: the walk's probe reads a planted carrier with content past ETX as stranded", () => {
     const f = carrierFiles(REPO).find((c) => {
       const disk = readFileSync(path.join(REPO, c), "utf8");
-      return /^uri-path\s*=/m.test(disk) && /^<<\^ code="&#x0003;">>.*$/m.test(disk);
+      return /^uri-path\s*=/m.test(disk) && /^<<\^ code=`&#x0003;`.*>>$/m.test(disk);
     });
     expect(f).toBeDefined();
     const disk = readFileSync(path.join(REPO, f!), "utf8");
     const uri = /^uri-path\s*=\s*"([^"]+)"/m.exec(disk)![1]!;
     expect(strandsPastEtx(uri, disk)).toBe(false);
-    const planted = disk.replace(/^(<<\^ code="&#x0003;">>.*)$/m, "$1\n\nProse an author wrote below the close.");
+    const planted = disk.replace(/^(<<\^ code=`&#x0003;`.*>>)$/m, "$1\n\nProse an author wrote below the close.");
     expect(planted).not.toBe(disk);
     expect(strandsPastEtx(uri, planted)).toBe(true);
   });
@@ -198,7 +198,7 @@ describe.skipIf(wikiSkip)(
       `type     = "${CARRIER_TYPE}"`, "```"].join("\n");
     const META_NS = META.replace("type     =", 'namespace = "⊙"\ntype     =');
     const BODY = "! A New Thought\n\nThe operator writes a file and saves it.\n";
-    const SLOT = ["<<~ ahu #/inner>>", "", "```toml meta", 'l-space = "adjacent"', "```", "",
+    const SLOT = ["<<~ ahu slot=`#/inner`>>", "", "```toml meta", 'l-space = "adjacent"', "```", "",
       "! Inner", "", "slot prose.", "", "<<~/ahu>>"].join("\n");
     const SHAPES: Array<[string, string, string]> = [
       ["bare prose, no frame and no meta", BODY, ""],
@@ -216,13 +216,13 @@ describe.skipIf(wikiSkip)(
       const first = project(src);
       if (!first.out) { faults.push(`${name}: projected to nothing`); continue; }
       const head = first.out.split("\n");
-      if (!/^<<!DOCTYPE "memetic-wikitext\+tiddlywiki" "lar:\/\/\/[^"]+">>$/.test(head[0] ?? "")) faults.push(`${name}: no declaration`);
-      if (!/^<<\^ code="&#x(?:0001|0011);"[^>\n]*?"?\?"? -> \S+>>/m.test(first.out)) faults.push(`${name}: SOH states no bearing`);
+      if (!/^<<!DOCTYPE type=`memetic-wikitext\+tiddlywiki` spec=`lar:\/\/\/[^`]+`>>$/.test(head[0] ?? "")) faults.push(`${name}: no declaration`);
+      if (!/^<<\^ code=`&#x(?:0001|0011);`[^>\n]*? from=`\?` to=`[^`\s]+`>>/m.test(first.out)) faults.push(`${name}: SOH states no bearing`);
       for (const [claim, mark] of [["STX", "0002"], ["ETX", "0003"]] as const) {
-        if (!first.out.includes(`<<^ code="&#x${mark};">>`)) faults.push(`${name}: no ${claim}`);
+        if (!first.out.includes(`<<^ code=\`&#x${mark};\``)) faults.push(`${name}: no ${claim}`);
       }
-      if (!/^<<\^ code="&#x(?:0004|0014);"[^>\n]*?-> to="?\?"?>>/m.test(first.out)) faults.push(`${name}: EOT releases nothing`);
-      const gotNs = /^<<\^ code="&#x(?:0001|0011);" namespace="([^"]*)"/m.exec(first.out)?.[1] ?? "";
+      if (!/^<<\^ code=`&#x(?:0004|0014);`[^>\n]*? to=`\?`>>/m.test(first.out)) faults.push(`${name}: EOT releases nothing`);
+      const gotNs = /^<<\^ code=`&#x(?:0001|0011);` namespace=`([^`]*)`/m.exec(first.out)?.[1] ?? "";
       if (gotNs !== wantNs) faults.push(`${name}: namespace "${gotNs}" where the meta declares "${wantNs}"`);
       const second = project(first.out);
       if (second.out !== first.out) faults.push(`${name}: projecting the projection changed it`);
@@ -260,6 +260,9 @@ describe.skipIf(wikiSkip)(
     // in this grammar exactly as in TiddlyWiki's own filetype registry, and never stores it in the bytes
     // — a carrier IS its type, so the value is re-derived on every read rather than carried.
     const HOST_OWNED = new Set(["title", "revision", "type"]);
+    // `uri-path` binds the HEAD (head-bind.ts): the seal reaches the head's `to=` through it, so an edit
+    // that moves it alone names a second address and reads torn, `head-meta-split` — asserted below.
+    const HEAD_BOUND = new Set(["uri-path"]);
     // `$…` NAMES THE HOST'S SHELF, NOT THE OPERATOR'S. TiddlyWiki hands that prefix to whatever stands
     // the wiki, so the grammar's own carriage lives there — the prologue, the preamble, the header
     // text, the slot a fragment fills, the bytes trailing the frame. Those rebuild from the frame on
@@ -269,7 +272,7 @@ describe.skipIf(wikiSkip)(
     const carrier = readFileSync(path.join(REPO, "bags/lares/ha.ka.ba/lares/api/pono/ahu.mem"), "utf8");
     const uri = `lar:///${/^uri-path\s*=\s*"([^"]+)"/m.exec(carrier)![1]!}`;
     const base = deserializeFromSource(carrier, uri);
-    const produced = [...new Set(base.flatMap((r) => Object.keys(r)))].filter((k) => !HOST_OWNED.has(k) && !isCarriage(k));
+    const produced = [...new Set(base.flatMap((r) => Object.keys(r)))].filter((k) => !HOST_OWNED.has(k) && !HEAD_BOUND.has(k) && !isCarriage(k));
 
     const lost: string[] = [];
     for (const key of produced) {
@@ -286,6 +289,18 @@ describe.skipIf(wikiSkip)(
       if (!survived) lost.push(key);
     }
     expect(lost).toEqual([]);
+
+    // THE HEAD-BOUND FIELD: moving `uri-path` alone splits the sealed meta from the head, and tears.
+    for (const key of HEAD_BOUND) {
+      const records = base.map((r) => ({ ...r }));
+      const target  = records.find((r) => r[key] !== undefined);
+      if (!target) continue;
+      target[key] = `EDITED-${key}`;
+      const by  = new Map(records.map((r) => [r["title"] as string, r]));
+      const out = expandMemeRefs((u: string) => (by.get(u) ?? null) as never, uri)!;
+      const v = verdict(out);
+      expect(v.kind === "torn" && v.faults.map((f) => f.kind)).toEqual(["head-meta-split"]);
+    }
   });
 
   /**

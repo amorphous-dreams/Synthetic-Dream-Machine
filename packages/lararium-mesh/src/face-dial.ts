@@ -28,7 +28,8 @@
  * `incomplete` from a gate behind it, and presents again with the whole line.
  *
  * Platform-blind: a node and a browser both dial through it, each over its own socket.
- * Stands specified in code until the socket cutover wires it; out of the package barrel till then.
+ * Called by the node's sovereign dial (`open-node-vessel`, `nexus-client-dial`), the browser adapter
+ * (`lar-ws-client-adapter`), the oracle reader and the carriage pull; the package barrel names it.
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange
  */
@@ -39,7 +40,7 @@ import {
 } from "./face-proof-subjects.js";
 import { gateBundleDigest, gateKnock, gatePrologue, readGateBundlePin, readGateSignature, type GateBundlePin, type GateTier } from "./gate-bundle.js";
 import {
-  GATE_FRAME, encodeGatePresentation, encodePlacePresentation, gateFinishPayload, gateFrame, gatePartReader, gateParts,
+  GATE_FRAME, GATE_VERDICT_BYTES, encodeGatePresentation, encodePlacePresentation, gateFinishPayload, gateFrame, gatePartReader, gateParts,
   gatePlaceFinishImage, gatePresentationDigest, gateVerdictImage, readGateAnswer, type PlaceArm, type PresentationArm,
 } from "./gate-exchange.js";
 import { noiseInitiate, noiseKeyPair, type NoiseTransport } from "./noise-ik.js";
@@ -188,7 +189,7 @@ async function present(args: FaceDialArgs, keys: DialKeys): Promise<FaceDialOutc
     const last = await socket.recv();
     if (last === null) return { state: "silence" };
     const verdict = transport.receive.open(last);
-    if (verdict.length !== 65 || verdict[0] !== GATE_FRAME.verdict) return { state: "silence" };
+    if (verdict.length !== GATE_VERDICT_BYTES || verdict[0] !== GATE_FRAME.verdict) return { state: "silence" };
     if (!readGateSignature(pin, gateVerdictImage({ handshakeHash: transport.handshakeHash, bundleDigest, answer }), verdict.subarray(1))) return { state: "silence" };
     const read = readGateAnswer(answer);
     if (read === null) return { state: "silence" };
@@ -267,7 +268,7 @@ export async function dialPlaceGate(args: PlaceDialArgs): Promise<PlaceDialOutco
       const answer = gatePartReader(GATE_FRAME.answerPart, GATE_FRAME.answerEnd).push(transport.receive.open((await socket.recv()) ?? new Uint8Array(0)));
       if (answer === null || answer === "refused") return { state: "silence" };
       const verdict = transport.receive.open((await socket.recv()) ?? new Uint8Array(0));
-      if (verdict.length !== 65 || verdict[0] !== GATE_FRAME.verdict) return { state: "silence" };
+      if (verdict.length !== GATE_VERDICT_BYTES || verdict[0] !== GATE_FRAME.verdict) return { state: "silence" };
       if (!readGateSignature(pin, gateVerdictImage({ handshakeHash: transport.handshakeHash, bundleDigest, answer }), verdict.subarray(1))) return { state: "silence" };
       return readGateAnswer(answer)?.state === "verified" ? { state: "verified", transport } : { state: "silence" };
     } catch {

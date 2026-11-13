@@ -1,0 +1,40 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/out`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-07 (file date) — source `.lares-scratch/lease-end/steps/step-002/out.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/out"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/out"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! out.md — hand-back, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/steps/step-002/out.md` (hand-back, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/step-002/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/step-2-broker-requests`>>
+
+! Step 2 — broker requests
+
+`relay/res-001.json` reports `ok: false`, `refused: unknown kind: undefined`. The recorded head remains `5c3d032dc7be49704d26f4f12b10e6fdacf88380`; no broker success has supplied a replacement.
+
+Submitted `relay/req-002.json` using `kind: commit`, preserving the original path, expected head, message and attribution trailers. Submitted `relay/req-003.json` through the Vitest test door for `packages/lararium-keyhive/tests/face-grant-record.test.ts`. Read both response files on the next step; neither commit success nor test results have been assumed. Verify each retirement red fails on its intended assertion and each control passes. The file also contains older epoch-fence tests, so an aggregate failure alone cannot establish the retirement contracts.
+
+No production or test files changed in this step. No git command or test ran in this wall. No seat launched. No sibling or composer hunks changed; the b5b overlap and blind Opus custody review remain owed. The prior step's census and fork decision remain provisional until measured against the implementation and tests as work proceeds.
+
+Next: resolve the commit and test responses, then proceed with the mesh slice in the recorded order. Keep the roll guard until the reader census and tests establish standing coverage; preserve separate quorum and bag-capability leases.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sCSaO--mQ3vF46UD2rbwTufD83fErh1OPexPen3Y5yo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

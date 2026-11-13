@@ -1,0 +1,44 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-10-31 (file date) — source `.lares-scratch/controller/seats/sol-train-b5-retry/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-10-31
+
+Verbatim scratch record `.lares-scratch/controller/seats/sol-train-b5-retry/final.md` (hand-back, file date 2026-10-31); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/seats/sol-train-b5-retry/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+Sol / Lares (Tasked Spirit).
+
+* ''CLOSED — MEASURED, ralias HIGH.'' The catalog bridge still admits the alias, but the composed private-document verdict denies face A access to face B’s circles. Actual `faceOf` wiring preserves each face’s own access. Foreign ownership refuses before consulting permissive gates.
+* ''CLOSED — MEASURED, rcx HIGH.'' A fully signed `[self, A, B]` reveal using ''self + A'' now fails full-chain verification and is set aside by the fold. Uppercase keys and subsequent graft reveals also refuse. Valid outside-contact quorums and pre-enrolment self recovery pass.
+* ''CLOSED at the probed boundary — MEASURED, porch5 × ralias.'' All ten face-plane IDs, daemon ID and catalog ID refuse before binding or spec registration. The composed fence → typed denial → delegation → resolver path returns `wiki-mount-refused: no-read-grant`, teaches no private spec, clears its pending delegation and aborts its signal. An ordinary wiki passes.
+
+''No new HIGH or adverse cross-lane interaction found'' in the revisions against the landed porch5 span.
+
+Verification used source overlays in memory: 21 recovery cases and eight guard/resolver cases passed, plus the direct composition probes above. These were assertion-harness probes, not a Vitest receipt. Three disk-writing cases were skipped. ''Lead runs:'' full worker materialization and confirmation that no foreign tiddlers appear.
+
+Writing `out.md` was rejected by the read-only sandbox; escalation is prohibited. The handback is therefore here.
+
+''SHIP''
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_2QMOKYGBU1N9JGvYW3nRZclbQhW71F-OxR-ltVIX-E`>>
+
+<<^ code=`&#x0004;` to=`?`>>

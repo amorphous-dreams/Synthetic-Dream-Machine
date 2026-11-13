@@ -166,9 +166,7 @@ export function sourceCidOf(text: string): string {
       "[memetic-wikitext-sensorium] the VM sandbox carries no TextEncoder — pass an explicit sourceCid to stratify()",
     );
   }
-  // Canonical algorithm-tagged form (`sha256:<hex>`, agile-digest). The reader side
-  // (`parseDigest`/`digestsEqual`) also accepts the `sha256-<hex>` SRI dash
-  // form, so a stored dash-tagged pin keeps comparing equal.
+  // Algorithm-tagged form (`sha256:<hex>`, agile-digest); `parseDigest` reads it back.
   return formatDigest("sha256", sha256HexSync(text));
 }
 

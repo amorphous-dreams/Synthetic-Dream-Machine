@@ -67,11 +67,11 @@ describe("persona-group-secret — delivered at enrolment, rolled with the op-ke
   });
 
   test("RED: only the seed seating a rotation's op-key re-enrols on it", async () => {
-    const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
+    const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
     const devices = [{ deviceVerifyingKey: await pubOf(SEEDS.deviceX), hearthTrueName: "", boundEpoch: 0 }];
-    const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (g) => ({ signer: await pubOf(g), sign: signerOf(g) })));
+    const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (g) => ({ signer: await pubOf(g), sign: signerOf(g) })));
     const rotate = async (opSeed: Uint8Array) => attestAndRotate({
-      head: inception, freshOpKeyDid: await didOf(SEEDS.opB), guardianRecoveryKeys, recoveryThreshold, guardianSigners,
+      head: inception, freshOpKeyDid: await didOf(SEEDS.opB), recoveryContactKeys, recoveryThreshold, recoveryContactSigners,
       enrolments: await rollEnrolments({ prefix: inception.prefix, opSeed, devices }),
     });
     const wrong = await rotate(SEEDS.opA);

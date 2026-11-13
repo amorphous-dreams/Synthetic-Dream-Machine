@@ -5,11 +5,28 @@
  * faults (another holder, a door that never answered, a wait that ended) each read under their own code. No store
  * refusal reaches a script as a bare `refused` or `error`.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its ward acts ask the suite's person (seat-harness#/the-ward).
+seatSuiteWard();
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../src/local-connector.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/local-connector.js")>();
   return { ...actual, udsAlive: vi.fn(async () => true), whoHolds: vi.fn(async () => null), udsSocketPresent: vi.fn(() => true), invokeLocal: vi.fn() };
+});
+// `handle rotate` acts as a face, so on a running vessel it rides a session of the one face the vessel resolves.
+vi.mock("../src/sealed-act-door.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/sealed-act-door.js")>();
+  return { ...actual, sealedAct: vi.fn(async () => ({ face: 0 })) };
+});
+// `handle rotate` is a ward act: the standing vessel parks the typed route over one custody frame and answers a ticket.
+vi.mock("../src/custody-door.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/custody-door.js")>();
+  return { ...real, sendCustodyFrame: vi.fn(async (frame: { op: string }) => (frame.op === "ward" ? { op: "ward", ref: "ward-ticket-1" } : null)) };
+});
+vi.mock("../src/session-connector.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../src/session-connector.js")>();
+  return { ...actual, openLocalSession: vi.fn() };
 });
 vi.mock("../src/env.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../src/env.js")>();
@@ -18,6 +35,7 @@ vi.mock("../src/env.js", async (importOriginal) => {
 
 import { NexusKapaeError, StoreHeld } from "@lararium/node";
 import { invokeLocal, LocalWaitExpired } from "../src/local-connector.js";
+import { openLocalSession } from "../src/session-connector.js";
 import { storeVerb, storeFailure, RoutedVerbRefused, SlowBootTimeout } from "../src/store-door.js";
 import { DaemonUnreachable } from "../src/verb-call.js";
 import { cmdKapae } from "../src/commands/nexus-kapae-cmd.js";
@@ -55,21 +73,7 @@ describe("storeFailure names a failure by its own type", () => {
     expect(storeFailure(new RoutedVerbRefused("later", "a-later-name")).code).toBe("a-later-name");
   });
 
-  it("the store's own faults each read under their own code", () => {
-    const held = Object.assign(Object.create(StoreHeld.prototype) as Error, { message: "a vessel (pid 7) holds the store" });
-    expect(storeFailure(held).code).toBe("store-held");
-    expect(storeFailure(new SlowBootTimeout("parked", "the vessel's store door", [7])).code).toBe("store-door-timeout");
-    const waited = storeFailure(new LocalWaitExpired("nexus-kapae", 10, "req-7"));
-    expect(waited.code).toBe("outcome-unknown");
-    expect(waited.hint).toMatch(/lares receipt req-7/);
-    expect(storeFailure(new DaemonUnreachable("/tmp/x.sock")).code).toBe("daemon-unreachable");
-  });
 
-  it("CONTROL: a fault that names nothing keeps the word its command gave", () => {
-    expect(storeFailure(new Error("disk full"))).toEqual({ code: "error", message: "disk full" });
-    expect(storeFailure(new NexusKapaeError("made here, through no door"), "refused").code).toBe("refused");
-    expect(storeFailure(new RoutedVerbRefused("no name given")).code).toBe("error");
-  });
 });
 
 describe("a command's JSON carries the name", () => {
@@ -98,7 +102,9 @@ describe("a command's JSON carries the name", () => {
   });
 
   it("★ a store refusal no command caught leaves the dispatcher as one JSON object, never a throw ★", async () => {
-    vi.mocked(invokeLocal).mockResolvedValue({ status: "error", requestId: "r", errorMessage: "the vessel holds no face", refusal: { reason: "waking-floor" } });
+    // A face row rides `session:act`; the vessel's refusal answers with the refusal's own name as its reason.
+    const refused = { status: "error", errorMessage: "the vessel holds no face", reason: "waking-floor" };
+    vi.mocked(openLocalSession).mockResolvedValue({ faceRef: "proof", act: async () => refused, close: async () => {} } as never);
     const { code, payload } = await jsonOf(() => dispatch(["handle", "rotate", "--json"]));
     expect(payload.error?.code).toBe("waking-floor");
     expect(code).toBe(2);

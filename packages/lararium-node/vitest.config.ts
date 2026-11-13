@@ -26,17 +26,22 @@ export const THRASHERS = [
 
 /** The suites the serial project takes. Kept complete by the reader that imports {@link THRASHERS}. */
 export const heavy = [
-  // real WebSocketServer + Repo + gate crossings
+  // a real floor composition and a sovereign one, each with its worker island: the locked floor reaches for no sealed document
+  "tests/locked-floor-loads-no-sealed.test.ts",
+  "tests/floor-key-one-reading.test.ts",
+  // binds a real HTTP listener to prove the desk-named Web root serves GET / as 200
+  "tests/pronaos-desk.test.ts",
+  // real WebSocketServer + Repo + sealed-gate crossings
   "tests/browser-crossing.test.ts",
-  "tests/carriage-relay-serve-loop.test.ts",
-  "tests/lar-ws-client-adapter.test.ts",
+  // real face gates + FLOW-map read-faces on four listeners: the gate-native herm relay
+  "tests/herm-carriage-relay.test.ts",
+  // a real worker thread: the herm's daemon door settles a receipt round (L29 mirror)
+  "tests/herm-daemon-settlement.test.ts",
   "tests/nexus-client-dial.test.ts",
+  "tests/nexus-client-dial-listener-order.test.ts",
   "tests/live-wire-node-crossing.test.ts",
-  "tests/daemon-auth-gate.test.ts",
-  "tests/hosted-walker.test.ts",
-  "tests/authenticated-membership-relay.test.ts",
-  "tests/carriage-heal-reconnect.test.ts",
-  "tests/carriage-reshare-sniff.test.ts",
+  "tests/crossing-matrix.test.ts",
+  "tests/sibling-channel-stand.test.ts",
   "tests/bulb-kindle.test.ts",
   "tests/bulb-serves-boot-cas-alone.test.ts",
   "tests/herm-reshares-public-blob.test.ts",
@@ -51,12 +56,17 @@ export const heavy = [
   "tests/repo-in-island.test.ts",
   "tests/vessel-island-pool.test.ts",
   "tests/pool-mount-intensity.test.ts",
+  "tests/wiki-switch-remount.test.ts",
+  // stands a nested island over a real worker handle to prove exit ends the parked asks
+  "tests/worker-handle-exit.test.ts",
   "tests/surface-mount-vessel-path.test.ts",
   "tests/surface-mount-real-island.test.ts",
   "tests/verb-tiddler-dispatch.test.ts",
   // Surfaced by `tests/heavy-roster-is-complete.test.ts`, which applies the criteria above to every
   // suite in the directory. These four stood a live listener or a nested island while running in the
   // parallel project — the exact condition the split exists to prevent.
+  // a nested island booting the full TW5 kernel (the production rest-door wiring proof)
+  "tests/island-doors-by-class.test.ts",
   "tests/carriage-cap.test.ts",
   "tests/flow-map-read-face.test.ts",
   "tests/ea-breath-watchdog.test.ts",
@@ -80,6 +90,18 @@ export const heavy = [
   "tests/daemon-vm-replica-restart.test.ts",
   "tests/daemon-vm-storage-accounting.test.ts",
   "tests/http-face-dispatcher.test.ts",
+  "tests/face-gate-server.test.ts",
+  "tests/flow-floor-gate.test.ts",
+  "tests/own-fleet-sync.test.ts",
+  "tests/same-operator-refold.test.ts",
+  "tests/flow-floor-resweep.test.ts",
+  "tests/face-gate-server-bounds.test.ts",
+  "tests/owned-store.test.ts",
+  "tests/intent-relay.test.ts",
+  "tests/intent-relay-door.test.ts",
+  "tests/intent-relay-admission.test.ts",
+  "tests/intent-relay-storm.test.ts",
+  "tests/intent-relay-wired.test.ts",
   "tests/http-face-integration.test.ts",
   "tests/pronaos-adapter.test.ts",
   "tests/pronaos-composition.test.ts",
@@ -87,10 +109,21 @@ export const heavy = [
   "tests/pronaos-kindle.test.ts",
   "tests/pronaos-public-artifact.test.ts",
   "tests/readiness-face.test.ts",
-  "tests/oracle-closed-door.test.ts",
+  "tests/flow-closed-door.test.ts",
   "tests/herm-answers-the-knock.test.ts",
-  "tests/oracle-read-face-shore.test.ts",
+  "tests/flow-read-face-shore.test.ts",
+  "tests/floor-porch.test.ts",
   "tests/wire-daemon-bootstrap.test.ts",
+  // A real HTTP listener and a sealed-gate crossing (the joinee dials its hearth through the production mount).
+  "tests/dial-presentation-joinee.test.ts",
+  // A raw HTTP listener that answers the upgrade as a gate stand-in, so the node dial socket meets real frames.
+  "tests/node-dial-socket.test.ts",
+  // The herm's relay port on a real HTTP listener: persona-KEL drops over HTTP, silence for every upgrade.
+  "tests/herm-relay-port.test.ts",
+  // Full `openNodeVessel` boots (nested daemon and wiki islands) with no dial: a founded sovereign node lights its face cell,
+  // a floor node lights none. In a parallel batch its teardown ran past the 10 s afterEach hook (a hook clock M6 owes), so
+  // it runs here, one live vessel at a time.
+  "tests/face-cell-lights-proved.test.ts",
 ];
 
 /**
@@ -104,7 +137,7 @@ export const mainExclude = ["tests/e2e/**", ...heavy];
  * The suites' custody: a when-needed seat that founds or opens a scratch custody at the first sealed row a suite
  * touches under its own temp root (`tests/support/scratch-custody-setup.ts`). Both projects load it.
  */
-const setupFiles = ["tests/support/scratch-custody-setup.ts"];
+const setupFiles = ["../../tools/vitest-scratch-house.mjs", "tests/support/scratch-custody-setup.ts"];
 /**
  * Room for a founding. A vector that reaches a sealed row under a fresh root founds that root's custody first, and
  * the founding derives a key from a passphrase (about half a second alone, several under a loaded run). The default
@@ -115,6 +148,7 @@ const testTimeout = 30_000;
 export default defineConfig({
   resolve: { alias },
   test: {
+    globalSetup: ["../../tools/vitest-dist-guard.mjs"],
     // The host oversubscribes under default per-core parallelism: dozens of these files each spawn their OWN
     // heavy child — a WebSocketServer, a nested worker_threads TW5 island, or a live Python+chroma holder — ON
     // TOP of vitest's worker-per-core pool, so peak concurrency runs far past the core count and starves. A

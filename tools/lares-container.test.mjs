@@ -7,8 +7,8 @@
  * binds, and that no argv ever carries the docker socket.
  */
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, writeFile, chmod, rm } from "node:fs/promises";
-import { spawnSync } from "node:child_process";
+import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm } from "node:fs/promises";
+import { spawn, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { test } from "node:test";
@@ -18,7 +18,13 @@ const SH = join(ROOT, "tools/lares-container.sh");
 const PS1 = join(ROOT, "tools/lares-container.ps1");
 const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0;
 
-async function run(shim, argv, { env = {}, envFile } = {}) {
+/**
+ * THE ENV FILE RESTS AT `~/.lares/lares-surface.env`, outside every bind, the same file `resolveLaresMcp` reads, and
+ * never in the clone: a file beside the compose file would sit in the tracked checkout. Every run names a scratch HOME
+ * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
+ * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
+ */
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -26,25 +32,125 @@ async function run(shim, argv, { env = {}, envFile } = {}) {
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
+      `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
+      `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_STOOD_ID:-\${FAKE_RUNNING_ID:-}}"; exit 0;; esac\n` +
+      `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
+      `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; exit 0;; esac\n` +
+      `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
       `case " $* " in *" exec "*) exit "\${FAKE_EXEC_RC:-0}";; esac\n`);
     await chmod(join(dir, "docker"), 0o755);
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
-    if (envFile) await writeFile(join(dir, "lares-surface.env"), envFile);
-    const cmd = shim === SH ? ["sh", [SH, ...argv]] : ["pwsh", ["-NoProfile", "-File", PS1, ...argv]];
+    const house = join(dir, "house");
+    // `wornFace` plants the face the shim last saw worn (`config/last-worn-face`), as a prior `vault unlock --face N` left it.
+    if (wornFace !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "last-worn-face"), `${wornFace}\n`); }
+    const fill = (v) => typeof v === "string" ? v.replaceAll("@HOUSE@", house) : v;
+    const home = env.HOME ? fill(env.HOME) : join(dir, "home");
+    await mkdir(join(home, ".lares"), { recursive: true });
+    if (envFile) await writeFile(join(envAt === "clone" ? dir : join(home, ".lares"), "lares-surface.env"), fill(envFile));
+    // `checkout` copies the shim into a scratch repo: "clean" (committed), "dirty" (a tracked change uncommitted) or
+    // "none" (no git above it), so the revision the shim reads comes from that repo, never from this checkout.
+    let script = shim;
+    const gitEnv = {};
+    if (checkout) {
+      const repo = join(dir, "repo");
+      await mkdir(join(repo, "tools"), { recursive: true });
+      script = join(repo, "tools", shim === SH ? "lares-container.sh" : "lares-container.ps1");
+      await writeFile(script, await readFile(shim, "utf8"));
+      gitEnv.GIT_CEILING_DIRECTORIES = dir;
+      if (checkout !== "none") {
+        const git = (...a) => spawnSync("git", ["-C", repo, "-c", "user.name=t", "-c", "user.email=t@t", ...a], { encoding: "utf8" });
+        git("init", "-q"); git("add", "."); git("commit", "-qm", "seed");
+        if (checkout === "dirty") await writeFile(script, (await readFile(script, "utf8")) + "\n# edited\n");
+      }
+    }
+    // `@HOUSE@` in an argument names the run's scratch house too.
+    const args = argv.map(fill);
+    const cmd = shim === SH ? ["sh", [script, ...args]] : ["pwsh", ["-NoProfile", "-File", script, ...args]];
     // A standing vessel answers a steady verdict unless a test scripts another answer.
     const steady = '{"data":{"standing":{"act":"attach","reason":"steady"}}}';
-    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady };
-    const r = spawnSync(cmd[0], cmd[1], { env: { ...base, ...env }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    const base = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose, FAKE_OBSERVE_OUTPUT: steady, ...gitEnv };
+    const filled = Object.fromEntries(Object.entries(env).map(([k, v]) => [k, fill(v)]));
+    // `tty` names the bytes typed on a pseudo-terminal (`script`), which then carries stdout and stderr as one stream.
+    const r = tty === undefined
+      ? spawnSync(cmd[0], cmd[1], { env: { ...base, ...filled }, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] })
+      : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
-    return { ...r, calls, dir };
+    let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
+    const made = {};
+    for (const c of ["hearth", "sensoriums", "projections", "library", "config"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
+    return { ...r, calls, dir, made, worn };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
 // ATTACHED: under a real pseudo-terminal the shim must NOT add -T, or the founding loses its human-route prompt.
 // (Reading `-t 1` inside the `$(tty_flag)` substitution once always read false: stdout there is a pipe.)
 const haveScript = spawnSync("script", ["--version"]).status === 0;
+test("sh: reset clears the hearth alone, after its refusals; sensoriums, projections, library, config and the env file stay", { skip: !haveScript }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), "lares-reset-"));
+  try {
+    const house = join(dir, "house"), workspace = join(dir, "workspace"), hearth = join(house, "hearth");
+    const kept = ["sensoriums", "projections", "library", "config"].map((c) => join(house, c));
+    await Promise.all([hearth, ...kept, workspace, join(workspace, "nested"), join(dir, ".lares")].map((path) => mkdir(path, { recursive: true })));
+    const calls = join(dir, "calls.log");
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "${calls}"\ncase " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}";; *" ps -q --filter volume="*) printf '%s' "\${FAKE_HOLDER_ID:-}";; esac\n`);
+    await chmod(join(dir, "docker"), 0o755);
+    await writeFile(join(hearth, "entry"), "keep until confirmation");
+    await writeFile(join(hearth, ".hidden"), "hidden");
+    for (const k of kept) await writeFile(join(k, "keep"), "stays");
+    await writeFile(join(dir, ".lares", "lares-surface.env"), "# stays\n");
+    const base = { PATH: `${dir}:${process.env.PATH}`, HOME: dir, LARES_HOUSE: house, LARES_WORKSPACE: workspace };
+    const reset = (env, input = "re-found\n") => spawnSync("script", ["-qec", `sh '${SH}' reset`, "/dev/null"], { env: { ...base, ...env }, input, encoding: "utf8" });
+    const standing = reset({ FAKE_RUNNING_ID: "vessel" });
+    assert.equal(standing.status, 2);
+    assert.match(standing.stdout, /tools\/lares-container\.sh down first/);
+    // The holder check reads the hearth bind, and a running holder of it refuses.
+    const held = reset({ FAKE_HOLDER_ID: "founding-run" });
+    assert.equal(held.status, 2);
+    assert.match(held.stdout, /a running container binds .*hearth: founding-run/);
+    assert.match(await readFile(calls, "utf8"), new RegExp(`ps -q --filter volume=${hearth.replaceAll("/", "\\/")}\\b`));
+    const parentOfHome = reset({ HOME: join(house, "operator") });
+    assert.equal(parentOfHome.status, 2);
+    assert.match(parentOfHome.stdout, /containing HOME/);
+    for (const unsafe of ["", "/", dir, workspace, join(workspace, "nested"), dir + "/house/../workspace", "relative/house"]) {
+      const result = reset({ LARES_HOUSE: unsafe });
+      assert.equal(result.status, 2, `${unsafe}: ${result.stdout}`);
+    }
+    // A house that holds the workspace refuses.
+    const holding = reset({ LARES_WORKSPACE: join(house, "projections", "ws") });
+    assert.equal(holding.status, 2);
+    assert.match(holding.stdout, /containing LARES_WORKSPACE/);
+    assert.equal(reset({}, "no\n").status, 2);
+    assert.deepEqual((await readdir(hearth)).sort(), [".hidden", "entry"]);
+    const done = reset({});
+    assert.equal(done.status, 0, done.stdout);
+    assert.match(done.stdout, /sensoriums, projections, library, config, the env file and the image stay/);
+    // THE PROMPT SAYS PLAINLY that projections stay, private cleartext memory among them, and where a former face's folders go.
+    assert.match(done.stdout, /projections stay, and with them the private memory of every face in cleartext/);
+    assert.match(done.stdout, /the next export names those folders/);
+    // A bundle under config stays across the reset, and so does its import journal, keyed by the faces it landed on.
+    assert.match(done.stdout, /a bundle exported under .*\/config stays, and so does its import journal \(keyed by the faces it landed on, so the re-founded faces import it afresh\)/);
+    assert.deepEqual(await readdir(hearth), []);
+    for (const k of kept) assert.equal(await readFile(join(k, "keep"), "utf8"), "stays");
+    assert.equal(await readFile(join(dir, ".lares", "lares-surface.env"), "utf8"), "# stays\n");
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
+test("sh: reset refuses a hearth that resolves outside the house", { skip: !haveScript }, async () => {
+  const dir = await mkdtemp(join(tmpdir(), "lares-reset-link-"));
+  try {
+    const house = join(dir, "house"), elsewhere = join(dir, "elsewhere"), workspace = join(dir, "workspace");
+    await Promise.all([house, elsewhere, workspace].map((path) => mkdir(path, { recursive: true })));
+    await writeFile(join(elsewhere, "precious"), "never cleared");
+    spawnSync("ln", ["-s", elsewhere, join(house, "hearth")]);
+    await writeFile(join(dir, "docker"), "#!/bin/sh\nexit 0\n");
+    await chmod(join(dir, "docker"), 0o755);
+    const r = spawnSync("script", ["-qec", `sh '${SH}' reset`, "/dev/null"], { env: { PATH: `${dir}:${process.env.PATH}`, HOME: dir, LARES_HOUSE: house, LARES_WORKSPACE: workspace }, input: "re-found\n", encoding: "utf8" });
+    assert.equal(r.status, 2, r.stdout);
+    assert.match(r.stdout, /resolves outside LARES_HOUSE/);
+    assert.equal(await readFile(join(elsewhere, "precious"), "utf8"), "never cleared");
+  } finally { await rm(dir, { recursive: true, force: true }); }
+});
 test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, async () => {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-tty-"));
   try {
@@ -54,48 +160,94 @@ test("sh: found under a TTY runs attached, with no -T", { skip: !haveScript }, a
     const compose = join(dir, "docker-compose.surface.yml");
     await writeFile(compose, "services: {}\n");
     spawnSync("script", ["-qec", `sh ${SH} found`, "/dev/null"], {
-      env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: process.env.HOME, LARES_COMPOSE_FILE: compose, LARES_STATE: "/s", LARES_WORKSPACE: "/w" },
+      env: { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: join(dir, "home"), LARES_COMPOSE_FILE: compose, LARES_HOUSE: join(dir, "house"), LARES_WORKSPACE: "/w" },
       encoding: "utf8",
     });
     const calls = await readFile(log, "utf8");
-    assert.match(calls, /--profile offline run --rm offline vessel found --skip-build --root \/state --genesis \/app\/genesis\s*$/m);
+    assert.match(calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?offline vessel found --skip-build --root \/lar --genesis \/app\/genesis\s*$/m);
     assert.doesNotMatch(calls, /(^|\s)-T(\s|$)/);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
 
-const MOUNTS = { LARES_STATE: "/s", LARES_WORKSPACE: "/w" };
+const MOUNTS = { LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w" };
 const shims = [["sh", SH], ...(havePwsh ? [["ps1", PS1]] : [])];
 
 for (const [name, shim] of shims) {
   test(`${name}: neither mount standing refuses by name, before docker runs`, async () => {
     const r = await run(shim, ["vessel", "read"]);
     assert.equal(r.status, 2);
-    assert.match(r.stderr, /LARES_STATE/);
+    assert.match(r.stderr, /LARES_HOUSE/);
     assert.equal(r.calls, "");
   });
 
-  test(`${name}: a mount named in lares-surface.env stands`, async () => {
-    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_STATE=/s\nLARES_WORKSPACE=/w\n" });
+  test(`${name}: a mount named in the hearth's lares-surface.env stands`, async () => {
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n" });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /--env-file \S*lares-surface\.env/);
+    assert.match(r.calls, /--env-file \S*\/home\/\.lares\/lares-surface\.env/);
+  });
+
+  test(`${name}: an env file beside the compose file goes unread: no hearth file, the mounts refuse by name`, async () => {
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n", envAt: "clone" });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /LARES_HOUSE stands in neither the environment nor \S*\/home\/\.lares\/lares-surface\.env/);
+    assert.equal(r.calls, "");
+  });
+
+  test(`${name}: with no hearth env file and the mounts from the shell, compose is pointed off the checkout's own .env`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    // Compose auto-loads `.env` from the compose file's directory when no --env-file names one; the shim
+    // names an empty one so a checkout .env never feeds the vessel's variables.
+    assert.match(r.calls, /--env-file \/dev\/null|--env-file NUL/);
+  });
+
+  test(`${name}: CONTROL: a hearth env file stays the env file named`, async () => {
+    const r = await run(shim, ["vessel", "read"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n" });
+    assert.match(r.calls, /--env-file \S*\/home\/\.lares\/lares-surface\.env/);
+    assert.doesNotMatch(r.calls, /--env-file \/dev\/null/);
   });
 
   test(`${name}: any other argv with a running vessel runs the CLI by exec`, async () => {
     const r = await run(shim, ["vessel", "read", "--json"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /compose .*exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
+    assert.match(r.calls, /compose .*exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel read --json/);
+  });
+
+  test(`${name}: display and debug names cross into the vessel by name alone; no value and no other name`, async () => {
+    const shown = { NO_COLOR: "1", TERM: "xterm-256color", COLORTERM: "truecolor", LARES_DEBUG: "1", SOME_TOKEN: "s3cret" };
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", ...shown } });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / vessel read$/.test(l));
+    assert.ok(exec, r.calls);
+    for (const n of ["NO_COLOR", "TERM", "COLORTERM", "LARES_DEBUG"]) assert.match(exec, new RegExp(`(^| )-e ${n}( |$)`));
+    assert.doesNotMatch(r.calls, /xterm-256color|truecolor|s3cret|SOME_TOKEN/);
+    const offline = await run(shim, ["persona", "list"], { env: { ...MOUNTS, TERM: "dumb" } });
+    assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ -e TERM -T offline persona list/);
+  });
+
+  test(`${name}: an act carries its stop handle: an exec its LARES_EXEC_TAG by name, a run its lares-offline-<tag> name`, async () => {
+    const standing = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.match(standing.calls, /exec -e LARES_EXEC_TAG -T lares node \S+ vessel read$/m);
+    assert.doesNotMatch(standing.calls, /LARES_EXEC_TAG=/);
+    const offline = await run(shim, ["persona", "list"], { env: MOUNTS });
+    assert.match(offline.calls, /run --rm --name lares-offline-[0-9a-f]{16} -T offline persona list$/m);
+  });
+
+  test(`${name}: CONTROL with none of the names set, no -e rides`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.doesNotMatch(r.calls, /(^| )-e (?!LARES_EXEC_TAG )/m);
   });
 
   test(`${name}: a verb with no running vessel uses the offline door`, async () => {
     const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], { env: MOUNTS });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /--profile offline run --rm -T offline persona new 0 --name ci-face/);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline persona new 0 --name ci-face/);
     assert.doesNotMatch(r.calls, /compose .*exec/);
   });
 
   test(`${name}: found uses the offline CLI door`, async () => {
     const r = await run(shim, ["found", "--json"], { env: MOUNTS });
-    assert.match(r.calls, /--profile offline run --rm -T offline vessel found --skip-build --root \/state --genesis \/app\/genesis --json\s*$/m);
+    assert.match(r.calls, /--profile offline run --rm (?:--name lares-offline-[0-9a-f]+ )?-T offline vessel found --skip-build --root \/lar --genesis \/app\/genesis --json\s*$/m);
   });
 
   test(`${name}: a successful exec with a restand verdict restarts and waits healthy`, async () => {
@@ -109,19 +261,94 @@ for (const [name, shim] of shims) {
 
   // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
   // that stands or restarts the vessel; a vessel that already holds its key draws no line.
-  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock`);
+  // A vessel of several faces refuses a bare unlock, so the hint names every face the credential opens and the face to wear.
+  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock --all --face 0 `);
   test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /up -d --wait lares[\s\S]*exec -T lares node \S+ vault status --json/);
+    assert.match(r.calls, /up -d --wait lares[\s\S]*exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
     assert.doesNotMatch(r.calls, /vault unlock/, "no TTY: the shim sends no unlock, it only names it");
+  });
+
+  test(`${name}: the unlock hint wears the face last worn through the shim, never the bare command`, async () => {
+    const r = await run(shim, ["up"], { wornFace: 2, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, new RegExp(`open it on a terminal: lares-container\\.${name} vault unlock --all --face 2 \\(every face the credential opens, wearing h2; one face: --face N\\)`));
+    assert.doesNotMatch(r.stderr, new RegExp(`vault unlock(?! --all)(?! --face)\\s*$`, "m"));
+  });
+
+  test(`${name}: a vault unlock --face N that lands remembers the face to wear; a refused one, and a bare one, remember nothing`, async () => {
+    const worn = await run(shim, ["vault", "unlock", "--face", "1"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(worn.status, 0, worn.stderr);
+    assert.match(worn.calls, /exec (?:-e LARES_EXEC_TAG )?(?:-T )?lares node \S+ vault unlock --face 1/);
+    assert.equal(worn.worn, "1");
+    const refused = await run(shim, ["vault", "unlock", "--face", "2"], { wornFace: 1, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "1" } });
+    assert.notEqual(refused.status, 0);
+    assert.equal(refused.worn, "1");
+    const bare = await run(shim, ["vault", "unlock", "--all"], { wornFace: 1, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(bare.worn, "1");
   });
 
   test(`${name}: CONTROL a vessel that holds its key draws no unlock line`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":true}}}' } });
     assert.equal(r.status, 0, r.stderr);
     assert.doesNotMatch(r.stderr, /holding no vessel key/);
+  });
+
+  /** The revision the shim computes: HEAD, marked `-dirty` while the tree holds changes. */
+  const checkoutRev = () => {
+    const head = spawnSync("git", ["-C", ROOT, "rev-parse", "HEAD"], { encoding: "utf8" }).stdout.trim();
+    const dirty = spawnSync("git", ["-C", ROOT, "status", "--porcelain", "--untracked-files=no"], { encoding: "utf8" }).stdout.trim() !== "";
+    return dirty ? `${head}-dirty` : head;
+  };
+
+  test(`${name}: up warns when the image's revision label differs from HEAD, naming both`, async () => {
+    const head = checkoutRev();
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "0123456789abcdef0123456789abcdef01234567", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /image names revision 0123456789abcdef0123456789abcdef01234567 and the checkout /);
+    if (!head.endsWith("-dirty")) {
+      assert.ok(r.stderr.includes(head), "the warning names the checkout's head");
+      assert.ok(r.stderr.includes(`rebuild with \`tools/lares-container.${name} build\``), "the hint names the shim's build verb, never a bare compose build");
+    } else {
+      assert.match(r.stderr, /commit first/);
+    }
+    assert.doesNotMatch(r.stderr, /docker compose -f \S+ build|GIT_REV=/, "no hint names a bare compose build that skips the env file");
+    assert.doesNotMatch(r.stderr, /rebuild the image \(`docker compose build`\)/);
+  });
+
+  test(`${name}: a label carrying control characters prints without them`, async () => {
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: "\u001b[31mevil\u0085\u009b[0m", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stderr, /[\u001b\u0085\u009b]/);
+  });
+
+  test(`${name}: CONTROL up stays silent about the revision when the image names the checkout's rev`, async () => {
+    const head = checkoutRev();
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: head, FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":true}}}' } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.stderr, /image names revision/);
+    assert.doesNotMatch(r.stderr, /no git checkout/);
+  });
+
+  test(`${name}: every stand the shim performs reads the image's revision: the bare vessel stand and a restart warn as up warns`, async () => {
+    const stale = "0123456789abcdef0123456789abcdef01234567";
+    const unlocked = '{"data":{"door":{"unlocked":true}}}';
+    // The bare stand, no vessel standing: the fake's `ps -q` answers the image once the stand ran (FAKE_STOOD_ID).
+    const bare = await run(shim, ["vessel", "stand"], { env: { ...MOUNTS, FAKE_STOOD_ID: "cid", FAKE_IMAGE_REV: stale, FAKE_CUSTODY_OUTPUT: unlocked } });
+    assert.equal(bare.status, 0, bare.stderr);
+    assert.match(bare.stderr, new RegExp(`image names revision ${stale}`), "the bare stand warns");
+    const restand = await run(shim, ["vessel", "stand"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: stale, FAKE_CUSTODY_OUTPUT: unlocked, FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(restand.status, 0, restand.stderr);
+    assert.match(restand.stderr, new RegExp(`image names revision ${stale}`), "a restart warns");
+    // CONTROL: an image that names the checkout's rev stays silent on both paths.
+    const head = checkoutRev();
+    const same = await run(shim, ["vessel", "stand"], { env: { ...MOUNTS, FAKE_STOOD_ID: "cid", FAKE_IMAGE_REV: head, FAKE_CUSTODY_OUTPUT: unlocked } });
+    assert.equal(same.status, 0, same.stderr);
+    assert.doesNotMatch(same.stderr, /image names revision/);
   });
 
   test(`${name}: a restart the shim performs names vault unlock again`, async () => {
@@ -136,7 +363,7 @@ for (const [name, shim] of shims) {
   test(`${name}: vault lock routes to the CLI inside the standing vessel`, async () => {
     const r = await run(shim, ["vault", "lock"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vault lock/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault lock/);
   });
 
   test(`${name}: CONTROL attach verdict does not restart`, async () => {
@@ -154,7 +381,7 @@ for (const [name, shim] of shims) {
     // The one exec a fresh stand makes: the custody door's read, after which the shim names the unlock.
     const execs = r.calls.split("\n").filter((line) => /compose .*exec /.test(line) || /^compose exec |(^| )exec /.test(line));
     assert.equal(execs.length, 1, r.calls);
-    assert.match(execs[0], /exec -T lares node \S+ vault status --json/);
+    assert.match(execs[0], /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vault status --json/);
     assert.match(r.stderr, NAMES_UNLOCK);
   });
 
@@ -163,7 +390,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand --observe --json[\s\S]*restart lares[\s\S]*up -d --wait lares/);
     // The acting stand never runs inside the container: the one exec carries --observe.
     assert.doesNotMatch(r.calls, /vessel stand\s*$/m);
   });
@@ -182,7 +409,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel stand --json --observe/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel stand --json --observe/);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
 
@@ -191,7 +418,7 @@ for (const [name, shim] of shims) {
       env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"attach","reason":"steady"}}}' },
     });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --observe --json/);
     assert.equal((r.calls.match(/--observe --json/g) ?? []).length, 1);
     assert.doesNotMatch(r.calls, /restart lares/);
   });
@@ -210,7 +437,7 @@ for (const [name, shim] of shims) {
   });
 
   test(`${name}: a standing check that fails after a verb landed exits non-zero and says so`, async () => {
-    const r = await run(shim, ["persona", "wear", "0"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
+    const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_RC: "1" } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /the standing check after it answered no verdict/);
     assert.doesNotMatch(r.calls, /restart lares/);
@@ -218,16 +445,16 @@ for (const [name, shim] of shims) {
 
   test(`${name}: a standing check that exits zero and names no verdict never passes as "no lift"`, async () => {
     for (const answer of ["", "not json", '{"data":{}}', '{"data":{"standing":{"act":"dance"}}}']) {
-      const r = await run(shim, ["persona", "wear", "0"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer } });
+      const r = await run(shim, ["persona", "new", "1", "--name", "probe"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: answer } });
       assert.equal(r.status, 1, JSON.stringify(answer));
       assert.match(r.stderr, /answered no verdict/);
     }
   });
 
   test(`${name}: option-bearing host stand routes to the CLI`, async () => {
-    const r = await run(shim, ["vessel", "stand", "--install"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    const r = await run(shim, ["vessel", "stand", "--init"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --install/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --init/);
   });
 
   test(`${name}: vessel stop stops the container from the host, never from inside it`, async () => {
@@ -241,7 +468,7 @@ for (const [name, shim] of shims) {
     for (const argv of [["vessel", "clear", "--force"], ["vessel", "rite", "rebirth"]]) {
       const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
       assert.equal(r.status, 2, argv.join(" "));
-      assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs/);
+      assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs/);
       assert.doesNotMatch(r.stderr, /no pave or wipe command/);
     }
   });
@@ -250,14 +477,14 @@ for (const [name, shim] of shims) {
     const argv = ["vessel", "stand", "--restart"];
     const r = await run(shim, argv, { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "2" } });
     assert.equal(r.status, 2, argv.join(" "));
-    assert.match(r.calls, /exec -T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart\s*$/m);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel stand --restart\s*$/m);
     assert.doesNotMatch(r.stderr, /takes no option through this shim/);
   });
 
   test(`${name}: CONTROL another vessel rite still routes to the CLI`, async () => {
     const r = await run(shim, ["vessel", "rite", "quorum"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.calls, /exec -T lares node \S+ vessel rite quorum/);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node \S+ vessel rite quorum/);
   });
 
   test(`${name}: a capture path holding a quote and a dollar sign rides the override as a literal`, async () => {
@@ -276,17 +503,205 @@ for (const [name, shim] of shims) {
     assert.match((await run(shim, ["down"], { env: MOUNTS })).calls, /down --remove-orphans/);
   });
 
+  // THE CENSUS BEFORE A STOP (operator ruling R3): a stop never drops content silently.
+  const STANDING = { ...MOUNTS, FAKE_RUNNING_ID: "vessel" };
+  const CLEAN = "census: clean — no save waits in memory, and the disk projector owes no carrier";
+  const ITEMS = "held-save  save-unbooked  doc doc-heron  2 save(s) in memory  bag notes\ncarrier  pending  lar:///ha.ka.ba/notes/pond  bag notes  island wiki";
+  const stopped = (calls) => /down --remove-orphans/.test(calls);
+
+  test(`${name}: down over a standing vessel asks the census first, and a clean answer stops it`, async () => {
+    const r = await run(shim, ["down", "--timeout", "5"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /exec (?:-e LARES_EXEC_TAG )?-T lares node packages\/lares-cli\/bin\/lares\.mjs vessel census --no-json/);
+    assert.ok(r.calls.indexOf("vessel census") < r.calls.indexOf("down --remove-orphans"), r.calls);
+    // down's own flags still pass through.
+    assert.match(r.calls, /down --remove-orphans --timeout 5/);
+  });
+
+  test(`${name}: a census naming items refuses with no terminal, listing each, and stops nothing`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /held-save {2}save-unbooked {2}doc doc-heron/);
+    assert.match(r.stderr, /carrier {2}pending {2}lar:\/\/\/ha\.ka\.ba\/notes\/pond/);
+    assert.match(r.stderr, /vault unlock/);
+    assert.match(r.stderr, /accept-loss/);
+    assert.match(r.stderr, /no terminal/);
+    assert.equal(stopped(r.calls), false, r.calls);
+  });
+
+  test(`${name}: a census that cannot answer refuses by name, never a silent stop`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1", FAKE_CENSUS_ERR: "container wedged" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /could not answer/);
+    assert.match(r.stderr, /check .*lares-container.* logs/i);
+    assert.doesNotMatch(r.stderr, /container wedged/);
+    assert.equal(stopped(r.calls), false, r.calls);
+    // An exit of zero that names no clean verdict never reads clean.
+    const mute = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "0" } });
+    assert.equal(mute.status, 2);
+    assert.equal(stopped(mute.calls), false, mute.calls);
+  });
+
+  test(`${name}: a locked hearth's census says unlock first, then down, never "could not answer"`, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "2", FAKE_CENSUS_ERR: "census: vessel locked: run `lares vault unlock`, then down" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /vessel locked: run tools\/lares-container\.(sh|ps1) vault unlock, then down/);
+    assert.doesNotMatch(r.stderr, /could not answer/);
+    assert.equal(stopped(r.calls), false, r.calls);
+  });
+
+  test(`${name}: up translates compose failure after its own error`, async () => {
+    const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_UP_RC: "1" } });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /the vessel did not become ready — check tools\/lares-container\.sh logs; if it already runs, run up again/);
+  });
+
+  test(`${name}: a ps that fails refuses the stop with no terminal`, async () => {
+    const r = await run(shim, ["down"], { env: { ...MOUNTS, FAKE_PS_RC: "1" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /reads unknown/);
+    assert.equal(stopped(r.calls), false, r.calls);
+  });
+
+  test(`${name}: CONTROL down with no vessel standing asks no census`, async () => {
+    const r = await run(shim, ["down"], { env: MOUNTS });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /vessel census/);
+    assert.ok(stopped(r.calls));
+  });
+
+  test(`${name}: on a terminal, accept-loss typed stops; another word refuses`, { skip: !haveScript }, async () => {
+    const items = { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" };
+    const accepted = await run(shim, ["down"], { env: items, tty: "accept-loss\n" });
+    assert.equal(accepted.status, 0, accepted.stdout);
+    assert.match(accepted.stdout, /doc doc-heron/);
+    assert.match(accepted.stdout, /Type accept-loss/);
+    assert.ok(stopped(accepted.calls), accepted.calls);
+    const wrong = await run(shim, ["down"], { env: items, tty: "yes\n" });
+    assert.notEqual(wrong.status, 0, wrong.stdout);
+    assert.match(wrong.stdout, /did not read accept-loss/);
+    assert.equal(stopped(wrong.calls), false, wrong.calls);
+  });
+
+  test(`${name}: on a terminal, a census that cannot answer offers accept-loss`, { skip: !haveScript }, async () => {
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_RC: "1" }, tty: "accept-loss\n" });
+    assert.equal(r.status, 0, r.stdout);
+    assert.match(r.stdout, /could not answer/);
+    assert.ok(stopped(r.calls), r.calls);
+  });
+
   test(`${name}: --capture binds read-only under /capture/<n>; a home directory whole refuses`, async () => {
     const dir = await mkdtemp(join(tmpdir(), "cap-"));
     try {
       const r = await run(shim, ["up", "--capture", dir], { env: MOUNTS });
       assert.match(r.calls, /target: \/capture\/1/);
       assert.match(r.calls, /read_only: true/);
-      const bad = await run(shim, ["up", "--capture", process.env.HOME], { env: MOUNTS });
+      const bad = await run(shim, ["up", "--capture", "/home"], { env: MOUNTS });
       assert.equal(bad.status, 2);
       assert.match(bad.stderr, /home directory/);
       assert.equal(bad.calls, "");
     } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test(`${name}: --workspace binds read-write under /lar/workspaces/<name>; LARES_WORKSPACES stands on every up`, async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ws-"));
+    const other = await mkdtemp(join(tmpdir(), "ws2-"));
+    try {
+      const r = await run(shim, ["up", "--workspace", `field-notes=${dir}`], { env: { ...MOUNTS, LARES_WORKSPACES: `drafts=${other}` } });
+      assert.equal(r.status, 0, r.stderr);
+      assert.match(r.calls, /target: \/lar\/workspaces\/field-notes/);
+      assert.match(r.calls, /target: \/lar\/workspaces\/drafts/);
+      assert.doesNotMatch(r.calls, /workspaces\/field-notes\n\s+read_only/);
+      const twice = await run(shim, ["up", "--workspace", `a=${dir}`, "--workspace", `a=${other}`], { env: MOUNTS });
+      assert.equal(twice.status, 2);
+      assert.match(twice.stderr, /binds once/);
+      assert.equal(twice.calls, "");
+    } finally { await rm(dir, { recursive: true, force: true }); await rm(other, { recursive: true, force: true }); }
+  });
+
+  test(`${name}: a restart keeps every LARES_WORKSPACES bind`, async () => {
+    const dir = await mkdtemp(join(tmpdir(), "ws-restart-"));
+    try {
+      const r = await run(shim, ["persona", "new", "0", "--name", "ci-face"], {
+        env: { ...MOUNTS, LARES_WORKSPACES: `field-notes=${dir}`, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+      });
+      assert.equal(r.status, 0, r.stderr);
+      assert.match(r.calls, /restart lares[\s\S]*up -d --wait lares/);
+      assert.match(r.calls, /target: \/lar\/workspaces\/field-notes/);
+    } finally { await rm(dir, { recursive: true, force: true }); }
+  });
+
+  test(`${name}: a workspace inside the checkout or the hearth refuses by name, before docker runs`, async () => {
+    const inCheckout = await run(shim, ["up", "--workspace", `tree=${join(ROOT, "tools")}`], { env: MOUNTS });
+    assert.equal(inCheckout.status, 2);
+    assert.match(inCheckout.stderr, /inside the checkout/);
+    assert.equal(inCheckout.calls, "");
+    const inHearth = await run(shim, ["up", "--workspace", "deep=@HOUSE@/hearth"], { env: MOUNTS });
+    assert.equal(inHearth.status, 2);
+    assert.match(inHearth.stderr, /inside the hearth/);
+    assert.equal(inHearth.calls, "");
+    const badName = await run(shim, ["up", "--workspace", `../x=${tmpdir()}`], { env: MOUNTS });
+    assert.equal(badName.status, 2);
+    assert.match(badName.stderr, /names no workspace/);
+  });
+
+  test(`${name}: a relative LARES_HOUSE refuses by name, before docker runs`, async () => {
+    const r = await run(shim, ["vessel", "read"], { env: { LARES_HOUSE: "house", LARES_WORKSPACE: "/w" } });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /LARES_HOUSE \(house\) reads relative/);
+    assert.equal(r.calls, "");
+  });
+
+  test(`${name}: an env file inside one of the house's binds refuses by name, before docker runs`, async () => {
+    const inside = await run(shim, ["vessel", "read"], { env: { HOME: "@HOUSE@/config/operator", LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w" }, envFile: "# names nothing\n" });
+    assert.equal(inside.status, 2, inside.stderr);
+    assert.match(inside.stderr, /sits inside LARES_HOUSE's config bind/);
+    assert.equal(inside.calls, "");
+    // CONTROL: an env file beside the house root, in no bind, serves.
+    const beside = await run(shim, ["vessel", "read"], { env: { HOME: "@HOUSE@/operator", LARES_HOUSE: "@HOUSE@", LARES_WORKSPACE: "/w" }, envFile: "# names nothing\n" });
+    assert.equal(beside.status, 0, beside.stderr);
+  });
+
+  test(`${name}: up, found and the offline door make the house's five bound classes before a container stands`, async () => {
+    for (const argv of [["up"], ["found"]]) {
+      const r = await run(shim, argv, { env: MOUNTS });
+      assert.equal(r.status, 0, r.stderr);
+      assert.deepEqual(r.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
+    }
+    const offline = await run(shim, ["vessel", "read"], { env: MOUNTS });
+    assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
+  });
+
+  // THE IMAGE BUILDS THROUGH THE SHIM: a bare `docker compose build` reads no env file and fails on LARES_HOUSE.
+  test(`${name}: build runs compose build through the env file, baking the checkout's HEAD`, async () => {
+    const r = await run(shim, ["build", "--no-cache"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=/w\n", checkout: "clean" });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /compose --env-file \S*\/home\/\.lares\/lares-surface\.env -f \S+ build --no-cache lares/);
+    assert.match(r.calls, /^GIT_REV=[0-9a-f]{40}$/m, r.calls);
+    assert.match(r.stderr, /rebuilding the vessel image \(every package\) from the committed checkout at [0-9a-f]{40}/);
+    const stamped = r.calls.match(/^GIT_REV=([0-9a-f]{40})$/m)[1];
+    assert.ok(r.stderr.includes(`stands rebuilt, stamped revision ${stamped}`), "the done line names the revision it stamped");
+  });
+
+  test(`${name}: build over a dirty checkout refuses by name, before docker builds`, async () => {
+    const r = await run(shim, ["build"], { env: MOUNTS, checkout: "dirty" });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /build refuses: the checkout holds uncommitted tracked changes[\s\S]*commit first/);
+    assert.doesNotMatch(r.calls, / build /);
+  });
+
+  test(`${name}: build with no checkout refuses by name, before docker builds`, async () => {
+    const r = await run(shim, ["build"], { env: MOUNTS, checkout: "none" });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /build refuses: no git checkout answers/);
+    assert.doesNotMatch(r.calls, / build /);
+  });
+
+  test(`${name}: the usage line names build`, async () => {
+    const r = await run(shim, [], { env: MOUNTS });
+    assert.equal(r.status, 2);
+    assert.match(r.stderr, /usage: lares-container\.(sh|ps1) [^\n]*\|build\|/);
+    assert.match(r.stderr, /build rebuilds the vessel image, every package, from the committed checkout/);
   });
 
   test(`${name}: no argv carries the docker socket`, async () => {
@@ -295,3 +710,61 @@ for (const [name, shim] of shims) {
     }
   });
 }
+
+// A LONE SIGNAL TO THE SHIM: docker forwards none to an exec'd process and a killed `compose run` client leaves its
+// container running (tests/host-bridge-real-docker.test.ts measured it), so the shim's own stop must run on a TERM,
+// HUP or QUIT sent to its pid alone. The fake docker sleeps on the act and logs every call, the stop among them.
+async function loneSignal(shim, sig, { standing }) {
+  const dir = await mkdtemp(join(tmpdir(), "lares-container-sig-"));
+  try {
+    const log = join(dir, "calls.log");
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n` +
+      `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *" sh -c "*|*" stop "*|*" rm -f "*) exit 0;; esac\n` +
+      `case " $* " in *" exec "*|*" run "*) echo $$ > "$CALL_LOG.pid"; exec sleep 30;; esac\nexit 0\n`);
+    await chmod(join(dir, "docker"), 0o755);
+    const compose = join(dir, "docker-compose.surface.yml");
+    await writeFile(compose, "services: {}\n");
+    const home = join(dir, "home");
+    await mkdir(join(home, ".lares"), { recursive: true });
+    const env = { PATH: `${dir}:${process.env.PATH}`, CALL_LOG: log, HOME: home, LARES_COMPOSE_FILE: compose,
+      LARES_HOUSE: join(dir, "house"), LARES_WORKSPACE: "/w", ...(standing ? { FAKE_RUNNING_ID: "cid" } : {}) };
+    const cmd = shim === SH ? ["sh", [shim, "persona", "list"]] : ["pwsh", ["-NoProfile", "-File", shim, "persona", "list"]];
+    const child = spawn(cmd[0], cmd[1], { env, stdio: "ignore" });
+    const ended = new Promise((r) => child.on("exit", (code, signal) => r({ code, signal })));
+    let pid = 0;
+    for (let i = 0; i < 200 && !pid; i++) {
+      try { pid = Number((await readFile(`${log}.pid`, "utf8")).trim()); } catch { await new Promise((r) => setTimeout(r, 50)); }
+    }
+    assert.ok(pid > 0, "the fake act never started");
+    await new Promise((r) => setTimeout(r, 300));
+    process.kill(child.pid, sig);
+    const exit = await Promise.race([ended, new Promise((r) => setTimeout(() => r({ code: "hung", signal: null }), 20_000))]);
+    await new Promise((r) => setTimeout(r, 300));
+    let alive = true;
+    try { process.kill(pid, 0); } catch { alive = false; }
+    if (alive) process.kill(pid, "SIGKILL");
+    if (exit.code === "hung") child.kill("SIGKILL");
+    return { exit, alive, calls: await readFile(log, "utf8") };
+  } finally { await rm(dir, { recursive: true, force: true }); }
+}
+
+const CODE = { SIGTERM: 143, SIGHUP: 129, SIGQUIT: 131 };
+for (const [name, shim] of shims) {
+  for (const sig of ["SIGTERM", "SIGHUP"]) {
+    test(`${name}: a lone ${sig} to the shim stops the tagged vessel process and leaves no compose client`, async () => {
+      const { exit, alive, calls } = await lone(shim, sig, true);
+      assert.ok(exit.signal === sig || exit.code === CODE[sig], JSON.stringify(exit));
+      assert.equal(alive, false, "the fake compose client outlived the shim");
+      assert.match(calls, new RegExp(`exec -T lares sh -c .* stop ${sig.slice(3)} [0-9a-f]{16}`));
+    });
+  }
+  test(`${name}: a lone SIGTERM over the offline door stops and removes the named run container`, async () => {
+    const { exit, alive, calls } = await lone(shim, "SIGTERM", false);
+    assert.ok(exit.signal === "SIGTERM" || exit.code === 143, JSON.stringify(exit));
+    assert.equal(alive, false);
+    assert.match(calls, /stop -t 10 lares-offline-[0-9a-f]{16}/);
+    assert.match(calls, /rm -f lares-offline-[0-9a-f]{16}/);
+  });
+}
+async function lone(shim, sig, standing) { return loneSignal(shim, sig, { standing }); }

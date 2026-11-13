@@ -39,7 +39,7 @@ over real, genuinely-independent planes and emit sane rows. A LOAD-BEARING bifur
 claim awaits the bigger corpuses — a 12-doc sweep cannot seat one.
 
 Usage (the mempalace venv):
-  ~/.venv/bin/python3 run_projector.py run --sensorium <lararium>/sensoriums/human-text-lares-memes \
+  ~/.venv/bin/python3 run_projector.py run --sensorium <root>/sensoriums/human-text-lares-memes \
       [--rungs 28] [--arl-hi 200] [--arl-lo 1.6] [--trials 60] [--alpha-sig 0.05] \
       [--seed 333073] [--out <dir>]
 
@@ -129,7 +129,7 @@ def _read_planes(root: str) -> dict:
 
     Record order sorts on (source_file, cid): a stable, content-free corpus order every series
     reads through."""
-    from form_encoder import FormPalaceStore
+    from form_store import FormPalaceStore
     from sensorium import sensorium_paths
 
     paths = sensorium_paths(root)

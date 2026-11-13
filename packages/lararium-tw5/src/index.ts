@@ -39,7 +39,10 @@ export {
 export type { ActiveWikiSelectionSource } from "./active-wiki.js";
 export type { CameraMount } from "./tw5-camera.js";
 export { mountCamera } from "./tw5-camera.js";
-export { mountProjection, PROJECTION_FRAME, dispatchProjectedEvent } from "./tw5-projection.js";
+export { mountGlassCamera } from "./glass-camera.js";
+export { makeGlassPortAdaptor } from "./glass-port-adaptor.js";
+export { preloadsFromCasBlob } from "./cas-preloads.js";
+export { mountProjection, dispatchLarControlEvent, resendLarCamera } from "./tw5-projection.js";
 export {
   mountCoherenceProjection,
   wireCoherenceProjection,
@@ -107,23 +110,27 @@ export type {
 } from "./types/tiddlywiki.d.ts";
 
 export { IslandAdaptor } from "./island-adaptor.js";
-export { buildIslandRecipe } from "./island-recipe.js";
+export { buildIslandRecipe, wikiLandedCovers, bindRecoveryAtRest } from "./island-recipe.js";
 export type { BuildIslandRecipeInput, RecipeReadyBinding } from "./island-recipe.js";
 export { placeVerb, patchVerb, removeVerb, writeOutcome, dispatchVerb } from "./verb-vm.js";
 export type { VerbPlacement } from "./verb-vm.js";
 export { MemoryTiddlerStore } from "./memory-store.js";
 export { getOriginBag } from "./residency-surface.js";
-export { registerActionReactors, makeActionReactorFor, makeTw5Deserializer } from "./action-handler.js";
+export { registerActionReactors, makeActionReactorFor, isFaceOwnedLayer, makeTw5Deserializer, makeFresherCanonReactor, makeOverrideBasesReactor } from "./action-handler.js";
+export { CANON_OFFER_VERBS, registerCanonOfferVerbs, makeOfferMakeReactor, makeOfferListReactor, makeOfferShowReactor, makeOfferPromoteReactor, type CanonOfferVerbOptions } from "./canon-offer-verbs.js";
+export type { FaceTargetResolver } from "./action-handler.js";
+export { fresherThanBase, fresherAfterChange, listFresherCanon, type FresherCanon } from "./override-bases.js";
 export type { Tw5Deserializer } from "./action-handler.js";
 export { canonicalizeNativeCarrierText } from "./native-canonical.js";
 export type { NativeCanonicalCarrier } from "./native-canonical.js";
 export { makeWikiBehavior } from "./wiki-behavior.js";
+export { hasPortLease } from "./record-port-lease.js";
 export type { WikiBehaviorOptions } from "./wiki-behavior.js";
 export { startEngineWatch, ENGINE_WAITING_ALERT_TITLE } from "./engine-watch.js";
 export { startRecipeWatch } from "./recipe-watch.js";
 export type { ActionHandlerOptions } from "./action-handler.js";
 
-export { exportMemeText, exportCarrierFile } from "./meme-write.js";
+export { exportMemeText, exportCarrierFile, exportRecordCarrierFile } from "./meme-write.js";
 export type { CarrierFile } from "./meme-write.js";
 export { installLazyResolver, skinnyCid } from "./lazy-resolver.js";
 export type { CarrierResolver as LazyCarrierResolver } from "./lazy-resolver.js";
@@ -137,13 +144,14 @@ export { parseTaploFields, patchTomlKey, lintToml } from "./toml-ast.js";
 
 export { recipeUri } from "@lararium/mesh/lar-uris";
 
-export type { IslandContext, IslandBehavior } from "./island-context.js";
+export type { IslandContext, IslandBehavior, WritableOutcome } from "./island-context.js";
+export { controlOf } from "./island-context.js";
 export { composeIsland } from "./island-caps.js";
 export type { IslandCap, CapTeardown } from "./island-caps.js";
 export { hasCapture, TELEMETRY_FRAME } from "./capture/has-capture.js";
 export type { CaptureCapOptions } from "./capture/has-capture.js";
 export { VerbDispatcher, VerbTable, VERB_SURFACE, projectOntoSurface } from "./verb-dispatcher.js";
-export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, SurfaceDeclared } from "./verb-dispatcher.js";
+export type { VerbContext, VerbReactor, VerbDispatcherOptions, VerbSpec, VerbFence, SurfaceDeclared, SessionWorn } from "./verb-dispatcher.js";
 export { heedSummons } from "./verb-summons.js";
 export type { SummonsRequest, SummonsRelayOptions } from "./verb-summons.js";
 export { runLocalVerb, makeCapVerify } from "./verb-local-dispatch.js";
@@ -151,11 +159,15 @@ export type { CapVerify, RunLocalVerbOptions } from "./verb-local-dispatch.js";
 export { makeDaemonBehavior } from "./daemon-behavior.js";
 export type { DaemonBehaviorOptions } from "./daemon-behavior.js";
 export { seedDaemonUiTiddlers, makeSwitcherStateReactor, DAEMON_UI_TIDDLERS, SWITCHER_STATE_TITLE, LARES_SURFACE_STATE, LARES_SURFACE_TAG } from "./daemon-ui-tiddlers.js";
+export { KAHUA_SHADOW_PREFIX, kahuaShadowTitle, kahuaShadowOf, type KahuaShadow } from "./kahua-shadow.js";
+export { librarySlotUrl, kahuaLayerStore, liveKahuaFace, type LiveKahuaFace } from "./kahua-layer.js";
 export { seedDaemonPersonaTiddlers, makePersonaStateReactor, DAEMON_PERSONA_TIDDLERS, PERSONA_STATE_TITLE } from "./daemon-persona-tiddlers.js";
 export { seedDaemonCircleTiddlers, makeCircleStateReactor, DAEMON_CIRCLE_TIDDLERS, CIRCLE_STATE_TITLE } from "./daemon-circle-tiddlers.js";
 export { seedDaemonFlowTiddlers } from "./daemon-flow-tiddlers.js";
 export { seedDaemonProtocol } from "./daemon-protocol-seed.js";
 export { seedDaemonRosterTiddlers, DAEMON_ROSTER_TIDDLERS, ROSTER_STATE_TITLE, LIFECYCLE_APPROVE_CAP } from "./daemon-roster-tiddlers.js";
+export { seedDaemonIntentTiddlers, DAEMON_INTENT_TIDDLERS, makeIntentViewReactor, INTENT_VIEW_CAP, INTENT_STATE_TITLE, INTENT_PANE_TITLE } from "./daemon-intent-tiddlers.js";
+export { seedShadows, DAEMON_SEED_PLUGIN_PREFIX } from "./daemon-ui-tiddlers.js";
 
 export { IslandKernel } from "./island-kernel.js";
 export { runSovereignKernel } from "./sovereign-kernel.js";
@@ -178,7 +190,7 @@ export {
   makeWardAlertReactor, fileWardRefusal,
 } from "./worker-data-verbs.js";
 export type { ResidencyOpPost } from "./worker-data-verbs.js";
-// The FOLLOW-GRAPH verbs over the sovereign @circles doc (source of truth; PRIVATE, fleet-synced
+// The FOLLOW-GRAPH verbs over the sovereign circles-plane doc (source of truth; PRIVATE, fleet-synced
 // same-operator, NEVER federated). Both vessels register them through the shared operator-daemon-behavior.
 export {
   makeCircleReactors, makeCircleAddReactor, makeCircleRemoveReactor, makeCircleListReactor,
@@ -189,7 +201,7 @@ export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
 // thread calls them from its custody door.
 export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
 export type { PersonaSelfRow } from "./persona-selves-plane.js";
-// The CABAL-REALM verbs over @daemon — the OFFERING that feeds a realm, and the verdict-free capture-clock.
+// The CABAL-REALM verbs over daemon-plane — the OFFERING that feeds a realm, and the verdict-free capture-clock.
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
 // Verb-plane reactors (composite/repo-only — pono home is tw5, not node; both vessels hold them).
@@ -207,10 +219,12 @@ export type {
   WikiHandlerOptions, WikiMintHandlerOptions, PruneStaleOptions, WikiComposeOptions, DraftHandlerOptions,
 } from "./wiki-handler-options.js";
 export { makeCompactBagReactor, makeRotateRecipeReactor } from "./compaction-handlers.js";
+export { makeRestampBagTierReactor } from "./bag-tier-restamp.js";
+export type { RestampBagTierOptions } from "./bag-tier-restamp.js";
 export type { EpochHandlerOptions, RotateRecipeOptions } from "./compaction-handlers.js";
 export { makeResidencyStatsReactor } from "./residency-handlers.js";
 export type { ResidencyHandlerOptions } from "./residency-handlers.js";
-export { makeCatalogAccessor, findOrThrow } from "./catalog-accessor.js";
+export { makeCatalogAccessor, makeCatalogAccessorOver, findOrThrow } from "./catalog-accessor.js";
 export type { CatalogAccessor } from "./catalog-accessor.js";
 export { RECIPE_PLANES, effectiveRecipe, effectiveRecipeOf } from "./recipe-planes.js";
 export type { RecipePlane, EffectiveRecipe } from "./recipe-planes.js";
@@ -224,6 +238,8 @@ export type {
   WikiSlotComponent, DaemonCapDeps,
 } from "./core-caps.js";
 export { openDaemonVmCore, HostWorkingBindingRefusal } from "./daemon-vm-core.js";
+export { holdDaemonVm, DaemonRestarting, KAPAE_EMERGENCY_REASON, PROMOTE_RESTART_REASON } from "./daemon-vm-holder.js";
+export type { DaemonVmHolder } from "./daemon-vm-holder.js";
 export type {
   DaemonVmHost,
   DaemonVmCore,
@@ -244,6 +260,7 @@ export type {
 
 export * from "./memetic-wikitext-sensorium.js";
 export { readCarrierShape } from "./carrier-shape.js";
+export { memeticVerdict, metaParityFaults } from "./meta-parity.js";
 // THE ONE ROOT-META LOCATOR — every reader composes onto this, so semantics agree by construction.
 export { metaFenceAt, rootMetaFence, rootMetaFields, metaValueRaw } from "./root-meta.js";
 export type { MetaFenceSpan } from "./root-meta.js";
@@ -254,10 +271,12 @@ export type { MetaFenceSpan } from "./root-meta.js";
 // never the path — see carrier-files.ts.
 export {
   carrierFiles, readCarrierFiles, forgetCarrierFiles,
-  declaresCarrier, inSubmodule,
-  SUBMODULES,
+  declaresCarrier, inSubmodule, inFrozenSpecimen, outsideCorpus,
+  SUBMODULES, FROZEN_SPECIMENS,
 } from "./carrier-files.js";
 export type { CarrierDeclaration, CarrierDeclarationForm, CarrierFile as DeclaredCarrierFile } from "./carrier-files.js";
+// The carrier reader the genesis floor cut shares with every door that reads a carrier (`genesis-floor.ts`).
+export { deserializeCarrier, type CarrierReading } from "./deserializer.js";
 // THE ONE READER of WHICH HEADS THE GRAMMAR KNOWS. Four readers rebuilt it from four artifacts, two
 // of them off filenames — and a filename names a tiddler, never a head a call can wear. The VM answers
 // wherever a wiki holds the grammar; ONE fallback reads the packed plugin for a reader whose wiki does
@@ -270,7 +289,7 @@ export { getGrammar, resetGrammar } from "./grammar-cache.js";
 // positionals a scheme would steal.
 export {
   readSigilAttrs, sigilAttr, sigilAttrValue, quotableAttrs,
-  positionalsOf, schemeShapedPositionals, lostPositionals,
+  schemeShapedPositionals, lostPositionals,
 } from "./sigil-attrs.js";
 export type { SigilAttr, SigilValueKind, LostPositional } from "./sigil-attrs.js";
 export type { CarrierShape, CarrierMarks } from "./carrier-shape.js";
@@ -284,3 +303,10 @@ export {
   checkCarrierLifecycle,
 } from "./carrier-lifecycle.js";
 export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
+
+export { placedAskIsLocal } from "./daemon-behavior.js";
+
+export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PROMOTE_STATE_TITLE } from "./promote-ui-tiddlers.js";
+export { makeShareSetReactor, makeShareListReactor, readShareRows } from "./share-verbs.js";
+// The ONE spelling of a person's view-state set: the shared workbench's admit filter reads it (cabal-realm#/the-workbench).
+export { isPersonalTitle } from "./filters/lar-kind.js";

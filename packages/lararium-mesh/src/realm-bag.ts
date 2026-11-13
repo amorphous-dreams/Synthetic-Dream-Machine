@@ -2,7 +2,7 @@
  * realm-bag — a bag two operators keep THROUGH a relation, registered on the realm's shared CRDT.
  *
  * THE RULING (scale-stories-basket-one#/exit, 2026-09-11): "the shared bag registers in the realm's shared
- * CRDT, @crossroads names only that it exists, read at CONTRACT". Three planes, never fused
+ * CRDT, crossroads-plane names only that it exists, read at CONTRACT". Three planes, never fused
  * (cabal-realm#six-joints): the CABAL is the collective, the REALM its shared CRDT and resources, the NEXUS the
  * hardware. A bag two households keep is stuff held in common — it belongs to the REALM plane.
  *
@@ -26,8 +26,8 @@
  * HANDLE's prefix, for a bag the collective keeps. A persona root never stands here: the realm doc crosses to
  * every member and the announce names `keptBy` in public, so whatever key a record carries gets published.
  *
- * WHAT @CROSSROADS CARRIES: `{ bagUri, keptBy }` — that a ford stands here and who keeps it — never the doc,
- * never a tiddler, never the read cap (`crossroadsAnnounceOf`).
+ * WHAT THE REALM-ANNOUNCE BOARD CARRIES (`realmAnnounceDocUrl`): `{ bagUri, keptBy }` — that a ford stands here and who
+ * keeps it — plus the doc for a PUBLIC-tier book alone; never a tiddler, never the read cap (`realmBagAnnounceOf`).
  *
  * THE READ CAP: CONTRACT — `{your-fleet ∪ a-cabal}` (cap-tier.ts). At the wire the `RealmBagGate` federates
  * the realm doc and each registered bag's doc to a peer the nexus-doc consult names a MEMBER, and to nobody
@@ -55,6 +55,7 @@ import {
 import type { FederationGate, NexusMembership } from "./federation-gate.js";
 import type { CapTier } from "./cap-tier.js";
 import { storedLarRecord } from "./stored-record.js";
+import { ownEntry } from "./stored-value.js";
 
 /** The realm plane's pointer namespace on a vessel's oracle plane. */
 export const REALM_DOC_URI = bagUri("realm");
@@ -76,7 +77,7 @@ export function realmStandingPointer(realmId: string): string { return `${REALM_
 export function writeRealmStanding(draft: LarDoc, realmId: string, standing: ReadonlyMap<string, RealmBagRegistration>): boolean {
   const key = realmStandingPointer(realmId);
   const text = JSON.stringify([...standing.values()].sort((a, b) => a.bagUri < b.bagUri ? -1 : a.bagUri > b.bagUri ? 1 : 0));
-  if (tiddlerText(draft.tiddlers[key]) === text) return false;
+  if (tiddlerText(ownEntry(draft.tiddlers, key)) === text) return false;
   draft.tiddlers[key] = storedLarRecord(key, { text }, realmId);
   return true;
 }
@@ -92,13 +93,26 @@ export function readRealmStanding(text: string | null | undefined): ReadonlyMap<
   return out;
 }
 
+/**
+ * The doc url a realm's STANDING registration names for `bagUri`, read off a vessel's OWN catalog: the realm id the
+ * vessel stands in, its pinned realm-doc pointer (a realm the vessel left reads none), and the standing verdict the
+ * vessel's own plane folded. Null where the vessel stands in no realm, holds no verdict, or no registration stands for
+ * the bag. A reader that wants the live system documents asks the Kahu predicate first: this names a url, never a reach.
+ */
+export function realmStandingDocUrl(catalog: LarDoc | undefined | null, bagUri: string): string | null {
+  const realmId = tiddlerText(ownEntry(catalog?.tiddlers, REALM_ID_TIDDLER));
+  if (!realmId) return null;
+  if (tiddlerText(ownEntry(catalog?.tiddlers, realmDocPointer(realmId))) !== realmDocUrl(realmId)) return null;
+  return readRealmStanding(tiddlerText(ownEntry(catalog?.tiddlers, realmStandingPointer(realmId)))).get(bagUri)?.docUrl ?? null;
+}
+
 /** The signing / content domain of a realm-bag registration — minted in the registry (`domains.ts`). */
 export { REALM_BAG_DOMAIN };
 
 /** The tiddler prefix registrations accrete under on the realm doc. */
 export const REALM_BAG_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bags/" as const;
 
-/** The tiddler prefix the @crossroads announce rides under — `{ bagUri, keptBy }` and nothing more. */
+/** The tiddler prefix a realm announce rides under on the Nexus's realm-announce board (`realmAnnounceDocUrl`). */
 export const REALM_BAG_ANNOUNCE_PREFIX = "lar:///ha.ka.ba/dreamnet/realm-bag-announce/" as const;
 
 /** The steward's seal and signer, and the reading of a steward's name: the record's own vocabulary. */
@@ -155,7 +169,7 @@ export interface RealmBagRegistration {
 
 /** The charter a named hand holds — the record's own `charters` entry, else the realm the record lives in. */
 export function charterOfSteward(rec: Omit<RealmBagRegistration, "signatures">, nym: string): string {
-  return rec.charters?.[nym.toLowerCase()] ?? rec.charters?.[nym] ?? rec.realmId;
+  return ownEntry(rec.charters, nym.toLowerCase()) ?? ownEntry(rec.charters, nym) ?? rec.realmId;
 }
 
 /** Every charter this registration's hands hold — the realm's own, plus each hand that keeps it under another. */
@@ -249,12 +263,21 @@ export async function coSignRealmBagRegistration(
 
 /** What a fold may hand the seal verifier beyond the record itself: this reader's own knowledge of a Handle
  *  steward (`StewardSealReading`). A face steward's seal reads the same with or without it. */
-export type RealmBagFoldOptions = StewardSealReading;
+export type RealmBagFoldOptions = StewardSealReading & {
+  /**
+   * THE VESSEL'S PRIVATE DOCUMENTS, by id (lane `ralias`): true where this reader classes the document `vessel-private`
+   * (its daemon document, a face's plane, its catalog). A registration naming one never counts here, whoever sealed it:
+   * a seal proves who keeps a book, never that its keepers hold the book to register. The share guard withholds the document
+   * either way; this refusal keeps the fold from seating it. A consult that throws refuses (fail closed).
+   */
+  readonly vesselPrivate?: (documentId: string) => boolean;
+};
 
 /**
  * Does this registration COUNT for `realmId`? Fail-closed at every shore: a foreign realm, an empty steward
  * set, a name that reads neither class or that the record spells twice, a tier this fold does not know, a
- * steward with no verifying seal, a seal under a name the record does not keep — each reads false. n-of-n and
+ * document this reader classes vessel-private, a steward with no verifying seal, a seal under a name the record does
+ * not keep — each reads false. n-of-n and
  * nothing beside it: every named steward sealed, once, and no other hand stands on the record.
  */
 export async function realmBagRegistrationCounts(
@@ -272,6 +295,11 @@ export async function realmBagRegistrationCounts(
   // A lease reads as a ROLL COUNT — a torn one reads as no lease at all, which would widen the write.
   if (rec.expiry !== undefined && (!Number.isInteger(rec.expiry) || rec.expiry < 0)) return false;
   if (!rec.bagUri.startsWith("lar:///") || !rec.docUrl.startsWith("automerge:")) return false;
+  if (opts?.vesselPrivate) {
+    try {
+      if (opts.vesselPrivate(String(interpretAsDocumentId(rec.docUrl as AutomergeUrl)))) return false;
+    } catch { return false; }
+  }
   const bytes = realmBagBytes(rec);
   // EXACTLY THE KEPT NAMES, EACH ONCE, IN THEIR CANONICAL SPELLING. A name the record spells twice, a name in
   // another case (the seal's own verifier reads the name's class), and a seal under a name the record does not
@@ -356,6 +384,12 @@ function coerceRegistration(parsed: unknown): RealmBagRegistration | null {
   };
 }
 
+/** A registration's bytes as a kept file or a row holds them, read at the exact floor shape; torn or foreign bytes read null. */
+export function parseRealmBagRegistration(text: string): RealmBagRegistration | null {
+  if (text.length > REALM_BAG_RECORD_MAX) return null;
+  try { return coerceRegistration(JSON.parse(text)); } catch { return null; }
+}
+
 /** Every well-formed registration the realm doc carries (unverified — the fold decides trust). */
 export function realmBagRegistrationsFromDoc(doc: LarDoc | undefined | null): RealmBagRegistration[] {
   const tiddlers = doc?.tiddlers;
@@ -437,18 +471,22 @@ export function mayWriteRealmBag(
   return rec.keptBy.some((s) => s.toLowerCase() === want);
 }
 
-// ── THE @CROSSROADS ANNOUNCE ─────────────────────────────────────────────────────────────────────
+// ── THE REALM ANNOUNCE ───────────────────────────────────────────────────────────────────────────
 
 /**
  * What the public plane carries about a realm bag — that it exists, who keeps it, and (for a PUBLIC-tier book
  * ALONE) the doc the book lives in.
  *
- * THE RULING (2026-09-13): "the @crossroads ANNOUNCE carries the doc url for PUBLIC-tier books only; the realm
+ * THE RULING (2026-09-13): "the crossroads-plane ANNOUNCE carries the doc url for PUBLIC-tier books only; the realm
  * doc never emits a public face; the Herm follows announces." A carrier reads the PUBLIC tier by hash, and the
  * declaration that a book reads public lives on the realm doc — which withholds from a carrier. So a carrier
  * could never learn WHICH books it may carry. The public plane closes that circle and nothing else moves: a
  * CONTRACT-tier announce carries `{ bagUri, keptBy }` exactly as before, and a public one adds only the address
  * of a book the registration already declared readable by hash to anyone.
+ *
+ * The announce rests on the Nexus's realm-announce board (`realmAnnounceDocUrl`), a public board the federation gate
+ * carries beside the crossroads document. No recipe mounts it and no mirror names it, so a house-minted announce never
+ * reaches plaintext disk, and a record in the crossroads mirror never folds here as a book.
  */
 export interface RealmBagAnnounce {
   readonly kind:   typeof REALM_BAG_ANNOUNCE_DOMAIN;
@@ -462,9 +500,9 @@ export function realmBagAnnounceKey(bagUri: string): string {
   return `${REALM_BAG_ANNOUNCE_PREFIX}${encodeURIComponent(bagUri)}`;
 }
 
-/** The announce a registration projects onto @crossroads — the exists · kept-by pair, plus the doc for a
+/** The announce a registration lands on the realm-announce board — the exists · kept-by pair, plus the doc for a
  *  PUBLIC-tier book alone; every tighter tier withholds the address exactly as it always did. */
-export function crossroadsAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
+export function realmBagAnnounceOf(rec: RealmBagRegistration): RealmBagAnnounce {
   return {
     kind: REALM_BAG_ANNOUNCE_DOMAIN, bagUri: rec.bagUri, keptBy: [...rec.keptBy],
     ...(rec.readTier === "public" ? { docUrl: rec.docUrl } : {}),
@@ -478,8 +516,8 @@ export interface PublicRealmBook {
 }
 
 /**
- * THE CARRIER'S FOLD — every PUBLIC book the @crossroads board announces, read off a carrier's OWN replica of
- * that board. A place that holds no charter and no realm doc learns here which books it may carry BY HASH, and
+ * THE CARRIER'S FOLD — every PUBLIC book the realm-announce board names, read off a carrier's OWN replica of
+ * that board (`realmAnnounceDocUrl`). A place that holds no charter and no realm doc learns here which books it may carry BY HASH, and
  * learns nothing else: an announce without a doc url (every tier tighter than PUBLIC) names no book, a torn
  * payload skips, and an empty board folds empty. The fold grants no read cap — the wire gate still decides
  * which documents cross, and the tier the REGISTRATION declared still decides what the shore serves.
@@ -504,10 +542,10 @@ export function publicRealmBooksFromDoc(doc: LarDoc | undefined | null): PublicR
   return out;
 }
 
-/** Land the announce on the crossroads draft. Call INSIDE a `handle.change()` callback. */
+/** Land the announce on the realm-announce board's draft. Call INSIDE a `handle.change()` callback. */
 export function writeRealmBagAnnounce(draft: LarDoc, rec: RealmBagRegistration): void {
   const key = realmBagAnnounceKey(rec.bagUri);
-  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(crossroadsAnnounceOf(rec)) }, "realm-bag");
+  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(realmBagAnnounceOf(rec)) }, "realm-bag");
 }
 
 // ── THE WIRE GATE ────────────────────────────────────────────────────────────────────────────────

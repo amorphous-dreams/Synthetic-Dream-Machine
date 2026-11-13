@@ -127,8 +127,8 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
 
     // ── the island door ───────────────────────────────────────────────────────────────────────
     lar = await targetInstance();
-    islandDir = join(lar.root, "bags/lares", REL_DIR);
-    islandIn = join(lar.root, "bags/parity-in", REL_DIR);
+    islandDir = join(lar.root, "projections/bags/lares", REL_DIR);
+    islandIn = join(lar.root, "projections/bags/parity-in", REL_DIR);
     laySource(islandIn);
     const r = await lar.cli(["ingest", "--source", islandIn, "--to", BAG_URI, "--apply", "--yes", "--json"]);
     if (r.json?.["ok"] !== true) throw new Error(`ingest failed: ${said(r)}`);
@@ -283,7 +283,7 @@ describe.skipIf(gaps.length > 0)("★ NON-MEME PARITY — one file, two doors, o
   test("NAMED: the server explodes the pack into per-member .tid files; the island keeps it packed", () => {
     for (const t of PACK_MEMBERS) {
       expect(existsSync(join(serverOut, "../../..", `${t}.tid`)), `server: tiddlers/${t}.tid`).toBe(true);
-      expect(walk(join(lar.root, "bags/lares")).some((f) => f.endsWith(`${t}.tid`)), `island: ${t}.tid must not exist`).toBe(false);
+      expect(walk(join(lar.root, "projections/bags/lares")).some((f) => f.endsWith(`${t}.tid`)), `island: ${t}.tid must not exist`).toBe(false);
     }
     // The pack owns no file under the mirror: its members ride records, and REPACK re-renders it whole.
     expect(existsSync(join(islandDir, "pack.json")), "a pack never projects back").toBe(false);

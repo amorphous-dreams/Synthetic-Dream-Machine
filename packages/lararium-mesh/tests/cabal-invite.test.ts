@@ -106,11 +106,10 @@ describe("the DreamNet opens invite-only", () => {
   });
 
   test("a payload of the wrong DOMAIN is not an invite, whatever it claims", async () => {
-    const notAnInvite = { ...(await mint()), kind: "nexus-treaty/v1" } as unknown as CabalInvite;
+    const notAnInvite = { ...(await mint()), kind: "nexus-treaty" } as unknown as CabalInvite;
     expect((await decide(notAnInvite)).refusal).toBe("no-invite");
     // The NAME, never the whole address: a literal here would be a domain written outside the registry,
-    // which is exactly what `domain-registry-witness` refuses. The frozen `/v1` tail is part of an opaque
-    // name, so the pin reads the name segment and lets the tail be.
-    expect(CABAL_INVITE_DOMAIN).toMatch(/\/domain\/cabal-invite(\/v1)?$/);
+    // The registry gives the invite its own unversioned name.
+    expect(CABAL_INVITE_DOMAIN).toMatch(/\/domain\/cabal-invite$/);
   });
 });

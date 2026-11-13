@@ -1,0 +1,125 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-slice2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — plan, 2026-11-07 (file date) — source `.lares-scratch/lease-end/seats/blind-opus-slice2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-slice2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/seats/blind-opus-slice2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! blind-opus-slice2.md — plan, 2026-11-07
+
+Verbatim scratch record `.lares-scratch/lease-end/seats/blind-opus-slice2.md` (plan, file date 2026-11-07); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+&lt;&lt;~ set lares=`aim` from=`lar://kiai:operator@hearth/lease-end.slice-two.reads` to=`lar://blind-warden-lease:agent@hearth/custody.reads.blind` mode=`seal` mu=`_!` stance=`🏛️ 🗡️` aperture=`12/measure` ooda-ha=`6/declare-glyphs` drift-ward=`a slice whose tests pass invites me to trust the comments' own account of the boundary`>>
+
+Blind-Warden-Lease: Lares (Tasked Spirit)
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/blind-custody-read-lease-end-slice-2-head-a49ce6`>>
+
+! Blind custody read: lease-end slice 2 (PR #203), head a49ce62e1
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/outcome`>>
+
+!! Outcome
+
+''Verdict: LAND at a49ce62e1.'' I found no P1 and no P2. No changed path seats, grants or keeps a face on absent, forked, rolled-back or set-aside proof. Unknown standing never reaches the ingest. The roll guard and the epoch fields still stand. All six findings are P3: they correct wording, close test gaps, or name residual windows that should be on the record.
+
+Measured: the six slice tests in the keyhive package passed (75/75), and the node live-wake test passed (2/2) in the lane worktree, run in a bwrap PID namespace with a scratch HOME and LAR_ROOT and LAR_BAGS unset. I also ran one scratch probe against the real Keyhive wasm, then deleted it. The worktree is clean.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/answers-to-the-six-questions`>>
+
+!! Answers to the six questions
+
+# ''Fail open: none found (MEASURED by reading the code, INFER on wiring).''
+#* The verifier walks lineage first, so a fork refuses by name even while standing reads unknown (face-grant-record.ts:142-144).
+#* Absent or unknown dyad standing returns pending (face-grant-record.ts:145-148).
+#* The seat adds its own hold on `aside` and `unknown` after any verifier `ok` (face-seat.ts:198-207). The weld test now spans from founderStanding to ingest (lease-epoch-doors-wired.test.ts:58-60).
+#* `owing` and `returned` read as standing through `standingOfReading` (face-seat-summons.ts:57-58), which matches the ruling.
+# ''Fail closed too far: none found.''
+#* An overtaken pass returns false (face-seat.ts:185, 214). The same `daemonChanged` that bumped `proofVersion` also set `dirty`, because `active` is non-null across every await of a pass (face-seat.ts:244). So the run loop always re-reads; the seat does not strand.
+#* Reordering the verifier lets an unknown-standing record with a non-fork lineage refusal reach `judged`. That is deterministic, because `personaKel` is the static `daemonAuth.personaKel` (operator-daemon-behavior.ts:1385). It would have refused the same way once standing arrived, so this is no regression.
+#* An `aside` refusal is no longer memoized (face-seat.ts:194), so a founder restored later can seat.
+# ''Commit boundary:'' no JS await sits between the `admit()` answer and the Keyhive call (daemon-event-store.ts:182 → 188; the ingest port at operator-daemon-behavior.ts:1404 is synchronous up to that call). The mutation itself still runs one microtask after the call. See F1.
+# ''The wake:'' the replica only wakes the seat and decides nothing. Standing comes from `dyadReader` (the browser's own board fold) or the vessel ring door (node). A forged or stale replica can cause extra passes, never a seat. A blank board materializes from pinned, byte-identical blank bytes (deterministic-doc.ts:151-167), the same way every birth site makes it (ceremony-core.ts:431, 1126; device-admit.ts:452). No clock decides standing. The clocks I did find bound waits only: `resolveBootDoc`'s hearth budget, and the browser reader's `findOrThrow` timeout, which answers `aside`. Both are pre-existing.
+# ''Roll guard and epoch fields:'' none burned early. The diff removes no epoch or roll source; `leaseEpoch`, `expectedEpoch` and `signedLeaseEpoch` all stand (face-join.ts:117/159, boot-daemon-keyhive.ts:161, lease-frontier.ts:53). The only test that drops the epoch is the existing epoch-free-shape probe.
+# ''Other:'' F2 to F6 below. Nothing leaks, and nothing hangs except under the unbounded churn named in F3.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/findings`>>
+
+!! Findings
+
+''F1 · P3 · MEASURED · daemon-event-store.ts:171-176 (doc comment), 182, 188; tests/cap-event-commit-boundary.test.ts:72''
+
+* ''What I measured:'' a scratch probe against the real `KeyhiveProvider` logged `["after-call","put","mt1",…]`. The event handler's `put` fires after `ingestPeerEvents(...)` returns synchronously, in a microtask that wasm-bindgen queues during the call (`ingestEventsBytes` returns a spawned Promise).
+* ''What still holds:'' "no await between the answer and the mutation's call" holds.
+* ''What is overstated:'' "asked … immediately before the mutation" goes too far. Any microtask queued before `admit()`, and any wait on a lock inside Keyhive (INFER), runs between the answer and the mutation.
+* ''Why the test misses it:'' the seat test's fake sink mutates synchronously, so it cannot see this window.
+* ''Scenario:'' a composite or board `change` callback already sits in the microtask queue when `admit()` answers true. It bumps `proofVersion` to record an aside, and the membership still lands.
+* ''Smallest cure:'' reword the comment and canon to "at the call". Optionally add a real-Keyhive test that queues a `daemonChanged` microtask ahead of the call and records the outcome as named residual.
+
+''F2 · P3 · INFER · face-seat.ts:185/212 against operator-daemon-behavior.ts:1402, 1430; edge-shadow-ring.ts ringDyadDoor''
+
+* ''The mismatch:'' on the node island, standing comes from the vessel's ring, but `proofVersion` moves only on events the island sees: its own board replica and the daemon bag. The comment covers one direction only: "a move the island sees has already turned the ring dark".
+* ''Scenario:'' an aside reaches the vessel ring after `founderStanding` returned clear, and the island's replica has not synced it yet. `admit()` answers true and the grant commits under a founder the vessel already reads as aside. Under no-global-now this is the island's reading as of its last sync, and the canon says a seated joinee is never rolled back. So the window lasts one sync latency and stays named.
+* ''Smallest cure:'' have the ring door return its fold generation with the answer, and fold that generation into `admit`. Or accept the window and name it in kapae #/four-edges.
+
+''F3 · P3 · INFER · operator-daemon-behavior.ts:1556, face-seat.ts:244''
+
+* ''The issue:'' `daemonChanged` bumps `proofVersion` on every daemon-bag title, not only on titles that carry proof. A pass spans the founderStanding call (up to three ring refolds on node) plus a crypto walk of the KEL.
+* ''Scenario:'' steady daemon-bag churn faster than one pass (peer sync of daemon docs, door or summons writes during a join) overtakes every pass, and the seat starves until things go quiet. It converges with no clock, but there is no bound.
+* ''Related, MEASURED by code read:'' the browser's `boardDyadReader` writes the board itself when `read.missing` is non-empty (board-dyad-reader.ts:23). The fleet watch then self-overtakes the pass that made the read. That costs one extra pass and then converges.
+* ''Smallest cure:'' bump only for the fleet board, the KEL and edge or lease titles. Or replace the counter with a cheap synchronous snapshot, such as the board's heads, and compare that in `admit`.
+
+''F4 · P3 · MEASURED · packages/lararium-node/tests/face-seat-live-wake-node.test.ts:30-41; tests/face-seat-wake-fixture.ts:55-63''
+
+* ''The gap:'' the node wake test builds the ring and the island on one shared repo. The claim it carries, that the island's own replica syncs from the vessel's, crosses no port. The browser test sets `readDyadFromBoard: true` with no `dyadLedger`, so the reader's ledger writes are not exercised either.
+* ''Smallest cure:'' stand the island repo over a sync channel to a separate vessel repo, as `makeIslandRepo({syncPort})` already does, and pass a ledger handle.
+
+''F5 · P3 · MEASURED · tests/face-grant-record.test.ts:361''
+
+* ''The gap:'' the epoch-free tamper control asserts `reason` matches `/founder|edge|signature/i`. Almost every refusal reason matches that pattern, so the assertion cannot tell an edge-signature refusal from anything else.
+* ''Smallest cure:'' pin the reason prefix to `founder edge refused under the persona-KEL head`.
+
+''F6 · P3 · INFER · face-seat.ts:194, 198-202''
+
+* ''The cost:'' an aside grant is never memoized. Every daemon-bag change re-runs its full verify, including the KEL walk. That is correct under remove-wins, but it is unbounded work while a founder stays aside.
+* ''Smallest cure:'' cache the lineage verdict per `record.sig` (the KEL is static per seat) and re-read only standing.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/reading-outside-the-diff-for-the-record`>>
+
+!! Reading outside the diff, for the record (not this slice's work)
+
+* `persona-group-ring-assembly.ts:100` maps `deviceAside(key) ? "aside" : "clear"`, so this reader never yields `unknown`.
+* The browser supplier (open-browser-vessel.ts:1845) answers `aside` when the frontier is unknown or the shadows are absent, so that reader fails closed. But `readings…stands === true → aside` reads inverted on its face, unless `stands` names the aside act's own standing. Worth one look in the ruling's "every authority reader" sweep.
+
+&lt;&lt;~ oracle throw=`↯13 ✲ ⚂(3) ⁂:⟁🜁⌗`>>
+&lt;&lt;~ set lares=`yield` drift-ward=`F1 rests on one probe of the real wasm, where put fired after the call returned, and F2/F3 rest on reading the code, not on a cross-port run - rerun the probe with a microtask queued ahead of admit and check whether membership lands · ↻ L-Prime` aperture=`12/measure -> 14/arc` ooda-ha=`closed 1↺` from=`lar://blind-warden-lease:agent@hearth/verdict.lands.named/a49ce62e1` to=`?`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xqhdzku3SXgBPUa2iY2q-DUZwX9OD3K80WUOtYwVWyU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

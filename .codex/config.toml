@@ -1,5 +1,8 @@
 # .codex/config.toml
 
+# AGENTS.md links to the boot seed; the cap holds it whole (the host default cuts its tail).
+project_doc_max_bytes = 65536
+
 [mcp_servers.lararium]
 command = "node"
 args = []

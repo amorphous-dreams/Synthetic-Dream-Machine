@@ -1,0 +1,49 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/index`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "index of the workshop records carried from `.lares-scratch/lease-end/` — 3 record(s) here, 70 under this branch; verbatim scratch planning records that inform and never govern"
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/index"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/lease-end/index"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Workshop — `.lares-scratch/lease-end/`
+
+The scratch planning records of `.lares-scratch/lease-end/`, each carried verbatim as its own record: Markdown transliterated to memetic-wikitext, the words kept as written. 3 record(s) stand here and 70 under this branch. They inform and never govern; live rulings and owed rows ride the road and design memes.
+
+Up: [[workshop|lar:///ha.ka.ba/lares/docs/history/workshop/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/branches`>>
+
+!! Branches
+
+|! Directory |! Records |h
+| [[seats/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/seats/index]] | 10 |
+| [[steps/|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/steps/index]] | 57 |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records
+
+|! Record |! Kind |! Date |! Source |h
+| [[pr2|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/pr2]] | PR body | 2026-11-07 | `pr2.md` |
+| [[resume|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/resume]] | resume | 2026-11-07 | `resume.md` |
+| [[ship-draft|lar:///ha.ka.ba/lares/docs/history/workshop/lease-end/ship-draft]] | plan | 2026-11-07 | `ship-draft.md` |
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cqq5RTioWJ8IzLPCk-T7MerArNZbE_A-vCgbjeOrLEQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

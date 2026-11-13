@@ -1,5 +1,5 @@
 /**
- * persona-group-root.test.ts — PersonaGroup-root key custody (operator-root capability).
+ * person-group-root.test.ts — PersonaGroup-root key custody (operator-root capability).
  *
  * Proves the custody helper the meshed founding consumes: a founder-only root key, minted once and
  * loaded idempotently, persisted into `<lares>/identity` — a SIBLING of the substrate a rite reforges,
@@ -7,6 +7,9 @@
  * device key (two capabilities in the #has-stack, never numbered planes). The seed surfaces
  * founder-only and throws when absent.
  */
+import { seatSuiteWard } from "./support/scratch-custody-setup.js";
+// This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
+seatSuiteWard();
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { mkdtempSync, readdirSync, rmSync, existsSync } from "node:fs";
@@ -17,13 +20,14 @@ import {
   loadPersonaGroupRootSeed,
   generateOrLoadVesselIdentity,
 } from "../src/node-vessel-identity.js";
+import { faceRowNames } from "./face-paths.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 
 const freshDataDir = (): string => join(mkdtempSync(join(tmpdir(), "lares-pgroot-")), ".lararium");
 /** The identity dir answers to `larIdentityDir()` — `<state>/identity`, beside the wiped `<lares>/vessel`. */
 const idDirOf = (_dataDir: string): string => larIdentityDir();
 const find = (idDir: string, prefix: string): string | undefined =>
-  readdirSync(idDir).find((f) => f.startsWith(prefix));
+  faceRowNames().find((f) => f.startsWith(prefix));
 
 describe("PersonaGroup-root custody (operator-root capability)", () => {
   // `LAR_ROOT` reroots every lares home, so a mint here never reads or writes the operator's OWN root
@@ -72,7 +76,7 @@ describe("PersonaGroup-root custody (operator-root capability)", () => {
   it("the root is a DISTINCT capability from the per-vessel device key (not numbered planes)", async () => {
     const dataDir = freshDataDir();
     try {
-      const vessel = await generateOrLoadVesselIdentity();
+      const vessel = await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
       const root   = await generateOrLoadPersonaGroupRoot();
       expect(root.verifyingKey).not.toBe(vessel.verifyingKey); // the split actually splits
     } finally {

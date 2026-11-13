@@ -6,9 +6,10 @@ import { mkdtemp } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, expect, test } from "vitest";
 
 import { makeKgCap, _liveKgHolderCount, type KgCap } from "../src/kg-cap.js";
+import { palaceSuite } from "./helpers/palace-holder.js";
 
 const TEST_TIMEOUT = 60_000;
 
@@ -21,7 +22,7 @@ function open(dir: string): KgCap {
 const palaceDir = (): Promise<string> => mkdtemp(join(tmpdir(), "kg-"));
 afterEach(async () => { await Promise.all(opened.splice(0).map((c) => c.close())); });
 
-describe("makeKgCap (consumed bitemporal KG, live)", () => {
+palaceSuite("makeKgCap (consumed bitemporal KG, live)", () => {
   test("add a triple → query the entity → timeline + stats", async () => {
     const kg = open(await palaceDir());
     await kg.addTriple("Alice", "collaborates_with", "Bob", { validFrom: "2026-01-01", confidence: 0.9 });

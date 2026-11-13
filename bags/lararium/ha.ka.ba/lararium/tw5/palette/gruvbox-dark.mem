@@ -1,16 +1,26 @@
-<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code="&#x0001;" from="?" -> to="lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-dark">>
-<<^ code="&#x0002;">>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-dark`>>
+<<^ code=`&#x0002;`>>
 
 ```toml meta
-file-path = "bags/lararium/ha.ka.ba/lararium/tw5/palette/gruvbox-dark.mem"
-l-space   = "adjacent"
-role      = "Gruvbox Dark color palette for TW5 theme engine"
-tags      = ["$:/tags/Palette"]
-title     = "lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-dark"
-type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/tw5/palette/gruvbox-dark"
+l-space  = "adjacent"
+role     = "the Gruvbox Dark palette: its colours ride the #/palette slot as a TW5 palette dictionary, the title $:/palette names"
+title    = "lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-dark"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lararium/tw5/palette/gruvbox-dark"
+```
+
+The Gruvbox Dark colours, as TiddlyWiki reads a palette: one `name: colour` row per line in the `#/palette` slot, typed `application/x-tiddler-dictionary` and tagged `$:/tags/Palette`, so `$:/palette` names the slot and `<<colour …>>` resolves through it.
+
+<<~ ahu slot=`#/palette`>>
+
+```toml meta
+color-scheme = "dark"
+description  = "Gruvbox Dark (the house palette)"
+name         = "Gruvbox Dark"
+tags         = ["$:/tags/Palette"]
+type         = "application/x-tiddler-dictionary"
 ```
 
 background: #282828
@@ -106,6 +116,8 @@ wikilist-item: #3c3836
 wikilist-toolbar-background: #1d2021
 wikilist-toolbar-foreground: #ebdbb2
 
-<<^ code="&#x0003;">>ni:///sha-256;k6UFhbwJtvu2fS3309orvNxGbOFWalObcTlMSMSmBAg
+<<~/ahu>>
 
-<<^ code="&#x0004;" -> to="?">>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CjeucJOE8kXcq5j3OxDnNmJOL7L1QaieP_lfjJ8WD64`>>
+
+<<^ code=`&#x0004;` to=`?`>>

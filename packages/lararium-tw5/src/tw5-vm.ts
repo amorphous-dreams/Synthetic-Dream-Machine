@@ -8,14 +8,15 @@
  * Reaction routing: reaction-router.ts TW5 startup module. No globals.
  */
 
+import { canonicalJsonBytes, sha256HexBytesSync } from "@lararium/mesh/crypto";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import type {
   TW5Instance,
   TW5TiddlerInputFields,
   TW5TiddlerFields,
 } from "./types/tiddlywiki.js";
-import type { LarTiddlerRecord } from "@lararium/mesh";
-import { toLarTiddlerRecord } from "@lararium/mesh";
+import type { LarTiddlerRecord } from "@lararium/mesh/tiddler-store";
+import { toLarTiddlerRecord } from "@lararium/mesh/tiddler-store";
 import {
   bootWithHostBridge,
   normalizeCoreBootBlob,
@@ -34,6 +35,10 @@ export type { TW5CoreBootBlob } from "./tw5-host-bridge.js";
 export class TW5Engine {
   private _tw: TW5Instance | null = null;
   private _bootPromise: Promise<void> | null = null;
+  private _release: (() => void) | null = null;
+
+  /** Give back the page globals a glass boot lent; a worker or Node engine holds none. */
+  releaseGlass(): void { const release = this._release; this._release = null; release?.(); }
 
   /**
    * Boot the TW5 wiki. Idempotent — multiple calls return the same promise.
@@ -42,22 +47,54 @@ export class TW5Engine {
    * Node:    evaluates the same tiddlywikicore blob with a CommonJS-shaped
    *          wrapper; no node_modules tiddlywiki runtime fallback is allowed.
    */
-  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>): Promise<void> {
+  boot(coreBlob?: TW5CoreBootInput, preloadedTiddlers?: Array<Record<string, unknown>>, mirrorToken?: symbol, options?: { onInstance?: (instance: TW5Instance) => void; grantedDigests?: ReadonlySet<string> }): Promise<void> {
     if (this._bootPromise) return this._bootPromise;
     this._bootPromise = (async () => {
       const core = normalizeCoreBootBlob(coreBlob);
       if (core) verifyCoreBootBlob(core);
-      const { instance, isBrowser } = await prepareHostBootInstance(core);
+      const { instance, isBrowser, release } = await prepareHostBootInstance(core, mirrorToken);
+      this._tw = instance;
+      options?.onInstance?.(instance);
 
       const allPreloads = preloadedTiddlers ?? [];
+      const preloadedTitles = new Set(allPreloads.map(t => String(t["title"] ?? "")));
+      const grantedRecords = new Map<string, Record<string, unknown>>();
+      const titleCounts = new Map<string, number>();
+      for (const preload of allPreloads) {
+        if (typeof preload["title"] === "string") titleCounts.set(preload["title"], (titleCounts.get(preload["title"]) ?? 0) + 1);
+      }
+      for (const preload of allPreloads) {
+        if (typeof preload["title"] === "string" && typeof preload["text"] === "string" &&
+            Object.values(preload).every(value => typeof value === "string")) {
+          const title = preload["title"];
+          // promoteDigest hashes these canonical preload bytes; require a unique title so an
+          // ungranted duplicate cannot replace a granted entry before the gate reads it.
+          if (titleCounts.get(title) === 1 && options?.grantedDigests?.has(sha256HexBytesSync(canonicalJsonBytes(preload)))) grantedRecords.set(title, { ...preload });
+        }
+        if (!preload["plugin-type"] || typeof preload["text"] !== "string") continue;
+        try {
+          const packed: unknown = JSON.parse(preload["text"]);
+          if (packed && typeof packed === "object" && !Array.isArray(packed)) {
+            const { tiddlers } = packed as { tiddlers?: unknown };
+            if (tiddlers && typeof tiddlers === "object" && !Array.isArray(tiddlers)) {
+              for (const title of Object.keys(tiddlers)) preloadedTitles.add(title);
+            }
+          }
+        } catch { /* TW5 handles malformed plugin text during boot. */ }
+      }
 
       instance.preloadTiddlers = instance.preloadTiddlers ?? [];
       for (const t of allPreloads) instance.preloadTiddlers.push(t as Record<string, unknown>);
 
-      await bootWithHostBridge(instance, isBrowser, async () => {
-        this._tw = instance;
-        await bootTrustedModules(instance);
-      });
+      // The glass keeps its page lends while the engine lives: TW5 executes a module on its first use,
+      // long after boot returns, and that module reads the lent names. `releaseGlass` gives them back.
+      this._release = release ?? null;
+      try {
+        await bootWithHostBridge(instance, isBrowser, async () => {
+          this._tw = instance;
+          await bootTrustedModules(instance, preloadedTitles, grantedRecords);
+        });
+      } catch (error) { this.releaseGlass(); throw error; }
     })();
     return this._bootPromise;
   }
@@ -125,13 +162,13 @@ export class TW5Engine {
    * Returns a teardown function (Verse cancelable equivalent).
    */
   onVerseEvent(consumer: {
-    handleVerseEvent(uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>): void;
+    handleVerseEvent(uri: string, listenable: string, verb?: string, fromUri?: string, args?: Record<string, unknown>, origin?: "surface" | "content"): void;
   }): () => void {
     if (!this._tw) return () => {};
     const handler = (...args: unknown[]) => {
-      const event = args[0] as { uri?: string; listenable?: string; verb?: string; fromUri?: string; args?: Record<string, unknown> } | undefined;
+      const event = args[0] as { uri?: string; listenable?: string; verb?: string; fromUri?: string; args?: Record<string, unknown>; origin?: "surface" | "content" } | undefined;
       if (event?.uri && event.listenable) {
-        consumer.handleVerseEvent(event.uri, event.listenable, event.verb, event.fromUri, event.args);
+        consumer.handleVerseEvent(event.uri, event.listenable, event.verb, event.fromUri, event.args, event.origin);
       }
     };
     this._tw.wiki.addEventListener("tm-verse-event", handler);
@@ -177,6 +214,24 @@ export class TW5Engine {
   setTiddler(fields: Record<string, string | string[]>): void {
     if (!this._tw) throw new Error("TW5Engine: call boot() before setTiddler()");
     this._tw.wiki.addTiddler(new this._tw.Tiddler(fields as Record<string, unknown>));
+  }
+
+  /**
+   * Lay records into TiddlyWiki's SHADOW layer as one plugin: the records read like any tiddler, no store holds them,
+   * and a hand's save writes an ordinary tiddler that overrides the shadow and outlives the next call. The plugin's own
+   * tiddler takes `pluginTitle`, which a caller names under the volatile `$:/temp/` slot so it rests in memory alone.
+   * Re-laying the same plugin replaces its shadows and raises a change for each, so a live render repaints.
+   */
+  setShadowTiddlers(pluginTitle: string, records: ReadonlyArray<Record<string, string | string[]>>): void {
+    if (!this._tw) throw new Error("TW5Engine: call boot() before setShadowTiddlers()");
+    const wiki = this._tw.wiki;
+    const packed = new Map<string, Record<string, string | string[]>>(records.map((record) => [String(record["title"]), { ...record }]));
+    const before = Object.keys(wiki.getPluginInfo(pluginTitle)?.tiddlers ?? {});
+    wiki.addTiddler(new this._tw.Tiddler({ title: pluginTitle, type: "application/json", "plugin-type": "plugin", text: JSON.stringify({ tiddlers: Object.fromEntries(packed) }) }));
+    wiki.readPluginInfo([pluginTitle]);
+    wiki.registerPluginTiddlers(null, [pluginTitle]);
+    wiki.unpackPluginTiddlers();
+    for (const title of new Set([...before, ...packed.keys()])) wiki.enqueueTiddlerEvent(title, !packed.has(title), true);
   }
 
   /** Dispose this VM — clear internal refs so GC can collect. */

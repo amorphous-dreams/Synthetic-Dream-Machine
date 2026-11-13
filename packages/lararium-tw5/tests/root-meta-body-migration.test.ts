@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { readFileSync } from "node:fs";
-import { bccOfSpan, checkSpan, verdict } from "@lararium/memetic-frame";
+import { bccOfSpan, canonicalSpan, checkSpan, verdict } from "@lararium/memetic-frame";
 import { expandMemeRefs, memeticWikitextDeserializer, type TiddlerFields } from "../src/deserializer.js";
 import { memeticIngestOps } from "../src/ingest-gate.js";
 
@@ -31,7 +31,7 @@ describe("root metadata is authored body", () => {
   test("emits root TOML immediately after STX and retains it on reparse", () => {
     const map = records(readFileSync(FIXTURE, "utf8"));
     const rendered = expandMemeRefs(reader(map), URI)!;
-    expect(rendered.indexOf('code="&#x0002;">>\n\n```toml meta')).toBeGreaterThanOrEqual(0);
+    expect(rendered.indexOf('code=`&#x0002;`>>\n\n```toml meta')).toBeGreaterThanOrEqual(0);
     expect(rendered).not.toMatch(/SOH[\s\S]*```toml meta/);
     const reparsed = records(rendered);
     expect(reparsed.get(URI)!["custom"]).toBe("root-authority");
@@ -43,8 +43,8 @@ describe("root metadata is authored body", () => {
     const rendered = expandMemeRefs(reader(map), URI)!;
     const span = checkSpan(rendered)!;
     const good = rendered.slice(span.start, span.end);
-    // ADJACENT: the check follows the ETX sigil with nothing between.
-    expect(rendered.slice(span.end).startsWith(bccOfSpan(good))).toBe(true);
+    // SEATED: the check rides the ETX mark's bcc slot, over the span with that run deleted.
+    expect(good.endsWith(`bcc=\`${bccOfSpan(canonicalSpan(good))}\`>>`)).toBe(true);
     const mutated = rendered.replace("root-authority", "root-mutated");
     const diagnostic = memeticIngestOps.deserialize(URI, mutated, verdict(mutated)).diagnostics;
     // GRADED A WARNING, never an error: a stale check on a human's disk edit is an edit, never
@@ -55,9 +55,9 @@ describe("root metadata is authored body", () => {
 
 describe("★ root metadata before STX is a frame fault, never recovered ★", () => {
   const preStx = readFileSync(FIXTURE, "utf8").replace(
-    '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n<<^ code="&#x0002;">>\n\n```toml meta',
-    '<<^ code="&#x0001;" from="?" -> to="lar:///tests/root-meta-body">>\n```toml meta',
-  ).replace('```\n\nRoot prose', '```\n\n<<^ code="&#x0002;">>\n\nRoot prose');
+    '<<^ code=`&#x0001;` from=`?` to=`lar:///tests/root-meta-body`>>\n<<^ code=`&#x0002;`>>\n\n```toml meta',
+    '<<^ code=`&#x0001;` from=`?` to=`lar:///tests/root-meta-body`>>\n```toml meta',
+  ).replace('```\n\nRoot prose', '```\n\n<<^ code=`&#x0002;`>>\n\nRoot prose');
 
   test("the gate refuses it on the frame fault `meta-before-stx`", () => {
     const diagnostics = memeticIngestOps.deserialize(URI, preStx, verdict(preStx)).diagnostics;

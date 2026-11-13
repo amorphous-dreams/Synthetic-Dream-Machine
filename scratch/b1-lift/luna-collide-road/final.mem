@@ -1,0 +1,93 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-05 (file date) — source `.lares-scratch/b1-lift/luna-collide-road/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-05
+
+Verbatim scratch record `.lares-scratch/b1-lift/luna-collide-road/final.md` (hand-back, file date 2026-11-05); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/b1-lift/luna-collide-road/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/stable-founding-road-mem`>>
+
+!! `stable-founding-road.mem`
+
+* ''EXTENDS'' — [[stable-founding-road.mem:200|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:200]]: “A browser leaf holds a passphrase or paper slot before it holds a persona root.” B1’s ''custody/founding path'' must retain a human backup route, including paper; the ceremony document changes where the secret is entered, not what custody must support.
+* ''AGREES'' — [[stable-founding-road.mem:205|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/stable-founding-road.mem:205]]: “Every boot rests at the floor until a human unlocks.” This matches B1’s ''vessel boot and ceremony'': the worker starts locked and requires the person’s unlock.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/controller-handoff-mem-state`>>
+
+!! `controller-handoff.mem` — `#/state`
+
+* ''EXTENDS'' — [[controller-handoff.mem:110|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/controller-handoff.mem:110]]: “the root mint refuses `no-custody-slot`” and merges “only after that boot binds a slot and unlocks before `openBrowserVessel`.” B1’s ''founding order'' must keep that gate: bind and unlock custody before the root mint and vessel composition.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/seat-harness-mem-ward-and-s2-s2b-s3-design`>>
+
+!! `seat-harness.mem` — ward and S2/S2b/S3 design
+
+* ''CONTRADICTS'' — [[seat-harness.mem:121|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem:121]]: “a browser signs in a per-act ward worker, fresh from the passphrase its page dialog collects.” B1’s ''ceremony boundary'' says the surface page never receives the passphrase; the clean ceremony document takes it and transfers its bytes to the vessel worker. The newer 2026-11-05 approved ceremony ruling favors B1; this line needs changing.
+* ''EXTENDS'' — [[seat-harness.mem:119–120|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem:119]]: “never a passkey” and “One act, one unlock.” B1’s ''ceremony and session records'' must keep `ward-passkey-refused`, fresh per-act unlocks, zeroing after use, and no route or key cached between acts.
+* ''EXTENDS'' — [[seat-harness.mem:125|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem:125]]: “the browser root still rests under the keystore’s tree key.” B1’s ''worker custody'' must preserve that storage relationship and its stated limit: bound acts sign through the ward worker, while the root’s resting protection remains the keystore tree key.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/kahua-memory-stage-mem`>>
+
+!! `kahua-memory-stage.mem`
+
+* ''EXTENDS'' — [[kahua-memory-stage.mem:72|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/kahua-memory-stage.mem:72]]: “Two faces on one device project two folders side by side, each session leasing its own wiki; nothing swaps.” B1’s ''per-tab session'' must keep each session’s face-scoped stage separate.
+* ''EXTENDS'' — [[kahua-memory-stage.mem:193|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/kahua-memory-stage.mem:193]]: browser promotion records live in keystore rows; “A locked vessel or a torn row loads NO promoted code and never falls back to stage bytes.” B1’s ''worker-owned keystore and boot'' must retain that refusal.
+* ''EXTENDS'' — [[kahua-memory-stage.mem:198|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/kahua-memory-stage.mem:198]]: “The browser vessel has no successful-shutdown hook, so its board watcher lives as long as the page.” B1’s ''session close and last-tab transition'' must account for stopping that watcher.
+* ''EXTENDS'' — [[kahua-memory-stage.mem:275|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/kahua-memory-stage.mem:275]]: “Tonight the page reads SELF-CONSISTENCY alone” against the hearth’s arrival descriptor. B1’s ''vessel seed reading'' must preserve this check and its named mismatch refusals.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/disk-projection-mem`>>
+
+!! `disk-projection.mem`
+
+* ''EXTENDS'' — [[disk-projection.mem:62|/home/joshu/Synthetic-Dream-Machine/bags/lararium/ha.ka.ba/lararium/api/disk-projection.mem:62]]: “a warning or the worker’s in-memory flush never supplies” durable acknowledgement. B1’s ''vessel durability/status'' must distinguish a requested drain or in-memory flush from storage-backed acknowledgement and confirmed projection hash.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/blob-carriage-mem`>>
+
+!! `blob-carriage.mem`
+
+* ''EXTENDS'' — [[blob-carriage.mem:179|/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/blob-carriage.mem:179]]: for base64 pointers, the persisted record carries “NO `lar:` `_canonical_uri`”; the browser island mints a `blob:` URL “per session” in the VM copy. B1’s ''per-session vessel'' must preserve that session scope and keep the minted URL out of persisted CRDT and disk records.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/b1-carriers-most-needed-changes`>>
+
+!! B1 carrier’s most needed changes
+
+# Replace the page-dialog passphrase wording with the approved ceremony-document-to-worker port flow.
+# State the ward laws explicitly: no passkey, fresh unlock per act, no cached route/key, zero after use.
+# Keep paper/passphrase backup routes and the custody-slot-before-root-mint gate.
+# Preserve face-scoped kahua rows and the locked/torn promotion refusal.
+# Carry forward durable projection acknowledgement and per-session blob URL rules.
+# Add the browser seed self-consistency check and board-watcher shutdown behavior.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;sSTjU3NFVbXfcBo_5P91JU7Em7q0jby2VXqcRkfRyi0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

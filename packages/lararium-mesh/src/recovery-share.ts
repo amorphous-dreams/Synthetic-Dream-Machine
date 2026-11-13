@@ -16,7 +16,7 @@ import { sha256BytesSync, hex, hexToBytes } from "./crypto.js";
 import type { RandomProvider } from "./crypto.js";
 
 /** WHO holds a share — the distinct-custodian rule reads this. A quorum needs ≥ 2 distinct tags. */
-export type CustodianTag = "device" | "recorded-code" | "guardian" | "escrow-peer";
+export type CustodianTag = "device" | "recorded-code" | "custodian" | "escrow-peer";
 
 /** One share of the recovery secret, bound to its custodian + the refresh generation it belongs to. */
 export interface RecoveryShare {

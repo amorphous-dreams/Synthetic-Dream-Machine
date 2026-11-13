@@ -1,0 +1,71 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/final`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — hand-back, 2026-11-06 (file date) — source `.lares-scratch/controller/terra-build-push/final.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/final"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/final"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! final.md — hand-back, 2026-11-06
+
+Verbatim scratch record `.lares-scratch/controller/terra-build-push/final.md` (hand-back, file date 2026-11-06); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/controller/terra-build-push/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/body`>>
+
+''The rite is not ready to schedule.'' The largest unresolved question is whether the secrets registry can be wired without blocking founding or exposing a chainless store. The two B1 lanes also need a semantic merge and a joined node–browser witness. ''MEASURED:'' The required order is lane completion and merge, joined founding gate, phone walk, pre-rite, then the operator’s rite (`039e703bd:stable-founding-road.mem:46–50`). Sizes below are ''INFER'' estimates: S = small, M = moderate, L = large.
+
+# ''Chainless face and P27 — L, potentially blocking founding.'' ''MEASURED:'' On `ddc16316e`, the registry refuses reads before its catalog binds and refuses initialization unless the catalog reports sealed; the tier floor consults secrets first (`secrets-registry.ts:124–167`, `cap-tier.ts:190–195`). No production composer calls `makeFaceSecretsRegistry` at that head. The node creates its Repo before setting the chain-derived face mapping; its current share decision admits proven house islands (`8fb9675ee:open-node-vessel.ts:858–874,1212–1215,1232–1252,1962`). The browser creates its Repo before applying an admit or founding (`83ca74cca:open-browser-vessel.ts:628–639,770–781,825–840`).
+
+''INFER:'' The code favors ''(a), refuse while the registry is unread'', as the currently implemented registry behavior. It does ''not'' establish (b). An unmapped document can pass through the node’s rest unchanged (`ddc16316e:sealed-rest.ts:5–7`), and the browser still uses an ordinary IndexedDB Repo adapter (`83ca74cca:open-browser-vessel.ts:628–629`). Those facts make “chainless holds no store” unsafe to assume, but do not alone prove a secret is written clear.
+
+''UNSETTLED:'' Whether node or browser founding, unlock, first boot, or join //requires// a share crossing before the chain stands; whether any such face can actually stand a secret-bearing store. Settle with a red for each path that records announce/access and actual disk writes before chain establishment, including a chainless attempted secret-store creation, plus positive controls. Only that red can justify (b); otherwise retain named refusal and solve any boot deadlock.
+
+# ''Finish and merge the lanes — L.'' ''MEASURED:'' A read-only three-way merge preview from common base `c59ade7d` identifies both-changed conflicts in `browser-vessel-lift.mem` and `open-browser-vessel.ts`. Node composer changes also overlap semantically: seal installs a catalog view and chain-scoped sealed map; lift changes face custody and composition (`8fb9675ee:open-node-vessel.ts:869–874,1348,1962`; `83ca74cca:open-browser-vessel.ts:628–639`). The secrets branch is based on seal and remains unwired (`ddc16316e:secrets-registry.ts:124–125`).
+
+''MEASURED:'' Both B1 and span install the ward listener before dynamically loading the core, but span also supports ward-key acts and returns `ward-worker-failed` if loading fails (`ffe05bc79:ward.worker.ts:13–30`; `83ca74cca:ward.worker.ts:11–25`). ''INFER:'' Preserve span’s act types and refusal while integrating B1’s ceremony route. Preserve the seal catalog split //per face//, alongside lift’s per-face keys; an automatic merge cannot prove isolation.
+
+''UNSETTLED:'' The eventual second merge into the span was not simulated after resolution. Resolve in the prescribed order, then inspect and test the actual merged head. Do not infer green from this preview.
+
+# ''Complete B1’s outstanding slices — L overall.'' ''MEASURED:'' The lift carrier specifies slice 4, SharedWorker plus fallback port broker and Pronaos routes, M–L; 5b, one node/browser composer, L; 6, epochs and durable retry ledger, M; 7, durability reading, M; and an X0b founding replay sweep, M (`83ca74cca:browser-vessel-lift.mem:102–111`). It places 5b and X0b inside the joined gate; the operator approved the durability reading (`039e703bd:stable-founding-road.mem:315`).
+
+''INFER:'' The broker and its own-session control matter wherever a second tab uses the fallback; retry/epoch safety matters for interrupted founding and writes. The common composer is an explicit gate requirement even if one clean manual founding could run without it. Durability is required by the ruling even if the immediate storage survives the rite.
+
+''UNSETTLED:'' Seal’s two-face node and herm-on-floor e2es, locked bag list, sibling rows under their own chains, draft before seat, locked `realm-bags` outcome, working-attach refusal control, browser catalog twin, and tails were not individually verified at these heads. ''INFER:'' Budget M–L combined for witnesses and fixes, plus L for the browser twin; the clear-rest, cross-face and locked-floor controls must precede a trustworthy rite. Their exact state needs a test-by-test audit, not a carrier’s “built” label.
+
+# ''Owed rows — all required before the rite by ruling, regardless of whether the happy path exercises them.'' ''MEASURED:'' The road names the rows and requires critical review before wiring L28, K22, K23 and P27 (`039e703bd:stable-founding-road.mem:46,317`). ''INFER:'' The following are provisional classifications from the named code/design evidence, not verified test verdicts:
+
+* ''L23'', promotion-drop ward floor: unbuilt, M; a later boot can encounter the replay risk, though a fresh rite need not drop a promotion (`:627`).
+* ''L24'', lapsed joinee renewal: half-built, L; ordinary fresh join need not cross a lease roll (`:621`).
+* ''L25'', tag rotation/storage-clear residues: half-built, M; fresh founding need not rotate or clear (`:623`).
+* ''L26'', lost atom, duplicate seat and roll residues: half-built, L; chiefly recovery/rejoin paths (`:624`).
+* ''L27'', ward-route and marker residues: half-built, M–L; the rite uses custody and ward routes, so route selection and refusal are material (`:625`).
+* ''L28'', renewal-at-roll: unwired, review plus M–L; not necessarily a fresh join (`:622`).
+* ''K22'', recovery readmit: unwired, review plus L; not a fresh founding (`:708`).
+* ''K23'', identity slot: unwired, review plus M–L; whether existing per-face isolation covers its purpose remains open (`:709`).
+* ''P27'', secret-tier share gate: half-built and unwired, review plus L; the joined crossing makes this the clearest possible rite-path confidentiality hole (`:751`; registry evidence above).
+* ''G54'', quota-paced CI reads: unbuilt, S–M; operational gate, not a rite call (`:839`).
+* ''G55'', browser-cell Node law and witness: half-built, S–M; CI gate, not a rite call (`:840`).
+* ''B7'', click/repaint retry: half-built, M; a human click can race a repaint during the walk (`:819`).
+
+# ''Joined gate, phones, pre-rite — L plus device work.'' ''MEASURED:'' The existing browser e2e founds a browser worker and checks its first paint; it does not establish a joined node/browser exchange (`83ca74cca:packages/lararium-web/tests/e2e/vessel-worker.e2e.test.ts:46–70`). The scratch probe exercises workers, ports, storage and locks; the repository capability probe has a broader field protocol (`/home/joshu/.lares-scratch/b1-lift/probe/run.mjs:8–43`; `83ca74cca:tools/capability-probe/README.md:3–13,39–59`).
+
+''UNSETTLED:'' No real iPhone or Android results, joined founding result, or landed-head pre-rite projection was established in this read. The lead must run the joined gate and both phone walks, rebuild the image at the landed head, move old homes aside, and have the operator confirm compose projection.
+
+''Other uncertainty:'' ''MEASURED:'' The earlier `nexus-client-dial` timeout occurred after a successful gate verdict but before the expected peer was observed; its cause was not established (`/home/joshu/.lares-scratch/controller/terra-dial-fault/final.md:1–15`). ''INFER:'' A controlled listener/join/response/disconnect witness is needed before choosing a fix. Socket and browser tests are ''lead runs''. This scout wrote no files and ran no tests.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0Gmsb9ecWBQiQK_LokwWNSzkzp3Xw-bG8j_c0toj2uE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

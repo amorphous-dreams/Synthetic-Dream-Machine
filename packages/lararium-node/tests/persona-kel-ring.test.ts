@@ -18,10 +18,13 @@ import {
   CompositeStore, AutomergeDocStore, DAEMON_BAG_ID,
   materializeSharedLarDoc, personaKelBoardDocUrl, writePersonaKelEvent, enrolmentDigestOf, personaEventCidOf,
   verifyEdgeAgainstPersonaKel, attestAndRotate, rollEnrolments, sha256HexSync,
+  mintFaceAnchor,
 } from "@lararium/mesh";
-import { KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony, veilFromDeviceKey, mintDeviceMintedKey } from "@lararium/keyhive";
+import { KeyhiveProvider, DaemonEventStore, bootDaemonKeyhive, runFoundingCeremony } from "@lararium/keyhive";
 import { makePersonaKelRingHolder, type PersonaKelRingHolder } from "../src/persona-kel-ring.js";
 import { SEEDS, pubOf, didOf, signerOf, founded, enrol, rotatedKeeping } from "../../lararium-mesh/tests/fixtures/sibling-fleet.js";
+import { testVesselTagDoor } from "../../lararium-mesh/tests/vessel-tag-fixture.js";
+import { memorySecretHome, MEMORY_SEALED, memorySecretStore } from "../../lararium-mesh/tests/secret-home-fixture.js";
 
 const NEXUS = "7c".repeat(32);
 
@@ -47,11 +50,11 @@ function junkInceptionOf(inception: PersonaKelEvent): PersonaKelEvent {
 
 /** The inception rotated to `op` keeping `keep`: a lawful quorum-signed successor at seq 1. */
 async function rotationTo(op: Uint8Array, keep: readonly Uint8Array[]): Promise<PersonaKelEvent> {
-  const { inception, guardianRecoveryKeys, recoveryThreshold } = await founded();
-  const guardianSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
+  const { inception, recoveryContactKeys, recoveryThreshold } = await founded();
+  const recoveryContactSigners = await Promise.all([SEEDS.g1, SEEDS.g2].map(async (s) => ({ signer: await pubOf(s), sign: signerOf(s) })));
   const devices = await Promise.all(keep.map(async (d) => ({ deviceVerifyingKey: await pubOf(d), hearthTrueName: "", boundEpoch: 0 })));
   const enrolments = await rollEnrolments({ prefix: inception.prefix, opSeed: op, devices });
-  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(op), guardianRecoveryKeys, recoveryThreshold, guardianSigners, enrolments });
+  const rot = await attestAndRotate({ head: inception, freshOpKeyDid: await didOf(op), recoveryContactKeys, recoveryThreshold, recoveryContactSigners, enrolments });
   if (!rot.ok) throw new Error(rot.reason);
   return rot.event;
 }
@@ -77,6 +80,7 @@ async function ringOver(events: readonly PersonaKelEvent[]): Promise<PersonaKelR
 
 describe("persona-kel ring — the doors meet every event the board holds", () => {
   const SEED = new Uint8Array(32).fill(7);
+  const ATOM_SEED = new Uint8Array(32).fill(8);
   let boot: { repo: Repo; verifyingKey: string; prefix: string; args: Parameters<typeof bootDaemonKeyhive>[0] };
 
   beforeAll(async () => {
@@ -86,8 +90,7 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     const did = await probe.whoami();
     const verifyingKey = did.startsWith("0x") ? did.slice(2) : did;
     await probe.dispose();
-    const cer = await runFoundingCeremony({ deriveVeil: veilFromDeviceKey(mintDeviceMintedKey(SEED)),
-      repo, vesselSeed: SEED, vesselVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
+    const cer = await runFoundingCeremony({ vesselTag: testVesselTagDoor(1), ...memorySecretHome(repo), repo, atomSeed: ATOM_SEED, placeVerifyingKey: verifyingKey, vesselDisplayName: "Ring Operator",
       binding: { mode: "self-stood", signerSeed: SEED }, hearthTrueName: "", nexusPubkey: verifyingKey,
     });
     const daemonHandle = await repo.find<LarDoc>(cer.daemonUrl as AutomergeUrl);
@@ -98,10 +101,12 @@ describe("persona-kel ring — the doors meet every event the board holds", () =
     boot = {
       repo, verifyingKey, prefix: cer.personaKelPrefix,
       args: {
-        seed: SEED, eventStore: new DaemonEventStore({ daemon: composite }), vesselVerifyingKey: verifyingKey,
+        atomSeed: cer.atomSeed, veilArchiveBytes: cer.veilArchive, eventStore: new DaemonEventStore({ ...memorySecretStore(await repo.find(cer.secretUrl as AutomergeUrl)), face: cer.personaGroupId }), placeVerifyingKey: verifyingKey,
         personaGroupId: cer.personaGroupId,
+        faceAnchor: mintFaceAnchor({ personaGroup: cer.personaGroupId, personaKelPrefix: cer.personaKelPrefix,
+          personaRootDid: cer.founderEdge.personaRootDid, edge: cer.founderEdge, leaseEpoch: 0 }),
         meshCabalDocIdHex: cer.meshCabalDocIdHex, registerBags: [DAEMON_BAG_ID], signerDid: cer.signerDid,
-        personaKel: { prefix: cer.personaKelPrefix, chain: [] }, deviceEdge: cer.founderEdge, expectedEpoch: 0,
+        personaKel: { prefix: cer.personaKelPrefix, chain: [] }, deviceEdge: cer.founderEdge, faceVerifyingKey: cer.founderEdge.deviceVerifyingKey, expectedEpoch: 0,
       },
     };
   });

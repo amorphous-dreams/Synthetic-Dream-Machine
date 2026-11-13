@@ -1,0 +1,41 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/brief2`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable     = false
+l-space       = "adjacent"
+render-target = "docs"
+role          = "VERBATIM scratch record — brief, 2026-10-28 (file date) — source `.lares-scratch/research/hydrafusion/brief2.md`. Markdown transliterated only; source wording retained. A workshop record: it informs and never governs."
+title         = "lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/brief2"
+type          = "text/memetic-wikitext+tiddlywiki"
+uri-path      = "ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/brief2"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! brief2.md — brief, 2026-10-28
+
+Verbatim scratch record `.lares-scratch/research/hydrafusion/brief2.md` (brief, file date 2026-10-28); only Markdown transliterated to memetic-wikitext, its words kept as written. Index: [[workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/research/hydrafusion/index]].
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/round-two-trade-verify-collide-hydrafusion-copil`>>
+
+! Round two (Sonnet): trade, verify, collide — HydraFusion / Copilot Fusion
+
+Two independent round-one reports exist: `/home/joshu/.lares-scratch/research/hydrafusion/terra/out.md` (OpenAI Terra-6.1 with search) and `/home/joshu/.lares-scratch/research/hydrafusion/sonnet/out.md` (Claude Sonnet with search). Their shared brief: `/home/joshu/.lares-scratch/research/hydrafusion/brief.md`. Read all three whole. Write ONLY `/home/joshu/.lares-scratch/research/hydrafusion/out2.md` (under 400 lines). Never edit the repository; never read a credential file.
+
+# TRADE: list every claim where the two reports disagree, or where only one makes it. Fetch the primary source for each that bears on a decision and rule it HOLDS / WRONG / UNVERIFIED with a quote.
+# CLOSE the open items: does a legacy annual Copilot plan (300 premium requests a month, `gpt-5.3-codex` at 6x) reach Fusion, and at what meter; can Fusion run headless from the Copilot CLI (our launcher: /home/joshu/Synthetic-Dream-Machine/tools/launch-copilot.mjs, read it) with a model choice we pin; the docs.github.com Fusion pages round one could not open.
+# COLLIDE against our crew law (`/home/joshu/Synthetic-Dream-Machine/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem` and `/home/joshu/.lares-scratch/k17-r/brief.md` #Crew and #Swarm refinements): one table, pattern | Fusion | ours | the stronger integrity and why. Then the BORROW list, each item with the exact law line or tool change it would become here (a brief line, a spend.py field, a launcher check), its red test, and its cost; and the places ours hold stronger, stated without flattery.
+# YIN: the strongest case that we should adopt Fusion as a seat or a lane controller. YANG: what survives.
+# INTEGRATION verdict with leans: adopt as a seat / adopt as a lane's controller / borrow ideas only / ignore; and the operator's open questions, each with a lean.
+Mark every claim SOURCED (URL, date) or REASONED.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7ifBGdaNBs5Eev7o4kGMmkwlUzKBEF0JoCqaCetjrno`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -3,12 +3,12 @@
  * no key and no roster here; standing reads as a live query the edge shadow ring answers. The realm-doc pointer
  * names each realm doc, the id pointer names the default realm, the steward pointer names a realm's worn key,
  * and the standing pointer carries that realm's folded registrations. The holder materializes each shared CRDT,
- * charter names, pins the pointer on the vessel's own oracle plane (so the daemon island's reach walks it),
- * folds the standing registrations into the wire gate, and lands a steward's registration + its @crossroads
- * announce.
+ * charter names, pins the pointer on the vessel's own catalog plane (so the daemon island's reach walks it),
+ * folds the standing registrations into the wire gate, and lands a steward's registration + its announce on the
+ * Nexus's realm-announce board.
  *
- * A vessel that holds no charter stands no realm: the holder rests INERT (no doc, no pointer, the base gate
- * unchanged). A charter import (`nexus seal import`, carried or primary) on a standing vessel stands it: the
+ * A vessel that holds no primary or carried charter stands no realm: the holder rests INERT (no doc, no pointer,
+ * the base gate unchanged). A charter import (`nexus seal import`, carried or primary) on a standing vessel stands it: the
  * import itself pokes the vessel's refold at once (no separate verb to run), and this holder's own
  * `refresh(charter)` re-reads the realm id and materializes on first sight; a re-read of the same realm
  * changes nothing. The realm id NEVER moves for a standing realm (a genesis epoch is fixed for life), so a different id
@@ -37,8 +37,7 @@ import {
   realmBagRegistrationCounts, writeRealmBagRegistration, realmBagRegistrationsFromDoc, foldRealmBags,
   realmBagBytes, realmBagSealedBy, stewardSealedHere, hex,
   writeRealmBagAnnounce, type RealmBagRegistration, type RealmCharterConsult, type StewardSigner,
-  type RealmBagFoldOptions,
-} from "@lararium/mesh";
+  type RealmBagFoldOptions, ownEntry} from "@lararium/mesh";
 
 /** Why a seal on this vessel refused. */
 /** One realm the vessel's ledger notes, and the Nexus it stands under there (null where no act named one);
@@ -47,7 +46,8 @@ export interface NotedRealm { readonly realm: string; readonly nexus: string | n
 
 export type StewardRefusal =
   | "no-realm"                 // the plane never stood, or stands in no realm
-  | "no-face-worn"             // this vessel wears no face, or holds no root for the worn index
+  | "face-not-named"           // this vessel stands several faces open and the act named none (--face N)
+  | "face-root-absent"         // this vessel holds no root for the face the act resolves to
   | "steward-key-unreadable"   // this vessel's own keys would not read (a locked vault, a torn roster)
   | "steward-key-class"        // the key reads as anything but this vessel's own per-Nexus face key at this Nexus
   | "steward-name-unreadable"  // a name that reads neither a face key nor a Handle prefix
@@ -88,11 +88,11 @@ export interface RealmPlaneHolder {
   /** Has this steward name SEALED HERE: does some record of this realm on the doc this vessel holds carry that
    *  name's own verifying seal? The steward door asks before it writes a name another hand holds. */
   sealedHere(name: string): Promise<boolean>;
-  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on @crossroads.
+  /** Register a bag this vessel's steward keeps: seal, land on the realm doc, announce on the realm-announce board.
    *  `propose` names stewards whose hands have NOT sealed this record — it accretes their names and counts
    *  nothing until each proposed hand co-signs (n-of-n; a named-but-unsigned steward is conscription). A
    *  proposed name must already have sealed a record of this realm, else `steward-name-unproven`.
-   *  Each signer names its steward: the worn face's key at this realm's Nexus, or a quorum Handle's prefix. */
+   *  Each signer names its steward: the acting face's key at this realm's Nexus, or a quorum Handle's prefix. */
   register(input: {
     readonly bagUri: string;
     readonly docUrl: string;
@@ -127,7 +127,7 @@ export interface RealmPlaneHolder {
  * default a verb routes to when it names none); `plane` hands out one realm's plane by name.
  */
 export interface RealmPlanesHolder extends RealmPlaneHolder {
-  /** Every realm this vessel stands a plane for: the charter-derived realm first, then its cabal realms, sorted. */
+  /** Every realm this vessel stands a plane for: the primary charter first when stood, then the rest sorted. */
   realms(): readonly string[];
   /** The plane of one realm: the charter-derived realm for `null`, `undefined` or its own id; a cabal realm's
    *  plane by its id; null for a realm this vessel stands no plane for. Each plane answers for ITS realm alone,
@@ -141,10 +141,10 @@ export interface RealmPlanesHolder extends RealmPlaneHolder {
 
 export function makeRealmPlane(opts: {
   readonly repo: Repo;
-  /** The vessel's own oracle plane — the pointer to the realm doc lands here. */
-  readonly oracleHandle: DocHandle<LarDoc>;
-  /** The public crossroads doc the announce lands on. */
-  readonly crossroadsHandle: DocHandle<LarDoc>;
+  /** The vessel's own catalog plane — the pointer to the realm doc lands here. */
+  readonly registry: DocHandle<LarDoc>;
+  /** The Nexus's realm-announce board the announce lands on (`realmAnnounceDocUrl`): no recipe mounts it, no mirror names it. */
+  readonly announceHandle: DocHandle<LarDoc>;
   readonly membership: NexusMembership;
   readonly base: FederationGate;
   /** The realm's OWN consult — the proven contract nym behind a wire key, and who holds which charter. Absent,
@@ -199,7 +199,7 @@ export function makeRealmPlane(opts: {
    */
   readonly dialedHearth?: () => { readonly pinned: boolean; readonly aid: string | null };
 }): RealmPlanesHolder {
-  const { repo, oracleHandle, crossroadsHandle, membership, base } = opts;
+  const { repo, registry, announceHandle, membership, base } = opts;
   const log = opts.onLog ?? (() => {});
 
   /** One realm's plane as the holder keeps it: the plane a verb acts through, its gate, and its teardown. */
@@ -284,12 +284,12 @@ export function makeRealmPlane(opts: {
       if (dropped) return;
       await realmGate.refold(realmHandle.doc(), realmId);
       if (dropped) return;
-      // THE VERDICT RESTS ON THE VESSEL'S OWN PLANE: the daemon island reads the standing registrations this
+      // THE VERDICT RESTS ON THE VESSEL'S OWN CATALOG: the daemon island reads the standing registrations this
       // plane folded, and folds nothing itself.
       const folded = realmGate.registrations();
       const image = JSON.stringify([...folded.values()].sort((a, b) => (a.bagUri < b.bagUri ? -1 : a.bagUri > b.bagUri ? 1 : 0)));
       if (image !== lastStanding) {
-        oracleHandle.change((d) => { writeRealmStanding(d, realmId, folded); });
+        registry.change((d) => { writeRealmStanding(d, realmId, folded); });
         lastStanding = image;
       }
       opts.onRefold?.();
@@ -309,20 +309,20 @@ export function makeRealmPlane(opts: {
      *  here. Written the moment this hand seals, never from a name another hand wrote. */
     const pinSteward = (nym: string): void => {
       const key = realmStewardPointer(realmId);
-      if (tiddlerText(oracleHandle.doc()?.tiddlers?.[key]) === nym) return;
-      oracleHandle.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text: nym }, "realm-bag"); });
+      if (tiddlerText(ownEntry(registry.doc()?.tiddlers, key)) === nym) return;
+      registry.change((d) => { d.tiddlers[key] = storedLarRecord(key, { text: nym }, "realm-bag"); });
     };
 
-    // The pointers on the vessel's OWN plane: the daemon island's reach reads a realm's doc from here, never off
+    // The pointers on the vessel's OWN catalog: the daemon island's reach reads a realm's doc from here, never off
     // the realm doc itself (a member who could rewrite an id there could make a foreign record count). The
     // charter-derived realm also names itself the DEFAULT a verb routes to.
     const docPointer = realmDocPointer(realmId);
     // A STAND THAT FAILS LEAVES NOTHING: no listener, no pin, no verdict.
     try {
-      const oracle = oracleHandle.doc();
-      const wantsDefault = kind === "charter" && tiddlerText(oracle?.tiddlers?.[REALM_ID_TIDDLER]) !== realmId;
-      if (tiddlerText(oracle?.tiddlers?.[docPointer]) !== realmUrl || wantsDefault) {
-        oracleHandle.change((d) => {
+      const catalog = registry.doc();
+      const wantsDefault = kind === "charter" && tiddlerText(ownEntry(catalog?.tiddlers, REALM_ID_TIDDLER)) !== realmId;
+      if (tiddlerText(ownEntry(catalog?.tiddlers, docPointer)) !== realmUrl || wantsDefault) {
+        registry.change((d) => {
           d.tiddlers[docPointer] = storedLarRecord(docPointer, { text: realmUrl }, "vessel-boot");
           if (kind === "charter") d.tiddlers[REALM_ID_TIDDLER] = storedLarRecord(REALM_ID_TIDDLER, { text: realmId }, "vessel-boot");
         });
@@ -380,8 +380,8 @@ export function makeRealmPlane(opts: {
         const by = signers[0]!.signer.toLowerCase();
         realmHandle.change((d) => writeRealmBagRegistration(d, rec, by, counts));
         // The announce carries the ford's existence — and only once the record actually counts, so a proposal
-        // never tells the crossroads a ford stands that no fold has seated.
-        if (counts) crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+        // never tells the board a ford stands that no fold has seated.
+        if (counts) announceHandle.change((d) => writeRealmBagAnnounce(d, rec));
         pinSteward(by);
         await refold();
         return rec;
@@ -431,7 +431,7 @@ export function makeRealmPlane(opts: {
           const image = hex(realmBagBytes(rec));
           (groups.get(image) ?? (groups.set(image, []), groups.get(image)!)).push({ rec, sealed: sealedBy.length });
         }
-        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> --join\`), and a keeping hand names a steward by the key that steward's worn face presents here (\`--steward <key>\`)`);
+        if (groups.size === 0) throw new Error(`realm-bag: no standing proposal on the realm doc names this steward for "${bagUri}" — a hand that would keep the bag asks from its own vessel first (\`lares nexus realm-bag <bag> --join\`), and a keeping hand names a steward by the key that steward's acting face presents here (\`--steward <key>\`)`);
         // WHERE NO REGISTRATION STANDS, nothing holds a proposal to a book: the signer names the hand it consents
         // with, so one planted proposal never draws a seal from a bare co-sign.
         if (!stands && withName === undefined) {
@@ -447,8 +447,8 @@ export function makeRealmPlane(opts: {
         const rec = await coSignRealmBagRegistration(proposal, { ...cosigner, signer: nym });
         const counts = await realmBagRegistrationCounts(rec, realmId, opts.sealReading);
         realmHandle.change((d) => writeRealmBagRegistration(d, rec, nym, counts));
-        // The announce follows a counted record alone: a record still short of a hand tells the crossroads nothing.
-        if (counts) crossroadsHandle.change((d) => writeRealmBagAnnounce(d, rec));
+        // The announce follows a counted record alone: a record still short of a hand tells the board nothing.
+        if (counts) announceHandle.change((d) => writeRealmBagAnnounce(d, rec));
         pinSteward(nym);
         await refold();
         return rec;
@@ -456,7 +456,7 @@ export function makeRealmPlane(opts: {
       dispose: () => dispose(),
     };
     const keepsOwn = (documentId: DocumentId): boolean => {
-      const own = tiddlerText(oracleHandle.doc()?.tiddlers?.[realmStewardPointer(realmId)]);
+      const own = tiddlerText(ownEntry(registry.doc()?.tiddlers, realmStewardPointer(realmId)));
       if (!own) return false;
       for (const rec of realmGate.registrations().values()) {
         if (rec.keptBy.includes(own) && interpretAsDocumentId(rec.docUrl as AutomergeUrl) === documentId) return true;
@@ -470,8 +470,8 @@ export function makeRealmPlane(opts: {
   /** A realm this vessel left takes its pointers with it: the island reads no verdict of a plane that stands no more. */
   const unpin = (realmId: string): void => {
     const keys = [realmDocPointer(realmId), realmStewardPointer(realmId), realmStandingPointer(realmId)];
-    if (!keys.some((k) => oracleHandle.doc()?.tiddlers?.[k] !== undefined)) return;
-    oracleHandle.change((d) => { for (const k of keys) delete d.tiddlers[k]; });
+    if (!keys.some((k) => ownEntry(registry.doc()?.tiddlers, k) !== undefined)) return;
+    registry.change((d) => { for (const k of keys) delete d.tiddlers[k]; });
   };
 
   /** The ledger's notes, read whole; a ledger that will not read notes nothing. */
@@ -500,8 +500,7 @@ export function makeRealmPlane(opts: {
 
   async function refreshNow(charter: NexusDoc | null): Promise<void> {
     const id = nexusAidOf(charter);
-    // NO CHARTER → INERT (a vessel outside every realm). A Nexus this vessel stood under and no longer holds takes
-    // every plane and pin with it: no realm stays standing under a Nexus no charter here names.
+    // A primary charter that leaves takes its dependent planes and pins. Carried charters stand on their own.
     if (!id) {
       if (charterRealm !== null) {
         const left = [...stood.keys()];
@@ -509,10 +508,10 @@ export function makeRealmPlane(opts: {
         for (const realm of left) unpin(realm);
         charterRealm = null;
         entered.clear();
+      } else {
+        for (const s of stood.values()) await s.refold();
       }
-      return;
-    }
-    if (id !== charterRealm) {
+    } else if (id !== charterRealm) {
       // ANOTHER NEXUS: every plane re-stands under it, since a steward's key derives against the Nexus.
       // Every plane leaves with its pins: a steward's key derives against the Nexus, so no pin of the Nexus
       // this vessel left answers under the next, and a failed stand leaves no realm readable. A realm this run
@@ -529,19 +528,18 @@ export function makeRealmPlane(opts: {
     } else {
       for (const s of stood.values()) await s.refold();
     }
-    // Every cabal realm this run entered, and every one the ledger notes, stands under the Nexus that stands now,
-    // save one the ledger notes under ANOTHER Nexus (kapae#/edge-hands).
-    for (const realm of await notedRealms()) entered.add(realm);
-    const elsewhere = new Set((await readNoted()).filter((n) => n.conflict || (n.nexus !== null && n.nexus !== charterRealm)).map((n) => n.realm.trim().toLowerCase()));
-    // A realm already standing that the ledger now pins elsewhere, or reads conflicted (two replicas met), leaves
-    // with its pins: no plane stands under a Nexus the realm does not stand under here.
-    for (const realm of [...stood.keys()]) {
-      if (realm === charterRealm || !elsewhere.has(realm)) continue;
-      stood.get(realm)!.drop(); stood.delete(realm); unpin(realm); entered.delete(realm);
-    }
-    for (const realm of [...entered].sort()) {
-      if (realm === charterRealm || stood.has(realm) || elsewhere.has(realm)) continue;
-      stood.set(realm, await standPlane(realm, "cabal"));
+    if (charterRealm !== null) {
+      // Cabal realms stand only beneath this vessel's primary charter.
+      for (const realm of await notedRealms()) entered.add(realm);
+      const elsewhere = new Set((await readNoted()).filter((n) => n.conflict || (n.nexus !== null && n.nexus !== charterRealm)).map((n) => n.realm.trim().toLowerCase()));
+      for (const realm of [...stood.keys()]) {
+        if (realm === charterRealm || !elsewhere.has(realm)) continue;
+        stood.get(realm)!.drop(); stood.delete(realm); unpin(realm); entered.delete(realm);
+      }
+      for (const realm of [...entered].sort()) {
+        if (realm === charterRealm || stood.has(realm) || elsewhere.has(realm)) continue;
+        stood.set(realm, await standPlane(realm, "cabal"));
+      }
     }
     // EACH CARRIED CHARTER stands its realm under its own Nexus; one this vessel no longer carries leaves with its
     // pins. A carried plane that fails to stand stands again at the next refresh.
@@ -575,7 +573,7 @@ export function makeRealmPlane(opts: {
     join:     async (input) => { const p = charterPlane(); if (!p) throw unstood("join");     return p.join(input); },
     coSign:   async (input) => { const p = charterPlane(); if (!p) throw unstood("coSign");   return p.coSign(input); },
     dispose,
-    realms: () => (charterRealm ? [charterRealm, ...[...stood.keys()].filter((r) => r !== charterRealm).sort()] : []),
+    realms: () => (charterRealm ? [charterRealm, ...[...stood.keys()].filter((r) => r !== charterRealm).sort()] : [...stood.keys()].sort()),
     plane(realm) {
       if (realm === null || realm === undefined) return charterPlane();
       return stood.get(realm.trim().toLowerCase())?.plane ?? null;

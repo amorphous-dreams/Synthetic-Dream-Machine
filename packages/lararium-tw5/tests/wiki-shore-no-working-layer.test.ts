@@ -12,12 +12,12 @@
 import { describe, expect, test } from "vitest";
 import { unroutedSaveAlertTitle } from "../src/island-adaptor.js";
 import { wikiSkip, skipNote } from "./test-wiki.js";
-import { afterDispatch, draftBag, ManualTimers, personalBag, shoreRig, storeText, tempBag, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
+import { afterDispatch, draftBag, ManualBoundary, personalBag, shoreRig, storeText, tempBag, turns, workingBag, type Rig } from "./wiki-shore-rig.js";
 
 const POINTER = (slot: string): string => `lar:///ha.ka.ba/lararium/config/current-wiki-${slot}`;
-const hand = async (r: Rig, timers: ManualTimers): Promise<void> => {
+const hand = async (r: Rig, boundary: ManualBoundary): Promise<void> => {
   await afterDispatch();
-  timers.fireAll(400);
+  boundary.fire();
   await turns(48);
   await r.adaptor.landingIdle();
 };
@@ -29,8 +29,8 @@ const DRAFT = `Draft of '${ORDINARY}'`;
 
 describe.skipIf(wikiSkip)(`a wiki with no working layer${skipNote}`, () => {
   test("a route into a mounted named layer lands; the route through the working pointer refuses by name", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, noWorking: true, upperSlots: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, noWorking: true, upperSlots: true });
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     expect(r.composite.defaultWritableBagId(), "the composition names no working layer").toBeNull();
@@ -39,7 +39,7 @@ describe.skipIf(wikiSkip)(`a wiki with no working layer${skipNote}`, () => {
     r.wiki.addTiddler(new r.Tiddler({ title: FOLDED, text: "hide" }));
     r.wiki.addTiddler(new r.Tiddler({ title: TEMP, text: "scratch" }));
     r.wiki.addTiddler(new r.Tiddler({ title: ORDINARY, text: "an ordinary save" }));
-    await hand(r, timers);
+    await hand(r, boundary);
 
     expect(storeText(r, draftBag, DRAFT), "the draft slot takes the draft").toBe("a draft");
     expect(storeText(r, personalBag, FOLDED), "the personal slot takes view state").toBe("hide");
@@ -57,13 +57,13 @@ describe.skipIf(wikiSkip)(`a wiki with no working layer${skipNote}`, () => {
   }, 120_000);
 
   test("a route into a named layer the composition does not mount refuses by name", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, noWorking: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, noWorking: true });
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
 
     r.wiki.addTiddler(new r.Tiddler({ title: FOLDED, text: "hide" }));
-    await hand(r, timers);
+    await hand(r, boundary);
 
     expect(r.calls.filter((c) => c.puts.includes(FOLDED))).toEqual([]);
     expect(storeText(r, personalBag, FOLDED)).toBeUndefined();
@@ -73,18 +73,18 @@ describe.skipIf(wikiSkip)(`a wiki with no working layer${skipNote}`, () => {
     expect(String(alert!.fields.text)).toContain(`it names ${personalBag}, a bag this wiki does not mount`);
     // CONTROL inside the same wiki: the draft slot stands mounted, and a draft still lands.
     r.wiki.addTiddler(new r.Tiddler({ title: DRAFT, "draft.of": ORDINARY, "draft.title": ORDINARY, text: "a draft" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeText(r, draftBag, DRAFT)).toBe("a draft");
     await end(r);
   }, 120_000);
 
   test("CONTROL: with the working layer mounted the ordinary save lands there and raises nothing", async () => {
-    const timers = new ManualTimers();
-    const r = await shoreRig({ timers, upperSlots: true });
+    const boundary = new ManualBoundary();
+    const r = await shoreRig({ boundary, upperSlots: true });
     await r.adaptor.armSeedCheckpoint();
     await r.adaptor.landingIdle();
     r.wiki.addTiddler(new r.Tiddler({ title: ORDINARY, text: "an ordinary save" }));
-    await hand(r, timers);
+    await hand(r, boundary);
     expect(storeText(r, workingBag, ORDINARY)).toBe("an ordinary save");
     expect(r.wiki.getTiddler(unroutedSaveAlertTitle(POINTER("bag")))).toBeUndefined();
     expect(tempBag).toContain("/temp");

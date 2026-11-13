@@ -27,7 +27,7 @@
  * key the presented ContactCard carries. Nothing is looked up, so nothing can drift or be forged by writing to
  * a list. Three of the four checks read the edge alone and run BEFORE the card enters local state.
  *
- * FRESHNESS READS THE LEASE. The LEASE — a per-resource max-register epoch, monotone and read locally — carries
+ * FRESHNESS READS THE LEASE. The face's verified signed lease epoch, read locally, carries
  * the authority: a grant bound below the current epoch reads stale. Connection replay is handled by the summons
  * transport and its fresh exchange; this gate does not turn a wall clock into authority.
  *
@@ -38,7 +38,7 @@ import { bytesToBase64 } from "./bytes-base64.js";
 
 /** The summons a joinee writes: what it holds (the card) and what licenses it (the edge). */
 export interface FaceJoinSummons {
-  readonly kind: "face-join/v1";
+  readonly kind: "face-join";
   /** The joinee's OWN self-certifying ContactCard (`ContactCard.toJson()`) — it carries the prekey the group
    *  path encrypts to, which a raw verifying key cannot supply. */
   readonly contactCard: string;
@@ -51,7 +51,7 @@ export interface FaceJoinSummons {
 
 /** The grant the island returns — everything the joinee needs to reach the group key, nothing secret. */
 export interface FaceJoinGrant {
-  readonly kind: "face-join-grant/v1";
+  readonly kind: "face-join-grant";
   readonly joineeAgentIdHex: string;
   /** The founder's own ContactCard — the joinee receives it so its provider can name this vessel as an
    *  audience. Without it a joinee holds membership yet cannot delegate anything back. */
@@ -109,9 +109,9 @@ export interface FaceJoinContext {
    */
   readonly reseal?: readonly string[];
   /**
-   * THE LEASE AUTHORITY — this resource's current max-register epoch (`effectiveLeaseEpoch` over its slots).
-   * A grant whose `boundEpoch` sits below it reads STALE and the gate refuses. A max-register is monotone and
-   * read locally, so two islands need no shared clock to agree which way it moved; an unfed resource reads 0
+   * THE LEASE AUTHORITY — this face's verified signed epoch (`signedLeaseEpoch` over its slots).
+   * A grant whose `boundEpoch` sits below it reads STALE and the gate refuses. The verified maximum
+   * reads locally, so two islands need no shared clock to agree which way it moved; an unadvanced face reads 0
    * and admits the epoch-0 grants a founding issues.
    */
   readonly leaseEpoch: number;
@@ -154,7 +154,7 @@ export async function gateFaceJoin(args: {
   if (edge?.kind !== "device-delegation") {
     return { ok: false, reason: "the summons carries no device-delegation edge" };
   }
-  // The signature check plus the causal lease frontier: the current max-register decides authority.
+  // The signature check plus the causal lease frontier: the face's verified signed epoch decides authority.
   const verdict = await verifyDeviceDelegation(edge, ctx.personaRootDid, {
     expectedEpoch: ctx.leaseEpoch,
   });
@@ -163,8 +163,13 @@ export async function gateFaceJoin(args: {
   }
   // THE BINDING GATE READS THE DYAD'S SHADOW. A device the fleet root set aside binds nothing here, whatever its
   // edge proves. It draws Mu: the words an edge with no relation behind it draws, and no cause.
-  if (ctx.dyad(edge.deviceVerifyingKey) === "aside") {
+  const standing = ctx.dyad(edge.deviceVerifyingKey);
+  if (standing === "aside") {
     return { ok: false, reason: "edge refused: signature mismatch" };
+  }
+  // ABSENCE IS NOT CLEAR: a fleet whose signed frontier reads unknown vouches for no device, so the gate binds nobody until it does.
+  if (standing === "unknown") {
+    return { ok: false, reason: "edge refused: no qualifying signed edge frontier" };
   }
   // The binding IS (vessel × hearth) — an edge minted for another place carries no seat at this one.
   if (edge.hearthTrueName !== ctx.hearthTrueName) {
@@ -225,6 +230,7 @@ export async function runFaceJoin(
   // the re-seal that would carry the standing chunks across stays out, since those chunks hold the span the
   // device missed.
   const dyad = ctx.dyad(summons.deviceEdge.deviceVerifyingKey);
+  if (dyad === "unknown") return { ok: false, reason: "no qualifying signed edge frontier" };
   const returned = dyad === "returned" || dyad === "owing";
   // THE EARLIER SEAT LEAVES FIRST. A device that returns while a raise still owes its roll may hold the very seat
   // the raise names, and its earlier key epoch with it. So the join rolls the seat before it seats: revoke, then add.
@@ -265,7 +271,7 @@ export async function runFaceJoin(
   return {
     ok: true,
     grant: {
-      kind: "face-join-grant/v1",
+      kind: "face-join-grant",
       joineeAgentIdHex,
       founderCard,
       capEvents: events.map(bytesToBase64),
