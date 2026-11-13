@@ -99,6 +99,49 @@ describe("the node's floor cut", () => {
     } finally { await r.repo.shutdown(); }
   });
 
+  /**
+   * A RELEASE CUT REFUSES A THIN SNAPSHOT. A canon document that holds far fewer rows than the snapshot the prior floor names
+   * (a realm document seeded while another document answered its doors) would publish a near-empty bag to every reader. The cut
+   * refuses that slug BY NAME (`floor-cut-thin`) and writes nothing, unless the steward names the slug as thin on purpose.
+   */
+  async function wideRig(liveRows: number) {
+    const r = await rig();
+    const title = (i: number) => `lar:///ha.ka.ba/lares/docs/pono/page-${String(i).padStart(2, "0")}`;
+    const priorRows: Record<string, LarTiddlerRecord> = {};
+    for (let i = 0; i < 20; i++) priorRows[title(i)] = row(title(i), `page ${i}`);
+    const lares = cutFloorSnapshot(priorRows);
+    const prior = (await resolveFloor(r.gCid, async (cid) => readVerifiedCasBlobFromFs(cid, r.casDir)) as { manifest: FloorManifest }).manifest;
+    const wide: FloorManifest = { ...prior, snapshots: { ...prior.snapshots, lares: lares.cid } };
+    const wBytes = floorManifestBytes(wide), wCid = sha256HexBytesSync(wBytes);
+    writeCasEntriesFs([{ cid: lares.cid, bytes: lares.bytes }, { cid: wCid, bytes: wBytes }], r.casDir);
+    const handle = r.repo.create<LarDoc>(emptyLarDoc());
+    const live = new AutomergeDocStore(handle, bagUri("lares"));
+    for (let i = 0; i < liveRows; i++) await live.put(row(title(i), `page ${i}`), { kind: "lares-verb", requestId: `seed-${i}` });
+    return { ...r, wCid, canonDocUrl: (bag: string): string | null => (bag === bagUri("lares") ? handle.url : null) };
+  }
+
+  test("RED: a slug whose live rows fall under half the prior snapshot's refuses floor-cut-thin by name and writes no file", async () => {
+    const r = await wideRig(3);
+    try {
+      const out = join(r.dir, "thin.json");
+      await expect(runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, bagTier: () => null }))
+        .rejects.toMatchObject({ refusal: "floor-cut-thin", message: expect.stringMatching(/lares \(3 live rows? under 20\).*--thin lares/s) });
+      expect(existsSync(out)).toBe(false);
+      // CONTROL: the steward names the slug thin on purpose, and the cut lands.
+      const named = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, bagTier: () => null, thin: ["lares"] });
+      expect(named).toMatchObject({ cut: ["lares"], moved: ["lares"] });
+      expect(existsSync(out)).toBe(true);
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("CONTROL: a slug that sheds some rows (12 of 20) cuts with no flag", async () => {
+    const r = await wideRig(12);
+    try {
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "shed.json"), prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, bagTier: () => null });
+      expect(cut).toMatchObject({ cut: ["lares"], moved: ["lares"] });
+    } finally { await r.repo.shutdown(); }
+  });
+
   test("runFloorCut binds through runFloorCutOver alone", () => {
     const source = readFileSync(new URL("../src/commands/floor-cut.ts", import.meta.url), "utf8");
     const body = source.slice(source.indexOf("export async function runFloorCut("));

@@ -434,7 +434,7 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 !!! The release wiring
 
-`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, a slug whose bag declares a tier under `public` in its own `meta.mem` leaves the manifest (`dropped`; the public floor carries public bags alone, `floorCarriesTier`), and the blobs stage before the manifest answers. `lares nexus release <manifest-file> --cut` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID.
+`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, a slug whose bag declares a tier under `public` in its own `meta.mem` leaves the manifest (`dropped`; the public floor carries public bags alone, `floorCarriesTier`), and the blobs stage before the manifest answers. ''A thin snapshot refuses'': a slug whose live rows count under half its prior snapshot's (`floorCutReadsThin`; a prior under 16 rows weighs nothing), or whose prior snapshot the CAS cannot answer for the weighing, refuses the whole cut `floor-cut-thin` by slug with both counts, and nothing stages; `--thin <slug[,slug]>` carries the steward's word that the bag shrank on purpose. A canon document seeded while another document answered its doors holds none or a handful of rows, and a lawful release sheds a few memes of hundreds, so half parts the two. `lares nexus release <manifest-file> --cut` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID.
 
 !!! The surfaces — one door, both hosts
 
@@ -514,6 +514,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;M3Sxk0_RY96ah71Cs7-kR6CkvfXOb8aTnaGxadIW2cQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9DFfpE-wSzavy9towXxjxCJL62Cyfh6IEXI4n26ZMGc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

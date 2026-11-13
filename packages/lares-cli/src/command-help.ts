@@ -171,7 +171,9 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "                                            manifest, the seats' approval of its exact bytes (`promote open --surface floor-release`) rides",
       "                                            attached, and it lands on the Nexus's publication board once it counts",
       "  release <manifest-file> --cut [--nexus <aid>]   cut that manifest from LIVE house canon (a promoted offer rides it),",
-      "                                            stage the floor in this hearth's CAS; it lands nothing (offering#/the-canon-offer)",
+      "                                            stage the floor in this hearth's CAS; it lands nothing (offering#/the-canon-offer);",
+      "                                            a bag whose live rows count under half its prior snapshot's refuses floor-cut-thin,",
+      "                                            unless --thin <slug[,slug]> names it as shrunk on purpose",
     ],
     examples: [
       "lares nexus rite quorum",

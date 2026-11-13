@@ -561,7 +561,8 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       })),
     })),
     "floor-cut": (args) => answer("floor-cut", async () => ({
-      ...(await runFloorCut({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), out: need("floor-cut", args, "out"), ...opt("aid", str(args["aid"])) })),
+      ...(await runFloorCut({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), out: need("floor-cut", args, "out"), ...opt("aid", str(args["aid"])),
+        ...(Array.isArray(args["thin"]) ? { thin: (args["thin"] as unknown[]).filter((s): s is string => typeof s === "string") } : {}) })),
     })),
 
     // THE VESSEL'S FLOOR PIN (w26-floor-lane#/the-vessel-pin): one pin per (vessel, Nexus) in the control home, moved only by

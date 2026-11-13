@@ -41,7 +41,7 @@ import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { projectionWithheld, resolvedTitlePath } from "./projection-filter.js";
 import { bagUri, CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { cutCanonFloor, floorCarriesTier, floorSlugs, readFloorManifest, FLOOR_REQUIRED_SLUGS } from "./floor-manifest.js";
+import { cutCanonFloor, floorCarriesTier, floorSlugs, openFloorSnapshot, readFloorManifest, FLOOR_REQUIRED_SLUGS } from "./floor-manifest.js";
 import type { CapTier } from "./cap-tier.js";
 import { rosterOfLineage } from "./floor-release.js";
 import type { SealEpoch } from "./wax-stamp.js";
@@ -691,8 +691,33 @@ export interface ReleaseFloorPorts {
   readonly canonRows: (slug: string) => Promise<Readonly<Record<string, LarTiddlerRecord>> | null>;
   /** The tier a bag's OWN declaration names on this vessel (its `meta.mem` `cap-tier`), or null where no declaration stands here. */
   readonly tier:      (slug: string) => Promise<CapTier | null> | CapTier | null;
+  /** One blob of the prior floor by CID (a snapshot the prior manifest names), or null where this CAS holds none. */
+  readonly blob:      (cid: string) => Promise<Uint8Array | null>;
   /** Stage the cut's blobs (the manifest and each fresh snapshot) where the release door and the porch read them. */
   readonly stage:     (blobs: ReadonlyArray<{ readonly cid: string; readonly bytes: Uint8Array }>) => Promise<void>;
+}
+
+/** The fewest rows a prior snapshot holds before the thin read weighs it: a holding of a handful of rows halves by one retire. */
+export const FLOOR_THIN_MIN_PRIOR = 16;
+/**
+ * WHETHER A LIVE ROW COUNT READS THIN against the prior snapshot's: under HALF of it. Canon grows from release to release, and a
+ * retire burns a few memes of a bag that holds hundreds of rows, so no lawful release sheds half a bag in one cut; a canon
+ * document seeded while another document answered its doors holds none or a handful. Half parts the two with room on both sides.
+ */
+export function floorCutReadsThin(live: number, prior: number): boolean {
+  return prior >= FLOOR_THIN_MIN_PRIOR && live * 2 < prior;
+}
+
+/** A release cut refused BY NAME: each slug whose live canon reads thin against the prior floor, with both counts. */
+export class FloorCutThin extends Error {
+  readonly refusal = "floor-cut-thin" as const;
+  constructor(readonly thin: ReadonlyArray<{ readonly slug: string; readonly live: number; readonly prior: number | null }>) {
+    const named = thin.map((t) => t.prior === null
+      ? `${t.slug} (${t.live} live row${t.live === 1 ? "" : "s"}; this CAS holds no prior snapshot to weigh them against)`
+      : `${t.slug} (${t.live} live row${t.live === 1 ? "" : "s"} under ${t.prior})`).join(", ");
+    super(`floor-cut-thin: live canon reads thin against the prior floor for ${named}; a release would publish that to every reader. Seed the canon document first, or name each slug thin on purpose: ${thin.map((t) => `--thin ${t.slug}`).join(" ")}`);
+    this.name = "FloorCutThin";
+  }
 }
 
 /**
@@ -702,8 +727,11 @@ export interface ReleaseFloorPorts {
  * A slug whose bag declares a tier the floor never carries (`floorCarriesTier`) LEAVES the cut manifest (named in `dropped`), so
  * a floor that once carried it stops at the next release; a bag with no declaration on this vessel keeps its standing, and the
  * system canon never drops.
+ * A THIN SNAPSHOT REFUSES. A slug whose live rows count under half the prior snapshot's (`floorCutReadsThin`), or whose prior
+ * snapshot this CAS cannot answer for the weighing, refuses the whole cut by name (`FloorCutThin`) before anything stages,
+ * unless `args.thin` names that slug: the steward's explicit word that the bag shrank on purpose.
  */
-export async function cutReleaseFloor(ports: ReleaseFloorPorts): Promise<{
+export async function cutReleaseFloor(ports: ReleaseFloorPorts, args: { readonly thin?: readonly string[] } = {}): Promise<{
   readonly manifestCid: string; readonly manifestBytes: Uint8Array; readonly prior: string;
   readonly cut: readonly string[]; readonly kept: readonly string[]; readonly moved: readonly string[]; readonly dropped: readonly string[];
 }> {
@@ -720,6 +748,18 @@ export async function cutReleaseFloor(ports: ReleaseFloorPorts): Promise<{
     const rows = await ports.canonRows(slug);
     if (rows === null) kept.push(slug); else canon[slug] = rows;
   }
+  const thin: Array<{ slug: string; live: number; prior: number | null }> = [];
+  for (const slug of Object.keys(canon).sort()) {
+    if (args.thin?.includes(slug)) continue;
+    const live = Object.values(canon[slug]!).filter((r) => r && r.meta?.deleted !== true).length;
+    const cid = opened.manifest.snapshots[slug]!;
+    const bytes = await ports.blob(cid);
+    const snap = bytes ? openFloorSnapshot(bytes, cid) : null;
+    if (snap === null || "refusal" in snap) { thin.push({ slug, live, prior: null }); continue; }
+    const priorCount = Object.keys(snap.rows).length;
+    if (floorCutReadsThin(live, priorCount)) thin.push({ slug, live, prior: priorCount });
+  }
+  if (thin.length > 0) throw new FloorCutThin(thin);
   const cut = cutCanonFloor({ prior: opened.manifest, canon, drop: dropped });
   await ports.stage([...Object.values(cut.snapshots).map((s) => ({ cid: s.cid, bytes: s.bytes })), { cid: cut.manifestCid, bytes: cut.manifestBytes }]);
   const moved = Object.keys(canon).filter((slug) => cut.manifest.snapshots[slug] !== opened.manifest.snapshots[slug]).sort();

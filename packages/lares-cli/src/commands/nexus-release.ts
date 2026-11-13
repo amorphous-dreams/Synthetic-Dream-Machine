@@ -17,6 +17,8 @@
  * `--cut` CUTS the manifest first, from live house canon (offering#/the-canon-offer): the floor a release after a promotion
  * names, written to <manifest-file> and staged in this hearth's CAS. It lands nothing; the approval and the release follow on
  * that file. `lares nexus release <manifest-file> --cut` → `nexus promote open|sign` → `nexus release <manifest-file> --approval`.
+ * The cut refuses `floor-cut-thin`, by slug, where a bag's live rows count under half its prior snapshot's; `--thin <slug[,slug]>`
+ * names a bag that shrank on purpose.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-slices
  */
@@ -63,7 +65,8 @@ export async function cmdNexusRelease(args: ParsedArgs): Promise<number> {
 /** `--cut`: the floor-cut row, then the next steps named. */
 async function cutRelease(args: ParsedArgs, out: string, aid: string | undefined): Promise<number> {
   try {
-    const { output } = await storeVerb("floor-cut", { out, ...(aid !== undefined ? { aid } : {}) }, NexusCabalError);
+    const thin = (args.options["thin"] ?? "").split(",").map((s) => s.trim()).filter((s) => s !== "");
+    const { output } = await storeVerb("floor-cut", { out, ...(aid !== undefined ? { aid } : {}), ...(thin.length ? { thin } : {}) }, NexusCabalError);
     if (typeof output["refused"] === "string") throw new FloorRefused(String(output["refusal"] ?? "floor-cut-refused"), output["refused"]);
     const r = output as unknown as FloorCutResult;
     emit(args, {

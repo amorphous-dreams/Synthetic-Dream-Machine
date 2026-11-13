@@ -11,6 +11,7 @@
  *                   asks nothing); a slug with no document here keeps the prior snapshot, and the answer names it;
  *   · `tier`      — each bag's own declared tier, read off its `meta.mem` under this vessel's canon source (`daemonBagsDir`); a
  *                   bag declared under `public` leaves the cut, and one with no declaration here keeps its standing;
+ *   · `blob`      — this hearth's CAS, read for each prior snapshot the thin read weighs (`floor-cut-thin`, lifted per slug by `thin`);
  *   · `stage`     — this hearth's CAS.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
@@ -19,7 +20,7 @@ import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, BAG_IDS, BAG_MANIFEST_FILE, bagUri, cutReleaseFloor, floorPinOf, floorReleaseRowsFromBoard, foldFloorReleases, ownEntry,
+  AutomergeDocStore, BAG_IDS, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseRowsFromBoard, foldFloorReleases, ownEntry,
   publicationDocUrl, materializeSharedLarDoc, realmStandingDocUrl, sha256HexBytesSync,
   type CapTier, type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
 } from "@lararium/mesh";
@@ -85,6 +86,8 @@ export async function runFloorCutOver(opts: {
   readonly prior:       () => Promise<string | null>;
   readonly canonDocUrl: (bag: string) => string | null;
   readonly bagTier:     (slug: string) => CapTier | null;
+  /** Slugs the steward names thin on purpose: each cuts though its live rows count under half the prior snapshot's. */
+  readonly thin?:       readonly string[];
 }): Promise<FloorCutResult> {
   const out = await cutReleaseFloor({
     prior: async () => {
@@ -100,8 +103,12 @@ export async function runFloorCutOver(opts: {
       return rows;
     },
     tier: opts.bagTier,
+    blob: async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), opts.casDir); },
-  }).catch((e: unknown) => { throw new FloorRefused("floor-cut-refused", e instanceof Error ? e.message : String(e)); });
+  }, { ...(opts.thin ? { thin: opts.thin } : {}) }).catch((e: unknown) => {
+    if (e instanceof FloorCutThin) throw new FloorRefused(e.refusal, e.message);
+    throw new FloorRefused("floor-cut-refused", e instanceof Error ? e.message : String(e));
+  });
   if (sha256HexBytesSync(out.manifestBytes) !== out.manifestCid) throw new FloorRefused("floor-cut-refused", "the cut manifest's bytes differ from its CID");
   writeFileSync(opts.out, out.manifestBytes);
   return { manifestCid: out.manifestCid, prior: out.prior, cut: out.cut, kept: out.kept, moved: out.moved, dropped: out.dropped, out: opts.out };
@@ -109,7 +116,7 @@ export async function runFloorCutOver(opts: {
 
 /** Cut the floor from live canon, stage it, and write its manifest to `out`: the charter, the board and the catalog resolved here. */
 export async function runFloorCut(opts: {
-  readonly repo: Repo; readonly sealHome: string; readonly casDir: string; readonly out: string; readonly aid?: string;
+  readonly repo: Repo; readonly sealHome: string; readonly casDir: string; readonly out: string; readonly aid?: string; readonly thin?: readonly string[];
 }): Promise<FloorCutResult> {
   const pinPorts = await nodeFloorPorts({ repo: opts.repo, sealHome: opts.sealHome, casDir: opts.casDir, ...(opts.aid !== undefined ? { aid: opts.aid } : {}) });
   const home = opts.aid !== undefined ? (charterHomeFor(opts.sealHome, opts.aid.trim().toLowerCase()) ?? opts.sealHome) : opts.sealHome;
@@ -118,6 +125,7 @@ export async function runFloorCut(opts: {
   const result = await runFloorCutOver({
     repo: opts.repo, casDir: opts.casDir, out: opts.out, canonDocUrl: await nodeCanonDocUrl(opts.repo),
     bagTier: (slug) => declaredBagTier(daemonBagsDir(), slug),
+    ...(opts.thin ? { thin: opts.thin } : {}),
     prior: async () => {
       const standing = await foldFloorReleases({ rows: floorReleaseRowsFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
       return standing.standing === "released" ? standing.head.body.manifest : floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin.manifest;
