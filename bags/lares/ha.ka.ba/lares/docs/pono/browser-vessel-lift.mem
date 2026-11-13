@@ -63,6 +63,8 @@ The vessel worker stands as a SharedWorker house where the engine offers one and
 
 ''Vessel to page'': `phase` · `frame` · `control-result` · `port-msg` · `ask{askId, kind: unlock|bind-first|clear|ward, act, words}` · `ask:settled{askId}` · `status{custody, seedRest, connection, did, wiki…}` · `join:request{text}` · `spawn{role}` (the page builds a Worker and transfers its port without reading it) · `ended{why}`.
 
+The vessel's `wikiDocUrl` reads null where the `lares` wiki stands on the floor alone, with no realm document named; the hello carries no `meshLeaf`, and no page door hands the vessel a peer list.
+
 ''Ceremony to vessel'': on a fresh `MessageChannel` the page mints per ask, one end transferred to the vessel worker and the other to the service worker, which hands it to the ceremony document's claim (`ceremony:offer` · `ceremony:claim` · `ceremony:port`). The vessel sends the public ask down it (`ask{askId, kind, act, digest, face, routes, passkeys, words}`); the ceremony answers `answer{askId}`, its bytes on a transferred `ArrayBuffer` (a passphrase's UTF-8, or a passkey's credential id and PRF output), so they detach from the sender and the input clears; the vessel answers `settled` or `refused`. Answers travel ceremony to vessel and never touch the surface page (`packages/lararium-web/src/ceremony-protocol.ts`).
 
 ''Typed payloads ~ nothing sovereign crosses to the page.''
@@ -192,7 +194,7 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 * Two faces on one device project two folders, each session leasing its own wiki; a locked vessel or a torn row loads no promoted code and never falls back to stage bytes; the board watcher stops at session close and at the last-tab transition; the vessel's seed self-consistency check against the hearth's arrival descriptor keeps its named mismatch refusals.
 * Minted `blob:` URLs stay per session and out of persisted CRDT and disk records.
 * No HTTP or RPC coordinator surface, and no browser singleton authority rooted in ambient page boot (<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint`>>).
-* The page keeps the G4 `mirror:began` `sessionStorage` record; any no-`sessionStorage` census exempts the page.
+* The page keeps the G4 `lares:mirror:began` and `lares:mirror:full-standing` `sessionStorage` records (one per wiki, under the vessel's own prefix, so the reset's clearing reaches them); any no-`sessionStorage` census exempts the page.
 
 ''The kept laws, every slice.'' No key on a surface; each tab's own unlock; the last tab returns the browser to its floor; one owner per store (a Web Lock); one Keyhive identity per PersonaGroup; refusals by name; red-first.
 
@@ -232,6 +234,6 @@ The order follows the dependencies: 0, 1, 2, 1b, 3 with 5a, 3b, 5b, 6, 7, then t
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KYP1JgGq4CJJbzWhraluZRhx6HvCHszhyqMvGdIQbl0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;azG0qIg0Bu72or6ZsFsGw4CHDqjVje7weKQ2lk-MUQc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
