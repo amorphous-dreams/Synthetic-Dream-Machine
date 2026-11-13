@@ -26,6 +26,8 @@
  *   the fleet-join door               page → vessel  `join:offer{text}` / `join:answer{text}`, answered by `reply`
  *   the holder's SharedWorker         vessel → page  `spawn{role}`; page → vessel `spawned{port}` (transferred, never read)
  *   a boot that stops                 vessel → page  `ended{why, refusal?}` (`store-owned`: another worker owns the store)
+ *   the console door                  page → vessel  `verb{argv}`, answered by `reply` (`console-door.ts`: a held verb's exact
+ *                                     path alone crosses, never a word past it, so no secret rides this message)
  *
  * THE SESSION (`@lararium/browser` vessel-sessions.ts). The port opens one session at `hello`; the vessel answers
  * `greeting{ownerEpoch, sessionId, lifetimeLock}` (an earlier greeting the hello names and this vessel did not mint reads
@@ -143,6 +145,9 @@ export type PageToVessel =
   | { readonly t: "fleet-seat:workbench"; readonly callId: string }
   // ── /leaf-fleet ──
   | { readonly t: "spawned"; readonly spawnId: string; readonly port?: MessagePort; readonly refused?: string }
+  /** THE CONSOLE DOOR: one verb by the CLI's own argv path (`["vessel", "read"]`, `["help"]`). The vessel answers it from its own
+   *  table before any unlock; `readFace` names the origin the page reads its hearth's porch at, for a row that reads the floor. */
+  | { readonly t: "verb"; readonly callId: string; readonly argv: readonly string[]; readonly readFace: string }
   | { readonly t: "walk:restart"; readonly callId: string; readonly reason: string }
   | { readonly t: "walk:ward"; readonly callId: string; readonly bytes: Uint8Array };
 

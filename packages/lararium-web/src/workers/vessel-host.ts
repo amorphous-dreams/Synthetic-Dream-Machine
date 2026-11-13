@@ -37,6 +37,9 @@
  * admitted session lights its provider through the lit vessel's provider door, and its last drops it. A fleet join acts as the session's own
  * face alone, or binds a new face's first slot by the session's own route, under the session's fence; its keys drop with the
  * session, and the landed answer names the face the tab selects next.
+ *
+ * THE CONSOLE DOOR ANSWERS BEFORE ANY UNLOCK (`verb`, `console-rows.ts`): its rows read public standing alone, so the host
+ * answers them for a session still asking, and for a connection that holds none. Every other request keeps its wait on admission.
  */
 declare const __LAR_WALK_DOOR__: boolean;
 import {
@@ -51,6 +54,8 @@ import { didFromVerifyingKey, foldLarFrame, mountedDocumentId, parseMeshPeer, re
 import type { PageToVessel, SeedRest, VesselBoot, VesselError, VesselStatus, VesselToPage } from "../vessel-protocol.js";
 import { CeremonyRefused, standCeremonyDoor } from "./ceremony-door.js";
 import { ceremonyPlaceCard, PlaceCardRefused } from "./place-card.js";
+import { ConsoleRefused, standConsoleVerbs } from "../console-verbs.js";
+import { vesselConsoleRows } from "./console-rows.js";
 
 export interface VesselScope {
   postMessage(msg: VesselToPage, transfer?: Transferable[]): void;
@@ -59,7 +64,7 @@ export interface VesselScope {
 const errorOf = (err: unknown): VesselError => ({
   name: err instanceof Error ? err.name : "Error",
   message: err instanceof Error ? err.message : String(err),
-  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused || err instanceof VesselSessionRefused || err instanceof PlaceCardRefused ? { refusal: err.refusal } : {}),
+  ...(err instanceof BrowserFleetJoinRefused || err instanceof CeremonyRefused || err instanceof VesselSessionRefused || err instanceof PlaceCardRefused || err instanceof ConsoleRefused ? { refusal: err.refusal } : {}),
 });
 
 export interface VesselHostEnv {
@@ -530,6 +535,17 @@ export function standVesselHost(env: VesselHostEnv = {}) {
               return { kind: "workbench", slug, bagId, documentUrl: documentId ? `automerge:${documentId}` : null };
             }); return;
             // ── /leaf-fleet ──
+            case "verb":
+              // THE CONSOLE DOOR: the vessel's own table, read as the house stands at this call. It waits on no admission.
+              reply(msg.callId, async () => {
+                if (!Array.isArray(msg.argv) || !msg.argv.every((word) => typeof word === "string")) throw new ConsoleRefused("usage", "a verb crosses as its argv path, one word per string");
+                return standConsoleVerbs(() => vesselConsoleRows({
+                  idbName: () => firstBoot ? idbName : null,
+                  house: async () => house ? house.catch(() => null) : null,
+                  session: () => conn.session,
+                })).run(msg.argv);
+              });
+              return;
             case "walk:restart":
               // A harness-only door, compiled out of every default build.
               if (!(typeof __LAR_WALK_DOOR__ !== "undefined" && __LAR_WALK_DOOR__)) { post({ t: "reply", callId: msg.callId, ok: false, error: { name: "Error", message: "walk-door-absent" } }); return; }

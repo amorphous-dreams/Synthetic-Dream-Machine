@@ -203,6 +203,8 @@ export function standVesselPort(worker: VesselWorkerLike, handlers: VesselPortHa
       workbench: async () => { const { slug, bagId, documentUrl } = await call<WorkbenchReadingReply>((callId) => ({ t: "fleet-seat:workbench", callId })); return { slug, bagId, documentUrl }; },
     },
     // ── /leaf-fleet ──
+    /** The console door's road: one held verb's argv path to the vessel's own table; a refusal rejects by name (`VesselRefused`). */
+    verb: (argv: readonly string[], readFace: string) => call<unknown>((callId) => ({ t: "verb", callId, argv: [...argv], readFace })),
     restartDaemonIsland: (reason: string) => call<{ restarts: number; leg: string }>((callId) => ({ t: "walk:restart", callId, reason })),
     /** A harness-only door (the walk build): one ward act over `bytes`, its passphrase asked through the ceremony. */
     walkWardAct: (bytes: Uint8Array) => call<{ key: string; signature: string }>((callId) => ({ t: "walk:ward", callId, bytes })),
