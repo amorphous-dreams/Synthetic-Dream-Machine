@@ -30,9 +30,12 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const say = (kind, text) => console.log(`  ${kind.padEnd(8)} ${text}`);
 
 function webUrl() {
-  const url = new URL(WEB);
-  if (BOOT_TRACE) url.searchParams.set("c4trace", "1");
-  return url.href;
+  return new URL(WEB).href;
+}
+
+// The page reads its trace switch off this tab's sessionStorage (its address stays TW5's own): raise it before the page loads.
+async function raiseBootTrace(context) {
+  if (BOOT_TRACE) await context.addInitScript(() => { try { sessionStorage.setItem("lares:c4trace", "1"); } catch { /* the page then boots untraced */ } });
 }
 
 async function waitFor(page, predicate, what) {
@@ -366,6 +369,7 @@ async function withProfile(run) {
   try {
     context = await chromium.launchPersistentContext(profile, { headless: true, args: ["--no-sandbox"] });
     await armTestCustody(context, "leaf-continuity");
+    await raiseBootTrace(context);
     return await run(context);
   } finally {
     await context?.close();

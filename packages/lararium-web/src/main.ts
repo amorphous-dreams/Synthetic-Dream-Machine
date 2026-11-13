@@ -37,7 +37,7 @@ import { pagePortDelivery, standPagePort } from "./page-port.js";
 import { standPageMirror } from "./page-mirror.js";
 import { paintPaneLabel } from "./pane-label.js";
 import { standFloorTab } from "./floor-tab.js";
-import { defaultReadFace, keptFloorOf, readFloorCarriage, mountLiveStatus, flowElsewhereNote, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
+import { defaultReadFace, keptFloorOf, readFloorCarriage, mountLiveStatus, sameOriginRelayUrl, arrivalRelayUrl } from "./live-status.js";
 // The materialize-fresh boot artifact: the PLAIN-DATA oracle seed (seed.json), read off the genesis base the page's URL names
 // (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
 // arrival descriptor before it crosses (`genesis-anchor.ts`).
@@ -54,9 +54,12 @@ import vesselWorkerUrlStr from "./workers/vessel.worker.ts?worker&url";
 const daemonWorkerUrl  = new URL(daemonWorkerUrlStr, import.meta.url);
 const workerScriptUrl = new URL(wikiWorkerUrlStr,  import.meta.url);
 const vesselWorkerUrl = new URL(vesselWorkerUrlStr, import.meta.url);
-// C4's explicit diagnostic flag travels only to the daemon Worker. Ordinary
-// browser boots create the exact same worker URL they carried before.
-if (new URL(location.href).searchParams.get("c4trace") === "1") {
+// C4's explicit diagnostic flag travels only to the daemon Worker, on that worker's own script URL. A harness raises it in this
+// tab's sessionStorage before the page loads; the page's address carries no switch (its query and fragment stay TW5's own).
+// Ordinary browser boots create the exact same worker URL they carried before.
+const C4_TRACE_KEY = "lares:c4trace";
+const c4TraceAsked = (): boolean => { try { return sessionStorage.getItem(C4_TRACE_KEY) === "1"; } catch { return false; } };
+if (c4TraceAsked()) {
   daemonWorkerUrl.searchParams.set("c4trace", "1");
 }
 const $ = (id: string): HTMLElement => document.getElementById(id) as HTMLElement;
@@ -152,13 +155,6 @@ function settleAsk(askId: string): void {
 }
 
 
-/**
- * The flow read-face this page reads from, when no `?flow=` names one.
- *
- * The page is served BY the vessel it reads, so the host that delivered it is the host that answers — a
- * literal `localhost` reads true only where the browser and the node share a machine, and silently points a
- * LAN or a phone at itself. `location.hostname` follows the page home wherever it was fetched from.
- */
 function row(parent: HTMLElement, k: string, v: string, cls = ""): void {
   const d = document.createElement("div");
   d.className = "row";
@@ -174,21 +170,18 @@ function set(id: string, text: string, cls = ""): void {
 // The floor — the Nexus's one public answer. The page reads it only through its own vessel, which fetches the hearth's porch
 // (`/floor/<Nexus AID>`) and the head release's blobs by CID, and verifies every step here: the epoch lineage re-derives the
 // AID the floor card (or the admit) carries, the head release seals as a seat of its epoch under the cabal's approval of the
-// manifest's exact bytes, and each blob hashes to its CID. The read face is the node that served this page (?flow=… names
-// another). The read records no acceptance: the page's running floor stays the genesis floor it booted on.
+// manifest's exact bytes, and each blob hashes to its CID. The read face is the node that served this page, and no URL
+// names another. The read records no acceptance: the page's running floor stays the genesis floor it booted on.
 type FloorReader = (baseUrl: string) => Promise<HearthFloorRead>;
 async function readFloor(read: FloorReader): Promise<void> {
-  const params = new URLSearchParams(location.search);
-  const readFace = params.get("flow") ?? defaultReadFace(location);
-  const elsewhere = flowElsewhereNote(params.get("flow"), dialledRelay);
-  const say = (text: string, cls = ""): void => set("floor-status", elsewhere ? `${text} — ${elsewhere}` : text, cls);
+  const readFace = defaultReadFace(location);
+  const say = (text: string, cls = ""): void => set("floor-status", text, cls);
   say(`reading the porch at ${readFace} …`);
   try {
     const r = await read(readFace);
     if (r.ok) {
       const floorEl = $("floor"); floorEl.replaceChildren();
       row(floorEl, "status", "✓ verified floor", "ok");
-      if (elsewhere) row(floorEl, "note", elsewhere, "warn");
       row(floorEl, "release", r.head.cid.slice(0, 16) + "…");
       row(floorEl, "epoch", r.head.body.epoch.slice(0, 22) + "…");
       row(floorEl, "prior", r.head.body.prior ? r.head.body.prior.slice(0, 16) + "…" : "(the Nexus's first release)");
@@ -252,9 +245,6 @@ function keptFloorCard(): string | null {
 function keepFloorCard(text: string): boolean {
   try { localStorage.setItem(`${FLOOR_CARD_KEY}:${location.origin}`, text); return true; } catch { return false; }
 }
-/** The relay this page dialled at its last boot (its own origin's, or none): the floor read's `?flow=` note compares against it. */
-let dialledRelay: string | undefined;
-
 /**
  * THE FLOOR'S CARRIAGE DOOR: the hearth's floor card and the place AID reach this device by a person's hand (paste, file or QR off
  * the hearth's banner), each by its own act, and never by a URL (the fragment stays the wiki's own permalink). A card or an
@@ -458,7 +448,6 @@ async function bootVessel(): Promise<void> {
   // THE RELAY: an origin that answers as a lararium's Pronaos is dialled at its own relay; any other origin keeps the local boot.
   // No URL names a relay. While the probe pends, a "boot local" button is the person's own word: its press resolves the race.
   const relayUrl = await probeArrivalWithLocalButton();
-  dialledRelay = relayUrl;
   // THE FLOOR CARD AND ITS ANCHOR come in at the carriage door (paste, file or QR), each by its own act, and rest per origin: the
   // card is what a device at the floor reads under, and the place AID is conveyed apart from it (the card alone never anchors, so
   // without one the card files nothing and says so). The address bar carries neither: its fragment stays the wiki's permalink.
@@ -508,12 +497,7 @@ async function bootVessel(): Promise<void> {
       "         To cross: open the page a hearth's banner prints (the hearth's own origin answers with its relay); this device stands at its floor, and a face joins it by the fleet-join door.",
     );
   }
-  // ?mesh=<readface%23gatekey,…> → carry-in as a mesh LEAF, bootstrapping the FLOW-map from peer flow
-  //   read-faces, each pinned by its gate key (opt-in; absent = no carriage / pure local boot). The vessel worker reads the
-  //   entries; one with no key is dropped: nothing to knock on. The browser is a LEAF (no endpoint — carries-in, not dial-able).
-  const meshParam = new URLSearchParams(location.search).get("mesh");
-  const meshLeaf = meshParam !== null ? { coordSeed: location.origin, peers: meshParam } : undefined;
-  const boot = { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed, meshLeaf };
+  const boot = { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed: served.seed as GenesisSeed };
   const broker = await ceremonyBroker;
   if ("refusal" in broker || !navigator.locks) { await lead(boot); return; }
   if (floorTab) {
@@ -562,8 +546,8 @@ function seedRestLine(status: VesselStatus): { readonly text: string; readonly o
 }
 
 async function lead(boot: { paint: (p: string) => void; relayUrl: string | undefined; floor: ReturnType<typeof keptFloorOf>["floor"]; floorAnchor: ReturnType<typeof keptFloorOf>["anchor"];
-  admit: string | null; founding: boolean; foundingAsk: FoundingAsk | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed; meshLeaf: { coordSeed: string; peers: string } | undefined }, port?: MessagePort): Promise<void> {
-  const { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed, meshLeaf } = boot;
+  admit: string | null; founding: boolean; foundingAsk: FoundingAsk | null; genesisCasBaseUrl: string; genesisSeed: GenesisSeed }, port?: MessagePort): Promise<void> {
+  const { paint, relayUrl, floor, floorAnchor, admit, founding, foundingAsk, genesisCasBaseUrl, genesisSeed } = boot;
   $("mirror").setAttribute("data-lar-tab", port ? "follower" : "owner");
   // The mirror stands once the first frame names the surface the page shows; the vessel's word that it stands comes after its open returns.
   let mirrorTrigger: (() => void) | null = null;
@@ -607,7 +591,6 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
     ...(admit ? { admitCarriage: admit } : {}),
     // THE FOUNDING ACT ASKS FOR A FACE: the page's own door (the identity panel's button) carries the ask; a bare arrival stands the veil floor.
     ...(founding ? { foundFace: true as const } : {}),
-    ...(meshLeaf ? { meshLeaf } : {}),
   });
   const outcome = await Promise.race([stood.then((v) => ({ kind: "stood" as const, v })), stopped.then((e) => ({ kind: "ended" as const, e }))]);
   if (outcome.kind === "ended") {

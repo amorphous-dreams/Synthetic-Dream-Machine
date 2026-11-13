@@ -86,20 +86,6 @@ export function keptFloorOf(
   };
 }
 
-/**
- * The line the web status owes when `?flow=` names a hearth other than the one whose relay this page dials: a read at another hearth
- * dials under no Nexus the page holds, so the browser reads only its own hearth's flow until a carried pin set
- * reaches browsers. Null when `?flow=` is absent or names the relay's own host.
- */
-export function flowElsewhereNote(flowParam: string | null, relayUrl: string | undefined): string | null {
-  if (flowParam === null || flowParam === "") return null;
-  const hostOf = (url: string): string | null => { try { return new URL(url).host; } catch { return null; } };
-  const here = hostOf(flowParam);
-  const relayHost = relayUrl === undefined ? null : hostOf(relayUrl);
-  if (here !== null && here === relayHost) return null;
-  return "the browser reads only its own hearth's flow until a carried pin set reaches browsers; an ?flow= naming another host is not read";
-}
-
 export interface ConnectionPresentation {
   readonly connection: string;
   readonly mode: string;

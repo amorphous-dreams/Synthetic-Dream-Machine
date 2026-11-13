@@ -1,22 +1,27 @@
 import { describe, expect, test } from "vitest";
 import type { BrowserConnectionSnapshot, BrowserConnectionState } from "@lararium/browser";
-import mainSource from "../src/main.ts?raw";
-import statusSource from "../src/live-status.ts?raw";
-import sinkSource from "../src/projection-sink.ts?raw";
-import { connectionData, connectionPresentation, defaultReadFace, keptFloorOf, mountLiveStatus, flowElsewhereNote, readFloorCarriage } from "../src/live-status.js";
+import { connectionData, connectionPresentation, defaultReadFace, keptFloorOf, mountLiveStatus, readFloorCarriage } from "../src/live-status.js";
 
 describe("served-origin crossing", () => {
   test("the read face carries the page origin including its actual port", () => {
     expect(defaultReadFace({ origin: "http://localhost:5417" })).toBe("http://localhost:5417");
   });
 
-  test("RED: no URL names the relay, the floor card or the anchor: the page's arrival sources read no query key and no fragment for them", () => {
-    for (const [name, src] of [["main.ts", mainSource], ["live-status.ts", statusSource]] as const) {
-      expect(src.includes("location.hash"), `${name} reads the fragment nowhere (TW5's permalink owns it)`).toBe(false);
-      expect(/\.get\("(relay|floor|anchor)"\)/.test(src), `${name} reads no relay, floor or anchor key off a URL`).toBe(false);
-    }
-    // CONTROL: the fragment keeps one reader on the wiki's page, the mirror's own permalink door.
-    expect(sinkSource).toContain("location.hash");
+  test("the page's address belongs to TW5: no vessel source reads the query, and the fragment keeps its named readers alone", () => {
+    // Every source the page and its workers run. A read of the address names itself here or the census reads red.
+    const sources = import.meta.glob("../src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+    const query = /location\.search|URLSearchParams|searchParams\.get\(/;
+    const fragment = /location\.hash/;
+    // The mirror's permalink door reads and writes the wiki's own fragment; the ceremony is a separate document (no wiki
+    // stands in it) whose navigation names its ask; the daemon worker reads its own script URL, never the page's.
+    const fragmentReaders = ["../src/ceremony/ceremony.ts", "../src/projection-sink.ts"];
+    const ownScriptUrlReaders = ["../src/ceremony/ceremony-core.ts", "../src/workers/daemon.worker.ts"];
+    expect(Object.keys(sources)).toContain("../src/main.ts");
+    expect(Object.entries(sources).filter(([, src]) => query.test(src)).map(([name]) => name).sort(), "sources that read a query string").toEqual(ownScriptUrlReaders);
+    expect(Object.entries(sources).filter(([, src]) => fragment.test(src)).map(([name]) => name).sort(), "sources that read the fragment").toEqual(fragmentReaders);
+    // CONTROL: the daemon worker's read names its own script URL, and the ceremony parses the hash its own document hands it.
+    expect(sources["../src/workers/daemon.worker.ts"]).toContain("new URL(self.location.href).searchParams.get(");
+    expect(sources["../src/ceremony/ceremony-core.ts"]).toContain("new URLSearchParams(hash.replace(");
   });
 
   test("connection state names local, refusal and the authenticated peer", () => {
@@ -132,16 +137,5 @@ describe("the connection row publishes its mount as data", () => {
     expect(row.getAttribute("data-wiki-doc-url")).toBe("automerge:doc");
     expect(row.textContent).toBe("disconnected from gate-1");
     stop();
-  });
-});
-
-describe("an ?flow= naming another hearth says what the browser reads", () => {
-  test("RED: a host other than the relay's draws the note; CONTROL: the relay's host, or no ?flow=, draws none", () => {
-    const relay = "ws://node:5440/ws";   // the relay the page's own origin answered with
-    expect(flowElsewhereNote("http://other:5441", relay)).toContain("only its own hearth's flow");
-    expect(flowElsewhereNote("http://other:5441", undefined)).toContain("only its own hearth's flow");
-    expect(flowElsewhereNote("http://node:5440", relay)).toBeNull();
-    expect(flowElsewhereNote(null, relay)).toBeNull();
-    expect(flowElsewhereNote("not a url", relay)).toContain("only its own hearth's flow");
   });
 });

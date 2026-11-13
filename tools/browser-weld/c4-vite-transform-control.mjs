@@ -90,6 +90,8 @@ async function installWorkerReceipt(page) {
 async function runCase(browser, mode) {
   const context = await browser.newContext();
   await armTestCustody(context, "c4-vite-transform");
+  // The page reads its trace switch off this tab's sessionStorage (its address stays TW5's own): raise it before the page loads.
+  await context.addInitScript(() => { try { sessionStorage.setItem("lares:c4trace", "1"); } catch { /* the page then boots untraced */ } });
   const page = await context.newPage();
   const receipts = [];
   const servedScripts = [];
@@ -178,7 +180,6 @@ async function runCase(browser, mode) {
   });
 
   const target = new URL(WEB);
-  target.searchParams.set("c4trace", "1");
   try {
     await page.goto(target.href, { waitUntil: "domcontentloaded" });
   } catch (error) {
@@ -304,7 +305,7 @@ try {
   const namedOutcomes = (result) => Object.fromEntries(Object.entries(result.workerOutcomes).map(([name, value]) => [name, Array.isArray(value) ? value.length : value]));
   console.log(JSON.stringify({
     comparison: { unchanged: namedOutcomes(unchanged), instrumented: namedOutcomes(instrumented) },
-    note: "unchanged means source-unchanged; both routes carry production c4trace=1",
+    note: "unchanged means source-unchanged; both routes raise the production c4trace switch",
   }));
   console.log(JSON.stringify({ unchanged, instrumented }));
 } finally {

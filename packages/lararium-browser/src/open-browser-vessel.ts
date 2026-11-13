@@ -304,7 +304,7 @@ export interface BrowserVesselOptions extends LarariumVesselOptions {
    */
   relayDial?: { readonly pins: HearthPinIndex; readonly nexus?: string; readonly presentation: BrowserFacePresentation };
   /**
-   * The hearth's oracle floor card the arrival URL carried (`#floor=`, `hearthFloorCardText`): the place's signed floor pin
+   * The hearth's oracle floor card a person carried in at the page's carriage door (`hearthFloorCardText`; no URL carries it): the place's signed floor pin
    * claim for the flow route and the KEL rows that fold to its head, carried by the person's own hand off the hearth's banner. A
    * device standing at the floor reads the oracle under it, faceless; the card seats no face and opens no sovereign gate. A torn
    * card files nothing and says so, and the card NEVER anchors itself: it files only against `floorAnchor`.
