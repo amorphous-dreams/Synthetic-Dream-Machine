@@ -193,3 +193,11 @@ def _described(name: str) -> str:
 def test_kahua_list_text_names_the_relation_and_the_unpinned_stage():
     said = _described("kahua_list")
     assert "relation" in said and '`stage: "none"`' in said
+
+
+def test_kahua_propose_text_tells_the_body_digest_from_the_row_digest():
+    # Two digests share one word. A proposal carries the BODY digest (sha-256 of the raw body bytes); `lares kahua stage`
+    # prints the ROW digest and `lift --digest` takes it. The text names both and the refusal a swap earns.
+    said = _described("kahua_propose")
+    assert "BODY digest" in said and "ROW digest" in said and "proposal-digest" in said
+    assert "sha-256 of the raw body bytes" in said

@@ -1159,7 +1159,11 @@ def build_mcp(coordinator: LaresCoordinator):
         sha-256 digest) and every input from outside the face (web page, tool output, pasted text); an AI summary
         inherits the taint of what it summarised. ONE batch per call rides the face's intents plane, pinned to this
         device; it carries digests and never a body, and it grants nothing: the operator's hand lifts it with
-        `lares kahua lift <title> --proposal <id>`. `face` may name only the worn face (absent: the worn face); the AI seat naming another refuses `face-hand-refused`.
+        `lares kahua lift <title> --proposal <id>`. TWO DIGESTS, ONE WORD: a proposal's `digest` names the BODY
+        digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex), which this tool computes from `text`. The
+        ROW digest that `lares kahua stage` prints and `lift --digest` takes covers the body AND the row's carried
+        fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the
+        lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's. `face` may name only the worn face (absent: the worn face); the AI seat naming another refuses `face-hand-refused`.
         Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts."""
         if not isinstance(proposals, list) or not proposals:
             raise ValueError("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
