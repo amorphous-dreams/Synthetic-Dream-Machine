@@ -15,6 +15,13 @@
  * `vault status` (the node's `lares vault status`): custody at rest for the place and for each face the store names, and what
  * this tab's session holds open. `vault lock` stands in no row: a browser vessel locks when its face's last tab leaves (each
  * tab holds its own unlock), and the door says so by name.
+ *
+ * WHAT A SESSION THAT HAS NOT UNLOCKED READS. Custody AT REST reaches it: how the place and each face rest (`reading`), the
+ * roster, the seed's resting state. All of that rests in the clear in this browser's own store, so the door discloses nothing
+ * a reader of that store lacks. What the vessel holds OPEN NOW does not reach it until its own unlock admits it: whether the
+ * place or any face stands unlocked, the census of sessions and held keys, and the face the lit vessel wears. Each answer
+ * names what it withholds (`withheld`), so the person reads why a field stands absent. The standing (floor, lighting, lit)
+ * stays: the host already tells every session's hello its floor state.
  */
 import {
   browserJoinedFaces, loadBrowserPlaceKel, readBrowserCustody, readBrowserVesselFaces, readFaceCustody,
@@ -57,6 +64,12 @@ async function standing(ctx: VesselConsoleCtx): Promise<{ readonly house: Vessel
   return { house, idbName };
 }
 
+/** A custody reading as it rests: its `unlocked` flag (what stands open now) left out. */
+const atRest = <T extends object>(reading: T): Omit<T, "unlocked"> => {
+  const { unlocked: _open, ...rest } = reading as T & { unlocked?: unknown };
+  return rest as Omit<T, "unlocked">;
+};
+
 /** A reading that names its own failure instead of failing the whole answer. */
 const orWhy = <T>(read: Promise<T>): Promise<T | { readonly unread: string }> =>
   read.catch((err: unknown) => ({ unread: err instanceof Error ? err.message : String(err) }));
@@ -72,12 +85,13 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
         const lit = ctx.lit();
         const worn = ctx.wearsLit();
         const face = session?.face ?? null;
+        const admitted = session?.admission === "admitted";
         const [place, named, joined, custody, faceCustody, seed, floorPin] = await Promise.all([
           orWhy(loadBrowserPlaceKel(idbName).then((kel) => kel && kel.ok ? { aid: kel.aid, kel: "armed" as const } : { aid: null, kel: "unfounded" as const })),
           orWhy(readBrowserVesselFaces(idbName)),
           orWhy(browserJoinedFaces(idbName)),
-          orWhy(readBrowserCustody(idbName).then((c) => c.reading === "sealed" ? { reading: c.reading, unlocked: c.unlocked, slots: c.slots.length } : c)),
-          face === null ? null : orWhy(readFaceCustody(idbName, face)),
+          orWhy(readBrowserCustody(idbName).then((c) => c.reading === "sealed" ? { reading: c.reading, ...(admitted ? { unlocked: c.unlocked } : {}), slots: c.slots.length } : c)),
+          face === null ? null : orWhy(readFaceCustody(idbName, face).then((c) => admitted ? c : atRest(c))),
           orWhy(ctx.seedRest(face)),
           // THE FLOOR PIN rests in the control document the lit vessel stood, so a vessel at its floor names the refusal the pin door itself names.
           lit && worn
@@ -88,12 +102,13 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
           standing: house.floor(),
           place,
           session: session ? { admission: session.admission, admittedBy: session.admittedBy, face } : null,
-          faces: { named, joined, worn: lit ? lit.face : null },
+          faces: { named, joined, ...(admitted ? { worn: lit ? lit.face : null } : {}) },
           relay: { dials: ctx.relayUrl(), connection: lit && worn ? lit.connectionState.getSnapshot() : null },
           floorPin,
           asks: ctx.asks(),
-          custody: { place: custody, face: faceCustody, ...("unread" in seed ? { seed } : seed), held: house.census() },
+          custody: { place: custody, face: faceCustody, ...("unread" in seed ? { seed } : seed), ...(admitted ? { held: house.census() } : {}) },
           vessel: lit && worn ? { did: didFromVerifyingKey(lit.identity.verifyingKey), verifyingKey: lit.identity.verifyingKey, activeWikiId: lit.activeWikiId, ...(lit.wikiAwaitsFace ? { wikiAwaits: lit.wikiAwaitsFace.message } : {}) } : null,
+          withheld: admitted ? [] : ["faces.worn", "custody.place.unlocked", "custody.face.unlocked", "custody.held"],
         };
       },
     },
@@ -104,12 +119,15 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
       run: async () => {
         const { house, idbName } = await standing(ctx);
         const session = ctx.session();
+        const admitted = session?.admission === "admitted";
         const named = await orWhy(readBrowserVesselFaces(idbName));
-        const faces = "unread" in named ? named : await Promise.all(named.map(async (face) => ({ face, ...(await orWhy(readFaceCustody(idbName, face))) })));
-        const place = await orWhy(readBrowserCustody(idbName).then((c) => c.reading === "sealed" ? { reading: c.reading, unlocked: c.unlocked, slots: c.slots.map((slot) => slot.kinds) } : c));
+        const faces = "unread" in named ? named : await Promise.all(named.map(async (face) => ({ face, ...(await orWhy(readFaceCustody(idbName, face).then((c) => admitted ? c : atRest(c)))) })));
+        const place = await orWhy(readBrowserCustody(idbName).then((c) => c.reading === "sealed" ? { reading: c.reading, ...(admitted ? { unlocked: c.unlocked } : {}), slots: c.slots.map((slot) => slot.kinds) } : c));
         return {
           custody: { place, faces, seed: await orWhy(ctx.seedRest(session?.face ?? null)) },
-          door: { standing: house.floor(), unlocked: session?.admission === "admitted", admittedBy: session?.admittedBy ?? null, face: session?.face ?? null, held: house.census() },
+          // The door's own `unlocked` names THIS session alone, so it reads at every admission.
+          door: { standing: house.floor(), unlocked: admitted, admittedBy: session?.admittedBy ?? null, face: session?.face ?? null, ...(admitted ? { held: house.census() } : {}) },
+          withheld: admitted ? [] : ["custody.place.unlocked", "custody.faces[].unlocked", "door.held"],
         };
       },
     },
