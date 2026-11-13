@@ -8,6 +8,9 @@
          house — a Home Screen install, which exempts the origin from WebKit's seven-day clock. The page never
          demands it; `phone-seat.ts` explains and offers, once, where the clock stands. -->
     <link rel="manifest" href="/manifest.webmanifest" />
+    <!-- The page names its own icon (the manifest's house, inline), so no browser asks the hearth for /favicon.ico. -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20128%20128'%3E%3Crect%20width='128'%20height='128'%20rx='24'%20fill='%230d0f14'/%3E%3Cpath%20d='M24%2060%20L64%2024%20L104%2060%20Z'%20fill='%23c9d1d9'/%3E%3Crect%20x='34'%20y='60'%20width='60'%20height='44'%20fill='%2311151c'%20stroke='%23c9d1d9'%20stroke-width='4'/%3E%3Crect%20x='56'%20y='76'%20width='16'%20height='28'%20fill='%23d29922'/%3E%3C/svg%3E" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Lararium" />
     <meta name="theme-color" content="#0d0f14" />
