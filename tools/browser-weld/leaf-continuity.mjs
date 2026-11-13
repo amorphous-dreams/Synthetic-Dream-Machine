@@ -1,7 +1,10 @@
 /**
  * browser leaf continuity — C4's held-out live walk.
  *
- * A real Chromium profile runs the web surface as a leaf: it founds offline, then reloads. A leaf names no anchor (a
+ * A real Chromium profile runs the web surface as a leaf: it founds offline, then reloads. A fresh browser boots as an unbound
+ * veil that holds no place KEL and runs no Binding Gate (the-veil-ladder ruling U3); a person founds a face of its own through
+ * the identity panel's door (`#found-face`, a one-boot ask), the founding arms the face's KEL, and the gate walks it from that
+ * boot on. So each walk founds through that door first, as a person does. A leaf names no anchor (a
  * device crosses by the floor card or the root-signed pin its fleet join carries), so it stands on its own island at
  * every boot, and the carry up the gradient finds nothing below to move. The browser's IndexedDB survives document
  * replacement, which makes this the ordinary field walk rather than a synthetic Repo exercise.
@@ -413,6 +416,19 @@ async function observeKelRead(context, page) {
   };
 }
 
+/**
+ * THE FOUNDING DOOR, driven as a person drives it: the veil stands live, the identity panel's button stashes the founding ask for
+ * one boot and the page boots again, and the vessel's custody asks answer through the published test route (`armTestCustody`).
+ * No URL selects a founding, so the address bar stays the wiki's own.
+ */
+async function foundThroughTheDoor(page) {
+  const veil = await liveReading(page);
+  if (veil.kel) throw new Error("a fresh veil boot ran the Binding Gate before any face was founded");
+  await Promise.all([page.waitForEvent("load", { timeout: BOOT_MS }), page.locator("#found-face").click()]);
+  if (new URL(page.url()).search !== new URL(webUrl()).search) throw new Error("the founding act moved the address bar");
+  return await liveReading(page);
+}
+
 function assertKel(label, reading, expected) {
   const kel = reading.kel;
   if (!kel || typeof kel.prefix !== "string" || !Array.isArray(kel.eventCids) || kel.eventCids.length === 0) {
@@ -437,7 +453,7 @@ async function ordinaryWalk() {
     const finishObservation = await observeKelRead(context, page);
 
     await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
-    const offline = await liveReading(page);
+    const offline = await foundThroughTheDoor(page);
     if (!/^0x[0-9a-f]{64}$/i.test(offline.did)) throw new Error(`offline boot reported no vessel key: ${offline.did || "empty"}`);
     const offlineKel = assertKel("offline founding", offline);
     say("ok", "C4.1 offline leaf founded with a persistent browser identity");
@@ -469,7 +485,8 @@ async function faultWalk() {
     watchPage(context, page);
     let replacements = 0;
     await page.goto(webUrl(), { waitUntil: "domcontentloaded" });
-    await liveReading(page);
+    // The gate runs only over a founded face: a veil's reload would never reach the emptied read.
+    await foundThroughTheDoor(page);
 
     // The gate's read runs in the vessel worker: context routing reaches its modules, as the observation route's does.
     await context.route("**/*.js*", async (route) => {
