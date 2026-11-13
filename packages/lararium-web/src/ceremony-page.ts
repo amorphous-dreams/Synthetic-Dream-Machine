@@ -133,6 +133,7 @@ export function paintCeremonyAsk(doc: Document, ask: PageAsk, doors: AskNoticeDo
     void doors.broker.then((broker) => {
       if ("refusal" in broker) { refuse(broker.refusal); return; }
       (doors.open ?? openCeremony)(ask.askId, broker.worker, doors.port);
+      notice.dataset["opened"] = "true";
       go.textContent = "the ceremony stands in its own window";
     });
   });
@@ -147,4 +148,22 @@ export function paintCeremonyAsk(doc: Document, ask: PageAsk, doors: AskNoticeDo
 export function settleCeremonyAsk(doc: Document, askId: string): void {
   for (const notice of doc.querySelectorAll<HTMLElement>(".ceremony-ask")) if (notice.dataset["askId"] === askId) notice.remove();
   wordBootStatus(doc);
+}
+
+/** One ask as the page still shows it: its kind, and whether its button still waits, its ceremony window opened, or the page refused it. */
+export interface StandingPageAsk { readonly askId: string; readonly kind: string; readonly ceremony: "button-waits" | "window-opened" | "refused"; readonly refusal: string | null }
+
+/**
+ * THE ASKS THE PAGE STILL SHOWS, read off its own notices in the order a person reads them (newest first). The notices carry
+ * the whole record, so this reading and the page never disagree: a settled ask reads absent because its notice left.
+ */
+export function standingAsks(doc: Document): readonly StandingPageAsk[] {
+  return [...doc.querySelectorAll<HTMLElement>(".ceremony-ask")].map((notice) => {
+    const refusal = notice.dataset["refusal"] ?? null;
+    return {
+      askId: notice.dataset["askId"] ?? "", kind: notice.dataset["ask"] ?? "",
+      ceremony: refusal !== null ? "refused" as const : notice.dataset["opened"] === "true" ? "window-opened" as const : "button-waits" as const,
+      refusal,
+    };
+  });
 }

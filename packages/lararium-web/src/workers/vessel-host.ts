@@ -543,6 +543,12 @@ export function standVesselHost(env: VesselHostEnv = {}) {
                   idbName: () => firstBoot ? idbName : null,
                   house: async () => house ? house.catch(() => null) : null,
                   session: () => conn.session,
+                  lit: () => litVessel,
+                  wearsLit: () => wearsLitFace(conn),
+                  asks: () => conn.door.pending(),
+                  relayUrl: () => firstBoot?.relayUrl ?? null,
+                  seedRest: (face) => seedRestOf(idbName, face),
+                  readFace: typeof msg.readFace === "string" ? msg.readFace : "",
                 })).run(msg.argv);
               });
               return;

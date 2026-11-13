@@ -20,10 +20,16 @@
  *   CONTROL   a page with no broker paints the refusal and no button, and the status row never says it waits on the person;
  *             a status another hand wrote while the ask stood stays as written.
  *
+ * THE PAGE SAYS WHICH ASKS STILL STAND. The console door's `vessel read` names every ask the page shows, read off the notices
+ * themselves, so a person who missed a second ask reads it by name.
+ *
+ *   CP4 RED   two asks painted in one boot both read standing, each with its kind; the one whose button was pressed reads
+ *             `window-opened`, the other `button-waits`; a refused ask reads `refused` with its name; a settled ask reads absent.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { expect, test } from "vitest";
-import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker, type CeremonyBroker, type PageAsk } from "../src/ceremony-page.js";
+import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks, type CeremonyBroker, type PageAsk } from "../src/ceremony-page.js";
 
 function containerOf(active: ServiceWorker, controller: ServiceWorker | null) {
   const listeners = new Set<() => void>();
@@ -121,4 +127,23 @@ test("CONTROL a page with no broker paints the refusal with no button and no wai
   // A live page holds no boot status row at all (the vessel panel repainted): an ask there paints its notice alone.
   live.doc.getElementById("vessel")!.replaceChildren();
   expect(() => { paintCeremonyAsk(live.doc, askOf("ward", 4), doors(standing())); settleCeremonyAsk(live.doc, askOf("ward", 4).askId); }).not.toThrow();
+});
+
+test("CP4 RED the page names every ask it still shows: its kind, and whether its button waits, its window opened, or it refused", async () => {
+  const { doc } = bootPage();
+  const card = askOf("card", 1), bind = askOf("bind-first", 2), ward = askOf("ward", 3);
+  paintCeremonyAsk(doc, card, doors(standing()));
+  paintCeremonyAsk(doc, bind, doors(standing()));
+  doc.querySelector<HTMLElement>(`.ceremony-ask[data-ask-id="${card.askId}"] button.ceremony-open`)!.click();
+  await new Promise((r) => setTimeout(r, 0));
+  expect(standingAsks(doc)).toEqual([
+    { askId: bind.askId, kind: "bind-first", ceremony: "button-waits", refusal: null },
+    { askId: card.askId, kind: "card", ceremony: "window-opened", refusal: null },
+  ]);
+  paintCeremonyAsk(doc, ward, doors(Promise.resolve({ refusal: "ceremony-broker-absent" })));
+  await new Promise((r) => setTimeout(r, 0));
+  expect(standingAsks(doc)[0]).toEqual({ askId: ward.askId, kind: "ward", ceremony: "refused", refusal: "ceremony-broker-absent" });
+  // A settled ask reads absent: its notice left the page.
+  settleCeremonyAsk(doc, card.askId);
+  expect(standingAsks(doc).map((a) => a.kind)).toEqual(["ward", "bind-first"]);
 });

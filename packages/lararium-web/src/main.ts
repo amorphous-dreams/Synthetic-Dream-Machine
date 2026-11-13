@@ -27,7 +27,7 @@ import {
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
 import type { VesselStatus } from "./vessel-protocol.js";
-import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker } from "./ceremony-page.js";
+import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks } from "./ceremony-page.js";
 import type { GenesisSeed } from "@lararium/mesh";
 import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
 import { readFloorCardCarriage, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
@@ -43,7 +43,7 @@ import { defaultReadFace, keptFloorOf, readFloorCarriage, mountLiveStatus, sameO
 // arrival descriptor before it crosses (`genesis-anchor.ts`).
 import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedSeed } from "./genesis-anchor.js";
 import { standConsoleVerbs } from "./console-verbs.js";
-import { installConsoleDoor, standConsoleDoor } from "./console-door.js";
+import { installConsoleDoor, readVesselBesidePage, standConsoleDoor } from "./console-door.js";
 // `?worker&url` — Vite builds each worker shim through its worker pipeline and yields the built
 // bundle's URL (a real /assets file). A standalone `new URL("./x.ts", import.meta.url)` passed
 // INDIRECTLY to the vessel got inlined as a `data:` URI, where the worker's dynamic imports
@@ -379,6 +379,8 @@ function mountFoundingDoor(): void {
   button.addEventListener("click", () => { askFounding("face"); });
 }
 
+/** The relay this page dials, once its arrival probe answered: null names a local boot. */
+let dialledRelay: string | null = null;
 let pendingAdmit: string | null = null;
 /** A founding ask this page took off its stash and has not yet seen stand (a boot retry carries it). */
 let pendingFounding: FoundingAsk | null = null;
@@ -418,6 +420,7 @@ async function bootVessel(): Promise<void> {
   // THE RELAY: an origin that answers as a lararium's Pronaos is dialled at its own relay; any other origin keeps the local boot.
   // No URL names a relay. While the probe pends, a "boot local" button is the person's own word: its press resolves the race.
   const relayUrl = await probeArrivalWithLocalButton();
+  dialledRelay = relayUrl ?? null;
   // THE FLOOR CARD AND ITS ANCHOR come in at the carriage door (paste, file or QR), each by its own act, and rest per origin: the
   // card is what a device at the floor reads under, and the place AID is conveyed apart from it (the card alone never anchors, so
   // without one the card files nothing and says so). The address bar carries neither: its fragment stays the wiki's permalink.
@@ -683,14 +686,27 @@ async function lead(boot: { paint: (p: string) => void; relayUrl: string | undef
  * prints. It seats before the boot, so it answers a vessel that stands locked, half-founded or not at all; the vessel's own
  * rows cross this tab's one port, and a tab whose vessel worker has not greeted it says so by name.
  */
-const pageVerbs = standConsoleVerbs(() => []);
-installConsoleDoor(window, standConsoleDoor({
-  page: pageVerbs,
+const vesselAtDoor = {
   vessel: () => {
     const vessel = leading?.vessel;
-    return vessel && vessel.greeting() ? (argv) => vessel.verb(argv, defaultReadFace(location)) : null;
+    return vessel && vessel.greeting() ? (argv: readonly string[]) => vessel.verb(argv, defaultReadFace(location)) : null;
   },
   vesselAbsent: () => leading ? "this tab's vessel worker has sent no greeting yet" : "no vessel worker stands for this tab yet",
-}));
+};
+/** What the page itself knows, public: its origin, its tab's place among the origin's tabs, the relay it dials, the boot's own
+ *  status row, the asks it still shows, and the entry asset this page loaded (the build's own fingerprint; the page holds no revision). */
+const pageReading = () => ({
+  origin: location.origin,
+  tab: floorTab?.role() ?? "alone",
+  relay: dialledRelay,
+  boot: document.getElementById("status")?.textContent ?? "stood",
+  asks: standingAsks(document),
+  entry: new URL(import.meta.url).pathname,
+});
+const pageVerbs = standConsoleVerbs(() => [
+  { path: ["vessel", "read"], summary: "read this browser vessel: its place, standing, faces, relay, floor pin, pending asks and custody at rest, beside what this page knows",
+    run: () => readVesselBesidePage(pageReading, vesselAtDoor) },
+]);
+installConsoleDoor(window, standConsoleDoor({ page: pageVerbs, ...vesselAtDoor }));
 
 void bootVessel();

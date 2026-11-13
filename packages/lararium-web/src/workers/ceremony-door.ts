@@ -136,6 +136,10 @@ export function standCeremonyDoor(post: (msg: DoorToPage) => void) {
       const held = settle(askId);
       held?.reject(new CeremonyRefused(refusal));
     },
+    /** The asks that still wait, in the order raised: public words alone, and whether a ceremony window holds each one's port. */
+    pending(): readonly { readonly askId: string; readonly kind: CeremonyAskKind; readonly act: string; readonly face: string | null; readonly ceremony: "unopened" | "open" }[] {
+      return [...pending.values()].map((p) => ({ askId: p.ask.askId, kind: p.ask.kind, act: p.ask.act, face: p.ask.face, ceremony: p.port ? "open" as const : "unopened" as const }));
+    },
   };
 }
 

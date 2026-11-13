@@ -112,6 +112,18 @@ export function standConsoleDoor(env: ConsoleDoorEnv): ConsoleDoor {
   };
 }
 
+/**
+ * `vessel read` AS THE PAGE COMPOSES IT: the page's own reading beside the vessel's. A tab no vessel worker greets, or whose
+ * vessel refuses the reading, still answers what the page knows (its asks, its tab's role, the relay it dials) and names why
+ * the vessel's half reads absent.
+ */
+export async function readVesselBesidePage(page: () => unknown, env: Pick<ConsoleDoorEnv, "vessel" | "vesselAbsent">): Promise<{ readonly page: unknown; readonly vessel: unknown }> {
+  const cross = env.vessel();
+  if (!cross) return { page: page(), vessel: { absent: env.vesselAbsent() } };
+  try { return { page: page(), vessel: await cross(["vessel", "read"]) }; }
+  catch (err) { return { page: page(), vessel: { absent: err instanceof Error ? err.message : String(err) } }; }
+}
+
 /** Seat the door on the page's global as `lares`: read-only, so no later script replaces the door a person calls. */
 export function installConsoleDoor(target: object, door: ConsoleDoor): void {
   Object.defineProperty(target, "lares", { value: door, writable: false, configurable: false, enumerable: false });

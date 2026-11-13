@@ -20,10 +20,12 @@
  *   D6       the door seats on its target as `lares`, and a later write does not replace it.
  *   D7       a tab no vessel worker greets still answers: its `help` lists the page's own rows and says why the vessel's
  *            are absent.
+ *   D8 RED   `vessel read` answers what the page knows beside the vessel's reading, and still answers it where no vessel
+ *            worker greets the tab or the vessel refuses: the ask a page shows reads there either way.
  */
 import { expect, test } from "vitest";
 import { ConsoleRefused, standConsoleVerbs, type ConsoleHelp } from "../src/console-verbs.js";
-import { installConsoleDoor, standConsoleDoor } from "../src/console-door.js";
+import { installConsoleDoor, readVesselBesidePage, standConsoleDoor } from "../src/console-door.js";
 
 /** A vessel worker's side of the door, as the host stands it: its own table behind the port's `verb` call. */
 function vesselOf(joined: boolean) {
@@ -138,4 +140,21 @@ test("D7 a tab no vessel worker greets still answers: help lists the page's own 
   // A page row that refuses by name reads under its own code.
   const refusing = doorOver(null, () => [{ path: ["vessel", "reset"], summary: "", run: async () => { throw new ConsoleRefused("reset-already-asked", "one reset ask stands"); } }]);
   expect(await refusing("vessel", "reset")).toEqual({ ok: false, error: { code: "reset-already-asked", message: "reset-already-asked: one reset ask stands" } });
+});
+
+test("D8 RED vessel read answers the page's own reading beside the vessel's, and still answers it where the vessel reads absent", async () => {
+  const page = () => ({ tab: "owner", asks: [{ askId: "a-1", kind: "bind-first", ceremony: "button-waits", refusal: null }] });
+  const vessel = vesselOf(true);
+  const row = (v: ReturnType<typeof vesselOf> | null, why = "this tab's vessel worker has sent no greeting yet") =>
+    doorOver(v, () => [{ path: ["vessel", "read"], summary: "read this vessel", run: () => readVesselBesidePage(page, { vessel: () => v ? v.verb : null, vesselAbsent: () => why }) }]);
+  expect(await row(vessel)("vessel", "read")).toEqual({ ok: true, data: { page: page(), vessel: { standing: "lit" } } });
+  // No vessel worker greets the tab: the page's half still answers, and the pending ask reads there.
+  const alone = await row(null)("vessel", "read");
+  expect(alone).toEqual({ ok: true, data: { page: page(), vessel: { absent: "this tab's vessel worker has sent no greeting yet" } } });
+  // The vessel refuses its reading by name: the page's half still answers beside the name.
+  const refusing = { crossed: [], verb: async (argv: readonly string[]) => { if (argv[0] === "help") return { entries: [], waits: [] }; throw new ConsoleRefused("vessel-unstood", "another worker owns the store"); } };
+  expect(await row(refusing as never)("vessel", "read")).toEqual({ ok: true, data: { page: page(), vessel: { absent: "vessel-unstood: another worker owns the store" } } });
+  // help lists the composed row once, held by the page.
+  const help = await row(vessel)("help") as { data: { entries: readonly { verb: string; holder: string }[] } };
+  expect(help.data.entries.filter((e) => e.verb === "vessel read")).toEqual([{ verb: "vessel read", summary: "read this vessel", holder: "page" }]);
 });

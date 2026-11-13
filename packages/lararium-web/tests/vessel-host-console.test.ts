@@ -7,6 +7,10 @@
  *
  *   H1 RED   a `verb` call for `help` answers over the port while the session's unlock ask still stands unanswered, and
  *            names the vessel's own rows.
+ *   H2 RED   `vessel read` while the unlock waits names the pending ask and its kind, the floor standing, the session still
+ *            asking, the face's custody bound and locked, and the floor pin's own refusal. CONTROL: once the ask reads
+ *            answered the same verb names no ask, the lit standing, the worn face and the vessel's public key; no reading
+ *            carries a route.
  *   H3 RED   a verb the table lacks refuses `verb-not-held` by name on the reply, and words past a held path refuse `usage`.
  *            CONTROL: the same port's `read:floor`, sent before a verb, still waits on admission after that verb answered:
  *            the door opens no other request early.
@@ -99,5 +103,36 @@ describe("the vessel worker answers the console door over the page's own port", 
     tab.conn.receive({ t: "read:floor", callId: "floor-1", baseUrl: "http://127.0.0.1:1" });
     expect((await tab.verb("help")).ok).toBe(true);
     expect(tab.heard.some((m) => m.t === "reply" && m.callId === "floor-1"), "the floor read keeps its wait on admission").toBe(false);
+  });
+
+  test("H2 RED vessel read names the pending ask and its kind while the unlock waits; CONTROL: answered, it names the lit standing and the worn face", async () => {
+    const tab = await standLockedTab();
+    const waiting = await tab.verb("vessel", "read");
+    expect(waiting.ok).toBe(true);
+    const at = (waiting as { value: Record<string, never> }).value as never as {
+      standing: string; session: { admission: string; face: string } | null; asks: readonly { askId: string; kind: string; ceremony: string; face: string | null }[];
+      custody: { face: { reading: string; unlocked?: boolean } | null }; floorPin: { ok: boolean; refusal?: string }; faces: { worn: string | null }; vessel: unknown; place: { aid: string | null; kel: string };
+    };
+    expect(at.asks, "the ask the vessel waits on reads by name").toEqual([{ askId: tab.ask.askId, kind: "unlock", act: "boot", face: tab.face, ceremony: "unopened" }]);
+    expect(at.standing).toBe("floor");
+    expect(at.session).toMatchObject({ admission: "asking", face: tab.face });
+    expect(at.custody.face).toEqual({ reading: "bound", unlocked: false });
+    expect(at.floorPin).toMatchObject({ ok: false, refusal: "floor-control-unread" });
+    expect(at.place).toEqual({ aid: null, kel: "unfounded" });
+    expect(at.faces.worn).toBeNull();
+    expect(at.vessel).toBeNull();
+
+    // CONTROL: the ask answered, the same verb reads the lit vessel.
+    tab.answer();
+    await tab.until("the session admitted", () => tab.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    const lit = (await tab.verb("vessel", "read") as { value: typeof at }).value;
+    expect(lit.asks).toEqual([]);
+    expect(lit.standing).toBe("lit");
+    expect(lit.session).toMatchObject({ admission: "admitted", face: tab.face });
+    expect(lit.faces.worn).toBe(tab.face);
+    expect(lit.custody.face).toEqual({ reading: "bound", unlocked: true });
+    expect(lit.vessel).toMatchObject({ verifyingKey: "00".repeat(32) });
+    expect(lit.floorPin).toMatchObject({ ok: false, refusal: "floor-no-nexus" });
+    expect(JSON.stringify(lit), "no reading carries the route").not.toContain("keeps its own fire");
   });
 });
