@@ -13,6 +13,7 @@ import { plainRecord, ownEntry, hasOwnEntry, type StoredLarRecord } from "./stor
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
+import type { CapTier } from "./cap-tier.js";
 
 /** The floor manifest's shape name. It carries no counter: a shape reads by its fields, and its bytes name it (the CID). */
 import { FLOOR_MANIFEST_FORMAT } from "./wire-names.js";
@@ -21,6 +22,15 @@ export { FLOOR_MANIFEST_FORMAT };
 export const GENESIS_FLOOR_TIDDLER = "lar:///ha.ka.ba/bags/oracle/genesis-cid-floor";
 /** The snapshots every floor carries: the system canon, house canon on every vessel. */
 export const FLOOR_REQUIRED_SLUGS: readonly string[] = SYSTEM_CANON_SLUGS;
+
+/**
+ * THE FLOOR CARRIES PUBLIC BAGS ALONE. Every recipe composes the floor read-only by a public CID, a faceless browser at the
+ * veil among its readers, so the floor's holder-set reads `{world}`: a bag rides it only where the bag's OWN declaration
+ * (`meta.mem` `cap-tier`) names `public`. A bag declared `contract`, `personagroup` or `veil` reaches a reader through its
+ * realm document and the cap that tier names, never through a snapshot. The system canon (`FLOOR_REQUIRED_SLUGS`) stands on
+ * every floor. Derived from the declaration at each cut; no slug list decides.
+ */
+export function floorCarriesTier(tier: CapTier): boolean { return tier === "public"; }
 
 /**
  * A floor manifest keys ONE snapshot per house-canon bag (`houseCanonSlugs`): the engine CIDs beside a map of slug to
@@ -200,9 +210,12 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
 export function cutCanonFloor(args: {
   readonly prior: FloorManifest;
   readonly canon: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
+  /** Slugs the prior floor names that this cut leaves off (a bag whose declared tier no longer rides the floor, `floorCarriesTier`). */
+  readonly drop?: readonly string[];
 }): { readonly manifest: FloorManifest; readonly manifestCid: string; readonly manifestBytes: Uint8Array; readonly snapshots: Readonly<Record<string, FloorSnapshot>> } {
   const snapshots: Record<string, FloorSnapshot> = {};
   const cids: Record<string, string> = { ...args.prior.snapshots };
+  for (const slug of args.drop ?? []) delete cids[slug];
   for (const slug of Object.keys(args.canon).sort()) {
     if (!SLUG.test(slug)) throw new FloorManifestRefusal("floor-manifest-malformed", `Invalid floor manifest snapshot: ${slug}`);
     const rows: Record<string, LarTiddlerRecord> = {};

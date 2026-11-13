@@ -41,7 +41,8 @@ import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { projectionWithheld, resolvedTitlePath } from "./projection-filter.js";
 import { bagUri, CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { cutCanonFloor, floorSlugs, readFloorManifest } from "./floor-manifest.js";
+import { cutCanonFloor, floorCarriesTier, floorSlugs, readFloorManifest, FLOOR_REQUIRED_SLUGS } from "./floor-manifest.js";
+import type { CapTier } from "./cap-tier.js";
 import { rosterOfLineage } from "./floor-release.js";
 import type { SealEpoch } from "./wax-stamp.js";
 
@@ -688,6 +689,8 @@ export interface ReleaseFloorPorts {
   readonly prior:     () => Promise<{ readonly manifestCid: string; readonly bytes: Uint8Array } | null>;
   /** One house-canon slug's live rows off its canon document, or null where this vessel reaches no such document. */
   readonly canonRows: (slug: string) => Promise<Readonly<Record<string, LarTiddlerRecord>> | null>;
+  /** The tier a bag's OWN declaration names on this vessel (its `meta.mem` `cap-tier`), or null where no declaration stands here. */
+  readonly tier:      (slug: string) => Promise<CapTier | null> | CapTier | null;
   /** Stage the cut's blobs (the manifest and each fresh snapshot) where the release door and the porch read them. */
   readonly stage:     (blobs: ReadonlyArray<{ readonly cid: string; readonly bytes: Uint8Array }>) => Promise<void>;
 }
@@ -696,10 +699,13 @@ export interface ReleaseFloorPorts {
  * CUT THE FLOOR A RELEASE NAMES, from live canon (a promotion's writes among it): every slug the prior floor names re-cuts off its
  * canon document, a slug this vessel reaches no document for keeps the prior snapshot (named in `kept`), and the blobs stage
  * BEFORE the manifest answers, so `nexus release` finds the floor whole. Cutting an unmoved canon answers the prior's own CID.
+ * A slug whose bag declares a tier the floor never carries (`floorCarriesTier`) LEAVES the cut manifest (named in `dropped`), so
+ * a floor that once carried it stops at the next release; a bag with no declaration on this vessel keeps its standing, and the
+ * system canon never drops.
  */
 export async function cutReleaseFloor(ports: ReleaseFloorPorts): Promise<{
   readonly manifestCid: string; readonly manifestBytes: Uint8Array; readonly prior: string;
-  readonly cut: readonly string[]; readonly kept: readonly string[]; readonly moved: readonly string[];
+  readonly cut: readonly string[]; readonly kept: readonly string[]; readonly moved: readonly string[]; readonly dropped: readonly string[];
 }> {
   const prior = await ports.prior();
   if (prior === null) throw new Error("floor-cut refused: no prior floor stands here (no genesis floor and no release), so a cut has no engine to carry");
@@ -707,12 +713,15 @@ export async function cutReleaseFloor(ports: ReleaseFloorPorts): Promise<{
   if ("refusal" in opened) throw new Error(`floor-cut refused: the prior floor reads unread (${opened.refusal})`);
   const canon: Record<string, Readonly<Record<string, LarTiddlerRecord>>> = {};
   const kept: string[] = [];
+  const dropped: string[] = [];
   for (const slug of floorSlugs(opened.manifest)) {
+    const tier = FLOOR_REQUIRED_SLUGS.includes(slug) ? null : await ports.tier(slug);
+    if (tier !== null && !floorCarriesTier(tier)) { dropped.push(slug); continue; }
     const rows = await ports.canonRows(slug);
     if (rows === null) kept.push(slug); else canon[slug] = rows;
   }
-  const cut = cutCanonFloor({ prior: opened.manifest, canon });
+  const cut = cutCanonFloor({ prior: opened.manifest, canon, drop: dropped });
   await ports.stage([...Object.values(cut.snapshots).map((s) => ({ cid: s.cid, bytes: s.bytes })), { cid: cut.manifestCid, bytes: cut.manifestBytes }]);
   const moved = Object.keys(canon).filter((slug) => cut.manifest.snapshots[slug] !== opened.manifest.snapshots[slug]).sort();
-  return { manifestCid: cut.manifestCid, manifestBytes: cut.manifestBytes, prior: prior.manifestCid, cut: Object.keys(canon).sort(), kept, moved };
+  return { manifestCid: cut.manifestCid, manifestBytes: cut.manifestBytes, prior: prior.manifestCid, cut: Object.keys(canon).sort(), kept, moved, dropped };
 }

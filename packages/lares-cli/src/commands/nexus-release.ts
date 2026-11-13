@@ -72,6 +72,7 @@ async function cutRelease(args: ParsedArgs, out: string, aid: string | undefined
         console.log(`nexus release --cut → CUT ${r.manifestCid}${r.manifestCid === r.prior ? " (canon unmoved: the prior floor)" : ""}`);
         console.log(`  prior:  ${r.prior}`);
         console.log(`  moved:  ${r.moved.join(", ") || "(none)"}   cut: ${r.cut.join(", ")}${r.kept.length ? `   kept (no live canon here): ${r.kept.join(", ")}` : ""}`);
+        if (r.dropped.length) console.log(`  dropped (the bag declares a tier the public floor never carries): ${r.dropped.join(", ")}`);
         console.log(`  wrote ${r.out}; the floor stands whole in this hearth's CAS. Next:`);
         console.log(`    lares nexus promote open ${r.out} --purpose floor-release --surface floor-release --class high-impact --out a.json`);
         console.log(`    lares nexus release ${r.out} --approval a.json`);

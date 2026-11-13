@@ -36,6 +36,13 @@ function fixture(lares: string[], lararium: string[], others: Record<string, str
   return files;
 }
 
+/** Declare a fixture bag's tier in its own `meta.mem`, the way a checkout's bag declares it (the referee bag's manifest, re-named). */
+const refereeMeta = readFileSync(join(new URL("../../..", import.meta.url).pathname, "bags/elyncia-referee/meta.mem"), "utf8");
+function declare(bag: string, tier: string): void {
+  mkdirSync(join(root, "bags", bag), { recursive: true });
+  writeFileSync(join(root, "bags", bag, "meta.mem"), refereeMeta.replaceAll("elyncia-referee", bag).replace('cap-tier   = "contract"', `cap-tier   = "${tier}"`));
+}
+
 const realA = readFileSync(join(REPO, "bags/lares/ha.ka.ba/lares/ref/RFC-2119.mem"), "utf8");
 const realB = readFileSync(join(REPO, "bags/lares/ha.ka.ba/lares/ref/RFC-3986.mem"), "utf8");
 const realC = readFileSync(join(REPO, "bags/lararium/ha.ka.ba/lararium/keyhive/event-store.mem"), "utf8");
@@ -63,6 +70,7 @@ describe("genesis floor carrier cut", () => {
     const sdmCarrier = realB.replaceAll("lar:///ha.ka.ba/lares/ref/RFC-3986", "lar:///ha.ka.ba/sdm/ref/RFC-3986").replaceAll("ha.ka.ba/lares/ref/RFC-3986", "ha.ka.ba/sdm/ref/RFC-3986");
     const boardCarrier = realB.replaceAll("lar:///ha.ka.ba/lares/ref/RFC-3986", "lar:///ha.ka.ba/crossroads/ref/RFC-3986").replaceAll("ha.ka.ba/lares/ref/RFC-3986", "ha.ka.ba/crossroads/ref/RFC-3986");
     fixture([realA], [realC], { sdm: [sdmCarrier], crossroads: [boardCarrier] });
+    declare("sdm", "public"); declare("crossroads", "public");
     const cut = cutGenesisFloor(opts(root));
     expect(Object.keys(cut.manifest.snapshots)).toEqual(["lararium", "lares", "sdm"]);
     expect(cut.manifest.format).toBe("lararium-floor");
@@ -70,6 +78,30 @@ describe("genesis floor carrier cut", () => {
     expect("rows" in sdm && Object.keys(sdm.rows)).toContain("lar:///ha.ka.ba/sdm/ref/RFC-3986");
     expect(cut.manifest.snapshots["sdm"]).toBe(cut.snapshots["sdm"]!.cid);
     expect(cut.snapshots).not.toHaveProperty("crossroads");
+  });
+
+  /**
+   * THE FLOOR CARRIES PUBLIC BAGS ALONE. Every recipe composes the floor read-only by public CID, a faceless browser at the veil
+   * among its readers, so a bag whose own `meta.mem` declares a tier under `public` never rides it: its rows reach a reader by
+   * its realm document and the cap that tier names, or not at all. The bake reads the declaration; no slug list decides.
+   */
+  test("the floor manifest keys no snapshot for a contract-tier bag, nor for a bag that declares no tier (CONTROL: a public-tier bag beside them keys one)", () => {
+    const move = (to: string) => realB.replaceAll("lar:///ha.ka.ba/lares/ref/RFC-3986", `lar:///ha.ka.ba/${to}/ref/RFC-3986`).replaceAll("ha.ka.ba/lares/ref/RFC-3986", `ha.ka.ba/${to}/ref/RFC-3986`);
+    fixture([realA], [realC], { elyncia: [move("elyncia")], "elyncia-referee": [move("elyncia-referee")], undeclared: [move("undeclared")] });
+    declare("elyncia", "public"); declare("elyncia-referee", "contract");
+    const cut = cutGenesisFloor(opts(root));
+    expect(Object.keys(cut.manifest.snapshots)).toEqual(["elyncia", "lararium", "lares"]);
+    expect(cut.snapshots).not.toHaveProperty("elyncia-referee");
+    expect(cut.snapshots).not.toHaveProperty("undeclared");
+    const elyncia = openFloorSnapshot(cut.snapshots["elyncia"]!.bytes, cut.snapshots["elyncia"]!.cid);
+    expect("rows" in elyncia && Object.keys(elyncia.rows)).toContain("lar:///ha.ka.ba/elyncia/ref/RFC-3986");
+  });
+
+  test("the checkout's own bake keys no referee snapshot (CONTROL: elyncia and sdm, public by their own manifests, key theirs)", async () => {
+    const { genesisFloorSlugs } = await import("../src/genesis-floor.js");
+    const slugs = genesisFloorSlugs(REPO);
+    expect(slugs).not.toContain("elyncia-referee");
+    expect(slugs).toEqual(expect.arrayContaining(["elyncia", "lararium", "lares", "sdm"]));
   });
 
   test("refuses a title carried by both bags while the two-bag control cuts", () => {

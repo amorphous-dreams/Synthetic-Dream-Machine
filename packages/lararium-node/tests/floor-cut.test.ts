@@ -51,7 +51,7 @@ describe("the node's floor cut", () => {
     try {
       await r.canon.put(row(T, "the promoted page"), { kind: "lares-verb", requestId: "promote" });
       const out = join(r.dir, "floor.json");
-      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.gCid, canonDocUrl: r.canonDocUrl });
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.gCid, canonDocUrl: r.canonDocUrl, bagTier: () => null });
       expect(cut).toMatchObject({ prior: r.gCid, cut: ["lares"], kept: ["lararium"], moved: ["lares"], out });
       expect(sha256HexBytesSync(new Uint8Array(readFileSync(out)))).toBe(cut.manifestCid);
       const floor = await resolveFloor(cut.manifestCid, async (cid) => readVerifiedCasBlobFromFs(cid, r.casDir));
@@ -64,7 +64,7 @@ describe("the node's floor cut", () => {
   test("RED: a cut over unmoved canon answers the prior's own CID", async () => {
     const r = await rig();
     try {
-      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "same.json"), prior: async () => r.gCid, canonDocUrl: r.canonDocUrl });
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "same.json"), prior: async () => r.gCid, canonDocUrl: r.canonDocUrl, bagTier: () => null });
       expect(cut).toMatchObject({ manifestCid: r.gCid, moved: [] });
     } finally { await r.repo.shutdown(); }
   });
@@ -73,9 +73,29 @@ describe("the node's floor cut", () => {
     const r = await rig();
     try {
       const out = join(r.dir, "none.json");
-      await expect(runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => "0".repeat(64), canonDocUrl: r.canonDocUrl }))
+      await expect(runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => "0".repeat(64), canonDocUrl: r.canonDocUrl, bagTier: () => null }))
         .rejects.toMatchObject({ refusal: "floor-cut-refused" });
       expect(existsSync(out)).toBe(false);
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("RED: a bag that declares a tier under public leaves the cut; CONTROL: a public bag and a bag with no declaration here keep their snapshots", async () => {
+    const r = await rig();
+    try {
+      const snap = (slug: string) => cutFloorSnapshot({ [`lar:///ha.ka.ba/${slug}/x`]: row(`lar:///ha.ka.ba/${slug}/x`, slug) });
+      const elyncia = snap("elyncia"), referee = snap("elyncia-referee"), sdm = snap("sdm");
+      const prior = (await resolveFloor(r.gCid, async (cid) => readVerifiedCasBlobFromFs(cid, r.casDir)) as { manifest: FloorManifest }).manifest;
+      const wide: FloorManifest = { ...prior, snapshots: { ...prior.snapshots, elyncia: elyncia.cid, "elyncia-referee": referee.cid, sdm: sdm.cid } };
+      const wBytes = floorManifestBytes(wide), wCid = sha256HexBytesSync(wBytes);
+      writeCasEntriesFs([elyncia, referee, sdm, { cid: wCid, bytes: wBytes }].map((b) => ({ cid: b.cid, bytes: b.bytes })), r.casDir);
+      const tiers: Record<string, "public" | "contract"> = { elyncia: "public", "elyncia-referee": "contract" };
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "tier.json"), prior: async () => wCid, canonDocUrl: r.canonDocUrl, bagTier: (slug) => tiers[slug] ?? null });
+      expect(cut.dropped).toEqual(["elyncia-referee"]);
+      const floor = await resolveFloor(cut.manifestCid, async (cid) => readVerifiedCasBlobFromFs(cid, r.casDir));
+      if ("refusal" in floor) throw new Error(floor.refusal);
+      expect(Object.keys(floor.manifest.snapshots).sort()).toEqual(["elyncia", "lararium", "lares", "sdm"]);
+      expect(floor.manifest.snapshots["elyncia"]).toBe(elyncia.cid);
+      expect(floor.manifest.snapshots["sdm"]).toBe(sdm.cid);     // no declaration on this vessel: its standing holds
     } finally { await r.repo.shutdown(); }
   });
 

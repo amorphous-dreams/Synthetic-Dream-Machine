@@ -9,17 +9,22 @@
  *   · `prior`     — the chain head's manifest where a release counts on the publication board, else this vessel's pinned floor;
  *   · `canonRows` — each house-canon slug's live document, named by the Kahu realm's bag row in this vessel's catalog (a read
  *                   asks nothing); a slug with no document here keeps the prior snapshot, and the answer names it;
+ *   · `tier`      — each bag's own declared tier, read off its `meta.mem` under this vessel's canon source (`daemonBagsDir`); a
+ *                   bag declared under `public` leaves the cut, and one with no declaration here keeps its standing;
  *   · `stage`     — this hearth's CAS.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, BAG_IDS, bagUri, cutReleaseFloor, floorPinOf, floorReleaseRowsFromBoard, foldFloorReleases, ownEntry,
+  AutomergeDocStore, BAG_IDS, BAG_MANIFEST_FILE, bagUri, cutReleaseFloor, floorPinOf, floorReleaseRowsFromBoard, foldFloorReleases, ownEntry,
   publicationDocUrl, materializeSharedLarDoc, realmStandingDocUrl, sha256HexBytesSync,
-  type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
+  type CapTier, type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
 } from "@lararium/mesh";
+import { readBagManifest } from "../bag-declare.js";
+import { daemonBagsDir } from "../lares-config.js";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
@@ -34,7 +39,15 @@ export interface FloorCutResult {
   readonly cut:         readonly string[];
   readonly kept:        readonly string[];
   readonly moved:       readonly string[];
+  /** Slugs the prior floor named that this cut leaves off: each bag declares a tier the public floor never carries. */
+  readonly dropped:     readonly string[];
   readonly out:         string;
+}
+
+/** A bag's own declared tier under a canon source dir (`<bags>/<slug>/meta.mem`), or null where no declaration stands there. */
+export function declaredBagTier(bagsDir: string, slug: string): CapTier | null {
+  const dir = join(bagsDir, slug);
+  return existsSync(join(dir, BAG_MANIFEST_FILE)) ? readBagManifest(dir, slug).tier : null;
 }
 
 function bootstrapEntry(id: string): string | null {
@@ -71,6 +84,7 @@ export async function runFloorCutOver(opts: {
   readonly out:         string;
   readonly prior:       () => Promise<string | null>;
   readonly canonDocUrl: (bag: string) => string | null;
+  readonly bagTier:     (slug: string) => CapTier | null;
 }): Promise<FloorCutResult> {
   const out = await cutReleaseFloor({
     prior: async () => {
@@ -85,11 +99,12 @@ export async function runFloorCutOver(opts: {
       for (const title of await store.listVisible()) { const r = await store.get(title); if (r) rows[title] = r; }
       return rows;
     },
+    tier: opts.bagTier,
     stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), opts.casDir); },
   }).catch((e: unknown) => { throw new FloorRefused("floor-cut-refused", e instanceof Error ? e.message : String(e)); });
   if (sha256HexBytesSync(out.manifestBytes) !== out.manifestCid) throw new FloorRefused("floor-cut-refused", "the cut manifest's bytes differ from its CID");
   writeFileSync(opts.out, out.manifestBytes);
-  return { manifestCid: out.manifestCid, prior: out.prior, cut: out.cut, kept: out.kept, moved: out.moved, out: opts.out };
+  return { manifestCid: out.manifestCid, prior: out.prior, cut: out.cut, kept: out.kept, moved: out.moved, dropped: out.dropped, out: opts.out };
 }
 
 /** Cut the floor from live canon, stage it, and write its manifest to `out`: the charter, the board and the catalog resolved here. */
@@ -102,6 +117,7 @@ export async function runFloorCut(opts: {
   const casRead = async (cid: string) => readVerifiedCasBlobFromFs(cid, opts.casDir);
   const result = await runFloorCutOver({
     repo: opts.repo, casDir: opts.casDir, out: opts.out, canonDocUrl: await nodeCanonDocUrl(opts.repo),
+    bagTier: (slug) => declaredBagTier(daemonBagsDir(), slug),
     prior: async () => {
       const standing = await foldFloorReleases({ rows: floorReleaseRowsFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
       return standing.standing === "released" ? standing.head.body.manifest : floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin.manifest;

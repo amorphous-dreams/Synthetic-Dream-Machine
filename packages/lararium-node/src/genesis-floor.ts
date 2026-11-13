@@ -1,7 +1,8 @@
 /**
- * The floor holds one snapshot per HOUSE-CANON bag (`houseCanonSlugs` over the checkout's tracked `bags/<slug>` dirs: the
- * system canon `lares` and `lararium` always, every other holding but the Nexus's public board `crossroads`), each cut from
- * the tracked carriers alone, history-free and read-only under every recipe. Non-carrier `.md`, `.md.meta` and `.txt` files
+ * The floor holds one snapshot per PUBLIC house-canon bag (`houseCanonSlugs` over the checkout's tracked `bags/<slug>` dirs: the
+ * system canon `lares` and `lararium` always; every other holding but the Nexus's public board `crossroads`, and only where the
+ * bag's own `meta.mem` declares `cap-tier = "public"`, `floorCarriesTier`), each cut from the tracked carriers alone, history-free
+ * and read-only under every recipe. A bag declared under `public` (the referee's `contract` bag) never rides the public floor. Non-carrier `.md`, `.md.meta` and `.txt` files
  * stay outside it. The bake reads the checkout it builds from (`repoRoot`), never a house root.
  */
 import { readFileSync, readdirSync } from "node:fs";
@@ -9,16 +10,18 @@ import { join } from "node:path";
 import { carrierFiles, declaresCarrier, rootMetaFields, deserializeCarrier } from "@lararium/tw5";
 import { verdict } from "@lararium/memetic-frame";
 import { carrierBaseRelPath, isPrivateProjectionSlug } from "./bag-paths.js";
-import { cutFloorSnapshot, floorManifestBytes, floorManifestCid, houseCanonSlugs, FLOOR_MANIFEST_FORMAT, type FloorManifest, type FloorSnapshot } from "@lararium/mesh";
+import { cutFloorSnapshot, floorCarriesTier, floorManifestBytes, floorManifestCid, houseCanonSlugs, FLOOR_MANIFEST_FORMAT, FLOOR_REQUIRED_SLUGS, type FloorManifest, type FloorSnapshot } from "@lararium/mesh";
+import { readBagManifest } from "./bag-declare.js";
 
-/** The house-canon slugs a checkout's floor keys: the tracked `bags/` dirs a bake sees, read through `houseCanonSlugs`. */
+/** The house-canon slugs a checkout's floor keys: the tracked `bags/` dirs a bake sees, read through `houseCanonSlugs`, each kept
+ *  only where its own `meta.mem` declares a tier the floor carries (a bag that declares none reads `veil` and stays off). */
 export function genesisFloorSlugs(repoRoot: string): string[] {
   let held: string[] = [];
   try {
     held = readdirSync(join(repoRoot, "bags"), { withFileTypes: true })
       .filter((e) => e.isDirectory() && !e.name.startsWith(".") && !isPrivateProjectionSlug(e.name)).map((e) => e.name);
   } catch { /* a checkout with no bags/ keys the system canon alone (each snapshot then empty) */ }
-  return houseCanonSlugs(held);
+  return houseCanonSlugs(held).filter((slug) => FLOOR_REQUIRED_SLUGS.includes(slug) || floorCarriesTier(readBagManifest(join(repoRoot, "bags", slug), slug).tier));
 }
 
 type Rows = Record<string, { tiddler: { title: string; [key: string]: unknown } }>;

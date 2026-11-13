@@ -332,6 +332,7 @@ describe("the loop", () => {
         for (const t of await canonStore.listVisible()) live[t] = (await canonStore.get(t))!;
         return live;
       },
+      tier: () => null,
       stage: async (blobs) => { for (const b of blobs) cas.set(b.cid, b.bytes); },
     });
     expect(cut).toMatchObject({ prior: gCid, cut: ["lares"], kept: ["lararium"], moved: ["lares"] });
@@ -363,7 +364,7 @@ describe("the loop", () => {
     expect(read?.tiddler.text).toBe("the referee's revised page");
     expect(carrierHashOf(read!.tiddler as Record<string, unknown>)).toBe(offer.body.records[0]!.digest);
     // CONTROL: a cut over unmoved canon answers the prior's own CID (a replayed cut lands nothing new).
-    const again = await cutReleaseFloor({ prior: async () => ({ manifestCid: gCid, bytes: gBytes }), canonRows: async (slug) => (slug === "lares" ? genesisLares : null), stage: async () => {} });
+    const again = await cutReleaseFloor({ prior: async () => ({ manifestCid: gCid, bytes: gBytes }), canonRows: async (slug) => (slug === "lares" ? genesisLares : null), tier: () => null, stage: async () => {} });
     expect(again).toMatchObject({ manifestCid: gCid, moved: [] });
     // CONTROL: the genesis floor still reads the old page (the pin moved, the old floor did not).
     const old = await resolveFloor(gCid, async (cid) => local.get(cid) ?? null);

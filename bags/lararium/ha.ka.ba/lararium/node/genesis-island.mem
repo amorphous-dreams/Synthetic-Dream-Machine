@@ -40,8 +40,9 @@ verification witness.
 artifact's shape to one host, and every host must agree on the artifact exactly.
 
 ''The floor rides the bake.'' Beside the engine and the plugins, the runner cuts the genesis floor (`cutGenesisFloor`,
-`packages/lararium-node/src/genesis-floor.ts`): one history-free snapshot per house-canon bag, read from the checkout's tracked
-carriers (`bags/lares` and `bags/lararium` always, every other holding but the public board `crossroads`), each addressed by
+`packages/lararium-node/src/genesis-floor.ts`): one history-free snapshot per public house-canon bag, read from the checkout's tracked
+carriers (`bags/lares` and `bags/lararium` always; every other holding but the public board `crossroads`, and only where the bag's own
+`meta.mem` declares `cap-tier = "public"`, so the referee's `contract` bag `elyncia-referee` keys no snapshot), each addressed by
 CID under one manifest the seed names (`genesis-cid-floor`). Every wiki's recipe composes that floor read-only through
 `@oracle`, so the canon carriers reach every vessel as static content before any document syncs.
 
@@ -126,6 +127,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cDtVa0FkD-HupJatQT474RPaoPOEQgZHWhA96dhRIk4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;c3xdajNF9c0u8NJ8wofTSstaUx3G0o3gXOV4fmRF1as`>>
 
 <<^ code=`&#x0004;` to=`?`>>

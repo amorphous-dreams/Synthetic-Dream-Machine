@@ -434,7 +434,7 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 !!! The release wiring
 
-`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, and the blobs stage before the manifest answers. `lares nexus release <manifest-file> --cut` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID.
+`cutReleaseFloor` cuts the floor the next release names from live canon: each slug the prior floor names re-cuts off its canon document, a slug with no document here keeps the prior snapshot, a slug whose bag declares a tier under `public` in its own `meta.mem` leaves the manifest (`dropped`; the public floor carries public bags alone, `floorCarriesTier`), and the blobs stage before the manifest answers. `lares nexus release <manifest-file> --cut` writes the manifest the seats then approve; an unmoved canon answers the prior's own CID.
 
 !!! The surfaces — one door, both hosts
 
@@ -514,6 +514,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lLOayht-iPLnGGqfQK-lomBZrGrWaFTsdHf5ch6KFm4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;M3Sxk0_RY96ah71Cs7-kR6CkvfXOb8aTnaGxadIW2cQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

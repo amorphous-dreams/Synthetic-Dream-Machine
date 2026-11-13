@@ -31,8 +31,9 @@ export const KAHU_REACH_REASON = "kahu-reach" as const;
 
 /**
  * THE HOUSE CANON — ONE SET, DERIVED. Every holding whose canon source stands on disk (the checkout's `bags/<slug>`, read
- * by the vessel at boot) rests in the Kahu realm at CONTRACT and publishes to every DreamNet user as a floor snapshot by
- * CID; the Kahu steward alone writes it live. Two names stand apart from the derivation: the system canon (`lares`,
+ * by the vessel at boot) rests in the Kahu realm at CONTRACT, and the Kahu steward alone writes it live. A holding whose own
+ * `meta.mem` declares `cap-tier = "public"` also publishes to every DreamNet user as a floor snapshot by CID
+ * (`floorCarriesTier`); one declared tighter (a referee's `contract` bag) stays house canon and keys no snapshot. Two names stand apart from the derivation: the system canon (`lares`,
  * `lararium`) belongs to the set on every vessel, a checkout or none, and the Nexus's public board (`crossroads`, a floor
  * row every face reads) never joins it.
  */

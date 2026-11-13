@@ -20,8 +20,8 @@
  *                            `slotLayerFlags`, which writes every slot but the floor
  *                            (the lares wiki-recipe carries the live lararium bag here)
  *   oracle                 — the floor's read-face, READ-ONLY, under every recipe: one pinned
- *                            history-free snapshot per house-canon bag (`lares` and `lararium`
- *                            always), named by a manifest CID (`floor-manifest.ts`), over the
+ *                            history-free snapshot per PUBLIC house-canon bag (`lares` and `lararium`
+ *                            always; a bag declared under `public` keys none), named by a manifest CID (`floor-manifest.ts`), over the
  *                            live seed rows (engine core, plugins, grammar, bag-oracle)
  *
  * `bags/lares` NAMES TWO THINGS, AND THE STACK KEEPS THEM APART. The STATIC floor: a snapshot cut from the

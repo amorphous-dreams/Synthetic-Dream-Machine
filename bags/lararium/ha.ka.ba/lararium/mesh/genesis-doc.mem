@@ -43,7 +43,7 @@ The shipped genesis ''never'' takes the form of an Automerge binary carrying byt
 
 !! The `@oracle` — the shared floor named by its seed
 
-The genesis seed names the shared floor: a manifest CID that names one history-free snapshot per house-canon bag (`lares` and `lararium` always, every other disk-sourced holding but the public board `crossroads`) beside the engine CIDs (`genesis-cid-floor`). `@oracle` mounts that floor read-only under every recipe, and no pointer signs it. Engine or grammar changes take a new seed and a new floor as one bake.
+The genesis seed names the shared floor: a manifest CID that names one history-free snapshot per house-canon bag (`lares` and `lararium` always; every other disk-sourced holding but the public board `crossroads`, and only where the bag's own `meta.mem` declares `cap-tier = "public"`: `floorCarriesTier`, so a `contract` bag never rides the floor) beside the engine CIDs (`genesis-cid-floor`). `@oracle` mounts that floor read-only under every recipe, and no pointer signs it. Engine or grammar changes take a new seed and a new floor as one bake.
 
 Each later floor reaches a Nexus's vessels by that Nexus's release: one porch answer per Nexus names the Nexus AID, the charter epoch, the release before it and the floor manifest CID, a seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes and the charter's epoch lineage ride attached, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release). No tender name reaches a stranger; the seal and the approval carry the authority.
 
@@ -196,6 +196,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MTGDAZI2Oy2GfbGf3s-POyueCoTcQ64MpR3LrQ_llq8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XCkdsYwu-0E1yegNHQVDH9eYTSEeMNgHzUZ-y-h7flM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
