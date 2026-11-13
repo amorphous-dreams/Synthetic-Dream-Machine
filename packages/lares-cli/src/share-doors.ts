@@ -11,7 +11,8 @@ import { larConfigHome } from "@lararium/node";
 import { SHARE_CONFIG_FILE, type ShareFace } from "@lararium/mesh";
 import { vesselDid } from "./env.js";
 import { runVerb } from "./verb-call.js";
-import { summaryOutput } from "./verb-result.js";
+import { summaryOutput, type SubmitResult } from "./verb-result.js";
+import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "./local-connector.js";
 import { readPersonaRoots, sealedPetnameStore } from "./sealed-rows.js";
 import { makeFleetPetnameStore } from "./daemon-persona-store.js";
 
@@ -26,6 +27,51 @@ export interface ShareDoors {
 }
 
 const shareFilePath = (): string => join(larConfigHome(), SHARE_CONFIG_FILE);
+
+/** How long a share verb's read-back keeps asking the vessel for the landing's receipt once the local wait ends. */
+export const SHARE_READBACK_MS = 180_000;
+
+/** What the read-back reaches: the vessel's receipt by request id, a pause between reads, a clock, and a line to the person. */
+export interface ReadBackPorts {
+  readonly receipt: (requestId: string) => Promise<ReceiptAnswer>;
+  readonly pause: (ms: number) => Promise<void>;
+  readonly now: () => number;
+  readonly patienceMs?: number;
+  readonly note?: (line: string) => void;
+}
+
+/**
+ * A LOCAL WAIT ENDING NAMES NO OUTCOME (`LocalWaitExpired`, the idiom `act.ts` keeps): the vessel took the verb and this process
+ * stopped hearing. A share landing founds a realm and seats faces, and may outrun the wait; so the door reads the landing's own
+ * receipt by the SAME request id until the vessel answers `done` or `error`, and never dispatches the verb again. A vessel that
+ * abandoned, interrupted or evicted the request says so by name; a landing still running when the patience ends names the
+ * receipt door (`lares receipt <id>`).
+ */
+export async function readBackOnExpiry(verb: string, run: () => Promise<SubmitResult>, ports: ReadBackPorts): Promise<SubmitResult> {
+  try { return await run(); }
+  catch (err) {
+    if (!(err instanceof LocalWaitExpired)) throw err;
+    const id = err.requestId, patience = ports.patienceMs ?? SHARE_READBACK_MS, started = ports.now();
+    ports.note?.(`  ${verb} still lands in the vessel; reading its receipt (request ${id})…`);
+    for (;;) {
+      const r = await ports.receipt(id).catch((): ReceiptAnswer => ({ requestId: id, state: "unanswered" }));
+      if (r.state === "done" || r.state === "error") {
+        return { status: r.state, requestId: id, ...(r.results !== undefined ? { results: r.results as NonNullable<SubmitResult["results"]> } : {}), ...(r.errorMessage !== undefined ? { errorMessage: r.errorMessage } : {}) };
+      }
+      if (r.state === "abandoned" || r.state === "interrupted") throw new Error(`request-${r.state}: the vessel ${r.state} ${verb} (request ${id}); run it again`);
+      if (r.state === "evicted") throw new Error(`retention-gap: the vessel no longer holds the outcome of ${verb} (request ${id})`);
+      if (ports.now() - started >= patience) throw new Error(`${verb} still lands after ${Math.round(patience / 1000)}s of reading its receipt; read its outcome with \`lares receipt ${id}\``);
+      await ports.pause(1_000);
+    }
+  }
+}
+
+const LIVE_READBACK: ReadBackPorts = {
+  receipt: (id) => queryReceipt(id, { patienceMs: 2_000 }),
+  pause: (ms) => new Promise((r) => setTimeout(r, ms)),
+  now: () => performance.now(),
+  note: (line) => console.error(line),
+};
 
 export const LIVE_SHARE_DOORS: ShareDoors = {
   faces: async () => {
@@ -45,7 +91,8 @@ export const LIVE_SHARE_DOORS: ShareDoors = {
   },
   verb: async (name, args) => {
     try {
-      const r = await runVerb(name, args, await vesselDid());
+      const did = await vesselDid();
+      const r = await readBackOnExpiry(name, () => runVerb(name, args, did), LIVE_READBACK);
       if (r.status === "error") throw new Error(r.errorMessage ?? `${name} refused`);
       return (summaryOutput(r) ?? {}) as Record<string, unknown>;
     } catch (e) {

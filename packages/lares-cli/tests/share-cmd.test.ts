@@ -10,7 +10,8 @@
 import { describe, expect, test } from "vitest";
 import { parseShareFile, type ShareFace } from "@lararium/mesh";
 import { cmdShare, petnamesOf, shareListLines } from "../src/commands/share-cmd.js";
-import type { ShareDoors } from "../src/share-doors.js";
+import { readBackOnExpiry, type ShareDoors } from "../src/share-doors.js";
+import { LocalWaitExpired, type ReceiptAnswer } from "../src/local-connector.js";
 
 const FACES: ShareFace[] = [{ handleIndex: 0, petname: "joshua-fontany" }, { handleIndex: 1, petname: "joshua-fontany-engineer" }, { handleIndex: 2, petname: "the referee" }];
 
@@ -62,5 +63,38 @@ describe("the share door", () => {
     expect(await cmdShare("bag", f.doors)(args(["notes"], { read: "[tag[x]]" }))).toBe(2);
     expect(f.file()).toBeNull();
     expect(() => petnamesOf("h9", FACES)).toThrow(/h9 names no face/);
+  });
+});
+
+describe("a share verb that outruns the local wait", () => {
+  const ports = (answers: ReceiptAnswer[]) => {
+    const asked: string[] = [], notes: string[] = [];
+    let clock = 0;
+    return { asked, notes, ports: {
+      receipt: async (id: string) => { asked.push(id); return answers[Math.min(asked.length - 1, answers.length - 1)]!; },
+      pause: async (ms: number) => { clock += ms; }, now: () => clock, patienceMs: 5_000, note: (l: string) => notes.push(l),
+    } };
+  };
+  const expires = async () => { throw new LocalWaitExpired("share-apply", 30_000, "req-1"); };
+
+  test("the landing's own receipt answers once the local wait ends: the outcome reads off the request id, never as unknown", async () => {
+    const p = ports([{ requestId: "req-1", state: "committed" }, { requestId: "req-1", state: "committed" }, { requestId: "req-1", state: "done", results: { summary: { ok: true } } }]);
+    let runs = 0;
+    const result = await readBackOnExpiry("share-apply", async () => { runs += 1; return expires(); }, p.ports);
+    expect(result).toMatchObject({ status: "done", requestId: "req-1", results: { summary: { ok: true } } });
+    expect(p.asked).toEqual(["req-1", "req-1", "req-1"]);
+    expect(runs).toBe(1);   // a read-back never dispatches the verb a second time
+    expect(p.notes.join("\n")).toMatch(/share-apply still lands.*req-1/);
+    // CONTROL: a verb that answers inside the wait reads no receipt at all.
+    const quick = ports([]);
+    expect(await readBackOnExpiry("share-set", async () => ({ status: "done" as const, requestId: "req-2" }), quick.ports)).toMatchObject({ requestId: "req-2" });
+    expect(quick.asked).toEqual([]);
+  });
+
+  test("a landing still running when the read-back's patience ends names the receipt door, and a vessel that abandoned it says so", async () => {
+    const still = ports([{ requestId: "req-1", state: "committed" }]);
+    await expect(readBackOnExpiry("share-apply", expires, still.ports)).rejects.toThrow(/still lands after .*lares receipt req-1/);
+    const gone = ports([{ requestId: "req-1", state: "abandoned" }]);
+    await expect(readBackOnExpiry("share-apply", expires, gone.ports)).rejects.toThrow(/request-abandoned/);
   });
 });

@@ -38,6 +38,8 @@ export interface ShareApplyDeps {
    * Land one wiki row's workbench under its lit owner, seating the lit member faces (`landWorkbench`). Absent: wiki rows land
    * their canon's grants alone (a composer with no ledger, a test of the grants).
    */
+  /** One line per landing phase, with the milliseconds it took: a slow landing names the phase that held it. */
+  readonly log?: (line: string) => void;
   readonly workbench?: (row: ShareRow, owner: { readonly handleIndex: number; readonly group: string }, members: ReadonlyArray<{ readonly handleIndex: number; readonly group: string; readonly access: "read" | "write" }>) => Promise<ShareWorkbenchLanded>;
 }
 
@@ -60,15 +62,22 @@ export interface ShareApplied {
 export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   const rows = await deps.rows();
   const halves = new Map<number, Awaited<ReturnType<ShareLitFace["catalog"]>>>();
-  for (const face of deps.faces) halves.set(face.handleIndex, await face.catalog().catch(() => null));
+  for (const face of deps.faces) {
+    const tc = Date.now();
+    halves.set(face.handleIndex, await face.catalog().catch(() => null));
+    if (face.group) deps.log?.(`[share-apply] h${face.handleIndex}'s catalog half ${halves.get(face.handleIndex) ? "read" : "unreached"} in ${Date.now() - tc}ms`);
+  }
   const rowIn = (doc: LarDoc | undefined, bag: string): StoredLarRecord | undefined => ownEntry(doc?.tiddlers, bag) as StoredLarRecord | undefined;
   const ownerOf = (bag: string): number | null => {
     for (const face of deps.faces) if (rowIn(halves.get(face.handleIndex)?.doc(), bag) !== undefined) return face.handleIndex;
     return null;
   };
   const grants = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
+  const t0 = Date.now();
+  deps.log?.(`[share-apply] ${rows.length} row(s), ${deps.faces.filter((f) => f.group).length} lit face(s), ${grants.length} grant(s) owed`);
   let granted = 0, pending = 0;
   for (const g of grants) {
+    const tg = Date.now();
     const flag = sharePendingTitle(g, deps.salt);
     const owner = deps.faces.find((f) => f.handleIndex === g.owner), grantee = deps.faces.find((f) => f.handleIndex === g.grantee);
     const ownerHalf = halves.get(g.owner), granteeHalf = halves.get(g.grantee);
@@ -80,7 +89,8 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       await deps.grant({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group });
       await deps.flag.clear(flag);
       granted++;
-    } catch { await deps.flag.set(flag); pending++; }
+      deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} landed in ${Date.now() - tg}ms`);
+    } catch { await deps.flag.set(flag); pending++; deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} waits (${Date.now() - tg}ms)`); }
   }
   const workbenches: ShareWorkbenchLanded[] = [];
   if (deps.workbench) {
@@ -99,10 +109,13 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
         if (!face?.group) continue;   // a shut face seats at its next light: its canon grant already waits behind a flag
         members.push({ handleIndex: index, group: face.group, access: answer.write.includes(index) ? "write" : "read" });
       }
+      const tw = Date.now();
       workbenches.push(await deps.workbench(row, { handleIndex: owner.handleIndex, group: owner.group }, members));
+      deps.log?.(`[share-apply] workbench ${row.slug} (${members.length} member face(s)) landed in ${Date.now() - tw}ms`);
     }
   }
   const waiting = new Set<string>();
   for (const row of rows) for (const name of resolveShare({ bag: shareRowBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
+  deps.log?.(`[share-apply] done in ${Date.now() - t0}ms: ${granted} granted, ${pending} pending, ${workbenches.length} workbench(es)`);
   return { granted, pending, waiting: [...waiting].sort(), workbenches };
 }

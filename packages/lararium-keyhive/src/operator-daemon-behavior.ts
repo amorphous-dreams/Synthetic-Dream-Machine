@@ -1525,6 +1525,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const applied = await applyShares({
           rows: () => readShareRows(control), faces,
           salt: daemonAuth.placeVerifyingKey,
+          log: (line) => console.log(line),
           flag: {
             set: async (title) => { if (!(await control.get(title))) await control.put(mutableLarRecord(title, { text: "owed" }, "share-apply"), ORIGIN); },
             clear: async (title) => { if (await control.get(title)) await control.remove(title, ORIGIN); },
