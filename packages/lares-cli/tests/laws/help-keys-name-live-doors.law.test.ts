@@ -66,7 +66,7 @@ describe("the per-command help registry", () => {
   test("a door that keeps its own sub-verb table answers --help with that table: `wiki --help` reads as `wiki help` reads", async () => {
     const flag = await said(["wiki", "--help"]), word = await said(["wiki", "help"]);
     expect(flag.out).not.toMatch(/no detailed help yet/);
-    expect(flag.out).toBe(word.out);
+    expect(flag.out.startsWith(word.out)).toBe(true);   // the same table, then the door's long account
     for (const verb of ["init", "share", "switch", "active", "list"]) expect(flag.out).toMatch(new RegExp(`^  ${verb}\\s`, "m"));
     expect(flag.code).toBe(0);
   });
@@ -82,8 +82,8 @@ describe("the per-command help registry", () => {
     const kahua = COMMANDS.find((c) => c.name === "kahua")!;
     expect([...(kahua.signsOnly ?? [])].sort()).toEqual([...KAHUA_OPERATOR_ROWS].map((row) => row.replace(/^kahua-/, "")).sort());
     const r = await said(["help"]);
-    expect(r.out).toMatch(/✍ kahua: carry, lift, mint, withdraw hold a key; its other sub-verbs stand open to a seat/);
+    expect(r.out).toMatch(/^\s+✍ kahua\s.*\(✍ mint, lift, withdraw, carry alone\)$/m);
     // CONTROL: a command that holds a key whole draws no such line.
-    expect(r.out).not.toMatch(/✍ promote:/);
+    expect(r.out).not.toMatch(/^\s+✍ promote\s.*alone\)$/m);
   });
 });
