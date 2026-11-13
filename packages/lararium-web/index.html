@@ -38,6 +38,14 @@
       #phases .phase { padding: 0.12rem 0; color: #58a6ff; }
       #phases .phase::before { content: "→ "; color: #3fb950; }
       .ok { color: #3fb950; } .warn { color: #d29922; } .err { color: #f85149; }
+      /* A vessel's ask waits on the person: the notice at the top of the page and the boot status row both say so. */
+      .ask { color: #d29922; font-weight: 600; }
+      .ceremony-ask {
+        position: sticky; top: 0; z-index: 10; padding: 0.8rem 1.25rem;
+        background: #2b2111; border-bottom: 2px solid #d29922; color: #f0d58c;
+      }
+      .ceremony-ask[data-refusal] { border-bottom-color: #f85149; }
+      .ceremony-ask button.ceremony-open { margin-top: 0.5rem; font: inherit; font-weight: 600; padding: 0.35rem 0.8rem; cursor: pointer; }
       .veil { color: #d2a8ff; }
 
       /* The admit surface carries a THUMB. Every tap target clears 44px, the paste box holds 16px type

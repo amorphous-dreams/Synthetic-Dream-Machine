@@ -27,7 +27,7 @@ import {
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
 import type { VesselStatus } from "./vessel-protocol.js";
-import { openCeremony, standCeremonyBroker } from "./ceremony-page.js";
+import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker } from "./ceremony-page.js";
 import type { GenesisSeed } from "@lararium/mesh";
 import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
 import { readFloorCardCarriage, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
@@ -118,42 +118,10 @@ function reportFirstPaint(): void {
 const ceremonyBroker = standCeremonyBroker();
 
 function paintAsk(ask: VesselAsk, vessel: VesselPort): void {
-  const notice = document.createElement("div");
-  notice.className = "ceremony-ask";
-  notice.dataset["ask"] = ask.kind;
-  notice.dataset["askId"] = ask.askId;
-  const say = document.createElement("div");
-  say.textContent =
-    ask.kind === "unlock" ? `This browser's vessel asks for its unlock (${ask.act}${ask.words ? `, ${ask.words}` : ""}).`
-      : ask.kind === "bind-first" ? "This browser's vessel asks for a first passphrase before it holds a face's secrets."
-        : ask.kind === "ward" ? `This face asks for its passphrase for one ward act (${ask.act}).`
-          : ask.kind === "card" ? "This browser founds its place: the ceremony shows its place card to write on paper and type back. Nothing is written until it reads back."
-          : "This browser's vessel asks for its passphrase to clear its custody.";
-  const go = document.createElement("button");
-  go.type = "button"; go.className = "ceremony-open"; go.textContent = "open the unlock ceremony";
-  const refuse = (refusal: string): void => {
-    vessel.ceremonyRefused(ask.askId, refusal);
-    notice.dataset["refusal"] = refusal;
-    say.textContent = `The unlock ceremony cannot stand here: ${refusal}.`;
-    go.remove();
-  };
-  go.addEventListener("click", () => {
-    void ceremonyBroker.then((broker) => {
-      if ("refusal" in broker) { refuse(broker.refusal); return; }
-      openCeremony(ask.askId, broker.worker, (port) => vessel.ceremonyPort(ask.askId, port));
-      go.textContent = "the ceremony stands in its own window";
-    });
-  });
-  notice.append(say, go);
-  document.body.prepend(notice);
-  // A page that stands no broker refuses at once, by name, and offers no form of its own.
-  void ceremonyBroker.then((broker) => { if ("refusal" in broker) refuse(broker.refusal); });
+  paintCeremonyAsk(document, ask, { broker: ceremonyBroker, port: (port) => vessel.ceremonyPort(ask.askId, port), refused: (refusal) => vessel.ceremonyRefused(ask.askId, refusal) });
 }
 
-function settleAsk(askId: string): void {
-  for (const notice of document.querySelectorAll<HTMLElement>(".ceremony-ask")) if (notice.dataset["askId"] === askId) notice.remove();
-}
-
+function settleAsk(askId: string): void { settleCeremonyAsk(document, askId); }
 
 function row(parent: HTMLElement, k: string, v: string, cls = ""): void {
   const d = document.createElement("div");
