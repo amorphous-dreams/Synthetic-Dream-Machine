@@ -9,10 +9,11 @@
  */
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const seam = vi.hoisted(() => ({ calls: [] as Array<[string, Record<string, unknown>]>, output: {} as Record<string, unknown>, preview: {} as Record<string, unknown> }));
+const seam = vi.hoisted(() => ({ calls: [] as Array<[string, Record<string, unknown>]>, output: {} as Record<string, unknown>, preview: {} as Record<string, unknown>, refuse: null as string | null }));
 vi.mock("../src/store-door.js", () => ({
   storeVerb: async (verb: string, args: Record<string, unknown>) => {
     seam.calls.push([verb, args]);
+    if (seam.refuse && verb === "kahua-lift") throw new Error(seam.refuse);
     return { output: verb === "kahua-read" && args["action"] === "staged" ? seam.preview : seam.output };
   },
   StoreDoorRefusal: class extends Error {},
@@ -22,6 +23,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cmdKahua } from "../src/commands/kahua.js";
+import { helpLines } from "../src/command-help.js";
 import { parseArgs } from "../src/parse-args.js";
 
 const run = (...argv: string[]) => cmdKahua(parseArgs(["kahua", ...argv]), null);
@@ -52,6 +54,32 @@ describe("lares kahua", () => {
     expect(seam.calls).toEqual([STAGED_READ, STAGED_READ, STAGED_READ]);
     expect(await run("lift", "T", "--taint", "none", "--digest", DIGEST)).toBe(0);
     expect(seam.calls.at(-1)).toEqual(["kahua-lift", { title: "T", digest: DIGEST, taint: [] }]);
+  });
+
+  test("RED: the lift's texts name the ROW digest apart from a proposal's BODY digest, and say a lift always asks the face's passphrase at a terminal", async () => {
+    const errs: string[] = [];
+    vi.spyOn(console, "error").mockImplementation((line: unknown) => { errs.push(String(line)); });
+    // The preview labels its digest as the row's; the unconfirmed refusal says what --digest spares and what it never spares.
+    expect(await run("lift", "T", "--taint", "none")).toBe(1);
+    expect(errs.join("\n")).toMatch(/^  row digest  abcd1234/m);
+    expect(errs.join("\n")).toMatch(/kahua-lift-unconfirmed:.*--digest <hex>.*spares the typed-back digest alone.*passphrase at a terminal/);
+    // A ward refusal on a lift that named --digest says the same: the passphrase still comes from a terminal.
+    errs.length = 0;
+    seam.refuse = "ward-needs-tty: kahua-lift is a ward act; its route comes from a person at a terminal";
+    expect(await run("lift", "T", "--taint", "none", "--digest", DIGEST)).toBe(1);
+    expect(errs.join("\n")).toMatch(/ward-needs-tty.*\n.*a lift always asks the face's passphrase at a terminal; `--digest` names the preview's row digest in place of typing it back, and spares nothing else/);
+    seam.refuse = null;
+    // The help says both, and names the two digests apart.
+    const help = helpLines("kahua").join("\n");
+    expect(help).toMatch(/row digest/);
+    expect(help).toMatch(/body digest/);
+    expect(help).toMatch(/a lift always asks the face's passphrase at a terminal/);
+    // CONTROL: a stage answer names its digest as the row's on stderr, and the JSON on stdout stays the door's own answer.
+    errs.length = 0;
+    seam.output = { title: "T", digest: DIGEST, staged: true };
+    expect(await run("stage", "T", "--text", "body")).toBe(0);
+    expect(JSON.parse(lines.at(-1)!)).toEqual(seam.output);
+    expect(errs.join("\n")).toMatch(/row digest.*body and fields.*A proposal's `digest` names the body digest/);
   });
 
   test("RED: at a terminal the person types the digest back: a wrong prefix lifts nothing; CONTROL: the first eight hex lift", async () => {

@@ -78,13 +78,18 @@ export function kahuaPreviewLines(p: KahuaStagedPreview): string[] {
   return [
     `lift preview — ${p.title}`,
     `  from    bags/daemon-${p.relation}`,
-    `  digest  ${p.digest}`,
+    `  row digest  ${p.digest}`,
     ...Object.entries(p.fields).sort(([a], [b]) => (a < b ? -1 : 1)).map(([k, v]) => `  field   ${k}: ${v}`),
     `  heads   ${p.heads.length === 0 ? "none (a first lift)" : p.heads.map((h) => `${h.cid.slice(0, 12)}${h.carries ? " (carries this row: the lift lands nothing)" : " (differs)"}`).join(", ")}`,
     "  body:",
     ...body.split("\n").map((l) => `    ${l}`),
   ];
 }
+
+/** What a stage answer's `digest` names, said beside it (stderr; stdout keeps the door's own JSON). */
+export const STAGE_DIGEST_NOTE = "  the `digest` above names the row digest (sha256 over the row's body and fields): a lift's --digest names it. A proposal's `digest` names the body digest (sha256 over the body bytes alone), so the two differ for one row.";
+/** What `--digest` spares on a lift, and what it never spares. */
+export const LIFT_WARD_NOTE = "a lift always asks the face's passphrase at a terminal; `--digest` names the preview's row digest in place of typing it back, and spares nothing else";
 
 /**
  * THE CONFIRM: the digest a lift names. `--digest` must name the preview's digest; else a terminal asks for the digest's
@@ -95,7 +100,7 @@ export async function confirmedDigest(preview: KahuaStagedPreview, named: string
     if (named !== preview.digest) throw new Error(`kahua-lift-digest-moved: the staged row reads digest ${preview.digest}, not the ${named} named; read its preview again`);
     return named;
   }
-  if (ask === null) throw new Error("kahua-lift-unconfirmed: a lift needs eyes: read the preview and name --digest <hex> as it printed it, or run at a terminal and type the digest back (a bare --yes lifts nothing)");
+  if (ask === null) throw new Error("kahua-lift-unconfirmed: a lift needs eyes: read the preview and name --digest <hex> (the row digest as it printed), or type it back at a terminal (a bare --yes lifts nothing). --digest spares the typed-back digest alone: a lift always asks the face's passphrase at a terminal");
   const typed = (await ask(`type the first 8 hex of the digest (${preview.digest.slice(0, 8)}…) to lift "${preview.title}", anything else lifts nothing: `)).trim().toLowerCase();
   if (typed.length < 8 || !preview.digest.startsWith(typed)) throw new Error("kahua-lift-unconfirmed: the typed digest did not match; nothing lifted");
   return preview.digest;
@@ -149,9 +154,15 @@ export async function cmdKahua(args: ParsedArgs, ask: ((prompt: string) => Promi
     }
     const { output } = await storeVerb(door, { ...face, ...payload });
     console.log(JSON.stringify(output));
+    // TWO DIGESTS SHARE ONE WORD: a staged row's digest covers its body AND fields; a proposal's covers the body bytes alone.
+    if (act === "stage") console.error(STAGE_DIGEST_NOTE);
     return 0;
   } catch (err) {
-    if (err instanceof StoreDoorRefusal || err instanceof Error) { console.error(`[lares kahua] refused: ${err.message}`); return 1; }
+    if (err instanceof StoreDoorRefusal || err instanceof Error) {
+      console.error(`[lares kahua] refused: ${err.message}`);
+      if (act === "lift" && /ward-needs-tty/.test(err.message)) console.error(`  ${LIFT_WARD_NOTE}`);
+      return 1;
+    }
     throw err;
   }
 }

@@ -120,6 +120,12 @@ export interface Command {
    * surface that declared them.
    */
   readonly signs?:      boolean;
+  /**
+   * Where only SOME of a signing command's sub-verbs hold a key: those sub-verbs, by name. The command still carries
+   * `signs` (an agent surface drops it whole); the top-level legend names these so the mark never vows more than the
+   * doors do. `kahua` names its hand-only rows; a law test welds them to the store door's own set.
+   */
+  readonly signsOnly?:  readonly string[];
 }
 
 /**
@@ -200,7 +206,7 @@ export const COMMANDS: readonly Command[] = [
   { name: "intent", brief: "Issue and read a face's signed intents.", summary: "Issue and read a face's signed intents; every invocation names --face N when several faces stand.", handler: cmdIntent, accepts: ["face", "to", "prefer", "class", "every", "args", "nonce", "void-at", "through", "executor", "detail", "deny", "agent", "prefix", "policy", "as-of", "until"], signs: true },
   { name: "promote", summary: "Manage a wiki’s promotions.", handler: cmdPromote, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
   { name: "kapae", summary: "Manage a wiki’s promotion brake.", handler: cmdKapae, accepts: ["face", "wiki", "why", "keep", "drop"], signs: true },
-  { name: "kahua", brief: "Mint, propose, stage, lift and read a face's kahua stage.", summary: "One face's kahua stage: `mint` its pin, `propose` and `stage` (any seat; `stage` writes a row into the face's local canon bags/daemon-<F>, unsigned), `lift` (one staged row by title and digest: a preview, then the digest typed back or `--digest`; a bare --yes lifts nothing), `withdraw` and `carry` (the operator's hand: the lōkahi cap and the grant out of sealed custody; a carry stands earlier items again after a root rotation), `list` and `get` its verified items; answers print as JSON.", handler: cmdKahua, accepts: ["face", "text", "file", "digest", "taint", "sources", "parent", "proposal", "proposals", "fields", "history", "all"], signs: true },
+  { name: "kahua", brief: "Mint, propose, stage, lift and read a face's kahua stage.", summary: "One face's kahua stage: `mint` its pin, `propose` and `stage` (any seat; `stage` writes a row into the face's local canon bags/daemon-<F>, unsigned), `lift` (one staged row by title and digest: a preview, then the digest typed back or `--digest`; a bare --yes lifts nothing), `withdraw` and `carry` (the operator's hand: the lōkahi cap and the grant out of sealed custody; a carry stands earlier items again after a root rotation), `list` and `get` its verified items; answers print as JSON.", handler: cmdKahua, accepts: ["face", "text", "file", "digest", "taint", "sources", "parent", "proposal", "proposals", "fields", "history", "all"], signs: true, signsOnly: ["mint", "lift", "withdraw", "carry"] },
   { name: "intent-relay", brief: "Enable, disable, inspect or rotate a face's intent relay door.", summary: "Enable, disable, inspect or rotate one face's sealed intent relay admission door.", handler: cmdIntentRelay, accepts: ["face", "json"], signs: true },
   { name: "vessel",        brief: "Found, stand, stop, seed and read the vessel (daemon, store, genesis).", summary: "THE VESSEL DOOR \u2014 one namespace over the vessel's own causal island (store, genesis artifact, daemon, corpus). Four primitives and one read: `found` mints identity + bootstrap (`--hearth --name <label>`: the Stable founding act, a hearth with persona zero and its one-seat seed charter; `--hearth --restore <bundle>`: the same act with a restored face as persona zero; bare: a place with no face, which joins a face by `lares fleet join`) \u00b7 `stand` brings the daemon up and reports ([--foreground] [--with-web] [--restart] [--page]) \u00b7 `stop` halts it on the port \u00b7 `seed` plants every bags/* holding back into its doc \u00b7 `read` inspects and starts nothing. Compositions ride `vessel rite <petname>` \u2014 founding \u00b7 refresh \u00b7 rebuild, so a new cap-stack arrives as a rite, never as another top-level verb. A fresh founding composes: found \u00b7 stand \u00b7 seed. Advancing the genesis composition is a MESH act \u2014 `nexus kahuli` \u2014 never a vessel door.", handler: cmdVessel, accepts: ["apply", "bag", "chair", "change-id", "cold-key", "cut", "dry-run", "force", "foreground", "genesis", "hearth", "in-wiki", "init", "lift-kahua", "name", "nexus", "observe", "page", "palaces", "porch", "port", "restart", "restore", "root", "shadow", "storage", "tag-blobs", "verbose", "wiki", "with-web"], signs: true /* found mints the vessel key + persona root; seed writes founding material */ },
   { name: "herm", brief: "Stand the herm crossroads; rotate its relay gate.", summary: "Stand the herm crossroads; `herm relay-rotate` mints a new durable relay service gate and prints the new pin. Restart the herm and hand dialing hearths the new pin.", handler: cmdHerm, accepts: ["port", "relay-port"] },
@@ -281,6 +287,10 @@ function printHelp(surface: string = VERB_SURFACE.cli, executableOnly = false): 
   console.log("  A path argument crosses as the vessel spells it ($LARES_HOUSE/<class> -> /lar/<class>).");
   if (shown.some((c) => c.signs)) {
     console.log("  ✍ = holds a key. An agent surface may compose these and MUST NOT execute them.");
+    for (const c of shown) {
+      const only = c.signs ? COMMANDS.find((row) => row.name === c.name)?.signsOnly : undefined;
+      if (only) console.log(`    ✍ ${c.name}: ${[...only].sort().join(", ")} hold a key; its other sub-verbs stand open to a seat.`);
+    }
   }
   console.log(`  ${"help".padEnd(13)} Show this message.\n`);
   console.log("Global flags:");

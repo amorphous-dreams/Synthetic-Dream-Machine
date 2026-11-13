@@ -305,6 +305,8 @@ export async function cmdWikiActive(_args: ParsedArgs): Promise<number> {
     const marks = [held.has(w) ? "📌" : "  ", surface === w ? "◀ surface" : ""].filter(Boolean).join(" ");
     console.log(`  ${marks} ${w}`);
   }
+  // THE DAEMON'S STANDING SLOT: the daemon stands no wiki island, so this list never shows it, yet it holds one slot of the cap.
+  console.log(`     daemon  (always live; it holds one of the ${result["activationCap"] ?? "?"} slots and stands outside this list)`);
   console.log(`  rotatable pin budget: ${result["pinBudget"] ?? "?"}`);
   console.log("");
   return 0;
@@ -566,7 +568,7 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "switch": { handler: cmdWikiSwitch, summary: "LIVE-activate a wiki (no reboot — the true swap; wakes it cold from its recipe). Browser flips the projection surface." },
   "hold":    { handler: cmdWikiHold,    summary: "Pin a wiki as a rotatable active pin (the daemon bag always + N rotatable; a hold past budget releases the least-recently-held)." },
   "release": { handler: cmdWikiRelease, summary: "Drop a wiki's rotatable pin (it stays live, becomes a cooling candidate)." },
-  "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface." },
+  "active":  { handler: cmdWikiActive,  summary: "Show the live switcher state: which wikis run now + which are held + the projection surface (the daemon always holds one slot and stands outside the list)." },
   "sync":  { handler: cmdWikiSync,  summary: "Walk wikis/<slug>/memes/** and ingest into the canonical bag. Idempotent." },
   "pin":        { handler: cmdWikiPin,       summary: "Pin every bag in the wiki's recipe (whole-recipe STOWAGE — the heat axis, never the canon one `resolve` reads)." },
   "unpin":      { handler: cmdWikiUnpin,     summary: "Unpin every bag in the wiki's recipe." },

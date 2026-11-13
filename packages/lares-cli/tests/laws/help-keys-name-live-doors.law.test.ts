@@ -17,6 +17,8 @@ import { describe, test, expect, vi } from "vitest";
 import { COMMAND_HELP } from "../../src/command-help.js";
 import { COMMAND_NAMES, dispatch } from "../../src/bin/lares.js";
 import { SHIM_VERBS } from "../../src/host-bridge.js";
+import { COMMANDS } from "../../src/bin/lares.js";
+import { KAHUA_OPERATOR_ROWS } from "@lararium/node";
 
 /** One dispatch's exit and what it printed to each stream. */
 async function said(argv: string[]): Promise<{ code: number; out: string; err: string }> {
@@ -74,5 +76,14 @@ describe("the per-command help registry", () => {
     expect(r.out).not.toMatch(/no detailed help yet/);
     expect(r.out).toMatch(/relay-rotate/);
     expect(r.out).toMatch(/--relay-port/);
+  });
+
+  test("the top-level ✍ mark says which of kahua's sub-verbs hold a key: the hand-only rows the store door names, no others", async () => {
+    const kahua = COMMANDS.find((c) => c.name === "kahua")!;
+    expect([...(kahua.signsOnly ?? [])].sort()).toEqual([...KAHUA_OPERATOR_ROWS].map((row) => row.replace(/^kahua-/, "")).sort());
+    const r = await said(["help"]);
+    expect(r.out).toMatch(/✍ kahua: carry, lift, mint, withdraw hold a key; its other sub-verbs stand open to a seat/);
+    // CONTROL: a command that holds a key whole draws no such line.
+    expect(r.out).not.toMatch(/✍ promote:/);
   });
 });

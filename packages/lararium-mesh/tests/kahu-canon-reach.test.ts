@@ -32,6 +32,13 @@ describe("the Kahu predicate at a write door", () => {
     expect(isVerbRefusal(err) && err.reason).toBe("kahu-reach");
   });
 
+  test("the refusal names the act that cures it: wear the steward's face", async () => {
+    const err = await refusalOf(async () => requireKahuReach(BAG_IDS.lares, await strangerHand("joined-without-admission"), "offer promote"));
+    expect(String((err as Error).message)).toContain("wear the steward's face: `lares vault unlock --face 0`");
+    // CONTROL: the admission state the fold read still rides the refusal.
+    expect(String((err as Error).message)).toContain("joined-without-admission");
+  });
+
   test("FAIL CLOSED: no source at all refuses a system bag", async () => {
     const err = await refusalOf(() => requireKahuReach(BAG_IDS.lararium, undefined, "ADD"));
     expect(isVerbRefusal(err) && err.reason).toBe("kahu-reach");

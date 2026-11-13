@@ -137,5 +137,6 @@ export async function requireKahuReach(bag: string, source: KahuReachSource | un
   if (access.held) return;
   throw new VerbRefusal(KAHU_REACH_REASON,
     `${KAHU_REACH_REASON}: ${act} into ${bag} refused — house canon takes a hand in the Kahu cabal (${access.reason}); ` +
+    "the steward's face holds that chair, so wear the steward's face: `lares vault unlock --face 0`; " +
     "a copy OUT of canon stays open, and an edit copies up into the wiki's own working layer.");
 }
