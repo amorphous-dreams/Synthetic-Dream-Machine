@@ -2,7 +2,7 @@ import { afterEach, beforeEach, expect, test } from "vitest";
 import { standMirror } from "../src/glass/stand.js";
 import { forgetEvidence, lends, rig } from "./glass-rig.js";
 
-const KEY = "mirror:began:wiki";   // keyed by the wiki the mirror serves
+const KEY = "lares:mirror:began:wiki";   // keyed by the wiki the mirror serves
 const clear = () => { try { sessionStorage.removeItem(KEY); localStorage.removeItem(KEY); sessionStorage.removeItem("width"); } catch { /* storage may be blocked */ } };
 beforeEach(forgetEvidence); afterEach(() => { forgetEvidence(); clear(); });
 
@@ -171,14 +171,14 @@ test("a port:gone and snapshot that land before the door returns leave no engine
   } finally { r.host.remove(); }
 });
 test("a record under another wiki's key holds nothing for this wiki", async () => {
-  sessionStorage.setItem("mirror:began:other-wiki", "left-by-another-wiki");
+  sessionStorage.setItem("lares:mirror:began:other-wiki", "left-by-another-wiki");
   const r = await rig();
   try {
     const result = await standMirror(r.options, r.seams) as any;
     expect(await result.settled).toEqual({ width: "full" });
-    expect(sessionStorage.getItem("mirror:began:other-wiki")).toBe("left-by-another-wiki");
+    expect(sessionStorage.getItem("lares:mirror:began:other-wiki")).toBe("left-by-another-wiki");
     result.unmount();
-  } finally { sessionStorage.removeItem("mirror:began:other-wiki"); r.host.remove(); }
+  } finally { sessionStorage.removeItem("lares:mirror:began:other-wiki"); r.host.remove(); }
 });
 test("storage that refuses a write names evidence-unavailable and the tab still boots full", async () => {
   const r = await rig(); const states: any[] = [];
@@ -200,7 +200,7 @@ test("CONTROL: storage that works names no evidence state", async () => {
   } finally { r.host.remove(); }
 });
 
-const STANDING = "mirror:full-standing:wiki";
+const STANDING = "lares:mirror:full-standing:wiki";
 const afterPaint = () => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
 test("the second record stands from full's first paint and clears on pagehide", async () => {
   const r = await rig();
@@ -240,11 +240,11 @@ test("a full page that ended without a pagehide holds the next boot of this wiki
   } finally { r.host.remove(); }
 });
 test("CONTROL: another wiki's standing record holds nothing for this wiki", async () => {
-  sessionStorage.setItem("mirror:full-standing:other-wiki", "elsewhere");
+  sessionStorage.setItem("lares:mirror:full-standing:other-wiki", "elsewhere");
   const r = await rig();
   try {
     const result = await standMirror(r.options, r.seams) as any;
     expect(await result.settled).toEqual({ width: "full" });
     result.unmount();
-  } finally { sessionStorage.removeItem("mirror:full-standing:other-wiki"); r.host.remove(); }
+  } finally { sessionStorage.removeItem("lares:mirror:full-standing:other-wiki"); r.host.remove(); }
 });

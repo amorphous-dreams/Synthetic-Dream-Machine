@@ -33,7 +33,7 @@ test("R7 CONTROL: with no error the mirror stands full on one port, one open", a
   } finally { r.host.remove(); }
 });
 test("R7: a RangeError at a boot the tab's evidence already holds at skinny reads the none floor with one open", async () => {
-  sessionStorage.setItem("mirror:began:wiki", "left-by-a-boot-that-died");
+  sessionStorage.setItem("lares:mirror:began:wiki", "left-by-a-boot-that-died");
   const before = lends(); const r = await rig();
   try {
     const result = await standMirror(r.options, { ...r.seams, bootEngine: capacityAtBoot(1) });

@@ -73,7 +73,7 @@ test("a mirror the tab's evidence holds at skinny names why on the host; CONTROL
     expect(full.host.hasAttribute("data-lar-mirror-why")).toBe(false);
     result.unmount();
   } finally { full.host.remove(); }
-  sessionStorage.setItem("mirror:began:lares", "an earlier full boot never finished");
+  sessionStorage.setItem("lares:mirror:began:lares", "an earlier full boot never finished");
   const held = await rig();
   try {
     const result = await standPageMirror({ port: held.port, host: held.host, actor: "a", surface: () => "lares",

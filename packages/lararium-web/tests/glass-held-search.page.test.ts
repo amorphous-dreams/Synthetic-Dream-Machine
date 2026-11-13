@@ -24,7 +24,7 @@ const until = async (what: string, read: () => boolean): Promise<void> => {
 };
 
 async function walk(held: boolean) {
-  if (held) sessionStorage.setItem("mirror:began:wiki", "left-by-a-full-boot-that-died");
+  if (held) sessionStorage.setItem("lares:mirror:began:wiki", "left-by-a-full-boot-that-died");
   const r = await rig({ preloads, records: [skinny("lar:///ha.ka.ba/lares/docs/welcome", "$:/tags/lares/Landing"), skinny("Shore Write Probe Updated"), skinny("Another Note")] as never });
   r.host.style.cssText = "display:block;width:1100px;height:700px";
   const result = await standMirror(r.options, r.seams) as any;

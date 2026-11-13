@@ -28,6 +28,9 @@
  *   R7 RED   A TAB HONOURS THE CHANNEL ONLY FOR A STANDING ASK. `reset:stand-down` for an id the origin's record does not
  *            name moves nothing; `reset:burned` moves nothing unless this tab stood down for that very id; `reset:declined`
  *            takes down only a reset ask this tab's page shows. CONTROL: R4 walks the standing id through all three.
+ *   R8 RED   EVERY STORAGE KEY THE PAGE WRITES RIDES THE VESSEL'S PREFIX, the mirror's two per-tab records among them, so
+ *            the burn and each tab's own clearing reach them. A census of every `*_KEY` constant under `src/` reads the
+ *            prefix. CONTROL: a tab's clearing removes the mirror's records and leaves another hand's key.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
@@ -35,9 +38,10 @@ import { expect, test } from "vitest";
 import { RESET_CHANNEL, type ResetSignal } from "../src/ceremony-protocol.js";
 import { askIdOf, resetAskOf } from "../src/ceremony/ceremony-core.js";
 import {
-  ambientResetEnv, burnPlace, forgetResetAsk, recordResetAsk, RESET_PHRASE, resetAskKey, resetAskStands,
+  ambientResetEnv, burnPlace, clearOwnedKeys, forgetResetAsk, OWNED_STORAGE_PREFIX, recordResetAsk, RESET_PHRASE, resetAskKey, resetAskStands,
   ResetRefused, resetRefusal, typedConfirms, type AskRecord, type ResetEnv,
 } from "../src/ceremony/reset-core.js";
+import { mirrorEvidenceKey, mirrorStandingKey } from "../src/glass/stand.js";
 import { standResetTab } from "../src/reset-tab.js";
 
 const ASK = "00000000-0000-4000-8000-0000000000aa";
@@ -254,4 +258,18 @@ test("R7 RED a tab honours the reset channel only for a standing ask: an unrecor
   hear({ t: "reset:burned", askId: ASK } satisfies ResetSignal);
   expect(acts).toEqual(["stand-down", "reload"]);
   expect([...session.map.keys()]).toEqual(["wiki-scroll"]);
+});
+
+test("R8 RED every storage key the page writes rides the vessel's prefix, the mirror's per-tab records among them; CONTROL: another hand's key stays", () => {
+  // THE CENSUS: every `*_KEY` constant under `src/` names a storage key, and each reads the vessel's own prefix.
+  const sources = import.meta.glob("../src/**/*.ts", { query: "?raw", import: "default", eager: true }) as Record<string, string>;
+  const keys = Object.entries(sources).flatMap(([file, src]) => [...src.matchAll(/const ([A-Z0-9_]+_KEY) = [`"]([^`"]*)[`"]/g)].map((m) => ({ file, name: m[1]!, key: m[2]! })));
+  expect(keys.map((k) => k.name), "the census reads the page's, the port's and the mirror's keys (a zero would read nothing)").toEqual(expect.arrayContaining(["TAB_FACE_KEY", "FLOOR_CARD_KEY", "MIRROR_EVIDENCE_KEY", "MIRROR_STANDING_KEY", "RESET_ASK_KEY"]));
+  expect(keys.filter((k) => !k.key.startsWith(OWNED_STORAGE_PREFIX)).map((k) => `${k.file} ${k.name}=${k.key}`), "storage keys outside the vessel's prefix").toEqual([]);
+  // The mirror's two records, as a tab holds them, leave with the tab's own clearing.
+  expect(mirrorEvidenceKey("wiki")).toBe("lares:mirror:began:wiki");
+  expect(mirrorStandingKey("wiki")).toBe("lares:mirror:full-standing:wiki");
+  const tab = storageOf({ [mirrorEvidenceKey("wiki")]: "began", [mirrorStandingKey("wiki")]: "standing", "lares:tab-face": "pg", "another-hand": "stays" });
+  expect(clearOwnedKeys(tab.storage)).toBe(3);
+  expect([...tab.map.keys()]).toEqual(["another-hand"]);
 });

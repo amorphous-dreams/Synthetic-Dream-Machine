@@ -172,7 +172,7 @@ test("served wiki opens the TW5 search dropdown without worker errors", async ()
   assert.deepEqual(wikiWorkerErrors, [], "the served popup walk emits zero [wiki-worker] error lines");
 });
 
-// A tab whose earlier full boot never reached its first painted frame holds its next boot at skinny (`mirror:began:<wiki>` in
+// A tab whose earlier full boot never reached its first painted frame holds its next boot at skinny (`lares:mirror:began:<wiki>` in
 // sessionStorage): the mirror takes its whole handoff at skinny and stays there. The walk reaches that tab on purpose.
 test("a tab held at skinny opens the TW5 search dropdown without worker errors", async () => {
   wikiWorkerErrors.length = 0;
@@ -181,8 +181,8 @@ test("a tab held at skinny opens the TW5 search dropdown without worker errors",
   // this test's usual bound on a CI runner (each takes most of a minute there); a tab that arrives bare boots once first, under
   // the longer bound this test names.
   const plant = (): Promise<number> => page.evaluate(() => {
-    const wikis = Object.keys(sessionStorage).flatMap((key) => key.match(/^mirror:(?:began|full-standing):(.+)$/)?.slice(1) ?? []);
-    for (const wiki of wikis) sessionStorage.setItem(`mirror:began:${wiki}`, "held-by-test");
+    const wikis = Object.keys(sessionStorage).flatMap((key) => key.match(/^lares:mirror:(?:began|full-standing):(.+)$/)?.slice(1) ?? []);
+    for (const wiki of wikis) sessionStorage.setItem(`lares:mirror:began:${wiki}`, "held-by-test");
     return wikis.length;
   });
   if ((await plant()) === 0) {
@@ -207,7 +207,7 @@ test("a tab held at skinny opens the TW5 search dropdown without worker errors",
     await dropdown.waitFor({ state: "visible", timeout: 20_000 });
     assert.deepEqual(wikiWorkerErrors, [], "the held popup walk emits zero [wiki-worker] error lines");
   } finally {
-    await page.evaluate(() => { for (const key of Object.keys(sessionStorage)) if (key.startsWith("mirror:")) sessionStorage.removeItem(key); });
+    await page.evaluate(() => { for (const key of Object.keys(sessionStorage)) if (key.startsWith("lares:mirror:")) sessionStorage.removeItem(key); });
   }
 }, 240_000);   // LIVENESS: two cold vessel boots on a CI runner, the bare-tab road; the usual road boots once
 

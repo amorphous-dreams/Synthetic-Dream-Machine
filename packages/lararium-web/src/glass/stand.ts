@@ -22,11 +22,12 @@ export type MirrorState = { kind: "waiting"; for: "handoff" } | { kind: "evidenc
   | { kind: "write-refused"; title: string; reason: string };
 /** How the boot ended: full stands, skinny held or stepped to, or the none floor. */
 export type MirrorSettled = { width: "full" | "skinny" | "none"; why?: string };
+/** Both per-tab records ride the vessel's own storage prefix (`lares:`), so the reset's clearing reaches them (`reset-core.ts`). */
 /** The per-tab record, one per wiki: a full boot began and its first full paint has not happened. It records an event and never a width. */
-export const MIRROR_EVIDENCE_KEY = "mirror:began";
+export const MIRROR_EVIDENCE_KEY = "lares:mirror:began";
 export const mirrorEvidenceKey = (wikiUri: string): string => `${MIRROR_EVIDENCE_KEY}:${wikiUri}`;
 /** The second per-tab record: a full page stands (written at full's first paint, cleared on `pagehide`). A boot that finds it knows the last full page ended without a leave: the jetsam shape. */
-export const MIRROR_STANDING_KEY = "mirror:full-standing";
+export const MIRROR_STANDING_KEY = "lares:mirror:full-standing";
 export const mirrorStandingKey = (wikiUri: string): string => `${MIRROR_STANDING_KEY}:${wikiUri}`;
 const floor = (why: string) => ({ kind: "floor" as const, width: "none" as const, why });
 const CAPACITY = ["RangeError", "QuotaExceededError"];
