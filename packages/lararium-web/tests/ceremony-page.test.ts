@@ -26,10 +26,18 @@
  *   CP4 RED   two asks painted in one boot both read standing, each with its kind; the one whose button was pressed reads
  *             `window-opened`, the other `button-waits`; a refused ask reads `refused` with its name; a settled ask reads absent.
  *
+ * THE RESET ASK READS AS AN ASK OF ITS OWN (browser-vessel-lift#/the-reset). The page burns nothing: it paints the ask, and the
+ * ask's button opens the ceremony document, which takes the typed confirmation.
+ *
+ *   CP5 RED   the reset ask's button names the reset and shares its label with no other kind; pressing it opens the ceremony
+ *             document at `#reset=<askId>` in a window with no opener; a second reset ask answers the standing one's id and
+ *             paints no second notice; the notice reads among the standing asks; "not now" takes it down.
+ *   CONTROL   the boot status row never says the boot waits on a reset: the vessel boots on beneath it.
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { expect, test } from "vitest";
-import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks, type CeremonyBroker, type PageAsk } from "../src/ceremony-page.js";
+import { openResetCeremony, paintCeremonyAsk, paintResetAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks, type CeremonyBroker, type PageAsk } from "../src/ceremony-page.js";
 
 function containerOf(active: ServiceWorker, controller: ServiceWorker | null) {
   const listeners = new Set<() => void>();
@@ -146,4 +154,30 @@ test("CP4 RED the page names every ask it still shows: its kind, and whether its
   // A settled ask reads absent: its notice left the page.
   settleCeremonyAsk(doc, card.askId);
   expect(standingAsks(doc).map((a) => a.kind)).toEqual(["ward", "bind-first"]);
+});
+
+test("CP5 RED the reset ask names itself, opens the ceremony at #reset=<askId> with no opener, stands once, and never words the boot row", () => {
+  const { doc, status } = bootPage();
+  const RESET = "00000000-0000-4000-8000-0000000000aa";
+  const opened: string[][] = [];
+  const open = (askId: string): void => openResetCeremony(askId, (url, target, features) => { opened.push([url, target, features]); return null; });
+  expect(paintResetAsk(doc, () => RESET, open)).toBe(RESET);
+  const button = doc.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open")!;
+  expect(button.textContent).toBe("open the reset ceremony");
+  for (const kind of KINDS) {
+    const other = bootPage();
+    paintCeremonyAsk(other.doc, askOf(kind), doors(standing()));
+    expect(other.doc.querySelector<HTMLElement>(".ceremony-ask button.ceremony-open")!.textContent, `${kind} carries another label`).not.toBe(button.textContent);
+  }
+  // CONTROL: the vessel boots on beneath a reset ask, so the boot row keeps its own words.
+  expect(status.textContent).toBe("booting…");
+  expect(opened, "painting opens nothing: the person's press does").toEqual([]);
+  button.click();
+  expect(opened).toEqual([[`/ceremony.html#reset=${RESET}`, "_blank", "noopener"]]);
+  expect(standingAsks(doc)).toEqual([{ askId: RESET, kind: "reset", ceremony: "window-opened", refusal: null }]);
+  // A second ask answers the standing one and paints no second notice.
+  expect(paintResetAsk(doc, () => "00000000-0000-4000-8000-0000000000bb", open)).toBe(RESET);
+  expect(doc.querySelectorAll(".ceremony-ask").length).toBe(1);
+  doc.querySelector<HTMLElement>(".ceremony-ask button.ceremony-withdraw")!.click();
+  expect(doc.querySelector(".ceremony-ask")).toBeNull();
 });

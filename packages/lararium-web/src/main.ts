@@ -27,7 +27,9 @@ import {
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
 import type { VesselStatus } from "./vessel-protocol.js";
-import { paintCeremonyAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks } from "./ceremony-page.js";
+import { paintCeremonyAsk, paintResetAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks } from "./ceremony-page.js";
+import { RESET_CHANNEL } from "./ceremony-protocol.js";
+import { standResetTab } from "./reset-tab.js";
 import type { GenesisSeed } from "@lararium/mesh";
 import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
 import { readFloorCardCarriage, readHearthFloorCard } from "@lararium/mesh/hearth-floor-pins";
@@ -697,16 +699,48 @@ const vesselAtDoor = {
  *  status row, the asks it still shows, and the entry asset this page loaded (the build's own fingerprint; the page holds no revision). */
 const pageReading = () => ({
   origin: location.origin,
-  tab: floorTab?.role() ?? "alone",
+  tab: resetTab?.stoodDown() ? "stood-down-for-reset" : floorTab?.role() ?? "alone",
   relay: dialledRelay,
   boot: document.getElementById("status")?.textContent ?? "stood",
   asks: standingAsks(document),
   entry: new URL(import.meta.url).pathname,
 });
+/**
+ * THE RESET (browser-vessel-lift#/the-reset): the device's holder returns this browser vessel to its anon floor, whatever
+ * state it stands in. The page's part burns nothing: `vessel reset` paints the reset ask, its button opens the ceremony
+ * document, and that document takes the typed confirmation and burns the place. Every tab of the origin hears the ceremony on
+ * one channel (`reset-tab.ts`): it stands its vessel down on the ceremony's word and boots afresh once the place burned.
+ */
+const resetChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel(RESET_CHANNEL) : null;
+const resetTab = resetChannel ? standResetTab({
+  listen: (listener) => resetChannel.addEventListener("message", (e: MessageEvent) => listener(e.data)),
+  standDown: () => { if (leading) { leading.stopLife(); leading.vessel.terminate(); leading = null; } },
+  reload: () => location.reload(),
+  session: (() => { try { return sessionStorage; } catch { return null; } })(),
+  settle: settleAsk,
+  say: (words) => {
+    const notice = document.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"]") ?? document.body.insertAdjacentElement("afterbegin", Object.assign(document.createElement("div"), { className: "ceremony-ask" })) as HTMLElement;
+    notice.setAttribute("role", "alert");
+    notice.replaceChildren(document.createTextNode(words));
+  },
+}) : null;
 const pageVerbs = standConsoleVerbs(() => [
   { path: ["vessel", "read"], summary: "read this browser vessel: its place, standing, faces, relay, floor pin, pending asks and custody at rest, beside what this page knows",
     run: () => readVesselBesidePage(pageReading, vesselAtDoor) },
+  { path: ["vessel", "reset"], summary: "return this browser vessel to its anon floor: paints the reset ask, whose ceremony takes typed words and then burns every store this site holds here, in every tab",
+    waits: () => resetChannel ? null : ["reset-channel-absent", "this engine carries no BroadcastChannel, so the ceremony cannot tell this site's tabs to let go; clear this site's data in the browser's own settings"] as const,
+    run: async () => ({ asked: "reset", askId: paintResetAsk(document), next: "press \"open the reset ceremony\" at the top of this page; nothing burns until its typed confirmation reads back" }) },
 ]);
-installConsoleDoor(window, standConsoleDoor({ page: pageVerbs, ...vesselAtDoor }));
+const consoleDoor = standConsoleDoor({ page: pageVerbs, ...vesselAtDoor });
+installConsoleDoor(window, consoleDoor);
+// ONE VISIBLE CONTROL for a device with no console: the vessel panel's button calls the same door, and its answer reads beside it.
+const resetButton = document.getElementById("reset-vessel");
+resetButton?.addEventListener("click", () => {
+  void consoleDoor("vessel", "reset").then((answer) => {
+    const said = document.getElementById("reset-vessel-status");
+    if (said) { said.textContent = answer.ok ? "the reset ask stands at the top of this page" : `✗ ${answer.error.message}`; said.className = answer.ok ? "ask" : "err"; }
+    if (answer.ok) window.scrollTo({ top: 0 });
+  });
+});
 
 void bootVessel();

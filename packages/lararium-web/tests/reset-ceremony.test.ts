@@ -1,0 +1,154 @@
+/**
+ * reset-ceremony — THE RESET: THIS BROWSER VESSEL RETURNS TO ITS ANON FLOOR (browser-vessel-lift#/the-reset), in a real engine.
+ *
+ * The device's holder owns the return to the floor (dreamnet-rhizome#/the-ground: every vessel "MUST always return"). The
+ * page's script burns nothing; the ceremony document takes typed words and burns the place itself, and every tab of the origin
+ * hears it on one channel.
+ *
+ *   R1 RED   the burn reads its census first, tells every tab to stand down, then burns every database the origin names, the
+ *            file system, the caches, the vessel's own storage keys and the service worker, and says `reset:burned` last.
+ *            CONTROL: a storage key outside the vessel's prefix stays.
+ *   R2 RED   the typed words decide, and nothing else does: the phrase confirms in any case and spacing, any other words
+ *            do not; the navigation's `#reset=<id>` names a reset ask and `#ask=<id>` never does. The reset ceremony stands
+ *            with no secure context and no broker (no ward and no missing worker blocks the return), and refuses a frame and
+ *            a policy out of force by name.
+ *   R3 RED   over the engine's own IndexedDB, caches and storage: a database another context holds open blocks, the
+ *            ceremony names the store it waits on and gives up on no clock, and the burn lands when that context lets go.
+ *            Afterwards the origin names no such database, cache or key.
+ *   R4 RED   A SECOND TAB: every tab hears the ceremony on the origin's reset channel. On `reset:stand-down` a tab stands
+ *            its vessel down once and does not reload; on `reset:burned` it clears its own session keys and boots afresh;
+ *            on `reset:declined` it takes the notice down and moves nothing else. CONTROL: a malformed signal moves nothing.
+ *   R5       an engine that names no database list refuses `reset-census-absent` before any tab stands down or any byte burns.
+ *
+ * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
+ */
+import { expect, test } from "vitest";
+import { RESET_CHANNEL, type ResetSignal } from "../src/ceremony-protocol.js";
+import { askIdOf, resetAskOf } from "../src/ceremony/ceremony-core.js";
+import { ambientResetEnv, burnPlace, RESET_PHRASE, ResetRefused, resetRefusal, typedConfirms, type ResetEnv } from "../src/ceremony/reset-core.js";
+import { standResetTab } from "../src/reset-tab.js";
+
+const ASK = "00000000-0000-4000-8000-0000000000aa";
+
+/** A storage over a plain map, as the burn reads one. */
+function storageOf(entries: Record<string, string>) {
+  const map = new Map(Object.entries(entries));
+  return { map, storage: { get length() { return map.size; }, key: (i: number) => [...map.keys()][i] ?? null, removeItem: (k: string) => { map.delete(k); } } };
+}
+
+test("R1 RED the burn reads its census, stands every tab down, burns each surface in order and says burned last; CONTROL: a foreign key stays", async () => {
+  const log: string[] = [];
+  const local = storageOf({ "lares:floor-card:http://h": "card", "lares:floor-anchor:http://h": "aid", "tiddlywiki-theme": "dark" });
+  const session = storageOf({ "lares:tab-face": "pg-1" });
+  const env: ResetEnv = {
+    databases: async () => { log.push("census"); return ["lares:vessel", "lares:continuity", "automerge-daemon"]; },
+    deleteDatabase: async (name) => { log.push(`db ${name}`); },
+    opfs: async () => ({ entries: async () => ["cas", "labels"], remove: async (name) => { log.push(`file ${name}`); } }),
+    caches: { keys: async () => ["genesis"], delete: async (name) => { log.push(`cache ${name}`); return true; } },
+    storages: [local.storage, session.storage],
+    workers: { getRegistrations: async () => [{ unregister: async () => { log.push("worker"); return true; } }] },
+    signal: (msg) => { log.push(msg.t); },
+    say: () => {},
+  };
+  const report = await burnPlace(env, ASK);
+  expect(log).toEqual(["census", "reset:stand-down", "db automerge-daemon", "db lares:continuity", "db lares:vessel", "file cas", "file labels", "cache genesis", "worker", "reset:burned"]);
+  expect(report).toEqual({ databases: ["automerge-daemon", "lares:continuity", "lares:vessel"], files: 2, caches: 1, storageKeys: 3, workers: 1 });
+  expect([...session.map.keys()]).toEqual([]);
+  // CONTROL: the reset removes the vessel's own keys and no other hand's.
+  expect([...local.map.keys()]).toEqual(["tiddlywiki-theme"]);
+});
+
+test("R2 RED the typed words decide; #reset names a reset ask; the reset ceremony stands with no secure context and no broker", () => {
+  expect(typedConfirms(RESET_PHRASE)).toBe(true);
+  expect(typedConfirms("  Reset  This Browser ")).toBe(true);
+  for (const other of ["", "reset", "yes", "reset this browser now", "this face keeps its own fire"]) expect(typedConfirms(other), other).toBe(false);
+  expect(resetAskOf(`#reset=${ASK}`)).toBe(ASK);
+  expect(resetAskOf(`#ask=${ASK}`), "a vessel's ask never reads as a reset").toBeNull();
+  expect(askIdOf(`#reset=${ASK}`), "a reset never reads as a vessel's ask").toBeNull();
+  expect(resetAskOf("#reset=not-an-id")).toBeNull();
+  // The return to the floor needs its clean document alone: neither a secure context nor a service worker stands before it.
+  expect(resetRefusal({ framed: false, evalRuns: false })).toBeNull();
+  expect(resetRefusal({ framed: true, evalRuns: false })).toBe("ceremony-framed");
+  expect(resetRefusal({ framed: false, evalRuns: true })).toBe("ceremony-csp-absent");
+});
+
+const openDb = (name: string): Promise<IDBDatabase> => new Promise((resolve, reject) => {
+  const request = indexedDB.open(name, 1);
+  request.onupgradeneeded = () => { request.result.createObjectStore("keystore"); };
+  request.onsuccess = () => resolve(request.result);
+  request.onerror = () => reject(request.error);
+});
+
+test("R3 RED over the engine's own stores: a database another context holds blocks and names itself, then burns when that context lets go", async () => {
+  if (typeof indexedDB.databases !== "function") return;   // R5 reads the engine that names no list
+  const mine = `lares:reset-witness-${crypto.randomUUID()}`;
+  const held = await openDb(mine);                          // "another tab": a connection the burn does not own
+  held.onversionchange = () => { /* a tab that does not let go: it ignores the platform's word */ };
+  const cacheName = `lares-reset-${crypto.randomUUID()}`;
+  if (typeof caches !== "undefined") await (await caches.open(cacheName)).put("/reset-witness", new Response("held"));
+  localStorage.setItem("lares:reset-witness", "kept"); localStorage.setItem("another-hand", "stays");
+  const said: string[] = [], signals: ResetSignal[] = [];
+  const env = ambientResetEnv((msg) => { signals.push(msg); }, (words) => { said.push(words); });
+  // This witness burns its own database alone, so a test file beside it keeps its stores.
+  const scoped: ResetEnv = { ...env, databases: async () => [mine], workers: null, opfs: null, caches: env.caches ? { keys: async () => [cacheName], delete: (n) => env.caches!.delete(n) } : null };
+  let landed = false;
+  const burn = burnPlace(scoped, ASK).then((report) => { landed = true; return report; });
+  for (let i = 0; i < 200 && !said.some((w) => w.includes("still holds")); i++) await new Promise((r) => setTimeout(r, 25));
+  expect(said.find((w) => w.includes("still holds")), "the ceremony names the store it waits on").toContain(mine);
+  expect(landed, "the burn waits on the tab and gives up on no clock").toBe(false);
+  expect(signals.map((s) => s.t)).toEqual(["reset:stand-down"]);
+  held.close();                                             // the other tab closes
+  const report = await burn;
+  expect(report.databases).toEqual([mine]);
+  expect((await indexedDB.databases()).map((db) => db.name)).not.toContain(mine);
+  if (typeof caches !== "undefined") expect(await caches.has(cacheName)).toBe(false);
+  expect(localStorage.getItem("lares:reset-witness")).toBeNull();
+  expect(localStorage.getItem("another-hand")).toBe("stays");
+  expect(signals.map((s) => s.t)).toEqual(["reset:stand-down", "reset:burned"]);
+  localStorage.removeItem("another-hand");
+});
+
+test("R4 RED a second tab stands its vessel down on the ceremony's word, boots afresh once the place burned, and a decline moves nothing else", async () => {
+  const ceremony = new BroadcastChannel(RESET_CHANNEL);
+  const tabs = ["asking", "second"].map((name) => {
+    const heard = new BroadcastChannel(RESET_CHANNEL);
+    const session = storageOf({ "lares:tab-face": `pg-${name}`, "lares:found-face": "face", "wiki-scroll": "40" });
+    const acts: string[] = [];
+    const tab = standResetTab({
+      listen: (listener) => heard.addEventListener("message", (e: MessageEvent) => listener(e.data)),
+      standDown: () => { acts.push("stand-down"); }, reload: () => { acts.push("reload"); },
+      session: session.storage, settle: (askId) => { acts.push(`settle ${askId}`); }, say: (words) => { acts.push(`say ${words.slice(0, 20)}`); },
+    });
+    return { name, acts, session, tab, close: () => heard.close() };
+  });
+  const settled = async (what: string, ok: () => boolean): Promise<void> => { for (let i = 0; i < 200 && !ok(); i++) await new Promise((r) => setTimeout(r, 10)); expect(ok(), what).toBe(true); };
+
+  // CONTROL: a malformed signal moves nothing.
+  ceremony.postMessage({ t: "reset:burned" }); ceremony.postMessage("reset:stand-down"); ceremony.postMessage({ t: "reset:erase", askId: ASK });
+  ceremony.postMessage({ t: "reset:declined", askId: ASK } satisfies ResetSignal);
+  await settled("each tab settles the declined ask", () => tabs.every((t) => t.acts.includes(`settle ${ASK}`)));
+  for (const t of tabs) { expect(t.acts, `${t.name}: a decline and three malformed signals move nothing else`).toEqual([`settle ${ASK}`]); expect(t.tab.stoodDown()).toBe(false); }
+
+  ceremony.postMessage({ t: "reset:stand-down", askId: ASK } satisfies ResetSignal);
+  ceremony.postMessage({ t: "reset:stand-down", askId: ASK } satisfies ResetSignal);
+  await settled("each tab stands down", () => tabs.every((t) => t.tab.stoodDown()));
+  for (const t of tabs) {
+    expect(t.acts.filter((a) => a === "stand-down"), `${t.name} stands its vessel down once`).toEqual(["stand-down"]);
+    expect(t.acts, `${t.name} keeps standing as a page until the place burned`).not.toContain("reload");
+    expect([...t.session.map.keys()], "nothing clears before the burn").toContain("lares:tab-face");
+  }
+  ceremony.postMessage({ t: "reset:burned", askId: ASK } satisfies ResetSignal);
+  await settled("each tab boots afresh", () => tabs.every((t) => t.acts.includes("reload")));
+  for (const t of tabs) expect([...t.session.map.keys()], `${t.name} clears its own session keys and no other hand's`).toEqual(["wiki-scroll"]);
+  for (const t of tabs) t.close();
+  ceremony.close();
+});
+
+test("R5 an engine that names no database list refuses reset-census-absent before any tab stands down or any byte burns", async () => {
+  const log: string[] = [];
+  const env: ResetEnv = { databases: null, deleteDatabase: async (n) => { log.push(n); }, opfs: null, caches: null, storages: [storageOf({ "lares:tab-face": "pg" }).storage], workers: null, signal: (m) => { log.push(m.t); }, say: () => {} };
+  const refused = await burnPlace(env, ASK).catch((e: unknown) => e);
+  expect(refused).toBeInstanceOf(ResetRefused);
+  expect((refused as ResetRefused).refusal).toBe("reset-census-absent");
+  expect(log).toEqual([]);
+});

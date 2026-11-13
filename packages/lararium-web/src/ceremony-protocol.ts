@@ -17,6 +17,21 @@ export type CeremonyRoute = "passphrase" | "passkey";
 /** `card`: a founding's cold card to write on paper and type back (the place card); its lines ride the brokered port alone. */
 export type CeremonyAskKind = "unlock" | "bind-first" | "clear" | "ward" | "card";
 
+/**
+ * THE RESET ASK (browser-vessel-lift#/the-reset): the page's own ask, never the vessel's. It carries no secret and no port, so
+ * no broker moves it: the ceremony document reads its id off its own navigation (`#reset=<askId>`), takes a typed
+ * confirmation, burns the place itself, and speaks to every tab of the origin on one BroadcastChannel.
+ */
+export type PageAskKind = CeremonyAskKind | "reset";
+export const RESET_CHANNEL = "lares:reset";
+export type ResetSignal =
+  /** The confirmation landed: every tab stands its vessel worker down, so no tab holds a store the burn deletes. */
+  | { readonly t: "reset:stand-down"; readonly askId: string }
+  /** The place burned: every tab clears its own session keys and boots afresh at the anon floor. */
+  | { readonly t: "reset:burned"; readonly askId: string }
+  /** The person declined: the ask's notice leaves the page, and nothing moved. */
+  | { readonly t: "reset:declined"; readonly askId: string };
+
 /** A passkey pin's public half: the authenticator's credential id and the PRF salt it evaluates. */
 export interface CeremonyPasskey { readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array }
 

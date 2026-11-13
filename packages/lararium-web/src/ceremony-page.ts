@@ -7,7 +7,7 @@
  * holds no handle to the window and no end of the channel. A page that cannot stand the broker names its refusal to the
  * vessel and never falls back to a form of its own.
  */
-import { CEREMONY_BROKER_PATH, CEREMONY_DOCUMENT_PATH, type CeremonyAskKind, type PageToBroker } from "./ceremony-protocol.js";
+import { CEREMONY_BROKER_PATH, CEREMONY_DOCUMENT_PATH, type CeremonyAskKind, type PageAskKind, type PageToBroker } from "./ceremony-protocol.js";
 
 export interface PageCeremonyEnv { readonly isSecureContext: boolean; readonly hasServiceWorker: boolean }
 
@@ -70,7 +70,8 @@ export interface AskNoticeDoors {
 }
 
 /** Each ask kind in the page's words: the label its button carries, and what the boot status row says the vessel waits on. */
-const ASK_WORDS: Record<CeremonyAskKind, { readonly open: string; readonly waits: string }> = {
+const ASK_WORDS: Record<PageAskKind, { readonly open: string; readonly waits: string }> = {
+  "reset": { open: "open the reset ceremony", waits: "the typed words that reset this browser's vessel" },
   "unlock": { open: "open the unlock ceremony", waits: "this browser's unlock" },
   "bind-first": { open: "open the first passphrase ceremony", waits: "a first passphrase" },
   "clear": { open: "open the custody clear ceremony", waits: "the passphrase that clears this browser's custody" },
@@ -88,7 +89,8 @@ function wordBootStatus(doc: Document): void {
   if (!status) return;
   const ours = status.dataset["larWaits"];
   if (ours !== undefined && status.textContent !== ours) { delete status.dataset["larWaits"]; delete status.dataset["larBefore"]; return; }
-  const pending = doc.querySelector<HTMLElement>(".ceremony-ask:not([data-refusal])");
+  // A reset ask waits on no boot: the vessel boots on beneath it, so the row never words it.
+  const pending = doc.querySelector<HTMLElement>(".ceremony-ask:not([data-refusal]):not([data-ask=\"reset\"])");
   if (pending) {
     if (ours === undefined) {
       if (["warn", "err", "ok"].some((verdict) => status.classList.contains(verdict))) return;
@@ -142,6 +144,38 @@ export function paintCeremonyAsk(doc: Document, ask: PageAsk, doors: AskNoticeDo
   wordBootStatus(doc);
   // A page that stands no broker refuses at once, by name, and offers no form of its own.
   void doors.broker.then((broker) => { if ("refusal" in broker) refuse(broker.refusal); });
+}
+
+/** Open the reset ceremony: the ceremony document in a window with no opener, the ask's id on its own navigation. No port and no broker: nothing secret crosses. */
+export function openResetCeremony(askId: string, open: (url: string, target: string, features: string) => unknown = (u, t, f) => window.open(u, t, f)): void {
+  open(`${CEREMONY_DOCUMENT_PATH}#reset=${encodeURIComponent(askId)}`, "_blank", "noopener");
+}
+
+/**
+ * THE RESET ASK (browser-vessel-lift#/the-reset), painted in the idiom of every other ask: a notice at the top of the page and
+ * one button that names its ask. The page's script burns nothing: the button opens the ceremony document, which takes the typed
+ * confirmation and burns the place itself. One reset ask stands at a time; a second call answers the standing one's id.
+ */
+export function paintResetAsk(doc: Document, mint: () => string = () => crypto.randomUUID(), open: (askId: string) => void = openResetCeremony): string {
+  const standing = doc.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"]");
+  if (standing?.dataset["askId"]) return standing.dataset["askId"];
+  const askId = mint();
+  const notice = doc.createElement("div");
+  notice.className = "ceremony-ask";
+  notice.setAttribute("role", "alert");
+  notice.dataset["ask"] = "reset";
+  notice.dataset["askId"] = askId;
+  const say = doc.createElement("div");
+  say.textContent = "This browser's holder asks to reset its vessel to its anon floor. Nothing burns here: the ceremony takes typed words first, then burns every key, face, wiki and pin this browser holds for this site.";
+  const go = doc.createElement("button");
+  go.type = "button"; go.className = "ceremony-open"; go.textContent = ASK_WORDS.reset.open;
+  go.addEventListener("click", () => { open(askId); notice.dataset["opened"] = "true"; go.textContent = "the reset ceremony stands in its own window (press to open it again)"; });
+  const not = doc.createElement("button");
+  not.type = "button"; not.className = "ceremony-open ceremony-withdraw"; not.textContent = "not now";
+  not.addEventListener("click", () => settleCeremonyAsk(doc, askId));
+  notice.append(say, go, not);
+  doc.body.prepend(notice);
+  return askId;
 }
 
 /** The vessel settled an ask: its notice leaves the page. */

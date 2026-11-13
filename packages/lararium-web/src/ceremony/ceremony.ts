@@ -7,8 +7,9 @@
  * the vessel worker. The surface page never holds them: the page opened this window with no opener, and the port reached
  * this document through the service worker.
  */
-import type { BrokerToCeremony, CeremonyAsk, CeremonyToBroker, VesselToCeremony } from "../ceremony-protocol.js";
-import { askIdOf, ceremonyRefusal, evalRuns, sendDecline, sendPasskey, sendPassphrase } from "./ceremony-core.js";
+import { RESET_CHANNEL, type BrokerToCeremony, type CeremonyAsk, type CeremonyToBroker, type ResetSignal, type VesselToCeremony } from "../ceremony-protocol.js";
+import { askIdOf, ceremonyRefusal, evalRuns, resetAskOf, sendDecline, sendPasskey, sendPassphrase } from "./ceremony-core.js";
+import { ambientResetEnv, burnPlace, RESET_PHRASE, resetRefusal, typedConfirms } from "./reset-core.js";
 
 const $ = (id: string): HTMLElement => document.getElementById(id)!;
 
@@ -77,7 +78,53 @@ function paint(ask: CeremonyAsk, port: MessagePort): void {
   pass.focus();
 }
 
+/**
+ * THE RESET CEREMONY (`reset-core.ts`): this document, standing clean, takes one typed confirmation and burns the place
+ * itself. No vessel answers it and no port reaches it, so it stands while the vessel rests locked, half-founded or down. It
+ * tells every tab of the origin to stand down first, names any tab that still holds a store, and tells them all to boot
+ * afresh once the place burned.
+ */
+function standReset(askId: string): void {
+  const refusal = resetRefusal({ framed: window.top !== window.self, evalRuns: evalRuns() });
+  if (refusal) { refuse(refusal); return; }
+  const channel = new BroadcastChannel(RESET_CHANNEL);
+  const signal = (msg: ResetSignal): void => channel.postMessage(msg);
+  const say = (words: string): void => { $("ceremony-state").textContent = words; };
+  document.title = "Lararium — reset ceremony";
+  const heading = document.querySelector("h1");
+  if (heading) heading.textContent = "Lararium — reset ceremony";
+  const form = $("ceremony-form") as HTMLFormElement;
+  form.dataset["kind"] = "reset";
+  $("ceremony-label").textContent =
+    "Reset this browser's vessel to its anon floor. Every key, face, wiki and pin this browser holds for this site burns, in every tab. "
+    + "A face that also lives on another vessel lives on there; a face that lives only here ends with this reset, and nothing recovers it. "
+    + `To confirm, type: ${RESET_PHRASE}`;
+  $("ceremony-face").textContent = "this browser";
+  $("ceremony-digest").textContent = askId;
+  const pass = $("ceremony-pass") as HTMLInputElement;
+  pass.type = "text"; pass.autocomplete = "off"; pass.placeholder = RESET_PHRASE;
+  ($("ceremony-again") as HTMLInputElement).hidden = true;
+  ($("ceremony-passkey") as HTMLButtonElement).hidden = true;
+  $("ceremony-go").textContent = "reset this browser's vessel";
+  say("Nothing burns until the typed words read back.");
+  form.hidden = false;
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!typedConfirms(pass.value)) { pass.value = ""; say(`The words differ, and nothing burned. Type: ${RESET_PHRASE}`); return; }
+    form.hidden = true;
+    void burnPlace(ambientResetEnv(signal, say), askId).then(
+      (report) => done(`This browser's vessel stands at its anon floor again (${String(report.databases.length)} store(s) burned). Every tab of this site boots afresh. This window closes.`),
+      (err: unknown) => { form.hidden = false; say(`The reset stopped: ${err instanceof Error ? err.message : String(err)}. What burned before it stays burned; confirm again to go on.`); },
+    );
+  });
+  $("ceremony-decline").addEventListener("click", () => { pass.value = ""; signal({ t: "reset:declined", askId }); done("Nothing burned. This window closes."); });
+  pass.focus();
+}
+
 async function stand(): Promise<void> {
+  // A RESET ASK names itself on the navigation and needs neither a secure context nor a broker: it stands first.
+  const reset = resetAskOf(location.hash);
+  if (reset) { standReset(reset); return; }
   const refusal = ceremonyRefusal({
     isSecureContext: window.isSecureContext,
     framed: window.top !== window.self,

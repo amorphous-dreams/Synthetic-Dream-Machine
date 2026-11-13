@@ -49,6 +49,7 @@
       }
       .ceremony-ask[data-refusal] { border-bottom-color: #f85149; }
       .ceremony-ask button.ceremony-open { margin-top: 0.5rem; font: inherit; font-weight: 600; padding: 0.35rem 0.8rem; cursor: pointer; }
+      .ceremony-ask button.ceremony-withdraw { margin-left: 0.5rem; font-weight: 400; }
       .veil { color: #d2a8ff; }
 
       /* The admit surface carries a THUMB. Every tap target clears 44px, the paste box holds 16px type
@@ -131,6 +132,7 @@
           <div id="floor-carriage-status" role="status"></div>
           <div id="fleet-root-door" class="carriage"></div>
           <div id="fleet-seat-door" class="carriage"></div>
+          <p class="reset-vessel">This browser's holder may always return it to its anon floor. <button id="reset-vessel" type="button">Reset this browser's vessel</button> <span id="reset-vessel-status" role="status"></span> The reset ceremony asks typed words first, then burns every key, face, wiki and pin this browser holds for this site.</p>
           <p class="found-face">This browser stands as an unbound veil until a face joins it. <button id="found-face" type="button">Found a face of its own here</button> The ceremony asks a first passphrase and shows a place card to write down.</p>
         </div>
       </section>

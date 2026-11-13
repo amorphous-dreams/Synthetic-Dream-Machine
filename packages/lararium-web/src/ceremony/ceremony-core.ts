@@ -39,6 +39,12 @@ export function askIdOf(hash: string): string | null {
   return id && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
 }
 
+/** The reset ask id the page's navigation names (`#reset=<id>`), or null: the ceremony then stands as a reset ceremony. */
+export function resetAskOf(hash: string): string | null {
+  const id = new URLSearchParams(hash.replace(/^#/, "")).get("reset");
+  return id && /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+}
+
 /** A field the ceremony reads: its value, and the clear it takes. */
 export interface SecretField { value: string }
 
