@@ -1,8 +1,8 @@
-"""Witness — the `kahua_propose` / `kahua_list` / `kahua_get` MCP tools: an AI seat's reach onto its face's kahua stage.
+"""Witness — the `kahua_propose` / `kahua_stage` / `kahua_list` / `kahua_get` MCP tools: an AI seat's reach onto its face's kahua stage.
 
-THE SEAT PROPOSES AND READS; THE OPERATOR'S HAND LIFTS. Each tool opens a local SESSION under the `seat` hand (the vessel
+THE SEAT PROPOSES, STAGES AND READS; THE OPERATOR'S HAND LIFTS. Each tool opens a local SESSION under the `seat` hand (the vessel
 seats the `seat` profile, which refuses the kahua pin, lift and withdraw rows at the socket), runs ONE `session:act`
-naming the store door's row (`kahua-propose`, `kahua-read`), and closes. No `kahua_lift`, `kahua_withdraw` or
+naming the store door's row (`kahua-propose`, `kahua-stage`, `kahua-read`), and closes. No `kahua_lift`, `kahua_withdraw` or
 `kahua_mint` tool exists. The witness stands a FAKE vessel on a temp unix socket that records every frame and answers
 the session protocol, so each assertion reads the exact frames the tool put on the wire.
 
@@ -106,7 +106,7 @@ def _tools():
 def test_kahua_tools_register_seat_hotl_and_carry_no_lift():
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     names = {t.name for t in asyncio.run(mcp.list_tools())}
-    assert set(KAHUA_VERBS) == {"kahua_propose", "kahua_list", "kahua_get"} <= names
+    assert set(KAHUA_VERBS) == {"kahua_propose", "kahua_stage", "kahua_list", "kahua_get"} <= names
     for v in KAHUA_VERBS:
         assert v in VERB_SEATS and seat_of(v) == "HOTL"
     # The operator's hand lifts: no MCP tool pins, lifts or withdraws.
@@ -201,3 +201,33 @@ def test_kahua_propose_text_tells_the_body_digest_from_the_row_digest():
     said = _described("kahua_propose")
     assert "BODY digest" in said and "ROW digest" in said and "proposal-digest" in said
     assert "sha-256 of the raw body bytes" in said
+
+
+def test_kahua_stage_runs_the_stage_row_on_a_seat_session_of_the_worn_face(vessel):
+    # THE SEAT STAGES; THE HAND LIFTS: one row into the face's local canon rides the `kahua-stage` row on a `seat`
+    # session, carrying the title, the body and the fields, and answers the row digest a lift names.
+    vessel.answer = {"status": "done", "output": {"verb": "kahua-stage", "title": "T", "digest": "d" * 64, "relation": "F", "staged": True}}
+    out = _tools()["kahua_stage"](title="T", text="body", fields={"tags": "memory"})
+    assert out == {"title": "T", "digest": "d" * 64, "relation": "F", "staged": True}
+    opened = [f for f in vessel.frames if f.get("op") == "session:open"]
+    assert [(f["hand"], f["faceRef"], f.get("seat")) for f in opened] == [("seat", "h2", "ai")]
+    assert vessel.acts() == [{"act": "kahua-stage", "args": {"title": "T", "text": "body", "fields": {"tags": "memory"}}}]
+    # A row with no fields names none on the wire.
+    _tools()["kahua_stage"](title="T", text="body")
+    assert vessel.acts()[-1] == {"act": "kahua-stage", "args": {"title": "T", "text": "body"}}
+
+
+def test_kahua_stage_refuses_a_malformed_row_and_another_face_before_any_session(vessel):
+    stage = _tools()["kahua_stage"]
+    for bad in ({"title": "", "text": "b"}, {"title": "T", "text": None}, {"title": "T", "text": "b", "fields": {"n": 1}},
+                {"title": "T", "text": "b", "fields": ["tags"]}):
+        with pytest.raises(ValueError, match="kahua_stage"):
+            stage(**bad)
+    with pytest.raises(uds.LaresVerbError, match="face-hand-refused"):
+        stage(title="T", text="b", face=1)
+    assert not any(f.get("op") == "session:open" for f in vessel.frames)
+    # CONTROL: the vessel's own row refusal crosses by name.
+    vessel.worn = 0
+    vessel.answer = {"status": "done", "output": {"refused": "kahua-stage-no-canon: the face holds no local canon", "refusal": "KahuaRefused"}}
+    with pytest.raises(uds.LaresVerbError, match="kahua-stage-no-canon"):
+        stage(title="T", text="b")

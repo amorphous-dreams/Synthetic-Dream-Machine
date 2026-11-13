@@ -136,11 +136,12 @@ OFFER_VERBS = ("meme_offer", "meme_offer_list", "meme_offer_show")
 
 # The KAHUA namespace — an AI seat's reach onto its face's kahua stage, the fleet's working-memory stage. `kahua_propose`
 # posts ONE batch of proposals on the face's intents plane (titles, daemon revisions, body digests, taint; a proposal
-# grants nothing); `kahua_list` and `kahua_get` read the stage's VERIFIED items (the fold, never a raw tiddler). Each
-# mirrors `lares kahua propose|list|get` and rides a local SESSION under the `seat` hand (`lares_uds.session_act`),
-# whose profile the vessel refuses every kahua pin, lift, withdraw and carry. THE SEAT PROPOSES; THE OPERATOR'S HAND LIFTS:
-# no MCP tool lifts, withdraws, carries or mints (`lares kahua lift|withdraw|carry|mint` stay the operator's).
-KAHUA_VERBS = ("kahua_propose", "kahua_list", "kahua_get")
+# grants nothing); `kahua_stage` writes ONE row into the face's local canon `bags/daemon-<F>` (local, unsigned: the row a
+# lift later names); `kahua_list` and `kahua_get` read the stage's VERIFIED items (the fold, never a raw tiddler). Each
+# mirrors `lares kahua propose|stage|list|get` and rides a local SESSION under the `seat` hand (`lares_uds.session_act`),
+# whose profile the vessel refuses every kahua pin, lift, withdraw and carry. THE SEAT PROPOSES AND STAGES; THE OPERATOR'S
+# HAND LIFTS: no MCP tool lifts, withdraws, carries or mints (`lares kahua lift|withdraw|carry|mint` stay the operator's).
+KAHUA_VERBS = ("kahua_propose", "kahua_stage", "kahua_list", "kahua_get")
 
 # The targets `meme_project` renders — the same list `lares meme project --to` takes.
 PROJECT_TARGETS = ("mem", "md", "html", "tid", "json")
@@ -195,6 +196,7 @@ VERB_SEATS = {
     # The kahua seat verbs — a proposal grants nothing (the operator's signed lift decides) and the reads fold the
     # verified stage; both stay on the face's own fleet → HOTL. The lift itself never seats here: no MCP tool carries it.
     "kahua_propose": (True, False),     # one proposal batch on the face's intents plane — grants nothing, trusted → HOTL
+    "kahua_stage": (True, False),       # one row in the face's local canon, unsigned and on this device alone → HOTL
     "kahua_list": (True, False),        # the stage's verified standing items — a read → HOTL
     "kahua_get": (True, False),         # one title's verified item (and its history) — a read → HOTL
     # teardown tears a whole sensorium store DOWN — IRREVERSIBLE → HITL. It rides the CLI today, gated
@@ -1145,7 +1147,7 @@ def build_mcp(coordinator: LaresCoordinator):
             args["nexus"] = nexus
         return _offer_wire("offer-show", args)
 
-    # ── the KAHUA namespace — an AI seat proposes and reads its face's stage through a `seat` session ──
+    # ── the KAHUA namespace — an AI seat proposes, stages and reads its face's stage through a `seat` session ──
 
     def _kahua_face(face: "int | None") -> "int | None":
         if face is not None and (not isinstance(face, int) or isinstance(face, bool) or face < 0):
@@ -1164,13 +1166,37 @@ def build_mcp(coordinator: LaresCoordinator):
         ROW digest that `lares kahua stage` prints and `lift --digest` takes covers the body AND the row's carried
         fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the
         lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's. `face` may name only the worn face (absent: the worn face); the AI seat naming another refuses `face-hand-refused`.
-        Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts."""
+        Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts (`kahua_stage` writes
+        the local row a lift names)."""
         if not isinstance(proposals, list) or not proposals:
             raise ValueError("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
         args: dict = {"proposals": proposals}
         if session:
             args["session"] = session
         return uds.session_act("kahua-propose", args, face=_kahua_face(face))
+
+    @mcp.tool()
+    def kahua_stage(title: str, text: str, fields: "dict | None" = None, face: "int | None" = None) -> dict:
+        """STAGE one row into the face's local canon `bags/daemon-<F>` — mirrors `lares kahua stage <title> --text
+        <body> [--fields <json>]`. The first of memory's two crossings: local to this device, unsigned, and it lifts
+        nothing; the operator's hand carries a staged row to the fleet with `lares kahua lift <title>`, reading its
+        preview first. `text` carries the row's whole body; `fields` carries its string-valued fields (`title`, `text`
+        and any `kahua-` field never ride). A row already standing at `title` gives way to this one. Returns
+        {title, digest, relation, staged}: `digest` names the ROW digest (sha-256 over the body and the carried fields),
+        the one `lift --digest` takes, never the BODY digest a proposal carries (`kahua_propose`); `staged` reads
+        false where the row already stood at that digest and nothing moved. `face` may name only the worn face
+        (absent: the worn face); the AI seat naming another refuses `face-hand-refused`. A face with no local canon
+        standing refuses `kahua-stage-no-canon`. Rides a `seat` session over the @daemon wire."""
+        if not isinstance(title, str) or not title:
+            raise ValueError("kahua_stage: name the row's `title`")
+        if not isinstance(text, str):
+            raise ValueError("kahua_stage: name the row's body as `text`")
+        if fields is not None and (not isinstance(fields, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items())):
+            raise ValueError("kahua_stage: `fields` takes an object of string values ({\"tags\": \"memory\"})")
+        args: dict = {"title": title, "text": text}
+        if fields:
+            args["fields"] = fields
+        return uds.session_act("kahua-stage", args, face=_kahua_face(face))
 
     @mcp.tool()
     def kahua_list(face: "int | None" = None) -> dict:

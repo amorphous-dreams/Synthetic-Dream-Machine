@@ -81,10 +81,11 @@ const CLI_FORMS = {
   meme_offer:      "meme offer",
   meme_offer_list: "meme offer list",
   meme_offer_show: "meme offer show",
-  // The KAHUA seat verbs — an AI seat proposes and reads its face's kahua stage; each mirrors `lares kahua <sub>`
-  // (the host `kahua` is a real top-level CLI command). `lares kahua lift|withdraw|mint` stay the operator's hand and
-  // hold no MCP tool, the way the LOCAL seats hold none: no tool spells them.
+  // The KAHUA seat verbs — an AI seat proposes, stages and reads its face's kahua stage; each mirrors `lares kahua <sub>`
+  // (the host `kahua` is a real top-level CLI command). `lares kahua lift|withdraw|carry|mint` stay the operator's hand
+  // and hold no MCP tool, the way the LOCAL seats hold none: no tool spells them.
   kahua_propose: "kahua propose",
+  kahua_stage:   "kahua stage",
   kahua_list:    "kahua list",
   kahua_get:     "kahua get",
   // The DURABLE sensorium-lifecycle sub-verbs — each mirrors `lares sense <verb>` (the one `sense` door),
