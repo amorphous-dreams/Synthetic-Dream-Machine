@@ -367,7 +367,21 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
       const hit = cache.get(bag);
       if (hit !== undefined) return hit;
       let store: LarTiddlerStore | null = opts.composite.writableStoreForBag(bag);
-      if (!store) {
+      // HOUSE CANON'S ONE DOCUMENT: its live document rests in the Kahu realm, named by the realm's bag row. Where the vessel
+      // names one, THAT document answers ahead of every registry plane (the document the keel mounts, the mirror projects, the
+      // retire and the floor cut read), so a registry row that names another document for the bag never takes a canon write.
+      // A realm document that fails to arrive refuses by name; it never falls to a row.
+      let realmNamed = false;
+      if (!store && reach.systemCanonUrl && isHouseCanonBag(bag)) {
+        const url = await reach.systemCanonUrl(bag).catch(() => null);
+        realmNamed = !!url;
+        const handle = url ? await findOrThrow(reach.repo, url, bag).catch((err: unknown) => {
+          causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
+          return null;
+        }) : null;
+        store = handle ? new AutomergeDocStore(handle, bag) : null;
+      }
+      if (!store && !realmNamed) {
         const held: string[] = [];
         for (const { name, accessor } of planes) {
           try {
@@ -378,15 +392,6 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
           }
         }
         if (!store && held.length > 0) causes.set(bag, held);
-      }
-      // A house canon bag: its live document rests in the Kahu realm, named by the realm's bag row.
-      if (!store && reach.systemCanonUrl && isHouseCanonBag(bag)) {
-        const url = await reach.systemCanonUrl(bag).catch(() => null);
-        const handle = url ? await findOrThrow(reach.repo, url, bag).catch((err: unknown) => {
-          causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
-          return null;
-        }) : null;
-        store = handle ? new AutomergeDocStore(handle, bag) : null;
       }
       // A wiki's instance slot (`wikis/<slug>/<kind>`) — the doc THE ONE resolver names, the same
       // doc its island mounts; reached by access, never mounted here.

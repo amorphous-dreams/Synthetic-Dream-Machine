@@ -430,7 +430,7 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 * The promotion writes the offered bytes; until a retire lands, the offer reads open and a replayed promotion writes nothing (every record reads `landed`).
 * ''The retire seals under a seat of the Nexus's charter'' (`retireCanonOffer`), and only once canon carries every offered digest (`offer-not-landed` otherwise). It carries the charter's epoch lineage, as a floor release does, so every reader proves the seat off the record alone: the genesis epoch's address IS the Nexus AID, each step verifies under the prior threshold, and the signer stands a seat of the named epoch. A retire any other key sealed reads `retire-unauthorised`, retires nothing, and `offer show` names it. The row keys to the offer's CID and then its own (`<offer cid>/<retire cid>`), so a forgery written first takes no key the steward needs. The offer row stays; never a deletion.
 * The seat keys rest in the steward's vault beside the store door, never in the daemon island that writes canon: the canon write rides the daemon verb `offer-promote` (under the Kahu reach), and the retire rides the store-door row `offer-retire`. `lares meme offer promote` runs both as one outcome: the seat answers first (`readyCanonOfferRetire`, the row's `check`), so a vessel that holds no charter seat refuses by name before canon moves, having written nothing; then the canon write; then the retire, which waits briefly while its own replica of canon takes the write.
-* ''One canon document.'' The offer doors read and write the Kahu realm's standing document for the bag wherever the vessel names one, the document the retire and the floor cut read; a registry row that names another document for the bag never answers a promotion.
+* ''One canon document.'' The offer doors read and write the Kahu realm's standing document for the bag wherever the vessel names one, the document the retire and the floor cut read; a registry row that names another document for the bag never answers a promotion. The action door (`ADD` · `COPY` · `MOVE` · `INGEST`, so `lares meme promote` and the seed) and the meme door (`meme get` · `list` · `put --bag`) resolve house canon the same way: the realm's standing document first, a registry row only where the realm names none (`makeBagAccess`, `memeVerbOptions`; witness `packages/lararium-tw5/tests/kahu-reach-doors.test.ts`).
 
 !!! The release wiring
 
@@ -514,6 +514,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_YNqBELqRmzQUt2oCWd2fBY1if3v5PHSl7PlzfFO4CU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ddynF1S8-zqFu1uhphi-1RAXGgLvoDhZeaVMHIQ_BOg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

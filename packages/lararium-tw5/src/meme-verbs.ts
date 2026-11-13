@@ -128,13 +128,18 @@ export function memeVerbOptions(
       const realm = await realmReach(key, bag, namedRealm);
       if (realm) return realm;
       if (namedRealm) return null;
-      for (const accessor of planes) {
-        const handle = await accessor.find(key).catch(() => null);
-        if (handle) return new AutomergeDocStore(handle, bag);
-      }
+      // HOUSE CANON'S ONE DOCUMENT: where the vessel names the Kahu realm's standing document for the bag, that document
+      // answers ahead of every registry plane; a registry row that names another document for the bag answers only where the
+      // realm names none (a rig, a vessel outside every realm).
       if (systemCanonUrl && isHouseCanonBag(bag)) {
         const url = await systemCanonUrl(bag).catch(() => null);
-        const handle = url ? await findOrThrow(ctx.repo, url, bag).catch(() => null) : null;
+        if (url) {
+          const handle = await findOrThrow(ctx.repo, url, bag).catch(() => null);
+          return handle ? new AutomergeDocStore(handle, bag) : null;
+        }
+      }
+      for (const accessor of planes) {
+        const handle = await accessor.find(key).catch(() => null);
         if (handle) return new AutomergeDocStore(handle, bag);
       }
       return null;

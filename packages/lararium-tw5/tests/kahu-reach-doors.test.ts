@@ -15,8 +15,9 @@ import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, plainField, recipeUri, wikiBagUri, type DocHandle, type LarDoc, type LarTiddlerRecord, type LarTiddlerStore, type Repo as RepoType, type Verb } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
+import { storedLarRecord } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
-import { makeMemePutReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemePutReactor, makeMemeDeleteReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
@@ -225,5 +226,64 @@ describe("wiki-mint", () => {
     await expect(makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor, { systemCanonUrl: async () => null }))({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
     await expect(makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor))({ slug: "lares" }, ctx)).rejects.toThrow(/system-bag/);
     expect(await makeInitWikiReactor(mintOpts(catalog.accessor, oracle.accessor, { systemCanonUrl: naming }))({ slug: "lares" }, ctx)).toMatchObject({ system: true, wikiDocUrl: "automerge:lares-live" });
+  });
+});
+
+/**
+ * HOUSE CANON'S ONE DOCUMENT, AT EVERY DOOR THAT REACHES IT BY ACCESS (offering#/the-canon-offer, "One canon document"). The Kahu
+ * realm's standing document carries a house canon bag wherever the vessel names one: the document the keel mounts, the mirror
+ * projects, the retire and the floor cut read. A registry row that names another document for the bag (the stand-in a floor boot
+ * of the `lares` wiki leaves in the catalog) answers no door once the realm names its own.
+ */
+describe("house canon resolves the Kahu realm's standing document at the action door and the meme door", () => {
+  async function split(realmNames: boolean) {
+    const repo = new Repo({ network: [] });
+    const island = new CompositeStore();   // the daemon island mounts no canon layer: it reaches canon by access
+    const working = new AutomergeDocStore(repo.create(emptyLarDoc()), WORKING);
+    island.addLayer({ bagId: WORKING, store: working, writable: true, defaultWritable: true });
+    await working.put(live("T"), hand);
+    const realm = repo.create<LarDoc>(emptyLarDoc()), stray = repo.create<LarDoc>(emptyLarDoc()), garden = repo.create<LarDoc>(emptyLarDoc());
+    await new AutomergeDocStore(realm, LARES).put({ tiddler: { title: "where", text: "realm" } }, hand);
+    await new AutomergeDocStore(stray, LARES).put({ tiddler: { title: "where", text: "stray" } }, hand);
+    const catalog = repo.create<LarDoc>(emptyLarDoc());
+    catalog.change((d) => {
+      d.tiddlers[LARES] = storedLarRecord(LARES, { text: stray.url }, "vessel-boot");
+      d.tiddlers[GARDEN] = storedLarRecord(GARDEN, { text: garden.url }, "test");
+    });
+    const systemCanonUrl = async (bag: string): Promise<string | null> => (realmNames && bag === LARES ? realm.url : null);
+    const reach = { repo: repo as unknown as RepoType, catalogUrl: catalog.url, oracleUrl: null, systemCanonUrl };
+    const textIn = async (doc: DocHandle<LarDoc>, bag: string, title: string) => (await new AutomergeDocStore(doc, bag).get(title))?.tiddler.text ?? null;
+    return { repo, island, realm, stray, garden, catalog, reach, systemCanonUrl, textIn };
+  }
+
+  test("RED: a COPY into bags/lares lands in the realm's document while a catalog row names another (the seed's INGEST rides the same access)", async () => {
+    const s = await split(true);
+    try {
+      await makeActionReactorFor("COPY", { composite: s.island, reach: s.reach, kahuReach: await kahuHand() })(into(LARES), ctxOf(s.island, "COPY"));
+      expect(await s.textIn(s.realm, LARES, "T")).toBe("T");
+      expect(await s.textIn(s.stray, LARES, "T")).toBeNull();                 // the stand-in takes no byte
+      // CONTROL: a user bag still lands in the document its catalog row names.
+      await makeActionReactorFor("COPY", { composite: s.island, reach: s.reach })(into(GARDEN), ctxOf(s.island, "COPY"));
+      expect(await s.textIn(s.garden, GARDEN, "T")).toBe("T");
+    } finally { await s.repo.shutdown(); }
+  });
+
+  test("CONTROL: where the realm names no document (a rig, a vessel outside every realm), the action door reaches the bag by its registry row", async () => {
+    const s = await split(false);
+    try {
+      await makeActionReactorFor("COPY", { composite: s.island, reach: s.reach, kahuReach: await kahuHand() })(into(LARES), ctxOf(s.island, "COPY"));
+      expect(await s.textIn(s.stray, LARES, "T")).toBe("T");
+    } finally { await s.repo.shutdown(); }
+  });
+
+  test("RED: the meme door reads bags/lares off the realm's document while a catalog row names another (CONTROL: with no realm document, the row answers)", async () => {
+    const s = await split(true);
+    try {
+      const ctx = { composite: s.island, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as never, repo: s.repo as unknown as RepoType, catalogUrl: s.catalog.url, oracleUrl: null };
+      const named = memeVerbOptions(ctx, async () => null, s.systemCanonUrl);
+      expect((await (await named.reach!(LARES, LARES))!.get("where"))?.tiddler.text).toBe("realm");
+      const unnamed = memeVerbOptions(ctx, async () => null, async () => null);
+      expect((await (await unnamed.reach!(LARES, LARES))!.get("where"))?.tiddler.text).toBe("stray");
+    } finally { await s.repo.shutdown(); }
   });
 });
