@@ -41,6 +41,20 @@ export interface CommandHelp {
 }
 
 export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
+  herm: {
+    usage: "usage: lares herm [--port N] [--relay-port N]  |  lares herm relay-rotate",
+    synopsis: "Stand a herm: the wiki-less wayfarer that stands the carriage crossroads a family's hearths dial to carry sealed bodies between each other. It boots the same node the vessel runs, under the herm recipe, and prints the crossroads' dial URL(s) and gate key once the node attests ready.",
+    details: [
+      "  lares herm                stand the herm detached; needs a founded place (`lares vessel found`) and a built node",
+      "  lares herm relay-rotate   mint a new durable relay gate and print its pin; restart the herm, then hand each dialing hearth the new pin",
+    ],
+    examples: ["lares herm", "lares herm --port 8080 --relay-port 8090", "lares herm relay-rotate"],
+    flags: [
+      "--port <N>         the http read-face port (LAR_PORT, else 8080)",
+      "--relay-port <N>   the carriage crossroads port hearths dial (LAR_HERM_RELAY_PORT, else 8090)",
+    ],
+    next: ["where the host holds the engine, a herm stands as the container's own service: docker compose -f docker-compose.surface.yml --profile herm up -d herm"],
+  },
   promote: {
     usage: "usage: lares promote list|prepare|commit|drop|orphan [digest] [--wiki wiki] [--face N]",
     synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",

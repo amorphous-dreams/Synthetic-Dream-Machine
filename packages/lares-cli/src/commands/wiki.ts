@@ -580,13 +580,14 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
 };
 
+/** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */
+export function wikiHelpLines(): string[] {
+  const width = Math.max(...Object.keys(SUBCOMMANDS).map((v) => v.length));
+  return ["lares wiki <verb> [args...]", "", "Verbs:", ...Object.entries(SUBCOMMANDS).map(([verb, entry]) => `  ${verb.padEnd(width)} ${entry.summary}`)];
+}
+
 function printWikiHelp(): void {
-  console.log("lares wiki <verb> [args...]\n");
-  console.log("Verbs:");
-  for (const [verb, entry] of Object.entries(SUBCOMMANDS)) {
-    console.log(`  ${verb.padEnd(10)} ${entry.summary}`);
-  }
-  console.log("\nFull E-arc surface complete.");
+  for (const line of wikiHelpLines()) console.log(line);
 }
 
 export async function cmdWiki(args: ParsedArgs): Promise<number> {

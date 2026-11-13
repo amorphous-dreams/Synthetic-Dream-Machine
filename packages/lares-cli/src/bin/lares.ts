@@ -27,7 +27,7 @@ import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
 import { parseArgs, ArgsError, type ParsedArgs } from "../parse-args.js";
 import { CustodyLocked, CustodyRowUnavailable } from "@lararium/node";
-import { bridge, commandScope, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
+import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
 import { cmdHerm }                    from "../commands/herm.js";
@@ -37,7 +37,7 @@ import { cmdDraft }                   from "../commands/draft.js";
 import { cmdMeme }                    from "../commands/meme.js";
 import { cmdBag }                     from "../commands/bag.js";
 import { cmdEvents }                  from "../commands/events.js";
-import { cmdWiki }                    from "../commands/wiki.js";
+import { cmdWiki, wikiHelpLines }                  from "../commands/wiki.js";
 import { cmdAct }                     from "../commands/act.js";
 import { cmdReceipt, cmdCancel }      from "../commands/receipt-cmd.js";
 import { cmdIngest }                  from "../commands/ingest.js";
@@ -52,7 +52,7 @@ import { cmdMempalace, MEMPALACE_OWN_VERBS } from "../commands/mempalace.js";
 import { cmdHooks }                   from "../commands/hooks.js";
 import { cmdSensorium }               from "../commands/sensorium.js";
 import { cmdHome, cmdRepo }           from "../commands/tunnel-door.js";
-import { renderCommandHelp, helpDoor, seatAbout } from "../command-help.js";
+import { COMMAND_HELP, renderCommandHelp, helpDoor, seatAbout } from "../command-help.js";
 import { emit, exitFor } from "../render.js";
 import { storeFailure } from "../store-door.js";
 import { reachHelpMeme }              from "../help-meme.js";
@@ -92,6 +92,8 @@ export interface Command {
    * source and reds when one reads a name this row omits, so the row cannot drift from the code.
    */
   readonly accepts:     readonly string[];
+  /** The door's own help where it keeps a sub-verb table (`wiki`): `--help` prints these lines when the registry holds no row. */
+  readonly help?:       () => readonly string[];
   /**
    * A verb of this command that hands the line to a program with its own grammar (`mempalace <verb>`
    * passes through to the vendored CLI). The vendored parser refuses its own unknowns, so the gate stands
@@ -216,7 +218,7 @@ export const COMMANDS: readonly Command[] = [
   { name: "meme",          brief: "Read and write memes (wiki records) through the meme rail.", summary: "THE MEME DOOR — one family for every law over meme text; a verb DECLARES ITS SEAT: `normalize` · `check` · `project --to md` run local over a file with no daemon, `put` · `get` · `project` to a rendered target ride the daemon verb. Store-backed verbs require `(--recipe <slug> | --bag <slug>)`. `put <uri> (--recipe <slug> | --bag <slug>) [--base <hash>] [--file <path>]` lands a framed meme through the Confluence gate (the same `placeMeme` the HTTP route and the MCP tool call): `--recipe` edits AS the named wiki; `--bag` places into that bag and refuses when this island cannot write it; `--base` carries the canonical hash last read — records that moved past it CONFLICT and nothing lands. `get <uri> (--recipe <slug> | --bag <slug>)` reads the meme back (text on stdout, the base on stderr). `normalize <file…>` canonicalizes a carrier's framing and re-stamps its block check; `check <file…> [--gradient | --edges]` reads the same law and writes nothing (drift exits 1). `project <file|uri> --to <mem|md|html|tid|json> [--out <path>]` renders a meme — `--to md` over a file writes the submission pair <name>.md + <name>.md.meta, deterministic and clock-free. Slugs ride bare. Bare `lares meme` prints usage.", handler: cmdMeme, accepts: ["all", "approval", "bag", "base", "check", "dest-bag", "dialect", "edges", "face", "file", "from-bag", "gradient", "grammar", "if-match", "nexus", "out", "realm", "recipe", "root", "sitting", "over-fresher", "to", "tongue", "tree"] },
   { name: "bag",           brief: "Pin, unpin, stat and register individual bags.", summary: "Operate on individual bags: pin / unpin / stats / register-cold. Run `lares bag help`.",      handler: cmdBag, accepts: ["all", "approve", "dir", "dry-run", "face", "fetch", "held", "holder", "home", "list", "note", "pin", "read", "reason", "release", "repo", "role", "root", "sweep", "tier", "to", "vcs", "write", "workspace"] },
   { name: "events",        brief: "Read the vessel journal (bag-projected entries).", summary: "Read the vessel journal: `bag-projected` entries, optionally from a cursor and with wait-on-next-entry.", handler: cmdEvents, accepts: ["kind", "since", "wait"] },
-  { name: "wiki",          brief: "Init, open, sync and pin whole wikis.", summary: "Operate on whole wikis: init/open/sync/pin/unpin/add-bag/remove-bag/list/which. Run `lares wiki help`.", handler: cmdWiki, accepts: ["days", "face", "list", "note", "read", "write", "workspace"] },
+  { name: "wiki",          brief: "Init, open, sync and pin whole wikis.", summary: "Operate on whole wikis: init/open/sync/pin/unpin/add-bag/remove-bag/list/which. Run `lares wiki help`.", handler: cmdWiki, accepts: ["days", "face", "list", "note", "read", "write", "workspace"], help: wikiHelpLines },
   { name: "repo",          brief: "Tend this checkout's reality tunnel and seat.", summary: "THE CHECKOUT'S DOOR — the checkout holds its declared reality tunnel (lar:///ha.ka.ba/lares/cli/reality-tunnel): the seed's links and imports, the scouts, the hosts' repo files. `read` answers both diffs and writes nothing; `tend` converges and writes only on difference; `verify` reads what the hosts loaded; `undo [gen]` restores a generation. Writes this checkout alone.", handler: cmdRepo, accepts: ["brief", "force", "probe", "staged"] },
   { name: "home",          brief: "Tend each home's reality tunnel (seats, hooks, seed rule).", summary: "THE OPERATOR'S HOMES' DOOR — every home the device carries (the native home, and the Windows profile under WSL) holds its declared reality tunnel: the memory guards that keep every harness's sessions, the lares seats and hooks, the seed rule, `lares` on the path. `read` · `tend` (asks before writing; --yes without a terminal) · `verify` · `undo [gen]`. Writes the homes alone.", handler: cmdHome, accepts: ["brief", "force", "probe", "staged"] },
   { name: "sense",         brief: "Search and read the sovereign sensorium.", summary: "THE SOVEREIGN SENSORIUM'S ONE DOOR (the guest comparator lives at `lares mempalace`). Addressed: `lares sense <sensorium> <verb>` targets any sensorium by name; bare `lares sense <verb>` keeps the `memory` default. READ — four verbs, the PLANE as a parameter: `search` (hybrid recall) · `relate` (bitemporal KG) · `structure` (entity-pair hallways) · `status` (wings/rooms/entities/total); `--lens <content|structure|form|persistence>` picks the plane (default content). One verb reaches any plane; a new plane needs no new verb. STAND — `setup` (the sovereign organs; it left the boot, so standing them takes its own act). FEED — `capture` (one native source, the hook's own verb) · `pour` (`pour --all` walks the whole tending movement: quiesce, baseline, drawers, bearing, projection, verify, resume; `pour --writeback` runs the bearing leg alone) · `sweep` (the bulk drawers leg alone) · `refresh` (re-derive the projection alone) · `meta` (tune the annotators) · `recall` (filtered verbatim drawers). HOLDERS — `quiesce` · `resume` · `holders` (the topology) · `teardown` (clean tear for a re-pave). DURABLE LIFECYCLE, direct over manifest.json — `roster` · `inspect` · `build` · `reconcile` read and re-settle; `promote` · `retire` · `un-retire` · `purge` seat HITL and need --approve. INSTRUMENTS over a poured sensorium — `rejim` (rhythm) · `analyze` (change-points) · `ki` (coupling verdict) · `li` (gluing verdict) · `jing` (the li∘ki square) · `plane-record` (ONE cid → its presence across content · structure · form, honest nulls where a plane lacks it — the cross-plane witness, read-only) · `couple-r` + `forecast` (the R plane) · `mismatch` (does the coupling read honest?). WALK — `worldline` (the spirit tree) · `telemetry` (project lar_* gradients) · `flow` (capture topology). Rides the daemon's composed caps (the single-owner law). Frozen trial: `trial-run` supervises one receipt-bearing operation; `search/status --trial-root` reads its owned Content and frontiers.", handler: cmdSense, accepts: ["agent", "all", "all-strata", "approve", "as-of", "channel", "confirm", "device", "drain", "dry-run", "ephemeral", "force", "freeze-receipt", "function", "grounds", "halves", "hold", "imago", "intent", "k", "keep-hooks", "lens", "limit", "list", "min-count", "model-home", "names", "not-root", "pair", "palace", "project", "reason", "repour", "revision", "room", "self-weight", "sensorium-root", "session-id", "signal", "source-host", "source-key", "span", "speaker", "spectral", "store-swap", "surface", "trial-root", "wing", "writeback"] },
@@ -332,6 +334,10 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   }
   const cmd = COMMANDS.find((c) => c.name === args.command);
   if (!cmd) {
+    // A SHIM VERB'S HELP: the host shim answers `up|down|reset|found|logs|build`, and a help ask stays on this machine,
+    // so the row reads here (`shimHelpLines`) instead of refusing a name the shim owns.
+    const shim = args.flags["help"] ? shimHelpLines(args.command) : null;
+    if (shim !== null) { for (const line of shim) console.log(line); return 0; }
     console.error(`lares: unknown command "${args.command}".  Run \`lares help\` for the list.`);
     return 2;
   }
@@ -343,6 +349,8 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
   // rail (`lares meme get`) — the same verb any vessel with the cap can run.
   if (args.flags["help"]) {
     const door = helpDoor(cmd.name, args.positional);
+    // A door that keeps its own sub-verb table answers with it where the registry holds no row: one table, two spellings.
+    if (cmd.help !== undefined && !(door in COMMAND_HELP)) { for (const line of cmd.help()) console.log(line); return 0; }
     renderCommandHelp(door, cmd.summary);
     if (args.flags["meme"] === true) return await reachHelpMeme(door, args);
     return 0;

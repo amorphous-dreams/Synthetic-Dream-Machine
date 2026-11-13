@@ -49,8 +49,31 @@ export const FORWARDED_ENV: readonly string[] = ["NO_COLOR", "TERM", "COLORTERM"
 /** The image's own marker: set in the Dockerfile, so a vessel never forwards to itself. */
 export const IN_CONTAINER_ENV = "LARES_IN_CONTAINER";
 
-/** The shim's own verbs: no CLI command answers them, and the shim does. */
-const SHIM_VERBS: ReadonlySet<string> = new Set(["up", "down", "reset", "found", "logs", "build"]);
+/**
+ * THE SHIM'S OWN VERBS, each with the row `lares <verb> --help` reads: no CLI command answers them, and the shim does
+ * (`tools/lares-container.sh`, whose header keeps the long account). A help ask stays on this machine (`asksHelp`), so the
+ * dispatcher reads these rows where its own table holds none.
+ */
+const SHIM_VERB_HELP: Readonly<Record<string, { readonly usage: string; readonly about: readonly string[] }>> = {
+  up:    { usage: "lares up [--capture <dir>]... [--workspace <name>=<dir>]...", about: ["Stand the vessel's container (detached) and wait until it answers healthy; then `vault unlock` on this terminal.", "A vessel stands holding no key: every start returns it to the floor until a person unlocks it."] },
+  down:  { usage: "lares down [compose-down args]", about: ["Stop the vessel and remove its container; the house stays in LARES_HOUSE.", "It asks the standing vessel first what a stop would drop (`vessel census`) and refuses on any item until it settles or a person types `accept-loss`."] },
+  reset: { usage: "lares reset", about: ["Clear a stopped vessel's hearth (LARES_HOUSE/hearth alone) after confirmation at a terminal.", "Sensoriums, projections, library and config stay."] },
+  found: { usage: "lares found [vessel-found args]", about: ["The founding act, at a terminal: it gathers the human route (a passphrase and/or a paper pin); `--hearth` prints the seed card and reads it back.", "Run it before `up`: the act holds the store. `lares vessel found --help` names its flags."] },
+  logs:  { usage: "lares logs [compose-logs args]", about: ["Read the vessel's log (`-f` follows it)."] },
+  build: { usage: "lares build [compose-build args]", about: ["Rebuild the vessel image from the committed checkout and stamp HEAD as its revision label.", "A dirty checkout, or none, refuses: the label must name a real commit."] },
+};
+export const SHIM_VERBS: ReadonlySet<string> = new Set(Object.keys(SHIM_VERB_HELP));
+
+/** The help lines of one shim verb, or null for a name the shim does not own. */
+export function shimHelpLines(verb: string): string[] | null {
+  const row = SHIM_VERB_HELP[verb];
+  if (row === undefined) return null;
+  return [
+    `usage: ${row.usage}`, "", ...row.about.map((l) => `  ${l}`), "",
+    `  The host shim answers this verb (tools/lares-container.sh ${verb}); it runs on this machine, outside the vessel.`,
+    "  The shim's own header keeps the full account of every verb it answers.",
+  ];
+}
 
 /** Commands that run on this machine whole. */
 const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "mempalace"]);
