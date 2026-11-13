@@ -60,9 +60,9 @@ via recipe-watch (composition class), with the reboot-pending alert as the
 fallback for islands that sleep through it — see engine-watch for the epoch
 class, where the alert stays the permanent mechanism.
 
-//(Pointer-plane split + system-recipe seeding: ruled; code-enactment tracked//
-//at the live handoff torch. Source-file `recipe.ts` carries the schema today;//
-//the plane routing lands in `genesis-doc` / `base-doc` / `catalog-accessor`.)//
+//(`recipe.ts` carries the schema. The plane routing rests in `genesis-doc` (the//
+//system recipe seeds), `catalog-accessor` (`libraryDocUrl`) and `kahu-realm`//
+//(the standing registrations that name the live house-canon documents).)//
 
 <<~/ahu>>
 
@@ -76,6 +76,6 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;oQ_tJpeCOW0sGUt-xjgZ0VQtLWQg2BIUcoHglEmxaVY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zFid__yWeSLWnnUXrXO7LhkkDPhU6w4YyCTWuHFE1NE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

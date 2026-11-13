@@ -58,7 +58,7 @@ The pattern runs fractal on purpose: `sdm` mounts into `elyncia`, `elyncia` into
 
 The quine governs ''every'' wiki — user and system alike. `@oracle` //alone// stands //below// as the protocol-invariant floor every recipe inherits structurally (`expandRecipe` hardcodes `@oracle` — the sole universal slot). `lares` and `lararium` stand in the house canon on every vessel, each opening as its own ''quine wiki'' carrying a wiki-recipe of its own — `lares` wiki = `@oracle` + `lararium` + `lares`; `lararium` wiki = `@oracle` + `lararium`. Every other wiki reads house canon through the floor's read-face, which lays one pinned, history-free snapshot per house-canon bag named by a manifest CID, read-only; a minted user wiki's recipe names neither as a library (W26 slice 1, `floor-manifest.ts`). Their own quine wikis compose the live documents as library and identity members. The shared `@oracle` document holds genesis seed rows alone; each vessel's `@catalog` holds its own crossroads and realm pointers, and no catalog row names a house-canon bag: recipe-watch resolves one through the Kahu realm's standing registration (`libraryDocUrl`), while system recipe seeds remain on `@oracle`. See `#oracle-planes`.
 
-''The default seat (operator ruling, 2026-06-10; recipe revised 2026-06-16):'' the vessel's default pinned primary wiki = `lares`-as-wiki — slug `lares` seats the operator-minted system doc itself as the write layer. The `lares` wiki-recipe (seeded in the `@oracle` system plane, not `@catalog`) carries `lararium` as a live library, so the doctrine corpus composes into the hearth; the recipe dedupes the coinciding wiki slot against the `@oracle` floor. The operator tends the personality at the hearth by default, and the disk-mirror designation carries those edits back to `bags/lares` as `.md` memes.
+''The default seat (operator ruling, 2026-06-10; recipe revised 2026-06-16):'' the vessel's default pinned primary wiki = `lares`-as-wiki. Slug `lares` seats the live `lares` canon document (the Kahu realm's, on a vessel the cabal admitted) as the wiki's canon slot, beneath its `@working` write layer and above the `@oracle` floor; a vessel outside the cabal stands the same wiki and reads canon from the floor's snapshot. The `lares` wiki-recipe (seeded in the `@oracle` system plane, not `@catalog`) carries `lararium` as a live library, so the doctrine corpus composes into the hearth; the recipe dedupes the coinciding wiki slot. The operator tends the personality at the hearth by default: an edit lands in `@working` (projecting to `wikis/lares`), a promotion carries it into canon, and on the Kahu's vessel the canon mirror carries canon back to `bags/lares` as `.mem` carriers.
 
 > Two faces on one bag — library-face turned down-stack to the consumers, dwelling-face turned up-stack to the instance. The threshold looks both ways. — Tide-Caller
 
@@ -340,6 +340,6 @@ Both #42 operator forks resolved by intervening work: `SHA256(uri+path)` retired
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;_3U8KH9Nu_yEpQlP2UbddsLYnbA9JTitzGyFEH2qhi8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UTO1hcjx36DLrabdWcWCmsq_Buyiw9onf0DkpcoKzxc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
