@@ -22,7 +22,7 @@ import { requireKahuReach, type KahuReachSource } from "../src/kahu-canon-reach.
 import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { storedLarRecord } from "../src/stored-record.js";
 import {
-  CANON_OFFER_PREFIX, CANON_OFFER_RETIRED_PREFIX, CanonOfferRefused, foldCanonOffers, offerCanonRecords, offerWithheldTitle,
+  CANON_OFFER_PREFIX, CANON_OFFER_RETIRED_PREFIX, CANON_OFFER_ROW_MAX, CanonOfferRefused, foldCanonOffers, offerCanonRecords, offerWithheldTitle,
   promoteCanonOffer, readCanonOffers, showCanonOffer, canonOfferCid, openCanonOffer, signCanonOffer, cutReleaseFloor,
   retireCanonOffer, readyCanonOfferRetire, signCanonOfferRetire, writeCanonOfferRetire, CANON_OFFER_RETIRE_DOMAIN, type OfferSteward,
   type CanonOfferBoard, type CanonOfferPorts, type OfferRecordReader, type OfferRecordWriter, type OfferSigner,
@@ -58,10 +58,11 @@ const rec = (title: string, text: string, base?: string): LarTiddlerRecord =>
   ({ tiddler: { title, text, type: "text/vnd.tiddlywiki", tags: ["docs/pono"] }, ...(base ? { meta: { [OVERRIDE_BASE_META]: base } } : {}) }) as LarTiddlerRecord;
 
 /** A memory store: what a browser binding reads and writes, counting each canon write. */
-function memoryStore(rows: Record<string, LarTiddlerRecord> = {}): OfferRecordReader & OfferRecordWriter & { puts: number; rows: Record<string, LarTiddlerRecord> } {
+function memoryStore(rows: Record<string, LarTiddlerRecord> = {}): OfferRecordReader & OfferRecordWriter & { listVisible(): Promise<string[]>; puts: number; rows: Record<string, LarTiddlerRecord> } {
   return {
     rows, puts: 0,
     async get(title) { return rows[title] ?? null; },
+    async listVisible() { return Object.keys(rows).filter((t) => rows[t]?.meta?.deleted !== true); },
     async put(record) { this.puts += 1; rows[String(record.tiddler.title)] = record; },
   };
 }
@@ -124,6 +125,42 @@ describe("the offer", () => {
     // CONTROL: a non-canon bag refuses by its own name.
     await expect(offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore({ [T1]: rec(T1, "x") }), signer: h1, face: "aa" }, { bag: "crossroads", titles: [T1] }))
       .rejects.toMatchObject({ refusal: "offer-not-canon" });
+  });
+
+  /**
+   * THE OFFER'S TWO BOUNDS READ AS ONE LAW. An offer carries at most `CANON_OFFER_MAX_MEMES` MEMES (a root and the slot records
+   * it calls count once, so any single meme rides whole), and its board row holds at most `CANON_OFFER_ROW_MAX` characters (the
+   * bound every reader already folds by). Either bound refuses at the open, by name, before any row lands.
+   */
+  test("RED: one meme of 105 slot records offers whole (CONTROL: sixty-five memes refuse offer-too-many, and sixty-four land)", async () => {
+    const rows: Record<string, LarTiddlerRecord> = { [T1]: rec(T1, "the root, calling its slots") };
+    for (let i = 0; i < 105; i++) rows[`${T1}#/slot-${i}`] = rec(`${T1}#/slot-${i}`, `slot ${i}`);
+    const h1 = await signer(11);
+    const board = memoryBoard();
+    const out = await offerCanonRecords({ ...ports(board, memoryStore()), source: memoryStore(rows), signer: h1, face: "aa" }, { bag: "lares", titles: [T1] });
+    expect(out.landed).toBe(true);
+    expect(out.offer.body.records).toHaveLength(106);
+    expect(foldCanonOffers(board.doc(), NEXUS).offers.map((o) => o.offer.cid)).toEqual([out.offer.cid]);
+    const many = (n: number) => Array.from({ length: n }, (_, i) => `lar:///ha.ka.ba/lares/docs/pono/many-${String(i).padStart(2, "0")}`);
+    const pages = Object.fromEntries(many(65).map((t) => [t, rec(t, "a page")]));
+    await expect(offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore(pages), signer: h1, face: "aa" }, { bag: "lares", titles: many(65) }))
+      .rejects.toMatchObject({ refusal: "offer-too-many" });
+    expect((await offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore(pages), signer: h1, face: "aa" }, { bag: "lares", titles: many(64) })).landed).toBe(true);
+  });
+
+  test("RED: an offer whose board row would pass CANON_OFFER_ROW_MAX refuses offer-too-large and lands no row (CONTROL: a meme just under the bound lands and folds)", async () => {
+    const h1 = await signer(11);
+    const heavy = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_ROW_MAX)) });
+    const board = memoryBoard();
+    await expect(offerCanonRecords({ ...ports(board, memoryStore()), source: heavy, signer: h1, face: "aa" }, { bag: "lares", titles: [T1] }))
+      .rejects.toMatchObject({ refusal: "offer-too-large" });
+    expect(Object.keys(board.doc()!.tiddlers)).toEqual([]);
+    const under = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_ROW_MAX - 4096)) });
+    const out = await offerCanonRecords({ ...ports(board, memoryStore()), source: under, signer: h1, face: "aa" }, { bag: "lares", titles: [T1] });
+    expect(out.landed).toBe(true);
+    const folded = foldCanonOffers(board.doc(), NEXUS);
+    expect(folded.offers.map((o) => o.offer.cid)).toEqual([out.offer.cid]);
+    expect(folded.setAside).toEqual([]);
   });
 
   test("RED: a replayed offer lands nothing", async () => {

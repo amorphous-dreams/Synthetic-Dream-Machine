@@ -416,6 +416,7 @@ The same law carries a second gift: records, not plugins. A face that holds no s
 
 * The offering face's atom signs `{kind, nexus, bag, face, offerer, records}`; each record carries its fields, its carrier digest (`carrierHashOf`, the identity every carrier already carries — "memes already have hashes") and its ''fork base'': the canon carrier its working copy forked from (`overrideBase`), or none for a new title.
 * ''A named title carries its fragments.'' A meme rests as a root record that calls its slot records (`<root>#/<slot>`); the offer takes every live record the working layer holds under `<title>#` with the title that names it, so a promoted meme reads back in canon as the text the working layer read before the offer. A root offered alone would land as calls with nothing behind them.
+* ''The offer's bounds: one law in two measures.'' An offer stays a gift a person reviews, never a bulk import. It carries at most 64 ''memes'' (`CANON_OFFER_MAX_MEMES`): a root and the slot records it calls count once, so any single meme rides whole whatever its slot count. Its board row holds at most 1 MiB of text (`CANON_OFFER_ROW_MAX`), the bound every reader folds by. `openCanonOffer` refuses either by name (`offer-too-many`, `offer-too-large`) before a row lands, so no offer reads `landed` that its readers then set aside.
 * The CID names the body's canonical bytes. No clock, counter or arrival order rides it, so the same offer twice keys one row: ''a replay lands nothing''.
 * A withheld title (the projection filter's base), a control or secret home row, and every `cap/**` row under a bag home refuse to leave home (`offer-withheld-title`); a row forged past the door carrying one never counts on the board.
 
@@ -514,6 +515,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying row grants
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9DFfpE-wSzavy9towXxjxCJL62Cyfh6IEXI4n26ZMGc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AqEtKWr_ccN_35OZ4LnOKvs_8HnPBsx2Lm1H2dY75cQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

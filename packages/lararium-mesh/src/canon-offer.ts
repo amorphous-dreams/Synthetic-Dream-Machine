@@ -52,10 +52,25 @@ export { CANON_OFFER_DOMAIN, CANON_OFFER_RETIRE_DOMAIN };
 export const CANON_OFFER_PREFIX = "$:/lar/canon-offer/" as const;
 /** The board row prefix a retire lands under, keyed by the CID of the offer it retires. */
 export const CANON_OFFER_RETIRED_PREFIX = "$:/lar/canon-offer-retired/" as const;
-/** The most records one offer carries: a gift a person reviews, never a bulk import. */
-export const CANON_OFFER_MAX_RECORDS = 64;
-/** The most text one board row holds; a larger row reads as no record (a write to a shared board never buys unbounded parsing). */
+/**
+ * THE OFFER'S BOUNDS, ONE LAW IN TWO MEASURES. An offer stays a gift a person reviews, never a bulk import:
+ *   · it carries at most `CANON_OFFER_MAX_MEMES` MEMES. A meme rests as a root record and the slot records it calls
+ *     (`<root>#/<slot>`), and the whole meme counts ONCE (`offeredMemeRoot`), so any single meme rides whole whatever its slot count;
+ *   · its board row holds at most `CANON_OFFER_ROW_MAX` characters, the bound every reader folds by (a write to a shared board
+ *     never buys unbounded parsing). The row bound caps the bytes the meme count leaves open.
+ * `openCanonOffer` refuses either by name (`offer-too-many`, `offer-too-large`) before a row lands, so no offer lands that its
+ * readers then set aside.
+ */
+export const CANON_OFFER_MAX_MEMES = 64;
 export const CANON_OFFER_ROW_MAX = 1024 * 1024;
+/** The row's envelope beside its body (`{"body":…,"cid":"<64 hex>","sig":"<128 hex>"}`), with room: the open weighs the body plus this. */
+const CANON_OFFER_ENVELOPE_MAX = 512;
+
+/** The meme a record belongs to: its title up to the fragment mark (`<root>#/<slot>` rides with `<root>`). */
+export function offeredMemeRoot(title: string): string {
+  const at = title.indexOf("#");
+  return at < 0 ? title : title.slice(0, at);
+}
 
 const HEX64 = /^[0-9a-f]{64}$/;
 
@@ -63,7 +78,8 @@ const HEX64 = /^[0-9a-f]{64}$/;
 export type CanonOfferRefusal =
   | "offer-not-canon"          // the bag names no house-canon bag
   | "offer-empty"              // no record named
-  | "offer-too-many"           // past CANON_OFFER_MAX_RECORDS
+  | "offer-too-many"           // past CANON_OFFER_MAX_MEMES (a root and its slot records count once)
+  | "offer-too-large"          // the board row would pass CANON_OFFER_ROW_MAX
   | "offer-withheld-title"     // a withheld or `cap/**` title never leaves its home
   | "offer-title-doubled"      // one title named twice
   | "offer-not-in-source"      // the source layer holds no live record of the title
@@ -190,7 +206,7 @@ const bagOf = (bag: string): string => (bag.startsWith("lar:") ? bag : bagUri(ba
 
 /**
  * Open an offer body over records a source layer holds. THROWS `CanonOfferRefused` on a bag outside house canon, no record, too
- * many, a doubled title or a withheld one. Records sort by title, so one set of records opens one body whatever the order named.
+ * many memes, a row too large, a doubled title or a withheld one. Records sort by title, so one set of records opens one body whatever the order named.
  */
 export function openCanonOffer(parts: {
   readonly nexus:   string;
@@ -203,7 +219,8 @@ export function openCanonOffer(parts: {
   if (!isHouseCanonBag(bag)) throw new CanonOfferRefused("offer-not-canon", `${bag} names no house-canon bag; an offer goes toward house canon alone`);
   if (parts.nexus.trim() === "") throw new CanonOfferRefused("offer-no-nexus", "no Nexus stands to offer toward");
   if (parts.records.length === 0) throw new CanonOfferRefused("offer-empty", "name at least one record to offer");
-  if (parts.records.length > CANON_OFFER_MAX_RECORDS) throw new CanonOfferRefused("offer-too-many", `one offer carries at most ${CANON_OFFER_MAX_RECORDS} records`);
+  const memes = new Set(parts.records.map(({ record }) => offeredMemeRoot(String(record.tiddler.title))));
+  if (memes.size > CANON_OFFER_MAX_MEMES) throw new CanonOfferRefused("offer-too-many", `one offer carries at most ${CANON_OFFER_MAX_MEMES} memes (a root and its slot records count once); this one names ${memes.size}`);
   const seen = new Set<string>();
   const records: CanonOfferedRecord[] = [];
   for (const { record, base } of parts.records) {
@@ -216,7 +233,10 @@ export function openCanonOffer(parts: {
     records.push({ title, fields, digest: carrierHashOf(fields), base });
   }
   records.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
-  return { kind: CANON_OFFER_DOMAIN, nexus: parts.nexus.trim(), bag, face: parts.face.trim().toLowerCase(), offerer: parts.offerer, records };
+  const body: CanonOfferBody = { kind: CANON_OFFER_DOMAIN, nexus: parts.nexus.trim(), bag, face: parts.face.trim().toLowerCase(), offerer: parts.offerer, records };
+  const weight = JSON.stringify(body).length + CANON_OFFER_ENVELOPE_MAX;
+  if (weight > CANON_OFFER_ROW_MAX) throw new CanonOfferRefused("offer-too-large", `this offer's board row would hold about ${weight} characters, past the ${CANON_OFFER_ROW_MAX} every reader folds; offer fewer memes at once`);
+  return body;
 }
 
 export async function signCanonOffer(body: CanonOfferBody, signer: OfferSigner): Promise<CanonOffer> {
@@ -331,11 +351,15 @@ export function verifyCanonOfferRetire(value: unknown, args: { readonly nexus: s
 /** The offer table as a door holds it: a document and its change. */
 export interface CanonOfferBoard { doc(): LarDoc | undefined; change(fn: (draft: LarDoc) => void): void }
 
-/** Land an offer row. Call INSIDE `change()`. Answers false where the row already stands (a replay lands nothing). */
+/** Land an offer row. Call INSIDE `change()`. Answers false where the row already stands (a replay lands nothing); THROWS
+ *  `offer-too-large` for a row past `CANON_OFFER_ROW_MAX`, which no reader would fold. */
 export function writeCanonOffer(draft: LarDoc, offer: CanonOffer): boolean {
   const key = `${CANON_OFFER_PREFIX}${offer.cid}`;
   if (Object.hasOwn(draft.tiddlers, key)) return false;
-  draft.tiddlers[key] = storedLarRecord(key, { text: JSON.stringify(offer) }, "canon-offer");
+  const text = JSON.stringify(offer);
+  // The last guard of the row bound (`openCanonOffer` weighs it first): a row no reader folds never lands.
+  if (text.length > CANON_OFFER_ROW_MAX) throw new CanonOfferRefused("offer-too-large", `this offer's board row holds ${text.length} characters, past the ${CANON_OFFER_ROW_MAX} every reader folds`);
+  draft.tiddlers[key] = storedLarRecord(key, { text }, "canon-offer");
   return true;
 }
 
@@ -489,7 +513,8 @@ export interface CanonOfferOutcome { readonly offer: CanonOffer; readonly landed
  * else: no canon read gates it and no canon document moves.
  */
 export async function offerCanonRecords(ports: CanonOfferPorts & {
-  readonly source: OfferRecordReader & { listVisible?(): Promise<string[]> };
+  /** The face's working layer: its records by title, and the live titles it holds (the fragment expansion reads them). */
+  readonly source: OfferRecordReader & { listVisible(): Promise<string[]> };
   readonly signer: OfferSigner;
   readonly face:   string;
 }, args: { readonly bag: string; readonly titles: readonly string[] }): Promise<CanonOfferOutcome> {
@@ -499,7 +524,7 @@ export async function offerCanonRecords(ports: CanonOfferPorts & {
   // A NAMED TITLE CARRIES ITS FRAGMENTS. A meme rests as a root record that calls its slot records (`<root>#/<slot>`), so a
   // root offered alone lands in canon as calls with nothing behind them. Every live record the source holds under `<title>#`
   // rides with the title that names it; a fragment a person also named rides once.
-  const visible = ports.source.listVisible ? await ports.source.listVisible() : [];
+  const visible = await ports.source.listVisible();
   const titles = [...new Set(args.titles.flatMap((title) => [title, ...visible.filter((t) => t.startsWith(`${title}#`)).sort()]))];
   const doubled = args.titles.find((t, i) => args.titles.indexOf(t) !== i);
   if (doubled !== undefined) throw new CanonOfferRefused("offer-title-doubled", `"${doubled}" named twice`);
