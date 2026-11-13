@@ -34,7 +34,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
-      `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *" ps -q lares "*) printf '%s' "\${FAKE_STOOD_ID:-\${FAKE_RUNNING_ID:-}}"; exit 0;; esac\n` +
       `case " $* " in *"inspect --format"*) printf '%s\\n' "\${FAKE_IMAGE_REV:-}"; exit 0;; esac\n` +
       `case " $* " in *" build "*) printf 'GIT_REV=%s\\n' "\${GIT_REV:-}" >> "$CALL_LOG"; exit 0;; esac\n` +
       `case " $* " in *" up -d --wait lares "*) [ "\${FAKE_UP_RC:-0}" = 0 ] || printf '%s\\n' 'compose readiness failed' >&2; exit "\${FAKE_UP_RC:-0}";; esac\n` +
@@ -330,6 +330,25 @@ for (const [name, shim] of shims) {
     assert.equal(r.status, 0, r.stderr);
     assert.doesNotMatch(r.stderr, /image names revision/);
     assert.doesNotMatch(r.stderr, /no git checkout/);
+  });
+
+  test(`${name}: every stand the shim performs reads the image's revision: the bare vessel stand and a restart warn as up warns`, async () => {
+    const stale = "0123456789abcdef0123456789abcdef01234567";
+    const unlocked = '{"data":{"door":{"unlocked":true}}}';
+    // The bare stand, no vessel standing: the fake's `ps -q` answers the image once the stand ran (FAKE_STOOD_ID).
+    const bare = await run(shim, ["vessel", "stand"], { env: { ...MOUNTS, FAKE_STOOD_ID: "cid", FAKE_IMAGE_REV: stale, FAKE_CUSTODY_OUTPUT: unlocked } });
+    assert.equal(bare.status, 0, bare.stderr);
+    assert.match(bare.stderr, new RegExp(`image names revision ${stale}`), "the bare stand warns");
+    const restand = await run(shim, ["vessel", "stand"], {
+      env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_IMAGE_REV: stale, FAKE_CUSTODY_OUTPUT: unlocked, FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' },
+    });
+    assert.equal(restand.status, 0, restand.stderr);
+    assert.match(restand.stderr, new RegExp(`image names revision ${stale}`), "a restart warns");
+    // CONTROL: an image that names the checkout's rev stays silent on both paths.
+    const head = checkoutRev();
+    const same = await run(shim, ["vessel", "stand"], { env: { ...MOUNTS, FAKE_STOOD_ID: "cid", FAKE_IMAGE_REV: head, FAKE_CUSTODY_OUTPUT: unlocked } });
+    assert.equal(same.status, 0, same.stderr);
+    assert.doesNotMatch(same.stderr, /image names revision/);
   });
 
   test(`${name}: a restart the shim performs names vault unlock again`, async () => {

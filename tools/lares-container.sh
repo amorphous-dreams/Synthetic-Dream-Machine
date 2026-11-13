@@ -15,7 +15,9 @@
 #                                                committed checkout, through the env file, stamping HEAD as its
 #                                                revision label; a dirty checkout, or none, refuses
 #   lares-container.sh vessel stand              stand the vessel when none stands; restart it when its standing no
-#                                                longer matches its state on disk; otherwise print the standing
+#                                                longer matches its state on disk; otherwise print the standing.
+#                                                Every stand and restart this shim performs (`up` too) warns when the
+#                                                image's revision label differs from the checkout's HEAD
 #   lares-container.sh vessel stop               stop the vessel's container (state stays; `up` stands it again)
 #   lares-container.sh vault unlock              hand the standing vessel a credential typed on this TTY: it opens its
 #                                                vessel key and composes with what the key opens
@@ -212,6 +214,7 @@ lift_vessel() {
   printf 'lares-container: %s; restarting the vessel\n' "${reason:-the standing requires a re-stand}" >&2
   if ! compose restart lares; then printf '%s\n' 'lares-container: the vessel restart failed' >&2; return 1; fi
   if ! up_with_workspaces; then printf '%s\n' 'lares-container: the vessel did not answer healthy after its restart' >&2; return 1; fi
+  warn_image_revision
   unlock_or_name
 }
 
@@ -554,7 +557,7 @@ case "$verb" in
         else
           # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints
           # the standing. Option-bearing forms go to the CLI, which owns their validation and execution.
-          if ! running_vessel; then ensure_house; compose up -d --wait lares; unlock_or_name
+          if ! running_vessel; then ensure_house; compose up -d --wait lares; warn_image_revision; unlock_or_name
           elif ! observe_standing || ! verdict_known; then die "the standing vessel answered no verdict"
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi

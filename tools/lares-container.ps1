@@ -183,8 +183,8 @@ function KeyHeld {
   return (($out -join "`n") -match '"unlocked"\s*:\s*true')
 }
 
-# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. Read only on `up`, BEFORE compose runs so a
-# build it triggers bakes the label; no git, or no checkout, skips the check with a note and never dies. A dirty tree
+# THE IMAGE'S REVISION LABEL AGAINST THE CHECKOUT'S HEAD: warns and stands. Every stand and restart this shim performs reads it
+# (`up`, the bare `vessel stand`, a re-stand); `up` resolves the rev BEFORE compose runs so a build it triggers bakes the label; no git, or no checkout, skips the check with a note and never dies. A dirty tree
 # (tracked files only) labels `<sha>-dirty`.
 $script:GitRev = ''; $script:GitDirty = $false
 function ResolveGitRev {
@@ -200,6 +200,7 @@ function ResolveGitRev {
   } catch { $script:GitRev = '' }
 }
 function WarnImageRevision {
+  if (-not $script:GitRev) { ResolveGitRev }
   $rev = $script:GitRev
   if (-not $rev) {
     [Console]::Error.WriteLine('lares-container: no git checkout answers here, so the image revision check is skipped')
@@ -274,6 +275,7 @@ function LiftVessel([string[]]$output) {
     & docker compose @Base up -d --wait lares
   }
   if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the vessel did not answer healthy after its restart'); exit $LASTEXITCODE }
+  WarnImageRevision
   UnlockOrName
 }
 
@@ -461,7 +463,7 @@ switch ($verb) {
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     if ($sub -eq 'stand' -and -not $observing -and $rest.Count -eq 1) {
       # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints the standing.
-      if (-not (HasRunningVessel)) { EnsureHouse; Compose @('up', '-d', '--wait', 'lares'); UnlockOrName }
+      if (-not (HasRunningVessel)) { EnsureHouse; Compose @('up', '-d', '--wait', 'lares'); WarnImageRevision; UnlockOrName }
       else {
         $answer = ObserveStanding
         if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') { Die 'the standing vessel answered no verdict' }
