@@ -25,6 +25,9 @@
  *            byte burns. The burn keeps the ask's record until every other surface burned (a burn that stops midway confirms
  *            again) and removes it before it says `reset:burned`. A storage that withholds itself records nothing, so it
  *            reads unasked. CONTROL: the recorded id burns; a forgotten id (declined, withdrawn) refuses again.
+ *   R7 RED   A TAB HONOURS THE CHANNEL ONLY FOR A STANDING ASK. `reset:stand-down` for an id the origin's record does not
+ *            name moves nothing; `reset:burned` moves nothing unless this tab stood down for that very id; `reset:declined`
+ *            takes down only a reset ask this tab's page shows. CONTROL: R4 walks the standing id through all three.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
@@ -126,6 +129,7 @@ test("R3 RED over the engine's own stores: a database another context holds bloc
 
 test("R4 RED a second tab stands its vessel down on the ceremony's word, boots afresh once the place burned, and a decline moves nothing else", async () => {
   const ceremony = new BroadcastChannel(RESET_CHANNEL);
+  const record = raised(ASK);
   const tabs = ["asking", "second"].map((name) => {
     const heard = new BroadcastChannel(RESET_CHANNEL);
     const session = storageOf({ "lares:tab-face": `pg-${name}`, "lares:found-face": "face", "wiki-scroll": "40" });
@@ -134,6 +138,7 @@ test("R4 RED a second tab stands its vessel down on the ceremony's word, boots a
       listen: (listener) => heard.addEventListener("message", (e: MessageEvent) => listener(e.data)),
       standDown: () => { acts.push("stand-down"); }, reload: () => { acts.push("reload"); },
       session: session.storage, settle: (askId) => { acts.push(`settle ${askId}`); }, say: (words) => { acts.push(`say ${words.slice(0, 20)}`); },
+      record: record.storage, shows: (askId) => name === "asking" && askId === ASK,
     });
     return { name, acts, session, tab, close: () => heard.close() };
   });
@@ -142,8 +147,10 @@ test("R4 RED a second tab stands its vessel down on the ceremony's word, boots a
   // CONTROL: a malformed signal moves nothing.
   ceremony.postMessage({ t: "reset:burned" }); ceremony.postMessage("reset:stand-down"); ceremony.postMessage({ t: "reset:erase", askId: ASK });
   ceremony.postMessage({ t: "reset:declined", askId: ASK } satisfies ResetSignal);
-  await settled("each tab settles the declined ask", () => tabs.every((t) => t.acts.includes(`settle ${ASK}`)));
-  for (const t of tabs) { expect(t.acts, `${t.name}: a decline and three malformed signals move nothing else`).toEqual([`settle ${ASK}`]); expect(t.tab.stoodDown()).toBe(false); }
+  await settled("the asking tab settles the declined ask", () => tabs[0]!.acts.includes(`settle ${ASK}`));
+  expect(tabs[0]!.acts, "asking: a decline and three malformed signals move nothing else").toEqual([`settle ${ASK}`]);
+  expect(tabs[1]!.acts, "second: it shows no such ask, so nothing moves").toEqual([]);
+  for (const t of tabs) expect(t.tab.stoodDown()).toBe(false);
 
   ceremony.postMessage({ t: "reset:stand-down", askId: ASK } satisfies ResetSignal);
   ceremony.postMessage({ t: "reset:stand-down", askId: ASK } satisfies ResetSignal);
@@ -216,4 +223,35 @@ test("R6 RED the ceremony burns only for an ask a page of this origin raised: an
   recordResetAsk(origin.storage, ASK); forgetResetAsk(origin.storage, ASK);
   expect(((await burnPlace(env(origin.storage), ASK).catch((e: unknown) => e)) as ResetRefused).refusal).toBe("reset-unasked");
   expect(log).toEqual([]);
+});
+
+test("R7 RED a tab honours the reset channel only for a standing ask: an unrecorded stand-down, a burned it never stood down for and a decline it does not show move nothing", async () => {
+  const acts: string[] = [];
+  const record = raised(ASK);
+  const session = storageOf({ "lares:tab-face": "pg-1", "wiki-scroll": "40" });
+  let hear: (msg: unknown) => void = () => {};
+  const tab = standResetTab({
+    listen: (listener) => { hear = listener; },
+    standDown: () => { acts.push("stand-down"); }, reload: () => { acts.push("reload"); },
+    session: session.storage, settle: (askId) => { acts.push(`settle ${askId}`); }, say: () => {},
+    record: record.storage, shows: (askId) => askId === ASK,
+  });
+  // An id no page raised: any script of the origin can say these words on the channel, and they move nothing.
+  hear({ t: "reset:stand-down", askId: OTHER } satisfies ResetSignal);
+  hear({ t: "reset:burned", askId: OTHER } satisfies ResetSignal);
+  hear({ t: "reset:declined", askId: OTHER } satisfies ResetSignal);
+  // The standing id's `burned` before this tab stood down for it: no reload, no cleared key.
+  hear({ t: "reset:burned", askId: ASK } satisfies ResetSignal);
+  expect(acts, "no signal for an unrecorded id, and no burned without its stand-down, moves this tab").toEqual([]);
+  expect(tab.stoodDown()).toBe(false);
+  expect([...session.map.keys()], "the tab keeps its session keys").toEqual(["lares:tab-face", "wiki-scroll"]);
+  // CONTROL: the standing id walks through. The burn removed the record before `reset:burned`, and the tab still honours it.
+  hear({ t: "reset:stand-down", askId: ASK } satisfies ResetSignal);
+  expect(acts).toEqual(["stand-down"]);
+  hear({ t: "reset:burned", askId: OTHER } satisfies ResetSignal);
+  expect(acts, "another id's burned still moves nothing").toEqual(["stand-down"]);
+  forgetResetAsk(record.storage, ASK);
+  hear({ t: "reset:burned", askId: ASK } satisfies ResetSignal);
+  expect(acts).toEqual(["stand-down", "reload"]);
+  expect([...session.map.keys()]).toEqual(["wiki-scroll"]);
 });
