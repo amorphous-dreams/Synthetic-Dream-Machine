@@ -41,14 +41,14 @@ The two disk planes carry the two STATES of a meme:
 
 The per-wiki live layers ride above the fold, each rooted at the wiki's identity — `wikis/{slug}/{temp,draft,working,personal}` (minted by `wikiSlotUri(slug, kind)`); the `bags/{slug}` canon rides below as the read-only, promotion-target library member. The `@working`/`@draft`/`@personal` binding keys per `(PersonaGroup × recipe-fingerprint)` — the slot URI carries the address, the resolver hands over the per-fingerprint doc.
 
-!! The two-layer model (@lares · lararium)
+!! The two uses of one name (`lares` · `lararium`)
 
-`lares`/`lararium` carry two layers that DO NOT compose into one wiki — the CID floor and the live edit surface stand decoupled:
+`bags/lares` (and each house-canon bag beside it) names two things, and no reader may fuse them:
 
-* ''Frozen doctrine floor — daemon-plane only.'' The genesis blob (the boot seed, `noosphere-boot`, the canon that survives a wipe) rides the ''@daemon wiki-worker's `libraryBags`'', addressed by ''`cid/<hash>`'' — reproducible from the hash, unreachable by an edit. Only daemon-plane holds the CID `lares`/`lararium` content. daemon-plane runs on these frozen CIDs and its behaviour changes only when new CIDs launch to the mesh.
-* ''Live edit surface — `wikis/lares`, `wikis/lararium`.'' Operator edit surfaces over `bags/lares` / `bags/lararium` (plus their own draft/working layers). They do NOT compose the CID floor.
+* ''The static floor — a seed for every wiki.'' The genesis bake cuts one history-free snapshot per house-canon bag from the tracked carriers (`cutGenesisFloor`), a manifest names each by ''CID'', and every recipe composes them read-only through `@oracle` (`floorReadFace`): reproducible from the hash, unreachable by an edit. A later floor reaches a vessel only as a release its Nexus's Kahu cabal approved and the vessel accepted. A write aimed at the floor copies up into the wiki's own working layer.
+* ''The live canon — the `wikis/lares` stack's canon layer.'' One CRDT document in the Kahu realm, which the Kahu cabal holds the write reach on (`requireKahuReach`). The `lares` wiki composes it beneath its draft and working layers and above the floor; a hand edits in the working layer and a promotion carries the edit into canon (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/offering`>> #/the-canon-offer). On the Kahu's vessel, in a checkout-sourced boot, that document mirrors to disk at `bags/lares`. A vessel outside the cabal holds no live document and reads the floor.
 
-''The decoupling carries the safety.'' The boot floor stands CID-frozen in daemon-plane and the live wikis never mount it, so editing `wikis/lares` cannot break the boot. Promotion to the mesh renders the live edits to fresh CIDs and launches them to daemon-plane; only then does daemon-plane behaviour change. Edit freely, promote deliberately, immune core sealed until mint.
+''The decoupling carries the safety.'' The floor answers to a CID, so editing `wikis/lares` cannot break what another wiki reads: a promotion moves live canon alone, and every other wiki's floor moves only when a release cuts a fresh snapshot from that canon and the vessel accepts it. Edit freely, promote deliberately, release by the cabal's act.
 
 ''THE DAEMON HOLDS THE ENGINE'' (operator ruling). The memetic-wikitext engine rides the daemon-plane
 wiki-worker, CID-frozen beside the boot seed, and every device reaches THE SAME ENGINE by hash. That
@@ -66,11 +66,11 @@ at all'' — it answers to a hash, and a hash answers to nobody.
 ''The engine serves everyone; the corpus carries content.'' `@oracle` names ONE doc — the genesis island — and every wiki reaches it by ''two independent paths'' that no reader may fuse into one:
 
 * ''By CID, for its blobs — off the recipe entirely.'' The oracle doc's `blobs` carry the engine core (`engineCid`) and the memetic-wikitext plugin tiddlers (parser, grammar, all-memes modules). `pluginCidsFromIslandBlobs(islandHandle.doc()?.blobs)` derives that CID set once, and the daemon and every wiki island resolve the bytes ''from the local CAS by hash'' (the breath path), never CRDT-syncing them over the port. A wiki renders the grammar because CAS answers its hashes. No slot lays the engine, and no recipe can withhold it.
-* ''By slot, for its tiddlers — the cascade's floor.'' `expandRecipe` closes every recipe with `ORACLE_BAG`, lowest priority, so the system island's content (bag→doc oracle, `genesis-cid-engine`, `genesis-cid-plugins`) stands under every wiki, including a primary mount with no libraryBags.
+* ''By slot, for its tiddlers — the cascade's floor.'' `expandRecipe` closes every recipe with `ORACLE_BAG`, lowest priority, so the system island's content (the seed rows `genesis-cid-engine`, `genesis-cid-plugins`, `genesis-cid-floor`, and the house-canon snapshots the floor manifest names) stands under every wiki, including a primary mount with no libraryBags.
 
 The catalog binds the two: `bags/oracle` → the genesis island's own doc URL, so the address a recipe floors on and the doc a CID pull reads name the same doc.
 
-`@oracle` splits from the memetic corpus (`disk-projection#oracle-split`); `lares` and `lararium` never stand as the floor — they ride a wiki's `libraryBags` (the lares wiki-recipe = oracle floor + lararium bag + lares bag). `lararium` carries the engine's authored self-doc memes: corpus, never engine.
+`@oracle` splits from the memetic corpus (`disk-projection#oracle-split`); the LIVE `lares` and `lararium` documents never stand as the floor — they ride their own system wikis' stacks (the lares wiki-recipe = oracle floor + lararium bag + lares bag), while every other wiki reads their snapshots through the floor's read-face. `lararium` carries the engine's authored self-doc memes: corpus, never engine.
 
 !! The isomorphic wiki core
 
@@ -90,6 +90,6 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor rows from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;imN3eJf8UoocE3_rSBlmD4J25e9D5izXLD7JKnw-5q0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SmZUze37PFrcyFIfrU2K1tx8TXaxau7HBqxGn71hjiU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

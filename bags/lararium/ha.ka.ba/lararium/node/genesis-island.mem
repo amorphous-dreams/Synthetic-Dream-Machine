@@ -39,10 +39,15 @@ verification witness.
 ''The split carries the portability.'' A build step that reached for `fs` inside layer B would bind the
 artifact's shape to one host, and every host must agree on the artifact exactly.
 
-''What does NOT belong here.'' Corpus memes load at runtime through the bag store's recipe stack, and
-the runtime document urls each vessel keeps (its crossroads pointer in its own catalog; the live house-canon documents in
-the Kahu realm's registrations) never enter the island. Neither counts as genesis material: the vessel carries the first as
-content and discovers the second as state.
+''The floor rides the bake.'' Beside the engine and the plugins, the runner cuts the genesis floor (`cutGenesisFloor`,
+`packages/lararium-node/src/genesis-floor.ts`): one history-free snapshot per house-canon bag, read from the checkout's tracked
+carriers (`bags/lares` and `bags/lararium` always, every other holding but the public board `crossroads`), each addressed by
+CID under one manifest the seed names (`genesis-cid-floor`). Every wiki's recipe composes that floor read-only through
+`@oracle`, so the canon carriers reach every vessel as static content before any document syncs.
+
+''What does NOT belong here.'' The LIVE house-canon documents and the runtime document urls each vessel keeps (its crossroads
+pointer in its own catalog; the live house-canon documents in the Kahu realm's registrations) never enter the island. The bake
+reads carriers and never a document: a vessel carries the floor as content and discovers the live documents as state.
 
 <<~/ahu>>
 
@@ -121,6 +126,6 @@ than none, because every vessel downstream would carry the lie by hash.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/residency-model`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/keyhive/capability-provider`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kUh9OZC2iBN_y06ZObaxhEp-VkA7IBb3bjq2WPNqT-k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cDtVa0FkD-HupJatQT474RPaoPOEQgZHWhA96dhRIk4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
