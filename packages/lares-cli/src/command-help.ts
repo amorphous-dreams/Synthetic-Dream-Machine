@@ -846,7 +846,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares home undo 3                # restore generation 3",
     ],
     flags: [
-      "--brief        one line: every item holds, or which stand off the tunnel",
+      "--brief        one line: every item holds, or which stand off the tunnel (drift alone; an aligned row another hand rewrote reads apart)",
       "--force        take bytes the house does not own; the ledger keeps them",
       "--probe        verify by asking each host (spends model calls)",
       "--yes          tend without asking (a terminal-less caller)",

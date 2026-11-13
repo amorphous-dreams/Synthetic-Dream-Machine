@@ -10,10 +10,10 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item } from "../src/reality-tunnel/engine.js";
+import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item, type Row } from "../src/reality-tunnel/engine.js";
 import { windowsProfile } from "../src/reality-tunnel/homes.js";
 import { radiusLock } from "../src/reality-tunnel/lock.js";
-import { indexReader } from "../src/commands/tunnel-door.js";
+import { briefLine, indexReader } from "../src/commands/tunnel-door.js";
 import {
   claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
@@ -299,6 +299,20 @@ describe("the brief line", () => {
     const out = execFileSync("node", [join(REPO, "packages/lares-cli/dist/src/bin/lares.js"), "repo", "read", "--brief"], { encoding: "utf8", cwd: REPO });
     expect(out.trim().split("\n")).toHaveLength(1);
     expect(out).toMatch(/^reality tunnel: /);
+  });
+});
+
+describe("the brief line's count", () => {
+  const row = (id: string, state: Row["state"], touched = false): Row => ({ id, state, touched, path: `/h/${id}`, detail: "", radius: "home" } as unknown as Row);
+
+  it("counts drift alone as off the tunnel; a row touched since the house wrote it and still aligned reads apart", () => {
+    const line = briefLine([row("a", "aligned", true), row("b", "aligned", true), row("c", "aligned")]);
+    expect(line).not.toMatch(/off the tunnel/);
+    expect(line).toBe("reality tunnel: every item holds (2 aligned item(s) rewritten by another hand since the house wrote them: a, b)");
+    // CONTROL: real drift counts, and a touched row that drifted counts once, as drift.
+    expect(briefLine([row("a", "drift", true), row("b", "foreign"), row("c", "unreachable"), row("d", "aligned", true), row("e", "aligned")]))
+      .toBe("reality tunnel: 3 item(s) off the tunnel — a, b, c (lares home read); 1 aligned item(s) rewritten by another hand since the house wrote them: d");
+    expect(briefLine([row("e", "aligned")])).toBe("reality tunnel: every item holds");
   });
 });
 

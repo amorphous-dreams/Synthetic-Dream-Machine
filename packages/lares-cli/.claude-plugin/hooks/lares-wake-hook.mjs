@@ -13,7 +13,9 @@ try { readFileSync(0, "utf8"); } catch { /* An empty input carries no additional
 const hookDir = dirname(fileURLToPath(import.meta.url));
 const laresBin = join(hookDir, "..", "..", "bin", "lares.mjs");
 const shim = join(hookDir, "..", "..", "..", "..", "tools", "lares-container.sh");
-const down = "vessel down; stand it with tools/lares-container.sh up";
+const cure = "stand it with tools/lares-container.sh up";
+// Each cause reads by its own name: only the vessel's own answer says "down".
+const unobserved = (why) => `vessel unobserved: ${why}; read it with tools/lares-container.sh vessel stand --observe --json, or ${cure}`;
 
 // Kill the process group on timeout so a compose child cannot hold the hook's pipes open.
 function observe() {
@@ -33,16 +35,17 @@ function observe() {
       try { process.kill(-child.pid, "SIGKILL"); } catch { /* The process already left. */ }
       child.stdout.destroy();
       child.unref();
-      finish("vessel observation timed out; stand it with tools/lares-container.sh up");
+      finish(`vessel observation timed out; ${cure}`);
     }, 10_000);
     child.stdout.setEncoding("utf8");
     child.stdout.on("data", (chunk) => { output += chunk; });
-    child.on("error", () => finish(down));
-    child.on("close", () => {
-      try {
-        const frame = JSON.parse(output);
-        finish(frame?.data?.node?.up === true ? JSON.stringify(frame) : down);
-      } catch { finish(down); }
+    child.on("error", (err) => finish(unobserved(`the shim did not start (${err?.code ?? err?.message ?? "spawn error"})`)));
+    child.on("close", (code, signal) => {
+      if (!output.trim()) { finish(unobserved(`the shim exited ${code ?? signal} with no answer`)); return; }
+      let frame;
+      try { frame = JSON.parse(output); }
+      catch { finish(unobserved(`the shim's answer did not parse (exit ${code ?? signal})`)); return; }
+      finish(frame?.data?.node?.up === true ? JSON.stringify(frame) : `vessel down (the observation answered node.up ${JSON.stringify(frame?.data?.node?.up ?? null)}); ${cure}`);
     });
   });
 }

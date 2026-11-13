@@ -38,12 +38,21 @@ export const indexReader = (repo: string): Reader => ({
 
 const GLYPH: Record<Row["state"], string> = { aligned: "✓", drift: "~", foreign: "✗", unreachable: "!", absent: "·" };
 
+/**
+ * THE WAKE'S ONE LINE. Off the tunnel counts what the reading names off: drift, a foreign value, an unreachable home. A row
+ * another hand rewrote since the house last wrote it (`touched`, a whole-file compare) that still reads `aligned` holds what
+ * the tunnel asks; it reads apart, never as drift, since a harness rewrites its own settings files at will.
+ */
+export function briefLine(rows: readonly Row[]): string {
+  const off = rows.filter((r) => r.state === "drift" || r.state === "foreign" || r.state === "unreachable");
+  const rewritten = rows.filter((r) => r.touched && r.state === "aligned");
+  const apart = rewritten.length === 0 ? "" : `${rewritten.length} aligned item(s) rewritten by another hand since the house wrote them: ${rewritten.map((r) => r.id).join(", ")}`;
+  if (off.length === 0) return `reality tunnel: every item holds${apart ? ` (${apart})` : ""}`;
+  return `reality tunnel: ${off.length} item(s) off the tunnel — ${off.map((r) => r.id).join(", ")} (lares home read)${apart ? `; ${apart}` : ""}`;
+}
+
 function show(rows: readonly Row[], brief: boolean): void {
-  if (brief) {
-    const off = rows.filter((r) => r.state === "drift" || r.state === "foreign" || r.state === "unreachable" || r.touched);
-    console.log(off.length === 0 ? "reality tunnel: every item holds" : `reality tunnel: ${off.length} item(s) off the tunnel — ${off.map((r) => r.id).join(", ")} (lares home read)`);
-    return;
-  }
+  if (brief) { console.log(briefLine(rows)); return; }
   for (const r of rows) {
     console.log(`  ${GLYPH[r.state]} ${r.state.padEnd(11)} ${r.id.padEnd(30)} ${r.detail}${r.touched ? " · touched since the house last wrote it" : ""}`);
     console.log(`    ${" ".repeat(11)} ${r.path}`);

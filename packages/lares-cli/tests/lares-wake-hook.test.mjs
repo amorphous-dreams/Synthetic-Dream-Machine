@@ -34,13 +34,21 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
       assert.match(context, /"cap":"observe"/);
       assert.match(context, /Lares homes: home reading/);
     });
-    await t.test("reports down when docker or compose fails", () => {
+    await t.test("names a shim that failed with no answer, by its exit, and never calls that a vessel down", () => {
       writeFileSync(shim, '#!/bin/sh\nexit 127\n');
-      assert.match(run(), /vessel down; stand it with tools\/lares-container\.sh up/);
+      const context = run();
+      assert.match(context, /vessel unobserved: the shim exited 127 with no answer/);
+      assert.doesNotMatch(context, /vessel down/);
     });
-    await t.test("reports down when the vessel answers down", () => {
+    await t.test("names an answer it could not read", () => {
+      writeFileSync(shim, '#!/bin/sh\necho "compose: pulling"\n');
+      const context = run();
+      assert.match(context, /vessel unobserved: the shim's answer did not parse/);
+      assert.doesNotMatch(context, /vessel down/);
+    });
+    await t.test("reports down only when the vessel itself answers down", () => {
       writeFileSync(shim, '#!/bin/sh\nprintf \'%s\\n\' \'{"data":{"node":{"up":false,"port":8080}}}\'\n');
-      assert.match(run(), /vessel down; stand it with tools\/lares-container\.sh up/);
+      assert.match(run(), /vessel down \(the observation answered node\.up false\); stand it with tools\/lares-container\.sh up/);
     });
     await t.test("names a hung shim timeout", () => {
       writeFileSync(shim, '#!/bin/sh\nsleep 30\n');
