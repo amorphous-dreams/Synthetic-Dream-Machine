@@ -7,7 +7,7 @@
 cacheable     = false
 l-space       = "adjacent"
 render-target = "docs"
-role          = "index of the history shelf — the story arcs, the record carriers, the verbatim spirit hand-backs and the workshop of scratch planning records; history informs and never governs"
+role          = "index of the history shelf — the story arcs, the record carriers, the verbatim spirit hand-backs, and a pointer to the workshop of scratch planning records in `scratch/`; history informs and never governs"
 title         = "lar:///ha.ka.ba/lares/docs/history"
 type          = "text/memetic-wikitext+tiddlywiki"
 uri-path      = "ha.ka.ba/lares/docs/history"
@@ -17,7 +17,7 @@ uri-path      = "ha.ka.ba/lares/docs/history"
 
 ! History
 
-The history shelf holds what the house made and how it read itself along the way: the story arcs, record carriers that say where early work landed, verbatim spirit hand-backs, and the workshop, where every scratch planning record stands word for word. These records inform and never govern; live law rides the api carriers, and live rulings and owed rows ride the road and design memes.
+The history shelf holds what the house made and how it read itself along the way: the story arcs, record carriers that say where early work landed, verbatim spirit hand-backs, and a pointer to the workshop (in the repository's `scratch/` directory), where every scratch planning record stands word for word. These records inform and never govern; live law rides the api carriers, and live rulings and owed rows ride the road and design memes.
 
 <<~/ahu>>
 
@@ -70,7 +70,7 @@ Each carrier holds a tasked spirit's final message, captured verbatim with only 
 
 !! Workshop
 
-[[The workshop index|lar:///ha.ka.ba/lares/docs/history/workshop/index]] mirrors `.lares-scratch/` by directory: controller notes, briefs, hand-backs, research waves, resumes, PR bodies, plans and session transcripts, each a verbatim record with its own directory index.
+The workshop rests in the repository's `scratch/` directory, outside `bags/` and `wikis/`, so no vessel carries it at boot and no floor snapshot holds it; a wiki may mount it as a shelf when someone wants to read it from inside. Its `index.mem` mirrors `.lares-scratch/` by directory: controller notes, briefs, hand-backs, research waves, resumes, PR bodies, plans and session transcripts, each a verbatim record with its own directory index.
 
 <<~/ahu>>
 
@@ -96,10 +96,9 @@ Each carrier holds a tasked spirit's final message, captured verbatim with only 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-intent-plane-collision`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-july-spirits-harvest`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/spirit-handback-nexus-dial-ready`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/history/workshop/index`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;B1M7igZAM-k5ZK6eRBRP7tNDZ7PHiELT15beSDwigt4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AFqXvXFjZ4YfziNu7qDyPxH8YQ44vov-U8J7Y2CroV8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
