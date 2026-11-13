@@ -363,3 +363,25 @@ def test_a_landed_write_answers_unchanged_and_an_internal_fault_stays_unnamed(da
     crashed = _seat_call("faulty", {}, mcp)
     assert crashed.is_error and _said(crashed) == "Error executing tool faulty"
     assert "the-secret-key-inside" not in _said(crashed) and "Traceback" not in _said(crashed)
+
+
+def _described(name: str) -> str:
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
+
+
+def test_meme_put_text_names_the_stage_row_key_law():
+    # A writer meets the law in the tool's own text, before the gate refuses: a record under the memory stage carries
+    # its `row-key`, and each refusal the law answers stands named.
+    said = _described("meme_put")
+    assert 'lar:///ha.ka.ba/kahua/memory/<class>/<slug>' in said and 'row-key = "<class>/<slug>"' in said
+    for code in ("row-key-missing", "row-key-title", "row-key-shape"):
+        assert code in said
+
+
+def test_meme_list_text_promises_a_row_bag_for_a_named_recipe_alone():
+    # The daemon's own wiki (`recipe="default"`) answers ONE `bag` over the whole listing and no row names its layer;
+    # the text says so, beside the shape each container answers.
+    said = _described("meme_list")
+    assert "{recipe, bags, roots, next}" in said and "{bag, roots, next}" in said
+    assert 'under `recipe="default"` no row names a `bag`' in said

@@ -1005,7 +1005,11 @@ def build_mcp(coordinator: LaresCoordinator):
         tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
         records already say it). A WRITE THAT NEVER LANDED RAISES: `refuse` and `conflict` answer a tool error
         naming the decision, its reason or warnings, and the live hash to re-read against; a locked vessel
-        answers `vessel-locked: run lares vault unlock`. Rides the @daemon wire, never a store."""
+        answers `vessel-locked: run lares vault unlock`. THE STAGE ROW LAW: a record under the memory stage,
+        `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`, carries `row-key = "<class>/<slug>"` in its toml meta block
+        (one or two lowercase, hyphen-joined segments; the title derives from the key). Without the key the put
+        refuses `row-key-missing`; a key that derives another title refuses `row-key-title`; a key that reads no
+        path refuses `row-key-shape`. Rides the @daemon wire, never a store."""
         args: dict = {**_meme_container("meme_put", recipe, bag), "uri": uri, "text": text}
         if base is not None:
             args["base"] = base
@@ -1041,11 +1045,16 @@ def build_mcp(coordinator: LaresCoordinator):
         """LIST every meme ROOT a seat holds, each with the canonical hash a writer hands back as `base` —
         mirrors `lares meme list`. CONTAINER LAW: exactly one of `recipe` / `bag` names the seat
         (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. `tree` nests each root's slot tree
-        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. A `bag` lists that bag's own
-        records; a named `recipe` lists the roots its whole stack resolves, each row naming the `bag` that
-        answered. THE LISTING PAGES: one answer carries a bounded page of roots in title order and `next`
-        names the cursor of the page behind it; hand it back as `after` until `next` reads null. Returns
-        {bag | recipe, roots, next}. A plain tiddler never lists. Rides the @daemon wire, never a store."""
+        (`slots: [{slot, uri, slots}]`) beneath it; off, roots + hash alone. THREE ANSWERS: a `bag` lists that
+        bag's own records and returns {bag, roots, next}; a named `recipe` lists the roots its whole stack resolves,
+        each row naming the `bag` that answered, and returns {recipe, bags, roots, next} (`bags` names the stack top
+        first; `unreached` rides beside it where a layer stood out of reach); `recipe="default"` lists the @daemon's
+        own wiki across its whole stack and returns {bag, roots, next}, where the one `bag` names the layer a write
+        lands in and labels the whole answer: under `recipe="default"` no row names a `bag`, so a root there may
+        answer from a floor bag beneath (house canon) and the listing never says which. THE LISTING PAGES: one
+        answer carries a bounded page of roots in title order and `next` names the cursor of the page behind it;
+        hand it back as `after` until `next` reads null. A plain tiddler never lists. Rides the @daemon wire,
+        never a store."""
         args: dict = _meme_container("meme_list", recipe, bag)
         if tree:
             args["tree"] = True
@@ -1163,8 +1172,11 @@ def build_mcp(coordinator: LaresCoordinator):
     def kahua_list(face: "int | None" = None) -> dict:
         """LIST the face's kahua stage — mirrors `lares kahua list`. Every standing item the stage's signed acts
         verify under the face's grant: {items: [{title, status: standing|siblings, heads: [{cid, text, fields,
-        parent, origin, taint, sources, proposal, signer, withdrawn}]}]}. `siblings` names two lifts on one parent,
-        both kept. A plain tiddler in the stage doc never lists. Rides a `seat` session over the @daemon wire."""
+        parent, origin, taint, sources, proposal, signer, withdrawn}]}], relation}. `siblings` names two lifts on
+        one parent, both kept. `relation` names the face's opaque relation id F, the folder name its projections
+        carry (`daemon-<F>`, `kahua-<F>`); null where the face's log names none yet. A fresh face whose log pins no
+        stage answers {items: [], relation, `stage: "none"`}, never a refusal. A plain tiddler in the stage doc
+        never lists. Rides a `seat` session over the @daemon wire."""
         return uds.session_act("kahua-read", {"action": "list"}, face=_kahua_face(face))
 
     @mcp.tool()

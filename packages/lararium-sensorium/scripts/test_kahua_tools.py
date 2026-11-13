@@ -183,3 +183,13 @@ def test_a_row_refusal_and_a_session_refusal_raise_by_name(vessel):
         _tools()["kahua_get"](title="T", face=0)
     with pytest.raises(ValueError, match="proposals"):
         _tools()["kahua_propose"](proposals=[], face=0)
+
+
+def _described(name: str) -> str:
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
+
+
+def test_kahua_list_text_names_the_relation_and_the_unpinned_stage():
+    said = _described("kahua_list")
+    assert "relation" in said and '`stage: "none"`' in said
