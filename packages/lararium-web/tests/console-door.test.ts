@@ -89,6 +89,7 @@ test("D3 RED a verb this vessel cannot hold refuses by name with its reason; CON
   expect(await lares("herm")).toMatchObject({ ok: false, error: { code: "needs-inbound-socket" } });
   expect(await lares("vault", "unlock")).toMatchObject({ ok: false, error: { code: "hand-needed" } });
   expect(await lares("export")).toMatchObject({ ok: false, error: { code: "syncs-by-join" } });
+  expect(await doorOver(null)("vault", "lock"), "a browser vessel holds no lock row: it locks as its last tab leaves").toMatchObject({ ok: false, error: { code: "locks-by-leaving" } });
   // CONTROL: a word no table and no reason names refuses under the one generic name, and points at help.
   const unknown = await lares("frobnicate");
   expect(unknown).toMatchObject({ ok: false, error: { code: "verb-not-held" } });

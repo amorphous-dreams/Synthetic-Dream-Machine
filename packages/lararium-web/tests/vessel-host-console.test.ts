@@ -11,6 +11,9 @@
  *            asking, the face's custody bound and locked, and the floor pin's own refusal. CONTROL: once the ask reads
  *            answered the same verb names no ask, the lit standing, the worn face and the vessel's public key; no reading
  *            carries a route.
+ *   H4 RED   `vault status` answers the node's two halves: custody at rest (the place clear, the face bound and locked) and
+ *            the door (this tab's session not yet unlocked). CONTROL: answered, the face reads unlocked and the door
+ *            unlocked by `unlock`; no slot id and no route reads anywhere.
  *   H3 RED   a verb the table lacks refuses `verb-not-held` by name on the reply, and words past a held path refuse `usage`.
  *            CONTROL: the same port's `read:floor`, sent before a verb, still waits on admission after that verb answered:
  *            the door opens no other request early.
@@ -134,5 +137,23 @@ describe("the vessel worker answers the console door over the page's own port", 
     expect(lit.vessel).toMatchObject({ verifyingKey: "00".repeat(32) });
     expect(lit.floorPin).toMatchObject({ ok: false, refusal: "floor-no-nexus" });
     expect(JSON.stringify(lit), "no reading carries the route").not.toContain("keeps its own fire");
+  });
+
+  test("H4 RED vault status reads custody at rest and the door, before and after the unlock, and carries no route", async () => {
+    const tab = await standLockedTab();
+    const locked = await tab.verb("vault", "status");
+    expect(locked.ok).toBe(true);
+    expect((locked as { value: unknown }).value).toMatchObject({
+      custody: { place: { reading: "clear" }, faces: [] },
+      door: { standing: "floor", unlocked: false, face: tab.face, admittedBy: null },
+    });
+    tab.answer();
+    await tab.until("the session admitted", () => tab.heard.some((m) => m.t === "status" && m.status.vessel !== undefined));
+    const open = (await tab.verb("vault", "status") as { value: { door: unknown } }).value;
+    expect(open.door).toMatchObject({ standing: "lit", unlocked: true, admittedBy: "unlock", face: tab.face });
+    expect(JSON.stringify(open)).not.toContain("keeps its own fire");
+    // help names both rows the vessel holds.
+    const help = (await tab.verb("help") as { value: { entries: readonly { verb: string }[] } }).value;
+    expect(help.entries.map((e) => e.verb)).toEqual(["vault status", "vessel read"]);
   });
 });

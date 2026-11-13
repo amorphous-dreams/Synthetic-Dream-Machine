@@ -11,6 +11,10 @@
  * armed; the standing (floor, lighting or lit); the faces this store names, the faces joined here, and the face worn; the relay
  * this vessel dials and the crossing as it stands; the floor pin; every ask this tab's session still waits on, with its kind
  * and whether its ceremony window holds its port; custody at rest.
+ *
+ * `vault status` (the node's `lares vault status`): custody at rest for the place and for each face the store names, and what
+ * this tab's session holds open. `vault lock` stands in no row: a browser vessel locks when its face's last tab leaves (each
+ * tab holds its own unlock), and the door says so by name.
  */
 import {
   browserJoinedFaces, loadBrowserPlaceKel, readBrowserCustody, readBrowserVesselFaces, readFaceCustody,
@@ -90,6 +94,22 @@ export function vesselConsoleRows(ctx: VesselConsoleCtx): ConsoleVerbRow[] {
           asks: ctx.asks(),
           custody: { place: custody, face: faceCustody, ...("unread" in seed ? { seed } : seed), held: house.census() },
           vessel: lit && worn ? { did: didFromVerifyingKey(lit.identity.verifyingKey), verifyingKey: lit.identity.verifyingKey, activeWikiId: lit.activeWikiId, ...(lit.wikiAwaitsFace ? { wikiAwaits: lit.wikiAwaitsFace.message } : {}) } : null,
+        };
+      },
+    },
+    {
+      // The node's `lares vault status` answers `{custody, door}`: custody at rest, and what the standing vessel holds. The same two halves read here.
+      path: ["vault", "status"],
+      summary: "read custody: how this browser's place and each face it names rest (clear, sealed, bound), and what this tab's session holds open",
+      run: async () => {
+        const { house, idbName } = await standing(ctx);
+        const session = ctx.session();
+        const named = await orWhy(readBrowserVesselFaces(idbName));
+        const faces = "unread" in named ? named : await Promise.all(named.map(async (face) => ({ face, ...(await orWhy(readFaceCustody(idbName, face))) })));
+        const place = await orWhy(readBrowserCustody(idbName).then((c) => c.reading === "sealed" ? { reading: c.reading, unlocked: c.unlocked, slots: c.slots.map((slot) => slot.kinds) } : c));
+        return {
+          custody: { place, faces, seed: await orWhy(ctx.seedRest(session?.face ?? null)) },
+          door: { standing: house.floor(), unlocked: session?.admission === "admitted", admittedBy: session?.admittedBy ?? null, face: session?.face ?? null, held: house.census() },
         };
       },
     },

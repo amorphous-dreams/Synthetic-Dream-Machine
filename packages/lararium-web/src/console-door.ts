@@ -44,6 +44,8 @@ const NOT_HELD: readonly { readonly paths: readonly string[]; readonly code: str
     reason: (p) => `\`${p}\` stands or tends a listening socket, and a browser opens none: this vessel dials a hearth's relay and serves nobody.` },
   { paths: ["vault unlock", "vault bind", "vault unbind", "vault rewrap", "vault backup", "vault restore", "raise", "rotate-place"], code: "hand-needed",
     reason: (p) => `\`${p}\` takes a person's hand and a secret, and the console takes neither. The vessel raises its ask at the top of the page, and the ceremony document it opens takes the secret.` },
+  { paths: ["vault lock"], code: "locks-by-leaving",
+    reason: () => "a browser vessel locks when its face's last tab closes or reloads: each tab holds its own unlock, and the vessel returns to its floor as the last one leaves. Close or reload this site's tabs to lock it." },
   { paths: ["export", "import"], code: "syncs-by-join",
     reason: (p) => `\`${p}\` carries a house's authored memory across a re-founding. A browser vessel carries no bundle: what a face holds reaches it by sync once the face joins here.` },
   { paths: ["fleet"], code: "page-door-holds-it",
