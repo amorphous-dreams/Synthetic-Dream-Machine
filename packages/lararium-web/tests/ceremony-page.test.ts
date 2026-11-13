@@ -33,11 +33,23 @@
  *             document at `#reset=<askId>` in a window with no opener; a second reset ask answers the standing one's id and
  *             paints no second notice; the notice reads among the standing asks; "not now" takes it down.
  *   CONTROL   the boot status row never says the boot waits on a reset: the vessel boots on beneath it.
+ *   CP6 RED   THE PAGE RECORDS THE RESET ASK IT RAISES, and the ceremony burns for no other (#/the-reset): painting the ask
+ *             writes `lares:reset-ask:<id>` to the origin's record; each press writes it again before the ceremony opens;
+ *             "not now" forgets it. A page whose storage withholds itself paints the refusal `reset-unrecorded` with no
+ *             button to a ceremony that would refuse. CONTROL: a second ask in the same page records nothing new.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { expect, test } from "vitest";
 import { openResetCeremony, paintCeremonyAsk, paintResetAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks, type CeremonyBroker, type PageAsk } from "../src/ceremony-page.js";
+import { resetAskStands, type AskRecord } from "../src/ceremony/reset-core.js";
+
+/** The origin's ask record over a plain map. */
+function recordOf() {
+  const map = new Map<string, string>();
+  const record: AskRecord = { getItem: (k) => map.get(k) ?? null, setItem: (k, v) => { map.set(k, v); }, removeItem: (k) => { map.delete(k); } };
+  return { map, record };
+}
 
 function containerOf(active: ServiceWorker, controller: ServiceWorker | null) {
   const listeners = new Set<() => void>();
@@ -161,7 +173,8 @@ test("CP5 RED the reset ask names itself, opens the ceremony at #reset=<askId> w
   const RESET = "00000000-0000-4000-8000-0000000000aa";
   const opened: string[][] = [];
   const open = (askId: string): void => openResetCeremony(askId, (url, target, features) => { opened.push([url, target, features]); return null; });
-  expect(paintResetAsk(doc, () => RESET, open)).toBe(RESET);
+  const { record } = recordOf();
+  expect(paintResetAsk(doc, () => RESET, open, record)).toBe(RESET);
   const button = doc.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open")!;
   expect(button.textContent).toBe("open the reset ceremony");
   for (const kind of KINDS) {
@@ -176,8 +189,38 @@ test("CP5 RED the reset ask names itself, opens the ceremony at #reset=<askId> w
   expect(opened).toEqual([[`/ceremony.html#reset=${RESET}`, "_blank", "noopener"]]);
   expect(standingAsks(doc)).toEqual([{ askId: RESET, kind: "reset", ceremony: "window-opened", refusal: null }]);
   // A second ask answers the standing one and paints no second notice.
-  expect(paintResetAsk(doc, () => "00000000-0000-4000-8000-0000000000bb", open)).toBe(RESET);
+  expect(paintResetAsk(doc, () => "00000000-0000-4000-8000-0000000000bb", open, record)).toBe(RESET);
   expect(doc.querySelectorAll(".ceremony-ask").length).toBe(1);
   doc.querySelector<HTMLElement>(".ceremony-ask button.ceremony-withdraw")!.click();
   expect(doc.querySelector(".ceremony-ask")).toBeNull();
+});
+
+test("CP6 RED the page records the reset ask it raises, records it again at each press, forgets it at not-now, and refuses reset-unrecorded where storage withholds itself", () => {
+  const { doc } = bootPage();
+  const RESET = "00000000-0000-4000-8000-0000000000aa";
+  const { map, record } = recordOf();
+  const stoodAtOpen: boolean[] = [];
+  const open = (askId: string): void => { stoodAtOpen.push(resetAskStands(record, askId)); };
+  expect(paintResetAsk(doc, () => RESET, open, record)).toBe(RESET);
+  expect([...map.keys()], "the paint records the ask under the vessel's own prefix").toEqual([`lares:reset-ask:${RESET}`]);
+  // CONTROL: a second ask answers the standing one and records nothing new.
+  paintResetAsk(doc, () => "00000000-0000-4000-8000-0000000000bb", open, record);
+  expect([...map.keys()]).toEqual([`lares:reset-ask:${RESET}`]);
+  // A record another hand removed (a decline in an earlier ceremony window, a cleared storage) returns at the press.
+  map.clear();
+  doc.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open")!.click();
+  expect(stoodAtOpen, "the ask stands recorded as its ceremony opens").toEqual([true]);
+  doc.querySelector<HTMLElement>(".ceremony-ask button.ceremony-withdraw")!.click();
+  expect([...map.keys()], "not now forgets the ask, so its id stands no ceremony").toEqual([]);
+
+  // A storage that withholds itself: the ceremony would refuse, so the page says so and offers no button to it.
+  const dark = bootPage();
+  const withheld: AskRecord = { getItem: () => null, setItem: () => { throw new Error("SecurityError"); }, removeItem: () => {} };
+  const opened: string[] = [];
+  paintResetAsk(dark.doc, () => RESET, (askId) => { opened.push(askId); }, withheld);
+  const notice = dark.doc.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"]")!;
+  expect(notice.dataset["refusal"]).toBe("reset-unrecorded");
+  expect(notice.querySelector("button.ceremony-open:not(.ceremony-withdraw)")).toBeNull();
+  expect(standingAsks(dark.doc)).toEqual([{ askId: RESET, kind: "reset", ceremony: "refused", refusal: "reset-unrecorded" }]);
+  expect(opened).toEqual([]);
 });

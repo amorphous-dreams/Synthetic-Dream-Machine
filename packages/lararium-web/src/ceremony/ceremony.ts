@@ -8,11 +8,13 @@
  * this document through the service worker.
  *
  * A RESET ASK (`#reset=<askId>`, browser-vessel-lift#/the-reset) stands here too, and it takes no secret and no port: this
- * document takes one typed confirmation and burns the place itself (`reset-core.ts`).
+ * document takes one typed confirmation and burns the place itself (`reset-core.ts`). The navigation alone stands no reset:
+ * the id must name an ask a page of this origin recorded and that still stands, or the document refuses `reset-unasked` and
+ * paints no form.
  */
 import { RESET_CHANNEL, type BrokerToCeremony, type CeremonyAsk, type CeremonyToBroker, type ResetSignal, type VesselToCeremony } from "../ceremony-protocol.js";
 import { askIdOf, ceremonyRefusal, evalRuns, resetAskOf, sendDecline, sendPasskey, sendPassphrase } from "./ceremony-core.js";
-import { ambientResetEnv, burnPlace, RESET_PHRASE, resetRefusal, typedConfirms } from "./reset-core.js";
+import { ambientResetEnv, burnPlace, forgetResetAsk, originAskRecord, RESET_PHRASE, resetAskStands, ResetRefused, resetRefusal, typedConfirms } from "./reset-core.js";
 
 const $ = (id: string): HTMLElement => document.getElementById(id)!;
 
@@ -85,10 +87,12 @@ function paint(ask: CeremonyAsk, port: MessagePort): void {
  * THE RESET CEREMONY (`reset-core.ts`): this document, standing clean, takes one typed confirmation and burns the place
  * itself. No vessel answers it and no port reaches it, so it stands while the vessel rests locked, half-founded or down. It
  * tells every tab of the origin to stand down first, names any tab that still holds a store, and tells them all to boot
- * afresh once the place burned.
+ * afresh once the place burned. It stands only for an ask the origin's record names: a link from anywhere else carries an id
+ * no page raised, and refuses `reset-unasked` with no form painted.
  */
 function standReset(askId: string): void {
-  const refusal = resetRefusal({ framed: window.top !== window.self, evalRuns: evalRuns() });
+  const record = originAskRecord();
+  const refusal = resetRefusal({ framed: window.top !== window.self, evalRuns: evalRuns(), asked: resetAskStands(record, askId) });
   if (refusal) { refuse(refusal); return; }
   const channel = new BroadcastChannel(RESET_CHANNEL);
   const signal = (msg: ResetSignal): void => channel.postMessage(msg);
@@ -117,10 +121,14 @@ function standReset(askId: string): void {
     form.hidden = true;
     void burnPlace(ambientResetEnv(signal, say), askId).then(
       (report) => done(`This browser's vessel stands at its anon floor again (${String(report.databases.length)} store(s) burned). Every tab of this site boots afresh. This window closes.`),
-      (err: unknown) => { form.hidden = false; say(`The reset stopped: ${err instanceof Error ? err.message : String(err)}. What burned before it stays burned; confirm again to go on.`); },
+      (err: unknown) => {
+        // The ask left the record while this window stood (the page withdrew it, or another window settled it): nothing burned.
+        if (err instanceof ResetRefused && err.refusal === "reset-unasked") { refuse(err.refusal); return; }
+        form.hidden = false; say(`The reset stopped: ${err instanceof Error ? err.message : String(err)}. What burned before it stays burned; confirm again to go on.`);
+      },
     );
   });
-  $("ceremony-decline").addEventListener("click", () => { pass.value = ""; signal({ t: "reset:declined", askId }); done("Nothing burned. This window closes."); });
+  $("ceremony-decline").addEventListener("click", () => { pass.value = ""; forgetResetAsk(record, askId); signal({ t: "reset:declined", askId }); done("Nothing burned. This window closes."); });
   pass.focus();
 }
 

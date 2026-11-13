@@ -8,6 +8,7 @@
  * vessel and never falls back to a form of its own.
  */
 import { CEREMONY_BROKER_PATH, CEREMONY_DOCUMENT_PATH, type CeremonyAskKind, type PageAskKind, type PageToBroker } from "./ceremony-protocol.js";
+import { forgetResetAsk, originAskRecord, recordResetAsk, type AskRecord } from "./ceremony/reset-core.js";
 
 export interface PageCeremonyEnv { readonly isSecureContext: boolean; readonly hasServiceWorker: boolean }
 
@@ -155,8 +156,14 @@ export function openResetCeremony(askId: string, open: (url: string, target: str
  * THE RESET ASK (browser-vessel-lift#/the-reset), painted in the idiom of every other ask: a notice at the top of the page and
  * one button that names its ask. The page's script burns nothing: the button opens the ceremony document, which takes the typed
  * confirmation and burns the place itself. One reset ask stands at a time; a second call answers the standing one's id.
+ *
+ * THE PAGE RECORDS THE ASK IT RAISES (`reset-core.ts`, the ask record): the ceremony burns only for an id this origin's record
+ * names, so the paint writes it, each press writes it again before the ceremony opens, and "not now" forgets it. A page whose
+ * storage withholds itself cannot record, so its ceremony would refuse: the notice says so (`reset-unrecorded`) and offers no
+ * button to it.
  */
-export function paintResetAsk(doc: Document, mint: () => string = () => crypto.randomUUID(), open: (askId: string) => void = openResetCeremony): string {
+export function paintResetAsk(doc: Document, mint: () => string = () => crypto.randomUUID(), open: (askId: string) => void = openResetCeremony,
+  record: AskRecord | null = originAskRecord()): string {
   const standing = doc.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"]");
   if (standing?.dataset["askId"]) return standing.dataset["askId"];
   const askId = mint();
@@ -169,12 +176,21 @@ export function paintResetAsk(doc: Document, mint: () => string = () => crypto.r
   say.textContent = "This browser's holder asks to reset its vessel to its anon floor. Nothing burns here: the ceremony takes typed words first, then burns every key, face, wiki and pin this browser holds for this site.";
   const go = doc.createElement("button");
   go.type = "button"; go.className = "ceremony-open"; go.textContent = ASK_WORDS.reset.open;
-  go.addEventListener("click", () => { open(askId); notice.dataset["opened"] = "true"; go.textContent = "the reset ceremony stands in its own window (press to open it again)"; });
+  const unrecorded = (): void => {
+    notice.dataset["refusal"] = "reset-unrecorded";
+    say.textContent = "The reset ceremony cannot stand here: reset-unrecorded. This browser withholds this site's storage, so the page cannot record the ask its ceremony checks. Clear this site's data in the browser's own settings to reset it.";
+    go.remove();
+  };
+  go.addEventListener("click", () => {
+    if (!recordResetAsk(record, askId)) { unrecorded(); return; }
+    open(askId); notice.dataset["opened"] = "true"; go.textContent = "the reset ceremony stands in its own window (press to open it again)";
+  });
   const not = doc.createElement("button");
   not.type = "button"; not.className = "ceremony-open ceremony-withdraw"; not.textContent = "not now";
-  not.addEventListener("click", () => settleCeremonyAsk(doc, askId));
+  not.addEventListener("click", () => { forgetResetAsk(record, askId); settleCeremonyAsk(doc, askId); });
   notice.append(say, go, not);
   doc.body.prepend(notice);
+  if (!recordResetAsk(record, askId)) unrecorded();
   return askId;
 }
 

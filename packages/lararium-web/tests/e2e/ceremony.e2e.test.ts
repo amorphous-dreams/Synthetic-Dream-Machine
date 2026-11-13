@@ -21,6 +21,11 @@
  *               ask; the ceremony's wrong words burn nothing (the key reads unchanged); its typed confirmation returns BOTH
  *               tabs to a fresh anon floor under a NEW key, with no word from either tab. CONTROL: the door refuses a host
  *               shim verb by name, and a word past a verb's path refuses `usage`.
+ *   K4 RED      THE RESET CEREMONY BURNS ONLY FOR AN ASK A PAGE OF THIS ORIGIN RAISED: the ceremony document opened at
+ *               `#reset=<id>` for an id no page raised (a bare link from anywhere) refuses `reset-unasked` and paints no form;
+ *               an ask the page raised and the person withdrew ("not now") refuses the same way; the vessel keeps its key.
+ *               CONTROL: a fresh ask the page raised and still shows stands the ceremony's form, its typed words burn the
+ *               place (a new key), and the burned id then refuses too.
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
@@ -201,20 +206,21 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
   } finally { await context.close(); }
 });
 
+type Answer = { ok: boolean; data?: { entries?: { verb: string; holder: string }[]; vessel?: { standing?: string; vessel?: { did: string } | null; absent?: string }; page?: { asks: { kind: string }[]; tab: string }; askId?: string }; error?: { code: string; message: string } };
+const lares = (page: Page, ...argv: string[]): Promise<Answer> => page.evaluate((words) => (window as unknown as { lares: (...a: string[]) => Promise<Answer> }).lares(...words), argv);
+/** The veil key this tab's vessel reads, once its session stands admitted on the lit vessel. */
+const keyOf = async (page: Page): Promise<string> => {
+  for (let i = 0; i < 360; i++) {
+    const read = await lares(page, "vessel", "read").catch(() => null);
+    const did = read?.data?.vessel?.vessel?.did;
+    if (typeof did === "string") return did;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  throw new Error(`the tab's vessel named no key within 90 s: ${JSON.stringify(await lares(page, "vessel", "read").catch((e: unknown) => String(e)))}`);
+};
+
 test("K3 RED — the console door reads the vessel, and the reset ceremony's typed words return every tab to a fresh anon floor", { timeout: 300_000 }, async () => {
   const context = await browser.newContext();
-  type Answer = { ok: boolean; data?: { entries?: { verb: string; holder: string }[]; vessel?: { standing?: string; vessel?: { did: string } | null; absent?: string }; page?: { asks: { kind: string }[]; tab: string }; askId?: string }; error?: { code: string; message: string } };
-  const lares = (page: Page, ...argv: string[]): Promise<Answer> => page.evaluate((words) => (window as unknown as { lares: (...a: string[]) => Promise<Answer> }).lares(...words), argv);
-  /** The veil key this tab's vessel reads, once its session stands admitted on the lit vessel. */
-  const keyOf = async (page: Page): Promise<string> => {
-    for (let i = 0; i < 360; i++) {
-      const read = await lares(page, "vessel", "read").catch(() => null);
-      const did = read?.data?.vessel?.vessel?.did;
-      if (typeof did === "string") return did;
-      await new Promise((r) => setTimeout(r, 250));
-    }
-    throw new Error(`the tab's vessel named no key within 90 s: ${JSON.stringify(await lares(page, "vessel", "read").catch((e: unknown) => String(e)))}`);
-  };
   try {
     const first = await context.newPage();
     const faults: string[] = [];
@@ -256,5 +262,49 @@ test("K3 RED — the console door reads the vessel, and the reset ceremony's typ
     assert.equal(await keyOf(second), after, "the second tab stands on the same fresh floor");
     assert.deepEqual((await lares(first, "vessel", "read")).data?.page?.asks, [], "no ask stands after the reset");
     assert.deepEqual(faults, [], "no page error through the door and the reset");
+  } finally { await context.close(); }
+});
+
+test("K4 RED — the reset ceremony burns only for an ask a page of this origin raised and still shows: a bare link and a withdrawn ask refuse reset-unasked", { timeout: 300_000 }, async () => {
+  const context = await browser.newContext();
+  /** Open the ceremony document at a reset ask's id, as a link from anywhere would, and read how it stands. */
+  const standAt = async (askId: string): Promise<{ refusal: string | null; formHidden: boolean; state: string }> => {
+    const rite = await context.newPage();
+    await rite.goto(`${baseUrl}/ceremony.html#reset=${askId}`);
+    await rite.waitForFunction(() => document.body.dataset["refusal"] !== undefined || document.getElementById("ceremony-form")?.hidden === false, undefined, { timeout: WAIT });
+    const read = await rite.evaluate(() => ({ refusal: document.body.dataset["refusal"] ?? null, formHidden: document.getElementById("ceremony-form")?.hidden === true, state: document.getElementById("ceremony-state")?.textContent ?? "" }));
+    await rite.close();
+    return read;
+  };
+  try {
+    const page = await context.newPage();
+    const faults: string[] = [];
+    page.on("pageerror", (e) => faults.push(e.message));
+    await page.goto(`${baseUrl}/`);
+    await live(page);
+    const before = await keyOf(page);
+    // A BARE LINK: an id no page raised. The ceremony paints no form, so no typed phrase can burn anything.
+    const bare = await standAt("0f8fad5b-d9cb-469f-a165-70867728950e");
+    assert.deepEqual({ refusal: bare.refusal, formHidden: bare.formHidden }, { refusal: "reset-unasked", formHidden: true }, `a ceremony no page asked for refuses by name (it said: ${bare.state})`);
+    // A WITHDRAWN ASK: the page raised it and the person pressed "not now". Its id no longer stands.
+    const asked = await lares(page, "vessel", "reset");
+    const askId = asked.data?.askId ?? "";
+    assert.match(askId, /^[0-9a-f-]{36}$/);
+    await page.locator(".ceremony-ask[data-ask=\"reset\"] button.ceremony-withdraw").click();
+    assert.equal((await standAt(askId)).refusal, "reset-unasked", "a withdrawn ask's id stands no ceremony");
+    assert.equal(await keyOf(page), before, "neither refusal burned anything: the vessel keeps its key");
+    // CONTROL: the same page raises a fresh ask, the ceremony stands its form for that id, and its typed words burn the place.
+    const again = (await lares(page, "vessel", "reset")).data?.askId ?? "";
+    assert.notEqual(again, askId);
+    const [rite] = await Promise.all([context.waitForEvent("page"), page.locator(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open").first().click()]);
+    await rite.waitForSelector("#ceremony-form:not([hidden])", { timeout: WAIT });
+    assert.equal(new URL(rite.url()).hash, `#reset=${again}`);
+    assert.equal(await rite.evaluate(() => document.body.dataset["refusal"] ?? null), null, "an ask the page raised and still shows stands its ceremony");
+    await rite.locator("#ceremony-pass").fill("reset this browser");
+    await Promise.all([page.waitForEvent("load", { timeout: WAIT }), rite.locator("#ceremony-go").click()]);
+    assert.notEqual(await keyOf(page), before, "the raised ask's ceremony burned the place: the vessel stands under a new key");
+    // The burned ask's id stands no second ceremony.
+    assert.equal((await standAt(again)).refusal, "reset-unasked", "a burned ask's id stands no ceremony again");
+    assert.deepEqual(faults, [], "no page error through the refusals and the burn");
   } finally { await context.close(); }
 });

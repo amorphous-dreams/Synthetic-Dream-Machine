@@ -19,8 +19,10 @@ export type CeremonyAskKind = "unlock" | "bind-first" | "clear" | "ward" | "card
 
 /**
  * THE RESET ASK (browser-vessel-lift#/the-reset): the page's own ask, never the vessel's. It carries no secret and no port, so
- * no broker moves it: the ceremony document reads its id off its own navigation (`#reset=<askId>`), takes a typed
- * confirmation, burns the place itself, and speaks to every tab of the origin on one BroadcastChannel.
+ * no broker moves it: the ceremony document reads its id off its own navigation (`#reset=<askId>`), checks it against the
+ * record the asking page wrote (`reset-core.ts`: an id no page raised refuses `reset-unasked`), takes a typed confirmation,
+ * burns the place itself, and speaks to every tab of the origin on one BroadcastChannel. A tab honours a signal only for an
+ * ask that record names (`reset-tab.ts`).
  */
 export type PageAskKind = CeremonyAskKind | "reset";
 export const RESET_CHANNEL = "lares:reset";
