@@ -28,10 +28,19 @@ const WHY: Record<FloorKeyRefusal, string> = {
   [FLOOR_UNKEYED]: "this place derives no floor key (a herm never unlocks), so it stands no floor document and registers none",
 };
 
+/** The name a floor act refuses under, ahead of the floor's own refusal (`floor-unavailable: <refusal>: <why>`). */
+export const FLOOR_UNAVAILABLE = "floor-unavailable";
+
 /** A floor act refused because the floor's rest key does not stand. */
 export class FloorUnavailable extends Error {
   override readonly name = "FloorUnavailable";
-  constructor(readonly refusal: FloorKeyRefusal) { super(`floor-unavailable: ${refusal}: ${WHY[refusal]}`); }
+  constructor(readonly refusal: FloorKeyRefusal) { super(`${FLOOR_UNAVAILABLE}: ${refusal}: ${WHY[refusal]}`); }
+}
+
+/** The floor's refusal a message carries across a worker boundary (where the error arrives as its message alone), or null. */
+export function floorRefusalOf(message: string): FloorKeyRefusal | null {
+  const named = /^floor-unavailable: (vessel-locked|floor-unkeyed):/.exec(message);
+  return named ? named[1] as FloorKeyRefusal : null;
 }
 
 export interface FloorRegistry {

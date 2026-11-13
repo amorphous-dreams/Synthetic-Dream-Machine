@@ -37,6 +37,7 @@ import {
   attachMessageChannelSync,
   controlStoreOf,
   controlHomeRefusal,
+  floorRefusalOf,
   awaitIslandMsg,
   mkManifest,
   mkDaemonPlaceVerb,
@@ -815,6 +816,11 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         requestId, fingerprint, recipeTrace, wikiSlug: "daemon",
       }), opts.askLivenessMs ?? ISLAND_ASK_LIVENESS_MS);
     } catch (cause) {
+      // A FLOOR THAT CANNOT SEAL STANDS (operator ruling 2026-11-09): where the island's floor key does not stand (a locked
+      // hearth, a herm that derives none), the island holds the daemon's working layer in its memory alone, and the host
+      // mounts none, as for a control stand-in: every host write refuses by name until an unlock composes again.
+      const floorRefused = cause instanceof Error ? floorRefusalOf(cause.message) : null;
+      if (floorRefused) { console.log(`[daemon] host working layer waits: the floor's rest key does not stand (${floorRefused})`); return; }
       throw new HostWorkingBindingRefusal(slot, cause);
     }
     if (!binding.workingUrl) throw new HostWorkingBindingRefusal(slot, new Error("the island named no working document for the daemon wiki"));

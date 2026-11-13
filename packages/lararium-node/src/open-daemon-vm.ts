@@ -80,6 +80,12 @@ export interface DaemonVmOptions {
   /** Typed structural capabilities: the lararium engine doc, daemon bag, the lares bag,
    *  catalog registry access. Library bags resolve island-side from the catalog registry. */
   grants:            IslandGrants;
+  /**
+   * THE FLOOR KEY, READ WHERE THE CONTROL DOCUMENT READS: asked once the control document stands, so the island's floor gate
+   * and the host's working layer read the key this composition reads (a custody that opened at the control document's stand
+   * stands the floor key too). Absent, `grants.floorKey` rides as handed.
+   */
+  floorKey?:         () => NonNullable<IslandGrants["floorKey"]>;
   /** Optional canon bag URIs for the daemon recipe. Empty by default. */
   libraryBags?:        readonly string[];
   /**
@@ -113,7 +119,7 @@ export function faceRelationStance(input: { personaBagId?: string | null | undef
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, grants, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData } = opts;
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
   // memory-only storage. Omit `storageDir` when the caller intends the
@@ -134,6 +140,8 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
   );
   // ── The vessel's control document, beside the daemon document that names it (`control-home`) ──
   const controlHandle = await standControlHome(repo, daemonHandle);
+  // ONE READING: the floor's key reads after the control document stood, never before it.
+  const grants: IslandGrants = opts.floorKey ? { ...opts.grants, floorKey: opts.floorKey() } : opts.grants;
   // ── Persona doc handle (same strategy) — the one VM tends both bags ──────────
   // A plane this replica already HOLDS (a joinee's admit landed it, or a sync delivered it) is read where it stands: the
   // library's boot query can answer `unavailable` for a document its own handle table already holds ready, and a held

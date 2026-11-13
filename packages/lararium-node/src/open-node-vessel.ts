@@ -1464,7 +1464,7 @@ async function prepareNodeBootOn(
   // Repo's rest where the custody stands unlocked, so every floor document seals with no secret home and no face. A locked
   // hearth derives none (`vessel-locked`), and a place the operator asked to stand as a herm derives none and registers
   // none (`floor-unkeyed`). The custody's open stands it for the saves that wait; the daemon island's gate reads the answer
-  // this composition began with, and an unlock composes again.
+  // this composition holds where its control document stood, and an unlock composes again.
   const standFloorKey = (): "stands" | "vessel-locked" | "floor-unkeyed" => {
     if (opts.askedHerm) return "floor-unkeyed";
     // ONE READING WITH THE CONTROL DOCUMENT: the floor's key stands wherever this home's custody stands open, as the control
@@ -1477,7 +1477,10 @@ async function prepareNodeBootOn(
     try { standFloorKeyOn(repo, key); } finally { key.fill(0); }
     return "stands";
   };
-  const floorKeyGrant = standFloorKey();
+  // The composition's reading of the floor key: read here, and read again where the daemon's control document stands (a custody
+  // that opens at that stand, through its seat's opener, stands the key too), so the island's floor gate, the host's working
+  // layer and the floor verbs all read the key the control document read under.
+  let floorKeyGrant = standFloorKey();
   const stopFloorKeyOpened = standingCustody()?.onOpened?.(() => { try { standFloorKey(); } catch (e) { console.warn(`[floor] the floor's rest key did not stand at the custody's open: ${e instanceof Error ? e.message : String(e)}`); } }) ?? null;
   stood.push({ what: "the floor key watch", down: () => { stopFloorKeyOpened?.(); } });
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
@@ -3599,6 +3602,8 @@ async function prepareNodeBootOn(
           // The worn face's daemon canon (`bags/daemon-<F>`), the document its catalog names; none at the floor.
           ...(daemonCanon ? { canonUrl: daemonCanon.url } : {}),
         },
+        // ONE READING WITH THE CONTROL DOCUMENT: the daemon VM reads the floor key again once its control document stood.
+        floorKey: () => (floorKeyGrant = standFloorKey()),
         daemonAuth: daemonAuthNow(joinedFaces),
         storageDir,
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
@@ -4539,7 +4544,7 @@ async function prepareNodeBootOn(
       return waiting;
     },
     heldSaves: () => sealedRest.store.held(),
-    floorKey: floorKeyGrant,
+    get floorKey() { return floorKeyGrant; },
     backupDoor: {
       wornFace: () => litFace,
       ownEdgeShadowed: async () => {

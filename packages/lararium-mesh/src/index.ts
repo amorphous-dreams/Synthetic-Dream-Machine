@@ -667,7 +667,7 @@ export * from "./sealed-rest.js";
 export { deviceDaemonDocs, vesselHeldBagOf, DAEMON_SLOT_PREFIX, FLOOR_REGISTRY_ROOT, FLOOR_SLOT_ROOT, FLOOR_DAEMON_SLOT_ROOT, floorSlotTitle, floorDaemonSlotTitle, isFloorRegistryTitle, floorSlotOf, type DeviceDaemonDocs, type LitDeviceFace, type LitDeviceFaces } from "./device-daemon-docs.js";
 export * from "./published-bag-key.js";
 export * from "./held-rest-key.js";
-export { floorRegistryOf, FloorUnavailable, FLOOR_UNKEYED, type FloorRegistry, type FloorKeyRefusal } from "./floor-registry.js";
+export { floorRegistryOf, floorRefusalOf, FloorUnavailable, FLOOR_UNAVAILABLE, FLOOR_UNKEYED, type FloorRegistry, type FloorKeyRefusal } from "./floor-registry.js";
 export * from "./secret-home.js";
 export * from "./memory-section.js";
 export * from "./face-bundle.js";
