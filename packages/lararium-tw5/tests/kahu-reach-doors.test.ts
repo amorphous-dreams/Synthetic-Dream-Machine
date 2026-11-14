@@ -17,7 +17,7 @@ import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, 
 import type { KahuReachSource } from "@lararium/mesh";
 import { storedLarRecord } from "@lararium/mesh";
 import { makeActionReactorFor } from "../src/action-handler.js";
-import { makeMemePutReactor, makeMemeDeleteReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
+import { makeMemePutReactor, makeMemeDeleteReactor, makeMemeGetReactor, makeMemeListReactor, memeVerbOptions, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
 import { makeInitWikiReactor } from "../src/wiki-mint-handlers.js";
@@ -285,5 +285,79 @@ describe("house canon resolves the Kahu realm's standing document at the action 
       const unnamed = memeVerbOptions(ctx, async () => null, async () => null);
       expect((await (await unnamed.reach!(LARES, LARES))!.get("where"))?.tiddler.text).toBe("stray");
     } finally { await s.repo.shutdown(); }
+  });
+
+  /**
+   * A FACE OUTSIDE THE KAHU CABAL READS HOUSE CANON FROM THE FLOOR. Its island registers no house canon bag (the live documents
+   * rest in the Kahu realm), so its read cap names none; the vessel-wide realm pointer may still reach the live document. The
+   * meme door answers the bag's floor snapshot, with no cap asked (the floor's blobs rest public by CID), through every read:
+   * `meme list --bag`, `meme get --bag`, and a wiki's stack (`--recipe`).
+   */
+  async function outsideFace() {
+    const repo = new Repo({ network: [] });
+    const store = (bag: string) => new AutomergeDocStore(repo.create(emptyLarDoc()), bag);
+    const liveLararium = store(LARARIUM), floorLararium = store(LARARIUM), liveLares = store(LARES), working = new MemoryTiddlerStore(WORKING);
+    const lay = async (into: LarTiddlerStore, bag: string, uri: string, slot: string): Promise<void> => {
+      const composite = new CompositeStore();
+      composite.addLayer({ bagId: bag, store: into, writable: true });
+      const text = meme(slot).replaceAll(URI, uri).replace('uri-path = "t/ford"', `uri-path = "${uri.slice("lar:///".length)}"`);
+      await makeMemePutReactor({ composite, tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as never, kahuReach: await kahuHand() })({ uri, bag, text }, ctxOf(composite, "meme-put"));
+    };
+    // The floor carries the released page; live canon has moved past it, and holds a page no release carries yet.
+    await lay(floorLararium, LARARIUM, "lar:///t/released", "/floor");
+    await lay(liveLararium, LARARIUM, "lar:///t/released", "/live");
+    await lay(liveLararium, LARARIUM, "lar:///t/unreleased", "/live");
+    await lay(liveLares, LARES, "lar:///t/lares-page", "/live");
+    const recipes = new Map<string, LarTiddlerRecord>([[recipeUri("catalog", "trove"), { tiddler: { title: recipeUri("catalog", "trove"), "bag-stack": `${LARARIUM} ${WORKING}`, "writable-bag": WORKING } }]]);
+    const opts: MemeVerbOptions = {
+      composite: new CompositeStore(),                                     // this face's daemon island mounts no canon layer
+      tw5: { $tw: { wiki: { getTiddlerText: () => "" } } } as unknown as MemeVerbOptions["tw5"],
+      recipeOf: async (slug) => recipes.get(recipeUri("catalog", slug)) ?? null,
+      slotStore: async (_slug, kind) => (kind === "working" ? working : null),
+      reach: async (key) => (key === LARARIUM ? liveLararium : key === LARES ? liveLares : null),   // the vessel-wide realm pointer
+      floorCanon: (bag) => (bag === LARARIUM ? floorLararium : null),      // the floor this island mounted carries lararium; no lares snapshot here
+      kahuReach: await strangerHand("joined-without-admission"),
+    };
+    // The face's hive registered neither house canon bag: its verifier answers as the live one does.
+    const cap: VerbContext["cap"] = async (_access, bag) => (bag === LARARIUM || bag === LARES ? { ok: false, reason: `bag not registered: ${bag}` } : { ok: true });
+    const ctx = (action: string): VerbContext => ({ ...ctxOf(opts.composite, action), cap });
+    return { repo, opts, ctx, live: liveLararium, floor: floorLararium };
+  }
+  const slotsOf = (answer: Record<string, unknown>): string => JSON.stringify(answer);
+
+  test("RED: a face whose cap names no house canon bag lists and gets bags/lararium from its floor snapshot, by bag and through a wiki's stack", async () => {
+    const f = await outsideFace();
+    try {
+      const listed = await makeMemeListReactor(f.opts)({ bag: "lararium" }, f.ctx("meme-list"));
+      expect(listed).toMatchObject({ bag: LARARIUM, floor: true });
+      expect((listed["roots"] as Array<{ uri: string }>).map((r) => r.uri)).toEqual(["lar:///t/released"]);   // the floor's roots: no unreleased page
+      const got = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", bag: "lararium" }, f.ctx("meme-get"));
+      expect(got).toMatchObject({ uri: "lar:///t/released", floor: true });
+      expect(slotsOf(got)).toContain("/floor");
+      expect(slotsOf(got)).not.toContain("/live");
+      const stack = await makeMemeListReactor(f.opts)({ recipe: "trove" }, f.ctx("meme-list"));
+      expect((stack["roots"] as Array<{ uri: string; bag: string; floor?: boolean }>)).toEqual([expect.objectContaining({ uri: "lar:///t/released", bag: LARARIUM, floor: true })]);
+      const viaWiki = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
+      expect(viaWiki).toMatchObject({ floor: true });
+      expect(slotsOf(viaWiki)).toContain("/floor");
+    } finally { await f.repo.shutdown(); }
+  });
+
+  test("CONTROLS: the same face writes no house canon (kahu-reach); a house canon bag the floor carries no snapshot of keeps its cap refusal; a hand whose cap holds reads the live document", async () => {
+    const f = await outsideFace();
+    try {
+      // The write door never reads the floor: with a canon layer mounted writable the put draws the Kahu predicate's refusal, and
+      // with none (this face's own island) it finds no layer to write. Either way no byte moves.
+      const before = [f.live.headsNow(), f.floor.headsNow()];
+      const mounted = new CompositeStore();
+      mounted.addLayer({ bagId: LARARIUM, store: f.live, writable: true });
+      expect(await reasonOf(async () => makeMemePutReactor({ ...f.opts, composite: mounted })({ uri: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("meme-put")))).toBe("kahu-reach");
+      await expect(makeMemePutReactor(f.opts)({ uri: "lar:///t/released", bag: "lararium", text: meme("/x") }, f.ctx("meme-put"))).rejects.toThrow();
+      expect([f.live.headsNow(), f.floor.headsNow()]).toEqual(before);
+      await expect(makeMemeListReactor(f.opts)({ bag: "lares" }, f.ctx("meme-list"))).rejects.toThrow(/cap-denied: read on lar:\/\/\/ha\.ka\.ba\/bags\/lares required \(bag not registered/);
+      const held = await makeMemeListReactor(f.opts)({ bag: "lararium" }, { ...f.ctx("meme-list"), cap: async () => ({ ok: true }) });
+      expect(held["floor"]).toBeUndefined();
+      expect((held["roots"] as Array<{ uri: string }>).map((r) => r.uri)).toEqual(["lar:///t/released", "lar:///t/unreleased"]);
+    } finally { await f.repo.shutdown(); }
   });
 });

@@ -17,7 +17,7 @@
  */
 
 import type { DocHandle }                        from "@lararium/mesh";
-import type { CompositeStore, IslandToVesselMsg, LarDoc, Repo, SecretHomeStore, SecretRestAnswer, WikiRecipe } from "@lararium/mesh";
+import type { CompositeStore, IslandToVesselMsg, LarDoc, LarTiddlerRecord, Repo, SecretHomeStore, SecretRestAnswer, WikiRecipe } from "@lararium/mesh";
 import type { TW5Engine }                        from "./tw5-vm.js";
 import type { ReceiptCapability }                        from "./receipt.js";
 
@@ -111,6 +111,12 @@ export interface IslandContext {
   control?: CompositeStore;
   /** The floor's rest key as the vessel granted it (`IslandGrants.floorKey`): the floor registry's gate. Absent: none stands. */
   floorKey?: "stands" | "vessel-locked" | "floor-unkeyed";
+  /**
+   * A HOUSE CANON BAG'S FLOOR SNAPSHOT, as the floor this island mounted carries it: the rows of that one slug, by bag uri. Null
+   * for a bag the floor carries no snapshot of (a tier under `public`, a bag outside house canon). The floor's blobs rest public
+   * by CID, so a read door answers from here with no cap asked where the hand holds no read on the live document.
+   */
+  floorCanon?: (bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null;
   /** THE VESSEL'S SECRET HOME, on the daemon island alone (`islandSecretHome`): never composed into a recipe, a composite
    *  or a mirror. Absent on every wiki island and on a daemon whose vessel named no home. */
   secretStore?: SecretHomeStore;

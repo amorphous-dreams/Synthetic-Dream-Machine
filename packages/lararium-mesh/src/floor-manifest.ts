@@ -13,6 +13,7 @@ import { plainRecord, ownEntry, hasOwnEntry, type StoredLarRecord } from "./stor
 import type { ChangeOrigin, LarTiddlerChange, LarTiddlerRecord, LarTiddlerStore } from "./tiddler-store.js";
 import { docPrototypeKeyFault } from "./prototype-key-shore.js";
 import { SYSTEM_CANON_SLUGS } from "./kahu-canon-reach.js";
+import { bagUri } from "./lar-uris.js";
 import type { CapTier } from "./cap-tier.js";
 
 /** The floor manifest's shape name. It carries no counter: a shape reads by its fields, and its bytes name it (the CID). */
@@ -277,6 +278,19 @@ export function floorBlobCids(manifestCid: string, m: FloorManifest): string[] {
 /** Each snapshot's rows in the manifest's slug order: the read-only layers the oracle floor stacks. */
 export function floorRowsInOrder(floor: ResolvedFloor): Readonly<Record<string, LarTiddlerRecord>>[] {
   return floorSlugs(floor.manifest).map((slug) => floor.snapshots[slug]!);
+}
+
+/**
+ * A BAG'S OWN SNAPSHOT OFF A RESOLVED FLOOR, by bag uri (`lar:///ha.ka.ba/bags/<slug>`): the rows of the one slug the manifest
+ * names, or null where the floor carries no snapshot of it. The oracle's read face stacks every snapshot into one layer; a door
+ * that reads ONE house canon bag from the floor (a face that holds no read on the live document) asks here.
+ */
+export function floorCanonReader(floor: ResolvedFloor): (bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null {
+  const prefix = bagUri("");
+  return (bag) => {
+    const slug = bag.startsWith(prefix) ? bag.slice(prefix.length) : "";
+    return slug.length > 0 && hasOwnEntry(floor.snapshots, slug) ? floor.snapshots[slug]! : null;
+  };
 }
 
 export function floorReadFace(opts: {

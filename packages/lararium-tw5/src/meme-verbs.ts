@@ -59,7 +59,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -96,11 +96,14 @@ export interface MemeVerbOptions {
   /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a house canon bag asks it
    *  BEFORE the cap gate, so a realm steward's grant stands in for no check. Absent → a stranger (fail closed). */
   readonly kahuReach?: KahuReachSource;
+  /** A house canon bag's FLOOR SNAPSHOT as a read-only store, off the floor this island mounted (`IslandContext.floorCanon`);
+   *  null where the floor carries none of it. A read door answers from it where the hand holds no read on the live document. */
+  readonly floorCanon?: (bag: string) => LarTiddlerStore | null;
 }
 
 /** The daemon's options off its island context — reach across both registry planes (access ≠ load). */
 export function memeVerbOptions(
-  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "faceCatalogUrl" | "oracleUrl">,
+  ctx: Pick<IslandContext, "composite" | "tw5" | "repo" | "catalogUrl" | "faceCatalogUrl" | "oracleUrl" | "floorCanon">,
   /** The instance-slot doc url by THE ONE resolver; null when nothing stands and `mint` is false. */
   slotDocUrl: (slug: string, kind: WikiSlotKind, opts: { mint: boolean }) => Promise<string | null>,
   /** A house canon bag's live document, which rests in the Kahu realm (no registry plane names it). Naming it asks nothing. */
@@ -112,6 +115,7 @@ export function memeVerbOptions(
   return {
     composite: ctx.composite,
     tw5: ctx.tw5,
+    ...(ctx.floorCanon ? { floorCanon: (bag: string) => { const rows = ctx.floorCanon!(bag); return rows ? floorReadFace({ rows: [rows], bagId: bag }) : null; } } : {}),
     slotStore: async (slug, kind, bag, opts) => {
       const url = await slotDocUrl(slug, kind, opts);
       if (!url) return null;
@@ -334,6 +338,41 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
   return { bag: anchorBagOf(opts), sink: wikiMemeSink(opts.tw5.$tw.wiki), anchor: true };
 }
 
+/** A house canon bag's floor snapshot, where the floor this island mounted carries one. */
+function floorStoreOf(opts: MemeVerbOptions, bag: string): LarTiddlerStore | null {
+  return isHouseCanonBag(bag) ? (opts.floorCanon?.(bag) ?? null) : null;
+}
+
+/**
+ * THE READ GATE, for every door that reads one container. The read cap gates the bag that answers; and A HOUSE CANON READ WITH
+ * NO CAP ON THE LIVE DOCUMENT READS THE FLOOR: a face outside the Kahu cabal registers no house canon bag (the live documents
+ * rest in the Kahu realm), so where its cap names none, or the island reaches no live document at all, the bag's floor snapshot
+ * answers, read-only and with no cap asked, since the floor's blobs rest public by CID. The answer says so (`floor: true`). A
+ * house canon bag the floor carries no snapshot of (a tier under `public`) keeps its refusal, and a WRITE never comes here: it
+ * asks the Kahu predicate at its own door (`requireKahuReach`).
+ */
+async function resolveRead(
+  opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> & { readonly uri?: string }, origin: ChangeOrigin, cap: VerbContext["cap"],
+): Promise<Resolved & { readonly floor?: true }> {
+  const fromFloor = (bag: string): (Resolved & { readonly floor: true }) | null => {
+    const store = floorStoreOf(opts, bag);
+    return store ? { bag, sink: storeMemeSink(store, bag, origin), anchor: false, floor: true } : null;
+  };
+  let resolved: Resolved;
+  try { resolved = await resolveSink(opts, target, origin, "get"); }
+  catch (err) {
+    // No live layer and nothing reaches the bag by access: a house canon bag named outright still reads its floor.
+    const floor = target.bag && !target.realm ? fromFloor(bagUriOf(target.bag)) : null;
+    if (!floor) throw err;
+    return floor;
+  }
+  const proof = await capOf(resolved.realmGrant, cap)("read", resolved.bag);
+  if (proof.ok) return resolved;
+  const floor = resolved.anchor ? null : fromFloor(resolved.bag);
+  if (!floor) throw new Error(`cap-denied: read on ${resolved.bag} required (${proof.reason ?? "no reason"})`);
+  return floor;
+}
+
 export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-put");
@@ -354,14 +393,12 @@ export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-get");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "get");
-    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    const { sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
     // The read hands a person the meme's TEXT: a pointer whose body rests in the content tier refuses by name.
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-get reads no pointer body.`);
     }
-    return { uri: target.uri, meme: await readMeme(target.uri, sink) };
+    return { uri: target.uri, meme: await readMeme(target.uri, sink), ...(floor ? { floor: true } : {}) };
   };
 }
 
@@ -381,7 +418,7 @@ function pageLimitOf(raw: unknown): number {
 }
 
 /** One root of a recipe's listing: the listing's own row, and the bag whose record answered it. */
-type StackListing = MemeListing & { readonly bag: string };
+type StackListing = MemeListing & { readonly bag: string; readonly floor?: true };
 
 /**
  * A NAMED RECIPE'S LISTING READS THE STACK, as its `meme-get` does: every root the wiki resolves, each
@@ -413,12 +450,16 @@ async function listRecipeStack(
   // THE READ CAP GATES THE BAG THAT ANSWERS, as the read's own gate does (`meme-get` asks for the one bag
   // its walk stopped at). A slot the wiki composes and nobody registered holds no root and answers none, so
   // it asks for no cap; a bag that answers a root the caller may not read refuses the listing by name.
-  const allowed = new Set<string>();
-  const mayRead = async (bag: string): Promise<void> => {
-    if (allowed.has(bag)) return;
+  // A HOUSE CANON LAYER THE CALLER HOLDS NO READ ON ANSWERS FROM ITS FLOOR SNAPSHOT (`resolveRead`'s law, per layer): the
+  // root lists under the floor's render and its row says so; a root the floor does not carry yet lists nowhere.
+  const allowed = new Map<string, Pick<MemeSink, "titles" | "read"> | null>();
+  const mayRead = async (bag: string): Promise<Pick<MemeSink, "titles" | "read"> | null> => {
+    if (allowed.has(bag)) return allowed.get(bag)!;
     const proof = await cap("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
-    allowed.add(bag);
+    const floor = proof.ok ? null : floorStoreOf(opts, bag);
+    if (!proof.ok && !floor) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    allowed.set(bag, floor ? storeMemeSink(floor, bag, origin) : null);
+    return allowed.get(bag)!;
   };
   const roots: StackListing[] = [];
   let next: string | null = null;
@@ -433,9 +474,9 @@ async function listRecipeStack(
     }
     if (!answered) continue;
     if (roots.length >= page.limit) { next = roots[roots.length - 1]!.uri; break; }
-    await mayRead(answered.bag);
-    const listed = await listOneMeme(uri, answered.sink, page.tree);
-    if (listed) roots.push({ ...listed, bag: answered.bag });
+    const floorSink = await mayRead(answered.bag);
+    const listed = await listOneMeme(uri, floorSink ?? answered.sink, page.tree);
+    if (listed) roots.push({ ...listed, bag: answered.bag, ...(floorSink ? { floor: true as const } : {}) });
   }
   return { recipe: slug, bags: layers.map((l) => l.bag), ...(unreached.length > 0 ? { unreached } : {}), roots, next };
 }
@@ -447,10 +488,8 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
     const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
     if (target.recipe && target.recipe !== "default") return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
-    const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "get");
-    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
-    return { bag, ...(await listMemePage(sink, page)) };
+    const { bag, sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
+    return { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
   };
 }
 
@@ -581,9 +620,7 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
       throw new Error(`meme-project: --dialect/--tongue weave the "md" target alone; got "${projectTarget}"`);
     }
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    const { bag, sink, anchor, realmGrant } = await resolveSink(opts, target, origin, "get");
-    const proof = await capOf(realmGrant, ctx.cap)("read", bag);
-    if (!proof.ok) throw new Error(`cap-denied: read on ${bag} required (${proof.reason ?? "no reason"})`);
+    const { bag, sink, anchor } = await resolveRead(opts, target, origin, ctx.cap);
     // A projection renders the meme's TEXT: the same pointer refusal the read gives, at every seat.
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-project renders no pointer body.`);

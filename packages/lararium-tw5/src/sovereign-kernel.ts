@@ -59,6 +59,7 @@ import {
   plainRecordOrNull,
   resolveFloor,
   floorRowsInOrder,
+  floorCanonReader,
   islandSecretHome,
   type KahuaStageFace,
   type Repo,
@@ -516,6 +517,8 @@ export function runSovereignKernel(
     // the genesis seed's own floor witness.
     const floorCidField = msg.floorCid ?? plainRecordOrNull(ownEntry(laraiumHandle.doc()?.tiddlers, GENESIS_FLOOR_TIDDLER))?.tiddler.cid;
     let floorRows: readonly Readonly<Record<string, LarTiddlerRecord>>[] = [];
+    // One house canon bag's own snapshot off that floor (`IslandContext.floorCanon`): a read door's floor answer.
+    let floorCanon: ((bag: string) => Readonly<Record<string, LarTiddlerRecord>> | null) | undefined;
     if (typeof floorCidField === "string" && floorCidField.length > 0) {
       const floor = await resolveFloor(floorCidField, resolveByCid);
       if ("refusal" in floor) {
@@ -523,6 +526,7 @@ export function runSovereignKernel(
         return;
       }
       floorRows = floorRowsInOrder(floor);
+      floorCanon = floorCanonReader(floor);
     } else {
       console.info(`[floor] the genesis seed names no floor; the ${PLANE_LABELS.oracle} reads the seed rows alone`);
     }
@@ -594,7 +598,7 @@ export function runSovereignKernel(
               // reconciling the SAME path boot just walked.
               // The CID plane the kernel already pulls engine/plugin bytes from, lifted to
               // behaviors: a residency handler resolves a carrier body a verb rode by reference.
-              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), ...(msg.grants.floorKey ? { floorKey: msg.grants.floorKey } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(msg.coreHash ? { bootSet: { engineCid: msg.coreHash, pluginCids: [...(msg.pluginCids ?? [])] } } : {}), diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
+              _ctx = { wikiUri: msg.wikiUri, composite: _composite!, ...(_control ? { control: _control } : {}), ...(msg.grants.floorKey ? { floorKey: msg.grants.floorKey } : {}), ...(floorCanon ? { floorCanon } : {}), tw5, handles: _handles, post: _post, requestDrain: () => _adaptor?.requestDrain(), repo: _repo!, kahuaUrl: msg.grants.kahuaUrl ?? null, kahuaFace, kahuaFaceWatch, ...(_receipt ? { receipt: _receipt } : {}), catalogUrl, faceCatalogUrl, oracleUrl: msg.grants.islandUrl, engine, recipe: msg.recipe, resolveByCid, ...(msg.coreHash ? { bootSet: { engineCid: msg.coreHash, pluginCids: [...(msg.pluginCids ?? [])] } } : {}), diskMirrors: msg.diskMirrors ?? [], ...(resolved ? { resolvedMount: true } : {}), ...(view ? { viewCatalog: (name: string) => view.catalog(name) } : {}), ...secretHomeOf(msg) };
               // Read-side skinny-handle rehydration: answer TW5's own `lazyLoad` event (fired when
               // `getTiddlerText` meets a bodyless `_is_skinny` tiddler) by pulling the body from the corpus
               // CAS through the SAME resolveByCid shore the kernel already rides for engine/plugin blobs. The
