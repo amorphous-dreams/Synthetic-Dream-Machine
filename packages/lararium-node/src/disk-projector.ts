@@ -37,10 +37,16 @@
  * flattened branch can collide, so only it walks `uniquifyBase`'s free-or-mine uniquifier.
  *
  * Group routing (carrier-whole at rest, disk-projection#projection-routing):
- *   memetic-wikitext records form a tiddler-group keyed by the carrier root.
- *   A child change climbs `$fragment-parent` to the root; the gate queues each
- *   root once across bags; reconcile renders the ROOT — one carrier, one file. A
- *   fragment URI never owns a disk path (bag-paths returns null for them).
+ *   memetic-wikitext records form a FAMILY keyed by the carrier root, read by the one
+ *   family law (`@lararium/mesh/family`). A child change climbs its parent edges to the
+ *   root; the gate queues each root once across bags; reconcile renders the ROOT — one
+ *   carrier, one file. A fragment URI never owns a disk path of its own.
+ *
+ * THE ORPHAN FOLDER (disk-projection#/the-orphan-folder): a slot record whose parent chain reaches no
+ *   standing record stays live in the store and the wiki, and nothing renders it inside a carrier. Each
+ *   projects as a plain `.tid` under `<root-stem>.orphans/<slot>.tid`, in the mirror of the bag it rests
+ *   in, and the wiki raises `$:/temp/lares/alert/meme-orphan/<root>`. A root that returns takes its slots
+ *   back: the folder's files leave and the flag clears. The flag lives in `$:/temp` and re-derives at boot.
  *
  * Echo suppression ranks (Confluence): the CONTENT-HASH gates carry the law —
  * ingest drops disk-hash == synced-hash; projection skips byte-identical
@@ -72,7 +78,7 @@
  * document also holds writes nothing over it and stands off by name.
  */
 
-import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync } from "fs";
+import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync, rmdirSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
@@ -83,6 +89,8 @@ import { isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, d
 import { ORIGINAL_TIDDLER_PATHS, parseProvenance, packOfMember } from "@lararium/mesh";
 import type { ReadinessMap, VesselJournal, LarTiddlerStore } from "@lararium/mesh";
 import type { TW5Engine, CarrierFile } from "@lararium/tw5";
+import { surfaceOrphanAlert, tendOrphanAlerts, wikiFamilyView } from "@lararium/tw5";
+import { familyRootOf, memeOrphanAlertTitle, orphansUnder, rootAddressOf, ORPHAN_FOLDER_SUFFIX } from "@lararium/mesh/family";
 import type { BagMirrorConfig } from "./bag-paths.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 
@@ -283,6 +291,43 @@ function safeReadEquals(path: string, body: string): boolean {
   catch { return false; }
 }
 
+/** What the orphan pass reads of the wiki. */
+interface OrphanWiki {
+  allTitles(): string[];
+  getTiddler(title: string): { fields: Record<string, unknown>; getFieldStrings?: () => Record<string, string> } | undefined;
+  addTiddler(fields: Record<string, unknown>): void;
+  deleteTiddler(title: string): void;
+  getChangeCount?(title: string): number;
+}
+
+/** The host's stamps and the edit buffer's base: fields that never reach a file. */
+const ORPHAN_FILE_DENY = new Set(["text", "$origin-bag", "revision", "draft.base.bag", "draft.base.heads"]);
+
+/**
+ * AN ORPHAN'S FILE: the record as a plain TiddlyWiki `.tid` (header fields, a blank line, the text), the
+ * title first and the rest in name order. A `.tid` header holds one line per field, so a record carrying a
+ * field with a newline rides as a one-record `.json` array instead. Either reads back through TiddlyWiki's
+ * own deserializer as a plain record under its own title, never as a family.
+ */
+export function orphanRecordFile(fields: Record<string, string>): { readonly ext: ".tid" | ".json"; readonly body: string } {
+  const names = Object.keys(fields).filter((name) => !ORPHAN_FILE_DENY.has(name) && name !== "title").sort();
+  if (names.some((name) => /[\r\n]/.test(fields[name]!) || name.includes(":"))) {
+    const record: Record<string, string> = { title: fields["title"] ?? "" };
+    for (const name of names) record[name] = fields[name]!;
+    record["text"] = fields["text"] ?? "";
+    return { ext: ".json", body: JSON.stringify([record], null, 2) + "\n" };
+  }
+  const header = [`title: ${fields["title"] ?? ""}`, ...names.map((name) => `${name}: ${fields[name]}`)].join("\n");
+  return { ext: ".tid", body: `${header}\n\n${fields["text"] ?? ""}` };
+}
+
+/** The path an orphan takes inside its root's orphan folder: its slot path, one directory per segment. */
+export function orphanRelPath(root: string, title: string): string {
+  const slot = title.slice(root.length).replace(/^#\/?/, "");
+  const safe = slot.split("/").map((segment) => segment.replace(/[^\w$.āēīōūʻ-]/g, "_")).filter((segment) => segment !== "" && segment !== "." && segment !== "..");
+  return safe.length > 0 ? safe.join("/") : "_";
+}
+
 /** Escape a filename stem for a literal match inside a RegExp. */
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -303,8 +348,10 @@ export function carrierDiskFiles(absBase: string): string[] {
   const re   = new RegExp(`^${escapeRegExp(stem)}\\.[^.]+(?:\\.meta)?$`);
   // A kāpae shadow (`<stem>.kapae`) stands where a carrier left; it never counts as the carrier's home.
   const shadow = `${stem}${KAPAE_EXT}`;
+  // The orphan folder (`<stem>.orphans/`) holds the slots a dead root left; it never counts as the carrier's home either.
+  const orphans = `${stem}${ORPHAN_FOLDER_SUFFIX}`;
   try {
-    return readdirSync(dir).filter((n) => re.test(n) && n !== shadow).map((n) => `${dir}/${n}`);
+    return readdirSync(dir).filter((n) => re.test(n) && n !== shadow && n !== orphans).map((n) => `${dir}/${n}`);
   } catch { return []; }
 }
 
@@ -504,16 +551,9 @@ export class LarDiskProjector {
     // Climb `$fragment-parent` one hop at a time (the field points one level
     // up); for a deleted record the chain is gone, so fall back to the URI
     // fragment-path law (`root#a/b` → `root`).
-    const routeToRoot = (title: string): string => {
-      let cur = title;
-      for (let hops = 0; hops < 32; hops++) {
-        const parent = (wiki.getTiddler?.(cur)?.fields as Record<string, unknown> | undefined)?.["$fragment-parent"];
-        if (typeof parent !== "string" || parent.length === 0) break;
-        cur = parent;
-      }
-      const hash = cur.indexOf("#");
-      return hash > 0 ? cur.slice(0, hash) : cur;
-    };
+    // The one family law reads the chain (`familyRootOf`): the root a title's parent edges name.
+    const familyView = wikiFamilyView(wiki as never);
+    const routeToRoot = (title: string): string => familyRootOf(familyView, title).root;
 
     // LEVEL-TRIGGERED (K8s reconciliation prior-art): every change is a NUDGE to
     // reconcile this carrier root against the CURRENT settled VM state — never an edge that
@@ -540,7 +580,13 @@ export class LarDiskProjector {
       this.measure.holdsSinceChange = 0;
       this.measure.wroteSinceChange = false;
       const roots = new Set<string>();
-      for (const title of Object.keys(changes)) roots.add(routeToRoot(title));
+      for (const title of Object.keys(changes)) {
+        const up = familyRootOf(familyView, title);
+        roots.add(up.root);
+        // A slot record that left, or one whose chain reaches no standing record, may leave orphans: its
+        // root's next reconcile reads them (`reconcileOrphans`).
+        if (title.includes("#") && !up.reaches) this.orphanSuspects.add(up.root);
+      }
       for (const rootUri of roots) gate.mark(rootUri);
       this.wakeWaiters(roots);
     };
@@ -585,6 +631,14 @@ export class LarDiskProjector {
       const bagId = fields?.["$origin-bag"];
       if ((typeof bagId === "string" && this.mirrors.some((mirror) => mirror.bagId === bagId)) || (!this.recoveryStore && this.mirrors.some((mirror) => mirror.mirrorClass === "recovery"))) gate.mark(rootUri);
     }
+    // THE ORPHAN FLAGS RE-DERIVE AT BOOT. The flag lives in `$:/temp` and survives nothing, so each start reads
+    // the view afresh: every root that holds orphans raises its flag and reconciles, and every orphan folder
+    // a mirror still holds marks its root, so a family that re-rooted while nothing watched gives its folder back.
+    const orphanWiki = wiki as unknown as OrphanWiki;
+    if (typeof orphanWiki.allTitles === "function" && typeof orphanWiki.addTiddler === "function") {
+      for (const rootUri of tendOrphanAlerts(orphanWiki as never).keys()) { this.orphanSuspects.add(rootUri); gate.mark(rootUri); }
+    }
+    for (const rootUri of this.orphanFolderRoots()) { this.orphanSuspects.add(rootUri); gate.mark(rootUri); }
     return async () => { wiki.removeEventListener?.("change", handler); for (const unsub of recoveryUnsubs) unsub(); await this.recoveryScan; await this.stop(); };
   }
 
@@ -731,6 +785,144 @@ export class LarDiskProjector {
   }
 
   private async reconcile(rootUri: string): Promise<void> {
+    await this.reconcileCarrier(rootUri);
+    await this.reconcileOrphans(rootUri);
+  }
+
+  /** Roots whose slot records left, or stand with a broken chain, since their last orphan pass. */
+  private readonly orphanSuspects = new Set<string>();
+
+  /** The ordinary mirrors: every mirror an orphan folder may rest in. */
+  private orphanMirrors(): BagMirrorConfig[] {
+    return this.mirrors.filter((m) => m.mirrorClass !== "recovery");
+  }
+
+  /** Every root whose orphan folder a mirror holds on disk: `<stem>.orphans/` names `lar:///<stem>`. */
+  private orphanFolderRoots(): string[] {
+    const roots = new Set<string>();
+    const walk = (dir: string, rel: string): void => {
+      let entries: import("fs").Dirent[];
+      try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return; }
+      for (const entry of entries) {
+        if (!entry.isDirectory()) continue;
+        const at = rel === "" ? entry.name : `${rel}/${entry.name}`;
+        if (entry.name.endsWith(ORPHAN_FOLDER_SUFFIX)) roots.add(`lar:///${at.slice(0, at.length - ORPHAN_FOLDER_SUFFIX.length)}`);
+        else walk(`${dir}/${entry.name}`, at);
+      }
+    };
+    for (const mirror of this.orphanMirrors()) walk(resolvePath(mirror.mirrorRoot), "");
+    return [...roots];
+  }
+
+  /** Every file beneath an orphan folder, absolute. */
+  private static orphanFilesIn(dir: string): string[] {
+    const out: string[] = [];
+    let entries: import("fs").Dirent[];
+    try { entries = readdirSync(dir, { withFileTypes: true }); } catch { return out; }
+    for (const entry of entries) {
+      if (entry.isDirectory()) out.push(...LarDiskProjector.orphanFilesIn(`${dir}/${entry.name}`));
+      else out.push(`${dir}/${entry.name}`);
+    }
+    return out;
+  }
+
+  /** Remove a directory and each emptied directory above it, up to and including `top`. A directory that holds anything stays. */
+  private static pruneEmptyDirs(dir: string, top: string): void {
+    let cur = dir;
+    for (;;) {
+      try { rmdirSync(cur); } catch { return; }
+      if (cur === top) return;
+      cur = dirname(cur);
+      if (!cur.startsWith(top)) return;
+    }
+  }
+
+  /**
+   * THE ORPHAN GRADIENT'S LAST RUNG: KEEP THE PIECES AND FLAG. Where a root's slot records stand with no
+   * root above them (a merge that killed the root under a live child, a lone child landing, a bare delete),
+   * each stays live and projects as a plain record file under `<root-stem>.orphans/`, in the mirror of the
+   * bag it rests in, and the wiki raises the root's orphan flag. A root that returns re-roots them: the
+   * carrier renders them again, their files here leave, and the flag clears.
+   *
+   * The pass runs where a reason stands: the root reads absent, a slot beneath it left or broke its chain
+   * (`orphanSuspects`), its flag stands, or a mirror still holds its folder. A whole family costs one read.
+   *
+   * A FILE HERE LEAVES ONLY WHERE ITS BYTES STAND AS THE PROJECTOR LEFT THEM: the base pinned at its path
+   * vouches for it. A file a hand edited or added stays, as every unlink in this projector reads first.
+   */
+  private async reconcileOrphans(rootUri: string): Promise<void> {
+    const wiki = this._tw5?.$tw.wiki as unknown as OrphanWiki | undefined;
+    if (!wiki || typeof wiki.allTitles !== "function" || typeof wiki.addTiddler !== "function" || rootUri.includes("#")) return;
+    const stem = carrierBaseRelPath(rootUri);
+    const folders = new Map<BagMirrorConfig, string>();
+    if (stem !== null) {
+      for (const mirror of this.orphanMirrors()) {
+        const gate = confineMirrorWrite(mirror.mirrorRoot, stem + ORPHAN_FOLDER_SUFFIX, mirror.allowBagsRootFiles);
+        if (gate.ok) folders.set(mirror, gate.path);
+      }
+    }
+    const suspect = this.orphanSuspects.delete(rootUri);
+    const flagged = wiki.getTiddler(memeOrphanAlertTitle(rootUri)) !== undefined;
+    const held = [...folders.values()].some((path) => existsSync(path));
+    if (wiki.getTiddler(rootUri) !== undefined && !suspect && !flagged && !held) return;
+
+    const orphans = orphansUnder(wikiFamilyView(wiki as never), rootUri);
+    surfaceOrphanAlert(wiki as never, rootUri, orphans);
+
+    for (const [mirror, folder] of folders) {
+      const wanted = new Map<string, { body: string; key: string }>();
+      for (const title of orphans) {
+        const tiddler = wiki.getTiddler(title);
+        if (!tiddler || tiddler.fields["$origin-bag"] !== mirror.bagId) continue;
+        if (await this.neverOnDisk(mirror, title, tiddler.fields)) continue;
+        const strings = tiddler.getFieldStrings?.() ?? Object.fromEntries(Object.entries(tiddler.fields).map(([k, v]) => [k, String(v)]));
+        const file = orphanRecordFile(strings);
+        const rel = `${stem}${ORPHAN_FOLDER_SUFFIX}/${orphanRelPath(rootUri, title)}`;
+        const gate = confineMirrorWrite(mirror.mirrorRoot, rel + file.ext, mirror.allowBagsRootFiles);
+        if (!gate.ok) {
+          console.error(`[disk-ward] orphan write refused (${mirror.bagId} <- ${title}): ${gate.reason}`);
+          this.onRefusal?.({ bagId: mirror.bagId, uri: title, reason: gate.reason });
+          continue;
+        }
+        // The key the ingest leg derives for this file (`mirrorDirFileToUri`): the base it reads stands here.
+        wanted.set(gate.path, { body: file.body, key: `lar:///${rel}` });
+      }
+      for (const [path, { body, key }] of wanted) {
+        const hash = carrierHash(body);
+        if (safeReadEquals(path, body)) { this.pin(mirror.bagId, key, path, hash); continue; }
+        // A file a hand left at this path stays: the base alone vouches for bytes the projector may replace.
+        if (existsSync(path)) {
+          const base = this.ownBaseAt(mirror.bagId, key, path);
+          let standing: string | null = null;
+          try { standing = readFileSync(path, "utf-8"); } catch { standing = null; }
+          if (base === null || standing === null || !digestsEqual(carrierHash(standing), base.disk)) continue;
+        }
+        this.writing.add(key);
+        try {
+          mkdirSync(dirname(path), { recursive: true });
+          this.atomicWrite(path, body);
+          this.pin(mirror.bagId, key, path, hash);
+        } finally { this.writing.delete(key); }
+      }
+      if (!existsSync(folder)) continue;
+      for (const path of LarDiskProjector.orphanFilesIn(folder)) {
+        if (wanted.has(path)) continue;
+        const rel = relativePath(resolvePath(mirror.mirrorRoot), path).split("\\").join("/");
+        const key = `lar:///${rel.replace(/\.[^/.]+$/, "")}`;
+        const base = this.ownBaseAt(mirror.bagId, key, path);
+        let standing: string | null = null;
+        try { standing = readFileSync(path, "utf-8"); } catch { standing = null; }
+        if (base === null || standing === null || !digestsEqual(carrierHash(standing), base.disk)) continue;
+        this.writing.add(key);
+        try { unlinkSync(path); } catch { /* best-effort — a hand can clean up */ } finally { this.writing.delete(key); }
+        this.forgetAt(mirror.bagId, key, path);
+        LarDiskProjector.pruneEmptyDirs(dirname(path), folder);
+      }
+      LarDiskProjector.pruneEmptyDirs(folder, folder);
+    }
+  }
+
+  private async reconcileCarrier(rootUri: string): Promise<void> {
     // Pack-member projection-suppress — the loop-stopper. A member whose title
     // rides in a pack's aside provenance lives inside its pack file (`foo.json`)
     // and MUST NOT self-project: a per-member file explodes the pack into N files,
@@ -795,8 +987,7 @@ export class LarDiskProjector {
 
   /** The carrier root a record title belongs to, by the URI fragment-path law (`root#a/b` → `root`). */
   private static rootOf(title: string): string {
-    const hash = title.indexOf("#");
-    return hash > 0 ? title.slice(0, hash) : title;
+    return rootAddressOf(title);
   }
 
   /**

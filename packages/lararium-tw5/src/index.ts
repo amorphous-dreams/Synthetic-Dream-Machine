@@ -131,6 +131,10 @@ export { startRecipeWatch } from "./recipe-watch.js";
 export type { ActionHandlerOptions } from "./action-handler.js";
 
 export { exportMemeText, exportCarrierFile, exportRecordCarrierFile } from "./meme-write.js";
+export {
+  familyRefsOf, familyViewOf, wikiFamilyView, surfaceOrphanAlert, tendOrphanAlert, tendOrphanAlerts, renameFamilyInWiki, retitleSlotsInWiki,
+  type FamilyRenameWiki, type MemeAlertWiki,
+} from "./place-meme.js";
 export type { CarrierFile } from "./meme-write.js";
 export { installLazyResolver, skinnyCid } from "./lazy-resolver.js";
 export type { CarrierResolver as LazyCarrierResolver } from "./lazy-resolver.js";

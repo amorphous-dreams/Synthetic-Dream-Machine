@@ -6,6 +6,7 @@ import type { PortWireRecord } from "@lararium/mesh/record-port";
 import type { GlassDoor } from "./glass-root.js";
 import { mountGlassCamera } from "./glass-camera.js";
 import { openDefaultStory } from "./default-story.js";
+import { tendOrphanAlerts } from "./place-meme.js";
 
 export interface MirrorSeams {
   bootEngine?: () => void | Promise<void>; paint?: () => void;
@@ -162,7 +163,23 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
   let wikiCensus: ReturnType<typeof censusRecords> | null = null;
   // The titles the port landed since the camera last refreshed: a refresh that carries one is a repaint the person never asked for, and it keeps their focus.
   const landedSince = new Set<string>();
-  const noteLanding = (change: { title: string }): void => { landedSince.add(change.title); };
+  // THE ORPHAN FLAG, THE BROWSER'S HALF (wiki-surface-scout #/meme-aware-actions). A slot record whose root
+  // reads absent lands here as the plain tiddler it stands as, and this device raises its own flag from its
+  // own view: `$:/temp/lares/alert/meme-orphan/<root>`, by the predicate the node projector reads
+  // (`orphanFamilies`). The flag lives in `$:/temp`, crosses no port, and re-derives at each boot and after
+  // each landing. One pass answers a whole batch of landings: the pass waits a microtask, never a clock.
+  let orphanPass = false;
+  const tendOrphans = (): void => {
+    if (orphanPass || closed) return;
+    orphanPass = true;
+    queueMicrotask(() => {
+      orphanPass = false;
+      if (closed) return;
+      try { tendOrphanAlerts(engine.$tw.wiki as never); }
+      catch (error) { console.warn(`[glass-mirror] the orphan flags could not re-derive (${nameOf(error)}); the next landing reads them again`); }
+    });
+  };
+  const noteLanding = (change: { title: string }): void => { landedSince.add(change.title); tendOrphans(); };
   const keepsFocus = (changes: Record<string, unknown>): boolean => {
     const landing = Object.keys(changes).some(title => landedSince.has(title));
     landedSince.clear();
@@ -202,6 +219,8 @@ export async function openMirror(options: Omit<GlassPortOptions, "wiki" | "Tiddl
     adaptor.onLanded(noteLanding);
     if (seams.landed) adaptor.onLanded(seams.landed);
     if (seams.refused) adaptor.onRefused(seams.refused);
+    // The boot's own records already stand: the flags re-derive from them before any landing.
+    tendOrphans();
     if (!options.deferPaint) paint();
     return {
       tw, get adaptor() { return adaptor!; }, paint, unmount,

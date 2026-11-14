@@ -50,6 +50,8 @@ written   = "2026-11-14"
 
 ''The console door.'' [measured] Commits `eb1eb3508..873e055d0`; canon at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-console-door`>>. `lares("vessel", "read")` takes the CLI's own argv as separate strings and answers `{ok, data}` or `{ok: false, error}`; it holds no list of its own, reads two tables at call time (the page's: `vessel read`, `vessel reset`; the vessel worker's: `vessel read`, `vault status`), takes no secret as a word, and refuses any verb it cannot hold by name (`verb-not-held`, `host-shim-verb`, `hand-needed`). No tiddler verb rides it yet.
 
+''The family law, cured (lane 0, 2026-11-14).'' [measured, each under a red test first] One module answers which records make a family (`packages/lararium-mesh/src/family.ts`: `familyOf`, `consequence`, `orphanFamilies`; canon at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/ahu#/family`>>), and the three laws of `#/meme-aware-actions` read through it. Rows of that slot's table that moved: `meme delete` of a root lands the family as one change and spares a `<root>/x` title; an engine delete of a root lands root and slots as ONE `writeFamily` (five separate tombstones before); a `meme put` spares path children; a residency MOVE or COPY naming a slot refuses `slot-without-root`, and a root MOVE leaves its path children; a re-link and an engine rename carry the slots under the new address; an orphan projects to `<root-stem>.orphans/` and raises `$:/temp/lares/alert/meme-orphan/<root>` on node and in the page mirror (<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/the-orphan-folder`>>); the alert rail names a log cursor (`seen-at`), no wall clock. Rows that still stand as measured: an engine delete of ONE slot leaves its root's `kahea` call dangling (the consequence names it; no door rewrites the root yet); an offer of lone slots; a bulk act by filter; ADD of a lone slot.
+
 ''The fences `L17` names.'' [measured] Wikis-first writes (a seat's write lands the wiki's working layer); custody verbs keep their confirm door and face gate; `F11`'s seat profile refuses a `seat` session every hand-only row at the socket, advisory until the signed local channel lands (road `F11`, `stable-founding-road.mem:787`); the act ward on the daemon and kahua wikis runs an action string in a throwaway copy, judges the recorded diff against `codeClassOf`, control families and custody verbs, refuses any captured `tm-*` outside an allowlist that starts EMPTY, and applies a clean diff as itself, once (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage#/the-hearth-lane`>>, stage slices 2 to 4); a user's wiki runs actions live with full caps (road `#/rulings`, `stable-founding-road.mem:386`).
 
 <<~/ahu>>
@@ -595,6 +597,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;UAddMTTYBLP3aSh3nuFxn1HQ4SiDILSrWkUiJaphoi4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;owX0lJB1xStLswLi_n9hJlLLTdRdzajf-2oMq_KxaNE`>>
 
 <<^ code=`&#x0004;` to=`?`>>
