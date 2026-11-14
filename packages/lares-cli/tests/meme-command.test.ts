@@ -191,6 +191,18 @@ describe("lares meme list — roots by default, --tree nests the slots", () => {
     expect(out.json["data"]).toEqual({ recipe: "lares", bags: ["w", "c"], unreached: ["lar:///ha.ka.ba/bags/far"], roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1", bag: "c" }] });
   });
 
+  test("a read the floor answered says so: the listing and the get each carry `floor: true` where the verb named the floor, and nothing where it named none", async () => {
+    h.reply = { bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }], next: null };
+    const listed = await captured(() => cmdMeme(memeArgs(["list"], { bag: "lararium" })));
+    expect(listed.json["data"]).toEqual({ bag: "lar:///ha.ka.ba/bags/lararium", floor: true, roots: [{ uri: "lar:///t/a", canonicalHash: "sha256:1" }] });
+    h.reply = { uri: "lar:///t/a", floor: true, meme: { text: "body", canonicalHash: "sha256:1" } };
+    const got = await captured(() => cmdMeme(memeArgs(["get", "lar:///t/a"], { bag: "lararium" })));
+    expect(got.json["data"]).toEqual({ uri: "lar:///t/a", text: "body", canonicalHash: "sha256:1", floor: true });
+    // CONTROL: a live read names no floor.
+    h.reply = { uri: "lar:///t/a", meme: { text: "body", canonicalHash: "sha256:1" } };
+    expect((await captured(() => cmdMeme(memeArgs(["get", "lar:///t/a"], { bag: "lararium" })))).json["data"]).toEqual({ uri: "lar:///t/a", text: "body", canonicalHash: "sha256:1" });
+  });
+
   test("★ --recipe AND --bag together refuse; nothing reaches the wire ★", async () => {
     expect(await cmdMeme(memeArgs(["list"], { recipe: "sdm", bag: "sdm" }))).toBe(2);
     expect(h.calls).toEqual([]);

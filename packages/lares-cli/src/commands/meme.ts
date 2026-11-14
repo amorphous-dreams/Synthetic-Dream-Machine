@@ -296,6 +296,7 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     return exitFor(code);
   }
   const meme = outcome.output["meme"] as { text: string; canonicalHash: string } | null | undefined;
+  const fromFloor = outcome.output["floor"] === true;
   if (!meme) {
     emit(args, { ok: false, requestId: result.requestId, error: { code: "not-found", message: `no meme at ${plan.args["uri"]}` }, human: () => console.error(`lares meme get: no meme at ${plan.args["uri"]}`) });
     return exitFor("not-found");
@@ -303,15 +304,19 @@ async function memeGet(args: ParsedArgs): Promise<number> {
   emit(args, {
     ok: true,
     requestId: result.requestId,
-    data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash },
+    // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
+    data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash, ...(fromFloor ? { floor: true } : {}) },
     // The text alone reaches stdout, so `lares meme get <uri> --recipe <slug> > file` carries the meme; the base rides stderr.
-    human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); },
+    human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
   });
   return 0;
 }
 
 /** One listed root, as the verb answers it. */
-interface ListedRoot { uri: string; canonicalHash: string; bag?: string; slots?: ListedSlot[] }
+interface ListedRoot { uri: string; canonicalHash: string; bag?: string; floor?: boolean; slots?: ListedSlot[] }
+
+/** The line a read prints on stderr where a house canon bag's floor snapshot answered it. */
+const FLOOR_READ_NOTE = "read from the floor snapshot: this face holds no read on the live house canon document (the Kahu steward's face reads it live)";
 interface ListedSlot { slot: string; uri: string; slots: ListedSlot[] }
 
 /**
@@ -355,7 +360,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
   };
   // The seat as the verb named it: one bag, or a recipe with the bags its stack read and any it could not reach.
   const seat: Record<string, unknown> = {};
-  for (const key of ["bag", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
+  for (const key of ["bag", "floor", "recipe", "bags", "unreached"]) if (head[key] !== undefined) seat[key] = head[key];
   const unreached = Array.isArray(head["unreached"]) ? (head["unreached"] as string[]) : [];
   emit(args, {
     ok: true,
@@ -365,6 +370,7 @@ async function memeList(args: ParsedArgs): Promise<number> {
     human: () => {
       for (const r of roots) { console.log(`${r.canonicalHash}  ${r.uri}`); slotLines(r.slots, 1); }
       for (const bag of unreached) console.error(`lares meme list: ${bag} stands unreached; its roots stay unlisted`);
+      if (head["floor"] === true || roots.some((r) => r.floor === true)) console.error(FLOOR_READ_NOTE);
     },
   });
   return 0;
