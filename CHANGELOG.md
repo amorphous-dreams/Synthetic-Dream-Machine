@@ -4,6 +4,19 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### Wave one: the tiddler door, one family law, the confirm gate, the veil's first cut, carry by document
+
+**Added**
+- **The tiddler door.** Six verbs answer every TiddlyWiki act on the worn face's daemon wiki through the island's own engine, on the CLI (`lares tiddler get|put|delete`, `lares wiki filter|render|status`) and the MCP seat (`tiddler_get`, `tiddler_put`, `tiddler_delete`, `wiki_filter`, `wiki_render`, `wiki_status`, each stating its annotations), welded by one answer table. A get answers every field with `hash` and `textHash`; a put patches fields and tags against a base (`conflict`, `exists`); a delete names its consequence and its mode (`kapae` by default, `reveal` to surface the record beneath); a filter and a render compute over the reader's view, so a record the face may not read reads absent inside the engine. A named wiki refuses `wiki-not-anchored` until the relay lands.
+- **The record port's filter pages.** The port's `filter` ask answers one bounded page (32 rows or a byte cap) under a cursor that names the answer it continues, and refuses `filter-malformed` and `filter-cursor-stale` by name (`filter-page.ts`, shared with the tiddler door).
+- **One family law, and orphans kept.** `familyOf`, `consequence` and `orphanFamilies` (`@lararium/mesh` `family.ts`) decide which records make a meme: `meme put` and `meme delete` spare path children, an engine delete of a root lands root and slots as one change, a residency MOVE or COPY naming a slot refuses `slot-without-root`, and a rename carries the slots. A slot whose root stands nowhere projects to `<root-stem>.orphans/` and raises `$:/temp/lares/alert/meme-orphan/<root>` on the node and in the page mirror.
+- **The confirm gate.** A browser vessel's reset proves the holder's passphrase against custody at rest, in the ceremony document's own worker, before anything burns; a bare floor takes the typed phrase, a wrong passphrase refuses `no-slot-opens`, and a burn runs only on the pass the gate minted. A locked browser store answers whether a passphrase opens it without unlocking (`browser-custody-proof.ts`). The ceremony refuses a window with an opener.
+- **Changed: one vessel presents no identifier under two faces across a face switch.** The store keeps one store id for each worn face and one for the veil floor, each composition mints its own peer id, and a face's sync state reads back under that face alone (`wire-identity.ts`).
+- **Changed: a canon offer names its face by a key at that Nexus alone.** The offer body reads `{kind, nexus, bag, offerer, records}`; no PersonaGroup and no atom key travel.
+- **Changed: a recovery commitment salts with the face.** Each recovery contact set a face commits after its inception hashes with the face's own prefix, so two faces enrolling the same contacts show two commitments.
+- **Changed: carry follows the document.** A wiki keeps one workbench on a vessel and one folder for it; export and import carry each workbench as one row set, each face's `personal` layer under its own face, and the share rows; a face with no writer's seat writes its own `personal` layer.
+
+
 ### The working layer and the founded seat
 
 **Added**
