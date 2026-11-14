@@ -40,7 +40,7 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash, type ShareRow } from "@lararium/mesh";
-import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
+import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
@@ -181,9 +181,19 @@ class FakeHouse {
       // answers `personal` and `bound: false` (the first stand founds it), as the island's `workbench-seat` does.
       benchSeat: async (slug) => { const seated = this.seats.get(slug); return { bound: seated !== undefined, writeSlot: seated?.has(this.worn) ? "working" : "personal" }; },
       shareRows: () => this.shareRows,
-      landShares: async () => { this.shareLandings++; return { granted: 0, carried: 0, pending: 0, workbenches: this.shareRows.filter((r) => r.kind === "wiki").map((r) => ({ slug: r.slug, members: 1 })) }; },
+      // The vessel's own account (`share-apply`): a wiki's first landing on this founding seats its member, and a replay seats none.
+      landShares: async () => {
+        this.shareLandings++;
+        return { granted: 0, moved: 0, carried: 0, pending: 0, workbenches: this.shareRows.filter((r) => r.kind === "wiki").map((r) => {
+          const fresh = !this.sharesSeated.has(r.slug) && this.held.has(r.slug);
+          if (fresh) this.sharesSeated.add(r.slug);
+          return { slug: r.slug, members: 1, founded: false, seated: fresh ? 1 : 0, removed: [] };
+        }) };
+      },
     };
   }
+  /** The shared wikis whose seats a landing already set on this founding. */
+  sharesSeated = new Set<string>();
   carryDoors(): CarryDoors {
     return {
       census: async () => ({ clean: true, items: [], unanswered: [] }),
@@ -241,7 +251,8 @@ function oldDisk(): void {
   put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/gone.kapae`, kapaeShadowBody(GONE));
   put(`projections/wikis/daemon-${F1}/recovery/draft-one.tid`, tid("draft one", "half a thought"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a rose"));
-  put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "remember the heron", `kahua-taint: []\nkahua-sources: [{"title":"${POND}","revision":"r1"}]\n`));
+  // A stage carrier's body rides as it stands: the projector adds no newline after it, and the seed's lift reads it byte for byte.
+  put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "remember the heron", `kahua-taint: []\nkahua-sources: [{"title":"${POND}","revision":"r1"}]\n`).replace(/\n$/, ""));
 }
 
 /** The old vessel, its records laid from its own disk (no adoption: it wears F1), its stage holding the heron. */
@@ -605,7 +616,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(v.workingOf(R0).size).toBe(0);
     expect(r.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[0, "unresolved"]]);
     expect(mirrorsLeftWork(r)).toBe(false);
-    expect(mirrorLines(r).out.join("\n")).toMatch(/joshua-fontany stands open, and this island resolves no layer of its own for it yet \(face-unresolved\)/);
+    expect(mirrorLines(r).out.join("\n")).toMatch(/joshua-fontany stands open, and its own layer lays at its own face's wear \(this island opens no daemon layer of its own for it under another face\)/);
     expect(existsSync(P(`wikis/daemon-${G0}`))).toBe(true);
     expect(r.ashesLeft.map((a) => a.relation)).toContain(G0);
   });
@@ -768,8 +779,8 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(v.layer("lar:///ha.ka.ba/bags/notes").get(PAGE)?.text).toBe(tid(PAGE, "a promoted page"));
     expect(v.bench("notes").get(DRAFTED)?.text).toBe(tid(DRAFTED, "a working-only page"));
     expect(second.benchWaiting).toEqual([]);
-    expect(second.shares?.workbenches).toEqual([{ slug: "notes", members: 1 }]);
-    expect(mirrorLines(second).out.join("\n")).toMatch(/shares: landed 0 grant\(s\); workbench seats: notes \(1 member face\(s\)\)/);
+    expect(second.shares?.workbenches).toEqual([{ slug: "notes", members: 1, founded: false, seated: 1, removed: 0 }]);
+    expect(mirrorLines(second).out.join("\n")).toMatch(/shares: landed 0 grant\(s\); workbench seats: notes \(1 member face\(s\), 1 seated now\)/);
     // The engineer's seed after it lands nothing: the document arrived once.
     v.seats.get("notes")!.add(R1);
     v.wear(R1);
@@ -882,5 +893,156 @@ describe("the seed lays every mirror back into its one layer", () => {
     const r = await seedMirrors({ apply: true, doors: v.mirrorDoors(), liftKahua: 1 });
     expect(r.adoptions).toEqual([]);
     expect(v.live(WORKING, POND)?.text).toBe(POND_WORKING);
+  });
+});
+
+describe("a carry act waits by name for a face that stands open and unworn, and accounts for every row (the carry block, walked)", () => {
+  const [G0, G1] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1"];
+  const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
+  const WREN = "lar:///ha.ka.ba/kahua/memory/wren", NOTE = "lar:///ha.ka.ba/notes/engineer-own", MARGIN = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL";
+  /** A kahua carrier as the projector writes it: the block, a blank line, the body verbatim (no newline added). */
+  const kahuaTid = (title: string, body: string): string => `kahua-sources: []\nkahua-taint: []\ntitle: ${title}\ntype: text/vnd.tiddlywiki\n\n${body}`;
+  const clearOld = (): void => { rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true }); };
+  /** The vessel's own law, as a walked hearth answers it: a lift for a face it does not wear refuses `kahua-face-unworn`. */
+  const liftsAsWornAlone = (v: FakeHouse): CarryDoors["kahuaLift"] => async (face, lift) => {
+    if (v.faces.find((f) => f.handleIndex === face)?.relation !== v.worn) throw new Error("kahua-face-unworn: a kahua stage asks this face's own wear");
+    return v.kahuaLift(face, lift);
+  };
+
+  test("W1 — RED: a kahua item of an open, unworn face waits by name for its own wear: the count names what this wear lifts, no lift reaches the vessel for it, the seed leaves no work; CONTROL: the worn face's item lifts, and the unworn face's lifts at its own wear", async () => {
+    clearOld();
+    put(`projections/bags/kahua-${G0}/ha.ka.ba/kahua/memory/heron.tid`, kahuaTid(HERON, "remember the heron"));
+    put(`projections/bags/kahua-${G1}/ha.ka.ba/kahua/memory/wren.tid`, kahuaTid(WREN, "remember the wren"));
+    writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
+    const doors = (): MirrorDoors => ({ ...v.mirrorDoors(), kahuaLift: liftsAsWornAlone(v) });
+    const first = await seedMirrors({ apply: true, doors: doors(), liftKahua: 1 });
+    expect(v.lifts.map((l) => [l.face, l.title])).toEqual([[0, HERON]]);
+    expect(first.kahua.refused, "an expected wait names itself; it never reads as a refusal").toEqual([]);
+    expect(first.kahua.waiting.map((p) => [p.handleIndex, p.title])).toEqual([[1, WREN]]);
+    expect(mirrorsLeftWork(first)).toBe(false);
+    expect(mirrorLines(first).out.join("\n")).toMatch(/engineer \(h1\)[^\n]*lifts at its own face's wear: wear it \(`lares vault unlock --face 1`\)/);
+    expect(readKahuaPending().map((p) => p.title), "the waiting item stays at the shore").toEqual([WREN]);
+    // A count that names the unworn face's item too refuses before anything writes: this wear lifts one.
+    await expect(seedMirrors({ apply: true, doors: doors(), liftKahua: 2 })).rejects.toThrow(/seed-kahua-count/);
+    v.wear(R1);
+    const second = await seedMirrors({ apply: true, doors: doors(), liftKahua: 1 });
+    expect(v.lifts.map((l) => [l.face, l.title])).toEqual([[0, HERON], [1, WREN]]);
+    expect(second.kahua.waiting).toEqual([]);
+    expect(readKahuaPending()).toEqual([]);
+  });
+
+  test("W2 — RED: a face-named wave the island answers `document-unavailable` for (a lit face's own layer, sealed under its own key) waits by name and leaves the exit green; CONTROL: any other refusal still reads as work for a hand", async () => {
+    clearOld();
+    put(`projections/wikis/daemon-${G1}/ha.ka.ba/notes/engineer-own.tid`, tid(NOTE, "the engineer's own memory"));
+    writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
+    const sealed = "[document-unavailable] lar:///ha.ka.ba/wikis/daemon/working (a lit face's own layer) unavailable: doc automerge:2rZ45c35 was reported unavailable by every reachable peer; make the document reachable from a peer, then restart.";
+    const refusing = (why: string): MirrorDoors => ({ ...v.mirrorDoors(), lay: async (wave, apply) => wave.face === undefined ? v.lay(wave, apply)
+      : { planned: [NOTE], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: apply ? [{ uri: NOTE, why }] : [], unanswered: [] } });
+    const r = await seedMirrors({ apply: true, doors: refusing(sealed) });
+    expect(r.layers.flatMap((t) => t.refused)).toEqual([]);
+    expect(r.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[1, "unresolved"]]);
+    expect(mirrorsLeftWork(r), "an expected wait leaves the exit green").toBe(false);
+    expect(mirrorLines(r).out.join("\n")).toMatch(/engineer stands open, and its own layer lays at its own face's wear[^\n]*wear it \(`lares vault unlock --face 1`\) and seed again/);
+    expect(mirrorLines(r).err).toEqual([]);
+    const other = await seedMirrors({ apply: true, doors: refusing("cap-denied: write on the layer required") });
+    expect(mirrorsLeftWork(other), "CONTROL: a refusal that names no wait still asks a hand").toBe(true);
+  });
+
+  test("W3 — RED: a kahua body rides the seed's lift byte for byte, its trailing newline kept, so the import after it reads the stage as holding the bundle's body; CONTROL: a body that ends with no newline lifts as it stands", async () => {
+    expect(readKahuaFile(kahuaTid(WREN, "a body that ends with one newline\n"))?.text).toBe("a body that ends with one newline\n");
+    expect(readKahuaFile(kahuaTid(WREN, "a body that ends with none"))?.text).toBe("a body that ends with none");
+    clearOld();
+    const body = "remember the wren, and the line ends here\n";
+    put(`projections/bags/kahua-${G0}/ha.ka.ba/kahua/memory/wren.tid`, kahuaTid(WREN, body));
+    writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }], join(root, "projections"));
+    const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }], "old-grant", G0);
+    old.stage.set(0, [{ title: WREN, cid: sha("old-wren"), text: body, fields: {}, taint: [], sources: [] }]);
+    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }], "new-grant", R0);
+    await seedMirrors({ apply: true, doors: v.mirrorDoors(), liftKahua: 1 });
+    expect(v.lifts.map((l) => l.text)).toEqual([body]);
+    const imported = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    expect(imported.tallies.kahua.stoodOff, "the stage holds the bundle's own body, so nothing stands off").toEqual([]);
+    expect(imported.tallies.kahua.already).toBe(1);
+  });
+
+  test("W4 — RED: a seed whose share landing moved nothing says nothing of shares; CONTROL: a landing that moved a grant, seated a face or left one pending says so", async () => {
+    clearOld();
+    put("projections/wikis/notes/ha.ka.ba/notes/page.tid", tid("lar:///ha.ka.ba/notes/page", "a page"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }], "grant", R0);
+    v.held.add("notes"); v.seats.set("notes", new Set([R0]));
+    v.shareRows = [{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }];
+    const landing = (answer: Record<string, unknown>): MirrorDoors => ({ ...v.mirrorDoors(), landShares: async () => answer });
+    const quiet = await seedMirrors({ apply: true, doors: landing({ granted: 2, moved: 0, carried: 2, pending: 0, workbenches: [{ slug: "notes", members: 2, founded: false, seated: 0, removed: [] }] }) });
+    await seedMirrors({ apply: true, doors: landing({ granted: 2, moved: 0, carried: 2, pending: 0, workbenches: [{ slug: "notes", members: 2, founded: false, seated: 0, removed: [] }] }) });
+    const second = await seedMirrors({ apply: true, doors: landing({ granted: 2, moved: 0, carried: 2, pending: 0, workbenches: [{ slug: "notes", members: 2, founded: false, seated: 0, removed: [] }] }) });
+    expect(quiet.shares?.moved).toBe(0);
+    expect(mirrorLines(second).out.join("\n"), "a second seed lands and says nothing").not.toMatch(/shares:/);
+    const moved = await seedMirrors({ apply: true, doors: landing({ granted: 2, moved: 1, carried: 1, pending: 0, workbenches: [{ slug: "notes", members: 2, founded: false, seated: 1, removed: [] }] }) });
+    expect(mirrorLines(moved).out.join("\n")).toMatch(/shares: landed 1 grant\(s\) \(1 reach their grantee at that face's next wear\); workbench seats: notes \(2 member face\(s\), 1 seated now\)/);
+    const pending = await seedMirrors({ apply: true, doors: landing({ granted: 0, moved: 0, carried: 0, pending: 1, workbenches: [] }) });
+    expect(mirrorLines(pending).out.join("\n")).toMatch(/shares: landed 0 grant\(s\); 1 wait for a shut face/);
+  });
+
+  test("W5 — RED: an import accounts for every bundle row: a personal row and a kahua head of an open, unworn face count as waiting and name their face, and no lift reaches the vessel for them; CONTROL: at that face's own wear both land, and a second import lands and waits on nothing", async () => {
+    clearOld();
+    put(`projections/personal/${G1}/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid`, tid(MARGIN, "what the engineer kept for itself"));
+    put(`projections/bags/kahua-${G1}/ha.ka.ba/kahua/memory/wren.tid`, kahuaTid(WREN, "remember the wren\n"));
+    const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
+    old.held.add("lares");
+    old.stage.set(1, [{ title: WREN, cid: sha("old-wren"), text: "remember the wren\n", fields: {}, taint: [], sources: [] }]);
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    expect(manifest.counts.personal).toBe(1);
+    rmSync(P(`personal/${G1}`), { recursive: true }); rmSync(P(`bags/kahua-${G1}`), { recursive: true });
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
+    v.held.add("lares");
+    const doors = (): CarryDoors => ({ ...v.carryDoors(), kahuaLift: liftsAsWornAlone(v) });
+    const first = await carryImport(out, { apply: true, doors: doors() });
+    expect(first.tallies.personal).toMatchObject({ landed: 0, already: 0, waiting: 1 });
+    expect(first.tallies.kahua).toMatchObject({ landed: 0, waiting: 1, refused: [], stoodOff: [] });
+    expect(first.kahuaWaiting).toEqual([{ petname: "engineer", handleIndex: 1, heads: 1 }]);
+    expect(v.lifts).toEqual([]);
+    v.wear(R1);
+    const second = await carryImport(out, { apply: true, doors: doors() });
+    expect(second.tallies.personal).toMatchObject({ landed: 1, waiting: 0 });
+    expect(second.tallies.kahua).toMatchObject({ landed: 1, waiting: 0 });
+    expect(v.lifts.map((l) => [l.face, l.text])).toEqual([[1, "remember the wren\n"]]);
+    const third = await carryImport(out, { apply: true, doors: doors() });
+    expect(Object.values(third.tallies).reduce((n, t) => n + t.landed + t.planned + t.waiting, 0)).toBe(0);
+  });
+
+  test("W6 — RED: an export names each wiki that stands cold, since a put a face made into a cold wiki rides no mirror and so no bundle; CONTROL: with every wiki awake the export names none", async () => {
+    clearOld();
+    const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }], "old-grant", G0);
+    const cold = await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), coldWikis: async () => ["notes"] } });
+    const named = cold.manifest.omissions.find((o) => o.kind === "cold-wikis");
+    expect(named?.items).toEqual(["notes"]);
+    expect(named?.detail).toMatch(/lares wiki hold <slug>/);
+    rmSync(out, { recursive: true });
+    const awake = await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), coldWikis: async () => [] } });
+    expect(awake.manifest.omissions.map((o) => o.kind)).not.toContain("cold-wikis");
+  });
+
+  test("W7 — a shared wiki mints from its share row at its owner's wear though no page of it reached a mirror, and a face's margin of it waits by name for that mint; CONTROL: once the owner's wear stood the wiki, the margin lays at its own face's wear", async () => {
+    clearOld();
+    const PAGE = "lar:///ha.ka.ba/notes/margin";
+    put(`projections/personal/${G1}/notes/ha.ka.ba/notes/margin.tid`, tid(PAGE, "the engineer's page in a wiki it woke late"));
+    writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R1);
+    v.shareRows = [{ slug: "notes", kind: "wiki", read: "engineer", write: "", owner: "steward" }];
+    const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.mints, "a wiki another face owns mints at that face's wear").toEqual([]);
+    expect(first.benchWaiting.map((w) => [w.slug, w.why, w.owner])).toEqual([["notes", "owner", "steward"]]);
+    expect(v.personalOf(R1, "notes").size).toBe(0);
+    expect(mirrorsLeftWork(first)).toBe(false);
+    v.wear(R0);
+    await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.wikiMints, "the share row alone mints the wiki, through the wiki door").toEqual(["notes"]);
+    v.wear(R1);
+    const third = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's page in a wiki it woke late"));
+    expect(third.benchWaiting).toEqual([]);
   });
 });

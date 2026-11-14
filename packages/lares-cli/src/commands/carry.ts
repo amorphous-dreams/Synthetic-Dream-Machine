@@ -112,6 +112,13 @@ export function litFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | 
   return related.length === 1 ? related[0]! : null;
 }
 
+/**
+ * The island's answers that name an EXPECTED WAIT for a face-named wave: it resolves no document of the face's own
+ * (`face-unresolved`), or the face's own layer rests sealed under its own key and no peer opens it (`document-unavailable`).
+ * Either way the face's memory lays at its own wear, and the wave landed nothing anywhere.
+ */
+export const FACE_LAYER_WAITS = /\bface-unresolved\b|\bdocument-unavailable\b/;
+
 /** The words a SHUT face reads: unlock it, then seed (or import) again. A named expected state, never a stand-off, and it
  *  never blocks the faces that stand open (THE LIT SET: one seed lays every open face, each in its own layer). */
 export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "seed" | "import"): string {
@@ -160,6 +167,11 @@ export interface CarryDoors {
   readonly overrideBases?: (workingBag: string) => Promise<Readonly<Record<string, string>>>;
   /** The `wikis` dir beside the canon source, where a sourced wiki's one workbench folder rests; null: none stands. */
   readonly canonWikis?: () => string | null;
+  /**
+   * The wikis this vessel holds that stand COLD (no island mounts them now). A put a face made into a cold wiki rests in its
+   * layer and projects nowhere until that face wakes the wiki, so the export names each cold wiki. Absent: none reads.
+   */
+  readonly coldWikis?: () => Promise<readonly string[]>;
   /** Whether a slug's canon stands under the canon source. Absent: none does. */
   readonly sourced?: (slug: string) => boolean;
   /** The worn face's seat on a wiki's workbench (`workbench-seat`). Absent (a rig with no roster): the worn face writes every workbench. */
@@ -256,6 +268,16 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
       .filter((h) => !seededBags.has(h.toBag)).map((h) => h.holding);
   },
   canonWikis: () => { try { return join(dirname(resolve(daemonBagsDir())), "wikis"); } catch { return null; } },
+  // The wikis the catalog names (`list-wikis`) that no island runs now (`wiki-active`): the daemon wiki always stands.
+  coldWikis: async () => {
+    const did = await vesselDid();
+    const listed = await runVerb("list-wikis", {}, did);
+    const active = await runVerb("wiki-active", {}, did);
+    if (listed.status === "error" || active.status === "error") return [];
+    const wikis = ((summaryOutput(listed) as { wikis?: Array<{ slug?: unknown }> } | null)?.wikis ?? []).map((w) => String(w.slug));
+    const live = new Set(((summaryOutput(active) as { active?: unknown } | null)?.active as unknown[] | undefined ?? []).map(String));
+    return wikis.filter((slug) => slug !== "daemon" && !live.has(slug)).sort();
+  },
   sourced: (slug) => { try { return canonIsDisk({ holding: slug, source: join(daemonBagsDir(), slug) }); } catch { return false; } },
   benchSeat: async (slug) => {
     const out = summaryOutput(await runVerb("workbench-seat", { slug }, await vesselDid())) as { writeSlot?: unknown; bound?: unknown } | null;
@@ -529,6 +551,9 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     if (isPrivateProjectionSlug(name)) continue;
     addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
   }
+  // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
+  const cold = doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : [];
+  if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki hold <slug>\`), then export again`, items: [...cold].sort(), count: cold.length });
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
@@ -668,9 +693,13 @@ function openJournal(bundleId: string, targetRelations: readonly string[], write
   };
 }
 
-/** One class's outcome. */
-export interface CarryTally { landed: number; already: number; stoodOff: string[]; refused: string[]; planned: number }
-const tally = (): CarryTally => ({ landed: 0, already: 0, stoodOff: [], refused: [], planned: 0 });
+/**
+ * One class's outcome. EVERY BUNDLE ROW COUNTS SOMEWHERE: landed, already standing, standing off, refused, or `waiting`: a row
+ * of a face that stands open and unworn (its daemon rows, its `personal` rows, its kahua heads), which lands at that face's
+ * own wear. A waiting row names its face in the result and never reads as a refusal.
+ */
+export interface CarryTally { landed: number; already: number; stoodOff: string[]; refused: string[]; planned: number; waiting: number }
+const tally = (): CarryTally => ({ landed: 0, already: 0, stoodOff: [], refused: [], planned: 0, waiting: 0 });
 
 export interface CarryImportResult {
   readonly bundleId: string;
@@ -684,6 +713,10 @@ export interface CarryImportResult {
   readonly benchWaiting: ReadonlyArray<{ readonly slug: string; readonly why: "writer" | "owner"; readonly owner?: string }>;
   /** Each bundle face whose `personal` rows wait for that face's own wear. */
   readonly personalWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
+  /** Each bundle face whose kahua heads wait for that face's own wear (a lift signs under its own grant), with how many. */
+  readonly kahuaWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number; readonly heads: number }>;
+  /** Each bundle face whose daemon rows (working, face canon) the island opened no layer for under this wear: they land at its own. */
+  readonly daemonWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
   /** The share rows the bundle carried that this vessel's file held none of (written on apply), and the landing's answer. */
   readonly shares: { readonly written: readonly string[]; readonly landed: boolean };
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
@@ -794,6 +827,8 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   // takes the bundle's row, and a row that stands here stays as it stands. They gate the mint below and land again at the close.
   const benchWaiting: Array<{ slug: string; why: "writer" | "owner"; owner?: string }> = [];
   const personalWaiting: Array<{ petname: string; handleIndex: number }> = [];
+  const kahuaWaiting: Array<{ petname: string; handleIndex: number; heads: number }> = [];
+  const daemonWaiting: Array<{ petname: string; handleIndex: number }> = [];
   const standingShares = [...(doors.shareRows?.read() ?? [])];
   const carriedShares = (redeclare.shares ?? []).filter((r) => !standingShares.some((x) => x.slug === r.slug));
   const allShares: ShareRow[] = [...standingShares, ...carriedShares.map((r): ShareRow => ({ ...r }))];
@@ -883,6 +918,18 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       atomicWriteFileSync(to, bytes, undefined, { mode: 0o600 });
     }
     const answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}), ...faceArg });
+    // A WAVE NAMING A FACE THE ISLAND OPENS NO LAYER FOR waits by name, as the seed's does: nothing of it landed anywhere.
+    if (faceArg.face !== undefined && answer.landed.length === 0 && answer.refused.length > 0 && answer.refused.every((c) => FACE_LAYER_WAITS.test(c.why))) {
+      workTally.planned -= candidates.length; shadowTally.planned -= kapae.length;
+      workTally.waiting += candidates.length; shadowTally.waiting += kapae.length;
+      // The files this wave restored leave the mirror again: a file standing there would read `already` at the face's own
+      // wear, and its record would never ride to INGEST.
+      for (const { uri, to } of pending) if (!differing.has(uri)) rmSync(to, { force: true });
+      const face = [...target.values()].find((f) => f.handleIndex === faceArg.face);
+      const bf = manifest.faces.find((b) => target.get(b.key) === face);
+      if (face !== undefined && bf !== undefined && !daemonWaiting.some((w) => w.handleIndex === face.handleIndex)) daemonWaiting.push({ petname: bf.petname, handleIndex: face.handleIndex });
+      return;
+    }
     const landed = new Set(answer.landed);
     for (const r of candidates) if (landed.has(r.uri)) { workTally.landed++; journal.mark(keyed(r), "landed"); }
     for (const c of answer.conflicts) workTally.stoodOff.push(`${c.uri} (${c.why})`);
@@ -912,6 +959,10 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     if (face.kahua === null) { tallies.kahua.refused.push(`the stage of h${face.handleIndex} would not read (${face.kahuaRefusal ?? "unread"}); ${heads.length} head(s) wait`); continue; }
     const byTitle = new Map<string, CarryKahuaHead[]>();
     for (const h of heads) byTitle.set(h.title, [...(byTitle.get(h.title) ?? []), h]);
+    // A LIFT RIDES ITS OWN FACE'S WEAR (`kahua-face-unworn`): where the vessel names the face it wears, a head of any other
+    // open face waits by name, and no lift reaches the vessel for it.
+    const liftsHere = !faces.some((f) => f.worn !== undefined) || face.relation === litRelation;
+    let waitingHeads = 0;
     for (const [title, bundleHeads] of byTitle) {
       const bundleDigests = new Set(bundleHeads.map((h) => sha256Hex(h.text)));
       const standing = face.kahua.filter((h) => h.title === title);
@@ -921,6 +972,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       for (const h of bundleHeads) {
         const digest = sha256Hex(h.text), key = `kahua:${bf.key}:${title}:${digest}`;
         if (here.has(digest) || journal.done.has(key)) { tallies.kahua.already++; continue; }
+        if (!liftsHere) { tallies.kahua.waiting++; waitingHeads++; continue; }
         tallies.kahua.planned++;
         if (!apply) continue;
         try {
@@ -932,6 +984,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
         } catch (e) { tallies.kahua.refused.push(`${title} (${e instanceof Error ? e.message : String(e)})`); }
       }
     }
+    if (waitingHeads > 0) kahuaWaiting.push({ petname: bf.petname, handleIndex: face.handleIndex, heads: waitingHeads });
   }
 
   // DRAFTS AND TEMP: files land back beside the new face's working folder, where none stands.
@@ -1013,7 +1066,11 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const personalFiles = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/personal/`));
     if (personalFiles.length === 0 || unworn.has(bf.key)) continue;
     const face = target.get(bf.key)!;
-    if (face.relation !== litRelation) { personalWaiting.push({ petname: bf.petname, handleIndex: face.handleIndex }); continue; }
+    if (face.relation !== litRelation) {
+      personalWaiting.push({ petname: bf.petname, handleIndex: face.handleIndex });
+      tallies.personal.waiting += manifest.rows.filter((r) => r.layer === "personal" && r.face === bf.petname).length;
+      continue;
+    }
     const slugs = [...new Set(personalFiles.map((p) => p.split("/")[3]!))].sort();
     for (const slug of slugs) {
       const files = personalFiles.filter((p) => p.startsWith(`faces/${bf.key}/personal/${slug}/`));
@@ -1066,6 +1123,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   for (const bf of manifest.faces) {
     for (const r of former.filter((x) => readFaceLabel(x, projections)?.petname === bf.petname)) {
       if (personalWaiting.some((w) => w.petname === bf.petname)) { ashesLeft.push({ relation: r, why: `its personal rows land at h${target.get(bf.key)!.handleIndex}'s own wear: \`lares vault unlock --face ${target.get(bf.key)!.handleIndex}\`, then import again` }); continue; }
+      if (kahuaWaiting.some((w) => w.petname === bf.petname) || daemonWaiting.some((w) => w.petname === bf.petname)) { ashesLeft.push({ relation: r, why: `its daemon rows or kahua heads land at h${target.get(bf.key)!.handleIndex}'s own wear: \`lares vault unlock --face ${target.get(bf.key)!.handleIndex}\`, then import again` }); continue; }
       if (unworn.has(bf.key)) { ashesLeft.push({ relation: r, why: unlockItLine({ handleIndex: target.get(bf.key)!.handleIndex, petname: bf.petname }, "import") }); continue; }
       if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
       const { beyond } = weigh(r, bf.key);
@@ -1076,7 +1134,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     }
   }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting, warnings, benchWaiting, personalWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting, warnings, benchWaiting, personalWaiting, kahuaWaiting, daemonWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────

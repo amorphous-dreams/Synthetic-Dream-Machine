@@ -18,7 +18,7 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
   const code = refused > 0 ? exitFor("verb-error") : stood > 0 ? exitFor("conflict") : 0;
   emit(args, {
     ok: code === 0,
-    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, ashes: result.ashes, ashesLeft: result.ashesLeft, waiting: result.waiting, warnings: result.warnings, benchWaiting: result.benchWaiting, personalWaiting: result.personalWaiting, shares: result.shares },
+    data: { bundleId: result.bundleId, applied: result.applied, faceMap: result.faceMap, redeclare: result.redeclare, minted: result.minted, tallies: result.tallies, skipped: result.skipped, ashes: result.ashes, ashesLeft: result.ashesLeft, waiting: result.waiting, warnings: result.warnings, benchWaiting: result.benchWaiting, personalWaiting: result.personalWaiting, kahuaWaiting: result.kahuaWaiting, daemonWaiting: result.daemonWaiting, shares: result.shares },
     ...(refused > 0 ? { error: { code: "verb-error", message: `${refused} row(s) refused` } } : stood > 0 ? { error: { code: "conflict", message: `${stood} row(s) stand off; nothing overwrote them` } } : {}),
     human: () => {
       console.log(`import: bundle ${result.bundleId.slice(0, 16)} verified whole${result.applied ? "" : " · preview only (pass --apply)"}`);
@@ -30,11 +30,13 @@ export async function cmdImport(args: ParsedArgs, doors: CarryDoors = LIVE_CARRY
         ? `  the wiki ${w.slug} re-stands at its owner's wear: wear ${w.owner} (\`lares vault unlock --face N\`) and import again; nothing of it minted or landed under this face`
         : `  the workbench of ${w.slug} lands once, at the wear of a face that holds a writer's seat there: this face holds none, so its rows wait and nothing of them landed in this face's layers`);
       for (const w of result.personalWaiting) console.log(`  ${w.petname} stands unworn, and a face's personal layer of a wiki lands at that face's own wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
+      for (const w of result.daemonWaiting) console.log(`  ${w.petname} stands open, and its own daemon layer lands at its own face's wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
+      for (const w of result.kahuaWaiting) console.log(`  ${w.petname} stands unworn, and its ${w.heads} kahua head(s) lift at its own face's wear: \`lares vault unlock --face ${w.handleIndex}\`, then import again`);
       if (result.shares.written.length > 0) console.log(`  shares: ${result.applied ? "wrote" : "would write"} the row(s) for ${result.shares.written.join(", ")} into config/share.tid${result.shares.landed ? ", and landed the shares again" : ""}`);
       for (const b of result.minted) console.log(`  ${result.applied ? "minted" : "would mint"} ${b} (this vessel held no such wiki)`);
       for (const [cls, t] of Object.entries(result.tallies)) {
-        if (t.landed + t.already + t.planned + t.stoodOff.length + t.refused.length === 0) continue;
-        console.log(`  ${cls.padEnd(8)} ${result.applied ? `landed ${t.landed}` : `would land ${t.planned}`} · already ${t.already} · stood off ${t.stoodOff.length} · refused ${t.refused.length}`);
+        if (t.landed + t.already + t.planned + t.waiting + t.stoodOff.length + t.refused.length === 0) continue;
+        console.log(`  ${cls.padEnd(8)} ${result.applied ? `landed ${t.landed}` : `would land ${t.planned}`} · already ${t.already}${t.waiting > 0 ? ` · waiting ${t.waiting}` : ""} · stood off ${t.stoodOff.length} · refused ${t.refused.length}`);
         for (const s of t.stoodOff) console.error(`    stands off: ${s}`);
         for (const r of t.refused) console.error(`    refused: ${r}`);
       }
