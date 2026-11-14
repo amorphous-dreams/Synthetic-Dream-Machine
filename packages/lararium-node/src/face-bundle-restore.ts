@@ -55,7 +55,7 @@ import { existsSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   RECOVERY_CONTACT_ENROLMENT_KIND, HANDLE_BOOK_SNAPSHOT_ERA, bundleMemoryKeypair, canonicalJsonBytes, deriveSelfRecoveryKey,
-  foldPersonaContests, recoveryContactCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, sealKeySetHash,
+  foldPersonaContests, recoveryContactCompartmentCheck, mintPersonaInception, openFaceBundleBody, readFaceBundleBody, recoverySetCommitment, sealKeySetHash,
   sealMemorySecret, verifyPersonaKelFull,
   type FaceBundleBody, type FaceBundleHolding, type PersonaKelEvent,
 } from "@lararium/mesh";
@@ -163,7 +163,7 @@ async function consistent(body: FaceBundleBody): Promise<{ readonly signerDid: s
   const set = body.recoveryContactSet;
   if (set !== null) {
     const keys = set.recoveryContacts.map((g) => g.recoveryPubKey);
-    if (new Set(keys).size !== keys.length || sealKeySetHash(keys, set.threshold) !== set.recoveryContactSetHash) inconsistent("the carried recovery contact set does not recompute the digest it names");
+    if (new Set(keys).size !== keys.length || recoverySetCommitment(inception.prefix, keys, set.threshold) !== set.recoveryContactSetHash) inconsistent("the carried recovery contact set does not recompute the digest it names");
     if (!body.kel.some((e) => e.kind === RECOVERY_CONTACT_ENROLMENT_KIND && e.nextRecoverySetHash === set.recoveryContactSetHash)) inconsistent("the carried recovery contact set names a digest no enrolment in the carried key history commits");
   }
   return { signerDid, recoveryCommit };

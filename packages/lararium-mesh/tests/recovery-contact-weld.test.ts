@@ -13,7 +13,7 @@ import { sha256HexSync, hex, type RandomProvider } from "../src/crypto.js";
 import { FACE_LOG_VIEW_PARTIES } from "../src/face-log-view.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
 import {
-  mintPersonaInception, personaEnrolmentSigningBytes, verifyPersonaKelFull, RECOVERY_CONTACT_ENROLMENT_KIND, type PersonaKelEvent,
+  mintPersonaInception, personaEnrolmentSigningBytes, recoverySetCommitment, verifyPersonaKelFull, RECOVERY_CONTACT_ENROLMENT_KIND, type PersonaKelEvent,
 } from "../src/persona-kel.js";
 import { attestAndRotate, enrolRecoveryContacts, recoveryContactPossessionBytes } from "../src/recovery-keel-core.js";
 import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
@@ -32,6 +32,7 @@ import { DOMAIN_ROOT, RECOVERY_CONTACT_REGISTRATION_DOMAIN, RECOVERY_CONTACT_POS
  *   kind "guardian-enrolment"       -> "recovery-contact-enrolment"    (the typed event: its bytes, cid and every cid after)
  *   party "guardian"                -> "recovery-contact"              (a face-log view's signed party; FACE_LOG_VIEW_DOMAIN is unchanged, so an old-party view now fails the reader)
  *   the enrolment event               gains enrolCount 3 and enrolThreshold 2 in its signed bytes, and every later rotation and veto on that log carries them forward (the KEL verifier decides the 2-of-3 law; the reveal decides the set)
+ *   the set commitment                hashes with the face's prefix (`recoverySetCommitment`, 2026-11-14): the enrolment bytes fe608c79… -> 1c9519a7…, its cid pkel1-3ef4850c… -> pkel1-0417a14e…, the rotation cid pkel2-45a7f2fa… -> pkel2-f08479d3…
  * The bare persona-kel domain re-mints the enrolment bytes and addresses, the possession bytes (which bind the prefix),
  * and the rotation address.
  * Before the cut: enrolment bytes 47251fe4…, event cid pkel1-9d0bab85…, possession bytes ec416f4b…, registration
@@ -67,11 +68,11 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
     const r = await enrolRecoveryContacts({ selfRecoveryKey: await pubOf(seed(5)), head: inception, recoveryContacts: offers, threshold: 2, heldByOtherFaces: [], sign: signerOf(seed(11)) });
     expect(r.ok).toBe(true);
     if (!r.ok) return;
-    expect(r.recoveryContactSetHash).toBe(sealKeySetHash(keys, 2));
+    expect(r.recoveryContactSetHash).toBe(recoverySetCommitment(inception.prefix, keys, 2));
     expect(r.event.kind).toBe(RECOVERY_CONTACT_ENROLMENT_KIND);
     expect(r.event.nextRecoverySetHash).toBe(r.recoveryContactSetHash);
-    expect(digest(personaEnrolmentSigningBytes(inception, r.recoveryContactSetHash))).toBe("fe608c79599e71b687979161a73d59fb935e639fcf6f43d39cb8c2dcfb2b537d");
-    expect(r.event.eventCid).toBe("pkel1-3ef4850c7f3716b82d65ec4dee8ef4e11089769a277cb66772bc0c09a6fdc594");
+    expect(digest(personaEnrolmentSigningBytes(inception, r.recoveryContactSetHash))).toBe("1c9519a7c2fa5bb639e065969def509d6d7e95702630b5f2da0fdccc240b6946");
+    expect(r.event.eventCid).toBe("pkel1-0417a14edaf2eb05e65c32a6511b37aa7f7ef88e2077691f1b864bfb70780d54");
     expect((await verifyPersonaKelFull([inception, r.event])).ok).toBe(true);
   });
 
@@ -118,7 +119,7 @@ describe("the weld: enrolment, the seed-share card and the recovery rotation, by
     expect(rot.ok).toBe(true);
     if (!rot.ok) return;
     expect(rot.event.prefix).toBe(inception.prefix);
-    expect(rot.event.eventCid).toBe("pkel2-45a7f2fa6e45af16e682cb39df501da6cd73ee3564bc61eb252cf994570cc2d8");
+    expect(rot.event.eventCid).toBe("pkel2-f08479d3fff413707d09858ff6f1d01ec3fb01b2201673aea6d5fc40b8b12aad");
     expect((await verifyPersonaKelFull([inception, r.event, rot.event])).ok).toBe(true);
     const one = await attestAndRotate({
       head: r.event, freshOpKeyDid: fresh, recoveryContactKeys: keys, recoveryThreshold: 2,

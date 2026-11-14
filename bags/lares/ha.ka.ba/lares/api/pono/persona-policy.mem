@@ -161,7 +161,7 @@ A sweep of the measured abuse literature (`docs/pono/managed-identity-scout`) re
 
 !!! Ruling 3, sharpened ~ no recovery contact key ever serves two faces (operator-ruled)
 
-''Each face recovers through its own recovery contact set, and NO RECOVERY-CONTACT KEY EVER SERVES TWO FACES.'' A recovery contact cuts a fresh key for each face they guard, so no two faces' logs carry a matching key or a matching set digest. ''The leak runs through the key and the committed set digest more than through the person'': anyone who reads two logs reads a shared key or a shared digest, while only the recovery contact reads what the recovery contact knows.
+''Each face recovers through its own recovery contact set, and NO RECOVERY-CONTACT KEY EVER SERVES TWO FACES.'' A recovery contact cuts a fresh key for each face they guard, so no two faces' logs carry a matching key or a matching set digest. ''The leak runs through the key and the committed set digest more than through the person'': anyone who reads two logs reads a shared key or a shared digest, while only the recovery contact reads what the recovery contact knows. ''The set digest holds apart by construction'': every set a face commits after its inception hashes with that face's own prefix (`recoverySetCommitment`), so a contact who answers two vessels with one key still leaves two unrelated digests on the two logs; the key itself shows only when a rotation reveals it.
 
 ''A PERSON may guard two faces of one human only by that human's own deliberate act'', named and warned at the moment of enrolment, because that recovery contact then knows the two faces share a human. A vessel refuses, by name, a recovery contact key it already holds in another face's set. One vault sees every face it holds, so the check stays local and builds no roster.
 
@@ -259,6 +259,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FJCQDoOukCYxGOPZMtAXwUce_mGOT6AOVupedk_yL6g`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5ToGYe03NDr-VfDs4CBqGs9Kp8NCrZLMYxbOCLkVxm8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

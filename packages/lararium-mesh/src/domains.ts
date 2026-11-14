@@ -104,6 +104,9 @@ export const RECOVERY_CONTACT_REGISTRATION_DOMAIN = mint("recovery-contact-regis
 /** A recovery contact's proof that it holds the private half of the recovery key it offers ONE face: its signature over
  *  that face's prefix and that key, taken before the face's enrolment commits the key's set. */
 export const RECOVERY_CONTACT_POSSESSION_DOMAIN = mint("recovery-contact-possession");
+/** The COMMITMENT a face's key history makes for a recovery contact set: the set's digest hashed with that face's prefix
+ *  under this name, so one set commits an unrelated digest on each face's history. */
+export const RECOVERY_SET_COMMITMENT_DOMAIN = mint("recovery-set-commitment");
 /** The growth rite's crossing record: old quorum signs the handoff, new quorum the receipt, witnesses
  *  outside both sets attest the rite — the checkable form of the ceremony witness report. */
 export const RESERVE_TRANSITION_DOMAIN = mint("reserve-transition");

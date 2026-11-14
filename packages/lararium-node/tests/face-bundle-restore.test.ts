@@ -45,7 +45,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
-  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, recoveryContactRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
+  HandleBook, attestAndRotate, faceLogViewLine, signFaceLogView, canonicalJsonBytes, coldKeySeedFromCode, sealKeySetHash, recoverySetCommitment, deriveSelfRecoveryKey, faceAtomKeyFromSeed, foldPersonaContests, recoveryContactRegistrationCard, hex, mintBundleKey, mintHandleInception, mintPersonaInception, mintVeto,
   faceCatalogDocUrl, personaBagIdFor, openFaceBundleBody, readFaceBundleBody, sealFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
@@ -634,7 +634,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R10 — a restore after recovery contact enrolment carries the face's set, and an earlier bundle still restores", async () => {
     const a = await cutOnDestroyedVessel("a", "the gardener", 3, 3);
     const { early, recoveryContacts, kel } = a.enrolled!;
-    const setHash = sealKeySetHash(recoveryContacts.map((g) => g.recoveryPubKey), 2);
+    const setHash = recoverySetCommitment(a.prefix, recoveryContacts.map((g) => g.recoveryPubKey), 2);
     expect(kel.map((e) => e.kind ?? "plain"), "CONTROL: A's board heads at the typed first enrolment").toEqual(["plain", "recovery-contact-enrolment"]);
     expect(early.body.recoveryContactSet, "the early cut carries no set: its log stood one-of-one").toBeNull();
     expect(a.body.recoveryContactSet?.recoveryContactSetHash, "the later cut carries the set its log commits").toBe(setHash);
@@ -673,7 +673,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // A CARRIED SET ITS OWN LOG DOES NOT COMMIT: another digest beside the enrolment, and a set beside a one-of-one log.
     await foundVessel("e");
     before = homeTree();
-    const other = { ...a.body.recoveryContactSet!, recoveryContactSetHash: sealKeySetHash([recoveryContacts[0]!.recoveryPubKey], 1), threshold: 1, recoveryContacts: [a.body.recoveryContactSet!.recoveryContacts[0]!] };
+    const other = { ...a.body.recoveryContactSet!, recoveryContactSetHash: recoverySetCommitment(a.prefix, [recoveryContacts[0]!.recoveryPubKey], 1), threshold: 1, recoveryContacts: [a.body.recoveryContactSet!.recoveryContacts[0]!] };
     expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...a.body, recoveryContactSet: other }), as: 1, withRepo }))).toBe("bundle-inconsistent");
     expect(await refusalOf(restoreFaceBundle({ ...sealed({ ...early.body, recoveryContactSet: a.body.recoveryContactSet }), as: 1, withRepo }))).toBe("bundle-inconsistent");
     // A set whose registrations do not recompute the digest it names.

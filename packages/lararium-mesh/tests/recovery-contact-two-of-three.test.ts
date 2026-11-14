@@ -14,7 +14,7 @@ import * as ed from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
 import { sealKeySetHash } from "../src/wax-stamp.js";
 import {
-  mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes, mintRecoveryContactEnrolment, personaEventBytes, personaEventCidOf, verifyPersonaKelFull, type PersonaKelEvent,
+  mintPersonaInception, mintPersonaRotation, recoverySetCommitment, personaRotationSigningBytes, mintRecoveryContactEnrolment, personaEventBytes, personaEventCidOf, verifyPersonaKelFull, type PersonaKelEvent,
 } from "../src/persona-kel.js";
 import { enrolRecoveryContacts, recoveryContactPossessionBytes, type RecoveryContactEnrolmentOffer } from "../src/recovery-keel-core.js";
 import { recoveryContactRegistrationCard } from "../src/recovery-registration.js";
@@ -147,7 +147,7 @@ describe("P2 — the reveal decides: a rotation revealing the enrolled set refus
   async function enrolledOver(keys: Uint8Array[], threshold: number) {
     const inception = await face();
     const pubs = await Promise.all(keys.map(pubOf));
-    const r = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash: sealKeySetHash(pubs, threshold), sign: signerOf(seed(11)) });
+    const r = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash: recoverySetCommitment(inception.prefix, pubs, threshold), sign: signerOf(seed(11)) });
     if (!r.ok) throw new Error(r.reason);
     return { inception, enrolment: r.event, pubs };
   }
@@ -202,15 +202,15 @@ describe("P2 — the law describes the standing set: every rotation on a log tha
     const inception = await face();
     const first = contacts(3);
     const pubs = await Promise.all(first.map(pubOf));
-    const en = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash: sealKeySetHash(pubs, 2), sign: signerOf(seed(11)) });
+    const en = await mintRecoveryContactEnrolment({ head: inception, recoveryContactSetHash: recoverySetCommitment(inception.prefix, pubs, 2), sign: signerOf(seed(11)) });
     if (!en.ok) throw new Error(en.reason);
     const nextPubs = await Promise.all(graftKeys.map(pubOf));
     const fresh1 = `0x${await pubOf(seed(22))}`;
-    const bytes1 = personaRotationSigningBytes(en.event, fresh1, sealKeySetHash(nextPubs, graftThreshold));
+    const bytes1 = personaRotationSigningBytes(en.event, fresh1, recoverySetCommitment(inception.prefix, nextPubs, graftThreshold));
     const r1 = await mintPersonaRotation({
       head: en.event, freshOpKeyDid: fresh1, recoveryRoster: pubs, recoveryThreshold: 2,
       rotationSigs: await Promise.all([seed(1), seed(2)].map(async (s) => ({ signer: await pubOf(s), sig: await signerOf(s)(bytes1) }))),
-      nextRecoverySetHash: sealKeySetHash(nextPubs, graftThreshold),
+      nextRecoverySetHash: recoverySetCommitment(inception.prefix, nextPubs, graftThreshold),
     });
     if (!r1.ok) throw new Error(r1.reason);
     return { head: r1.event, nextPubs };

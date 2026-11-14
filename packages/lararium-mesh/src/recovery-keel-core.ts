@@ -31,7 +31,7 @@ import { sealKeySetHash } from "./wax-stamp.js";
 import type { RecoveryContactRegistration } from "./recovery-registration.js";
 import type { QuorumSignature } from "./kapae-antigen.js";
 import {
-  RECOVERY_CONTACT_COUNT, RECOVERY_CONTACT_THRESHOLD, mintRecoveryContactEnrolment, mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes,
+  RECOVERY_CONTACT_COUNT, RECOVERY_CONTACT_THRESHOLD, mintRecoveryContactEnrolment, mintPersonaInception, mintPersonaRotation, personaRotationSigningBytes, recoverySetCommitment,
   type PersonaKelEvent, type PersonaRotateResult, type SealedEnrolment,
 } from "./persona-kel.js";
 
@@ -278,8 +278,9 @@ export async function attestAndRotate(input: {
    *  digest with the rotation, so rotation and re-enrolment land as one act. Absent, the rotation enrols no one. */
   readonly enrolments?: readonly SealedEnrolment[];
 }): Promise<PersonaRotateResult> {
+  // A GRAFT COMMITS UNDER THE FACE'S PREFIX (`recoverySetCommitment`): two faces that graft one set show two digests.
   const nextRecoverySetHash = input.next
-    ? sealKeySetHash(input.next.recoveryContacts.map((g) => g.recoveryPubKey), input.next.threshold)
+    ? recoverySetCommitment(input.head.prefix, input.next.recoveryContacts.map((g) => g.recoveryPubKey), input.next.threshold)
     : input.head.nextRecoverySetHash;
   const bytes = personaRotationSigningBytes(input.head, input.freshOpKeyDid, nextRecoverySetHash, input.provisional ?? false, input.enrolments ?? []);
   const rotationSigs: QuorumSignature[] = [];
@@ -411,7 +412,9 @@ export async function enrolRecoveryContacts(input: {
   if (!apart.ok) {
     return refuse("recovery-contact-key-serves-another-face", `the recovery contact key ${apart.key.slice(0, 16)}… already serves the face at handle-index ${apart.handleIndex}: a recovery contact cuts a fresh key for each face`);
   }
-  const recoveryContactSetHash = sealKeySetHash(keys, threshold);
+  // THE SET COMMITS UNDER THIS FACE'S PREFIX (`recoverySetCommitment`): the same three contacts enrolled by another face,
+  // on this vessel or any other, commit an unrelated digest there.
+  const recoveryContactSetHash = recoverySetCommitment(head.prefix, keys, threshold);
   const minted = await mintRecoveryContactEnrolment({ head, recoveryContactSetHash, sign: input.sign });
   return minted.ok ? { ok: true, event: minted.event, recoveryContactSetHash } : refuse("enrolment-refused", minted.reason);
 }
