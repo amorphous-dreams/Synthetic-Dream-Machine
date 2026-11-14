@@ -42,7 +42,7 @@ import { nodeNexusIsland, nodeNexusIslandsBelow, nodeNexusStanding } from "../ne
 import { carryPersonaKelUpTheGradient } from "../persona-kel-ring.js";
 import { hearthAid } from "../hearth-aid.js";
 import { loadIdentityAnchors } from "../identity-anchors.js";
-import { admitCanonDocs, hearthCustodyGroup } from "../kahu-realm.js";
+import { admitCanonDocs } from "../kahu-realm.js";
 import { loadFaceAtomOfGroup } from "../face-atom-store.js";
 import { fleetLineageForVessel } from "../fleet-lineage.js";
 import { loadFaceAnchorOfGroup } from "../face-anchor-store.js";
@@ -450,7 +450,7 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
   }
   const hearth: AdmitHearthReading = {
     gatePin: stoodSovereignPin(larSealHome(), opts.gateDoor),
-    canon:   await admitCanonDocs(repo, larSealHome(), await hearthCustodyGroup()),
+    canon:   await admitCanonDocs(repo, larSealHome(), personaGroupId),
     islandKind: founderIdentity.kind, islandScope: founderIdentity.scope,
   };
   return { payload, hearth };

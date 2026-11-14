@@ -362,7 +362,17 @@ export async function admitCanonDocs(
 
 /** The face this hearth wears under sealed custody: the founding face's anchors' group (the composer's own reading); a locked or faceless place names none. */
 export async function hearthCustodyGroup(): Promise<string | null> {
-  return (await loadIdentityAnchors(0).catch(() => null))?.personaGroupId ?? null;
+  return faceCustodyGroup(0);
+}
+
+/**
+ * The group of ONE face this hearth holds, by its index: the group an admit that seats a device of THAT face reads the
+ * realm's canon for (`admitCanonDocs`). The hearth's wire hands house canon to a session of a face the Kahu cabal admitted
+ * and to no other, so an admit names canon by the face it seats, never by the founding face. A face the hearth holds no
+ * anchors for names none.
+ */
+export async function faceCustodyGroup(face: number): Promise<string | null> {
+  return (await loadIdentityAnchors(face).catch(() => null))?.personaGroupId ?? null;
 }
 
 

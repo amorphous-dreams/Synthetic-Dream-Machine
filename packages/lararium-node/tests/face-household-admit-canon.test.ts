@@ -38,11 +38,16 @@ vi.mock("../src/carried-set.js", () => ({ primaryNexusAid: () => AID }));
 vi.mock("../src/hearth-sovereign-pin.js", () => ({ hearthSovereignPin: () => PIN }));
 vi.mock("../src/nexus-leaf.js", () => ({ mintNexusLeaf: async () => ({ verifyingKey: NYM, seed: new Uint8Array(32) }) }));
 vi.mock("../src/nexus-doc.js", () => ({ readNexusDoc: () => ({}) }));
-vi.mock("../src/kahu-realm.js", () => ({ admitCanonDocs: async () => ({ ...seam.realmCanon }), hearthCustodyGroup: async () => "group-0" }));
+// The realm stands its canon for the Kahu face alone (`group-0`): any other face's group reads none.
+vi.mock("../src/kahu-realm.js", () => ({
+  admitCanonDocs: async (_repo: unknown, _home: unknown, group: string | null) => (group === "group-0" ? { ...seam.realmCanon } : {}),
+  hearthCustodyGroup: async () => "group-0",
+  faceCustodyGroup: async (face: number) => `group-${face}`,
+}));
 vi.mock("../src/commands/nexus-contract.js", () => ({
   runNexusContract: async (opts: Record<string, unknown>) => {
     seam.minted.push(opts);
-    return { bundle: bundleWith(PIN, { ...seam.realmCanon }) };
+    return { bundle: bundleWith(PIN, opts["canonGroup"] === undefined || opts["canonGroup"] === "group-0" ? { ...seam.realmCanon } : {}) };
   },
 }));
 vi.mock("@lararium/mesh", async (importActual) => ({
@@ -102,6 +107,18 @@ describe("the household admit's carriage carries the canon the realm names now",
     const answered = await ensureFaceHouseholdAdmit({ repo: {} as never, sealHome, face: 0 });
     expect(seam.minted).toHaveLength(0);
     expect(answered.opening.carriage.canon).toEqual({});
+  });
+
+  test("R4e — RED: a face OUTSIDE the Kahu cabal takes an admit that names the canon ITS group holds (none), never the founding face's", async () => {
+    seam.realmCanon = { ...CANON };
+    const answered = await ensureFaceHouseholdAdmit({ repo: {} as never, catalogUrl: "automerge:catalog", sealHome, face: 1 });
+    expect(seam.minted).toHaveLength(1);
+    expect(seam.minted[0], "the contract door signs the canon of the face the admit seats").toMatchObject({ action: "admit", canonGroup: "group-1" });
+    // The mint's own seam answers what the door signs for that group.
+    expect(answered.opening.carriage.canon, "a leaf of this face mounts no document its session cannot read").toEqual({});
+    // A second ask keeps the admit: the canon it carries equals what the realm names for this face now.
+    await ensureFaceHouseholdAdmit({ repo: {} as never, catalogUrl: "automerge:catalog", sealHome, face: 1 });
+    expect(seam.minted, "idempotent: the kept admit stands").toHaveLength(1);
   });
 
   test("R4d — CONTROL: a kept admit committed to another pin is minted again (the standing rule)", async () => {

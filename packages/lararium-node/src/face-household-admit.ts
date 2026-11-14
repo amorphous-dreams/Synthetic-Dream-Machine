@@ -29,7 +29,7 @@ import {
 } from "@lararium/mesh";
 import { admitBundlePathFor, isAdmitBundle, type AdmitBundle } from "./admit-bundle.js";
 import { primaryNexusAid } from "./carried-set.js";
-import { admitCanonDocs, hearthCustodyGroup } from "./kahu-realm.js";
+import { admitCanonDocs, faceCustodyGroup } from "./kahu-realm.js";
 import { runNexusContract } from "./commands/nexus-contract.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
 import { hearthSovereignPin } from "./hearth-sovereign-pin.js";
@@ -99,8 +99,11 @@ export async function ensureFaceHouseholdAdmit(opts: {
   const nym = leaf.verifyingKey;
   leaf.seed.fill(0);
   const pinDigest = gateBundleDigest(hearthSovereignPin(aid, opts.gateDoor));
-  // The canon the realm names now: the same read the contract door signs into a fresh admit's carriage.
-  const canon = await admitCanonDocs(opts.repo, opts.sealHome, await hearthCustodyGroup());
+  // The canon the realm names now FOR THIS FACE (`faceCustodyGroup`): the same read the contract door signs into a fresh
+  // admit's carriage. A face outside the Kahu cabal reads none, so its leaf mounts no document the wire holds back from it
+  // and reads house canon from the floor, as that face does at the hearth.
+  const canonGroup = await faceCustodyGroup(opts.face);
+  const canon = await admitCanonDocs(opts.repo, opts.sealHome, canonGroup);
   const path = faceHouseholdAdmitPath(opts.sealHome, aid, nym);
   let kept: unknown = null;
   try { kept = JSON.parse(readFileSync(path, "utf8")); } catch { kept = null; }
@@ -108,7 +111,7 @@ export async function ensureFaceHouseholdAdmit(opts: {
     return kept as AdmitBundle & { readonly opening: NonNullable<AdmitBundle["opening"]> };
   }
   const result = await runNexusContract({
-    action: "admit", nym, sealHome: opts.sealHome, repo: opts.repo, catalogUrl: opts.catalogUrl,
+    action: "admit", nym, sealHome: opts.sealHome, repo: opts.repo, catalogUrl: opts.catalogUrl, canonGroup,
     ...(opts.gateDoor ? { gateDoor: opts.gateDoor } : {}), ...(opts.syncUrl ? { syncUrl: opts.syncUrl } : {}),
   });
   const bundle = result.bundle;

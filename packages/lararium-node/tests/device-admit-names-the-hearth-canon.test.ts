@@ -4,7 +4,8 @@
  * A leaf opens its hearth's wiki. The documents that wiki reads (`@lares`, `@lararium`) ride the fleet-join answer's
  * signed carriage by name, beside the gate pin, so the joinee's gate widens by exactly those documents and the
  * hearth's catalog plane never crosses to it. The Kahu realm owns those names (one owner per registry): the door reads
- * them through `admitCanonDocs` keyed by the hearth's custody group, never off the catalog. What that reading names
+ * them through `admitCanonDocs` keyed by the group of the FACE the answer seats, never off the catalog and never by the
+ * founding face for another face's device. What that reading names
  * stands in `admit-canon-reads-the-realm`; this file holds the door to it.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/device-admit
@@ -18,8 +19,8 @@ describe("the fleet-join door names the hearth's canon", () => {
       .replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
     const hearth = src.slice(src.indexOf("const hearth: AdmitHearthReading = {"));
     expect(hearth.slice(0, hearth.indexOf("};")), "the hearth reading names no canon documents")
-      .toMatch(/canon:\s*await admitCanonDocs\(repo, larSealHome\(\), await hearthCustodyGroup\(\)\)/);
-    expect(src, "the door imports the realm's canon reader").toMatch(/import \{ admitCanonDocs, hearthCustodyGroup \} from "\.\.\/kahu-realm\.js";/);
+      .toMatch(/canon:\s*await admitCanonDocs\(repo, larSealHome\(\), personaGroupId\)/);
+    expect(src, "the door imports the realm's canon reader").toMatch(/import \{ admitCanonDocs \} from "\.\.\/kahu-realm\.js";/);
     expect(src, "a carried admit composes beside the signed edge").not.toMatch(/CarriedAdmitPayload\s*=/);
   });
 });
