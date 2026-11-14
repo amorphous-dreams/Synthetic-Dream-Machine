@@ -82,6 +82,31 @@ test("CONTROL a page already controlled stands its broker at once", async () => 
   await expect(standCeremonyBroker({ isSecureContext: true, container: c.container as never })).resolves.toEqual({ worker: sw });
 });
 
+test("CP1b RED a page whose registration stands active and controls it not (revived after a reset, so no activation claims) asks the worker to claim, and stands", async () => {
+  // After a reset's burn, a same-origin window that outlives it keeps the unregistered worker alive; the reloaded page loads
+  // uncontrolled, its `register()` revives that registration, and the platform fires no `activate`, so no `controllerchange`
+  // arrives by itself. The page asks the active worker for the claim it would otherwise wait on for ever.
+  const heard: unknown[] = [];
+  let c: ReturnType<typeof containerOf>;
+  const sw = { name: "revived", postMessage(msg: unknown) { heard.push(msg); if ((msg as { t?: string }).t === "broker:claim") queueMicrotask(() => c.claim(sw as unknown as ServiceWorker)); } } as unknown as ServiceWorker;
+  c = containerOf(sw, null);
+  const stood = await Promise.race([
+    standCeremonyBroker({ isSecureContext: true, container: c.container as never }),
+    new Promise<string>((r) => setTimeout(() => r("still waiting"), 500)),   // instrument bound: the red reads a stand that never comes
+  ]);
+  expect(stood, "the page stands on the worker it asked to claim").toEqual({ worker: sw });
+  expect(heard).toEqual([{ t: "broker:claim" }]);
+  // CONTROL: a registration still installing (no active worker yet) hears no word; its own activation claims (CP1's wait).
+  const installing = containerOf(null as unknown as ServiceWorker, null);
+  let later: unknown = "waiting";
+  void standCeremonyBroker({ isSecureContext: true, container: installing.container as never }).then((b) => { later = b; });
+  await new Promise((r) => setTimeout(r, 30));
+  expect(later).toBe("waiting");
+  installing.claim(sw);
+  await new Promise((r) => setTimeout(r, 10));
+  expect(later).toEqual({ worker: sw });
+});
+
 /** A page as the vessel's boot leaves it: the status row inside the vessel panel, mid-boot. */
 function bootPage(): { doc: Document; status: HTMLElement } {
   const doc = document.implementation.createHTMLDocument("vessel");

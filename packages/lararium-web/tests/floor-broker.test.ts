@@ -132,3 +132,16 @@ test("FB6 RED — a gone claimant's claim ends at the broker's next event, never
   expect(portsTo(live), "CONTROL: the live claim still hands its port").toHaveLength(1);
   expect(broker.settled(liveWait!), "and its wait ends at the hand").toBe(true);
 });
+
+test("FB7 RED — a page's `broker:claim` word has the broker claim its clients: a registration revived after a reset activates no second time", async () => {
+  const page = client("page", "/");
+  const broker = standBroker([page]);
+  expect(broker.claims.count, "evaluating the broker claims nothing by itself").toBe(0);
+  await broker.send(page, { t: "broker:claim" });
+  expect(broker.claims.count, "the page's word draws one claim").toBe(1);
+  expect(broker.kept.length, "the claim holds the worker's event open until it lands").toBeGreaterThan(0);
+  // CONTROL: no other word claims, and the ceremony document's word claims nothing (it stands controlled by its own navigation).
+  await broker.send(page, { t: "vessel:withdraw", tabSession: "tab-a" });
+  await broker.send(client("rite", "/ceremony.html"), { t: "broker:claim" });
+  expect(broker.claims.count).toBe(1);
+});

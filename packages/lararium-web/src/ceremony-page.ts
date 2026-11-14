@@ -22,7 +22,16 @@ export function pageCeremonyRefusal(env: PageCeremonyEnv): string | null {
 /** The broker as it stands: its active worker, or the refusal that keeps it down. */
 export type CeremonyBroker = { readonly worker: ServiceWorker } | { readonly refusal: string };
 
-/** Register the broker and wait for control: on first load it can activate before claiming the page, while matchAll reads controlled windows alone. */
+/**
+ * Register the broker and stand as its controlled page (the broker's `matchAll` reads controlled windows alone).
+ *
+ * Three ways the page comes to stand, none on a clock: it loads controlled; a worker still installing claims it on its own
+ * `activate` (first load); or the registration already stands ACTIVE and controls this page not, where no activation follows
+ * and so no claim arrives by itself. That last one follows a reset: a same-origin window that outlives the burn (the ceremony
+ * document reached by a plain navigation, which `window.close()` never shuts) keeps the unregistered worker alive, the
+ * reloaded page loads uncontrolled, and its `register()` revives that registration without a second `activate`. The page
+ * then ASKS the active worker to claim (`broker:claim`) and stands on the `controllerchange` that claim raises.
+ */
 export async function standCeremonyBroker(env: { readonly isSecureContext: boolean; readonly container: ServiceWorkerContainer | null } = {
   isSecureContext: window.isSecureContext, container: "serviceWorker" in navigator ? navigator.serviceWorker : null,
 }): Promise<CeremonyBroker> {
@@ -30,7 +39,7 @@ export async function standCeremonyBroker(env: { readonly isSecureContext: boole
   const refusal = pageCeremonyRefusal({ isSecureContext: env.isSecureContext, hasServiceWorker: container !== null });
   if (refusal || !container) return { refusal: refusal ?? "ceremony-broker-absent" };
   try {
-    await container.register(CEREMONY_BROKER_PATH, { scope: "/", type: "classic" });
+    const registration = await container.register(CEREMONY_BROKER_PATH, { scope: "/", type: "classic" });
     if (container.controller) return { worker: container.controller };
     return await new Promise<CeremonyBroker>((resolve) => {
       const changed = (): void => {
@@ -40,6 +49,9 @@ export async function standCeremonyBroker(env: { readonly isSecureContext: boole
       };
       container.addEventListener("controllerchange", changed);
       changed();
+      // An active worker that controls this page not will activate no second time: ask it for the claim. (A worker still
+      // installing hears nothing here; its own activation claims.)
+      if (!container.controller) registration.active?.postMessage({ t: "broker:claim" } satisfies PageToBroker);
     });
   } catch {
     return { refusal: "ceremony-broker-absent" };

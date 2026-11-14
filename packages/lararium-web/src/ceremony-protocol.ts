@@ -71,6 +71,8 @@ export type VesselToCeremony =
 export type CeremonyToVessel = { readonly t: "answer"; readonly askId: string; readonly answer: CeremonyAnswer };
 
 export type PageToBroker =
+  /** A page its active broker controls not asks for the claim an activation would have made (`standCeremonyBroker`). */
+  | { readonly t: "broker:claim" }
   | { readonly t: "ceremony:offer"; readonly askId: string }
   | { readonly t: "vessel:claim"; readonly tabSession: string }
   | { readonly t: "vessel:withdraw"; readonly tabSession: string }

@@ -26,6 +26,11 @@
  *               an ask the page raised and the person withdrew ("not now") refuses the same way; the vessel keeps its key.
  *               CONTROL: a fresh ask the page raised and still shows stands the ceremony's form, its typed words burn the
  *               place (a new key), and the burned id then refuses too.
+ *   K5 RED      A CEREMONY WINDOW THAT OUTLIVES THE BURN STALLS NO BOOT: the reset ceremony reached by plain navigation in a tab
+ *               with history (`window.close()` shuts no such window) keeps the unregistered broker alive; the reloaded page loads
+ *               uncontrolled and its `register()` revives that registration with no second `activate`. The page asks the
+ *               worker to claim and boots to `live` under a new key. CONTROL: the ceremony's window still stands open after the
+ *               burn (the instrument held the condition), and the booted page stands controlled.
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
@@ -306,5 +311,33 @@ test("K4 RED — the reset ceremony burns only for an ask a page of this origin 
     // The burned ask's id stands no second ceremony.
     assert.equal((await standAt(again)).refusal, "reset-unasked", "a burned ask's id stands no ceremony again");
     assert.deepEqual(faults, [], "no page error through the refusals and the burn");
+  } finally { await context.close(); }
+});
+
+test("K5 RED — a ceremony window that outlives the reset's burn stalls no boot: the reloaded page asks the revived broker to claim and stands live", { timeout: 300_000 }, async () => {
+  const context = await browser.newContext();
+  try {
+    const page = await context.newPage();
+    const faults: string[] = [];
+    page.on("pageerror", (e) => faults.push(e.message));
+    await page.goto(`${baseUrl}/`);
+    await live(page);
+    const before = await keyOf(page);
+    const askId = (await lares(page, "vessel", "reset")).data?.askId ?? "";
+    assert.match(askId, /^[0-9a-f-]{36}$/);
+    // The ceremony reached by PLAIN NAVIGATION, in a tab that already holds history: no script opened it, so its own
+    // `window.close()` after the burn shuts nothing and the window keeps the unregistered broker alive.
+    const rite = await context.newPage();
+    await rite.goto(`${baseUrl}/manifest.webmanifest`);
+    await rite.goto(`${baseUrl}/ceremony.html#reset=${askId}`);
+    await rite.waitForSelector("#ceremony-form:not([hidden])", { timeout: WAIT });
+    await rite.locator("#ceremony-pass").fill("reset this browser");
+    await Promise.all([page.waitForEvent("load", { timeout: WAIT }), rite.locator("#ceremony-go").click()]);
+    await live(page);
+    assert.notEqual(await keyOf(page), before, "the burn landed and the page booted afresh under a new key");
+    // CONTROL: the condition held (the ceremony's window outlived the burn), and the booted page stands controlled.
+    assert.equal(rite.isClosed(), false, "the ceremony's window outlived the burn");
+    assert.equal(await page.evaluate(() => navigator.serviceWorker.controller !== null), true, "the booted page stands under its broker");
+    assert.deepEqual(faults, [], "no page error through the burn and the boot");
   } finally { await context.close(); }
 });

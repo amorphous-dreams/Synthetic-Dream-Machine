@@ -4,7 +4,7 @@
  * `standBroker(clients)` evaluates the real broker against a scope whose `clients` reads the live `clients` array (splice a
  * client out to read it gone). `send` delivers one message from a client as the platform does; every `event.data` the broker
  * receives lands in `seen` (the broker's whole view of its traffic), and every promise it hands `waitUntil` lands in `kept`,
- * with `settled(p)` reading whether that wait has ended.
+ * with `settled(p)` reading whether that wait has ended; `claims.count` reads how often it claimed its clients.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
@@ -25,11 +25,13 @@ export function standBroker(clients: Client[]) {
   const seen: unknown[] = [];
   const kept: Promise<unknown>[] = [];
   const done = new WeakSet<Promise<unknown>>();
+  /** How many times the broker claimed its clients (`clients.claim()`). */
+  const claims = { count: 0 };
   const scope = {
     location: { origin: ORIGIN },
     skipWaiting: () => Promise.resolve(),
     clients: {
-      claim: () => Promise.resolve(),
+      claim: () => { claims.count += 1; return Promise.resolve(); },
       get: (id: string) => Promise.resolve(clients.find((c) => c.id === id)),
       matchAll: () => Promise.resolve(clients.slice()),
     },
@@ -45,5 +47,5 @@ export function standBroker(clients: Client[]) {
     // barrier: the broker's own async hand (its clients reads) settles before the test reads what it posted.
     await settle();
   };
-  return { send, seen, kept, settled: (p: Promise<unknown>) => done.has(p), settle };
+  return { send, seen, kept, settled: (p: Promise<unknown>) => done.has(p), settle, claims };
 }
