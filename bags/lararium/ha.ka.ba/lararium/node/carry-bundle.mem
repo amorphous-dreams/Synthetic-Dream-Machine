@@ -39,7 +39,7 @@ among them (`place-floor-pin`).
 No seat key, no opening, no sealed row. A bundle read by a stranger learns which key a Nexus carries, which
 the board publishes anyway.
 
-''One row for one document.'' This bundle carries a contract and no content. The content bundle (`lares export`, `lares import`) keeps the same grain: one row set for each document it carries, so a wiki's shared workbench travels once, naming its owner and its seats by pet-name, and a face-private document travels for its one face (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>).
+''One row for one document.'' This bundle carries a contract and no content. The content bundle (`lares export`, `lares import`) keeps the same grain: one row set for each document it carries, so a wiki's shared workbench travels once, naming its owner and its seats by pet-name, and a face-private document travels for its one face. That content bundle rides as the operator's own private carry: its pet-names join one human's faces, and handed to another party it would leak that map (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>).
 
 <<~/ahu>>
 
@@ -81,6 +81,6 @@ act, the claim and the rows in one write, and emits this bundle from there. A pa
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/place-floor-pin`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;G2cqJ_DxFvVJMF4T3fl6PLPjV3MvHp2qO-MF_bCRePA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ABpS5zg3ODZcDhc8w1A3lt7Zk9ARC3kWQflD0Jzndng`>>
 
 <<^ code=`&#x0004;` to=`?`>>
