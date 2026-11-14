@@ -27,8 +27,9 @@ import {
 import { phoneSeatExplanation, ambientPhoneSeatHost, seedRestStatus } from "./phone-seat.js";
 import { standVesselPort, vesselWorkerOfPort, VesselRefused, type VesselAsk, type VesselPort } from "./vessel-port.js";
 import type { VesselStatus } from "./vessel-protocol.js";
-import { paintCeremonyAsk, paintResetAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks } from "./ceremony-page.js";
+import { paintCeremonyAsk, paintResetAsk, resetAskAnswer, settleCeremonyAsk, standCeremonyBroker, standingAsks } from "./ceremony-page.js";
 import { RESET_CHANNEL } from "./ceremony-protocol.js";
+import { originAskRecord } from "./ceremony/reset-core.js";
 import { standResetTab } from "./reset-tab.js";
 import type { GenesisSeed } from "@lararium/mesh";
 import { LAR_WHOLE_VALUE_MAX_CHARS } from "@lararium/mesh/lar-camera";
@@ -44,7 +45,7 @@ import { defaultReadFace, keptFloorOf, readFloorCarriage, mountLiveStatus, sameO
 // (the hearth's Pronaos serves its own). The page carries no seed of its own, and checks the one it reads against the hearth's
 // arrival descriptor before it crosses (`genesis-anchor.ts`).
 import { arrivalSeedAnchor, genesisCrossingVerdict, genesisSeedBase, readServedSeed } from "./genesis-anchor.js";
-import { standConsoleVerbs } from "./console-verbs.js";
+import { ConsoleRefused, standConsoleVerbs } from "./console-verbs.js";
 import { installConsoleDoor, readVesselBesidePage, standConsoleDoor } from "./console-door.js";
 // `?worker&url` — Vite builds each worker shim through its worker pipeline and yields the built
 // bundle's URL (a real /assets file). A standalone `new URL("./x.ts", import.meta.url)` passed
@@ -723,13 +724,20 @@ const resetTab = resetChannel ? standResetTab({
     notice.setAttribute("role", "alert");
     notice.replaceChildren(document.createTextNode(words));
   },
+  // The two readings a tab checks a channel word against, named here: the origin's ask record and this page's own notices.
+  record: originAskRecord(),
+  shows: (askId) => standingAsks(document).some((ask) => ask.kind === "reset" && ask.askId === askId),
 }) : null;
 const pageVerbs = standConsoleVerbs(() => [
   { path: ["vessel", "read"], summary: "read this browser vessel: its place, standing, faces, relay, floor pin, pending asks and custody at rest, beside what this page knows",
     run: () => readVesselBesidePage(pageReading, vesselAtDoor) },
   { path: ["vessel", "reset"], summary: "return this browser vessel to its anon floor: paints the reset ask, whose ceremony takes typed words and then burns every store this site holds here, in every tab",
     waits: () => resetChannel ? null : ["reset-channel-absent", "this engine carries no BroadcastChannel, so the ceremony cannot tell this site's tabs to let go; clear this site's data in the browser's own settings"] as const,
-    run: async () => ({ asked: "reset", askId: paintResetAsk(document), next: "press \"open the reset ceremony\" at the top of this page; nothing burns until its typed confirmation reads back" }) },
+    run: async () => {
+      const answer = resetAskAnswer(document, paintResetAsk(document));
+      if ("refusal" in answer) throw new ConsoleRefused(answer.refusal, answer.why);
+      return answer;
+    } },
 ]);
 const consoleDoor = standConsoleDoor({ page: pageVerbs, ...vesselAtDoor });
 installConsoleDoor(window, consoleDoor);

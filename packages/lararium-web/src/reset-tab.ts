@@ -19,9 +19,8 @@
  * A SECOND TAB NEVER REFUSES THE RESET, and the reset never waits on its word: a tab that stands down lets go at once, and a
  * tab that does not hear (frozen, or an older page) holds its store until it closes, which the ceremony names to the person.
  */
-import { standingAsks } from "./ceremony-page.js";
 import type { ResetSignal } from "./ceremony-protocol.js";
-import { clearOwnedKeys, originAskRecord, resetAskStands } from "./ceremony/reset-core.js";
+import { clearOwnedKeys, resetAskStands } from "./ceremony/reset-core.js";
 
 export interface ResetTabEnv {
   /** The origin's reset channel as this tab hears it. */
@@ -36,10 +35,10 @@ export interface ResetTabEnv {
   readonly settle: (askId: string) => void;
   /** Tell the person where this tab stands. */
   readonly say: (words: string) => void;
-  /** The origin's ask record as this tab reads it; the origin's own storage where none is named. */
-  readonly record?: Pick<Storage, "getItem"> | null;
-  /** Whether this tab's page shows this reset ask; read off the page's own notices where none is named. */
-  readonly shows?: (askId: string) => boolean;
+  /** The origin's ask record as this tab reads it (`originAskRecord()` on the page); null where the browser withholds it. */
+  readonly record: Pick<Storage, "getItem"> | null;
+  /** Whether this tab's page shows this reset ask (the page reads its own notices, `standingAsks`). */
+  readonly shows: (askId: string) => boolean;
 }
 
 const signalOf = (msg: unknown): ResetSignal | null => {
@@ -53,8 +52,7 @@ export function standResetTab(env: ResetTabEnv): { readonly stoodDown: () => boo
   let stoodDown = false;
   /** The asks this tab stood down for: the only ids whose `reset:burned` it honours. */
   const stoodFor = new Set<string>();
-  const record = env.record !== undefined ? env.record : originAskRecord();
-  const shows = env.shows ?? ((askId: string): boolean => standingAsks(document).some((ask) => ask.kind === "reset" && ask.askId === askId));
+  const { record, shows } = env;
   env.listen((msg) => {
     const signal = signalOf(msg);
     if (!signal) return;

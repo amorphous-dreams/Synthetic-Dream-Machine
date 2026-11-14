@@ -194,6 +194,21 @@ export function paintResetAsk(doc: Document, mint: () => string = () => crypto.r
   return askId;
 }
 
+/**
+ * WHAT `vessel reset` ANSWERS, read off the notice the page now shows for the ask: where a button waits, the ask's id and that
+ * button; where the page refused the ask (`reset-unrecorded`: storage withholds itself, so no ceremony could stand for it), the
+ * refusal by name and the way that still resets the site. The answer never points at a button the notice does not offer.
+ */
+export function resetAskAnswer(doc: Document, askId: string):
+  | { readonly asked: "reset"; readonly askId: string; readonly next: string }
+  | { readonly refusal: string; readonly why: string } {
+  const ask = standingAsks(doc).find((a) => a.kind === "reset" && a.askId === askId);
+  if (ask?.refusal) {
+    return { refusal: ask.refusal, why: `${ask.refusal}: this browser withholds this site's storage, so the page cannot record the ask its ceremony checks and no reset ceremony stands here; clear this site's data in the browser's own settings to reset it` };
+  }
+  return { asked: "reset", askId, next: "press \"open the reset ceremony\" at the top of this page; nothing burns until its typed confirmation reads back" };
+}
+
 /** The vessel settled an ask: its notice leaves the page. */
 export function settleCeremonyAsk(doc: Document, askId: string): void {
   for (const notice of doc.querySelectorAll<HTMLElement>(".ceremony-ask")) if (notice.dataset["askId"] === askId) notice.remove();

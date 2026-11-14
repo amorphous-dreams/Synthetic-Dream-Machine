@@ -41,7 +41,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift
  */
 import { expect, test } from "vitest";
-import { openResetCeremony, paintCeremonyAsk, paintResetAsk, settleCeremonyAsk, standCeremonyBroker, standingAsks, type CeremonyBroker, type PageAsk } from "../src/ceremony-page.js";
+import { openResetCeremony, paintCeremonyAsk, paintResetAsk, resetAskAnswer, settleCeremonyAsk, standCeremonyBroker, standingAsks, type CeremonyBroker, type PageAsk } from "../src/ceremony-page.js";
 import { resetAskStands, type AskRecord } from "../src/ceremony/reset-core.js";
 
 /** The origin's ask record over a plain map. */
@@ -223,4 +223,19 @@ test("CP6 RED the page records the reset ask it raises, records it again at each
   expect(notice.querySelector("button.ceremony-open:not(.ceremony-withdraw)")).toBeNull();
   expect(standingAsks(dark.doc)).toEqual([{ askId: RESET, kind: "reset", ceremony: "refused", refusal: "reset-unrecorded" }]);
   expect(opened).toEqual([]);
+});
+
+test("CP6b RED `vessel reset` answers what the page shows: a withheld storage names reset-unrecorded and sends nobody to a button the notice never offers", () => {
+  const RESET = "00000000-0000-4000-8000-0000000000aa";
+  const dark = bootPage();
+  const withheld: AskRecord = { getItem: () => null, setItem: () => { throw new Error("SecurityError"); }, removeItem: () => {} };
+  const refused = resetAskAnswer(dark.doc, paintResetAsk(dark.doc, () => RESET, () => {}, withheld));
+  expect(refused).toMatchObject({ refusal: "reset-unrecorded" });
+  expect((refused as { why: string }).why).toMatch(/withholds this site's storage/);
+  expect(JSON.stringify(refused)).not.toMatch(/press/);
+  // CONTROL: a recorded ask names its id and the button that opens its ceremony.
+  const lit = bootPage();
+  const answer = resetAskAnswer(lit.doc, paintResetAsk(lit.doc, () => RESET, () => {}, recordOf().record));
+  expect(answer).toMatchObject({ asked: "reset", askId: RESET });
+  expect((answer as { next: string }).next).toMatch(/press "open the reset ceremony"/);
 });
