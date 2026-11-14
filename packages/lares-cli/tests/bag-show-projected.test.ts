@@ -34,3 +34,13 @@ test("CONTROL: a named --dir reads that survey alone, and a bag absent from it r
   mkdirSync(join(root, "elsewhere"), { recursive: true });
   await expect(show("book", { dir: join(root, "elsewhere") })).rejects.toThrow(/no bag "book" stands under/);
 });
+
+test("a bag door takes the bag by its slug or by its bag uri, and a uri outside the bags plane refuses by name", async () => {
+  root = mkdtempSync(join(tmpdir(), "bag-show-projected-"));
+  process.env["LAR_ROOT"] = root;
+  process.env["LAR_BAGS"] = join(root, "canon");
+  mkdirSync(join(root, "canon", "book"), { recursive: true });
+  expect(await show("book")).toBe(0);                                        // CONTROL: the slug
+  expect(await show("lar:///ha.ka.ba/bags/book")).toBe(0);
+  await expect(show("lar:///ha.ka.ba/wikis/book")).rejects.toThrow(/names no bag: a bag door takes a slug \(book\) or its bag uri \(lar:\/\/\/ha\.ka\.ba\/bags\/book\)/);
+});

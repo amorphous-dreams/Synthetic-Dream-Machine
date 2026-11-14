@@ -86,6 +86,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares kahua carry <cid> <cid> --face 1",
       "lares kahua carry --all --face 1",
       "lares kahua get T --face 1 --history",
+      "lares kahua list --face 1   # the stage's LIFTED items alone; a staged row rests in bags/daemon-<F> and lists here once its lift lands",
     ],
     flags: ["--face N   face index", "--text <body> | --file <path>   (stage) the row's body", "--fields <json>   (stage) the row's fields", "--digest <hex>   (lift) the staged row's row digest, as its preview printed it; it stands in for typing the digest back, and the passphrase prompt still needs a terminal", "--taint a,b | none   inputs from outside the face", "--sources <json>   further daemon sources the item distils (the staged row always rides)", "--parent <cid> | none   the revision a lift supersedes", "--proposal <id>   the proposal a lift answers", "--proposals <json>   a proposal batch", "--history   every revision of a title", "--all   (carry) every earlier head the history reads"],
   },

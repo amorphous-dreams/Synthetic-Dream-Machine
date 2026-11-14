@@ -70,6 +70,14 @@ function findBag(args: ParsedArgs, bag: string, roots: ReturnType<typeof bagHome
 function bagArg(args: ParsedArgs, verb: string): string {
   const raw = (args.positional[0] ?? "").trim();
   if (!raw) throw new BagUsageError(`\`bag ${verb}\` wants a bag name (e.g. lares)`);
+  // A BAG DOOR TAKES THE BAG BY ITS SLUG OR BY ITS BAG URI (`lar:///ha.ka.ba/bags/<slug>`, the name every other door prints):
+  // the uri reads as its slug. A `lar:` uri outside the bags plane names no bag, and refuses by name.
+  if (raw.startsWith("lar:")) {
+    const prefix = bagUri("");
+    const slug = raw.startsWith(prefix) ? raw.slice(prefix.length) : "";
+    if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) throw new BagUsageError(`\`bag ${verb}\`: ${raw} names no bag: a bag door takes a slug (book) or its bag uri (${bagUri("book")})`);
+    return slug;
+  }
   return raw.replace(/^@/, "");   // an entity name carries no marker; the kind-plane segment names it
 }
 
