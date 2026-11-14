@@ -40,7 +40,7 @@ import {
   ENGINE_CORE_ID,
   resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
   personaMultitudeView, renameOwnPersona,
-  DeterministicFederationGate, federationShareDecision, shareConfigOf, type FederationGate,
+  DeterministicFederationGate, federationShareDecision, shareConfigOf, wireIdentityOf, type FederationGate,
   GatedSyncLeg, oneWayDocumentsGate,
   LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
@@ -792,8 +792,16 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // the Repo's stand-down ends the wait by name.
     hydrates: true,
   });
+  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): this boot presents the store id of the face it
+  // wears and a peer id minted for this boot alone; the floor presents its own. The face settles below, after an admit or a
+  // founding has had its turn, and before any adapter that reaches a peer stands: the store id waits on it, and no
+  // document's bytes do. A boot that ends before it settles reads the floor's scope and presents it to no one.
+  let wornFaceSettles!: (face: string | null) => void;
+  const wire = wireIdentityOf({ store: sealedRest.store, face: new Promise<string | null>((settle) => { wornFaceSettles = settle; }) });
+  held.stood.push({ what: "the wire scope", down: () => wornFaceSettles(null) });
   const repo = new Repo({
-    storage: sealedRest.store,
+    storage: wire.storage,
+    peerId: wire.peerId,
     // The verdict seats on announce AND access (the announce-only lie the node measured in
     // share-policy-is-access.test.ts); `browserShareConfig` composes it through mesh's one law.
     // The gate rides by READER: it arms at the spore crossing below, after this Repo stands.
@@ -1198,6 +1206,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   if (opts.face && opts.face !== social.personaGroupId) throw new Error("face-not-worn: the session wears another face than the one this vessel's store names");
   // The veil floor wears no face: nothing to name on this thread until an admit overlays one.
   if (social.personaGroupId) wearFaceOfVessel(idbName, social.personaGroupId);
+  // THE WIRE SCOPE SETTLES HERE, on the face this boot presents at its relay and to its siblings (the floor where none).
+  wornFaceSettles(social.personaGroupId ?? null);
   // A pin chooses which gate to knock; the selected face atom's card supplies face peer proof. Name the missing
   // proof here instead of leaving the page pinned while no adapter can stand.
   // THE PINS THE ADMIT CARRIED are filed in the ONE pair index under the hearth's name (the origin of the relay url: the

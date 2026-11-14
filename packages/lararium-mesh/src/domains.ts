@@ -251,6 +251,9 @@ export const SWARM_ACT_DOMAIN = mint("swarm-act");
 /** A face's OFFER of records toward a house-canon bag: the offered fields, each record's carrier digest and fork base, signed by
  *  the offering face's atom. Its own name, so no plugin offering, promote act or release verifies as one. */
 export const CANON_OFFER_DOMAIN = mint("canon-offer");
+/** The digest that names a worn face's WIRE SCOPE inside a vessel's own store (`wire-identity`): the store keeps one store id
+ *  for each scope, and the scope's name there carries no PersonaGroup. */
+export const WIRE_SCOPE_DOMAIN = mint("wire-scope");
 /** The steward's RETIRE of one canon offer after its promotion, keyed to the offer's CID. Its own name, so no offer verifies as one. */
 export const CANON_OFFER_RETIRE_DOMAIN = mint("canon-offer-retire");
 /** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so

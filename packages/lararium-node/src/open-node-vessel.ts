@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -1350,8 +1350,13 @@ async function prepareNodeBootOn(
   let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
   // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
   const vesselOnly = vesselOnlyBook(() => repo);
+  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): this composition presents the worn face's own
+  // store id and a peer id minted for this composition alone; the floor presents its own. A face switch recomposes, so no
+  // peer reads one identifier under two faces of this vessel.
+  const wire = wireIdentityOf({ store: sealedRest.store, face: custodyGroup });
   const repo = new Repo({
-    storage: sealedRest.store,
+    storage: wire.storage,
+    peerId: wire.peerId,
     // THE PROTOTYPE-KEY SHORE: a sync message carrying a `__proto__` key never reaches the Repo.
     network: [shoreInbound(network)],
     // Two rings: WS peers (outside) must have passed a face gate; the
@@ -1428,6 +1433,13 @@ async function prepareNodeBootOn(
   // The SECOND half of the probe — a doc enters a peer's sync session exactly when sync messages start moving
   // for that (doc, peer) pair, and leaves it when they stop. `doc-metrics` carries both directions.
   if (wireProbe) {
+    // WHAT THIS COMPOSITION PRESENTS, and what each peer it meets presents: the peer id and the store id of the peer
+    // metadata, so a witness reads both sides of a face switch off two vessels' logs. It names the scope's kind, never a group.
+    void wire.storeId().then(
+      (storeId) => console.log(`[wire] presents peer=${wire.peerId} store=${storeId} scope=${custodyGroup === null ? "floor" : "face"}`),
+      (e: unknown) => console.log(`[wire] presents peer=${wire.peerId} store=(unread: ${e instanceof Error ? e.message : String(e)})`),
+    );
+    repo.networkSubsystem.on("peer", ({ peerId, peerMetadata }) => console.log(`[wire] met    peer=${peerId} store=${peerMetadata.storageId ?? "-"}${peerMetadata.isEphemeral ? " ephemeral" : ""}`));
     repo.on("doc-metrics", (e) => {
       if (e.type === "generate-sync-message")     console.log(`[wire] out    doc=${e.documentId} peer=${String(e["forPeer"])}`);
       else if (e.type === "receive-sync-message") console.log(`[wire] in     doc=${e.documentId} peer=${String(e["fromPeer"])}`);

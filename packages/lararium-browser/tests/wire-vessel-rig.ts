@@ -43,7 +43,9 @@ export class FakeRelayAdapter extends NetworkAdapter {
   constructor(options: unknown) { super(); this.options = options; observed.relays.push(this); }
   isReady(): boolean { return true; }
   whenReady(): Promise<void> { return Promise.resolve(); }
-  connect(peerId: PeerId, _peerMetadata?: PeerMetadata): void { this.peerId = peerId; }
+  /** What the vessel's Repo presented on this relay: its peer id and the store id its peer metadata names. */
+  presented: { readonly peerId: string; readonly storageId: string | undefined } | null = null;
+  connect(peerId: PeerId, peerMetadata?: PeerMetadata): void { this.peerId = peerId; this.presented = { peerId, storageId: peerMetadata?.storageId }; }
   join(): void { /* no session stands */ }
   onClose(): void { /* nothing to close */ }
   send(): void { /* nothing leaves the page */ }
@@ -60,11 +62,11 @@ export function relayPeerArrives(peerId: string): void {
 const hex = (seed: string): string => seed.repeat(32).slice(0, 64);
 
 /** A carried admit whose island resolves to the hearth's own gate key (`anchor`). */
-export function admitNaming(hearthGatePubKey: string, hearthCanonDocs: Record<string, string>): CarriedAdmitPayload {
+export function admitNaming(hearthGatePubKey: string, hearthCanonDocs: Record<string, string>, personaGroupId: string = hex("a1")): CarriedAdmitPayload {
   return {
     hearthGatePubKey, hearthIslandKind: "anchor", hearthIslandScope: hearthGatePubKey,
     hearthCanonDocs,
-    personaGroupId: hex("a1"), meshCabalDocIdHex: hex("a3"),
+    personaGroupId, meshCabalDocIdHex: hex("a3"),
     signerDid: "did:key:z6MkWireRig", personaKelPrefix: "EWireRigPrefix",
     // The rig's edge carries the fields the sealed anchor commits to (root, device, hearth, epoch); no ceremony signs it.
     deviceEdge: { signed: true, personaRootDid: `0x${hex("a5")}`, deviceVerifyingKey: hex("a7"), hearthTrueName: "wire-rig-hearth", boundEpoch: "0" },

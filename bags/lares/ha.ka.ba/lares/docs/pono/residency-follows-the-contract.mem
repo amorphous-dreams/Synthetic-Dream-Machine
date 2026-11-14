@@ -67,12 +67,14 @@ A face that holds no writer's seat in a wiki's workbench reads canon (from the f
 * ''Everything that does join faces rests vessel-private:'' the persona roster, the device table, pet-name labels, share-carry rows, adoption across a re-founding. An export bundle counts as the operator's own private carry; handed to another party it would tell the mapping.
 * ''Who belongs to whom travels by voice.'' The model offers no field to say it and none to deny it.
 
-''What the code keeps, measured by reading on 2026-11-14 (no hearth ran).'' A PersonaGroup holds the devices of ONE face. Each face founds its own Keyhive identity, group and sentinel document, and each face's root mints from fresh randomness, so no public value lets an observer test "same root". The operator's ruling of 2026-10-18 stands behind it: //"one Keyhive identity per PersonaGroup, none above them … it's the only way to retain control over faces that don't know about each other."// A workbench's key document stays on its vessel, and nothing of it crosses to another human today.
+''What the code keeps, measured by reading on 2026-11-14.'' A PersonaGroup holds the devices of ONE face. Each face founds its own Keyhive identity, group and sentinel document, and each face's root mints from fresh randomness, so no public value lets an observer test "same root". The operator's ruling of 2026-10-18 stands behind it: //"one Keyhive identity per PersonaGroup, none above them … it's the only way to retain control over faces that don't know about each other."// A workbench's key document stays on its vessel, and nothing of it crosses to another human today.
 
-''Where the code breaks it, read on 2026-11-14 (no hearth ran; each row waits on a walked confirmation).''
+''Where the code broke it, read on 2026-11-14 and then measured row by row (each row names its standing).''
 
-* ''The store's id at the wire.'' One vessel runs one sync repo for every face it holds, and that repo sends one stored `storageId` to every peer on every connection, across reboots and face switches. A peer that meets face A and later face B from one vessel reads the same id twice. This joins two faces with no help from timing. Within one boot the repo's `peerId` holds constant the same way.
-* ''The change actor.'' One repo mints one actor id for each document, so two faces writing one shared document through one repo may sign their changes with one actor. Inferred, unverified.
+* ''The store's id at the wire ~ CURED.'' One vessel keeps one store for every face it holds, and the sync engine minted one `storageId` for that store and sent it to every peer under every face. Reproduced red on both vessels (`packages/lararium-node/tests/face-wire-identity.test.ts`, `packages/lararium-browser/tests/wire-face-identity.test.ts`: one id under face A and under face B). The cure (`packages/lararium-mesh/src/wire-identity.ts`): the store keeps one id for each worn face and one for the veil floor, a composition presents its own scope's id alone, and the sync state a face rests for a peer reads back under that face alone. The same face keeps its id across a restart, so a peer's rested sync state for the vessel still names it. The repo's `peerId` never repeated in the measurement: a face switch tears the composition down and stands a fresh one, and each composition mints its own.
+* ''The change actor ~ MEASURED, holds.'' The engine mints an actor for a document at each load, and a face switch recomposes, so two faces wrote one shared document under two actors. The acceptance test fails the day an actor repeats.
+* ''STILL STANDING ~ one face across Nexuses.'' One composition speaks to every Nexus its face stands in through one repo, so that face presents one `peerId` within a boot, and one store id across boots, at each of them. This links ONE face across Nexuses. The cure mints both ids at each Nexus's adapter, and waits on a lane of its own.
+* ''STILL STANDING ~ a face lit beside the worn one.'' A face lit beside the worn face (a relay face) rides the worn face's composition and shares its ids. Read, never walked: the reading found only the operator's own sessions reaching such a face's documents through that composition.
 * ''The canon offer.'' An offer's body publishes the offering face's PersonaGroup and its atom key to every face on the Nexus. That links ONE face across Nexuses, and it hands an observer the PersonaGroup needed to test who owns a private workbench realm (its id hashes the PersonaGroup with the slug).
 * ''The recovery commitment.'' A face's recovery key set hashes unsalted, so two faces that enrol the same contacts under the same keys show equal commitments. Inferred.
 * ''A group seated in a document shows its members.'' A document's readers can list the individuals a member group reaches. The workbench seats individuals, so nothing shows today.
@@ -164,6 +166,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xlbrtfrx3VmHKN67YzSLQctScsuxsA8RC5kRA1TLHTU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lvANw6kmQtHgfE7SYLEQiwBKA7YYcjo4bGazcRVyJUI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

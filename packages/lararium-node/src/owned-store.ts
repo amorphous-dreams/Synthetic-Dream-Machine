@@ -33,19 +33,15 @@
  */
 
 import { createConnection, type Socket } from "node:net";
-import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { Repo } from "@automerge/automerge-repo";
 import { rendezvousPath } from "@lararium/mesh/rendezvous-path";
-import { SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes } from "@lararium/mesh";
+import { SealedDocumentStore, bindSecretHomeRest, vesselHeldHomes, wireIdentityOf } from "@lararium/mesh";
 
 import { DurableNodeFSStorageAdapter } from "./durable-storage-adapter.js";
 import { claimName, anchoredName, NameHeld, answers, letGo, type ClaimedName, type ReapWord } from "./socket-claim.js";
 import { atomicWriteFileSync } from "./fs-atomic.js";
-
-/** The key under which a store keeps its own id — the one write a Repo makes on opening a fresh store. */
-const STORE_ID_KEY = "storage-adapter-id";
 
 // ── THE BOOT EPOCH (M7′) — a per-vessel monotone counter, bumped once per VESSEL claim ──────────────
 //
@@ -403,11 +399,14 @@ export async function ownedStore<T>(storageDir: string, act: (repo: Repo) => Pro
       sessionFace: () => null, sessionOf: () => null, seal: refuse, open: refuse,
       refuseClearOverSealed: true,
     });
+    // THE DIRECT HOLDER STANDS AT THE FLOOR'S WIRE SCOPE (`wireIdentityOf`): it wears no face and dials no peer, and it
+    // never reads or mints a face's store id.
     // NO WRITE OUTLIVES THE CLAIM. A Repo opening a store with no id mints one and saves it unawaited, so that
-    // save could land after the act returns and the name stands free. The holder seats the id first; the Repo then
-    // reads it and writes nothing of its own accord.
-    if (!(await storage.load([STORE_ID_KEY]))) await storage.save([STORE_ID_KEY], new TextEncoder().encode(randomUUID()));
-    const repo = new Repo({ storage });
+    // save could land after the act returns and the name stands free. The holder reads the scope's id first (the reading
+    // mints it where none rests); the Repo then reads it and writes nothing of its own accord.
+    const wire = wireIdentityOf({ store: storage, face: null });
+    await wire.storeId();
+    const repo = new Repo({ storage: wire.storage, peerId: wire.peerId });
     // The vessel's key stands on demand: an act that reaches the control document opens the secret home's custody row first.
     // A REFUSED OPEN NAMES ITS REASON (a locked custody, a place that names no home): the act refuses by it, and no
     // stand-in stands in its place. The map moving (a home opened) wakes every load waiting on it and reseals what waits.
