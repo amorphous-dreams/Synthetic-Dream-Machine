@@ -395,9 +395,12 @@ export function kahuaRecipe(r: WikiRecipe): WikiRecipe {
   return { ...r, libraryBags: [KAHUA_BAG, ...(r.libraryBags ?? [])] };
 }
 
-/** The working slot is the only default writable; an absent handle leaves no default writable. */
-export function defaultWritableSlot(slug: string): SlotUri {
-  return wikiSlotUri(slug, "working");
+/**
+ * The default writable: the working slot, or the face's own `personal` slot where the face holds no writer's seat in the
+ * wiki's workbench (`writeSlot`, cabal-realm#/the-workbench). An absent handle leaves no default writable.
+ */
+export function defaultWritableSlot(slug: string, writeSlot?: "personal"): SlotUri {
+  return wikiSlotUri(slug, writeSlot ?? "working");
 }
 
 /**
@@ -405,10 +408,13 @@ export function defaultWritableSlot(slug: string): SlotUri {
  * the system island every vessel shares, so a wiki mounts it read-only and an edit aimed at it copies
  * UP into the wiki's default writable (Law 4) — the floor's one writer is the node home, by handle.
  * `defaultWritable` marks `defaultWritableSlot` alone; every other layer registers `false` so the
- * last-registered temp store never takes the office.
+ * last-registered temp store never takes the office. A face that holds no writer's seat in the wiki's workbench
+ * (`writeSlot: "personal"`) mounts the workbench it may read as a layer that takes no write, and its `personal` slot
+ * takes the office.
  */
-export function slotLayerFlags(slot: SlotUri, slug: string): { writable: boolean; defaultWritable: boolean } {
-  return { writable: slot !== ORACLE_BAG && slot !== KAHUA_BAG, defaultWritable: slot === defaultWritableSlot(slug) };
+export function slotLayerFlags(slot: SlotUri, slug: string, writeSlot?: "personal"): { writable: boolean; defaultWritable: boolean } {
+  const readOnlyBench = writeSlot === "personal" && slot === wikiSlotUri(slug, "working");
+  return { writable: slot !== ORACLE_BAG && slot !== KAHUA_BAG && !readOnlyBench, defaultWritable: slot === defaultWritableSlot(slug, writeSlot) };
 }
 
 /** The four INSTANCE slots — minted per (PersonaGroup × fingerprint) by the resolver, threaded

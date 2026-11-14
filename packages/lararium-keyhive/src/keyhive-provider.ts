@@ -900,14 +900,24 @@ export class KeyhiveProvider implements CapabilityProvider {
    * reading of (another face's, never ingested here) answers false: a seat nobody can read seats nobody.
    */
   async seatedInDoc(agentIdentifierHex: string, docIdHex: string): Promise<boolean> {
+    return (await this.accessInDoc(agentIdentifierHex, docIdHex)) !== null;
+  }
+
+  /**
+   * The access `agent` holds in the Document `docIdHex` AS THIS REPLICA READS IT, lower-cased (`admin`, `read`, …), or null
+   * where it holds none or this hive holds no reading of the Document. The reading names the Document itself, never the
+   * Document this hive maps some bag to.
+   */
+  async accessInDoc(agentIdentifierHex: string, docIdHex: string): Promise<string | null> {
     const id = `0x${docIdHex.trim().toLowerCase().replace(/^0x/, "")}`;
     try {
       await this.ensureIsland(id);
       const kh = this.requireKh();
       const docId = new KH.DocumentId(hexToBytes(id));
-      if (!(await kh.getDocument(docId))) return false;
-      return !!(await kh.accessForDoc(new KH.Identifier(hexToBytes(agentIdentifierHex)), docId));
-    } catch { return false; }
+      if (!(await kh.getDocument(docId))) return null;
+      const access = await kh.accessForDoc(new KH.Identifier(hexToBytes(agentIdentifierHex)), docId);
+      return access ? access.toString().toLowerCase() : null;
+    } catch { return null; }
   }
 
   /**

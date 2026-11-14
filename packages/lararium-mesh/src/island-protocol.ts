@@ -167,6 +167,9 @@ export interface IslandGrants {
   /** working — the SAVED live write layer (PersonaGroup×fingerprint-bound, like
    *  personal); normal edits route here, canon publishes on a promotion MOVE. */
   workingUrl?:  string | null;
+  /** The layer this face's saves of the wiki land in where it holds no writer's seat in the wiki's workbench: its own
+   *  `personal` slot (cabal-realm#/the-workbench). Absent: the working slot, where one stands. */
+  writeSlot?:   "personal";
   /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
    *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
   kahuaUrl?:    string | null;
@@ -655,6 +658,8 @@ export interface DaemonMsg_ResolveBindingResult {
    * name never reaches the vessel ahead of the document it names.
    */
   workingDoc?: Uint8Array;
+  /** The face holds no writer's seat in the wiki's workbench: its saves land in its own `personal` slot. */
+  writeSlot?: "personal";
   error?: string;
 }
 
@@ -1497,6 +1502,7 @@ export function mkDaemonResolveBindingResult(opts: {
   draftUrl?:    string;
   workingUrl?:  string;
   workingDoc?:  Uint8Array;
+  writeSlot?:   "personal";
   error?:       string;
 }): DaemonMsg_ResolveBindingResult {
   const msg: DaemonMsg_ResolveBindingResult = {
@@ -1507,6 +1513,7 @@ export function mkDaemonResolveBindingResult(opts: {
   if (opts.draftUrl    !== undefined) msg.draftUrl    = opts.draftUrl;
   if (opts.workingUrl  !== undefined) msg.workingUrl  = opts.workingUrl;
   if (opts.workingDoc  !== undefined) msg.workingDoc  = opts.workingDoc;
+  if (opts.writeSlot   !== undefined) msg.writeSlot   = opts.writeSlot;
   if (opts.error       !== undefined) msg.error       = opts.error;
   return msg;
 }

@@ -14,7 +14,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { makeIslandRepo } from "@lararium/mesh";
-import { CompositeStore, CONTROL_HOME_ID, AutomergeDocStore, daemonFaceCanonBag, emptyLarDoc, mutableLarRecord, wikiSlotUri, realmWorkbenchDocUrl, type LarDoc } from "@lararium/mesh";
+import { CompositeStore, CONTROL_HOME_ID, AutomergeDocStore, daemonFaceCanonBag, emptyLarDoc, mutableLarRecord, wikiSlotUri, realmWorkbenchDocUrl, computeRecipeFingerprint, bagUri, type LarDoc } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { litFaceSlotDocs } from "../src/slot-doc-resolver.js";
 import { makeLitFaceTarget, type LitFace } from "../src/lit-face-target.js";
@@ -34,6 +34,35 @@ function stand() {
 }
 
 describe("every lit face resolves its own slots", () => {
+  test("L0 — a face that holds no writer's seat in a wiki's workbench writes its own personal layer, and its mount hears so", async () => {
+    // The binding rows rest in the daemon document: this rig lays that bag beside the control home.
+    const repo = makeIslandRepo({ syncPort: new MessageChannel().port1 });
+    const home = new CompositeStore();
+    home.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: false });
+    home.addLayer({ bagId: bagUri("daemon"), store: new MemoryTiddlerStore(bagUri("daemon")), writable: true, defaultWritable: true });
+    const slots = litFaceSlotDocs({ repo, daemonStore: home, control: home, catalog: null, deviceScoped: (slug) => slug === "daemon" });
+    const REALM = "e".repeat(64);
+    const door = { mint: async () => ({ docId: `0x${"d".repeat(64)}` }) } as never;
+    const writer = slots.of({ group: "group-h0", atomKey: "a0".repeat(32), faceDoor: door, workbenchRealm: async () => REALM, workbenchWrites: async () => true });
+    const reader = slots.of({ group: "group-h1", atomKey: "a1".repeat(32), faceDoor: door, workbenchRealm: async () => REALM, workbenchWrites: async () => false });
+    const unseated = slots.of({ group: "group-h2", atomKey: "a2".repeat(32), faceDoor: door, workbenchRealm: async () => null, workbenchWrites: async () => false });
+    expect(await writer.writeSlot("garden"), "CONTROL: a writer's seat writes the workbench").toBe("working");
+    expect(await reader.writeSlot("garden"), "a reader's seat writes personal").toBe("personal");
+    expect(await unseated.writeSlot("garden"), "no seat writes personal").toBe("personal");
+    const trace = { wikiDocId: "automerge:2ZcLTyZGscnNvcFcXGyuAuuXVpd6", libraryBagDocIds: [] as readonly string[] };
+    const fingerprint = await computeRecipeFingerprint(trace);
+    const w = await writer.bindings(fingerprint, trace, "garden");
+    expect(w.workingUrl).toBe(realmWorkbenchDocUrl(REALM, "garden"));
+    expect(w.writeSlot, "CONTROL: a writer's mount names no other write slot").toBeUndefined();
+    const r = await reader.bindings(fingerprint, trace, "garden");
+    expect(r.workingUrl, "a reader mounts the workbench it reads").toBe(realmWorkbenchDocUrl(REALM, "garden"));
+    expect(r.writeSlot).toBe("personal");
+    const u = await unseated.bindings(fingerprint, trace, "garden");
+    expect(u.workingUrl, "a face no realm seats mounts no workbench, and the mount stands").toBeNull();
+    expect(u.writeSlot).toBe("personal");
+    expect(new Set([w.personalUrl, r.personalUrl, u.personalUrl]).size, "each face binds its own personal document").toBe(3);
+  });
+
   test("L1 — each face's working slot answers through its own workbench port; device slots stand under each group", async () => {
     const { control, slots } = stand();
     const REALM = "e".repeat(64);
@@ -43,7 +72,7 @@ describe("every lit face resolves its own slots", () => {
     const a = await worn.slotDoc("garden", "working", { mint: false });
     expect(a).toEqual({ url: realmWorkbenchDocUrl(REALM, "garden"), reach: "face" });
     expect(await sibling.slotDoc("garden", "working", { mint: false }), "a face the realm never seated reads no workbench").toBeNull();
-    await expect(sibling.slotDoc("garden", "working")).rejects.toMatchObject({ reason: "no-workbench" });
+    expect(await sibling.slotDoc("garden", "working"), "and a mint founds it none: another face of the vessel stands the wiki").toBeNull();
     const d0 = await worn.slotDoc("daemon", "working");
     const d1 = await sibling.slotDoc("daemon", "working");
     expect(d1?.url).not.toBe(d0?.url);

@@ -172,7 +172,9 @@ export function wikiCap<TPool extends PrimaryMountPool>(o: VesselOrchestration<T
         (await resolveSlots(canonAddress)).draftUrl;
       const resolveWorking = async (canonAddress: string): Promise<string | null> =>
         (await resolveSlots(canonAddress)).workingUrl;
-      const { wikiHandle, canonAddress, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, resolveWorking, presetWiki);
+      const resolveWriteSlot = async (canonAddress: string): Promise<"personal" | undefined> =>
+        (await resolveSlots(canonAddress)).writeSlot;
+      const { wikiHandle, canonAddress, draftHandle } = await mountWikiSlot(o.keel, assembly.composite, slot, resolveDraft, resolveWorking, presetWiki, resolveWriteSlot);
       emit("wiki-ready");
       emit("vessel-ready");
       return { wikiHandle, canonAddress, draftHandle };

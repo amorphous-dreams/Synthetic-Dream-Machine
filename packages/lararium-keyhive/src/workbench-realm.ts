@@ -14,11 +14,12 @@
  *     its readers of the layer stay ONE list. The vessel's ledger names the Document (`noteWorkbenchKey`).
  *   · STAND (`standWorkbench`): a wiki's first stand under a face notes the derived realm and founds this vessel's key
  *     Document; every later stand finds both. A replay, reboot or retry lands nothing new: every row names its content.
- *   · EACH FACE ITS OWN CABAL, AND THE SEAT DECIDES THE MOUNT (`seatedWorkbenches`, `faceWorkbenchRealm`): one vessel's ledger
- *     serves every face it holds, so it may bind one slug under several realms, one per face that stood the wiki unshared. A
+ *   · ONE WORKBENCH ON A VESSEL, AND THE SEAT DECIDES THE MOUNT (`seatedWorkbenches`, `faceWorkbenchRealm`): one vessel's
+ *     ledger serves every face it holds and binds a slug to ONE realm, the cabal of the first face that stood the wiki. A
  *     face mounts the realm whose OWN key Document seats that face's hive (read on that Document, never on whichever
- *     Document the hive maps the slot's bag to), founds its own private cabal where none seats it, and refuses
- *     `workbench-two-realms` where two do.
+ *     Document the hive maps the slot's bag to); a face no realm seats mounts none and founds none for a slug the ledger
+ *     already binds (`workbench-slug-bound`): it writes its own `personal` layer. Two seats refuse `workbench-two-realms`.
+ *   · THE SEAT READS ITS HAND (`workbenchWriterSeat`): `admin` writes the workbench, `read` reads it and writes `personal`.
  *   · ADMIT / REMOVE: a member face takes a Keyhive delegation on the key Document (`admin` writer, `read` reader); a removal
  *     rides Keyhive's convergent revoke. No lease, no epoch, no counter. A hard cut forks the realm.
  *   · THE ROSTER'S PROJECTION (`projectWorkbenchRoster`): the ledger's seat rows mirror what the key Document answers on this
@@ -131,12 +132,19 @@ async function seatedWorkbench(provider: KeyhiveProvider, ledger: LarDoc | undef
   return seated[0] ?? null;
 }
 
+/** Whether the ledger binds `slug` under a realm other than `face`'s own derived cabal: another face of this vessel owns the workbench. */
+function boundElsewhere(ledger: LarDoc | undefined | null, slug: string, face: string): boolean {
+  const own = privateCabalRealmId(face, slug);
+  return ledgerWorkbenchRealms(ledger, slug).some((realmId) => realmId !== own);
+}
+
 /**
  * STAND a wiki's realm under `face`: the realm that already seats this face's hive (its own cabal on a later stand, or one a
  * share seated it in), else the face's derived private cabal of one, noted. This vessel's key Document stands too: the one
  * the ledger names that seats this hive (adopted where the hive has not mapped the slot), else a fresh one founded and
  * named. The founder's seat projects. A face seated in two realms for one slug refuses `workbench-two-realms`; the daemon
- * wiki refuses `workbench-face-private`. Another face's realm for the same slug never answers here: no seat, no mount.
+ * wiki refuses `workbench-face-private`. A face that holds no seat founds no second realm for a slug the ledger already
+ * binds to another face's cabal: it refuses `workbench-slug-bound` (ONE workbench stands for a wiki on a vessel).
  */
 export async function standWorkbench(provider: KeyhiveProvider, ledger: LedgerDoc, slug: string, face: string): Promise<{ readonly realmId: string; readonly founded: boolean; readonly keyDoc: string }> {
   requireWorkbenchShareable({ slug });
@@ -144,6 +152,9 @@ export async function standWorkbench(provider: KeyhiveProvider, ledger: LedgerDo
   if (seated !== null) {
     if (provider.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(provider, slug, seated.keyDoc);
     return { realmId: seated.realmId, founded: false, keyDoc: seated.keyDoc };
+  }
+  if (boundElsewhere(ledger.doc(), slug, face)) {
+    throw new WorkbenchRefusal("workbench-slug-bound", `the workbench of "${slug}" stands on this vessel under another face's realm, and this face holds no seat there; it writes its own personal layer of the wiki until a share seats it`);
   }
   const realmId = privateCabalRealmId(face, slug);
   const noted = ledgerWorkbenchRealms(ledger.doc(), slug).includes(realmId);
@@ -159,17 +170,30 @@ export async function standWorkbench(provider: KeyhiveProvider, ledger: LedgerDo
 
 /**
  * THE WORKBENCH PORT UNDER ONE FACE: the realm a wiki's working layer rests in for `face`, read off the vessel's ledger through
- * the face's own hive. The realm that seats the hive answers (`seatedWorkbenches`); where none does, a `mint` founds the
- * face's own private cabal of one (`standWorkbench`) and a read answers null. One vessel holds every face's documents, so the
- * seat gates the mount here as the guard gates the wire: a face never mounts a workbench whose Document seats it nowhere.
+ * the face's own hive. The realm that seats the hive answers (`seatedWorkbenches`). Where none does, a `mint` founds the
+ * face's own private cabal of one (`standWorkbench`) ONLY for a slug the ledger binds to no other face's realm; a slug another
+ * face of the vessel already stands answers null, mint or no mint, and a read answers null. One vessel holds every face's
+ * documents, so the seat gates the mount here as the guard gates the wire: a face never mounts a workbench whose Document
+ * seats it nowhere, and it founds no second one.
  */
 export async function faceWorkbenchRealm(provider: KeyhiveProvider, ledger: LedgerDoc, slug: string, face: string, mint: boolean): Promise<string | null> {
   const seated = await seatedWorkbench(provider, ledger.doc(), slug);
-  if (seated === null) return mint ? (await standWorkbench(provider, ledger, slug, face)).realmId : null;
+  if (seated === null) return mint && !boundElsewhere(ledger.doc(), slug, face) ? (await standWorkbench(provider, ledger, slug, face)).realmId : null;
   if (provider.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(provider, slug, seated.keyDoc);
   // The mount reads the roster, so the roster's projection follows it (one owner: Keyhive).
   await projectWorkbenchRoster(provider, ledger, seated.realmId, slug, new Map([[face, await provider.whoami()]])).catch(() => [] as readonly string[]);
   return seated.realmId;
+}
+
+/**
+ * WHETHER THIS HIVE HOLDS A WRITER'S SEAT in the workbench of `slug`: the realm that seats it, read on that realm's own key
+ * Document, answers `admin`. A reader's seat, no seat, and two seats all answer false: such a face writes its own `personal`
+ * layer of the wiki and never the workbench.
+ */
+export async function workbenchWriterSeat(provider: KeyhiveProvider, ledger: LarDoc | undefined | null, slug: string): Promise<boolean> {
+  const seated = await seatedWorkbenches(provider, ledger, slug);
+  if (seated.length !== 1) return false;
+  return (await provider.accessInDoc(await provider.whoami(), seated[0]!.keyDoc)) === "admin";
 }
 
 /**

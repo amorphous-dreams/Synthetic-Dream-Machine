@@ -104,7 +104,7 @@ export {
 export type { FoundCabalRealmOpts, FoundedCabalRealm } from "./cabal-realm-ceremony.js";
 // EVERY WIKI'S WORKING LAYER RESTS IN A REALM WORKBENCH, kept by a private cabal of one human's faces (cabal-realm#/the-workbench).
 export {
-  foundWorkbench, standWorkbench, adoptWorkbench, admitWorkbenchFace, removeWorkbenchFace, workbenchFaceHolds, requireWorkbenchWriter,
+  foundWorkbench, standWorkbench, adoptWorkbench, admitWorkbenchFace, removeWorkbenchFace, workbenchFaceHolds, requireWorkbenchWriter, workbenchWriterSeat,
   landWorkbench, projectWorkbenchRoster,
 } from "./workbench-realm.js";
 export type { FoundedWorkbench, LedgerDoc, WorkbenchMember, LandWorkbenchPorts, LandedWorkbench } from "./workbench-realm.js";

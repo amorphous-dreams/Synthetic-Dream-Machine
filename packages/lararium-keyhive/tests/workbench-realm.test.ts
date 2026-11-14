@@ -12,8 +12,9 @@
  * K7 (red 9) a face whose hive holds a seat in two realms for one slug refuses the landing; realms that seat it nowhere never count.
  * K8 (red 3) a row that stops naming a face revokes the seat the vessel noted for it; the address stands.
  * K9 (causal islands) two offline devices of one face stand the same wiki, then sync: one realm, one workbench, no tie.
- * K11 (one vessel, several faces) each face of a vessel stands its own private cabal for a slug: the mount reads the face's
- *     seat in the realm's OWN key Document, so a face seated nowhere mounts no other face's workbench and founds its own.
+ * K11 (one vessel, one workbench) the ledger binds a slug to one realm: the mount reads the face's seat in the realm's OWN key
+ *     Document, so a face seated nowhere mounts no other face's workbench and founds none of its own for a bound slug; a
+ *     seat reads its hand (`workbenchWriterSeat`).
  * K10 (one owner) device A revokes a face while device B's ledger still holds that face's seat row: once B's hive ingests A's
  *     revoke, the roster's projection drops the row and B's wire guard refuses the face.
  */
@@ -21,7 +22,7 @@ import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 import {
   admitWorkbenchFace, foundWorkbench, landWorkbench, removeWorkbenchFace, requireWorkbenchWriter, standWorkbench, workbenchFaceHolds,
-  adoptWorkbench, projectWorkbenchRoster, faceWorkbenchRealm,
+  adoptWorkbench, projectWorkbenchRoster, faceWorkbenchRealm, workbenchWriterSeat,
   type LedgerDoc,
 } from "../src/workbench-realm.js";
 import {
@@ -119,16 +120,14 @@ describe("K5/K6/K8 — stand, land, revoke: no announce, one founding", () => {
 });
 
 describe("K7 — a face seated in two realms for one wiki refuses", () => {
-  test("a hive that holds a seat in two realms' key Documents refuses the landing by name; realms that seat it nowhere never count", async () => {
+  test("a hive that holds a seat in two realms' key Documents refuses the landing by name", async () => {
     const owner = await face(0x51);
     const ledger = memDoc();
-    // Two realms the ledger names for the slug, neither seating this hive (other faces' cabals): the owner stands its own.
-    noteWorkbench(ledger.d, "c".repeat(64), "notes");
-    noteWorkbench(ledger.d, "d".repeat(64), "notes");
     const own = await standWorkbench(owner, ledger, "notes", "x");
-    expect(own.realmId, "CONTROL: realms that seat the face nowhere leave it its own cabal").toBe(privateCabalRealmId("x", "notes"));
+    expect(own.realmId).toBe(privateCabalRealmId("x", "notes"));
     // A second realm whose key Document this same hive founded: the hive now holds a seat in two realms for one slug.
     const rival = await foundWorkbench(owner, { slug: "notes", face: "y" });
+    // Two devices' ledgers merged two rows for the slug (a CRDT union): the hive now reads a seat in each.
     ledger.change((d) => { noteWorkbench(d, rival.realmId, "notes"); noteWorkbenchKey(d, rival.realmId, "notes", rival.keyDoc); });
     await expect(landWorkbench({ slug: "notes" }, [], { provider: owner, ledger, ownerFace: "x" })).rejects.toThrow(/workbench-two-realms/);
   });
@@ -193,7 +192,7 @@ describe("K10 — the seat rows project the roster: one owner", () => {
   });
 });
 
-describe("K11 — each face of one vessel stands its own private cabal, and a seat in the realm's own Document decides the mount", () => {
+describe("K11 — one vessel binds a slug to one realm, and a seat in the realm's own Document decides the mount", () => {
   const SLOT = wikiSlotUri("lares", "working");
   /** A face's hive as a composition stands it: the working slot registered on the hive under the face's own bag Document. */
   async function composedFace(fill: number): Promise<{ readonly hive: KeyhiveProvider; readonly recompose: () => void }> {
@@ -203,21 +202,37 @@ describe("K11 — each face of one vessel stands its own private cabal, and a se
     return { hive, recompose: () => hive.adoptBag(SLOT, docId) };
   }
 
-  test("a second face that holds no seat in the first face's realm mounts its own realm at its own address, and each face finds its own again after a recomposition", async () => {
+  test("a second face that holds no seat in the first face's realm founds no realm for a slug the ledger already binds, and mounts none", async () => {
     const steward = await composedFace(0x91), engineer = await composedFace(0x92);
     const ledger = memDoc();   // one vessel: every face reads the one ledger
     const s = await faceWorkbenchRealm(steward.hive, ledger, "lares", "group-steward", true);
-    expect(await faceWorkbenchRealm(engineer.hive, ledger, "lares", "group-engineer", false), "no seat and no mint: no realm answers").toBeNull();
-    const e = await faceWorkbenchRealm(engineer.hive, ledger, "lares", "group-engineer", true);
     expect(s).toBe(privateCabalRealmId("group-steward", "lares"));
-    expect(e, "the engineer holds no seat in the steward's realm: it stands its own private cabal").toBe(privateCabalRealmId("group-engineer", "lares"));
-    expect(realmWorkbenchDocUrl(e!, "lares"), "two faces, two workbench documents").not.toBe(realmWorkbenchDocUrl(s!, "lares"));
-    // A wear recomposes each face's hive; the mount (no mint) answers each face its own realm.
+    expect(await faceWorkbenchRealm(engineer.hive, ledger, "lares", "group-engineer", false), "no seat and no mint: no realm answers").toBeNull();
+    expect(await faceWorkbenchRealm(engineer.hive, ledger, "lares", "group-engineer", true), "no seat, and the ledger binds the slug: the engineer founds no realm").toBeNull();
+    expect(ledgerWorkbenches(ledger.d).map((b) => b.realmId), "ONE realm for the slug on this vessel").toEqual([s]);
+    await expect(standWorkbench(engineer.hive, ledger, "lares", "group-engineer")).rejects.toThrow(/workbench-slug-bound/);
+    // A wear recomposes each face's hive; the steward finds its own again and the engineer still mounts none.
     steward.recompose(); engineer.recompose();
     expect(await faceWorkbenchRealm(steward.hive, ledger, "lares", "group-steward", false)).toBe(s);
-    expect(await faceWorkbenchRealm(engineer.hive, ledger, "lares", "group-engineer", false)).toBe(e);
-    expect([...workbenchSeats(ledger.d, s!, "lares").keys()], "the engineer's mount drops no seat row of the steward's realm").toEqual(["group-steward"]);
-    expect([...workbenchSeats(ledger.d, e!, "lares").keys()]).toEqual(["group-engineer"]);
+    expect(await faceWorkbenchRealm(engineer.hive, ledger, "lares", "group-engineer", true)).toBeNull();
+    expect([...workbenchSeats(ledger.d, s!, "lares").keys()], "the engineer's ask drops no seat row of the steward's realm").toEqual(["group-steward"]);
+    // A slug no face of the vessel stood still founds under the face that stands it first.
+    expect(await faceWorkbenchRealm(engineer.hive, ledger, "garden", "group-engineer", true), "CONTROL: the first face to stand a wiki founds its cabal of one").toBe(privateCabalRealmId("group-engineer", "garden"));
+  });
+
+  test("a seat reads its hand: the owner and a writer write, a reader reads and never writes", async () => {
+    const steward = await composedFace(0x95), engineer = await face(0x96), referee = await face(0x97);
+    const ledger = memDoc();
+    const s = await faceWorkbenchRealm(steward.hive, ledger, "lares", "group-steward", true);
+    const eng = await introduce(steward.hive, engineer), ref = await introduce(steward.hive, referee);
+    await landWorkbench({ slug: "lares" }, [{ face: "group-engineer", agentHex: eng, access: "write" }, { face: "group-referee", agentHex: ref, access: "read" }], { provider: steward.hive, ledger, ownerFace: "group-steward" });
+    const keyDoc = workbenchKeyDocs(ledger.d, s!, "lares")[0]!;
+    for (const [hive, id] of [[engineer, eng], [referee, ref]] as const) { await hive.ingestPeerEvents(await steward.hive.eventsForPeer(id)); adoptWorkbench(hive, "lares", keyDoc); }
+    expect(await workbenchWriterSeat(steward.hive, ledger.d, "lares"), "the owner writes").toBe(true);
+    expect(await workbenchWriterSeat(engineer, ledger.d, "lares"), "a face seated as a writer writes").toBe(true);
+    expect(await faceWorkbenchRealm(referee, ledger, "lares", "group-referee", true), "a reader mounts the realm that seats it").toBe(s);
+    expect(await workbenchWriterSeat(referee, ledger.d, "lares"), "a reader holds no writer's seat").toBe(false);
+    expect(await workbenchWriterSeat(await face(0x98), ledger.d, "lares"), "a face no realm seats holds none").toBe(false);
   });
 
   test("CONTROL: a face the owner seats by a share mounts the owner's realm and founds none", async () => {

@@ -567,6 +567,7 @@ export function runSovereignKernel(
                 recipe: msg.recipe,
                 ready,
                 floorRows,
+                ...(msg.grants.writeSlot ? { writeSlot: msg.grants.writeSlot } : {}),
                 kahuaFace,
                 kahuaFaceWatch,
               });

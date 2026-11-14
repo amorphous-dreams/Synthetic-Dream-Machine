@@ -79,9 +79,11 @@ class FakeHouse {
   }
   layer(bag: string): Map<string, Rec> {
     // Each face its own daemon working document, and its own workbench of every wiki: a working layer reads the WORN face's.
-    const key = /\/wikis\/[^/]+\/working$/.test(bag) ? `${bag}@${this.worn}` : bag;
+    const key = /\/wikis\/[^/]+\/(working|personal)$/.test(bag) ? `${bag}@${this.worn}` : bag;
     return this.layers.get(key) ?? this.layers.set(key, new Map()).get(key)!;
   }
+  /** One face's own personal layer of a wiki, whichever face stands worn. */
+  personalOf(relation: string, slug: string): Map<string, Rec> { return this.layers.get(`lar:///ha.ka.ba/wikis/${slug}/personal@${relation}`) ?? new Map(); }
   /** One face's own workbench of a wiki, whichever face stands worn. */
   benchOf(relation: string, slug: string): Map<string, Rec> { return this.layers.get(`lar:///ha.ka.ba/wikis/${slug}/working@${relation}`) ?? new Map(); }
   /** The `wikis` dir beside the canon source, and the slugs that stand sourced there (none: no canon source stands). */
@@ -685,7 +687,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     // The two unworn faces wait by name, their folders standing, out of ashes; the worn face's former folder moved to ashes.
     expect(first.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[0, "unworn"], [2, "unworn"]]);
     expect(first.waiting[0]!.folders).toEqual([P(`wikis/lares-${G0}`)]);
-    expect(mirrorLines(first).out.join("\n")).toMatch(/steward stands unworn, and a workbench lays at its own face's wear: wear it \(`lares vault unlock --face 0`\)/);
+    expect(mirrorLines(first).out.join("\n")).toMatch(/steward stands unworn, and a face's own layer of a wiki lays at that face's wear: wear it \(`lares vault unlock --face 0`\)/);
     expect(mirrorsLeftWork(first)).toBe(true);     // the unowned folder alone leaves work for a hand
     expect(first.ashes.map((a) => a.relation)).toEqual([G1]);
     expect(existsSync(P(`ashes/${G1}/wikis/lares-${G1}/ha.ka.ba/lares/ref/RFC-4151.tid`))).toBe(true);
@@ -737,6 +739,43 @@ describe("the seed lays every mirror back into its one layer", () => {
     put("wikis/lares/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the steward's copy, edited by hand"));
     expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).waiting.map((w) => w.handleIndex)).toEqual([0]);
     expect(v.benchOf(F3, "lares").size).toBe(0);
+  });
+
+  test("M20 — a face's personal layer of a wiki comes back across a re-founding: the former face's folder adopts by pet-name and lays into that face's own layer alone", async () => {
+    const [G0, G1] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1"];
+    const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
+    const NOTE = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL";
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true });
+    // The former engineer held no writer's seat in the `lares` workbench, so its put rested in its own personal layer.
+    put(`projections/personal/${G1}/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid`, tid(NOTE, "what the engineer kept for itself"));
+    writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }, { relation: G1, petname: "engineer", handleIndex: 1 }], join(root, "projections"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
+    v.held.add("lares");
+    // A view-state carrier of the former face, and the new face's own: the face here keeps its own view, and nothing stands off.
+    put(`projections/personal/${G1}/lares/$__StoryList.tid`, tid("$:/StoryList", "the former story"));
+    put(`projections/personal/${R1}/lares/$__StoryList.tid`, tid("$:/StoryList", "the story here"));
+    const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(first.adoptions.map((a) => [a.relation, a.handleIndex])).toEqual([[G1, 1]]);
+    // The steward stands worn: the engineer's margin waits for the engineer's own wear, and lands in no other face's layer.
+    expect(first.waiting.map((w) => [w.handleIndex, w.why, w.folders])).toEqual([[1, "unworn", [P(`personal/${G1}/lares`)]]]);
+    expect(v.personalOf(R0, "lares").size + v.personalOf(R1, "lares").size).toBe(0);
+    expect(mirrorLines(first).out.join("\n")).toMatch(/engineer stands unworn, and a face's own layer of a wiki lays at that face's wear: wear it \(`lares vault unlock --face 1`\)/);
+    expect(first.ashes).toEqual([]);
+    expect(mirrorsLeftWork(first), "a waiting face leaves no work for a hand beyond its wear").toBe(false);
+    v.wear(R1);
+    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.personalOf(R1, "lares").get(NOTE)?.text, "the engineer's margin lands in the engineer's own personal layer").toBe(tid(NOTE, "what the engineer kept for itself"));
+    expect(v.personalOf(R0, "lares").size, "and never in the steward's").toBe(0);
+    expect(v.waveFaces.filter((w) => w.source.includes("personal")).every((w) => w.face === undefined), "a personal wave rides the worn face's own island").toBe(true);
+    expect(existsSync(P(`personal/${R1}/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid`))).toBe(true);
+    expect(readFileSync(P(`personal/${R1}/lares/$__StoryList.tid`), "utf8")).toContain("the story here");
+    expect(second.files.stoodOff).toEqual([]);
+    expect(second.ashes.map((a) => a.relation)).toEqual([G1]);
+    expect(existsSync(P(`ashes/${G1}/personal/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid`)), "the former folder rests under ashes").toBe(true);
+    expect(existsSync(P(`personal/${G1}`))).toBe(false);
+    expect(second.waiting).toEqual([]);
+    const again = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(again.layers.reduce((n, t) => n + t.landed, 0), "a second seed lands nothing").toBe(0);
   });
 
   test("M11 — a fresh face that reads no relation and no stage never halts the seed", async () => {

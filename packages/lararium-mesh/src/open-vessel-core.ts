@@ -330,6 +330,9 @@ export async function mountWikiSlot(
   /** Pre-resolved wiki doc — the lares-as-wiki quine seats the Kahu realm's live canon document as the canon layer
    *  (the realm names it, never the catalog registry — no cross-plane resolution, no second mint). */
   presetWikiHandle?: DocHandle<LarDoc>,
+  /** `personal` where the worn face holds no writer's seat in the wiki's workbench: the host mounts the workbench it may read
+   *  as a layer that takes no write (the island's `personal` slot takes the face's saves; the host composite lays none). */
+  resolveWriteSlot?: (canonAddress: string) => Promise<"personal" | undefined>,
 ): Promise<{ wikiHandle: DocHandle<LarDoc> | null; canonAddress: string; draftHandle: DocHandle<LarDoc> }> {
   const { repo, catalogHandle, waitHandle } = keel;
   // Resolve the CANON doc by its content key (bags/{slug}) — where the mint
@@ -347,7 +350,8 @@ export async function mountWikiSlot(
   const workingUrl = await resolveWorking(canonAddress);
   const workingSlot = wikiSlotUri(slot.wikiSlug, "working");
   const workingHandle = workingUrl === null ? null : await findOrThrow(repo, workingUrl, `${workingSlot} (working layer)`, { refusal: WorkingDocumentUnavailableRefusal, timeoutMs: DOCUMENT_HANG_BOUND_MS });
-  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug);
+  const writeSlot = await resolveWriteSlot?.(canonAddress);
+  const flags = (bagId: string) => slotLayerFlags(bagId, slot.wikiSlug, writeSlot);
   if (wikiHandle) composite.addLayer({ bagId: slot.wikiBagId, store: new AutomergeDocStore(wikiHandle, slot.wikiBagId), ...flags(slot.wikiBagId) });
   if (workingHandle) composite.addLayer({ bagId: workingSlot, store: new AutomergeDocStore(workingHandle, workingSlot), ...flags(workingSlot) });
 

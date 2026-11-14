@@ -14,7 +14,7 @@
  */
 import { existsSync, mkdirSync, readdirSync, renameSync } from "node:fs";
 import { join } from "node:path";
-import { daemonFaceFolder, kahuaFaceFolder, wikiFaceFolderOf } from "@lararium/node";
+import { daemonFaceFolder, kahuaFaceFolder, wikiFaceFolderOf, PERSONAL_PROJECTION_DIR } from "@lararium/node";
 import { faceLabelPath, faceBasesPath } from "./face-labels.js";
 
 export const ASHES_DIR = "ashes";
@@ -35,6 +35,8 @@ export function faceFolderMoves(projections: string, relation: string): Array<{ 
     ...benches.map((n) => ({ from: join(projections, "wikis", n), to: join(base, "wikis", n) })),
     { from: join(projections, "bags", daemonFaceFolder(relation)), to: join(base, "bags", daemonFaceFolder(relation)) },
     { from: join(projections, "bags", kahuaFaceFolder(relation)), to: join(base, "bags", kahuaFaceFolder(relation)) },
+    // The face's personal layers of every wiki: `personal/<relation>/`, a face-private mirror like the rest.
+    { from: join(projections, PERSONAL_PROJECTION_DIR, relation), to: join(base, PERSONAL_PROJECTION_DIR) },
     { from: faceLabelPath(relation, projections), to: join(base, "face-label.json") },
     { from: faceBasesPath(relation, projections), to: join(base, "face-bases.json") },
   ];

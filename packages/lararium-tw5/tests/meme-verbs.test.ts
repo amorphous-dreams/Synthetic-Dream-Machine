@@ -183,6 +183,35 @@ describe("meme-put — a named recipe (an edit AS that wiki)", () => {
     expect(r.wiki.store.size).toBe(0);
   });
 
+  test("a face that holds no writer's seat in the wiki's workbench lands its put in its own personal layer, and the answer names the layer", async () => {
+    const r = rig();
+    const working = wikiSlotUri("lares", "working"), personal = wikiSlotUri("lares", "personal");
+    r.recipes.set(recipeUri("catalog", "lares"), { tiddler: { title: recipeUri("catalog", "lares"), "bag-stack": bagUri("lares"), "writable-bag": working } });
+    // A reader's seat: the workbench stands and reads, and this face writes none of it.
+    const bench = new MemoryTiddlerStore(working), margin = new MemoryTiddlerStore(personal);
+    r.slots.set("lares/working", bench); r.slots.set("lares/personal", margin);
+    const unseated = { ...r.opts, writeSlot: async () => "personal" as const };
+    capCalls.length = 0;
+    const receipt = await makeMemePutReactor(unseated)({ recipe: "lares", uri: URI, text: meme(["a"]) }, ctx());
+    expect(receipt["decision"]).toBe("ingest");
+    expect(receipt["bag"], "the answer names the bag the put landed in").toBe(personal);
+    expect(receipt["layer"]).toBe("personal");
+    expect(await margin.get(URI), "the save rests in the face's personal layer").toBeTruthy();
+    expect(await bench.get(URI), "the workbench takes no byte of it").toBeNull();
+    expect(capCalls.filter((c) => c.access === "admin").map((c) => c.bag), "the write cap gates the layer that takes the write").toEqual([personal]);
+    // The wiki's own read answers it back: the personal layer rides above the workbench in the stack.
+    const got = await makeMemeGetReactor(unseated)({ recipe: "lares", uri: URI }, ctx());
+    expect((got["meme"] as { text?: string } | null)?.text).toContain("! a");
+    // CONTROL: a face that holds a writer's seat lands in the workbench, and its answer says so.
+    const bench2 = new MemoryTiddlerStore(working), margin2 = new MemoryTiddlerStore(personal);
+    r.slots.set("lares/working", bench2); r.slots.set("lares/personal", margin2);
+    const seated = await makeMemePutReactor({ ...r.opts, writeSlot: async () => "working" as const })({ recipe: "lares", uri: URI, text: meme(["a"]) }, ctx());
+    expect(seated["bag"]).toBe(working);
+    expect(seated["layer"]).toBe("working");
+    expect(await bench2.get(URI)).toBeTruthy();
+    expect(await margin2.get(URI)).toBeNull();
+  });
+
   test("a recipe whose writable bag the island mounts writable lands through the composite", async () => {
     const r = rig();
     r.recipes.set(recipeUri("catalog", "sdm"), {

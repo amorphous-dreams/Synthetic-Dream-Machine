@@ -278,6 +278,10 @@ async function memePut(args: ParsedArgs): Promise<number> {
     human: () => {
       console.log(`${decision}: ${plan.args["uri"]}`);
       if (decision === "ingest") console.log(`  landed ${landed.length} · tombstoned ${tombstoned.length}`);
+      // THE ANSWER NAMES THE LAYER: a face that holds no writer's seat in the wiki's workbench lands in its own personal layer.
+      if (typeof receipt["bag"] === "string") console.log(receipt["layer"] === "personal"
+        ? `  in ${receipt["bag"]} (your personal layer: this face holds no writer's seat in the wiki's workbench; \`lares meme offer\` carries a record from here)`
+        : `  in ${receipt["bag"]}`);
       if (decision === "noop" && receipt["reason"]) console.log(`  ${receipt["reason"]}`);
       for (const w of warnings) console.log(`  ! ${w}`);
       if (receipt["canonicalHash"]) console.log(`  base: ${receipt["canonicalHash"]}`);

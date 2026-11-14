@@ -13,6 +13,8 @@
  *   <canon source>/../wikis/<slug> -> the Kahu steward's workbench of a sourced wiki, at the steward's own wear
  *   projections/wikis/<slug>       -> that wiki's working layer on a vessel that wears no face; under a worn face the seed
  *                                     names it (`seed-workbench-unowned`) and lays none of it: nothing says whose it holds
+ *   projections/personal/<F>/<slug> -> face F's own personal layer of that wiki (`wikis/<slug>/personal`): the layer a face
+ *                                     that holds no writer's seat in the wiki's workbench writes; adopted by pet-name
  *   recovery/ and consented temp/  -> placed back as files, as carry places them (never through a layer)
  *   projections/ashes/**           -> nothing: never read back, never projected into
  *
@@ -312,7 +314,10 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const canonWikis = opts.kahuaOnly ? null : doors.canonWikis?.() ?? null;
   const stewardBenches = canonWikis === null || resolve(canonWikis) === resolve(wikisDir) ? []
     : folders(canonWikis).filter((n) => doors.sourced(n) && mirrorFiles(join(canonWikis, n), ["recovery", TEMP_LAYER_DIR]).length > 0);
-  const relations = [...new Set([...[...wikiFolders, ...bagFolders].map(relOf), ...benches.map((b) => b.of.relation)].filter((r): r is string => r !== null))].sort();
+  // EACH FACE'S PERSONAL FOLDERS (`personal/<F>/<slug>`): a face-private document, so a former face's adopt by pet-name too.
+  const personalRoot = join(projections, PERSONAL_PROJECTION_DIR);
+  const personalRelations = opts.kahuaOnly ? [] : folders(personalRoot).filter((r) => folders(join(personalRoot, r)).some((slug) => mirrorFiles(join(personalRoot, r, slug)).length > 0));
+  const relations = [...new Set([...[...wikiFolders, ...bagFolders].map(relOf), ...benches.map((b) => b.of.relation), ...personalRelations].filter((r): r is string => r !== null))].sort();
   const houseBags = bagFolders.filter((n) => relOf(n) === null && !isPrivateProjectionSlug(n) && !doors.sourced(n));
   const houseWikis = wikiFolders.filter((n) => relOf(n) === null && !isPrivateProjectionSlug(n) && !doors.sourced(n));
   const empty: MirrorSeedResult = { applied: apply, adoptions: [], layers: [], files: { placed: 0, planned: 0, stoodOff: [] }, kahua: { preview: [], lifted: [], pending: [], refused: [] }, ashes: [], ashesLeft: [], waiting: [], refusals: [], minted: [], any: false };
@@ -338,7 +343,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     const worn = byRelation.get(r);
     if (worn !== undefined) { target.set(r, worn); continue; }
     const label = readFaceLabel(r, projections);
-    const held = [wikiFolders.includes(daemonFaceFolder(r)) ? join(wikisDir, daemonFaceFolder(r)) : null, bagFolders.includes(daemonFaceFolder(r)) ? join(bagsDir, daemonFaceFolder(r)) : null, bagFolders.includes(kahuaFaceFolder(r)) ? join(bagsDir, kahuaFaceFolder(r)) : null, ...benchesOf(r).map((b) => join(wikisDir, b.name))].filter((p): p is string => p !== null);
+    const held = [wikiFolders.includes(daemonFaceFolder(r)) ? join(wikisDir, daemonFaceFolder(r)) : null, bagFolders.includes(daemonFaceFolder(r)) ? join(bagsDir, daemonFaceFolder(r)) : null, bagFolders.includes(kahuaFaceFolder(r)) ? join(bagsDir, kahuaFaceFolder(r)) : null, ...benchesOf(r).map((b) => join(wikisDir, b.name)), personalRelations.includes(r) ? join(personalRoot, r) : null].filter((p): p is string => p !== null);
     if (label === null) { refuse(r, "seed-face-unlabelled", `${held.join(", ")}: this folder carries no face label (no ${r}.json stands under face-labels), so it reads as no face's mirror and the seed adopts nothing from it; move it aside or remove it, and seed again`); continue; }
     const matches = faces.filter((f) => f.petname === label.petname);
     if (matches.length > 1) { refuse(r, "seed-face-duplicate-petname", `faces ${matches.map((m) => `h${m.handleIndex}`).join(" and ")} on this vessel both carry the pet-name "${label.petname}", which the former face ${r} wore; its memory lands on one face alone, so rename one and seed again`); continue; }
@@ -572,11 +577,45 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // EACH FACE'S PERSONAL MARGIN (cabal-realm#/the-workbench; operator ruling 2026-11-11 "Personal can absorb the new caps."):
     // `<projections>/personal/<F>/<slug>` lays back into that face's own personal layer of the wiki, the worn face's through the
     // ordinary wave and every other open face's through a wave naming it. It never lays into a shared workbench.
+    // A former face's personal folder copies into the folder of the face that carries its pet-name where none stands there,
+    // then that folder lays through the one gate: a face's margin comes back across a re-founding as its daemon memory does.
+    // IT LAYS AT ITS OWN FACE'S WEAR: a wiki's island stands over the worn face's personal document and the vessel grants the
+    // personal mirror to the worn face's folder alone, so an open face that stands unworn waits by name where its folder (or
+    // a former face's it adopts) holds a carrier new or moved against its base. A view-state carrier (a `$:/` title: the story
+    // list, a fold state) never adopts: the face here keeps its own view.
+    const viewState = (rel: string): boolean => (rel.split("/").pop() ?? "").startsWith("$__");
     for (const face of faces) {
       if (face.relation === null) continue;
-      const personalDir = join(projections, PERSONAL_PROJECTION_DIR, face.relation);
+      const to = face.relation;
+      const owners = byTarget.get(to) ?? [to];
+      const personalDir = join(personalRoot, to);
+      if (to !== litRelation) {
+        for (const r of owners) for (const slug of folders(join(personalRoot, r))) {
+          const folder = join(personalRoot, r, slug);
+          if (r === to) {
+            const read = await doors.lay({ source: folder, uriDir: join(personalRoot, r), toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, false);
+            if (read.planned.length + read.kapae.length === 0) continue;
+          } else if (mirrorFiles(folder).filter((rel) => !viewState(rel)).length === 0) continue;
+          waitUnworn(face, r, folder);
+          markPartial(r, `its personal folder of ${slug} lays at h${face.handleIndex}'s own wear`);
+        }
+        continue;
+      }
+      for (const r of owners.filter((r) => r !== to)) {
+        for (const slug of folders(join(personalRoot, r))) {
+          const from = join(personalRoot, r, slug), dest = join(personalDir, slug);
+          const placed = placeFiles(from, dest, mirrorFiles(from).filter((rel) => !viewState(rel)), apply);
+          for (const rel of placed.stoodOff) {
+            const uri = mirrorDirFileToUri(join(personalRoot, r), join(from, ...rel.split("/"))) ?? rel;
+            files.stoodOff.push(`${uri} (personal: a different file stands in ${dest}; left as it stands)`);
+            markPartial(r, `${uri} stands off in ${dest}`);
+          }
+          // A preview reads the former face's folder as the source: its files have not copied yet.
+          if (!apply) await runWave({ source: from, uriDir: join(personalRoot, r), toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, `personal ${slug} of ${r} -> h${face.handleIndex}`, [r]);
+        }
+      }
       for (const slug of folders(personalDir)) {
-        await runWave({ source: join(personalDir, slug), uriDir: personalDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [], ...(face.relation === litRelation ? {} : { face: face.handleIndex }) }, `personal ${slug} of h${face.handleIndex}`, [face.relation]);
+        await runWave({ source: join(personalDir, slug), uriDir: personalDir, toBag: wikiSlotUri(slug, "personal"), wiki: slug, skipTop: [] }, `personal ${slug} of h${face.handleIndex}`, owners);
       }
     }
   }
@@ -625,7 +664,7 @@ export function mirrorLines(r: MirrorSeedResult): { out: string[]; err: string[]
   for (const x of r.refusals) err.push(`mirrors: refused ${x.message}`);
   for (const w of r.waiting) {
     out.push(w.why === "unworn"
-      ? `mirrors: ${w.petname ?? `h${w.handleIndex}`} stands unworn, and a workbench lays at its own face's wear: wear it (\`lares vault unlock --face ${w.handleIndex}\`) and seed again; its workbench folders (${(w.folders ?? []).join(", ")}) stay as they stand, and none of their files laid into another face's workbench`
+      ? `mirrors: ${w.petname ?? `h${w.handleIndex}`} stands unworn, and a face's own layer of a wiki lays at that face's wear: wear it (\`lares vault unlock --face ${w.handleIndex}\`) and seed again; its folders (${(w.folders ?? []).join(", ")}) stay as they stand, and none of their files laid into another face's layer`
       : w.why === "unresolved"
       ? `mirrors: ${w.petname ?? `h${w.handleIndex}`} stands open, and this island resolves no layer of its own for it yet (face-unresolved): wear it (\`lares vault unlock --face ${w.handleIndex}\`) and seed again; its folders (${w.relations.join(", ")}) stay as they stand`
       : `mirrors: ${unlockItLine(w, "seed")}; its folders (${w.relations.join(", ")}) stay as they stand, and nothing of its memory laid into any layer`);

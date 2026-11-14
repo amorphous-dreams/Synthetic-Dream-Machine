@@ -3,8 +3,10 @@
  * `offer-list`, `offer-show` and `offer-promote`. The daemon behaviour registers them on node and browser alike, so both hosts
  * run this file and the mesh's decisions; only the ports bind here, each by capability:
  *
- *   · `source`      — the face's own working layer for the canon bag's wiki (`wikis/<slug>/working`, its realm workbench),
- *                     reached by access, never mounted; the face's read cap on it gates the offer;
+ *   · `source`      — the face's view above canon for the canon bag's wiki: its own `personal` layer over the workbench it
+ *                     may read (`wikis/<slug>/personal`, `wikis/<slug>/working`), each reached by access, never mounted, and
+ *                     each gated by the face's read cap on it. A face that holds no seat in the workbench offers from its
+ *                     `personal` layer alone (cabal-realm#/the-workbench);
  *   · `canon`       — the house-canon bag's live document: the Kahu realm's standing document where the vessel names one
  *                     (`canonStoreOf`), read by access otherwise (a read asks nothing);
  *   · `canonWrite`  — the same document, written ONLY after `requireKahuReach` clears for the bag (the vessel's Kahu source);
@@ -82,22 +84,58 @@ async function answered(run: () => Promise<Record<string, unknown>>): Promise<Re
   }
 }
 
-/** `offer-make { bag, titles }` — the lit face offers records from its working layer toward a house-canon bag. */
+/**
+ * THE OFFER'S SOURCE: the face's `personal` layer over the workbench it may read, as the wiki's own stack reads them. The
+ * first layer that holds a record of a title answers it, a tombstone included (it shadows the layer beneath); a layer the
+ * face holds no read on, or that reaches no document here, drops out. Null where neither layer answers.
+ */
+async function offerSourceOf(opts: CanonOfferVerbOptions, working: string, cap: (access: "read", bag: string) => Promise<{ ok: boolean; reason?: string }>): Promise<{ readonly source: Pick<LarTiddlerStore, "get" | "listVisible">; readonly bags: readonly string[] } | { readonly denied: string }> {
+  const personal = working.replace(/\/working$/, "/personal");
+  const layers: Array<{ bag: string; store: LarTiddlerStore }> = [];
+  let denied = "";
+  for (const bag of [personal, working]) {
+    const proof = await cap("read", bag);
+    if (!proof.ok) { if (bag === working) denied = proof.reason ?? "no reason"; continue; }
+    const store = await makeBagAccess(opts).read(bag).catch(() => null);
+    if (store) layers.push({ bag, store });
+  }
+  if (layers.length === 0) return { denied };
+  const get: LarTiddlerStore["get"] = async (title) => {
+    for (const layer of layers) { const held = await layer.store.get(title); if (held) return held; }
+    return null;
+  };
+  return {
+    bags: layers.map((l) => l.bag),
+    source: {
+      get,
+      listVisible: async () => {
+        const titles = new Set<string>();
+        for (const layer of layers) for (const title of await layer.store.listVisible()) titles.add(title);
+        const out: string[] = [];
+        for (const title of titles) { const held = await get(title); if (held && !held.meta?.deleted) out.push(title); }
+        return out.sort();
+      },
+    },
+  };
+}
+
+/** `offer-make { bag, titles }` — the lit face offers records from its own view above canon (personal over the workbench) toward a house-canon bag. */
 export function makeOfferMakeReactor(opts: CanonOfferVerbOptions): VerbReactor {
   return async (args, ctx) => answered(async () => {
     const bag = canonBagOf(args["bag"]);
     if (!isHouseCanonBag(bag)) throw new CanonOfferRefused("offer-not-canon", `${bag} names no house-canon bag; an offer goes toward house canon alone`);
     const titles = Array.isArray(args["titles"]) ? (args["titles"] as unknown[]).filter((t): t is string => typeof t === "string") : [];
     const working = workingLayerOfCanon(bag)!;
-    const proof = await ctx.cap("read", working);
-    if (!proof.ok) throw new VerbRefusal("cap-denied", `cap-denied: read on ${working} required (${proof.reason ?? "no reason"})`);
     const face = opts.signer();
     if (face === null) throw new VerbRefusal("waking-floor", "waking-floor: light a face before it offers; an offer seals under the face that makes it");
     const ports = await portsOf(opts, args);
-    const source = await makeBagAccess(opts).read(working).catch(() => null);
-    if (source === null) throw new CanonOfferRefused("offer-not-in-source", `${working} reaches no working layer here`);
-    const out = await offerCanonRecords({ ...ports, source, signer: face.atom, face: face.face }, { bag, titles });
-    return { cid: out.offer.cid, landed: out.landed, bag, nexus: ports.nexus, records: out.offer.body.records.map((r) => ({ title: r.title, digest: r.digest, base: r.base })) };
+    const reached = await offerSourceOf(opts, working, ctx.cap);
+    if ("denied" in reached) {
+      if (reached.denied) throw new VerbRefusal("cap-denied", `cap-denied: read on ${working} required (${reached.denied})`);
+      throw new CanonOfferRefused("offer-not-in-source", `${working} reaches no working layer here, and this face holds no personal layer of the wiki`);
+    }
+    const out = await offerCanonRecords({ ...ports, source: reached.source, signer: face.atom, face: face.face }, { bag, titles });
+    return { cid: out.offer.cid, landed: out.landed, bag, source: reached.bags, nexus: ports.nexus, records: out.offer.body.records.map((r) => ({ title: r.title, digest: r.digest, base: r.base })) };
   });
 }
 

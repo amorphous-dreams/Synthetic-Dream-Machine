@@ -59,7 +59,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
@@ -93,6 +93,12 @@ export interface MemeVerbOptions {
    *  resolver names — the doc the wiki island mounts. `mint` false reads what stands (a get), true
    *  mints on absent (a put). Absent = instance slots resolve by their bare key only. */
   readonly slotStore?: (slug: string, kind: WikiSlotKind, bag: string, opts: { mint: boolean }) => Promise<LarTiddlerStore | null>;
+  /**
+   * THE LAYER THIS FACE'S SAVES OF A WIKI LAND IN (cabal-realm#/the-workbench): `working` where the face holds a writer's seat
+   * in the wiki's workbench, `personal` where it holds none (seated `read`, or seated nowhere while another face of the vessel
+   * stands the wiki), null where no layer takes a write. Absent, a put lands in the recipe's designated bag as written.
+   */
+  readonly writeSlot?: (slug: string) => Promise<"working" | "personal" | null>;
   /** The vessel's source of the Kahu predicate's facts. A put or a delete that lands in a house canon bag asks it
    *  BEFORE the cap gate, so a realm steward's grant stands in for no check. Absent → a stranger (fail closed). */
   readonly kahuReach?: KahuReachSource;
@@ -235,7 +241,8 @@ async function storeOfBag(opts: MemeVerbOptions, slug: string, bag: string, mode
 
 /**
  * Resolve a named wiki's bag + store for a verb. PUT: the recipe record's designated bag, its own
- * store. GET: the whole cascade top-down, the first bag holding a record under the root, live or
+ * store; where that bag names the wiki's working layer and the face holds no writer's seat in its workbench (`writeSlot`),
+ * the put lands in the face's own `personal` layer of the wiki, so the save rests and the answer names the layer. GET: the whole cascade top-down, the first bag holding a record under the root, live or
  * tombstoned; when none does, the designated bag's store (the read answers null there, never a refusal
  * for an absent meme).
  */
@@ -245,18 +252,29 @@ async function reachRecipeBag(
   const rec = await opts.recipeOf?.(slug);
   if (!rec) throw new Error(`meme: recipe "${slug}" not found in any registry plane — run \`lares wiki init ${slug}\` first`);
   const designated = designatedBagOf(rec, slug);
+  // The first layer of the stack that reaches a store at all: where the designated bag stands unreached for this face (no seat
+  // in the wiki's workbench), an absent meme still reads absent there, never a refusal.
+  let reachable: { bag: string; store: LarTiddlerStore } | null = null;
   if (mode === "get" && uri) {
     for (const bag of expandRecipe(recipeFromRecord(rec, slug))) {
       const store = await storeOfBag(opts, slug, bag, "get");
       if (!store) continue;
+      reachable ??= { bag, store };
       // THE FIRST BAG THAT HOLDS A RECORD ANSWERS, A TOMBSTONE INCLUDED. A tombstone shadows every bag
       // beneath it, as the wiki's own composite reads it (`CompositeStore.get`): the read stops there and
       // that bag's store answers the meme absent. A bag that holds no record at all lets the walk go on.
       if (await store.get(uri)) return { bag, store };
     }
   }
+  if (mode === "put" && wikiSlotKindOf(slug, designated) === "working" && (await opts.writeSlot?.(slug)) === "personal") {
+    const personal = wikiSlotUri(slug, "personal");
+    const margin = await storeOfBag(opts, slug, personal, "put");
+    if (margin) return { bag: personal, store: margin };
+    throw new Error(`meme: this face holds no writer's seat in the workbench of "${slug}", and its personal layer "${personal}" stands unreached`);
+  }
   const store = await storeOfBag(opts, slug, designated, mode);
   if (store) return { bag: designated, store };
+  if (mode === "get" && reachable) return reachable;
   throw new Error(`meme: recipe "${slug}" designates bag "${designated}", which this island neither mounts${mode === "put" ? " writable" : ""} nor reaches by access`);
 }
 
@@ -400,7 +418,11 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
       }
     }
     const receipt = await placeMeme({ uri: target.uri, text, baseHash }, sink);
-    return shown !== null && receipt.decision === "conflict" ? { ...receipt, canonicalHash: shown } : { ...receipt };
+    // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`
+    // where the face holds no writer's seat in the wiki's workbench).
+    const layer = target.recipe && target.recipe !== "default" ? wikiSlotKindOf(target.recipe, bag) : null;
+    const landedIn = { bag, ...(layer ? { layer } : {}) };
+    return shown !== null && receipt.decision === "conflict" ? { ...receipt, ...landedIn, canonicalHash: shown } : { ...receipt, ...landedIn };
   };
 }
 

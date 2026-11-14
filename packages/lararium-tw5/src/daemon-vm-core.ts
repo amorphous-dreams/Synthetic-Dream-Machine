@@ -297,7 +297,7 @@ export interface DaemonVmCore {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; writeSlot?: "personal" }>;
   /**
    * GRACEFUL shutdown — post a teardown to the daemon island and AWAIT its
    * teardown:ack (the island flushes its in-flight Automerge docs + capture state
@@ -623,7 +623,7 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
         // answer, and lands in the vessel's repo here, so the mount that reads `workingUrl` meets the document, never the
         // `unavailable` the vessel gave the island's earlier ask (`stood-document`).
         landBindingDocuments(repo, msg);
-        settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl ?? null });
+        settleAsk(msg.requestId, { personalUrl: msg.personalUrl, draftUrl: msg.draftUrl, workingUrl: msg.workingUrl ?? null, ...(msg.writeSlot ? { writeSlot: msg.writeSlot } : {}) });
       }
       else settleAsk(msg.requestId, undefined, "resolve-binding-result missing urls");
       return;

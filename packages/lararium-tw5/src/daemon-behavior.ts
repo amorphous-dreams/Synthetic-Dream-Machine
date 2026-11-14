@@ -118,7 +118,7 @@ export interface DaemonBehaviorOptions {
     fingerprint: string,
     recipeTrace: { wikiDocId: string; libraryBagDocIds: readonly string[] },
     wikiSlug: string,
-  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; workingDoc?: Uint8Array }>;
+  ) => Promise<{ personalUrl: string; draftUrl: string; workingUrl: string | null; workingDoc?: Uint8Array; writeSlot?: "personal" }>;
   /**
    * Sovereign-worker data-plane: register the residency / wiki / where / resolve
    * reactors into the worker's VerbDispatcher, in-worker, over the IslandContext.
@@ -345,6 +345,7 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
               requestId: msg.requestId, personalUrl: r.personalUrl, draftUrl: r.draftUrl, ...(r.workingUrl ? { workingUrl: r.workingUrl } : {}),
               // The stood working document crosses WITH its name, so the vessel holds it before the mount reads it.
               ...(r.workingUrl && r.workingDoc ? { workingDoc: r.workingDoc } : {}),
+              ...(r.writeSlot ? { writeSlot: r.writeSlot } : {}),
             })))
             .catch((err: unknown) => post(mkDaemonResolveBindingResult({
               requestId: msg.requestId, error: err instanceof Error ? err.message : String(err),
