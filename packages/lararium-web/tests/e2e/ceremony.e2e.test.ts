@@ -269,7 +269,9 @@ test("K2b K2c — after a founding, an unlock and a ward act, no heap of the pag
 
     // K2b — THE PAGE TARGET.
     const cdp = await context.newCDPSession(page);
-    const pageHeap = (): Promise<string> => heapSnapshotOf((method) => cdp.send(method as "HeapProfiler.enable"), (listener) => { cdp.removeAllListeners("HeapProfiler.addHeapSnapshotChunk"); cdp.on("HeapProfiler.addHeapSnapshotChunk", (e) => listener(e.chunk)); });
+    let pageChunk: (chunk: string) => void = () => {};
+    cdp.on("HeapProfiler.addHeapSnapshotChunk", (e) => pageChunk(e.chunk));
+    const pageHeap = (): Promise<string> => heapSnapshotOf((method) => cdp.send(method as "HeapProfiler.enable"), (listener) => { pageChunk = listener; });
     const pageSnapshot = await pageHeap();
     assert.ok(pageSnapshot.length > 100_000, `K2b CONTROL: the page's snapshot holds a heap (${String(pageSnapshot.length)} characters)`);
     // K2b — THE BROKER TARGET (the service worker), over the browser's own CDP door.

@@ -86,9 +86,10 @@ test("H1 RED custody standing and locked: the typed phrase and a wrong passphras
   const before = await census(idbName);
 
   const wrongGuess = "a wrong but secret guess";
+  const refused = (work: Promise<unknown>): Promise<GateRefused> => work.then(() => { throw new Error("the gate passed"); }, (e: unknown) => e as GateRefused);
   const refusals = [
-    await passCriticalGate(RESET_PROCEDURE, gate.env, { value: RESET_PHRASE }, "passphrase").catch((e: unknown) => e as GateRefused),
-    await passCriticalGate(RESET_PROCEDURE, gate.env, { value: wrongGuess }, "passphrase").catch((e: unknown) => e as GateRefused),
+    await refused(passCriticalGate(RESET_PROCEDURE, gate.env, { value: RESET_PHRASE }, "passphrase")),
+    await refused(passCriticalGate(RESET_PROCEDURE, gate.env, { value: wrongGuess }, "passphrase")),
   ];
   expect(refusals.map((r) => r.refusal)).toEqual(["no-slot-opens", "no-slot-opens"]);
   expect(await census(idbName), "neither refusal wrote a row").toEqual(before);
