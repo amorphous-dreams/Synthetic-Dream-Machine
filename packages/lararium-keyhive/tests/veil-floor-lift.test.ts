@@ -14,7 +14,7 @@ import { describe, test, expect } from "vitest";
 import { makeIslandRepo, liftFaceCatalogRows, catalogRowHalf } from "@lararium/mesh";
 import {
   CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
-  floorSlotTitle, mutableLarRecord, wikiBagUri, wikiSlotUri, realmWorkbenchDocUrl, privateCabalRealmId, ledgerWorkbenches, materializeSharedLarDoc, workbenchKeyDocs,
+  floorSlotTitle, mutableLarRecord, wikiBagUri, realmWorkbenchDocUrl, privateCabalRealmId, ledgerWorkbenches, materializeSharedLarDoc,
   tiddlerText, floorAnswerStore, ControlHomeUnavailable, CONTROL_HOME_UNNAMED, floorRegistryOf, floorDaemonSlotTitle, FLOOR_UNKEYED, VESSEL_LOCKED,
   type FloorKeyRefusal, type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
@@ -22,7 +22,7 @@ import { MemoryTiddlerStore, makeCatalogAccessor } from "@lararium/tw5";
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver } from "../src/slot-doc-resolver.js";
 import { makeFaceBagDoor } from "../src/face-bag-door.js";
-import { standWorkbench, workbenchFaceHolds, adoptWorkbench } from "../src/workbench-realm.js";
+import { faceWorkbenchRealm } from "../src/workbench-realm.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const VERIFYING_KEY = "ab".repeat(32);
@@ -44,13 +44,7 @@ async function house(opts: { control?: CompositeStore; floorKey?: FloorKeyRefusa
   const control = opts.control ?? (() => { const s = new CompositeStore(); s.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true }); return s; })();
   const d = { tiddlers: {} } as LarDoc;
   const ledger: Ledger = { d, doc: () => d, change: (fn) => fn(d) };
-  const workbenchRealm = async (slug: string, mint: boolean): Promise<string | null> => {
-    const held = ledgerWorkbenches(ledger.doc()).find((b) => b.slug === slug)?.realmId ?? null;
-    const keys = held === null ? [] : workbenchKeyDocs(ledger.doc(), held, slug);
-    if (held === null || keys.length === 0) return mint ? (await standWorkbench(kh, ledger, slug, group.groupId)).realmId : null;
-    if (kh.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(kh, slug, keys[0]!);
-    return (await workbenchFaceHolds(kh, slug, await kh.whoami(), "read")) ? held : null;
-  };
+  const workbenchRealm = (slug: string, mint: boolean): Promise<string | null> => faceWorkbenchRealm(kh, ledger, slug, group.groupId, mint);
   const order: string[] = [];
   const base = { repo, daemonStore: daemon, control, floor: floorRegistry, keyhive: kh, deviceScoped: (slug: string) => slug === "daemon", catalog: makeCatalogAccessor(repo, catalogHandle.url), vesselDid: () => DID, mintedByHex: () => VERIFYING_KEY };
   // The veil floor: no face.

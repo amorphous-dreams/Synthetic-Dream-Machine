@@ -13,8 +13,8 @@
  *   · the workbench's ADDRESS (`realmWorkbenchDocUrl`, deterministic-doc): a sibling of the realm's vouch board, derived
  *     from the realm id and the slug, so no member change moves it;
  *   · the vessel LEDGER rows that bind a slug to its realm, and the seats this vessel's own hand made there;
- *   · the REFUSALS: the daemon wiki stays face-private, a checkout-sourced slug never rests a shared private mirror, and one
- *     wiki never registers under two realms;
+ *   · the REFUSALS: the daemon wiki stays face-private, a checkout-sourced slug never rests a shared private mirror, and no
+ *     face mounts one wiki under two realms (the ledger of a vessel that holds several faces binds a slug once per face);
  *   · the wire DECIDER the protected-document guard asks for a workbench document (`realm-workbench`).
  *
  * WHY THE LEDGER, AND WHY NOT `noteRealm`. The vessel's own ledger (`edgeLedgerDocUrl`) keeps the relations this vessel
@@ -57,7 +57,7 @@ export function privateCabalRealmId(face: string, slug: string): string {
 export type WorkbenchRefusalReason =
   /** The daemon wiki (and each face's `daemon-<F>` folder) holds one face's memory: it never shares. */
   | "workbench-face-private"
-  /** A wiki whose ledger rows name two realms: no realm stands for it until a person settles which. */
+  /** A face that holds a seat in two realms for one wiki: no realm mounts for it until a person settles which. */
   | "workbench-two-realms"
   /** A slug whose source stands in the checkout projects to the tracked tree; a private shared mirror never rests there. */
   | "workbench-checkout-sourced"
@@ -111,7 +111,7 @@ const WORKBENCH_ROW = /^([0-9a-f]{64})\/workbench\/([^/]+)$/;
 /** One slug the ledger binds to one realm's workbench. */
 export interface WorkbenchBinding { readonly slug: string; readonly realmId: string; readonly docUrl: string }
 
-/** Every workbench row the ledger holds, sorted by slug then realm. A slug two realms name appears twice (`ledgerWorkbenchRealm` refuses it). */
+/** Every workbench row the ledger holds, sorted by slug then realm. A slug two faces of the vessel each stood appears twice, once per realm. */
 export function ledgerWorkbenches(ledger: LarDoc | undefined | null): WorkbenchBinding[] {
   const out: WorkbenchBinding[] = [];
   for (const [key, record] of Object.entries(ledger?.tiddlers ?? {})) {
@@ -126,31 +126,22 @@ export function ledgerWorkbenches(ledger: LarDoc | undefined | null): WorkbenchB
   return out.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : a.realmId < b.realmId ? -1 : a.realmId > b.realmId ? 1 : 0));
 }
 
-/** Every realm the ledger binds a slug under: none, one, or (two replicas that each founded before they met) a conflict. */
+/**
+ * Every realm the ledger binds a slug under, sorted: none, one, or one per face of this vessel that stood the wiki as its own
+ * private cabal. The ledger serves every face the vessel holds, so it names each face's realm; which one a face MOUNTS reads
+ * off its seat in the realm's key Document (keyhive `seatedWorkbenches`), never off the row count.
+ */
 export function ledgerWorkbenchRealms(ledger: LarDoc | undefined | null, slug: string): string[] {
   const want = slug.normalize("NFC");
   return ledgerWorkbenches(ledger).filter((b) => b.slug === want).map((b) => b.realmId);
 }
 
 /**
- * The ONE realm a slug's workbench stands in, or null where none. Two realms refuse `workbench-two-realms`: no tie-break picks
- * one (a tie never grants), and the wiki mounts no workbench until a person removes one row.
- */
-export function ledgerWorkbenchRealm(ledger: LarDoc | undefined | null, slug: string): string | null {
-  const realms = ledgerWorkbenchRealms(ledger, slug);
-  if (realms.length > 1) throw new WorkbenchRefusal("workbench-two-realms", `"${slug}" registers under ${realms.length} realms (${realms.map((r) => r.slice(0, 12)).join(", ")}…); remove one row before the wiki mounts its workbench`);
-  return realms[0] ?? null;
-}
-
-/**
- * Note that `slug`'s workbench stands in `realmId`. Call INSIDE a `handle.change()` callback. A slug the ledger already binds
- * to ANOTHER realm refuses `workbench-two-realms` and writes nothing; the same binding again writes nothing.
+ * Note that `slug`'s workbench stands in `realmId`. Call INSIDE a `handle.change()` callback. The same binding again writes
+ * nothing. A second realm for the slug notes beside the first: another face of this vessel stood the wiki as its own cabal.
  */
 export function noteWorkbench(draft: LarDoc, realmId: string, slug: string): void {
-  const realm = realmScope(realmId);
-  const held = ledgerWorkbenchRealms(draft, slug);
-  if (held.some((r) => r !== realm)) throw new WorkbenchRefusal("workbench-two-realms", `"${slug}" already registers under realm ${held[0]!.slice(0, 12)}…; one wiki registers under one realm`);
-  const key = workbenchKey(realm, slug);
+  const key = workbenchKey(realmScope(realmId), slug);
   if (ownEntry(draft.tiddlers, key) === undefined) draft.tiddlers[key] = storedLarRecord(key, { text: slug.normalize("NFC") }, "workbench");
 }
 

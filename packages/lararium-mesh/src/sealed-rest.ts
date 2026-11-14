@@ -414,7 +414,8 @@ export interface SealedRest<S extends SaveSession = SaveSession> {
    *  asks before its own store rests a byte of it (`islandRestGuard`). */
   restsSealed(documentId: string): Promise<boolean>;
   /** V3: a document's bag mapped sealed after its rest took clear chunks (a slot the map learned late): book it under
-   *  `session` and seal those chunks now, so they leave rest. Answers whether any clear chunk sealed. */
+   *  `session` and seal those chunks now, so they leave rest; a save of it that waited `save-unmapped` on this naming
+   *  seals too. Answers whether any clear chunk sealed. */
   sealMapped(documentId: string, session: S): Promise<boolean>;
 }
 
@@ -534,7 +535,11 @@ export function composeSealedRest<S extends SaveSession>(input: {
       if (book.of(documentId) === null) book.seal(documentId, session);
       const sealed = await store.sealClearRest(documentId);
       // THE LIFT: a value still resting under the vessel's key re-files under the bag's face (`refileHeld`).
-      return (await store.refileHeld(documentId)) > 0 || sealed;
+      const refiled = (await store.refileHeld(documentId)) > 0;
+      // A SAVE THAT OUTRAN THE NAMING: a save of this document that landed while the map named no bag for it waits in
+      // memory (`save-unmapped`); the naming is the event it waited on, so it seals now, never at a stand-down.
+      if (store.waiting(documentId) > 0) await store.reseal();
+      return refiled || sealed;
     },
   };
 }

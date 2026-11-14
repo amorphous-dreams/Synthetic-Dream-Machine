@@ -68,6 +68,11 @@ export interface SlotDocResolverArgs {
    * files held and seals under the floor's rest key (`announceSlotDoc` with `floor`).
    */
   readonly announceFloor?: (slug: string, kind: FloorSlotKind, documentId: string) => void;
+  /**
+   * Name a face's WORKBENCH document to the vessel's sealed map before its first byte moves (`announceSlotDoc`): the address
+   * derives from the realm, so it reads before the document materializes, and no save of it lands ahead of its bag's naming.
+   */
+  readonly announceWorking?: (slug: string, url: string) => void;
   /** The Lift carried a veil-minted wiki's canon in place: tell the vessel, which re-files its seal under the face (`announceLiftedDoc`). */
   readonly announceLifted?: (slug: string, documentId: string) => void;
   /** The daemon-bag composite — binding records live here. */
@@ -216,6 +221,8 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       throw new WorkingSlotRefusal("no-workbench", `no realm answers for "${slug}" under this face (its hive holds no seat in the realm's Document)`);
     }
     const url = realmWorkbenchDocUrl(realmId, slug);
+    // THE NAMING LEADS THE FIRST BYTE: the vessel's map names this document under the face's working bag before it materializes.
+    args.announceWorking?.(slug, url);
     if (mint && args.workbenchDoc && !stood.has(url)) {
       const handle = await args.workbenchDoc(url, slug);
       await args.repo.flush([handle.documentId]);

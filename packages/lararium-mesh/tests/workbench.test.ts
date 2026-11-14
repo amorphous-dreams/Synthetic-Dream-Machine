@@ -21,7 +21,7 @@ import * as A from "@automerge/automerge";
 import { Repo, interpretAsDocumentId, type AutomergeUrl, type PeerId } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
 import {
-  isFacePrivateSlug, ledgerWorkbenchRealm, ledgerWorkbenches, noteWorkbench, realmWorkbenchDocUrl, noteWorkbenchSeat, dropWorkbenchSeat,
+  isFacePrivateSlug, ledgerWorkbenchRealms, ledgerWorkbenches, noteWorkbench, realmWorkbenchDocUrl, noteWorkbenchSeat, dropWorkbenchSeat,
   workbenchSeats, workbenchSeatHolds, requireWorkbenchShareable, workbenchDecider, workbenchDocIds, WorkbenchRefusal,
 } from "../src/workbench.js";
 import { realmVouchBoardDocUrl, materializeSharedLarDoc, deterministicDocUrl } from "../src/deterministic-doc.js";
@@ -79,20 +79,22 @@ describe("W2 — the daemon wiki holds one face's memory and never shares", () =
   });
 });
 
-describe("W3 — one wiki, one realm", () => {
-  test("a second realm for a noted slug refuses and writes nothing", () => {
+describe("W3 — the ledger binds a slug once per realm, and names every realm a face of the vessel stood", () => {
+  test("the same binding again writes nothing; a second realm for the slug notes beside the first", () => {
     const ledger = blank();
     noteWorkbench(ledger, REALM, "notes");
     noteWorkbench(ledger, REALM, "notes");   // the same binding again writes nothing
-    expect(() => noteWorkbench(ledger, OTHER, "notes")).toThrow(/workbench-two-realms/);
     expect(ledgerWorkbenches(ledger)).toHaveLength(1);
+    noteWorkbench(ledger, OTHER, "notes");   // another face of the vessel stood the wiki as its own private cabal
+    expect(ledgerWorkbenchRealms(ledger, "notes")).toEqual([OTHER, REALM].sort());
+    expect(ledgerWorkbenchRealms(ledger, "elsewhere")).toEqual([]);
   });
-  test("two replicas that each founded before they met hold two rows, and the slug then mounts no workbench", () => {
+  test("two replicas that each noted a realm merge to both rows, each at its own address", () => {
     const a = blank(), b = blank();
     noteWorkbench(a, REALM, "notes");
     noteWorkbench(b, OTHER, "notes");
     const merged = { tiddlers: { ...a.tiddlers, ...b.tiddlers } } as LarDoc;
-    expect(() => ledgerWorkbenchRealm(merged, "notes")).toThrow(/workbench-two-realms/);
+    expect(ledgerWorkbenches(merged).map((w) => w.docUrl).sort()).toEqual([realmWorkbenchDocUrl(REALM, "notes"), realmWorkbenchDocUrl(OTHER, "notes")].sort());
   });
   test("a malformed realm id refuses by name", () => {
     expect(() => noteWorkbench(blank(), "not-a-realm", "notes")).toThrow(/workbench-realm-malformed/);

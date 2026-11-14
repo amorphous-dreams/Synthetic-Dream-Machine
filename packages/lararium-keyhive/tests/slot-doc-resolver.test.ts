@@ -29,7 +29,7 @@ import { MemoryTiddlerStore, makeCatalogAccessor, makeInitWikiReactor, makePrune
 import { KeyhiveProvider } from "../src/keyhive-provider.js";
 import { makeSlotDocResolver, type SlotDocResolver } from "../src/slot-doc-resolver.js";
 import { makeFaceBagDoor } from "../src/face-bag-door.js";
-import { standWorkbench, workbenchFaceHolds, adoptWorkbench } from "../src/workbench-realm.js";
+import { faceWorkbenchRealm } from "../src/workbench-realm.js";
 
 const noopStore = { put: async () => {}, list: async () => [] };
 const VERIFYING_KEY = "ab".repeat(32);
@@ -39,16 +39,10 @@ const DID = didFromVerifyingKey(VERIFYING_KEY);
 type Ledger = { d: LarDoc; doc(): LarDoc; change(fn: (d: LarDoc) => void): void };
 const ledgerDoc = (): Ledger => { const d = { tiddlers: {} } as LarDoc; return { d, doc: () => d, change: (fn) => fn(d) }; };
 
-/** The workbench port as the daemon composes it (`faceWorkbench`): the ledger's realm under this face's seat, founded on mint. */
-const workbenchPort = (kh: KeyhiveProvider, ledger: Ledger, face: string) => async (slug: string, mint: boolean): Promise<string | null> => {
-  const held = ledgerWorkbenches(ledger.doc()).find((b) => b.slug === slug)?.realmId ?? null;
-  const keys = held === null ? [] : workbenchKeyDocs(ledger.doc(), held, slug);
-  if (held === null || keys.length === 0) return mint ? (await standWorkbench(kh, ledger, slug, face)).realmId : null;
-  if (kh.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(kh, slug, keys[0]!);
-  return (await workbenchFaceHolds(kh, slug, await kh.whoami(), "read")) ? held : null;
-};
+/** The workbench port as the daemon composes it (`faceWorkbenchRealm`): the realm that seats this face's hive, founded on mint. */
+const workbenchPort = (kh: KeyhiveProvider, ledger: Ledger, face: string) => (slug: string, mint: boolean): Promise<string | null> => faceWorkbenchRealm(kh, ledger, slug, face, mint);
 
-async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean; ledger?: Ledger; doorMints?: string[] }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string; ledger: Ledger }> {
+async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean; ledger?: Ledger; doorMints?: string[]; order?: string[] }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string; ledger: Ledger }> {
   const kh = new KeyhiveProvider();
   await kh.init({ seed: new Uint8Array(32).fill(3), eventStore: noopStore });
   const group = await kh.createGroup();
@@ -70,7 +64,8 @@ async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean
       personaGroupId: group.groupId,
       faceDoor: ((door) => (opts.doorMints ? { ...door, mint: async (url: string, level: never) => { opts.doorMints!.push(url); return door.mint(url, level); } } : door))(makeFaceBagDoor({ face: kh, groupId: group.groupId })) as never,
       workbenchRealm: workbenchPort(kh, ledger, group.groupId),
-      workbenchDoc: (url: string) => materializeSharedLarDoc(repo, url as never, "board:workbench"),
+      workbenchDoc: (url: string) => { opts.order?.push(`materialize:${url}`); return materializeSharedLarDoc(repo, url as never, "board:workbench"); },
+      announceWorking: (slug: string, url: string) => { opts.order?.push(`announce:${slug}:${url}`); },
     }),
   });
   return { resolver, repo, catalogUrl: catalogHandle.url, daemon, kh, wikiUrl: wikiHandle.url, ledger };
@@ -180,6 +175,21 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     expect(doc?.reach).toBe("vessel-only");
     expect((await r.resolver.slotDoc("garden", "personal", { mint: false }))?.url, "personal reads back what stands").toBe(doc?.url);
     await r.kh.dispose(); await r.repo.shutdown();
+  });
+
+  test("the workbench names itself to the vessel's map before its document materializes, on the first stand and on every later answer", async () => {
+    const order: string[] = [];
+    const r = await rig({ seated: true, order });
+    const doc = (await r.resolver.slotDoc("garden", "working"))!;
+    expect(order, "the naming leads the first byte").toEqual([`announce:garden:${doc.url}`, `materialize:${doc.url}`]);
+    await r.resolver.slotDoc("garden", "working", { mint: false });
+    expect(order.slice(2), "a later answer names it again and materializes nothing").toEqual([`announce:garden:${doc.url}`]);
+    // CONTROL: a floor (no seat) stands no workbench, so nothing names one.
+    const floor: string[] = [];
+    const f = await rig({ seated: false, order: floor });
+    await f.resolver.slotDoc("garden", "working", { mint: false });
+    expect(floor).toEqual([]);
+    await r.kh.dispose(); await r.repo.shutdown(); await f.kh.dispose(); await f.repo.shutdown();
   });
 
   test("RED S5 — the one path: a wiki's working slot rests in its realm workbench, founded once on the first stand", async () => {

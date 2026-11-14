@@ -405,6 +405,43 @@ describe("P1: a bag map that drops (a dial drop, the floor) never writes clear o
     await repo2.shutdown();
   });
 
+  it("a slot document the map names late (after a save of it already waited `save-unmapped`) seals that save at the naming, so a stand-down finds none waiting; a session of another face seals nothing (control)", async () => {
+    const w = world();
+    const a = await vessel(w, "a");
+    const inner = memoryAdapter();
+    let mapped = true;
+    const r = standRest(a, inner, { sealed: () => mapped });
+    const session: Session = { id: "s-a", subject: r.own, signer: a.signer };
+    const repo = new Repo({ storage: r.rest.store, network: [] });
+    r.seat(repo);
+    const doc = repo.create<{ note?: string; more?: string }>();
+    r.rest.wrote(doc.documentId, session);
+    doc.change((d) => { d.note = SECRET; });
+    await repo.flush();
+    await r.rest.store.flush();
+    expect(restsAny(inner, doc.documentId)).toBe(true);   // the setup took: the document rests sealed
+    // A LATER COMPOSITION: the island writes the slot's document before its resolver names it to the vessel's map.
+    mapped = false;
+    r.rest.book.drop();
+    doc.change((d) => { d.more = `${SECRET}-before-the-naming`; });
+    await repo.flush();
+    expect(r.rest.store.held().map((h) => h.refusal)).toEqual(["save-unmapped"]);
+    // THE NAMING (`docstore:slot` → `sealMapped`). CONTROL first: a session that wears another face seals nothing of it.
+    mapped = true;
+    expect(await r.rest.sealMapped(doc.documentId, { id: "s-other", subject: "another-face", signer: a.signer })).toBe(false);
+    expect(r.rest.store.waiting(doc.documentId), "another face's session leaves the save waiting").toBeGreaterThan(0);
+    await r.rest.sealMapped(doc.documentId, session);
+    expect(r.rest.store.waiting(doc.documentId), "the naming seals what waited on it").toBe(0);
+    expect(await r.rest.standDown([session]), "the stand-down finds no save waiting").toBe(0);
+    expect(restsClear(inner, doc.documentId, `${SECRET}-before-the-naming`)).toBe(false);
+    await repo.shutdown();
+    a.restart();
+    const again = standRest(a, inner);
+    const repo2 = new Repo({ storage: again.rest.store, network: [] });
+    expect((await repo2.find<{ note?: string; more?: string }>(doc.documentId as unknown as AutomergeUrl)).doc()).toMatchObject({ note: SECRET, more: `${SECRET}-before-the-naming` });
+    await repo2.shutdown();
+  });
+
   it("CONTROL: a document that never rested sealed still writes clear while unmapped", async () => {
     const w = world();
     const a = await vessel(w, "a");

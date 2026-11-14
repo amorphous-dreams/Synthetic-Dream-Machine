@@ -896,6 +896,21 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /**
+   * Whether `agent` holds any access in the Document `docIdHex` AS THIS REPLICA READS IT. A Document this hive holds no
+   * reading of (another face's, never ingested here) answers false: a seat nobody can read seats nobody.
+   */
+  async seatedInDoc(agentIdentifierHex: string, docIdHex: string): Promise<boolean> {
+    const id = `0x${docIdHex.trim().toLowerCase().replace(/^0x/, "")}`;
+    try {
+      await this.ensureIsland(id);
+      const kh = this.requireKh();
+      const docId = new KH.DocumentId(hexToBytes(id));
+      if (!(await kh.getDocument(docId))) return false;
+      return !!(await kh.accessForDoc(new KH.Identifier(hexToBytes(agentIdentifierHex)), docId));
+    } catch { return false; }
+  }
+
+  /**
    * Whether this provider can name an agent (by Identifier hex) — a delegation to an unknown audience
    * throws, so a caller deciding WHETHER to delegate reads this first. A group agent reads known only
    * once its membership events reached this provider (the seat), never from the pinned id alone.

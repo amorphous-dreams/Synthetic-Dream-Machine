@@ -33,8 +33,8 @@ import {
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
 } from "@lararium/tw5";
 import { applyShares } from "./share-apply.js";
-import { adoptWorkbench, landWorkbench, projectWorkbenchRoster, standWorkbench, type LedgerDoc } from "./workbench-realm.js";
-import { ledgerWorkbenchRealm, workbenchKeyDocs, bagUri as meshBagUri } from "@lararium/mesh";
+import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, type LedgerDoc } from "./workbench-realm.js";
+import { workbenchKeyDocs, bagUri as meshBagUri } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
@@ -459,30 +459,22 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     });
   };
   // THE WORKBENCH LEDGER (cabal-realm#/the-workbench): the vessel's own ledger under its place key, where each wiki's realm is
-  // noted on its first stand. Every face of the vessel reads the one ledger; the realm's Document decides who mounts.
+  // noted on its first stand under a face. Every face of the vessel reads the one ledger, so it binds a slug once per face
+  // that stood the wiki; the seat in a realm's own key Document decides which realm a face mounts.
   let workbenchLedger: Promise<DocHandle<LarDoc>> | null = null;
   const workbenchLedgerOf = (ctx: IslandContext): Promise<DocHandle<LarDoc>> =>
     (workbenchLedger ??= materializeSharedLarDoc(ctx.repo, edgeLedgerDocUrl(daemonAuth.placeVerifyingKey), "ledger:workbench"));
   const asLedgerDoc = (h: DocHandle<LarDoc>): LedgerDoc => ({ doc: () => h.doc(), change: (fn) => h.change(fn) });
   /**
-   * THE WORKBENCH PORT UNDER ONE FACE: the ledger's realm for the slug, answered only where that face's own hive holds a seat
-   * in the realm's Document (one vessel holds every face's documents, so the roster gates the mount here as the guard gates
-   * the wire). With `mint`, a wiki that holds no realm founds its private cabal of one under the face's hive (`standWorkbench`).
-   * A ledger naming two realms for one slug refuses `workbench-two-realms` by name.
+   * THE WORKBENCH PORT UNDER ONE FACE (`faceWorkbenchRealm`): the realm whose own key Document seats that face's hive (one
+   * vessel holds every face's documents, so the seat gates the mount here as the guard gates the wire). With `mint`, a face
+   * no realm seats founds its own private cabal of one; a face seated in two realms for one slug refuses
+   * `workbench-two-realms` by name.
    */
   const faceWorkbench = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face: string) => async (slug: string, mint: boolean): Promise<string | null> => {
     const hive = provider();
     if (!hive) return null;
-    const ledger = asLedgerDoc(await workbenchLedgerOf(ctx));
-    const held = ledgerWorkbenchRealm(ledger.doc(), slug);
-    // The wiki holds no realm here, or holds one with no key Document on this vessel: a mint stands it under this face.
-    if (held === null || workbenchKeyDocs(ledger.doc(), held, slug).length === 0) {
-      return mint ? (await standWorkbench(hive, ledger, slug, face)).realmId : null;
-    }
-    if (hive.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(hive, slug, workbenchKeyDocs(ledger.doc(), held, slug)[0]!);
-    // The mount reads the roster, so the roster's projection follows it (one owner: Keyhive).
-    const seated = await projectWorkbenchRoster(hive, ledger, held, slug, new Map([[face, await hive.whoami()]])).catch(() => [] as readonly string[]);
-    return seated.includes(face) ? held : null;
+    return faceWorkbenchRealm(hive, asLedgerDoc(await workbenchLedgerOf(ctx)), slug, face, mint);
   };
   // THE FLOOR'S REGISTRY (`floor-registry`): the daemon document's floor rows, gated on the floor's rest key as the vessel
   // granted it for this composition. A grant that names none reads as a place that derives no floor key.
@@ -499,6 +491,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       // THE VEIL FLOOR'S WIKI SLOT names itself to the vessel as the vessel's own, before its first byte (it seals under the floor's rest key).
       ...(docStoreDoor ? { announceFloor: (slug: string, kind: "working" | "draft" | "personal", documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId, true) } : {}),
       ...(docStoreDoor ? { announceLifted: (slug: string, documentId: string) => announceLiftedDoc(docStoreDoor, wikiBagUri(slug), documentId) } : {}),
+      // THE WORKBENCH names itself before it materializes (`workingDoc`), so its first save finds its bag mapped.
+      announceWorking: (slug: string, url: string) => announced(slug, "working", url),
       daemonStore: ctx.composite, ...(kh ? { keyhive: kh } : {}),
       catalog: ctx.catalogUrl ? makeCatalogAccessor(ctx.repo, ctx.catalogUrl, ctx.faceCatalogUrl) : null,
       vesselDid: () => didFromVerifyingKey(mintedByHex),

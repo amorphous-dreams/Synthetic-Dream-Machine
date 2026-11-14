@@ -1055,6 +1055,12 @@ async function prepareNodeBootOn(
     // the Repo's stand-down ends the wait by name.
     hydrates: true,
   });
+  // A STAND-DOWN THAT LEAVES A SAVE UNSEALED NAMES IT: each document, the refusal that held it and the bag the map names for
+  // it now, never a byte of its body. Such a save rests nowhere new; only a replica that holds its change can hand it back.
+  const nameHeldSaves = (waiting: number): void => {
+    console.log(`[sealed-rest] ${waiting} save(s) leave unsealed and rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
+    for (const held of sealedRest.store.held()) console.log(`[sealed-rest]   ${held.refusal}: ${held.documentId.slice(0, 12)}… ${held.saves} save(s), bag ${held.bagId ?? "(none mapped)"}`);
+  };
   // THE FLOOR PIN SET (house ruling "The admit's gate pin": a floor route's full pin travels through an authenticated
   // relation): each sovereign session hears, at open, the floor pins this
   // hearth stands at the Nexus that seated it, the same pins the floor gates below derive (`hearthFloorPins`).
@@ -1441,7 +1447,7 @@ async function prepareNodeBootOn(
     await sealedRest.store.flush();
     // A save no session booked never rests clear: one still waiting rests nowhere new, and its change returns by sync.
     const waiting = sealedRest.store.waiting();
-    if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
+    if (waiting > 0) nameHeldSaves(waiting);
     sealedRest.store.endHydration();
     await repo.shutdown();
   } });
@@ -4540,7 +4546,7 @@ async function prepareNodeBootOn(
     },
     sealedRestStandDown: async () => {
       const waiting = await sealedRest.standDown((sealedCells.book?.seated() ?? []).map(saveSessionOf));
-      if (waiting > 0) console.log(`[sealed-rest] save-unbooked: ${waiting} save(s) no session could seal rest nowhere new; the replica that holds each change hands it back by sync after the next unlock`);
+      if (waiting > 0) nameHeldSaves(waiting);
       return waiting;
     },
     heldSaves: () => sealedRest.store.held(),
