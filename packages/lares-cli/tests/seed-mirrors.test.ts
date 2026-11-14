@@ -72,6 +72,8 @@ class FakeHouse {
   laid: string[] = [];
   held = new Set<string>();
   mints: string[] = [];
+  /** The slugs minted through the WIKI door (`init-wiki`: canon, draft and recipe row), a subset of `mints`. */
+  wikiMints: string[] = [];
   /** The relation the composition wears: the daemon working layer holds THAT face's document alone (`wear` switches it). */
   constructor(faces: Array<Partial<CarryVesselFace> & { handleIndex: number }>, readonly grant: string, public worn: string) {
     this.faces = faces.map((f) => ({ petname: null, relation: null, handle: null, seat: false, chair: null, kahua: [], ...f }));
@@ -173,6 +175,7 @@ class FakeHouse {
     return {
       faces: async () => this.facesNow(), tempConsented: () => ["daemon"],
       heldSlugs: async () => new Set(this.held), mintBag: async (bag) => { this.mints.push(bag); this.held.add(bag.slice(bag.lastIndexOf("/") + 1)); },
+      mintWiki: async (slug) => { this.wikiMints.push(slug); this.mints.push(`lar:///ha.ka.ba/bags/${slug}`); this.held.add(slug); },
       kahuaLift: this.kahuaLift, lay: (w, a) => this.lay(w, a), sourced: (slug) => this.sourcedSlugs.has(slug), canonWikis: () => this.canonWikis,
       // THE SEAT: a bound slug answers the worn face `working` where it holds a writer's seat, else `personal`; an unbound one
       // answers `personal` and `bound: false` (the first stand founds it), as the island's `workbench-seat` does.
@@ -187,6 +190,7 @@ class FakeHouse {
       faces: async () => this.facesNow(), tempConsented: () => ["daemon"],
       rename: async () => {}, declareHandle: async () => {}, standSeat: async () => {},
       heldSlugs: async () => new Set(this.held), mintBag: async (bag) => { this.mints.push(bag); this.held.add(bag.slice(bag.lastIndexOf("/") + 1)); },
+      mintWiki: async (slug) => { this.wikiMints.push(slug); this.mints.push(`lar:///ha.ka.ba/bags/${slug}`); this.held.add(slug); },
       // A FACE-NAMED WAVE lands in THAT face's own document, as the island's face-named INGEST does (never the worn one's).
       ingest: async ({ toBag, candidates, kapae, face }) => {
         const named = face === undefined ? undefined : this.faces.find((f) => f.handleIndex === face);
@@ -210,6 +214,10 @@ class FakeHouse {
           return { landed, conflicts, refused: [], unanswered: [], kapaeRaised: raised, kapaeRefused: [] };
         } finally { this.worn = prior; }
       },
+      canonWikis: () => this.canonWikis, sourced: (slug) => this.sourcedSlugs.has(slug),
+      benchSeat: async (slug) => { const seated = this.seats.get(slug); return { bound: seated !== undefined, writeSlot: seated?.has(this.worn) ? "working" : "personal" }; },
+      shareRows: { read: () => this.shareRows, write: (rows) => { this.shareRows = [...rows]; } },
+      landShares: async () => { this.shareLandings++; return { granted: 0, carried: 0, pending: 0, workbenches: [] }; },
       overrideBases: async (bag) => Object.fromEntries([...this.layer(bag)].filter(([, r]) => r.base !== undefined && !r.deleted).map(([t, r]) => [t, r.base!])),
       kahuaLift: this.kahuaLift,
     };
@@ -756,6 +764,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     v.wear(R0);
     const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(v.mints).toEqual(["lar:///ha.ka.ba/bags/notes"]);
+    expect(v.wikiMints, "a wiki mints through the wiki door, so its recipe row stands").toEqual(["notes"]);
     expect(v.layer("lar:///ha.ka.ba/bags/notes").get(PAGE)?.text).toBe(tid(PAGE, "a promoted page"));
     expect(v.bench("notes").get(DRAFTED)?.text).toBe(tid(DRAFTED, "a working-only page"));
     expect(second.benchWaiting).toEqual([]);
@@ -804,6 +813,67 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(second.waiting).toEqual([]);
     const again = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(again.layers.reduce((n, t) => n + t.landed, 0), "a second seed lands nothing").toBe(0);
+  });
+
+  test("M22 — export and import carry by document: a workbench travels as ONE row set with its share row, a personal layer for its one face; each lands once", async () => {
+    const [G0, G1] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1"];
+    const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
+    const PAGE = "lar:///ha.ka.ba/notes/page", DRAFTED = "lar:///ha.ka.ba/notes/working-only", MARGIN = "lar:///ha.ka.ba/lares/ref/RW-REHEARSAL", SOURCED = "lar:///ha.ka.ba/lares/ref/RFC-4151";
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true });
+    // THE STANDING VESSEL: a shared wiki's canon and its ONE workbench folder, a sourced wiki's workbench beside its canon
+    // source, the engineer's personal layer of `lares`, and the vessel-private share row that names owner and seats.
+    put("projections/bags/notes/ha.ka.ba/notes/page.tid", tid(PAGE, "a promoted page"));
+    put("projections/wikis/notes/ha.ka.ba/notes/working-only.tid", tid(DRAFTED, "a working-only page"));
+    put("wikis/lares/ha.ka.ba/lares/ref/RFC-4151.tid", tid(SOURCED, "a working copy beside the source"));
+    put(`projections/personal/${G1}/lares/ha.ka.ba/lares/ref/RW-REHEARSAL.tid`, tid(MARGIN, "what the engineer kept for itself"));
+    put(`projections/personal/${G1}/lares/$__StoryList.tid`, tid("$:/StoryList", "a view"));
+    const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
+    old.held.add("notes"); old.held.add("lares");
+    old.canonWikis = join(root, "wikis"); old.sourcedSlugs.add("lares");
+    old.shareRows = [{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }];
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    expect(manifest.counts["wiki-working"], "each workbench travels as its one row set: notes, and the sourced lares").toBe(2);
+    expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.title, r.face]).sort()).toEqual([[SOURCED, null], [DRAFTED, null]].sort());
+    expect(manifest.rows.filter((r) => r.layer === "personal").map((r) => [r.title, r.face, r.bag])).toEqual([[MARGIN, "engineer", "lar:///ha.ka.ba/wikis/lares/personal"]]);
+    expect(manifest.files.some((f) => f.path.includes("$__")), "a view-state carrier never travels").toBe(false);
+    expect(manifest.omissions.map((o) => o.kind)).not.toContain("face-workbench");
+    const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8")) as { shares?: unknown };
+    expect(redeclare.shares, "the share row travels beside the workbench it seats, owner and seats by pet-name").toEqual([{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }]);
+
+    // A RE-FOUNDING, with the mirrors gone (the bundle alone carries them): the engineer imports first.
+    rmSync(P("wikis/notes"), { recursive: true }); rmSync(P("bags/notes"), { recursive: true }); rmSync(P(`personal/${G1}`), { recursive: true }); rmSync(join(root, "wikis"), { recursive: true });
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R1);
+    v.canonWikis = join(root, "wikis"); v.sourcedSlugs.add("lares"); v.held.add("lares");
+    v.seats.set("lares", new Set([R0]));           // the steward's first mount stood the house wiki's workbench
+    const first = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    expect(v.shareRows, "the share row lands in the vessel-private file").toEqual([{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }]);
+    expect(first.shares.written).toEqual(["notes"]);
+    expect(first.benchWaiting.map((w) => [w.slug, w.why, w.owner]).sort(), "notes waits for its owner, lares for a seated writer").toEqual([["lares", "writer", undefined], ["notes", "owner", "steward"]]);
+    expect(v.mints, "a wiki another face owns mints at that face's wear").toEqual([]);
+    expect(v.bench("notes").size + v.bench("lares").size + v.layer("lar:///ha.ka.ba/bags/notes").size).toBe(0);
+    expect(v.personalOf(R1, "lares").get(MARGIN)?.text, "the worn engineer's own margin lands").toBe(tid(MARGIN, "what the engineer kept for itself"));
+    expect(first.tallies.personal.landed).toBe(1);
+    // THE STEWARD WEARS: the wiki mints, its canon and both workbenches land once, and the engineer's margin stays the engineer's.
+    v.wear(R0);
+    const second = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    expect(v.mints).toEqual(["lar:///ha.ka.ba/bags/notes"]);
+    expect(v.wikiMints, "a wiki mints through the wiki door, so its recipe row stands").toEqual(["notes"]);
+    expect(v.layer("lar:///ha.ka.ba/bags/notes").get(PAGE)?.text).toBe(tid(PAGE, "a promoted page"));
+    expect(v.bench("notes").get(DRAFTED)?.text).toBe(tid(DRAFTED, "a working-only page"));
+    expect(v.bench("lares").get(SOURCED)?.text).toBe(tid(SOURCED, "a working copy beside the source"));
+    expect(existsSync(join(root, "wikis", "lares", "ha.ka.ba", "lares", "ref", "RFC-4151.tid")), "a sourced wiki's rows restore beside the canon source").toBe(true);
+    expect(second.benchWaiting).toEqual([]);
+    expect(second.tallies.wikiWorking.landed).toBe(2);
+    expect(v.personalOf(R0, "lares").size, "no face's margin lands on another face").toBe(0);
+    expect(v.shareLandings).toBeGreaterThan(0);
+    // A SECOND IMPORT LANDS NOTHING, under either face.
+    const third = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    expect(Object.values(third.tallies).reduce((n, t) => n + t.landed + t.planned, 0)).toBe(0);
+    v.seats.get("notes")!.add(R1);
+    v.wear(R1);
+    const fourth = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    expect(Object.values(fourth.tallies).reduce((n, t) => n + t.landed + t.planned, 0)).toBe(0);
+    expect(v.mints).toHaveLength(1);
   });
 
   test("M11 — a fresh face that reads no relation and no stage never halts the seed", async () => {

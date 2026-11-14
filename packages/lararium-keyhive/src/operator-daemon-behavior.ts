@@ -990,7 +990,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       };
       const memeOpts = { ...memeVerbOptions(ctx, async (slug, kind, opts) => {
         const url = (await slotDocsOf(ctx).slotDoc(slug, kind, opts))?.url ?? null;
-        if (url && kind === "personal" && opts.mint) await personalCap(slug);
+        // A read after a restart asks the same cap: the face's hand on its own personal bag stands again from its ledger record.
+        if (url && kind === "personal") await personalCap(slug);
         return url;
       }, realmCanonUrlOf(ctx)), writeSlot: (slug: string) => slotDocsOf(ctx).writeSlot(slug), ...(kahuReach ? { kahuReach } : {}) };
       registry.register("meme-put", makeMemePutReactor(memeOpts), { summary: "Place a meme (framed text) through the Confluence gate into the anchor wiki, a named recipe's designated bag, or a named bag; `base` = the canonical hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });

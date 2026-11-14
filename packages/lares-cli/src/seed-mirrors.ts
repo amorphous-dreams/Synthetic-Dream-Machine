@@ -121,6 +121,7 @@ export interface MirrorDoors {
   readonly tempConsented: CarryDoors["tempConsented"];
   readonly heldSlugs: CarryDoors["heldSlugs"];
   readonly mintBag: CarryDoors["mintBag"];
+  readonly mintWiki?: CarryDoors["mintWiki"];
   readonly kahuaLift: CarryDoors["kahuaLift"];
   /** Scan one folder against the synced base and, applied, lay its new and moved carriers through INGEST's gate. */
   readonly lay: (wave: MirrorWave, apply: boolean) => Promise<MirrorLaid>;
@@ -537,7 +538,10 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
       // A wiki another face owns mints at that face's wear: nothing of it mints or lays under this one.
       if ((await gateOf(slug))?.why === "owner") continue;
       minted.push(wikiBagUri(slug));
-      if (apply) await doors.mintBag(wikiBagUri(slug));
+      // A WIKI mints through the wiki door (`init-wiki`), so its recipe row stands and `--recipe <slug>` answers; a plain bag
+      // through CREATE, which stands the bag alone.
+      const asWiki = doors.mintWiki !== undefined && (houseWikis.includes(slug) || shareRows.some((r) => r.kind === "wiki" && r.slug === slug));
+      if (apply) await (asWiki ? doors.mintWiki!(slug) : doors.mintBag(wikiBagUri(slug)));
     }
     for (const slug of houseBags) {
       const gate = held.has(slug) ? null : await gateOf(slug);
@@ -756,6 +760,7 @@ export const LIVE_MIRROR_DOORS: MirrorDoors = {
   tempConsented: LIVE_CARRY_DOORS.tempConsented,
   heldSlugs: LIVE_CARRY_DOORS.heldSlugs,
   mintBag: LIVE_CARRY_DOORS.mintBag,
+  ...(LIVE_CARRY_DOORS.mintWiki ? { mintWiki: LIVE_CARRY_DOORS.mintWiki } : {}),
   kahuaLift: LIVE_CARRY_DOORS.kahuaLift,
   lay: liveLay,
   sourced: (slug) => { try { return canonIsDisk({ holding: slug, source: join(daemonBagsDir(), slug) }); } catch { return false; } },

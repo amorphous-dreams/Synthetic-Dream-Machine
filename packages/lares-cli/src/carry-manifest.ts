@@ -39,8 +39,8 @@ export const REDECLARE_FILE = "re-declare.json";
 export const KAHUA_HEADS_FILE = "kahua-heads.json";
 
 /** A row's layer: what it carries and how the import lands it. */
-export type CarryLayer = "working" | "kapae" | "draft" | "temp" | "kahua-carrier" | "kahua-head" | "bag" | "daemon-canon" | "wiki-working";
-export const CARRY_LAYERS: readonly CarryLayer[] = ["working", "kapae", "draft", "temp", "kahua-carrier", "kahua-head", "bag", "daemon-canon", "wiki-working"];
+export type CarryLayer = "working" | "kapae" | "draft" | "temp" | "kahua-carrier" | "kahua-head" | "bag" | "daemon-canon" | "wiki-working" | "personal";
+export const CARRY_LAYERS: readonly CarryLayer[] = ["working", "kapae", "draft", "temp", "kahua-carrier", "kahua-head", "bag", "daemon-canon", "wiki-working", "personal"];
 
 /** One file the bundle holds, with the bytes' sha-256: the tamper check reads every one. */
 export interface CarryFile { readonly path: string; readonly sha256: string; readonly bytes: number }
@@ -95,7 +95,13 @@ export interface CarryRedeclareFace {
   readonly seat: boolean;
   readonly chair: string | null;
 }
-export interface CarryRedeclare { readonly schema: typeof CARRY_SCHEMA; readonly faces: readonly CarryRedeclareFace[] }
+/**
+ * One shared wiki's row set, as the vessel-private share config held it: who owns the wiki's workbench and who sits there, by
+ * PET-NAME. A bundle counts as the operator's own private carry; these names join one human's faces, so a bundle handed to
+ * another party would leak that map (cabal-realm#/the-workbench: no roster joins a human's faces).
+ */
+export interface CarryShareRow { readonly slug: string; readonly kind: "bag" | "wiki"; readonly read: string; readonly write: string; readonly owner?: string; readonly workspace?: string; readonly note?: string }
+export interface CarryRedeclare { readonly schema: typeof CARRY_SCHEMA; readonly faces: readonly CarryRedeclareFace[]; readonly shares?: readonly CarryShareRow[] }
 
 /** One standing head of a face's kahua stage, as the fold read it: the import re-lifts it under the new grant. */
 export interface CarryKahuaHead {

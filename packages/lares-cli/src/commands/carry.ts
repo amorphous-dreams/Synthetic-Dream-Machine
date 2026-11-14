@@ -15,7 +15,10 @@
  *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
  *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
  *      memory and no pet-name, or two that share one, refuses;
- *   4. copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
+ *   4. (ONE ROW SET FOR ONE DOCUMENT: a wiki's workbench travels once, from its one folder, a sourced wiki's beside its canon
+ *      source included, with the vessel-private share rows that name its owner and its seats by pet-name in `re-declare.json`;
+ *      a face-private document, `personal` layers among them, travels for its one face.)
+ *      copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
  *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
  *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
  *   5. writes `manifest.json` and `re-declare.json`, reads every byte back against the manifest, and only then moves
@@ -33,6 +36,9 @@
  *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
  *      into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
  *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview.
+ *   A WORKBENCH LANDS ONCE, where the worn face holds a writer's seat in it or stands the wiki first (its owner, where a share
+ *   row names one); under any other face its rows wait by name. Each face's `personal` rows land at that face's own wear. The
+ *   share rows the bundle carries write into `config/share.tid` where none stands for the slug, and the shares land again.
  *   A journal under `<root>/config/carry-journal/<bundle-id>.<faces>.ndjson` (the bundle and the target faces' relations) records
  *   each landed act: an interrupted import re-enters to the same end, a second import of the same bundle onto the same faces
  *   lands nothing, and the same bundle walked onto fresh faces after a re-founding imports afresh.
@@ -43,10 +49,10 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf, parseShareFile, serializeShareFile, type ShareRow } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
-  KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
+  KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, PERSONAL_PROJECTION_DIR, daemonBagsDir,
   listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
@@ -66,8 +72,9 @@ import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-pers
 import {
   CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, CarryBundleRefused,
   type CarryFace, type CarryFile, type CarryKahuaHead, type CarryManifest, type CarryOmission, type CarryRedeclare,
-  type CarryRedeclareFace, type CarryRow, type VerifiedBundle,
+  type CarryRedeclareFace, type CarryRow, type CarryShareRow, type VerifiedBundle,
 } from "../carry-manifest.js";
+import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 
 
 /** One face this vessel wears, as the doors read it. */
@@ -111,6 +118,9 @@ export function unlockItLine(face: { readonly handleIndex: number; readonly petn
   return `${face.petname ?? `h${face.handleIndex}`} stays shut: \`lares vault unlock --face ${face.handleIndex}\`, then ${verb} again`;
 }
 
+/** A view-state carrier of a `personal` layer (a `$:/` title: the story list, a fold state): it never travels and never adopts. */
+const isViewState = (rel: string): boolean => (rel.split("/").pop() ?? "").startsWith("$__");
+
 /** What one ingest wave settled, as the carry verbs read it. */
 export interface CarryIngestAnswer {
   readonly landed: readonly string[];
@@ -134,8 +144,10 @@ export interface CarryDoors {
   readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[]; readonly inWiki?: boolean; readonly wiki?: string; readonly face?: number }) => Promise<CarryIngestAnswer>;
   /** The wiki slugs this vessel's catalog registers. */
   readonly heldSlugs: () => Promise<ReadonlySet<string>>;
-  /** Mint a bag (and the wiki it opens as) through the existing CREATE road. */
+  /** Mint a bag through the existing CREATE road. It stands the bag alone: no recipe row, so no wiki answers to the slug. */
   readonly mintBag: (bagUri: string) => Promise<void>;
+  /** Mint a WIKI through the wiki door (`init-wiki`: its canon, its draft and its recipe row), idempotent. Absent: `mintBag`. */
+  readonly mintWiki?: (slug: string) => Promise<void>;
   /**
    * The disk-sourced holdings whose canon this vessel never seeded (no synced base stands for any carrier of the bag).
    * An import lands its rows over seeded canon alone, so it refuses while one stands unseeded. Absent: no guard.
@@ -146,6 +158,16 @@ export interface CarryDoors {
    * beside the files, since a base never projects. Absent: rows carry none.
    */
   readonly overrideBases?: (workingBag: string) => Promise<Readonly<Record<string, string>>>;
+  /** The `wikis` dir beside the canon source, where a sourced wiki's one workbench folder rests; null: none stands. */
+  readonly canonWikis?: () => string | null;
+  /** Whether a slug's canon stands under the canon source. Absent: none does. */
+  readonly sourced?: (slug: string) => boolean;
+  /** The worn face's seat on a wiki's workbench (`workbench-seat`). Absent (a rig with no roster): the worn face writes every workbench. */
+  readonly benchSeat?: (slug: string) => Promise<{ readonly writeSlot: "working" | "personal" | null; readonly bound: boolean }>;
+  /** The vessel-private share rows (`config/share.tid`), read and written whole. Absent: no rows travel and none land. */
+  readonly shareRows?: { read(): readonly ShareRow[]; write(rows: readonly ShareRow[]): void };
+  /** Land the shares again (`share-apply`); null where no vessel answers. */
+  readonly landShares?: () => Promise<Record<string, unknown> | null>;
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
 }
 
@@ -223,12 +245,27 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
     const r = await runVerb("CREATE", actionArgs, await vesselDid(), { requestId: newRequestId(), effectKey });
     if (r.status === "error") throw new Error(r.errorMessage ?? `CREATE ${bagUri} refused`);
   },
+  mintWiki: async (slug) => {
+    const r = await runVerb("init-wiki", { slug }, await vesselDid());
+    if (r.status === "error") throw new Error(r.errorMessage ?? `init-wiki ${slug} refused`);
+  },
   unseeded: () => {
     const tree = openSyncedTree();
     const seededBags = new Set(tree.rows().map((r) => r.bagId));
     return discoverHoldings(larBagsDir()).filter((h) => { try { return canonIsDisk(h); } catch { return false; } })
       .filter((h) => !seededBags.has(h.toBag)).map((h) => h.holding);
   },
+  canonWikis: () => { try { return join(dirname(resolve(daemonBagsDir())), "wikis"); } catch { return null; } },
+  sourced: (slug) => { try { return canonIsDisk({ holding: slug, source: join(daemonBagsDir(), slug) }); } catch { return false; } },
+  benchSeat: async (slug) => {
+    const out = summaryOutput(await runVerb("workbench-seat", { slug }, await vesselDid())) as { writeSlot?: unknown; bound?: unknown } | null;
+    return { writeSlot: out?.writeSlot === "working" || out?.writeSlot === "personal" ? out.writeSlot : null, bound: out?.bound === true };
+  },
+  shareRows: {
+    read: () => { try { const text = LIVE_SHARE_DOORS.file.read(); return text === null ? [] : parseShareFile(text); } catch { return []; } },
+    write: (rows) => LIVE_SHARE_DOORS.file.write(serializeShareFile(rows)),
+  },
+  landShares: async () => landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces()),
   overrideBases: async (workingBag) => {
     const out: Record<string, string> = {};
     let after: string | null = null;
@@ -443,6 +480,32 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     const wikiBases = await baseFor(wikiSlotUri(name, "working"));
     addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
+  // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside its canon source: the same one row set, from that folder.
+  const canonWikis = doors.canonWikis?.() ?? null;
+  if (canonWikis !== null && resolve(canonWikis) !== resolve(wikisDir)) {
+    for (const name of folders(canonWikis)) {
+      if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name)) continue;
+      const wikiBases = await baseFor(wikiSlotUri(name, "working"));
+      addTree(join(canonWikis, name), `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(canonWikis, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
+    }
+  }
+  // EACH FACE'S PERSONAL LAYER OF A WIKI (`personal/<F>/<slug>`): a face-private document, so it travels for its one face. A
+  // view-state carrier (a `$:/` title: the story list, a fold state) stays behind: the face that lands the bundle keeps its own.
+  const personalRoot = join(projections, PERSONAL_PROJECTION_DIR);
+  for (const f of named) {
+    if (f.relation === null) continue;
+    const fk = keyOf.get(f.handleIndex)!, own = join(personalRoot, f.relation);
+    for (const slug of folders(own)) {
+      const listed = plainFiles(join(own, slug));
+      odd += listed.odd.length;
+      for (const rel of listed.files) {
+        if (isStray(rel)) { strays++; continue; }
+        if (isViewState(rel)) continue;
+        const abs = join(own, slug, ...rel.split("/"));
+        plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: f.petname!, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: mirrorDirFileToUri(own, abs), rowKey: null } });
+      }
+    }
+  }
   for (const name of folders(bagsDir)) {
     const src = join(bagsDir, name);
     if (isDaemonFaceFolder(name)) {
@@ -504,6 +567,8 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     const redeclare: CarryRedeclare = {
       schema: CARRY_SCHEMA,
       faces: named.map((f): CarryRedeclareFace => ({ face: keyOf.get(f.handleIndex)!, handleIndex: f.handleIndex, petname: f.petname!, handle: f.handle, seat: f.seat, chair: f.seat ? f.chair : null })),
+      // THE SHARE ROWS travel with the workbenches they seat: owner and seats by pet-name, the operator's own private carry.
+      ...((): { shares?: CarryShareRow[] } => { const rows = doors.shareRows?.read() ?? []; return rows.length > 0 ? { shares: rows.map((r) => ({ ...r })) } : {}; })(),
     };
     put(REDECLARE_FILE, `${JSON.stringify(redeclare, null, 2)}\n`);
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
@@ -613,7 +678,14 @@ export interface CarryImportResult {
   /** Bundle face pet-name -> the handle index it lands on. */
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
-  readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking", CarryTally>>;
+  readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking" | "personal", CarryTally>>;
+  /** Each workbench (or the canon of a wiki another face owns) whose rows wait: `writer` (the worn face holds no writer's seat
+   *  there) or `owner` (a share row names another face as the wiki's owner, and no face stood it here yet). Nothing of it landed. */
+  readonly benchWaiting: ReadonlyArray<{ readonly slug: string; readonly why: "writer" | "owner"; readonly owner?: string }>;
+  /** Each bundle face whose `personal` rows wait for that face's own wear. */
+  readonly personalWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
+  /** The share rows the bundle carried that this vessel's file held none of (written on apply), and the landing's answer. */
+  readonly shares: { readonly written: readonly string[]; readonly landed: boolean };
   /** The bags (and the wikis they open as) this import mints, or would mint in a preview, before it re-pours them. */
   readonly minted: readonly string[];
   readonly skipped: readonly string[];
@@ -717,7 +789,33 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   };
   const waiting = manifest.faces.filter((bf) => unworn.has(bf.key)).map((bf) => ({ petname: bf.petname, handleIndex: target.get(bf.key)!.handleIndex }));
 
-  const tallies = { working: tally(), kapae: tally(), faceCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally() };
+  const tallies = { working: tally(), kapae: tally(), faceCanon: tally(), kahua: tally(), draft: tally(), temp: tally(), bag: tally(), wikiWorking: tally(), personal: tally() };
+  // THE SHARE ROWS THE BUNDLE CARRIED (vessel-private; owner and seats by pet-name): a slug this vessel's file holds no row for
+  // takes the bundle's row, and a row that stands here stays as it stands. They gate the mint below and land again at the close.
+  const benchWaiting: Array<{ slug: string; why: "writer" | "owner"; owner?: string }> = [];
+  const personalWaiting: Array<{ petname: string; handleIndex: number }> = [];
+  const standingShares = [...(doors.shareRows?.read() ?? [])];
+  const carriedShares = (redeclare.shares ?? []).filter((r) => !standingShares.some((x) => x.slug === r.slug));
+  const allShares: ShareRow[] = [...standingShares, ...carriedShares.map((r): ShareRow => ({ ...r }))];
+  if (apply && carriedShares.length > 0 && doors.shareRows) doors.shareRows.write(allShares);
+  const wornPet = litFaceOf(faces)?.petname ?? null;
+  const gates = new Map<string, { why: "writer" | "owner"; owner?: string } | null>();
+  /** Why the worn face may not land this wiki's workbench (or mint the wiki) now, or null where it may. */
+  const gateOf = async (slug: string): Promise<{ why: "writer" | "owner"; owner?: string } | null> => {
+    if (gates.has(slug)) return gates.get(slug)!;
+    let gate: { why: "writer" | "owner"; owner?: string } | null = null;
+    if (litFaceOf(faces) !== null && doors.benchSeat !== undefined) {
+      const seat = await doors.benchSeat(slug);
+      const owner = allShares.find((r) => r.kind === "wiki" && r.slug === slug)?.owner ?? null;
+      if (seat.bound) gate = seat.writeSlot === "working" ? null : { why: "writer" };
+      else gate = owner !== null && wornPet !== owner ? { why: "owner", owner } : null;
+    }
+    gates.set(slug, gate);
+    return gate;
+  };
+  const waitBench = (slug: string, gate: { why: "writer" | "owner"; owner?: string }): void => {
+    if (!benchWaiting.some((w) => w.slug === slug)) benchWaiting.push({ slug, why: gate.why, ...(gate.owner !== undefined ? { owner: gate.owner } : {}) });
+  };
   const minted: string[] = [];
   const skipped: string[] = [];
 
@@ -874,29 +972,62 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const bagSlugs = slugsOf(/^bags\/([^/]+)\//), wikiSlugs = slugsOf(/^wikis\/([^/]+)\/working\//);
   /** The slugs this vessel did not hold before the import: their layers mint fresh, so no mirror file reads already landed there. */
   const freshSlugs = new Set<string>();
+  /** The slugs that wait for their owner's wear: nothing of them mints or lands under this face. */
+  const unminted = new Set<string>();
   if (bagSlugs.length + wikiSlugs.length > 0) {
     const held = await doors.heldSlugs();
     for (const slug of [...new Set([...bagSlugs, ...wikiSlugs])].sort()) {
       if (held.has(slug)) continue;
+      // A wiki another face owns mints at that face's wear: nothing of it mints under this one.
+      if (doors.sourced?.(slug) === true) continue;
+      const gate = await gateOf(slug);
+      if (gate?.why === "owner") { waitBench(slug, gate); unminted.add(slug); continue; }
       freshSlugs.add(slug);
       minted.push(wikiBagUri(slug));
       if (!apply || journal.done.has(`mint:${slug}`)) continue;
-      try { await doors.mintBag(wikiBagUri(slug)); journal.mark(`mint:${slug}`, "minted"); }
+      // A WIKI mints through the wiki door, so its recipe row stands and `--recipe <slug>` answers; a plain bag through CREATE.
+      const asWiki = doors.mintWiki !== undefined && (wikiSlugs.includes(slug) || allShares.some((r) => r.kind === "wiki" && r.slug === slug));
+      try { await (asWiki ? doors.mintWiki!(slug) : doors.mintBag(wikiBagUri(slug))); journal.mark(`mint:${slug}`, "minted"); }
       catch (e) { tallies.bag.refused.push(`${wikiBagUri(slug)} (mint refused: ${e instanceof Error ? e.message : String(e)})`); }
     }
   }
   for (const slug of bagSlugs) {
+    if (unminted.has(slug)) continue;
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
     await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null, null, freshSlugs.has(slug));
   }
+  // A WORKBENCH LANDS ONCE, FOR ITS DOCUMENT: through the worn face's island where that face holds a writer's seat (or stands the
+  // wiki first), into its one folder (a sourced wiki's rests beside its canon source). Under any other face its rows wait by name.
+  const canonWikis = doors.canonWikis?.() ?? null;
   for (const slug of wikiSlugs) {
+    if (unminted.has(slug)) continue;
+    const gate = await gateOf(slug);
+    if (gate !== null) { waitBench(slug, gate); continue; }
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`wikis/${slug}/working/`));
-    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), join(projections, "wikis", slug), wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug, freshSlugs.has(slug));
+    const mirror = canonWikis !== null && doors.sourced?.(slug) === true ? join(canonWikis, slug) : join(projections, "wikis", slug);
+    await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), mirror, wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug, freshSlugs.has(slug));
   }
+  // EACH FACE'S PERSONAL LAYER lands at that face's own wear: the vessel grants the personal mirror to the worn face's folder
+  // alone, so an open face that stands unworn waits by name, and nothing of its margin lands under another face.
+  for (const bf of manifest.faces) {
+    const personalFiles = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/personal/`));
+    if (personalFiles.length === 0 || unworn.has(bf.key)) continue;
+    const face = target.get(bf.key)!;
+    if (face.relation !== litRelation) { personalWaiting.push({ petname: bf.petname, handleIndex: face.handleIndex }); continue; }
+    const slugs = [...new Set(personalFiles.map((p) => p.split("/")[3]!))].sort();
+    for (const slug of slugs) {
+      const files = personalFiles.filter((p) => p.startsWith(`faces/${bf.key}/personal/${slug}/`));
+      await wave(join(bundle.root, "faces", bf.key, "personal", slug), join(bundle.root, "faces", bf.key, "personal"), join(projections, PERSONAL_PROJECTION_DIR, face.relation!, slug), wikiSlotUri(slug, "personal"), files, `personal:${bf.key}:${slug}`, tallies.personal, null, slug, false);
+    }
+  }
+  // THE SHARES LAND AGAIN: each shared wiki's seats come back by pet-name, once its owner's wear stood it.
+  let sharesLanded = false;
+  if (apply && allShares.length > 0 && doors.landShares !== undefined) sharesLanded = (await doors.landShares().catch(() => null)) !== null;
 
   // THE FORMER FACES' FOLDERS: every face folder under the projections root that no face here wears.
   const worn = new Set(faces.map((f) => f.relation).filter((r): r is string => r !== null));
-  const faceDirs = (r: string): Array<{ dir: string; kind: "working" | "canon" | "kahua" }> => [
+  const faceDirs = (r: string): Array<{ dir: string; kind: "working" | "canon" | "kahua" | "personal" }> => [
+    { dir: join(projections, PERSONAL_PROJECTION_DIR, r), kind: "personal" as const },
     { dir: join(projections, "wikis", daemonFaceFolder(r)), kind: "working" as const },
     { dir: join(projections, "bags", daemonFaceFolder(r)), kind: "canon" as const },
     { dir: join(projections, "bags", `kahua-${r}`), kind: "kahua" as const },
@@ -908,6 +1039,8 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       try { names = readdirSync(dir).filter(test); } catch { /* no such dir */ }
       for (const n of names) rels.add(n.slice(n.indexOf("-") + 1));
     }
+    // A former face's personal folders name its relation too (`personal/<F>/`).
+    try { for (const n of readdirSync(join(projections, PERSONAL_PROJECTION_DIR))) if (/^[0-9a-f-]{36}$/.test(n)) rels.add(n); } catch { /* no personal dir */ }
     return [...rels].filter((r) => !worn.has(r)).sort();
   })();
   /** A former folder's files against one bundle face's: how many stand byte-identical, and how many the bundle never carried. */
@@ -916,6 +1049,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const { dir, kind } of faceDirs(r)) {
       for (const rel of plainFiles(dir).files.filter((x) => !isStray(x))) {
         if (kind === "working" && (rel.startsWith("recovery/") || rel.startsWith(`${TEMP_LAYER_DIR}/`))) continue;
+        if (kind === "personal" && isViewState(rel)) continue;
         const sha = sha256Hex(readFileSync(join(dir, ...rel.split("/"))));
         const carried = manifest.files.find((f) => f.path === `faces/${fk}/${kind}/${rel}`);
         if (carried !== undefined && carried.sha256 === sha) same++; else beyond++;
@@ -931,6 +1065,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const left = Object.values(tallies).reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
   for (const bf of manifest.faces) {
     for (const r of former.filter((x) => readFaceLabel(x, projections)?.petname === bf.petname)) {
+      if (personalWaiting.some((w) => w.petname === bf.petname)) { ashesLeft.push({ relation: r, why: `its personal rows land at h${target.get(bf.key)!.handleIndex}'s own wear: \`lares vault unlock --face ${target.get(bf.key)!.handleIndex}\`, then import again` }); continue; }
       if (unworn.has(bf.key)) { ashesLeft.push({ relation: r, why: unlockItLine({ handleIndex: target.get(bf.key)!.handleIndex, petname: bf.petname }, "import") }); continue; }
       if (left > 0) { ashesLeft.push({ relation: r, why: `the import left ${left} row(s) standing off or refused; settle them and import again` }); continue; }
       const { beyond } = weigh(r, bf.key);
@@ -941,7 +1076,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     }
   }
 
-  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting, warnings };
+  return { bundleId: manifest.bundleId, applied: apply, faceMap, redeclare: acts, tallies, skipped, minted, ashes, ashesLeft, waiting, warnings, benchWaiting, personalWaiting, shares: { written: carriedShares.map((r) => r.slug), landed: sharesLanded } };
 }
 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────
