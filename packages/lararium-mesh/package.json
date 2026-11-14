@@ -32,6 +32,10 @@
       "import": "./dist/lar-camera.js",
       "types": "./dist/lar-camera.d.ts"
     },
+    "./family": {
+      "import": "./dist/family.js",
+      "types": "./dist/family.d.ts"
+    },
     "./carrier-type": {
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
