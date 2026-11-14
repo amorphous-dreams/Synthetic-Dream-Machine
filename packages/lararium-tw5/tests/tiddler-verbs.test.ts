@@ -334,6 +334,8 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(out).toMatchObject({ decision: "removed", tombstoned: [MEME, `${MEME}#/a`, `${MEME}#/b`], consequence: { position: "root", family: MEME, refusals: [] } });
     expect((out["consequence"] as Consequence).leaves).toContainEqual({ title: `${MEME}/child`, why: "path-child-stands-as-its-own-meme" });
     expect(calls).toEqual([{ tombstones: [MEME, `${MEME}#/a`, `${MEME}#/b`], bag: DAEMON }]);
+    // The answer stays bounded: versions name the family and what it leaves, never the wiki's other dozen notes.
+    expect(Object.keys((out["consequence"] as Consequence).versions).sort()).toEqual([MEME, `${MEME}#/a`, `${MEME}#/b`, `${MEME}/child`]);
     expect(out).toMatchObject({ mode: "kapae", retracted: [] });
     // The shore lands the store's change in the wiki (the rig's subscription stands in for the island adaptor).
     await r.landed();
