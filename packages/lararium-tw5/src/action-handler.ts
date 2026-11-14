@@ -69,7 +69,8 @@ import { isCarrierType } from "@lararium/mesh/carrier-type";
 import { SESSION_FORM_TITLE_CODE, assertStorableTitle, storableTitleFault } from "@lararium/mesh/lar-uris";
 import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { conflictWhy, decideIngest } from "./ingest-gate.js";
-import { placeMeme } from "./place-meme.js";
+import { familyViewOf, placeMeme } from "./place-meme.js";
+import { componentsBeneath, consequence, orphansUnder, rootAddressOf, type FamilyView } from "@lararium/mesh/family";
 import { snapshotUnderOverrides, fresherAfterChange, listFresherCanon, type FresherCanon } from "./override-bases.js";
 import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
@@ -1262,12 +1263,16 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     // to the gate below and lands as itself, and the summary names the source `absent`: the records hold
     // nothing under it, so nothing stays owed for it.
     const sources = (await listLiveTitlesInBag(access, action.toBag)).filter((t) => !isEffectRecordUri(t));
-    const absent = lawful.filter((r) => groupOf(sources, r.fromUri).length === 0).map((r) => r.fromUri);
+    const holdsFamily = async (uri: string): Promise<boolean> => familyTitles(await familyViewInBag(access, action.toBag, uri, sources), uri).length > 0;
+    const absent: string[] = [];
+    for (const r of lawful) if (!(await holdsFamily(r.fromUri))) absent.push(r.fromUri);
     // A RE-LINK NEVER LANDS OVER RECORDS THAT STAND AT ITS TARGET. A re-link skips the target's own gate,
     // so over a target that already holds records it would replace them unweighed. Such a pair reads as
     // no rename: the source stands declined, and the target falls to the gate below, where a person's
     // gesture adopts the file and a wave no person stands behind stands off.
-    renames = lawful.filter((r) => !absent.includes(r.fromUri) && groupOf(sources, r.toUri).length === 0);
+    const clear: Array<{ readonly fromUri: string; readonly toUri: string }> = [];
+    for (const r of lawful) if (!absent.includes(r.fromUri) && !(await holdsFamily(r.toUri))) clear.push(r);
+    renames = clear;
     for (const r of renames) renameTargets.add(r.toUri);
     const settled = new Set([...renames.map((r) => r.fromUri), ...absent]);
     deletionSummary = {
@@ -1295,10 +1300,12 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       const fault = storableTitleFault(title);
       if (fault !== null) { refused.push({ uri: title, code: SESSION_FORM_TITLE_CODE, reason: fault }); continue; }
       shadowed.add(title);
-      const fragments = live.filter((t) => t === title || t.startsWith(`${title}#`));
+      // The family the kāpae sets aside, by the one family law: the root and its component slots (the orphans a
+      // dead root left, where none stands). They leave as ONE change of the bag's document.
+      const fragments = familyTitles(await familyViewInBag(access, action.toBag, title, live), title);
       const rootRecord = await readFromBag(access, action.toBag, title);
       if (rootRecord?.meta?.deleted === true && fragments.length === 0) { standing.push(title); continue; }
-      for (const t of new Set([title, ...fragments])) await tombstoneIn(access, action.toBag, t, o);
+      await tombstoneFamilyIn(access, action.toBag, [...new Set([title, ...fragments])], o);
       raised.push(title);
     }
     kapaeSummary = { raised, standing, refused };
@@ -1373,10 +1380,6 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     if (!CARRIER_SOH.test(carrierText) && isOversizedBody(carrier.size ?? carrierText.length)) {
       throw new Error(`carrier ${uri}: body ${carrier.size ?? carrierText.length}B would inline oversized — a verb rides a reference, never a body (flag _lar_cas or stage the body to CAS)`);
     }
-    const all = await listLiveTitlesInBag(access, action.toBag);
-    // The carrier group: the root + its fragment children (FFZ decomposition
-    // emits `uri#slot` titles) + any path children (`uri/wires/...` era).
-    const groupTitles = all.filter((t) => t === uri || t.startsWith(`${uri}#`) || t.startsWith(`${uri}/`));
 
     // Route by content, mirroring LOAD: a memetic carrier (SOH heading / no
     // native bridge) decomposes at the shore through the Confluence gate; ANY other
@@ -1647,6 +1650,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       freshTitles.add(title);
     }
     const tombstoned: string[] = [];
+    // The carrier's family, by the one family law: the record under the address and its component slots. A
+    // title the address merely prefixes (`uri/path`) stands as its own and stays.
+    const groupTitles = familyTitles(await familyViewInBag(access, action.toBag, uri), uri);
     for (const t of groupTitles) {
       if (!freshTitles.has(t)) {
         await tombstoneIn(access, action.toBag, t, o);
@@ -1662,9 +1668,9 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
   // A rename re-homes the vanished carrier's whole group to the new URI, PRESERVING each record's
   // change-id (the re-link, never a fresh create). Nothing here removes a carrier the wave only named gone.
   for (const { fromUri, toUri } of renames) {
-    const live = await listLiveTitlesInBag(access, action.toBag);
     let relinked = 0;
-    for (const t of groupOf(live, fromUri)) {
+    const slotPrefix = `${fromUri}#`;
+    for (const t of familyTitles(await familyViewInBag(access, action.toBag, fromUri), fromUri)) {
       const rec = await readFromBag(access, action.toBag, t);
       if (!rec) continue;
       const newTitle = toUri + t.slice(fromUri.length);
@@ -1676,6 +1682,11 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       // so only this same-doc path needs it.
       const movedTiddler = structuredClone(rec.tiddler) as Record<string, unknown>;
       movedTiddler["title"] = newTitle;
+      // THE SLOTS FOLLOW THEIR ROOT: a slot's parent edge and its `uri-path` move with its title, so the
+      // re-homed family still reads as one family under the new address.
+      const parent = movedTiddler["$fragment-parent"];
+      if (typeof parent === "string" && (parent === fromUri || parent.startsWith(slotPrefix))) movedTiddler["$fragment-parent"] = toUri + parent.slice(fromUri.length);
+      if (t !== fromUri && typeof movedTiddler["uri-path"] === "string" && newTitle.startsWith("lar:///")) movedTiddler["uri-path"] = newTitle.slice("lar:///".length);
       const moved: LarTiddlerRecord = {
         tiddler: movedTiddler as LarTiddlerRecord["tiddler"],
         meta: structuredClone(rec.meta ?? {}), // change-id preserved — identity survives the move
@@ -1852,6 +1863,14 @@ async function tombstoneIn(access: BagAccess, bag: string, title: string, o: Cha
   await store.tombstone(title, o);
 }
 
+/** Tombstone a family's titles as ONE change where the bag's document writes atomically; title by title where it cannot. */
+async function tombstoneFamilyIn(access: BagAccess, bag: string, titles: readonly string[], o: ChangeOrigin): Promise<void> {
+  const store = await access.write(bag);
+  if (!store) throw new Error(`action-handler: target bag "${bag}" unreachable — cannot tombstone (no silent misroute).`);
+  if (titles.length > 1 && typeof store.writeFamily === "function") { await store.writeFamily([], titles, o); return; }
+  for (const title of titles) await store.tombstone(title, o);
+}
+
 /** HARD-remove (ABSENT — falls through to a lower bag) a title in the bag's own
  *  store, NOT a kāpae tombstone. The retract a MOVE source uses so a canonical
  *  copy beneath surfaces (residency-model anti-pattern #3). Fails loud unreachable. */
@@ -1870,6 +1889,7 @@ function bagMemeSink(access: BagAccess, bag: string, changeId: string, o: Change
     read:      async (title) => ((await readFromBag(access, bag, title))?.tiddler as unknown as TiddlerFields | undefined),
     land:      (fields) => landInBag(access, bag, { tiddler: fields as LarTiddlerRecord["tiddler"], meta: {} }, changeId, o),
     tombstone: (title) => tombstoneIn(access, bag, title, o),
+    tombstoneFamily: (titles) => tombstoneFamilyIn(access, bag, titles, o),
   };
 }
 
@@ -1911,16 +1931,52 @@ async function executeAdd(action: AddAction, access: BagAccess): Promise<Record<
 async function executeCopy(action: CopyAction, access: BagAccess): Promise<Record<string, unknown>> {
   const source = await readFromBag(access, action.fromBag, action.title);
   if (!source) throw new Error(`COPY: source bag ${action.fromBag} does not hold ${action.title}`);
+  // A slot copies only with the root that holds it: a lone slot would land rootless in the target.
+  const read = consequence(await familyViewInBag(access, action.fromBag, action.title), { kind: "copy", title: action.title, toBag: action.toBag });
+  if (read.refusals.some((r) => r.code === "slot-without-root")) throw new SlotWithoutRootRefusal("COPY", action.title, read.family);
   await landInBag(access, action.toBag, source, lineageOf(source, action.changeId), origin(action));
   return { title: action.title, fromBag: action.fromBag, toBag: action.toBag, changeId: action.changeId, mode: "overwrite" };
 }
 
-/** A memetic-wikitext carrier is a tiddler-GROUP keyed by its root: the root
- *  title itself plus every `#fragment` child and `/path` segment. Residency ops
- *  that touch a carrier MUST carry the whole group so a fragment never orphans
- *  from its root (the shared law the deletion, rename, and MOVE paths enforce). */
-function groupOf(titles: readonly string[], root: string): string[] {
-  return titles.filter((t) => t === root || t.startsWith(`${root}#`) || t.startsWith(`${root}/`));
+/**
+ * A FAMILY IN ONE BAG, read by the one family law (`@lararium/mesh/family`): a carrier rests as a root and
+ * the component slots its parent edges and `kahea` calls name. Residency acts that touch a carrier carry
+ * the whole family, so a slot never orphans from its root. The view names every live title of the bag and
+ * reads the records the address grammar lets a component hold: the title, its root address, and each
+ * `<root>#…` title. A `<root>/path` title stands as its own meme and never joins.
+ */
+async function familyViewInBag(access: BagAccess, bag: string, title: string, titles?: readonly string[]): Promise<FamilyView> {
+  const live = (titles ?? await listLiveTitlesInBag(access, bag)).filter((t) => !isEffectRecordUri(t));
+  const address = rootAddressOf(title);
+  const prefix = `${address}#`;
+  const records = new Map<string, Record<string, unknown>>();
+  for (const t of live) {
+    if (t !== title && t !== address && !t.startsWith(prefix)) continue;
+    const rec = await readFromBag(access, bag, t);
+    if (rec && !rec.meta?.deleted) records.set(t, rec.tiddler as unknown as Record<string, unknown>);
+  }
+  return familyViewOf(() => live, (t) => records.get(t));
+}
+
+/** The record under a title and every component beneath it; where none stands there, the orphans a dead root left. */
+function familyTitles(view: FamilyView, title: string): string[] {
+  return view.read(title) !== undefined ? componentsBeneath(view, title) : orphansUnder(view, title);
+}
+
+/**
+ * A TOMBSTONED FAMILY. A dead record carries no edge to read, so the address grammar alone names what
+ * composed onto it: the title and each `<title>#…` title. A `<title>/path` title never joined it.
+ */
+function tombstonedFamily(titles: readonly string[], title: string): string[] {
+  return titles.filter((t) => t === title || t.startsWith(`${title}#`));
+}
+
+export class SlotWithoutRootRefusal extends Error {
+  readonly code = "SLOT_WITHOUT_ROOT";
+  constructor(verb: string, title: string, root: string | null) {
+    super(`slot-without-root: ${verb}: ${title} names a slot${root ? ` of ${root}` : ""}; a slot moves only with the root that holds it. Name the root${root ? ` (${root})` : ""} and its whole family follows.`);
+    this.name = "SlotWithoutRootRefusal";
+  }
 }
 
 async function executeMove(action: MoveAction, access: BagAccess): Promise<Record<string, unknown>> {
@@ -1942,11 +1998,11 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
     // (a store that lists none answers the title alone plus each group member the target holds live).
     const lister = (await access.read(action.fromBag)) as (LarTiddlerStore & { listTombstoned?: () => string[] }) | null;
     const sourceTombstones = typeof lister?.listTombstoned === "function"
-      ? groupOf(lister.listTombstoned().filter((t) => !isEffectRecordUri(t)), action.title)
+      ? tombstonedFamily(lister.listTombstoned().filter((t) => !isEffectRecordUri(t)), action.title)
       : [];
     const family = new Set<string>([action.title, ...sourceTombstones]);
     if (typeof lister?.listTombstoned !== "function") {
-      for (const t of groupOf((await listLiveTitlesInBag(access, action.toBag)).filter((x) => !isEffectRecordUri(x)), action.title)) {
+      for (const t of tombstonedFamily((await listLiveTitlesInBag(access, action.toBag)).filter((x) => !isEffectRecordUri(x)), action.title)) {
         if ((await readFromBag(access, action.fromBag, t))?.meta?.deleted) family.add(t);
       }
     }
@@ -1968,13 +2024,13 @@ async function executeMove(action: MoveAction, access: BagAccess): Promise<Recor
     };
   }
   if (action.shadow === true) throw new ShadowRequiresTombstoneRefusal(action.title);
-  // Carrier-group MOVE: a MOVE of a carrier root
-  // carries its WHOLE group — root + #fragment + /path — so promotion publishes
-  // a meme entire and never orphans a fragment from its root (#shore-law). The
-  // same group law the deletion/rename path uses; a single-title move of one
-  // record of a carrier was the latent bug this closes.
-  const live  = await listLiveTitlesInBag(access, action.fromBag);
-  const group = groupOf(live, action.title);
+  // Family MOVE: a MOVE of a carrier root carries its WHOLE family (the root and its component slots, by
+  // the one family law), so promotion publishes a meme entire and never orphans a slot from its root
+  // (#shore-law). The consequence names what moves: a slot subject refuses (`slot-without-root`: the
+  // caller names the root), and a `root/path` title stands as its own meme and stays.
+  const read = consequence(await familyViewInBag(access, action.fromBag, action.title), { kind: "move", title: action.title, toBag: action.toBag });
+  if (read.refusals.some((r) => r.code === "slot-without-root")) throw new SlotWithoutRootRefusal("MOVE", action.title, read.family);
+  const group = read.acts.filter((row) => row.act === "put").map((row) => row.title);
   if (group.length === 0) throw new Error(`MOVE: source bag ${action.fromBag} does not hold ${action.title}`);
   // Order: land the whole group first, then tombstone the source group. If a
   // land fails, the source stays intact (no orphaned deaccession); a tombstone

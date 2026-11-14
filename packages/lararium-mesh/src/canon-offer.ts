@@ -34,6 +34,7 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { CANON_OFFER_DOMAIN, CANON_OFFER_KEY_DOMAIN, CANON_OFFER_RETIRE_DOMAIN } from "./domains.js";
 import { canonicalJsonBytes, hex, sha256HexBytesSync, utf8Bytes } from "./crypto.js";
+import { rootAddressOf } from "./family.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -71,8 +72,8 @@ const CANON_OFFER_ENVELOPE_MAX = 512;
 
 /** The meme a record belongs to: its title up to the fragment mark (`<root>#/<slot>` rides with `<root>`). */
 export function offeredMemeRoot(title: string): string {
-  const at = title.indexOf("#");
-  return at < 0 ? title : title.slice(0, at);
+  // The one family law's own address reading (`family.ts`): a slot's title composes onto its root's.
+  return rootAddressOf(title);
 }
 
 const HEX64 = /^[0-9a-f]{64}$/;

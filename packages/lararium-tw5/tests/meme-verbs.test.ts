@@ -390,7 +390,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const { canon } = stacked(r);
     await land(canon, bagUri("garden"), ["a"]);
     const working = r.slots.get("garden/working")!;
-    await working.put({ tiddler: { title: `${URI}#/extra`, text: "a child the working layer holds alone" }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "working") });
+    await working.put({ tiddler: { title: `${URI}#/extra`, text: "a child the working layer holds alone", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "working") });
     const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
     expect(gone["tombstoned"]).toContain(`${URI}#/extra`);
     expect((await working.get(`${URI}#/extra`))?.meta?.deleted).toBe(true);
@@ -400,7 +400,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const r = rig();
     const { canon, draft } = stacked(r);
     await land(canon, bagUri("garden"), ["a"]);
-    await draft.put({ tiddler: { title: `${URI}#/b`, text: "a draft child over canon" }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "draft") });
+    await draft.put({ tiddler: { title: `${URI}#/b`, text: "a draft child over canon", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: wikiSlotUri("garden", "draft") });
     const gone = await makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, ctx());
     expect(gone).toMatchObject({ decision: "removed", readFrom: bagUri("garden") });
     expect([...(gone["tombstonedIn"] as string[])].sort()).toEqual([wikiSlotUri("garden", "draft"), wikiSlotUri("garden", "working")].sort());
@@ -437,7 +437,7 @@ describe("meme-get — a named recipe READS THE STACK", () => {
     const r = rig();
     const { canon, draft } = stacked(r);
     await land(draft, wikiSlotUri("garden", "draft"), ["b"]);
-    await canon.put({ tiddler: { title: `${URI}#/secret`, text: "a child canon holds" }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: bagUri("garden") });
+    await canon.put({ tiddler: { title: `${URI}#/secret`, text: "a child canon holds", "$fragment-parent": URI }, meta: {} }, { kind: "canon-hydrate", receipt: "t" }, { bag: bagUri("garden") });
     const blind: VerbContext = { ...ctx(), cap: async (access, bag) => (access === "read" && bag === bagUri("garden") ? { ok: false, reason: "no read" } : { ok: true }) };
     await expect(makeMemeDeleteReactor(r.opts)({ recipe: "garden", uri: URI }, blind)).rejects.toThrow(new RegExp(`cap-denied: read on ${bagUri("garden").replace(/[.*+?^${}()|[\]\\/]/g, "\\$&")}`));
     expect((await draft.get(URI))?.meta?.deleted).toBeFalsy();

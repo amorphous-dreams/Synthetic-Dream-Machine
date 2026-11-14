@@ -51,7 +51,7 @@ The meme's URI projects onto the path with the scheme as its own segment: `lar:/
 |---|---|---|---|
 | `PUT` | `/{recipes\|bags}/default/memes/<scheme>/<path>` | the whole meme arrives as text and lands as its records through the Confluence gate (`placeMeme`) | `200` receipt JSON · `412` · `422` · `400` · `404` |
 | `GET` | `/{recipes\|bags}/default/memes/<scheme>/<path>` | the whole meme, children recomposed inline (`readMeme`) | `200` text · `404` · `400` |
-| `DELETE` | `/bags/default/memes/<scheme>/<path>` | the group leaves — root · `#/slot` fragments · `/path` children (`removeMeme`). A removal addresses a BAG, as stock's `delete-tiddler.js` does; the `/recipes/` form answers `404` the same way stock's does | `204` · `412` · `404` · `400` |
+| `DELETE` | `/bags/default/memes/<scheme>/<path>` | the family leaves as one change — the root and its component slots; a `/path` child stands as its own meme and stays (`removeMeme`, `lar:///ha.ka.ba/lares/api/pono/ahu#/family`). A removal addresses a BAG, as stock's `delete-tiddler.js` does; the `/recipes/` form answers `404` the same way stock's does | `204` · `412` · `404` · `400` |
 | `GET` | `/{recipes\|bags}/default/memes.json[?tree=1]` | every ROOT with its canonical hash (`listMemes`); `tree=1` nests each root's slot tree. A sibling of stock's `tiddlers.json`: a `$:/`-titled root rides only while `$:/config/SyncSystemTiddlersFromServer` reads `yes` | `200` JSON array · `404` |
 | `PUT` | `/recipes/default/tiddlers/<title>` | THE NATIVE DOOR, gated ahead of stock: a framed root refuses (#/two-doors); every other record reaches stock's own handler | `422` · stock's `204` |
 
@@ -222,6 +222,6 @@ The CLI walk names its container on each store verb: `lares meme put lar:///t/x 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;C_mV9LaDSK0mpdxYIO6ojeX7Z04p2dm1_UHmE1AB0gU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pB81NifpOA0JeeHwaRUq2sp_3pqte7mYPxRWQg4J9xY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
