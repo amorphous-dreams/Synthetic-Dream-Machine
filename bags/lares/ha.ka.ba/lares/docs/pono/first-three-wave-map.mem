@@ -1,0 +1,395 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/first-three-wave-map`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "adjacent"
+role      = "the first three things toward a house that reads its own code and its own work from the wiki: the wikis in scope with their recipes trued, the code map, the work as tiddlers, the rite script with its test ledger, the lane card, the wave map, and the handoff walk a new main session takes over by"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/first-three-wave-map"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/first-three-wave-map"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! The first three things ~ the house reads its code and its work from the wiki
+
+''The question'' (operator, 2026-11-14, quote license): //"how would you improve the workflow/token-burn? Scouting as parallel Opus spirits that write to memes for the builders to consume? The code files have grown large, and until the later dogfooding isomorphic-lift/re-org-re-factor pass it seems that reading large code files burns context... this work has become complexified with that tension AND the number of tests that grew organically and needs the same cleanup... (eventually I'll want all the code files mirrored into the live Lararium wikis, probably in the `lararium/` bag as code tiddlers with wrapping meme contexts, and that means smaller code files and more modular designs, but defer that full complex design). What would the first 3 things towards this intent can we accomplish once the next dogfood-alpha lararium stands founded?"//
+
+''The order'' (operator, 2026-11-14, quote license, after the controller's answer drew "Pono"): //"Pono, add those three to the roadmap; Send an opus scout to design the concrete 'first 3 things' wave map, might need to define a new recipe or true-up the set of wiki recipes to all the ones in scope now. Once I restand the Lararium, I want you to write some minimal mems and memories, ensure they come back as the pono design indicates through the session start hooks and other mcp/ux calls, and then I'll stand up a new main session to take over."//
+
+''The three things'' (approved): (1) a code map in the wiki that a tool writes, never a model; (2) the work itself as tiddlers: road rows, lane cards, handbacks; (3) the rite as one runnable script, with a test ledger beside it. The road seats them as `L40`, `L41` and `L42`, and the handoff walk rides the re-founding band (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-order`>>).
+
+''Register.'' Every claim here carries one of two marks: ''measured'' (read in the tree at `96b6e59a3`, 2026-11-14, with `file:line` or the instrument named) or ''inferred'' (a design reading no run has tested). Where this carrier decides, the decision reads overrulable and names its reason.
+
+''The costs this carrier answers'' (measured with `git ls-files` over `packages/**` and `wc`; the controller's own instrument counted 1,742 source and 2,056 test files, so the two sweeps differ on what counts as a test path): 1,565 source files (1,326 TypeScript or JavaScript, 239 Python) hold 316,242 lines; 2,119 test-path files hold 298,782 lines, plus 68 files under `tests/`; ten source files run past 1,500 lines, the largest `packages/lararium-node/src/open-node-vessel.ts` at 4,939 lines and 363,451 bytes (about 90,000 tokens read whole); the road carrier weighs 482,515 bytes. Tokens went to a walker re-deriving the rite four times, every builder running every suite, whole-meme reads, rediscovery of what a reader already traced, and wrong-shape rounds from symptom briefs (the controller's ledger, 2026-11-14).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-wikis-in-scope`>>
+
+!! The wikis in scope ~ the recipe true-up
+
+Each row reads its layers top to bottom in the order `expandRecipe` lays them (`packages/lararium-mesh/src/wiki-recipe.ts`; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/daemon-and-domain`>>). "Mirror" names the folder the working layer projects to and whether git tracks it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/two-workspaces`>>). The faces carry the rite's names: face 0 the steward (the Kahu chair), face 1 the engineer, face 2 the referee (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/the-three-face-rite`>>).
+
+|! slug |! class |! recipe (top first) |! owner · seats |! mirror · git |! holds |
+| `daemon` (one per face, `daemon-<F>`) | daemon | temp · working (the face's device slot) · `bags/daemon-<F>` (local canon, unsigned) · `bags/kahua-<F>` (the signed stage, lift-only) · the vessel's library bags · `bags/crossroads` · `bags/daemon` · `bags/oracle` | one face; refuses every share (`share-face-private`) | `<projections>/wikis/daemon-<F>` under the house root; no git | the face's memory rows (`lar:///ha.ka.ba/kahua/memory/<class>/<slug>`); in the steward's, the house laws (#/the-handoff-walk) and, until `works` opens, the wave's lane cards and handbacks (#/thing-two-the-work-as-tiddlers) |
+| `lares` | house canon | temp · draft · personal · working (the realm workbench, the steward's private cabal) · `bags/lares` (the Kahu realm's standing document) · the recipe's libraries · `bags/oracle` | the steward writes canon live (`requireKahuReach`); the rite seats the engineer `write` and the referee `read`, and on one vessel each seated face writes its own `personal` (the rest gate, `C2`) | the workbench in the checkout's `wikis/lares`, tracked by git; each face's `personal` under `<projections>/personal/<F>/lares`, untracked | the house's design canon: the road, the handoff meme, this map |
+| `lararium` | house canon | as `lares`, its canon `bags/lararium`, and NEW: the derived library `codemap` beneath canon (decision 1 below) | as `lares` | the checkout's `wikis/lararium` once a steward write mints it (measured: `wikis/` holds `crossroads`, `elyncia`, `elyncia-referee`, `lares`, `sdm` and no `lararium` folder today); tracked | the mesh, node and runbook canon; the code map read beside it |
+| `elyncia` | house canon | as `lares`, canon `bags/elyncia` | the steward; never a lane's edit (controller-handoff #/the-lane-law) | `wikis/elyncia`, tracked | the fiction layer; out of this wave's work |
+| `sdm` | house canon | as `lares`, canon `bags/sdm` | the steward; never a lane's edit | `wikis/sdm`, tracked | the RPG corpus; out of this wave's work |
+| `crossroads` | house canon, the public oracle plane | as `lares`; and a library in every daemon recipe | the steward | `wikis/crossroads`, tracked | the plane every face reads; a library of each daemon wiki |
+| `notes` | minted (the rite's `lares wiki init notes`) | temp · draft · personal · working (the steward's realm workbench) · `bags/notes` (the catalog row's document) · libraries · `bags/oracle` | the steward mints and owns; the rite seats the engineer `write` and the referee `read` (`personal` on one vessel until `C2`) | `<projections>/wikis/notes`, untracked | the rite's smoke rows |
+| `works` (NEW) | minted shared work wiki | as `notes`, canon `bags/works` | the steward (the face the controller and its spirits wear, decision 2); the engineer and referee seated `read` once `C2` lands | `<projections>/wikis/works`, untracked | lane cards, handbacks, rite reports, wave cards; a settled wave's cards promote into `bags/works` as its archive |
+| `house` (NEW) | shared topic wiki, every seated face writes (NEW class) | as `notes`, canon `bags/house` | the steward owns; every face seated `write` (after `C2`, each writes the one workbench) | `<projections>/wikis/house`, untracked | the house's shared memory (`L35`, decision 3): the house laws, the standing rulings, the open ledger, once `C2` and `L17-2a` stand |
+| `codemap` (NEW bag, never a wiki) | derived library (NEW class) | composes as a library into `lararium`'s recipe alone | no hand writes it; the generator's ingest wave alone | none: its bytes rest at `<LAR_ROOT>/cache/codemap/<head>/` as the wave's source, never in a tracked tree, never in `hearth/` | one tiddler per source file and per test file (#/thing-one-the-code-map) |
+
+`elyncia-referee` stays contract-tier, off the public floor, and outside this wave (its referee recipe stays owed at rank 28 of the road).
+
+!!! Decision 1 ~ the code map lives in a derived library composed into `lararium`, never in `bags/lararium` (overrulable)
+
+The operator leans the `lararium` bag. ''Weighed'' (measured): `bags/lararium/meta.mem` declares `cap-tier = "public"` and `home = "repository"`, and the genesis bake and every release cut carry each public-tier bag's own snapshot (road #/the-leaps, "a contract-tier bag never rides the public floor"). A generated map there therefore lands generated files in git on every land, churns the baked genesis floor, which only a labelled `GENESIS RE-BAKE` folds (controller-handoff #/the-lane-law, canon and genesis), and lets a model-free derivative reach the promotion and offer doors meant for authored canon. ''The house's call'': a bag of its own, `codemap`, of a new class, the DERIVED LIBRARY (defined below), composed into the `lararium` recipe as a library beneath `bags/lararium`, so a reader of the `lararium` wiki sees the map beside the canon that cites it, and nothing generated ever enters git, the floor or the offering door. ''Its cost'': one meta key and three refusals in code (the bake, the offer, the export skip a derived bag), one ingest wave per land of about 2.3 MB (#/thing-one-the-code-map), and its wiki reads wait on `L17-2a`; the files on disk serve every builder from day one. The operator's later intent, code tiddlers inside `bags/lararium` with wrapping meme contexts, inverts the source of truth and stands apart from this map: the map indexes the code where it rests today and retires once code tiddlers carry their own outlines.
+
+!!! Decision 2 ~ road rows ride the road, lane cards and handbacks ride `works`, every spirit writes as the worn face (overrulable)
+
+''Road rows'' stay inside the road carrier as slot children with fields, the shape `L17-2d` already names, so a filter reprioritizes the road and no second carrier competes with #/the-order. ''Lane cards, handbacks and rite reports'' live in a minted `works` wiki under the house root: they turn over every wave, nothing in them binds once landed (git and the CHANGELOG keep what landed), and a minted wiki keeps that churn out of git and out of canon. ''Who writes'' (measured): the MCP seat marks every call as the AI seat and acts as the vessel's worn face alone (`packages/lararium-sensorium/scripts/lares_mcp.py:84-88`, `uds.SEAT_KIND = "ai"`), and the server registers in the operator's user scope (`~/.claude.json` `mcpServers.lares`, a `docker compose exec` stdio process), so every Claude session on the machine, a tasked spirit and a worktree spirit included, reaches the same seat as the same worn face; this spirit's own session listed `lares` as configured and failed to connect, since the hearth stands cleared. A spirit therefore names itself in a field (`spirit`, `model`), a designation and no proof (`F11` owes the signed channel and the Mask on `meme_put`). The steward wears for the controller's working days, so `works` mints under the steward and its writes land `working`; the engineer and the referee wear for the rite's proofs and offers, at the operator's hand. ''The bridge'': until `L17-2a` relays the tiddler door to named wikis, the cards ride the steward's daemon wiki at the same titles, where `tiddler_put` and `wiki_filter` answer today. ''Its cost'': one wear law every brief carries (no spirit switches the worn face, since a wear switch moves every session's face at once), one `wiki init works` at the walk, and a re-put of the bridge cards into `works` once `L17-2a` lands.
+
+!!! Decision 3 ~ shared house memory lives in the `house` topic wiki; until `C2` and `L17-2a`, in the steward's daemon wiki (overrulable)
+
+`L35` rules the reach: a face reads its own daemon wiki and every topic wiki shared to it. A topic wiki named `house` holds what every face shares (the house laws, the standing rulings, the open ledger), owned by the steward with every face seated `write`; a face's own memory stays in its daemon wiki. ''Measured blockers'': on one vessel a seated face mounts no workbench of another face's realm and writes its own `personal` (`cabal-realm` #/the-workbench, the rest gate; `C2`), so before `C2` the engineer would read none of the steward's house memory; and `wiki_filter` on `house` refuses `wiki-not-anchored` before `L17-2a` (`packages/lararium-tw5/src/tiddler-verbs.ts:150-160`). So the handoff walk writes the house laws into the steward's daemon wiki first (rank 4 of the road already names that wiki), and they re-put into `house` once both rows land. ''Its cost'': one carry step later, and until then the engineer's sessions read the house laws only while the steward wears.
+
+!!! The new classes, defined, with the true-up owed to `recipe-layer-model`
+
+''THE DERIVED LIBRARY'' (proposed text for <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/daemon-and-domain`>>; a later scribe applies it, this carrier edits nothing there):
+
+* A derived library holds records ONE named tool writes as a pure function of ONE named commit of a tracked tree. Its bag's `meta.mem` declares `cap-tier = "public"`, `home = "hearth"` and a new key `derived = "<tool>"`; each record carries the commit it derives from (`head`).
+* It composes only as a library, beneath the host wiki's canon (the `libraries` row), and takes no write from any hand door: `meme put`, `tiddler put`, a residency `MOVE` or `COPY` naming it, a kāpae and a lift each refuse `derived-library-read-only`.
+* One road writes it: an INGEST wave whose source root the vessel grants to that bag alone (`<LAR_ROOT>/cache/<bag>/<head>/`). A wave replaces the whole bag: a title absent from the new wave retracts to absent (a reveal, never a kāpae, since nothing lies beneath its namespace).
+* It never bakes into genesis, never rides a release cut, never takes an offer or a promotion, never travels in an export or a carry (each refuses or skips by `derived`), and survives a re-founding only as its cache folder, re-ingested at the next boot or the next land.
+* Its titles live under one namespace the host wiki's canon never writes (`lar:///ha.ka.ba/codemap/`), so its place beneath canon shadows nothing in practice.
+
+''THE TOPIC WIKI EVERY SEATED FACE WRITES'' (proposed text for the same slot): a domain wiki minted by one face, shared with every face of the operator seated `write`. Its recipe matches the domain column whole. Its reach law: a face reads its own daemon wiki and every topic wiki a share row names it in (`L35`). Until the rest seals for the roster (`C2`), only the owning face writes the workbench on one vessel and every other seated face writes its own `personal`; the slot names that limit beside the class.
+
+''The true-up owed'' (one scribe lane on `recipe-layer-model.mem` and `bag-home`'s carrier): the two class texts above; a fourth column in the layer table for the derived library; the `derived` key in the bag meta law beside `cap-tier` and `home` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>); the `daemon-and-domain` slot's list of domain wikis gaining `works` and `house` as examples of the minted and topic classes.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/thing-one-the-code-map`>>
+
+!! Thing one ~ the code map (road `L40`)
+
+''What it buys.'' A builder asks the map which file holds a seam, which lines hold the function, who imports it, which memes cite it and which tests cover it, and then opens a slice by line range. Today a builder opens `open-node-vessel.ts` whole at about 90,000 tokens to find one option at line 4445 (measured: `portPolicy`'s default, `packages/lararium-node/src/open-node-vessel.ts:4445`). The map shows where the giants split later, at no model's cost.
+
+!!! The tiddler shape
+
+* ''Titles'' (decision, overrulable): `lar:///ha.ka.ba/codemap` (the map's root: head, counts), `lar:///ha.ka.ba/codemap/<package>` (one per package), `lar:///ha.ka.ba/codemap/<package>/<file-key>` (one per source file) and `lar:///ha.ka.ba/codemap/test/<package>/<file-key>` (one per test file, thing three's census). The `<file-key>` writes the in-package path with `~` for `/` (`src~commands~tiddler.ts`), so a title keeps the URI law's path within four segments; the field `repo-path` carries the exact path.
+* ''Fields'': `repo-path`, `package`, `lang` (`ts` · `mjs` · `py`), `lines`, `bytes`, `blob` (the git blob id), `head` (the commit the wave derives from), `exports` (a TiddlyWiki list of exported names), `imports` (a list of repo paths, and package specifiers that resolve to none), `imported-by` (repo paths), `cited-by` (meme titles), `covered-by` (test repo paths), `covered-via` (`direct` · `barrel`), `size-class` (`giant` past 1,500 lines · `large` past 800 · `small`). ''Tags'': `codemap/file`, `codemap/pkg/<package>`, `codemap/lang/<lang>`, `codemap/<size-class>`.
+* ''Text'': a table of the top-level declarations with their line ranges and kinds, and the file's leading doc comment cut to its first sentence. No code body ever rides.
+* ''Type'' `text/vnd.tiddlywiki`: no `$:/` title or tag, no `module-type` or `plugin-type` field, no script type, so the code-class fence (`packages/lararium-tw5/src/tiddler-verbs.ts:466-484`) never meets it.
+
+''An example tiddler, in full'' (the shape; its numbers read off the tree at `96b6e59a3` where measured, and the declaration rows read off `grep -n function`):
+
+```text
+title: lar:///ha.ka.ba/codemap/lararium-tw5/src~tiddler-verbs.ts
+repo-path: packages/lararium-tw5/src/tiddler-verbs.ts
+package: lararium-tw5
+lang: ts
+lines: 683
+head: 96b6e59a3
+exports: makeWikiFilterReactor makeTiddlerGetReactor makeWikiRenderReactor makeTiddlerPutReactor makeTiddlerDeleteReactor TiddlerVerbOptions TiddlerPosition WIKI_RENDER_BYTES
+imports: packages/lararium-tw5/src/filter-page.ts packages/lararium-mesh/src/family.ts
+cited-by: [[lar:///ha.ka.ba/lares/docs/stable-founding-road]] [[lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout]]
+covered-by: tests/e2e/tiddler-door.test.ts
+covered-via: direct
+size-class: small
+tags: codemap/file codemap/pkg/lararium-tw5 codemap/lang/ts codemap/small
+type: text/vnd.tiddlywiki
+
+The tiddler door's six daemon verbs on the anchor.
+
+|! lines |! kind |! name |
+| 150-160 | function | anchorOf (the `wiki-not-anchored` refusal) |
+| 315-356 | export function | makeWikiFilterReactor |
+| 361-409 | export function | makeTiddlerGetReactor |
+| 466-484 | function | refuseCodeClass (the code-class fence) |
+| 515-576 | export function | makeTiddlerPutReactor |
+| 577-683 | export function | makeTiddlerDeleteReactor |
+```
+
+The `imports`, `cited-by` and `covered-by` values above stand as illustrations of the shape; the generator derives the real lists.
+
+!!! The generator
+
+* ''One tool'': `tools/codemap.mjs --out <dir>` (default `<LAR_ROOT>/cache/codemap/<head>/`), writing one `.tid` per tiddler and a `codemap.json` index. A pure function of `git ls-files` at `HEAD`; it reads no wall clock and calls no model.
+* ''The outline source'' (measured): the workspace pins `typescript@7.0.2`, the native compiler, whose package exports a JavaScript API only under `typescript/unstable/sync` (`Project`, `Program`, `Checker`, `Symbol`) and `typescript/unstable/ast` (`createScanner`, no `createSourceFile`); `ts-morph` stands nowhere in `node_modules`, and it binds the version 5 API in any case; `web-tree-sitter@0.27.1` stands in the workspace for the memetic-wikitext grammar alone, with no TypeScript grammar; `@oxc-project/types` stands without its parser. ''The house's call'': one adapter module, `tools/codemap/outline.mjs`, over `typescript/unstable/sync`, reading each file's top-level statements with their line ranges, its exports through the checker's module symbol, and its import specifiers resolved through the program; Python files outline through `python3 -I -c 'import ast'` (top-level `def` and `class` with `lineno` and `end_lineno`). A red pins the adapter (#/thing-one-the-code-map, the reds), so an unstable API break reads red at once; where the sync API cannot walk 1,565 files inside a land's budget (unmeasured), the fallback adds `oxc-parser` as a tools-only dependency.
+* ''Memes that cite'' (measured instrument): `grep -rohE 'packages/[A-Za-z0-9_./-]+\.(ts|tsx|mjs|py)' bags` finds 591 distinct repo paths cited by full path; a backtick basename (`` `open-node-vessel.ts` ``) adds 768 distinct names; 37 basenames repeat across source files (`index.ts` among them). The generator resolves a full path directly, a basename only where one source file carries it, and lists an ambiguous basename on the root tiddler as `cite-ambiguous`, never guessing. `cited-by` names the meme's `title` from its first toml fence.
+* ''Tests that cover'' (inferred method): the import graph of each test file through the same program; a relative import covers that file `direct`; a package specifier (`@lararium/mesh`) resolves through the package's `exports` map to a barrel, which marks every file the barrel re-exports `barrel`, and a builder reads `direct` first. Measured scale: test files carry 12,825 import lines.
+* ''Regeneration'': once at each land, after the join's green run, from the landed head; and on demand in a worktree (`--out <worktree>/.codemap`, never committed). The ingest wave lands it into `codemap` where a hearth stands.
+
+!!! Size
+
+Measured by a structural regex over the 1,326 TypeScript and JavaScript source files (11,515 `export` lines, 5,895 `import` lines, 15,275 top-level declarations), at an estimated 350 bytes of fields per tiddler plus 70 per export, 60 per import and 45 per declaration: about 2.3 MB across 1,326 tiddlers, 1,743 bytes on average, the largest `packages/lararium-mesh/src/index.ts` (the mesh barrel) near 36 KB. The 239 Python files and the 2,187 test tiddlers of thing three add an estimated 1.5 MB (inferred). A `wiki_filter` page answers at most 32 rows or 65,536 bytes (`packages/lararium-tw5/src/filter-page.ts:18-20`), so a builder's filter asks `fields` and pages by cursor.
+
+!!! The reads ~ who runs which filter
+
+Each runs as `wiki_filter(filter=…, recipe="lararium", fields=[…])` on the MCP seat, or `lares wiki filter '…' --recipe lararium --fields …` on the CLI, once `L17-2a` stands; before it, the same expressions run against the `.tid` folder with `rg` over fields.
+
+* ''A builder'': `[tag[codemap/file]repo-path[packages/lararium-mesh/src/port-lease.ts]]` then `tiddler_get(…, text=false)`; who imports a seam: `[tag[codemap/file]contains:imports[packages/lararium-mesh/src/family.ts]]`; where a name lives: `[tag[codemap/file]contains:exports[makePortDoor]]`; which tests to run: `[tag[codemap/file]repo-path[<path>]get[covered-by]enlist-input[]]`.
+* ''A scribe'': files a meme cites: `[tag[codemap/file]contains:cited-by[lar:///ha.ka.ba/lares/docs/pono/cabal-realm]]`; stale citations: `[tag[codemap/file]!has[cited-by]tag[codemap/giant]]`.
+* ''The controller'': where the giants stand: `[tag[codemap/giant]!nsort[lines]]`; a package's weight: `[tag[codemap/pkg/lararium-node]get[lines]sum[]]`.
+
+!!! What blocks it today
+
+* `wiki-not-anchored` on every named wiki (measured, `tiddler-verbs.ts:150-160`): the wiki reads wait on `L17-2a`.
+* The code-class fence: none, by the shape above.
+* The rest gate: none, since no face writes the map.
+* The derived class: unbuilt; the bake, the offer and the export read no `derived` key today (inferred from the class's absence in `packages/lararium-mesh/src/bag-home.ts:50`).
+
+!!! Reds, files, size
+
+* Reds: `codemap-outline-lines` (a fixture file's declarations answer their exact line ranges); `codemap-pure-of-head` (two runs at one head write byte-identical folders); `codemap-cite-ambiguous` (a basename two files carry lands on the root's `cite-ambiguous`, in no file's `cited-by`); `codemap-no-body` (no tiddler text carries a line of a fixture's function body); `derived-library-read-only` (a `meme put` into `codemap` refuses); `derived-never-bakes` (a genesis bake over a scratch tree skips a `derived` bag). Controls: a repo-path citation lands on its file; a public authored bag still bakes.
+* Files: new `tools/codemap.mjs`, `tools/codemap/outline.mjs`, `tools/codemap/cites.mjs`, `tools/codemap.test.mjs` (lane `L40a`, new files alone); the derived class in `packages/lararium-mesh/src/bag-home.ts`, the bake's bag walk, the offer door's bag check, the export's bag walk, and the `lararium` recipe record (lane `L40b`).
+* Size: `L40a` one builder, a short lane; `L40b` one builder, a medium lane touching four doors.
+* Saves (inferred, against today's measured costs): a builder's first orientation drops from opening a giant whole (90,000 tokens) to one filter page and one slice (a few thousand); a scout's "which tests cover this" stops costing a grep round; the giants' split map falls out of `size-class` and `imported-by` with no reader.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/thing-two-the-work-as-tiddlers`>>
+
+!! Thing two ~ the work as tiddlers (road `L41`, carrying `L17-2d`)
+
+''What it buys.'' A scribe filters "open, wave two" and reads twelve rows instead of the road's 482 KB; a builder reads one lane card instead of a scout's whole report; the controller reads handback status lines and opens detail on demand; and a rediscovered trace stops costing a reader, since the card names the ranges a scout already read.
+
+!!! Three tiddler kinds
+
+''Road rows'' (`L17-2d`'s shape, on the road carrier itself): a slot child per row, `lar:///ha.ka.ba/lares/docs/stable-founding-road#/row/<id>` (the slot law's form awaits `L17-2d`'s ruling), fields `row`, `rank`, `band` (`wave-one` · `at-the-refounding` · `wave-two` · `after`), `status` (`open` · `flying` · `landed` · `merged`), `depends-on`, `lane`, `carrier` (the meme that holds the row's law). The controller writes them by hand on the road carrier, as `L17-2d` already names.
+
+''Lane cards'' (in `works`; the bridge: the steward's daemon wiki at the same title): `lar:///ha.ka.ba/works/lane/<wave>/<lane>`. The template rests at #/the-lane-card.
+
+''Handbacks'' (same home): `lar:///ha.ka.ba/works/handback/<wave>/<lane>`, fields `lane`, `status-line` (the one `<<~ status "…">>` line `mixed-model-swarm#/the-shapes` asks), `head`, `ci`, `held-out`, `reds` (the red-first lines, quoted), `rulings` (canon sources the spirit decided from), `asks` (true operator asks only), `spirit`, `model`, `landed` (the land's commit, written by the join); tags `works/handback`, `works/wave/<wave>`. The text carries the story and its walk, short.
+
+An example handback, in full (inferred shape; the commit and test names read off `git log` for `c28a77478`):
+
+```text
+title: lar:///ha.ka.ba/works/handback/carry/c8-kahua-wear
+lane: c8-kahua-wear
+status-line: kahua acts ride their own face's wear; the store door parks no more
+head: c28a77478
+ci: green at c28a77478 (the lane's suites: lararium-node kahua-door)
+held-out: not read
+reds: kahua-door.test.ts "a face that stands open and unworn": Error: Test timed out in 30000ms
+rulings: [[lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage]]
+asks:
+spirit: Carry-Mender
+model: fable
+tags: works/handback works/wave/carry
+type: text/vnd.tiddlywiki
+
+The store door hands the kahua rows the worn face, refuses a write row for any other face by name, and the canon's resolve rides the bounded find.
+```
+
+!!! The doors that write and read them
+
+* ''Write, today'' (measured doors, the hearth standing): `tiddler_put(title=…, recipe="default", fields={…}, text=…)` into the steward's daemon wiki (no `$:/` title, no code field, so the fence passes; `tiddler-verbs.ts:476-486`); or `meme_put(uri=…, text=…, recipe="works")`, which reaches a named wiki's store today (`tiddler-verbs.ts:153`, "The meme verbs read a named wiki's store today") with the fields in the meme's toml meta block.
+* ''Write, after `L17-2a`'': `tiddler_put(…, recipe="works")`.
+* ''Read'': a scribe's "open, wave two": `[tag[works/lane]wave[wave-two]!status[landed]sort[rank]]`; a builder's own card: `tiddler_get(title="lar:///ha.ka.ba/works/lane/wave-two/l17-2a", recipe=…)`; the controller's sweep: `[tag[works/handback]wave[wave-two]]` with `fields=["lane","status-line","head","ci","asks"]`, then one `tiddler_get` where a status line asks for more; a lane's seams: `[tag[works/lane]contains:owner-files[packages/lararium-mesh/src/port-lease.ts]]`.
+* ''How a tasked spirit writes its handback today'' (measured reach, inferred act): a spirit's session inherits the user-scope `lares` server and calls `tiddler_put` as the AI seat on the worn face; a spirit whose session finds the seat unreachable (this one did) writes the same fields into its handback message, and the controller puts it. The lane card names which.
+
+!!! What blocks it today
+
+* `wiki-not-anchored` for `works` on the tiddler door (`L17-2a`): the daemon-wiki bridge carries the wave meanwhile.
+* The rest gate (`C2`): only the steward's wear writes `works`' workbench on one vessel.
+* A cold wiki's put reaches disk only once the wiki wakes (`lares wiki hold works`; road `C8`, cured as a named wait by `6d8d8a5d8`).
+* The road's slot law awaits a ruling before `L17-2d` writes rows.
+* No provenance tells one spirit's write from another's (`F11`); the `spirit` field designates.
+
+!!! Reds, files, size
+
+* Reds: `lane-card-fields-round-trip` (a card put with its fields answers them whole through `tiddler_get` and through the filter); `lane-card-no-code-class` (the template's fields pass the fence); `handback-status-line-one` (a handback carrying two status lines refuses at the helper). Control: a meme put of the same card into `works` reads back through `meme_get`.
+* Files: new `tools/lane-card.mjs` (writes a card or a handback through `lares tiddler put`, or prints the MCP call for a spirit; lane `L41a`, new files alone); the road carrier (`L41b` = `L17-2d`, the controller's hand).
+* Saves (inferred): a builder's brief drops from a scout's report (often 20 to 60 KB) to one card under 2,000 tokens; the controller's aftermath reads N status lines instead of N handbacks; the road stops needing whole reads for "what stands open".
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/thing-three-the-rite-script-and-test-ledger`>>
+
+!! Thing three ~ the rite script and the test ledger (road `L42`)
+
+''What it buys.'' Four walker rounds re-derived the rite by hand, each writing throwaway keepers and probes (measured: the walker's scratch folders `rw/` and `cm/` hold `keeper.mts`, `keeper2.mts`, `wear.sh`, `L.sh`, `b6-hearth.mjs` to `b6-hearth3.mjs`, `mcp-probe.mjs`, `mcp-probe2.mjs` and dozens of logs). One script walks the runbook's rite on a scratch hearth at each merge, and a spirit reads its report instead of walking.
+
+!!! The rite script
+
+* ''One entry'': `tools/rite-walk.mjs [--from <step>] [--to <step>] --out <dir>`, run on the e2e harness: `openStaged` and `foundStagedHearth` (`tests/harness/instance.ts`), the staged test custody for every passphrase act (`tools/unlock-test-custody.mjs`'s `unlockTestCustody(root, "unlock", face)`), and the browser leg through Playwright with `armTestCustody` (`packages/lararium-node/dist/probes/browser-test-custody.js`), as the walker's `b6-hearth3.mjs` and `keeper.mts` already do. It refuses any root outside a scratch prefix (the walker's own guard), unsets `LAR_BAGS` and `LAR_GENESIS`, and runs under a scratch `HOME` and `LAR_ROOT`.
+* ''Its steps'' bind to the runbook by line (measured at `founding-runbook.mem` as it stands after `7bc2e42fb`): the Stand block (`:402-410`, ten commands), memory (`:417`, an MCP `meme_put` of a keyed row), the lift (`:419`, `kahua stage`, then `kahua lift --digest` under test custody), wearing another face (`:421`), the shared workbench (`:426-428`), offer, promote, release and accept (`:433-440`), the browser leg (`:449`), and the carry across a re-founding (`:454-465`), then the read-backs (`:472`, `:474`). Each step names its runbook line, the command, the expected answer as the runbook quotes it (a `layer: working`, an `ok — 1 of 1 seats`, a `pinSource: genesis`), and an outcome.
+* ''A drift witness'': each `lares …` line inside the rite's `sh` fences maps to one step, so a runbook edit that adds a command without a step reads red at the join.
+* ''The report'' (`<out>/rite-report.json`, and where a hearth answers, the tiddler `lar:///ha.ka.ba/works/rite/<head>`): per step `{step, runbook, command, expect, outcome: "pass" | "fail" | "unreached", answer (the quoted line, at most 400 bytes), ms}`; fields on the tiddler `head`, `pass`, `fail`, `unreached`, `first-fail`; tags `works/rite`.
+* ''What it cannot reach, and how the report names each'': a real terminal's passphrase ward (the staged custody stands in: every such step reads `pass (staged-custody)`, never a bare `pass`); `lares reset` through the host shim (`tools/lares-container.sh reset`, and `C10`'s gate on it: `unreached: host-shim`, while the script resets through the CLI's own `reset` on the scratch root); Docker and the product image (the script runs the host's built `dist`: `unreached: image`, and the ready state of rank 2 still builds and walks the image once); the browser's paper card typed back by a human (`pass (staged-custody)` through the test route); `/mcp` reconnect inside a Claude session (the script speaks the seat's stdio as `tests/e2e/tiddler-door.test.ts` does: `pass (seat-stdio)`).
+* ''Cadence'': once at each merge onto the span, in the join's run, under the 600-second single-file cap the lane law grants an e2e file whose own waits exceed the default (controller-handoff #/the-lane-law, the battery); a full walk that outruns it splits by `--from`/`--to` into legs.
+
+!!! The test ledger
+
+* ''One census tiddler per test file'', `lar:///ha.ka.ba/codemap/test/<package>/<file-key>` in the derived `codemap` library (the same generator, a `--tests` pass): fields `repo-path`, `kind` (`unit` · `e2e` · `witness`), `guards` (the file's leading doc comment, first sentence), `covers` (source repo paths, `direct` first), `tests` (the count of `test(` and `it(` calls), `runtime-ms`, `last-red`, `head`; tags `codemap/test`, `codemap/test/<kind>`.
+* ''Runtime'' (measured source): the e2e shards already write vitest JSON (`.github/workflows/e2e-shards.yml:134`, `:166`, merged at `:237` into `merged-report.json`); the unit suites in `ci.yml` write none, so a `--reporter=json` beside their default reporter stays owed, a CI edit the controller's hand makes.
+* ''Last red'': the CI artifacts of red runs name failing files; the census reads the last such run for each file, and leaves the field empty where none stands, never guessing.
+* ''What the census seeds'': the later test cleanup filters duplicates (`[tag[codemap/test]covers[<path>]]` with several hits and no distinct `guards`), slow files (`[tag[codemap/test]!nsort[runtime-ms]limit[20]]`) and files that never ran red.
+
+!!! Reds, files, size
+
+* Reds: `rite-walk-binds-every-line` (a runbook fixture with an unmapped `lares` line reads red); `rite-walk-names-unreached` (a step the script cannot reach reports `unreached` with its cause, never `pass`); `rite-walk-scratch-only` (a root outside the scratch prefix refuses before any act); `census-runtime-from-report` (a merged report's duration lands in `runtime-ms`). Controls: a passing stand step quotes the runbook's expected line; a test file absent from every report carries no `runtime-ms`.
+* Files: new `tools/rite-walk.mjs`, `tools/rite-walk/steps.mjs`, `tools/rite-walk.test.mjs` (lane `L42a`, new files alone); `tools/codemap/tests.mjs` (lane `L42b`, after `L40a`); one `ci.yml` line (the controller's hand).
+* Saves (inferred): each rehearsal stops spending a walker spirit's whole session (four rounds measured); a wave's join learns at merge which rite step broke, with the quoted line; the census replaces a test-cleanup scout's first sweep.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-lane-card`>>
+
+!! The lane card ~ one builder's brief, under two thousand tokens
+
+A scout writes it; one builder reads it and nothing else first. Fields carry what a filter reads; the text carries what a person reads.
+
+```text
+title: lar:///ha.ka.ba/works/lane/<wave>/<lane>
+lane: <lane>
+row: <road id>
+wave: <wave>
+status: open | briefed | flying | handed-back | landed | parked
+head: <the commit the builder branches from>
+branch: <the lane branch>
+owner-files: <repo paths this lane alone edits>
+open-ranges: <repo-path:first-last …, the slices to read>
+leave-unread: <files or slots the builder never opens>
+seams: <other lanes and the files they hold>
+reds: <test names, red first>
+suites: <the packages whose suites this lane runs>
+depends-on: <rows or lanes>
+spirit: <mask name>
+model: <model>
+tags: works/lane works/wave/<wave>
+type: text/vnd.tiddlywiki
+
+''Prove'': one sentence, what stands when the lane lands.
+''Start'': the harness seats a new worktree on `main`; branch from `head` first (`git switch -c <branch> <head>`), and read `git log -1` before any edit.
+''Read'': the `open-ranges` alone, then the carrier slot named in `row`; open a code map tiddler before any whole file.
+''Wear'': never switch the vessel's worn face; never touch the host shim, `~/.lares`, genesis or the boot seed.
+''Run'': the suites of `suites` alone; the join runs everything once.
+''Hand back'': one handback tiddler (or its fields in the message where the seat stands unreachable).
+```
+
+!!! A worked card ~ wave two's `L17-2a`
+
+The ranges read off the tree at `96b6e59a3` (measured).
+
+```text
+title: lar:///ha.ka.ba/works/lane/wave-two/l17-2a
+lane: l17-2a
+row: L17-2a
+wave: wave-two
+status: open
+head: <the span head the controller names at launch>
+branch: lane/l17-2a-relay
+owner-files: packages/lararium-node/src/open-node-vessel.ts packages/lararium-mesh/src/vessel-island-pool-core.ts packages/lararium-mesh/src/port-lease.ts
+open-ranges: packages/lararium-mesh/src/port-lease.ts:1-115 packages/lararium-mesh/src/vessel-island-pool-core.ts:275-290 packages/lararium-mesh/src/vessel-island-pool-core.ts:375-430 packages/lararium-node/src/open-node-vessel.ts:380-390 packages/lararium-node/src/open-node-vessel.ts:4435-4455 packages/lararium-tw5/src/tiddler-verbs.ts:150-200
+leave-unread: open-node-vessel.ts beyond the two ranges; record-port.ts (L17-2b alone edits it); every bags/ carrier but wiki-surface-scout#/phases
+seams: L17-2b holds record-port.ts and record-port-handler.ts; C1's second cut holds the dial and gate legs; C2 holds operator-daemon-behavior.ts
+reds: wiki-filter-named-wiki-engine relay-lease-from-session-face relay-second-face-refuses
+suites: lararium-mesh lararium-node lararium-tw5, and tests/e2e/tiddler-door.test.ts alone under the 600-second cap
+depends-on: the standing hearth for its walk
+spirit: <mask>
+model: <model>
+tags: works/lane works/wave/wave-two
+type: text/vnd.tiddlywiki
+
+''Prove'': `wiki_filter` and `tiddler_get` answer a named wiki (`notes`) through a width-`none` port under a lease minted from the session's face, and a second face's lease refuses.
+''Start'': branch from `head`; the default port policy reads at `open-node-vessel.ts:4445` (`faceId: wornGateFace()?.personaGroup ?? islandKey`, `edits: false`); the anchor's refusal reads at `tiddler-verbs.ts:150-160`.
+''Read'': the ranges above, then wiki-surface-scout #/phases, phase 2.
+''Wear'': never switch the worn face; the e2e stages its own two faces.
+''Run'': the three packages' suites and the one e2e file.
+''Hand back'': `lar:///ha.ka.ba/works/handback/wave-two/l17-2a`.
+```
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-wave-map`>>
+
+!! The wave map ~ the first-three wave, beside wave two
+
+The lanes below own new files alone, except `L40b`, so each takes a free slot beside wave two under the road's rule (a free slot takes the lowest open rank whose files no flying lane holds), and four lanes fly at most (controller-handoff #/the-lane-law). Each builder runs the suites of the packages it touched; the join runs everything once. Every brief says: the harness seats a new worktree on `main`, and a builder branches from the named head first.
+
+|! order |! lane |! row |! owns |! waits on |! parallel with |
+| 1 | `L42a` the rite script | `L42` | `tools/rite-walk.mjs`, `tools/rite-walk/`, its test (new) | nothing (a scratch hearth) | every wave-two lane; it then runs at each of their merges |
+| 1 | `L40a` the code map generator | `L40` | `tools/codemap.mjs`, `tools/codemap/`, its test (new) | nothing | `L42a`, wave two |
+| 1 | `L41a` the lane-card helper | `L41` | `tools/lane-card.mjs`, its test (new) | the standing hearth for its walk | `L42a`, `L40a`, wave two |
+| 2 | `L42b` the test census | `L42` | `tools/codemap/tests.mjs` (new); one `ci.yml` reporter line by the controller's hand | `L40a`'s output shape | wave two |
+| 3 | `L40b` the derived library | `L40` | `bag-home.ts`, the bake's bag walk, the offer's bag check, the export's bag walk, the `lararium` recipe record | `L40a`; its wiki reads wait on `L17-2a`; no file overlap with wave two's named files (inferred: re-check `C3`'s seed-source files at launch) | `C9`, `C10`, `L17-2b` |
+| 4 | `L41b` road rows (`L17-2d`) | `L41` | the road carrier, the controller's hand | the slot law's ruling | any |
+| 5 | the bridge's move | `L41` | no code: a re-put of the daemon-bridge cards into `works`, and of the house laws into `house` | `L17-2a` and `C2` | any |
+
+''Beside wave two'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-order`>>): wave two's four builders (`C1`'s second cut, `C2`, `C9`, `C10`) and its two relay lanes (`L17-2a`, `L17-2b`) hold product files; `L42a`, `L40a` and `L41a` hold new tool files and fly in the same window when a slot frees. `L42a` lands first, since every later merge of wave two then reads its rite report. `L17-2a` unlocks both the code map's wiki reads and the cards' move into `works`; `C2` unlocks every face's write of `works` and `house`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-handoff-walk`>>
+
+!! The handoff walk ~ what the outgoing controller does on the fresh hearth before a new main session takes over
+
+Each step names the call, the answer expected, and a mark: ''day one'' (reachable on the freshly founded hearth with the tree at `96b6e59a3` and wave one landed), or ''after <row>''.
+
+!!! What the wake hook prints today, and what stays owed
+
+''Measured'' (`packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.mjs`, registered as a `SessionStart` hook in the operator's `~/.claude/settings.json` with a 15-second timeout, and as the plugin's own `hooks/hooks.json`): the hook observes the container through `tools/lares-container.sh vessel stand --observe --json` under a 10-second timer (`:21-52`), then runs `lares home read --brief` under a 4-second budget (`:56-60`), and emits one `additionalContext` string: "Lares live wake (SessionStart) …" followed by the observation frame as JSON where `data.node.up` reads true, else `vessel down (…)` or `vessel unobserved: <cause>`, then `Lares homes: <the brief line>` (`:62-68`). It prints no memory index and names no wiki. No `PreCompact` hook stands in either settings file. The two budgets sum to 14 of the hook's 15 seconds.
+
+''Owed'' (`L43`, code alone, no config act: the registration already points at the file): a third read, run in parallel with the observation rather than after it, `tools/lares-container.sh wiki filter '[tag[stage/index]]' --recipe default --fields title,description --limit 32 --json`, printed as `Lares memory index: <N> rows` and one line per row (`title — description`), cut to a byte cap, with `memory index unread: <cause>` on any fault; and the compaction hook of `L35` (a config act at the operator's hand). The operator's `Stop` and `SessionEnd` hooks still call `lares-mempalace-ingest-hook.sh`, though mempalace burned on 2026-10-13 (flat memory index); a cleanup at the operator's hand.
+
+!!! The checklist
+
+# ''The hearth answers'' (day one): `tools/lares-container.sh vault status` names the steward worn; `/mcp` reconnects; `wiki_status(recipe="default")` answers the daemon wiki's layers with `working` writable.
+# ''The house laws'' (day one): `meme_put(uri="lar:///ha.ka.ba/kahua/memory/house/laws", recipe="default", text=…)` with `row-key = "house/laws"` in its toml meta block and tags `stage/semantic stage/index`, into the steward's daemon wiki (`stage/index` stands proposed here as the tag of the one cold-boot view `L11` asks for). The seven laws, as the flat memory holds them (`feedback_lares_talk_out_before_surfacing.md`, `project_first_live_lararium_2026_11_13.md`): no global now; no back-compatibility in early alpha; causal islands; identity as relation; infrastructure as myth; no slot held for "only the operator can decide" (Mu it, talk it out, decide, record the call as overrulable); talk story as Gaia-2026 and Elyncia-5492 user-story myths and surface only what survives. Expect a receipt with `decision: "ingest"`; a row with no key refuses `row-key-missing`.
+# ''The standing rulings'' (day one): one row each, `lar:///ha.ka.ba/kahua/memory/ruling/2026-11-13` and `…/ruling/2026-11-14`, tagged `stage/semantic stage/index`, each quoting the operator verbatim and pointing at the road's #/rulings for the full text.
+# ''The open ledger and standing orders'' (day one): `lar:///ha.ka.ba/kahua/memory/state/open-ledger` (the open φ and the lanes in flight) and `…/state/standing-orders` (the lane law's headlines: no stash, no push of the span or `main`, no `~/.lares` reads by spirits, the build lock, one battery per batch), tagged `stage/working stage/index`.
+# ''Where things live'' (day one): `lar:///ha.ka.ba/kahua/memory/reference/where-things-live`, tagged `stage/reference stage/index`: the road (`lar:///ha.ka.ba/lares/docs/stable-founding-road`, #/the-order first), the handoff meme (`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`, #/state), this map, and the bridge cards' prefix `lar:///ha.ka.ba/works/`.
+# ''The lift'' (day one, the operator's hand): `kahua_stage(title=<the house-laws row>, text=…)`, then at a terminal `lares kahua lift <title> --face 0 --taint none`, the row digest's first 8 hex typed back and the passphrase. Expect the row in `kahua_list()` as lifted.
+# ''Read back through the MCP seat, cold'' (day one, a second Claude session): `wiki_filter(filter="[tag[stage/index]]", recipe="default", fields=["title","description","row-key"])` answers the five rows with a cursor (`after`) only where more than 32 stand; `tiddler_get(title=<a row>, recipe="default", text=false)` answers fields alone with `bag` naming the working layer; `meme_get(uri="lar:///ha.ka.ba/kahua/memory/house/laws", recipe="default")` answers the text; `kahua_list()` names the lifted row.
+# ''Read back through the CLI'' (day one): `tools/lares-container.sh wiki filter '[tag[stage/index]]' --recipe default --json` and `tools/lares-container.sh tiddler get <title> --skinny --json` answer the same rows and fields.
+# ''Read back on disk'' (day one): each row's file under `<projections>/wikis/daemon-<F>/`, read by the operator (spirits read nothing under `~/.lares`).
+# ''Read back in the browser'' (after `L4f`): a joined own-hearth page mounts the daemon document only once `L4f` widens the admit carriage; until then the page shows the floor and the shared wikis, never the daemon rows.
+# ''Read back at wake'' (after `L43`): a new session's `SessionStart` context carries `Lares memory index: 5 rows`. Day one, the wake prints the vessel frame and the homes line alone, so the new session's first turn asks the seat itself (step 7).
+# ''A restart'' (day one): `tools/lares-container.sh down`, then `up` (the passphrase at the terminal), then step 7 again answers the same rows and hashes.
+# ''A re-wear'' (day one): `lares vault unlock --face 1`, `wiki_filter(…)` answers the engineer's own daemon wiki and none of the steward's rows (reach law); `lares vault unlock --face 0` and the rows answer again.
+# ''The works wiki'' (day one for the mint; after `L17-2a` for its filter): `lares wiki init works` wearing the steward, `lares wiki hold works`, and the first bridge card put into the steward's daemon wiki at `lar:///ha.ka.ba/works/lane/…`.
+# ''The house wiki'' (after `C2` and `L17-2a`): `lares wiki init house`, `lares wiki share house --write 'joshua-fontany-engineer joshua-fontany-referee' --face 0` (the names ride as a title list, `share-cmd.ts:30-39`), the house-law rows re-put there, and the engineer's `wiki_filter(…, recipe="house")` answers them.
+
+!!! The new session's first turn, in order
+
+# The boot seed (CLAUDE.md seats it) and the wake's context.
+# `wiki_filter(filter="[tag[stage/index]]", recipe="default", fields=["title","description"])`, then `meme_get` of the house laws and the where-things-live row.
+# The road's #/the-order, then `controller-handoff` #/state, then this map's #/the-wave-map.
+# `git log --oneline -10` on the span, against the handoff's heads.
+
+''Questions for the outgoing controller while it still answers'': which lanes fly and at which heads; which flat memories stay unmoved and why; whether the steward stays the worn face for the controller's days (decision 2); which rite steps the last rehearsal walked by hand and which only the script reached; which of the open items below it would overrule.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open`>>
+
+!! Open ~ each with a default
+
+* ''The code map's home'' (decision 1): a derived `codemap` library in the `lararium` recipe. Default: as decided; the operator's lean toward `bags/lararium` waits for the code-tiddler era, where authored code tiddlers replace the map.
+* ''The file-key form'': `~` for `/` inside one path segment. Default: as decided; `repo-path` carries the exact path for every filter.
+* ''The outline source under TypeScript 7'': the `unstable/sync` API, unmeasured at 1,565 files. Default: the adapter over it, with `oxc-parser` as the named fallback.
+* ''The worn face for AI days'' (decision 2): the steward. Default: the steward; the engineer wears only for the rite's offers and proofs.
+* ''The road's slot law for `L17-2d`'': a ruling owed before rows carry fields. Default: `#/row/<id>` slot children on the road carrier.
+* ''The bridge's move'': daemon-wiki cards re-put into `works`, then kāpae'd in the daemon wiki once each receipt stands. Default: re-put, never a residency `MOVE`, since the daemon working layer refuses every share.
+* ''The house wiki's name'': `house`. Default: `house`, a plain word every face reads.
+* ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
+* ''The mempalace hooks in the operator's settings'': still registered on `Stop` and `SessionEnd`. Default: named to the operator once, at the walk, as a cleanup of their own config.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1a0wBMHSy0E7WX5JPOlsZA8yLySSXmq2Ob6L4tjQOIo`>>
+
+<<^ code=`&#x0004;` to=`?`>>
