@@ -39,16 +39,23 @@ export const indexReader = (repo: string): Reader => ({
 const GLYPH: Record<Row["state"], string> = { aligned: "✓", drift: "~", foreign: "✗", unreachable: "!", absent: "·" };
 
 /**
- * THE WAKE'S ONE LINE. Off the tunnel counts what the reading names off: drift, a foreign value, an unreachable home. A row
- * another hand rewrote since the house last wrote it (`touched`, a whole-file compare) that still reads `aligned` holds what
- * the tunnel asks; it reads apart, never as drift, since a harness rewrites its own settings files at will.
+ * THE WAKE'S ONE LINE. Off the tunnel counts what the reading names off: drift, a foreign value, an unreachable home. Two kinds
+ * of row a hand changed since the house last wrote them (`touched`, a whole-file compare) read APART, each in its own clause,
+ * never as drift and never dropped: one that still reads `aligned` holds what the tunnel asks (a harness rewrites its own
+ * settings files at will), and one whose host now stands `absent` on this machine leaves the tunnel nothing to keep there, yet
+ * the house once wrote it, so the line names it.
  */
 export function briefLine(rows: readonly Row[]): string {
   const off = rows.filter((r) => r.state === "drift" || r.state === "foreign" || r.state === "unreachable");
+  const ids = (some: readonly Row[]): string => some.map((r) => r.id).join(", ");
   const rewritten = rows.filter((r) => r.touched && r.state === "aligned");
-  const apart = rewritten.length === 0 ? "" : `${rewritten.length} aligned item(s) rewritten by another hand since the house wrote them: ${rewritten.map((r) => r.id).join(", ")}`;
+  const gone = rows.filter((r) => r.touched && r.state === "absent");
+  const apart = [
+    ...(rewritten.length === 0 ? [] : [`${rewritten.length} aligned item(s) rewritten by another hand since the house wrote them: ${ids(rewritten)}`]),
+    ...(gone.length === 0 ? [] : [`${gone.length} item(s) the house once wrote, changed since, on a host now absent here: ${ids(gone)}`]),
+  ].join("; ");
   if (off.length === 0) return `reality tunnel: every item holds${apart ? ` (${apart})` : ""}`;
-  return `reality tunnel: ${off.length} item(s) off the tunnel — ${off.map((r) => r.id).join(", ")} (lares home read)${apart ? `; ${apart}` : ""}`;
+  return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares home read)${apart ? `; ${apart}` : ""}`;
 }
 
 function show(rows: readonly Row[], brief: boolean): void {

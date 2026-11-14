@@ -314,6 +314,16 @@ describe("the brief line's count", () => {
       .toBe("reality tunnel: 3 item(s) off the tunnel — a, b, c (lares home read); 1 aligned item(s) rewritten by another hand since the house wrote them: d");
     expect(briefLine([row("e", "aligned")])).toBe("reality tunnel: every item holds");
   });
+
+  it("names a row the house once wrote whose host now stands absent here: apart from drift, never dropped from the line", () => {
+    const line = briefLine([row("gone", "absent", true), row("c", "aligned")]);
+    expect(line).toBe("reality tunnel: every item holds (1 item(s) the house once wrote, changed since, on a host now absent here: gone)");
+    // Beside real drift and a rewritten aligned row, each reads in its own clause and the off count holds drift alone.
+    expect(briefLine([row("a", "drift"), row("d", "aligned", true), row("gone", "absent", true)]))
+      .toBe("reality tunnel: 1 item(s) off the tunnel — a (lares home read); 1 aligned item(s) rewritten by another hand since the house wrote them: d; 1 item(s) the house once wrote, changed since, on a host now absent here: gone");
+    // CONTROL: an absent host the house never wrote (or left as it wrote it) draws no word.
+    expect(briefLine([row("never", "absent"), row("c", "aligned")])).toBe("reality tunnel: every item holds");
+  });
 });
 
 describe("the cold reader's findings, each a red first", () => {
