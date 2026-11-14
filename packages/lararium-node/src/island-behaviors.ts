@@ -157,6 +157,9 @@ export function mountDiskProjection(
   // projector only sites them.
   carrierFileFn: vmCarrierFile(ctx.tw5),
   recoveryStore: (bagId) => ctx.composite.storeForBag(bagId),
+  // THE DOCUMENT EACH MIRRORED BAG RESTS IN: every base names it, so a file another face's workbench document mirrored
+  // under the same bag id answers to that document alone.
+  documentOf: (bagId) => (ctx.composite.storeForBag(bagId) as { readonly documentId?: unknown } | null)?.documentId as string | undefined ?? null,
   recoveryFileFn: async (fields) => {
     const title = fields["title"];
     if (typeof title !== "string") return null;

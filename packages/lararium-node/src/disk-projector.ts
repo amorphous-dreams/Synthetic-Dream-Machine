@@ -64,13 +64,19 @@
  * that fails the proof stays where a hand left it, and the carrier stands off under a key that names
  * the paths. One judge serves every unlink: a carrier's earlier siting, a sibling at an earlier
  * extension, a mirror the carrier left, and the file of a carrier the records dropped.
+ *
+ * A FILE ANSWERS ONLY TO THE DOCUMENT ITS BASE NAMES (`otherDocument`). Several documents may serve one bag id over
+ * one mirror root: each face of a vessel mounts its own workbench document for an unshared wiki. Every base this
+ * projector pins names the document it read (`documentOf`). A base that names another document reads as no base of
+ * this one: the judge leaves its file standing and raises nothing, its row stays in the tree, and a carrier this
+ * document also holds writes nothing over it and stands off by name.
  */
 
 import { writeFileSync, mkdirSync, unlinkSync, existsSync, readFileSync, readdirSync } from "fs";
 import { dirname, basename, extname, relative as relativePath, resolve as resolvePath } from "path";
 import { confineMirrorWrite, carrierBaseRelPath, titleRelPath } from "./bag-paths.js";
 import { KAPAE_EXT, kapaeShadowBody } from "./kapae-shadow.js";
-import { contentHash, syncedTreeKey, SyncedTree } from "./synced-tree.js";
+import { contentHash, syncedTreeKey, SyncedTree, type SyncedBase } from "./synced-tree.js";
 import { decideProjection } from "./projection-gate.js";
 import { MEME_EXT } from "@lararium/mesh/mirror-paths";
 import { isFaceScopedBag, KeyedReconcileGate, carrierHash, sha256HexBytesSync, digestsEqual, projectionWithheld, hasEffectRecordKind, type ProjectionClass } from "@lararium/mesh";
@@ -101,6 +107,13 @@ export interface LarDiskProjectorOptions {
   readonly carrierFileFn: (tiddlerUri: string) => Promise<CarrierFile | null>;
   /** One bag's own store: a recovery grant reads its records here, and with `recordFileFn` so does every ordinary mirror. */
   readonly recoveryStore?: (bagId: string) => LarTiddlerStore | null;
+  /**
+   * THE DOCUMENT A BAG'S RECORDS REST IN, in this composition (null: none named). Several documents may serve one bag
+   * id over one mirror root (each face of a vessel mounts its own workbench document for an unshared wiki), so every
+   * base this projector pins names the document it read, and a base that names another document vouches for nothing
+   * here: its file stays, its row stays, and nothing writes over it (`otherDocument`).
+   */
+  readonly documentOf?: (bagId: string) => string | null;
   readonly recoveryFileFn?: (fields: Record<string, unknown>) => Promise<CarrierFile | null>;
   /**
    * Render a mirrored bag's OWN record of a carrier root — off that bag's records, never the resolved view. Present, an
@@ -435,6 +448,7 @@ export class LarDiskProjector {
   private readonly readinessMap: ReadinessMap | undefined;
   private readonly debugJson: boolean;
   private readonly syncedTree: SyncedTree;
+  private readonly documentOf: LarDiskProjectorOptions["documentOf"];
   private readonly journal: VesselJournal | undefined;
   private readonly onBagProjected: ((info: { bagId: string; path: string }) => void) | undefined;
   private readonly projectedBags = new Set<string>();
@@ -443,6 +457,7 @@ export class LarDiskProjector {
     this.mirrors      = opts.mirrors.filter((mirror) => !isFaceScopedBag(mirror.bagId));
     this.carrierFileFn = opts.carrierFileFn;
     this.recoveryStore = opts.recoveryStore;
+    this.documentOf = opts.documentOf;
     this.recoveryFileFn = opts.recoveryFileFn;
     this.recordFileFn = opts.recordFileFn;
     this.topRecordFn = opts.topRecordFn;
@@ -614,7 +629,7 @@ export class LarDiskProjector {
     const current = await store.get(title);
     if (!current || current.meta?.deleted || stableFields(current.tiddler) !== captured) throw new Error("recovery record superseded");
     this.syncedTree.reread(syncedTreeKey(bagId, title));
-    const bases = this.syncedTree.bases(syncedTreeKey(bagId, title));
+    const bases = this.ownBases(bagId, title);
     for (const mirror of mirrors) {
       const candidates = bases.filter((base) => {
         const rel = relativePath(resolvePath(mirror.mirrorRoot), base.path);
@@ -914,6 +929,40 @@ export class LarDiskProjector {
     return file.endsWith(".meta") ? file.slice(0, -".meta".length) : file;
   }
 
+  /** The document this composition names for a bag's records, or undefined where it names none. */
+  private docOf(bagId: string): string | undefined {
+    return this.documentOf?.(bagId) || undefined;
+  }
+
+  /** Whether a base names ANOTHER document than the one this composition reads for the bag: such a base vouches for nothing here. */
+  private otherDocument(bagId: string, base: SyncedBase | null): boolean {
+    if (base === null || base.doc === undefined) return false;
+    const mine = this.docOf(bagId);
+    return mine !== undefined && base.doc !== mine;
+  }
+
+  /** The base that stands at `path` for THIS document's records, or null: another document's base names none here. */
+  private ownBaseAt(bagId: string, uri: string, path: string): SyncedBase | null {
+    const base = this.syncedTree.baseAt(syncedTreeKey(bagId, uri), path);
+    return this.otherDocument(bagId, base) ? null : base;
+  }
+
+  /** Every base the carrier holds for THIS document's records. */
+  private ownBases(bagId: string, uri: string): SyncedBase[] {
+    return this.syncedTree.bases(syncedTreeKey(bagId, uri)).filter((base) => !this.otherDocument(bagId, base));
+  }
+
+  /** Pin an agreement between the file at `path` and this document's records. */
+  private pin(bagId: string, uri: string, path: string, diskHash: string, recordsHash: string = diskHash): void {
+    this.syncedTree.set(syncedTreeKey(bagId, uri), path, diskHash, recordsHash, this.docOf(bagId));
+  }
+
+  /** The base at `path` leaves, unless it names another document: that row stays with the file it vouches for. */
+  private forgetAt(bagId: string, uri: string, path: string): void {
+    const key = syncedTreeKey(bagId, uri);
+    if (!this.otherDocument(bagId, this.syncedTree.baseAt(key, path))) this.syncedTree.deleteAt(key, path);
+  }
+
   /**
    * THE HOMES A CARRIER'S BASES NAME, WHERE THIS MIRROR HOLDS THEM. Each base names the file its agreement
    * stood at, and the ingest gesture pins one at whatever source it read: a holding directory beside the
@@ -921,7 +970,7 @@ export class LarDiskProjector {
    * unlink weighs it and the file there stays its person's.
    */
   private basedHomes(mirror: BagMirrorConfig, uri: string): string[] {
-    return this.syncedTree.bases(syncedTreeKey(mirror.bagId, uri)).map((base) => base.path).filter((basedAt) =>
+    return this.ownBases(mirror.bagId, uri).map((base) => base.path).filter((basedAt) =>
       confineMirrorWrite(mirror.mirrorRoot, relativePath(resolvePath(mirror.mirrorRoot), basedAt), mirror.allowBagsRootFiles).ok);
   }
 
@@ -933,11 +982,14 @@ export class LarDiskProjector {
    *   agreed   its bytes equal the disk side of the base standing AT THAT PATH, or say what the records
    *            render: byte for byte, or through the family's congruence. Nothing a hand added rests there;
    *   held     anything else, with the hash of what stands. The file stays.
+   *   another  the base standing AT THAT PATH names another document: the file mirrors that document's records,
+   *            so it stays, and this document's pass says nothing of it.
    *
    * `recordsHash` names the render the records carry, or null where the records hold no such carrier:
    * then the base alone can vouch.
    */
-  private judgeHome(bagId: string, uri: string, contentPath: string, recordsHash: string | null): "absent" | "agreed" | { readonly held: string } {
+  private judgeHome(bagId: string, uri: string, contentPath: string, recordsHash: string | null): "absent" | "agreed" | "another" | { readonly held: string } {
+    if (this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, uri), contentPath))) return "another";
     let body: string, meta: string | undefined, binary: boolean;
     try {
       if (!existsSync(contentPath)) {
@@ -1003,6 +1055,7 @@ export class LarDiskProjector {
       const verdict = this.judgeHome(bagId, uri, home, recordsHash);
       if (verdict === "agreed") agreed.push(home);
       else if (verdict === "absent") continue;   // no body stands there; a sidecar left alone proves nothing and stays
+      else if (verdict === "another") continue;  // another document's file: it stays, and nothing stands off
       else held.push({ path: home, hash: verdict.held });
     }
     if (held.length > 0) {
@@ -1100,7 +1153,7 @@ export class LarDiskProjector {
     const held = new Set(this.mirroredRoots());
     const gone = new Set<string>();
     for (const { bagId, uri, base } of this.syncedTree.rows()) {
-      if (!held.has(uri) || existsSync(base.path)) continue;
+      if (!held.has(uri) || existsSync(base.path) || this.otherDocument(bagId, base)) continue;
       const mirror = this.mirrors.find((m) => m.bagId === bagId);
       if (mirror === undefined) continue;
       if (confineMirrorWrite(mirror.mirrorRoot, relativePath(resolvePath(mirror.mirrorRoot), base.path), mirror.allowBagsRootFiles).ok) gone.add(uri);
@@ -1231,7 +1284,7 @@ export class LarDiskProjector {
       // A BASE LEAVES WITH ITS OWN FILE: each home this mirror weighed gives up its base, a home whose file
       // had already left included. A base at a path outside the mirror (a holding copy a hand keeps) stays
       // with its file, so that file's next scan still reads it against the agreement it reached.
-      for (const home of new Set(homes)) this.syncedTree.deleteAt(syncedTreeKey(mirror.bagId, title), home);
+      for (const home of new Set(homes)) this.forgetAt(mirror.bagId, title, home);
       this.sited.delete(sitedKey(mirror.bagId, title));
     }
   }
@@ -1713,7 +1766,8 @@ export class LarDiskProjector {
         ? readFileSync(candidate).equals(writeBytes as Buffer)
         : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
       if (bodyInSync && metaInSync) {
-        this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, obsHash);
+        // Another document's file already says what these records render: its own base stays, and nothing writes.
+        if (!this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate))) this.pin(bagId, tiddlerUri, candidate, obsHash);
         this._leaveStandoff(bagId, tiddlerUri);
         this._leavePending(bagId, tiddlerUri);
         if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
@@ -1763,7 +1817,9 @@ export class LarDiskProjector {
       })();
       const key = sitedKey(mirror.bagId, tiddlerUri);
       // A BASE STANDS AT ONE PATH: an agreement this carrier reached at another path names no base here.
-      let base = this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate);
+      // A base that names ANOTHER DOCUMENT names no agreement of this one: the gate reads none.
+      let another = this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate));
+      let base = this.ownBaseAt(bagId, tiddlerUri, candidate);
       /** Weigh the carrier against the base as it stands: the disk's hash, the standoff those states fold to, and the gate's answer. */
       const weigh = (): { diskHash: string | null; standoff: string; decision: ReturnType<typeof decideProjection> } => {
         const diskHash = onDisk !== null ? carrierHash(onDisk.body, onDisk.meta)
@@ -1791,7 +1847,8 @@ export class LarDiskProjector {
       // decides again.
       if (weighed.decision.kind !== "noop") {
         this.syncedTree.reread(syncedTreeKey(bagId, tiddlerUri));
-        base = this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate);
+        another = this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate));
+        base = this.ownBaseAt(bagId, tiddlerUri, candidate);
         weighed = weigh();
       }
       const { diskHash, standoff, decision } = weighed;
@@ -1808,15 +1865,15 @@ export class LarDiskProjector {
         // no byte writes. The base pins at this agreement, the disk's bytes on one side and the records'
         // render on the other, so the ingest scan reads the file `unchanged` and each gate still tells a
         // later disk edit from a later record edit. A base that already names this agreement stays put.
-        if (decision.reason === "canonical-equivalent" && diskHash !== null
+        if (decision.reason === "canonical-equivalent" && diskHash !== null && !another
             && !(base !== null && base.disk === diskHash && base.records === gateRecords)) {
-          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash, gateRecords);
+          this.pin(bagId, tiddlerUri, candidate, diskHash, gateRecords);
         }
         // A PENDING POINTER'S SIDECAR STANDS AS THE RECORDS RENDER IT, and no base stands here: that
         // agreement holds a sidecar alone, and its base says so. A base that already stands stays: where
         // it names a body, that body vanished, and the carrier pends once its bytes resolve.
-        if (bodyPending && base === null && diskHash !== null && decision.reason === "disk-matches-records") {
-          this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, diskHash);
+        if (bodyPending && base === null && !another && diskHash !== null && decision.reason === "disk-matches-records") {
+          this.pin(bagId, tiddlerUri, candidate, diskHash);
         }
         this._leaveStandoff(bagId, tiddlerUri);
         if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
@@ -1829,7 +1886,9 @@ export class LarDiskProjector {
         // THE ALERT NAMES BOTH DOORS: the one that lands the disk's words and the one that lands the
         // records', each under this standoff's own key, so a person who reads the alert alone can settle it.
         const doors = `Take the disk's words: \`lares shore take-disk ${tiddlerUri} --key ${standoff}\`. Take the records' words: \`lares shore take-records ${tiddlerUri} --key ${standoff}\`. Or save in the wiki until both say the same`;
-        const reason = decision.reason === "no-base"
+        const reason = another
+          ? `the file at ${candidate} mirrors another document's record of ${tiddlerUri} (another face's workbench serves this bag over the same mirror), and this document's records say something else; nothing writes, so that file stays whole. ${doors}`
+          : decision.reason === "no-base"
           ? `the file at ${candidate} and the records say different things, and no base names a last agreement (${decision.reason}); nothing writes. ${doors}`
           : `the file at ${candidate} and the records both moved past their last agreement (${decision.reason}); nothing writes, so neither edit drowns. ${doors}`;
         // ONE SURFACING PER STANDOFF: the key names the bag, the carrier and the two states. A reconcile
@@ -1865,7 +1924,7 @@ export class LarDiskProjector {
       // THE KĀPAE LOWERED: the carrier writes back, so a shadow standing at its stem leaves with the raise.
       LarDiskProjector.lowerShadowAt(candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
       // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
-      this.syncedTree.set(syncedTreeKey(bagId, tiddlerUri), candidate, gateRecords);
+      this.pin(bagId, tiddlerUri, candidate, gateRecords);
       // A bag counts as projected once a file of it stands: a pending body with no sidecar wrote nothing yet.
       if ((!bodyPending || metaPath !== null) && !this.projectedBags.has(bagId)) {
         this.projectedBags.add(bagId);
