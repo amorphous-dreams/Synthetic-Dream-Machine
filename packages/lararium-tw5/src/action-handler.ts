@@ -965,13 +965,27 @@ const CARRIER_SOH = new RegExp(`<<\\^[^&\\n]*${frameAlt("SOH")}`);
  *   · a LIVE head: a SOH sigil standing outside every fence. A head SHOWN inside a fence opens
  *     nothing, so a document that teaches the frame keeps its own filetype and its sidecar's fields.
  *
+ *   · a `.tid` file's OWN FRAME: a header block of `field: value` lines naming its title, a blank line, then the body. The
+ *     header stands as that file's sidecar, so the file rides TW5's registry and the header never enters the record's text,
+ *     whatever its body holds. A staged memory row rests so, its body a whole framed meme (`bags/daemon-<F>/…/<slug>.tid`):
+ *     read as memetic, the re-pour landed the row with its `title:` line inside the text.
+ *
  * A host with no native bridge reads every carrier as memetic. The routing never reads the path.
  */
-function readsAsMemetic(text: string, meta: string | undefined, tw5: Tw5Deserializer | undefined): boolean {
+function readsAsMemetic(text: string, meta: string | undefined, tw5: Tw5Deserializer | undefined, ext?: string): boolean {
   if (!tw5) return true;
   const declared = meta ? tw5.parseFields(meta)["type"] : undefined;
   if (typeof declared === "string" && declared) return isCarrierType(declared);
+  if (tidFramed(text, ext)) return false;
   return maskedExec(text, CARRIER_SOH) !== null;
+}
+
+/** Whether a `.tid` file frames itself: every line ahead of its first blank line reads `field: value`, and one names the title. */
+function tidFramed(text: string, ext: string | undefined): boolean {
+  if (ext !== ".tid") return false;
+  const end = text.indexOf("\n\n");
+  const head = (end < 0 ? text : text.slice(0, end)).split("\n");
+  return head.every((line) => /^[^\s:][^:]*:/.test(line)) && head.some((line) => line.startsWith("title:"));
 }
 
 /**
@@ -1102,7 +1116,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
     // lands through TW5's OWN deserializer registry, resolved from its extension.
     // Absent a native resolver (no booted $tw), every carrier falls back to memetic.
     let fieldsList: Array<Record<string, unknown>>;
-    if (!tw5 || readsAsMemetic(carrierText, carrier.meta, tw5)) {
+    if (!tw5 || readsAsMemetic(carrierText, carrier.meta, tw5, carrier.ext)) {
       fieldsList = memeticWikitextDeserializer(carrierText, { title: carrier.title ?? "" });
     } else {
       // The extension routes to TW5's registry — it resolves the content-type + the right
@@ -1369,7 +1383,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     // legal TW5 filetype rides TW5's OWN deserializer registry, keyed by its
     // extension. The registry — not a CLI-side reimplementation — owns the
     // filetype routing; the island hands the bytes to it.
-    const memetic = readsAsMemetic(carrierText, carrier.meta, tw5);
+    const memetic = readsAsMemetic(carrierText, carrier.meta, tw5, carrier.ext);
 
     // Records to land + the receipt this carrier rides. The memetic path grades
     // the recover; the native path leans on the registry + the echo gate.
