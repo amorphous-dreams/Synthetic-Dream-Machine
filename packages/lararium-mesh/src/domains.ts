@@ -249,8 +249,11 @@ export const PROMOTE_WARD_DOMAIN = mint("promote-ward");
  *  Its own name, so no swarm record verifies as a promote or kahua act and none of those as a swarm control. */
 export const SWARM_ACT_DOMAIN = mint("swarm-act");
 /** A face's OFFER of records toward a house-canon bag: the offered fields, each record's carrier digest and fork base, signed by
- *  the offering face's atom. Its own name, so no plugin offering, promote act or release verifies as one. */
+ *  the offering face's key for that Nexus (`CANON_OFFER_KEY_DOMAIN`). Its own name, so no plugin offering, promote act or release verifies as one. */
 export const CANON_OFFER_DOMAIN = mint("canon-offer");
+/** The HKDF info under which a face's atom seed derives its OFFER KEY for one Nexus (the Nexus rides beside it in the info):
+ *  one key for each (face, Nexus), so an offer names no PersonaGroup and no key the face shows anywhere else. */
+export const CANON_OFFER_KEY_DOMAIN = mint("canon-offer-key");
 /** The digest that names a worn face's WIRE SCOPE inside a vessel's own store (`wire-identity`): the store keeps one store id
  *  for each scope, and the scope's name there carries no PersonaGroup. */
 export const WIRE_SCOPE_DOMAIN = mint("wire-scope");

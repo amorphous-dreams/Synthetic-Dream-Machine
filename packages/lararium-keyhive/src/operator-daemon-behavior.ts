@@ -159,7 +159,7 @@ export function requireDyadReader(reader: DyadReader | undefined, gate: "the Bin
 import { bootDaemonKeyhive } from "./boot-daemon-keyhive.js";
 import { daemonBagDocLedger, planeBagDocLedger, registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 import { persistArchiveFloor } from "./archive-floor-write.js";
-import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
+import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
 import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, documentIdOfUrl, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry, type WikiSlotKind } from "@lararium/mesh";
@@ -952,7 +952,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         // THE OFFERING DOOR (offering#/the-canon-offer): a face offers working records toward house canon on the Nexus's offer
         // table, and the steward promotes under the Kahu reach. The same four reactors stand on node and browser; the Nexus
-        // reads off the shore's cabal board, the signer is the lit face's atom, and the canon write clears `requireKahuReach` and then
+        // reads off the shore's cabal board, the signer is the lit face's offer key at that Nexus (derived from its atom seed; the
+        // offer names no PersonaGroup and no atom key), and the canon write clears `requireKahuReach` and then
         // the charter seat the shore reads (`charterSeat`): a vessel that could seal no retire writes no canon, whoever calls the verb.
         registerCanonOfferVerbs(registry, {
           composite: ctx.composite, reach,
@@ -962,7 +963,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             const handle = await materializeSharedLarDoc(ctx.repo, canonOfferDocUrl(nexus), "board:canon-offer");
             return { doc: () => handle.doc(), change: (fn) => { handle.change(fn); } };
           },
-          signer: () => { try { return { face: daemonAuth.personaGroupId!, atom: faceAtom() }; } catch { return null; } },
+          signer: () => { try { faceAtom(); const seed = daemonAuth.atom!.seed; return (nexus) => nexusOfferSigner(meshHexToBytes(seed), nexus); } catch { return null; } },
           ...(charterSeat ? { seat: charterSeat } : {}),
         }, VERB_SURFACE);
       } else {

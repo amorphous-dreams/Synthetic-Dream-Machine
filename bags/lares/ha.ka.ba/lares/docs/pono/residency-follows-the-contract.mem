@@ -75,7 +75,7 @@ A face that holds no writer's seat in a wiki's workbench reads canon (from the f
 * ''The change actor ~ MEASURED, holds.'' The engine mints an actor for a document at each load, and a face switch recomposes, so two faces wrote one shared document under two actors. The acceptance test fails the day an actor repeats.
 * ''STILL STANDING ~ one face across Nexuses.'' One composition speaks to every Nexus its face stands in through one repo, so that face presents one `peerId` within a boot, and one store id across boots, at each of them. This links ONE face across Nexuses. The cure mints both ids at each Nexus's adapter, and waits on a lane of its own.
 * ''STILL STANDING ~ a face lit beside the worn one.'' A face lit beside the worn face (a relay face) rides the worn face's composition and shares its ids. Read, never walked: the reading found only the operator's own sessions reaching such a face's documents through that composition.
-* ''The canon offer.'' An offer's body publishes the offering face's PersonaGroup and its atom key to every face on the Nexus. That links ONE face across Nexuses, and it hands an observer the PersonaGroup needed to test who owns a private workbench realm (its id hashes the PersonaGroup with the slug).
+* ''The canon offer ~ CURED.'' An offer's body published the offering face's PersonaGroup and its atom key to every face on the Nexus (reproduced red, `packages/lararium-mesh/tests/canon-offer-veil.test.ts`). That linked ONE face across Nexuses, and it handed an observer the PersonaGroup needed to test who owns a private workbench realm (its id hashes the PersonaGroup with the slug). The body now names the face by its offer key at that Nexus alone, derived from the atom seed and the Nexus under its own name: one offerer at one Nexus, an unrelated key at every other, and no field beside the sealed five. The steward's list, show and promote read the offerer by that key. A call the operator may overrule: the offer key derives inside the island that already holds the atom, so it stands apart from the face's admitted key at that Nexus (the leaf in sealed custody), and the steward ties an offer to an admitted member only by voice.
 * ''The recovery commitment.'' A face's recovery key set hashes unsalted, so two faces that enrol the same contacts under the same keys show equal commitments. Inferred.
 * ''A group seated in a document shows its members.'' A document's readers can list the individuals a member group reaches. The workbench seats individuals, so nothing shows today.
 
@@ -166,6 +166,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;lvANw6kmQtHgfE7SYLEQiwBKA7YYcjo4bGazcRVyJUI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;47ZA4SpUO3NmhaBsbcAMudg7aT_c7XEFx8E1RGy-cfw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

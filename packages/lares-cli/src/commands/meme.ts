@@ -1210,7 +1210,7 @@ export function offerPlan(args: ParsedArgs): { readonly verb: "offer-make" | "of
   return { verb: "offer-make", args: { bag, titles } };
 }
 
-type OfferRow = { cid: string; bag: string; face: string; retired: { steward: string } | null; refusedRetires?: Array<{ retire: string; reason: string; steward?: string }>; fresher: boolean; records: Array<{ title: string; freshness: string }> };
+type OfferRow = { cid: string; bag: string; offerer: string; retired: { steward: string } | null; refusedRetires?: Array<{ retire: string; reason: string; steward?: string }>; fresher: boolean; records: Array<{ title: string; freshness: string }> };
 
 /** A daemon offer verb refused: the code, the message and the named refusal its answer carried. */
 class OfferVerbRefused extends Error {
@@ -1303,7 +1303,7 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
         const offers = (out["offers"] as OfferRow[]) ?? [];
         if (offers.length === 0) console.log("offer list: no open offer on this Nexus's table");
         for (const o of offers) {
-          console.log(`${o.cid}  ${o.bag}  face ${short(o.face)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}${o.refusedRetires?.length ? `  (${o.refusedRetires.length} retire-unauthorised ignored)` : ""}`);
+          console.log(`${o.cid}  ${o.bag}  offerer ${short(o.offerer)}${o.retired ? "  (retired)" : ""}${o.fresher ? "  ⚠ canon is fresher" : ""}${o.refusedRetires?.length ? `  (${o.refusedRetires.length} retire-unauthorised ignored)` : ""}`);
           for (const r of o.records) console.log(`  ${r.freshness === "canon-is-fresher" ? "⚠ canon is fresher" : r.freshness}  ${r.title}`);
         }
         return;

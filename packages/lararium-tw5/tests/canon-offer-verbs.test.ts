@@ -71,7 +71,7 @@ async function rig() {
     ...(seat ? { seat: async () => seat } : {}),
     nexus: async () => shore,
     board: async () => ({ doc: () => boardHandle.doc(), change: (fn) => { boardHandle.change(fn); } }),
-    signer: () => (face ? { face: "aa".repeat(32), atom: face } : null),
+    signer: () => (face ? () => face : null),
   });
   return { repo, composite, canon, working, opts };
 }

@@ -7,7 +7,7 @@
  * `cutCanonFloor` (`floor-manifest`) cuts the floor a release names from the canon documents the promotion wrote.
  *
  * "A gift announces itself; the receiver ratchets." An OFFER is a signed, immutable record keyed by its CID (sha-256 hex of the
- * body's canonical bytes): the offering face's atom signs `{kind, nexus, bag, face, offerer, records}`, each record naming its
+ * body's canonical bytes): the offering face's key at that Nexus signs `{kind, nexus, bag, offerer, records}`, each record naming its
  * fields, its carrier digest (`carrierHashOf`, the identity every carrier already carries) and its FORK BASE: the carrier digest
  * of the canon record the working copy forked from (`overrideBase`), or null for a title canon did not hold. No clock, counter
  * or arrival order rides it; the same offer twice keys the same row, so a replay lands nothing.
@@ -29,8 +29,11 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
-import { CANON_OFFER_DOMAIN, CANON_OFFER_RETIRE_DOMAIN } from "./domains.js";
-import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { hkdf } from "@noble/hashes/hkdf.js";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { CANON_OFFER_DOMAIN, CANON_OFFER_KEY_DOMAIN, CANON_OFFER_RETIRE_DOMAIN } from "./domains.js";
+import { canonicalJsonBytes, hex, sha256HexBytesSync, utf8Bytes } from "./crypto.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { storedLarRecord } from "./stored-record.js";
@@ -109,15 +112,21 @@ export interface CanonOfferedRecord {
   readonly base:   string | null;
 }
 
-/** The body an offer seals. `face` names the offering face (its PersonaGroup) as the face claims it; `offerer` the atom key that signs. */
+/**
+ * The body an offer seals. `offerer` names the offering face BY ITS OFFER KEY AT THIS NEXUS (`nexusOfferSigner`), the key that
+ * signs; the body names no PersonaGroup and no atom key. The board stands open to every face of the Nexus, and a PersonaGroup
+ * addresses the face's private realms while an atom key shows wherever the face signs: either would join this face to itself at
+ * another Nexus. One face reads as one offerer at one Nexus, and as an unrelated key at every other.
+ */
 export interface CanonOfferBody {
   readonly kind:    typeof CANON_OFFER_DOMAIN;
   readonly nexus:   string;
   readonly bag:     string;
-  readonly face:    string;
   readonly offerer: string;
   readonly records: readonly CanonOfferedRecord[];
 }
+/** The fields a body holds, and no other: a row that carries one more reads malformed, so no identity rides beside the seal. */
+const OFFER_BODY_FIELDS: readonly string[] = ["kind", "nexus", "bag", "offerer", "records"];
 
 export interface CanonOffer { readonly body: CanonOfferBody; readonly cid: string; readonly sig: string }
 
@@ -198,9 +207,29 @@ const sameDigest = (a: string | null, b: string | null): boolean => (a === null 
 /** The canonical bytes of an offer body. */
 export function canonOfferBodyBytes(body: CanonOfferBody): Uint8Array {
   return canonicalJsonBytes({
-    kind: body.kind, nexus: body.nexus, bag: body.bag, face: body.face, offerer: body.offerer,
+    kind: body.kind, nexus: body.nexus, bag: body.bag, offerer: body.offerer,
     records: body.records.map((r) => ({ title: r.title, fields: r.fields, digest: r.digest, base: r.base })),
   });
+}
+
+/**
+ * THE OFFER KEY A FACE HOLDS AT ONE NEXUS: an ed25519 key derived from the face's atom seed and the Nexus, under its own
+ * name (`CANON_OFFER_KEY_DOMAIN`). The same face at the same Nexus derives the same key on every vessel that holds its atom,
+ * so the steward reads its offers there as one offerer; at another Nexus it derives an unrelated key, and no reader without
+ * the seed relates the two or reaches the atom key from either. The island that makes the offer already holds the seed (it
+ * signs as the face); it derives, signs and keeps nothing.
+ */
+export function nexusOfferSigner(atomSeed: Uint8Array, nexus: string): OfferSigner {
+  if (atomSeed.length !== 32) throw new Error("canon-offer: an atom seed is 32 bytes");
+  if (nexus.trim() === "") throw new CanonOfferRefused("offer-no-nexus", "no Nexus stands to offer toward");
+  const derive = (): Uint8Array => hkdf(sha256, atomSeed, undefined, utf8Bytes(`${CANON_OFFER_KEY_DOMAIN}\n${nexus.trim()}`), 32);
+  const own = derive();
+  const key = hex(ed25519.getPublicKey(own));
+  own.fill(0);
+  return {
+    key,
+    sign: async (bytes) => { const seed = derive(); try { return hex(ed25519.sign(bytes, seed)); } finally { seed.fill(0); } },
+  };
 }
 
 export function canonOfferCid(body: CanonOfferBody): string { return sha256HexBytesSync(canonOfferBodyBytes(body)); }
@@ -214,7 +243,6 @@ const bagOf = (bag: string): string => (bag.startsWith("lar:") ? bag : bagUri(ba
 export function openCanonOffer(parts: {
   readonly nexus:   string;
   readonly bag:     string;
-  readonly face:    string;
   readonly offerer: string;
   readonly records: ReadonlyArray<{ readonly record: LarTiddlerRecord; readonly base: string | null }>;
 }): CanonOfferBody {
@@ -236,7 +264,7 @@ export function openCanonOffer(parts: {
     records.push({ title, fields, digest: carrierHashOf(fields), base });
   }
   records.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
-  const body: CanonOfferBody = { kind: CANON_OFFER_DOMAIN, nexus: parts.nexus.trim(), bag, face: parts.face.trim().toLowerCase(), offerer: parts.offerer, records };
+  const body: CanonOfferBody = { kind: CANON_OFFER_DOMAIN, nexus: parts.nexus.trim(), bag, offerer: parts.offerer, records };
   const weight = JSON.stringify(body).length + CANON_OFFER_ENVELOPE_MAX;
   if (weight > CANON_OFFER_ROW_MAX) throw new CanonOfferRefused("offer-too-large", `this offer's board row would hold about ${weight} characters, past the ${CANON_OFFER_ROW_MAX} every reader folds; offer fewer memes at once`);
   return body;
@@ -266,12 +294,13 @@ export function readCanonOffer(value: unknown): CanonOffer | null {
   if (!isRecord(value) || !isRecord(value["body"]) || typeof value["cid"] !== "string" || typeof value["sig"] !== "string") return null;
   const b = value["body"];
   if (b["kind"] !== CANON_OFFER_DOMAIN) return null;
-  for (const k of ["nexus", "bag", "face", "offerer"] as const) if (typeof b[k] !== "string") return null;
+  if (Object.keys(b).some((k) => !OFFER_BODY_FIELDS.includes(k))) return null;
+  for (const k of ["nexus", "bag", "offerer"] as const) if (typeof b[k] !== "string") return null;
   if (!Array.isArray(b["records"])) return null;
   const records: CanonOfferedRecord[] = [];
   for (const r of b["records"]) { const read = readOfferedRecord(r); if (read === null) return null; records.push(read); }
   return {
-    body: { kind: CANON_OFFER_DOMAIN, nexus: b["nexus"] as string, bag: b["bag"] as string, face: b["face"] as string, offerer: b["offerer"] as string, records },
+    body: { kind: CANON_OFFER_DOMAIN, nexus: b["nexus"] as string, bag: b["bag"] as string, offerer: b["offerer"] as string, records },
     cid: value["cid"], sig: value["sig"],
   };
 }
@@ -512,14 +541,14 @@ export interface CanonOfferOutcome { readonly offer: CanonOffer; readonly landed
 
 /**
  * OFFER: read each named title off the face's own source layer (its workbench), take each record's fork base off its
- * `overrideBase` (null where it names none), seal the offer under the face's atom and append it to the board. It writes nothing
+ * `overrideBase` (null where it names none), seal the offer under the face's offer key at this Nexus and append it to the board. It writes nothing
  * else: no canon read gates it and no canon document moves.
  */
 export async function offerCanonRecords(ports: CanonOfferPorts & {
   /** The face's working layer: its records by title, and the live titles it holds (the fragment expansion reads them). */
   readonly source: OfferRecordReader & { listVisible(): Promise<string[]> };
+  /** The offering face's key AT THIS NEXUS (`nexusOfferSigner`), never its atom. */
   readonly signer: OfferSigner;
-  readonly face:   string;
 }, args: { readonly bag: string; readonly titles: readonly string[] }): Promise<CanonOfferOutcome> {
   const bag = bagOf(args.bag);
   if (!isHouseCanonBag(bag)) throw new CanonOfferRefused("offer-not-canon", `${bag} names no house-canon bag; an offer goes toward house canon alone`);
@@ -540,7 +569,7 @@ export async function offerCanonRecords(ports: CanonOfferPorts & {
     }
     records.push({ record, base: overrideBaseOf(record) });
   }
-  const body = openCanonOffer({ nexus: ports.nexus, bag, face: ports.face, offerer: ports.signer.key, records });
+  const body = openCanonOffer({ nexus: ports.nexus, bag, offerer: ports.signer.key, records });
   const offer = await signCanonOffer(body, ports.signer);
   let landed = false;
   ports.board.change((draft) => { landed = writeCanonOffer(draft, offer); });
@@ -551,7 +580,7 @@ export async function offerCanonRecords(ports: CanonOfferPorts & {
 export interface CanonOfferListing {
   readonly cid:      string;
   readonly bag:      string;
-  readonly face:     string;
+  /** The offering face's offer key at this Nexus: one offerer reads the same on every offer it makes here. */
   readonly offerer:  string;
   readonly retired:  { readonly steward: string; readonly retire: string } | null;
   /** Retires the table carries for this offer that count nothing (`retire-unauthorised`: no charter seat sealed them). */
@@ -582,7 +611,7 @@ export async function readCanonOffers(ports: CanonOfferPorts, args: { readonly b
     if (s.retired !== null && args.all !== true) continue;
     const rows = await freshnessRows(ports, s.offer);
     offers.push({
-      cid: s.offer.cid, bag: s.offer.body.bag, face: s.offer.body.face, offerer: s.offer.body.offerer,
+      cid: s.offer.cid, bag: s.offer.body.bag, offerer: s.offer.body.offerer,
       retired: s.retired ? { steward: s.retired.body.steward, retire: s.retired.cid } : null,
       refusedRetires: s.refusedRetires,
       records: rows.map(({ r, freshness }) => ({ title: r.title, digest: r.digest, base: r.base, freshness })),
@@ -605,7 +634,7 @@ export async function showCanonOffer(ports: CanonOfferPorts, cid: string): Promi
   const s = standingOf(ports, cid);
   const rows = await freshnessRows(ports, s.offer);
   return {
-    cid: s.offer.cid, bag: s.offer.body.bag, face: s.offer.body.face, offerer: s.offer.body.offerer,
+    cid: s.offer.cid, bag: s.offer.body.bag, offerer: s.offer.body.offerer,
     retired: s.retired ? { steward: s.retired.body.steward, retire: s.retired.cid } : null,
     refusedRetires: s.refusedRetires,
     records: rows.map(({ r, freshness }) => ({ title: r.title, digest: r.digest, base: r.base, freshness })),

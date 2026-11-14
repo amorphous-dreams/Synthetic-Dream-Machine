@@ -85,7 +85,7 @@ describe("the offer", () => {
     const working = memoryStore({ [T1]: rec(T1, "the engineer says one", base), [T2]: rec(T2, "a new page") });
     const board = memoryBoard();
     const h1 = await signer(11);
-    const out = await offerCanonRecords({ ...ports(board, canon), source: working, signer: h1, face: "aa".repeat(32) }, { bag: "lares", titles: [T2, T1] });
+    const out = await offerCanonRecords({ ...ports(board, canon), source: working, signer: h1 }, { bag: "lares", titles: [T2, T1] });
     expect(out.landed).toBe(true);
     expect(canon.puts).toBe(0);
     expect(canon.rows[T1]).toBe(canonBefore);
@@ -108,13 +108,13 @@ describe("the offer", () => {
       expect(offerWithheldTitle(title)).toBe(true);
       const working = memoryStore({ [title]: rec(title, "secret") });
       const board = memoryBoard();
-      await expect(offerCanonRecords({ ...ports(board, memoryStore()), source: working, signer: await signer(11), face: "aa" }, { bag: "lares", titles: [title] }))
+      await expect(offerCanonRecords({ ...ports(board, memoryStore()), source: working, signer: await signer(11) }, { bag: "lares", titles: [title] }))
         .rejects.toMatchObject({ refusal: "offer-withheld-title" });
       expect(Object.keys(board.doc()!.tiddlers)).toEqual([]);
     }
     // A row forged past the door (signed, CID-true, but carrying a cap title) never counts on the board.
     const h1 = await signer(11);
-    const body = { ...openCanonOffer({ nexus: NEXUS, bag: "lares", face: "aa", offerer: h1.key, records: [{ record: rec(T1, "x"), base: null }] }) };
+    const body = { ...openCanonOffer({ nexus: NEXUS, bag: "lares", offerer: h1.key, records: [{ record: rec(T1, "x"), base: null }] }) };
     const forgedRecord = { title: "lar:///ha.ka.ba/bags/daemon/cap/zz", fields: { title: "lar:///ha.ka.ba/bags/daemon/cap/zz", text: "k" }, digest: carrierHashOf({ title: "lar:///ha.ka.ba/bags/daemon/cap/zz", text: "k" }), base: null };
     const forged = await signCanonOffer({ ...body, records: [forgedRecord] }, h1);
     const doc = emptyLarDoc();
@@ -123,7 +123,7 @@ describe("the offer", () => {
     expect(folded.offers).toHaveLength(0);
     expect(folded.setAside).toEqual([{ key: forged.cid, reason: "withheld-title" }]);
     // CONTROL: a non-canon bag refuses by its own name.
-    await expect(offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore({ [T1]: rec(T1, "x") }), signer: h1, face: "aa" }, { bag: "crossroads", titles: [T1] }))
+    await expect(offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore({ [T1]: rec(T1, "x") }), signer: h1 }, { bag: "crossroads", titles: [T1] }))
       .rejects.toMatchObject({ refusal: "offer-not-canon" });
   });
 
@@ -137,26 +137,26 @@ describe("the offer", () => {
     for (let i = 0; i < 105; i++) rows[`${T1}#/slot-${i}`] = rec(`${T1}#/slot-${i}`, `slot ${i}`);
     const h1 = await signer(11);
     const board = memoryBoard();
-    const out = await offerCanonRecords({ ...ports(board, memoryStore()), source: memoryStore(rows), signer: h1, face: "aa" }, { bag: "lares", titles: [T1] });
+    const out = await offerCanonRecords({ ...ports(board, memoryStore()), source: memoryStore(rows), signer: h1 }, { bag: "lares", titles: [T1] });
     expect(out.landed).toBe(true);
     expect(out.offer.body.records).toHaveLength(106);
     expect(foldCanonOffers(board.doc(), NEXUS).offers.map((o) => o.offer.cid)).toEqual([out.offer.cid]);
     const many = (n: number) => Array.from({ length: n }, (_, i) => `lar:///ha.ka.ba/lares/docs/pono/many-${String(i).padStart(2, "0")}`);
     const pages = Object.fromEntries(many(65).map((t) => [t, rec(t, "a page")]));
-    await expect(offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore(pages), signer: h1, face: "aa" }, { bag: "lares", titles: many(65) }))
+    await expect(offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore(pages), signer: h1 }, { bag: "lares", titles: many(65) }))
       .rejects.toMatchObject({ refusal: "offer-too-many" });
-    expect((await offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore(pages), signer: h1, face: "aa" }, { bag: "lares", titles: many(64) })).landed).toBe(true);
+    expect((await offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore(pages), signer: h1 }, { bag: "lares", titles: many(64) })).landed).toBe(true);
   });
 
   test("RED: an offer whose board row would pass CANON_OFFER_ROW_MAX refuses offer-too-large and lands no row (CONTROL: a meme just under the bound lands and folds)", async () => {
     const h1 = await signer(11);
     const heavy = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_ROW_MAX)) });
     const board = memoryBoard();
-    await expect(offerCanonRecords({ ...ports(board, memoryStore()), source: heavy, signer: h1, face: "aa" }, { bag: "lares", titles: [T1] }))
+    await expect(offerCanonRecords({ ...ports(board, memoryStore()), source: heavy, signer: h1 }, { bag: "lares", titles: [T1] }))
       .rejects.toMatchObject({ refusal: "offer-too-large" });
     expect(Object.keys(board.doc()!.tiddlers)).toEqual([]);
     const under = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_ROW_MAX - 4096)) });
-    const out = await offerCanonRecords({ ...ports(board, memoryStore()), source: under, signer: h1, face: "aa" }, { bag: "lares", titles: [T1] });
+    const out = await offerCanonRecords({ ...ports(board, memoryStore()), source: under, signer: h1 }, { bag: "lares", titles: [T1] });
     expect(out.landed).toBe(true);
     const folded = foldCanonOffers(board.doc(), NEXUS);
     expect(folded.offers.map((o) => o.offer.cid)).toEqual([out.offer.cid]);
@@ -167,9 +167,9 @@ describe("the offer", () => {
     const working = memoryStore({ [T2]: rec(T2, "a new page") });
     const board = memoryBoard();
     const h1 = await signer(11);
-    const first = await offerCanonRecords({ ...ports(board, memoryStore()), source: working, signer: h1, face: "aa" }, { bag: "lares", titles: [T2] });
+    const first = await offerCanonRecords({ ...ports(board, memoryStore()), source: working, signer: h1 }, { bag: "lares", titles: [T2] });
     const before = JSON.stringify(board.doc());
-    const again = await offerCanonRecords({ ...ports(board, memoryStore()), source: working, signer: h1, face: "aa" }, { bag: "lares", titles: [T2] });
+    const again = await offerCanonRecords({ ...ports(board, memoryStore()), source: working, signer: h1 }, { bag: "lares", titles: [T2] });
     expect(again).toMatchObject({ landed: false, offer: { cid: first.offer.cid } });
     expect(Object.keys(board.doc()!.tiddlers)).toHaveLength(1);
     expect(JSON.stringify(board.doc())).toBe(before);
@@ -183,7 +183,7 @@ describe("the promotion", () => {
     const base = carrierHashOf(canonBefore.tiddler as Record<string, unknown>);
     const working = memoryStore({ [T1]: rec(T1, "the engineer says one", base), [T2]: rec(T2, "a new page") });
     const board = memoryBoard();
-    const out = await offerCanonRecords({ ...ports(board, canon), source: working, signer: await signer(11), face: "aa" }, { bag: "lares", titles: [T1, T2] });
+    const out = await offerCanonRecords({ ...ports(board, canon), source: working, signer: await signer(11) }, { bag: "lares", titles: [T1, T2] });
     return { canon, board, offer: out.offer, working };
   }
 
@@ -305,7 +305,7 @@ describe("the retire's authority", () => {
     const canon = memoryStore();
     const working = memoryStore({ [T2]: rec(T2, "a new page") });
     const board = memoryBoard();
-    const out = await offerCanonRecords({ ...ports(board, canon), source: working, signer: await signer(11), face: "aa" }, { bag: "lares", titles: [T2] });
+    const out = await offerCanonRecords({ ...ports(board, canon), source: working, signer: await signer(11) }, { bag: "lares", titles: [T2] });
     await promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await kahuHand()), seat, canonWrite: async () => canon }, { cid: out.offer.cid });
     return { canon, board, offer: out.offer };
   }
@@ -362,7 +362,7 @@ describe("the loop", () => {
     const canonPorts: CanonOfferPorts = { nexus: NEXUS, board, canon: async () => canonStore };
 
     // 1 · h1 OFFERS (unadmitted).
-    const { offer } = await offerCanonRecords({ ...canonPorts, source: workbench, signer: await signer(21), face: "11".repeat(32) }, { bag: "lares", titles: [T1] });
+    const { offer } = await offerCanonRecords({ ...canonPorts, source: workbench, signer: await signer(21) }, { bag: "lares", titles: [T1] });
     // 2 · h0 PROMOTES under the Kahu reach.
     await promoteCanonOffer({ ...canonPorts, requireReach: reachOf(await kahuHand()), seat,
       canonWrite: async () => ({ put: (r) => canonStore.put(r, { kind: "lares-verb", requestId: "promote" }) }) }, { cid: offer.cid });
@@ -442,7 +442,7 @@ describe("both hosts", () => {
       }
       const p: CanonOfferPorts = { nexus: NEXUS, board, canon: async () => canon };
       const working = memoryStore({ [T1]: rec(T1, "offered", base), [T2]: rec(T2, "new") });
-      const { offer } = await offerCanonRecords({ ...p, source: working, signer: h1, face: "aa" }, { bag: "lares", titles: [T1, T2] });
+      const { offer } = await offerCanonRecords({ ...p, source: working, signer: h1 }, { bag: "lares", titles: [T1, T2] });
       const listed = await readCanonOffers(p);
       const promoted = await promoteCanonOffer({ ...p, requireReach: reachOf(steward), seat: async () => h0, canonWrite: async () => canon }, { cid: offer.cid });
       const retired = await retireCanonOffer({ ...p, steward: h0 }, { cid: offer.cid });
@@ -455,7 +455,7 @@ describe("both hosts", () => {
     expect(node.promoted).toMatchObject({ moved: true, wrote: [T1, T2] });
     expect(node.replay).toMatchObject({ moved: false });
     // CONTROL: the CID re-derives from the body alone, the same on either host.
-    expect(canonOfferCid(openCanonOffer({ nexus: NEXUS, bag: "lares", face: "aa", offerer: h1.key, records: [{ record: rec(T1, "offered", base), base }, { record: rec(T2, "new"), base: null }] }))).toBe(node.cid);
+    expect(canonOfferCid(openCanonOffer({ nexus: NEXUS, bag: "lares", offerer: h1.key, records: [{ record: rec(T1, "offered", base), base }, { record: rec(T2, "new"), base: null }] }))).toBe(node.cid);
   });
 });
 

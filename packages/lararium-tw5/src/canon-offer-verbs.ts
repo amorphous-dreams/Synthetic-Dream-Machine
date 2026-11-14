@@ -12,7 +12,8 @@
  *   · `canonWrite`  — the same document, written ONLY after `requireKahuReach` clears for the bag (the vessel's Kahu source);
  *   · `board`       — the Nexus's offer table (`canonOfferDocUrl`), beside the Kahu realm and never in it; the Nexus reads off
  *                     the shore's charter (node), else the call's own `nexus` (a browser page, whose island reads no charter);
- *   · `signer`      — the lit face's atom: an offer and a retire each seal under the face that made it.
+ *   · `signer`      — the lit face's offer key at the Nexus it offers toward (`nexusOfferSigner`): an offer seals under a key
+ *                     scoped to that Nexus and names no PersonaGroup and no atom key.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
@@ -30,8 +31,8 @@ export interface CanonOfferVerbOptions extends ActionHandlerOptions {
   readonly nexus:  () => Promise<string | null>;
   /** The Nexus's offer table. */
   readonly board:  (nexus: string) => Promise<CanonOfferBoard>;
-  /** The lit face's atom and its PersonaGroup; null at a faceless floor. */
-  readonly signer: () => { readonly face: string; readonly atom: OfferSigner } | null;
+  /** The lit face's offer key at a Nexus (`nexusOfferSigner` over the face's atom seed); null at a faceless floor. */
+  readonly signer: () => ((nexus: string) => OfferSigner) | null;
   /**
    * The seat of the Nexus's charter this vessel holds, read by name and never opened (its key, its epoch, the lineage that proves
    * it); null where it holds none. A host that lends no reader (a browser page, which holds no seat row) promotes nothing.
@@ -134,7 +135,7 @@ export function makeOfferMakeReactor(opts: CanonOfferVerbOptions): VerbReactor {
       if (reached.denied) throw new VerbRefusal("cap-denied", `cap-denied: read on ${working} required (${reached.denied})`);
       throw new CanonOfferRefused("offer-not-in-source", `${working} reaches no working layer here, and this face holds no personal layer of the wiki`);
     }
-    const out = await offerCanonRecords({ ...ports, source: reached.source, signer: face.atom, face: face.face }, { bag, titles });
+    const out = await offerCanonRecords({ ...ports, source: reached.source, signer: face(ports.nexus) }, { bag, titles });
     return { cid: out.offer.cid, landed: out.landed, bag, source: reached.bags, nexus: ports.nexus, records: out.offer.body.records.map((r) => ({ title: r.title, digest: r.digest, base: r.base })) };
   });
 }
