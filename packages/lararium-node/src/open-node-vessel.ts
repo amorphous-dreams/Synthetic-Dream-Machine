@@ -32,7 +32,7 @@ import { provenPlaneUrls, registerFacePlanesForRelay } from "./face-plane-regist
 import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
-import { larBootstrapPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
+import { larBootstrapPath, larCatalogUrlPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
 import { join, dirname, resolve as resolvePath } from "path";
 import type { Server }                  from "node:http";
@@ -1491,7 +1491,7 @@ async function prepareNodeBootOn(
   emit("repo-open");
 
   // ── 2. Catalog — local-first rendezvous anchor (catalog-url file) ───────────
-  const catalogUrlFile = join(storageDir, "catalog-url");
+  const catalogUrlFile = larCatalogUrlPath(storageDir);   // the ONE pointer a direct store door reads too (`readCatalogPointer`)
   let resolvedCatalogUrl: string | null = catalogUrl ?? null;
   if (!resolvedCatalogUrl) {
     try { resolvedCatalogUrl = readFileSync(catalogUrlFile, "utf8").trim() || null; } catch { /* first boot */ }

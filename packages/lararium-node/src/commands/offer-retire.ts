@@ -67,6 +67,8 @@ export async function runOfferRetire(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly cid: string;
   readonly over?: ReadonlyArray<{ readonly title: string; readonly canon: string | null }>;
   readonly aid?: string; readonly vesselKey?: string;
+  /** The catalog the held store names (`StoreDoorDeps.catalogUrl`): the Kahu realm's bag rows in it name the canon documents. */
+  readonly catalogUrl?: string | undefined;
   /** The canon document's heads the promotion answered (`canonHeads`): the retire waits until this door's replica contains them. */
   readonly after?: readonly string[];
   /** The bound on that wait (default `OFFER_RETIRE_WAIT_MS`). */
@@ -81,7 +83,7 @@ export async function runOfferRetire(opts: {
   const [seat] = heldSeatSigners(core.roster);
   if (seat === undefined) throw new NexusCabalError("this vessel holds no seat of the charter, so it retires no offer (a seat's vessel promotes and retires it).");
   const board = await materializeSharedLarDoc(opts.repo, canonOfferDocUrl(core.nexus), "board:canon-offer");
-  const docUrlOf = await nodeCanonDocUrl(opts.repo);
+  const docUrlOf = await nodeCanonDocUrl(opts.repo, opts.catalogUrl);
   const ports = {
     nexus: core.nexus,
     board: { doc: () => board.doc(), change: (fn: Parameters<typeof board.change>[0]) => { board.change(fn); } },

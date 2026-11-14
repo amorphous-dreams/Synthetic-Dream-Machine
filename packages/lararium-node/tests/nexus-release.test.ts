@@ -22,12 +22,11 @@ import { join } from "node:path";
 import * as A from "@automerge/automerge";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, BAG_IDS, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, canonOfferDocUrl, emptyLarDoc, faceAtomKeyFromSeed, foldCanonOffers, nexusAidOf,
+  AutomergeDocStore, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, canonOfferDocUrl, emptyLarDoc, faceAtomKeyFromSeed, foldCanonOffers, nexusAidOf,
   offerCanonRecords, promoteCanonOffer, realmDocPointer, realmDocUrl, realmStandingPointer, storedLarRecord, type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { runOfferRetire } from "../src/commands/offer-retire.js";
-import { larBootstrapPath } from "../src/vessel-paths.js";
 import {
   crossroadsDocUrl, publicationDocUrl, floorReleaseRowsFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE, cutFloorSnapshot, floorManifestBytes,
@@ -186,7 +185,7 @@ describe("a charter seat retires a promoted canon offer across the store door", 
 
   /**
    * One vessel's side of a promotion, on its own Repo: the Kahu realm's standing document for `bags/lares` (named by the vessel's
-   * catalog, which the bootstrap names), an open offer on the Nexus's offer table, and THE DAEMON ISLAND'S REPLICA of canon, a
+   * catalog, which the store door holds as `catalogUrl` and no bootstrap names), an open offer on the Nexus's offer table, and THE DAEMON ISLAND'S REPLICA of canon, a
    * clone the promotion writes into. `deliver` merges that replica's write into the store door's own, as sync would.
    */
   async function rig(repo: Repo) {
@@ -197,7 +196,6 @@ describe("a charter seat retires a promoted canon offer across the store door", 
     catalog.change((d) => {
       for (const [k, text] of [[REALM_ID_TIDDLER, REALM], [realmDocPointer(REALM), realmDocUrl(REALM)], [realmStandingPointer(REALM), JSON.stringify(standing)]] as const) d.tiddlers[k] = storedLarRecord(k, { text }, "test");
     });
-    writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: { [BAG_IDS.catalog]: { text: catalog.url } } }) }));
     const charter = readNexusDoc(larSealHome())!;
     const nexus = nexusAidOf(charter)!;
     const boardHandle = await materializeSharedLarDoc(repo, canonOfferDocUrl(nexus), "board:canon-offer");
@@ -212,9 +210,9 @@ describe("a charter seat retires a promoted canon offer across the store door", 
     const promote = () => promoteCanonOffer({ ...ports, requireReach: async () => {}, seat: async () => seat,
       canonWrite: async () => ({ put: (r) => islandStore.put(r, origin), heads: () => islandStore.headsNow() }) }, { cid: offer.cid, overFresher: true });
     const deliver = (): void => { canonHandle.update((doc) => A.merge(doc, A.clone(island.doc()!))); };
-    const door = storeDoorReactors({ storageDir: larDataDir(), sealHome: larSealHome(), repo });
+    const door = storeDoorReactors({ storageDir: larDataDir(), sealHome: larSealHome(), repo, catalogUrl: catalog.url });
     const retired = () => foldCanonOffers(boardHandle.doc(), nexus).offers.find((o) => o.offer.cid === offer.cid)?.retired ?? null;
-    return { offer, promote, deliver, door, retired, canonHandle };
+    return { offer, promote, deliver, door, retired, canonHandle, catalogUrl: catalog.url };
   }
 
   it("a retire that follows a promotion waits on the heads the promotion answered, and lands when its replica takes the write", async () => {
@@ -236,7 +234,7 @@ describe("a charter seat retires a promoted canon offer across the store door", 
       const r = await rig(repo);
       const promoted = await r.promote();
       if (!promoted.moved) throw new Error("the promotion held");
-      const pending = await runOfferRetire({ repo, sealHome: larSealHome(), cid: r.offer.cid, after: promoted.canonHeads!, waitMs: 60 });
+      const pending = await runOfferRetire({ repo, sealHome: larSealHome(), cid: r.offer.cid, catalogUrl: r.catalogUrl, after: promoted.canonHeads!, waitMs: 60 });
       expect(pending).toMatchObject({ retired: false, cid: r.offer.cid, why: "canon-trails" });
       expect((pending as { pending: string }).pending).toMatch(/the canon write stands.*lares meme offer promote/s);
       expect(r.retired()).toBeNull();

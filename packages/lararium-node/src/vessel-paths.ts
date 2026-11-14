@@ -39,7 +39,7 @@
  * path always agrees.
  */
 
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { basename, join } from "node:path";
 
@@ -384,6 +384,21 @@ export function larHarvestStagingDir(): string {
  */
 export function larBootstrapPath(): string {
   return join(larDataDir(), "social-bootstrap.json");
+}
+
+/**
+ * The catalog pointer — `<vessel>/catalog-url`: the automerge url of the catalog's floor document, written by the vessel's
+ * boot only after that document flushed. THE ONE ANSWER to "where does this store's catalog rest" for a door that opens the
+ * store with no vessel standing (`storeDoorDirect`); a standing vessel hands its own catalog handle's url instead, and that
+ * handle resolves from this same file. The bootstrap names no catalog: it holds the social planes' address book alone.
+ */
+export function larCatalogUrlPath(storageDir: string = larDataDir()): string {
+  return join(storageDir, "catalog-url");
+}
+
+/** The catalog url the pointer file names, or null where no catalog stands beside this store. */
+export function readCatalogPointer(storageDir: string = larDataDir()): string | null {
+  try { return readFileSync(larCatalogUrlPath(storageDir), "utf8").trim() || null; } catch { return null; }
 }
 
 // NOTE: genesis/ stays CORPUS-relative (larRoot / the repo) and holds TRACKED SEED ALONE — the baked

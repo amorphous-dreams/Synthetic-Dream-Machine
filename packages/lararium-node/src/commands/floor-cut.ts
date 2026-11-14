@@ -7,8 +7,8 @@
  *
  * The ports, by capability (`runFloorCutOver` binds them; `runFloorCut` resolves the charter, the board and the catalog first):
  *   · `prior`     — the chain head's manifest where a release counts on the publication board, else this vessel's pinned floor;
- *   · `canonRows` — each house-canon slug's live document, named by the Kahu realm's bag row in this vessel's catalog (a read
- *                   asks nothing); a slug with no document here keeps the prior snapshot, and the answer names it;
+ *   · `canonRows` — each house-canon slug's live document, named by the Kahu realm's bag row in this vessel's catalog (the
+ *                   catalog the store door holds, `catalogUrl`; a read asks nothing); a slug with no document here keeps the prior snapshot, and the answer names it;
  *   · `tier`      — each bag's own declared tier, read off its `meta.mem` under this vessel's canon source (`daemonBagsDir`); a
  *                   bag declared under `public` leaves the cut, and one with no declaration here keeps its standing;
  *   · `blob`      — this hearth's CAS, read for each prior snapshot the thin read weighs (`floor-cut-thin`, lifted per slug by `thin`);
@@ -16,11 +16,11 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/offering#/the-canon-offer
  */
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, BAG_IDS, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseRowsFromBoard, foldFloorReleases, ownEntry,
+  AutomergeDocStore, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseRowsFromBoard, foldFloorReleases,
   publicationDocUrl, materializeSharedLarDoc, realmStandingDocUrl, sha256HexBytesSync,
   type CapTier, type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
 } from "@lararium/mesh";
@@ -29,7 +29,6 @@ import { daemonBagsDir } from "../lares-config.js";
 import { readVerifiedCasBlobFromFs, writeCasEntriesFs } from "../node-cas.js";
 import { loadVesselVerifyingKey } from "../node-vessel-identity.js";
 import { nodeNexusIsland } from "../nexus-standing.js";
-import { larBootstrapPath } from "../vessel-paths.js";
 import { FloorRefused, nodeFloorPorts } from "./floor.js";
 import { charterHomeFor } from "../carried-set.js";
 
@@ -51,20 +50,13 @@ export function declaredBagTier(bagsDir: string, slug: string): CapTier | null {
   return existsSync(join(dir, BAG_MANIFEST_FILE)) ? readBagManifest(dir, slug).tier : null;
 }
 
-function bootstrapEntry(id: string): string | null {
-  try {
-    const plugin = JSON.parse(readFileSync(larBootstrapPath(), "utf8")) as { text?: string };
-    const entries = (JSON.parse(plugin.text ?? "{}") as { tiddlers?: Record<string, { text?: string }> }).tiddlers ?? {};
-    return ownEntry(entries, id)?.text ?? null;
-  } catch { return null; }
-}
-
 /**
- * The live house-canon document a bag names on this vessel: the Kahu realm's bag row in the vessel's own catalog (the bootstrap
- * names the catalog). Null where the vessel holds no catalog or no row stands for the bag. A read; it asks nothing.
+ * The live house-canon document a bag names on this vessel: the Kahu realm's bag row in the vessel's own catalog. `catalogUrl`
+ * names that catalog as the store door holds it (`StoreDoorDeps.catalogUrl`: the standing vessel's own catalog handle, or the
+ * pointer file beside a store a direct act opened, `readCatalogPointer`). Null where the store names no catalog or no row stands
+ * for the bag. A read; it asks nothing.
  */
-export async function nodeCanonDocUrl(repo: Repo): Promise<(bag: string) => string | null> {
-  const catalogUrl = bootstrapEntry(BAG_IDS.catalog);
+export async function nodeCanonDocUrl(repo: Repo, catalogUrl: string | null | undefined): Promise<(bag: string) => string | null> {
   const catalog = catalogUrl ? (await repo.find<LarDoc>(catalogUrl as AutomergeUrl)).doc() : null;
   return (bag) => (catalog ? realmStandingDocUrl(catalog, bag) : null);
 }
@@ -117,13 +109,15 @@ export async function runFloorCutOver(opts: {
 /** Cut the floor from live canon, stage it, and write its manifest to `out`: the charter, the board and the catalog resolved here. */
 export async function runFloorCut(opts: {
   readonly repo: Repo; readonly sealHome: string; readonly casDir: string; readonly out: string; readonly aid?: string; readonly thin?: readonly string[];
+  /** The catalog the held store names (`StoreDoorDeps.catalogUrl`); absent, no canon document reads and every slug keeps its snapshot. */
+  readonly catalogUrl?: string | undefined;
 }): Promise<FloorCutResult> {
   const pinPorts = await nodeFloorPorts({ repo: opts.repo, sealHome: opts.sealHome, casDir: opts.casDir, ...(opts.aid !== undefined ? { aid: opts.aid } : {}) });
   const home = opts.aid !== undefined ? (charterHomeFor(opts.sealHome, opts.aid.trim().toLowerCase()) ?? opts.sealHome) : opts.sealHome;
   const board = await materializeSharedLarDoc(opts.repo, publicationDocUrl(nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: home })), "board:publication");
   const casRead = async (cid: string) => readVerifiedCasBlobFromFs(cid, opts.casDir);
   const result = await runFloorCutOver({
-    repo: opts.repo, casDir: opts.casDir, out: opts.out, canonDocUrl: await nodeCanonDocUrl(opts.repo),
+    repo: opts.repo, casDir: opts.casDir, out: opts.out, canonDocUrl: await nodeCanonDocUrl(opts.repo, opts.catalogUrl),
     bagTier: (slug) => declaredBagTier(daemonBagsDir(), slug),
     ...(opts.thin ? { thin: opts.thin } : {}),
     prior: async () => {

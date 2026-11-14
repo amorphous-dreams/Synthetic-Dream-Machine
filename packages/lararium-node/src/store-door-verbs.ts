@@ -89,9 +89,7 @@ import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import type { LarDoc } from "@lararium/mesh";
-import { readFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { join } from "node:path";
 import type { VerbReactor } from "@lararium/tw5";
 import type { HandleClaim } from "@lararium/mesh";
 import { federationPostureFromDoc, isVerbRefusal, readNexusActPartial, type FederationPosture, type CarriageAction, type KahuQuorumSeats, type SealEpoch } from "@lararium/mesh";
@@ -123,7 +121,7 @@ import { runNexusInspectOffering, NexusOfferingInspectError } from "./commands/n
 import { runRaiseSign, RaiseSignError } from "./commands/raise-sign.js";
 import { makeLocalPersonaKelHeadAndSeqResolver } from "./local-persona-kel.js";
 import { ownedStore } from "./owned-store.js";
-import { larDataDir } from "./vessel-paths.js";
+import { larDataDir, readCatalogPointer } from "./vessel-paths.js";
 import { readNexusDoc, writeNexusPractice } from "./nexus-doc.js";
 import { takeAdmitBundle, AdmitBundleError } from "./admit-bundle.js";
 import { takeCarryBundle, CarryBundleError } from "./carry-bundle.js";
@@ -316,6 +314,8 @@ async function answer(verb: string, run: () => Promise<Record<string, unknown>>)
   try { return { verb, ...(await run()) }; }
   catch (err) {
     if (err instanceof FaceRouteRefused) return { verb, refused: err.message, refusal: "face-route-refused" };
+    // A floor door's refusal carries its own name (`floor-no-charter`, `floor-cut-thin`): the row answers under it, never the verb's.
+    if (err instanceof FloorRefused) return { verb, refused: err.message, refusal: err.refusal };
     if (REFUSALS.some((R) => err instanceof R)) return { verb, refused: (err as Error).message, refusal: storeRefusalName(verb) };
     throw err;
   }
@@ -556,7 +556,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // A replica that trails the promotion past the wait's bound answers `canon-trails` with `pending`: an answer, never a refusal.
     "offer-retire": (args) => answer("offer-retire", async () => ({
       ...(await runOfferRetire({
-        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])),
+        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])), ...opt("catalogUrl", deps.catalogUrl),
         // The heads the promotion answered: the retire waits until this door's replica of canon contains them.
         ...(args["after"] !== undefined ? { after: Array.isArray(args["after"]) ? (args["after"] as unknown[]).map(String) : [] } : {}),
         ...(Array.isArray(args["over"]) ? { over: (args["over"] as unknown[]).filter((o): o is { title: string; canon: string | null } =>
@@ -564,7 +564,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       })),
     })),
     "floor-cut": (args) => answer("floor-cut", async () => ({
-      ...(await runFloorCut({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), out: need("floor-cut", args, "out"), ...opt("aid", str(args["aid"])),
+      ...(await runFloorCut({ repo, sealHome, casDir: deps.casDir ?? casDirForStorage(storageDir), out: need("floor-cut", args, "out"), ...opt("aid", str(args["aid"])), ...opt("catalogUrl", deps.catalogUrl),
         ...(Array.isArray(args["thin"]) ? { thin: (args["thin"] as unknown[]).filter((s): s is string => typeof s === "string") } : {}) })),
     })),
 
@@ -821,9 +821,7 @@ export async function storeDoorDirect(
 ): Promise<Record<string, unknown>> {
   const storageDir = opts.storageDir ?? larDataDir();
   return await ownedStore(storageDir, (repo) => {
-    // The direct holder reads the catalog named beside the store it owns. An unnamed store carries no canon.
-    let catalogUrl: string | undefined;
-    try { catalogUrl = readFileSync(join(storageDir, "catalog-url"), "utf8").trim() || undefined; } catch { /* No catalog stands. */ }
-    return storeDoorRows({ storageDir, sealHome: opts.sealHome, repo, catalogUrl })[verb](args);
+    // The direct holder reads the catalog named beside the store it owns (`readCatalogPointer`). An unnamed store carries no canon.
+    return storeDoorRows({ storageDir, sealHome: opts.sealHome, repo, catalogUrl: readCatalogPointer(storageDir) ?? undefined })[verb](args);
   });
 }
