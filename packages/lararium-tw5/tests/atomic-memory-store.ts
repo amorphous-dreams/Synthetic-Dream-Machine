@@ -28,6 +28,10 @@ export class AtomicMemoryStore extends MemoryTiddlerStore {
       records._records.set(title, { ...(existing ?? { tiddler: { title } }), meta: { ...(existing?.meta ?? {}), deleted: true } });
       changes.push({ title, record: null, origin, ...bag });
     }
+    for (const title of _options?.retracts ?? []) {
+      if (!records._records.delete(title)) continue;
+      changes.push({ title, record: null, origin, ...bag });
+    }
     for (const change of changes) {
       const live = records._records.get(change.title);
       const fired: LarTiddlerChange = change.record === null

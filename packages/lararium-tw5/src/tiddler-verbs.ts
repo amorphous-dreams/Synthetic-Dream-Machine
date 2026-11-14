@@ -6,11 +6,11 @@
  * The contract every skin (this, the CLI's `lares tiddler|wiki`, the MCP seat's `tiddler_*|wiki_*`) carries verbatim:
  *
  *   wiki-filter    { recipe, filter, fields?, after?, limit?, maxBytes? } → { recipe, filter, titles | rows, total, next, asOf, withheld? }
- *   tiddler-get    { recipe, title, slot?, fields?, text?, maxBytes? }    → { recipe, title, tiddler: { fields, hash, textHash, bag, position, family?, omitted? } | null }
+ *   tiddler-get    { recipe, title, slot?, fields?, text?, maxBytes? }    → { recipe, title, tiddler: { fields, hash, textHash, bag, position, family?, orphan?, omitted? } | null }
  *   wiki-render    { recipe, title | text, type?, form?, after?, maxBytes? } → { recipe, title, form, text, bytes, truncated, next }
  *   tiddler-put    { recipe, title, text?, fields?, unset?, tagsAdd?, tagsRemove?, base?, create? }
  *                                                                         → { recipe, title, decision: put|noop|conflict|exists, bag, created, changed, hash, textHash, position, family? }
- *   tiddler-delete { recipe, title, base? }                               → { recipe, title, decision: removed|absent|conflict, tombstoned, hash?, consequence? }
+ *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted, read, write, working?, why? }] }
  *
  * THIS PHASE ANSWERS THE ANCHOR ALONE: `recipe: "default"`, the worn face's daemon wiki, through the daemon island's live
@@ -27,6 +27,22 @@
  * plugin field, a script type) refuses `tiddler-put-code-class`: no eval door opens here. No action string and no
  * `tm-*` message rides this door (the `act` ask, phase 2).
  *
+ * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
+ * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
+ * so a record the face may not read enters no consequence. A plain tiddler leaves. A meme root or slot answers its
+ * consequence and `decision: "refused"` (`refusal: "tiddler-delete-in-a-family"`) unless the call names the family act
+ * (`family: true`); with it the consequence's tombstones land as ONE change in the working layer. A slot its parent
+ * calls by `kahea` refuses even then, since the parent's text would have to move: that rides `meme put`.
+ *
+ * A DELETE OVER LAYERS NAMES ITS MEANING (`mode`, lar:///ha.ka.ba/lares/api/pono/kapae #/core-cut). `kapae`, the default
+ * and what every delete door raised before the name stood (the engine's own delete through the island adaptor, `meme
+ * delete`, `store.tombstone`): a tombstone in a writable layer at or above the working layer, which shadows every record
+ * of the title beneath, so the wiki reads the title gone and the lower layers keep theirs. `reveal`: the topmost record
+ * retracts to absent and the record beneath surfaces; it refuses `reveal-top-unwritable` where the face cannot write the
+ * layer that holds the topmost record. Each act of the consequence names the layers that hold the title (`holds`) and
+ * what the wiki reads afterward (`shadowed: [bags]` or `reveals: bag | null`). One mode covers a whole family, and each
+ * layer takes its members as one change.
+ *
  * EVERY ANSWER STAYS BOUNDED. A filter pages by rows and bytes under a cursor that names the answer it continues
  * (`pageFilterAnswer`, the one page law the record port's `filter` ask shares); a render and a get hold a byte cap.
  *
@@ -37,15 +53,15 @@
 
 import {
   VerbRefusal, canonicalJsonBytes, offerWithheldTitle, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
-  type CompositeStore, type KahuReachSource, type LarTiddlerStore,
+  type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
+import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readContainer } from "./meme-verbs.js";
-import { isMemeRoot, stageRowTitle, ROW_KEY_FIELD, ROW_KEY_MISSING_CODE, ROW_KEY_SHAPE_CODE, ROW_KEY_TITLE_CODE, STAGE_ROW_PREFIX } from "./place-meme.js";
+import { wikiFamilyView, stageRowTitle, ROW_KEY_FIELD, ROW_KEY_MISSING_CODE, ROW_KEY_SHAPE_CODE, ROW_KEY_TITLE_CODE, STAGE_ROW_PREFIX } from "./place-meme.js";
 import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
-import type { TiddlerFields } from "./deserializer.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
@@ -124,33 +140,7 @@ const textHashOf = (fields: Record<string, string>): string | null =>
 
 // ── FAMILY POSITION ───────────────────────────────────────────────────────────────────────────────────
 
-export type TiddlerPosition = "root" | "slot" | "plain";
-
-/**
- * ━━ SEAM (lane 1a, `packages/lararium-mesh/src/family.ts`) ━━
- * WHERE A RECORD STANDS IN A MEME FAMILY, BY TODAY'S TESTS: a root by `isMemeRoot`, a slot by its `$fragment-parent`
- * edge (the family read by climbing those edges), anything else plain. The one family law (`familyOf`, parent edges
- * plus references) replaces this function whole once it merges; nothing else in this module spells a family test.
- */
-export function positionToday(wiki: Pick<EngineWiki, "getTiddler">, title: string, fields: Record<string, unknown> | undefined): { position: TiddlerPosition; family: string | null } {
-  if (isMemeRoot(title, fields as TiddlerFields | undefined)) return { position: "root", family: title };
-  let parent = fields?.["$fragment-parent"];
-  if (typeof parent !== "string" || parent === "") return { position: "plain", family: null };
-  let family = parent;
-  for (let depth = 0; depth < 64; depth++) {
-    parent = wiki.getTiddler(family)?.fields["$fragment-parent"];
-    if (typeof parent !== "string" || parent === "" || parent === family) break;
-    family = parent;
-  }
-  return { position: "slot", family };
-}
-
-/** True where some record names `title` as its `$fragment-parent`: a parent by edge, whatever its own type reads. */
-function holdsSlotChildren(wiki: Pick<EngineWiki, "each">, title: string): boolean {
-  let found = false;
-  wiki.each((tiddler) => { if (!found && tiddler.fields["$fragment-parent"] === title) found = true; });
-  return found;
-}
+export type TiddlerPosition = FamilyPosition;
 
 // ── THE GATES ─────────────────────────────────────────────────────────────────────────────────────────
 
@@ -240,6 +230,79 @@ async function viewFor(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContex
   return { view: readerView(wiki, visible), visible, mayRead };
 }
 
+/**
+ * THE FAMILY VIEW THIS DOOR READS THROUGH: the one family law over a wiki (the reader's view, so a hidden record
+ * enters no reading), lent the anchor's layer facts. Every write at the anchor lands in the working layer, so a record
+ * another layer answers takes its tombstone there as a shadow; a record's version reads as the `hash` a writer holds.
+ */
+function familyViewAt(anchor: Anchor, wiki: EngineWiki, layers?: LayerFacts): FamilyView {
+  return wikiFamilyView(wiki as never, {
+    bagOf: (title) => {
+      const top = layers?.of.get(title)?.[0];
+      if (top) return top.bag;
+      const tiddler = wiki.getTiddler(title);
+      return tiddler ? (readRecord(tiddler).bag ?? anchor.bag) : null;
+    },
+    writable: (bag) => (layers ? layers.writable.has(bag) : bag === anchor.bag),
+    workingBag: () => anchor.bag,
+    ...(layers ? { layersOf: (title: string) => layers.of.get(title) ?? [] } : {}),
+    version: (title) => { const tiddler = wiki.getTiddler(title); return tiddler ? hashOf(readRecord(tiddler).fields) : null; },
+  });
+}
+
+/** What the composition holds for a delete's candidates: each title's layers, topmost first, and the layers this face's delete may write. */
+interface LayerFacts {
+  readonly of: Map<string, Array<{ bag: string; state: "live" | "kapae" }>>;
+  readonly writable: Set<string>;
+}
+
+/**
+ * THE LAYERS A DELETE READS. For the target and every title that composes onto its root address (the only titles a
+ * component can hold): each mounted layer that holds a record, topmost first, live or a raised kāpae, minus the layers
+ * the face may not read. A layer takes this face's delete where the island mounts it writable at or above the working
+ * layer (a tombstone shadows only from above, and a canon layer beneath takes no hand's delete: the adaptor's own rule)
+ * and the Kahu predicate and the face's write cap both admit it.
+ */
+async function layerFactsFor(
+  opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], view: EngineWiki, mayRead: (bag: string | null) => Promise<boolean>, title: string,
+): Promise<LayerFacts> {
+  const composite = opts.composite;
+  const stack = [...composite.layerIds].reverse();
+  const workingIndex = composite.layerIndexOf(anchor.bag);
+  const writable = new Set<string>();
+  const readable: string[] = [];
+  for (const bag of stack) {
+    if (!(await mayRead(bag))) continue;
+    readable.push(bag);
+    if (!composite.hasWritableBag(bag) || workingIndex < 0 || composite.layerIndexOf(bag) < workingIndex) continue;
+    try {
+      await requireKahuReach(bag, opts.kahuReach, "tiddler delete");
+      if ((await cap("admin", bag)).ok) writable.add(bag);
+    } catch { /* a layer the Kahu predicate keeps from this hand takes no delete of its */ }
+  }
+  const address = rootAddressOf(title);
+  const prefix = `${address}#`;
+  const of: LayerFacts["of"] = new Map();
+  for (const candidate of view.allTitles()) {
+    if (candidate !== title && candidate !== address && !candidate.startsWith(prefix)) continue;
+    const held: Array<{ bag: string; state: "live" | "kapae" }> = [];
+    for (const bag of readable) {
+      const record = await composite.storeForBag(bag)?.get(candidate);
+      if (record) held.push({ bag, state: record.meta?.deleted ? "kapae" : "live" });
+    }
+    of.set(candidate, held);
+  }
+  return { of, writable };
+}
+
+/** Where a title stands, as an answer names it: its position, its family's root, and whether it stands orphaned. */
+function placeOf(anchor: Anchor, wiki: EngineWiki, title: string): { position: TiddlerPosition; family: string | null; orphan: boolean } {
+  const reading = familyOf(familyViewAt(anchor, wiki), title);
+  return { position: reading.position, family: reading.root, orphan: reading.orphan };
+}
+const placeFields = (place: { position: TiddlerPosition; family: string | null; orphan: boolean }): Record<string, unknown> =>
+  ({ position: place.position, ...(place.family ? { family: place.family } : {}), ...(place.orphan ? { orphan: true } : {}) });
+
 /** The write gate, in the meme door's own order: the Kahu predicate, then the face's write cap on the landing bag. */
 async function requireWrite(opts: TiddlerVerbOptions, anchor: Anchor, cap: VerbContext["cap"], verb: string): Promise<void> {
   await requireKahuReach(anchor.bag, opts.kahuReach, verb);
@@ -303,7 +366,7 @@ export function makeTiddlerGetReactor(opts: TiddlerVerbOptions): VerbReactor {
     const slot = optionalStringArg(args, "slot");
     const title = slot ? slotTitle(named, slot) : named;
     refuseWithheld(title, "tiddler-get");
-    const mayRead = await reachOf(opts, anchor, ctx.cap);
+    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     const wiki = anchor.engine.wiki;
     const tiddler = wiki.getTiddler(title);
     if (!tiddler) return { recipe: "default", title, tiddler: null };
@@ -330,10 +393,9 @@ export function makeTiddlerGetReactor(opts: TiddlerVerbOptions): VerbReactor {
         omitted.push(name);
       }
     }
-    const { position, family } = positionToday(wiki, title, tiddler.fields);
     return {
       recipe: "default", title,
-      tiddler: { fields: shown, hash: hashOf(fields), textHash: textHashOf(fields), bag, position, ...(family ? { family } : {}), ...(omitted.length > 0 ? { omitted } : {}) },
+      tiddler: { fields: shown, hash: hashOf(fields), textHash: textHashOf(fields), bag, ...placeFields(placeOf(anchor, view, title)), ...(omitted.length > 0 ? { omitted } : {}) },
     };
   };
 }
@@ -460,15 +522,13 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     const { wiki, utils, Tiddler } = anchor.engine;
     const standing = wiki.getTiddler(title);
     const held = standing ? readRecord(standing) : null;
-    if (held) {
-      const mayRead = await reachOf(opts, anchor, ctx.cap);
-      if (!(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
-    }
+    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
+    if (held && !(await mayRead(held.bag))) throw new Error(`cap-denied: read on ${held.bag} required (the bag that answers "${title}")`);
     const before = held?.fields ?? null;
     const liveHash = before ? hashOf(before) : null;
-    const place = standing ? positionToday(wiki, title, standing.fields) : { position: "plain" as TiddlerPosition, family: null };
+    const place = standing ? placeOf(anchor, view, title) : { position: "plain" as TiddlerPosition, family: null, orphan: false };
     const answer = (decision: string, more: Record<string, unknown>): Record<string, unknown> =>
-      ({ recipe: "default", title, decision, bag: anchor.bag, ...more, position: place.position, ...(place.family ? { family: place.family } : {}) });
+      ({ recipe: "default", title, decision, bag: anchor.bag, ...more, ...placeFields(place) });
 
     // CREATE-ONLY ON REQUEST, and the base where one rides: either answers before any field moves.
     if (flagOn(args["create"]) && wiki.tiddlerExists(title)) return answer("exists", { created: false, changed: [], hash: liveHash, textHash: before ? textHashOf(before) : null });
@@ -526,28 +586,64 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;
     if (!standing) return { recipe: "default", title, decision: "absent", tombstoned: [] };
     const { fields, bag } = readRecord(standing);
-    const mayRead = await reachOf(opts, anchor, ctx.cap);
+    const { view, mayRead } = await viewFor(opts, anchor, ctx.cap);
     if (!(await mayRead(bag))) throw new Error(`cap-denied: read on ${bag} required (the bag that answers "${title}")`);
-
-    // ━━ SEAM (lane 1a) ━━ THE FAMILY LAW DECIDES WHAT A DELETE MOVES. Until `familyOf` and `consequence` merge
-    // (`@lararium/mesh` `family.ts`), a target that reads as a meme root or slot by today's tests, or that any record
-    // names as its `$fragment-parent`, refuses here and the meme door removes the family whole. Once they merge:
-    // replace this block and the hand-built `consequence` below with `consequence(familyOf(title, view), "delete")`,
-    // and let a root's delete widen to its family in one change (red `delete-root-previews-family`).
-    const place = positionToday(wiki, title, standing.fields);
-    if (place.position !== "plain" || holdsSlotChildren(wiki, title)) {
-      const family = place.family ?? title;
-      throw new VerbRefusal("tiddler-delete-in-a-family", `tiddler-delete-in-a-family: use the meme door. "${title}" stands as a meme ${place.position === "plain" ? "parent" : place.position} of ${family}; \`lares meme delete ${family}\` (meme_delete) removes the family whole, and a slot leaves through a \`meme put\` of its root's text.`);
-    }
     const hash = hashOf(fields);
+
+    const named = optionalStringArg(args, "mode");
+    if (named !== null && named !== "kapae" && named !== "reveal") {
+      throw new VerbRefusal("delete-mode-unknown", `delete-mode-unknown: args.mode reads "kapae" (a tombstone that shadows the layers beneath; the default) or "reveal" (the topmost record retracts and the one beneath surfaces); got "${named}".`);
+    }
+    const mode: DeleteMode = named === "reveal" ? "reveal" : "kapae";
+
+    // THE FAMILY LAW DECIDES WHAT A DELETE MOVES: the consequence gets read first, over the reader's view and the
+    // layers the composition holds, and a refusal lands nothing. The read stays meme-aware (never `bare`): this door
+    // strands no slot.
+    const layers = await layerFactsFor(opts, anchor, ctx.cap, view, mayRead, title);
+    const read: Consequence = consequence(familyViewAt(anchor, view, layers), { kind: "delete", title, mode });
+    const refused = (refusal: string, why: string): Record<string, unknown> =>
+      ({ recipe: "default", title, decision: "refused", mode, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash, consequence: read });
+    const tombstones = tombstonesOf(read);
+    const retracts = retractsOf(read);
+    const moves = tombstones.length + retracts.length;
+    if (read.position !== "plain" && !flagOn(args["family"])) {
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares meme delete ${read.family}\` (meme_delete).`);
+    }
+    if (read.refusals.length > 0) {
+      const first = read.refusals[0]!;
+      const why = first.code === "reveal-top-unwritable"
+        ? `a reveal retracts the topmost record of "${first.title}", and this face writes no record in the layer that holds it (${layers.of.get(first.title)?.[0]?.bag ?? "none"}); \`mode: "kapae"\` shadows it from the working layer instead. Nothing moved.`
+        : `"${first.title}" refuses this delete; nothing moved.`;
+      return refused(first.code, why);
+    }
+    // A slot its parent calls leaves with the call: the parent's text would move, and a family's text moves through the meme door.
+    const dangling = read.acts.find((row) => row.act === "put") ?? read.leaves.find((row) => row.why === "reference-dangles:kahea");
+    if (dangling) {
+      return refused("tiddler-delete-in-a-family", `"${title}" stands as a slot "${dangling.title}" calls by \`kahea\`; the call leaves with the slot, and a family's text moves through the meme door: \`lares meme put ${read.family}\` (meme_put) with the slot's block gone.`);
+    }
+    // A record no mounted layer holds (the engine's own, or a wiki with no store beneath it) has nothing to retract.
+    const unheld = read.acts.find((row) => row.act === "retract" && (row.holds?.length ?? 0) === 0);
+    if (unheld) return refused("reveal-top-unwritable", `no mounted layer holds a record of "${unheld.title}", so a reveal has nothing to retract; \`mode: "kapae"\` removes it. Nothing moved.`);
     const base = optionalStringArg(args, "base");
-    if (base !== null && base !== hash) return { recipe: "default", title, decision: "conflict", tombstoned: [], hash };
-    // The delete goes through the live wiki: the island's adaptor lands the tombstone where it shadows (the working layer).
-    wiki.deleteTiddler(title);
-    return {
-      recipe: "default", title, decision: "removed", tombstoned: [title], hash,
-      consequence: { position: "plain", family: null, acts: [{ title, act: "tombstone", bag: anchor.bag }], leaves: [], orphans: [], refusals: [] },
-    };
+    if (base !== null && base !== hash) return { recipe: "default", title, decision: "conflict", mode, tombstoned: [], retracted: [], hash };
+
+    // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
+    // that change in the wiki as one grain. A record no layer holds leaves through the live wiki, as a hand's delete.
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const perBag = new Map<string, { tombstones: string[]; retracts: string[] }>();
+    const byHand: string[] = [];
+    for (const row of read.acts) {
+      if (row.act !== "tombstone" && row.act !== "retract") continue;
+      if (row.bag === null || (row.holds?.length ?? 0) === 0 || !opts.composite.hasWritableBag(row.bag)) { byHand.push(row.title); continue; }
+      const group = perBag.get(row.bag) ?? { tombstones: [], retracts: [] };
+      (row.act === "tombstone" ? group.tombstones : group.retracts).push(row.title);
+      perBag.set(row.bag, group);
+    }
+    for (const [landing, group] of perBag) {
+      await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
+    }
+    for (const member of byHand) wiki.deleteTiddler(member);
+    return { recipe: "default", title, decision: "removed", mode, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
 }
 

@@ -21,6 +21,13 @@
  * AN ORPHAN: a record whose `$fragment-parent` chain reaches no standing record. It stays live, and the
  * house keeps and flags it (`orphanFamilies`), since a concurrent re-root may still rescue it.
  *
+ * A DELETE CARRIES TWO MEANINGS over a layered recipe, and the act names which (`mode`). KĀPAE (the default,
+ * and what every delete door raised before the name stood): a tombstone in a writable layer, which SHADOWS
+ * every record of the title beneath it, so the wiki reads the title gone while lower layers still hold it.
+ * REVEAL: the topmost record retracts to absent, so the cascade falls through and the record beneath
+ * surfaces. Where the view lends its layers (`layersOf`), each act names the layers that hold the title and
+ * what the wiki reads afterward (`shadowed`, `reveals`). A family applies one mode to every member.
+ *
  * PURE AND ISOMORPHIC. Every function here reads the `FamilyView` it gets handed and nothing else: no
  * store, no clock, no engine. Node and browser import this one module. The view lends the text grammar
  * (`refs`), since the sigil scanner lives above this package.
@@ -70,6 +77,11 @@ export interface FamilyView {
   childrenOf?(parent: string): readonly string[];
   /** The version (a seq, a heads digest) the view read `title` at; null where it holds none. */
   version?(title: string): string | null;
+  /**
+   * Every layer that holds a record of `title`, topmost first, each `live` or a raised `kapae`. Absent, a
+   * delete's acts name no `holds`, `shadowed` or `reveals`.
+   */
+  layersOf?(title: string): ReadonlyArray<{ readonly bag: string; readonly state: "live" | "kapae" }>;
   /** The layer (bag) `title` resolves from. */
   bagOf?(title: string): string | null;
   /** Whether the caller's standing grant writes `bag`. Absent, every bag reads writable. */
@@ -328,7 +340,8 @@ export function familyMembers(view: FamilyView, root: string): string[] {
  * act reads meme-aware and widens to the family by the gradient.
  */
 export type FamilyAct =
-  | { readonly kind: "delete"; readonly title: string; readonly bare?: boolean }
+  /** `mode`: `kapae` (default) shadows the title from a writable layer; `reveal` retracts the topmost record so the one beneath surfaces. */
+  | { readonly kind: "delete"; readonly title: string; readonly bare?: boolean; readonly mode?: DeleteMode }
   /** `lands`: every title the new content lands (the root and each slot it declares). Absent, the one title lands. */
   | { readonly kind: "put"; readonly title: string; readonly lands?: readonly string[]; readonly bare?: boolean }
   | { readonly kind: "rename"; readonly title: string; readonly to: string; readonly bare?: boolean }
@@ -336,11 +349,14 @@ export type FamilyAct =
   | { readonly kind: "move" | "copy"; readonly title: string; readonly toBag?: string; readonly toWiki?: string; readonly bare?: boolean; readonly withRoot?: boolean }
   | { readonly kind: "field"; readonly title: string; readonly field: string; readonly value: string | null };
 
+export type DeleteMode = "kapae" | "reveal";
+
 export type FamilyRefusalCode =
   | "absent"                         // the view holds no live record under the target
   | "slot-without-root"              // a slot moves, copies or re-titles only with the root that holds it
   | "family-spans-unwritable-layer"  // a member rests in a bag the grant cannot write and no working layer shadows it
   | "rename-target-stands"           // a record already stands at a title the rename would take
+  | "reveal-top-unwritable"          // a reveal retracts the topmost record, and the grant cannot write the layer that holds it
   | "read-only-seat";                // the seat reads only
 
 export interface ConsequenceAct {
@@ -355,6 +371,12 @@ export interface ConsequenceAct {
   readonly shadows?: string;
   /** The wiki the act lands in, for a move or copy across wikis. */
   readonly wiki?: string;
+  /** A delete, where the view lends its layers: every layer holding a live record of the title, topmost first. */
+  readonly holds?: readonly string[];
+  /** A kāpae delete: the layers whose live records the tombstone shadows (they stay in their bags; the wiki reads the title gone). */
+  readonly shadowed?: readonly string[];
+  /** A reveal delete: the layer whose record the wiki reads afterward; null where nothing surfaces (the title reads absent). */
+  readonly reveals?: string | null;
 }
 
 export interface Consequence {
@@ -441,6 +463,37 @@ export function consequence(view: FamilyView, act: FamilyAct): Consequence {
     acts.push({ title, act: kind, bag: at.bag, ...(at.shadows !== undefined ? { shadows: at.shadows } : {}) });
     if (at.shadows !== undefined) leaves.push({ title, why: `stands-beneath:${at.shadows}` });
   };
+  const mode: DeleteMode = act.kind === "delete" && act.mode === "reveal" ? "reveal" : "kapae";
+  /** One member leaves, by the delete's mode: a kāpae tombstone that shadows, or a retract that reveals. */
+  const leaveAct = (title: string): void => {
+    const layers = view.layersOf?.(title);
+    const holds = layers?.filter((layer) => layer.state === "live").map((layer) => layer.bag);
+    if (mode === "kapae") {
+      const at = landing(title);
+      if (at === null) { refusals.push({ title, code: "family-spans-unwritable-layer" }); return; }
+      acts.push({
+        title, act: "tombstone", bag: at.bag, ...(at.shadows !== undefined ? { shadows: at.shadows } : {}),
+        ...(holds !== undefined ? { holds, shadowed: holds.filter((bag) => bag !== at.bag) } : {}),
+      });
+      if (at.shadows !== undefined) leaves.push({ title, why: `stands-beneath:${at.shadows}` });
+      return;
+    }
+    const own = bagOf(title);
+    if (!writes(own)) {
+      // The target must retract or the act means nothing; a fellow member this hand holds no record of stays as it reads.
+      if (title === act.title) refusals.push({ title, code: "reveal-top-unwritable" });
+      else leaves.push({ title, why: `reveal-keeps:${own}` });
+      return;
+    }
+    // What surfaces: the next layer beneath the retracted one that holds any record; a kāpae there still shadows.
+    const at = layers?.findIndex((layer) => layer.bag === own) ?? -1;
+    const beneath = layers !== undefined && at >= 0 ? layers[at + 1] : undefined;
+    acts.push({
+      title, act: "retract", bag: own,
+      ...(holds !== undefined ? { holds, reveals: beneath !== undefined && beneath.state === "live" ? beneath.bag : null } : {}),
+    });
+    if (beneath !== undefined && beneath.state === "live") leaves.push({ title, why: `revealed-from:${beneath.bag}` });
+  };
   const namePathChildren = (root: string): void => {
     for (const title of pathChildren(tracked, root)) leaves.push({ title, why: "path-child-stands-as-its-own-meme" });
   };
@@ -471,20 +524,20 @@ export function consequence(view: FamilyView, act: FamilyAct): Consequence {
     case "delete": {
       if (isRoot) {
         if (bare) {
-          shadowingAct(act.title, "tombstone");
+          leaveAct(act.title);
           orphans.push(...slots);
         } else {
-          for (const member of reading.members) shadowingAct(member, "tombstone");
+          for (const member of reading.members) leaveAct(member);
         }
         namePathChildren(act.title);
         nameDanglers(bare ? [act.title] : reading.members);
       } else if (reading.position === "slot") {
         const subtree = subtreeOf(act.title);
         if (bare) {
-          shadowingAct(act.title, "tombstone");
+          leaveAct(act.title);
           orphans.push(...subtree.filter((t) => t !== act.title));
         } else {
-          for (const member of subtree) shadowingAct(member, "tombstone");
+          for (const member of subtree) leaveAct(member);
         }
         const parent = reading.parent;
         if (parent !== null && !reading.orphan && callsByKahea(parent, act.title)) {
@@ -495,7 +548,7 @@ export function consequence(view: FamilyView, act: FamilyAct): Consequence {
         }
         nameDanglers(bare ? [act.title] : subtree);
       } else {
-        shadowingAct(act.title, "tombstone");
+        leaveAct(act.title);
         nameDanglers([act.title]);
       }
       break;
@@ -596,4 +649,9 @@ export function consequence(view: FamilyView, act: FamilyAct): Consequence {
 /** The tombstones a consequence lands, in the order it names them. */
 export function tombstonesOf(c: Consequence): string[] {
   return c.acts.filter((row) => row.act === "tombstone").map((row) => row.title);
+}
+
+/** The retracts a consequence lands (a reveal delete, a move's source), in the order it names them. */
+export function retractsOf(c: Consequence): string[] {
+  return c.acts.filter((row) => row.act === "retract").map((row) => row.title);
 }

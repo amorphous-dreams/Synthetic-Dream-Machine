@@ -111,6 +111,11 @@ export interface LarTiddlerRecord {
 export interface LarWriteOptions {
   readonly bag?: string;
   readonly base?: readonly string[];
+  /**
+   * `writeFamily` alone: titles that RETRACT to absent inside the same change (a hard remove, never a kāpae
+   * tombstone), so the cascade falls through and a record beneath surfaces. A reveal delete of a family rides here.
+   */
+  readonly retracts?: readonly string[];
 }
 
 // ---------------------------------------------------------------------------

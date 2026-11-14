@@ -122,9 +122,18 @@ describe("the exit classes a receipt maps to", () => {
     expect((await run(argv("tiddler", ["put", "T"], { recipe: "default", text: "x" }, { create: true }))).exit).toBe(4);
     h.reply = { decision: "absent", tombstoned: [] };
     expect((await run(argv("tiddler", ["delete", "T"], { recipe: "default" }))).exit).toBe(3);
-    h.refuse = "tiddler-delete-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root of lar:///t/x";
+    // The family law answers a refusal as a receipt, so the consequence it read rides `data` beside the refusal's name.
+    h.reply = { recipe: "default", title: "lar:///t/x", decision: "refused", refusal: "tiddler-delete-in-a-family", why: "tiddler-delete-in-a-family: \"lar:///t/x\" stands as a meme root of lar:///t/x", tombstoned: [],
+      consequence: { position: "root", family: "lar:///t/x", acts: [{ title: "lar:///t/x", act: "tombstone" }, { title: "lar:///t/x#/b", act: "tombstone" }], leaves: [], orphans: [], refusals: [] } };
     const family = await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }));
-    expect(family).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: tiddler-delete-in-a-family" } } });
+    expect(family).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: tiddler-delete-in-a-family", message: expect.stringContaining("tiddler-delete-in-a-family:") },
+      data: { decision: "refused", consequence: { position: "root", acts: [{ title: "lar:///t/x" }, { title: "lar:///t/x#/b" }] } } } });
+    expect(h.calls.at(-1)!.args).not.toHaveProperty("family");
+    h.reply = { recipe: "default", title: "lar:///t/x", decision: "removed", tombstoned: ["lar:///t/x", "lar:///t/x#/b"] };
+    expect(await run(argv("tiddler", ["delete", "lar:///t/x"], { recipe: "default" }, { family: true }))).toMatchObject({ exit: 0, printed: { ok: true, data: { tombstoned: ["lar:///t/x", "lar:///t/x#/b"] } } });
+    expect(h.calls.at(-1)!.args).toMatchObject({ family: true });
+    h.refuse = "tiddler-put-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root and this put moves `text`";
+    expect(await run(argv("tiddler", ["put", "lar:///t/x"], { recipe: "default", text: "x" }))).toMatchObject({ exit: 4, printed: { ok: false, error: { code: "verb-error", hint: "refusal: tiddler-put-in-a-family" } } });
     h.refuse = "filter-malformed: Missing ] in filter expression (in \"[tag[x\")";
     expect(await run(argv("wiki", ["filter", "[tag[x"], { recipe: "default" }))).toMatchObject({ exit: 4, printed: { error: { hint: "refusal: filter-malformed" } } });
     h.refuse = "cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)";

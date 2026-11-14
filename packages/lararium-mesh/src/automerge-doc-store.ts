@@ -367,7 +367,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
     puts:       readonly LarTiddlerRecord[],
     tombstones: readonly string[],
     origin:     ChangeOrigin,
-    options?:   { bag?: string; base?: readonly string[] },
+    options?:   { bag?: string; base?: readonly string[]; retracts?: readonly string[] },
   ): Promise<void> {
     // THE TITLE DOOR. Every durable title passes this write: a put, a family, a tombstone (a tombstone
     // against an absent title MINTS the key). A session-form URI never stands as one, so the whole family
@@ -407,7 +407,9 @@ export class AutomergeDocStore implements LarTiddlerStore {
       return !(existing && _contentEquals(existing, r));
     });
     const movedTombstones = tombstones.filter((title) => !storedDeleted(ownEntry(current, title)));
-    if (moved.length === 0 && movedTombstones.length === 0) return;
+    // A RETRACT drops the key (absent: the cascade falls through), inside the same change as the family's other members.
+    const movedRetracts = (options?.retracts ?? []).filter((title) => ownEntry(current, title) !== undefined);
+    if (moved.length === 0 && movedTombstones.length === 0 && movedRetracts.length === 0) return;
 
     const based = requestedBase !== undefined && currentHeads !== null && !headsEqual(requestedBase, currentHeads);
     // A REMOVAL COUNTS AS A CHANGE. A based write removes, at its base, each field the hand's record no
@@ -450,6 +452,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
         }
       }
       for (const title of movedTombstones) _markDeleted(tiddlers, title);
+      for (const title of movedRetracts) delete tiddlers[title];
     };
     let madeAt: readonly string[] | undefined;
     try {
@@ -484,6 +487,7 @@ export class AutomergeDocStore implements LarTiddlerStore {
       const standing = ownEntry(tiddlersNow, title);
       fired.push({ title, record: standing ? _freezeRecord(standing) : _tombstoneRecord(title), ...envelope });
     }
+    for (const title of movedRetracts) fired.push({ title, record: null, ...envelope });
     this.provider.fireFamily(fired);
     for (const [title, { record, fields }] of removing) {
       const standing = ownEntry(tiddlersNow, title);

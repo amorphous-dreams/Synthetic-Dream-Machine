@@ -327,6 +327,7 @@ export class CompositeStore implements LarTiddlerStore {
     if (typeof store.writeFamily === "function") return store.writeFamily(based, tombstones, origin, writeOptions);
     for (const record of based) await store.put(record, origin, writeOptions);
     for (const title of tombstones) await store.tombstone(title, origin, writeOptions);
+    for (const title of options?.retracts ?? []) await store.remove(title, origin);
   }
 
   /** One listener that throws never starves the listeners after it: each hears every change. */
@@ -353,7 +354,7 @@ export class CompositeStore implements LarTiddlerStore {
     const store = this._writeTargetFor(options?.bag, "writeFamily");
     for (const record of puts) assertStorableTitle(record.tiddler.title);
     for (const title of tombstones) assertStorableTitle(title);
-    return { store, retired: this._refuseRetired(store, puts, "writeFamily", tombstones) };
+    return { store, retired: this._refuseRetired(store, puts, "writeFamily", [...tombstones, ...(options?.retracts ?? [])]) };
   }
 
   /**

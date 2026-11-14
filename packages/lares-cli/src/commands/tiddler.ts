@@ -8,7 +8,11 @@
  *
  * A tiddler verb acts on ONE record with its fields, whatever its type: a plain note, a data tiddler, a meme's root or
  * one of its slots. The meme door (`lares meme`) stays the door for a FAMILY's text (split, recompose, the block
- * check); this door reads any record and patches fields and tags without touching text.
+ * check); this door reads any record and patches fields and tags without touching text. A delete reads the one family
+ * law: a plain tiddler leaves; a meme root or slot answers the consequence the delete would land and refuses
+ * (`tiddler-delete-in-a-family`) unless the line names the family act (`--family`), which lands it as one change.
+ * Over layers a delete names its meaning: `--mode kapae` (the default) shadows the title from a writable layer and the
+ * layers beneath keep their records; `--mode reveal` retracts the topmost record and the one beneath surfaces.
  *
  * The container law holds: name `--recipe <slug>` or `--bag <slug>`. This phase answers `--recipe default`, the worn
  * face's daemon wiki; a named wiki refuses `wiki-not-anchored` by name.
@@ -46,6 +50,12 @@ export function tiddlerPlan(sub: Sub, args: ParsedArgs): DoorPlan {
     // The meme door's own spelling of the base on a delete, kept: one hash, the verb reads it as `base`.
     const base = wordOf(args.options["if-match"]) ?? wordOf(args.options["base"]);
     if (base) out["base"] = base;
+    if (args.flags["family"] === true) out["family"] = true;
+    const mode = wordOf(args.options["mode"]);
+    if (mode !== null) {
+      if (mode !== "kapae" && mode !== "reveal") throw new DoorUsage(`--mode takes kapae (shadow the layers beneath; the default) or reveal (retract the top record, the one beneath surfaces); got "${mode}"`);
+      out["mode"] = mode;
+    }
     return { verb: "tiddler-delete", args: out };
   }
   const raw = wordOf(args.options["fields"]);
@@ -142,14 +152,29 @@ async function tiddlerDelete(args: ParsedArgs): Promise<number> {
   const receipt = ran.output;
   const decision = String(receipt["decision"] ?? "");
   const code = decision === "removed" ? "ok" : decision === "conflict" ? "conflict" : decision === "absent" ? "not-found" : "verb-error";
+  // A refusal the family law answers rides the receipt with the consequence it read: the code leads the message.
+  const refusal = decision === "refused" && typeof receipt["refusal"] === "string" ? receipt["refusal"] : null;
   const message = decision === "conflict" ? `conflict: the record moved past ${plan.args["base"] ?? "the base"}; it reads ${receipt["hash"] ?? "absent"} now`
-                : decision === "absent" ? `no tiddler at ${plan.args["title"]}` : `${decision}: ${plan.args["title"]}`;
+                : decision === "absent" ? `no tiddler at ${plan.args["title"]}`
+                : refusal ? String(receipt["why"] ?? `${refusal}: ${plan.args["title"]}`) : `${decision}: ${plan.args["title"]}`;
+  const read = receipt["consequence"] as { acts?: Array<{ title: string; act: string; bag?: string | null; shadowed?: string[]; reveals?: string | null }>; leaves?: Array<{ title: string; why: string }> } | undefined;
+  /** One act as a line: the layer it writes and what the wiki reads afterward. */
+  const actLine = (row: NonNullable<NonNullable<typeof read>["acts"]>[number]): string =>
+    row.act === "retract" ? `retract ${row.title} from ${row.bag ?? "?"} → ${row.reveals ? `reveals ${row.reveals}` : "reads absent"}`
+    : row.act === "tombstone" ? `kapae ${row.title} in ${row.bag ?? "?"}${row.shadowed?.length ? ` (shadows ${row.shadowed.join(", ")})` : ""}`
+    : `${row.act} ${row.title}`;
   emit(args, {
     ok: code === "ok", requestId: ran.requestId, data: receipt,
-    ...(code === "ok" ? {} : { error: { code, message } }),
+    ...(code === "ok" ? {} : { error: { code, message, ...(refusal ? { hint: `refusal: ${refusal}` } : {}) } }),
     human: () => {
-      if (code !== "ok") { console.error(`lares tiddler delete: ${message}`); return; }
+      if (code !== "ok") {
+        console.error(`lares tiddler delete: ${message}`);
+        if (refusal) for (const row of read?.acts ?? []) console.error(`  would ${actLine(row)}`);
+        return;
+      }
       console.log(`removed: ${plan.args["title"]}`);
+      for (const row of read?.acts ?? []) console.log(`  ${actLine(row)}`);
+      for (const row of read?.leaves ?? []) console.log(`  leaves ${row.title} (${row.why})`);
       if (receipt["hash"]) console.log(`  base: ${receipt["hash"]}`);
     },
   });

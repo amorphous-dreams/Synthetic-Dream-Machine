@@ -181,6 +181,24 @@ def test_tiddler_delete_raises_on_a_stale_base_and_answers_absent(daemon):
     assert t["tiddler_delete"](title="T", recipe="default")["decision"] == "absent"
 
 
+def test_tiddler_delete_of_a_family_raises_with_its_consequence_and_lands_under_the_family_flag(daemon):
+    # THE FAMILY LAW AT THE SEAT: a root without the flag moves nothing and the tool error quotes the consequence the
+    # delete would land; with `family=True` the flag rides the wire and the receipt comes back whole.
+    t = _tools()
+    read = {"act": "delete", "target": "lar:///t/x", "position": "root", "family": "lar:///t/x",
+            "acts": [{"title": "lar:///t/x", "act": "tombstone", "bag": "w"}, {"title": "lar:///t/x#/b", "act": "tombstone", "bag": "w"}],
+            "leaves": [], "orphans": [], "refusals": []}
+    daemon.output = {"recipe": "default", "title": "lar:///t/x", "decision": "refused", "refusal": "tiddler-delete-in-a-family",
+                     "why": "tiddler-delete-in-a-family: \"lar:///t/x\" stands as a meme root of lar:///t/x", "tombstoned": [], "consequence": read}
+    with pytest.raises(uds.LaresVerbError, match=r"tiddler-delete-in-a-family.*nothing moved.*lar:///t/x#/b") as raised:
+        t["tiddler_delete"](title="lar:///t/x", recipe="default")
+    assert raised.value.refusal == "tiddler-delete-in-a-family"
+    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"recipe": "default", "title": "lar:///t/x"}}
+    daemon.output = {"recipe": "default", "title": "lar:///t/x", "decision": "removed", "tombstoned": ["lar:///t/x", "lar:///t/x#/b"], "consequence": read}
+    assert t["tiddler_delete"](title="lar:///t/x", recipe="default", family=True)["tombstoned"] == ["lar:///t/x", "lar:///t/x#/b"]
+    assert daemon.wire() == {"verb": "tiddler-delete", "args": {"recipe": "default", "title": "lar:///t/x", "family": True}}
+
+
 def _call(mcp, name: str, args: dict):
     async def go():
         try:
@@ -192,10 +210,10 @@ def _call(mcp, name: str, args: dict):
 
 def test_house_refusals_cross_the_seat_in_their_own_words(daemon):
     # The refusal classes the vessel names reach the caller through the seat's one refusal door: the family law on a
-    # delete, a malformed filter, a face with no reach, each in the house's words and never as a bare crash line.
+    # put, a malformed filter, a face with no reach, each in the house's words and never as a bare crash line.
     mcp = _mcp()
     for refusal, name, args in (
-        ("tiddler-delete-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root of lar:///t/x", "tiddler_delete", {"title": "lar:///t/x", "recipe": "default"}),
+        ("tiddler-put-in-a-family: use the meme door. \"lar:///t/x\" stands as a meme root and this put moves `text`", "tiddler_put", {"title": "lar:///t/x", "recipe": "default", "text": "x"}),
         ("filter-malformed: Missing ] in filter expression (in \"[tag[x\")", "wiki_filter", {"filter": "[tag[x", "recipe": "default"}),
         ("cap-denied: read on lar:///ha.ka.ba/wikis/daemon/working required (no-grant)", "wiki_status", {"recipe": "default"}),
         ("wiki-not-anchored: wiki-filter answers recipe \"default\" alone in this phase", "wiki_filter", {"filter": "[tag[x]]", "recipe": "lares"}),

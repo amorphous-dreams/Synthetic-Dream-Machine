@@ -14,6 +14,7 @@
  *   patch a field; the text's hash stays where it stood      (and a stale base lands nothing: the CONTROL)
  *   wiki status                                              (the working layer takes the write)
  *   a malformed filter and a family delete refuse by name    (CONTROLS)
+ *   a family delete under the family flag lands whole         (THE JOIN)
  *
  * Then THE CALLER'S FACE DECIDES REACH: the vessel wears a second face, and the same filter reaches none of the
  * first face's daemon wiki.
@@ -335,6 +336,48 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     expect(mine["tiddler_delete"]).toMatchObject({ destructiveHint: true, readOnlyHint: false, openWorldHint: false });
     expect(mine["wiki_filter"]).toMatchObject({ destructiveHint: false, readOnlyHint: true, idempotentHint: true, openWorldHint: false });
   }, 60_000);
+
+  test("a family delete through the tiddler door: the consequence and a refusal without the family flag, ONE act with it, on both skins", async () => {
+    const extra = NOTES + 1;
+    const file = join(scratch, `note-${extra}.mem`);
+    writeFileSync(file, memory(extra));
+    expect((await lar.cli(["meme", "put", uriOf(extra), "--recipe", "default", "--file", file, "--json"])).code).toBe(0);
+    const family = [uriOf(extra), `${uriOf(extra)}#/rule`, `${uriOf(extra)}#/why`];
+    // WITHOUT THE FLAG: nothing moves, and the answer names every record the delete would move.
+    const refused = await lar.cli(["tiddler", "delete", uriOf(extra), ...D]);
+    say("CLI tiddler delete of a meme root, no --family", refused.json);
+    expect(refused.code).toBe(4);
+    expect(dataOf(refused)).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family", tombstoned: [], consequence: { position: "root", family: uriOf(extra), refusals: [] } });
+    const acts = (dataOf(refused)["consequence"] as { acts: Array<{ title: string; act: string }> }).acts;
+    expect(acts.filter((row) => row.act === "tombstone").map((row) => row.title)).toEqual(family);
+    const slotRefused = await lar.cli(["tiddler", "delete", `${uriOf(extra)}#/why`, "--family", ...D]);
+    say("CLI tiddler delete of a called slot, --family", slotRefused.json);
+    expect(dataOf(slotRefused)).toMatchObject({ decision: "refused", refusal: "tiddler-delete-in-a-family" });
+    const said = await speak(entry, [
+      { name: "tiddler_delete", arguments: { title: uriOf(extra), recipe: "default" } },
+      { name: "tiddler_get", arguments: { title: uriOf(extra), recipe: "default", fields: ["status"] } },
+      { name: "tiddler_delete", arguments: { title: uriOf(extra), recipe: "default", family: true } },
+    ]);
+    const [seatRefused, seatStill, seatRemoved] = said.results.map(payload);
+    say("MCP tiddler_delete of a meme root, no family", seatRefused);
+    expect(seatRefused!.ok === false && seatRefused!.said).toContain("tiddler-delete-in-a-family");
+    expect(seatRefused!.ok === false && seatRefused!.said).toContain(`${uriOf(extra)}#/why`);
+    expect(seatStill!.ok && seatStill!.data["tiddler"]).not.toBeNull();
+    say("MCP tiddler_delete family=true", seatRemoved);
+    expect(seatRemoved!.ok && seatRemoved!.data).toMatchObject({ decision: "removed", tombstoned: family, consequence: { position: "root", family: uriOf(extra) } });
+    // LIVENESS: the shore lands the store's one change in the wiki; the walk COUNTS looks and never compares a clock.
+    let left: unknown = null;
+    for (let look = 0; look < 30; look++) {
+      const after = await lar.cli(["wiki", "filter", `[prefix[${uriOf(extra)}]]`, ...D]);
+      left = dataOf(after)["titles"];
+      if (after.code === 0 && Array.isArray(left) && left.length === 0) break;
+      await new Promise((r) => setTimeout(r, 500));
+    }
+    say("CLI wiki filter over the family's address after the delete", left);
+    expect(left).toEqual([]);
+    expect((await lar.cli(["tiddler", "get", uriOf(extra), ...D])).code).toBe(3);
+    expect((await lar.cli(["meme", "get", uriOf(extra), "--recipe", "default", "--json"])).code).not.toBe(0);
+  }, 300_000);
 
   test("THE CALLER'S FACE DECIDES REACH: a second face, worn, reaches none of the first face's daemon wiki", async () => {
     const filter = `[prefix[${STAGE}]]`;

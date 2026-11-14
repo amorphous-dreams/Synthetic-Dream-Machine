@@ -216,7 +216,7 @@ export type { MemeVerbOptions } from "./meme-verbs.js";
 // The tiddler door: every TiddlyWiki act over one record or one wiki's engine, on the anchor (wiki-surface-scout, lane 1).
 export {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
-  pageFilterAnswer, checkFilter, positionToday, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_RENDER_BYTES, WIKI_ANSWER_BYTES_MAX,
+  pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_RENDER_BYTES, WIKI_ANSWER_BYTES_MAX,
 } from "./tiddler-verbs.js";
 export type { TiddlerVerbOptions, FilterPage, FilterPageQuery, FilterRow, TiddlerPosition } from "./tiddler-verbs.js";
 // The projection law behind `--render`, the Export dropdown, `$tw.lares.meme.project` and `meme-project`.
