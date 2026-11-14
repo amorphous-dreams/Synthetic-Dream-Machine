@@ -30,7 +30,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { daemonFaceFolder, kahuaFaceFolder, wikiFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
+import { daemonFaceFolder, kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -315,15 +315,11 @@ export function daemonWikiDir(root: string): string {
 }
 
 /**
- * Where a staged vessel's workbench of a wiki projects on disk when its canon stands under no canon source: the founded
- * face's own folder, `<root>/projections/wikis/<slug>-<F>`, and `<root>/projections/wikis/<slug>` on a vessel that founded
- * no face (cabal-realm#/the-workbench).
+ * Where a staged vessel's workbench of a wiki projects on disk when its canon stands under no canon source: the ONE
+ * folder `<root>/projections/wikis/<slug>`, whichever seated writer wears (cabal-realm#/the-workbench).
  */
 export function wikiWorkbenchDir(root: string, slug: string): string {
-  // The kahua index names the founded face's relation; a vessel that founded no face writes none.
-  let relation: string | null = null;
-  try { relation = stagedHearthRelation(root); } catch { relation = null; }
-  return join(root, "projections", "wikis", relation ? wikiFaceFolder(slug, relation) : slug);
+  return join(root, "projections", "wikis", slug);
 }
 
 /** The face's kahua stage on a staged hearth: `<root>/projections/bags/kahua-<F>`. */

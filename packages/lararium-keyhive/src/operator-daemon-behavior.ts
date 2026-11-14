@@ -34,7 +34,7 @@ import {
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
-import { workbenchKeyDocs, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText } from "@lararium/mesh";
+import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
@@ -483,10 +483,26 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
    * no realm seats founds its own private cabal of one for a slug no other face of the vessel stands, and none for a slug
    * the ledger already binds; a face seated in two realms for one slug refuses `workbench-two-realms` by name.
    */
+  /**
+   * THE REST GATE (cabal-realm#/the-workbench, OWED): the vessel seals the working document of the wiki it MOUNTS under the
+   * worn face's own content key (`wornFaceWikiBags`; the island's one holder carries the worn face's), so a face seated in
+   * ANOTHER face's realm cannot open that document's rest on this vessel, and a save it made there would seal one document
+   * under two faces (the fault 9d57bb71e named: `reference-unknown`, a working layer neither face loads again). Until a
+   * workbench's rest seals for its realm's roster, such a seat mounts no workbench here and writes its own `personal` layer,
+   * as a face with no seat does; its seat still stands in the realm's Document for the wire and for its own vessels.
+   */
+  const restsUnderAnotherFace = (slug: string, realmId: string, face: string): boolean =>
+    realmId !== privateCabalRealmId(face, slug) && daemonAuth.registerBags.includes(wikiSlotUri(slug, "working"));
+  const restGateNamed = new Set<string>();
   const faceWorkbench = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face: string) => async (slug: string, mint: boolean): Promise<string | null> => {
     const hive = provider();
     if (!hive) return null;
-    return faceWorkbenchRealm(hive, asLedgerDoc(await workbenchLedgerOf(ctx)), slug, face, mint);
+    const realmId = await faceWorkbenchRealm(hive, asLedgerDoc(await workbenchLedgerOf(ctx)), slug, face, mint);
+    if (realmId !== null && hive === kh && restsUnderAnotherFace(slug, realmId, face)) {
+      if (!restGateNamed.has(slug)) { restGateNamed.add(slug); console.log(`[workbench] ${slug}: this face holds a seat in realm ${realmId.slice(0, 12)}…, and the workbench's document rests sealed under its owner face on this vessel; this face mounts none of it and writes its personal layer`); }
+      return null;
+    }
+    return realmId;
   };
   /** Whether one face's hive holds a writer's seat in a wiki's workbench (`workbenchWriterSeat`): a face that holds none writes `personal`. */
   const faceWrites = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined) => async (slug: string): Promise<boolean> => {
@@ -1595,6 +1611,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             set: async (title) => { if (!(await control.get(title))) await control.put(mutableLarRecord(title, { text: "owed" }, "share-apply"), ORIGIN); },
             clear: async (title) => { if (await control.get(title)) await control.remove(title, ORIGIN); },
           },
+          // THE WORKBENCH'S OWNER, read off the vessel's ledger: the lit face whose own derived realm binds the slug.
+          workbenchOwner: async (slug) => {
+            const bound = ledgerWorkbenchRealms((await workbenchLedgerOf(ctx)).doc(), slug);
+            const lit = faces.filter((f) => f.group !== null).find((f) => bound.includes(privateCabalRealmId(f.group!, slug)));
+            return { bound: lit?.handleIndex ?? null, founder: typeof daemonAuth.handleIndex === "number" ? daemonAuth.handleIndex : null, boundElsewhere: bound.length > 0 };
+          },
           // A WIKI ROW'S WORKBENCH: the owner face stands the wiki's realm, seats each lit member face on the realm's Document,
           // revokes each face the row stopped naming, and hands each member's hive the seat's events.
           workbench: async (row, owner, members) => {
@@ -1616,7 +1638,9 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               await seat.hive.ingestPeerEvents(await ownerHive.eventsForPeer(seat.agentHex));
               if (keyDoc) adoptWorkbench(seat.hive, row.slug, keyDoc);
             }
-            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, removed: landed.removed };
+            // THE REST GATE, said at the door: a workbench of the wiki this vessel mounts rests sealed under its owner's key.
+            const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
+            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
           },
           grant: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
@@ -1630,6 +1654,19 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         return { ok: true, ...applied, waiting: [...applied.waiting], workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };
       }, { summary: "Land the share config: lift each shared bag's row into each lit grantee's catalog half and delegate it from its owner's hive; a shut face's grant waits behind an opaque flag.", surfaces: [VERB_SURFACE.cli] });
+      // THE SEAT A CARRY ACT ASKS (cabal-realm#/the-workbench): a seed or an import lays a workbench once, at the wear of a face
+      // that holds a writer's seat there. This answers the worn face's write layer for a wiki and whether the vessel's ledger
+      // binds the slug at all; it reads alone and founds nothing.
+      registry.register("workbench-seat", async (args) => {
+        const slug = typeof args["slug"] === "string" ? args["slug"].trim() : "";
+        if (slug === "") throw new VerbRefusal("workbench-seat-incomplete", "workbench-seat-incomplete: name the wiki (`slug`)");
+        const realms = ledgerWorkbenchRealms((await workbenchLedgerOf(ctx)).doc(), slug);
+        const face = daemonAuth.personaGroupId;
+        // `restsUnderOwner`: the vessel seals this workbench's document under one face's key (the wiki it mounts), so a seat
+        // another face holds there writes `personal` on this vessel (the rest gate).
+        const restsUnderOwner = face !== undefined && realms.some((realmId) => restsUnderAnotherFace(slug, realmId, face));
+        return { ok: true, slug, writeSlot: await slotDocsOf(ctx).writeSlot(slug), bound: realms.length > 0, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
+      }, { summary: "Read the worn face's write layer for a wiki (`working` where it holds a writer's seat in the wiki's workbench, `personal` where it holds none) and whether this vessel's ledger binds the wiki's workbench.", surfaces: [VERB_SURFACE.cli] });
       // THE CONTENT FENCE DENIES BY DEFAULT. A verb runs on the MOUNTED face's resources (its content keys, its provider,
       // mint and ledger, its slot documents and catalog) whichever face's provider cleared the verify, so a presenter that
       // is another face refuses by name before any handler reads. The fence stands before EVERY verb on this table,

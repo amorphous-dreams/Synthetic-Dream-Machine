@@ -12,9 +12,9 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { existsSync, mkdirSync, readdirSync, renameSync } from "node:fs";
+import { existsSync, mkdirSync, renameSync } from "node:fs";
 import { join } from "node:path";
-import { daemonFaceFolder, kahuaFaceFolder, wikiFaceFolderOf, PERSONAL_PROJECTION_DIR } from "@lararium/node";
+import { daemonFaceFolder, kahuaFaceFolder, PERSONAL_PROJECTION_DIR } from "@lararium/node";
 import { faceLabelPath, faceBasesPath } from "./face-labels.js";
 
 export const ASHES_DIR = "ashes";
@@ -27,12 +27,8 @@ export function ashesDir(projections: string): string {
 /** The live folders a former face's relation names, each with the place it takes under ashes. */
 export function faceFolderMoves(projections: string, relation: string): Array<{ readonly from: string; readonly to: string }> {
   const base = join(ashesDir(projections), relation);
-  // The face's workbench folders: every `wikis/<slug>-<relation>` beside its daemon folder.
-  let benches: string[] = [];
-  try { benches = readdirSync(join(projections, "wikis")).filter((n) => n !== daemonFaceFolder(relation) && wikiFaceFolderOf(n)?.relation === relation).sort(); } catch { /* no wikis dir */ }
   return [
     { from: join(projections, "wikis", daemonFaceFolder(relation)), to: join(base, "wikis", daemonFaceFolder(relation)) },
-    ...benches.map((n) => ({ from: join(projections, "wikis", n), to: join(base, "wikis", n) })),
     { from: join(projections, "bags", daemonFaceFolder(relation)), to: join(base, "bags", daemonFaceFolder(relation)) },
     { from: join(projections, "bags", kahuaFaceFolder(relation)), to: join(base, "bags", kahuaFaceFolder(relation)) },
     // The face's personal layers of every wiki: `personal/<relation>/`, a face-private mirror like the rest.

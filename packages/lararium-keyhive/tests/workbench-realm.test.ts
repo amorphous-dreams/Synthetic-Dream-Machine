@@ -235,6 +235,22 @@ describe("K11 — one vessel binds a slug to one realm, and a seat in the realm'
     expect(await workbenchWriterSeat(await face(0x98), ledger.d, "lares"), "a face no realm seats holds none").toBe(false);
   });
 
+  test("a share over a wiki both faces MOUNT seats the member in the realm's key Document, though each composition mapped the slot on a Document of its own", async () => {
+    const steward = await composedFace(0x9a), engineer = await composedFace(0x9b);
+    const ledger = memDoc();
+    const s = await faceWorkbenchRealm(steward.hive, ledger, "lares", "group-steward", true);
+    const keyDoc = workbenchKeyDocs(ledger.d, s!, "lares")[0]!;
+    // A LATER COMPOSITION: each hive maps the working slot on its own bag Document again, as the mounted wiki's slots register.
+    steward.recompose(); engineer.recompose();
+    const engOnSteward = await introduce(steward.hive, engineer.hive);
+    await landWorkbench({ slug: "lares" }, [{ face: "group-engineer", agentHex: engOnSteward, access: "write" }], { provider: steward.hive, ledger, ownerFace: "group-steward" });
+    expect(steward.hive.docIdOfBag(SLOT)?.replace(/^0x/, ""), "the owner's working bag rides the realm's key Document").toBe(keyDoc);
+    await engineer.hive.ingestPeerEvents(await steward.hive.eventsForPeer(engOnSteward));
+    expect(await faceWorkbenchRealm(engineer.hive, ledger, "lares", "group-engineer", true), "the engineer's seat stands in the realm's own Document").toBe(s);
+    expect(engineer.hive.docIdOfBag(SLOT)?.replace(/^0x/, ""), "and its working bag rides that Document too").toBe(keyDoc);
+    expect(await workbenchWriterSeat(engineer.hive, ledger.d, "lares")).toBe(true);
+  });
+
   test("CONTROL: a face the owner seats by a share mounts the owner's realm and founds none", async () => {
     const steward = await composedFace(0x93), engineer = await face(0x94);
     const ledger = memDoc();

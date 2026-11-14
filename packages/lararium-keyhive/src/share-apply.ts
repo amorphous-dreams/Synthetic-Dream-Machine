@@ -16,7 +16,10 @@
  * A WIKI'S ROW ALSO SEATS ITS WORKBENCH (cabal-realm#/the-workbench): beside the canon's grants, the owner face stands the
  * wiki's realm (founded at the wiki's first stand, else now) and seats every lit face the row names in its Document, revoking
  * each face the row stopped naming (`workbench`, the composer's port over `landWorkbench`). A named face that stands shut seats
- * at its next light.
+ * at its next light. THE WORKBENCH'S OWNER reads off the vessel's ledger (`workbenchOwner`: the face whose realm binds the slug),
+ * else the face whose catalog half names the wiki's canon; a HOUSE CANON wiki, whose canon no catalog row names, founds under
+ * the face that lands the share where no face stood it yet. A house canon wiki's row seats its workbench and grants no canon:
+ * every face reads house canon from the floor, and the Kahu steward alone writes it live.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
@@ -57,6 +60,12 @@ export interface ShareApplyDeps {
    */
   /** One line per landing phase, with the milliseconds it took: a slow landing names the phase that held it. */
   readonly log?: (line: string) => void;
+  /**
+   * The face that OWNS a wiki's workbench on this vessel: the lit face whose realm the vessel's ledger binds the slug under
+   * (`bound`), else the face that would found it for a wiki no catalog half names (`founder`: the face that lands the share).
+   * Absent: the canon bag's owner alone.
+   */
+  readonly workbenchOwner?: (slug: string) => Promise<{ readonly bound: number | null; readonly founder: number | null; readonly boundElsewhere: boolean }>;
   readonly workbench?: (row: ShareRow, owner: { readonly handleIndex: number; readonly group: string }, members: ReadonlyArray<{ readonly handleIndex: number; readonly group: string; readonly access: "read" | "write" }>) => Promise<ShareWorkbenchLanded>;
 }
 
@@ -64,6 +73,10 @@ export interface ShareApplyDeps {
 export interface ShareWorkbenchLanded {
   readonly slug: string; readonly realmId: string; readonly founded: boolean; readonly members: number;
   readonly removed: readonly string[];
+  /** The handle index of the face that owns the workbench on this vessel: a vessel-local answer for the operator's own door. */
+  readonly owner?: number;
+  /** The vessel seals this workbench's document under its owner face's key (the wiki it mounts): a seat another face holds writes `personal` on this vessel. */
+  readonly restsUnderOwner?: boolean;
 }
 
 export interface ShareApplied {
@@ -160,8 +173,11 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     for (const row of rows) {
       if (row.kind !== "wiki") continue;
       const bag = shareRowBag(row);
-      if (isHouseCanonBag(bag)) continue;
-      const ownerIndex = ownerOf(bag);
+      // THE OWNER: the face whose realm the ledger binds the slug under; a slug bound under a face that stands shut waits for
+      // its light. Where no face stood the wiki yet, the canon's owner founds it, and a house canon wiki's lander does.
+      const seat = await deps.workbenchOwner?.(row.slug) ?? null;
+      if (seat?.boundElsewhere && seat.bound === null) continue;
+      const ownerIndex = seat?.bound ?? (isHouseCanonBag(bag) ? seat?.founder ?? null : ownerOf(bag));
       const owner = ownerIndex === null ? undefined : deps.faces.find((f) => f.handleIndex === ownerIndex);
       if (!owner?.group) continue;
       const answer = resolveShare({ bag, rows, faces: deps.faces, owner: owner.handleIndex });
@@ -173,7 +189,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
         members.push({ handleIndex: index, group: face.group, access: answer.write.includes(index) ? "write" : "read" });
       }
       const tw = Date.now();
-      workbenches.push(await deps.workbench(row, { handleIndex: owner.handleIndex, group: owner.group }, members));
+      workbenches.push({ ...(await deps.workbench(row, { handleIndex: owner.handleIndex, group: owner.group }, members)), owner: owner.handleIndex });
       deps.log?.(`[share-apply] workbench ${row.slug} (${members.length} member face(s)) landed in ${Date.now() - tw}ms`);
     }
   }

@@ -76,7 +76,8 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     const note = args.options["note"];
     const workspace = kind === "wiki" ? args.options["workspace"] : undefined;
     if (kind === "bag" && args.options["workspace"] !== undefined) { doors.err("lares bag share: --workspace names where a WIKI's workbench rests; a bag takes none"); return 2; }
-    const row: ShareRow = { slug, kind, read, write, ...(workspace ? { workspace } : {}), ...(note ? { note } : {}) };
+    const prior = rows.find((r) => r.slug === slug && r.kind === kind);
+    const row: ShareRow = { slug, kind, read, write, ...(workspace ? { workspace } : {}), ...(prior?.owner ? { owner: prior.owner } : {}), ...(note ? { note } : {}) };
     const next = [...rows.filter((r) => r.slug !== slug), row];
     try { serializeShareFile(next); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
     doors.file.write(serializeShareFile(next));
@@ -92,7 +93,17 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         + (pending > 0 ? `; ${pending} wait for a shut face (\`lares vault unlock --face N\`, then share again)` : ""));
       for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
         doors.out(`  workbench: wiki ${String(w["slug"])} rides realm ${String(w["realmId"]).slice(0, 12)}… (${Number(w["members"] ?? 0)} member face(s)${w["founded"] === true ? ", founded now" : ""})`);
+        if (w["restsUnderOwner"] === true && Number(w["members"] ?? 0) > 0) doors.out(`    its document rests sealed under its owner face on this vessel, so each seated face here writes its own personal layer of ${String(w["slug"])} and offers from there; the seats stand for the wire and for each face's own vessels`);
       }
+      // THE ROW KEEPS ITS OWNER, by pet-name, in the vessel-private file: after a re-founding the seed re-stands the wiki at
+      // that face's wear. The name joins two faces of one human, so it rests here and in the control document alone.
+      const landedOwners = new Map<string, string>();
+      for (const w of Array.isArray(applied["workbenches"]) ? applied["workbenches"] as Array<Record<string, unknown>> : []) {
+        const pet = faces.find((f) => f.handleIndex === w["owner"])?.petname;
+        if (typeof w["slug"] === "string" && pet) landedOwners.set(w["slug"], pet);
+      }
+      const owned = next.map((r) => (r.kind === "wiki" && landedOwners.has(r.slug) && r.owner !== landedOwners.get(r.slug) ? { ...r, owner: landedOwners.get(r.slug)! } : r));
+      if (owned.some((r, i) => r !== next[i])) doors.file.write(serializeShareFile(owned));
       for (const w of Array.isArray(applied["waiting"]) ? applied["waiting"] as string[] : []) doors.out(`  waits: "${w}" names no face here`);
       for (const slug of Array.isArray(applied["unowned"]) ? applied["unowned"] as string[] : []) doors.out(`  waits: "${slug}" stands in no catalog the worn face reads: wear the face that owns it (\`lares vault unlock --face N\`) and share again, or stand it first (\`lares wiki init ${slug}\`)`);
     }

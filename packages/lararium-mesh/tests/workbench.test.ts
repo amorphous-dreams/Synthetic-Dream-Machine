@@ -71,8 +71,12 @@ describe("W2 — the daemon wiki holds one face's memory and never shares", () =
     const file = "title: $:/config/lares/share/daemon\nkind: wiki\nread: *\nwrite: *\ntype: text/vnd.tiddlywiki\n\n";
     try { parseShareFile(file); expect.unreachable(); } catch (e) { expect((e as ShareConfigRefusal).reason).toBe("share-face-private"); }
   });
-  test("a checkout-sourced slug refuses a private shared mirror; a workspace name round-trips through the file", () => {
-    try { requireWorkbenchShareable({ slug: "sdm", checkoutSourced: true }); expect.unreachable(); } catch (e) { expect((e as WorkbenchRefusal).reason).toBe("workbench-checkout-sourced"); }
+  test("a sourced slug's share lands and takes no workspace (its one folder rests beside its source); a workspace name and an owner round-trip through the file", () => {
+    expect(() => requireWorkbenchShareable({ slug: "sdm", checkoutSourced: true }), "one human's faces share a sourced wiki's workbench").not.toThrow();
+    try { requireWorkbenchShareable({ slug: "sdm", checkoutSourced: true, workspace: "field-notes" }); expect.unreachable(); } catch (e) { expect((e as WorkbenchRefusal).reason).toBe("workbench-checkout-sourced"); }
+    const owned = serializeShareFile([{ slug: "lares", kind: "wiki", read: "referee", write: "engineer", owner: "steward" }]);
+    expect(parseShareFile(owned)[0]!.owner, "the vessel-private row keeps its owner by pet-name").toBe("steward");
+    expect(parseShareFile(serializeShareFile([{ slug: "lares", kind: "wiki", read: "*", write: "" }]))[0]!.owner).toBeUndefined();
     const text = serializeShareFile([{ slug: "notes", kind: "wiki", read: "*", write: "*", workspace: "field-notes" }]);
     expect(parseShareFile(text)[0]!.workspace).toBe("field-notes");
     try { requireWorkbenchShareable({ slug: "notes", workspace: "../escape" }); expect.unreachable(); } catch (e) { expect((e as WorkbenchRefusal).reason).toBe("workbench-workspace-malformed"); }

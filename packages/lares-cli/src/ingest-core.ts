@@ -18,7 +18,7 @@
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, resolve, sep, extname } from "node:path";
 import { newChangeId, taskContentId, carrierHash, digestsEqual, BAG_MANIFEST_FILE } from "@lararium/mesh";
-import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow, wikiFaceFolderOf } from "@lararium/node";
+import { SyncedTree, syncedTreeKey, syncedTreeDir, bagsFileToUri, mirrorDirFileToUri, larProjectionCheckpointDir, KAPAE_EXT, readKapaeShadow } from "@lararium/node";
 import { canonicalizeCarrierText } from "@lararium/tw5/carrier-canonical";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { runVerb } from "./verb-call.js";
@@ -179,29 +179,6 @@ export function fileToUriForSource(
     : null;
   const dir = projected ?? (under(dirs.wikis) ? dirs.wikis : dirs.bags);
   return (_root, file) => mirrorDirFileToUri(dir, file);
-}
-
-/**
- * THE FACE A SOURCE'S FOLDER NAMES. A face's own folder under `<projections>/wikis` (`<slug>-<F>`: its workbench of a wiki, or
- * its daemon wiki's working mirror) mirrors ONE face's document, so a gesture that reads it lands only in that face's layer.
- * Answers the slug and the relation where `source` sits at or beneath such a folder, else null.
- */
-export function faceFolderOfSource(source: string, projections: string | undefined): { readonly slug: string; readonly relation: string; readonly folder: string } | null {
-  if (projections === undefined) return null;
-  const wikis = resolve(join(projections, "wikis")), abs = resolve(source);
-  if (!abs.startsWith(wikis + sep)) return null;
-  const name = abs.slice(wikis.length + 1).split(sep)[0]!;
-  const of = wikiFaceFolderOf(name);
-  return of === null ? null : { ...of, folder: join(wikis, name) };
-}
-
-/**
- * Whether the gesture may read a face's folder: only while the vessel WEARS that face. Null where it may; else the refusal's
- * words. `worn` names the relation the standing composition wears (null: none, or the reading would not answer).
- */
-export function faceFolderRefusal(of: { readonly slug: string; readonly relation: string; readonly folder: string }, worn: string | null): string | null {
-  if (worn === of.relation) return null;
-  return `ingest-face-folder: ${of.folder} mirrors the ${of.slug} wiki of the face ${of.relation}, and ${worn === null ? "this vessel wears no face the gesture could read" : `this vessel wears ${worn}`}; a face's folder lands in that face's own layer alone: wear it (\`lares vault unlock --face N\`) and run the gesture again`;
 }
 
 /**

@@ -22,8 +22,7 @@ import { emit, wantsJson, exitFor } from "../render.js";
 import { summaryOutput } from "../verb-result.js";
 import { OUTCOME_URI_PREFIX } from "@lararium/mesh";
 import { larRoot, larBagsDir, larWikisDir, larProjectionsDirOrNone, vesselDid } from "../env.js";
-import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames, faceFolderOfSource, faceFolderRefusal } from "../ingest-core.js";
-import { LIVE_CARRY_DOORS, litFaceOf } from "./carry.js";
+import { openSyncedTree, scanSource, fileToUriForSource, candidatesOf, settleIngest, ingestVerdict, applyConfirmedRenames } from "../ingest-core.js";
 import { carrierNeedsTag, tagBlobs } from "../tag-blobs.js";
 import { verbFailure } from "../verb-call.js";
 import { askShore, askSettle, type SettleReading } from "../shore-core.js";
@@ -64,18 +63,6 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
   // scan — observations only, never a work queue
   const projections = larProjectionsDirOrNone();
   const dirs = { bags: larBagsDir(), wikis: larWikisDir(), ...(projections !== undefined ? { projections } : {}) };
-  // A FACE'S FOLDER LANDS IN THAT FACE'S LAYER ALONE: the gesture names no document, so it reads a face folder only while the
-  // vessel wears that face (a wiki's island stands over the worn face's workbench).
-  const faceFolder = faceFolderOfSource(source, projections);
-  if (faceFolder !== null) {
-    let worn: string | null = null;
-    try { worn = litFaceOf(await LIVE_CARRY_DOORS.faces())?.relation ?? null; } catch { worn = null; }
-    const refusal = faceFolderRefusal(faceFolder, worn);
-    if (refusal !== null) {
-      emit(args, { ok: false, error: { code: "ingest-face-folder", message: refusal }, human: () => console.error(`lares ingest: ${refusal}`) });
-      return 1;
-    }
-  }
   const scan = scanSource(root, source, toBag, tree, fileToUriForSource(root, source, dirs));
   if (scan === null) {
     emit(args, { ok: false, error: { code: "usage", message: `source "${source}" does not resolve` }, human: () => console.error(`lares ingest: source "${source}" does not resolve`) });

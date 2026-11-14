@@ -80,6 +80,16 @@ export function adoptWorkbench(provider: KeyhiveProvider, slug: string, keyDoc: 
   provider.adoptBag(wikiSlotUri(slug, "working"), `0x${bare(keyDoc)}`);
 }
 
+/**
+ * THE WORKING BAG RIDES THE REALM'S KEY DOCUMENT, FOR EVERY SEATED FACE. A composition registers the slots of the wiki a face
+ * mounts on a Document of that face's own, so a seated hive may map the working bag elsewhere when the mount asks: the seat
+ * moves the mapping onto the realm's key Document, where the roster, the write gate and the content key of the ONE shared
+ * layer all read. Without it a share's delegation lands on the owner's own bag Document and seats nobody in the realm.
+ */
+function rideKeyDoc(provider: KeyhiveProvider, slug: string, keyDoc: string): void {
+  if (bare(provider.docIdOfBag(wikiSlotUri(slug, "working")) ?? "") !== bare(keyDoc)) adoptWorkbench(provider, slug, keyDoc);
+}
+
 /** ADMIT a face (a Keyhive agent the provider knows: exchange contact cards first). A writer takes `admin`, a reader `read`. */
 export async function admitWorkbenchFace(provider: KeyhiveProvider, slug: string, faceAgentHex: string, access: "read" | "write"): Promise<void> {
   await provider.delegate({ audience: faceAgentHex, bagUrl: wikiSlotUri(slug, "working"), access: access === "write" ? "admin" : "read" });
@@ -150,7 +160,7 @@ export async function standWorkbench(provider: KeyhiveProvider, ledger: LedgerDo
   requireWorkbenchShareable({ slug });
   const seated = await seatedWorkbench(provider, ledger.doc(), slug);
   if (seated !== null) {
-    if (provider.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(provider, slug, seated.keyDoc);
+    rideKeyDoc(provider, slug, seated.keyDoc);
     return { realmId: seated.realmId, founded: false, keyDoc: seated.keyDoc };
   }
   if (boundElsewhere(ledger.doc(), slug, face)) {
@@ -179,7 +189,7 @@ export async function standWorkbench(provider: KeyhiveProvider, ledger: LedgerDo
 export async function faceWorkbenchRealm(provider: KeyhiveProvider, ledger: LedgerDoc, slug: string, face: string, mint: boolean): Promise<string | null> {
   const seated = await seatedWorkbench(provider, ledger.doc(), slug);
   if (seated === null) return mint && !boundElsewhere(ledger.doc(), slug, face) ? (await standWorkbench(provider, ledger, slug, face)).realmId : null;
-  if (provider.docIdOfBag(wikiSlotUri(slug, "working")) === null) adoptWorkbench(provider, slug, seated.keyDoc);
+  rideKeyDoc(provider, slug, seated.keyDoc);
   // The mount reads the roster, so the roster's projection follows it (one owner: Keyhive).
   await projectWorkbenchRoster(provider, ledger, seated.realmId, slug, new Map([[face, await provider.whoami()]])).catch(() => [] as readonly string[]);
   return seated.realmId;
@@ -230,7 +240,7 @@ export interface LandWorkbenchPorts {
   /** The vessel's own ledger (`edgeLedgerDocUrl` under the vessel's place key). */
   readonly ledger: LedgerDoc;
   readonly ownerFace: string;
-  /** True where the wiki's source stands in the checkout: a SHARED private wiki never projects into the tracked tree. */
+  /** True where the wiki's canon stands in the canon source: its one workbench folder rests beside that source and takes no workspace. */
   readonly checkoutSourced?: boolean;
 }
 

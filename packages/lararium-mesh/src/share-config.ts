@@ -64,6 +64,13 @@ export interface ShareRow {
   readonly note?: string;
   /** A wiki row's workspace name: its workbench mirror rests at `/lar/workspaces/<name>` (else `<projections>/wikis/<slug>`). */
   readonly workspace?: string;
+  /**
+   * A wiki row's OWNER, by pet-name: the face whose realm holds the wiki's workbench, written by the share door once the
+   * landing names it. VESSEL-PRIVATE, as the whole row stands (`config/share.tid`, the control document): it joins two faces
+   * of one human by name, so it rides no record that crosses to another member or vessel. A seed reads it after a re-founding:
+   * the wiki re-stands at its owner's wear.
+   */
+  readonly owner?: string;
 }
 
 /** A face as the resolver reads it: its handle index and its pet-name (null where none reads). */
@@ -208,6 +215,7 @@ export function shareRowFields(row: ShareRow): Record<string, string> {
   return {
     title: shareRowTitle(row.slug), kind: row.kind, read: row.read, write: row.write,
     ...(shareRowWorkspace(row) !== null ? { workspace: shareRowWorkspace(row)! } : {}),
+    ...(row.owner ? { owner: row.owner } : {}),
     ...(row.note ? { text: row.note } : {}), type: "text/vnd.tiddlywiki",
   };
 }
@@ -222,8 +230,8 @@ export function shareRowOf(fields: Readonly<Record<string, unknown>>): ShareRow 
   if (isFacePrivateSlug(slug)) return null;
   const str = (k: string): string => (typeof fields[k] === "string" ? fields[k] as string : "");
   const note = str("text");
-  const workspace = str("workspace").trim();
-  return { slug, kind: str("kind") === "wiki" ? "wiki" : "bag", read: str("read"), write: str("write"), ...(workspace ? { workspace } : {}), ...(note ? { note } : {}) };
+  const workspace = str("workspace").trim(), owner = str("owner").trim();
+  return { slug, kind: str("kind") === "wiki" ? "wiki" : "bag", read: str("read"), write: str("write"), ...(workspace ? { workspace } : {}), ...(owner ? { owner } : {}), ...(note ? { note } : {}) };
 }
 
 /**
@@ -234,7 +242,7 @@ export function serializeShareFile(rows: readonly ShareRow[]): string {
   const sorted = [...rows].sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
   return sorted.map((r) => {
     const f = shareRowFields(r);
-    const head = ["title", "kind", "read", "write", ...(f["workspace"] ? ["workspace"] : []), "type"].map((k) => `${k}: ${f[k] ?? ""}`).join("\n");
+    const head = ["title", "kind", "read", "write", ...(f["workspace"] ? ["workspace"] : []), ...(f["owner"] ? ["owner"] : []), "type"].map((k) => `${k}: ${f[k] ?? ""}`).join("\n");
     return `${head}\n\n${r.note ?? ""}\n`;
   }).join("---\n");
 }

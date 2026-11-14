@@ -172,24 +172,6 @@ export function isDaemonFaceFolder(name: string): boolean {
 }
 
 /**
- * A FOLDER FOR EACH FACE'S OWN WORKBENCH (cabal-realm#/the-workbench): each face of a vessel mounts its own workbench document
- * for an unshared wiki, so that workbench's mirror rests in `<projections>/wikis/<slug>-<F>/`, the shape the daemon wiki's
- * folder already holds (`daemon-<F>`). The face relation closes the name, so the slug reads as everything before it.
- */
-export function wikiFaceFolder(slug: string, faceRelation: string): string {
-  if (!KAHUA_FACE_RELATION.test(faceRelation)) throw new Error(`wiki face folder: invalid relation ${JSON.stringify(faceRelation)}`);
-  if (slug.length === 0 || slug.includes("/")) throw new Error(`wiki face folder: invalid slug ${JSON.stringify(slug)}`);
-  return `${slug}-${faceRelation}`;
-}
-/** Read a face folder's name back: the slug it mirrors and the face relation that owns it; null for any other name. */
-export function wikiFaceFolderOf(name: string): { readonly slug: string; readonly relation: string } | null {
-  // A relation runs 36 characters, after the hyphen that joins it to the slug.
-  if (name.length < 38 || name[name.length - 37] !== "-") return null;
-  const relation = name.slice(-36), slug = name.slice(0, -37);
-  return KAHUA_FACE_RELATION.test(relation) && !slug.includes("/") ? { slug, relation } : null;
-}
-
-/**
  * The daemon wiki's disk mirror: its working layer, bound to the worn face, writes files to
  * `<projections>/wikis/daemon-<F>/`. The daemon document carries no canon role.
  *
@@ -293,13 +275,13 @@ export function titleRelPath(title: string): string | null {
 /**
  * THE PRIVATE PLANES: the layers a house mints for itself and never writes beside a canon source, whatever dirs that
  * source holds. The daemon wiki (each device's own private working wiki) and the kahua plane; each face's folders
- * (`daemon-<F>`, `kahua-<F>`, and `<slug>-<F>` for its workbench of a wiki) join them by shape (`isPrivateProjectionSlug`).
+ * (`daemon-<F>`, `kahua-<F>`) join them by shape (`isPrivateProjectionSlug`). A wiki's workbench names no face: one folder answers it.
  */
 export const PRIVATE_PROJECTION_SLUGS: ReadonlySet<string> = new Set(["daemon", "kahua"]);
 
-/** Whether a slug names a private plane: a named one, or some face's own folder (its daemon, kahua or workbench folder). */
+/** Whether a slug names a private plane: a named one, or some face's own folder (its daemon or kahua folder). */
 export function isPrivateProjectionSlug(slug: string): boolean {
-  return PRIVATE_PROJECTION_SLUGS.has(slug) || wikiFaceFolderOf(slug) !== null;
+  return PRIVATE_PROJECTION_SLUGS.has(slug) || isDaemonFaceFolder(slug) || isKahuaFaceFolder(slug);
 }
 
 /** Where a house's disk mirrors root, split by ORIGIN. */
@@ -417,7 +399,7 @@ export interface WorkspaceRow { readonly slug: string; readonly kind: "bag" | "w
  * THE WORKSPACE ROOTS a shared wiki's workbench mirror may rest in: each `kind: "wiki"` share row naming a workspace maps its
  * slug to `<root>/workspaces/<name>` (the host shim binds `/lar/workspaces/<name>`), where that directory stands. A workspace
  * that resolves inside the checkout (`checkoutRoot`) or inside the hearth refuses by name, and so does a slug whose source
- * stands in the checkout: projection follows placement, and a private shared wiki never writes into the tracked tree. A
+ * stands in the canon source: its one workbench folder rests beside that source and takes no workspace. A
  * workspace with no directory standing (no bind) waits by name, and its workbench projects under the projections root.
  */
 export function workspaceRootsOf(opts: {

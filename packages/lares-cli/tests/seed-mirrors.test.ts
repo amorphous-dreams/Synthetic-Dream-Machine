@@ -39,7 +39,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
-import { daemonFaceCanonBag, carrierHash } from "@lararium/mesh";
+import { daemonFaceCanonBag, carrierHash, type ShareRow } from "@lararium/mesh";
 import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
@@ -78,14 +78,20 @@ class FakeHouse {
     for (const f of this.faces) this.stage.set(f.handleIndex, [...(f.kahua ?? [])]);
   }
   layer(bag: string): Map<string, Rec> {
-    // Each face its own daemon working document, and its own workbench of every wiki: a working layer reads the WORN face's.
-    const key = /\/wikis\/[^/]+\/(working|personal)$/.test(bag) ? `${bag}@${this.worn}` : bag;
+    // Each face its own daemon working document and its own personal layer of every wiki: those read the WORN face's. A wiki's
+    // workbench stands as ONE document on the vessel, whichever face wears.
+    const key = bag === WORKING || /\/wikis\/[^/]+\/personal$/.test(bag) ? `${bag}@${this.worn}` : bag;
     return this.layers.get(key) ?? this.layers.set(key, new Map()).get(key)!;
   }
   /** One face's own personal layer of a wiki, whichever face stands worn. */
   personalOf(relation: string, slug: string): Map<string, Rec> { return this.layers.get(`lar:///ha.ka.ba/wikis/${slug}/personal@${relation}`) ?? new Map(); }
-  /** One face's own workbench of a wiki, whichever face stands worn. */
-  benchOf(relation: string, slug: string): Map<string, Rec> { return this.layers.get(`lar:///ha.ka.ba/wikis/${slug}/working@${relation}`) ?? new Map(); }
+  /** A wiki's ONE workbench on this vessel. */
+  bench(slug: string): Map<string, Rec> { return this.layers.get(`lar:///ha.ka.ba/wikis/${slug}/working`) ?? new Map(); }
+  /** The writer seats each wiki's workbench holds, by relation; a slug with no entry stands unbound (no face stood it yet). */
+  seats = new Map<string, Set<string>>();
+  /** The share rows the vessel-private file holds, and how many times the seed landed them. */
+  shareRows: ShareRow[] = [];
+  shareLandings = 0;
   /** The `wikis` dir beside the canon source, and the slugs that stand sourced there (none: no canon source stands). */
   canonWikis: string | null = null;
   sourcedSlugs = new Set<string>();
@@ -128,6 +134,9 @@ class FakeHouse {
   }
   async layAsWorn(wave: MirrorWave, apply: boolean): Promise<MirrorLaid> {
     this.laid.push(wave.source);
+    // The first face whose applied wave reaches a wiki's workbench stands it (its private cabal of one), as a mount does.
+    const bench = /\/wikis\/([^/]+)\/working$/.exec(wave.toBag);
+    if (apply && bench && wave.toBag !== WORKING && !this.seats.has(bench[1]!)) this.seats.set(bench[1]!, new Set([this.worn]));
     const planned: string[] = [], kapae: string[] = [];
     const cands: Array<{ uri: string; key: string; text: string; base: string | undefined }> = [];
     for (const rel of mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta"))) {
@@ -165,6 +174,11 @@ class FakeHouse {
       faces: async () => this.facesNow(), tempConsented: () => ["daemon"],
       heldSlugs: async () => new Set(this.held), mintBag: async (bag) => { this.mints.push(bag); this.held.add(bag.slice(bag.lastIndexOf("/") + 1)); },
       kahuaLift: this.kahuaLift, lay: (w, a) => this.lay(w, a), sourced: (slug) => this.sourcedSlugs.has(slug), canonWikis: () => this.canonWikis,
+      // THE SEAT: a bound slug answers the worn face `working` where it holds a writer's seat, else `personal`; an unbound one
+      // answers `personal` and `bound: false` (the first stand founds it), as the island's `workbench-seat` does.
+      benchSeat: async (slug) => { const seated = this.seats.get(slug); return { bound: seated !== undefined, writeSlot: seated?.has(this.worn) ? "working" : "personal" }; },
+      shareRows: () => this.shareRows,
+      landShares: async () => { this.shareLandings++; return { granted: 0, carried: 0, pending: 0, workbenches: this.shareRows.filter((r) => r.kind === "wiki").map((r) => ({ slug: r.slug, members: 1 })) }; },
     };
   }
   carryDoors(): CarryDoors {
@@ -181,6 +195,8 @@ class FakeHouse {
         }
         const prior = this.worn;
         if (named?.relation) this.worn = named.relation;
+        const bench = /\/wikis\/([^/]+)\/working$/.exec(toBag);
+        if (bench && toBag !== WORKING && !this.seats.has(bench[1]!)) this.seats.set(bench[1]!, new Set([this.worn]));
         try {
           const landed: string[] = [], conflicts: Array<{ uri: string; why: string }> = [];
           for (const c of candidates) {
@@ -661,84 +677,96 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(r.ashesLeft.map((a) => [a.relation, a.why])).toEqual([[OLDER, "1 kahua item(s) of h0 refused"]]);
   });
 
-  test("M18 — a folder for each face's own workbench: one title, three texts; each lays at its own face's wear and none reaches another's workbench", async () => {
-    const [G0, G1, G2] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1", "cccccccc-cccc-4ccc-8ccc-ccccccccccc2"];
+  test("M18 — one folder for a workbench: it lays once, at a seated writer's wear; a face with no writer's seat waits by name and takes none of it", async () => {
     const [R0, R1, R2] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2"];
     const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151";
-    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true });
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true });
     const pets = ["steward", "engineer", "referee"];
-    // The former founding: three faces each kept a working copy of ONE canon title, each in its own folder.
-    [G0, G1, G2].forEach((g, i) => put(`projections/wikis/lares-${g}/ha.ka.ba/lares/ref/RFC-4151.tid`, tid(RFC, `the ${pets[i]}'s working copy`)));
-    // A folder no face names: nothing says whose working copies it holds, so under a worn face the seed names it and lays none.
-    put("projections/wikis/garden/ha.ka.ba/garden/bed.tid", tid("lar:///ha.ka.ba/garden/bed", "a bed"));
-    writeFaceLabels([G0, G1, G2].map((relation, handleIndex) => ({ relation, petname: pets[handleIndex]!, handleIndex })), join(root, "projections"));
-    const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R1);
-    v.held.add("garden"); v.held.add("lares");
-
+    put("projections/wikis/notes/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the one working copy the seated faces share"));
+    const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R2);
+    v.held.add("notes");
+    // The steward owns the workbench and the engineer holds a writer's seat; the referee reads.
+    v.seats.set("notes", new Set([R0, R1]));
+    // THE REFEREE WORN: the folder waits by name, exits clean, and nothing of it reaches the workbench or the referee's own layers.
     const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    // The worn engineer's own text lands in its own workbench; no other face's file laid anywhere.
-    expect(v.benchOf(R1, "lares").get(RFC)?.text).toBe(tid(RFC, "the engineer's working copy"));
-    expect(v.benchOf(R0, "lares").size + v.benchOf(R2, "lares").size).toBe(0);
-    expect(v.laid.some((src) => src.includes(G0) || src.includes(G2) || src.includes(`lares-${R0}`) || src.includes(`lares-${R2}`))).toBe(false);
-    expect(existsSync(P(`wikis/lares-${R1}/ha.ka.ba/lares/ref/RFC-4151.tid`))).toBe(true);
-    expect(v.benchOf(R1, "garden").size).toBe(0);
-    expect(first.refusals.map((x) => [x.relation, x.code])).toEqual([["garden", "seed-workbench-unowned"]]);
-    expect(first.refusals[0]!.message).toContain(P(`wikis/garden-${R1}`));
-    // The two unworn faces wait by name, their folders standing, out of ashes; the worn face's former folder moved to ashes.
-    expect(first.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[0, "unworn"], [2, "unworn"]]);
-    expect(first.waiting[0]!.folders).toEqual([P(`wikis/lares-${G0}`)]);
-    expect(mirrorLines(first).out.join("\n")).toMatch(/steward stands unworn, and a face's own layer of a wiki lays at that face's wear: wear it \(`lares vault unlock --face 0`\)/);
-    expect(mirrorsLeftWork(first)).toBe(true);     // the unowned folder alone leaves work for a hand
-    expect(first.ashes.map((a) => a.relation)).toEqual([G1]);
-    expect(existsSync(P(`ashes/${G1}/wikis/lares-${G1}/ha.ka.ba/lares/ref/RFC-4151.tid`))).toBe(true);
-    expect(existsSync(P(`wikis/lares-${G0}/ha.ka.ba/lares/ref/RFC-4151.tid`))).toBe(true);
-
-    // The steward wears and seeds: its own text lands in its own workbench, and the engineer's stays as it stood.
-    v.wear(R0);
-    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(v.benchOf(R0, "lares").get(RFC)?.text).toBe(tid(RFC, "the steward's working copy"));
-    expect(v.benchOf(R1, "lares").get(RFC)?.text).toBe(tid(RFC, "the engineer's working copy"));
-    // The engineer's own folder stands settled against its base, so it draws no line; the referee still waits.
-    expect(second.waiting.map((w) => w.handleIndex)).toEqual([2]);
-    // A hand edits the engineer's file while the steward stands worn: it waits for the engineer's wear and reaches no other workbench.
-    put(`projections/wikis/lares-${R1}/ha.ka.ba/lares/ref/RFC-4151.tid`, tid(RFC, "the engineer's copy, edited by hand"));
-    const edited = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(edited.waiting.map((w) => [w.handleIndex, w.folders])).toEqual([[1, [P(`wikis/lares-${R1}`)]], [2, [P(`wikis/lares-${G2}`)]]]);
-    expect(v.benchOf(R0, "lares").get(RFC)?.text).toBe(tid(RFC, "the steward's working copy"));
-    expect(v.benchOf(R1, "lares").get(RFC)?.text).toBe(tid(RFC, "the engineer's working copy"));
+    expect(first.benchWaiting).toEqual([{ slug: "notes", folder: P("wikis/notes"), why: "writer" }]);
+    expect(v.bench("notes").size + v.personalOf(R2, "notes").size).toBe(0);
+    expect(mirrorLines(first).out.join("\n")).toMatch(/the workbench of notes lays once, at the wear of a face that holds a writer's seat there: this face holds none/);
+    expect(mirrorsLeftWork(first), "a folder that waits for a writer leaves no work for a hand").toBe(false);
+    expect(first.refusals).toEqual([]);
+    // THE ENGINEER WORN, a seated writer and not the owner: it lays the one folder into the one document.
     v.wear(R1);
-    await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(v.benchOf(R1, "lares").get(RFC)?.text).toBe(tid(RFC, "the engineer's copy, edited by hand"));
-    expect(v.benchOf(R0, "lares").get(RFC)?.text).toBe(tid(RFC, "the steward's working copy"));
-    expect(second.ashes.map((a) => a.relation)).toEqual([G0]);
-    // A second seed under the same face lands nothing.
-    const again = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(again.layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
+    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.bench("notes").get(RFC)?.text).toBe(tid(RFC, "the one working copy the seated faces share"));
+    expect(second.benchWaiting).toEqual([]);
+    expect(second.layers.map((t) => [t.mirror, t.landed])).toEqual([["workbench notes", 1]]);
+    // THE STEWARD WORN: the document already holds it, so the second writer's seed lands nothing. Once per document.
+    v.wear(R0);
+    const third = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(third.layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
+    // Settled against its base, the folder draws no line under the referee; a hand's edit there waits for a writer again.
+    v.wear(R2);
+    expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).benchWaiting).toEqual([]);
+    put("projections/wikis/notes/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the copy, edited by hand"));
+    expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).benchWaiting.map((w) => w.why)).toEqual(["writer"]);
+    expect(v.bench("notes").get(RFC)?.text).toBe(tid(RFC, "the one working copy the seated faces share"));
+    expect(existsSync(P(`wikis/notes-${R1}`)), "no folder names a face").toBe(false);
   });
 
-  test("M19 — the one folder that names no face, beside the canon source, lays into the Kahu steward's workbench at the steward's wear alone", async () => {
+  test("M19 — a sourced wiki's one folder, beside the canon source, lays at ANY seated writer's wear: no face alone writes back", async () => {
     const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151";
-    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true });
-    put("wikis/lares/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the steward's working copy, beside the source"));
-    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: F2 }, { handleIndex: 1, petname: "engineer", relation: F3 }], "grant", F3);
-    v.held.add("garden"); v.held.add("lares");
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true });
+    put("wikis/lares/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the shared working copy, beside the source"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: F2 }, { handleIndex: 1, petname: "engineer", relation: F3 }, { handleIndex: 2, petname: "referee", relation: F1 }], "grant", F1);
+    v.held.add("lares");
     v.canonWikis = join(root, "wikis"); v.sourcedSlugs.add("lares");
-    // The engineer worn: the steward's folder waits by name and reaches no workbench.
+    v.seats.set("lares", new Set([F2, F3]));
+    // The referee, seated read-only, worn: the folder waits and reaches no layer.
     const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(v.benchOf(F3, "lares").size + v.benchOf(F2, "lares").size).toBe(0);
-    expect(first.waiting).toEqual([{ handleIndex: 0, petname: "steward", relations: [], why: "unworn", folders: [join(root, "wikis", "lares")] }]);
-    // The steward worn: it lands in the steward's workbench.
-    v.wear(F2);
-    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(v.benchOf(F2, "lares").get(RFC)?.text).toBe(tid(RFC, "the steward's working copy, beside the source"));
-    expect(v.benchOf(F3, "lares").size).toBe(0);
-    expect(second.waiting).toEqual([]);
-    // Settled against its base, the folder draws no line under the engineer; a hand's edit there waits for the steward again.
+    expect(first.benchWaiting).toEqual([{ slug: "lares", folder: join(root, "wikis", "lares"), why: "writer" }]);
+    expect(v.bench("lares").size).toBe(0);
+    // The engineer, a seated writer who holds no Kahu chair, worn: it lays the folder beside the source.
     v.wear(F3);
-    expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).waiting).toEqual([]);
-    put("wikis/lares/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the steward's copy, edited by hand"));
-    expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).waiting.map((w) => w.handleIndex)).toEqual([0]);
-    expect(v.benchOf(F3, "lares").size).toBe(0);
+    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.bench("lares").get(RFC)?.text).toBe(tid(RFC, "the shared working copy, beside the source"));
+    expect(second.layers.map((t) => t.mirror)).toEqual(["workbench lares (beside the canon source)"]);
+    expect(second.benchWaiting).toEqual([]);
+    // The steward's seed after it lands nothing.
+    v.wear(F2);
+    expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
+  });
+
+  test("M21 — after a re-founding a shared wiki re-stands at its owner's wear from its mirror and its share row, and the shares land again", async () => {
+    const [R0, R1] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1"];
+    const PAGE = "lar:///ha.ka.ba/notes/page", DRAFTED = "lar:///ha.ka.ba/notes/working-only";
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true });
+    // What the former founding left: the wiki's canon mirror, its one workbench folder, and the vessel-private share row.
+    put("projections/bags/notes/ha.ka.ba/notes/page.tid", tid(PAGE, "a promoted page"));
+    put("projections/wikis/notes/ha.ka.ba/notes/working-only.tid", tid(DRAFTED, "a working-only page"));
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R1);
+    v.shareRows = [{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }];
+    // THE ENGINEER SEEDS FIRST: the wiki belongs to the steward, so nothing mints and nothing lays under the engineer.
+    const first = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.mints).toEqual([]);
+    expect(first.benchWaiting.map((w) => [w.slug, w.why, w.owner])).toEqual([["notes", "owner", "steward"], ["notes", "owner", "steward"]]);
+    expect(mirrorLines(first).out.join("\n")).toMatch(/the wiki notes re-stands at its owner's wear: wear steward/);
+    expect(v.bench("notes").size + v.layer("lar:///ha.ka.ba/bags/notes").size).toBe(0);
+    expect(mirrorsLeftWork(first)).toBe(false);
+    // THE OWNER'S WEAR: the wiki mints again, its canon and its workbench lay, and the shares land again by pet-name.
+    v.wear(R0);
+    const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.mints).toEqual(["lar:///ha.ka.ba/bags/notes"]);
+    expect(v.layer("lar:///ha.ka.ba/bags/notes").get(PAGE)?.text).toBe(tid(PAGE, "a promoted page"));
+    expect(v.bench("notes").get(DRAFTED)?.text).toBe(tid(DRAFTED, "a working-only page"));
+    expect(second.benchWaiting).toEqual([]);
+    expect(second.shares?.workbenches).toEqual([{ slug: "notes", members: 1 }]);
+    expect(mirrorLines(second).out.join("\n")).toMatch(/shares: landed 0 grant\(s\); workbench seats: notes \(1 member face\(s\)\)/);
+    // The engineer's seed after it lands nothing: the document arrived once.
+    v.seats.get("notes")!.add(R1);
+    v.wear(R1);
+    const third = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(third.layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
+    expect(v.mints).toHaveLength(1);
   });
 
   test("M20 — a face's personal layer of a wiki comes back across a re-founding: the former face's folder adopts by pet-name and lays into that face's own layer alone", async () => {

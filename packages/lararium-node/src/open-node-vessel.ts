@@ -106,7 +106,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { seatHouseCanonFromCheckout, kahuRealmHandleIndex, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
@@ -4404,15 +4404,14 @@ async function prepareNodeBootOn(
       // rides the recipe's mirrorBags.
       // A wiki's working slot rests in its realm workbench (cabal-realm#/the-workbench); a share row may root its mirror in an
       // operator workspace (`/lar/workspaces/<name>`), never inside the checkout or the hearth (`workspaceRootsOf`).
-      // EACH FACE MOUNTS ITS OWN WORKBENCH for an unshared wiki, so its mirror rests in that face's own folder,
-      // `<projections>/wikis/<slug>-<F>` (`faceWorkbench`). The Kahu steward alone, the face whose seat writes `bags/` back,
-      // keeps a sourced slug's one folder beside the canon source (`writesBack`): no face relation enters a tracked tree.
-      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots,
-        faceWorkbench: () => wornDeviceRelation, writesBack: () => (wornMount?.handleIndex ?? 0) === kahuRealmHandleIndex() },
+      // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/wikis/<slug>`, and a sourced slug's beside
+      // its canon source (`<source>/../wikis/<slug>`, the repo workspace: git tracks it). No face relation enters that path.
+      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },
       // A wiki's personal slot carries the worn face's private margin: it projects per face, `personal/<F>/<slug>`.
       { bagId: "personal",       mirrorRoot: join(projectionRoot, PERSONAL_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation },
-      // Recovery remains an explicit, recipe-designated grant with its own directory.
-      { bagId: "draft",          mirrorRoot: join(projectionRoot, "wikis"),          scope: "draft", wikiSlot: "draft", mirrorClass: "recovery", sourcedRoots: projection.sourcedRoots("wikis") },
+      // Recovery remains an explicit, recipe-designated grant with its own directory. A draft holds one face's unsaved hand, so it
+      // rests under the projections root for every slug and never beside a canon source: nothing face-private lands in a checkout.
+      { bagId: "draft",          mirrorRoot: join(projectionRoot, "wikis"),          scope: "draft", wikiSlot: "draft", mirrorClass: "recovery" },
       // The USER temp layer projects to wikis/{slug}/temp, always under the projections root (never beside a canon
       // source), and only for a slug the operator's consent row names (`projection.temp.<slug>`); absent, nothing lands.
       { bagId: "temp",           mirrorRoot: join(projectionRoot, "wikis"),          scope: "temp", wikiSlot: "temp", mirrorClass: "recovery", consentSlugs: tempConsentedSlugs(loadLaresConfig()) },

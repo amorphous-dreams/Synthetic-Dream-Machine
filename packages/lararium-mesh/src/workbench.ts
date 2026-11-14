@@ -59,7 +59,7 @@ export type WorkbenchRefusalReason =
   | "workbench-face-private"
   /** A face that holds a seat in two realms for one wiki: no realm mounts for it until a person settles which. */
   | "workbench-two-realms"
-  /** A slug whose source stands in the checkout projects to the tracked tree; a private shared mirror never rests there. */
+  /** A slug whose canon stands in the canon source rests its ONE workbench folder beside that source: it takes no workspace. */
   | "workbench-checkout-sourced"
   /** The vessel's ledger already binds the slug to another face's realm: ONE workbench stands for a wiki on a vessel. */
   | "workbench-slug-bound"
@@ -84,15 +84,16 @@ export function isFacePrivateSlug(slug: string): boolean {
 export const WORKSPACE_NAME_RE = /^[a-z0-9][a-z0-9._-]{0,63}$/;
 
 /**
- * THE SHARE'S GATE, before any realm founds: the daemon slug refuses `workbench-face-private`, a slug sourced from the
- * checkout refuses `workbench-checkout-sourced`, and a workspace name outside the grammar refuses by name.
+ * THE SHARE'S GATE, before any realm founds: the daemon slug refuses `workbench-face-private`, a slug whose canon stands in
+ * the canon source refuses a WORKSPACE `workbench-checkout-sourced` (its one folder rests beside that source, where source
+ * control tracks it; the share itself lands), and a workspace name outside the grammar refuses by name.
  */
 export function requireWorkbenchShareable(input: { readonly slug: string; readonly checkoutSourced?: boolean; readonly workspace?: string | undefined }): void {
   if (isFacePrivateSlug(input.slug)) {
     throw new WorkbenchRefusal("workbench-face-private", `"${input.slug}" holds one face's memory (the daemon wiki): a named exception, it never shares`);
   }
-  if (input.checkoutSourced === true) {
-    throw new WorkbenchRefusal("workbench-checkout-sourced", `"${input.slug}" takes its source from the checkout, and a private shared wiki never projects into the tracked tree`);
+  if (input.checkoutSourced === true && input.workspace !== undefined && input.workspace !== "") {
+    throw new WorkbenchRefusal("workbench-checkout-sourced", `"${input.slug}" takes its canon from the canon source, and its one workbench folder rests beside that source: it takes no workspace`);
   }
   if (input.workspace !== undefined && input.workspace !== "" && !WORKSPACE_NAME_RE.test(input.workspace)) {
     throw new WorkbenchRefusal("workbench-workspace-malformed", `"${input.workspace}" names no workspace (lower-case letters, digits, '.', '_' and '-')`);
