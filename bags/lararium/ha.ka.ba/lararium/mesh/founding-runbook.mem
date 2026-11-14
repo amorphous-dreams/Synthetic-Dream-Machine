@@ -459,7 +459,8 @@ lares up
 lares persona new 1 --name 'joshua-fontany-engineer'                      # the same names, the same passphrase
 lares persona new 2 --name 'joshua-fontany-referee'
 lares vault unlock --all --face 1                                         # each face stands lit in a composition once
-lares vault unlock --face 0 && lares vessel seed --apply --yes            # the steward's seed: house canon, each workbench it owns or writes, and the shares again; every other face's memory waits by name
+lares vault unlock --face 0 && lares vessel seed --apply --yes            # the steward's seed: house canon, each workbench it owns or writes, and the shares again; every other face's memory waits by name, and its own kahua items preview
+lares vessel seed --apply --lift-kahua <N>                                # still wearing the steward: its own kahua items (the house laws among them), on the count its seed previewed
 lares vault unlock --face 1 && lares vessel seed --apply --yes            # the engineer's own seed: its daemon memory, its `personal` layers, and the preview of its kahua items
 lares vessel seed --apply --lift-kahua <N>                                # still wearing the engineer: its kahua items, on the count its seed previewed
 lares vault unlock --face 2 && lares vessel seed --apply --yes            # the referee's own seed; where it previews kahua items of its own, lift them the same way
@@ -532,6 +533,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VTDPqEVSs_pg4hsXhwn-2wkjVcCbC1lqjk33dmr_PbY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kqvduD1YSj_4Za4pSSQOUDwRjP69Y7WF8_HqMPBVj6U`>>
 
 <<^ code=`&#x0004;` to=`?`>>
