@@ -135,6 +135,19 @@ describe("the share config lands", () => {
     expect(Object.keys(direct.doc().tiddlers).sort()).toEqual([NOTES, RECIPE].sort());
   });
 
+  test("RED SA6 — a row whose bag no open catalog half names owes nothing here, and the landing names it instead of answering a bare zero", async () => {
+    const rows: ShareRow[] = [{ slug: "ghost", kind: "wiki", read: "reader", write: "" }];
+    const out = await applyShares({
+      rows: async () => rows, salt: "salt",
+      faces: [{ handleIndex: 0, petname: "owner", group: "g0", catalog: async () => half() }, { handleIndex: 1, petname: "reader", group: "g1", catalog: async () => null }],
+      grant: async () => { throw new Error("nothing delegates"); }, flag: { set: async () => {}, clear: async () => {} },
+    });
+    expect(out).toMatchObject({ granted: 0, pending: 0, unowned: ["ghost"] });
+    // CONTROL: a row its owner's half names reads owned.
+    const r = rig({ granteeLit: true });
+    expect((await r.run(true)).unowned, "the owned row reads owned; the rig's other row names a bag no half holds").toEqual(["sdm"]);
+  });
+
   test("SA3 — house canon owes nothing; a pet-name no face carries waits named", async () => {
     // The checkout carries sdm and the crossroads board: sdm seats as house canon, the board never does.
     seatHouseCanon(["crossroads", "sdm"]);

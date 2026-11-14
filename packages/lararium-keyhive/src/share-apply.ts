@@ -78,6 +78,11 @@ export interface ShareApplied {
   readonly waiting: readonly string[];
   /** Each wiki row's workbench the landing reached. */
   readonly workbenches: readonly ShareWorkbenchLanded[];
+  /**
+   * Each row whose bag no catalog half open here names (its owner stands shut, or stands lit and unworn, or the bag was never
+   * stood on this vessel): the row owes nothing this landing can read, and the door says so by slug.
+   */
+  readonly unowned: readonly string[];
 }
 
 /**
@@ -175,5 +180,6 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   const waiting = new Set<string>();
   for (const row of rows) for (const name of resolveShare({ bag: shareRowBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
   deps.log?.(`[share-apply] done in ${Date.now() - t0}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
-  return { granted, pending, carried, lifted, waiting: [...waiting].sort(), workbenches };
+  const unowned = rows.filter((row) => !isHouseCanonBag(shareRowBag(row)) && ownerOf(shareRowBag(row)) === null).map((row) => row.slug).sort();
+  return { granted, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned };
 }
