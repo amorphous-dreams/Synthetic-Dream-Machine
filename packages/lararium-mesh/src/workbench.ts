@@ -5,7 +5,7 @@
  * THE RULINGS (operator, 2026-11-11): "the multitude of faces reads as a private cabal for 1 human. Pattern integrities!";
  * "Personal can absorb the new caps."; "Unpono, rip out old code, enact the full new design, early-alpha law holds." One path
  * stands: a wiki's first stand under a face founds a private cabal of one (a glamour-less, announce-less cabal realm under the
- * seed charter whose Keyhive Document seats the owning face's PersonaGroup alone), and the wiki's working slot
+ * seed charter whose Keyhive Document, minted per vessel, seats the owning face's hive (its Keyhive individual on that vessel) alone), and the wiki's working slot
  * (`wikis/<slug>/working`) resolves to that realm's workbench. A share row seats more faces in the same Document; it never
  * moves the address or the layer. A face's private margin over the shared layer rests in `personal`.
  *

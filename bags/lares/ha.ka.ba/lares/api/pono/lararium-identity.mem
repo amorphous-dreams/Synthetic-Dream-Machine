@@ -188,8 +188,8 @@ split and the walk-the-chain-at-use discipline merit stealing, but Ink&Switch mo
 orthogonally as the rare root-rotation sub-lever (#/provenance).
 
 ''Wire-C (Keyhive 0.1.0 scout, 2026-06-24) — the two layers COMPOSE, not duplicate.'' Keyhive's
-''membership graph serves as the authority'' for the operator↔device binding + revocation: the operator
-PersonaGroup, a Keyhive group (`addGroupMember`/`verifyGroupMembership`; a seat's revocation rolls the key of
+''membership graph serves as the authority'' for the face↔device binding + revocation: a face's
+PersonaGroup, a Keyhive group of that face's devices (`addGroupMember`/`verifyGroupMembership`; a seat's revocation rolls the key of
 every bag the group reaches). The ''`device-delegation` edge''
 ''stands beside it as the OFFLINE projection'' — verifiable against the pinned operator root with no
 Keyhive boot (the light leaf path), place-bound, synchronously `exp`-bounded; a lossy offline witness
@@ -554,6 +554,6 @@ folded in; the FS-limit stated as posture). Standing dissent kept, with re-entry
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BpzVnibLePiuKD9x3LS7vod1vFkyaMsj-MQpeMVFzXw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;d5bkxxjxJWpF0N7DAsikPHx1wlBbd6qVf5wQOkiR198`>>
 
 <<^ code=`&#x0004;` to=`?`>>

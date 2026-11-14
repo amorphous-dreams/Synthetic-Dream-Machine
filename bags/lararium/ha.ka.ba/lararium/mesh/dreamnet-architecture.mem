@@ -230,11 +230,11 @@ The root. Each vessel mints its ''own'' Ed25519 keypair, stored locally (disk `0
 
 !!! personaGroup (veiled)
 
-One operator, N device-vessels. The `PersonaGroup`, a Keyhive group, proves which vessels speak for the same operator. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil`>>). The fleet-join ceremony transfers one face's membership out-of-band (QR, file, direct message) — no server participates.
+One face, N device-vessels. A face's `PersonaGroup`, a Keyhive group, holds the devices that wear that face and proves which vessels speak for it. A human who wears several faces holds one PersonaGroup per face, and no Keyhive structure, key or record joins them. The group faces the mesh ''veiled'' — anon by default, a first-class veil, not a deficit (see the veil doctrine at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-veil`>>). The fleet-join ceremony transfers one face's membership out-of-band (QR, file, direct message) — no server participates.
 
 !!! cabalGroup (neighborhood shrine)
 
-Multiple personaGroups who share a charter and a common ontology surface. The Keyhive `MeshCabal` sentinel document proves cabalGroup membership; cabal membership ''scopes read'' — it decides what a vessel may decrypt off the streams its relays deliver. ''A cabal names a //social// relationship — a mutual-petname Circle (who-recognizes-whom on the WHO axis), and it carries NO carriage:'' cabal-membership proposes ''no'' relay edge. To carry, a vessel signs a //separate//, deliberate PEER/TRANSIT edge on the INFRA axis (#/infra-axis) — the two planes never auto-couple, ''map never collapses to territory'' (ruling 2026-06-28). A cabalGroup holds `cap=admin` on its own ''charter and corpus bags'' (its social shared docs, never carriage-infrastructure) and may author a local corpus extension — new meme namespaces, local sigil tiddlers, charter documents — without permission from the DreamNet layer. The charter lives in the cabal's own Automerge docs; it does not inherit the corpus-kahu's grammar, it ''shares'' it via CRDT propagation from the genesis artifact.
+Multiple personaGroups who share a charter and a common ontology surface. A cabal's membership lives in the counted admission its charter's seat quorum signs plus, for a private cabal of one and for a shared wiki's workbench, a Keyhive Document that a vessel keeps for the realm; the per-face `MeshCabal` sentinel a face founds seats only that face's own PersonaGroup. Cabal membership ''scopes read'' — it decides what a vessel may decrypt off the streams its relays deliver. ''A cabal names a //social// relationship — a mutual-petname Circle (who-recognizes-whom on the WHO axis), and it carries NO carriage:'' cabal-membership proposes ''no'' relay edge. To carry, a vessel signs a //separate//, deliberate PEER/TRANSIT edge on the INFRA axis (#/infra-axis) — the two planes never auto-couple, ''map never collapses to territory'' (ruling 2026-06-28). A cabalGroup holds `cap=admin` on its own ''charter and corpus bags'' (its social shared docs, never carriage-infrastructure) and may author a local corpus extension — new meme namespaces, local sigil tiddlers, charter documents — without permission from the DreamNet layer. The charter lives in the cabal's own Automerge docs; it does not inherit the corpus-kahu's grammar, it ''shares'' it via CRDT propagation from the genesis artifact.
 
 The "neighborhood shrine" framing: a place that carries local ritual, local knowledge, local aesthetic — while recognizing the shared pattern grammar that keeps it legible to neighboring shrines.
 
@@ -723,6 +723,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Kd6QHXuXDYaHEQ3c0BckQeEN5hVMvMEuM_PdDa2YOg4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jA0c6EWg4yJPkvc1o9Y0Z8wew5kzreIsjvW28QS2OrY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

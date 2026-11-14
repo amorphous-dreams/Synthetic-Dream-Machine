@@ -30,7 +30,7 @@ A YIN and a YANG Luna-6 pair researched apart in two traded waves, then exchange
 
 !! What both faces hold, sourced
 
-* ''The vessel identity registers a union and delegates face bags vessel → veil → group.'' The vessel boots one Keyhive identity and registers every supplied bag as a union; face bags pass from vessel through veil to the face group. (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts:95-105,185-188`; `packages/lararium-mesh/src/register-bags.ts:16-19,105-119`; `packages/lararium-keyhive/src/operator-daemon-behavior.ts:203-216`.)
+* ''The vessel identity registers a union and delegates face bags vessel → veil → group'' (measured 2026-10-18; since moved by `K15` steps 0 to 3: a face's hive now registers its own bags on its own atom and event-store scope, and the vessel identity registers vessel-ground bags alone, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/rulings`>>). The vessel boots one Keyhive identity and registers every supplied bag as a union; face bags pass from vessel through veil to the face group. (`packages/lararium-keyhive/src/boot-daemon-keyhive.ts:95-105,185-188`; `packages/lararium-mesh/src/register-bags.ts:16-19,105-119`; `packages/lararium-keyhive/src/operator-daemon-behavior.ts:203-216`.)
 * ''Each face's PersonaGroup gets born of its own veil.'' The veil Keyhive creates the face's group (`packages/lararium-keyhive/src/ceremony-core.ts:345-370`).
 * ''Vessel and veils share one event store and one content-key holder.'' The same store initializes both providers (`ceremony-core.ts:346,361-365`); the mounted vessel process shares the holder across vessel and veil identities (`operator-daemon-behavior.ts:195-202,1036-1054`).
 * ''Per-face archive rows already exist, but their contents do not yet guarantee face-exclusive state.'' Node carries vessel and per-face rows (`packages/lararium-node/src/identity-anchors.ts:124-168`); browser carries face rows (`browser-keyhive-archive.ts:18-31,69-93`). Those row names do not establish isolated event, archive or key contents.
@@ -220,6 +220,6 @@ Sources below are repository paths under `/home/joshu/Synthetic-Dream-Machine`; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;7GC1JYGhZixqhkYbpnDEdMWQ1xGGl13KibEnv15i1_M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oqqUzHuoAw3QOP4XYAqybZzFqKPPWM_-6A6wEaC6v44`>>
 
 <<^ code=`&#x0004;` to=`?`>>
