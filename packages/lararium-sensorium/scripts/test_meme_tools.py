@@ -365,6 +365,37 @@ def test_a_landed_write_answers_unchanged_and_an_internal_fault_stays_unnamed(da
     assert "the-secret-key-inside" not in _said(crashed) and "Traceback" not in _said(crashed)
 
 
+def test_a_stray_builtin_error_stays_unnamed_and_only_a_house_raised_refusal_crosses(daemon, tmp_path):
+    # THE SEAT FORWARDS WHAT THE HOUSE RAISED BY NAME, never a builtin by its type. An OS permission error carries house
+    # paths and a library's decode error carries its input: neither was written for a caller, so each answers the bare line.
+    mcp = build_mcp(DaemonCoordinator(wing="w"))
+    sealed = tmp_path / "hearth" / "vault" / "seat.key"
+
+    @mcp.tool()
+    def os_denied() -> dict:
+        raise PermissionError(13, "Permission denied", str(sealed))
+
+    @mcp.tool()
+    def lib_decode() -> dict:
+        return {"n": int("the-private-row-text")}
+
+    @mcp.tool()
+    def lib_runtime() -> dict:
+        raise RuntimeError(f"dictionary changed size during iteration over {sealed}")
+
+    for name in ("os_denied", "lib_decode", "lib_runtime"):
+        crashed = _seat_call(name, {}, mcp)
+        assert crashed.is_error and _said(crashed) == f"Error executing tool {name}", _said(crashed)
+        assert str(tmp_path) not in _said(crashed) and "the-private-row-text" not in _said(crashed)
+    # CONTROL: the same three builtin families, raised by the house under its own refusal classes, still cross in their own
+    # words (an argument guard, the HITL guard, a shaping this seat never routes, an address that walks out of the shrine).
+    assert "no-container" in _said(_seat_call("meme_list", {}, mcp))
+    assert "HITL" in _said(_seat_call("purge", {"name": "x"}, mcp))
+    assert "carries no writeback/preview shaping" in _said(_seat_call("pour", {"surface": "claude-code", "pointer": "p", "dry_run": True}, mcp))
+    walked = _seat_call("recall", {"query": "q", "sensorium": "../abide"}, mcp)
+    assert walked.is_error and "ONE path segment" in _said(walked)
+
+
 def _described(name: str) -> str:
     mcp = build_mcp(DaemonCoordinator(wing="w"))
     return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)

@@ -19,9 +19,15 @@ import os
 import tempfile
 
 import content_io as cio
+from house_root import HouseRefusal
 from capture_stream import ContentStoreLandCap, Pipeline
 from deep_time import island_local_now
 from holder_caps import acquire_root_lock, release_lock, root_mutation
+
+
+class AddressRefused(HouseRefusal, ValueError):
+    """A name that reaches out of its root (`assert_one_segment`): the house's own refusal, in words for the caller
+    who sent the name, so a seat hands it across."""
 
 
 @dataclass(frozen=True)
@@ -106,7 +112,7 @@ def assert_one_segment(kind: str, name: str) -> str:
     than returning a verdict — a caller resolves a path it is about to act on, and a fail-closed
     refusal is the only reading that cannot be ignored."""
     if not name or name in (".", "..") or os.path.basename(name) != name or "\\" in name:
-        raise ValueError(
+        raise AddressRefused(
             f"{kind} refuses {name!r} — a name resolves to ONE path segment, never a route out of its root"
         )
     return name

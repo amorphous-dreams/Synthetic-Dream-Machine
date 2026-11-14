@@ -79,6 +79,7 @@ if __name__ == "__main__":
 import content_io as cio
 import worldline_io as wl
 import lares_uds as uds
+from house_root import HouseRefusal
 # THE MCP SEAT MARKS EVERY CALL AS THE AI SEAT (`"seat": "ai"` on each UDS request line and session opening): the vessel lets
 # it act as the worn face alone, and a call naming another face refuses `face-hand-refused`. A designation, not a proof (F7:
 # authority by designation on one machine, for the dogfood).
@@ -227,10 +228,24 @@ def seat_of(verb: str) -> str:
     return "HOTL" if (reversible and not trust_crossing) else "HITL"
 
 
-# THE REFUSAL FAMILIES this seat raises by name: the vessel's own refusal and an absent daemon (`lares_uds`), an unnamed
-# house root (a RuntimeError), a tool's argument guard (ValueError), the HITL guard (PermissionError), and a verb this
-# seat never runs (RuntimeError, NotImplementedError). `build_mcp`'s seat hands each to the caller in its own words.
-REFUSALS = (uds.LaresVerbError, uds.LaresDaemonUnreachable, ValueError, PermissionError, RuntimeError)
+class SeatArgumentRefused(HouseRefusal, ValueError):
+    """A tool's own argument guard: the call named something this seat cannot route (no container, a bare-slug law, ...)."""
+
+
+class SeatHitlRefused(HouseRefusal, PermissionError):
+    """The HITL guard: the verb needs the operator's hand and rode without an approval capability."""
+
+
+class SeatVerbOwed(HouseRefusal, NotImplementedError):
+    """A verb or a shaping this seat never runs (TS-native, owed to the daemon, deferred): refused rather than faked."""
+
+
+# THE REFUSAL FAMILIES THIS SEAT HANDS ACROSS, each raised BY THE HOUSE in words written for a caller: the vessel's own
+# refusal and an absent daemon (`lares_uds`), and every `HouseRefusal` (an unnamed house root, a tool's argument guard,
+# the HITL guard, a verb this seat never runs, an address that walks out of its root). No bare builtin rides here: a
+# `PermissionError` the OS raised carries house paths and a library's `ValueError` carries its input, so a builtin's
+# TYPE alone never crosses; `build_mcp`'s seat answers those the bare line.
+REFUSALS = (uds.LaresVerbError, uds.LaresDaemonUnreachable, HouseRefusal)
 
 
 def guard_hitl(verb: str, approval=None) -> None:
@@ -238,7 +253,7 @@ def guard_hitl(verb: str, approval=None) -> None:
     capability (the @daemon grants it out-of-band). Raise when an HITL verb rides without one."""
     if seat_of(verb) == "HITL" and not approval:
         why = "irreversible" if not VERB_SEATS[verb][0] else "trust-crossing"
-        raise PermissionError(f"{verb} sits HITL ({why}) — an operator-approval capability is required; "
+        raise SeatHitlRefused(f"{verb} sits HITL ({why}) — an operator-approval capability is required; "
                               "the @daemon grants it out-of-band. A reversible verb (e.g. kapae) needs none.")
 
 
@@ -347,7 +362,7 @@ class LaresCoordinator:
         if writeback or dry_run:
             # STILL refuse honestly: dry_run especially would otherwise LAND on the append-only ground (the
             # tool advertises a preview it can't yet give). Writeback/preview shaping rides the deferred wire.
-            raise NotImplementedError(
+            raise SeatVerbOwed(
                 "pour writeback/dry_run: the writeback/preview shaping rides the deferred @daemon-cap-wire "
                 "(not yet wired) — refusing rather than capturing for real")
         return capture_and_observe(self._palace, surface, pointer, wing=wing or self._wing, room=room,
@@ -437,7 +452,7 @@ class LaresCoordinator:
             return self.recall_crossplane(query, k, wing=wing, agent=agent, surface=surface,
                                           speaker=speaker, channel=channel, function=function)
         if lens != "content":
-            raise ValueError(
+            raise SeatArgumentRefused(
                 f"recall lens {lens!r} unknown — name one of: content · structure · form · persistence · crossplane")
         if imago:
             return self._content.get(imago) or {}
@@ -566,21 +581,21 @@ class LaresCoordinator:
         """The Ki (氣) corpus-coupling verdict is TS-native — the H¹ cohomology lives in @lararium/mesh, the
         hull a browser carries. A python STANDALONE can't compute it, so this raises: reach it through the
         node daemon (`lares sense ki`, or the routed MCP with the @daemon up), never the standalone coordinator."""
-        raise RuntimeError("ki: the coupling verdict is TS-native (the H¹ cohomology lives in @lararium/mesh) — "
+        raise SeatVerbOwed("ki: the coupling verdict is TS-native (the H¹ cohomology lives in @lararium/mesh) — "
                            "reach it via the @daemon (`lares sense ki`), not the standalone python coordinator")
 
     def li(self, **_) -> dict:
         """The Li (理) gluing verdict is TS-native — the Robinson li-radius and the H¹ cohomology live in
         @lararium/mesh, the hull a browser carries. A python STANDALONE can't compute it, so this raises:
         reach it through the node daemon (`lares sense li`, or the routed MCP with the @daemon up)."""
-        raise RuntimeError("li: the gluing verdict is TS-native (the li-radius + H¹ cohomology live in @lararium/mesh) — "
+        raise SeatVerbOwed("li: the gluing verdict is TS-native (the li-radius + H¹ cohomology live in @lararium/mesh) — "
                            "reach it via the @daemon (`lares sense li`), not the standalone python coordinator")
 
     def jing(self, **_) -> dict:
         """The Jing (勁) coherence verdict is TS-native — the li∘ki square (extend→restrict round-trip) rides
         the H¹ cohomology hull in @lararium/mesh. A python STANDALONE can't compute it, so this raises: reach
         it through the node daemon (`lares sense jing`, or the routed MCP with the @daemon up)."""
-        raise RuntimeError("jing: the coherence verdict is TS-native (the li∘ki square rides @lararium/mesh) — "
+        raise SeatVerbOwed("jing: the coherence verdict is TS-native (the li∘ki square rides @lararium/mesh) — "
                            "reach it via the @daemon (`lares sense jing`), not the standalone python coordinator")
 
     def couple_r(self, *, rows=None, names=None, shuffles: int = 100, nboot: int = 100,
@@ -610,7 +625,7 @@ class LaresCoordinator:
         (@lararium/mesh coupleMesh) beside the R effective-TE (coupling.R) and diffs the directed edges. The
         TS hull rides the browser-carried @daemon, so this raises: reach it via the @daemon (`lares sense
         mismatch`), not the standalone python coordinator."""
-        raise RuntimeError("mismatch: the ki↔R comparator is TS-orchestrated (the TS-hull coupling lives in "
+        raise SeatVerbOwed("mismatch: the ki↔R comparator is TS-orchestrated (the TS-hull coupling lives in "
                            "@lararium/mesh) — reach it via the @daemon (`lares sense mismatch`), not standalone")
 
     def flow(self, **_) -> dict:
@@ -618,7 +633,7 @@ class LaresCoordinator:
         each step routed by hull (crystallize + the coupleMesh capstone ride the TS hull; phase rides the py
         serve-op; mismatch reaches both hulls). Only the @daemon reaches every hull, so this raises: reach it
         via the @daemon (`lares flow <petname>`), not the standalone python coordinator."""
-        raise RuntimeError("flow: the composed-flow runner is TS-orchestrated (it routes cap-steps across "
+        raise SeatVerbOwed("flow: the composed-flow runner is TS-orchestrated (it routes cap-steps across "
                            "both hulls) — reach it via the @daemon (`lares flow <petname>`), not standalone")
 
     # ── the per-plane QUERY DOOR (read-only; PLANE_VERBS) ────────────────────────────────────
@@ -789,7 +804,7 @@ def build_mcp(coordinator: LaresCoordinator):
             return None
         root = sensorium_dir(sensorium)
         if bound_root is not None and os.path.realpath(root) != os.path.realpath(bound_root):
-            raise ValueError(f"--standalone opens ONE sensorium ({bound_root}); addressing {sensorium!r} "
+            raise SeatArgumentRefused(f"--standalone opens ONE sensorium ({bound_root}); addressing {sensorium!r} "
                              "rides the routed @daemon (drop --standalone, or name the bound sensorium)")
         return root
 
@@ -961,7 +976,7 @@ def build_mcp(coordinator: LaresCoordinator):
         Rides the @daemon cap-wire like every verb (uds), never a local store."""
         allowed = {"switch", "hold", "release", "active"}
         if verb not in allowed:
-            raise ValueError(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
+            raise SeatArgumentRefused(f"wiki: `verb` must be one of {sorted(allowed)}, got {verb!r}")
         args: dict = {"slug": slug} if slug else {}
         return uds.output(f"wiki-{verb}", args)
 
@@ -974,15 +989,15 @@ def build_mcp(coordinator: LaresCoordinator):
         answers to its explicit name, `recipe="default"`. A slug rides bare (the `@` spelling stands
         retired: refused, never stripped)."""
         if recipe is not None and bag is not None:
-            raise ValueError(f"{verb}: no-container — name one of `recipe`/`bag`, never both "
+            raise SeatArgumentRefused(f"{verb}: no-container — name one of `recipe`/`bag`, never both "
                              f"(got recipe={recipe!r}, bag={bag!r})")
         if recipe is None and bag is None:
-            raise ValueError(f"{verb}: no-container — name where this verb reads or writes: `recipe` (as that "
+            raise SeatArgumentRefused(f"{verb}: no-container — name where this verb reads or writes: `recipe` (as that "
                              "wiki, e.g. \"lares\"; the daemon's own wiki answers to \"default\") or `bag` "
                              "(that one bag). No default wiki exists.")
         for key, slug in (("recipe", recipe), ("bag", bag)):
             if slug is not None and (not slug or slug.startswith("@")):
-                raise ValueError(f"{verb}: `{key}` takes a bare slug (`sdm`, `lares`), got {slug!r} — "
+                raise SeatArgumentRefused(f"{verb}: `{key}` takes a bare slug (`sdm`, `lares`), got {slug!r} — "
                                  "the `@` spelling stands retired")
         return {"recipe": recipe} if recipe is not None else {"bag": bag}
 
@@ -1089,7 +1104,7 @@ def build_mcp(coordinator: LaresCoordinator):
         (`recipe="default"` names the @daemon's own wiki); neither, or both, refuses as `no-container`. Slugs ride bare. Returns {uri, to, text, contentType, meta?} — `meta` rides beside `text` for `md` (the `.md.meta` sidecar; the pair is one carrier in two files). Deterministic
         and clock-free — currency proves by re-projecting, never by a stamp. Rides the @daemon wire."""
         if to not in PROJECT_TARGETS:
-            raise ValueError(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
+            raise SeatArgumentRefused(f"meme_project: `to` must be one of {list(PROJECT_TARGETS)}, got {to!r}")
         args: dict = {**_meme_container("meme_project", recipe, bag), "uri": uri, "to": to}
         return _meme_wire("meme-project", args)
 
@@ -1097,7 +1112,7 @@ def build_mcp(coordinator: LaresCoordinator):
 
     def _offer_bag(verb: str, bag: "str | None") -> str:
         if not bag or bag.startswith("@"):
-            raise ValueError(f"{verb}: name the house-canon `bag` the offer goes toward, a bare slug (`lares`, `sdm`), got {bag!r}")
+            raise SeatArgumentRefused(f"{verb}: name the house-canon `bag` the offer goes toward, a bare slug (`lares`, `sdm`), got {bag!r}")
         return bag
 
     def _offer_wire(verb: str, args: dict):
@@ -1115,7 +1130,7 @@ def build_mcp(coordinator: LaresCoordinator):
         by hand. A withheld or `cap/**` title refuses `offer-withheld-title`. `nexus` names the Nexus where this vessel's
         island reads no charter. Returns {cid, landed, bag, nexus, records}; a replay answers `landed: false`."""
         if not isinstance(uris, list) or not uris or not all(isinstance(u, str) and u.startswith("lar:") for u in uris):
-            raise ValueError("meme_offer: name `uris` as a non-empty list of lar: uris")
+            raise SeatArgumentRefused("meme_offer: name `uris` as a non-empty list of lar: uris")
         args: dict = {"bag": _offer_bag("meme_offer", bag), "titles": uris}
         if nexus:
             args["nexus"] = nexus
@@ -1141,7 +1156,7 @@ def build_mcp(coordinator: LaresCoordinator):
         """SHOW one offer — mirrors `lares meme offer show <cid>`: each record's freshness and its field diff against canon
         now ({field, canon, offered}). Returns the listing row plus `diffs`. Reads alone."""
         if not isinstance(cid, str) or len(cid) != 64 or any(c not in "0123456789abcdef" for c in cid):
-            raise ValueError("meme_offer_show: `cid` names one offer CID (64 lower-case hex)")
+            raise SeatArgumentRefused("meme_offer_show: `cid` names one offer CID (64 lower-case hex)")
         args: dict = {"cid": cid}
         if nexus:
             args["nexus"] = nexus
@@ -1151,7 +1166,7 @@ def build_mcp(coordinator: LaresCoordinator):
 
     def _kahua_face(face: "int | None") -> "int | None":
         if face is not None and (not isinstance(face, int) or isinstance(face, bool) or face < 0):
-            raise ValueError(f"kahua: `face` takes a whole persona index from 0, got {face!r}")
+            raise SeatArgumentRefused(f"kahua: `face` takes a whole persona index from 0, got {face!r}")
         return face
 
     @mcp.tool()
@@ -1169,7 +1184,7 @@ def build_mcp(coordinator: LaresCoordinator):
         Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts (`kahua_stage` writes
         the local row a lift names)."""
         if not isinstance(proposals, list) or not proposals:
-            raise ValueError("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
+            raise SeatArgumentRefused("kahua_propose: name `proposals` as a non-empty list of {title, revision, text|digest, taint}")
         args: dict = {"proposals": proposals}
         if session:
             args["session"] = session
@@ -1188,11 +1203,11 @@ def build_mcp(coordinator: LaresCoordinator):
         (absent: the worn face); the AI seat naming another refuses `face-hand-refused`. A face with no local canon
         standing refuses `kahua-stage-no-canon`. Rides a `seat` session over the @daemon wire."""
         if not isinstance(title, str) or not title:
-            raise ValueError("kahua_stage: name the row's `title`")
+            raise SeatArgumentRefused("kahua_stage: name the row's `title`")
         if not isinstance(text, str):
-            raise ValueError("kahua_stage: name the row's body as `text`")
+            raise SeatArgumentRefused("kahua_stage: name the row's body as `text`")
         if fields is not None and (not isinstance(fields, dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in fields.items())):
-            raise ValueError("kahua_stage: `fields` takes an object of string values ({\"tags\": \"memory\"})")
+            raise SeatArgumentRefused("kahua_stage: `fields` takes an object of string values ({\"tags\": \"memory\"})")
         args: dict = {"title": title, "text": text}
         if fields:
             args["fields"] = fields
@@ -1215,7 +1230,7 @@ def build_mcp(coordinator: LaresCoordinator):
         (null where none stands: never lifted, or every head withdrawn) and, with `history`, every verified revision,
         withdrawn ones included. Rides a `seat` session over the @daemon wire."""
         if not isinstance(title, str) or not title:
-            raise ValueError("kahua_get: name a `title`")
+            raise SeatArgumentRefused("kahua_get: name a `title`")
         args: dict = {"action": "get", "title": title}
         if history:
             args["history"] = True
@@ -1254,7 +1269,7 @@ def build_mcp(coordinator: LaresCoordinator):
         (idempotent; the pure reducer writes only on change). Reversible re-settle → HOTL. Mirrors
         `lares sense reconcile <name> | --all`."""
         if not all and not name:
-            raise ValueError("reconcile: pass a sensorium `name` or `all=True`")
+            raise SeatArgumentRefused("reconcile: pass a sensorium `name` or `all=True`")
         args: dict = {}
         if all:
             args["all"] = True
@@ -1326,7 +1341,7 @@ class DaemonCoordinator:
         self._wing = wing
 
     def _owed(self, verb: str):
-        raise RuntimeError(
+        raise SeatVerbOwed(
             f"lares_mcp: `{verb}` has no @daemon verb yet, and this surface holds no store of its own. "
             "Opening one would put a second writer on the palace (N sessions, N clients, one index). "
             f"Owed: a node verb for `{verb}` that routes to the holder the daemon already owns."
@@ -1386,7 +1401,7 @@ class DaemonCoordinator:
             # rides) — no refusal where the holder answers it.
             return self.sweep(surface="all", wing=wing, room=room, sensorium_root=sensorium_root)
         if writeback or dry_run:
-            raise NotImplementedError(
+            raise SeatVerbOwed(
                 "pour writeback/dry_run: the @daemon `capture` verb carries no writeback/preview shaping, so "
                 "this routed surface refuses rather than silently drop them (dry_run would LAND on the "
                 "append-only ground) — owed: the shaping verb on the daemon or in capture_and_observe")

@@ -22,7 +22,13 @@ A re-founding clears `<root>/hearth` alone. Dependency-free (stdlib only), so ev
 import os
 
 
-class HouseRootUnnamed(RuntimeError):
+class HouseRefusal(Exception):
+    """A REFUSAL THE HOUSE RAISED BY NAME, in words it wrote for a caller. The one family a seat hands across verbatim
+    (`lares_mcp.REFUSALS`): a builtin raised by the OS or a library carries paths and inputs nobody wrote for a caller,
+    so its type alone never crosses. A house raise site subclasses this beside the builtin its callers already catch."""
+
+
+class HouseRootUnnamed(HouseRefusal, RuntimeError):
     """The refusal an unnamed house root raises. Mirrors TS `HouseRootUnnamed`, message for message."""
 
     def __init__(self):
