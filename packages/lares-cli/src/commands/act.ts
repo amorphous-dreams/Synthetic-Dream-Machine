@@ -336,6 +336,9 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     nonce = changeId;
     actionArgs["bag"]   = bag;
     actionArgs["plane"] = plane;
+    // THE SEED'S FLAG (`house-canon`, set by `seedHolding`, no typed surface): the seed read this bag's holding off the canon
+    // source as house canon. An island that never seated the bag refuses `house-canon-unseated` and mints no catalog row for canon.
+    if (args.flags["house-canon"] === true) actionArgs["house-canon"] = true;
   } else {
     // verb === "LOAD"
     const sourceUri = args.options["source-uri"];

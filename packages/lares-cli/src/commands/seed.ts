@@ -30,6 +30,7 @@
 
 import { readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { houseCanonSlugs } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit } from "../render.js";
 import { larBagsDir, vesselDid } from "../env.js";
@@ -72,7 +73,10 @@ export async function seedHolding(
       command: "act",
       positional: ["CREATE"],
       options: { ...args.options, bag: h.toBag },
-      flags: { ...args.flags, yes: true },
+      // THE SEED'S DISK READING RIDES THE CREATE: a disk-sourced holding other than the board stands as house canon
+      // (`houseCanonSlugs`), so an island that never seated it (the holding landed after the vessel booted) refuses
+      // `house-canon-unseated` and mints no catalog row, where a plain CREATE would strand the seeded rows outside the realm.
+      flags: { ...args.flags, yes: true, ...(houseCanonSlugs([h.holding]).includes(h.holding) ? { "house-canon": true } : {}) },
     }));
     if (created.code !== 0) return { ...h, gesture: "ingest", exitCode: created.code };
     // HOUSE CANON ON A FACE OUTSIDE THE KAHU CABAL: the CREATE answered that this face reads the floor, so the INGEST

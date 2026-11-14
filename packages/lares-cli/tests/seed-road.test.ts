@@ -142,6 +142,19 @@ describe("house canon on a face outside the Kahu cabal reads the floor", () => {
     expect(await seedHolding(applied, holdingOf("crossroads"))).toMatchObject({ gesture: "ingest", exitCode: 0 });
     expect(calls.map((c) => c.command)).toEqual(["act", "ingest"]);
   });
+  test("S9 — the seed's CREATE names a disk-sourced holding house canon, so an island that never seated it mints no row; the board carries no such claim", async () => {
+    floorFor = new Set();
+    for (const slug of ["sdm", "lares"]) {
+      calls.length = 0;
+      await seedHolding(applied, holdingOf(slug));
+      expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"], flags: { "house-canon": true } });
+    }
+    // CONTROL: the Nexus's public board stays an ordinary catalog bag.
+    calls.length = 0;
+    await seedHolding(applied, holdingOf("crossroads"));
+    expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"] });
+    expect(calls[0]!.flags["house-canon"]).toBeUndefined();
+  });
   test("S8b — the floor reading reads the printed answer alone", () => {
     expect(createReadsFloor(["CREATE ✓ applied locally (req 1)", "  readsFloor   true"])).toBe(true);
     expect(createReadsFloor(["CREATE ✓ applied locally (req 1)", "  alreadyStood true"])).toBe(false);

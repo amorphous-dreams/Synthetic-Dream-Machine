@@ -97,6 +97,7 @@ describe("a register act lands its row on its half", () => {
  *   V1 — seed as h0, h1, h2: zero catalog rows; one document per house canon bag (the realm's); h1 and h2 read the floor
  *   V2 — a non-steward CREATE answers resolvedElsewhere with readsFloor, never a kahu-reach red; a stranger's own write refuses
  *   V3 — a steward whose realm registers no document refuses by name (house-canon-unlanded) and mints no row
+ *   V5 — a CREATE that names its bag house canon over a bag this island never seated refuses (house-canon-unseated), mints no row
  *   V4 — CREATE carries no tier: a `tier` arg stamps nothing, and the board (crossroads) stays an ordinary catalog bag
  */
 describe("house canon: one realm document, no catalog row", () => {
@@ -169,6 +170,22 @@ describe("house canon: one realm document, no catalog row", () => {
     expect(minted.readsFloor).toBeUndefined();
     await repo.shutdown();
   }));
+
+  test("V5 — a CREATE that names its bag house canon (the seed's own disk reading) refuses on an island that never seated it, and mints no row", async () => {
+    // The seat reads the checkout once, at boot: a holding that lands under the canon source afterwards stands unseated here, and a
+    // plain CREATE would mint a catalog row for canon, the very row the realm's later document strands.
+    const { repo, createAs, rowsNaming } = await threeFaces();
+    const bag = "lar:///ha.ka.ba/bags/elyncia";
+    for (const n of [0, 1]) await expect(createAs(n)({ bag, "house-canon": true }, ctx())).rejects.toMatchObject({ reason: "house-canon-unseated" });
+    expect(rowsNaming(bag)).toBe(0);
+    // CONTROLS: the claim over a seated bag answers as house canon always does; a CREATE that claims nothing mints its ordinary row.
+    await seated(async () => {
+      expect(await createAs(1)({ bag, "house-canon": true }, ctx())).toMatchObject({ resolvedElsewhere: true, readsFloor: true });
+    });
+    const plain = await createAs(1)({ bag: "lar:///ha.ka.ba/bags/private-ledger" }, ctx());
+    expect(typeof plain.docUrl).toBe("string");
+    await repo.shutdown();
+  });
 
   test("CONTROL — an ordinary bag still forks per face (each face's half stays sealed to the others)", async () => {
     const { repo, createAs } = await threeFaces();

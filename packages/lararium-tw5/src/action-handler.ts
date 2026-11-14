@@ -544,6 +544,13 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
     // with CREATE on every face and reads clean: the steward's answer names the realm's document, any other face's names
     // the floor, and no face ever mints a catalog row for canon.
     if (action.verb === "CREATE" && isHouseCanonBag(action.bag)) return createHouseCanon(action, opts);
+    // THE CALLER'S OWN DISK READING (`house-canon: true`, the seed's): it read this bag's holding off the canon source as house
+    // canon. The seat reads that source once, at boot, so a holding that landed afterwards stands unseated here, and a plain
+    // CREATE would mint the catalog row canon never takes: the realm's document, landed at the steward's next boot, would
+    // then answer every door empty while the row's document held the seeded rows. So it refuses by name and mints nothing.
+    if (action.verb === "CREATE" && args["house-canon"] === true) {
+      throw new VerbRefusal("house-canon-unseated", `house-canon-unseated: ${action.bag} stands under the canon source as house canon, and this vessel booted before it stood there, so the Kahu realm names no document for it; restart the vessel (the steward's boot lands it in the realm at contract), then seed again. No catalog row ever mints canon.`);
+    }
 
     // THE ONE PREDICATE, before any other check: a hand outside the Kahu cabal lands nothing in house canon.
     if (opts.kahuReachClearedAtGate !== true) {
