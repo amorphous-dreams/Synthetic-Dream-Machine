@@ -22,14 +22,14 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import type { ParsedArgs } from "../src/parse-args.js";
 
-type Call = { readonly command: string; readonly positional: string[]; readonly options: Record<string, string>; readonly flags: Record<string, unknown> };
+type Call = { readonly command: string; readonly positional: string[]; readonly options: Record<string, string>; readonly flags: Record<string, unknown>; readonly claims?: unknown };
 const calls: Call[] = [];
 let fresherFor: Record<string, unknown> = {};
 let floorFor = new Set<string>();
 let floorJson = false;
 vi.mock("../src/commands/act.js", () => ({
-  cmdAct: vi.fn(async (args: ParsedArgs) => {
-    calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
+  cmdAct: vi.fn(async (args: ParsedArgs, claims?: unknown) => {
+    calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags }, claims });
     // The action handler's answer for house canon on a face outside the Kahu cabal, as `act` prints it.
     if (floorFor.has(String(args.options["bag"]))) {
       // Off a terminal `act` prints its answer as ONE JSON line straight to stdout (`emit`), never through console.log.
@@ -152,13 +152,14 @@ describe("house canon on a face outside the Kahu cabal reads the floor", () => {
     for (const slug of ["sdm", "lares"]) {
       calls.length = 0;
       await seedHolding(applied, holdingOf(slug));
-      expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"], flags: { "house-canon": true } });
+      expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"], claims: { houseCanon: true } });
     }
     // CONTROL: the Nexus's public board stays an ordinary catalog bag.
     calls.length = 0;
     await seedHolding(applied, holdingOf("crossroads"));
-    expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"] });
-    expect(calls[0]!.flags["house-canon"]).toBeUndefined();
+    expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"], claims: { houseCanon: false } });
+    // The claim rides beside the parsed arguments: no flag of the seed's or of `act` carries it, so neither door grows a typed surface.
+    for (const call of calls) expect(Object.keys(call.flags)).not.toContain("house-canon");
   });
   test("S8d — the seed hears the CREATE's answer where `act` writes it as JSON to stdout: no INGEST follows, the answer still prints, and the seed reads clean", async () => {
     floorFor = new Set(["lar:///ha.ka.ba/bags/lares"]);

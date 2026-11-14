@@ -235,7 +235,14 @@ async function actRepack(args: ParsedArgs): Promise<number> {
   return 0;
 }
 
-export async function cmdAct(args: ParsedArgs): Promise<number> {
+/**
+ * What a caller inside this CLI states beside the parsed arguments, with no typed surface of its own:
+ *   · `houseCanon` — the caller (the seed) read this CREATE's bag off the canon source as house canon. The verb carries it as
+ *     `house-canon: true`, and an island that never seated the bag refuses `house-canon-unseated` and mints no catalog row.
+ */
+export interface ActClaims { readonly houseCanon?: boolean }
+
+export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<number> {
   const verbRaw = args.positional[0];
   if (!verbRaw) { printUsage(); return 2; }
   if (verbRaw === "REPACK") return await actRepack(args);
@@ -336,9 +343,9 @@ export async function cmdAct(args: ParsedArgs): Promise<number> {
     nonce = changeId;
     actionArgs["bag"]   = bag;
     actionArgs["plane"] = plane;
-    // THE SEED'S FLAG (`house-canon`, set by `seedHolding`, no typed surface): the seed read this bag's holding off the canon
-    // source as house canon. An island that never seated the bag refuses `house-canon-unseated` and mints no catalog row for canon.
-    if (args.flags["house-canon"] === true) actionArgs["house-canon"] = true;
+    // THE SEED'S CLAIM (`ActClaims.houseCanon`): the seed read this bag's holding off the canon source as house canon. An island
+    // that never seated the bag refuses `house-canon-unseated` and mints no catalog row for canon.
+    if (claims.houseCanon === true) actionArgs["house-canon"] = true;
   } else {
     // verb === "LOAD"
     const sourceUri = args.options["source-uri"];

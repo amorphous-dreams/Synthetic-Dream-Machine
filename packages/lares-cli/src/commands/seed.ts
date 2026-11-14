@@ -69,15 +69,15 @@ export async function seedHolding(
     return { ...h, gesture: "skip", exitCode: 0, reason: "its canon source stands off disk (not under the canon source the daemon reads, or a private plane): the seed feeds disk canon alone" };
   }
   if (args.flags["apply"]) {
+    // THE SEED'S DISK READING RIDES THE CREATE (`ActClaims.houseCanon`): a disk-sourced holding other than the board stands as
+    // house canon (`houseCanonSlugs`), so an island that never seated it (the holding landed after the vessel booted) refuses
+    // `house-canon-unseated` and mints no catalog row, where a plain CREATE would strand the seeded rows outside the realm.
     const created = await foldCreateOutput(args, () => cmdAct({
       command: "act",
       positional: ["CREATE"],
       options: { ...args.options, bag: h.toBag },
-      // THE SEED'S DISK READING RIDES THE CREATE: a disk-sourced holding other than the board stands as house canon
-      // (`houseCanonSlugs`), so an island that never seated it (the holding landed after the vessel booted) refuses
-      // `house-canon-unseated` and mints no catalog row, where a plain CREATE would strand the seeded rows outside the realm.
-      flags: { ...args.flags, yes: true, ...(houseCanonSlugs([h.holding]).includes(h.holding) ? { "house-canon": true } : {}) },
-    }));
+      flags: { ...args.flags, yes: true },
+    }, { houseCanon: houseCanonSlugs([h.holding]).includes(h.holding) }));
     if (created.code !== 0) return { ...h, gesture: "ingest", exitCode: created.code };
     // HOUSE CANON ON A FACE OUTSIDE THE KAHU CABAL: the CREATE answered that this face reads the floor, so the INGEST
     // writes nothing (the steward alone writes canon live) and the seed names the state, clean.
