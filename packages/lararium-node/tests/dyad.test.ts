@@ -199,3 +199,31 @@ describe("the dyad capability", () => {
     expect(boardReader).toMatch(/keptFromLedger\(/);
   });
 });
+
+describe("the handle hears its worker through ONE listener", () => {
+  test("a daemon island's whole record, its document store door and every later subscriber share one `message` listener on the worker; each still hears, an unsubscribe leaves alone, and the dyad still answers (control)", async () => {
+    const emitter = new EventEmitter();
+    const said: Array<Record<string, unknown>> = [];
+    const worker = Object.assign(emitter, { postMessage: (msg: unknown) => { said.push(msg as Record<string, unknown>); }, terminate: async () => 0 }) as unknown as Worker;
+    const doorHeard: unknown[] = [];
+    const handle = nodeWorkerHandle(worker, { island: "daemon", caps: {
+      dyad: () => "clear",
+      // The document store's door listens on the island's channel several times over (its answers, its askers).
+      docStore: (port) => { const stops = [1, 2, 3, 4, 5].map(() => port.listen((m) => { doorHeard.push(m); })); return () => { for (const stop of stops) stop(); }; },
+    } });
+    const heard: string[] = [];
+    const stops = ["a", "b", "c", "d", "e", "f"].map((name) => handle.listen(() => { heard.push(name); }));
+    expect(emitter.listenerCount("message"), "one listener stands on the worker, whatever the design hangs on it").toBe(1);
+    emitter.emit("message", { type: "probe" });
+    expect(heard).toEqual(["a", "b", "c", "d", "e", "f"]);
+    expect(doorHeard).toHaveLength(5);
+    stops[1]!();
+    emitter.emit("message", { type: "probe" });
+    expect(heard.slice(6), "an unsubscribe leaves alone").toEqual(["a", "c", "d", "e", "f"]);
+    // CONTROL: the record's own answers still hear the worker.
+    emitter.emit("message", ask("one-listener"));
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    expect(said.map((m) => [m["type"], m["standing"]])).toEqual([["dyad:read", "clear"]]);
+  });
+});
+

@@ -14,9 +14,26 @@ export { answerReceipt, answerDyad, answerCustodyWrite, answerSessionSign };
 // spawn (the transport stands late) and drop it at teardown, and two vessels in one process never share one. No
 // module-global stands behind any of the four.
 
+// ONE LISTENER PER WORKER. An island's channel carries every answer its class owns, the document store's door (its answers
+// and its askers) and each later subscriber of the handle: a count the design grows freely. So one `message` listener
+// stands on the worker and tells each hearer in the order it joined, where each `w.on` of its own crossed the emitter's
+// listener ceiling on every boot. A hearer's throw surfaces as the emitter's own would.
+const hearers = new WeakMap<Worker, Set<(raw: unknown) => void>>();
+function hear(w: Worker, cb: (raw: unknown) => void): () => void {
+  let set = hearers.get(w);
+  if (set === undefined) {
+    const joined = new Set<(raw: unknown) => void>();
+    hearers.set(w, joined);
+    w.on("message", (raw: unknown) => { for (const tell of [...joined]) tell(raw); });
+    set = joined;
+  }
+  set.add(cb);
+  return () => { set.delete(cb); };
+}
+
 /** Answer a worker's `cas:want` on the same requestId: through the record's `cas` when one stands, else a miss. */
 function attachCas(w: Worker, caps: CapabilityRecord): void {
-  w.on("message", (raw: unknown) => {
+  hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CasWant> | null;
     if (!m || m.type !== "cas:want" || typeof m.requestId !== "string" || typeof m.cid !== "string") return;
     const { requestId, cid } = m;
@@ -32,7 +49,7 @@ function attachCas(w: Worker, caps: CapabilityRecord): void {
 
 function attachReceipt(w: Worker, caps: CapabilityRecord): void {
   const settlement = receiptSettlement(() => { try { w.postMessage({ type: "receipt:close" }); } catch { /* the worker already left */ } });
-  w.on("message", (raw: unknown) => {
+  hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_ReceiptRequest> | null;
     // The island's word reads whole, as at every island door: a type with any other key is no asks-done.
     if ((raw as { type?: unknown } | null)?.type === "receipt:asks-done") { if (Object.keys(raw as object).length === 1) settlement.asksDone(); return; }
@@ -47,7 +64,7 @@ function attachReceipt(w: Worker, caps: CapabilityRecord): void {
 }
 
 function attachDyad(w: Worker, caps: CapabilityRecord): void {
-  w.on("message", (raw: unknown) => {
+  hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_DyadAsk> | null;
     if (!m || m.type !== "dyad:ask" || typeof m.requestId !== "string") return;
     void answerDyad(caps, { requestId: m.requestId, fleetRoot: m.fleetRoot as string, deviceKey: m.deviceKey as string }).then((reply) => {
@@ -57,7 +74,7 @@ function attachDyad(w: Worker, caps: CapabilityRecord): void {
 }
 
 function attachCustodyWrite(w: Worker, caps: CapabilityRecord): void {
-  w.on("message", (raw: unknown) => {
+  hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_CustodyWrite> | null;
     if (!m || m.type !== "custody:write" || typeof m.requestId !== "string") return;
     void answerCustodyWrite(caps, { requestId: m.requestId, carrier: m.carrier as CustodyWriteCarrier, bytes: m.bytes as Uint8Array }).then((reply) => {
@@ -71,7 +88,7 @@ function attachCustodyWrite(w: Worker, caps: CapabilityRecord): void {
 // channel alone carries the ask: a wiki island's refuses by name.
 function attachSessionSignDoor(w: Worker, caps: CapabilityRecord): void {
   const logged = { once: false };
-  w.on("message", (raw: unknown) => {
+  hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_SessionSign> | null;
     if (!m || m.type !== "session:sign" || typeof m.requestId !== "string") return;
     if (!caps.sessionSign && !logged.once) {
@@ -116,7 +133,7 @@ function attachRefusals(w: Worker, caps: CapabilityRecord, island: "wiki" | "ses
     console.warn(`[vessel-caps] ${name}: a ${island} island asked for ${what}; only the daemon island reaches it. The ask refused and nothing ran.`);
   };
   const reply = (msg: unknown): void => { try { w.postMessage(msg); } catch { /* the worker went away */ } };
-  w.on("message", (raw: unknown) => {
+  hear(w, (raw: unknown) => {
     const m = raw as { type?: unknown; requestId?: unknown } | null;
     if (!m || typeof m !== "object" || typeof m.requestId !== "string") return;
     if (m.type === "cas:want" && island === "session") {
@@ -157,7 +174,7 @@ function attachRefusals(w: Worker, caps: CapabilityRecord, island: "wiki" | "ses
 // THE REST ASK, vessel side (sealed-store#/owed, V2): every island with a store of its own (the daemon island's owned
 // store, a wiki island's) asks before it rests a byte of a document, and the vessel answers from its Repo's sealed rest.
 function attachRestAsk(w: Worker, caps: CapabilityRecord): void {
-  w.on("message", (raw: unknown) => {
+  hear(w, (raw: unknown) => {
     const m = raw as Partial<IslandMsg_RestAsk> | null;
     if (!m || m.type !== "rest:ask" || typeof m.requestId !== "string") return;
     void answerRestAsk(caps, m as Partial<IslandMsg_RestAsk> & { requestId: string }).then((reply) => {
@@ -190,7 +207,7 @@ export function nodeWorkerHandle(w: Worker, opts: { readonly island: IslandClass
   const post = w.postMessage.bind(w) as (msg: unknown, transfer?: unknown[]) => void;
   return {
     post:      (msg, transfer) => post(msg, transfer),
-    listen:    (cb) => { w.on("message", cb); return () => { w.off("message", cb); }; },
+    listen:    (cb) => hear(w, cb),
     onError:   (cb) => { w.on("error",   cb); return () => { w.off("error",   cb); }; },
     onExit:    (cb) => {
       const fn = (code: number): void => cb(`the island exited (code ${String(code)})`);
@@ -233,7 +250,7 @@ function attachDocStore(w: Worker, caps: CapabilityRecord): void {
   if (!docStore) return;
   const detach = docStore({
     post: (msg) => w.postMessage(msg),
-    listen: (cb) => { w.on("message", cb); return () => { w.off("message", cb); }; },
+    listen: (cb) => hear(w, cb),
   });
   w.once("exit", () => detach());
 }
