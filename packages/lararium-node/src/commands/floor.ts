@@ -51,7 +51,7 @@ function bootstrapDaemonUrl(): string {
  * The oracle island this store holds, at its deterministic address. A store no boot has materialized it into refuses by name:
  * the founding stands the social planes, and the vessel's first boot stands the island from the genesis seed.
  */
-async function storedOracleIsland(repo: Repo): Promise<DocHandle<LarDoc>> {
+async function storedGenesisIsland(repo: Repo): Promise<DocHandle<LarDoc>> {
   try { return await resolveBootDoc<LarDoc>(repo, oracleGenesisDocUrl(), { tideline: "hearth-private", label: "floor (@oracle)" }); }
   catch { throw new FloorRefused("floor-no-genesis", "this vessel's store holds no oracle island yet, so no genesis floor reads here: stand the vessel once (`lares up`), and its boot materializes the island from the genesis seed"); }
 }
@@ -80,7 +80,7 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   const nexus = nexusAidOf(readNexusDoc(home));
   if (nexus === null) throw new FloorRefused("floor-no-charter", "this vessel stands in no Nexus charter, so it holds no floor pin past genesis");
   const daemonUrl = bootstrapDaemonUrl();
-  const genesisManifest = genesisFloorCidOf((await storedOracleIsland(opts.repo)).doc());
+  const genesisManifest = genesisFloorCidOf((await storedGenesisIsland(opts.repo)).doc());
   if (genesisManifest === null) throw new FloorRefused("floor-no-genesis", "this vessel's genesis seed names no floor");
   let control;
   try { control = await readControlHome(opts.repo, await opts.repo.find<LarDoc>(daemonUrl as AutomergeUrl)); }
