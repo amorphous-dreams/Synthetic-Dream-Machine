@@ -309,7 +309,7 @@ Keyhive keeps the PersonaGroup's private membership and its content keys. The fa
 
 !! The sibling channel ~ its inner proof moves to face scope
 
-''The sibling-facing proof moves to face scope together with the herm-facing stamp.'' The channel seals a face-scoped session proof and the face-private membership authority to its sibling, and binds its Repo peer id to the proven face session. It transmits no device delegation and derives no peer id from a device key. The herm stamps the separate per-dial relay identity alone.
+''The sibling-facing proof moves to face scope together with the herm-facing stamp.'' The channel seals a face-scoped session proof and the face-private membership authority to its sibling, and binds its Repo peer id to the proven face session. It transmits no device delegation. The code derives that peer id from the sibling's proven key (`siblingPeerIdOf`, `sibling-channel.ts`), so one key's peer id reads the same under every face it proves; OWED with the veil's second cut (road `C1`): a sibling peer id scoped to the face, as the next paragraph's law asks. The herm stamps the separate per-dial relay identity alone.
 
 ''Each face holds its own group secrets, channel tags and actor ids.'' No identifier at the vessel's level reappears through a lower layer: an actor id, a sibling peer id, a channel tag or a presentation lineage shared across two faces would rebuild the link the proof removed.
 
@@ -396,6 +396,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ReXnzKPJ058zrBha0l8JrC-1hqIWAGsZ62vpxHogvwI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TBZyEbmofoWrr1oUaFgkb_64Jh7o0Mso7kPmZ_OW7Sc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
