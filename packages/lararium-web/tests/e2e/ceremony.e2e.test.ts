@@ -15,6 +15,14 @@
  *               verifies under the key it names. CONTROL: the spy read the vessel's asks and the page's own port hand-offs,
  *               so a zero reads from a live instrument; the barrier for each claim is the far side's own answer (the phase
  *               `live`, the ward act's signature).
+ *   K2b         THE HEAP HOLDS NO ROUTE: after a founding, an unlock and a ward act on a page that carries no spy (the spy
+ *               itself holds the route), a V8 heap snapshot of the page target and of the service-worker broker target reads
+ *               no byte of the route, as UTF-8 or as hex. CONTROL: the same instrument, after a string of the route's shape
+ *               gets planted in the page, reads the planted string.
+ *   K2c         NO STORE HOLDS THE ROUTE: after that same walk, every IndexedDB database and store, localStorage,
+ *               sessionStorage, Cache Storage and the origin-private file system read no byte of the route, as UTF-8 or as
+ *               hex. CONTROL: the walk read rows (a zero count would prove nothing).
+ *   K2d         NO CONSOLE LINE HOLDS THE ROUTE: the page's and its workers' console output through K2 reads none of it.
  *   K3 RED      THE CONSOLE DOOR AND THE RESET, on two tabs of one origin (browser-vessel-lift#/the-console-door, #/the-reset):
  *               `lares("help")` from the page's console lists the page's and the vessel's rows, and `lares("vessel", "read")`
  *               names the veil's standing and its key; `lares("vessel", "reset")` burns nothing by itself and paints the reset
@@ -175,8 +183,10 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
   const faults: string[] = [];
   page.on("pageerror", (e) => faults.push(`[page] ${e.message}`));
   const logs: string[] = [];
-  context.on("console", (m) => { if (!/Global assignment detected/.test(m.text())) logs.push(`[${m.type()}] ${m.text().slice(0, 300)}`); });
-  page.on("worker", (w) => w.on("console", (m) => { if (!/Global assignment detected/.test(m.text())) logs.push(`[worker ${w.url().split("/").pop()}] ${m.text().slice(0, 300)}`); }));
+  /** Every console line whole (K2d): the redacted tail above keeps 300 characters of each, and a route could ride past them. */
+  const wholeLines: string[] = [];
+  context.on("console", (m) => { wholeLines.push(m.text()); if (!/Global assignment detected/.test(m.text())) logs.push(`[${m.type()}] ${m.text().slice(0, 300)}`); });
+  page.on("worker", (w) => w.on("console", (m) => { wholeLines.push(m.text()); if (!/Global assignment detected/.test(m.text())) logs.push(`[worker ${w.url().split("/").pop()}] ${m.text().slice(0, 300)}`); }));
   type Spy = { count: number; hits: string[]; detail: string[]; kinds: Record<string, number>; passwordFields: number; notices: number };
   const readSpy = () => page.evaluate(() => (window as unknown as { __larSpy: Spy }).__larSpy);
   const reads: Spy[] = [];
@@ -221,6 +231,127 @@ test("K2 RED — the page's thread holds no route byte while a vessel founds, un
 
     assert.ok((reads[1]!.kinds["worker-in:ask"] ?? 0) >= 2, "the second load asked twice (the unlock, the ward act)");
     assert.deepEqual(faults, [], "no page error through the founding, the unlock and the ward act");
+    // K2d: no console line of the page or its workers carries the route. The count names lines, never their bytes.
+    assert.ok(wholeLines.length > 0, "K2d CONTROL: the console instrument read lines");
+    assert.equal(wholeLines.filter((l) => l.includes(needle) || l.includes(hexNeedle)).length, 0, "K2d: no console line carries a byte of the route");
+  } finally { await context.close(); }
+});
+
+/** One V8 heap snapshot's text, over a CDP session's own send and event doors. */
+async function heapSnapshotOf(send: (method: string) => Promise<unknown>, onChunk: (listener: (chunk: string) => void) => void): Promise<string> {
+  const chunks: string[] = [];
+  onChunk((chunk) => { chunks.push(chunk); });
+  await send("HeapProfiler.enable");
+  await send("HeapProfiler.collectGarbage");
+  await send("HeapProfiler.takeHeapSnapshot");
+  return chunks.join("");
+}
+
+test("K2b K2c — after a founding, an unlock and a ward act, no heap of the page or the broker and no store of the origin holds a byte of the route", { timeout: 300_000 }, async () => {
+  const context = await browser.newContext();
+  // NO SPY RIDES THIS PAGE: K2's spy holds the route in the page's own heap, so this walk carries the ceremony door alone.
+  await armTestCustody(context, "canary");
+  const hexNeedle = Buffer.from(TEST_PASSPHRASE, "utf8").toString("hex");
+  const hits = (text: string): number => (text.includes(TEST_PASSPHRASE) ? 1 : 0) + (text.includes(hexNeedle) ? 1 : 0);
+  try {
+    const page = await context.newPage();
+    await page.goto(`${baseUrl}/`);
+    await live(page);
+    await Promise.all([page.waitForEvent("load"), page.locator("#found-face").click()]);
+    await live(page);
+    await page.reload();
+    await live(page);
+    await page.waitForFunction(() => typeof (window as unknown as Record<string, unknown>)["__larWalkWardAct"] === "function", undefined, { timeout: WAIT });
+    await page.evaluate((b) => (window as unknown as { __larWalkWardAct: (b: number[]) => Promise<unknown> }).__larWalkWardAct(b), [0x6c, 0x61, 0x72]);
+    // Every ceremony window closed with its ask; none stands to hold a field.
+    for (let i = 0; i < 80 && context.pages().length > 1; i++) await new Promise((r) => setTimeout(r, 125));
+    assert.equal(context.pages().length, 1, "every ceremony window closed with its ask");
+
+    // K2b — THE PAGE TARGET.
+    const cdp = await context.newCDPSession(page);
+    const pageHeap = (): Promise<string> => heapSnapshotOf((method) => cdp.send(method as "HeapProfiler.enable"), (listener) => { cdp.removeAllListeners("HeapProfiler.addHeapSnapshotChunk"); cdp.on("HeapProfiler.addHeapSnapshotChunk", (e) => listener(e.chunk)); });
+    const pageSnapshot = await pageHeap();
+    assert.ok(pageSnapshot.length > 100_000, `K2b CONTROL: the page's snapshot holds a heap (${String(pageSnapshot.length)} characters)`);
+    // K2b — THE BROKER TARGET (the service worker), over the browser's own CDP door.
+    const top = await browser.newBrowserCDPSession();
+    const targets = (await top.send("Target.getTargets")).targetInfos.filter((t) => t.type === "service_worker" && t.url.startsWith(baseUrl));
+    assert.equal(targets.length, 1, `the broker stands as one service-worker target (${targets.map((t) => t.url).join(", ") || "none"})`);
+    const { sessionId } = await top.send("Target.attachToTarget", { targetId: targets[0]!.targetId, flatten: false });
+    let callId = 0;
+    const waiting = new Map<number, () => void>();
+    let chunkListener: (chunk: string) => void = () => {};
+    top.on("Target.receivedMessageFromTarget", (e) => {
+      if (e.sessionId !== sessionId) return;
+      const msg = JSON.parse(e.message) as { id?: number; method?: string; params?: { chunk?: string } };
+      if (msg.method === "HeapProfiler.addHeapSnapshotChunk" && typeof msg.params?.chunk === "string") chunkListener(msg.params.chunk);
+      if (typeof msg.id === "number") { waiting.get(msg.id)?.(); waiting.delete(msg.id); }
+    });
+    const brokerSnapshot = await heapSnapshotOf((method) => new Promise<void>((resolve) => {
+      const id = ++callId;
+      waiting.set(id, resolve);
+      void top.send("Target.sendMessageToTarget", { sessionId, message: JSON.stringify({ id, method }) });
+    }), (listener) => { chunkListener = listener; });
+    assert.ok(brokerSnapshot.length > 10_000, `K2b CONTROL: the broker's snapshot holds a heap (${String(brokerSnapshot.length)} characters)`);
+    const heapHits = { page: hits(pageSnapshot), broker: hits(brokerSnapshot) };
+
+    // K2c — EVERY STORE OF THE ORIGIN, walked in the page. The route enters the page here, after the heaps were read.
+    const stores = await page.evaluate(async ({ needle, hexNeedle }) => {
+      const found: string[] = [];
+      let read = 0;
+      const scanText = (where: string, text: string): void => { read++; if (text.includes(needle) || text.includes(hexNeedle)) found.push(where); };
+      // Bytes read as text: the route's UTF-8 bytes read as the route, and its hex spelling reads as that spelling.
+      const scanBytes = (where: string, b: Uint8Array): void => scanText(where, new TextDecoder().decode(b));
+      const walk = (where: string, v: unknown, depth = 0, seen = new Set<unknown>()): void => {
+        if (v === null || v === undefined || depth > 24) return;
+        if (typeof v === "string") { scanText(where, v); return; }
+        if (typeof v !== "object") { scanText(where, String(v)); return; }
+        if (seen.has(v)) return;
+        seen.add(v);
+        if (v instanceof ArrayBuffer) { scanBytes(where, new Uint8Array(v)); return; }
+        if (ArrayBuffer.isView(v)) { scanBytes(where, new Uint8Array(v.buffer, v.byteOffset, v.byteLength)); return; }
+        for (const [k, inner] of Object.entries(v)) { scanText(where, k); walk(where, inner, depth + 1, seen); }
+      };
+      // IndexedDB: every database, every store, every key and value.
+      for (const info of await indexedDB.databases()) {
+        if (!info.name) continue;
+        const db = await new Promise<IDBDatabase>((resolve, reject) => { const r = indexedDB.open(info.name!); r.onsuccess = () => resolve(r.result); r.onerror = () => reject(r.error); });
+        for (const store of [...db.objectStoreNames]) {
+          const where = `idb ${info.name} / ${store}`;
+          await new Promise<void>((resolve, reject) => {
+            const cursor = db.transaction(store, "readonly").objectStore(store).openCursor();
+            cursor.onerror = () => reject(cursor.error);
+            cursor.onsuccess = () => { const c = cursor.result; if (!c) { resolve(); return; } walk(where, c.key); walk(where, c.value); c.continue(); };
+          });
+        }
+        db.close();
+      }
+      for (const [name, storage] of [["localStorage", localStorage], ["sessionStorage", sessionStorage]] as const) {
+        for (let i = 0; i < storage.length; i++) { const k = storage.key(i)!; scanText(`${name}`, k); scanText(`${name}`, storage.getItem(k) ?? ""); }
+      }
+      for (const name of await caches.keys()) {
+        const cache = await caches.open(name);
+        for (const request of await cache.keys()) { scanText(`cache ${name}`, request.url); const hit = await cache.match(request); if (hit) scanBytes(`cache ${name}`, new Uint8Array(await hit.arrayBuffer())); }
+      }
+      const opfs = async (dir: FileSystemDirectoryHandle, at: string): Promise<void> => {
+        for await (const [name, handle] of (dir as unknown as { entries(): AsyncIterable<[string, FileSystemHandle]> }).entries()) {
+          scanText(`opfs ${at}`, name);
+          if (handle.kind === "directory") await opfs(handle as FileSystemDirectoryHandle, `${at}/${name}`);
+          else scanBytes(`opfs ${at}`, new Uint8Array(await (await (handle as FileSystemFileHandle).getFile()).arrayBuffer()));
+        }
+      };
+      await opfs(await navigator.storage.getDirectory(), "");
+      return { found: [...new Set(found)], read };
+    }, { needle: TEST_PASSPHRASE, hexNeedle });
+
+    // K2b CONTROL — a live instrument: a string of the route's own bytes planted in the page reads in the page's next snapshot.
+    await page.evaluate((planted) => { (window as unknown as { __larCanaryControl: string[] }).__larCanaryControl = [planted.split("").join("\u0000").split("\u0000").join("")]; }, TEST_PASSPHRASE);
+    const planted = hits(await pageHeap());
+    assert.ok(planted >= 1, "K2b CONTROL: the heap instrument reads a planted route");
+
+    console.log(`[K2bc] heap hits ${JSON.stringify(heapHits)} · stores read ${String(stores.read)} value(s), hit in ${JSON.stringify(stores.found)}`);
+    assert.deepEqual(heapHits, { page: 0, broker: 0 }, "K2b: no heap of the page or the broker holds a byte of the route");
+    assert.ok(stores.read > 20, `K2c CONTROL: the walk read the origin's stores (${String(stores.read)} values)`);
+    assert.deepEqual(stores.found, [], "K2c: no store of the origin holds a byte of the route");
   } finally { await context.close(); }
 });
 
