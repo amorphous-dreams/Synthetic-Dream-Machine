@@ -260,7 +260,7 @@ export { runCabalAct, runCabalCosign, runCabalStanding, readKahuCabalBoard, land
 export { runFloorRelease, runFloorReleaseStanding, type NexusReleaseResult } from "./commands/nexus-release.js";
 export { runFloorStatus, runFloorAccept, nodeFloorPorts, FloorRefused, type NodeFloorOptions } from "./commands/floor.js";
 export { runFloorCut, runFloorCutOver, type FloorCutResult } from "./commands/floor-cut.js";
-export { runOfferRetire } from "./commands/offer-retire.js";
+export { runOfferRetire, heldCharterSeat, OFFER_RETIRE_WAIT_MS } from "./commands/offer-retire.js";
 export type { CabalVouchOptions, CabalVouchResult } from "./commands/cabal-vouch.js";
 export type { CabalJoinOptions, CabalJoinResult } from "./commands/cabal-join.js";
 export { runRaiseSign, readRaiseChallenge, RaiseSignError } from "./commands/raise-sign.js";

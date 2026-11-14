@@ -17,7 +17,7 @@
 import {
   AutomergeDocStore, CanonOfferRefused, VerbRefusal, bagUri, findOrThrow, isHouseCanonBag, offerCanonRecords, resolveHouseCanon, promoteCanonOffer, readCanonOffers, requireKahuReach,
   showCanonOffer, workingLayerOfCanon,
-  type CanonOfferBoard, type CanonOfferPorts, type LarTiddlerStore, type OfferSigner,
+  type CanonOfferBoard, type CanonOfferPorts, type LarTiddlerStore, type OfferSeat, type OfferSigner,
 } from "@lararium/mesh";
 import { makeBagAccess, type ActionHandlerOptions } from "./action-handler.js";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -30,6 +30,11 @@ export interface CanonOfferVerbOptions extends ActionHandlerOptions {
   readonly board:  (nexus: string) => Promise<CanonOfferBoard>;
   /** The lit face's atom and its PersonaGroup; null at a faceless floor. */
   readonly signer: () => { readonly face: string; readonly atom: OfferSigner } | null;
+  /**
+   * The seat of the Nexus's charter this vessel holds, read by name and never opened (its key, its epoch, the lineage that proves
+   * it); null where it holds none. A host that lends no reader (a browser page, which holds no seat row) promotes nothing.
+   */
+  readonly seat?:  () => Promise<OfferSeat | null>;
 }
 
 /** The verb names, one owner. */
@@ -116,21 +121,43 @@ export function makeOfferShowReactor(opts: CanonOfferVerbOptions): VerbReactor {
 }
 
 /**
- * `offer-promote { cid, overFresher? }` — the steward's Kahu hand: the reach first, then the canon write. The retire seals under a
- * seat of the Nexus's charter, which the steward's vessel holds outside this island, so it rides the store door (`offer-retire`,
- * `lares meme offer promote` runs both); until it lands the offer reads open and a replay writes nothing.
+ * `offer-promote { cid, overFresher? }` — the steward's Kahu hand: the reach first, then the charter seat this vessel holds
+ * (`offer-retire-unseated` where it holds none: the law stands HERE, for every caller of the verb), then the canon write. The
+ * retire seals under that seat's key, which rests outside this island, so it rides the store door (`offer-retire`; `lares meme
+ * offer promote` runs both); until it lands the offer reads open and a replay writes nothing. The answer names the canon
+ * document's heads after the write (`canonHeads`), which the retire's door waits on.
+ *
+ * ONE CANON STORE, RESOLVED ONCE, READ OR REFUSED. The decision and the write ride the same store, and a resolution that fails
+ * refuses `offer-canon-unread`: a promotion never reads a failed canon read as "canon holds no such record", which would land an
+ * offered record as new over one another hand added. (The listings keep their soft read: they write nothing.)
  */
 export function makeOfferPromoteReactor(opts: CanonOfferVerbOptions): VerbReactor {
   return async (args, ctx) => answered(async () => {
     const cid = typeof args["cid"] === "string" ? args["cid"] : "";
     const ports = await portsOf(opts, args);
     const requestId = String((ctx.invocation as { requestId?: unknown }).requestId ?? "offer-promote");
+    const stores = new Map<string, Promise<LarTiddlerStore | null>>();
+    const canonOf = (bag: string): Promise<LarTiddlerStore | null> => {
+      let store = stores.get(bag);
+      if (store === undefined) {
+        store = canonStoreOf(opts, bag).catch((err: unknown) => {
+          throw new CanonOfferRefused("offer-canon-unread", `${bag}'s canon document did not answer a read (${err instanceof Error ? err.message : String(err)}), so the promotion decided nothing and wrote nothing; run it again`);
+        });
+        stores.set(bag, store);
+      }
+      return store;
+    };
     const out = await promoteCanonOffer({
       ...ports,
+      canon: canonOf,
       requireReach: (bag) => requireKahuReach(bag, opts.kahuReach, "offer promote"),
+      seat: async () => (opts.seat ? opts.seat() : null),
       canonWrite: async (bag) => {
-        const store = await canonStoreOf(opts, bag);
-        return store ? { put: (record) => store.put(record, { kind: "lares-verb", requestId }) } : null;
+        const store = await canonOf(bag);
+        return store ? {
+          put: (record) => store.put(record, { kind: "lares-verb", requestId }),
+          heads: () => (store as { headsNow?: () => readonly string[] | null }).headsNow?.() ?? null,
+        } : null;
       },
     }, { cid, overFresher: args["overFresher"] === true });
     return { ...out, nexus: ports.nexus };
@@ -146,5 +173,5 @@ export function registerCanonOfferVerbs(
   registry.register("offer-make", makeOfferMakeReactor(opts), { summary: "Offer records from the lit face's working layer toward a house-canon bag: a signed offer on the Nexus's offer table; canon stays unmoved.", surfaces: [surfaces.cli, surfaces.agent] });
   registry.register("offer-list", makeOfferListReactor(opts), { summary: "List the offers on the Nexus's offer table, each record's freshness against canon now (\"canon is fresher\" warns); nothing writes.", surfaces: [surfaces.cli, surfaces.agent] });
   registry.register("offer-show", makeOfferShowReactor(opts), { summary: "Show one offer: each record's freshness and its field diff against canon now; nothing writes.", surfaces: [surfaces.cli, surfaces.agent] });
-  registry.register("offer-promote", makeOfferPromoteReactor(opts), { summary: "Promote one offer into house canon under the steward's Kahu hand; a moved base takes overFresher. The charter seat's retire follows on the store door (offer-retire).", surfaces: [surfaces.cli] });
+  registry.register("offer-promote", makeOfferPromoteReactor(opts), { summary: "Promote one offer into house canon under the steward's Kahu hand, on a vessel that holds a seat of the Nexus's charter; a moved base takes overFresher. The seat's retire follows on the store door (offer-retire).", surfaces: [surfaces.cli] });
 }

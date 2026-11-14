@@ -6,12 +6,15 @@
  *   · `offer-make` from an unadmitted face lands a signed offer and moves no canon byte;
  *   · `offer-promote` from a hand outside the Kahu cabal refuses `kahu-reach` and moves no byte;
  *   · `offer-promote` from the steward writes the offered bytes into canon; a replay writes nothing (the retire rides the store door);
+ *   · `offer-promote` on a vessel that lends no charter seat refuses `offer-retire-unseated` at the verb, canon unmoved;
+ *   · a canon read that fails during a promotion refuses `offer-canon-unread`, never reading the record as new;
  *   · a `cap/**` title refuses as data (`offer-withheld-title`); a faceless floor refuses `waking-floor`.
  */
-import { describe, expect, test } from "vitest";
+import { beforeAll, describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore, CompositeStore, bagUri, carrierHashOf, emptyLarDoc, faceAtomKeyFromSeed, isVerbRefusal, OVERRIDE_BASE_META, type LarDoc, type Verb } from "@lararium/mesh";
-import type { KahuReachSource, OfferSigner } from "@lararium/mesh";
+import type { KahuReachSource, OfferSeat, OfferSigner } from "@lararium/mesh";
+import { seatedCharter, type SeatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { makeOfferMakeReactor, makeOfferListReactor, makeOfferPromoteReactor, makeOfferShowReactor, type CanonOfferVerbOptions } from "../src/canon-offer-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { kahuHand, strangerHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
@@ -33,7 +36,11 @@ const MEME = [
 const LARES = bagUri("lares");
 const WORKING = "lar:///ha.ka.ba/wikis/lares/working";
 const T = "lar:///ha.ka.ba/lares/docs/pono/offered";
-const NEXUS = "nexus-" + "12".repeat(32);
+/** The Nexus is a charter's AID, so the seat a vessel holds proves itself off the charter's lineage. */
+let CH: SeatedCharter;
+let NEXUS: string;
+let SEAT: OfferSeat;
+beforeAll(async () => { CH = await seatedCharter({ seats: 3, threshold: 1 }); NEXUS = CH.aid; SEAT = { key: CH.keys[0]!, epoch: CH.head.epochCid, lineage: CH.chain }; });
 const hand = { kind: "tw-local", instanceId: "test" } as const;
 
 const ctxOf = (composite: CompositeStore): VerbContext => ({
@@ -59,8 +66,9 @@ async function rig() {
   await working.put({ tiddler: { title: T, text: "the engineer says" }, meta: { [OVERRIDE_BASE_META]: base } }, hand);
   await working.put({ tiddler: { title: "lar:///ha.ka.ba/bags/daemon/cap/x", text: "k" } }, hand);
   const boardHandle = repo.create<LarDoc>(emptyLarDoc());
-  const opts = (reach: KahuReachSource | undefined, face: OfferSigner | null, shore: string | null = NEXUS): CanonOfferVerbOptions => ({
+  const opts = (reach: KahuReachSource | undefined, face: OfferSigner | null, shore: string | null = NEXUS, seat: OfferSeat | null = SEAT): CanonOfferVerbOptions => ({
     composite, ...(reach ? { kahuReach: reach } : {}),
+    ...(seat ? { seat: async () => seat } : {}),
     nexus: async () => shore,
     board: async () => ({ doc: () => boardHandle.doc(), change: (fn) => { boardHandle.change(fn); } }),
     signer: () => (face ? { face: "aa".repeat(32), atom: face } : null),
@@ -95,8 +103,58 @@ describe("the offer verbs", () => {
       expect(promoted).toMatchObject({ ok: true, moved: true, wrote: [T] });
       expect((await r.canon.get(T))?.tiddler.text).toBe("the engineer says");
       const after = r.canon.headsNow();
+      // The answer names the canon document's heads after the write: the retire's door waits on them.
+      expect(promoted["canonHeads"]).toEqual([...after!]);
       expect(await makeOfferPromoteReactor(r.opts(await kahuHand(), h0))({ cid }, ctxOf(r.composite))).toMatchObject({ ok: true, moved: true, wrote: [], already: [T] });
       expect(r.canon.headsNow()).toEqual(after);
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("RED: the offer-promote verb refuses offer-retire-unseated on a vessel that lends no charter seat, whoever calls it, and canon stays unmoved", async () => {
+    const r = await rig();
+    try {
+      const made = await makeOfferMakeReactor(r.opts(undefined, await atom(41)))({ bag: "lares", titles: [T] }, ctxOf(r.composite));
+      const cid = String(made["cid"]);
+      const heads = r.canon.headsNow();
+      const stranger = (await seatedCharter({ seats: 3, threshold: 1, seed: 7 })).keys[0]!;
+      // The steward's own Kahu hand, on a vessel that holds no seat row, and on one whose key the charter seats nowhere.
+      for (const seat of [null, { ...SEAT, key: stranger }]) {
+        const out = await makeOfferPromoteReactor(r.opts(await kahuHand(), await atom(40), NEXUS, seat))({ cid }, ctxOf(r.composite));
+        expect(out).toMatchObject({ ok: false, refusal: "offer-retire-unseated" });
+      }
+      expect(r.canon.headsNow()).toEqual(heads);
+      expect((await r.canon.get(T))?.tiddler.text).toBe("canon says");
+      // The reach answers first: a hand outside the cabal reads kahu-reach on a seatless vessel too.
+      expect(await reasonOf(async () => makeOfferPromoteReactor(r.opts(await strangerHand("removed"), await atom(40), NEXUS, null))({ cid }, ctxOf(r.composite)))).toBe("kahu-reach");
+      // CONTROL: the same call on a vessel that holds a charter seat writes canon.
+      expect(await makeOfferPromoteReactor(r.opts(await kahuHand(), await atom(40)))({ cid }, ctxOf(r.composite))).toMatchObject({ ok: true, moved: true, wrote: [T] });
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("RED: a canon read that fails during a promotion refuses offer-canon-unread, and the record another hand added to canon stands", async () => {
+    const r = await rig();
+    try {
+      const NEW = "lar:///ha.ka.ba/lares/docs/pono/offered-new";
+      const island = new CompositeStore();
+      const realm = r.repo.create<LarDoc>(emptyLarDoc());
+      const realmStore = new AutomergeDocStore(realm, LARES);
+      await realmStore.put({ tiddler: { title: NEW, text: "another hand wrote this" } }, hand);
+      const workingDoc = r.repo.create<LarDoc>(emptyLarDoc());
+      await new AutomergeDocStore(workingDoc, WORKING).put({ tiddler: { title: NEW, text: "the engineer's new page" } }, hand);   // no fork base: offered as new
+      let reads = 0, failing = 0;
+      const reach = { repo: r.repo, catalogUrl: null, oracleUrl: null, slotDocUrl: async () => workingDoc.url,
+        systemCanonUrl: async () => { reads += 1; if (failing > 0) { failing -= 1; throw new Error("the realm's document did not answer"); } return realm.url; } };
+      const opts = (hand: KahuReachSource | undefined, face: OfferSigner): CanonOfferVerbOptions => ({ ...r.opts(hand, face), composite: island, reach } as unknown as CanonOfferVerbOptions);
+      const made = await makeOfferMakeReactor(opts(undefined, await atom(41)))({ bag: "lares", titles: [NEW] }, ctxOf(island));
+      expect(made).toMatchObject({ ok: true, records: [{ title: NEW, base: null }] });
+      // The read fails once (the write that follows would have reached the document): the promotion must not read "no canon record".
+      failing = 1;
+      const out = await makeOfferPromoteReactor(opts(await kahuHand(), await atom(40)))({ cid: made["cid"] }, ctxOf(island));
+      expect(out).toMatchObject({ ok: false, refusal: "offer-canon-unread" });
+      expect((await realmStore.get(NEW))?.tiddler.text).toBe("another hand wrote this");
+      // CONTROL: with the read answering, the same promotion meets the other hand's record and refuses by ITS name (canon is fresher).
+      expect(await makeOfferPromoteReactor(opts(await kahuHand(), await atom(40)))({ cid: made["cid"] }, ctxOf(island))).toMatchObject({ ok: false, refusal: "offer-base-moved" });
+      expect(reads).toBeGreaterThan(1);
     } finally { await r.repo.shutdown(); }
   });
 
@@ -160,7 +218,10 @@ describe("the offer verbs", () => {
         const named = host === "browser" ? { nexus: NEXUS } : {};
         const made = await makeOfferMakeReactor(r.opts(undefined, await atom(41), shore))({ bag: "lares", titles: [T], ...named }, ctxOf(r.composite));
         const promoted = await makeOfferPromoteReactor(r.opts(await kahuHand(), await atom(40), shore))({ cid: made["cid"], ...named }, ctxOf(r.composite));
-        return { made, promoted, text: (await r.canon.get(T))?.tiddler.text };
+        // The heads name each rig's own canon document (its actors), never the decision: they stay out of the comparison.
+        const { canonHeads, ...decision } = promoted;
+        expect(canonHeads).toEqual([...r.canon.headsNow()!]);
+        return { made, promoted: decision, text: (await r.canon.get(T))?.tiddler.text };
       } finally { await r.repo.shutdown(); }
     };
     expect(await decide("browser")).toEqual(await decide("node"));

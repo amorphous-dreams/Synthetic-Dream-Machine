@@ -107,6 +107,10 @@ type DaemonExtra = Pick<DaemonBehaviorOptions, "makeCaptureEngine" | "captureTic
    *  admission acts its carriage board carries. This island adds the sentinel read and the group, and hands every
    *  write door the composed source. Absent → every door reads a stranger and refuses a house canon bag (fail closed). */
   kahuCabal?: (ctx: IslandContext) => import("@lararium/mesh").KahuCabalBoardReader;
+  /** `charterSeat` — the shore's reader of the charter seat this vessel holds (its key, its epoch, the lineage that proves
+   *  it), read by name and never opened. `offer-promote` asks it before canon moves: the retire that closes an offer seals
+   *  under that seat alone. Absent → the verb refuses `offer-retire-unseated` for every caller (a browser page holds no seat row). */
+  charterSeat?: () => Promise<import("@lararium/mesh").OfferSeat | null>;
 };
 
 /** What a shore injects so the content-key holder can stand in the daemon island. */
@@ -239,7 +243,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   // The face archive writer stays on the island shore.
   const {
     persistVeilArchive, shore, events, journalAppend,
-    bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, docStoreDoor, freshBase, countedRaises, kahuCabal, ...daemonExtra
+    bagTier, askReceipt, dyadReading, readDyadFromBoard, dyadLedger, restDyadLedger, sealedStore, sessionProof, docStoreDoor, freshBase, countedRaises, kahuCabal, charterSeat, ...daemonExtra
   } = extra;
   const daemonAuth = manifest.daemonAuth;
   let clearGate!: () => void;
@@ -921,7 +925,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         // THE OFFERING DOOR (offering#/the-canon-offer): a face offers working records toward house canon on the Nexus's offer
         // table, and the steward promotes under the Kahu reach. The same four reactors stand on node and browser; the Nexus
-        // reads off the shore's cabal board, the signer is the lit face's atom, and the canon write clears `requireKahuReach`.
+        // reads off the shore's cabal board, the signer is the lit face's atom, and the canon write clears `requireKahuReach` and then
+        // the charter seat the shore reads (`charterSeat`): a vessel that could seal no retire writes no canon, whoever calls the verb.
         registerCanonOfferVerbs(registry, {
           composite: ctx.composite, reach,
           ...(kahuReach ? { kahuReach } : {}),
@@ -931,6 +936,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             return { doc: () => handle.doc(), change: (fn) => { handle.change(fn); } };
           },
           signer: () => { try { return { face: daemonAuth.personaGroupId!, atom: faceAtom() }; } catch { return null; } },
+          ...(charterSeat ? { seat: charterSeat } : {}),
         }, VERB_SURFACE);
       } else {
         for (const v of [...ACTION_VERBS, "REPACK", ...CANON_OFFER_VERBS]) registry.register(v, lightAFace(v));

@@ -6,6 +6,11 @@
  * Proven: a release lands and reads back as the chain's head; a second release links to the first by `prior`;
  * CONTROLS: an approval over other bytes, an approval of another surface, a vessel that holds no seat, a manifest
  * already at the head and a chain left `unsettled` each refuse BEFORE a row lands.
+ *
+ * The same steward seat retires a promoted canon offer (offering#/the-canon-offer), across the REAL store door
+ * (`storeDoorReactors`, the `offer-retire` row) over a real Repo: a retire that follows a promotion waits on the heads
+ * the promotion answered, never on a clock's verdict; a replica that trails past the bound PENDS by name; a retire
+ * that names no promotion decides on one read; a vessel that holds no seat seals none.
  */
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
@@ -14,7 +19,15 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import * as A from "@automerge/automerge";
 import type { Repo } from "@automerge/automerge-repo";
+import {
+  AutomergeDocStore, BAG_IDS, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, canonOfferDocUrl, emptyLarDoc, faceAtomKeyFromSeed, foldCanonOffers, nexusAidOf,
+  offerCanonRecords, promoteCanonOffer, realmDocPointer, realmDocUrl, realmStandingPointer, storedLarRecord, type LarDoc, type LarTiddlerRecord,
+} from "@lararium/mesh";
+import { storeDoorReactors } from "../src/store-door-verbs.js";
+import { runOfferRetire } from "../src/commands/offer-retire.js";
+import { larBootstrapPath } from "../src/vessel-paths.js";
 import {
   crossroadsDocUrl, publicationDocUrl, floorReleaseRowsFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE, cutFloorSnapshot, floorManifestBytes,
@@ -161,5 +174,91 @@ describe("a one-seat hearth publishes its floor release", () => {
     const known = new Map([[one.cid, one.bytes], [left.cid, left.bytes], [right.cid, right.bytes]]);
     expect(await standing(0, known)).toMatchObject({ standing: "unsettled" });
     await expect(release(0, next.file, await approve(next.file))).rejects.toThrow(/unsettled/);
+  });
+});
+
+describe("a charter seat retires a promoted canon offer across the store door", () => {
+  const T = "lar:///ha.ka.ba/lares/docs/pono/offered";
+  const LARES = bagUri("lares");
+  const REALM = "ab".repeat(32);
+  const origin = { kind: "lares-verb", requestId: "test" } as const;
+  const row = (title: string, text: string): LarTiddlerRecord => ({ tiddler: { title, text } });
+
+  /**
+   * One vessel's side of a promotion, on its own Repo: the Kahu realm's standing document for `bags/lares` (named by the vessel's
+   * catalog, which the bootstrap names), an open offer on the Nexus's offer table, and THE DAEMON ISLAND'S REPLICA of canon, a
+   * clone the promotion writes into. `deliver` merges that replica's write into the store door's own, as sync would.
+   */
+  async function rig(repo: Repo) {
+    const canonHandle = repo.create<LarDoc>(emptyLarDoc());
+    await new AutomergeDocStore(canonHandle, LARES).put(row(T, "canon says"), origin);
+    const catalog = repo.create<LarDoc>(emptyLarDoc());
+    const standing = [{ kind: REALM_BAG_DOMAIN, realmId: REALM, bagUri: LARES, docUrl: canonHandle.url, keptBy: ["cd".repeat(32)], readTier: "contract", signatures: [{ signer: "cd".repeat(32), sig: "00".repeat(64) }] }];
+    catalog.change((d) => {
+      for (const [k, text] of [[REALM_ID_TIDDLER, REALM], [realmDocPointer(REALM), realmDocUrl(REALM)], [realmStandingPointer(REALM), JSON.stringify(standing)]] as const) d.tiddlers[k] = storedLarRecord(k, { text }, "test");
+    });
+    writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: { [BAG_IDS.catalog]: { text: catalog.url } } }) }));
+    const charter = readNexusDoc(larSealHome())!;
+    const nexus = nexusAidOf(charter)!;
+    const boardHandle = await materializeSharedLarDoc(repo, canonOfferDocUrl(nexus), "board:canon-offer");
+    const board = { doc: () => boardHandle.doc(), change: (fn: Parameters<typeof boardHandle.change>[0]) => { boardHandle.change(fn); } };
+    const atom = faceAtomKeyFromSeed(new Uint8Array(32).fill(41), "aa".repeat(32));
+    const working = { get: async (title: string) => (title === T ? row(T, "the engineer says") : null), listVisible: async () => [T] };
+    const island = repo.clone(canonHandle);
+    const islandStore = new AutomergeDocStore(island, LARES);
+    const ports = { nexus, board, canon: async () => islandStore };
+    const { offer } = await offerCanonRecords({ ...ports, source: working, signer: { key: atom.key, sign: atom.sign }, face: "aa".repeat(32) }, { bag: "lares", titles: [T] });
+    const seat = { key: (await seatChairs([0])).keys[0]!, epoch: foundingRoster(charter).sealEpochCid, lineage: charter.sealLineage! };
+    const promote = () => promoteCanonOffer({ ...ports, requireReach: async () => {}, seat: async () => seat,
+      canonWrite: async () => ({ put: (r) => islandStore.put(r, origin), heads: () => islandStore.headsNow() }) }, { cid: offer.cid, overFresher: true });
+    const deliver = (): void => { canonHandle.update((doc) => A.merge(doc, A.clone(island.doc()!))); };
+    const door = storeDoorReactors({ storageDir: larDataDir(), sealHome: larSealHome(), repo });
+    const retired = () => foldCanonOffers(boardHandle.doc(), nexus).offers.find((o) => o.offer.cid === offer.cid)?.retired ?? null;
+    return { offer, promote, deliver, door, retired, canonHandle };
+  }
+
+  it("a retire that follows a promotion waits on the heads the promotion answered, and lands when its replica takes the write", async () => {
+    await withRoot(0, async (repo) => {
+      const r = await rig(repo);
+      const promoted = await r.promote();
+      if (!promoted.moved) throw new Error("the promotion held");
+      expect(promoted.canonHeads).not.toBeNull();
+      expect(A.hasHeads(r.canonHandle.doc()!, [...promoted.canonHeads!])).toBe(false);   // the door's replica trails
+      setTimeout(r.deliver, 300);
+      const out = await r.door["offer-retire"]({ cid: r.offer.cid, over: promoted.over, after: promoted.canonHeads }, {} as never);
+      expect(out).toMatchObject({ verb: "offer-retire", retired: true, cid: r.offer.cid });
+      expect(r.retired()?.cid).toBe(out["retire"]);
+    });
+  });
+
+  it("a replica that trails past the bound PENDS by name, lands no retire, and the re-run retires once the write arrives", async () => {
+    await withRoot(0, async (repo) => {
+      const r = await rig(repo);
+      const promoted = await r.promote();
+      if (!promoted.moved) throw new Error("the promotion held");
+      const pending = await runOfferRetire({ repo, sealHome: larSealHome(), cid: r.offer.cid, after: promoted.canonHeads!, waitMs: 60 });
+      expect(pending).toMatchObject({ retired: false, cid: r.offer.cid, why: "canon-trails" });
+      expect((pending as { pending: string }).pending).toMatch(/the canon write stands.*lares meme offer promote/s);
+      expect(r.retired()).toBeNull();
+      r.deliver();
+      expect(await r.door["offer-retire"]({ cid: r.offer.cid, after: promoted.canonHeads }, {} as never)).toMatchObject({ retired: true });
+      expect(r.retired()).not.toBeNull();
+    });
+  });
+
+  it("CONTROLS: a retire that names no promotion decides on one read (offer-not-landed), and a vessel that holds no seat seals none", async () => {
+    await withRoot(0, async (repo) => {
+      const r = await rig(repo);
+      const out = await r.door["offer-retire"]({ cid: r.offer.cid }, {} as never);
+      expect(out).toMatchObject({ verb: "offer-retire", refusal: "offer-retire-refused" });
+      expect(String(out["refused"])).toMatch(/^offer-not-landed/);
+      expect(r.retired()).toBeNull();
+      // Malformed heads refuse before any wait.
+      expect(String((await r.door["offer-retire"]({ cid: r.offer.cid, after: ["nope"] }, {} as never))["refused"])).toMatch(/after/);
+    });
+    await withRoot(1, async (repo) => {
+      const door = storeDoorReactors({ storageDir: larDataDir(), sealHome: larSealHome(), repo });
+      expect(String((await door["offer-retire"]({ cid: "f".repeat(64) }, {} as never))["refused"])).toMatch(/holds no seat of the charter/);
+    });
   });
 });

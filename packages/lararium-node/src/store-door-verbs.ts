@@ -553,9 +553,12 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     // a promotion carries the promoted rows. It stages the floor in this hearth's CAS and writes the manifest file; it lands nothing.
     // THE OFFER'S RETIRE (offering#/the-canon-offer): a seat of the charter held here retires an offer canon now carries. A retire
     // only counts where a charter seat sealed it, and the seat keys rest beside this door, never in the island that wrote canon.
+    // A replica that trails the promotion past the wait's bound answers `canon-trails` with `pending`: an answer, never a refusal.
     "offer-retire": (args) => answer("offer-retire", async () => ({
       ...(await runOfferRetire({
-        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])), ...(args["check"] === true ? { check: true } : {}),
+        repo, sealHome, cid: need("offer-retire", args, "cid"), ...opt("aid", str(args["aid"])),
+        // The heads the promotion answered: the retire waits until this door's replica of canon contains them.
+        ...(args["after"] !== undefined ? { after: Array.isArray(args["after"]) ? (args["after"] as unknown[]).map(String) : [] } : {}),
         ...(Array.isArray(args["over"]) ? { over: (args["over"] as unknown[]).filter((o): o is { title: string; canon: string | null } =>
           typeof o === "object" && o !== null && typeof (o as { title?: unknown }).title === "string") } : {}),
       })),

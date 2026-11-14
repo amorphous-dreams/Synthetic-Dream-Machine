@@ -28,32 +28,38 @@ describe("lares meme offer", () => {
 });
 
 describe("lares meme offer promote", () => {
+  const HEADS = ["c".repeat(64)];
   const doors = (over: Partial<Parameters<typeof promoteThenRetire>[0]> = {}) => {
-    const calls: string[] = [];
+    const calls: unknown[] = [];
     return { calls, doors: {
-      seat:    async () => { calls.push("seat"); return { standing: "open" }; },
-      promote: async () => { calls.push("promote"); return { moved: true, over: [] as unknown[] }; },
-      retire:  async () => { calls.push("retire"); return { retired: true, retire: "b".repeat(64) }; },
+      promote: async () => { calls.push("promote"); return { moved: true, over: [] as unknown[], canonHeads: HEADS }; },
+      retire:  async (o: unknown, after: unknown) => { calls.push(["retire", o, after]); return { retired: true, retire: "b".repeat(64) }; },
       ...over,
     } };
   };
 
-  test("a vessel that can seal no retire refuses before the canon write: the promote door never opens", async () => {
-    const d = doors({ seat: async () => { throw new Error("offer-retire-unseated: this vessel holds no seat of the charter"); } });
+  test("the promotion walks two doors and no third: the canon write, then the retire, which rides the heads the write answered", async () => {
+    const d = doors();
+    expect(await promoteThenRetire(d.doors)).toMatchObject({ ok: true, retire: { retired: true } });
+    expect(d.calls).toEqual(["promote", ["retire", [], HEADS]]);
+    // CONTROL: a promotion that held (the offer already retired) asks no retire.
+    const held = doors({ promote: async () => ({ moved: false }) });
+    expect(await promoteThenRetire(held.doors)).toMatchObject({ ok: true, retire: null });
+    expect(held.calls).toEqual([]);
+  });
+
+  test("a retire whose replica of canon still trails reads as pending, never as a refusal: the canon write stands and the re-run is named", async () => {
+    const d = doors({ retire: async () => ({ retired: false, why: "canon-trails", pending: "the canon write stands; the retire still pends: run `lares meme offer promote` again" }) });
     const out = await promoteThenRetire(d.doors);
-    expect(out).toMatchObject({ ok: false, wrote: false });
-    expect((out as { message: string }).message).toMatch(/nothing was written.*offer-retire-unseated/);
-    expect(d.calls).toEqual([]);
-    // CONTROL: a seated vessel walks seat check, canon write, retire, in that order, as one outcome.
-    const seated = doors();
-    expect(await promoteThenRetire(seated.doors)).toMatchObject({ ok: true, retire: { retired: true } });
-    expect(seated.calls).toEqual(["seat", "promote", "retire"]);
+    expect(out).toMatchObject({ ok: false, wrote: true, pending: true });
+    expect((out as { message: string }).message).toMatch(/the canon write stands; the retire still pends/);
+    expect((out as { message: string }).message).not.toMatch(/did not|refus/);
   });
 
   test("a retire that refuses after the canon write names both halves and the act that completes it", async () => {
     const d = doors({ retire: async () => { throw new Error("offer-not-landed: canon does not yet carry x"); } });
     const out = await promoteThenRetire(d.doors);
-    expect(out).toMatchObject({ ok: false, wrote: true });
+    expect(out).toMatchObject({ ok: false, wrote: true, pending: false });
     expect((out as { message: string }).message).toMatch(/the canon write landed; the retire did not: offer-not-landed.*run the promote again/);
   });
 });

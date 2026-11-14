@@ -24,7 +24,7 @@ import { storedLarRecord } from "../src/stored-record.js";
 import {
   CANON_OFFER_PREFIX, CANON_OFFER_RETIRED_PREFIX, CANON_OFFER_ROW_MAX, CanonOfferRefused, foldCanonOffers, offerCanonRecords, offerWithheldTitle,
   promoteCanonOffer, readCanonOffers, showCanonOffer, canonOfferCid, openCanonOffer, signCanonOffer, cutReleaseFloor,
-  retireCanonOffer, readyCanonOfferRetire, signCanonOfferRetire, writeCanonOfferRetire, CANON_OFFER_RETIRE_DOMAIN, type OfferSteward,
+  retireCanonOffer, signCanonOfferRetire, writeCanonOfferRetire, CANON_OFFER_RETIRE_DOMAIN, type OfferSteward, type OfferSeat,
   type CanonOfferBoard, type CanonOfferPorts, type OfferRecordReader, type OfferRecordWriter, type OfferSigner,
 } from "../src/canon-offer.js";
 import { cutFloorSnapshot, floorManifestBytes, floorReadFace, floorRowsInOrder, resolveFloor, type FloorManifest } from "../src/floor-manifest.js";
@@ -191,7 +191,7 @@ describe("the promotion", () => {
     const { canon, board, offer } = await offered();
     for (const kind of ["joined-without-admission", "admitted-not-joined", "removed", "no-cabal"] as const) {
       const changes = board.changes;
-      await expect(promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await strangerHand(kind)), canonWrite: async () => canon }, { cid: offer.cid }))
+      await expect(promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await strangerHand(kind)), seat, canonWrite: async () => canon }, { cid: offer.cid }))
         .rejects.toMatchObject({ reason: "kahu-reach" });
       expect(canon.puts).toBe(0);
       expect(board.changes).toBe(changes);
@@ -203,7 +203,7 @@ describe("the promotion", () => {
     const { canon, board, offer } = await offered();
     // A retire never runs ahead of the canon write it records.
     await expect(retireCanonOffer({ ...ports(board, canon), steward: await seat() }, { cid: offer.cid })).rejects.toMatchObject({ refusal: "offer-not-landed" });
-    const out = await promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await kahuHand()), canonWrite: async () => canon }, { cid: offer.cid });
+    const out = await promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await kahuHand()), seat, canonWrite: async () => canon }, { cid: offer.cid });
     expect(out).toMatchObject({ moved: true, wrote: [T1, T2], already: [], over: [] });
     for (const r of offer.body.records) expect(carrierHashOf(canon.rows[r.title]!.tiddler as Record<string, unknown>)).toBe(r.digest);
     // Promoted, not yet retired: the offer still reads open.
@@ -222,40 +222,48 @@ describe("the promotion", () => {
     expect(all.offers[0]!.records.map((r) => r.freshness)).toEqual(["landed", "landed"]);
   });
 
-  test("RED: the seat check a promotion runs before its canon write refuses an unseated vessel by name, and writes nothing", async () => {
+  test("RED: a promotion on a vessel that holds no charter seat refuses offer-retire-unseated at the door, after the reach and before canon moves", async () => {
     const { canon, board, offer } = await offered();
     const stranger = await signer(77);
     const before = { changes: board.changes, puts: canon.puts };
-    await expect(readyCanonOfferRetire({ ...ports(board, canon), steward: { ...stranger, epoch: CH.head.epochCid, lineage: CH.chain } }, { cid: offer.cid }))
-      .rejects.toMatchObject({ refusal: "offer-retire-unseated" });
-    await expect(readyCanonOfferRetire({ ...ports(board, canon), steward: await seat() }, { cid: "f".repeat(64) })).rejects.toMatchObject({ refusal: "offer-unknown" });
+    const promote = async (held: OfferSeat | null, hand = kahuHand()) =>
+      promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await hand), seat: async () => held, canonWrite: async () => canon }, { cid: offer.cid });
+    // No seat row held here, and a key the charter's lineage seats nowhere: each refuses by name, having written nothing.
+    await expect(promote(null)).rejects.toMatchObject({ refusal: "offer-retire-unseated" });
+    await expect(promote({ key: stranger.key, epoch: CH.head.epochCid, lineage: CH.chain })).rejects.toMatchObject({ refusal: "offer-retire-unseated" });
     expect({ changes: board.changes, puts: canon.puts }).toEqual(before);
-    // CONTROL: a charter seat reads ready while canon still lacks the bytes, and the check itself lands no retire.
-    expect(await readyCanonOfferRetire({ ...ports(board, canon), steward: await seat() }, { cid: offer.cid })).toEqual({ cid: offer.cid, standing: "open" });
-    expect(board.changes).toBe(before.changes);
+    // The reach still answers first: a hand outside the cabal reads kahu-reach whatever seat the vessel holds.
+    await expect(promote(null, strangerHand("removed"))).rejects.toMatchObject({ reason: "kahu-reach" });
+    // CONTROL: the same hand on a vessel that holds a charter seat promotes.
+    expect(await promote(await seat())).toMatchObject({ moved: true, wrote: [T1, T2] });
   });
 
-  test("RED: a retire asked while canon's replica still trails the write waits for it, and refuses offer-not-landed only once the wait runs out", async () => {
+  test("RED: a promotion answers the canon document's heads after its write, and a retire whose replica never reaches them pends by name instead of refusing", async () => {
     const { canon, board, offer } = await offered();
-    const trailing = memoryStore();   // the retire's replica of canon: empty until the write reaches it
-    await promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await kahuHand()), canonWrite: async () => canon }, { cid: offer.cid });
-    let waits = 0;
-    const settle = async (): Promise<boolean> => { waits += 1; if (waits === 2) Object.assign(trailing.rows, canon.rows); return waits <= 3; };
-    const retired = await retireCanonOffer({ ...ports(board, trailing), steward: await seat(), settle }, { cid: offer.cid });
-    expect(retired).toMatchObject({ retired: true, cid: offer.cid });
-    expect(waits).toBe(2);
-    // CONTROL: a replica the write never reaches refuses by name once the wait runs out, and lands no retire.
+    const heads = ["ab".repeat(32)];
+    const out = await promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await kahuHand()), seat: seat, canonWrite: async () => ({ put: (r) => canon.put(r), heads: () => heads }) }, { cid: offer.cid });
+    expect(out).toMatchObject({ moved: true, canonHeads: heads });
+    // The retire's own replica of canon: empty until the write reaches it. The host answers whether its replica carries the heads.
+    const trailing = memoryStore();
+    const asked: string[] = [];
+    const pending = await retireCanonOffer({ ...ports(board, trailing), steward: await seat(), carried: async (bag) => { asked.push(bag); return false; } }, { cid: offer.cid });
+    expect(pending).toEqual({ retired: false, cid: offer.cid, why: "canon-trails" });
+    expect(asked).toEqual([BAG]);
+    expect(foldCanonOffers(board.doc(), NEXUS).offers[0]!.retired).toBeNull();
+    // Once the replica carries the write, the same retire lands.
+    Object.assign(trailing.rows, canon.rows);
+    expect(await retireCanonOffer({ ...ports(board, trailing), steward: await seat(), carried: async () => true }, { cid: offer.cid })).toMatchObject({ retired: true, cid: offer.cid });
+    // CONTROL: a replica that carries the promotion's heads and still lacks the digests refuses by name (another hand moved canon since),
+    // and a retire that names no promotion decides on one read.
     const second = await offered();
-    let asked = 0;
-    await expect(retireCanonOffer({ ...ports(second.board, memoryStore()), steward: await seat(), settle: async () => { asked += 1; return asked < 3; } }, { cid: second.offer.cid }))
-      .rejects.toMatchObject({ refusal: "offer-not-landed" });
-    expect(asked).toBe(3);
+    await expect(retireCanonOffer({ ...ports(second.board, memoryStore()), steward: await seat(), carried: async () => true }, { cid: second.offer.cid })).rejects.toMatchObject({ refusal: "offer-not-landed" });
+    await expect(retireCanonOffer({ ...ports(second.board, memoryStore()), steward: await seat() }, { cid: second.offer.cid })).rejects.toMatchObject({ refusal: "offer-not-landed" });
     expect(foldCanonOffers(second.board.doc(), NEXUS).offers[0]!.retired).toBeNull();
   });
 
   test("RED: a replayed promotion lands nothing", async () => {
     const { canon, board, offer } = await offered();
-    const p = { ...ports(board, canon), requireReach: reachOf(await kahuHand()), canonWrite: async () => canon };
+    const p = { ...ports(board, canon), requireReach: reachOf(await kahuHand()), seat, canonWrite: async () => canon };
     await promoteCanonOffer(p, { cid: offer.cid });
     const puts = canon.puts;
     // Before the retire, a replay writes nothing: every record reads landed.
@@ -278,7 +286,7 @@ describe("the promotion", () => {
     expect(listed.offers[0]!.records.find((r) => r.title === T1)!.freshness).toBe("canon-is-fresher");
     const shown = await showCanonOffer(ports(board, canon), offer.cid);
     expect(shown.diffs.find((d) => d.title === T1)!.fields).toEqual([{ field: "text", canon: "the steward moved canon meanwhile", offered: "the engineer says one" }]);
-    const p = { ...ports(board, canon), requireReach: reachOf(await kahuHand()), canonWrite: async () => canon };
+    const p = { ...ports(board, canon), requireReach: reachOf(await kahuHand()), seat, canonWrite: async () => canon };
     const err = await promoteCanonOffer(p, { cid: offer.cid }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(CanonOfferRefused);
     expect((err as CanonOfferRefused).refusal).toBe("offer-base-moved");
@@ -298,7 +306,7 @@ describe("the retire's authority", () => {
     const working = memoryStore({ [T2]: rec(T2, "a new page") });
     const board = memoryBoard();
     const out = await offerCanonRecords({ ...ports(board, canon), source: working, signer: await signer(11), face: "aa" }, { bag: "lares", titles: [T2] });
-    await promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await kahuHand()), canonWrite: async () => canon }, { cid: out.offer.cid });
+    await promoteCanonOffer({ ...ports(board, canon), requireReach: reachOf(await kahuHand()), seat, canonWrite: async () => canon }, { cid: out.offer.cid });
     return { canon, board, offer: out.offer };
   }
   const forge = async (offerCid: string, steward: OfferSteward) => signCanonOfferRetire({
@@ -356,7 +364,7 @@ describe("the loop", () => {
     // 1 · h1 OFFERS (unadmitted).
     const { offer } = await offerCanonRecords({ ...canonPorts, source: workbench, signer: await signer(21), face: "11".repeat(32) }, { bag: "lares", titles: [T1] });
     // 2 · h0 PROMOTES under the Kahu reach.
-    await promoteCanonOffer({ ...canonPorts, requireReach: reachOf(await kahuHand()),
+    await promoteCanonOffer({ ...canonPorts, requireReach: reachOf(await kahuHand()), seat,
       canonWrite: async () => ({ put: (r) => canonStore.put(r, { kind: "lares-verb", requestId: "promote" }) }) }, { cid: offer.cid });
     await retireCanonOffer({ ...canonPorts, steward: await seat() }, { cid: offer.cid });
     expect((await readCanonOffers(canonPorts)).offers).toHaveLength(0);
@@ -436,9 +444,9 @@ describe("both hosts", () => {
       const working = memoryStore({ [T1]: rec(T1, "offered", base), [T2]: rec(T2, "new") });
       const { offer } = await offerCanonRecords({ ...p, source: working, signer: h1, face: "aa" }, { bag: "lares", titles: [T1, T2] });
       const listed = await readCanonOffers(p);
-      const promoted = await promoteCanonOffer({ ...p, requireReach: reachOf(steward), canonWrite: async () => canon }, { cid: offer.cid });
+      const promoted = await promoteCanonOffer({ ...p, requireReach: reachOf(steward), seat: async () => h0, canonWrite: async () => canon }, { cid: offer.cid });
       const retired = await retireCanonOffer({ ...p, steward: h0 }, { cid: offer.cid });
-      const replay = await promoteCanonOffer({ ...p, requireReach: reachOf(steward), canonWrite: async () => canon }, { cid: offer.cid });
+      const replay = await promoteCanonOffer({ ...p, requireReach: reachOf(steward), seat: async () => h0, canonWrite: async () => canon }, { cid: offer.cid });
       const digests = await Promise.all([T1, T2].map(async (t) => carrierHashOf((await canon.get(t))!.tiddler as Record<string, unknown>)));
       return { cid: offer.cid, listed: listed.offers, promoted, retired, replay, digests };
     }

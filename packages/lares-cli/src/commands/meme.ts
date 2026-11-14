@@ -1181,7 +1181,7 @@ async function memePromote(args: ParsedArgs): Promise<number> {
  *   offer <lar:uri ...> --bag <slug>      `offer-make`: the lit face offers records from its working layer toward a house-canon bag;
  *   offer list [--bag <slug>] [--all]     `offer-list`: the open offers (every one with --all), each record's freshness now;
  *   offer show <cid>                      `offer-show`: one offer's field diff against canon now;
- *   offer promote <cid> [--over-fresher]  `offer-promote`: the Kahu steward writes the offered bytes into canon and retires the offer.
+ *   offer promote <cid> [--over-fresher]  `offer-promote`: the Kahu steward, on a vessel holding a charter seat, writes the offered bytes into canon and retires the offer.
  * A moved base WARNS ("canon is fresher") in every listing; only a promotion over it takes the explicit `--over-fresher`. A release
  * after a promotion carries it: `lares nexus release --cut <manifest-file>` cuts the floor from live canon.
  */
@@ -1207,37 +1207,39 @@ class OfferVerbRefused extends Error {
   constructor(readonly code: "cap-denied" | "verb-error", message: string, readonly requestId: string, readonly refusal?: string) { super(message); }
 }
 
-/** The doors one promotion walks: the charter seat's check and retire on the store door, the canon write on the daemon's. */
+/** The doors one promotion walks: the canon write on the daemon's door, the charter seat's retire on the store door. */
 export interface OfferPromoteDoors {
-  /** The seat check (`offer-retire { check }`): throws where this vessel could seal no retire. It writes nothing. */
-  readonly seat:    () => Promise<Record<string, unknown>>;
-  /** The canon write (`offer-promote`); a refusal throws. */
+  /** The canon write (`offer-promote`); a refusal throws. The verb itself asks the charter seat before canon moves. */
   readonly promote: () => Promise<Record<string, unknown>>;
-  /** The retire (`offer-retire`), given the fresher canon digests the promotion chose to override. */
-  readonly retire:  (over: unknown) => Promise<Record<string, unknown>>;
+  /** The retire (`offer-retire`), given the fresher canon digests the promotion overrode and the canon heads its write answered. */
+  readonly retire:  (over: unknown, after: unknown) => Promise<Record<string, unknown>>;
 }
 
 export type OfferPromoteOutcome =
   | { readonly ok: true; readonly out: Record<string, unknown>; readonly retire: Record<string, unknown> | null }
-  | { readonly ok: false; readonly wrote: boolean; readonly message: string; readonly out?: Record<string, unknown>; readonly retire?: Record<string, unknown> };
+  /** The canon write landed and the retire did not: `pending` where the seat's replica of canon still trails (no refusal). */
+  | { readonly ok: false; readonly wrote: true; readonly pending: boolean; readonly message: string; readonly out: Record<string, unknown>; readonly retire: Record<string, unknown> };
 
 /**
- * ONE PROMOTION, ONE OUTCOME (offering#/the-canon-offer). The canon write and the retire ride two doors, so the seat that seals
- * the retire answers FIRST: a vessel that holds no charter seat refuses by name before canon moves, having written nothing. Then
- * the canon write, then the retire. A retire that still refuses after the write names both halves and the act that completes it:
- * a second promote writes nothing canon already carries and retires.
+ * ONE PROMOTION, ONE OUTCOME (offering#/the-canon-offer). The canon write and the retire ride two doors. The daemon's verb asks
+ * the charter seat itself before canon moves (`offer-retire-unseated`, for every caller), so this walk holds no check of its own:
+ * the canon write, then the retire, which waits on the canon heads the write answered. A retire whose replica still trails past
+ * the wait reads PENDING (the canon write stands); one that refuses names both halves. Either way a second promote completes it:
+ * it writes nothing canon already carries, and retires.
  */
 export async function promoteThenRetire(doors: OfferPromoteDoors): Promise<OfferPromoteOutcome> {
-  const said = (err: unknown): string => (err instanceof Error ? err.message : String(err));
-  try { await doors.seat(); }
-  catch (err) { return { ok: false, wrote: false, message: `nothing was written: this vessel can seal no retire for the offer (${said(err)})` }; }
   const out = await doors.promote();
   if (out["moved"] !== true) return { ok: true, out, retire: null };
-  try { return { ok: true, out, retire: await doors.retire(out["over"] ?? []) }; }
+  let retire: Record<string, unknown>;
+  try { retire = await doors.retire(out["over"] ?? [], out["canonHeads"] ?? undefined); }
   catch (err) {
-    const retire = { refused: said(err) };
-    return { ok: false, wrote: true, out, retire, message: `the canon write landed; the retire did not: ${retire.refused}; run the promote again to retire it (canon already carries the bytes, so it writes nothing)` };
+    const refused = err instanceof Error ? err.message : String(err);
+    return { ok: false, wrote: true, pending: false, out, retire: { refused }, message: `the canon write landed; the retire did not: ${refused}; run the promote again to retire it (canon already carries the bytes, so it writes nothing)` };
   }
+  if (retire["retired"] === false && retire["why"] === "canon-trails") {
+    return { ok: false, wrote: true, pending: true, out, retire, message: String(retire["pending"] ?? "the canon write stands; the retire still pends: run the promote again to retire it") };
+  }
+  return { ok: true, out, retire };
 }
 
 async function memeOffer(args: ParsedArgs): Promise<number> {
@@ -1259,14 +1261,14 @@ async function memeOffer(args: ParsedArgs): Promise<number> {
   try {
     if (plan.verb === "offer-promote") {
       // THE RETIRE (offering#/the-canon-offer): a seat of the charter held in this vault retires the offer on the store door; a
-      // retire no seat sealed counts nothing to any reader. The seat answers before canon moves (`promoteThenRetire`).
+      // retire no seat sealed counts nothing to any reader. The daemon's verb asks that seat before canon moves, and the retire
+      // waits on the canon heads the write answered (`promoteThenRetire`).
       const promoted = await promoteThenRetire({
-        seat:    async () => (await storeVerb("offer-retire", { cid: plan.args["cid"], check: true })).output,
         promote: daemon,
-        retire:  async (over) => (await storeVerb("offer-retire", { cid: plan.args["cid"], over })).output,
+        retire:  async (over, after) => (await storeVerb("offer-retire", { cid: plan.args["cid"], over, ...(Array.isArray(after) ? { after } : {}) })).output,
       });
       if (!promoted.ok) {
-        emit(args, { ok: false, requestId, ...(promoted.out ? { data: { ...promoted.out, retire: promoted.retire } } : {}), error: { code: "verb-error", message: promoted.message }, human: () => console.error(`lares meme offer promote: ${promoted.message}`) });
+        emit(args, { ok: false, requestId, data: { ...promoted.out, retire: promoted.retire, retirePending: promoted.pending }, error: { code: "verb-error", message: promoted.message }, human: () => console.error(`lares meme offer promote: ${promoted.message}`) });
         return exitFor("verb-error");
       }
       out = promoted.out; retire = promoted.retire;
