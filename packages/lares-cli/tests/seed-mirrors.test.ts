@@ -662,7 +662,7 @@ describe("the seed lays every mirror back into its one layer", () => {
   test("M18 — a folder for each face's own workbench: one title, three texts; each lays at its own face's wear and none reaches another's workbench", async () => {
     const [G0, G1, G2] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1", "cccccccc-cccc-4ccc-8ccc-ccccccccccc2"];
     const [R0, R1, R2] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2"];
-    const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151", BENCH = "lar:///ha.ka.ba/wikis/lares/working";
+    const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151";
     rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true });
     const pets = ["steward", "engineer", "referee"];
     // The former founding: three faces each kept a working copy of ONE canon title, each in its own folder.
