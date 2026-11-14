@@ -112,6 +112,78 @@ export const copilotHook = (event: string, base: string, command: Json): Transfo
     hooks[event] = converge(list, mentionsScript(base), command);
   });
 
+// ── Retired hooks: a hook the house once seated leaves, under every event, and nothing else moves ──────────────
+
+/** A JSON object with `edit` applied; an absent or foreign target, and one the edit leaves alone, keep their bytes. */
+function jsonLift(edit: (o: Json) => void): Transform {
+  return (cur) => {
+    if (cur === null || cur.trim() === "" || jsonForeign(cur)) return cur;
+    const before = JSON.parse(cur) as Json;
+    const after = structuredClone(before);
+    edit(after);
+    return JSON.stringify(after) === JSON.stringify(before) ? cur : `${JSON.stringify(after, null, 2)}\n`;
+  };
+}
+
+const isObject = (v: unknown): v is Json => v !== null && typeof v === "object" && !Array.isArray(v);
+
+/** Claude's `hooks`: no command mentions `base`, under any event; a group and an event left empty go with it. */
+export const claudeHookRetired = (base: string): Transform =>
+  jsonLift((o) => {
+    if (!isObject(o["hooks"])) return;
+    const hooks = o["hooks"];
+    const mentions = mentionsScript(base);
+    for (const [event, held] of Object.entries(hooks)) {
+      if (!Array.isArray(held) || !held.some(mentions)) continue;
+      const groups = (held as Array<Json & { hooks?: unknown[] }>)
+        .map((g) => (Array.isArray(g.hooks) && g.hooks.some(mentions) ? { ...g, hooks: g.hooks.filter((c) => !mentions(c)) } : g))
+        .filter((g) => !Array.isArray(g.hooks) || g.hooks.length > 0);
+      if (groups.length > 0) hooks[event] = groups; else delete hooks[event];
+    }
+  });
+
+/** Copilot's `hooks/lares.json`: no event list carries a command that mentions `base`; an event left empty goes. */
+export const copilotHookRetired = (base: string): Transform =>
+  jsonLift((o) => {
+    if (!isObject(o["hooks"])) return;
+    const hooks = o["hooks"];
+    const mentions = mentionsScript(base);
+    for (const [event, held] of Object.entries(hooks)) {
+      if (!Array.isArray(held) || !held.some(mentions)) continue;
+      const kept = held.filter((c) => !mentions(c));
+      if (kept.length > 0) hooks[event] = kept; else delete hooks[event];
+    }
+  });
+
+/** Codex's `[[hooks.<event>]]`: every block that carries `base` leaves, under any event; a shared block stays foreign. */
+export const tomlHookRetired = (base: string): Transform => (cur) => {
+  if (cur === null || !cur.includes(base) || tomlShapeForeign("hooks", "table")(cur)) return cur;
+  const lines = cur.split("\n");
+  const out: string[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const m = /^\[\[hooks\.([A-Za-z]+)\]\]$/.exec(lines[i]!.trim());
+    if (m) {
+      let j = i + 1;
+      while (j < lines.length && (!lines[j]!.trimStart().startsWith("[") || lines[j]!.trim() === `[[hooks.${m[1]}.hooks]]`)) j++;
+      if (lines.slice(i, j).join("\n").includes(base)) { i = j - 1; continue; }
+    }
+    out.push(lines[i]!);
+  }
+  const next = tidy(out.join("\n"));
+  return next === cur ? cur : next;
+};
+
+/** A Codex hook block of ANY event that carries `base` beside another hand's command stands outside the house's ownership. */
+export const tomlHookRetiredForeign = (base: string) => (cur: string | null): string | null => {
+  if (cur === null || !cur.includes(base)) return null;
+  const events = ((tomlTryParse(cur) ?? {})["hooks"] ?? {}) as Record<string, unknown>;
+  for (const event of Object.keys(isObject(events) ? events : {})) {
+    const why = tomlHookForeign(event, base)(cur);
+    if (why) return why;
+  }
+  return null;
+};
+
 // ── Text ────────────────────────────────────────────────────────────────────────────────────────
 
 /**

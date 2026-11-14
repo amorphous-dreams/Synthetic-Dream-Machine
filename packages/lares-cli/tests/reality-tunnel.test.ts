@@ -241,6 +241,95 @@ describe("the home radius", () => {
     expect((await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l)).wrote).toEqual([]);
   });
 
+  it("a tend seats the compaction hook on PreCompact beside the wake on SessionStart (road L35, L43)", async () => {
+    const root = clone();
+    const h = homes();
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
+    const at = (name: string) => ({ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/${name}`], timeout: 15 });
+    expect(hooks["PreCompact"]).toEqual([{ hooks: [at("lares-compact-hook.mjs")] }]);
+    expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-wake-hook.mjs")] }]);
+  });
+
+  // ── THE AFTERMATH: a hook the house once seated and has since retired leaves every home at the next tend ──────────
+  const INGEST = "lares-mempalace-ingest-hook.sh";
+  /** A scratch home as an older tend left it: the retired ingest hook on three hosts, beside commands of other hands. */
+  function plantRetired(native: string, root: string): void {
+    const ingest = `${root}/packages/lares-cli/.claude-plugin/hooks/${INGEST}`;
+    writeFileSync(join(native, ".claude/settings.json"), `${JSON.stringify({
+      model: "m",
+      hooks: {
+        Stop: [{ hooks: [{ type: "command", command: `bash "${ingest}"`, timeout: 30 }, { type: "command", command: "my-own-stop" }] }],
+        SessionEnd: [{ hooks: [{ type: "command", command: `bash "${ingest}"`, timeout: 60 }] }],
+        SessionStart: [{ hooks: [{ type: "command", command: "bash /old/clone/hooks/lares-wake-hook.sh" }] }],
+      },
+    }, null, 2)}\n`);
+    writeFileSync(join(native, ".codex/config.toml"),
+      `model = "m"\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = ${JSON.stringify(ingest)}\ntimeout = 60\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "my-own-stop"\n`);
+    mkdirSync(join(native, ".copilot/hooks"), { recursive: true });
+    writeFileSync(join(native, ".copilot/hooks/lares.json"),
+      `${JSON.stringify({ version: 1, hooks: { sessionEnd: [{ type: "command", bash: ingest, timeoutSec: 60 }, { type: "command", bash: "my-own-end" }] } }, null, 2)}\n`);
+  }
+
+  it("a home that still carries a retired hook reads as drift by name, and the wake's line sends the operator to tend", () => {
+    const root = clone();
+    const h = homes();
+    plantRetired(h.native, root);
+    const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    for (const id of ["claude.ingest-hook", "codex.ingest-hook", "copilot.ingest-hook", "claude.wake-hook-sh"]) {
+      const row = rows.find((r) => r.id === id)!;
+      expect(row, id).toBeDefined();
+      expect(row.state, id).toBe("drift");
+      expect(row.retired, id).toBe(true);
+      expect(row.detail, id).toMatch(/^a retired hook still stands \(.+\); tend removes it$/);
+    }
+    const line = briefLine(rows);
+    expect(line).toContain("claude.ingest-hook");
+    expect(line).toMatch(/4 retired item\(s\) still stand: claude\.ingest-hook, claude\.wake-hook-sh, codex\.ingest-hook, copilot\.ingest-hook \(lares home tend removes them\)/);
+  });
+
+  it("a tend removes every retired hook, keeps each other hand's command, and never plants one again", async () => {
+    const root = clone();
+    const h = homes();
+    plantRetired(h.native, root);
+    const l = ledger();
+    const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
+    await tend(items(), l);
+    const settings = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8"));
+    expect(JSON.stringify(settings)).not.toContain(INGEST);
+    expect(JSON.stringify(settings)).not.toContain("lares-wake-hook.sh");
+    expect(settings.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: "my-own-stop" }] }]);
+    expect(settings.hooks.SessionEnd).toBeUndefined();
+    expect(settings.model).toBe("m");
+    const toml = readFileSync(join(h.native, ".codex/config.toml"), "utf8");
+    expect(toml).not.toContain(INGEST);
+    expect(toml).toContain('command = "my-own-stop"');
+    const copilot = JSON.parse(readFileSync(join(h.native, ".copilot/hooks/lares.json"), "utf8"));
+    expect(copilot.hooks.sessionEnd).toEqual([{ type: "command", bash: "my-own-end" }]);
+    // The retired rows read aligned now, and a second tend writes nothing: no row re-plants what another removes.
+    const after = read(items(), l);
+    expect(after.filter((r) => r.retired).map((r) => r.state)).toEqual(["aligned", "aligned", "aligned", "aligned"]);
+    expect(briefLine(after)).not.toContain("retired");
+    expect((await tend(items(), l)).wrote).toEqual([]);
+  });
+
+  it("a fresh home takes no retired hook, and a retired row writes no file of its own", async () => {
+    const root = clone();
+    const h = homes();
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
+    for (const f of [".claude/settings.json", ".codex/config.toml"]) expect(readFileSync(join(h.native, f), "utf8")).not.toContain(INGEST);
+    expect(existsSync(join(h.native, ".copilot/hooks/lares.json"))).toBe(false);
+  });
+
+  it("the live carrier names no home item whose script left the tree, and none a retired row names", () => {
+    const d = declared(REPO);
+    const missing = d.home.filter((s) => typeof (s["script"] ?? s["target"]) === "string" && !existsSync(join(REPO, String(s["script"] ?? s["target"]))));
+    expect(missing.map((s) => s.id)).toEqual([]);
+    expect(d.retired.length).toBeGreaterThan(0);
+    const retiredBases = d.retired.map((s) => String(s["script"]).split("/").at(-1));
+    expect(d.home.filter((s) => retiredBases.includes(String(s["script"] ?? "").split("/").at(-1))).map((s) => s.id)).toEqual([]);
+  });
+
   it("a host whose home stands absent reads absent; a seat whose MCP pieces stand absent reads unreachable", () => {
     const root = clone();
     const native = mkdtempSync(join(dir, "bare-"));

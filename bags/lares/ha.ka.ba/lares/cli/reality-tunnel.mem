@@ -44,7 +44,7 @@ An operator's machine holds what the operator declares, through one door per RAD
 
 !! The declared tunnel
 
-Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone.
+Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. A `[[retired]]` item names a hook the house once seated and withdrew, by its script: `read` answers drift while any command in the host's hook file still names that script, `lares home read --brief` (the wake's homes line) names it beside the act that cures it, and `tend` lifts every such command under any event, keeps each other hand's command, and says `retired <id>`. The catalog refuses a carrier where a `[[home]]` row names a retired script, so no tend plants one again.
 
 ```toml reality-tunnel
 seed = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem"
@@ -159,7 +159,18 @@ event = "SessionStart"
 script = "packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.mjs"
 runner = "node"
 timeout = 15
-what = "a Claude session wakes the house and reads the homes' drift at turn 1"
+what = "a Claude session wakes the house and reads the homes' drift and the worn face's memory index at turn 1"
+
+[[home]]
+id = "claude.compact-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "PreCompact"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-compact-hook.mjs"
+runner = "node"
+timeout = 15
+what = "a compaction's summary keeps the memory index and the rows in play by `lar:` address"
 
 [[home]]
 id = "claude.loads-hook"
@@ -171,28 +182,6 @@ script = "packages/lares-cli/.claude-plugin/hooks/lares-loads-hook.mjs"
 runner = "node"
 timeout = 10
 what = "every instruction file a Claude session loads lands in the load log `verify` reads"
-
-[[home]]
-id = "claude.ingest-stop"
-host = "claude"
-kind = "claude-hook"
-file = ".claude/settings.json"
-event = "Stop"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
-runner = "bash"
-timeout = 30
-what = "a turn's verbatim memory keeps on Stop"
-
-[[home]]
-id = "claude.ingest-end"
-host = "claude"
-kind = "claude-hook"
-file = ".claude/settings.json"
-event = "SessionEnd"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
-runner = "bash"
-timeout = 60
-what = "a session's verbatim memory keeps on SessionEnd"
 
 [[home]]
 id = "claude.mcp-seat"
@@ -221,16 +210,6 @@ host = "codex"
 kind = "toml-mcp"
 file = ".codex/config.toml"
 what = "Codex reaches memory through the lares seat"
-
-[[home]]
-id = "codex.ingest-stop"
-host = "codex"
-kind = "toml-hook"
-file = ".codex/config.toml"
-event = "Stop"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
-timeout = 60
-what = "a Codex turn's verbatim memory keeps on Stop"
 
 [[home]]
 id = "codex.retain"
@@ -268,16 +247,6 @@ shape = "copilot"
 what = "Copilot reaches memory through the lares seat"
 
 [[home]]
-id = "copilot.ingest-end"
-host = "copilot"
-kind = "copilot-hook"
-file = ".copilot/hooks/lares.json"
-event = "sessionEnd"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
-timeout = 60
-what = "a Copilot session's verbatim memory keeps on sessionEnd"
-
-[[home]]
 id = "copilot.retain"
 host = "copilot"
 kind = "json-set"
@@ -310,6 +279,42 @@ kind = "bin-link"
 file = ".local/bin/lares"
 target = "packages/lares-cli/bin/lares.mjs"
 what = "`lares` answers on the operator's path"
+
+# ── retired: what a home once held at the house's hand and holds no longer ──────────────────────
+# A tend lifts every command that names the script, under any event, and keeps each other hand's command.
+# No [[home]] row names the same script (the catalog refuses the pair), so no tend plants it again.
+
+[[retired]]
+id = "claude.ingest-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
+what = "the mempalace ingest hook on Stop and SessionEnd: mempalace burned on 2026-10-13, and the sensorium's capture stays deferred"
+
+[[retired]]
+id = "claude.wake-hook-sh"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.sh"
+what = "the bash wake hook: the tree dropped it for lares-wake-hook.mjs"
+
+[[retired]]
+id = "codex.ingest-hook"
+host = "codex"
+kind = "toml-hook"
+file = ".codex/config.toml"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
+what = "the mempalace ingest hook on Codex's Stop"
+
+[[retired]]
+id = "copilot.ingest-hook"
+host = "copilot"
+kind = "copilot-hook"
+file = ".copilot/hooks/lares.json"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
+what = "the mempalace ingest hook on Copilot's sessionEnd"
 ```
 
 <<~/ahu>>
@@ -336,6 +341,6 @@ what = "`lares` answers on the operator's path"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wB2YUWVZDWkfFl9q61zLLOjJC1pJKRjmGtCa6DX5iVg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hx_nPklemAspmm_v08jTf4XxPt479od7GvNwc76FA3M`>>
 
 <<^ code=`&#x0004;` to=`?`>>

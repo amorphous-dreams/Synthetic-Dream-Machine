@@ -11,8 +11,9 @@ import { dirname, join, relative } from "node:path";
 import { parse as parseToml } from "smol-toml";
 import type { External, Item, Radius } from "./engine.js";
 import {
-  claudeHook, copilotHook, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, owned, seedless, 
-  tomlHook, tomlHookForeign, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey, tomlTableUnset, tomlTopFloor,
+  claudeHook, claudeHookRetired, copilotHook, copilotHookRetired, headLine, jsonFloor, jsonForeign, jsonIncludes, jsonSet, owned, seedless,
+  tomlHook, tomlHookForeign, tomlHookRetired, tomlHookRetiredForeign, tomlMcpServer, tomlShapeForeign, tomlTableForeign, tomlTableKey,
+  tomlTableUnset, tomlTopFloor,
 } from "./kinds.js";
 import { homesOf, type Homes } from "./homes.js";
 import { resolveLaresMcp, seatAbsentCause, type LaresMcpCommand } from "../mcp-resolve.js";
@@ -22,7 +23,12 @@ export const RULE_MARKER = "<!-- written by lares";
 export const SCOUT_MARKER = "# projected by";
 
 type Spec = Record<string, unknown> & { id: string; host: string; kind: string; file: string; what: string };
-export interface Declared { readonly seed: string; readonly repo: Spec[]; readonly home: Spec[] }
+/**
+ * `home` rows name what every operator home holds. `retired` rows name what a home once held at the house's hand and
+ * holds no longer: a hook whose script the house withdrew. A tend lifts each from every home, and no `home` row names
+ * the same script, so no tend plants it again.
+ */
+export interface Declared { readonly seed: string; readonly repo: Spec[]; readonly home: Spec[]; readonly retired: Spec[] }
 
 /** Reads one repo-relative file, or null when it stands absent: the working tree, or the index for `--staged`. */
 export type TextOf = (rel: string) => string | null;
@@ -34,9 +40,17 @@ export function declared(repo: string, textOf: TextOf = treeText(repo)): Declare
   if (text === null) throw new Error(`${CARRIER} stands absent`);
   const m = /^```toml reality-tunnel\n([\s\S]*?)^```/m.exec(text);
   if (!m) throw new Error(`${CARRIER} carries no \`toml reality-tunnel\` fence`);
-  const d = parseToml(m[1]!) as { seed?: string; repo?: Spec[]; home?: Spec[] };
+  const d = parseToml(m[1]!) as { seed?: string; repo?: Spec[]; home?: Spec[]; retired?: Spec[] };
   if (typeof d.seed !== "string") throw new Error(`${CARRIER}: the tunnel names no seed`);
-  return { seed: d.seed, repo: d.repo ?? [], home: d.home ?? [] };
+  const home = d.home ?? [];
+  const retired = d.retired ?? [];
+  const nameOf = (s: Spec): string => String(s["script"] ?? "").split("/").at(-1) ?? "";
+  for (const r of retired) {
+    if (!nameOf(r)) throw new Error(`${CARRIER}: retired item ${r.id} names no script`);
+    const planter = home.find((h) => nameOf(h) === nameOf(r));
+    if (planter) throw new Error(`${CARRIER}: home item ${planter.id} plants ${nameOf(r)}, which retired item ${r.id} lifts; one of the two rows goes`);
+  }
+  return { seed: d.seed, repo: d.repo ?? [], home, retired };
 }
 
 /** The main clone a tree belongs to: the parent of git's common dir, or the tree itself. */
@@ -169,7 +183,8 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
   const clone = mainCloneOf(ctx.repo);
   const mcp = ctx.mcp === undefined ? resolveLaresMcp(clone) : ctx.mcp;
   const out: Item[] = [];
-  for (const s of d.home) {
+  for (const s of [...d.home, ...d.retired]) {
+    const retired = d.retired.includes(s);
     const homes = s["homes"] === "all" ? homesOf(ctx.homes) : homesOf(ctx.homes).slice(0, 1);
     for (const h of homes) {
       const id = h.name === "home" ? s.id : `${s.id}@${h.name}`;
@@ -181,6 +196,8 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
         const absent = root
           ? (existsSync(join(h.dir, root)) ? null : `${join(h.dir, root)} absent; this variant stands unset here`)
           : dir && !existsSync(join(h.dir, dir)) ? `${join(h.dir, dir)} absent; ${s.host} stands unset in this home` : null;
+        // A retired item lifts a hook by its script's NAME: the script may have left the tree, and it reaches no seat.
+        if (retired) { out.push(retiredItem(base, path, absent)); continue; }
         const script = join(clone, str(s, "script")).replace(/\\/g, "/");
         const needsScript = s["script"] !== undefined && !existsSync(script) ? `${script} absent in the main clone` : null;
         const needsMcp = /mcp/.test(s.kind) && mcp === null ? seatAbsentCause() : null;
@@ -190,6 +207,19 @@ export function homeItems(ctx: HomeContext, d: Declared = declared(ctx.repo)): I
     }
   }
   return out;
+}
+
+/** A retired hook's item: the kind names the host's hook shape, the script's file name names what leaves. */
+function retiredItem(s: Spec, path: string, absent: string | null): Item {
+  const name = str(s, "script").split("/").at(-1)!;
+  const rest = { absent, retires: name };
+  switch (s.kind) {
+    case "claude-hook": return item("home", s, path, { ...rest, transform: claudeHookRetired(name), foreign: jsonForeign });
+    case "copilot-hook": return item("home", s, path, { ...rest, transform: copilotHookRetired(name), foreign: jsonForeign });
+    case "toml-hook":
+      return item("home", s, path, { ...rest, transform: tomlHookRetired(name), foreign: (cur) => tomlShapeForeign("hooks", "table")(cur) ?? tomlHookRetiredForeign(name)(cur) });
+    default: throw new Error(`${CARRIER}: retired item ${s.id} names a kind (${s.kind}) the house retires no hook of`);
+  }
 }
 
 function homeItem(
