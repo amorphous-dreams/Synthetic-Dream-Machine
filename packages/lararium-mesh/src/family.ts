@@ -205,6 +205,18 @@ function referenceEdges(view: FamilyView, members: readonly string[]): FamilyEdg
   return edges;
 }
 
+/**
+ * THE ROOT A TITLE'S PARENT CHAIN NAMES, and whether the chain reaches a standing record: the cheap half of
+ * `familyOf`, which reads the chain alone and no member. A title the view does not hold answers its own
+ * root address (the fragment-path law: `root#/a/b` names `root`) and `reaches: false`.
+ */
+export function familyRootOf(view: FamilyView, title: string): { readonly root: string; readonly reaches: boolean } {
+  const fields = view.read(title);
+  if (fields === undefined) return { root: rootAddressOf(title), reaches: false };
+  const up = climb(view, title, fields);
+  return { root: rootAddressOf(up.top), reaches: up.reaches };
+}
+
 /** Every standing orphan under one root address, in title order. */
 export function orphansUnder(view: FamilyView, root: string): string[] {
   const prefix = `${root}#`;
@@ -287,7 +299,7 @@ export function edgeDescendantsOf(view: FamilyView, title: string): string[] {
   const queue = [title];
   for (let i = 0; i < queue.length; i++) {
     for (const child of edgeChildrenOf(view, queue[i]!)) {
-      if (seen.has(child) || view.read(child) === undefined) continue;
+      if (seen.has(child)) continue;
       seen.add(child);
       queue.push(child);
     }

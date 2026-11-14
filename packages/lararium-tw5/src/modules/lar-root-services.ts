@@ -39,6 +39,7 @@ module-type: startup
 
 import { clearCustodyQuestion, LARES_DISPATCH_FIELD, LARES_VERB_ARG_PREFIX } from "@lararium/mesh/lar-uris";
 import { openDefaultStory } from "../default-story.js";
+import { retitleSlotsInWiki, type FamilyRenameWiki } from "../place-meme.js";
 
 export const name        = "lar-root-services";
 export const after       = ["startup"];
@@ -138,6 +139,9 @@ export function installRootServices(tw: Tw): void {
       dontRenameInTags: p["renameInTags"] === "false" || p["renameInTags"] === "no",
       dontRenameInLists: p["renameInLists"] === "false" || p["renameInLists"] === "no",
     });
+    // THE SLOTS FOLLOW THEIR ROOT: stock re-titles the one record, and a meme root's slots would stand
+    // stranded under the old address. The root moved first, so its writes lead its slots'.
+    if (method === "renameTiddler") retitleSlotsInWiki(wiki as unknown as FamilyRenameWiki, from, p["to"]);
   };
   root.addEventListener("tm-rename-tiddler", rename("renameTiddler"));
   root.addEventListener("tm-relink-tiddler", rename("relinkTiddler"));

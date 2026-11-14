@@ -47,7 +47,7 @@ import type { TW5Wiki } from "./types/tiddlywiki.js";
 import { carrierMarkPattern, headUriOf, maskedExec, maskedExecAll } from "@lararium/memetic-frame";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import {
-  componentsBeneath, consequence, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
+  componentsBeneath, consequence, edgeDescendantsOf, isFamilyRoot, memeOrphanAlertTitle, MEME_ORPHAN_ALERT_PREFIX, orphanFamilies, orphansUnder, rootAddressOf, tombstonesOf,
   type Consequence, type FamilyFields, type FamilyReference, type FamilyView,
 } from "@lararium/mesh/family";
 import { carrierHash } from "@lararium/mesh/crypto";
@@ -303,6 +303,64 @@ export function wikiFamilyView(wiki: Pick<TW5Wiki, "allTitles" | "getTiddler">, 
   return familyViewOf(() => wiki.allTitles(), (title) => (wiki.getTiddler(title) as { fields?: FamilyFields } | undefined)?.fields, extra);
 }
 
+/** What a wiki lends a family re-title: its titles, its records, and the two writes a hand makes. */
+export interface FamilyRenameWiki {
+  allTitles(): string[];
+  getTiddler(title: string): unknown;
+  addTiddler(fields: Record<string, unknown>): void;
+  deleteTiddler(title: string): void;
+}
+
+const fieldsIn = (wiki: Pick<FamilyRenameWiki, "getTiddler">, title: string): Record<string, unknown> | undefined =>
+  (wiki.getTiddler(title) as { fields?: Record<string, unknown> } | undefined)?.fields;
+
+/** One record under a new title: the address-bearing fields follow the title. */
+function retitled(fields: Record<string, unknown>, to: string, extra: Record<string, unknown> = {}): Record<string, unknown> {
+  const next: Record<string, unknown> = { ...fields, ...extra, title: to };
+  if (typeof fields["uri-path"] === "string" && to.startsWith("lar:///")) next["uri-path"] = to.slice("lar:///".length);
+  return next;
+}
+
+/**
+ * THE SLOTS FOLLOW THEIR ROOT. Re-title every slot record standing beneath `from` (by its parent edges, at
+ * every depth, whether or not `from` itself still stands) under `to`: the title, the parent edge and the
+ * `uri-path` move together, and the body rides untouched. A `kahea` call names its slot by a rooted path, so
+ * the root's text needs no rewrite. A title a record already holds is never landed over. Answers the new
+ * titles. A stock rename of a root re-titles the one record and strands every slot beneath it; this carries them.
+ */
+export function retitleSlotsInWiki(wiki: FamilyRenameWiki, from: string, to: string): string[] {
+  const moved: string[] = [];
+  const prefix = `${from}#`;
+  for (const old of edgeDescendantsOf(wikiFamilyView(wiki as never), from)) {
+    const fields = fieldsIn(wiki, old);
+    if (!fields || !old.startsWith(prefix)) continue;
+    const next = to + old.slice(from.length);
+    if (wiki.getTiddler(next) !== undefined) continue;
+    const parent = String(fields["$fragment-parent"] ?? "");
+    const parentNext = parent === from || parent.startsWith(prefix) ? to + parent.slice(from.length) : parent;
+    wiki.addTiddler(retitled(fields, next, { "$fragment-parent": parentNext }));
+    wiki.deleteTiddler(old);
+    moved.push(next);
+  }
+  return moved;
+}
+
+/**
+ * RENAME, MEME-AWARE, over a live wiki: the consequence gets read first, and a refusal lands nothing. A root
+ * re-titles and its slots follow it (the root first, so its writes lead its slots'); a plain tiddler
+ * re-titles alone; a slot refuses (`slot-without-root`). Relinking the references other tiddlers hold stays
+ * the engine's own act (`relinkTiddler`). Answers the consequence it read.
+ */
+export function renameFamilyInWiki(wiki: FamilyRenameWiki, from: string, to: string): Consequence {
+  const read = consequence(wikiFamilyView(wiki as never), { kind: "rename", title: from, to });
+  if (read.refusals.length > 0) return read;
+  const fields = fieldsIn(wiki, from)!;
+  wiki.addTiddler(retitled(fields, to));
+  wiki.deleteTiddler(from);
+  if (read.position === "root") retitleSlotsInWiki(wiki, from, to);
+  return read;
+}
+
 /**
  * ONE CONSISTENT READ of a meme's neighbourhood in a sink: the record under the URI and every record whose
  * title composes onto the same root address (`<root>#…`), which the address grammar makes the only titles a
@@ -313,10 +371,11 @@ async function familySnapshot(
   uri: string, sink: Pick<MemeSink, "titles" | "read">,
 ): Promise<{ view: FamilyView; records: Map<string, TiddlerFields> }> {
   const titles = [...await sink.titles()];
-  const prefix = `${rootAddressOf(uri)}#`;
+  const address = rootAddressOf(uri);
+  const prefix = `${address}#`;
   const records = new Map<string, TiddlerFields>();
   for (const title of titles) {
-    if (title !== uri && !title.startsWith(prefix)) continue;
+    if (title !== uri && title !== address && !title.startsWith(prefix)) continue;
     const fields = await sink.read(title);
     if (fields) records.set(title, fields);
   }

@@ -72,13 +72,13 @@ import type {
 import { KAHUA_SHADOW_PREFIX, kahuaShadowOf, kahuaShadowTitle } from "./kahua-shadow.js";
 import { KAHUA_BAG } from "@lararium/mesh";
 import { toLarTiddlerRecord, isVolatileVmUri, draftsOffLive, parallelDraftTitle } from "@lararium/mesh";
-import { maskedExecAll } from "@lararium/memetic-frame";
+import { edgeDescendantsOf, rootAddressOf, type FamilyView } from "@lararium/mesh/family";
 import { BAG_PATHS_CONFIG, routeBag, type RouteVerdict } from "./bag-cascade.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { ReceiptCapabilityUnavailable, type ReceiptCapability, type ReceiptHold } from "./receipt.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import { splitBodyTiddler, quoteblockFence } from "./deserializer.js";
-import { KAHEA_REF_RE } from "./meme-ast/ahu-scan.js";
+import { familyRefsOf, retitleSlotsInWiki, wikiFamilyView, type FamilyRenameWiki } from "./place-meme.js";
 import { LandedLedger, same, sameWithStamp } from "./landed-ledger.js";
 import { WaveLanding } from "./wave-landing.js";
 import { Drain, macrotask, type DrainOutcome, type DrainSettling } from "./drain.js";
@@ -182,11 +182,14 @@ function toTW5FieldStrings(
  * reference quoted inside a code fence names no child.
  */
 function kaheaChildUris(rootUri: string, text: string): Set<string> {
-  const uris = new Set<string>();
-  if (!text.includes("<<~ kahea ahu ")) return uris;
-  for (const match of maskedExecAll(text, KAHEA_REF_RE)) uris.add(rootUri + match[1]!);
-  return uris;
+  // The one family law's own reading of the text (`familyRefsOf`): the component calls alone.
+  return new Set(familyRefsOf(rootUri, { text }).filter((ref) => ref.kind === "kahea").map((ref) => ref.to));
 }
+
+/** A component leaving with its root: whether the wiki still holds it, and the acknowledgements it had before the write. */
+interface LeavingRider { readonly uri: string; readonly acks: number; readonly standing: boolean }
+/** What leaves with one title: the riders its own change carries, and the members another layer takes. */
+interface Leaving { readonly riders: LeavingRider[]; readonly apart: string[] }
 
 function extractFields(tw5: TW5Engine, tiddler: unknown): Record<string, string> {
   return toTW5FieldStrings(tw5, tiddler);
@@ -1470,9 +1473,13 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (!removal.source) return;
     this._clearUnsaved(removal.target);
     const wiki = this.tw5.$tw.wiki;
-    // A newer hand of the source made meanwhile stands: it leaves as its own owed title, children and all.
+    // A newer hand of the source made meanwhile stands: it leaves as its own owed title, slots and all.
     if (!this._removalStands(title, removal)) return;
-    this._removeSlotChildren(title);
+    // THE SLOTS FOLLOW THEIR ROOT. The source left for its target, durably acknowledged (the save order): each
+    // slot still beneath the old address re-titles under the target, its body untouched, and its old title
+    // leaves as a hand's own delete. Where the target no longer stands the slots stay as they stand: orphans,
+    // kept and flagged, never dropped.
+    if (wiki.getTiddler(removal.target)) retitleSlotsInWiki(wiki as unknown as FamilyRenameWiki, title, removal.target);
     if (wiki.getTiddler(title)) wiki.deleteTiddler(title);
   }
 
@@ -1584,12 +1591,23 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
       writeBag = bag;
       this.sent.set(title, null);
       const base = this._handBaseFor(title, bag);
-      task = this.store.tombstoneInBag(bag, title, origin, base ? { base } : undefined)
-        .catch(async (error: unknown) => {
-          if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
-          console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
-          await this.store.tombstoneInBag(bag, title, origin);
-        }).then(() => { this._removeSlotChildren(title); });
+      // THE FAMILY LEAVES AS ONE CHANGE. A record's delete takes every component beneath it: root and slots
+      // ride one `writeFamily`, so no peer ever reads a dead root over live children. A title that holds
+      // no component leaves as the single tombstone it always was.
+      const leaving = this._leavingWith(title, bag);
+      for (const rider of leaving.riders) this.sent.set(rider.uri, null);
+      const issued = leaving.riders.length > 0
+        ? this._issueGroup(bag, base, [], [title, ...leaving.riders.map((rider) => rider.uri)], origin)
+        : this.store.tombstoneInBag(bag, title, origin, base ? { base } : undefined)
+          .catch(async (error: unknown) => {
+            if (!(error instanceof Error) || !error.message.includes("requested base contains heads outside this document history")) throw error;
+            console.warn(`[island-adaptor] retrying "${title}" without unavailable base`);
+            await this.store.tombstoneInBag(bag, title, origin);
+          });
+      task = issued.then(
+        () => { this._settleLeaving(leaving, bag); },
+        (error: unknown) => { this._returnLeaving(leaving, bag, error); throw error; },
+      );
     }
     try {
       await task;
@@ -1698,14 +1716,83 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     return this.tw5.$tw.wiki.getTiddler(uri) !== undefined || (this.ledger.landedOf(uri)?.tiddler ?? null) !== null;
   }
 
-  private _childUrisOf(parentUri: string): string[] {
-    return this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`) as string[];
+  /** The wiki as the one family law reads it (`@lararium/mesh/family`); the engine's own field index answers the parent edges. */
+  private _familyView(): FamilyView {
+    const wiki = this.tw5.$tw.wiki;
+    return wikiFamilyView(wiki as never, {
+      childrenOf: (parent) => wiki.filterTiddlers(`[field:$fragment-parent[${parent}]]`) as string[],
+    });
   }
 
-  /** Remove ahu-slot child tiddlers from TW5 during outbound delete. */
-  private _removeSlotChildren(parentUri: string): void {
-    const children = this.tw5.$tw.wiki.filterTiddlers(`[field:$fragment-parent[${parentUri}]]`);
-    for (const t of children) this.tw5.$tw.wiki.deleteTiddler(t);
+  private _childUrisOf(parentUri: string): string[] {
+    return [...this._familyView().childrenOf!(parentUri)];
+  }
+
+  /** True where the last wave landed `uri` beneath `top`: its landed parent edges climb to it. */
+  private _landedBeneath(uri: string, top: string): boolean {
+    let cur = uri;
+    for (let hops = 0; hops < 64; hops++) {
+      const landed = this.ledger.landedOf(cur)?.tiddler as { fields?: Record<string, unknown> } | null | undefined;
+      const parent = landed?.fields?.["$fragment-parent"];
+      if (typeof parent !== "string" || parent === "") return false;
+      if (parent === top) return true;
+      cur = parent;
+    }
+    return false;
+  }
+
+  /**
+   * WHAT LEAVES WITH A TITLE (the one family law, `@lararium/mesh/family`): every component beneath it. A
+   * component the wiki still holds (the delete named the root alone) and a component the wiki already
+   * dropped and still owes the store (the meme door removed the family title by title) both ride the
+   * title's own change, where the router lands their tombstone in the same bag. A component whose tombstone
+   * lands in another layer leaves `apart`, on its own road: cross-bag atomicity cannot exist.
+   */
+  private _leavingWith(title: string, bag: string): Leaving {
+    const wiki = this.tw5.$tw.wiki;
+    const riders: LeavingRider[] = [];
+    const apart: string[] = [];
+    const routed = (uri: string): string | null => {
+      try { return this._tombstoneBag(uri, this.lastWriteBag.get(uri) ?? (this.ledger.landedOf(uri)?.bag as string | undefined) ?? bag); }
+      catch (error) { if (error instanceof UnroutedSaveRefusal) return null; throw error; }
+    };
+    for (const uri of edgeDescendantsOf(this._familyView(), title)) {
+      if (neverPersists(uri) || this.sent.has(uri)) continue;
+      if (routed(uri) === bag) riders.push({ uri, acks: this.writeAcks.get(uri) ?? 0, standing: true });
+      else apart.push(uri);
+    }
+    const prefix = `${rootAddressOf(title)}#`;
+    for (const uri of this.drain.titles()) {
+      if (uri === title || !uri.startsWith(prefix) || this.handed.has(uri) || this.sent.has(uri) || this.actRemovals.has(uri)) continue;
+      if (wiki.getTiddler(uri) || !this.ledger.landedOf(uri)?.tiddler || !this._landedBeneath(uri, title)) continue;
+      if (routed(uri) === bag) riders.push({ uri, acks: this.writeAcks.get(uri) ?? 0, standing: false });
+    }
+    return { riders, apart };
+  }
+
+  /** The family's change landed: the wiki drops each member it still holds, and each rider reads as written. */
+  private _settleLeaving(leaving: Leaving, bag: string): void {
+    const wiki = this.tw5.$tw.wiki;
+    for (const rider of leaving.riders) {
+      this.lastWriteBag.set(rider.uri, bag);
+      this.recoveryWrites.set(rider.uri, { bag, fields: null });
+      if (rider.standing && wiki.getTiddler(rider.uri)) wiki.deleteTiddler(rider.uri);
+      // A member the store took as a noop raises no envelope, so no return wave will clear its `sent`.
+      if ((this.writeAcks.get(rider.uri) ?? 0) === rider.acks && this.sent.get(rider.uri) === null && !rider.standing) this.sent.delete(rider.uri);
+    }
+    // A member another layer holds leaves through its own delete: the router shadows it from where its save would land.
+    for (const uri of leaving.apart) if (wiki.getTiddler(uri)) wiki.deleteTiddler(uri);
+  }
+
+  /** The family's change was refused: each rider returns to its own owed road. */
+  private _returnLeaving(leaving: Leaving, bag: string, error: unknown): void {
+    for (const rider of leaving.riders) {
+      if (this.sent.get(rider.uri) !== null) continue;
+      this.sent.delete(rider.uri);
+      if (rider.standing) continue;
+      this.drain.mark(rider.uri);
+      this._raiseUnsaved(rider.uri, bag, error);
+    }
   }
 
   /**
@@ -1749,6 +1836,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     if (!split && title.indexOf("#") < 0 && fields["draft.of"] === undefined) {
       const wiki = this.tw5.$tw.wiki;
       const marked = (uri: string): boolean => this.drain.owes(uri) && !this.handed.has(uri);
+      let beneath: Set<string> | undefined;
       // Slot children carry the root's address plus a fragment, so the marked titles alone name them.
       for (const uri of this.drain.titles()) {
         if (!uri.startsWith(`${title}#`) || !marked(uri)) continue;
@@ -1756,7 +1844,9 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         if (((entry?.bag as SlotUri | undefined) ?? targetBag) !== targetBag) continue;
         const standing = wiki.getTiddler(uri) as { fields?: Record<string, unknown> } | undefined;
         if (standing) {
-          if (standing.fields?.["$fragment-parent"] !== title) continue;
+          // A component at any depth rides its root's change (the one family law reads the parent edges).
+          beneath ??= new Set(edgeDescendantsOf(this._familyView(), title));
+          if (!beneath.has(uri)) continue;
           const { "$origin-bag": _slotOrigin, ...persistedSlot } = extractFields(this.tw5, standing);
           puts.push(toLarTiddlerRecord({ ...withoutDraftBase(persistedSlot), title: uri }));
           rode.push({ uri, value: standing, acks: this.writeAcks.get(uri) ?? 0 });
@@ -1766,7 +1856,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
           let chosen: string;
           try { chosen = this._tombstoneBag(uri, targetBag); } catch (error) { if (error instanceof UnroutedSaveRefusal) continue; throw error; }
           if (chosen !== targetBag) continue;
-          tombstones.push(uri);
+          if (!tombstones.includes(uri)) tombstones.push(uri);
           rode.push({ uri, value: null, acks: this.writeAcks.get(uri) ?? 0 });
         }
       }
