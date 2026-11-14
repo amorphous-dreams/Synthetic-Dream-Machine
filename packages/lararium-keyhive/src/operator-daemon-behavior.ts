@@ -952,7 +952,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         });
         // THE OFFERING DOOR (offering#/the-canon-offer): a face offers working records toward house canon on the Nexus's offer
         // table, and the steward promotes under the Kahu reach. The same four reactors stand on node and browser; the Nexus
-        // reads off the shore's cabal board, the signer is the lit face's offer key at that Nexus (derived from its atom seed; the
+        // reads off the shore's cabal board, the signer derives the lit face's offer key at that Nexus from its atom seed (the
         // offer names no PersonaGroup and no atom key), and the canon write clears `requireKahuReach` and then
         // the charter seat the shore reads (`charterSeat`): a vessel that could seal no retire writes no canon, whoever calls the verb.
         registerCanonOfferVerbs(registry, {

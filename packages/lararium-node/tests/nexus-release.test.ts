@@ -22,7 +22,7 @@ import { join } from "node:path";
 import * as A from "@automerge/automerge";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, canonOfferDocUrl, emptyLarDoc, faceAtomKeyFromSeed, foldCanonOffers, nexusAidOf,
+  AutomergeDocStore, REALM_BAG_DOMAIN, REALM_ID_TIDDLER, bagUri, canonOfferDocUrl, emptyLarDoc, foldCanonOffers, nexusAidOf, nexusOfferSigner,
   offerCanonRecords, promoteCanonOffer, realmDocPointer, realmDocUrl, realmStandingPointer, storedLarRecord, type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import { storeDoorReactors } from "../src/store-door-verbs.js";
@@ -200,12 +200,11 @@ describe("a charter seat retires a promoted canon offer across the store door", 
     const nexus = nexusAidOf(charter)!;
     const boardHandle = await materializeSharedLarDoc(repo, canonOfferDocUrl(nexus), "board:canon-offer");
     const board = { doc: () => boardHandle.doc(), change: (fn: Parameters<typeof boardHandle.change>[0]) => { boardHandle.change(fn); } };
-    const atom = faceAtomKeyFromSeed(new Uint8Array(32).fill(41), "aa".repeat(32));
     const working = { get: async (title: string) => (title === T ? row(T, "the engineer says") : null), listVisible: async () => [T] };
     const island = repo.clone(canonHandle);
     const islandStore = new AutomergeDocStore(island, LARES);
     const ports = { nexus, board, canon: async () => islandStore };
-    const { offer } = await offerCanonRecords({ ...ports, source: working, signer: { key: atom.key, sign: atom.sign }, face: "aa".repeat(32) }, { bag: "lares", titles: [T] });
+    const { offer } = await offerCanonRecords({ ...ports, source: working, signer: nexusOfferSigner(new Uint8Array(32).fill(41), nexus) }, { bag: "lares", titles: [T] });
     const seat = { key: (await seatChairs([0])).keys[0]!, epoch: foundingRoster(charter).sealEpochCid, lineage: charter.sealLineage! };
     const promote = () => promoteCanonOffer({ ...ports, requireReach: async () => {}, seat: async () => seat,
       canonWrite: async () => ({ put: (r) => islandStore.put(r, origin), heads: () => islandStore.headsNow() }) }, { cid: offer.cid, overFresher: true });

@@ -84,8 +84,8 @@ async function present(face: string | null, mark: string): Promise<Presentation>
   try {
     const handle = await vessel.find<Doc>(shared.url as AutomergeUrl);
     handle.change((d) => { d.marks[mark] = 1; });
-    const actor = A.getActorId(handle.doc());
-    await vi.waitFor(() => { expect(shared.doc().marks[mark]).toBe(1); }, { timeout: 10_000 });
+    const actor = A.getActorId(handle.doc()!);
+    await vi.waitFor(() => { expect(shared.doc()!.marks[mark]).toBe(1); }, { timeout: 10_000 });
     // The vessel rests its sync state for the recording peer (the engine debounces that save).
     await vi.waitFor(async () => {
       expect(await identity.storage.load([shared.documentId, "sync-state", recorderStoreId])).toBeDefined();
@@ -105,7 +105,7 @@ async function present(face: string | null, mark: string): Promise<Presentation>
 }
 
 /** Every actor that signed a change the recording peer holds of the shared document. */
-const actorsSeen = (): string[] => [...new Set(A.getAllChanges(shared.doc()).map((c) => A.decodeChange(c).actor))];
+const actorsSeen = (): string[] => [...new Set(A.getAllChanges(shared.doc()!).map((c) => A.decodeChange(c).actor))];
 
 describe("the veil at the wire: one vessel presents no identifier under two faces", () => {
   test("W1: face A, then face B over the same store: store id, peer id and change actor all differ", async () => {
@@ -150,7 +150,7 @@ describe("the veil at the wire: one vessel presents no identifier under two face
     const offline = new Repo({ ...wireIdentityOf({ store, face: null }) });
     try {
       const handle = await offline.find<Doc>(shared.url as AutomergeUrl);
-      expect(Object.keys(handle.doc().marks).sort()).toEqual(["a", "b"]);
+      expect(Object.keys(handle.doc()!.marks).sort()).toEqual(["a", "b"]);
     } finally { await offline.shutdown(); await store.close(); }
   });
 
@@ -163,7 +163,7 @@ describe("the veil at the wire: one vessel presents no identifier under two face
     try {
       // The document reads back whole while the face stays unsettled (a browser boot founds and admits in this window).
       const handle = await vessel.find<Doc>(shared.url as AutomergeUrl);
-      expect(Object.keys(handle.doc().marks)).toEqual(["a"]);
+      expect(Object.keys(handle.doc()!.marks)).toEqual(["a"]);
       handle.change((d) => { d.marks["late"] = 1; });
       await vessel.flush();
       let read: string | null = null;

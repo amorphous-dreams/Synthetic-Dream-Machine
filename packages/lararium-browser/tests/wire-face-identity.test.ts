@@ -2,7 +2,7 @@
  * wire-face-identity — the veil at the wire, on the browser vessel: what a page's Repo presents on its relay under one
  * face, and then under another, over ONE browser store.
  *
- * The vessel runs for real over the page's IndexedDB; the admit ceremony and the relay transport are fakes beneath it
+ * The vessel runs for real over the page's IndexedDB; the admit ceremony and the relay transport stand as fakes beneath it
  * (`wire-vessel-rig`), and the fake relay records the peer id and the peer metadata the vessel's Repo connects it with:
  * the same two values a hearth's gate reads off a real dial.
  *

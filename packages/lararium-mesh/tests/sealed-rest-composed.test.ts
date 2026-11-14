@@ -24,7 +24,9 @@ describe("each vessel's Repo stands on the sealed rest", () => {
   it("the node's standing vessel composes its Repo over the sealed rest, and its lock flushes before a signer drops", () => {
     const node = stripped(["lararium-node", "src", "open-node-vessel.ts"]);
     expect(count(node, /composeSealedRest(<[^>]*>)?\(/)).toBe(1);
-    expect(node).toMatch(/new Repo\(\{\s*storage:\s*sealedRest\.store,/);
+    // The Repo takes the sealed rest through its wire face (`wireIdentityOf`: the worn face's store id over the same store).
+    expect(node).toMatch(/wireIdentityOf\(\{\s*store:\s*sealedRest\.store,/);
+    expect(node).toMatch(/new Repo\(\{\s*storage:\s*wire\.storage,\s*peerId:\s*wire\.peerId,/);
     const uds = stripped(["lararium-node", "src", "uds-channel.ts"]);
     expect(uds).toMatch(/await opts\.beforeSignerDrops\?\.\(/);
   });
@@ -32,7 +34,8 @@ describe("each vessel's Repo stands on the sealed rest", () => {
   it("the browser's vessel worker composes its Repo over the sealed rest, and its lock flushes before the lift drops", () => {
     const browser = stripped(["lararium-browser", "src", "open-browser-vessel.ts"]);
     expect(count(browser, /composeSealedRest(<[^>]*>)?\(/)).toBe(1);
-    expect(browser).toMatch(/new Repo\(\{\s*storage:\s*sealedRest\.store,/);
+    expect(browser).toMatch(/wireIdentityOf\(\{\s*store:\s*sealedRest\.store,/);
+    expect(browser).toMatch(/new Repo\(\{\s*storage:\s*wire\.storage,\s*peerId:\s*wire\.peerId,/);
     // The lift drops its signer through its own dispose (slice 5b: the lift stack's dispose IS the lock).
     expect(browser).toMatch(/await sealedRest\.lock\(\)[\s\S]{0,300}await lifted\.dispose\(\)/);
   });

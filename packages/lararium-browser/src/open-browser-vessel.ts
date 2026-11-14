@@ -795,10 +795,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): this boot presents the store id of the face it
   // wears and a peer id minted for this boot alone; the floor presents its own. The face settles below, after an admit or a
   // founding has had its turn, and before any adapter that reaches a peer stands: the store id waits on it, and no
-  // document's bytes do. A boot that ends before it settles reads the floor's scope and presents it to no one.
+  // document's bytes do. A boot that ends before it settles never reads a store id: its teardown leaves the scope unsettled,
+  // so no read reaches a store the teardown already closed, and the Repo it stood presented nothing.
   let wornFaceSettles!: (face: string | null) => void;
   const wire = wireIdentityOf({ store: sealedRest.store, face: new Promise<string | null>((settle) => { wornFaceSettles = settle; }) });
-  held.stood.push({ what: "the wire scope", down: () => wornFaceSettles(null) });
   const repo = new Repo({
     storage: wire.storage,
     peerId: wire.peerId,
@@ -1208,6 +1208,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   if (social.personaGroupId) wearFaceOfVessel(idbName, social.personaGroupId);
   // THE WIRE SCOPE SETTLES HERE, on the face this boot presents at its relay and to its siblings (the floor where none).
   wornFaceSettles(social.personaGroupId ?? null);
+  // The scope's id reads (or mints) HERE, inside the boot: a boot that ends on a later line never leaves that read in
+  // flight over a store its teardown closes.
+  await wire.storeId();
   // A pin chooses which gate to knock; the selected face atom's card supplies face peer proof. Name the missing
   // proof here instead of leaving the page pinned while no adapter can stand.
   // THE PINS THE ADMIT CARRIED are filed in the ONE pair index under the hearth's name (the origin of the relay url: the
