@@ -17,6 +17,7 @@ import { toBlocks, toLabelHtml, toText, type Block } from "./recording-serialise
 import { mountCamera } from "./tw5-camera.js";
 import { registerActionReactors, makeTw5Deserializer } from "./action-handler.js";
 import { VerbTable, type VerbContext } from "./verb-dispatcher.js";
+import { checkFilter, pageFilterAnswer, type FilterRow } from "./filter-page.js";
 
 export interface RecordPortOptions {
   authority?: (req: InvokeRequest) => AuthorityResult;
@@ -438,8 +439,25 @@ export function hasRecordPort(opts: RecordPortOptions = {}): RecordPortCap {
       drop(msg.portId); return;
     }
     if (msg.kind === "filter") {
-      try { answered(ctx.tw5.$tw.wiki.filterTiddlers(msg.subject ?? "").filter(title => visible(title, port))); }
-      catch { refused("filter-unavailable"); }
+      // ONE BOUNDED PAGE, never the whole array: the page law the daemon's `wiki-filter` verb answers (`filter-page.ts`) caps rows
+      // and bytes and names a cursor to continue; a filter the engine cannot parse refuses by name before it runs.
+      try {
+        const wiki = ctx.tw5.$tw.wiki;
+        const filter = msg.subject ?? "";
+        checkFilter(wiki, filter);
+        const titles = wiki.filterTiddlers(filter).filter(title => visible(title, port));
+        const names = msg.fields;
+        const rowOf = names === undefined ? undefined : (title: string): FilterRow => {
+          const held = (wiki.getTiddler(title) as { getFieldStrings?: () => Record<string, string> } | undefined)?.getFieldStrings?.() ?? {};
+          const fields: Record<string, string> = {};
+          for (const name of names) if (typeof held[name] === "string") fields[name] = held[name]!;
+          return { title, fields };
+        };
+        const page = pageFilterAnswer(titles, { ...(msg.after === undefined ? {} : { after: msg.after }),
+          ...(msg.limit === undefined ? {} : { limit: msg.limit }), ...(msg.maxBytes === undefined ? {} : { maxBytes: msg.maxBytes }),
+          ...(rowOf ? { rowOf } : {}) });
+        answered({ ...(page.rows ? { rows: page.rows } : { titles: page.titles }), total: page.total, next: page.next, asOf: page.asOf });
+      } catch (error) { refused(isVerbRefusal(error) ? error.reason : "filter-unavailable"); }
     } else if (msg.kind === "load") {
       const titles = msg.titles ?? (msg.subject ? [msg.subject] : []);
       const results = [];

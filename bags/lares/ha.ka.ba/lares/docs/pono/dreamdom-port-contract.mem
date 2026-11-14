@@ -124,6 +124,17 @@ written           = "2026-10-22"
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/filter-page`>>
+
+!! The `filter` ask ~ one bounded page, never the whole array
+
+* ''One page law, shared.'' A `filter` ask answers `{titles | rows, total, next, asOf}`: at most 32 rows and the ask's `maxBytes` (65536 by default, 262144 at most) per answer, `total` counting every title the filter matched and the port may show. `fields` names fields to ride beside each title (`rows: [{title, fields}]`); a single row past the byte cap sheds its largest fields and names them `omitted`. The daemon's `wiki-filter` verb answers through the same function (`packages/lararium-tw5/src/filter-page.ts`), so a page reads alike on the page's port, the CLI and the MCP seat (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout#/what-stands`>>).
+* ''The cursor names the answer it continues.'' `next` reads `<offset>.<asOf>`, where `asOf` digests the whole title list; the asker hands it back as `after`. The filter re-runs for each page, and a re-run that answers another list refuses `filter-cursor-stale`; a cursor that reads as none refuses `filter-cursor-malformed`. No clock and no counter decides staleness.
+* ''A malformed filter refuses by name.'' The engine's own parser reads the filter first; a parse fault or an unknown run prefix refuses `filter-malformed` and runs nothing. Any other fault refuses `filter-unavailable`, as before.
+* Reds: `wiki-filter-bounded` and `wiki-filter-malformed-refuses-by-name` at the port (`record-port-filter-bounded.test.ts`), `port-ask-filter-bounds` at the reader. Control: a small answer rides whole with `next: null`.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/retry-law`>>
 
 !! The one retry law ~ a resend of the same id, never a timer
@@ -191,6 +202,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;we3g6C5WzL0d-woHk8ekJnu_cDs1IP8piiEWw03qHtU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZaRbr4cR2seVSz7ZypL8da6Cn2dJ9AKjYQrFr7GQ84U`>>
 
 <<^ code=`&#x0004;` to=`?`>>

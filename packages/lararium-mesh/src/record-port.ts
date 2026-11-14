@@ -3,7 +3,7 @@
  *
  * The port carries RECORDS across the engine↔projection waist: a projection opens a port at a width, receives a
  * chunked snapshot at a stable base cursor, then changes after it, writes under a `txId`, asks the engine for
- * filters, renders, loads and invokes, and shares presence. The contract stands at
+ * filters (each answer one bounded page under a cursor), renders, loads and invokes, and shares presence. The contract stands at
  * lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract; every reader below keeps its bounds, so a malformed
  * port message vanishes at the door before any handler sees it.
  *
@@ -108,6 +108,12 @@ export interface PortMsg_Ask {
   form?: PortRenderForm;
   renderCursor?: string;
   affordanceId?: string;
+  /** filter: the cursor a prior page answered as `next`; absent asks for the first page. */
+  after?: string;
+  /** filter: the rows one page carries at most; the island holds its own cap above it. */
+  limit?: number;
+  /** filter: the bytes one page carries at most; the island holds its own cap above it. */
+  maxBytes?: number;
 }
 
 export interface PortMsg_Ack { type: typeof PORT_ACK; portId: string; cursor: string }
@@ -276,6 +282,9 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
       if (v["renderCursor"] !== undefined && !isName(v["renderCursor"])) return null;
       if (v["affordanceId"] !== undefined && !isName(v["affordanceId"])) return null;
       if (v["kind"] === "invoke" && (v["subject"] !== undefined || !isName(v["affordanceId"]) || !isName(v["renderCursor"]))) return null;
+      if (v["after"] !== undefined && !isName(v["after"])) return null;
+      if (v["limit"] !== undefined && !(isCount(v["limit"]) && v["limit"] >= 1)) return null;
+      if (v["maxBytes"] !== undefined && !(isCount(v["maxBytes"]) && v["maxBytes"] >= 1 && v["maxBytes"] <= PORT_BYTES_MAX)) return null;
       return { type: PORT_ASK, portId: v["portId"], askId: v["askId"], kind: v["kind"],
         ...(v["subject"] === undefined ? {} : { subject: v["subject"] }),
         ...(v["titles"] === undefined ? {} : { titles: v["titles"] }),
@@ -283,7 +292,10 @@ export function readPortVesselMsg(v: unknown): PortVesselToIslandMsg | null {
         ...(v["fields"] === undefined ? {} : { fields: v["fields"] }),
         ...(v["form"] === undefined ? {} : { form: v["form"] }),
         ...(v["renderCursor"] === undefined ? {} : { renderCursor: v["renderCursor"] }),
-        ...(v["affordanceId"] === undefined ? {} : { affordanceId: v["affordanceId"] }) } as PortMsg_Ask;
+        ...(v["affordanceId"] === undefined ? {} : { affordanceId: v["affordanceId"] }),
+        ...(v["after"] === undefined ? {} : { after: v["after"] }),
+        ...(v["limit"] === undefined ? {} : { limit: v["limit"] }),
+        ...(v["maxBytes"] === undefined ? {} : { maxBytes: v["maxBytes"] }) } as PortMsg_Ask;
     case PORT_PRESENCE:
       if (!isName(v["actorKey"]) || (v["beat"] !== undefined && !isCount(v["beat"])) || (v["gone"] !== undefined && v["gone"] !== true)) return null;
       if (v["gone"] === undefined && v["beat"] === undefined) return null;   // a presence round carries its beat
