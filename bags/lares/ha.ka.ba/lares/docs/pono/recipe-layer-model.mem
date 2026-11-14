@@ -306,6 +306,15 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 ''The browser vessel.'' The same kernel composes the same stacks (`open-browser-vessel.ts`; the daemon recipe at `open-browser-daemon-vm.ts`, its canon under the same `daemonFaceCanonBag` rule); no disk projector runs there, so no layer of either class projects to a folder from a browser.
 
+!!! Two further classes ~ specified, OWED
+
+No code holds either class today: no bag meta reads a `derived` key, and no door answers `derived-library-read-only`. <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/first-three-wave-map#/the-wikis-in-scope`>> defines both; this slot seats them beside the two that stand.
+
+* ''THE DERIVED LIBRARY'' (road `L40`, `L40b`; OWED). A bag whose records ONE named tool writes as a pure function of ONE named commit of a tracked tree; its first instance, `codemap`, composes into the `lararium` recipe. Its `meta.mem` declares `cap-tier = "public"`, `home = "hearth"` and a new bag-meta key `derived = "<tool>"`, and each record carries the commit it derives from (`head`). It composes only in the ''libraries'' row, beneath the host wiki's canon, under a namespace that canon never writes (`lar:///ha.ka.ba/codemap/`), so it shadows nothing. No hand door writes it: `meme put`, `tiddler put`, a residency `MOVE` or `COPY` naming it, a kāpae and a lift each refuse `derived-library-read-only`. One road writes it, an INGEST wave whose source root the vessel grants to that bag alone (`<LAR_ROOT>/cache/<bag>/<head>/`); a wave replaces the whole bag, and a title the new wave drops retracts to absent (a reveal, #/delete-reveals-or-shadows, since nothing lies beneath its namespace). It never bakes into genesis, never rides a release cut, never takes an offer or a promotion, and never travels in an export or a carry; each of those doors refuses or skips by `derived`. After a re-founding it returns from its cache folder alone, by a fresh ingest. In the layer table it reads as a fourth kind of ''libraries'' row: generator-written, read-only, no mirror.
+* ''THE TOPIC WIKI EVERY SEATED FACE WRITES'' (road `L35`; OWED). A domain wiki that one face mints and shares with every face of the operator seated `write`; its first instance, `house`, holds the house's shared memory, and `works` stands beside it as a minted work wiki. Its recipe matches the domain column whole, and it adds a reach law alone: a face reads its own daemon wiki and every topic wiki a share row names it in. Until a workbench's rest seals for its realm's roster (the rest gate, road `C2`), only the owning face writes the workbench on one vessel and every other seated face writes its own `personal`; and until the tiddler door relays to named wikis (road `L17-2a`), its rows ride the steward's daemon wiki at the same titles.
+
+The bag meta law owes the `derived` key beside `cap-tier` and `home` (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy`>>).
+
 <<~/ahu>>
 
 <<~ ahu slot=`#/delete-reveals-or-shadows`>>
@@ -338,15 +347,22 @@ The same press with the title in canon alone (case c) lands the kāpae in the la
 | `meme delete --recipe <slug>` / `meme_delete` | kāpae in that layer | kāpae in the top layer where it stands above the designated bag, else in the designated bag (`deleteThroughRecipe`, `packages/lararium-tw5/src/meme-verbs.ts`) | kāpae in the designated bag (`writable-bag`, the working slot) | no: always kāpae; the receipt names `tombstonedIn` and `readFrom` |
 | `meme delete` on the anchor (`recipe: "default"`) | kāpae through the daemon wiki's engine (`wikiMemeSink`, `place-meme.ts`), so the adaptor's law above | same | same | no |
 | `meme delete --bag <bag>` | kāpae IN the named bag (`removeMeme` over that bag's sink) | kāpae in the named bag; shadows only what lies beneath that bag in a recipe that composes it | kāpae in the named bag | no |
-| `lares tiddler delete` / `tiddler_delete` (the anchor alone today) | `mode: "kapae"` (default): tombstone in working; `mode: "reveal"`: retract | kapae: the answer names `holds` and `shadowed`; reveal: retract, and `reveals` names the lower bag | kapae: tombstone in working; reveal: refuses `reveal-top-unwritable` where the face writes no record in the layer that holds it | YES: `mode`, defaulting `kapae`; refuses `delete-mode-unknown` on any other word (Join-Wright's lane, landing beside this slot in `packages/lararium-tw5/src/tiddler-verbs.ts` and `packages/lararium-mesh/src/family.ts`) |
+| `lares tiddler delete` / `tiddler_delete` (the anchor alone today) | `mode: "kapae"` (default): tombstone in working; `mode: "reveal"`: retract | kapae: the act names `holds` and `shadowed`; reveal: retract, `reveals` names the lower bag, and a leave reads `revealed-from:<bag>` | kapae: tombstone in working; reveal: refuses `reveal-top-unwritable`, since the layer that holds the record sits beneath working and takes no hand's delete | YES: `mode` (`--mode`), defaulting `kapae`; refuses `delete-mode-unknown` on any other word (`packages/lararium-tw5/src/tiddler-verbs.ts`, `packages/lararium-mesh/src/family.ts`) |
 | `lares act CLEAR` / `DROP` | kāpae over every live title IN the named bag (`executeClear`, `executeDrop`, `action-handler.ts`) | same | — | no: exclusion gestures, kāpae by law |
 | `lares act MOVE` (promotion), an INGEST re-link | the source RETRACTS (reveal): the title lands in the target, then leaves the source | same | — | no: relocation, reveal by law |
 
 ''The default every door takes: kāpae.'' Three grounds. (1) The resurrection guard: a user who deletes what she reads expects it gone; a reveal that surfaces a lower copy she never saw replays the OverlayFS resurrection (kapae#/core-cut). (2) Remove-wins under contention: a raised kāpae holds against a peer re-adding a lower copy, and a retract holds against nothing. (3) Every door already raised kāpae before the name stood, so the default changes no landed behaviour. ''A reveal rides by name'' (`mode: "reveal"`), the act of a hand that wants "discard my layer's version; show me what lies beneath".
 
+!!! The tiddler door's delete, as it stands
+
+* ''Which layer takes a delete.'' A layer takes a face's delete only where the island mounts it writable at or above the working layer, and the Kahu predicate and the face's `admin` cap both admit it (`layerFactsFor`). A tombstone shadows only from above, and a canon layer beneath working takes no hand's delete.
+* ''What a reveal refuses.'' A reveal retracts the topmost record of the title. Where that record's layer sits beneath working, or the face cannot write it, the reveal refuses `reveal-top-unwritable` and names the layer; a reveal of a record no mounted layer holds (the engine's own, or a wiki with no store beneath it) refuses the same, with nothing to retract. Each refusal names `mode: "kapae"` as the act that would shadow it from working.
+* ''A refusal answers a receipt.'' The door answers `decision: "refused"` with `refusal`, `why`, the record's `hash` and the `consequence` it read, and lands nothing; it never throws for a refusal the family law reads. Outside the law the door still throws by name: an unknown mode word (`delete-mode-unknown`), a system title (`tiddler-put-code-class`), and a read the face's cap denies.
+* ''What the consequence names.'' Each act row carries `holds` (every layer with a live record of the title) and, by mode, `shadowed` (the layers a kāpae hides) or `reveals` (the layer that surfaces, `null` where none does or a kāpae stands there). The `leaves` rows give each reason in `why`: `revealed-from:<bag>` for a title that a lower live record now answers, `reveal-keeps:<bag>` for a fellow family member whose layer this hand cannot write and which therefore stays as it reads, `stands-beneath:<bag>` for a record that stays in a layer this hand cannot write, beneath the tombstone that shadows it. `versions` names the titles the consequence itself names (the target, each act, each leave, each orphan) and no other, so an answer stays bounded on a wiki of any size.
+
 !!! A family takes one mode, as one change per layer
 
-A meme's root and its component slots leave together (the family law, `packages/lararium-mesh/src/family.ts`, `consequence`): one `mode` covers every member, the consequence reads before anything lands, and each layer takes its members as ONE change (`writeFamily`). The tiddler door refuses a root or slot unless the call names the family act (`family: true`), and refuses a slot its parent calls by `kahea` even then (the parent's text moves through `meme put`). Cross-layer atomicity cannot exist: a family split across two layers lands as ordered writes, each named in the receipt (`partial` where one throws).
+A meme's root and its component slots leave together (the family law, `packages/lararium-mesh/src/family.ts`, `consequence`): one `mode` covers every member, the consequence reads before anything lands, and each layer takes its members as ONE change (`writeFamily`). The tiddler door refuses a root or slot (`tiddler-delete-in-a-family`, with the consequence) unless the call names the family act (`family: true`, `--family`), and refuses a slot its parent calls by `kahea` even with the flag (the parent's text moves through `meme put`). Cross-layer atomicity cannot exist: a family split across two layers lands as ordered writes, one per layer. `meme delete` on the anchor reads the same consequence, lands one change per member through the daemon wiki's engine (`removeMeme`, `wikiMemeSink`), and takes no mode: kāpae alone (OWED, road `L37`).
 
 !!! How each act travels
 
@@ -375,7 +391,7 @@ A meme's root and its component slots leave together (the family law, `packages/
 
 !!! OWED
 
-* ''A reveal on every door.'' The TW5 engine's delete, `meme delete` (CLI and `meme_delete`) and the in-wiki UI raise kāpae alone; only the tiddler door names `mode` (in flight). The meme door owes `mode: "reveal"` with the same consequence (`retractsOf`), and the wiki UI owes a "show what lies beneath" gesture beside Delete.
+* ''A reveal on every door.'' The TW5 engine's delete, `meme delete` (CLI and `meme_delete`) and the in-wiki UI raise kāpae alone; only the tiddler door names `mode`. The meme door owes `mode: "reveal"` with the same consequence (`retractsOf`), and the wiki UI owes a "show what lies beneath" gesture beside Delete.
 * ''A lower-kāpae door for the bag cascade.'' kapae#/law asks a deliberate lower with an effect record; no hand door retracts a tombstone today, and the tiddler door's reveal reads a kāpae'd title as `absent` (the family view reads tombstoned titles as standing nowhere).
 * ''kapae#/core-cut and #/law name DELETE among the exclusion gestures (MUST raise kāpae).'' The operator's ask names delete's two meanings; the law owes a re-true: DELETE carries a `mode`, kāpae by default, reveal by name, and only CLEAR, DROP and EVICT stay kāpae-only.
 * ''Promotion disagrees with itself over a kāpae.'' A titled `MOVE` of a tombstoned source deletes canon's record (lands a tombstone in canon); a layer `MOVE` skips tombstones. One law owes: does promoting a workbench kāpae delete canon? (An operator ruling.)
@@ -419,6 +435,6 @@ A meme's root and its component slots leave together (the family law, `packages/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uNDnlzD-pJkGjNfr7RiIn8zQsSDEhWQDM6vn7tCN6A4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_0FgFB-0fknsBYYIqEnGwBpVL-dtO7QXd1hJYnNR-Jc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
