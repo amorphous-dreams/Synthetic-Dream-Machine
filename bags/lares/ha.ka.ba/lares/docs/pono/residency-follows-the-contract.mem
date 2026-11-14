@@ -1,0 +1,162 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "adjacent"
+role      = "the residency model talked out on 2026-11-14: a document follows its cap contract and every carry act follows the document; faces sit flat and unjoined; the Kahu workbench belongs to the realm; the CRDT transports and git records; with what stands built, what stands owed, and the leaps that follow"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/residency-follows-the-contract"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! Residency follows the contract ~ one model for faces, wikis, seeds and source control
+
+A moʻolelo of the talk-story between the operator and the house on 2026-11-14, after three dress rehearsals of the three-face rite. Each section names what the talk settled, what the code already keeps, and what stands owed. The law text lives in <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>; this meme holds the whole shape in one place and the reasons behind it.
+
+> ''Operator rulings'' (2026-11-14): //"Per-face bags reads pono for daemon wikis, and perfect working layers reads pono for the daemon wikis too. Other wikis should get shared/contracted crdt doc caps."// · //"most wikis should NOT seed per-face because shared crdts, while daemon wikis should seed per-face. Same with import/export."// · //"Git serves only Amorphous Dreams Cabal Kahu, other local nexus operators with their own private/public/contracted realms will probably seed from npms or other stores or even from the DreamNet itself. CRDT carries everything for DreamNet syncing, git serves source control (Amorphous Dreams Cabal as Governing Org, we write protocols, not just an app)."// · //"We need to make sure (by construction, deterministically) that a human 'publishes' no roster that joins their faces, but a human should be able to grant multiple faces access to a Cabal realm without doing so. It's up to the humans in irl to tell the other humans which faces belong to which humans (& hold the models support both Anon & Dread Pirate Roberts public Handles with many faces beneath them -> basically a cabal that presents as a Handle)."// · //"an operator's personal wiki garden belongs in .lares, SDM lares/rpg related wiki content belongs in the repo workspace."//
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-one-rule`>>
+
+!! The one rule
+
+''A document follows its cap contract, and every carry act follows the document.'' A carry act names any of: a disk mirror, a seed, an export, an import, a sync to a fleet device. None of them asks which face stands worn first; each asks which document it carries and who holds that document.
+
+|! document |! held by |! folder |! seeded and carried |
+| a daemon wiki, a kahua stage | one face | names the face (`daemon-<F>`, `kahua-<F>`) | per face, adopted by pet-name |
+| a face's `personal` layer of a wiki | one face | `personal/<F>/<slug>` | per face |
+| a wiki's workbench (`wikis/<slug>/working`) | the realm: its owner and every seated face | one folder for the wiki | once per document, at any seated writer's wear |
+| house canon | the Kahu seat | `bags/<slug>` | at the steward |
+
+''Seed'' names the first pour of a document onto a place. Its source varies: the genesis floor for canon, the disk mirrors on a re-founding, a peer's CRDT on a fleet device. A shared wiki arrives once; a face-private document arrives for its face.
+
+''What it retired.'' On 2026-11-13 two cures gave each face a private working realm and a face-named folder for every wiki, to stop saves that vanished on restart. That copied the daemon wiki's shape onto wikis meant for sharing, and built a second `personal` layer under the name `working`. The talk retired both; the cure for the vanishing save stays (a face with no seat rests its write in `personal`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-unseated-face`>>
+
+!! The unseated face writes its margin
+
+A face that holds no writer's seat in a wiki's workbench reads canon (from the floor where it stands outside the cabal) and writes into its own `personal` layer of that wiki. It offers from there. It founds no second working realm of a wiki another face on the vessel already stands. The recipe order already carried the place: canon -> working -> personal -> draft -> temp, with the operator's 2026-11-11 ruling //"Personal can absorb the new caps."//
+
+* ''Gaia 2026.'' A person opens the `lares` wiki wearing a face with no seat, edits a page, and sees the edit over canon, alone. Nothing presents that edit as the shared draft.
+* ''Elyncia 5492.'' A visiting scribe annotates the temple's book in a margin of their own, then petitions the keepers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/faces-sit-flat`>>
+
+!! Faces sit flat ~ no record joins a human's faces
+
+''The construction.'' No realm-crossing act takes two faces of one human as its inputs, and seating one's own second face takes the same record shape as seating a stranger's.
+
+* ''One door for every seat.'' A face asks with its own key from its own session; standing members consent (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer`>>: "a name enters a record by its own hand first"). No shortcut for "my other face" exists, so no record shape exists that could mark one.
+* ''A roster lists faces flat.'' It carries no owner field, no issuer that ties face to face, and no pet-name. A pet-name such as `<name>-engineer` spells a link in plain text and stays a local label.
+* ''Everything that does join faces rests vessel-private:'' the persona roster, the device table, pet-name labels, share-carry rows, adoption across a re-founding. An export bundle counts as the operator's own private carry; handed to another party it would tell the mapping.
+* ''Who belongs to whom travels by voice.'' The model offers no field to say it and none to deny it.
+
+''What the code keeps, measured by reading on 2026-11-14 (no hearth ran).'' A PersonaGroup holds the devices of ONE face. Each face founds its own Keyhive identity, group and sentinel document, and each face's root mints from fresh randomness, so no public value lets an observer test "same root". The operator's ruling of 2026-10-18 stands behind it: //"one Keyhive identity per PersonaGroup, none above them … it's the only way to retain control over faces that don't know about each other."// A workbench's key document stays on its vessel, and nothing of it crosses to another human today.
+
+''Where the code breaks it, read on 2026-11-14 (no hearth ran; each row waits on a walked confirmation).''
+
+* ''The store's id at the wire.'' One vessel runs one sync repo for every face it holds, and that repo sends one stored `storageId` to every peer on every connection, across reboots and face switches. A peer that meets face A and later face B from one vessel reads the same id twice. This joins two faces with no help from timing. Within one boot the repo's `peerId` holds constant the same way.
+* ''The change actor.'' One repo mints one actor id for each document, so two faces writing one shared document through one repo may sign their changes with one actor. Inferred, unverified.
+* ''The canon offer.'' An offer's body publishes the offering face's PersonaGroup and its atom key to every face on the Nexus. That links ONE face across Nexuses, and it hands an observer the PersonaGroup needed to test who owns a private workbench realm (its id hashes the PersonaGroup with the slug).
+* ''The recovery commitment.'' A face's recovery key set hashes unsalted, so two faces that enrol the same contacts under the same keys show equal commitments. Inferred.
+* ''A group seated in a document shows its members.'' A document's readers can list the individuals a member group reaches. The workbench seats individuals, so nothing shows today.
+
+What holds by construction: every per-face key mints at random, the dial key changes with each dial, each face carries a separate key for each Nexus, and no crossing record read carries a handle index or a pet-name. No workbench document crosses to another operator at all today, so the roster leaks describe what the owed cross-operator seam would ship.
+
+''Residual the model owns.'' Timing: faces of one human on one vessel never stand worn at once, and a patient observer may correlate that.
+
+''OWED ~ the acceptance test for cross-operator seating.'' Seat a same-human second face and a stranger's face in one realm and compare the event bytes; they MUST differ only by the keys.
+
+''OWED ~ named drifts.'' The doctrine speaks of one seed deriving every face, and a one-seed derivation stands in the packages with no caller; the code mints each root at random. Recovery must say what a phrase restores under random roots. A workbench seat names the face's own hive individual while a face bag delegates to the PersonaGroup, so a second device of a seated face gains the seat by no Keyhive path today.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a-cabal-presents-as-a-handle`>>
+
+!! A cabal presents as a Handle
+
+A human, a crew or a line of successors MAY bring many faces into a realm in one of two ways:
+
+|! way |! what the outer realm sees |! fits |
+| each face seated flat | N unrelated members | faces that act as separate people |
+| one Handle seated | one member | an anon, a crew, a role that outlives its holder ("Dread Pirate Roberts") |
+
+The faces beneath a Handle form their own private cabal, unseen from outside. "The multitude of faces reads as a private cabal for 1 human" (operator, 2026-11-11) names that same cabal: a human's faces already form what a Handle would front.
+
+''OWED.'' <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-steward-signer`>> specifies the Handle signer and marks it unbuilt: no vessel holds a collective Handle's key, and no door offers a Handle signer. Two specified shapes contradict the intent and MUST change before a Handle fronts many faces: the Handle's key event log reveals its owner set (each owning face's prefix and the threshold) at inception and at every graft, and each presentation names the owning member that authorized it; and a Handle seated as a Keyhive group would show its members to the outer realm's readers. A Handle that keeps the veil sits as one key and reveals no owner set. Until it lands, the flat way carries the requirement alone.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-kahu-workbench`>>
+
+!! The Kahu workbench belongs to the realm
+
+The question behind road seam `P21` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>): when a second Kahu operator joins, who owns the working layer of a house wiki?
+
+|! candidate |! what breaks |
+| each Kahu keeps a private workbench and offers | two Kahu never see one draft; the 2026-11-11 ruling asks for synced working layers across operators |
+| the first steward's private cabal, shared outward | the address derives from one person's face; that person re-founds or leaves and the address dies; a person becomes the root the realm forbids |
+| ''the Kahu realm itself'' | nothing; it waits on the owed cross-operator consult |
+
+''Settled.'' The workbench address derives from the charter-derived realm id and the slug, never from a face. Two managements stay apart, as <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/governance`>> rules:
+
+* ''Editing the workbench'' counts as realm work. Its seats: the hands that keep the canon bag (`keptBy`), widened by ask and consent.
+* ''Promoting to canon'' counts as a charter act. Chairs sign to the charter's threshold.
+
+Agreement in the workbench moves no key; a threshold of chairs edits no draft.
+
+''Leans, refinable during the dogfood foundings.'' A solo hearth stands under its seed charter, so founding a Nexus moves the charter-derived realm id once; the old workbench's rows lift into the new one additively (an absent title moves, a differing title stays and gets named), and no roster crosses with them. Which roster seats the workbench (the bag's stewards, or the charter's chairs) coincides while every Kahu holds a chair. An outside offer lands as a promotion proposal, as today. A steward's departure has no act yet.
+
+* ''Gaia 2026.'' Two maintainers each run a hearth and watch one working copy of a roadmap converge. A release needs both signatures where the charter says two. One of them re-founds, and the workbench address holds.
+* ''Elyncia 5492.'' The temple's keepers share one scriptorium desk. The desk belongs to the temple, never to the eldest keeper, and a text enters the canon only under the council's seals.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/two-workspaces`>>
+
+!! Two workspaces ~ the CRDT transports, git records
+
+|! workspace |! holds |! source control |
+| the house root (`~/.lares`) | the operator's personal wiki garden: daemon wikis, every `personal` layer, their own private and contracted wikis | none; the CRDT and the export carry it |
+| the repo checkout | the Amorphous Dreams Cabal's sourced content (SDM, Lares, RPG): canon in `bags/`, each sourced wiki's one workbench in `wikis/<slug>` | git tracks both |
+
+* ''The CRDT carries everything that syncs'' across the DreamNet, for every operator, the Kahu included.
+* ''Git records and never transports.'' A commit of `bags/` snapshots promoted canon; a commit of `wikis/` snapshots the cabal's shared draft. A pulled commit lays back through the ordinary three-way gate as the puller's hand edit, so git proposes and never overrules.
+* ''Git serves the governing cabal alone.'' Every other operator fills the canon slot from another seed source: a package's baked genesis floor, another store, or the DreamNet's own release board.
+* ''Nothing face-private lands in the checkout:'' no `personal` layer, no daemon wiki, no face-named folder, no pet-name in a path or a file.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-leaps`>>
+
+!! The leaps that follow
+
+Each leap names a lane that can run beside the others once the workbench build lands.
+
+# ''The veil at the wire.'' A store id, a peer id and a change actor for each face (a repo for each face, or ids stripped and re-minted at the face boundary), proven by reading a gate's peer metadata while one vessel switches face. The canon offer drops the PersonaGroup and the atom key for a key scoped to that Nexus. The recovery commitment takes a salt for each face.
+# ''The Kahu realm's workbench.'' Derive a house wiki's workbench from the charter-derived realm; move the Kahu accessors off persona zero (`P21`); the additive lift at a Nexus founding.
+# ''The seed source slot.'' One slot for canon's source with four fillers (checkout, package floor, another store, the DreamNet board), so a hearth with no checkout founds by the same road.
+# ''The critical-procedure gate.'' The browser reset and its kin ask the holder's passphrase where custody stands.
+# ''The Handle.'' A collective Handle's key custody and a Handle seat that shows one member.
+# ''Recovery under random roots.'' What a recovery phrase restores, and the fate of the unused one-seed derivation.
+# ''The seat for a face's second device.'' A workbench seat that reaches every device of the seated face.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bElbaApteEX3_Bt7xCozOauRdRXyyiuzN9OTCWB-Mdk`>>
+
+<<^ code=`&#x0004;` to=`?`>>
