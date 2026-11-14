@@ -232,6 +232,29 @@ def test_meme_get_absent_meme_reads_null(daemon):
     assert _get(uri=_URI, recipe="default") is None
 
 
+def test_meme_get_carries_the_floor_word_where_the_floor_snapshot_answered(daemon):
+    # A face outside the Kahu cabal reads house canon from the bag's floor snapshot, and the verb says so beside the
+    # meme (`{uri, meme, floor: true}`). The tool hands the meme back with the word on it; a live read names no floor.
+    daemon.output = {"uri": _URI, "meme": _GET_MEME, "floor": True}
+    assert _get(uri=_URI, bag="lararium") == {**_GET_MEME, "floor": True}
+    daemon.output = _GET_OUTPUT
+    assert _get(uri=_URI, bag="lararium") == _GET_MEME
+    # An absent meme stays null, whatever answered.
+    daemon.output = {"uri": _URI, "meme": None, "floor": True}
+    assert _get(uri=_URI, bag="lararium") is None
+
+
+def test_meme_list_carries_the_floor_word_on_the_seat_and_on_each_row(daemon):
+    # A bag the floor answered names it on the seat; a recipe's stack names it on each row a floor bag answered.
+    by_bag = {"bag": "lar:///ha.ka.ba/bags/lararium", "floor": True, "roots": [{"uri": _URI, "canonicalHash": "sha256-get"}], "next": None}
+    daemon.output = by_bag
+    assert _list(bag="lararium") == by_bag
+    by_recipe = {"recipe": "lares", "bags": ["lar:///ha.ka.ba/bags/lares"], "next": None,
+                 "roots": [{"uri": _URI, "canonicalHash": "sha256-get", "bag": "lar:///ha.ka.ba/bags/lares", "floor": True}]}
+    daemon.output = by_recipe
+    assert _list(recipe="lares") == by_recipe
+
+
 def test_meme_get_refuses_recipe_and_bag_together(daemon):
     with pytest.raises(ValueError, match="no-container"):
         _get(uri=_URI, recipe="sdm", bag="lares")
@@ -416,3 +439,13 @@ def test_meme_list_text_promises_a_row_bag_for_a_named_recipe_alone():
     said = _described("meme_list")
     assert "{recipe, bags, roots, next}" in said and "{bag, roots, next}" in said
     assert 'under `recipe="default"` no row names a `bag`' in said
+
+
+def test_meme_get_and_meme_list_texts_name_the_floor_word():
+    # A caller learns from the tool's own text that `floor: true` marks a read the floor snapshot answered, and where
+    # the word rides: on the meme a get hands back, on a bag listing's seat, on each row of a recipe listing.
+    got = _described("meme_get")
+    assert "`floor: true`" in got and "floor snapshot" in got and "{text, canonicalHash, floor}" in got
+    listed = _described("meme_list")
+    assert "`floor: true`" in listed and "floor snapshot" in listed
+    assert "{bag, floor, roots, next}" in listed and "each row" in listed

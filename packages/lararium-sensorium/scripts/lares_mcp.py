@@ -1049,12 +1049,18 @@ def build_mcp(coordinator: LaresCoordinator):
         LAW: exactly one of `recipe` / `bag` names where to read (`recipe="default"` names the @daemon's
         own wiki); neither, or both, refuses as `no-container`. Slugs ride bare (`sdm`, `lares`). Returns {text, canonicalHash} — carry the
         `canonicalHash` into `meme_put`'s `base` to write against what you read — or null when the meme
-        stands absent. Rides the @daemon wire, never a store."""
+        stands absent. THE FLOOR WORD: a face outside the Kahu cabal holds no read on a live house canon document
+        (`lares`, `lararium`), so the bag's floor snapshot answers it, and the answer says so: {text, canonicalHash, floor}
+        with `floor: true`. A live read carries no `floor`. A floor read may trail the live canon, and a write to
+        that bag from the same face refuses. Rides the @daemon wire, never a store."""
         args: dict = {**_meme_container("meme_get", recipe, bag), "uri": uri}
         # A reactor outcome never rides bare null, so the daemon answers `{uri, meme}`; the tool hands
-        # back the meme alone, as the contract spells it.
+        # back the meme alone, as the contract spells it, with the verb's floor word on it where one stands.
         out = _meme_wire("meme-get", args) or {}
-        return out.get("meme")
+        meme = out.get("meme")
+        if meme is not None and out.get("floor") is True:
+            return {**meme, "floor": True}
+        return meme
 
     @mcp.tool()
     def meme_list(recipe: "str | None" = None, bag: "str | None" = None, tree: bool = False,
@@ -1068,7 +1074,10 @@ def build_mcp(coordinator: LaresCoordinator):
         first; `unreached` rides beside it where a layer stood out of reach); `recipe="default"` lists the @daemon's
         own wiki across its whole stack and returns {bag, roots, next}, where the one `bag` names the layer a write
         lands in and labels the whole answer: under `recipe="default"` no row names a `bag`, so a root there may
-        answer from a floor bag beneath (house canon) and the listing never says which. THE LISTING PAGES: one
+        answer from a floor bag beneath (house canon) and the listing never says which. THE FLOOR WORD: `floor: true`
+        marks a read the bag's floor snapshot answered, where this face holds no read on the live house canon
+        document: a `bag` listing carries it on the seat, {bag, floor, roots, next}, and a named `recipe` carries it
+        on each row a floor bag answered. A live read carries no `floor`. THE LISTING PAGES: one
         answer carries a bounded page of roots in title order and `next` names the cursor of the page behind it;
         hand it back as `after` until `next` reads null. A plain tiddler never lists. Rides the @daemon wire,
         never a store."""
