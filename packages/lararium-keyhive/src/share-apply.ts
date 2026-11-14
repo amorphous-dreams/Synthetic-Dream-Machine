@@ -49,9 +49,13 @@ export interface ShareApplyDeps {
     list(granteeGroup: string): Promise<ReadonlyArray<{ readonly bag: string; readonly row: StoredLarRecord }>>;
     clear(granteeGroup: string, bag: string): Promise<void>;
   };
-  /** Delegate `bag` from the owner face's hive to the grantee's (both lit). */
-  readonly grant: (g: OwedGrant & { readonly ownerGroup: string; readonly granteeGroup: string }) => Promise<void>;
-  readonly flag: { set(title: string): Promise<void>; clear(title: string): Promise<void> };
+  /**
+   * Delegate `bag` from the owner face's hive to the grantee's (both lit). It MAY answer `fresh`: false where the owner's roster
+   * already held that delegation (the roster's own read), so a replay counts as no move; a port that answers nothing reads fresh.
+   */
+  readonly grant: (g: OwedGrant & { readonly ownerGroup: string; readonly granteeGroup: string }) => Promise<void | { readonly fresh?: boolean }>;
+  /** `has` (optional) reads whether a grant's flag stood before this landing: a grant that waited counts as a move when it lands. */
+  readonly flag: { set(title: string): Promise<void>; clear(title: string): Promise<void>; has?(title: string): Promise<boolean> };
   /** A vessel-own salt, so the opaque flag reads alike on no other vessel. */
   readonly salt: string;
   /**
@@ -73,6 +77,8 @@ export interface ShareApplyDeps {
 export interface ShareWorkbenchLanded {
   readonly slug: string; readonly realmId: string; readonly founded: boolean; readonly members: number;
   readonly removed: readonly string[];
+  /** How many member faces this landing seated that the roster did not already hold (a replay seats none). */
+  readonly seated?: number;
   /** The handle index of the face that owns the workbench on this vessel: a vessel-local answer for the operator's own door. */
   readonly owner?: number;
   /** The vessel seals this workbench's document under its owner face's key (the wiki it mounts): a seat another face holds writes `personal` on this vessel. */
@@ -81,6 +87,12 @@ export interface ShareWorkbenchLanded {
 
 export interface ShareApplied {
   readonly granted: number;
+  /**
+   * Of the granted, how many MOVED something this landing: a delegation the owner's roster did not hold yet, a row written into
+   * a grantee's open half, or a grant that had waited behind its flag. A replay over a landed share moves none, so a door that
+   * reports a landing (the seed) says nothing for it.
+   */
+  readonly moved: number;
   /** How many grants wait behind a shut face (a count; the flags name nothing). */
   readonly pending: number;
   /** Of the granted, how many rows carry in the control document until their grantee stands worn (its half opens then). */
@@ -135,17 +147,32 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     const own = halves.get(face.handleIndex);
     if (face.group && own && deps.carry) lifted += await liftCarriedShares({ group: face.group, handleIndex: face.handleIndex, half: own, carry: deps.carry, ...(deps.log ? { log: deps.log } : {}) });
   }
+  // THE ROW'S OWN OWNER WINS: a grantee's half names a shared bag too (by reference), so under the grantee's wear its half
+  // alone opens and would read as the owner's. Where a row names its owner by pet-name, only that face owns the bag here: a
+  // reader never delegates the bag onward, and the grant waits for its owner's wear, unnamed and unflagged.
+  const namedOwner = (bag: string): number | null | undefined => {
+    const pet = rows.find((r) => shareRowBag(r) === bag && typeof r.owner === "string" && r.owner !== "")?.owner;
+    if (pet === undefined) return undefined;
+    const named = deps.faces.filter((f) => f.petname === pet);
+    return named.length === 1 ? named[0]!.handleIndex : null;
+  };
   const ownerOf = (bag: string): number | null => {
-    for (const face of deps.faces) if (rowIn(halves.get(face.handleIndex)?.doc(), bag) !== undefined) return face.handleIndex;
+    const named = namedOwner(bag);
+    for (const face of deps.faces) {
+      if (rowIn(halves.get(face.handleIndex)?.doc(), bag) === undefined) continue;
+      if (named !== undefined && named !== face.handleIndex) continue;
+      return face.handleIndex;
+    }
     return null;
   };
   const grants = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
   const t0 = Date.now();
   deps.log?.(`[share-apply] ${rows.length} row(s), ${deps.faces.filter((f) => f.group).length} lit face(s), ${grants.length} grant(s) owed`);
-  let granted = 0, pending = 0, carried = 0;
+  let granted = 0, pending = 0, carried = 0, moved = 0;
   for (const g of grants) {
     const tg = Date.now();
     const flag = sharePendingTitle(g, deps.salt);
+    const waited = deps.flag.has ? await deps.flag.has(flag).catch(() => false) : false;
     const owner = deps.faces.find((f) => f.handleIndex === g.owner), grantee = deps.faces.find((f) => f.handleIndex === g.grantee);
     const ownerHalf = halves.get(g.owner), granteeHalf = halves.get(g.grantee);
     // The owner's half names the row (`ownerOf` read it there), so it opens here; a lit grantee's half opens only where the
@@ -155,16 +182,20 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     // over the wiki's own recipe row beside its canon's, so the grantee mounts the wiki and never only holds its bag.
     const titles = [g.bag, ...rows.filter((r) => r.kind === "wiki" && shareRowBag(r) === g.bag).map((r) => recipeUri("catalog", r.slug))];
     const owned = titles.map((title) => ({ title, row: plainRecordOrNull(rowIn(ownerHalf.doc(), title) as never) })).filter((t) => t.row !== null);
+    let wrote = false;
     if (granteeHalf) {
       const owed = owned.filter((t) => rowIn(granteeHalf.doc(), t.title) === undefined);
-      if (owed.length > 0) granteeHalf.change((d) => { for (const t of owed) d.tiddlers[t.title] = storedRecord(t.row!) as never; });
+      if (owed.length > 0) { granteeHalf.change((d) => { for (const t of owed) d.tiddlers[t.title] = storedRecord(t.row!) as never; }); wrote = true; }
     }
     try {
-      await deps.grant({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group });
+      const delegated = await deps.grant({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group });
+      const fresh = !(delegated && delegated.fresh === false);
       // THE ROWS CARRY where the grantee's half stays shut to this island: its own wear lifts them (above).
       if (!granteeHalf && owned.length > 0) { for (const t of owned) await deps.carry!.put(grantee.group, t.title, storedRecord(t.row!) as never); carried++; }
       await deps.flag.clear(flag);
       granted++;
+      // WHAT MOVED: a delegation the roster did not hold, a row this landing wrote, or a grant that had waited behind its flag.
+      if (fresh || wrote || waited) moved++;
       deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} landed in ${Date.now() - tg}ms`);
     } catch { await deps.flag.set(flag); pending++; deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} waits (${Date.now() - tg}ms)`); }
   }
@@ -197,5 +228,5 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   for (const row of rows) for (const name of resolveShare({ bag: shareRowBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
   deps.log?.(`[share-apply] done in ${Date.now() - t0}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
   const unowned = rows.filter((row) => !isHouseCanonBag(shareRowBag(row)) && ownerOf(shareRowBag(row)) === null).map((row) => row.slug).sort();
-  return { granted, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned };
+  return { granted, moved, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned };
 }

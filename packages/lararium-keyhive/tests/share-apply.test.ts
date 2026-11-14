@@ -156,4 +156,46 @@ describe("the share config lands", () => {
     expect(r.grants.some((g) => g["bag"] === SDM)).toBe(false);
     expect(out.waiting).toEqual(["nobody"]);
   });
+
+  test("RED SA7 — a landing counts what MOVED: the first landing of a grant moves it, and a replay over a roster that already holds it moves nothing (a walked seed printed `landed 2 grant(s)` at every seed); CONTROL: the replay still answers the grant as granted, and a flag that stood counts as a move when its face lights", async () => {
+    const ownerHalf = half({ [NOTES]: "automerge:notesDoc" });
+    const granteeHalf = half();
+    const roster = new Set<string>();
+    const flags = new Set<string>();
+    const rows: ShareRow[] = [{ slug: "notes", kind: "bag", read: "reader", write: "" }];
+    const run = (granteeLit = true) => applyShares({
+      rows: async () => rows, salt: "salt",
+      faces: [{ handleIndex: 0, petname: "owner", group: "g0", catalog: async () => ownerHalf }, { handleIndex: 1, petname: "reader", group: granteeLit ? "g1" : null, catalog: async () => (granteeLit ? granteeHalf : null) }],
+      // The owner's hive answers whether the delegation stood already (the roster's own read).
+      grant: async (g) => { const key = `${g.bag}\n${g.granteeGroup}\n${g.access}`; const fresh = !roster.has(key); roster.add(key); return { fresh }; },
+      flag: { set: async (t) => { flags.add(t); }, clear: async (t) => { flags.delete(t); }, has: async (t) => flags.has(t) },
+    });
+    expect(await run()).toMatchObject({ granted: 1, moved: 1 });
+    expect(await run(), "a replay grants again by reference and moves nothing").toMatchObject({ granted: 1, moved: 0 });
+    // CONTROL: a grant that waited behind a flag counts as a move at the light that lands it, though the roster held it.
+    expect(await run(false)).toMatchObject({ granted: 0, pending: 1, moved: 0 });
+    expect(await run()).toMatchObject({ granted: 1, pending: 0, moved: 1 });
+  });
+
+  test("RED SA8 — a face the row names as a reader never acts as the bag's owner: under the grantee's own wear its half names the bag by reference, the row names another face as owner, and the landing owes nothing (a walked hearth logged `grant notes h2 -> h0`); CONTROL: under the owner's wear the grant lands", async () => {
+    const ownerHalf = half({ [NOTES]: "automerge:notesDoc" });
+    const granteeHalf = half({ [NOTES]: "automerge:notesDoc" });
+    const grants: Array<[number, number]> = [];
+    const rows: ShareRow[] = [{ slug: "notes", kind: "wiki", read: "reader other", write: "", owner: "owner" }];
+    const run = (worn: 0 | 1) => applyShares({
+      rows: async () => rows, salt: "salt",
+      carry: { put: async () => {}, list: async () => [], clear: async () => {} },
+      faces: [
+        { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => (worn === 0 ? ownerHalf : null) },
+        { handleIndex: 1, petname: "reader", group: "g1", catalog: async () => (worn === 1 ? granteeHalf : null) },
+        { handleIndex: 2, petname: "other", group: "g2", catalog: async () => null },
+      ],
+      grant: async (g) => { grants.push([g.owner, g.grantee]); return { fresh: true }; },
+      flag: { set: async () => {}, clear: async () => {} },
+    });
+    expect(await run(1)).toMatchObject({ granted: 0, pending: 0, moved: 0 });
+    expect(grants, "the reader delegates nothing, to the owner or to another reader").toEqual([]);
+    expect(await run(0)).toMatchObject({ granted: 2 });
+    expect(grants).toEqual([[0, 1], [0, 2]]);
+  });
 });

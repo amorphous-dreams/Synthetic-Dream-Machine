@@ -1624,6 +1624,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           flag: {
             set: async (title) => { if (!(await control.get(title))) await control.put(mutableLarRecord(title, { text: "owed" }, "share-apply"), ORIGIN); },
             clear: async (title) => { if (await control.get(title)) await control.remove(title, ORIGIN); },
+            has: async (title) => Boolean(await control.get(title)),
           },
           // THE WORKBENCH'S OWNER, read off the vessel's ledger: the lit face whose own derived realm binds the slug.
           workbenchOwner: async (slug) => {
@@ -1654,7 +1655,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             }
             // THE REST GATE, said at the door: a workbench of the wiki this vessel mounts rests sealed under its owner's key.
             const restsUnderOwner = daemonAuth.registerBags.includes(wikiSlotUri(row.slug, "working"));
-            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
+            return { slug: landed.slug, realmId: landed.realmId, founded: landed.founded, members: landed.members, seated: landed.seated, removed: landed.removed, ...(restsUnderOwner ? { restsUnderOwner: true } : {}) };
           },
           grant: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
@@ -1662,8 +1663,12 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
             if (!owner.docIdOfBag(g.bag)) await owner.registerBag(g.bag);
             const { id } = await owner.receiveContactCard(await grantee.contactCard());
             // A writer takes the hand the house grants a face over a bag it writes (Keyhive's `admin`, `FACE_SEATS_AND_UNSEATS`).
-            await owner.delegate({ audience: id, bagUrl: g.bag, access: g.access === "edit" ? "admin" : "read" });
+            const access = g.access === "edit" ? "admin" : "read";
+            // THE ROSTER'S OWN READ: a delegation the owner's hive already holds delegates again by reference and moves nothing.
+            const held = (await owner.verify({ bagUrl: g.bag, presenter: id, access }).catch(() => ({ ok: false }))).ok;
+            await owner.delegate({ audience: id, bagUrl: g.bag, access });
             await grantee.ingestPeerEvents(await owner.eventsForPeer(id));
+            return { fresh: !held };
           },
         });
         return { ok: true, ...applied, waiting: [...applied.waiting], workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };

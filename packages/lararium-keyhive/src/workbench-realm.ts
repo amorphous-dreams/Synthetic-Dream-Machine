@@ -248,6 +248,8 @@ export interface LandWorkbenchPorts {
 export interface LandedWorkbench {
   readonly slug: string; readonly realmId: string; readonly docUrl: AutomergeUrl;
   readonly founded: boolean; readonly members: number;
+  /** How many members this landing seated that the roster did not already hold: a replay seats none. */
+  readonly seated: number;
   /** The faces a row stopped naming, whose seats this landing revoked. */
   readonly removed: readonly string[];
 }
@@ -270,10 +272,11 @@ export async function landWorkbench(
     await removeWorkbenchFace(ports.provider, keyDoc, agentHex);
     removed.push(face);
   }
+  let seated = 0;
   for (const m of members) {
-    if (!(await workbenchFaceHolds(ports.provider, row.slug, m.agentHex, m.access))) await admitWorkbenchFace(ports.provider, row.slug, m.agentHex, m.access);
+    if (!(await workbenchFaceHolds(ports.provider, row.slug, m.agentHex, m.access))) { await admitWorkbenchFace(ports.provider, row.slug, m.agentHex, m.access); seated++; }
   }
   const candidates = new Map<string, string>([[ports.ownerFace, await ports.provider.whoami()], ...members.map((m) => [m.face, m.agentHex] as [string, string])]);
   await projectWorkbenchRoster(ports.provider, ports.ledger, realmId, row.slug, candidates);
-  return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, removed: removed.sort() };
+  return { slug: row.slug, realmId, docUrl: realmWorkbenchDocUrl(realmId, row.slug), founded, members: members.length, seated, removed: removed.sort() };
 }
