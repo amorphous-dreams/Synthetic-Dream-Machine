@@ -256,6 +256,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
       try {
         const landed = await landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces());
         if (landed !== null && Number(landed["granted"] ?? 0) > 0) console.log(`shares: ${Number(landed["granted"])} grant(s) landed for the faces now open`);
+        if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
       } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
     }
     return ok ? 0 : 1;

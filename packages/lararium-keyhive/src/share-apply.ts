@@ -7,6 +7,12 @@
  * grantee stands shut waits behind an opaque flag in the control document (`sharePendingTitle`: no face, no bag, no access),
  * and the next light that runs this lands it and clears the flag. A name no face carries waits, named, in the answer.
  *
+ * A FACE'S CATALOG HALF OPENS ONLY WHILE THAT FACE STANDS WORN: it rests sealed under the face's own content key, and the
+ * island's one holder carries the worn face's. So a lit grantee that stands beside the worn owner takes its grant in two
+ * acts, each by an event and none by a clock: the owner's hive delegates NOW and the row CARRIES in the control document
+ * (`carry`, a vessel-held row no face reads); the grantee's own wear LIFTS the carried row into its own half and the carry
+ * leaves. The landing never asks for a half it cannot open.
+ *
  * A WIKI'S ROW ALSO SEATS ITS WORKBENCH (cabal-realm#/the-workbench): beside the canon's grants, the owner face stands the
  * wiki's realm (founded at the wiki's first stand, else now) and seats every lit face the row names in its Document, revoking
  * each face the row stopped naming (`workbench`, the composer's port over `landWorkbench`). A named face that stands shut seats
@@ -15,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  isHouseCanonBag, owedGrants, ownEntry, plainRecordOrNull, resolveShare, sharePendingTitle, shareRowBag, storedRecord,
+  isHouseCanonBag, owedGrants, ownEntry, plainRecordOrNull, recipeUri, resolveShare, sharePendingTitle, shareRowBag, storedRecord,
   type LarDoc, type OwedGrant, type ShareFace, type ShareRow, type StoredLarRecord,
 } from "@lararium/mesh";
 
@@ -29,6 +35,17 @@ export interface ShareLitFace extends ShareFace {
 export interface ShareApplyDeps {
   readonly rows: () => Promise<readonly ShareRow[]>;
   readonly faces: readonly ShareLitFace[];
+  /**
+   * The rows that wait for a face's wear, in the control document: `put` keeps one catalog row for (grantee group, row title:
+   * a bag's row, or a shared wiki's recipe row), `list` reads
+   * a group's, `clear` drops one. Absent: a grantee whose half does not open here waits behind its flag (a composer with no
+   * control document).
+   */
+  readonly carry?: {
+    put(granteeGroup: string, bag: string, row: StoredLarRecord): Promise<void>;
+    list(granteeGroup: string): Promise<ReadonlyArray<{ readonly bag: string; readonly row: StoredLarRecord }>>;
+    clear(granteeGroup: string, bag: string): Promise<void>;
+  };
   /** Delegate `bag` from the owner face's hive to the grantee's (both lit). */
   readonly grant: (g: OwedGrant & { readonly ownerGroup: string; readonly granteeGroup: string }) => Promise<void>;
   readonly flag: { set(title: string): Promise<void>; clear(title: string): Promise<void> };
@@ -53,10 +70,36 @@ export interface ShareApplied {
   readonly granted: number;
   /** How many grants wait behind a shut face (a count; the flags name nothing). */
   readonly pending: number;
+  /** Of the granted, how many rows carry in the control document until their grantee stands worn (its half opens then). */
+  readonly carried: number;
+  /** How many carried rows this landing lifted into a half that opens here (the worn face's). */
+  readonly lifted: number;
   /** Each pet-name a row names that no face here carries. */
   readonly waiting: readonly string[];
   /** Each wiki row's workbench the landing reached. */
   readonly workbenches: readonly ShareWorkbenchLanded[];
+}
+
+/**
+ * THE WEAR LIFTS WHAT CARRIED: each row the control document carries for `group` lands in that face's own catalog half (by
+ * reference: the row names the owner's ONE document) and the carry leaves. The face's stand runs it once its half opens, and
+ * every share landing runs it for the half it holds open. A row the half already names writes nothing; a replay lifts none.
+ * Answers how many carries left.
+ */
+export async function liftCarriedShares(input: {
+  readonly group: string; readonly handleIndex?: number;
+  readonly half: { doc(): LarDoc | undefined; change(fn: (d: LarDoc) => void): void };
+  readonly carry: NonNullable<ShareApplyDeps["carry"]>;
+  readonly log?: (line: string) => void;
+}): Promise<number> {
+  let lifted = 0;
+  for (const waitingRow of await input.carry.list(input.group)) {
+    if (ownEntry(input.half.doc()?.tiddlers, waitingRow.bag) === undefined) input.half.change((d) => { d.tiddlers[waitingRow.bag] = storedRecord(waitingRow.row as never) as never; });
+    await input.carry.clear(input.group, waitingRow.bag);
+    lifted++;
+    input.log?.(`[share-apply] a carried row landed in ${input.handleIndex === undefined ? "the worn face" : `h${input.handleIndex}`}'s catalog half`);
+  }
+  return lifted;
 }
 
 export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
@@ -65,9 +108,15 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   for (const face of deps.faces) {
     const tc = Date.now();
     halves.set(face.handleIndex, await face.catalog().catch(() => null));
-    if (face.group) deps.log?.(`[share-apply] h${face.handleIndex}'s catalog half ${halves.get(face.handleIndex) ? "read" : "unreached"} in ${Date.now() - tc}ms`);
+    if (face.group) deps.log?.(`[share-apply] h${face.handleIndex}'s catalog half ${halves.get(face.handleIndex) ? "read" : "opens at that face's own wear"} (${Date.now() - tc}ms)`);
   }
   const rowIn = (doc: LarDoc | undefined, bag: string): StoredLarRecord | undefined => ownEntry(doc?.tiddlers, bag) as StoredLarRecord | undefined;
+  // THE WEAR LIFTS WHAT CARRIED, here as at the worn face's own stand (`liftCarriedShares`).
+  let lifted = 0;
+  for (const face of deps.faces) {
+    const own = halves.get(face.handleIndex);
+    if (face.group && own && deps.carry) lifted += await liftCarriedShares({ group: face.group, handleIndex: face.handleIndex, half: own, carry: deps.carry, ...(deps.log ? { log: deps.log } : {}) });
+  }
   const ownerOf = (bag: string): number | null => {
     for (const face of deps.faces) if (rowIn(halves.get(face.handleIndex)?.doc(), bag) !== undefined) return face.handleIndex;
     return null;
@@ -75,18 +124,27 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   const grants = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
   const t0 = Date.now();
   deps.log?.(`[share-apply] ${rows.length} row(s), ${deps.faces.filter((f) => f.group).length} lit face(s), ${grants.length} grant(s) owed`);
-  let granted = 0, pending = 0;
+  let granted = 0, pending = 0, carried = 0;
   for (const g of grants) {
     const tg = Date.now();
     const flag = sharePendingTitle(g, deps.salt);
     const owner = deps.faces.find((f) => f.handleIndex === g.owner), grantee = deps.faces.find((f) => f.handleIndex === g.grantee);
     const ownerHalf = halves.get(g.owner), granteeHalf = halves.get(g.grantee);
-    if (!owner?.group || !grantee?.group || !ownerHalf || !granteeHalf) { await deps.flag.set(flag); pending++; continue; }
-    // BY REFERENCE: the grantee's catalog half names the owner's ONE document; nothing copies its content.
-    const row = plainRecordOrNull(rowIn(ownerHalf.doc(), g.bag) as never);
-    if (row !== null && rowIn(granteeHalf.doc(), g.bag) === undefined) granteeHalf.change((d) => { d.tiddlers[g.bag] = storedRecord(row) as never; });
+    // The owner's half names the row (`ownerOf` read it there), so it opens here; a lit grantee's half opens only where the
+    // grantee stands worn, and with no carry to hold its row the grant waits as a shut face's does.
+    if (!owner?.group || !grantee?.group || !ownerHalf || (!granteeHalf && !deps.carry)) { await deps.flag.set(flag); pending++; continue; }
+    // BY REFERENCE: the grantee's catalog half names the owner's ONE document; nothing copies its content. A WIKI row hands
+    // over the wiki's own recipe row beside its canon's, so the grantee mounts the wiki and never only holds its bag.
+    const titles = [g.bag, ...rows.filter((r) => r.kind === "wiki" && shareRowBag(r) === g.bag).map((r) => recipeUri("catalog", r.slug))];
+    const owned = titles.map((title) => ({ title, row: plainRecordOrNull(rowIn(ownerHalf.doc(), title) as never) })).filter((t) => t.row !== null);
+    if (granteeHalf) {
+      const owed = owned.filter((t) => rowIn(granteeHalf.doc(), t.title) === undefined);
+      if (owed.length > 0) granteeHalf.change((d) => { for (const t of owed) d.tiddlers[t.title] = storedRecord(t.row!) as never; });
+    }
     try {
       await deps.grant({ ...g, ownerGroup: owner.group, granteeGroup: grantee.group });
+      // THE ROWS CARRY where the grantee's half stays shut to this island: its own wear lifts them (above).
+      if (!granteeHalf && owned.length > 0) { for (const t of owned) await deps.carry!.put(grantee.group, t.title, storedRecord(t.row!) as never); carried++; }
       await deps.flag.clear(flag);
       granted++;
       deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} landed in ${Date.now() - tg}ms`);
@@ -116,6 +174,6 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   }
   const waiting = new Set<string>();
   for (const row of rows) for (const name of resolveShare({ bag: shareRowBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
-  deps.log?.(`[share-apply] done in ${Date.now() - t0}ms: ${granted} granted, ${pending} pending, ${workbenches.length} workbench(es)`);
-  return { granted, pending, waiting: [...waiting].sort(), workbenches };
+  deps.log?.(`[share-apply] done in ${Date.now() - t0}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
+  return { granted, pending, carried, lifted, waiting: [...waiting].sort(), workbenches };
 }

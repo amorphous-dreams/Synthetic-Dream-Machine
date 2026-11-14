@@ -34,6 +34,23 @@ import { isFacePrivateSlug, WORKSPACE_NAME_RE } from "./workbench.js";
 export const SHARE_CONFIG_PREFIX = "$:/config/lares/share/";
 /** The prefix of the control document's opaque flags: a grant owed behind a shut owner, naming no face. */
 export const SHARE_PENDING_PREFIX = "$:/config/lares/share-pending/";
+/**
+ * The prefix of the control document's CARRIED rows: a granted bag's catalog row, kept for a lit grantee until that face
+ * stands worn and its own catalog half opens (`shareCarryTitle`). The control document rests under the vessel's key and no
+ * face reads it, so the row names its grantee's group and its bag.
+ */
+export const SHARE_CARRY_PREFIX = "$:/config/lares/share-carry/";
+/** The title one carried row rests under: the grantee's group, then the bag. */
+export function shareCarryTitle(granteeGroup: string, bag: string): string {
+  return `${SHARE_CARRY_PREFIX}${encodeURIComponent(granteeGroup)}/${encodeURIComponent(bag)}`;
+}
+/** The group and bag a carried row's title names, or null where the title names none. */
+export function shareCarryOf(title: string): { readonly group: string; readonly bag: string } | null {
+  if (!title.startsWith(SHARE_CARRY_PREFIX)) return null;
+  const [group, bag, ...more] = title.slice(SHARE_CARRY_PREFIX.length).split("/");
+  if (!group || !bag || more.length > 0) return null;
+  try { return { group: decodeURIComponent(group), bag: decodeURIComponent(bag) }; } catch { return null; }
+}
 /** The file each row writes through to, under `$LAR_ROOT/config`. */
 export const SHARE_CONFIG_FILE = "share.tid";
 

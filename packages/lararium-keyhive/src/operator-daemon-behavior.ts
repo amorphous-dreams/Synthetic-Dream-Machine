@@ -32,10 +32,10 @@ import {
   makeShareSetReactor, makeShareListReactor, readShareRows,
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
 } from "@lararium/tw5";
-import { applyShares } from "./share-apply.js";
+import { applyShares, liftCarriedShares } from "./share-apply.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, type LedgerDoc } from "./workbench-realm.js";
-import { workbenchKeyDocs, bagUri as meshBagUri } from "@lararium/mesh";
-import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, faceCatalogDocUrl, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
+import { workbenchKeyDocs, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText } from "@lararium/mesh";
+import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
 import type { IslandMsg_Manifest, JoinedFaceAuth } from "@lararium/mesh";
 import { boardDyadReader, intentDoorStandings } from "./board-dyad-reader.js";
@@ -321,6 +321,16 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       litInputs.set(key, faceInputsDigest(face));
       // THE LIT SET: the sibling joins the faces a face-named wave may name, under its own handle index and relation.
       litSiblings.set(key, face);
+      // A LIT SIBLING HANDS THE WORN FACE WHAT IT DELEGATED TO IT (sealed-store#/the-share-config): a share the sibling
+      // landed while IT stood worn seated this face on a bag and on a wiki's realm, and those cap events rest in the
+      // sibling's hive. The worn hive ingests them at the sibling's light, so its seat reads on its own replica.
+      const worn = daemonAuth.atom ? providers.get(bareKey(daemonAuth.atom.key))?.provider : undefined;
+      if (worn && worn !== joined.keyhive) {
+        try {
+          const { id } = await joined.keyhive.receiveContactCard(await worn.contactCard());
+          await worn.ingestPeerEvents(await joined.keyhive.eventsForPeer(id));
+        } catch (error) { console.warn(`[daemon] face ${key.slice(0, 12)}… handed the worn face no cap events: ${error instanceof Error ? error.message : String(error)}`); }
+      }
     } catch (error) {
       await joined.keyhive.dispose();
       throw error;
@@ -1502,15 +1512,50 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         for (const face of providers.values()) if (face.group === group) return face.provider;
         return null;
       };
+      // THE CARRIED ROWS of a share (`applyShares`): a granted bag's catalog row rests in the control document, under the
+      // vessel's key, until its grantee stands worn and its own catalog half opens.
+      const SHARE_ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
+      const shareCarryOver = (control: ReturnType<typeof controlOf>): NonNullable<Parameters<typeof applyShares>[0]["carry"]> => ({
+        put: async (group, bag, row) => {
+          const title = shareCarryTitle(group, bag);
+          const text = JSON.stringify(row);
+          if (tiddlerText(await control.get(title)) !== text) await control.put(mutableLarRecord(title, { text }, "share-apply"), SHARE_ORIGIN);
+        },
+        list: async (group) => {
+          const out: Array<{ bag: string; row: never }> = [];
+          for (const title of await control.listVisible()) {
+            const named = shareCarryOf(title);
+            if (named === null || named.group !== group) continue;
+            try { out.push({ bag: named.bag, row: JSON.parse(tiddlerText(await control.get(title)) ?? "null") as never }); } catch { /* a torn row carries nothing */ }
+          }
+          return out.filter((c) => c.row !== null);
+        },
+        clear: async (group, bag) => { const title = shareCarryTitle(group, bag); if (await control.get(title)) await control.remove(title, SHARE_ORIGIN); },
+      });
+      // THE WEAR LIFTS WHAT CARRIED: this island stands for the worn face, whose own catalog half opens here, so each row a
+      // sibling's share carried for it lands now, by the stand itself and by no later hand.
+      if (daemonAuth.personaGroupId && ctx.faceCatalogUrl) {
+        const group = daemonAuth.personaGroupId, catalogUrl = ctx.faceCatalogUrl;
+        void (async () => {
+          const carry = shareCarryOver(controlOf(ctx));
+          if ((await carry.list(group)).length === 0) return;
+          const half = await findOrThrow(ctx.repo, catalogUrl, "the worn face's catalog half", { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never;
+          const lifted = await liftCarriedShares({ group, ...(typeof daemonAuth.handleIndex === "number" ? { handleIndex: daemonAuth.handleIndex } : {}), half, carry, log: (line) => console.log(line) });
+          if (lifted > 0) console.log(`[share-apply] the wear lifted ${lifted} granted bag(s) into this face's catalog`);
+        })().catch((e: unknown) => console.warn(`[share-apply] the carried rows stay in the control document until the next landing: ${e instanceof Error ? e.message : String(e)}`));
+      }
       // The operator's hand names each face's handle index and pet-name (the CLI reads them off custody); the island adds what
       // it holds lit: each lit face's group and its own catalog half (the worn face's, and each sibling's by its own secret).
       registry.register("share-apply", async (args) => {
         const named = Array.isArray(args["faces"]) ? (args["faces"] as Array<Record<string, unknown>>) : [];
+        // A FACE'S CATALOG HALF OPENS ONLY WHILE THAT FACE STANDS WORN (it rests sealed under the face's own content key, and
+        // this island's holder carries the worn face's): the worn face names its half, a lit sibling names none, and the
+        // landing carries a sibling's row in the control document until that sibling's own wear lifts it (`applyShares`).
         const litByIndex = new Map<number, { group: string; catalogUrl: string | null }>();
         if (typeof daemonAuth.handleIndex === "number" && daemonAuth.personaGroupId) litByIndex.set(daemonAuth.handleIndex, { group: daemonAuth.personaGroupId, catalogUrl: ctx.faceCatalogUrl ?? null });
         for (const entry of litSiblings.values()) {
           if (typeof entry.handleIndex !== "number") continue;
-          litByIndex.set(entry.handleIndex, { group: entry.personaGroupId, catalogUrl: entry.faceAddressSecret ? faceCatalogDocUrl(meshHexToBytes(entry.faceAddressSecret)) : null });
+          litByIndex.set(entry.handleIndex, { group: entry.personaGroupId, catalogUrl: null });
         }
         const faces = named.filter((f) => typeof f["handleIndex"] === "number").map((f) => {
           const handleIndex = f["handleIndex"] as number;
@@ -1526,6 +1571,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           rows: () => readShareRows(control), faces,
           salt: daemonAuth.placeVerifyingKey,
           log: (line) => console.log(line),
+          carry: shareCarryOver(control),
           flag: {
             set: async (title) => { if (!(await control.get(title))) await control.put(mutableLarRecord(title, { text: "owed" }, "share-apply"), ORIGIN); },
             clear: async (title) => { if (await control.get(title)) await control.remove(title, ORIGIN); },
