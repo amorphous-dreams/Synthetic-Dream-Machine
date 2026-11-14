@@ -1,0 +1,500 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+cacheable = true
+l-space   = "adjacent"
+role      = "wiki-surface-scout: one surface for everything TiddlyWiki does with any tiddler in any wiki a face reaches, with the meme family's laws layered above it, isomorphic across the MCP seat, the CLI, the console door and the page; the measured ground, the Mu sort of every standing verb, the prior art, the principles and anti-patterns, four candidate shapes, the stories, a lean and the open rows"
+status    = "draft"
+title     = "lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/wiki-surface-scout"
+written   = "2026-11-14"
+```
+
+<<~ kanawai uri=`lar:///ha.ka.ba/lares/ref/RFC-2119`>>
+
+<<~ ahu slot=`#/head`>>
+
+! The wiki surface ~ every TiddlyWiki power on every door, the meme laws above it
+
+''Register: Scout.'' A tasked spirit (Surface-Scout) read the checkout at `feature/green-jello-dinosaur-5` (head `e56ace6e1`, a dirty tree it never touched) and the open web, and holds three marks apart everywhere: ''[measured]'' (read in the repo, with a file and line), ''[cited]'' (read off a source page, with its URL), ''[inferred]'' (the spirit's own reading, never executed). Nothing here rules; the operator rules, and `#/a-lean` stays overrulable.
+
+''The asks, verbatim.''
+
+* Operator, 2026-10-31 (road row `L17`): //"The MCP server should also have full TW5 caps on any wiki loaded."//
+* Operator, 2026-11-14: //"'Meme' serves as a specification name for a 'family of tiddlers, DAG style almost?'. So we need to widen that UX surface past memes to all things TW5 can do + memes (memetic-wikitext 'is' a true superset of Tiddlywiki wikitext). That might mean wrapping or exposing the wiki-vm (& page mirrors) api objects, etc. This shall need deep 'prior art/golden principles/best practices/anti patterns to avoid/pattern integrity rhymes to adopt' research (recorded as a meme)."// Also: //"full Tiddlywiki capabilities exposed on all UX"//, made a priority leap lane.
+* Operator, 2026-11-14: //"Mu all meme verbs (some of those apply to tiddlers of all types)."//
+
+''The question.'' What shape lets ONE surface expose everything TiddlyWiki does with any tiddler in any wiki a face reaches, plus the meme family's own laws layered on top, isomorphically across the MCP seat, the `lares` CLI, the page's console door `lares(...)` and the page itself, without a second parser and without a road past the wards?
+
+''The short reading.'' The house already built most of that surface once, for the page, and named it the ''record port'' (`#/what-stands`). The lean (`#/a-lean`) carries the record port's asks out to the other three doors under the same lease, names its verbs `tiddler_*` and `wiki_*` rather than `meme_*`, and keeps a small meme door above it for the verbs the Mu sort finds meme-only.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/what-stands`>>
+
+!! What stands ~ the measured surface, 2026-11-14
+
+''The engine.'' [measured] Each wiki runs its own TiddlyWiki engine inside an island: a module Worker in the browser, a `worker_thread` on node, booted as a third runtime with `$tw.browser = $tw.node = null` (`packages/lararium-tw5/src/tw5-vm.ts`, `TW5Engine`; the boot and its gaps in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout`>>). `TW5Engine` hands out the whole `$tw` (`tw5-vm.ts`, `get $tw()`), `wiki`, `renderText`, `setTiddler`, `setShadowTiddlers` and `ingestCarrier`, but only to code already inside the island's thread. No thread outside the island holds a `$tw`; the main thread holds none by law (packages `AGENTS.md` §9, as the gaps scout cites it). Truth rests in the Automerge documents; `$tw.wiki` caches it, fed by the landing queue and drained back by the outbound bridge.
+
+''The in-VM face.'' [measured] `packages/lararium-tw5/src/modules/meme-face.ts` publishes `$tw.lares.meme.{place, read, list, remove, normalize, check, project, recompose, parse}` to wiki-side callers (a widget, an action, a button). `modules/lar-root-services.ts` answers the root `tm-*` family itself (rename, relink, home, modal, notify, scroll and focus hints) and asks the surface for host doors (clipboard, download, open-window, print) through `$tw.lares.serviceDoor`.
+
+''The record port ~ the waist the page already crosses.'' [measured] `packages/lararium-mesh/src/record-port.ts` and `packages/lararium-tw5/src/record-port-handler.ts`, under the contract <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>. One port binds one island's store at a width (`full`, `skinny`, `story`, `none`), hands a chunked snapshot at a stable base cursor, then changes after it; takes writes as one transaction per `txId` with per-family atomicity and a replaying ledger; and answers six asks (`record-port.ts:41`): `filter` (runs `$tw.wiki.filterTiddlers` and drops tier-local titles, `record-port-handler.ts:440-442`), `load` (titles at chosen fields, seq-guarded against races, `:443-461`), `render` (a camera mount into a recording document, answering `html`, `text`, `blocks` or `label-html` with a `renderCursor`, `:462-490`), `invoke` (fires a recorded affordance the last render offered, by `affordanceId` and `renderCursor`, never an action string, `:491-507`), `verb` (a registered ACTION verb under a lent `verbCap`, `:508-536`) and `cas` (public-tier blobs alone, re-hashed, `:537-563`). The vessel's pool holds the port lease and sends `port:lease{portId, grant}` with `{faceId, actor, edits, bags, admin, casTier, kahu}` ahead of each open, write and ask; a page can never forge one. The invoke gate (`record-port-invoke-gate.ts`) refuses by default (`no-authority`), then checks the proven face, then the cursor's freshness, immediately before the fire. Read scope stands ruled one island, one face (`port-one-island-one-face`); a per-bag read lend stays owed before an island serves a second authority. Who opens a port today: the page's mirrors alone (`makePortTransport`); no CLI or MCP road opens one.
+
+''The daemon verbs and the MCP seat.'' [measured] `packages/lararium-sensorium/scripts/lares_mcp.py` seats the tools `wiki` (switch, hold, release, active; `:969-985`), `meme_put`, `meme_get`, `meme_list`, `meme_delete`, `meme_project` (`:1013-1132`), `meme_offer`, `meme_offer_list`, `meme_offer_show`, and `kahua_propose`, `kahua_stage`, `kahua_list`, `kahua_get` (`:1181-1252`), beside the sensorium tools. Every one rides the daemon's socket (`uds.call`, `uds.session_act`); `VERB_SEATS` (`:166-222`) marks each HOTL or HITL. The meme verbs land in `packages/lararium-tw5/src/meme-verbs.ts`: `recipe:"default"` goes through the daemon's live `$tw.wiki`; a named `recipe` or `bag` goes to a STORE, never a wiki engine (`meme-verbs.ts:30-52`: //"WRITE-THEN-SYNC: the daemon never reaches into that wiki's mounted island"//). So no verb today runs a filter or a render in a named wiki's own engine; `meme_project` to `html`, `tid` or `json` refuses off the anchor (`meme-verbs.ts:668-670`). Daemon answers bound arrays to `AUDIT_ARRAY_CAP = 32` rows (`verb-vm.ts:53`) and page with `next`/`after`.
+
+''The CLI.'' [measured] `lares meme put|get|list|delete|normalize|check|sitting|project|promote|offer` (`packages/lares-cli/src/commands/meme.ts:133`, dispatch `:209-218`); `lares wiki list|which|resolve|init|open|sync|pin|unpin|add-bag|remove-bag|epoch|rotate-recipe|prune-stale` plus the switcher (`commands/wiki.ts:1-15`); `lares kahua mint|propose|stage|lift|withdraw|carry|list|get` (`commands/kahua.ts:127-152`); and, a name the lean must step around, `lares act ADD|COPY|MOVE|CLEAR|DROP|LOAD|CREATE|REPACK`, the residency verbs (`commands/act.ts:1-35`). The `wiki-act` daemon verb (`packages/lararium-node/src/open-node-vessel.ts:4081-4102`) already activates a named wiki on reference (`wikiActivation.ensureActive`) and places a verb in its island (`vmManager.placeWikiVerb`): a road into a named wiki's engine stands, for residency verbs alone.
+
+''The console door.'' [measured] Commits `eb1eb3508..873e055d0`; canon at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-console-door`>>. `lares("vessel", "read")` takes the CLI's own argv as separate strings and answers `{ok, data}` or `{ok: false, error}`; it holds no list of its own, reads two tables at call time (the page's: `vessel read`, `vessel reset`; the vessel worker's: `vessel read`, `vault status`), takes no secret as a word, and refuses any verb it cannot hold by name (`verb-not-held`, `host-shim-verb`, `hand-needed`). No tiddler verb rides it yet.
+
+''The fences `L17` names.'' [measured] Wikis-first writes (a seat's write lands the wiki's working layer); custody verbs keep their confirm door and face gate; `F11`'s seat profile refuses a `seat` session every hand-only row at the socket, advisory until the signed local channel lands (road `F11`, `stable-founding-road.mem:787`); the act ward on the daemon and kahua wikis runs an action string in a throwaway copy, judges the recorded diff against `codeClassOf`, control families and custody verbs, refuses any captured `tm-*` outside an allowlist that starts EMPTY, and applies a clean diff as itself, once (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage#/the-hearth-lane`>>, stage slices 2 to 4); a user's wiki runs actions live with full caps (road `#/rulings`, `stable-founding-road.mem:386`).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/tiddler-and-meme`>>
+
+!! Two layers ~ the tiddler and the meme family
+
+''The tiddler layer'' [cited, measured]: a record keyed by title, carrying string fields (`text`, `type`, `tags`, `list`, any other), resting in a bag, read through a recipe's cascade, shadowed by plugins. Every operation TiddlyWiki defines reads or writes this layer and asks nothing of a frame: get and put a record with its fields; delete it; run a filter (a small pipeline language over titles, https://tiddlywiki.com/static/Filter%20Syntax.html); render a tiddler or a wikitext span through the widget tree to HTML or text; list shadows and plugins; run an action string (the action widgets: setfield, createtiddler, deletetiddler, listops, sendmessage, navigate, confirm, https://tiddlywiki.com/static/ActionWidgets.html); dispatch a `tm-*` message that travels up a widget tree until a handler answers (https://tiddlywiki.com/static/Messages.html). A tiddler of the carrier type `text/memetic-wikitext+tiddlywiki` still answers all of these as a tiddler; memetic-wikitext reads as a superset of TW5 wikitext, so the engine renders a meme's body as wikitext with every `<<~ …>>` sigil an unbound macro call (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>).
+
+''The meme layer'' [measured]: a FAMILY of tiddlers under one `lar:` address, one root plus its `#/slot` fragments plus its `/path` children (`groupOfMeme`, `place-meme.ts:206-208`), the root of the carrier type with no `#` in its title and no `$fragment-parent` (`isMemeRoot`, `place-meme.ts:443-444`), joined by `$fragment-parent` edges into a tree, a DAG once `loulou` and `pranala` edges cross families. The operations that need the family:
+
+# ''Split and recompose.'' A whole carrier text arrives and lands as its records through the Confluence gate (`placeMeme`); the records recompose into one text (`expandMemeRefs`, `recomposeMeme`).
+# ''The frame.'' Doctype, SOH head, toml meta, STX..ETX body, the `ni:///` block check, the EOT throat: `normalize` and `check` read and mint it; the gate grades `torn`, `stale`, `head-unbound`, `bare` (`ingest-gate.ts:165-178`).
+# ''The family hash.'' The canonical hash of the recomposed render, the merge base every write hands back (`base`, `If-Match`).
+# ''Group acts.'' Remove a family whole; list roots with their slot trees; carry a family across bags by residency (`promote`).
+# ''Projection through the house templates'' (`mem`, `md`, `html`, `tid`, `json`), the `md` sidecar and its dialect weave.
+# ''Corpus readings'' over files: gradient, edges, sitting.
+# ''Stage laws'' keyed on title shape, such as the row-key law under `lar:///ha.ka.ba/kahua/memory/` (`place-meme.ts:264-300`), which bind a meme's meta field.
+
+''The line between them'' [inferred]: an operation belongs to the tiddler layer when its input and output name single records and fields; it belongs to the meme layer when it needs the frame, the block check, the family hash or the group law to mean anything. The meme layer composes tiddler operations and never replaces them: a meme put lands N tiddler puts and M tombstones in one family write.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/mu-the-meme-verbs`>>
+
+!! Mu the meme verbs ~ sorted by what the code touches
+
+''🜍 0, unask the question.'' The framing //"which TiddlyWiki powers should the meme verbs gain"// assumes the meme verbs stand at the base. Unasked: sort every standing verb by what its code touches, and let the sort decide which door each belongs at. Classes: ''(a)'' acts on any tiddler of any type; ''(b)'' needs a meme family to mean anything; ''(c)'' mixed, the meme-only part named; and two the brief did not name but the code shows: ''(w)'' acts on a whole wiki or container and on no tiddler's content, ''(v)'' acts on the vessel and touches no tiddler.
+
+!!! The meme verbs (CLI `lares meme`, MCP `meme_*`, daemon `meme-*`, in-VM `$tw.lares.meme`)
+
+| verb | class | what the code touches | where it requires meme structure or bends a plain tiddler |
+|---|---|---|---|
+| `put` / `meme_put` / `meme-put` | ''(c)'' | takes TEXT only, never fields; a framed text splits into the family; an unframed text lands as one record with `type: text/plain` and nothing else (`bareRecord`, `ingest-gate.ts:122-126`; graded `bare-data`, `:173-175`) | ''Meme-only part:'' the split, the grade, the family hash. ''Hazard on a plain tiddler'' [inferred from code, unexecuted]: the gate tombstones every title of the family that did not freshly land (`place-meme.ts:376-381`), and the family takes every `<uri>/` title (`:206-208`), so a bare put at `lar:///x` would tombstone a plain `lar:///x/y`. A plain tiddler's own `type`, `tags` and fields cannot ride this door at all. |
+| `get` / `meme_get` / `meme-get` | ''(c)'' | any record's text under the title answers (`heldText`, `place-meme.ts:232-234`); a carrier recomposes its family | ''Meme-only part:'' the recompose and the canonical hash. A plain tiddler answers its `text` alone; its fields never cross. |
+| `list` / `meme_list` / `meme-list` | ''(b)'' | lists ROOTS only | `isMemeRoot` gates every row (`place-meme.ts:506`, recipe stack `meme-verbs.ts:509`); the docstring says it plainly: //"A plain tiddler never lists"// (`lares_mcp.py:1084`). |
+| `delete` / `meme_delete` / `meme-delete` | ''(c)'' | tombstones the whole family (`removeMeme`, `place-meme.ts:424-434`) | ''Meme-only part:'' the family hash as base and the group sweep. On a plain tiddler the group law still sweeps every `<uri>/` title [inferred from code]. Deleting one plain record has no door of its own. |
+| `project` / `meme_project` / `meme-project` | ''(b)'' today, ''(c)'' by intent | renders through the house templates | refuses where no carrier root stands, at the anchor (`meme-project.ts:159`) and on the store path (`meme-verbs.ts:674`); `html`, `tid`, `json` off the anchor refuse (`:668-670`). Rendering a PLAIN tiddler to HTML stands as a pure tiddler act no door offers. |
+| `normalize` | ''(b)'' | the framing canonicalization over a file (`commands/meme.ts:467`) | a file law; LOCAL seat by law (`meme-api-surface#/skins`). |
+| `check` | ''(b)'' | shape, block check, gradient, edges over files (`commands/meme.ts:438`) | needs the frame. |
+| `sitting` | ''(b)'' | a corpus reading over carriers' addresses and edges (`commands/meme.ts:742`) | needs `uri-path` and `loulou` edges. |
+| `promote` | ''(c)'' | a residency move of the family into a canon bag with a durable receipt (`commands/meme-promote.ts:1-30`) | ''Meme-only part:'' the door refuses a file unless it reads framed and sealed (`meme-promote.ts:177-185`: //"a canon crossing takes only a head its seal names"//). The move itself, a bag change on the envelope, touches no byte and would carry any record. |
+| `offer` / `meme_offer` / `offer-make` | ''(a)'' | `offer-make {bag, titles}` signs any records from the face's view (`canon-offer-verbs.ts:122-137`) | meme-aware only in counting: a record rides with the root before its `#` (`offeredMemeRoot`, `canon-offer.ts:69-72`) under `CANON_OFFER_MAX_MEMES`. |
+| `offer list` / `offer show` / `offer-promote` | ''(a)'' | fold the offer table; show a field diff; the steward's promotion | records and fields; no frame read. |
+
+!!! The kahua verbs (CLI `lares kahua`, MCP `kahua_*`)
+
+| verb | class | what the code touches |
+|---|---|---|
+| `stage` / `kahua_stage` | ''(a)'' | `{title, text, fields}` into `bags/daemon-<F>`, row digest over body and fields (`lares_mcp.py:1203-1223`) |
+| `propose` / `kahua_propose` | ''(a)'' | `{title, revision, text\|digest, taint}` on the intents plane (`:1182-1200`) |
+| `list` / `get` / `kahua_list` / `kahua_get` | ''(a)'' | the verified stage's items with `cid`, `text`, `fields` |
+| `lift`, `withdraw`, `carry`, `mint` | ''(a)'' / ''(w)'' | a signed lift of one staged row by digest; `mint` founds the stage (container) |
+
+''🜁 ! on the stage row law'' (the one place the kahua path meets meme structure): `meme_put` into `lar:///ha.ka.ba/kahua/memory/…` refuses without a `row-key` in the toml meta (`place-meme.ts:288-300`); `kahua_stage` takes the key as a plain title. The law binds a TITLE SHAPE, which tiddler-level code can check; it reaches into the meme frame only because the meme door reads its key from meta. Sort: a tiddler law the meme door happens to enforce, ''(a)'' by nature.
+
+!!! Container, vessel and switcher verbs
+
+| verb | class | what the code touches |
+|---|---|---|
+| `lares wiki list\|which\|resolve\|init\|open\|sync\|pin\|unpin\|add-bag\|remove-bag\|epoch\|rotate-recipe\|prune-stale`, the switcher `switch\|hold\|release\|active`, MCP `wiki` | ''(w)'' | recipes, bag stacks, activation, pins; `sync` ingests memes (a (b) step inside a (w) verb) |
+| `lares act ADD\|COPY\|MOVE\|CLEAR\|DROP\|LOAD\|CREATE\|REPACK`, daemon `wiki-act` | ''(a)'' + ''(w)'' | residency of titles between bags; whole-bag clears |
+| console door `vessel read`, `vessel reset`, `vault status` | ''(v)'' | the place AID, standing, faces, custody at rest; no tiddler |
+
+!!! The controller's first pass, collided
+
+* ''Confirmed:'' offer and its sub-verbs (a); normalize, check, sitting (b); the kahua verbs (a).
+* ''Overturned:'' `list` reads (b), not (a): it refuses every plain tiddler by the root law. `put`, `get`, `delete` read (c), not (a): each answers a plain tiddler only by bending it (text only in, text only out, `text/plain` on landing, a group sweep by prefix). `promote` reads (c), not (a): its move would carry any record, but its door refuses anything unsealed. `project` reads (b) as built and (c) by intent.
+
+!!! The Five Tools on the two unclear rows
+
+* ''`put` on a plain tiddler.'' 🜂 * (match-many, the visible feed): every record put through it today reaches the store, so it looks tiddler-wide. 🜄 ? (macro, relation): its relation to a plain tiddler runs lossy, since fields vanish and `type` turns `text/plain`. 🜁 ! (micro, assert): the group sweep asserts a family where none exists, a confusion of identity with prefix. 🜃 _ (hidden, ground): the gate's contract speaks of carriers throughout; the bare leg exists so a person's bytes never vanish, a safety net, not a tiddler door. 🜍 0: unask "can put write tiddlers"; ask "which door owns a record with fields". Answer: a tiddler door, with `meme put` composing it.
+* ''`project` to `html`.'' 🜂 *: the html target renders through the engine, a pure TW5 act. 🜄 ?: its template reads the family (the house projection wraps a recomposed carrier). 🜁 !: it refuses a plain tiddler by name. 🜃 _: rendering any tiddler to html already exists as the port's `render` ask. 🜍 0: the plain render belongs to the tiddler door (`wiki_render`); `meme project` keeps the template targets that need the family.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/meme-aware-actions`>>
+
+!! Meme-aware actions ~ every act reaches any tiddler and knows where it stands
+
+''The ask'' (operator, 2026-11-14, verbatim): //"these actions need to get designed as 'meme aware'; example: a delete of a parent meme (deletes all children slots) vs a delete of that tiddler in memory (???) have vastly different consequences. Example fail-gracefully-on-a-gradient: Orphan meme slot children should get projected to disk as tiddlers & flag for the operator/user (both node/browser). We may find other examples of design gaps vs vessel caps."//
+
+''The principle this slot designs against.'' Every action reaches any tiddler, AND every action knows whether its target stands as a meme ROOT, a SLOT CHILD, a CARRIED FIELD, or a PLAIN tiddler, and names what follows before it acts. This overturns a thin tiddler door ignorant of memes: the tiddler door stays the base of `#/mu-the-meme-verbs`, but it reads family position on every call.
+
+!!! Three group laws stand today, and they disagree
+
+[measured] The code holds three different answers to "which records make one family":
+
+# ''The prefix law.'' Root, every `<root>#…`, every `<root>/…` title: `groupOfMeme` (`place-meme.ts:206-208`), used by `meme put` and `meme delete`; and its twin `groupOf` (`action-handler.ts:1922-1924`), used by residency MOVE.
+# ''The parent-edge law.'' Titles whose `$fragment-parent` names the parent: the island's delete cascade (`_removeSlotChildren`, `island-adaptor.ts:1705-1708`) and the disk projector's climb to the root (`disk-projector.ts:505-516`).
+# ''The reference law.'' The `kahea` references the root's text holds: the island's orphan reckoning on a save (`_buildFamily`, `island-adaptor.ts:1853-1873`) and the recompose (`expandRefs`; a missing child keeps its marker as //"honest residue, never invented bytes"//, `deserializer.ts:976`).
+
+[inferred] A `/path` child carries no `$fragment-parent`, so laws 1 and 2 part on it: `meme delete` sweeps `<root>/x`, an engine delete of the root does not. A renamed root keeps law 3 (its text still names the old child titles) while losing laws 1 and 2. A surface that names a consequence first needs ONE family law; the lean takes law 2 plus law 3 (edges the records carry), and reads law 1 as a heuristic only for `/path` children, which stand as their own memes.
+
+!!! What the code does today, act by act
+
+| act | today | orphan? | mark |
+|---|---|---|---|
+| `meme delete` of a root | tombstones every prefix title in one pass (`place-meme.ts:424-434`); the anchor's sink lands each tombstone | none within the prefix; a plain `<root>/x` swept too | measured |
+| engine delete of a root (`tm-delete-tiddler`, a page edit's delete, `$tw.wiki.deleteTiddler`) | the adaptor tombstones the root in its bag, then deletes each `$fragment-parent` child in the ENGINE (`island-adaptor.ts:1583-1592`); each child's delete raises its own change and flushes as its own tombstone | a window where the root stands tombstoned and children live: separate writes, never one family change [inferred from the code path]; `/path` children untouched | measured + inferred |
+| engine delete of one slot child | a plain tombstone in the layer `_tombstoneBag` picks (`island-adaptor.ts:1165-1170`); the root's text keeps its `kahea` reference | the root carries a dangling reference; the recompose keeps the marker (`deserializer.ts:976`); the next save of the root reckons the child gone | measured |
+| save of a root that drops a slot | the family lands as ONE `writeFamily` change; dropped children tombstone with it, a child in another layer rides as a `stray` in its own call (`island-adaptor.ts:1810-1875`) | strays land as separate writes | measured |
+| rename of a root (`tm-rename-tiddler`) | stock's `renameTiddler` over one title (`modules/lar-root-services.ts:133-143`) | children keep the old `$fragment-parent` and the old prefix; the new root's text still references them by their old titles [inferred] | inferred |
+| residency MOVE or COPY of one slot by title | `groupOf(live, "<root>#/a")` collects that slot and its descendants and moves them alone (`action-handler.ts:1977-1978`); no refusal for a slot as the subject | the slot lands rootless in the destination; the source root's reference dangles [inferred from code] | inferred |
+| a write to one slot under a layered recipe (root in canon, slot overridden in working or personal) | a slot saved at its own address splits under its fragment and routes by the cascade to the working layer (`_buildFamily`, `island-adaptor.ts:1823-1830`); a delete there writes a kāpae tombstone in the working layer that shadows canon's slot (`_tombstoneBag`) | the family spans layers by design; a shadowed slot reads absent and the canon root keeps its reference | measured |
+| a filter-driven bulk act catching half a family | no bulk tiddler act exists on any outward door today; inside the wiki, an action string over a filter deletes each title as an engine delete (row 2) | children caught without their root become orphans; a root caught without its children cascades [inferred] | inferred |
+| offer of a slot without its root | `offer-make {titles}` signs any titles (`canon-offer-verbs.ts:122-137`); grouping by `#` only counts memes (`canon-offer.ts:69-72`) | a promoted offer could land a slot in canon with no root [inferred, unexecuted] | inferred |
+| promote of a slot | the CLI door takes a sealed `.mem` file and refuses an unsealed one (`meme-promote.ts:177-185`); a slot never arrives as a sealed file | refused at the door | measured |
+| a sync merge, root deleted on one peer, child edited on another | one Automerge document per bag holds the family; a root tombstone and a concurrent child edit both survive the merge [inferred from the CRDT model] | the child stands with a dead parent | inferred |
+| ingest or native-door landing of a child whose root stands absent | the native door lands a slot child as a plain tiddler, ungated (`meme-api-surface#/two-doors`); the backstop re-cuts a root it can find | lands as an orphan when no root stands [inferred] | inferred |
+| the disk mirror over a family whose root stands absent | the projector routes every child's change to its root, and a root absent from the view unlinks the root's file (`disk-projector.ts:770-773`); `mirroredRoots` skips every `#` title (`:1166-1172`) | ''orphan children stay in the store and the wiki, and vanish from disk with no flag'' | measured |
+
+''Where an orphan arises today:'' a root's engine delete (the window), a slot's MOVE or COPY by title, a root's rename, a sync merge, a native-door landing of a lone child, an offer of lone slots. ''What happens to it:'' silently KEPT in the store and the wiki, DROPPED from disk, flagged nowhere. The one alert rail that stands (`memeAlertTitle`, `$:/temp/lares/alert/meme-child-gate/<root>`, `place-meme.ts:77-122`) raises for a child that breaks its root's frame, not for an orphan.
+
+!!! The consequence matrix
+
+Each cell: the meme-level act · the bare act · what stays behind.
+
+| action | root | slot child | carried field (`toml meta` on the root) | plain tiddler |
+|---|---|---|---|---|
+| ''delete'' | the family leaves as one change · the root title alone · nothing, or children orphaned under the bare act | the slot leaves and the root's reference drops in the same change · one tombstone · a dangling reference under the bare act | the field leaves the root and the block check re-mints · a field delete · a stale check under the bare act | one tombstone · the same · nothing |
+| ''put'' (fields) | the root re-splits if its text carries ahu blocks · one record · slots the new text no longer names | the slot lands and the root re-renders · one record · nothing, but the family hash moves | the root's meta changes; the hash moves · one field write · nothing | one record · the same · nothing |
+| ''rename'' | the root and every child re-title together; references re-mint · one title · every child orphaned | refuse, or rename the slot inside its root's text · one title · a dangling reference and a rootless record | not applicable | stock rename and relink · the same · nothing |
+| ''move / copy'' (bag or wiki) | the family moves whole (`groupOf`, measured) · the root alone · children left behind | refuse, or carry the root with it · the slot alone · a rootless slot at the destination | rides its root | one record · the same · nothing |
+| ''act'' (action string over a filter) | the act widens to whole families or refuses · the matched titles · half families | the same | the same | the matched titles · the same · nothing |
+| ''offer / promote'' | the family offered whole · the named titles · lone slots in canon | widen to the family or refuse · the slot alone · a rootless slot in canon | rides its root | the record · the same · nothing |
+| ''render'' | the recomposed carrier or the root's own body · the root's text · nothing | the slot as its own tiddler · the same · nothing | the field's value · the same · nothing | the same both ways |
+
+''The answer field.'' Every action's answer, preview or applied, carries a `consequence` object: `{position: root|slot|field|plain, family: <root uri>|null, acts: [{title, act: put|tombstone|retitle, bag}], leaves: [{title, why}], orphans: [title], refusals: [{title, code}]}`. A caller reads it before committing.
+
+!!! The graceful gradient
+
+For each break, a ladder: ''refuse before acting'' -> ''act and repair'' -> ''keep the pieces and flag''. The rung each door takes by default:
+
+| break | refuse | act and repair | keep and flag | default |
+|---|---|---|---|---|
+| delete of a root through a tiddler door | refuse a bare root delete that would orphan (`family-would-orphan`) | widen to the family in ONE change (law 2 + law 3) | — | act and repair, previewed |
+| delete of a slot | — | drop the root's `kahea` reference in the same change | — | act and repair |
+| rename of a root | — | re-title the family and re-mint the references in one change | — | act and repair; refuse when any child sits in a bag the lease cannot write |
+| move or copy of a slot alone | refuse (`slot-without-root`) | carry the root | — | refuse; the caller names the root |
+| a bulk act catching half a family | refuse the act whole, naming the families | widen each family | — | refuse in preview, widen on `apply` with `widen: true` |
+| offer of lone slots | — | widen to the family | — | act and repair |
+| a sync merge leaving a child under a dead root | — (no caller to refuse) | — | the child stands; projected as a plain tiddler; flagged | keep and flag |
+| a native-door or ingest landing of a lone child | — | — | lands as a plain tiddler; flagged | keep and flag |
+| a family whose root stands absent at projection | — | — | each orphan child projects to disk as a plain `.tid` under the root's folder; flagged | keep and flag (the operator's fixed point) |
+
+''The operator's fixed point, placed.'' Orphan slot children project as plain tiddlers and raise a flag, the same on node and browser. [inferred design] The projector already routes every child to its root (`disk-projector.ts:505-516`); where the root reads absent, it writes each live child as a plain tiddler file (`<root-stem>.orphans/<slot>.tid`, a name the ingest reads back as plain records, never as a family) instead of unlinking silently. The browser holds no disk: its page mirror shows the same records as plain tiddlers in the wiki view, and the flag rides the same record.
+
+''Where the flag lives.'' One alert per root, beside the existing rail: `$:/temp/lares/alert/meme-orphan/<root>` (tagged as the house's alert tag, fields `root`, `orphans`, `seen-at` naming a log cursor, never a clock; the existing rail's `ts: new Date()` at `place-meme.ts:119` stands as a no-global-now tension worth its own row). The `$:/temp` layer keeps it per device, so each device raises its own from its own view; node and browser raise it from the same predicate, run where the projector runs on node and where the mirror runs in the browser.
+
+''How each UX shows it.'' The page: the alert in the wiki's alert list, with `keep as plain`, `re-root` and `drop` buttons, each a previewed act. The CLI: `lares wiki orphans --recipe <slug>` lists them; `lares wiki status` names the count. The MCP seat: `wiki_orphans(recipe)` and the count in every `consequence`. The console door: `lares("wiki", "orphans", …)`. Disk: the `.orphans/` folder beside the root's stem.
+
+!!! Caps versus family integrity
+
+Caps grant reach at a wiki or a bag (the port grant's `bags`, `edits`, `admin`; `cap("read"|"write", bag)` in `meme-verbs.ts:495-497`). A family spans tiddlers and may span layers and residencies. Where a cap alone cannot decide a meme-level act:
+
+| case | today | what the surface should answer |
+|---|---|---|
+| a write reaches the child's layer and not the root's (root in canon, slot in working) | the slot lands in working by the cascade; the canon root stands untouched (measured, `_buildFamily`) | allowed; `consequence.family` names the canon root and `leaves` names it as read-only; a root-level act (rename, delete) refuses `family-spans-unwritable-layer` with the bag named |
+| a delete of a root whose children rest in a bag the lease cannot write | the engine path tombstones the root, then each child's tombstone routes through `_tombstoneBag` to the working layer, shadowing (measured) | preview names every shadowing tombstone and its layer; apply lands them as one family change in the working layer, or refuses when no working layer stands |
+| a reader-seated face | the meme door serves canon's floor snapshot and refuses the face's write to that bag (`lares_mcp.py:1050-1059`, the floor word) | reads answer with `floor: true`; every act previews and refuses `read-only-seat` before any write; `consequence` still names the family |
+| a family split across canon and `personal` | the personal layer overrides by cascade; nothing names the split | `consequence.acts` names each record's bag; a family read answers which layer each slot came from |
+| a Handle-seated member (a cabal presenting as one member) | the port binds one face id; the realm-steward reading rests in the 2026-11-14 model (`residency-follows-the-contract`) | the Handle's grant decides reach; family integrity checks run the same; a member's act never names the human behind the Handle |
+| an offer of lone slots from a face that holds the root only in its view | `offer-make` takes any titles (measured) | widen to the family from the face's view, or refuse `slot-without-root` |
+
+''Other gaps against vessel caps the spirit met.''
+
+* ''Read scope one island, one face'' (port contract, owed per-bag read lend): a daemon relay for a second face refuses until it lands.
+* ''A filter runs over the whole wiki the island paints'', not over the lease's `bags`: the port's `filter` drops tier-local titles only (`record-port-handler.ts:117-119`), so a face's filter sees every bag its island composes; sound under one island, one face, unsound once an island serves two authorities.
+* ''The routed `wiki:place-verb` envelope'' still reads `worker-trust` in the gaps scout (tw5-vm-gaps #16); the port's invoke path retired it, the routed path stands unverified here.
+* ''Annotations and the seat profile stay advisory'' until `F11`'s signed local channel lands.
+* ''Cross-bag atomicity cannot exist'' (port contract #/write): a family split across layers never moves as one change, so act-and-repair across layers degrades to ordered writes with a named partial state.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/prior-art`>>
+
+!! Prior art ~ what each did, what it cost
+
+A spirit fetched each page below; a fetch hands back a summary of the page, so details read as summaries. ''[memory]'' marks a claim no fetched page carried.
+
+!!! TiddlyWiki's own surfaces
+
+* ''The filter language'' (https://tiddlywiki.com/static/Filter%20Syntax.html): runs of steps, processed left to right, each run modifying the set; named run prefixes since 5.1.23 (https://tiddlywiki.com/static/Filter%20Run%20Prefix.html). Did: one compact, composable read language every widget already speaks. Cost: a filter computes (`:map`, `:reduce`, variables, functions), so it reads as a small program, not a bare query.
+* ''The Node WebServer'' (https://tiddlywiki.com/static/WebServer%20API.html, https://tiddlywiki.com/static/WebServer.html): routes for get/put/delete tiddler, get-all, rendered tiddler, status; `readers` and `writers` principal lists; `X-Requested-With: TiddlyWiki` against CSRF (https://tiddlywiki.com/static/WebServer%20API%3A%20Put%20Tiddler.html). ''Get All Tiddlers'' (https://tiddlywiki.com/static/WebServer%20API%3A%20Get%20All%20Tiddlers.html) answers skinny records by default (`exclude=text`), and ANY filter beyond the default answers 403 unless a tiddler `$:/config/Server/ExternalFilters/<filter>` holds `yes`, or `$:/config/Server/AllowAllExternalFilters` does, which the docs advise against on a public server. Did: a per-query whitelist against a hostile filter. Cost: user-level principals only, no per-tiddler scope; the docs call the server //"not robust enough for the open internet"//. The house's own route skins ride it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>).
+* ''Action widgets and messages'' (https://tiddlywiki.com/static/ActionWidgets.html, https://tiddlywiki.com/static/Messages.html, https://tiddlywiki.com/static/WidgetMessage%3A%20tm-new-tiddler.html): an action string carries the unit of mutation; messages travel up the widget tree to a handler such as the navigator. Cost: an action string returns no structured result, and many messages move UI session state (story, popups, drafts), which a headless caller either needs a widget tree for or must not reach.
+* ''`--render`'' (https://tiddlywiki.com/static/RenderTiddlerCommand.html, https://tiddlywiki.com/static/Using%20TiddlyWiki%20on%20Node.js.html): render one tiddler through a template to a content type and a file. Did: the engine as a batch renderer. The house uses it for `meme project`.
+* ''Safe mode'' (https://tiddlywiki.com/static/SafeMode.html): disables plugins and renames shadow overrides; a recovery tool, not a sandbox, and unsafe beside a syncing server.
+* ''The Multi-Wiki Server'': bags with ACLs, recipes as ordered bag stacks, a wiki as a recipe (forum snippet, https://talk.tiddlywiki.org/t/announcing-the-multiwikiserver-plugin/9033); its API page (https://mws.tiddlywiki.com/static/HTTP%20API.html) opened but listed no endpoints. The house's recipe/bag model rhymes with it.
+* ''Unread'' (404 or not attempted): the developer pages for `$tw.Wiki`, the store, startup modules and syncadaptor modules; the `$tw.wiki` method names in this meme (`filterTiddlers`, `renderText`, `renderTiddler`, `makeWidget`, `invokeActionString`) come from the house's own code [measured], not a fetched doc.
+
+!!! Existing TiddlyWiki bridges for AI callers
+
+* ''`tiddlywiki-mcp`'' (https://github.com/ppetru/tiddlywiki-mcp): tools `search_tiddlers` (filter, semantic or hybrid), `create_tiddler`, `update_tiddler`, `delete_tiddler`, and a resource `filter-reference://syntax`. Did right: teaches the filter language through a resource on demand; previews a diff before update and the content before delete; checks results against a token budget and points at pagination. Cost: a client of the HTTP API, so no render, no actions, no plugins; its identity header comes from a config value, so the bridge names whoever its config says.
+* ''`tiddly-mcp`'' (https://github.com/rryan/tiddly-mcp): a plugin serving MCP from inside the Node wiki; tools `list_tiddlers` (filter, limit, includeSystem), `read_tiddler`, `search_tiddlers`, `write_tiddler`, `delete_tiddler`. Did right: read-only by default, writes off until enabled, a `limit`. Cost: marked work in progress; no version check on write; auth left to a proxy.
+* No bridge found exposes render, action strings or `tm-*` dispatch. The forum thread on the first (https://talk.tiddlywiki.org/t/tiddlywiki-mcp-server/14736) refused the fetch (403).
+
+!!! Live runtimes opened to remote callers
+
+* ''Language Server Protocol 3.17'' (https://microsoft.github.io/language-server-protocol/specifications/lsp/3.17/specification/): capability negotiation first (`initialize`; absent means absent); requests answer, notifications never; versioned documents, so a client checks the version before an edit applies; `workspace/applyEdit` with a failure mode (abort, transactional, undo); cancellation still answers; partial results through progress tokens. Did: one protocol for every editor, with edits that name their base.
+* ''Jupyter messaging'' (https://jupyter-client.readthedocs.io/en/latest/messaging.html): `execute_request` with `silent`, `store_history`, side-effect-free `user_expressions`, `allow_stdin`; `inspect_request`; comms; a separate control channel so an interrupt never queues behind execution; MIME-bundle replies; `parent_header` correlation. Cost: IOPub broadcasts to every client; `execute` hands out the whole kernel.
+* ''Chrome DevTools Protocol'' [memory; the page redirected, https://chromedevtools.github.io/devtools-protocol/tot/Runtime/]: domains; `Runtime.evaluate` answering remote object handles; `objectGroup` with `releaseObjectGroup` for bounded lifetimes; `throwOnSideEffect`. Cost: handles leak unless released; `evaluate` grants the page's whole authority.
+* ''Emacs server'' [memory; the manual refused the fetch]: `emacsclient --eval` over a socket guarded by file permissions or a key; any connected client holds total authority, the textbook of ambient authority.
+* ''Obsidian Vault'' (https://docs.obsidian.md/Plugins/Vault): `cachedRead` for display, `read` before a write, `modify` ignoring current content, and `process()`, a synchronous read-modify-write the docs prefer, since nothing changes between the read and the write. Did: compare-and-swap as the default edit. Plugins otherwise receive the whole `app` object [memory].
+* ''Logseq plugins'' (https://plugins-doc.logseq.com/): namespaces App, Editor, DB, UI, Assets; the datalog query door [memory].
+* ''Datasette'' (https://docs.datasette.io/en/stable/json_api.html, https://docs.datasette.io/en/stable/sql_queries.html): read-only by default; raw SQL behind an `execute-sql` permission; named parameters escaped; `PRAGMA` refused; `_size` capped by `max_returned_rows`; opaque `_next` cursors; `_shape` choices. Did: a raw query language as a first-class door, bounded on the server.
+* ''Notion'' (https://developers.notion.com/reference/request-limits): rate limits, 100-element arrays, 1,000-block payloads, and the warning that a 503 on a write may have saved, so read before a retry. Roam's datalog API [memory].
+* ''automerge-repo DocHandle'' (https://automerge.org/docs/reference/repositories/dochandles/): `whenReady`, an explicit state machine (LOADING, READY, UNAVAILABLE, DELETED), `change`. Did: no read before load.
+* ''Comlink'' (https://github.com/GoogleChromeLabs/comlink): `expose`/`wrap` async proxies over a MessagePort, `transfer`, `proxy` callbacks, `releaseProxy`. Cost: origins default to `*`, and a proxy hands the far side the whole exposed object, so the README's own advice reads: expose a narrow facet.
+* ''Pharo remote images'' (TelePharo): not attempted.
+
+!!! Object capabilities
+
+* ''Confused deputy'' (https://en.wikipedia.org/wiki/Confused_deputy_problem): a program holding more authority than its requester misuses it on the requester's word; the cure bundles designation with permission. A door that takes a title or a filter string and acts with the island's full authority stands as a deputy.
+* ''Attenuation and membranes'' (https://en.wikipedia.org/wiki/Object-capability_model): an attenuating proxy forwards only the allowed messages; a membrane wraps every reference crossing it, so restrictions hold transitively. Revocable membranes and the caretaker (search snippets only: https://soft.vub.ac.be/~tvcutsem/invokedynamic/js-membranes, Miller's QCon 2010 slides https://qconsf.com/sf2010/dl/qcon-sanfran-2010/slides/MarkS.Miller_FromEToECMAScriptAndBackAgain.pdf); the primary papers stayed unopened.
+* ''Hardened JavaScript'' (https://hardenedjs.org/): `lockdown` freezes intrinsics and removes `Date.now` and `Math.random` from the locked realm; `harden` freezes a graph; a `Compartment` gives code a fresh global holding exactly the endowments granted. Limit, in the project's own words as fetched: it does not protect availability; a party in the same agent can loop forever, so time bounds need a separate worker.
+
+!!! Tool surfaces for AI callers
+
+* ''MCP tools, 2025-06-18'' (https://modelcontextprotocol.io/specification/2025-06-18/server/tools, https://modelcontextprotocol.io/specification/2025-06-18/schema#toolannotations): a human SHOULD stay able to deny a call; cursor pagination; `outputSchema` with `structuredContent`; two error channels; annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`) advisory and untrusted unless the server stands trusted; servers MUST validate, control access, rate-limit and sanitize.
+* ''Writing effective tools for agents'' (https://www.anthropic.com/engineering/writing-tools-for-agents): consolidate steps into one tool, prefer targeted over broad, avoid overlap; a `response_format` (concise or detailed); human-readable fields over opaque ids; truncate with defaults (Claude Code caps a tool answer near 25,000 tokens) and say how to narrow; actionable errors; namespace by service and resource.
+* ''Code execution with MCP'' (https://www.anthropic.com/engineering/code-execution-with-mcp): tools as a code API loaded on demand; filtering in code before data reaches the model (150,000 tokens down to 2,000 in one example); the cost names sandboxing, limits and monitoring.
+* ''Code Mode'' (https://blog.cloudflare.com/code-mode/): generated TypeScript interfaces, one fresh isolate per snippet, `fetch` and `connect` throwing, bindings the only outward reach, keys held by the supervisor.
+* ''The lethal trifecta'' (https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/): private data, untrusted content and an outward channel in one agent let an attacker exfiltrate; guardrails fail; constrain what untrusted input can trigger.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/golden-principles`>>
+
+!! Golden principles
+
+# ''One engine answers.'' Every filter, render and action runs in the island that holds the wiki, through its own `$tw`, never a second parser and never a store-side imitation (`L17`'s own words; the record port already obeys it).
+# ''Authority rides the lease, never the call.'' A call carries no identity claim; the composer lends the proven face and its grant from server-held state (the port lease, `#/what-stands`). The cure for the confused deputy: the handle a door holds already designates and authorizes.
+# ''The tiddler door underneath, the meme door above.'' Every class (a) operation lives at the tiddler door; a meme verb composes tiddler operations and adds only the frame, the family hash and the group law (`#/mu-the-meme-verbs`).
+# ''Same verb, same shape, every door.'' One table names each verb's arguments and answer; the MCP tool, the CLI subcommand, the console argv and the page's port ask render that one row (the house's `cli-verbs.json` weld and `mirror-parity-witness.sh` already enforce this for the meme verbs).
+# ''Every write names its base.'' A write carries the hash or seq it read, and a moved record answers `conflict` with the live base (LSP versions, Obsidian `process()`, the house's `If-Match`).
+# ''Preview, then apply the preview.'' A consequential act answers its recorded effect first and applies that exact effect by its digest, never by re-running (the act ward's apply-as-itself, generalized).
+# ''Bounded answers, opaque cursors.'' Every list or filter answer caps rows and bytes and names a cursor (Datasette, MCP, the house's `AUDIT_ARRAY_CAP`).
+# ''Refuse by name, never silently.'' A capability the door does not hold answers a named refusal that says what would cure it (the console door's `verb-not-held`, DreamDOM vector 5).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/best-practices`>>
+
+!! Best practices
+
+* ''Teach the language through a resource.'' Seat the filter reference and the action-widget reference as MCP resources (and `lares wiki help filter`), the way `tiddlywiki-mcp` seats `filter-reference://syntax`; keep tool descriptions short.
+* ''Skinny by default, fields by name.'' A filter answers titles; a load names the fields it wants; `text` crosses only when asked (the server's `exclude=text`, the port's widths).
+* ''A concise and a detailed answer form'' on reads, defaulting to concise.
+* ''Annotate honestly.'' `readOnlyHint` on filter, get, render; `destructiveHint` on delete and act; `idempotentHint` on put-with-base and act-apply-by-digest. Annotations advise; the ward enforces.
+* ''Idempotent ids.'' Every write carries a `txId`; a resend replays the first answer (the port's ledger, the house's one retry law, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract#/retry-law`>>).
+* ''Name the container on every call.'' Exactly one of `recipe`/`bag`, never a default wiki (the meme door's container law, kept).
+* ''Bound a filter's cost by its answer, and its time by its island.'' A cap on rows and bytes at the door; a filter that loops blocks only its own worker, and the vessel's pool can tear that island down (Hardened JavaScript's own limit, `#/prior-art`).
+* ''Treat every rendered or read text as untrusted content'' when it reaches an AI caller: the door hands data, never instructions, and no read verb carries an outward channel.
+* ''Measure each door against the others.'' One parity suite runs the same verb table through MCP, CLI, console and port.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/anti-patterns`>>
+
+!! Anti-patterns ~ each with the precedent that showed the harm
+
+# ''Eval over a socket.'' Handing a remote caller `$tw` or a JavaScript evaluator. Harm shown: Emacs server, where any connected client holds total authority [memory]; CDP's `Runtime.evaluate` granting the page's whole authority [memory]; Jupyter's `execute_request` handing out the kernel (https://jupyter-client.readthedocs.io/en/latest/messaging.html). In the house: an island holds custody lends and the outbound bridge, so `$tw` in a caller's hand reaches past every ward.
+# ''A whole-object proxy.'' Comlink-style `wrap` over `TW5Engine` or `$tw.wiki`. Harm: the far side receives every method, including the ones that write shadows, boot modules or reach the host bridge; Comlink's own README advises a narrow facet (https://github.com/GoogleChromeLabs/comlink); a membrane cures it only when every returned widget, tiddler and closure gets wrapped, and TW5's widget tree hands out closures everywhere.
+# ''The deputy that takes a name.'' A door that accepts a title, filter or action string and acts with the island's authority, not the caller's. Harm: the original confused deputy, a compiler writing a billing file on a requester's file name (https://en.wikipedia.org/wiki/Confused_deputy_problem). In the house: `wiki-behavior.ts`'s old `worker-trust` answer, which the port's invoke gate retired.
+# ''An unbounded filter door.'' Harm: TW5's own server refuses every external filter by default for exactly this (https://tiddlywiki.com/static/WebServer%20API%3A%20Get%20All%20Tiddlers.html); in the house the port's `filter` ask returns the whole array uncapped today (`record-port-handler.ts:441`) [measured].
+# ''Meme verbs bending plain tiddlers.'' Harm, measured in this repo: `meme put` lands an unframed text as `text/plain` with no fields, and its group law sweeps `<uri>/` titles (`#/mu-the-meme-verbs`). A base operation cast as a family operation silently loses data at the edge.
+# ''Write without a base.'' Harm: Obsidian's `modify()` ignoring current content (https://docs.obsidian.md/Plugins/Vault); `tiddly-mcp`'s `write_tiddler` with no version check (https://github.com/rryan/tiddly-mcp); Notion's warning that a failed write may have saved (https://developers.notion.com/reference/request-limits).
+# ''Check, then run again.'' Judging an action by a dry run and then re-running it live. Harm: the gap between check and use, which the act ward's design already names (a transcluded value changes between the two runs, kahua-memory-stage #/the-hearth-lane).
+# ''Annotations as enforcement.'' Trusting `readOnlyHint` or a client-named hand. Harm: the MCP spec marks annotations untrusted (https://modelcontextprotocol.io/specification/2025-06-18/server/tools); the house's own `F11` row reads the seat profile advisory, //"since a client names its own hand"//.
+# ''The trifecta door.'' One verb that reads private records, carries untrusted text and reaches outward (a `tm-http-request`, an open-window, a download). Harm: https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/. The house's act-ward allowlist starting EMPTY answers it.
+# ''Tool sprawl.'' One tool per TiddlyWiki method. Harm: overlap and selection errors (https://www.anthropic.com/engineering/writing-tools-for-agents). Its mirror, the single code tool, costs a sandbox (https://www.anthropic.com/engineering/code-execution-with-mcp).
+# ''A family-blind act.'' A tiddler verb that deletes, renames or moves one record of a family without naming what follows. Harm, measured in this repo: three group laws answer "which records make one family" differently, and a root whose view reads absent unlinks its file while its children live on, unprojected and unflagged (`#/meme-aware-actions`, `disk-projector.ts:770-773`).
+# ''A name the house already spent.'' `lares meme act` beside `lares act` (the residency verbs, `commands/act.ts`) [measured]: two meanings of `act` at one CLI breaks one name, one relation.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/pattern-rhymes`>>
+
+!! Pattern rhymes ~ integrities the house already holds
+
+* ''Isomorphic by intent.'' One verb table, four skins; the meme door already proves it (`meme-api-surface#/skins`), and the lean extends the same weld to the tiddler door.
+* ''Idempotent by intent.'' The port's `txId` ledger and the one retry law; act-apply by digest lands once.
+* ''No global now.'' Cursors as `<bootNonce>.<shapeId>.<seq>`, never a clock; a render cursor goes stale on any later change; presence counts rounds (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/no-global-now`>>).
+* ''Causal islands.'' Each wiki answers from its own island and its own log; a caller reads //as of// a cursor, never //now//, and a call to a cold wiki wakes it on reference (`wikiActivation.ensureActive`).
+* ''Wikis-first writes.'' A seat's put lands the wiki's working layer; canon moves only by offer, promote or lift.
+* ''One engine, never a second parser.'' Filters, renders and actions run in the island's `$tw`; a store path that cannot render refuses rather than imitates (as `meme project` already refuses `html` off the anchor).
+* ''Residency follows the contract.'' Where a record lands follows the cap contract and the cascade, never the door the caller used (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract`>>).
+* ''Faces sit flat.'' A port binds one face; the door never takes two faces of one human as inputs and never joins them in an answer (cabal-realm #/the-workbench).
+* ''Capability, never host.'' `L17`'s own law; the record port's lease and grant carry it.
+* ''Surface and correct, never defend'' (Off True): every refusal names its cure.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/candidate-shapes`>>
+
+!! Candidate shapes
+
+The Mu sort drives all four: class (a) operations live at a tiddler door, class (b) at a small meme door, (w) and (v) where they already stand. Each shape names its verbs, how it reads on each door, what the wards see, and its costs.
+
+!!! Shape A ~ enumerated verbs over the daemon (the road `L17` wrote)
+
+* ''Verbs.'' Daemon `tiddler-get`, `tiddler-put`, `tiddler-delete`, `wiki-filter`, `wiki-render`, `wiki-act`, `wiki-shadows`, `wiki-plugins`, each a reactor beside `meme-*`, reaching a named wiki through the `wiki-act` road (`vmManager.placeWikiVerb`).
+* ''Doors.'' MCP `tiddler_get(title, recipe|bag, fields?)`, `tiddler_put(title, fields, recipe|bag, base?)`, `wiki_filter(filter, recipe, after?)`, `wiki_render(title|text, recipe, form)`, `wiki_act(actions, recipe, …)`; CLI `lares tiddler get|put|delete`, `lares wiki filter|render|act|shadows|plugins`; console `lares("wiki", "filter", …)`; page: unchanged (its port).
+* ''Wards see.'' The daemon's verb caps and `VERB_SEATS`; the act ward on daemon and kahua wikis; the island sees a `wiki:place-verb` envelope with `requestedBy`.
+* ''Consequence before commit.'' A `dryRun` flag per verb, each reactor computing its own family reading; three group laws (`#/meme-aware-actions`) risk three readings.
+* ''Costs.'' A second road into the island beside the port, with its own authority story (the routed envelope still answers `worker-trust` on the wiki island, tw5-vm-gaps #16) [measured in the scout, unverified since]; no cursor, no render cursor, no snapshot; the page and the AI see the wiki through two different contracts, which breaks isomorphic by intent.
+
+!!! Shape B ~ one language door
+
+* ''Verbs.'' Two: `wiki_query(filter, recipe, fields?, after?)` answering records, and `wiki_do(actions, recipe, preview|apply)` answering a recorded diff. Everything else expresses itself in TW5's filter and action languages (a render through a `[render[]]`-style filter or a `<$wikify>` action, a put through `<$action-setmultiplefields>`).
+* ''Doors.'' Two MCP tools; `lares wiki query|do`; console the same; the page's port asks unchanged.
+* ''Wards see.'' Strings, which a ward reads only by running them (a static parse never serves as the ward, kahua-memory-stage). Every act reaches the throwaway-copy ward.
+* ''Consequence before commit.'' `preview` answers the recorded diff; a caller infers the family reading from the diff after the fact, so a half-family act shows only as titles.
+* ''Costs.'' The deputy shape: the door takes a program and acts with the island's authority; filters compute; rendering and plain field writes become awkward strings; AI callers lose the structured put/get they handle best; the meme door has nowhere to compose.
+
+!!! Shape C ~ an attenuated object proxy over the wiki VM
+
+* ''Objects.'' A facet `wiki` with methods `getTiddler`, `filter`, `render`, `invoke`, handed over a MessagePort as a Comlink-style proxy behind a revocable membrane, with tiddler and widget handles as remote references (CDP's handle-and-group model).
+* ''Doors.'' The console holds the proxy as a live object (`await lares.wiki("lares").filter("[tag[x]]")`); the CLI and MCP need a stub layer that turns calls into messages, so the proxy collapses into Shape A's verbs on three of four doors.
+* ''Wards see.'' Every method call crosses the membrane; the membrane must wrap every widget, closure and tiddler TW5 hands back.
+* ''Consequence before commit.'' None native: a method call acts; a preview facet would duplicate every method.
+* ''Costs.'' The largest attack surface and the hardest to prove: TW5's widget tree passes closures everywhere, a missed wrap leaks authority, handles need release (CDP's leak); the third runtime already patches the fake DOM, so a membrane over it doubles the surface the house owns. No isomorphism: only the console sees objects.
+
+!!! Shape D ~ the record port, carried to every door (the hybrid)
+
+* ''The waist.'' The record port stays the ONE contract into an island: snapshot and changes at a width, `write` transactions with `txId` and basis, asks `filter`, `load`, `render`, `invoke`, `verb`, `cas`. Two asks join it: `act` (an action string or a single `tm-*` message, answered as a recorded diff, with `apply` taking that diff's digest) and `catalog` (shadows, plugins, field names).
+* ''The relay.'' The daemon opens a port on the aimed wiki's island for a CLI or MCP call, under a lease the pool mints from the SESSION's face and grant (the same `port:lease` a page receives), activates a cold wiki on reference, and answers in the port's shapes. The console door rides the page's own port; the page keeps its mirrors.
+* ''The tiddler door (class a).'' MCP `tiddler_get`, `tiddler_put`, `tiddler_delete`, `wiki_filter`, `wiki_render`, `wiki_act`, `wiki_catalog`; CLI `lares tiddler get|put|delete` and `lares wiki filter|render|act|catalog` beside the switcher; console `lares("tiddler", "get", …)`, `lares("wiki", "filter", …)`; page: the port asks it already makes. Each row maps to one port message: get to `load`, put and delete to `write`, filter to `filter`, render to `render`, act to `act` then `write`, catalog to `catalog`.
+* ''The meme door (class b, and the meme part of c).'' `meme put|get|delete` (the family: split, recompose, family hash, group sweep), `meme list` (roots and slot trees), `meme project` (house templates), `normalize`, `check`, `sitting` (local), `promote` (sealed families). Each composes the tiddler door: a meme put lands its records as one port `write` under one `txId`.
+* ''Elsewhere, unchanged.'' (w) `lares wiki` container verbs and the switcher; (a)+(w) `lares act` residency verbs; (v) the console's vessel rows; `offer` and `kahua` verbs keep their doors, since they already take titles and fields.
+* ''Wards see.'' The lease grant (`faceId`, `bags`, `edits`, `admin`, `casTier`, `kahu`); the invoke gate's authority check run at fire time; `verbCap` on every bag grant; the act ward's diff judgment on daemon and kahua wikis (`codeClassOf`, control families, custody verbs, the `tm-*` allowlist), and on a user's wiki the same diff as a preview the caller may skip only by naming `apply` on a digest it holds; the row-key law and canon floors in the write path, unchanged.
+* ''Consequence before commit.'' Every write-bearing verb (put, delete, rename, move, act) answers a preview first, carrying the `consequence` object of `#/meme-aware-actions` (position, family, acts, leaves, orphans, refusals), computed in the island by ONE family law; `apply` takes the preview's digest and lands exactly that, once. A plain tiddler's preview reads `position: plain` and costs one round trip, which a caller may skip with `preview: false` where the act ward allows it.
+* ''Costs.'' The port gains two asks and a relay; read scope stays one island, one face, so a daemon relay serving a second face on the same island waits on the owed per-bag read lend; the snapshot machinery reads heavy for a one-shot CLI call (a relay opens at width `none` and asks only); the port's `filter` answer needs a cap and cursor it lacks today.
+
+!!! The naming proposal
+
+Base operations stop wearing `meme_*`. ''`tiddler_*`'' names acts on one record (get, put, delete). ''`wiki_*`'' names acts on a wiki's engine (filter, render, act, catalog) and keeps the switcher's `wiki` tool as `wiki_switch`, `wiki_hold`, `wiki_release`, `wiki_active` (one namespace, never top-level twins, as the switcher's own docstring asks). ''`meme_*`'' keeps only family verbs. The CLI mirrors it: `lares tiddler …`, `lares wiki filter|render|act|catalog …`, `lares meme …`. `lares meme act` never lands; `wiki act` names the action-string verb, and the residency verbs keep `lares act` (the collision noted in `#/anti-patterns` stays open in `#/open`). A deprecation leaves `meme_get` answering a plain tiddler for one release with a warning that names `tiddler_get` (the retirement law: deprecate, never redefine).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gaia-and-elyncia`>>
+
+!! Gaia and Elyncia ~ one story each, run against each shape
+
+''Gaia, 2026.'' A nurse in Leeds keeps her shift notes in a personal wiki, tagged by patient room and status, with a `todo` field per tiddler and a handover template that transcludes them. Her AI session asks: //"which rooms still carry an open todo, and render tonight's handover."// Then: //"mark room 4's todo done."//
+
+* ''A:'' `wiki_filter("[tag[room]has[todo]!todo[done]]")` answers titles; `wiki_render("Handover")` answers text; `tiddler_put` with the field lands. Works; the page shows the change only after its own port sees the store change, and the answer carries no cursor to tie the render to the filter.
+* ''B:'' one `wiki_query`, one `wiki_do` with `<$action-setfield $tiddler="Room 4" todo="done"/>`. Works, but the render needs a wikify string, and her session writes TW5 action syntax for a one-field edit; a typo in the string writes the wrong tiddler with the island's authority.
+* ''C:'' her console could chain proxy calls; her AI session cannot (MCP holds no live objects), so it falls back to A's verbs.
+* ''D:'' `wiki_filter` answers titles at a cursor; `wiki_render` answers the handover text at a render cursor; `tiddler_put(title="Room 4", fields={todo:"done"}, base=<seq>)` lands one write; her open page shows the change by the same port log. A second session that edited room 4 in between draws `conflict` with the live seq.
+
+''Elyncia, 5492.'' A crossroads keeper tends the district shrine's ledger wiki, shared by three Lararia in the Nexus; a tasked spirit, seated `seat` under the keeper's face, reads the offering-log tiddlers and wants to run a stored button's actions that tally the week's offerings into a summary tiddler. One of the logged offerings arrived from a stranger and carries, in its text, an action string that would rewrite the shrine's charter.
+
+* ''A:'' `wiki_act` runs the tally; on a user wiki, live with full caps; the stranger's text reaches the action only if the tally transcludes it as actions, and nothing previews the effect.
+* ''B:'' the spirit composes action strings from what it read; the stranger's text becomes a candidate program in the spirit's own context: the trifecta, with the island's authority behind it.
+* ''C:'' a membrane over the shrine wiki's widget tree would need to wrap the stored button's closures; one missed wrap and the spirit holds the charter.
+* ''D:'' the spirit renders the button's tiddler and invokes its affordance by `affordanceId` at the render cursor (no action string crosses); or names `wiki_act` with the stored action string and receives the recorded diff first: a write to the charter shows in the preview, and the charter's bag sits outside the lease's `bags`, so `apply` refuses `bag-not-granted` by name. The keeper reads the preview; the spirit's seat cannot lift.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/a-lean`>>
+
+!! A lean ~ an overrulable house reading
+
+''Shape D.'' The record port already holds the engine's whole tiddler surface behind a lease, a proven face and clockless cursors; the page crosses it today. Carry it to the CLI, the MCP seat and the console door through a daemon relay that mints the lease from the session's face, add the `act` and `catalog` asks, cap the `filter` answer, and seat the verbs as `tiddler_*` and `wiki_*`. Keep `meme_*` for the family verbs the Mu sort found meme-only, each composing one port write. Act previews by default everywhere and applies by digest; on daemon and kahua wikis the preview runs AS the act ward's throwaway copy, and on user wikis the same machinery runs with full caps. Every write-bearing verb stays meme-aware: one family law (parent edges plus references) decides position, the preview names the consequence, a bare act that would orphan widens or refuses by the gradient, and an orphan that arises anyway (a merge, a lone landing) projects to disk as a plain tiddler with a per-device flag on node and browser alike.
+
+''Why not A'' [inferred]: it builds a second road into each island beside the port, with a second authority story, and the page and the AI would see one wiki through two contracts. ''Why not B'': the deputy shape, and AI callers handle structured get and put better than action syntax. ''Why not C'': the widest surface, the hardest proof, and only one door could use it.
+
+!!! The red tests that would prove it
+
+Each red fails on today's code first, each with its control.
+
+# `tiddler-door-plain-roundtrip`: `tiddler_put` of a `text/vnd.tiddlywiki` tiddler with tags and a custom field, then `tiddler_get`, answers the same fields on MCP, CLI and console. Control: the same through the page's port.
+# `meme-put-spares-plain-children`: a bare `meme put` at `lar:///x` leaves a plain `lar:///x/y` standing (red today if the code reading in `#/mu-the-meme-verbs` holds). Control: a framed put still tombstones its stale slot.
+# `wiki-filter-named-wiki-engine`: a tag filter on a named, cold wiki wakes it and answers through that island's `$tw`, not a store. Control: the anchor answers the same.
+# `wiki-filter-bounded`: a filter matching 10,000 titles answers a page with `next`; the cursor walks the rest; bytes stay under the cap. Control: a small filter answers whole with `next: null`.
+# `wiki-filter-malformed-refuses-by-name` (`L17`'s own control).
+# `wiki-render-transclusion`: a transcluding tiddler renders its transcluded text (`L17`'s red). Control: a plain tiddler renders its own.
+# `wiki-act-preview-then-apply`: an action string that sets a field answers a diff naming that field and lands nothing; `apply` with the diff's digest lands it once; a second `apply` replays. Control: a stale digest refuses `act-digest-stale`.
+# `wiki-act-custody-refuses`: an action string naming a custody verb refuses without the face's confirm (`L17`'s control); on the daemon wiki a code-bearing action refuses until the ward stands.
+# `wiki-act-tm-allowlist-empty`: a `tm-http-request` captured in the copy refuses by name.
+# `relay-lease-from-session-face`: a CLI call under face F opens its port with F's grant; a write to a bag outside F's grant refuses `bag-not-granted`. Control: the page under F sees the same refusal.
+# `relay-second-face-refuses`: a relay for face G on an island already serving F answers `port-one-island-one-face`, until the per-bag read lend lands.
+# `delete-root-previews-family`: a `tiddler_delete` preview of a meme root names `position: root`, every slot child in `acts` and no orphans; apply lands root and children as ONE change. Control: a plain tiddler's preview names `position: plain` and one tombstone.
+# `delete-slot-drops-reference`: deleting one slot lands the slot's tombstone and the root's reference drop in one change; the recompose carries no dangling marker. Control: a save of the root that drops the slot does the same today.
+# `engine-root-delete-one-change`: a `tm-delete-tiddler` on a root lands root and children as one family change, never a window (red today if the reading of `island-adaptor.ts:1583-1592` holds).
+# `move-slot-refuses`: a residency MOVE naming a slot title refuses `slot-without-root`. Control: a root MOVE carries the family.
+# `rename-root-carries-family`: a rename of a root re-titles its children and re-mints its references. Control: a plain rename relinks as stock does.
+# `bulk-act-half-family-refuses`: an action string over a filter that catches a child without its root refuses in preview, naming the family.
+# `orphan-projects-and-flags`: a family whose root reads absent (a merge, a lone landing) projects each child as a plain `.tid` under `<root-stem>.orphans/` and raises `$:/temp/lares/alert/meme-orphan/<root>`, on the node projector and the browser mirror alike. Control: a whole family projects one `.mem` and raises nothing.
+# `cap-family-split-names-layers`: a root delete with children in an unwritable bag previews the shadowing tombstones with their layers; a reader-seated face's preview refuses `read-only-seat` before any write.
+# `verb-table-parity`: one table drives MCP, CLI, console and port; a row missing on any door reds `mirror-parity-witness`.
+
+!!! The lanes it splits into
+
+# ''Lane 0, one family law'': a single `familyOf(title)` in `@lararium/mesh` answering position and members from parent edges and references, replacing the three laws of `#/meme-aware-actions`; every existing caller moves onto it; the `consequence` object lands as a pure function over it. Then the orphan projection and its flag (red `orphan-projects-and-flags`), since it stands independent of any new door.
+# ''Lane 1, the tiddler door on the anchor'' (`L17` stage slice 3, re-named): `tiddler_get|put|delete`, `wiki_filter`, `wiki_render` on `recipe:"default"` through the daemon's own `$tw`, with the cap and cursor; the CLI and MCP skins; the parity weld.
+# ''Lane 2, the port relay'': the daemon opens a width-`none` port on a named island under a session-minted lease, reusing `wikiActivation`; red 3, 10, 11.
+# ''Lane 3, `act` and `catalog` asks'': the throwaway-copy recorder (stage slice 2's `codeClassOf` first), preview by default, apply by digest, the empty `tm-*` allowlist; reds 7 to 9.
+# ''Lane 4, the meme door re-seated'': `meme put|get|delete` compose a port write; the group sweep stops at families (red 2); `meme_get` on a plain tiddler warns toward `tiddler_get`.
+# ''Lane 5, the console rows'': `lares("tiddler", …)` and `lares("wiki", "filter", …)` read off the vessel worker's table over the page's port.
+# ''Lane 6, resources'': the filter and action references as MCP resources.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open`>>
+
+!! Open ~ each with a default
+
+* ''Act on a user wiki: preview mandatory or optional?'' Default: preview by default, `apply` straight from an action string allowed on a user wiki with `preview: false`, since the operator ruled user wikis live with full caps.
+* ''`act` versus the residency `lares act`.'' Default: `wiki act` for action strings; `lares act` keeps residency; revisit if a reader confuses them.
+* ''Which `tm-*` messages a headless act may dispatch.'' Default: the act ward's allowlist, EMPTY, joined by name only when a real act needs one; story and popup messages refuse off a page.
+* ''A filter's time bound.'' Default: none inside the island; caps on rows and bytes at the door; a hung island torn down by the pool. A measured red before any time bound.
+* ''`tiddler_put` without a base.'' Default: allowed as a fresh adoption, as `meme_put` allows today; `If-None-Match`-style create-only on request.
+* ''The relay's width.'' Default: `none` plus asks; a CLI `watch` verb opens `skinny` and streams changes later.
+* ''Read scope for a second face on one island.'' Default: refuse (`port-one-island-one-face`) until the per-bag read lend lands.
+* ''Field names that collide with envelope fields (`bag`, `$origin-bag`).'' Default: the field-collision law as it stands (`bag` reads as user space on a put).
+* ''Where `$tw.lares.meme` stands after lane 4.'' Default: unchanged for wiki-side callers; it already composes the live wiki.
+* ''Deprecation length for `meme_get` on plain tiddlers.'' Default: one release, with the warning.
+* ''Which family law wins for `/path` children.'' Default: a `/path` child stands as its own meme (its own root); the prefix law stops sweeping it; `meme delete` names it in `leaves` rather than tombstoning it.
+* ''The orphan folder's name and its ingest.'' Default: `<root-stem>.orphans/<slot>.tid`, read back as plain records; a re-rooted family removes the folder by the projector's own reconcile.
+* ''Orphan flag after a re-found.'' Default: the flag lives in `$:/temp` and re-derives from the view on each boot, so it never needs to survive.
+* ''The existing rail's wall-clock `ts`'' (`place-meme.ts:119`). Default: name it as a no-global-now debt and replace it with a log cursor when the orphan rail lands beside it.
+* ''Unread sources.'' The TW5 developer pages on the store, startup and syncadaptor modules (404); the primary membrane papers; the Emacs manual; CDP's docs; Pharo remote images. Default: re-fetch before lane 3 leans on any of them.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/meme-api-surface`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/tw5-vm-gaps-scout`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/meme`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/field-collision`>>
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;63WLCavMLTEIf8G3R0f7tF7A3jyyihvy3X7yNiimpIc`>>
+
+<<^ code=`&#x0004;` to=`?`>>
