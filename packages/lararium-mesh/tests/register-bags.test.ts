@@ -46,6 +46,19 @@ describe("the ground every vessel stands on", () => {
     }
   });
 
+  test("RED: a face outside the cabal that stands a house canon wiki registers that wiki's slots and never its canon bag", () => {
+    // The active wiki's own canon bag rides `wikiBags` (`wornFaceWikiBags`). Where that wiki composes house canon (`lares`), the
+    // bag's live document rests in the Kahu realm: a face the cabal never admitted that registered the bag id held a read cap
+    // by name over a document it holds no seat in, so `meme get --bag lares` read the live document where the floor answers.
+    const slots = ["lar:///ha.ka.ba/wikis/lares/working", "lar:///ha.ka.ba/wikis/lares/draft"];
+    const outside = deriveRegisterBags({ fleets: [standingIn("g1")], wikiBags: [BAG_IDS.lares, ...slots] });
+    expect(outside).not.toContain(BAG_IDS.lares);
+    for (const slot of slots) expect(outside).toContain(slot);
+    // CONTROLS: the admitted vessel registers it; a wiki whose canon carries no house canon registers its own bag as before.
+    expect(deriveRegisterBags({ fleets: [standingIn("g1")], wikiBags: [BAG_IDS.lares, ...slots], systemCanon: true })).toContain(BAG_IDS.lares);
+    expect(deriveRegisterBags({ fleets: [standingIn("g1")], wikiBags: WIKI })).toEqual(expect.arrayContaining(WIKI));
+  });
+
   test("★ a face's relations are NOT ground — a vessel standing in nothing carries no one's circles ★", () => {
     // A single vessel-wide circles plane would put one persona's blocked list in the same document as another's
     // follows, where anything reading it correlates the faces a multitude exists to hold apart. So the

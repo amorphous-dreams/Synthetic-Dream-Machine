@@ -110,7 +110,8 @@ const OWN_GROUND = [
 
 /**
  * The LIVE house canon (`houseCanonBagsSeated`): ground for the Kahu cabal's vessel alone. It rests in the Kahu realm
- * (`kahu-realm`), so a vessel outside the cabal holds no document of it and registers none of its bags. It remains
+ * (`kahu-realm`), so a vessel outside the cabal holds no document of it and registers none of its bags, the canon bag of the
+ * wiki it stands included (`deriveRegisterBags` leaves a house canon bag out of `wikiBags` without `systemCanon`). It remains
  * vessel-ground in KIND: the daemon's own key holds its caps, as it holds the substrate's.
  */
 export function isVesselGround(bag: string): boolean {
@@ -126,7 +127,11 @@ export function isVesselGround(bag: string): boolean {
  * produce one comparable set, and two groups naming a bag in common register it once.
  */
 export function deriveRegisterBags(input: RegisterBagsInput): string[] {
-  const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? houseCanonBagsSeated() : []), ...(input.wikiBags ?? [])];
+  // A HOUSE CANON BAG ENTERS THROUGH THE CABAL'S ADMISSION ALONE. The wiki a face stands may compose house canon (`lares`), and
+  // its slot names that canon bag as the wiki's own; a vessel outside the cabal holds no document of it, so it registers the
+  // wiki's slots and never the canon bag: its read cap over that bag never forms, and its reads answer from the floor.
+  const wikiBags = (input.wikiBags ?? []).filter((bag) => input.systemCanon === true || !isHouseCanonBag(bag));
+  const out: string[] = [...OWN_GROUND, ...(input.systemCanon === true ? houseCanonBagsSeated() : []), ...wikiBags];
   for (const fleet of input.fleets) {
     const face = personaScopedBagIds(fleet.personaGroupId);
     // The catalog names every face's planes; a group registers ITS four (above) and never another face's, which the derived shape
