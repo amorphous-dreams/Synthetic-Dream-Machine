@@ -298,11 +298,19 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
         const alert = landingFailedAlertTitle(title);
         if (this.tw5.$tw.wiki.getTiddler(alert)) this.tw5.$tw.wiki.deleteTiddler(alert);
       },
+      (landed) => { for (const hear of [...this.sliceHearers]) hear(landed); },
     );
     this.landing = landing;
     this.engineApply = apply;
     this.door = (change) => landing.enqueue(change);
     lares.enqueueNalu = this.door;
+  }
+
+  private readonly sliceHearers = new Set<(landed: number) => void>();
+  /** Hear each slice the shore's queue lands (the rows it landed), until the returned unsubscribe: the kernel's breath rides it. */
+  onSliceLanded(hear: (landed: number) => void): () => void {
+    this.sliceHearers.add(hear);
+    return () => { this.sliceHearers.delete(hear); };
   }
 
   armSeedCheckpoint(): Promise<void> {

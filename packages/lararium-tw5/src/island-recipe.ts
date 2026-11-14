@@ -179,12 +179,17 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
  * the corpus and the slot pointers both. The kernel awaits it between the recipe and `behavior.onEa`, so
  * behavior arms over a resident seed and its first write finds every slot named. An engine no recipe was
  * built over holds no checkpoint, and asking for one refuses by name: a seed nobody queued must never
- * read as a seed that landed.
+ * read as a seed that landed. `breathe` hears each slice the shore's queue lands while the seed drains: the kernel hands
+ * its progress tick, so the vessel's watchdog (which bounds the mount on PROGRESS) reads a long drain as moving and still
+ * reads a drain that lands nothing as stalled.
  */
-export function seedDrained(tw5: TW5Engine): Promise<void> {
+export function seedDrained(tw5: TW5Engine, breathe?: () => void): Promise<void> {
   const checkpoint = seedCheckpoints.get(tw5);
   if (!checkpoint) throw new Error("island-recipe: no seed checkpoint stands for this engine — build its recipe (`buildIslandRecipe`) before awaiting `seedDrained`");
-  return checkpoint;
+  if (!breathe) return checkpoint;
+  // THE DRAIN BREATHES AS IT WORKS: each slice the shore lands tells `breathe` until the checkpoint settles either way.
+  const stop = adaptors.get(tw5)?.onSliceLanded(() => breathe()) ?? (() => {});
+  return checkpoint.finally(stop);
 }
 
 const seedCheckpoints = new WeakMap<TW5Engine, Promise<void>>();

@@ -584,9 +584,10 @@ export function runSovereignKernel(
               // The bridge compares wiki notifications with the landed ledger and sends hands through the gate.
               _bridgeUnsub = bridgeWikiToAdaptor(tw5, adaptor);
               // Await the shore's seed checkpoint before arming behavior: onEa observes a fully resident seed,
-              // landed by the shore's queue in host-task slices.
+              // landed by the shore's queue in host-task slices. Each landed slice ticks the breath's progress, so the
+              // vessel's stall watchdog reads a long seed as moving; a drain that lands no slice ticks nothing.
               tick("seed-drain");
-              await seedDrained(tw5);
+              await seedDrained(tw5, () => tick());
               // THE STORY OPENS AT THE ISLAND'S FIRST WHOLE SNAPSHOT, never inside engine boot: the wiki's own landing has landed
               // by now, and a personal `$:/StoryList` the seed carried stays (`default-story.ts`). A composition with no layer for the
               // story keeps it in the engine alone, so the island owes no save it cannot make (`island-story.ts`).
