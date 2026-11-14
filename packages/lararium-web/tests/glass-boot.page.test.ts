@@ -9,6 +9,12 @@ async function coreBytes(): Promise<Uint8Array> {
   return new Uint8Array(await response.arrayBuffer());
 }
 
+/** The core's content id: the hex SHA-256 of its bytes. */
+async function cidOf(bytes: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+}
+
 /** Run `act`, then wait for the wiki's own change event; the camera's listener stands ahead of this one. */
 function afterChange(tw: { wiki: { addEventListener(t: string, l: () => void): void; removeEventListener(t: string, l: () => void): void } }, act: () => void): Promise<void> {
   return new Promise<void>(resolve => {
@@ -38,8 +44,7 @@ describe("glass boot on the real page", () => {
     const door = (glass as any).openMirror;
     expect(door).toBeTypeOf("function");
     const bytes = await coreBytes();
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    const coreCid = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    const coreCid = await cidOf(bytes);
     const camera = await door({ transport, inputs: { coreBytes: bytes, coreCid, preloadedTiddlers: [
       { title: "Glass Seed", text: "Glass seed body" },
       { title: "$:/StoryList", list: ["Glass Seed"] },
@@ -73,8 +78,7 @@ describe("glass boot on the real page", () => {
     const shadowRoot = host.attachShadow({ mode: "open" });
     const transport = { send: () => ({ ok: true as const }), onMessage: () => () => {} };
     const bytes = await coreBytes();
-    const digest = await crypto.subtle.digest("SHA-256", bytes);
-    const coreCid = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+    const coreCid = await cidOf(bytes);
     const root = "lar:///t/glass/orphan-root";
     const whole = "lar:///t/glass/whole-root";
     const carrier = "text/memetic-wikitext+tiddlywiki";
