@@ -2,15 +2,17 @@
 
 The Lares boot **entry point**, as a Claude Code plugin.
 
-On every `SessionStart`, the hook runs `lares vessel stand --observe` and `lares home read --brief`, which:
+On every `SessionStart`, `hooks/lares-wake-hook.mjs` starts three reads together and carries their answers into the session:
 
-- **checks** the mempalace integration — submodule, the `@lararium/mempalace` package, the python holder deps, the recall plugin (`lares mempalace install` installs it);
-- **ensures the live Lararium node is up** — attach if healthy, start detached if down (idempotent; never a restart);
-- **emits a live-delta hydration frame** into the session.
+- **the vessel observation** — `tools/lares-container.sh vessel stand --observe --json`; it observes and never stands a vessel;
+- **the memory index** — `tools/lares-container.sh wiki filter '[tag[stage/index]]' --recipe default --fields title,description --limit 32 --max-bytes 4096 --json`, printed as `Lares memory index: <N> rows`, one `<title> — <description>` line per row, and one line naming the call that reads further; a fault prints `memory index unread: <cause>`, and a vessel that answers no "up" skips the read;
+- **the homes line** — `lares home read --brief`.
 
-The static `CLAUDE.md` @-import carries the canonical seed (always-true); this plugin grounds it in live state (true-right-now). A degraded wake never blocks the session — it exits 0 with the verdict in the frame.
+Before a compaction, `hooks/lares-compact-hook.mjs` (`PreCompact`) prints the same index and the rows in play (the open ledger, the standing orders) by `lar:` address; Claude Code appends that text to the compaction's instructions. The wake fires again on the session start that follows a compaction and prints both into the new context. What either hook says lives in `hooks/lares-wake-core.mjs`.
 
-**Install:** `/plugin marketplace add <this repo>` → `/plugin install lares-wake`, or point a `SessionStart` hook at `hooks/lares-wake-hook.sh`.
+The static `CLAUDE.md` @-import carries the canonical seed (always-true); this plugin grounds it in live state (true-right-now). A degraded wake never blocks the session — it exits 0 with each read's own cause in the frame, inside one 12-second budget under the harness's 15.
+
+**Install:** `/plugin marketplace add <this repo>` → `/plugin install lares-wake`, or run `lares home tend`, which seats both hooks in `~/.claude/settings.json` from the main clone.
 
 **Founding vs joining:**
 - `lares vessel stand --init` — found a *first* vessel (build · init · genesis, each found-if-absent; genesis never rebuilt; keypair never wiped). It writes `LAR_ROOT` alone; `lares home tend` keeps the operator's homes.
