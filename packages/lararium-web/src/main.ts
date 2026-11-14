@@ -709,7 +709,8 @@ const pageReading = () => ({
 /**
  * THE RESET (browser-vessel-lift#/the-reset): the device's holder returns this browser vessel to its anon floor, whatever
  * state it stands in. The page's part burns nothing: `vessel reset` paints the reset ask, its button opens the ceremony
- * document, and that document takes the typed confirmation and burns the place. Every tab of the origin hears the ceremony on
+ * document, and that document takes the holder's confirmation through the confirm gate (a passphrase where this browser
+ * holds custody, typed words at a bare floor) and burns the place. Every tab of the origin hears the ceremony on
  * one channel (`reset-tab.ts`): it stands its vessel down on the ceremony's word and boots afresh once the place burned.
  */
 const resetChannel = typeof BroadcastChannel === "function" ? new BroadcastChannel(RESET_CHANNEL) : null;
@@ -731,7 +732,7 @@ const resetTab = resetChannel ? standResetTab({
 const pageVerbs = standConsoleVerbs(() => [
   { path: ["vessel", "read"], summary: "read this browser vessel: its place, standing, faces, relay, floor pin, pending asks and custody at rest, beside what this page knows",
     run: () => readVesselBesidePage(pageReading, vesselAtDoor) },
-  { path: ["vessel", "reset"], summary: "return this browser vessel to its anon floor: paints the reset ask, whose ceremony takes typed words and then burns every store this site holds here, in every tab",
+  { path: ["vessel", "reset"], summary: "return this browser vessel to its anon floor: paints the reset ask, whose ceremony takes the holder's confirmation (this browser's passphrase where it holds custody, typed words where it holds none) and then burns every store this site holds here, in every tab",
     waits: () => resetChannel ? null : ["reset-channel-absent", "this engine carries no BroadcastChannel, so the ceremony cannot tell this site's tabs to let go; clear this site's data in the browser's own settings"] as const,
     run: async () => {
       const answer = resetAskAnswer(document, paintResetAsk(document));

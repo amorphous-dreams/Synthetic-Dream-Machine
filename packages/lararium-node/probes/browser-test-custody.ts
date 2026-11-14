@@ -68,6 +68,9 @@ export async function armTestCustody(target: BrowserContext | Page, label: strin
       for (const notice of document.querySelectorAll<HTMLElement>(".ceremony-ask")) {
         if (seen.has(notice) || notice.dataset["refusal"]) continue;
         seen.add(notice);
+        // THE RESET ASK BELONGS TO THE HOLDER: this door answers the vessel's asks, and never confirms a burn. A harness that
+        // walks a reset opens its ceremony and types its confirmation itself.
+        if (notice.dataset["ask"] === "reset") continue;
         const call = (globalThis as unknown as { __larTestCustodyAsked?: (kind: string, askId: string) => Promise<void> }).__larTestCustodyAsked;
         void call?.(notice.dataset["ask"] ?? "unnamed", notice.dataset["askId"] ?? "");
       }

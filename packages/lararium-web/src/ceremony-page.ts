@@ -84,7 +84,7 @@ export interface AskNoticeDoors {
 
 /** Each ask kind in the page's words: the label its button carries, and what the boot status row says the vessel waits on. */
 const ASK_WORDS: Record<PageAskKind, { readonly open: string; readonly waits: string }> = {
-  "reset": { open: "open the reset ceremony", waits: "the typed words that reset this browser's vessel" },
+  "reset": { open: "open the reset ceremony", waits: "the holder's confirmation that resets this browser's vessel" },
   "unlock": { open: "open the unlock ceremony", waits: "this browser's unlock" },
   "bind-first": { open: "open the first passphrase ceremony", waits: "a first passphrase" },
   "clear": { open: "open the custody clear ceremony", waits: "the passphrase that clears this browser's custody" },
@@ -166,8 +166,11 @@ export function openResetCeremony(askId: string, open: (url: string, target: str
 
 /**
  * THE RESET ASK (browser-vessel-lift#/the-reset), painted in the idiom of every other ask: a notice at the top of the page and
- * one button that names its ask. The page's script burns nothing: the button opens the ceremony document, which takes the typed
- * confirmation and burns the place itself. One reset ask stands at a time; a second call answers the standing one's id.
+ * one button that names its ask. The page's script burns nothing: the button opens the ceremony document, which takes the
+ * holder's confirmation through the confirm gate (`ceremony/critical-gate.ts`: a passphrase where this browser holds custody,
+ * typed words at a bare floor) and burns the place itself. The console door's `vessel reset` and the page's own control both
+ * call this one function. One reset ask stands at a time; a second call answers the standing one's id. The notice and the
+ * door's answer name the gate and never how this browser's custody stands.
  *
  * THE PAGE RECORDS THE ASK IT RAISES (`reset-core.ts`, the ask record): the ceremony burns only for an id this origin's record
  * names, so the paint writes it, each press writes it again before the ceremony opens, and "not now" forgets it. A page whose
@@ -185,7 +188,7 @@ export function paintResetAsk(doc: Document, mint: () => string = () => crypto.r
   notice.dataset["ask"] = "reset";
   notice.dataset["askId"] = askId;
   const say = doc.createElement("div");
-  say.textContent = "This browser's holder asks to reset its vessel to its anon floor. Nothing burns here: the ceremony takes typed words first, then burns every key, face, wiki and pin this browser holds for this site.";
+  say.textContent = "This browser's holder asks to reset its vessel to its anon floor. Nothing burns here: the ceremony asks the holder's confirmation first (this browser's passphrase where it holds custody, typed words where it holds none), then burns every key, face, wiki and pin this browser holds for this site.";
   const go = doc.createElement("button");
   go.type = "button"; go.className = "ceremony-open"; go.textContent = ASK_WORDS.reset.open;
   const unrecorded = (): void => {
@@ -219,7 +222,7 @@ export function resetAskAnswer(doc: Document, askId: string):
   if (ask?.refusal) {
     return { refusal: ask.refusal, why: `${ask.refusal}: this browser withholds this site's storage, so the page cannot record the ask its ceremony checks and no reset ceremony stands here; clear this site's data in the browser's own settings to reset it` };
   }
-  return { asked: "reset", askId, next: "press \"open the reset ceremony\" at the top of this page; nothing burns until its typed confirmation reads back" };
+  return { asked: "reset", askId, next: "press \"open the reset ceremony\" at the top of this page; nothing burns until the ceremony's gate takes the holder's confirmation: this browser's passphrase where it holds custody, typed words where it holds none" };
 }
 
 /** The vessel settled an ask: its notice leaves the page. */

@@ -2,14 +2,14 @@
  * reset-ceremony — THE RESET: THIS BROWSER VESSEL RETURNS TO ITS ANON FLOOR (browser-vessel-lift#/the-reset), in a real engine.
  *
  * The device's holder owns the return to the floor (dreamnet-rhizome#/the-ground: every vessel "MUST always return"). The
- * page's script burns nothing; the ceremony document takes typed words and burns the place itself, and every tab of the origin
- * hears it on one channel.
+ * page's script burns nothing; the ceremony document takes the holder's confirmation through the confirm gate and burns the
+ * place itself, and every tab of the origin hears it on one channel. Every burn here spends a pass the gate minted.
  *
  *   R1 RED   the burn reads its census first, tells every tab to stand down, then burns every database the origin names, the
  *            file system, the caches, the vessel's own storage keys and the service worker, and says `reset:burned` last.
  *            CONTROL: a storage key outside the vessel's prefix stays.
- *   R2 RED   the typed words decide, and nothing else does: the phrase confirms in any case and spacing, any other words
- *            do not; the navigation's `#reset=<id>` names a reset ask and `#ask=<id>` never does. The reset ceremony stands
+ *   R2 RED   at a bare floor the typed words decide (the confirm gate asks a passphrase where custody stands,
+ *            `critical-gate.test.ts`): the phrase confirms in any case and spacing, any other words do not; the navigation's `#reset=<id>` names a reset ask and `#ask=<id>` never does. The reset ceremony stands
  *            with no secure context and no broker (no ward and no missing worker blocks the return), and refuses a frame and
  *            a policy out of force by name.
  *   R3 RED   over the engine's own IndexedDB, caches and storage: a database another context holds open blocks, the
@@ -37,14 +37,19 @@
 import { expect, test } from "vitest";
 import { RESET_CHANNEL, type ResetSignal } from "../src/ceremony-protocol.js";
 import { askIdOf, resetAskOf } from "../src/ceremony/ceremony-core.js";
+import { passCriticalGate, typedConfirms as phraseConfirms, type GatePass } from "../src/ceremony/critical-gate.js";
 import {
-  ambientResetEnv, burnPlace, clearOwnedKeys, forgetResetAsk, OWNED_STORAGE_PREFIX, recordResetAsk, RESET_PHRASE, resetAskKey, resetAskStands,
-  ResetRefused, resetRefusal, typedConfirms, type AskRecord, type ResetEnv,
+  ambientResetEnv, burnPlace, clearOwnedKeys, forgetResetAsk, OWNED_STORAGE_PREFIX, recordResetAsk, RESET_PHRASE, RESET_PROCEDURE, resetAskKey, resetAskStands,
+  ResetRefused, resetRefusal, type AskRecord, type ResetEnv,
 } from "../src/ceremony/reset-core.js";
 import { mirrorEvidenceKey, mirrorStandingKey } from "../src/glass/stand.js";
 import { standResetTab } from "../src/reset-tab.js";
 
 const ASK = "00000000-0000-4000-8000-0000000000aa";
+
+/** A fresh pass through the confirm gate at a bare floor (`critical-gate.test.ts` reads the gate's own law): every burn here spends one. */
+const passed = (): Promise<GatePass> => passCriticalGate(RESET_PROCEDURE, { census: async () => [], readable: async () => 0, prove: async () => "unverifiable" }, { value: RESET_PHRASE }, "typed-phrase");
+const typedConfirms = (typed: string): boolean => phraseConfirms(typed, RESET_PHRASE);
 
 /** A storage over a plain map, as the burn reads one. */
 function storageOf(entries: Record<string, string>) {
@@ -71,7 +76,7 @@ test("R1 RED the burn reads its census, stands every tab down, burns each surfac
     signal: (msg) => { log.push(msg.t); },
     say: () => {},
   };
-  const report = await burnPlace(env, ASK);
+  const report = await burnPlace(env, ASK, await passed());
   expect(log).toEqual(["census", "reset:stand-down", "db automerge-daemon", "db lares:continuity", "db lares:vessel", "file cas", "file labels", "cache genesis", "worker", "reset:burned"]);
   expect(report).toEqual({ databases: ["automerge-daemon", "lares:continuity", "lares:vessel"], files: 2, caches: 1, storageKeys: 4, workers: 1 });
   expect([...session.map.keys()]).toEqual([]);
@@ -88,9 +93,10 @@ test("R2 RED the typed words decide; #reset names a reset ask; the reset ceremon
   expect(askIdOf(`#reset=${ASK}`), "a reset never reads as a vessel's ask").toBeNull();
   expect(resetAskOf("#reset=not-an-id")).toBeNull();
   // The return to the floor needs its clean document alone: neither a secure context nor a service worker stands before it.
-  expect(resetRefusal({ framed: false, evalRuns: false, asked: true })).toBeNull();
-  expect(resetRefusal({ framed: true, evalRuns: false, asked: true })).toBe("ceremony-framed");
-  expect(resetRefusal({ framed: false, evalRuns: true, asked: true })).toBe("ceremony-csp-absent");
+  expect(resetRefusal({ framed: false, opened: false, evalRuns: false, asked: true })).toBeNull();
+  expect(resetRefusal({ framed: false, opened: true, evalRuns: false, asked: true }), "an opener could read the gate's field").toBe("ceremony-has-opener");
+  expect(resetRefusal({ framed: true, opened: false, evalRuns: false, asked: true })).toBe("ceremony-framed");
+  expect(resetRefusal({ framed: false, opened: false, evalRuns: true, asked: true })).toBe("ceremony-csp-absent");
 });
 
 const openDb = (name: string): Promise<IDBDatabase> => new Promise((resolve, reject) => {
@@ -114,7 +120,7 @@ test("R3 RED over the engine's own stores: a database another context holds bloc
   // This witness burns its own database alone, so a test file beside it keeps its stores.
   const scoped: ResetEnv = { ...env, databases: async () => [mine], workers: null, opfs: null, caches: env.caches ? { keys: async () => [cacheName], delete: (n) => env.caches!.delete(n) } : null };
   let landed = false;
-  const burn = burnPlace(scoped, ASK).then((report) => { landed = true; return report; });
+  const burn = burnPlace(scoped, ASK, await passed()).then((report) => { landed = true; return report; });
   for (let i = 0; i < 200 && !said.some((w) => w.includes("still holds")); i++) await new Promise((r) => setTimeout(r, 25));
   expect(said.find((w) => w.includes("still holds")), "the ceremony names the store it waits on").toContain(mine);
   expect(landed, "the burn waits on the tab and gives up on no clock").toBe(false);
@@ -174,7 +180,7 @@ test("R4 RED a second tab stands its vessel down on the ceremony's word, boots a
 test("R5 an engine that names no database list refuses reset-census-absent before any tab stands down or any byte burns", async () => {
   const log: string[] = [];
   const env: ResetEnv = { databases: null, deleteDatabase: async (n) => { log.push(n); }, opfs: null, caches: null, storages: [storageOf({ "lares:tab-face": "pg" }).storage], record: raised(ASK).storage, workers: null, signal: (m) => { log.push(m.t); }, say: () => {} };
-  const refused = await burnPlace(env, ASK).catch((e: unknown) => e);
+  const refused = await burnPlace(env, ASK, await passed()).catch((e: unknown) => e);
   expect(refused).toBeInstanceOf(ResetRefused);
   expect((refused as ResetRefused).refusal).toBe("reset-census-absent");
   expect(log).toEqual([]);
@@ -184,8 +190,8 @@ const OTHER = "00000000-0000-4000-8000-0000000000bb";
 
 test("R6 RED the ceremony burns only for an ask a page of this origin raised: an unrecorded id refuses reset-unasked before anything moves; CONTROL: the recorded id burns", async () => {
   // The ceremony's stand: its clean document, and an ask the origin's record names.
-  expect(resetRefusal({ framed: false, evalRuns: false, asked: false })).toBe("reset-unasked");
-  expect(resetRefusal({ framed: true, evalRuns: false, asked: false }), "a frame names itself first").toBe("ceremony-framed");
+  expect(resetRefusal({ framed: false, opened: false, evalRuns: false, asked: false })).toBe("reset-unasked");
+  expect(resetRefusal({ framed: true, opened: false, evalRuns: false, asked: false }), "a frame names itself first").toBe("ceremony-framed");
   // The record: a page's paint writes it, the ceremony reads it, a decline or a withdrawal forgets it.
   const origin = storageOf({});
   expect(resetAskStands(origin.storage, ASK)).toBe(false);
@@ -211,7 +217,7 @@ test("R6 RED the ceremony burns only for an ask a page of this origin raised: an
     workers: { getRegistrations: async () => [{ unregister: async () => { log.push(`worker (ask recorded: ${String(resetAskStands(record, ASK))})`); return true; } }] },
     signal: (msg) => { log.push(`${msg.t} (ask recorded: ${String(resetAskStands(record, msg.askId))})`); }, say: () => {},
   });
-  const refused = await burnPlace(env(origin.storage), OTHER).catch((e: unknown) => e);
+  const refused = await burnPlace(env(origin.storage), OTHER, await passed()).catch((e: unknown) => e);
   expect(refused, "a bare link's id burns nothing").toBeInstanceOf(ResetRefused);
   expect((refused as ResetRefused).refusal).toBe("reset-unasked");
   expect(log, "nothing read, signalled or burned").toEqual([]);
@@ -219,13 +225,13 @@ test("R6 RED the ceremony burns only for an ask a page of this origin raised: an
 
   // CONTROL: the recorded id burns. Its record outlives every other surface, so a burn that stops midway confirms again,
   // and it leaves before the tabs hear `reset:burned`.
-  await burnPlace(env(origin.storage), ASK);
+  await burnPlace(env(origin.storage), ASK, await passed());
   expect(log).toEqual(["census", "reset:stand-down (ask recorded: true)", "db lares:vessel", "worker (ask recorded: true)", "reset:burned (ask recorded: false)"]);
   expect([...origin.map.keys()], "the burn leaves no record").toEqual([]);
   // A forgotten id (the person declined, or withdrew the ask on the page) refuses again.
   log.length = 0;
   recordResetAsk(origin.storage, ASK); forgetResetAsk(origin.storage, ASK);
-  expect(((await burnPlace(env(origin.storage), ASK).catch((e: unknown) => e)) as ResetRefused).refusal).toBe("reset-unasked");
+  expect(((await burnPlace(env(origin.storage), ASK, await passed()).catch((e: unknown) => e)) as ResetRefused).refusal).toBe("reset-unasked");
   expect(log).toEqual([]);
 });
 

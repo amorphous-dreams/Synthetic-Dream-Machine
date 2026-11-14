@@ -2,10 +2,14 @@
  * reset-core — the reset ceremony's own parts (lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-reset).
  *
  * A browser vessel MUST always return to its anon floor (dreamnet-rhizome#/the-ground), and the device's holder owns that
- * return: no ward and no passphrase stands before it, and it runs while the vessel stands locked, half-founded or not at all.
- * So the reset asks nothing of the vessel worker. The ceremony document takes one typed confirmation and burns the place
- * itself, from its own clean heap: every IndexedDB database this origin names, the origin-private file system, the caches, the
- * storage keys the vessel owns (`lares:`), and the service worker's registration.
+ * return. The reset burns a whole place, so it stands in the class of CRITICAL PROCEDURES and passes the confirm gate
+ * (`critical-gate.ts`; the operator's note, 2026-11-13): where this browser holds custody the gate asks a passphrase that
+ * opens it, and at a bare floor the typed phrase confirms. The burn runs only on the pass that gate mints (`gate-unpassed`
+ * otherwise). No ward stands before it, and it runs while the vessel stands locked, half-founded or not at all: the reset
+ * asks nothing of the vessel worker, and the gate proves a passphrase against custody at rest. The ceremony document burns
+ * the place itself, from its own clean heap: every IndexedDB database this origin names, the origin-private file system, the
+ * caches, the storage keys the vessel owns (`lares:`), and the service worker's registration. A holder who lost every
+ * passphrase keeps the platform's own clearing of this site's data, which no house door gates.
  *
  * IT BURNS ONLY FOR AN ASK A PAGE OF THIS ORIGIN RAISED (the ask record, below): the ceremony's own navigation names an id,
  * and an id no page recorded refuses `reset-unasked` at the ceremony's stand and again at the burn.
@@ -17,9 +21,13 @@
  * This module imports the protocol's types alone, so the ceremony document's graph stays its own directory.
  */
 import type { ResetSignal } from "../ceremony-protocol.js";
+import { spendGatePass, type CriticalProcedure, type GatePass } from "./critical-gate.js";
 
-/** The words a person types to confirm. Public: they prove a deliberate hand, never a secret. */
+/** The words a person types to confirm at a bare floor. Public: they prove a deliberate hand, never a secret. */
 export const RESET_PHRASE = "reset this browser";
+
+/** The reset as the confirm gate names it (`critical-gate.ts`): the procedure its burn spends a pass under. */
+export const RESET_PROCEDURE: CriticalProcedure = { name: "vessel reset", phrase: RESET_PHRASE };
 
 /** The prefix of every storage key the vessel's page writes; the reset removes these and leaves any other key as it stands. */
 export const OWNED_STORAGE_PREFIX = "lares:";
@@ -32,8 +40,8 @@ export const OWNED_STORAGE_PREFIX = "lares:";
  * ceremony again. localStorage carries it because the ceremony's window opens with no opener and shares no sessionStorage.
  *
  * WHAT THIS DEFENDS: a bare inbound link, and an id that no longer stands. WHAT IT CANNOT: script already running in a page of
- * this origin writes the same storage a page writes. The typed phrase and the confirm gate #/the-reset records as owed stand
- * against that.
+ * this origin writes the same storage a page writes, and deletes a database as the burn does. The confirm gate asks the
+ * device's holder; it stands against a hand at the device and a mistaken press, never against that script.
  */
 export const RESET_ASK_KEY = "lares:reset-ask";
 export const resetAskKey = (askId: string): string => `${RESET_ASK_KEY}:${askId}`;
@@ -70,16 +78,13 @@ export class ResetRefused extends Error {
  * force) and an ask the origin's record names (`asked`). It needs no secure context and no broker, since no secret and no
  * port crosses, and nothing of the vessel worker: the record rests in storage a page wrote.
  */
-export function resetRefusal(env: { readonly framed: boolean; readonly evalRuns: boolean; readonly asked: boolean }): string | null {
+export function resetRefusal(env: { readonly framed: boolean; readonly opened: boolean; readonly evalRuns: boolean; readonly asked: boolean }): string | null {
   if (env.framed) return "ceremony-framed";
+  // The gate's field may take a passphrase: a window some script opened and still holds refuses, as every ceremony does.
+  if (env.opened) return "ceremony-has-opener";
   if (env.evalRuns) return "ceremony-csp-absent";
   if (!env.asked) return "reset-unasked";
   return null;
-}
-
-/** Whether what a person typed confirms the reset: the phrase itself, whatever its case or outer spacing. */
-export function typedConfirms(typed: string): boolean {
-  return typed.trim().replace(/\s+/g, " ").toLowerCase() === RESET_PHRASE;
 }
 
 /** What the burn reaches, each as the platform hands it; null names a surface this engine lacks. */
@@ -114,14 +119,16 @@ export function clearOwnedKeys(storage: Pick<Storage, "length" | "key" | "remove
 }
 
 /**
- * BURN THE PLACE, for an ask the origin's record names and no other: an unrecorded id refuses `reset-unasked` before anything
- * reads or moves. The census reads next, so an engine that names no database list refuses `reset-census-absent` before any
+ * BURN THE PLACE, on a pass the confirm gate minted for the reset and for nothing else: no pass, another procedure's or a
+ * spent one refuses `gate-unpassed` first. Then the ask: an id the origin's record does not name refuses `reset-unasked`
+ * before anything reads or moves. The census reads next, so an engine that names no database list refuses `reset-census-absent` before any
  * tab stands down or any byte burns. Then every tab stands down, each database deletes (a held one names itself and waits),
  * the file system, the caches, the owned storage keys and the service worker follow, the ask's own record leaves last, and
  * `reset:burned` tells every tab to boot afresh. A step that fails rejects with its own words; what burned before it stays
- * burned, the ask still stands recorded, and a second run goes on.
+ * burned, the ask still stands recorded, and a second run passes the gate again and goes on.
  */
-export async function burnPlace(env: ResetEnv, askId: string): Promise<ResetReport> {
+export async function burnPlace(env: ResetEnv, askId: string, pass: GatePass): Promise<ResetReport> {
+  spendGatePass(pass, RESET_PROCEDURE);
   if (!resetAskStands(env.record, askId)) throw new ResetRefused("reset-unasked", "no page of this site raised this reset ask, or the ask no longer stands; raise it from the vessel's own page (its reset button, or lares(\"vessel\", \"reset\"))");
   if (!env.databases) throw new ResetRefused("reset-census-absent", "this engine names no list of this site's databases, so the ceremony cannot tell what the vessel holds here; clear this site's data in the browser's own settings");
   const databases = [...await env.databases()].sort();

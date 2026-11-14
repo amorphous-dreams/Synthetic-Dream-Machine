@@ -20,19 +20,35 @@ export type CeremonyAskKind = "unlock" | "bind-first" | "clear" | "ward" | "card
 /**
  * THE RESET ASK (browser-vessel-lift#/the-reset): the page's own ask, never the vessel's. It carries no secret and no port, so
  * no broker moves it: the ceremony document reads its id off its own navigation (`#reset=<askId>`), checks it against the
- * record the asking page wrote (`reset-core.ts`: an id no page raised refuses `reset-unasked`), takes a typed confirmation,
- * burns the place itself, and speaks to every tab of the origin on one BroadcastChannel. A tab honours a signal only for an
- * ask that record names (`reset-tab.ts`).
+ * record the asking page wrote (`reset-core.ts`: an id no page raised refuses `reset-unasked`), takes the holder's
+ * confirmation through the confirm gate (`ceremony/critical-gate.ts`: a passphrase where this browser holds custody, typed
+ * words at a bare floor), burns the place itself, and speaks to every tab of the origin on one BroadcastChannel. A tab
+ * honours a signal only for an ask that record names (`reset-tab.ts`).
  */
 export type PageAskKind = CeremonyAskKind | "reset";
 export const RESET_CHANNEL = "lares:reset";
 export type ResetSignal =
-  /** The confirmation landed: every tab stands its vessel worker down, so no tab holds a store the burn deletes. */
+  /** The gate passed: every tab stands its vessel worker down, so no tab holds a store the burn deletes. */
   | { readonly t: "reset:stand-down"; readonly askId: string }
   /** The place burned: every tab clears its own session keys and boots afresh at the anon floor. */
   | { readonly t: "reset:burned"; readonly askId: string }
   /** The person declined: the ask's notice leaves the page, and nothing moved. */
   | { readonly t: "reset:declined"; readonly askId: string };
+
+/**
+ * THE CUSTODY PROOF (browser-vessel-lift#/the-confirm-gate): the ceremony document's own worker, spawned for one question and
+ * ended with its answer. It reads the stores' slot trees and writes nothing; a passphrase reaches it as bytes on a
+ * transferred buffer, and its answers name a count or a reading alone.
+ */
+export type ProofAsk =
+  /** How many of these stores' slot trees read. */
+  | { readonly t: "proof:read"; readonly stores: readonly string[] }
+  /** Whether the passphrase on `bytes` (UTF-8) opens a slot tree in these stores. */
+  | { readonly t: "proof:prove"; readonly stores: readonly string[]; readonly bytes: ArrayBuffer };
+export type ProofAnswer =
+  | { readonly t: "proof:readable"; readonly readable: number }
+  | { readonly t: "proof:proved"; readonly reading: "opens" | "no-slot-opens" | "unverifiable" }
+  | { readonly t: "proof:failed"; readonly why: string };
 
 /** A passkey pin's public half: the authenticator's credential id and the PRF salt it evaluates. */
 export interface CeremonyPasskey { readonly credentialId: Uint8Array; readonly prfSalt: Uint8Array }

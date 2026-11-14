@@ -7,14 +7,17 @@
  * the vessel worker. The surface page never holds them: the page opened this window with no opener, and the port reached
  * this document through the service worker.
  *
- * A RESET ASK (`#reset=<askId>`, browser-vessel-lift#/the-reset) stands here too, and it takes no secret and no port: this
- * document takes one typed confirmation and burns the place itself (`reset-core.ts`). The navigation alone stands no reset:
- * the id must name an ask a page of this origin recorded and that still stands, or the document refuses `reset-unasked` and
- * paints no form.
+ * A RESET ASK (`#reset=<askId>`, browser-vessel-lift#/the-reset) stands here too, and no port reaches it: this document
+ * takes the holder's confirmation through the confirm gate (`critical-gate.ts`: a passphrase that opens this browser's custody
+ * where it holds any, the typed phrase at a bare floor) and burns the place itself (`reset-core.ts`). A passphrase typed here
+ * goes to this document's own proof worker and nowhere else. The navigation alone stands no reset: the id must name an ask a
+ * page of this origin recorded and that still stands, or the document refuses `reset-unasked` and paints no form.
  */
 import { RESET_CHANNEL, type BrokerToCeremony, type CeremonyAsk, type CeremonyToBroker, type ResetSignal, type VesselToCeremony } from "../ceremony-protocol.js";
 import { askIdOf, ceremonyRefusal, evalRuns, resetAskOf, sendDecline, sendPasskey, sendPassphrase } from "./ceremony-core.js";
-import { ambientResetEnv, burnPlace, forgetResetAsk, originAskRecord, RESET_PHRASE, resetAskStands, ResetRefused, resetRefusal, typedConfirms } from "./reset-core.js";
+import { gateDemandOf, GateRefused, gateWords, passCriticalGate, readGateStanding, type GateDemand } from "./critical-gate.js";
+import { ambientGateEnv } from "./gate-ambient.js";
+import { ambientResetEnv, burnPlace, forgetResetAsk, originAskRecord, RESET_PHRASE, RESET_PROCEDURE, resetAskStands, ResetRefused, resetRefusal } from "./reset-core.js";
 
 const $ = (id: string): HTMLElement => document.getElementById(id)!;
 
@@ -84,52 +87,102 @@ function paint(ask: CeremonyAsk, port: MessagePort): void {
 }
 
 /**
- * THE RESET CEREMONY (`reset-core.ts`): this document, standing clean, takes one typed confirmation and burns the place
- * itself. No vessel answers it and no port reaches it, so it stands while the vessel rests locked, half-founded or down. It
- * tells every tab of the origin to stand down first, names any tab that still holds a store, and tells them all to boot
- * afresh once the place burned. It stands only for an ask the origin's record names: a link from anywhere else carries an id
- * no page raised, and refuses `reset-unasked` with no form painted.
+ * THE RESET CEREMONY (`reset-core.ts`): this document, standing clean, takes the holder's confirmation through the confirm
+ * gate and burns the place itself. No vessel answers it and no port reaches it, so it stands while the vessel rests locked,
+ * half-founded or down. It tells every tab of the origin to stand down first, names any tab that still holds a store, and
+ * tells them all to boot afresh once the place burned. It stands only for an ask the origin's record names: a link from
+ * anywhere else carries an id no page raised, and refuses `reset-unasked` with no form painted.
+ *
+ * THE GATE DECIDES WHAT THE FORM ASKS (`critical-gate.ts`), read off this browser's custody at rest: a passphrase field where a
+ * slot tree stands and reads, the typed phrase at a bare floor, the typed phrase under plain words where sealed custody
+ * stands that no passphrase can open. Each confirmation reads custody afresh; a wrong passphrase refuses by name, burns
+ * nothing and leaves the form standing, with no count of tries kept anywhere.
  */
 function standReset(askId: string): void {
   const record = originAskRecord();
-  const refusal = resetRefusal({ framed: window.top !== window.self, evalRuns: evalRuns(), asked: resetAskStands(record, askId) });
+  const refusal = resetRefusal({ framed: window.top !== window.self, opened: window.opener !== null, evalRuns: evalRuns(), asked: resetAskStands(record, askId) });
   if (refusal) { refuse(refusal); return; }
   const channel = new BroadcastChannel(RESET_CHANNEL);
   const signal = (msg: ResetSignal): void => channel.postMessage(msg);
   const say = (words: string): void => { $("ceremony-state").textContent = words; };
+  const gate = ambientGateEnv();
   document.title = "Lararium — reset ceremony";
   const heading = document.querySelector("h1");
   if (heading) heading.textContent = "Lararium — reset ceremony";
   const form = $("ceremony-form") as HTMLFormElement;
   form.dataset["kind"] = "reset";
-  $("ceremony-label").textContent =
-    "Reset this browser's vessel to its anon floor. Every key, face, wiki and pin this browser holds for this site burns, in every tab. "
-    + "A face that also lives on another vessel lives on there; a face that lives only here ends with this reset, and nothing recovers it. "
-    + `To confirm, type: ${RESET_PHRASE}`;
   $("ceremony-face").textContent = "this browser";
   $("ceremony-digest").textContent = askId;
   const pass = $("ceremony-pass") as HTMLInputElement;
-  pass.type = "text"; pass.autocomplete = "off"; pass.placeholder = RESET_PHRASE;
   ($("ceremony-again") as HTMLInputElement).hidden = true;
   ($("ceremony-passkey") as HTMLButtonElement).hidden = true;
   $("ceremony-go").textContent = "reset this browser's vessel";
-  say("Nothing burns until the typed words read back.");
-  form.hidden = false;
+  /** The demand the form shows now; null while the gate reads custody or a confirmation runs. */
+  let painted: GateDemand | null = null;
+  const gateRefused = (err: unknown): void => {
+    // A gate that cannot read custody or stand its proof passes nothing: the form stays down, by name.
+    const named = err instanceof GateRefused ? err : new GateRefused("gate-failed", err instanceof Error ? err.message : String(err));
+    document.body.dataset["gate"] = named.refusal;
+    form.hidden = true;
+    say(`The reset's gate cannot stand: ${named.message}. ${gateWords("typed-phrase", RESET_PROCEDURE).platform}`);
+  };
+  /** Read custody at rest and paint what the gate asks for it. */
+  const paintGate = async (words?: string): Promise<void> => {
+    painted = null;
+    const demand = gateDemandOf((await readGateStanding(gate)).standing);
+    const asks = gateWords(demand, RESET_PROCEDURE);
+    $("ceremony-label").textContent =
+      "Reset this browser's vessel to its anon floor. Every key, face, wiki and pin this browser holds for this site burns, in every tab. "
+      + "A face that also lives on another vessel lives on there; a face that lives only here ends with this reset, and nothing recovers it. "
+      + `${asks.ask} ${asks.platform}`;
+    pass.value = "";
+    pass.type = demand === "passphrase" ? "password" : "text";
+    pass.autocomplete = demand === "passphrase" ? "current-password" : "off";
+    pass.placeholder = demand === "passphrase" ? "" : RESET_PHRASE;
+    form.dataset["demand"] = demand;
+    delete document.body.dataset["gate"];
+    say(words ?? "Nothing burns until the gate takes this confirmation.");
+    form.hidden = false;
+    painted = demand;
+    pass.focus();
+  };
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    if (!typedConfirms(pass.value)) { pass.value = ""; say(`The words differ, and nothing burned. Type: ${RESET_PHRASE}`); return; }
-    form.hidden = true;
-    void burnPlace(ambientResetEnv(signal, say), askId).then(
-      (report) => done(`This browser's vessel stands at its anon floor again (${String(report.databases.length)} store(s) burned). Every tab of this site boots afresh. This window closes.`),
+    const demand = painted;
+    if (demand === null) return;
+    painted = null;
+    if (demand === "passphrase") say("The gate proves the passphrase against this browser's custody…");
+    void passCriticalGate(RESET_PROCEDURE, gate, pass, demand).then(
+      (gatePass) => {
+        form.hidden = true;
+        return burnPlace(ambientResetEnv(signal, say), askId, gatePass).then(
+          (report) => done(`This browser's vessel stands at its anon floor again (${String(report.databases.length)} store(s) burned). Every tab of this site boots afresh. This window closes.`),
+          (err: unknown) => {
+            // The ask left the record while this window stood (the page withdrew it, or another window settled it): nothing burned.
+            if (err instanceof ResetRefused && err.refusal === "reset-unasked") { refuse(err.refusal); return; }
+            // What stands now decides what the gate asks next: a burn that took the keystore leaves a bare floor.
+            return paintGate(`The reset stopped: ${err instanceof Error ? err.message : String(err)}. What burned before it stays burned; confirm again to go on.`).catch(gateRefused);
+          },
+        );
+      },
       (err: unknown) => {
-        // The ask left the record while this window stood (the page withdrew it, or another window settled it): nothing burned.
-        if (err instanceof ResetRefused && err.refusal === "reset-unasked") { refuse(err.refusal); return; }
-        form.hidden = false; say(`The reset stopped: ${err instanceof Error ? err.message : String(err)}. What burned before it stays burned; confirm again to go on.`);
+        if (!(err instanceof GateRefused)) { gateRefused(err); return; }
+        // A WRONG ANSWER leaves the ask standing: the refusal's name and public words, the form as it stood, no tally.
+        if (err.refusal === "no-slot-opens" || err.refusal === "gate-words-differ") {
+          document.body.dataset["gate"] = err.refusal;
+          say(`The gate refuses (${err.refusal}): ${err.message.slice(err.refusal.length + 2)}`);
+          painted = demand;
+          pass.focus();
+          return;
+        }
+        if (err.refusal === "gate-demand-moved") { void paintGate(`The gate asks again: ${err.message.slice(err.refusal.length + 2)}`).catch(gateRefused); return; }
+        gateRefused(err);
       },
     );
   });
   $("ceremony-decline").addEventListener("click", () => { pass.value = ""; forgetResetAsk(record, askId); signal({ t: "reset:declined", askId }); done("Nothing burned. This window closes."); });
-  pass.focus();
+  say("The gate reads how this browser's custody stands…");
+  void paintGate().catch(gateRefused);
 }
 
 async function stand(): Promise<void> {
@@ -139,6 +192,7 @@ async function stand(): Promise<void> {
   const refusal = ceremonyRefusal({
     isSecureContext: window.isSecureContext,
     framed: window.top !== window.self,
+    opened: window.opener !== null,
     hasServiceWorker: "serviceWorker" in navigator,
     evalRuns: evalRuns(),
   });

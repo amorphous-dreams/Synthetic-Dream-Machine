@@ -31,6 +31,19 @@
  *               uncontrolled and its `register()` revives that registration with no second `activate`. The page asks the
  *               worker to claim and boots to `live` under a new key. CONTROL: the ceremony's window still stands open after the
  *               burn (the instrument held the condition), and the booted page stands controlled.
+ *   K6 RED      THE CONFIRM GATE (browser-vessel-lift#/the-confirm-gate), on a founded browser whose vessel stands LOCKED (a
+ *               fresh tab whose unlock nobody answers): the page's own control and the console door raise ONE reset ask; its
+ *               ceremony asks a passphrase (a password field, no typed-phrase prompt); the typed phrase alone and a wrong
+ *               passphrase each refuse `no-slot-opens`, the place stays sealed with its face, and the form still stands; the
+ *               right passphrase burns the place and the tab boots at a fresh anon floor under a new key. At that bare floor
+ *               the ceremony asks the typed phrase, and the phrase alone burns. No console line of any page or worker, no
+ *               door answer and no ask record carries a byte typed into the gate. CONTROL: the locked tab's own door read
+ *               the place sealed and its session not unlocked while the gate answered.
+ *   K6b RED     THE CEREMONY REFUSES AN OPENER: a script of the page that opens the ceremony document itself, WITHOUT
+ *               `noopener`, holds a handle to a same-origin window and could read its field. The ceremony refuses
+ *               `ceremony-has-opener` before it paints any field, for a reset ask and for a vessel ask alike; what a person
+ *               types then reaches no field the opener reads. CONTROL: the same ask, opened by the page's own button (no
+ *               opener), stands its form.
  */
 import assert from "node:assert/strict";
 import { execFileSync, spawn } from "node:child_process";
@@ -339,5 +352,119 @@ test("K5 RED — a ceremony window that outlives the reset's burn stalls no boot
     assert.equal(rite.isClosed(), false, "the ceremony's window outlived the burn");
     assert.equal(await page.evaluate(() => navigator.serviceWorker.controller !== null), true, "the booted page stands under its broker");
     assert.deepEqual(faults, [], "no page error through the burn and the boot");
+  } finally { await context.close(); }
+});
+
+type Vault = { ok: boolean; data?: { custody?: { place?: { reading?: string }; faces?: unknown[] }; door?: { unlocked?: boolean; standing?: string } } };
+const vault = (page: Page): Promise<Vault> => lares(page, "vault", "status") as Promise<Vault>;
+
+test("K6 RED — the confirm gate: a locked, founded browser's reset asks its passphrase, a wrong one burns nothing, the right one burns; a bare floor takes the typed phrase", { timeout: 300_000 }, async () => {
+  const context = await browser.newContext();
+  const lines: string[] = [];
+  context.on("console", (m) => lines.push(m.text()));
+  context.on("page", (p) => p.on("worker", (w) => w.on("console", (m) => lines.push(m.text()))));
+  const faults: string[] = [];
+  const wrongGuess = "a wrong but secret guess";
+  /** Type one answer into the reset ceremony and wait for the gate's refusal by name. */
+  const refusedBy = async (rite: Page, typed: string): Promise<string> => {
+    await rite.evaluate(() => { delete document.body.dataset["gate"]; });
+    await rite.locator("#ceremony-pass").fill(typed);
+    await rite.locator("#ceremony-go").click();
+    await rite.waitForFunction(() => document.body.dataset["gate"] !== undefined, undefined, { timeout: WAIT });
+    return rite.evaluate(() => document.body.dataset["gate"] ?? "");
+  };
+  try {
+    // FOUND a face through the ceremony (this tab alone answers with the published test route), then leave: the vessel locks.
+    const founder = await context.newPage();
+    founder.on("pageerror", (e) => faults.push(`[founder] ${e.message}`));
+    await armTestCustody(founder, "gate");
+    await founder.goto(`${baseUrl}/`);
+    await live(founder);
+    await Promise.all([founder.waitForEvent("load"), founder.locator("#found-face").click()]);
+    await live(founder);
+    const founded = await keyOf(founder);
+    assert.equal((await vault(founder)).data?.custody?.place?.reading, "sealed", "the founding bound this browser's first passphrase");
+    await founder.close();
+
+    // A FRESH TAB nobody unlocks: the vessel asks its unlock and stands locked.
+    const page = await context.newPage();
+    page.on("pageerror", (e) => faults.push(`[page] ${e.message}`));
+    await page.goto(`${baseUrl}/`);
+    await page.waitForSelector(".ceremony-ask[data-ask=\"unlock\"]", { timeout: WAIT });
+    const locked = await vault(page);
+    // CONTROL: the place rests sealed and this tab's session holds no unlock.
+    assert.deepEqual({ place: locked.data?.custody?.place?.reading, unlocked: locked.data?.door?.unlocked, faces: locked.data?.custody?.faces?.length }, { place: "sealed", unlocked: false, faces: 1 });
+
+    // ONE ASK, TWO DOORS: the page's own control raises it, and the console door answers the standing ask's id.
+    await page.locator("#reset-vessel").click();
+    await page.waitForSelector(".ceremony-ask[data-ask=\"reset\"]", { timeout: WAIT });
+    const askId = await page.locator(".ceremony-ask[data-ask=\"reset\"]").getAttribute("data-ask-id") ?? "";
+    const asked = await lares(page, "vessel", "reset");
+    assert.equal(asked.data?.askId, askId, "the console door answers the ask the page's control raised");
+    assert.equal(await page.locator(".ceremony-ask[data-ask=\"reset\"]").count(), 1);
+    assert.doesNotMatch(JSON.stringify(asked), /sealed|locked|unlocked/, "the door's answer names no custody standing");
+    const record = await page.evaluate((id) => localStorage.getItem(`lares:reset-ask:${id}`), askId);
+    assert.equal(record, "raised", "the ask record names the ask and nothing else");
+
+    // K6b — THE CEREMONY REFUSES AN OPENER. A script of the page opens the ceremony itself, without `noopener`, so it holds
+    // a handle to a same-origin window. The ceremony names the refusal and paints no field; what gets typed reaches nothing
+    // the opener reads. (The harness types the published test route; no line prints it.)
+    for (const hash of [`#reset=${askId}`, "#ask=0f8fad5b-d9cb-469f-a165-70867728950e"]) {
+      const [held] = await Promise.all([context.waitForEvent("page"), page.evaluate((h) => { (window as unknown as { __larHeld: Window | null }).__larHeld = window.open(`/ceremony.html${h}`, "_blank"); }, hash)]);
+      await held.waitForFunction(() => document.body.dataset["refusal"] !== undefined || document.getElementById("ceremony-form")?.hidden === false, undefined, { timeout: WAIT });
+      const stood = await held.evaluate(() => ({ refusal: document.body.dataset["refusal"] ?? null, formHidden: document.getElementById("ceremony-form")?.hidden === true, opener: window.opener !== null }));
+      // The person types anyway, wherever a field would take it.
+      await held.evaluate((typed) => { const field = document.getElementById("ceremony-pass") as HTMLInputElement | null; const form = document.getElementById("ceremony-form"); if (field && form && !form.hidden) field.value = typed; }, TEST_PASSPHRASE);
+      const pageRead = await page.evaluate(() => { const w = (window as unknown as { __larHeld: Window | null }).__larHeld; try { return (w?.document.getElementById("ceremony-pass") as HTMLInputElement | null)?.value ?? ""; } catch { return ""; } });
+      assert.equal(stood.opener, true, `CONTROL: the window the page's script opened carries its opener (${hash.slice(0, 6)})`);
+      assert.equal(pageRead === TEST_PASSPHRASE, false, `K6b: the opener read what was typed into the ceremony's field (${hash.slice(0, 6)})`);
+      assert.deepEqual({ refusal: stood.refusal, formHidden: stood.formHidden }, { refusal: "ceremony-has-opener", formHidden: true }, `K6b: a ceremony with an opener refuses by name and paints no field (${hash.slice(0, 6)})`);
+      await held.close();
+    }
+    assert.equal((await vault(page)).data?.custody?.place?.reading, "sealed", "the refused ceremonies burned nothing");
+
+    const [rite] = await Promise.all([context.waitForEvent("page"), page.locator(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open").first().click()]);
+    rite.on("pageerror", (e) => faults.push(`[rite] ${e.message}`));
+    await rite.waitForSelector("#ceremony-form:not([hidden])", { timeout: WAIT });
+    assert.deepEqual(await rite.evaluate(() => ({ demand: (document.getElementById("ceremony-form") as HTMLFormElement).dataset["demand"], type: (document.getElementById("ceremony-pass") as HTMLInputElement).type })),
+      { demand: "passphrase", type: "password" }, "custody stands, so the gate asks a passphrase");
+    console.log(`[K6-walk] the ask: ${await rite.locator("#ceremony-label").innerText()}`);
+
+    // THE TYPED PHRASE ALONE, then A WRONG PASSPHRASE: each refuses by name, the form stands, and nothing burned.
+    assert.equal(await refusedBy(rite, "reset this browser"), "no-slot-opens");
+    assert.equal(await refusedBy(rite, wrongGuess), "no-slot-opens");
+    console.log(`[K6-walk] the refusal: ${await rite.locator("#ceremony-state").innerText()}`);
+    assert.equal(await rite.locator("#ceremony-form").isVisible(), true, "the ask still stands after a wrong passphrase");
+    const still = await vault(page);
+    assert.deepEqual({ place: still.data?.custody?.place?.reading, faces: still.data?.custody?.faces?.length }, { place: "sealed", faces: 1 }, "two refusals burned nothing: the place rests sealed with its face");
+    assert.equal(await page.locator(".ceremony-ask[data-ask=\"reset\"]").count(), 1, "the page still shows the ask");
+
+    // THE RIGHT PASSPHRASE burns the place, and the tab boots afresh at an anon floor.
+    await rite.locator("#ceremony-pass").fill(TEST_PASSPHRASE);
+    await Promise.all([page.waitForEvent("load", { timeout: WAIT }), rite.locator("#ceremony-go").click()]);
+    await live(page);
+    const floor = await keyOf(page);
+    assert.notEqual(floor, founded, "the burn landed: the vessel stands under a new veil key");
+    const bare = await vault(page);
+    assert.deepEqual({ place: bare.data?.custody?.place?.reading, faces: bare.data?.custody?.faces }, { place: "clear", faces: [] }, "the fresh floor holds no custody and no face");
+    console.log(`[K6-walk] the post-reset boot: ${JSON.stringify({ standing: bare.data?.door?.standing, place: bare.data?.custody?.place, faces: bare.data?.custody?.faces, key: floor })}`);
+
+    // A BARE FLOOR takes the typed phrase: the console door raises the ask, and the phrase alone burns.
+    const again = (await lares(page, "vessel", "reset")).data?.askId ?? "";
+    const [second] = await Promise.all([context.waitForEvent("page"), page.locator(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open").first().click()]);
+    await second.waitForSelector("#ceremony-form:not([hidden])", { timeout: WAIT });
+    assert.equal(new URL(second.url()).hash, `#reset=${again}`);
+    assert.deepEqual(await second.evaluate(() => ({ demand: (document.getElementById("ceremony-form") as HTMLFormElement).dataset["demand"], type: (document.getElementById("ceremony-pass") as HTMLInputElement).type })),
+      { demand: "typed-phrase", type: "text" }, "no custody stands, so the gate asks the typed phrase");
+    assert.equal(await refusedBy(second, "reset"), "gate-words-differ");
+    await second.locator("#ceremony-pass").fill("reset this browser");
+    await Promise.all([page.waitForEvent("load", { timeout: WAIT }), second.locator("#ceremony-go").click()]);
+    await live(page);
+    assert.notEqual(await keyOf(page), floor, "the typed phrase burned the bare floor: a new key again");
+
+    // NO SECRET IN ANY LINE: every page's and worker's console, across the founding, both gates and both burns.
+    for (const secret of [TEST_PASSPHRASE, wrongGuess]) assert.equal(lines.filter((l) => l.includes(secret)).length, 0, "no console line carries a byte typed into the gate");
+    assert.ok(lines.length > 0, "CONTROL: the console instrument read lines");
+    assert.deepEqual(faults, [], "no page error through the gate and the burns");
   } finally { await context.close(); }
 });
