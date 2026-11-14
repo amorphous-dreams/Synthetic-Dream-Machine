@@ -120,7 +120,8 @@ describe("a face pinned is not a face seated", () => {
 
   test("a face reuse refuses a binding without its Keyhive document identity by name", async () => {
     const joinee = await vessel(16);
-    const key = "lar:///ha.ka.ba/bags/daemon/working-bindings/" + "e".repeat(64);
+    // The face's own row: its title carries the face's group.
+    const key = "lar:///ha.ka.ba/bags/daemon/working-bindings/" + "cd".repeat(16) + "/" + "e".repeat(64);
     const error = await resolveOrMintBinding({
       kind: "working-binding", prefix: "lar:///ha.ka.ba/bags/daemon/working-bindings", fingerprint: "e".repeat(64),
       repo: { create: () => { throw new Error("reuse mints nothing"); }, flush: async () => {} },
@@ -162,8 +163,8 @@ describe("a face pinned is not a face seated", () => {
     const originalDelegate = face.delegate.bind(face);
     face.delegate = async (args) => { grants += 1; return originalDelegate(args); };
 
-    expect(await resolveOrMintBinding(input)).toEqual({ url: "automerge:face-first", minted: true });
-    expect(await resolveOrMintBinding(input)).toEqual({ url: "automerge:face-first", minted: false });
+    expect(await resolveOrMintBinding(input)).toMatchObject({ url: "automerge:face-first", minted: true });
+    expect(await resolveOrMintBinding(input)).toMatchObject({ url: "automerge:face-first", minted: false });
     expect(grants).toBe(1);
     expect(await face.verify({ presenter: agent, bagUrl: "automerge:face-first", access: "admin" })).toEqual({ ok: true });
     expect(provider.docIdOfBag("automerge:face-first")).toBeNull();

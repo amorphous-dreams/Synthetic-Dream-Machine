@@ -57,8 +57,8 @@ Laid by `expandRecipe` (`packages/lararium-mesh/src/wiki-recipe.ts`) walked bott
 | layer (top wins) | store | writable | default | sync class | doc keyed by | disk mirror (node) |
 |---|---|---|---|---|---|---|
 | `wikis/{slug}/temp` | `MemoryTiddlerStore` | yes | ''never'' (`slotLayerFlags`) | device | none — fresh per boot | none |
-| `wikis/{slug}/draft` | `AutomergeDocStore` | yes | no | fleet when seated · device when not | THE ONE slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`): `daemon/draft-bindings/{fingerprint}` (PersonaGroup × recipe-fingerprint) when the vessel holds a SEAT; else the floor doc `wikis/{slug}/drafts/{did}` in the catalog registry, `face-reach: vessel-only` | none |
-| `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | the face's own devices | `daemon/personal-bindings/{fingerprint}` — one face's view-state and its PRIVATE MARGIN over the shared workbench (operator ruling 2026-11-11: //"Personal can absorb the new caps."//) | `<projections>/personal/<F>/{slug}/` via the `wikiSlot:"personal"` grant's `faceFolder` |
+| `wikis/{slug}/draft` | `AutomergeDocStore` | yes | no | fleet when seated · device when not | THE ONE slot-doc resolver (`packages/lararium-keyhive/src/slot-doc-resolver.ts`): `daemon/draft-bindings/{group}/{fingerprint}` (PersonaGroup × recipe-fingerprint, one row for each face) when the vessel holds a SEAT; else the floor doc `wikis/{slug}/drafts/{did}` in the catalog registry, `face-reach: vessel-only` | none |
+| `wikis/{slug}/personal` | `AutomergeDocStore` | yes | no | the face's own devices | `daemon/personal-bindings/{group}/{fingerprint}` — one face's view-state and its PRIVATE MARGIN over the shared workbench (operator ruling 2026-11-11: //"Personal can absorb the new caps."//) | `<projections>/personal/<F>/{slug}/` via the `wikiSlot:"personal"` grant's `faceFolder` |
 | `wikis/{slug}/working` | `AutomergeDocStore` | yes | ''YES'' — the ONE default | every member face | THE REALM WORKBENCH (cabal-realm#/the-workbench): the wiki's first stand under a face founds a private cabal of one and the vessel ledger notes it; the slot reads `realmWorkbenchDocUrl(realm, slug)`, and a share seats more faces without moving it. A vessel that wears no face stands none (`no-face`). The daemon wiki alone keeps its face-private device slot | `wikis/{slug}/`, or the workspace the wiki's share row names, via the `wikiSlot:"working"` grant (`open-node-vessel.ts`, `vessel-island-pool-core.ts`) |
 | `bags/{slug}` (canon) | `AutomergeDocStore` | yes | no | fleet | `grants.wikiUrl` = the catalog's `bags/{slug}` row; for a house-canon slug (`lares`, `lararium`, every disk-sourced holding but `crossroads`) the Kahu realm's standing document, which no catalog row names | `bags/{slug}/` via the `selfCanon` grant; `bags/lares/` and `bags/lararium/` by literal grants the Kahu's vessel alone holds |
 | `libraryBags[]` | `AutomergeDocStore` | yes | no | fleet | the recipe record's `bag-stack` minus `structuralSlots` (the lares and lararium bags share library-layer behavior), laid at boot and reconciled live (`recipe-watch.ts`); recipe-watch resolves a library's document from the vessel's `@catalog`, and a house-canon library's from the Kahu realm's standing registration (`libraryDocUrl`), while genesis recipe seeds remain on `@oracle` | `bags/lares/` and `bags/lararium/` on the Kahu's vessel alone, `bags/crossroads/`, for the literal grants |
@@ -305,6 +305,6 @@ The spiral walked every carrier the #/as-written table names and evergreened the
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;EcNSMeJsgTeHbq2HuOuFyhTMUVH-NcxgqpFT1wOIGyc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4hIcwdCevRmE6S3aE9kxXeTqYyLrtEvpXOoncH4T4QQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

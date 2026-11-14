@@ -587,12 +587,21 @@ export const PERSONA_KEL_PREFIX_TIDDLER     = `${PERSONA_NAMESPACE}/binding/pers
 // ── personal / draft binding tiddler prefixes ───────────────────────────
 // The (PersonaGroup × recipe-fingerprint) → docUrl bindings live as tiddlers
 // under these prefixes (now persona-namespaced — PersonaGroup-scoped, cross-device).
-// One fingerprint produces THREE bindings (personal, draft, working) that
-// share a lifecycle. The binding tiddler title is `${PREFIX}/${fingerprintHex}`;
+// One fingerprint produces a personal and a draft binding that share a lifecycle. A FACE's binding tiddler rides at
+// `${PREFIX}/${group}/${fingerprintHex}` and the faceless floor's at `${PREFIX}/${fingerprintHex}` (`slotBindingKey`);
 // its `text` carries the bound URL.
 // Canon: lar:///ha.ka.ba/lararium/api/personal-slot#/core-claim
 export const PERSONAL_BINDINGS_PREFIX = `${PERSONA_NAMESPACE}/personal-bindings`;
 export const DRAFT_BINDINGS_PREFIX    = `${PERSONA_NAMESPACE}/draft-bindings`;
+
+/**
+ * The title of one (PersonaGroup × recipe-fingerprint) binding row. The daemon document serves every face a vessel holds and
+ * two faces can read one canon (one fingerprint), so a seated face's row carries its group; a row with no group names the
+ * faceless floor's document, which the Lift moves under the face that seats.
+ */
+export function slotBindingKey(prefix: string, fingerprint: string, group?: string | null): string {
+  return group ? `${prefix}/${encodeURIComponent(group)}/${fingerprint}` : `${prefix}/${fingerprint}`;
+}
 
 // ── Well-known bag slot IDs ────────────────────────────────────────────────
 // Six root docs (two planes) + in-memory leaves.

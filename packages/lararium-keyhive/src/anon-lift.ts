@@ -41,7 +41,7 @@
  * that finds a binding still holding `lifted-from-url` finishes the burn and moves nothing a second time.
  */
 import {
-  FloorUnavailable, floorDaemonSlotTitle, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, canonicalJson, emptyLarDoc,
+  FloorUnavailable, floorDaemonSlotTitle, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey, canonicalJson, emptyLarDoc,
   mutableLarRecord, tiddlerText, FLOOR_SLOT_ROOT, floorSlotOf, sha256HexBytesSync, utf8Bytes, wikiBagUri, wikiDraftDocKey, requireLarDid, plainEntries, storedRecord,
   type ChangeOrigin, type CompositeStore, type FloorRegistry, type LarDoc, ownEntry, DOCUMENT_READY_TIMEOUT_MS} from "@lararium/mesh";
 import type { CatalogAccessor } from "@lararium/tw5";
@@ -60,6 +60,8 @@ export interface LiftArgs {
   readonly daemonStore: CompositeStore;
   readonly catalog: CatalogAccessor | null;
   readonly faceDoor: FaceBagDoor;
+  /** The face the lift moves the floor under: its binding rows ride under this group (`slotBindingKey`). */
+  readonly personaGroupId: string;
   readonly mintedByHex: string;
   readonly vesselDid: string;
   /** How long a floor document may stay silent before the lift names it and skips it (default: the house's document-ready bound). */
@@ -217,27 +219,36 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
     if (!fields || typeof pending !== "string") continue;
     await burn(args, pending);
     await dropFloorRecord(args, String(fields["lifted-from"] ?? ""));
-    const { ["lifted-from-url"]: _gone, ...rest } = carried(fields);
+    await dropFloorBinding(args, fields["lifted-from-title"]);
+    const { ["lifted-from-url"]: _gone, ["lifted-from-title"]: _row, ...rest } = carried(fields);
     await putBinding(args, title, rest, `finish-${title.slice(-8)}`);
     finished.push(title);
   }
 
-  // 2 — daemon-bag bindings minted at the floor by this vessel.
+  // 2 — daemon-bag bindings minted at the floor by this vessel: the FLOOR's rows alone (no group in the title). Each moves
+  // under this face's own row, and the floor's row leaves; another face's row never moves.
   for (const { title, bagId, record } of entries) {
-    if (bagId !== DAEMON_BAG_ID || !PREFIXES.some((p) => title.startsWith(`${p.prefix}/`))) continue;
+    const slot = PREFIXES.find((p) => title.startsWith(`${p.prefix}/`));
+    if (bagId !== DAEMON_BAG_ID || !slot) continue;
     const fields = fieldsOf(record);
     const oldUrl = tiddlerText(record);
     if (!fields || !oldUrl || fields["face-reach"] !== "vessel-only" || !mintedHere(args, fields["minted-by"])) continue;
+    const fingerprint = title.slice(slot.prefix.length + 1);
+    if (fingerprint.includes("/")) continue;   // a face's row: its own face lifts nothing from it
+    const faceTitle = slotBindingKey(slot.prefix, fingerprint, args.personaGroupId);
+    // The face already holds its own row for this slot: the floor's stays where it stands, named, and nothing overwrites.
+    if (tiddlerText(await args.daemonStore.get(faceTitle))) continue;
     let next: { url: string; keyhiveDocId: string };
     try { next = await rehome(args, oldUrl); } catch (error) { if (error instanceof FloorDocumentUnavailable) { held(error, title); continue; } throw error; }
-    await putBinding(args, title, {
+    await putBinding(args, faceTitle, {
       ...carried(fields), text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
-      "lifted-from": digestOf(title), "lifted-from-url": oldUrl,
+      "lifted-from": digestOf(title), "lifted-from-url": oldUrl, "lifted-from-title": title,
     }, `bind-${title.slice(-8)}`);
     await burn(args, oldUrl);
-    // The burn landed: the pending mark leaves with it, so a replay finds nothing to finish.
-    const { ["lifted-from-url"]: _burned, ...settled } = carried(fieldsOf(await args.daemonStore.get(title)) ?? {});
-    await putBinding(args, title, {
+    await dropFloorBinding(args, title);
+    // The burn landed: the pending marks leave with it, so a replay finds nothing to finish.
+    const { ["lifted-from-url"]: _burned, ["lifted-from-title"]: _row, ...settled } = carried(fieldsOf(await args.daemonStore.get(faceTitle)) ?? {});
+    await putBinding(args, faceTitle, {
       ...settled, text: next.url, "face-reach": "face", "keyhive-doc-id": next.keyhiveDocId,
       "lifted-from": digestOf(title),
     }, `done-${title.slice(-8)}`);
@@ -259,7 +270,7 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
       const slug = floorKey.slice(0, -mark.length).replace(/^.*\/wikis\//, "");
       const trace = await args.traceOf(slug);
       if (!trace) continue;
-      const bindingKey = `${DRAFT_BINDINGS_PREFIX}/${trace.fingerprint}`;
+      const bindingKey = slotBindingKey(DRAFT_BINDINGS_PREFIX, trace.fingerprint, args.personaGroupId);
       const standing = await args.daemonStore.get(bindingKey);
       const standingUrl = tiddlerText(standing);
       let url: string; let keyhiveDocId: string;
@@ -398,6 +409,12 @@ export async function liftVesselOnlyIntoFace(args: LiftArgs): Promise<LiftResult
 }
 
 /** Remove the catalog floor record whose key digests to `digest`, if one still stands. */
+/** The floor's own binding row leaves once its document moved under a face (a row already gone answers nothing). */
+async function dropFloorBinding(args: LiftArgs, title: string | undefined): Promise<void> {
+  if (!title || !(await args.daemonStore.get(title))) return;
+  await args.daemonStore.removeInBag(DAEMON_BAG_ID, title, originFor(`drop-${title.slice(-8)}`));
+}
+
 async function dropFloorRecord(args: LiftArgs, digest: string): Promise<void> {
   if (!args.catalog || !digest) return;
   const handle = await args.catalog.handle();

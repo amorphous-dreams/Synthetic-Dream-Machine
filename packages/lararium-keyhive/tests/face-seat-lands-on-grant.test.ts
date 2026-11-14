@@ -311,9 +311,9 @@ test("R6 reuse of a vessel-only record reads the record and asks no seat; a face
     seatSettled: async () => { asked.push("settled"); },
     faceSeated: async () => { asked.push("seated"); return true; },
   };
-  expect(await resolveOrMintBinding({ ...base, daemonStore: store("vessel-only") })).toEqual({ url: "automerge:vessel-only", minted: false });
+  expect(await resolveOrMintBinding({ ...base, daemonStore: store("vessel-only") })).toMatchObject({ url: "automerge:vessel-only", minted: false });
   expect(asked).toEqual([]);
-  expect(await resolveOrMintBinding({ ...base, daemonStore: store("face") })).toEqual({ url: "automerge:face", minted: false });
+  expect(await resolveOrMintBinding({ ...base, daemonStore: store("face") })).toMatchObject({ url: "automerge:face", minted: false });
   expect(adopted).toEqual(["automerge:face"]);
   expect(asked).toEqual([]);
 });

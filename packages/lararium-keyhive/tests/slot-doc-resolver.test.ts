@@ -20,7 +20,7 @@
 import { describe, test, expect } from "vitest";
 import { makeIslandRepo, type Repo } from "@lararium/mesh";
 import {
-  CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
+  CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   mutableLarRecord, wikiBagUri, wikiDraftDocKey, wikiSlotUri, realmWorkbenchDocUrl, ledgerWorkbenches, materializeSharedLarDoc, workbenchKeyDocs,
   refusingControlStore, vesselLockedRefusal, VESSEL_LOCKED, floorRegistryOf,
   type LarDoc, type LarTiddlerRecord,
@@ -42,7 +42,7 @@ const ledgerDoc = (): Ledger => { const d = { tiddlers: {} } as LarDoc; return {
 /** The workbench port as the daemon composes it (`faceWorkbenchRealm`): the realm that seats this face's hive, founded on mint. */
 const workbenchPort = (kh: KeyhiveProvider, ledger: Ledger, face: string) => (slug: string, mint: boolean): Promise<string | null> => faceWorkbenchRealm(kh, ledger, slug, face, mint);
 
-async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean; ledger?: Ledger; doorMints?: string[]; order?: string[] }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string; ledger: Ledger }> {
+async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean; ledger?: Ledger; doorMints?: string[]; order?: string[] }): Promise<{ resolver: SlotDocResolver; repo: Repo; catalogUrl: string; daemon: CompositeStore; kh: KeyhiveProvider; wikiUrl: string; ledger: Ledger; group: string }> {
   const kh = new KeyhiveProvider();
   await kh.init({ seed: new Uint8Array(32).fill(3), eventStore: noopStore });
   const group = await kh.createGroup();
@@ -68,7 +68,7 @@ async function rig(opts: { seated: boolean | (() => boolean); faceless?: boolean
       announceWorking: (slug: string, url: string) => { opts.order?.push(`announce:${slug}:${url}`); },
     }),
   });
-  return { resolver, repo, catalogUrl: catalogHandle.url, daemon, kh, wikiUrl: wikiHandle.url, ledger };
+  return { resolver, repo, catalogUrl: catalogHandle.url, daemon, kh, wikiUrl: wikiHandle.url, ledger, group: group.groupId };
 }
 
 describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
@@ -143,10 +143,35 @@ describe("★ the ONE slot-doc resolver, floor-falling ★", () => {
     const doc = await r.resolver.draft("garden");
     expect(doc.reach).toBe("face");
     const fp = await computeRecipeFingerprint({ wikiDocId: r.wikiUrl, libraryBagDocIds: [] });
-    const rec = await r.daemon.get(`${DRAFT_BINDINGS_PREFIX}/${fp}`);
-    expect(rec?.tiddler["text"], "the binding record names the doc").toBe(doc.url);
+    const rec = await r.daemon.get(slotBindingKey(DRAFT_BINDINGS_PREFIX, fp, r.group));
+    expect(rec?.tiddler["text"], "the binding record names the doc under the face's own group").toBe(doc.url);
+    expect(await r.daemon.get(slotBindingKey(DRAFT_BINDINGS_PREFIX, fp)), "no row stands at the floor's title").toBeNull();
     expect(rec?.tiddler["face-reach"]).toBe("face");
     await r.kh.dispose(); await r.repo.shutdown();
+  });
+
+  test("RED (two faces, one wiki): each seated face of one vessel binds its OWN draft and personal margin over the one daemon store", async () => {
+    const a = await rig({ seated: true });
+    const khB = new KeyhiveProvider();
+    await khB.init({ seed: new Uint8Array(32).fill(5), eventStore: noopStore });
+    const groupB = await khB.createGroup();
+    const b = makeSlotDocResolver({
+      repo: a.repo, daemonStore: a.daemon, keyhive: khB, catalog: makeCatalogAccessor(a.repo, a.catalogUrl),
+      vesselDid: () => DID, mintedByHex: () => "0x" + "b".repeat(64), faceSeated: async () => true,
+      personaGroupId: groupB.groupId, faceDoor: makeFaceBagDoor({ face: khB, groupId: groupB.groupId }) as never,
+    });
+    for (const kind of ["draft", "personal"] as const) {
+      const first = (await a.resolver.slotDoc("garden", kind))!;
+      const second = (await b.slotDoc("garden", kind))!;
+      expect(second.url, `the second face mounts its own ${kind}, never the first face's sealed document`).not.toBe(first.url);
+      expect(second.reach).toBe("face");
+      // Idempotent on each face, and a read without a mint answers the face's own document.
+      expect((await a.resolver.slotDoc("garden", kind))!.url).toBe(first.url);
+      expect((await b.slotDoc("garden", kind))!.url).toBe(second.url);
+      expect((await b.slotDoc("garden", kind, { mint: false }))?.url).toBe(second.url);
+      expect((await a.resolver.slotDoc("garden", kind, { mint: false }))?.url).toBe(first.url);
+    }
+    await khB.dispose(); await a.kh.dispose(); await a.repo.shutdown();
   });
 
   test("S2 — unseated: the draft falls to the device floor keyed by the DID, says so, never throws", async () => {

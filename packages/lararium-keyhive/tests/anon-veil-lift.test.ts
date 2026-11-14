@@ -21,7 +21,7 @@
 import { describe, test, expect } from "vitest";
 import { identityShareDecision, makeIslandRepo, type DocumentId, type Repo } from "@lararium/mesh";
 import {
-  CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey,
+  CompositeStore, DAEMON_BAG_ID, DRAFT_BINDINGS_PREFIX, slotBindingKey, computeRecipeFingerprint, didFromVerifyingKey,
   emptyLarDoc, mutableLarRecord, plainField, storedLarRecord, wikiBagUri, wikiDraftDocKey,
   type LarDoc, type LarTiddlerRecord,
 } from "@lararium/mesh";
@@ -70,7 +70,8 @@ async function newFace(v: Vessel, seated: { on: boolean }) {
   return { face: { seated: () => seated.on, door: counting, group: group.groupId }, minted };
 }
 
-const draftKey = (v: Vessel): string => `${DRAFT_BINDINGS_PREFIX}/${v.fp}`;
+/** The draft binding row: a face's own under its group, the floor's with none (`slotBindingKey`). */
+const draftKey = (v: Vessel, group?: string): string => slotBindingKey(DRAFT_BINDINGS_PREFIX, v.fp, group);
 const bindingOf = async (v: Vessel, title: string) => (await v.daemon.get(title))?.tiddler as Record<string, unknown> | undefined;
 const floorRecord = (v: Vessel) => makeCatalogAccessor(v.repo, v.catalogUrl).recordOf(wikiDraftDocKey("garden", DID));
 
@@ -110,8 +111,8 @@ describe("the anon-veil lift on join", () => {
     expect(v.kh.docIdOfBag(after.url)).not.toBeNull();
     expect(await floorRecord(v), "the floor index keeps no record and no mark").toBeNull();
     expect(await opens(v, anon.url), "the old document no longer opens from the repo's storage").toBe(false);
-    expect(await bindingOf(v, draftKey(v))).toMatchObject({ text: after.url, "face-reach": "face" });
-    expect((await bindingOf(v, draftKey(v)))?.["lifted-from-url"], "the burn finished").toBeUndefined();
+    expect(await bindingOf(v, draftKey(v, a.face.group))).toMatchObject({ text: after.url, "face-reach": "face" });
+    expect((await bindingOf(v, draftKey(v, a.face.group)))?.["lifted-from-url"], "the burn finished").toBeUndefined();
   });
 
   test("L8 — a draft bound at the faceless floor under the public place label lifts under the face that lights later (control: unnamed, it stays)", async () => {
@@ -148,7 +149,7 @@ describe("the anon-veil lift on join", () => {
     await write(v, anon.url, "Draft", "once");
     first.on = true;
     await resolver.liftFloor();
-    const landed = (await bindingOf(v, draftKey(v)))!["text"];
+    const landed = (await bindingOf(v, draftKey(v, a.face.group)))!["text"];
     expect((await resolver.liftFloor()).moved).toEqual([]);                       // a second pass
     expect((await resolverFor(v, a.face).liftFloor()).moved).toEqual([]);         // a replayed join: a fresh resolver over the same stores
     expect(a.minted, "one lift, one new document").toHaveLength(1);
@@ -156,7 +157,7 @@ describe("the anon-veil lift on join", () => {
     const b = await newFace(v, second);
     expect((await resolverFor(v, b.face).liftFloor()).moved, "the second face finds nothing at the floor").toEqual([]);
     expect(b.minted).toEqual([]);
-    expect((await bindingOf(v, draftKey(v)))?.["text"]).toBe(landed);
+    expect((await bindingOf(v, draftKey(v, a.face.group)))?.["text"]).toBe(landed);
   });
 
   test("L3 — the lift carries no other vessel's material: a floor doc another vessel minted never moves", async () => {
@@ -200,7 +201,7 @@ describe("the anon-veil lift on join", () => {
     await write(v, anon.url, "Draft", "never asked for again");
     joined.on = true;
     await resolver.liftFloor();                                                   // no draft() call after the join
-    const binding = (await bindingOf(v, draftKey(v)))!;
+    const binding = (await bindingOf(v, draftKey(v, a.face.group)))!;
     expect(binding["face-reach"]).toBe("face");
     expect(await textOf(v, String(binding["text"]), "Draft")).toBe("never asked for again");
   });
@@ -243,13 +244,13 @@ describe("the anon-veil lift on join", () => {
     joined.on = true;
     const crashing = { create: v.repo.create.bind(v.repo), find: v.repo.find.bind(v.repo), flush: v.repo.flush.bind(v.repo), delete: () => { throw new Error("the disk faulted"); } };
     await expect(resolverFor(v, a.face, crashing).liftFloor()).rejects.toThrow(/the disk faulted/);
-    const half = (await bindingOf(v, draftKey(v)))!;
+    const half = (await bindingOf(v, draftKey(v, a.face.group)))!;
     expect(half["lifted-from-url"], "the binding keeps the old URL until the burn finishes").toBe(anon.url);
     expect(await opens(v, anon.url)).toBe(true);
     const finished = await resolverFor(v, a.face).liftFloor();
     expect(finished.finished).toHaveLength(1);
     expect(finished.moved).toEqual([]);
-    const done = (await bindingOf(v, draftKey(v)))!;
+    const done = (await bindingOf(v, draftKey(v, a.face.group)))!;
     expect(done["text"], "the same new document, not a second copy").toBe(half["text"]);
     expect(done["lifted-from-url"]).toBeUndefined();
     expect(await opens(v, anon.url)).toBe(false);
@@ -271,7 +272,7 @@ describe("a vessel-only document never reaches a peer", () => {
     expect(v.kh.docIdOfBag(anon.url), "the cap layer holds no document for the floor URL").toBeNull();
     joined.on = true;
     await resolver.liftFloor();
-    const faceUrl = String((await bindingOf(v, draftKey(v)))!["text"]);
+    const faceUrl = String((await bindingOf(v, draftKey(v, a.face.group)))!["text"]);
     const faceId = (await v.repo.find<LarDoc>(faceUrl as never)).documentId as unknown as DocumentId;
     const ring = {
       slot: { verifyCapability: async () => true } as never,

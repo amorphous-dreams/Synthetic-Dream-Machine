@@ -29,7 +29,7 @@
  */
 
 import {
-  CONTROL_HOME_ID, FloorUnavailable, floorDaemonSlotTitle, floorRegistryOf, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX,
+  CONTROL_HOME_ID, FloorUnavailable, floorDaemonSlotTitle, floorRegistryOf, DRAFT_BINDINGS_PREFIX, PERSONAL_BINDINGS_PREFIX, slotBindingKey,
   computeRecipeFingerprint, emptyLarDoc, floorSlotTitle, realmWorkbenchDocUrl, mintVesselDocumentId, storedLarRecord, mutableLarRecord, resolveSlotDoc, tiddlerText,
   wikiBagUri, wikiDraftDocKey, requireLarDid, didFromVerifyingKey,
   type CompositeStore, type FloorRegistry, type LarDoc, type SlotReach, type WikiSlotKind,
@@ -157,7 +157,18 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return url;
   };
 
-  const bindingKey = (kind: "draft" | "personal", fingerprint: string): string => `${PREFIX_OF[kind].prefix}/${fingerprint}`;
+  /**
+   * The binding row that STANDS for this resolver's face, read without a mint: the face's own row (`slotBindingKey` under its
+   * group), or the floor's row while no seat stands or the Lift has not moved it.
+   */
+  const standingBinding = async (kind: "draft" | "personal", fingerprint: string): Promise<SlotDoc | null> => {
+    const prefix = PREFIX_OF[kind].prefix;
+    const own = args.personaGroupId ? await args.daemonStore.get(slotBindingKey(prefix, fingerprint, args.personaGroupId)) : null;
+    const floorRow = tiddlerText(own) ? null : await args.daemonStore.get(slotBindingKey(prefix, fingerprint));
+    const rec = tiddlerText(own) ? own : floorRow && floorRow.tiddler["face-reach"] !== "face" ? floorRow : null;
+    const url = tiddlerText(rec);
+    return url ? { url, reach: rec?.tiddler["face-reach"] === "face" ? "face" : "vessel-only" } : null;
+  };
 
   /** The PersonaGroup × fingerprint binding (mint-on-absent) — vessel-key when unseated. */
   const binding = async (kind: "draft" | "personal", fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> => {
@@ -170,9 +181,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       ...(args.seatSettled ? { seatSettled: args.seatSettled } : {}),
       mintedByHex: args.mintedByHex(),
     });
-    const rec = await args.daemonStore.get(bindingKey(kind, fingerprint));
-    const reach = rec?.tiddler["face-reach"] === "face" ? "face" : "vessel-only";
-    return { url: r.url, reach };
+    return { url: r.url, reach: r.reach };
   };
 
   /** The draft FLOOR doc — keyed by the vessel DID in the catalog registry; minted on absent. */
@@ -373,17 +382,15 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     if (kind === "draft") {
       if (mint) return draftDoc(slug, fingerprint, recipeTrace);
       if (await seated()) {
-        const url = tiddlerText(await args.daemonStore.get(bindingKey("draft", fingerprint)));
-        return url ? { url, reach: "face" } : null;
+        const standing = await standingBinding("draft", fingerprint);
+        return standing ? { url: standing.url, reach: "face" } : null;
       }
       const url = await floor(slug, false);
       return url ? { url, reach: "vessel-only" } : null;
     }
     if (mint) return kind === "personal" ? personalDoc(slug, fingerprint, recipeTrace) : binding(kind, fingerprint, recipeTrace);
     if (kind === "personal" && !(await seated()) && floorStands()) return floorSlot(slug, "personal", false);
-    const rec = await args.daemonStore.get(bindingKey(kind, fingerprint));
-    const url = tiddlerText(rec);
-    return url ? { url, reach: rec?.tiddler["face-reach"] === "face" ? "face" : "vessel-only" } : null;
+    return standingBinding(kind, fingerprint);
   };
 
   return {
@@ -413,7 +420,7 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
       if (typeof repo.find !== "function" || typeof repo.delete !== "function") throw new Error("slot-doc: the lift needs a repo that finds and deletes documents");
       return liftVesselOnlyIntoFace({
         repo: args.repo as unknown as LiftRepo, daemonStore: args.daemonStore, catalog: args.catalog, faceDoor: args.faceDoor,
-        mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()),
+        mintedByHex: args.mintedByHex(), vesselDid: String(await args.vesselDid()), personaGroupId: args.personaGroupId,
         ...(args.liftReadBoundMs !== undefined ? { readBoundMs: args.liftReadBoundMs } : {}),
         ...(args.floorMinter ? { floor: args.floorMinter() } : {}),
         // THE WORKING FLOOR lifts into the face's realm workbench, stood on ask (`workingDoc` with mint).

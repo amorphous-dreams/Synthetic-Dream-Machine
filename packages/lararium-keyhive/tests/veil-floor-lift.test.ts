@@ -13,7 +13,7 @@
 import { describe, test, expect } from "vitest";
 import { makeIslandRepo, liftFaceCatalogRows, catalogRowHalf } from "@lararium/mesh";
 import {
-  CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
+  CompositeStore, CONTROL_HOME_ID, DAEMON_BAG_ID, PERSONAL_BINDINGS_PREFIX, slotBindingKey, computeRecipeFingerprint, didFromVerifyingKey, emptyLarDoc,
   floorSlotTitle, mutableLarRecord, wikiBagUri, realmWorkbenchDocUrl, privateCabalRealmId, ledgerWorkbenches, materializeSharedLarDoc,
   tiddlerText, floorAnswerStore, ControlHomeUnavailable, CONTROL_HOME_UNNAMED, floorRegistryOf, floorDaemonSlotTitle, FLOOR_UNKEYED, VESSEL_LOCKED,
   type FloorKeyRefusal, type LarDoc, type LarTiddlerRecord,
@@ -131,7 +131,7 @@ describe("★ the veil floor stands its own wiki content, and a seat's landing l
     expect(await h.read(bench, "Tabs")).toBe("C F G7");
     expect(await h.daemon.get(floorSlotTitle("garden", "working")), "the floor's row leaves the registry").toBeNull();
     // The private margin lifted under the face beside it.
-    const personal = await h.daemon.get(`${PERSONAL_BINDINGS_PREFIX}/${h.fingerprint}`);
+    const personal = await h.daemon.get(slotBindingKey(PERSONAL_BINDINGS_PREFIX, h.fingerprint, h.group.groupId));
     expect(personal?.tiddler["face-reach"]).toBe("face");
     expect(await h.read(tiddlerText(personal)!, "$:/StoryList")).toBe("Tabs");
     // V4: a replay moves nothing.

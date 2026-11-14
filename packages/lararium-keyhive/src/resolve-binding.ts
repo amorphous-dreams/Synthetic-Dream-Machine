@@ -27,6 +27,7 @@ import {
   mutableLarRecord,
   tiddlerText,
   canonicalJson,
+  slotBindingKey,
 } from "@lararium/mesh";
 import type { CapabilityProvider } from "./capability-provider.js";
 import type { FaceBagDoor } from "./face-bag-door.js";
@@ -109,6 +110,10 @@ export interface ResolveBindingArgs {
 export interface ResolveBindingResult {
   /** The bound `personal` / `draft` Automerge doc URL. */
   readonly url: string;
+  /** The title of the binding row that answered: the face's own, or the floor's while the Lift has not moved it. */
+  readonly key: string;
+  /** Whether the row names a document the face holds (`face`) or one the vessel alone holds (`vessel-only`). */
+  readonly reach: "face" | "vessel-only";
   /** true when this call minted a fresh doc; false on reuse-on-present. */
   readonly minted: boolean;
 }
@@ -124,6 +129,11 @@ export class BindingRegistrationRefusal extends Error {
  * Resolve the bound doc URL for a (PersonaGroup × recipe-fingerprint) slot, or
  * mint + delegate + record it when absent.
  *
+ * ONE ROW FOR EACH FACE (`slotBindingKey`): a seated face reads and writes the row under its own group, so a second face
+ * of the vessel that reads the same canon never mounts the first face's sealed document. A seated face that holds no row
+ * yet reads the floor's (a vessel-only document the Lift has not moved) before it mints; a vessel with no seat reads and
+ * writes the floor's row alone.
+ *
  * Reuse-on-present returns the stored URL without minting. A vessel-only record
  * moves under the face at the seat's landing, by the lift pass (`anon-lift`), and this resolver never re-registers it. A face record's recorded Keyhive document ID restores
  * the process-local mapping on the provider that holds it. Reuse MUST NOT block boot on
@@ -132,10 +142,17 @@ export class BindingRegistrationRefusal extends Error {
  * key. See personal-slot#lifecycle "authorized-but-undecryptable window".
  */
 export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<ResolveBindingResult> {
-  const key = `${args.prefix}/${args.fingerprint}`;
+  const floorKey = slotBindingKey(args.prefix, args.fingerprint);
+  const faceKey = args.personaGroupId ? slotBindingKey(args.prefix, args.fingerprint, args.personaGroupId) : null;
 
-  // Reuse-on-present — the binding tiddler already replicated to this device.
-  const record = await args.daemonStore.get(key);
+  // Reuse-on-present — the binding tiddler already replicated to this device. The read asks no seat: the face's own row
+  // answers first, then the floor's (a row at the floor's title names a vessel-only document, never a face's).
+  let key = faceKey ?? floorKey;
+  let record = await args.daemonStore.get(key);
+  if (!tiddlerText(record) && faceKey) {
+    const floorRow = await args.daemonStore.get(floorKey);
+    if (tiddlerText(floorRow) && floorRow?.tiddler["face-reach"] !== "face") { record = floorRow; key = floorKey; }
+  }
   const existing = tiddlerText(record);
   if (existing) {
     const fields = record?.tiddler as Record<string, unknown> | undefined;
@@ -146,7 +163,7 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
       if (typeof docId !== "string" || !docId) throw new BindingRegistrationRefusal(key, existing);
       args.faceDoor.adopt(existing, docId);
     }
-    return { url: existing, minted: false };
+    return { url: existing, key, minted: false, reach: fields?.["face-reach"] === "face" ? "face" : "vessel-only" };
   }
 
   // Mint-on-absent waits for a running seat act before choosing its owner.
@@ -155,7 +172,10 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
   const handle = args.repo.create<LarDoc>(emptyLarDoc());
 
   // The provider mapping is process-local, so the binding carries its document ID for reuse.
-  const seated = !!(args.personaGroupId && args.faceDoor && await (args.faceSeated?.() ?? Promise.resolve(true)));
+  // A seated face writes its own row; a face pinned and not yet seated, and a vessel with no face, write the floor's.
+  const owner = args.personaGroupId && await (args.faceSeated?.() ?? Promise.resolve(true)) ? args.personaGroupId : null;
+  key = slotBindingKey(args.prefix, args.fingerprint, owner);
+  const seated = !!(owner && args.faceDoor);
   const keyhiveDocId = seated
     ? (await args.faceDoor!.mint(handle.url, "admin")).docId
     : args.keyhive ? (await args.keyhive.registerBag(handle.url)).docId : undefined;
@@ -186,7 +206,7 @@ export async function resolveOrMintBinding(args: ResolveBindingArgs): Promise<Re
     ...(keyhiveDocId !== undefined ? { "keyhive-doc-id": keyhiveDocId } : {}),
   }, "personal-bindings"), originFor(`binding-${args.fingerprint}`), { bag: DAEMON_BAG_ID });
 
-  return { url: handle.url, minted: true };
+  return { url: handle.url, key, minted: true, reach: seated ? "face" : "vessel-only" };
 }
 
 function originFor(fingerprint: string): ChangeOrigin {
@@ -196,12 +216,13 @@ function originFor(fingerprint: string): ChangeOrigin {
 /** Mints without a matching binding remain visible for operator inspection. */
 export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{ kind: BindingKind; fingerprint: string; url: string }>> {
   const entries = await daemonStore.entries();
-  const bindings = new Map<string, string>();
+  // A document reads bound where ANY row of its kind and fingerprint names it: the floor's, or any face's own.
+  const bound = new Set<string>();
   for (const { title, bagId, record } of entries) {
     if (bagId === DAEMON_BAG_ID && !title.includes("-minted/")) {
       const fields = record.tiddler as Record<string, unknown>;
       if (typeof fields.fingerprint === "string" && typeof fields.kind === "string" && fields.kind !== "binding-mint" && typeof fields.text === "string") {
-        bindings.set(`${title.slice(0, title.lastIndexOf("/"))}/${fields.fingerprint}`, fields.text);
+        bound.add(`${fields.kind}\n${fields.fingerprint}\n${fields.text}`);
       }
     }
   }
@@ -213,8 +234,7 @@ export async function unboundMints(daemonStore: CompositeStore): Promise<Array<{
     const fingerprint = fields.fingerprint;
     const url = fields.text;
     if ((kind === "personal-binding" || kind === "draft-binding") && typeof fingerprint === "string" && typeof url === "string") {
-      const bindingPrefix = title.slice(0, title.indexOf("-minted/"));
-      if (bindings.get(`${bindingPrefix}/${fingerprint}`) !== url) unbound.push({ kind, fingerprint, url });
+      if (!bound.has(`${kind}\n${fingerprint}\n${url}`)) unbound.push({ kind, fingerprint, url });
     }
   }
   return unbound;
