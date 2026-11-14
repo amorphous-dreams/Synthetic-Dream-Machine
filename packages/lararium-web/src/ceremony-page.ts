@@ -198,7 +198,8 @@ export function paintResetAsk(doc: Document, mint: () => string = () => crypto.r
     open(askId); notice.dataset["opened"] = "true"; go.textContent = "the reset ceremony stands in its own window (press to open it again)";
   });
   const not = doc.createElement("button");
-  not.type = "button"; not.className = "ceremony-open ceremony-withdraw"; not.textContent = "not now";
+  // THE DECLINE CARRIES ITS OWN CLASS: `ceremony-open` names the one door that opens the ceremony, on every ask.
+  not.type = "button"; not.className = "ceremony-withdraw"; not.textContent = "not now";
   not.addEventListener("click", () => { forgetResetAsk(record, askId); settleCeremonyAsk(doc, askId); });
   notice.append(say, go, not);
   doc.body.prepend(notice);

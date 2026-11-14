@@ -213,6 +213,10 @@ test("CP5 RED the reset ask names itself, opens the ceremony at #reset=<askId> w
   button.click();
   expect(opened).toEqual([[`/ceremony.html#reset=${RESET}`, "_blank", "noopener"]]);
   expect(standingAsks(doc)).toEqual([{ askId: RESET, kind: "reset", ceremony: "window-opened", refusal: null }]);
+  // ONE DOOR OPENS THE CEREMONY: `button.ceremony-open` names it alone, so a driver that presses "the ceremony's button" (the
+  // harness's test door, a person's assistive tool) never meets two; "not now" carries its own class and opens nothing.
+  expect([...doc.querySelectorAll(".ceremony-ask[data-ask=\"reset\"] button.ceremony-open")].map((b) => b.textContent), "the reset ask holds one opening door").toEqual([button.textContent]);
+  expect(doc.querySelector<HTMLElement>(".ceremony-ask button.ceremony-withdraw")!.textContent, "CONTROL: the decline still stands beside it").toBe("not now");
   // A second ask answers the standing one and paints no second notice.
   expect(paintResetAsk(doc, () => "00000000-0000-4000-8000-0000000000bb", open, record)).toBe(RESET);
   expect(doc.querySelectorAll(".ceremony-ask").length).toBe(1);
@@ -245,7 +249,7 @@ test("CP6 RED the page records the reset ask it raises, records it again at each
   paintResetAsk(dark.doc, () => RESET, (askId) => { opened.push(askId); }, withheld);
   const notice = dark.doc.querySelector<HTMLElement>(".ceremony-ask[data-ask=\"reset\"]")!;
   expect(notice.dataset["refusal"]).toBe("reset-unrecorded");
-  expect(notice.querySelector("button.ceremony-open:not(.ceremony-withdraw)")).toBeNull();
+  expect(notice.querySelector("button.ceremony-open")).toBeNull();
   expect(standingAsks(dark.doc)).toEqual([{ askId: RESET, kind: "reset", ceremony: "refused", refusal: "reset-unrecorded" }]);
   expect(opened).toEqual([]);
 });
