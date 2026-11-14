@@ -384,8 +384,23 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     await requireKahuReach(bag, opts.kahuReach, "meme put");
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
-    const receipt = await placeMeme({ uri: target.uri, text, baseHash: base }, sink);
-    return { ...receipt };
+    // THE BASE A WIKI'S WRITER READ MAY REST BELOW THE LAYER IT WRITES. `--recipe <slug>` reads through the wiki's stack and
+    // writes its designated layer; where that layer holds no record of the title, the hash the writer named came from a
+    // layer beneath (a house canon page off the floor, a library's). The gate compares like with like: the base stands
+    // where the stack still answers that hash, and the put lands as a copy-up; where the stack answers another, the put
+    // stands off and the receipt names the hash the wiki answers now.
+    let baseHash = base;
+    let shown: string | null = null;
+    if (base && target.recipe && (await sink.read(target.uri)) === undefined) {
+      const below = await resolveRead(opts, target, origin, ctx.cap).catch(() => null);
+      if (below && below.bag !== bag) {
+        const standing = (await readMeme(target.uri, below.sink))?.canonicalHash ?? null;
+        if (standing === base) baseHash = null;
+        else shown = standing;
+      }
+    }
+    const receipt = await placeMeme({ uri: target.uri, text, baseHash }, sink);
+    return shown !== null && receipt.decision === "conflict" ? { ...receipt, canonicalHash: shown } : { ...receipt };
   };
 }
 

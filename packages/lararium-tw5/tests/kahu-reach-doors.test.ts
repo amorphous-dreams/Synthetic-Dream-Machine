@@ -343,6 +343,29 @@ describe("house canon resolves the Kahu realm's standing document at the action 
     } finally { await f.repo.shutdown(); }
   });
 
+  test("RED: a put through a wiki that names the hash its get just answered lands as a copy-up in the working layer, though that layer held no record of the title", async () => {
+    const f = await outsideFace();
+    try {
+      const got = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
+      const read = (got["meme"] as { canonicalHash: string; text: string });
+      expect(read.canonicalHash).toMatch(/^sha256:[0-9a-f]{64}$/);
+      const edited = meme("/working").replaceAll(URI, "lar:///t/released").replace('uri-path = "t/ford"', 'uri-path = "t/released"');
+      const put = await makeMemePutReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove", text: edited, base: read.canonicalHash }, f.ctx("meme-put"));
+      expect(put, "the base the writer read still stands below, so the copy-up lands").toMatchObject({ decision: "ingest" });
+      // The wiki now answers the working copy, and the floor's page never moved.
+      const after = await makeMemeGetReactor(f.opts)({ uri: "lar:///t/released", recipe: "trove" }, f.ctx("meme-get"));
+      expect(slotsOf(after)).toContain("/working");
+      expect(after["floor"]).toBeUndefined();
+      // CONTROL: a stale base (the page below moved past what the writer read) stands off, and the receipt names the hash
+      // the wiki answers now, never the hash of no bytes.
+      const g = await outsideFace();
+      try {
+        const stale = await makeMemePutReactor(g.opts)({ uri: "lar:///t/released", recipe: "trove", text: edited, base: `sha256:${"0".repeat(64)}` }, g.ctx("meme-put"));
+        expect(stale).toMatchObject({ decision: "conflict", canonicalHash: read.canonicalHash });
+      } finally { await g.repo.shutdown(); }
+    } finally { await f.repo.shutdown(); }
+  });
+
   test("CONTROLS: the same face writes no house canon (kahu-reach); a house canon bag the floor carries no snapshot of keeps its cap refusal; a hand whose cap holds reads the live document", async () => {
     const f = await outsideFace();
     try {
