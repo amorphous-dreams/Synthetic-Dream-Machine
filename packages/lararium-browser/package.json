@@ -18,6 +18,10 @@
     "./browser-daemon-island": {
       "import": "./dist/browser-daemon-island.js"
     },
+    "./custody-proof": {
+      "import": "./dist/browser-custody-proof.js",
+      "types": "./dist/browser-custody-proof.d.ts"
+    },
     "./connect-buffer": {
       "import": "./dist/connect-buffer.js",
       "types": "./dist/connect-buffer.d.ts"
