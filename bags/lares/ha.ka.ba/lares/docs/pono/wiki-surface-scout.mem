@@ -194,7 +194,7 @@ Each cell: the meme-level act · the bare act · what stays behind.
 | ''offer / promote'' | the family offered whole · the named titles · lone slots in canon | widen to the family or refuse · the slot alone · a rootless slot in canon | rides its root | the record · the same · nothing |
 | ''render'' | the recomposed carrier or the root's own body · the root's text · nothing | the slot as its own tiddler · the same · nothing | the field's value · the same · nothing | the same both ways |
 
-''The answer field.'' Every action's answer, preview or applied, carries a `consequence` object: `{position: root|slot|field|plain, family: <root uri>|null, acts: [{title, act: put|tombstone|retitle, bag}], leaves: [{title, why}], orphans: [title], refusals: [{title, code}]}`. A caller reads it before committing.
+''The answer field.'' Every action's answer, preview or applied, carries a `consequence` object: `{position: root|slot|field|plain, family: <root uri>|null, acts: [{title, act: put|tombstone|retitle, bag}], leaves: [{title, why}], orphans: [title], refusals: [{title, code}]}`. A caller reads it before committing. The tiddler door's delete reads it as built: its two modes, its refusals and the reasons its `leaves` name stand at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/delete-reveals-or-shadows`>>.
 
 !!! The graceful gradient
 
@@ -473,7 +473,7 @@ Each red fails on today's code first, each with its control.
 # `wiki-act-tm-allowlist-empty`: a `tm-http-request` captured in the copy refuses by name.
 # `relay-lease-from-session-face`: a CLI call under face F opens its port with F's grant; a write to a bag outside F's grant refuses `bag-not-granted`. Control: the page under F sees the same refusal.
 # `relay-second-face-refuses`: a relay for face G on an island already serving F answers `port-one-island-one-face`, until the per-bag read lend lands.
-# `delete-root-previews-family`: a `tiddler_delete` preview of a meme root names `position: root`, every slot child in `acts` and no orphans; apply lands root and children as ONE change. Control: a plain tiddler's preview names `position: plain` and one tombstone.
+# `delete-root-previews-family` (STANDS on the anchor): a `tiddler_delete` of a meme root that names no family act answers `decision: refused` (`tiddler-delete-in-a-family`), and that refusal carries the preview as its `consequence`: `position: root`, every slot child in `acts` and no orphans; the same call with `family: true` lands root and children as ONE change. Control: a plain tiddler's consequence names `position: plain` and one tombstone. OWED (phase 2): preview and apply as two calls, the apply bound to the preview's `versions` by digest and refusing `act-digest-stale` on a mismatch.
 # `delete-slot-drops-reference`: deleting one slot lands the slot's tombstone and the root's reference drop in one change; the recompose carries no dangling marker. Control: a save of the root that drops the slot does the same today.
 # `engine-root-delete-one-change`: a `tm-delete-tiddler` on a root lands root and children as one family change, never a window (red today if the reading of `island-adaptor.ts:1583-1592` holds).
 # `move-slot-refuses`: a residency MOVE naming a slot title refuses `slot-without-root`. Control: a root MOVE carries the family.
@@ -610,6 +610,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iCKa1zTgCtItPMcAHlfpkJM3sL8z2JRbR8axYUf2-_k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4nlv84Z4bhJU9E-8TGcYp20z6_v8M02vNKTMS7N4O2U`>>
 
 <<^ code=`&#x0004;` to=`?`>>
