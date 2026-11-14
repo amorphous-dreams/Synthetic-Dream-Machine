@@ -1,0 +1,881 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/elyncia/working/lady-aki-annotated-character-sheet`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+l-space                                = "stable:@elyncia"
+mana                                   = 17
+manao                                  = 16
+manaoio                                = 16
+sdm-character-ability-scores-agility   = 1
+sdm-character-ability-scores-aura      = 2
+sdm-character-ability-scores-charisma  = 2
+sdm-character-ability-scores-endurance = 1
+sdm-character-ability-scores-strength  = 0
+sdm-character-ability-scores-thought   = 3
+sdm-character-bonus-dice-comfort       = 0
+sdm-character-bonus-dice-hero          = 2
+sdm-character-bonus-dice-protection    = 0
+sdm-character-bonus-dice-speed         = 0
+sdm-character-company                  = "Lindwyrm-backed Neo-Thracian expedition under Adventurer's Guild cover"
+sdm-character-description              = "Lady Aki walks between shrines, kingdoms, roads, and glades. Her rites bind. Her potions heal. Her illusions open doors. Spores, silk, bells, and blessings follow her path."
+sdm-character-level                    = 2
+sdm-character-life                     = 12
+sdm-character-name                     = "Lady Aki"
+sdm-character-role                     = "Wandering Spider Folk miko-wizard, fungal alchemist, illusionist, shrine-field operator."
+sdm-character-save                     = 13
+sdm-daemon-name                        = "Freyja Fontany"
+sdm-daemon-uri                         = "lar:///ha.ka.ba/bags/players/freyja-fontany"
+title                                  = "lar:///ha.ka.ba/elyncia/working/lady-aki-annotated-character-sheet"
+role                                   = "annotated working copy; not promoted into bags/ canon"
+status                                 = "draft"
+source-blob-sha                        = "ebbe463a6520e33042f27c4ed6c0777d9c4b8a67"
+type                                   = "text/memetic-wikitext+tiddlywiki"
+uri-path                               = "ha.ka.ba/elyncia/working/lady-aki-annotated-character-sheet"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! Lady Aki — Annotated Character Sheet (working copy)
+
+//FTLS / SDM+ alpha playtest. OGA-era table sheet. Powers remain deferred. Rulings and proposals have explicit provenance below.//
+
+''Player-Daemon:'' Freyja  
+''Character:'' Lady Aki  
+''Level:'' 2  
+
+Lady Aki walks between shrines, kingdoms, roads, and glades. Her rites bind. Her potions heal. Her illusions open doors. Spores, silk, bells, and blessings follow her path.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/annotation-ledger`>>
+
+!! Annotated Working Copy — Read Before Play
+
+''Status:'' DRAFT / source-preserving review copy. This document lives outside the canonical bags/ tree. The original Lady Aki .mem stays unchanged.
+''Source ref:'' feature/lady-aki-character-sheet; ''source blob:'' ebbe463a6520e33042f27c4ed6c0777d9c4b8a67.
+''Governing comparisons:'' SDM Quickstart Ch. 1; SDM Traits and Gear Indexes; Our Golden Age; FTLS Powers and ECM / Heritage / companion sheets.
+''Provenance markers:'' RULING = operator and Episkopos decision; SOURCE = retrieved rule or sheet; PROPOSAL = new playtest procedure; OPEN = requires a decision or reconciliation.
+
+| Area | Provenance | State carried into this copy |
+|---|---|---|
+| Shrine | RULING | Faerie-Ring Strandbeest-Shrine takes Hallmark identity; provisional Trait-slot allocation. |
+| Ichi | RULING | Relationship / squire / familiar in Social Inventory; autonomous and symbiosis modes retained, separate physical accounting still open. |
+| Ephyra and homunculi | RULING | Social responsibilities, task boundaries, upkeep and household symbiosis; no invented numerical social capacity. |
+| Backgrounds | RULING | Alchemist and Priestess stand as distinct Path-Magic Background Traits, not a combined custom Trait. |
+| Ranks and XP | OPEN | Each Background tentatively carries the former combined +3 pending purchase/progression evidence. |
+| Inventory | SOURCE + RULING | Ichi removed from the seven personal readied-item entries; satchel bulk and harness compatibility still unresolved. |
+| Path-Magic | RULING (scope) + PROPOSAL (mechanics) | Craft/refine/attune reagents and condensed resources; conversion, stacking and shelf-life rates not yet fixed. |
+| Exuberant | SOURCE | Each Life point spent by Aki counts as two for Power payment; outside source interactions not assumed. |
+| Morale | SOURCE + PROPOSAL | Apparent effortless power may trigger referee-called NPC morale test; no automatic penalty. |
+| Cash | OPEN | Prose 228.50 uncommitted versus CSV-derived 229.50; neither amount silently overwritten. |
+
+''Read-through contract:'' Source story, companion identity, sheet modes, existing cost boundaries and all unchanged sections remain intact. Each adjusted block names the distinction or unresolved cost.
+
+<<~/ahu>>
+
+
+<<~ ahu slot=`#/origin`>>
+
+!! Origin ~ How the Household Began
+
+Aki came up in a ''Spider-Mother priesthood'' of the Shattered Isles, tending an anchored Mother
+Spore cluster in the settled country. She followed one of its Ephyra out past the cultivated ground
+into the fungal jungle — the wild interior, where a Neo-Thracian invasion force and the clans
+resisting it died together of a planet-wide comms failure in the year the Necrospire fell.
+
+The Ephyra came down on a ruined roadside shrine with powered armor lying in the wreck. Aki warded
+the site — ''Web'' and ''Alarm'' — and the shrine read her ward as a handshake, answered //security
+perimeter established, re-routing mana//, and routed that mana through everything inside her circle.
+She lost the next stretch of time entirely.
+
+''She walked in a priesthood's daughter and walked out an operator.'' Ichi woke; the shrine, the
+Ephyra, and her juvenile strandbeest merged into a Level 1 mobile Lararium; and Aki acquired —
+without asking, and without any rite her training covered — ''a house''.
+
+''The two relations, held apart.'' Aki serves a ''mask of the Arcana'' through her priesthood, and
+she operates a ''node'' that woke in her presence. A god and a piece of infrastructure. She owes
+each something categorically different, and the difference stands as this character's live tension
+rather than a thing to resolve
+([[grandmother-spider|lar:///ha.ka.ba/elyncia/concepts/grandmother-spider]]).
+
+''The open claim.'' The priesthood's anchored Mother Spore dispatched a tasked spirit on an errand
+and never got it back. From the Glade's side, Aki's household reads as ''an unreturned asset with
+opinions''.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/quick-card`>>
+
+!! Quick Card
+
+| Field | Value |
+|---|---|
+| Level | 2 |
+| Life | 12 |
+| Hero Dice | 2 |
+| Save | 13 |
+| Core approach | reveal -> veil -> bind -> stabilize -> negotiate -> extract |
+| Public face | veiled wandering miko |
+| True body | iridescent Spider Folk |
+| Danger posture | controller / ritualist, not bruiser |
+| Primary support | Ichi, Faerie-Ring Strandbeest-Shrine, Ephyra |
+
+''Table instinct:'' Aki prepares the battlefield before battle claims the scene.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/visual-registers`>>
+
+!! Visual Registers
+
+!!! 1. True Body — Spider Folk
+
+Iridescent fae chitin. Extra arms. Soft alien face. Chitin plates. Web-silk organs. Sacred, fae, and strange rather than monstrous.
+
+!!! 2. Public Glamour — Traveling Miko
+
+Red and white shrine workwear. Silksteel ritual robe layers. Wide-brimmed ''ichimegasa'' with ''uchikatsugi-style veil''. Shrine bells, ofuda, spinneret tools, and soft faerie glamour.
+
+The glamour softens Aki's chitinous body for social passage. It does not erase her true form. Treat it as visual and social positioning until a Power, item, or roll grants stronger mechanics.
+
+!!! 3. Threshold Reveal — Glamour Thins
+
+The veil lifts. Extra arms appear. Chitin catches moonlight. Silk lines, ward papers, bells, and shrine geometry mark the room. Ichi may step in as armor or shield.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/guardian-resonances`>>
+
+!! Guardian Resonances — Duty, Veil, and the Long Watch
+
+''Operator design touchstones, not literal Elyncian factions or imported game mechanics.''
+
+Aki and Ichi both resonate strongly with the ''Redmane Army'': exhausted defenders, veterans who keep formation in broken country, and comrades whose stubborn service protects people and memory after the old order falters. Their solidarity matters more than borrowed heraldry.
+
+They also resonate with ''the giants who remained guarding the ruins of Anor Londo'': guardians holding an abandoned sacred place even when its original splendor, patrons, or purpose seem to have passed. Aki tends a moving shrine rather than a ruined palace; Ichi carries a soldier's long watch into the household.
+
+''The Blue Moon knights under Gwyndolyn'' supply a third touchstone: fidelity to a veiled magical guardian, protection enacted through illusion and controlled appearances, and magic that changes how an intruder experiences space. Gwyndolyn's spatial distortion, illusion, and mastery of magic particularly inform Aki's desired practice and presentation.
+
+''The seeming frailty.'' Aki can read as a slight, gentle, veiled shrine attendant while the veil conceals formidable magical understanding and a chitinous Spider Folk body that strangers might call monstrous. The contrast comes from perspective and managed revelation, not from an assertion that her true form deserves fear. The same guardian can offer tea, reroute a threshold, and make a hostile passage betray its apparent geometry.
+
+''Ichi's echo.'' The friendly mycelial symbiote carries the veteran-guardian register into practical weapon imbuements and thrown Balefire grenades; Ichi's own sheet holds those armaments and their unsettled rules accounting.
+
+''Kapu / rule boundary:'' These resonances guide characterization, spatial-illusion Power selection, staging, and visual art. They do not grant Aki free active spatial distortion or new purchased Powers; the Powers section remains deferred until the SDM/OGA choices are made.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/stats`>>
+
+!! Ability Scores
+
+| STR | AGI | END | THT | CHA | AUR |
+|---:|---:|---:|---:|---:|---:|
+| 0 | 1 | 1 | 3 | 2 | 2 |
+
+''Reading:'' Thought and Aura drive DreamNet contact, wizardry, ritual analysis, glamour, and shrine work. Agility and Endurance keep Aki mobile enough for field pressure. Strength does not carry the build.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/heritage`>>
+
+!! Heritage — Spider Folk
+
+''Rank:'' Skilled (+3)  
+''Effects:'' Affinity — Silk & Web; Alternate Movement — Climb; Armoured Body
+
+!!! Affinity — Silk & Web
+
+Tags: `[illusion] [silk] [web]`
+
+Aki spins lines, sheets, snares, glamour scaffolds, ward webs, belay systems, ritual knots, and silk-field diagrams from web-silk.
+
+Use this for:
+* silk and web craft,
+* vibration reading,
+* shrine-thread omens,
+* ambush geometry,
+* fae-spider etiquette,
+* illusion staging,
+* alchemical binding.
+
+!!! Alternate Movement — Climb
+
+Aki climbs at normal Speed.
+
+After 30 minutes of continuous climbing, mark Heritage and make a Wear and Tear attrition save. While marked, make another attrition save every 10 minutes of continued alternate movement.
+
+!!! Armoured Body
+
+Aki's true chitin grants ''+1 Armor'' and ''+1 Ward''. This comes from her body, not worn gear.
+
+This stacks with Ichi when worn, because Heritage Armoured Body comes from the operator's form rather than equipment.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/traits`>>
+
+!! Traits — Five Named Traits plus Hallmark Allocation
+
+| Trait | Rank | Classification / Use |
+|---|---:|---|
+| Wizard | +3 | Wizard / Power skill: casting, magical analysis, hostile glamours, noospheric pressure |
+| Alchemist | +3 (provisional) | Background / Path-Magic: substance preparation, transmutation, cultivation, extraction, stabilization, potions |
+| Priestess | +3 (provisional) | Background / Path-Magic: shrine rites, purification, blessings, taboo law, offerings, bindings and ritual coordination |
+| Mind Palace | +3 | Memorize Powers equal to Level without consuming inventory: two at Level 2 |
+| Exuberant | +3 | Each Life point spent to pay for Powers counts double |
+| Faerie-Ring Strandbeest-Shrine | — | Hallmark: proposed one Trait slot, subject to final accounting and progression review |
+
+''Working Trait Inventory:'' 7 + Thought 3 = 10 slots. Five named Traits occupy five; assign the shrine Hallmark to a sixth Trait slot only as the current working allocation. Thus ''6/10 in use; 4 open'' if that assignment holds. Spider Folk Heritage rides free under FTLS.
+
+!!! Annotation — Split Backgrounds (RULING)
+
+The old combined Alchemist Priestess +3 entry split into distinct ''Alchemist'' and ''Priestess'' Background Traits, each functioning as ''Path-Magic'' (also called Half-Magic). The source combined entry recorded +3 only once; independently granting each +3 remains an explicit ''provisional rank'', not a documented XP purchase. These Backgrounds grant relevant skill and trained minor workings, not unrestricted Full Powers.
+
+!!! Annotation — Path-Magic Scope (RULING; numeric crafting procedure OPEN)
+
+Alchemist understands the magical/material affordances of reagents, including compatible excess byproducts of the shrine and Glowkin mycelial constructs. Priestess understands ritual attention, offerings, helper coordination and attunement. Preparation may produce catalysts, condensed resources or temporary support effects where materials and rites permit; this does not itself grant a free Power, universal Mana supply, or an unlimited production loop.
+
+!!! Trait Direction
+
+Future picks may support shrine and ritual logistics, illusion and threshold control, support casting, companion coordination, survival by retreat and mycelial/silk field problem solving. Maintain other company niches.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/defenses`>>
+
+!! Defenses
+
+''Quickstart formulas'' (SDM Ch.1 §6): Physical = 7 + Agility + Skill + ''Armor'' ·
+Mental = 7 + Thought + Skill + ''Ward'' · Social = 7 + Charisma + Skill + ''Prestige''.
+
+!!! Base — Heritage Only
+
+Counts Aki's own body and nothing she wears.
+
+| Defense | Formula | Result |
+|---|---|---:|
+| Physical | 7 + AGI 1 + Spider Folk Armor 1 | 9 |
+| Mental | 7 + THT 3 + Spider Folk Ward 1 | 11 |
+| Social | 7 + CHA 2 + Prestige 0 | 9 |
+| Mental vs Wizard-domain threats | 7 + THT 3 + Wizard 3 + Ward 1 | 14 |
+
+!!! Base — Heritage + Worn Gear
+
+Counts the Armor and Ward the gear ledger already buys and Aki already wears.
+
+| Defense | Formula | Result |
+|---|---|---:|
+| Physical | 7 + AGI 1 + Armor 3 //(heritage 1 + silksteel robes 2)// | 11 |
+| Mental | 7 + THT 3 + Ward 5 //(heritage 1 + hat 2 + menpo 1 + netsuke 1)// | 15 |
+| Social | 7 + CHA 2 + Prestige 0 | 9 |
+| Mental vs Wizard-domain threats | 7 + THT 3 + Wizard 3 + Ward 5 | 18 |
+
+!!! Open Fork — Which Base Row Governs
+
+<<~ pranala slot=`#defense-source-fork` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/defense-source-ruling`>>
+''Which base row governs play stays open at the table.'' The two tables differ by 2 Physical
+and 4 Mental, so the fork moves every contested roll against Aki. The gear carries canonical
+numbers — Ruffle Coat comparator `armor +2`, Moss Hat `ward +2`, Dust Face `ward +1`, Safety
+Scarab `ward +1` — and the Quickstart formulas read Armor and Ward without distinguishing worn
+sources from bodily ones. Two readings stand:
+
+# ''Gear counts.'' Worn Armor and trinket Wards feed Defense as the formula reads them; the
+  second table governs.
+# ''Trinkets feed saves only.'' Wards from trinkets grant save bonuses while heritage Ward alone
+  reaches Defense; the first table governs.
+
+Reading 2 needs a written FTLS alpha ruling to stand, because the Quickstart text grants Ward
+''both'' save bonuses and mental defenses in one sentence. Freyja's and the referee's hand decides;
+until then both tables ride, and the sheet names the fork rather than choosing it.
+
+!!! Wearing Ichi
+
+| Defense | Formula | Result |
+|---|---|---:|
+| Damage Threshold | Ichi Level | 2 |
+| Physical | 7 + AGI 1 + Ichi/Aki Armor 6 | 14 |
+| Mental | 7 + THT 3 + Ichi/Aki Ward 2 | 12 |
+| Social | 7 + CHA 2 | 9 |
+| Mental vs Wizard-domain threats | 7 + THT 3 + Wizard 3 + Ward 2 | 15 |
+
+These rows count Ichi's Ward +1 and Aki's heritage Ward +1. The #defense-source-fork reaches
+here too: should trinket Wards feed Defense, the hat, menpo, and netsuke add +4 more wherever
+Aki still wears them under the armor — and whether she wears a wide-brimmed travel hat inside a
+powered symbiote asks its own question. Settle the fork first; this table follows it.
+
+!!! Domain Notes
+
+''Wizard'' may apply against hostile Powers, glamours, illusion warfare, DreamNet intrusion, magical signal attacks, hostile noospheric pressure, and magical analysis contests.
+
+''Alchemist'' may apply to reagents, materials, alchemical transformations, cultivation, extraction, distillation and prepared substance effects.
+
+''Priestess'' may apply to curses, shrine law, offerings, daemon etiquette, ritual contamination, purification, consecration and binding or oath pressure.
+
+''Spider Folk Heritage'' may apply where webs, thread systems, silk structures, climbing, ambush geometry, vibration-reading, or spider-fae social logic matter.
+
+
+!!! Annotation — Equipment and Symbiosis (OPEN)
+The Quickstart's Armor/Ward wording supports the gear-counts reading for worn equipment; the existing alternate defense row remains as a named table fork. Confirm which accessories physically fit and function during Ichi symbiosis before adding their Ward ratings to the Ichi-worn row. Ichi moving to Social Inventory does not itself rewrite their armor, DT, Burn or mode-switch numbers.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/inventory`>>
+
+!! Inventory — Slots, Bulk, Readiness and Access
+
+''Item slots:'' 7 + Strength 0 = ''7''. One sack (sk) = 10 stones (st); one stone = 10 soaps (sp); one soap = 25 cash.
+
+!!! Ready / Carried Item Tally (RULING + SOURCE)
+
+| Recorded entry | Size as on source sheet | Slots | Readiness / note |
+|---|---|---:|---|
+| Spinneret Kit | 1 st | 1 | Silk/thread tools, ready |
+| Silksteel Ritual Miko Robes | 1 st | 1 | Worn, Ruffle Coat comparator, Armor +2 |
+| Veiled Miko Work Hat | 1 st | 1 | Worn, Moss Hat comparator, Ward +2 |
+| Silk Filter Menpo | 1 st | 1 | Worn, Dust Face comparator, Ward +1 |
+| Silkthorn Thawnette x2 | 1 st each | 2 | Two readied entangling thrown nets |
+| Expedition Satchel | 1 sk kit container | 1 (provisional) | Packed quantum kit; full-sack bulk and actual carrier unresolved |
+| ''Recorded ready / carried total'' | | ''7 / 7'' | Ichi no longer occupies a personal Hallmark slot |
+
+''Robes' pockets:'' 7 sp of free small-item storage, not seven additional inventory slots. Existing pocket contents: Bell-Tikker Clicker 1 sp, Safety Netsuke 1 sp, DreamNet Prayer Relay Ofuda x5. Exact per-ofuda bulk remains inherited from the source sheet.
+
+!!! Annotation — The Missing Distinction (SOURCE)
+An available/readied item consumes a slot and can be used immediately. Packed items consolidate bulk but require at least one action to retrieve. Bandolier, belt, ready sling and pocket placement manage availability; backpack, bags, satchel and shrine wagon manage packing and load. They do not automatically erase slot costs.
+
+!!! Annotation — Aki's Load-Bearing Harness (PROPOSAL)
+A tailored harness can stabilize the robes, satchel, bandolier, ofuda, silk tools and Ichi interfaces; track any item-specific bonus, Armor/Ward stacking or free ready slots as an explicit purchased feature or table ruling, not as a free assumption. Keep outer armor versus under-armor passives and pockets separate while Ichi encloses Aki.
+
+!!! Annotation — Satchel Capacity (OPEN)
+The original one-sack background kit weighs 10 stones and may not fit the claimed single stone-scale personal slot without an actual container capacity or declared transport arrangement. Preferred logistics direction: the full alchemy kit rides shrine/wagon cargo; Aki draws a clearly limited ready subset into personal slots before danger. No relocation is presumed complete until the quartermaster tally changes.
+
+!!! Annotation — Ichi and Social Inventory (RULING)
+Ichi rides under relationship and responsibility rather than occupying a Hallmark Item or Trait slot. Their physical 2-stone armor body, when worn, transported, or parked, still requires credible spatial/compatibility handling; Social Inventory does not make mass vanish. Autonomous Ichi uses their own sheet and gear accounting.
+
+''Carrying audit:'' The prior eighth-slot problem resolves at the personal-slot tally once Ichi leaves the tally. Packed satchel bulk, harness rights and physical symbiosis remain explicitly open.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/social-inventory`>>
+
+!! Social Inventory — The Maintained Household
+
+''Standing ruling (Freyja + Episkopos):'' Aki maintains Ichi as familiar, squire and aspiring heroic individual, through relationship rather than property. She also tends Ephyra, homunculi and enshrined artifice as a mobile miko and shrine-operator. The shrine holds the Hallmark; the household carries social obligations and the possibility of reciprocity or refusal.
+
+| Relationship | Responsibility / support | Vulnerability |
+|---|---|---|
+| Ichi | Repair, power, rest, recognition, consent to symbiosis, personal development | Damage, failed upkeep, burnout, conflicting aims; autonomous personhood remains respected |
+| Ephyra | Narrow tasks, rites, supplies, re-binding and release | Task-scope limits, decay, loss of connection |
+| Fungus Gumi / homunculi | Habitat, material supply, work assignments, care, formation support | Injuries, depleted substrates, interrupted command and upkeep |
+| Shrine's Mother Spore daughter-ring | Offerings, maintenance, ritual ecology, environmental care | Node damage, contested home-Glade claim, disrupted web |
+
+''No numeric Social Inventory cap or automatic additional actions'' have yet been adopted. Compatible companion independence and action economies continue under their own sheets and table rulings.
+
+''Model touchstones:'' shrine-keepers, monks and preservers of knowledge in secluded temples; Soulsborne fire/grave keepers and guardians. Their narrative resonance grants no free purchased Power.
+
+''Symbiosis principle:'' maintaining a relationship makes cooperation possible, not guaranteed. The living network can falter from harm, neglect, ritual disruption or disagreement; restoration may require time, material repair, offerings, negotiation or acts of care.
+
+<<~/ahu>>
+
+
+<<~ ahu slot=`#/gear-on-body`>>
+
+!! Gear — On Body
+
+| Gear | Canon Basis | Rules / Effect |
+|---|---|---|
+| Spinneret Kit | Spider Folk toolkit | tool edge for silk/web/thread craft |
+| Silksteel Ritual Miko Robes | Ruffle Coat comparator | ''armor +2'' (protects as leather), 1 st; pockets hold 7 sp of free inventory |
+| Veiled Miko Work Hat / Ichimegasa with Uchikatsugi Veil | Moss Hat | Ward +2; protection vs charms/nausea |
+| Silk Filter Menpo | Dust Face | Ward +1; full-face mask vs dust/haze/spores/toxins |
+| Bell-Tikker Clicker | Tikker Clicker | detects corrupting energies; bonus vs corruption |
+| Silkthorn Thawnette x2 | Thawnette | thrown entangling nets; 1d4; 1 stone each |
+| Safety Netsuke | Safety Scarab | Ward +1 trinket |
+
+!!! Hat
+
+The hat uses a wide-brimmed traveling shrine silhouette, not a tall ritual hat. It gives dust, sun, insect, modesty, anonymity, and threshold-focus fiction.
+
+
+!!! Annotation — Ready-Access Bandolier and Harness (PROPOSAL)
+Use a dedicated bandolier or sash to stage selected vials, ofuda, charms and thrown gear as ''available''; stowed copies and alchemy refills remain ''packed''. The robe pockets already hold tiny instruments. Aki's existing silksteel robes keep their priced Armor and pocket properties; the draft does not award a free bandolier, extra slots, or equipment stacking before a specific gear entry and cost have been chosen.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gear-free-kit`>>
+
+!! Free Starting Gear
+
+!!! Clothing
+
+* shrine-maiden work robes
+* travel cloak / weather mantle
+* underlayers suitable for Ichi symbiosis
+
+!!! Alchemist / Priestess Background Expedition Satchel
+
+One bag with 10 stones of quantum gear.
+
+Likely contents:
+* chalk
+* charcoal ink
+* ritual cord
+* spare wraps
+* wax packets
+* lamp oil
+* thread
+* writing slips
+* field utensils
+* wrapping cloth
+* tea and cooking basics
+* mortar and pestle
+* incense
+* candles
+* herb packets
+* fungal salves
+* spore culture jars
+* hand broom
+* small bells
+
+!!! Strange Item — DreamNet Prayer Relay Ofuda
+
+Five ceramic-paper prayer slips with faint orichalcum traces. Reusable; alchemy clears the last charm script. Fire and acid resistant, DT 5.
+
+Functions:
+* temporary ward anchors,
+* shrine route markers,
+* ley disturbance indicators,
+* veil or illusion procedure anchors,
+* ritual relay geometry.
+
+
+!!! Annotation — One Kit, Two Relevant Backgrounds (SOURCE + RULING)
+The Quickstart grants a useful kit for a Background Trait, not one full free sack for every Background. Aki's listed kit remains one 10-stone sack (up to ten quantum mundane items), linked to her Alchemist or Priestess training. Reagent refinement into condensed spell fuel requires an additional explicit crafting/rules procedure; ordinary starting kit contents do not grant such fuel for free.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/gear-in-shrine`>>
+
+!! Gear — In Shrine
+
+| Gear | Canon Basis | Use |
+|---|---|---|
+| Ichi Maintenance Sutra Box | Machination Kit | Ichi/Shrine maintenance tools and machine rites |
+| Treated Chitin Patch-Stock | Thorned Leather | organic armor-repair material |
+| Ichi Armor Repair Work Order | Hardened Armor/Ward mod comparator | material/service access for armor repair |
+| Shrine Weather-Seal Materials | Waterproof Armor/Ward mod comparator | shrine/Ichi/cargo waterproofing |
+| Ephyra Spore Sacks x4 | Spore Sack | single-use fungal area-control pods |
+| Heretech Ofuda x2 | Heretech Scribbles | glitchy ward papers / warning labels |
+| Purification Gourd | Water Extractor | moisture extraction / field purification |
+| Hard-Silk Leashes x2 | Hard Leash | chitin-silk belay lines / shrine rigging |
+
+
+!!! Annotation — Workshop and Byproduct Flow (RULING on capability; PROPOSAL on conversion)
+The shrine and towed wagon carry the bulk workshop, packed kit, spare reagents, repairs and cultivated outputs. The shrine's companion sheet tracks 9 stone-scale item slots on its own body plus a separate 6-sack towed wagon. Keep allocations and readiness on that sheet as the quartermaster assigns cargo.
+
+Compatible surplus from the shrine, Mother Spore daughter-ring, homunculi and Ichi's Glowkin mycelial golem substrate may serve as ''raw material'' for Alchemist Path-Magic. Any transfer of stored Mana/Life-equivalent credit, temporary ward, ritual catalyst or overcharge reserve needs an identified recipe, amount, shelf life, capacity and upkeep cost. Aki should not extract Ichi's maintenance tissue or the household's survival supplies without accounting for consequences.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/resources`>>
+
+!! Budget and Reserves
+
+| Reserve | Cash | Guild Credit |
+|---|---:|---:|
+| Deferred Powers | 80.00 | 100.00 |
+| Company Pool / Ship Cargo | 50.00 | 100.00 |
+
+''Uncommitted value:'' Cash 228.50; Guild Credit 164.00; Total 392.50.
+
+!!! Reskin Doctrine
+
+Aki's renamed gear keeps the canonical SDM+ basis, price, rules, bulk, and mechanical effect unless an FTLS alpha ruling says otherwise.
+
+Discounts track supply channel and cultural fit:
+* Adventurer's Guild: 15%
+* Spider Folk heritage: 50%
+* stacked SF+AG: 42.5% of list price
+
+
+!!! Annotation — Bookkeeping Disagreement (OPEN)
+Original prose records 228.50 uncommitted cash. A prior row-by-row audit of the companion CSV calculated 229.50 uncommitted cash, a one-unit difference in on-body expenditure. This annotated copy preserves the unmodified prose value above until the ledger reconciles; do not silently promote either amount.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/powers`>>
+
+!! Powers
+
+''Status:'' deferred.
+
+Aki holds cash and Guild credit for Powers.
+
+Power choices should support:
+* glamour and illusion,
+* silk/web control,
+* biomancy / mycelium / purification,
+* DreamNet / shrine signal work,
+* extraction and retreat,
+* ritual support for the company.
+
+''Kapu:'' Do not treat Aki's visual glamour as a free active Power. It provides social and visual positioning until a selected Power or roll activates stronger mechanics.
+
+
+!!! Annotation — Path-Magic / Prepared Casting (RULING scope; PROPOSAL conversions)
+''Path-Magic'' names the Half-Magic functions of Alchemist and Priestess Backgrounds. The Backgrounds support trained, domain-appropriate minor magical procedures and skill use; Full Powers still require their own acquisition, activation and cost accounting. Mind Palace can memorize two Powers without normal inventory at Level 2. Exuberant values each ''Life point Aki herself pays'' as two Power-cost units.
+
+''FTLS Chapter 06 source rule:'' A Power normally costs Life equal to its Power Level; overcharge doubles Power Level and price for each overcharge step when that Power supports it. The chapter's Reckless Dweomer stores condensed Mana in Gear or Trait inventory, with a Dangerous Magic and carrying procedure. Ritual helpers may change time or cost under the specific rite. Neither rule grants Aki unrestricted harvestable Mana.
+
+!!! Proposed Process — Path-Magic Reagents (NOT YET A RULE)
+| Stage | Operator-facing requirement |
+|---|---|
+| 1. Harvest | Identify surplus biomass, glowkin resin, fungal substrate or other suitable materials; respect symbiote upkeep. |
+| 2. Prepare | Alchemist refines and packages a reagent, catalyst or condensed reserve using appropriate tools and time. |
+| 3. Attune | Priestess consecrates, binds affinities and coordinates shrine/helper contributions where relevant. |
+| 4. Allocate | Declare ready bandolier slot, packed container, shrine stock or a legally permitted Mana inventory slot. |
+| 5. Invoke | Wizard or relevant Power skill activates a known Power; apply only source-supported reductions and purchased effects. |
+| 6. Expend | Consume/mark reagents, Life, charges, refresh, corruption risk, maintenance and any disturbed relationship. |
+
+''Three proposed outputs:'' (a) catalysts which modify an eligible working; (b) condensed Mana/Life-equivalent reserves occupying explicitly tracked inventory; (c) resonant preparations granting specified temporary duration/area/ward/overcharge riders. No conversion rate, stacking limit, readiness exception or expiry clock has yet passed referee approval.
+
+''Suggested stacking order — not adjudicated:'' establish original Power and overcharge magnitude -> test eligible source-specific reductions -> account for consumed prepared resource -> pay the remaining share with Aki's Life (Exuberant doubles that Life contribution) -> test danger against the actual overcharged Power. External Mana does not automatically benefit from Exuberant; discounts do not by themselves reduce danger.
+
+''Morale application (SOURCE + fictional trigger):'' A powerful effect delivered with apparent ease may persuade witnesses that resistance has become hopeless, justifying an NPC Morale test at referee discretion. Quickstart morale uses 2d6 and permits no more than one test per round. No automatic fear penalty or guaranteed surrender accompanies Path-Magic.
+
+''Boundary:'' Do not replace the retired memegraph mana metadata scalar with new numerical tiddler metadata. Numeric energy committed or spent belongs in the relevant item, Power, rite or resource record.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ichi`>>
+
+!! Social Inventory — Ichi, Familiar / Squire / Symbiote
+
+''Type:'' Powered Symbiote companion (Social Inventory; legacy companion mechanics still use a Hallmark-only interface)  
+''Level:'' 2  
+''Role:'' bodyguard, living powered armor, autonomous fighter, DreamNet interface
+
+!!! Visual Canon
+
+Ichi appears as compact humanoid ashigaru armor:
+* chitin kikko plates,
+* mycelium-silk backing,
+* orange daemon-spore eye-orbs,
+* damaged old-soldier silhouette,
+* no spider legs.
+
+!!! Modes
+
+| Mode | Table Handling |
+|---|---|
+| Autonomous | Ichi uses their own sheet and action economy |
+| Symbiosis | Aki wears Ichi; Aki acts, Ichi perceives and communicates |
+| Emergency / Unpowered | powered features offline; physical armor may still protect |
+
+!!! Symbiosis Rules
+
+Entering or exiting symbiosis requires an action from both Aki and Ichi. Both lose actions for that round, but movement and free actions remain possible.
+
+When worn:
+* Ichi's armor/ward replaces worn armor,
+* Aki's Spider Folk Armoured Body stacks,
+* Aki gains Ichi's powered features and Burn talents,
+* Ichi cannot act independently,
+* Ichi grants DT 2.
+
+!!! Burn / Recharging
+
+Ichi has `re 4`.
+
+Roll d20 when Burn activates:
+* 5+ -> Burn activates; battery holds.
+* 1-4 -> Burn activates; Ichi takes -1 effective Level.
+* Level 0 -> Unpowered/Emergency Mode.
+* below 0 -> Ichi rolls Defeat.
+
+Recharge requires a spare power source, recharging cradle/prayer altar, ley-line node, or active lararium. Each negative Level recovered requires one full recharge cycle.
+
+!!! Ejection
+
+On a Defeat trigger while worn, Aki may eject instead of rolling personal Defeat. Ichi takes -1 Level. Aki and Ichi separate prone. Aki survives at current Life, unarmored.
+
+
+!!! Annotation — Companion Status (RULING; rules interface OPEN)
+The operator and Episkopos place Ichi under Aki's cared-for relationships, not her Hallmark inventory. Aki maintains Ichi as an aspiring heroic individual with independent concerns, not a compulsory equipment extension. The separate Ichi sheet still calls Powered Symbiote Hallmark-only; decouple the slot requirement in that rule before updating any global FTLS mechanics.
+
+Ichi's autonomous and worn modes, armor, Ward, DT, re 4 Burn and ejection procedures remain provisional carry-forwards; they did not gain extra actions or free slot capacity merely through reclassification. Aki and Ichi still both spend an action to enter/exit symbiosis under the present worked example.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/shrine`>>
+
+!! Hallmark — Faerie-Ring Strandbeest-Shrine
+
+''Type:'' Generic Synthesized Creature / Living Automaton  
+''Level:'' 2 Calibrated item  
+''Role:'' mobile household lararium, expedition transport, field logistics, Ichi recharging platform, tasked-spirit spawner
+
+!!! Visual Canon
+
+A compact roadside shrine / hokora rides on six to eight articulated strandbeest legs. Silk-and-mycelium sails unfurl from the roof. A Mother Spore fairy ring glows at the base. A towed armored wagon carries cargo.
+
+!!! Table Role
+
+The shrine functions as sentient gear, not a full PC.
+
+It:
+* carries supplies,
+* tows the wagon,
+* hosts camp rites,
+* stabilizes local ritual work,
+* recharges Ichi,
+* spawns Ephyra,
+* reads soil and fungal networks,
+* provides mobile cover when threatened.
+
+!!! Lararium Feeding
+
+Feeding the shrine with food, drink, incense, mana-rich offerings, or proper shrine gifts grants one compact benefit for the session:
+
+# ''Stabilize'' local ley-line mana.
+# ''Reduce Power mana cost'' by 1, minimum 1, for matching affinities nearby.
+# ''Boost effective casting Level'' by 1d6 for the session, allowing safer high-cost Power use.
+
+Node affinities: `[spore] [biomancy] [dream]`
+
+!!! Visibility
+
+A walking mushroom shrine with glowing sails does not sneak well. The sails can fold and the glow can dim, but the silhouette still invites attention, fear, worship, theft, or negotiation.
+
+
+!!! Annotation — Hallmark Assignment (RULING; slot placement OPEN)
+The operator and Episkopos name the walking shrine Aki's one active Hallmark in this household arrangement. The draft tentatively assigns that Hallmark to one of Aki's ten Trait slots (Trait occupancy 6/10). This does not make the shrine a full PC; its current companion document still describes a leveled item rather than a Hallmark character, so the Hallmark benefit, XP investment and slot declaration need one clear update across the sheets.
+
+''Production role:'' The household shrine provides the infrastructure for cultivating and maintaining compatible Glowkin materials; trained Path-Magic may use genuine surplus. The current lararium compact and feeding benefits stand as written; new material-to-Power conversion rates remain proposed.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/ephyra`>>
+
+!! Tasked Spirits — Ephyra
+
+Ephyra appear as floating blue spore-jelly spirits spawned from the Mother Spore.
+
+Typical duties:
+* scout,
+* carry messages,
+* sense contamination,
+* bear ward slips,
+* transport small offerings,
+* lure or distract,
+* mark a route,
+* watch camp.
+
+''Kapu:'' Ephyra need narrow tasks. They do not replace player scouting, social choices, or delve risk.
+
+
+!!! Annotation — Social Duties and Ritual Assistance (RULING + OPEN)
+Aki bears ongoing responsibility for these tasked spirits as part of the shrine household. Ephyra can ferry prepared components, hold ofuda anchors, signal and support ritual geometry; narrow-task limits and their own action boundaries continue to apply. Translating such help into ritual cost/time modifiers follows the actual FTLS helper procedure where applicable, not an unlimited free action pool.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/fungus-gumi`>>
+
+!! Tasked Spirits — Fungus Gumi
+
+Small batches of multibody mushroom homonculi tasked spirits.
+
+Typical duties:
+* scouting,
+* resource collection,
+* guarding the Mother Spore,
+* work crew helpers,
+* impromptu combat units.
+
+
+!!! Annotation — Glowkin Labor and Byproducts (RULING scope; numeric accounting OPEN)
+Glowkin mycelial golems and homunculi can contribute cultivated surplus, extraction labor, maintenance and formation support within their established tasks. The previously discussed two units of six (6-12 overall) remain working household testimony; the number field and costs still need reconciliation with the specific companion rules. Harvests, overcharges, batteries and regeneration must be balanced against upkeep and reciprocal obligations.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/spore-mother-ontology`>>
+
+!! Spore-Mother Ontology
+
+The Spore-Mother rides as:
+* distributed fungal intelligence,
+* ritual ecology,
+* reproductive colony body,
+* shrine-computational substrate,
+* memory-bearing fungal network.
+
+Includes:
+* mycelium,
+* sclerotia,
+* rhizomorphs,
+* polyps,
+* strobilae,
+* fruiting bodies.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/company-context`>>
+
+!! Company Context
+
+Aki belongs to Freyja's player-side cluster.
+
+Freyja controls:
+* Aki,
+* Ichi when player-side action applies,
+* the shrine when spotlighted or commanded,
+* Ephyra or mushroom homunculi as narrow-task helpers.
+
+Other player-side clusters cover long-range scouting, infiltration, ship command, morale, crew coordination, and company cargo. Aki supports the company without replacing those niches.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/play-loop`>>
+
+!! Aki's Field Loop
+
+Use this at the table before opening deeper rules.
+
+# ''Read the threshold.'' What place, spirit, signal, taboo, or hazard governs the scene?
+# ''Set the line.'' Mark safe passage, ward boundary, silk anchor, retreat route, or offering point.
+# ''Send a small helper.'' Ephyra scouts, ofuda marks, bells listen, silk tests tension.
+# ''Bind or veil.'' Use silk, glamour, alchemy, shrine etiquette, or DreamNet relay geometry.
+# ''Ask the household.'' Ichi reads dream-signal; shrine reads soil and ley-current.
+# ''Spend a cost.'' Time, offering, visibility, battery, gear, or risk.
+# ''Extract.'' Retreat counts as success when the company returns with map, leverage, salvage, or secret.
+
+
+!!! Annotation — Prepared Threshold (PROPOSAL)
+Before the encounter, Aki can sort the shrine's stock, pack the satchel, ready a selected bandolier loadout, coordinate a known helper task and prepare compatible alchemical/ritual reagents. During danger, she draws only from actual ready equipment, paid Power effects and supported helper operations. Observers see the finished working, not the labor that made it possible.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/costs-and-boundaries`>>
+
+!! Costs and Boundaries
+
+Aki's support stays powerful because it asks for cost.
+
+| Support | Cost / Boundary |
+|---|---|
+| Glamour | social veil unless powered |
+| Silk/Web | needs material, anchors, time, or positioning |
+| Ephyra | narrow task; dissolves or decays |
+| Shrine rite | offering, time, visibility, or ley-line access |
+| Ichi Burn | re roll; battery degradation risk |
+| Ichi mode switch | action from both Aki and Ichi |
+| Gear reskins | mechanics stay canonical |
+| Guild credit | strongest where Guild recognition holds |
+| Path-Magic preparation | tools, time, compatible substrate, labor, rites and documented yields; no free Powers |
+| Condensed reserves | physical inventory, stability, decay, charges and potential Dangerous Magic |
+| Bandolier / harness | governs readiness and equipment fit; no assumed free slots or defense stacking |
+| Material harvest | draw on surplus, never silently spend symbiotes' survival substrates |
+| Overcharge | preserves actual Power magnitude, price and danger even when payment discounts apply |
+| Morale | a referee-called response to apparent superiority; no guaranteed reaction |
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/meme-pattern`>>
+
+!! Meme Pattern
+
+This character sheet models one complete playable meme:
+
+* doctype and opener name the memetic-wikitext surface,
+* `meta` records address, type, confidence, register, and role,
+* `ahu` blocks hold local worksite sections,
+* `kapu` callouts mark boundaries,
+* `? ->` edges hold unresolved pressure,
+* `loulou` edges expose adjacency,
+* table-facing rules stay close to play.
+
+Companion sheets should preserve this rhythm: identity, quick card, modes, stats or ratings, rules, costs, open questions, and edges.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open-questions`>>
+
+!! Open Questions
+
+<<~ pranala slot=`#open-powers` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/lady-aki#/powers`>>
+Final Powers remain deferred.
+
+<<~ pranala slot=`#open-traits` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/lady-aki#/open-traits`>>
+Four trait slots remain open ''if'' the shrine occupies a Trait slot; five named Traits currently recorded. Confirm the separate Background XP ranks and shrine placement.
+
+<<~ pranala slot=`#open-ichi-dreams` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/ichi#/dreams`>>
+What does Ichi dream?
+
+<<~ pranala slot=`#open-mother-spore` from=`?` to=`lar:///elyncia.neo-thracia.opens/characters/faerie-ring-strandbeest-shrine#/mother-spore`>>
+How does the Mother Spore understand Aki's household compact?
+
+<<~ pranala slot=`#open-ephyra-rules` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/ephyra-rules`>>
+Exact Ephyra task-spirit mechanics need final table handling.
+
+<<~ pranala slot=`#open-defense-source` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/defense-source-ruling`>>
+Does worn Armor and do trinket Wards feed Defense, or do trinket Wards feed saves alone?
+Two base tables ride until the referee rules (see #defense-source-fork). The answer moves Aki's
+Mental Defense by 4 and her Physical by 2.
+
+<<~ pranala slot=`#open-slot-tally` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/aki-slot-tally`>>
+The ready item tally now runs 7/7 after Ichi's move to Social Inventory. The full-sack quantum kit, physical armor/harness fit, and shrine transport allocations remain unclosed (see #/inventory).
+
+
+!!! Additional Open Decisions after the Operator Rulings
+* Confirm Alchemist and Priestess as separately Skilled +3 Background purchases/starting grants, and reconstruct XP spent, earned and banked.
+* Confirm shrine Hallmark's Trait versus Item slot, XP investment, and interaction with the non-PC living-automaton chassis.
+* Amend the Hallmark-only Powered Symbiote rules while preserving Ichi's personhood and established mechanics.
+* Assign satchel/pack cargo properly; confirm bandolier/harness purchase, accessibility, bulk and Ichi compatibility.
+* Define Path-Magic reagent yields, permissible substrate sources, renewable rate, duration, product limits, stacking order and failure consequences.
+* Define how Social Inventory upkeep and reciprocity interact with action economy and disrupted relationships.
+* Reconcile one-unit cash difference and check later branch changes before canon promotion.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/edges`>>
+
+!! Edges
+
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/characters/ichi`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/grandmother-spider`>>
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/concepts/strandbeests`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/characters/faerie-ring-strandbeest-shrine`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/company/alpha-playtest-company`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/gear/lady-aki-ledger`>>
+<<~ loulou uri=`lar:///elyncia.neo-thracia.opens/mission/session-zero-thracia`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+
+<<~ loulou uri=`lar:///ha.ka.ba/elyncia/characters/primary-characters/lady-aki`>>
+
+''Source branch:'' feature/lady-aki-character-sheet; ''original sheet blob:'' ebbe463a6520e33042f27c4ed6c0777d9c4b8a67.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/residue`>>
+
+!! Residue
+
+Keep silhouettes distinct:
+* Aki: primary PC and threshold worker.
+* Ichi: humanoid powered symbiote and personhood question.
+* Shrine: walking lararium and expedition infrastructure.
+* Ephyra: narrow-task spirits.
+* Company: broader player-side expedition ecology.
+
+Do not collapse these roles.
+
+
+!!! Annotation — Copy / Original Separation
+Only this annotated working document carries these proposed rules and clarified rulings. The live source sheet and companion sheets retain their existing wording until a separate promotion is authorized. No source seal from the original file authenticates this modified copy.
+
+<<~/ahu>>
+
+
+//Unsealed annotated working draft. Do not reuse the source sheet's integrity digest; reseal only after reviewed promotion.//
