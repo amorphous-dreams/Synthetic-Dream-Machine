@@ -425,4 +425,32 @@ describe("the carry door", () => {
   });
 });
 
+describe("a face that stands open and unworn (the wedge: a walked hearth parked its store door on this face's sealed canon)", () => {
+  /** A canon no peer ever answers for: the sealed canon of a face the vessel does not wear, as a walked hearth read it. */
+  const never = async (): Promise<never> => new Promise<never>(() => { /* a find no peer answers */ });
+  const src = [{ title: "daemon/t", revision: "r1" }];
+
+  test("RED: stage, staged, lift, withdraw and carry for a face the vessel does not wear refuse `kahua-face-unworn` before any document opens, so no act waits on a canon that cannot open; CONTROL: the stage's reads still answer, and the worn face stages and lifts", async () => {
+    const f = await face();
+    await kahuaDoor(f.ports()).mint();
+    const lifted = await kahuaDoor(f.ports()).lift({ ...f.st("a", "alpha"), taint: [], sources: src });
+    let opened = 0;
+    const unworn = kahuaDoor(f.ports({ worn: () => false, faceCanon: async () => { opened++; return never(); } }));
+    await expect(unworn.stage({ title: "b", text: "beta" })).rejects.toThrow(/^kahua-face-unworn: /);
+    await expect(unworn.stage({ title: "b", text: "beta" })).rejects.toBeInstanceOf(KahuaRefused);
+    await expect(unworn.staged("a")).rejects.toThrow(/^kahua-face-unworn: /);
+    await expect(unworn.lift({ title: "a", digest: "0".repeat(64), taint: [] })).rejects.toThrow(/^kahua-face-unworn: /);
+    await expect(unworn.withdraw(lifted.cid)).rejects.toThrow(/^kahua-face-unworn: /);
+    await expect(unworn.carry({ all: true })).rejects.toThrow(/^kahua-face-unworn: /);
+    expect(opened).toBe(0);
+    // CONTROL: the stage reads for an unworn face (a seed's preview reads every open face's heads).
+    expect((await unworn.list()).map((i) => i.title)).toEqual(["a"]);
+    expect((await unworn.get("a"))?.status).toBe("standing");
+    // CONTROL: the worn face stages and lifts as before; a door handed no wear reading (a direct act) keeps its own refusals.
+    const worn = kahuaDoor(f.ports({ worn: () => true }));
+    const staged = await worn.stage({ title: "c", text: "gamma" });
+    expect((await worn.lift({ title: "c", digest: staged.digest, taint: [], sources: src })).landed).toBe(true);
+  });
+});
+
 export { KahuaRefused };

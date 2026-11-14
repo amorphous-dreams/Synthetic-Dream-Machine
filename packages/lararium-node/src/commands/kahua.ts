@@ -18,9 +18,9 @@ import { wardRootSigner } from "../ward-signer.js";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import type { WardCredential } from "../ward-credential.js";
 import { randomBytes } from "node:crypto";
-import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
+import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  faceRecordsOf, faceRelationOf, storedLarRecord, tiddlerText, ownEntry, CONTROL_HOME_ID, type KahuaSource, type LarDoc,
+  faceRecordsOf, faceRelationOf, storedLarRecord, tiddlerText, ownEntry, CONTROL_HOME_ID, findOrThrow, DocumentUnavailableRefusal, type KahuaSource, type LarDoc,
 } from "@lararium/mesh";
 import { loadIntentFace, IntentRefused } from "./intent.js";
 import { kahuaDoor, KahuaRefused, type KahuaDoorPorts } from "../kahua-door.js";
@@ -71,6 +71,8 @@ export interface KahuaCommandOptions {
   readonly cap?: KahuaCapPort;
   /** The face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it; absent on a direct act. */
   readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
+  /** The face the standing vessel wears (`wornFace`); absent on a direct act. A write row for any other face refuses `kahua-face-unworn`. */
+  readonly worn?: () => number | null | undefined;
 }
 
 /**
@@ -82,7 +84,10 @@ export function faceCanonThroughControl(repo: Repo, control: () => Promise<DocHa
   return async (relation) => {
     const named = tiddlerText(ownEntry((await control()).doc()?.tiddlers, `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(relation)}`));
     if (!named || !named.startsWith("automerge:")) return null;
-    return repo.find<LarDoc>(named as AutomergeUrl);
+    // THE ONE BOUNDED RESOLVE (`findOrThrow`): a canon no peer answers for refuses by name and never holds a session's act
+    // open. The wear check (`kahua-face-unworn`) decides first; this bound stands under it as the resolve's own liveness floor.
+    try { return await findOrThrow(repo, named, `bags/daemon-${relation} (the face's local canon)`); }
+    catch (e) { if (e instanceof DocumentUnavailableRefusal) throw new KahuaRefused(`kahua-canon-unavailable: ${e.message}`); throw e; }
   };
 }
 
@@ -107,6 +112,8 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     register: (bagId, url) => catalog.change((d) => { d.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "kahua-pin"); }),
     session: () => session,
     ...(opts.faceCanon ? { faceCanon: opts.faceCanon } : {}),
+    // The face this row names against the face the vessel wears: a row for an open, unworn face refuses before a document opens.
+    ...(opts.worn ? { worn: () => { const w = opts.worn!(); return w === null || w === undefined || w === index; } } : {}),
   };
   const door = kahuaDoor(ports);
   const need = (v: string | undefined, what: string): string => { if (!v) throw new KahuaRefused(`${opts.action}: name ${what}`); return v; };

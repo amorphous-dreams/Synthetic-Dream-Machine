@@ -372,7 +372,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("proposals", args["proposals"]), ...opt("session", str(args["session"])),
       ...opt("history", args["history"] === true ? true : undefined),
       ...opt("cids", list(args["cids"])), ...opt("all", args["all"] === true ? true : undefined),
-      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon),
+      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon), ...opt("worn", deps.wornFace),
     });
   };
   const promoteRow = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>

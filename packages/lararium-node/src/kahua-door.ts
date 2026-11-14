@@ -70,6 +70,14 @@ export interface KahuaDoorPorts {
    * `kahua-lift-unstaged`, never a body from the hand.
    */
   readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
+  /**
+   * WHETHER THE STANDING VESSEL WEARS THIS FACE. A face's local canon and its signing hand open under the worn face alone: the
+   * canon rests sealed under the face's own key, and the island's one content-key holder carries the worn face's. So a row that
+   * stages, lifts, withdraws or carries for a face that stands open and unworn refuses `kahua-face-unworn` before any document
+   * opens (a walked hearth waited without end on that canon, and the wear after it never answered). Absent (a direct act, a
+   * rig): no wear reads, and each row keeps its own refusals.
+   */
+  readonly worn?: () => boolean;
 }
 
 export interface KahuaLiftInput {
@@ -102,6 +110,10 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return url;
   };
   const stage = async (): Promise<DocHandle<LarDoc>> => ports.repo.find<LarDoc>(stageUrl() as never);
+  /** The rows that write a face's canon or sign as the face ask its wear first: nothing opens for a face that stands unworn. */
+  const wornOrRefuse = (act: string): void => {
+    if (ports.worn && !ports.worn()) throw new KahuaRefused(`kahua-face-unworn: ${act} asks this face's own wear: its local canon bags/daemon-<F> rests sealed under its own key, and its hand signs under its own grant, so both open only while the vessel wears it; wear it (\`lares vault unlock --face N\`) and run it again`);
+  };
   const foldFace = () => ({ group, grant: ports.currentSigner, ...(ports.signedAt ? { signedAt: ports.signedAt } : {}) });
   const records = async () => kahuaActRecords((await stage()).doc(), group);
   const reading = async () => readKahuaStage(await records(), foldFace());
@@ -175,6 +187,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     },
 
     async staged(title: string): Promise<KahuaStagedRow & { readonly relation: string }> {
+      wornOrRefuse("a staged row's read");
       const { relation, handle } = await canon("kahua-lift-unstaged");
       const row = readKahuaStagedRow(handle.doc(), title);
       if (!row) throw new KahuaRefused(`kahua-lift-unstaged: bags/daemon-${relation} holds no row "${title}"; stage it there first (\`lares kahua stage\`)`);
@@ -182,6 +195,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     },
 
     async stage(input: KahuaStageInput): Promise<{ readonly title: string; readonly digest: string; readonly relation: string; readonly staged: boolean }> {
+      wornOrRefuse("a kahua stage");
       if (typeof input.title !== "string" || input.title.length === 0) throw new KahuaRefused("kahua-stage-title: name the row's title");
       if (typeof input.text !== "string") throw new KahuaRefused("kahua-stage-text: name the row's body");
       const { relation, handle } = await canon("kahua-stage-no-canon");
@@ -195,6 +209,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     },
 
     async lift(input: KahuaLiftInput): Promise<{ readonly cid: string; readonly parent: string | null; readonly landed: boolean }> {
+      wornOrRefuse("a kahua lift");
       stageUrl();
       if (!Array.isArray(input.taint)) throw new KahuaRefused("kahua-act-refused: taint: name the lift's taint list (empty when every input came from inside the face)");
       if (typeof input.digest !== "string" || !/^[0-9a-f]{64}$/.test(input.digest)) throw new KahuaRefused("kahua-lift-unstaged: name the staged row's digest as its preview printed it");
@@ -252,6 +267,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     },
 
     async withdraw(target: string): Promise<{ readonly cid: string }> {
+      wornOrRefuse("a kahua withdraw");
       stageUrl();
       await cap();
       const root = await grant();
@@ -262,6 +278,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     },
 
     async carry(input: { readonly cids?: readonly string[]; readonly all?: boolean }): Promise<{ readonly cids: readonly string[]; readonly carried: readonly string[] }> {
+      wornOrRefuse("a kahua carry");
       stageUrl();
       await cap();
       const root = await grant();
