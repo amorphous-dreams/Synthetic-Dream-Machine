@@ -21,6 +21,7 @@ import {
   makeCatalogAccessor, findOrThrow,
   makeInitWikiReactor, makeOpenWikiReactor, makeDraftReactor, makePruneStaleReactor,
   makeMemePutReactor, makeMemeGetReactor, makeMemeListReactor, makeMemeDeleteReactor, makeMemeProjectReactor, memeVerbOptions, VERB_SURFACE,
+  makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor, makeWikiStatusReactor,
   makeWardAlertReactor, fileWardRefusal,
   makeAddBagReactor, makeRemoveBagReactor, makeCompactBagReactor, makeRotateRecipeReactor, makeRestampBagTierReactor,
   makeSwitcherStateReactor, makePromoteStateReactor,
@@ -1000,6 +1001,17 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       registry.register("meme-list", makeMemeListReactor(memeOpts), { summary: "List every meme root a seat holds with its canonical hash; `tree` nests the slot tree.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-delete", makeMemeDeleteReactor(memeOpts), { summary: "Remove a meme's whole group; `base` = the canonical hash last read, stale → conflict.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
       registry.register("meme-project", makeMemeProjectReactor(memeOpts), { summary: "Project a meme root to a target — mem · md · html · tid · json — as { uri, to, text, contentType, meta? }; the anchor renders every target in-VM, a recipe or bag target projects mem · md.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+
+      // THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1): every TiddlyWiki act over one record or the wiki's engine,
+      // answered by this island's own `$tw` on the anchor (`recipe: "default"`, the worn face's daemon wiki). The same
+      // options the meme verbs read: the caller's cap decides reach, the Kahu predicate and the write cap gate each write,
+      // and a write lands through the live wiki so the cascade routes it to the working layer. No action string rides here.
+      registry.register("wiki-filter", makeWikiFilterReactor(memeOpts), { summary: "Run a TiddlyWiki filter in the daemon wiki's own engine; answers a bounded page of titles (or rows with named fields), `total`, and a `next` cursor to hand back as `after`. A malformed filter refuses `filter-malformed`.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-get", makeTiddlerGetReactor(memeOpts), { summary: "Read one tiddler with its fields, its `hash` (a writer's base) and its `textHash`; `fields` names a subset, `text: false` leaves the text home, `slot` reads one slot of a meme.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("wiki-render", makeWikiRenderReactor(memeOpts), { summary: "Wikify a title or a wikitext span through the daemon wiki's own engine to `text` or `html`, under a byte cap with a `next` cursor.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-put", makeTiddlerPutReactor(memeOpts), { summary: "Patch one tiddler: set fields, unset fields, add and remove tags, and move the text only where named; `base` = the hash last read (stale answers `conflict`), `create` lands only where no tiddler stands. Lands in the wiki's working layer.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("tiddler-delete", makeTiddlerDeleteReactor(memeOpts), { summary: "Remove one plain tiddler (a tombstone in the working layer); a meme root or slot refuses `tiddler-delete-in-a-family` toward the meme door; `base` = the hash last read.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
+      registry.register("wiki-status", makeWikiStatusReactor(memeOpts), { summary: "Name each layer the daemon wiki composes and whether the session's face reads and writes it; `working` names the layer a write lands in.", surfaces: [VERB_SURFACE.cli, VERB_SURFACE.agent] });
 
       // switcher-state — the daemon UX widget's IN path: main pushes the live
       // activation state and this writes the LOCAL, volatile $:/temp/lares/switcher

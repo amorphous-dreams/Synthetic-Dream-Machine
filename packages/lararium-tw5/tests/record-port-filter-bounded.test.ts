@@ -21,7 +21,8 @@ describe.skipIf(wikiSkip)(`the record port's filter ask, bounded${skipNote}`, ()
     await r.send(open);
     let n = 0;
     const ask = async (more: Record<string, unknown>) => {
-      await r.send({ type: "port:ask", portId: "p", askId: `f${++n}`, kind: "filter", ...more });
+      const message = { type: "port:ask", portId: "p", askId: `f${++n}`, kind: "filter", ...more };
+      await r.send(message);
       return ofType(r.messages, "port:answer").at(-1)!;
     };
     return { engine, r, ask };

@@ -217,7 +217,7 @@ function readTarget(args: Readonly<Record<string, unknown>>, verb: string): Meme
  * both, refuses as `no-container` before any cap ask, read or write. No default wiki exists: the daemon's
  * own wiki answers to its explicit name, `recipe: "default"`.
  */
-function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
+export function readContainer(args: Readonly<Record<string, unknown>>, verb: string): Omit<MemeArgs, "uri"> {
   const recipe = optionalStringArg(args, "recipe");
   const bag = optionalStringArg(args, "bag");
   const realm = optionalStringArg(args, "realm")?.trim().toLowerCase() || null;
@@ -305,7 +305,7 @@ const CURRENT_WIKI_BAG = "lar:///ha.ka.ba/lararium/config/current-wiki-bag";
  * The bag the anchor's cap gate checks: the one the in-wiki cascade routes a `lar:` title to — the same
  * bag the placement will land in through `wikiMemeSink`: the daemon's mounted working layer.
  */
-function anchorBagOf(opts: MemeVerbOptions): string {
+export function anchorBagOf(opts: Pick<MemeVerbOptions, "tw5">): string {
   const wiki = opts.tw5.$tw.wiki as { getTiddlerText?: (t: string, d?: string) => string };
   const configured = wiki.getTiddlerText?.(CURRENT_WIKI_BAG, "") ?? "";
   if (!configured) throw new NoWorkingLayerRefusal("The meme write into the daemon's own wiki", "Wait until the daemon working layer attaches, or name another container (--recipe <slug> or --bag <slug>).");
