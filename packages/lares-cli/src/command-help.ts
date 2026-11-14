@@ -423,6 +423,48 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares sense status --lens content", "lares mempalace status   # the guest comparator door"],
   },
 
+  tiddler: {
+    usage: "usage: lares tiddler <get | put | delete> <title> (--recipe <slug> | --bag <slug>)   (this phase answers --recipe default)",
+    synopsis:
+      "THE TIDDLER DOOR — one record with its fields, whatever its type: a plain note, a data tiddler, a meme's root " +
+      "or one of its slots. Every verb runs in the wiki's own TiddlyWiki engine through the daemon. `get` reads the " +
+      "record (fields, then the text) and the `base` hash a writer hands back; `put` PATCHES: it sets and unsets " +
+      "fields, adds and removes tags, and moves the text only where `--text` or `--file` names it, landing in the " +
+      "wiki's working layer; `delete` removes a plain tiddler and refuses a meme root or slot by name " +
+      "(`tiddler-delete-in-a-family`), since a family leaves whole through `lares meme delete`. A meme root or slot " +
+      "takes a field or tag patch here; its text moves through `lares meme put`. `--base` carries the hash last " +
+      "read: a record that moved past it answers `conflict` and nothing lands. The engine verbs stand beside this " +
+      "door: `lares wiki filter | render | status`.",
+    examples: [
+      "lares tiddler get \"Room 4\" --recipe default                         # the record as a .tid on stdout, the base on stderr",
+      "lares tiddler get \"Room 4\" --recipe default --skinny                 # every field, the text left home",
+      "lares tiddler get lar:///ha.ka.ba/kahua/memory/feedback/x --recipe default --slot '#/why'   # one slot of a meme",
+      "lares tiddler put \"Room 4\" --recipe default --fields '{\"todo\":\"done\"}' --tag-add reviewed --base <hash>   # a field and tag patch; the text stays",
+      "lares tiddler put \"New Note\" --recipe default --create --text \"first words\" --fields '{\"tags\":\"memory\"}'",
+      "lares tiddler delete \"Old Note\" --recipe default --if-match <hash>   # a stale base moves nothing",
+      "lares wiki filter '[tag[memory]sort[title]]' --recipe default --limit 5   # one page; --after <cursor> continues, --all walks it",
+      "lares wiki filter '[[Room 4]backlinks[]]' --recipe default               # the link graph rides filters",
+      "lares wiki render Handover --recipe default --form html                  # transclusions resolved by the engine",
+      "lares wiki status --recipe default                                       # which layer takes a write for this face",
+    ],
+    flags: [
+      "--recipe <slug>      the wiki read or written (this phase: default, the worn face's daemon wiki)",
+      "--slot <#/name>      (get) one slot of the meme the title names",
+      "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
+      "--skinny             (get) every field, the text left home",
+      "--unset <a,b>        (put) fields to remove",
+      "--tag-add <list>     (put) tags to add, as TiddlyWiki writes a list: one [[two words]]",
+      "--tag-remove <list>  (put) tags to remove",
+      "--text <words>       (put) the new text   ·   --file <path>  the new text from a file (`-` reads stdin)",
+      "--base <hash>        (put) the hash last read; stale → conflict, nothing lands",
+      "--create             (put) land only where no tiddler stands; an existing one answers `exists`",
+      "--if-match <hash>    (delete) the hash last read; stale → conflict, nothing moves",
+      "--max-bytes <N>      (get) the byte cap on the answer; the largest fields leave first and get named",
+    ],
+    next: ["lares wiki filter '[tag[memory]]' --recipe default", "lares meme get <uri> --recipe default   # a family's whole text"],
+    meme: "lar:///ha.ka.ba/lares/docs/pono/wiki-surface-scout",
+  },
+
   meme: {
     usage: "usage: lares meme <put | get | list | delete | normalize | check | sitting | project | promote | offer> (store verbs require (--recipe <slug> | --bag <slug>))",
     synopsis:

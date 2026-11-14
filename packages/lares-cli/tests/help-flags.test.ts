@@ -41,10 +41,10 @@ describe("help flags", () => {
     }
   });
 
-  test("★ the top-level list fits one screen: <= 62 lines, each <= 100 chars, every verb named ★", async () => {
+  test("★ the top-level list fits one screen: <= 63 lines, each <= 100 chars, every verb named ★", async () => {
     const r = await run(["help"]);
     const lines = r.out.split("\n");
-    expect(lines.length).toBeLessThanOrEqual(62);
+    expect(lines.length).toBeLessThanOrEqual(63);
     for (const l of lines) expect(l.length, l).toBeLessThanOrEqual(100);
     for (const c of COMMANDS) expect(r.out, c.name).toMatch(new RegExp(`^\\s+(✍ )?${c.name}\\s`, "m"));
   });

@@ -13,6 +13,10 @@
  *   add-bag / remove-bag     — recipe composition (hot-reload via composite.addLayer)
  *   epoch / rotate-recipe    — bound history (snapshot-restart, Nix-generations)
  *   prune-stale              — surface stale drafts for residency-action-or-prune
+ *   filter / render / status — THE TIDDLER DOOR's engine verbs (wiki-surface-scout, lane 1): run a TiddlyWiki
+ *                              filter, wikify a title or a span, and read each layer's writeability for the
+ *                              session's face, each in the wiki's own engine (`--recipe default` this phase);
+ *                              `lares tiddler get|put|delete` holds the record verbs
  */
 
 import { vesselDid } from "../env.js";
@@ -20,6 +24,9 @@ import { emit } from "../render.js";
 import { summaryOutput, type SubmitResult, type SubmitOptions } from "../verb-result.js";
 import { runVerb, verbFailure } from "../verb-call.js";
 import { cmdShare } from "./share-cmd.js";
+import { containerArgs } from "../container-target.js";
+import { DoorUsage, countOf, guardDoor, namesOf, runDoor, wordOf, type DoorPlan } from "./door-call.js";
+import { stdout } from "node:process";
 import type { ParsedArgs } from "../parse-args.js";
 
 type WikiSubcommand = (args: ParsedArgs) => Promise<number>;
@@ -561,6 +568,136 @@ export async function cmdWikiWhich(args: ParsedArgs): Promise<number> {
   return primary ? 0 : 5;
 }
 
+// ── THE TIDDLER DOOR's engine verbs: filter · render · status ─────────────────────────────────────────
+
+/** `lares wiki filter '<filter>'`: the daemon verb `wiki-filter` and the args it receives. */
+export function wikiFilterPlan(args: ParsedArgs): DoorPlan {
+  const filter = args.positional[0];
+  if (!filter) throw new DoorUsage("a filter is required (e.g. `lares wiki filter '[tag[memory]sort[title]]' --recipe default`)");
+  const out: Record<string, unknown> = { ...containerArgs(args, "wiki filter"), filter };
+  const fields = namesOf(args.options["fields"]);
+  if (fields) out["fields"] = fields;
+  const limit = countOf(args.options["limit"], "limit");
+  if (limit !== null) out["limit"] = limit;
+  const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
+  if (maxBytes !== null) out["maxBytes"] = maxBytes;
+  const after = wordOf(args.options["after"]);
+  if (after) out["after"] = after;
+  return { verb: "wiki-filter", args: out };
+}
+
+/** `lares wiki render <title>` or `lares wiki render --text '<span>'`: the daemon verb `wiki-render` and its args. */
+export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
+  const title = args.positional[0];
+  const span = typeof args.options["text"] === "string" ? args.options["text"] : "";
+  if (Boolean(title) === Boolean(span)) throw new DoorUsage("name one source: a title (`lares wiki render \"My Note\" --recipe default`) or a span (`--text \"''bold'' {{My Note}}\"`)");
+  const out: Record<string, unknown> = { ...containerArgs(args, "wiki render"), ...(title ? { title } : { text: span }) };
+  const form = wordOf(args.options["form"]);
+  if (form) {
+    if (form !== "text" && form !== "html") throw new DoorUsage(`--form reads text or html (got "${form}")`);
+    out["form"] = form;
+  }
+  const type = wordOf(args.options["type"]);
+  if (type) out["type"] = type;
+  const maxBytes = countOf(args.options["max-bytes"], "max-bytes");
+  if (maxBytes !== null) out["maxBytes"] = maxBytes;
+  const after = wordOf(args.options["after"]);
+  if (after) out["after"] = after;
+  return { verb: "wiki-render", args: out };
+}
+
+/** `lares wiki status`: the daemon verb `wiki-status` and its args. */
+export function wikiStatusPlan(args: ParsedArgs): DoorPlan {
+  return { verb: "wiki-status", args: { ...containerArgs(args, "wiki status") } };
+}
+
+interface FilterRowOut { title: string; fields: Record<string, string>; omitted?: string[] }
+
+/**
+ * A FILTER'S ANSWER ARRIVES IN PAGES. One call prints one page and names the cursor of the next on stderr (`--after`
+ * continues it); `--all` follows the cursor to the end and prints every title. A cursor that fails to advance refuses
+ * by name, and a wiki that moved mid-walk answers the verb's own `filter-cursor-stale`.
+ */
+export async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
+  return guardDoor(args, "wiki filter", async () => {
+    const plan = wikiFilterPlan(args);
+    const titles: string[] = [];
+    const rows: FilterRowOut[] = [];
+    let last: Record<string, unknown> = {};
+    let requestId = "";
+    let pages = 0;
+    for (let after: string | null = null; ;) {
+      const ran = await runDoor(args, "wiki filter", after === null ? plan : { verb: plan.verb, args: { ...plan.args, after } });
+      if (!ran.ok) return ran.exit;
+      requestId = ran.requestId;
+      last = ran.output;
+      pages++;
+      if (Array.isArray(last["rows"])) rows.push(...(last["rows"] as FilterRowOut[]));
+      else if (Array.isArray(last["titles"])) titles.push(...(last["titles"] as string[]));
+      const next = last["next"];
+      if (args.flags["all"] !== true || typeof next !== "string" || next === "") break;
+      if (next === after) {
+        const message = `the filter's cursor stood still at ${next}`;
+        emit(args, { ok: false, requestId, error: { code: "verb-error", message }, human: () => console.error(`lares wiki filter: ${message}`) });
+        return 4;
+      }
+      after = next;
+    }
+    // One page rides as the verb answered it; `--all` rides the pages joined, `next` null and the page count beside them.
+    const data = pages === 1 ? last : { ...last, ...(rows.length > 0 || Array.isArray(last["rows"]) ? { rows } : { titles }), next: last["next"] ?? null, pages };
+    emit(args, {
+      ok: true, requestId, data,
+      human: () => {
+        // One title per line; named fields follow their title, tab-joined, so a shell cuts them.
+        for (const title of titles) console.log(title);
+        for (const row of rows) console.log([row.title, ...Object.entries(row.fields).map(([name, value]) => `${name}=${value}`)].join("\t"));
+        const shown = titles.length + rows.length;
+        if (typeof last["next"] === "string" && last["next"] !== "") console.error(`${shown} of ${last["total"]} · next: --after ${last["next"]}`);
+        else console.error(`${shown} of ${last["total"]}`);
+        if (typeof last["withheld"] === "number") console.error(`${last["withheld"]} withheld (titles that stay home, or records this face holds no read on)`);
+      },
+    });
+    return 0;
+  });
+}
+
+export async function cmdWikiRender(args: ParsedArgs): Promise<number> {
+  return guardDoor(args, "wiki render", async () => {
+    const ran = await runDoor(args, "wiki render", wikiRenderPlan(args));
+    if (!ran.ok) return ran.exit;
+    const out = ran.output;
+    emit(args, {
+      ok: true, requestId: ran.requestId, data: out,
+      // The render alone reaches stdout, so a pipe carries it; the reading rides stderr.
+      human: () => {
+        stdout.write(String(out["text"] ?? ""));
+        if (out["truncated"] === true) console.error(`\ntruncated at the byte cap (${out["bytes"]} bytes whole) · next: --after ${out["next"]}`);
+      },
+    });
+    return 0;
+  });
+}
+
+export async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
+  return guardDoor(args, "wiki status", async () => {
+    const ran = await runDoor(args, "wiki status", wikiStatusPlan(args));
+    if (!ran.ok) return ran.exit;
+    const out = ran.output;
+    const layers = Array.isArray(out["layers"]) ? (out["layers"] as Array<{ bag: string; mounted: string; read: boolean; write: boolean; working?: boolean; why?: string }>) : [];
+    emit(args, {
+      ok: true, requestId: ran.requestId, data: out,
+      human: () => {
+        console.log(`wiki: ${out["recipe"]}  working layer: ${out["working"] ?? "(none attached; no layer takes a write)"}`);
+        for (const layer of layers) {
+          const reach = layer.write ? "read + write" : layer.read ? "read-only" : "no reach";
+          console.log(`  ${reach.padEnd(12)} ${layer.bag}${layer.working ? "  <- a write lands here" : ""}${layer.why ? `  (${layer.why})` : ""}`);
+        }
+      },
+    });
+    return 0;
+  });
+}
+
 const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: string }>> = {
   "init":  { handler: cmdWikiInit,  summary: "Mint a fresh wiki: wiki canonical + per-wiki draft + recipe. Idempotent." },
   "share": { handler: cmdShare("wiki"), summary: "Share a wiki with sibling faces through a private cabal: its canon by reference and its working layer as ONE shared workbench every member face syncs (--read <names> --write <names> --note <why> --face N --workspace <name>); --list shows the resolved answer. The daemon wiki never shares." },
@@ -580,6 +717,9 @@ const SUBCOMMANDS: Readonly<Record<string, { handler: WikiSubcommand; summary: s
   "list":       { handler: cmdWikiList,      summary: "Enumerate wikis registered in the catalog. Needs `lares vessel stand --foreground`." },
   "which":      { handler: cmdWikiWhich,     summary: "Recipe-presence query — list bags holding a tiddler. Needs `lares vessel stand --foreground`." },
   "resolve":    { handler: cmdWikiResolve,   summary: "Residency Model coordinate-inspection — list all Manifestations of a tiddler across bags; highlight winning bag per recipe priority. Needs `lares vessel stand --foreground`." },
+  "filter":     { handler: cmdWikiFilter,    summary: "Run a TiddlyWiki filter in the wiki's own engine: `lares wiki filter '[tag[memory]sort[title]]' --recipe default [--fields a,b] [--limit N] [--max-bytes N] [--after <cursor>] [--all]`. One bounded page per call, the next cursor on stderr; a malformed filter refuses `filter-malformed`. The link graph rides filters: `[[T]backlinks[]]`, `links[]`, `transcludes[]`, `backtranscludes[]`." },
+  "render":     { handler: cmdWikiRender,    summary: "Wikify a title or a span through the wiki's own engine: `lares wiki render <title> --recipe default [--form text|html] [--max-bytes N] [--after <cursor>]`, or `--text '<wikitext>' [--type <mime>]`. The render reaches stdout." },
+  "status":     { handler: cmdWikiStatus,    summary: "Name each layer the wiki composes and whether this face reads and writes it: `lares wiki status --recipe default`. The working layer takes every write." },
 };
 
 /** The wiki door's help, drawn from the sub-verb table: `lares wiki help` and `lares wiki --help` print these lines. */

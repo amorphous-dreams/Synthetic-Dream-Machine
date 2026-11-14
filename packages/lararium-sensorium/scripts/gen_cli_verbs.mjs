@@ -75,6 +75,15 @@ const CLI_FORMS = {
   meme_list:    "meme list",
   meme_delete:  "meme delete",
   meme_project: "meme project",
+  // THE TIDDLER DOOR (wiki-surface-scout #/a-lean) — every TiddlyWiki act over one record or one wiki's engine. The record
+  // verbs ride their own host (`lares tiddler get|put|delete`); the engine verbs join the `wiki` host beside the switcher
+  // (`lares wiki filter|render|status`). One table welds both skins' wire and answer: fixtures/tiddler-door-answers.json.
+  tiddler_get:    "tiddler get",
+  tiddler_put:    "tiddler put",
+  tiddler_delete: "tiddler delete",
+  wiki_filter:    "wiki filter",
+  wiki_render:    "wiki render",
+  wiki_status:    "wiki status",
   // The OFFERING door (offering#/the-canon-offer) — an AI seat offers toward house canon and reads the offer table; each
   // mirrors `lares meme offer …` under the one `meme` host. `lares meme offer promote` stays the Kahu steward's hand and
   // holds no MCP tool, the way `kahua lift` holds none.

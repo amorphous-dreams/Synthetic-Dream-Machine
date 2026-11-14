@@ -40,16 +40,23 @@ if not CLI.exists():
     print(f"[surface-parity] no built CLI at {CLI} — run `pnpm build` first"); sys.exit(1)
 
 tools = [t.replace("_", "-") for t in
-         re.findall(r'@mcp\.tool\(\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
+         re.findall(r'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def (\w+)', MCP.read_text())]
 
-# A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool()` with EMPTY parentheses, so the
-# ordinary act of giving one tool a `name=` or `description=` argument would drop it from this reading —
-# and a reading that drops every tool leaves `missing` empty and the run green. The set the whole witness
-# walks must be asserted before anything is asserted about its members.
+# A FLOOR ON THE SUBJECT'S SIZE. The decorator pattern binds `@mcp.tool(...)` with its arguments on ONE line
+# (the tiddler door's tools state their annotations there: `@mcp.tool(annotations=_READS)`), so a decorator
+# broken across lines would drop its tool from this reading — and a reading that drops every tool leaves
+# `missing` empty and the run green. The set the whole witness walks must be asserted before anything is
+# asserted about its members, and the count below welds the reading to the seat's own tool list.
 if not tools:
     print(f"[surface-parity] {MCP} DECLARES NO TOOLS to this reader — the walk below has no members.")
-    print( "      The probe binds `@mcp.tool()` with empty parentheses; a decorator carrying an argument")
+    print( "      The probe binds `@mcp.tool(...)` on one line; a decorator broken across lines")
     print( "      reads as absent, and every check here then passes by having nothing to check.")
+    sys.exit(1)
+# EVERY DECORATOR THE SEAT WRITES GETS READ: a `@mcp.tool` this pattern cannot bind would ride unaudited.
+decorated = len(re.findall(r'^\s*@mcp\.tool\b', MCP.read_text(), re.M))
+if decorated != len(tools):
+    print(f"[surface-parity] {MCP} writes {decorated} `@mcp.tool` decorators and this reader binds {len(tools)}:")
+    print( "      a tool whose decorator the pattern cannot read rides unaudited. Keep each decorator on one line.")
     sys.exit(1)
 
 # The CLI's own answer, never a transcription of it: the top-level listing, plus each parent verb's own
@@ -124,7 +131,7 @@ EXEMPT: dict[str, str] = {
 
 def daemon_verbs_mcp(name: str) -> set:
     """The daemon verbs an MCP tool routes to — read off its own `_call(...)`."""
-    body = re.search(rf'@mcp\.tool\(\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
+    body = re.search(rf'@mcp\.tool\([^)\n]*\)\s*\n\s*(?:async )?def {re.escape(name)}\b.*?(?=\n    @mcp\.tool|\Z)',
                      MCP.read_text(), re.S)
     found = set(re.findall(r'_call\(\s*"(\w+)"', body.group(0))) if body else set()
     return {v.replace("_", "-") for v in found}
