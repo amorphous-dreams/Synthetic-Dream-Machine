@@ -66,7 +66,10 @@ describe("the per-command help registry", () => {
   test("a door that keeps its own sub-verb table answers --help with that table: `wiki --help` reads as `wiki help` reads", async () => {
     const flag = await said(["wiki", "--help"]), word = await said(["wiki", "help"]);
     expect(flag.out).not.toMatch(/no detailed help yet/);
-    expect(flag.out.startsWith(word.out)).toBe(true);   // the same table, then the door's long account
+    // The same table, then exactly the door's long account: a blank line, `About:`, and the row's own summary. Nothing else rides.
+    const wiki = COMMANDS.find((c) => c.name === "wiki")!;
+    expect(flag.out).toBe(`${word.out}\n\nAbout:\n  ${wiki.summary}`);
+    expect(word.out).not.toMatch(/^About:$/m);   // CONTROL: the bare table (`wiki help`) carries no account
     for (const verb of ["init", "share", "switch", "active", "list"]) expect(flag.out).toMatch(new RegExp(`^  ${verb}\\s`, "m"));
     expect(flag.code).toBe(0);
   });
