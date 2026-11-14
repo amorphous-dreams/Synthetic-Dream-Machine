@@ -46,7 +46,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
-  KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs,
+  KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, wikiFaceFolderOf, loadLaresConfig, tempConsentedSlugs,
   listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
@@ -407,6 +407,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       plan.push({ from: abs, to: `${toDir}/${rel}`, row: rowOf(rel, abs) });
     }
   };
+  const benchesLeft: string[] = [];
   for (const name of folders(wikisDir)) {
     const src = join(wikisDir, name);
     const face = faceFolderOf(name);
@@ -431,6 +432,9 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       } else if (existsSync(join(src, TEMP_LAYER_DIR))) omissions.push({ kind: "temp-unconsented", detail: `the daemon wiki's temp folder stands with no consent row (projection.temp.daemon); it stays behind` });
       continue;
     }
+    // A FACE'S OWN WORKBENCH FOLDER (`<slug>-<F>`) rides no bundle row yet: the export names each one it leaves behind, and the
+    // seed lays it back from disk at that face's own wear.
+    if (wikiFaceFolderOf(name) !== null && !isKahuaFaceFolder(name)) { if (plainFiles(src).files.length > 0) benchesLeft.push(src); continue; }
     if (isPrivateProjectionSlug(name)) continue;
     addTree(join(src, "recovery"), `wikis/${name}/drafts`, () => ({ face: null, bag: wikiSlotUri(name, "draft"), layer: "draft", title: null, rowKey: null }));
     if (consented.has(name)) {
@@ -443,6 +447,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     const wikiBases = await baseFor(wikiSlotUri(name, "working"));
     addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
+  if (benchesLeft.length > 0) omissions.push({ kind: "face-workbench", detail: "each face's own workbench folder of a wiki stays on disk and rides no bundle row; `lares vessel seed` lays it back at that face's wear", items: benchesLeft, count: benchesLeft.length });
   for (const name of folders(bagsDir)) {
     const src = join(bagsDir, name);
     if (isDaemonFaceFolder(name)) {

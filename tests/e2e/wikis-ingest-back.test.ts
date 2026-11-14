@@ -18,7 +18,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { readFileSync, writeFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { stagedTarget, targetInstance, type LarInstance } from "../harness/instance.js";
+import { stagedTarget, targetInstance, wikiWorkbenchDir, type LarInstance } from "../harness/instance.js";
 import { projectionDrained, settleWordOver } from "../harness/settle-word.js";
 
 const REPO_ROOT = new URL("../..", import.meta.url).pathname;
@@ -58,7 +58,7 @@ beforeAll(async () => {
   if (!stagedTarget) return;
   // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `wikis/daemon-<F>/`, the face in the folder's name), so the
   // scan back into `wikis/lares/working` reads `wikis/lares/` alone — a sibling wiki's tree is never its source.
-  wikisDir = join(lar.root, "projections/wikis", "lares");
+  wikisDir = wikiWorkbenchDir(lar.root, "lares");
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);
   if (r.json?.["ok"] !== true) throw new Error(`seed LOAD --to working failed: ${JSON.stringify(r.json)}`);
   projected = await awaitWikisCarrier();

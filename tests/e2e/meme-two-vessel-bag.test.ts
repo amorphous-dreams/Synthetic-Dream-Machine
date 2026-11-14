@@ -39,7 +39,7 @@
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { openStagedJoinee, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
+import { openStagedJoinee, wikiWorkbenchDir, type StagedJoinee, type LarInstance, type CliResult } from "../harness/instance.js";
 import { promoteLoadedTitles } from "../harness/promote.js";
 import { faceJoinOutcome, requestFaceJoin } from "../harness/face-join-intent.js";
 
@@ -127,7 +127,7 @@ describe.skipIf(gaps.length > 0)("★ each vessel keeps its own lares book and a
     // The wiki island mounts the SAME working doc the recipe seat wrote (the ONE slot-doc resolver), and
     // its disk mirror sites the working layer under wikis/{slug}/ — a file here is the running wiki's own
     // projection of the placement, never the daemon's.
-    const f = join(A!.root, "projections/wikis/lares", `${PATH}.mem`);
+    const f = join(wikiWorkbenchDir(A!.root, "lares"), `${PATH}.mem`);
     const deadline = Date.now() + 60_000;
     while (!existsSync(f)) {
       if (Date.now() > deadline) throw new Error(`A's running wiki never surfaced the placement at ${f}`);

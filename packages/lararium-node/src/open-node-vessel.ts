@@ -106,7 +106,7 @@ import {
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
-import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
+import { seatHouseCanonFromCheckout, kahuRealmHandleIndex, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
@@ -4404,7 +4404,11 @@ async function prepareNodeBootOn(
       // rides the recipe's mirrorBags.
       // A wiki's working slot rests in its realm workbench (cabal-realm#/the-workbench); a share row may root its mirror in an
       // operator workspace (`/lar/workspaces/<name>`), never inside the checkout or the hearth (`workspaceRootsOf`).
-      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },
+      // EACH FACE MOUNTS ITS OWN WORKBENCH for an unshared wiki, so its mirror rests in that face's own folder,
+      // `<projections>/wikis/<slug>-<F>` (`faceWorkbench`). The Kahu steward alone, the face whose seat writes `bags/` back,
+      // keeps a sourced slug's one folder beside the canon source (`writesBack`): no face relation enters a tracked tree.
+      { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots,
+        faceWorkbench: () => wornDeviceRelation, writesBack: () => (wornMount?.handleIndex ?? 0) === kahuRealmHandleIndex() },
       // A wiki's personal slot carries the worn face's private margin: it projects per face, `personal/<F>/<slug>`.
       { bagId: "personal",       mirrorRoot: join(projectionRoot, PERSONAL_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation },
       // Recovery remains an explicit, recipe-designated grant with its own directory.

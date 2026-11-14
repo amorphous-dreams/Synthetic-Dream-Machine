@@ -203,6 +203,12 @@ export type DiskMirrorGrant = readonly {
   workspaceRoots?: Readonly<Record<string, string>>;
   /** A wiki's PERSONAL grant: the folder of the face the composition wears (its relation F), read at each mount; none: no mirror. */
   faceFolder?: () => string | null;
+  /** A wiki's WORKING grant: the relation F of the face the composition wears, read at each mount. Each face mounts its own
+   *  workbench document for an unshared wiki, so its mirror rests in that face's own folder, `{slug}-{F}`; none worn: `{slug}`. */
+  faceWorkbench?: () => string | null;
+  /** A wiki's WORKING grant: whether the worn face writes canon back beside the canon source (the Kahu steward). That face alone
+   *  keeps a sourced slug's one folder beside the source; every other face's workbench rests under `mirrorRoot`. */
+  writesBack?: () => boolean;
 }[];
 
 /** Resolve a mount's disk mirrors: intersect the held grant (authority) with the
@@ -225,7 +231,12 @@ export type DiskMirrorGrant = readonly {
  *  projector bars the layer's internal volatile titles by namespace. A draft recovery entry lands in `/recovery`.
  *
  *  A wiki's WORKING slot rests in its realm workbench (cabal-realm#/the-workbench), and its grant may name a workspace for the
- *  slug (`workspaceRoots`): the workbench's mirror then roots there instead of `wikis/{slug}`. A wiki's PERSONAL slot carries the
+ *  slug (`workspaceRoots`): a shared wiki's workbench mirror then roots there, one folder for every face seated in it. With no
+ *  workspace named, the mirror rests in the worn face's own folder, `wikis/{slug}-{F}` under the grant's own root
+ *  (`faceWorkbench`), since each face mounts its own workbench document for an unshared wiki and a file answers to one
+ *  document. One face keeps the folder that names none: the face that writes canon back (`writesBack`) rests a SOURCED slug's
+ *  workbench beside the canon source, `{source}/wikis/{slug}`, so no face relation enters a tracked tree. With no face worn the
+ *  mirror keeps `wikis/{slug}`. A wiki's PERSONAL slot carries the
  *  wearing face's private margin (operator ruling 2026-11-11), so its grant roots per face: `personal/<F>/{slug}`, read off the
  *  grant's `faceFolder` at each mount; with no face worn it yields no mirror.
  *
@@ -257,9 +268,13 @@ export function resolveDiskMirrors(
     .map((g) => {
       // A sourced slug's per-wiki root writes back beside its source; every other slug keeps the grant's own root.
       const base = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug) ? g.sourcedRoots![wikiSlug]! : g.mirrorRoot;
-      const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, ...held } = g;
+      const sourced = Object.hasOwn(g.sourcedRoots ?? {}, wikiSlug);
+      const { sourcedRoots: _sourced, consentSlugs: _consent, workspaceRoots: _workspaces, faceFolder: _face, faceWorkbench: _bench, writesBack: _back, ...held } = g;
       if (g.faceFolder !== undefined) return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${g.faceFolder()}/${wikiSlug}` };
       if (g.wikiSlot === "working" && Object.hasOwn(g.workspaceRoots ?? {}, wikiSlug)) return { ...held, bagId: perWikiBag(g), mirrorRoot: g.workspaceRoots![wikiSlug]! };
+      // An unshared wiki's workbench rests in the worn face's own folder; the face that writes canon back keeps a sourced slug's one folder.
+      const benchFace = g.wikiSlot === "working" ? g.faceWorkbench?.() ?? null : null;
+      if (benchFace !== null && !(sourced && g.writesBack?.() === true)) return { ...held, bagId: perWikiBag(g), mirrorRoot: `${g.mirrorRoot}/${wikiSlug}-${benchFace}` };
       const leaf = g.wikiSlot === "temp" ? "/temp" : g.mirrorClass === "recovery" ? "/recovery" : "";
       return (g.selfCanon || g.wikiSlot)
         ? { ...held, bagId: perWikiBag(g), mirrorRoot: `${base}/${wikiSlug}${leaf}`, ...(g.wikiSlot === "temp" ? { tempLayer: true } : {}) }

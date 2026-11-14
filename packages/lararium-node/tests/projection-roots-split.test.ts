@@ -18,7 +18,7 @@ import { afterEach, describe, expect, test } from "vitest";
 import { CROSSROADS_DOC_URI, DAEMON_BAG_ID, KAHUA_BAG, wikiSlotUri, CONTROL_HOME_ID } from "@lararium/mesh";
 import {
   projectionRoots, daemonWorkingMirror, kahuaStageMirror, daemonDiskMirrors, daemonFaceFolder, kahuaFaceFolder,
-  isPrivateProjectionSlug,
+  isPrivateProjectionSlug, wikiFaceFolder, wikiFaceFolderOf,
 } from "../src/bag-paths.js";
 import { atomicWriteFileSync, durableSyncIo } from "../src/fs-atomic.js";
 import { LarDiskProjector, PROJECTION_FILE_MODE } from "../src/disk-projector.js";
@@ -58,6 +58,21 @@ describe("projectionRoots — the mirror root splits by origin", () => {
     expect(roots.wikisRootFor("kahua")).toBe(join(projections, "wikis"));
     expect(roots.sourcedSlugs()).toEqual([]);
     expect(isPrivateProjectionSlug(`daemon-${TAG}`)).toBe(true);
+  });
+  test("a face's workbench folder names its wiki and its face, reads back whole, and counts as a private plane", () => {
+    expect(wikiFaceFolder("lares", TAG)).toBe(`lares-${TAG}`);
+    expect(wikiFaceFolderOf(`lares-${TAG}`)).toEqual({ slug: "lares", relation: TAG });
+    // A slug that carries hyphens keeps them: the relation closes the name.
+    expect(wikiFaceFolderOf(`elyncia-referee-${TAG}`)).toEqual({ slug: "elyncia-referee", relation: TAG });
+    expect(wikiFaceFolderOf(`daemon-${TAG}`)).toEqual({ slug: "daemon", relation: TAG });
+    // CONTROL: a plain slug, a hyphenated slug and a bare relation name no face folder.
+    for (const name of ["lares", "elyncia-referee", TAG, `lares-${TAG.slice(1)}`]) expect(wikiFaceFolderOf(name)).toBeNull();
+    expect(isPrivateProjectionSlug(`lares-${TAG}`)).toBe(true);
+    expect(isPrivateProjectionSlug("elyncia-referee")).toBe(false);
+    expect(() => wikiFaceFolder("lares", "not-a-relation")).toThrow(/relation/);
+    // A face folder that stands under a canon source never reads as a sourced slug.
+    const { projections, canon } = tree("lares", `lares-${TAG}`);
+    expect(projectionRoots({ projectionRoot: projections, canonBags: canon }).sourcedSlugs()).toEqual(["lares"]);
   });
   test("an absent canon source sources nothing: every root stays under the projections root", () => {
     dir = mkdtempSync(join(tmpdir(), "proj-split-"));

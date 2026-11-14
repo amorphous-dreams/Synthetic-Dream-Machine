@@ -123,6 +123,36 @@ describe("resolveDiskMirrors — a per-wiki grant's root splits by the slug's or
   });
 });
 
+// A FOLDER FOR EACH FACE'S OWN WORKBENCH (cabal-realm#/the-workbench): each face of a vessel mounts its own workbench document
+// for an unshared wiki, so its mirror rests in a folder that names the face, `wikis/{slug}-{F}`, as `wikis/daemon-{F}` does.
+describe("resolveDiskMirrors — an unshared wiki's workbench rests in its face's own folder", () => {
+  const A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2";
+  const working = (face: string | null, writesBack = false, workspaces: Record<string, string> = {}): DiskMirrorGrant => [
+    { bagId: "working", mirrorRoot: "/state/wikis", scope: "working", wikiSlot: "working", sourcedRoots: { lares: "/checkout/wikis" },
+      workspaceRoots: workspaces, faceWorkbench: () => face, writesBack: () => writesBack },
+  ];
+  const rootOf = (g: DiskMirrorGrant, slug: string): string | undefined => resolveDiskMirrors(g, [wikiSlotUri(slug, "working")], slug)[0]?.mirrorRoot;
+  test("RED: two faces of one vessel resolve two folders for one wiki, each named by its face", () => {
+    expect(rootOf(working(A), "notes")).toBe(`/state/wikis/notes-${A}`);
+    expect(rootOf(working(B), "notes")).toBe(`/state/wikis/notes-${B}`);
+  });
+  test("RED: a face that writes no canon back rests its workbench of a sourced wiki under the state root, never beside the source", () => {
+    expect(rootOf(working(A), "lares")).toBe(`/state/wikis/lares-${A}`);
+  });
+  test("CONTROL: the face that writes canon back keeps the one folder beside the source, and no face relation enters that path", () => {
+    expect(rootOf(working(A, true), "lares")).toBe("/checkout/wikis/lares");
+    // A wiki with no source carries no write-back: the same face rests its workbench in its own folder.
+    expect(rootOf(working(A, true), "notes")).toBe(`/state/wikis/notes-${A}`);
+  });
+  test("CONTROL: a shared wiki's workbench under an operator workspace keeps its one folder; no face worn keeps `wikis/{slug}`", () => {
+    expect(rootOf(working(A, false, { notes: "/lar/workspaces/field-notes" }), "notes")).toBe("/lar/workspaces/field-notes");
+    expect(rootOf(working(null), "notes")).toBe("/state/wikis/notes");
+    expect(rootOf(working(null), "lares")).toBe("/checkout/wikis/lares");
+    // The resolved entry carries none of the grant's resolvers.
+    expect(Object.keys(resolveDiskMirrors(working(A), [wikiSlotUri("notes", "working")], "notes")[0]!).sort()).toEqual(["bagId", "mirrorRoot", "scope", "wikiSlot"]);
+  });
+});
+
 test("a recovery grant sites designated drafts separately from working", () => {
   const draft = wikiSlotUri("garden", "draft");
   const working = wikiSlotUri("garden", "working");

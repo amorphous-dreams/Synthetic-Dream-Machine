@@ -172,6 +172,24 @@ export function isDaemonFaceFolder(name: string): boolean {
 }
 
 /**
+ * A FOLDER FOR EACH FACE'S OWN WORKBENCH (cabal-realm#/the-workbench): each face of a vessel mounts its own workbench document
+ * for an unshared wiki, so that workbench's mirror rests in `<projections>/wikis/<slug>-<F>/`, the shape the daemon wiki's
+ * folder already holds (`daemon-<F>`). The face relation closes the name, so the slug reads as everything before it.
+ */
+export function wikiFaceFolder(slug: string, faceRelation: string): string {
+  if (!KAHUA_FACE_RELATION.test(faceRelation)) throw new Error(`wiki face folder: invalid relation ${JSON.stringify(faceRelation)}`);
+  if (slug.length === 0 || slug.includes("/")) throw new Error(`wiki face folder: invalid slug ${JSON.stringify(slug)}`);
+  return `${slug}-${faceRelation}`;
+}
+/** Read a face folder's name back: the slug it mirrors and the face relation that owns it; null for any other name. */
+export function wikiFaceFolderOf(name: string): { readonly slug: string; readonly relation: string } | null {
+  // A relation runs 36 characters, after the hyphen that joins it to the slug.
+  if (name.length < 38 || name[name.length - 37] !== "-") return null;
+  const relation = name.slice(-36), slug = name.slice(0, -37);
+  return KAHUA_FACE_RELATION.test(relation) && !slug.includes("/") ? { slug, relation } : null;
+}
+
+/**
  * The daemon wiki's disk mirror: its working layer, bound to the worn face, writes files to
  * `<projections>/wikis/daemon-<F>/`. The daemon document carries no canon role.
  *
@@ -275,13 +293,13 @@ export function titleRelPath(title: string): string | null {
 /**
  * THE PRIVATE PLANES: the layers a house mints for itself and never writes beside a canon source, whatever dirs that
  * source holds. The daemon wiki (each device's own private working wiki) and the kahua plane; each face's folders
- * (`daemon-<F>`, `kahua-<F>`) join them by shape (`isPrivateProjectionSlug`).
+ * (`daemon-<F>`, `kahua-<F>`, and `<slug>-<F>` for its workbench of a wiki) join them by shape (`isPrivateProjectionSlug`).
  */
 export const PRIVATE_PROJECTION_SLUGS: ReadonlySet<string> = new Set(["daemon", "kahua"]);
 
-/** Whether a slug names a private plane: a named one, or some face's daemon or kahua folder. */
+/** Whether a slug names a private plane: a named one, or some face's own folder (its daemon, kahua or workbench folder). */
 export function isPrivateProjectionSlug(slug: string): boolean {
-  return PRIVATE_PROJECTION_SLUGS.has(slug) || isKahuaFaceFolder(slug) || isDaemonFaceFolder(slug);
+  return PRIVATE_PROJECTION_SLUGS.has(slug) || wikiFaceFolderOf(slug) !== null;
 }
 
 /** Where a house's disk mirrors root, split by ORIGIN. */
