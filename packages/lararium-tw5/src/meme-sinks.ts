@@ -45,6 +45,11 @@ export function storeMemeSink(store: LarTiddlerStore, bag: string, origin: Chang
       return store.put(record, origin, { bag });
     },
     tombstone: (title) => store.tombstone(title, origin),
+    // ONE CHANGE where the bag's document writes atomically; member by member where it cannot.
+    tombstoneFamily: async (titles) => {
+      if (typeof store.writeFamily === "function") { await store.writeFamily([], titles, origin, { bag }); return; }
+      for (const title of titles) await store.tombstone(title, origin);
+    },
   };
 }
 

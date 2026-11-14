@@ -63,10 +63,11 @@ import {
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
+import { componentsBeneath } from "@lararium/mesh/family";
 import { findOrThrow, makeCatalogAccessor } from "./catalog-accessor.js";
 import { effectiveRecipeOf } from "./recipe-planes.js";
 import type { IslandContext } from "./island-context.js";
-import { groupOfMeme, holdsUnreadPointer, isMemeRoot, listMemePage, listOneMeme, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeListing, type MemeSink } from "./place-meme.js";
+import { familyViewOf, holdsUnreadPointer, isMemeRoot, listMemePage, listOneMeme, placeMeme, POINTER_BODY_CODE, readMeme, removeMeme, wikiMemeSink, type MemeListing, type MemeSink } from "./place-meme.js";
 import { compositeMemeSink, storeMemeSink } from "./meme-sinks.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import { pinTargetsOf, profileOf } from "./weave/index.js";
@@ -579,8 +580,20 @@ async function deleteThroughRecipe(
     // wiki island alone; any other bag with no store stands unreached, by name.
     if (store) layers.push({ bag, store }); else if (!wikiSlotKindOf(slug, bag)) unreached.push(bag);
   }
-  const titles = new Set<string>();
-  for (const layer of layers) for (const t of groupOfMeme(await layer.store.listVisible(), uri)) titles.add(t);
+  // THE FAMILY, BY THE ONE LAW, over the stack as the wiki composes it: the root and its component slots. A
+  // `uri/path` title stands as its own meme and stays.
+  const candidates = new Set<string>();
+  for (const layer of layers) for (const t of await layer.store.listVisible()) if (t === uri || t.startsWith(`${uri}#`)) candidates.add(t);
+  const composed = new Map<string, TiddlerFields>();
+  for (const title of candidates) {
+    for (const layer of layers) {
+      const record = await layer.store.get(title);
+      if (!record) continue;
+      if (!record.meta?.deleted) composed.set(title, record.tiddler as unknown as TiddlerFields);
+      break;
+    }
+  }
+  const titles = new Set<string>(componentsBeneath(familyViewOf(() => candidates, (t) => composed.get(t)), uri));
   const shadowAt = new Map<string, string>();
   const answeredIn = new Set<string>();
   for (const title of titles) {
@@ -614,11 +627,23 @@ async function deleteThroughRecipe(
   }
   // EACH TOMBSTONE LANDS OR NAMES WHY: a write that throws stops none of the others, and the receipt names both
   // halves (`partial`), so a caller never reads a delete that half-landed as one that did not move.
+  // ONE CHANGE PER BAG: the members a bag takes leave together where its document writes atomically. Cross-bag
+  // atomicity cannot exist, so a family split across layers lands as ordered writes, each named.
   const tombstoned: string[] = [];
   const failed: Array<{ title: string; bag: string; why: string }> = [];
-  for (const [title, bag] of shadowAt) {
-    try { await writers.get(bag)!.tombstone(title, origin); tombstoned.push(title); }
-    catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+  const perBag = new Map<string, string[]>();
+  for (const [title, bag] of shadowAt) perBag.set(bag, [...(perBag.get(bag) ?? []), title]);
+  for (const [bag, members] of perBag) {
+    const writer = writers.get(bag)!;
+    if (typeof writer.writeFamily === "function") {
+      try { await writer.writeFamily([], members, origin, { bag }); tombstoned.push(...members); }
+      catch (err) { for (const title of members) failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+      continue;
+    }
+    for (const title of members) {
+      try { await writer.tombstone(title, origin); tombstoned.push(title); }
+      catch (err) { failed.push({ title, bag, why: err instanceof Error ? err.message : String(err) }); }
+    }
   }
   // A BAG THE ISLAND CANNOT REACH, ABOVE THE ONE THAT ANSWERED, may still hold the meme the wiki reads: the
   // delete names that `unconfirmed`, never `removed`.

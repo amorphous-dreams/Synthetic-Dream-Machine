@@ -278,6 +278,28 @@ export function familyOf(view: FamilyView, title: string, opts: { readonly field
   };
 }
 
+/**
+ * Every standing record beneath `title` by parent edges, at every depth, in title order: answered whether or
+ * not `title` itself still stands, so a shore reads what a record that just left held.
+ */
+export function edgeDescendantsOf(view: FamilyView, title: string): string[] {
+  const seen = new Set<string>([title]);
+  const queue = [title];
+  for (let i = 0; i < queue.length; i++) {
+    for (const child of edgeChildrenOf(view, queue[i]!)) {
+      if (seen.has(child) || view.read(child) === undefined) continue;
+      seen.add(child);
+      queue.push(child);
+    }
+  }
+  return queue.slice(1).sort();
+}
+
+/** A record and every standing component beneath it: the record first, then its slots in title order. */
+export function componentsBeneath(view: FamilyView, title: string): string[] {
+  return view.read(title) === undefined ? [] : closure(view, title).members;
+}
+
 /** The standing titles of the family a root address heads: the root and its component slots. Empty where no root stands. */
 export function familyMembers(view: FamilyView, root: string): string[] {
   const fields = view.read(root);
@@ -469,9 +491,14 @@ export function consequence(view: FamilyView, act: FamilyAct): Consequence {
     case "put": {
       const lands = act.lands ?? [act.title];
       for (const title of lands) shadowingAct(title, "put");
-      if (isRoot && act.lands !== undefined) {
+      if (act.lands !== undefined) {
+        // What stood beneath the target: a root's slots, a slot's own subtree, the orphans a dead root left.
+        const beneath = isRoot ? slots
+          : reading.position === "slot" ? subtreeOf(act.title).filter((t) => t !== act.title)
+          : !reading.stands ? orphansUnder(tracked, act.title)
+          : [];
         const fresh = new Set(lands);
-        for (const slot of slots) {
+        for (const slot of beneath) {
           if (fresh.has(slot)) continue;
           if (bare) leaves.push({ title: slot, why: "slot-no-longer-declared" });
           else shadowingAct(slot, "tombstone");

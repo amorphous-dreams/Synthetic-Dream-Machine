@@ -8,7 +8,7 @@
  */
 import { describe, test, expect } from "vitest";
 import {
-  placeMeme, wikiMemeSink, groupOfMeme, listMemes, readMeme, stageRowTitle, STAGE_ROW_PREFIX,
+  placeMeme, wikiMemeSink, removeMeme, listMemes, readMeme, stageRowTitle, STAGE_ROW_PREFIX,
   ROW_KEY_MISSING_CODE, ROW_KEY_SHAPE_CODE, ROW_KEY_TITLE_CODE, type MemeSink,
 } from "../src/place-meme.js";
 import type { TiddlerFields } from "../src/deserializer.js";
@@ -89,9 +89,13 @@ describe("★ placeMeme lands a meme from text alone ★", () => {
     expect(sink.store.size).toBe(0);
   });
 
-  test("the group law: root, #fragment and /path children belong to the meme", () => {
-    const titles = [URI, `${URI}#/a`, `${URI}/wires/1`, `${URI}-other`, "lar:///t/y"];
-    expect(groupOfMeme(titles, URI)).toEqual([URI, `${URI}#/a`, `${URI}/wires/1`]);
+  test("the family law: the root and its slots belong to the meme; a /path title and a neighbour stay", async () => {
+    const sink = memorySink();
+    await placeMeme({ uri: URI, text: meme(["a"]) }, sink);
+    for (const title of [`${URI}/wires/1`, `${URI}-other`, "lar:///t/y"]) sink.store.set(title, { title, text: "stands apart" });
+    const removed = await removeMeme({ uri: URI }, sink);
+    expect([...removed.tombstoned].sort()).toEqual([URI, `${URI}#/a`]);
+    expect([...sink.store.keys()].sort()).toEqual(["lar:///t/x-other", `${URI}/wires/1`, "lar:///t/y"].sort());
   });
 });
 
