@@ -26,11 +26,16 @@ type Call = { readonly command: string; readonly positional: string[]; readonly 
 const calls: Call[] = [];
 let fresherFor: Record<string, unknown> = {};
 let floorFor = new Set<string>();
+let floorJson = false;
 vi.mock("../src/commands/act.js", () => ({
   cmdAct: vi.fn(async (args: ParsedArgs) => {
     calls.push({ command: args.command, positional: [...args.positional], options: { ...args.options }, flags: { ...args.flags } });
     // The action handler's answer for house canon on a face outside the Kahu cabal, as `act` prints it.
-    if (floorFor.has(String(args.options["bag"]))) { console.log("CREATE ✓ applied locally (req 00000000)"); console.log(`  ${"readsFloor".padEnd(12)} true`); }
+    if (floorFor.has(String(args.options["bag"]))) {
+      // Off a terminal `act` prints its answer as ONE JSON line straight to stdout (`emit`), never through console.log.
+      if (floorJson) process.stdout.write(`${JSON.stringify({ ok: true, requestId: "r", data: { verb: "CREATE", bag: args.options["bag"], plane: "catalog", alreadyStood: true, resolvedElsewhere: true, readsFloor: true, count: 0 } })}\n`);
+      else { console.log("CREATE ✓ applied locally (req 00000000)"); console.log(`  ${"readsFloor".padEnd(12)} true`); }
+    }
     return 0;
   }),
 }));
@@ -155,9 +160,32 @@ describe("house canon on a face outside the Kahu cabal reads the floor", () => {
     expect(calls[0]).toMatchObject({ command: "act", positional: ["CREATE"] });
     expect(calls[0]!.flags["house-canon"]).toBeUndefined();
   });
+  test("S8d — the seed hears the CREATE's answer where `act` writes it as JSON to stdout: no INGEST follows, the answer still prints, and the seed reads clean", async () => {
+    floorFor = new Set(["lar:///ha.ka.ba/bags/lares"]);
+    floorJson = true;
+    const written: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((m: unknown) => { written.push(String(m)); return true; });
+    try {
+      calls.length = 0;
+      const row = await seedHolding(applied, holdingOf("lares"));
+      expect(row).toMatchObject({ holding: "lares", gesture: "floor", exitCode: 0, reason: HOUSE_CANON_FLOOR_REASON });
+      expect(calls.map((c) => `${c.command}:${c.positional[0] ?? ""}`)).toEqual(["act:CREATE"]);
+      expect(written.join("")).toContain('"readsFloor":true');                 // the answer still reaches the caller's stdout
+    } finally { spy.mockRestore(); floorJson = false; }
+  });
   test("S8b — the floor reading reads the printed answer alone", () => {
     expect(createReadsFloor(["CREATE ✓ applied locally (req 1)", "  readsFloor   true"])).toBe(true);
     expect(createReadsFloor(["CREATE ✓ applied locally (req 1)", "  alreadyStood true"])).toBe(false);
+  });
+  test("S8c — the floor reading reads the answer `act` prints as one JSON line too (a pipe, a seat, a harness), by its own field alone", () => {
+    // The CREATE's answer as a walk on a scratch hearth printed it, the engineer worn: no human line stands in it.
+    const answer = (data: Record<string, unknown>): string => JSON.stringify({ ok: true, requestId: "7m4v2m373g4a6v1q5r6u2v2b522b5f6j", data: { verb: "CREATE", bag: "lar:///ha.ka.ba/bags/lararium", plane: "catalog", alreadyStood: true, resolvedElsewhere: true, ...data, count: 0 } });
+    expect(createReadsFloor([answer({ readsFloor: true, houseCanon: HOUSE_CANON_FLOOR_REASON })])).toBe(true);
+    // CONTROLS: the steward's own answer names no floor; a field that only quotes the word reads as no floor; a torn line reads as none.
+    expect(createReadsFloor([answer({})])).toBe(false);
+    expect(createReadsFloor([answer({ readsFloor: false })])).toBe(false);
+    expect(createReadsFloor([answer({ note: '"readsFloor":true' })])).toBe(false);
+    expect(createReadsFloor(['{"ok":true,"data":{"readsFloor":true'])).toBe(false);
   });
 });
 

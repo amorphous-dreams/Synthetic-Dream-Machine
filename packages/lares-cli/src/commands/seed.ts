@@ -143,15 +143,35 @@ async function withIngestTicks(holding: string, run: () => Promise<number>): Pro
 /** The CREATE's verdict, and whether its answer named the floor (a house canon bag on a face outside the Kahu cabal). */
 export interface CreateFold { readonly code: number; readonly readsFloor: boolean }
 
-/** Whether the CREATE's printed answer names the floor (`readsFloor true`, the action handler's house canon answer). */
+/**
+ * Whether the CREATE's printed answer names the floor (the action handler's house canon answer), in either form `act` prints:
+ * the human line `readsFloor true` (a terminal), or the one JSON line whose `data.readsFloor` reads `true` (a pipe, a seat, a
+ * harness). The JSON form reads the answer's own field alone: a line that quotes the word elsewhere, or a torn line, names no floor.
+ */
 export function createReadsFloor(lines: readonly string[]): boolean {
-  return lines.some((line) => /^\s*readsFloor\s+true\s*$/.test(line));
+  return lines.some((line) => {
+    if (/^\s*readsFloor\s+true\s*$/.test(line)) return true;
+    if (!line.trimStart().startsWith("{")) return false;
+    try { return (JSON.parse(line) as { data?: { readsFloor?: unknown } } | null)?.data?.readsFloor === true; } catch { return false; }
+  });
 }
 
+/**
+ * Run the CREATE and hear its answer on BOTH mouths `act` speaks through: the human lines ride `console.log` (folded to one
+ * line unless --verbose), and off a terminal the one JSON line rides `process.stdout.write` (`emit`). The JSON line passes
+ * through to the caller untouched and the fold listens beside it, so a seed in a pipe, a seat or a harness hears `readsFloor`
+ * exactly as a seed at a terminal does.
+ */
 async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): Promise<CreateFold> {
   const lines: string[] = [];
+  const written: string[] = [];
   const log = console.log;
+  const write = process.stdout.write;
   console.log = (...values: unknown[]) => { lines.push(values.map(String).join(" ")); };
+  process.stdout.write = ((chunk: unknown, ...rest: unknown[]) => {
+    written.push(typeof chunk === "string" ? chunk : Buffer.from(chunk as Uint8Array).toString("utf8"));
+    return (write as (...a: unknown[]) => boolean).call(process.stdout, chunk, ...rest);
+  }) as typeof process.stdout.write;
   try {
     const code = await run();
     if (args.flags["verbose"]) for (const line of lines) log(line);
@@ -159,8 +179,8 @@ async function foldCreateOutput(args: ParsedArgs, run: () => Promise<number>): P
       const detail = lines.join(" · ").replace(/\s+/g, " ").trim();
       if (detail) log(`  CREATE ${detail}`);
     }
-    return { code, readsFloor: code === 0 && createReadsFloor(lines) };
-  } finally { console.log = log; }
+    return { code, readsFloor: code === 0 && createReadsFloor([...lines, ...written.join("").split("\n")]) };
+  } finally { console.log = log; process.stdout.write = write; }
 }
 
 /** Run the mirror leg off the seed's own flags: `--apply`, `--lift-kahua <N>`, `--json`. */
