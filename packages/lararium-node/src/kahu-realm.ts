@@ -38,6 +38,7 @@ import { projectionRoots } from "./bag-paths.js";
 import { daemonBagsDir } from "./lares-config.js";
 import { mintNexusLeaf } from "./nexus-leaf.js";
 import { nexusKeyPublicOf, readNexusKeys } from "./face-key-custody.js";
+import { CustodyLocked } from "./custody-holder.js";
 import { keyLineAt } from "./nexus-carriage.js";
 import { NexusCabalError, cabalCore } from "./commands/nexus-cabal.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
@@ -517,8 +518,11 @@ const absent = (err: unknown): boolean => (err as { code?: unknown } | null)?.co
  * re-read): a directory, a kept registration, a key or a charter that would not read is named here, so the holder can mark
  * its classification INCOMPLETE rather than take a partial count as truth. An absent path is no failure.
  */
-async function readKahuProtected(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<{ readonly homes: ReadonlyMap<string, string | null>; readonly failures: readonly string[] }> {
+async function readKahuProtected(opts: { readonly sealHome: string; readonly canon?: KahuCanonDocs }): Promise<{ readonly homes: ReadonlyMap<string, string | null>; readonly failures: readonly string[]; readonly locked: number }> {
   const failures: string[] = [];
+  // How many of the failures a LOCKED VAULT caused (a key read that waits on the unlock): the count stays incomplete either
+  // way, and the holder words a count that only the lock holds back as locked, never as torn.
+  let locked = 0;
   const ids = new Map<string, string | null>(opts.canon ? [...kahuCanonDocIds(opts.canon)].map((id) => [id, null] as const) : []);
   const add = (url: string, nexus: string, where: string): void => {
     try { const id = String(interpretAsDocumentId(url as AutomergeUrl)); if (!ids.has(id) || ids.get(id) === null) ids.set(id, nexus); }
@@ -557,12 +561,12 @@ async function readKahuProtected(opts: { readonly sealHome: string; readonly can
   for (const nexus of nexuses) {
     let seeds: Uint8Array[] = [];
     try { seeds = await readNexusKeys(kahuRealmHandleIndex(), nexus); }
-    catch (err) { failures.push(`persona zero's keys at ${nexus.slice(0, 18)}… would not read: ${String(err)}`); seeds = []; }
+    catch (err) { failures.push(`persona zero's keys at ${nexus.slice(0, 18)}… would not read: ${String(err)}`); if (err instanceof CustodyLocked) locked++; seeds = []; }
     try {
       for (const seed of seeds) for (const bagUri of kahuRealmBags()) add(kahuBagDocUrlFrom(seed, nexus, bagUri), nexus, `the derivation at ${nexus.slice(0, 18)}…`);
     } finally { for (const seed of seeds) seed.fill(0); }
   }
-  return { homes: ids, failures };
+  return { homes: ids, failures, locked };
 }
 
 /** What the protected readings read off the Kahu canon holder (`kahuProtectedHolder`). */
@@ -639,13 +643,16 @@ export function kahuProtectedHolder(opts: {
     if (closed) return;
     let read: Awaited<ReturnType<typeof readKahuProtected>>;
     try { read = await readKahuProtected({ sealHome: opts.sealHome, canon: opts.canon() }); }
-    catch (err) { read = { homes: new Map(), failures: [`the recount threw: ${String(err)}`] }; }
+    catch (err) { read = { homes: new Map(), failures: [`the recount threw: ${String(err)}`], locked: 0 }; }
     if (read.failures.length > 0) {
       const was = incomplete;
       incomplete = true;
       if (!said) {
         said = true;
-        console.error(`[kahu-realm] ⚠ THE PROTECTED CANON COUNT IS INCOMPLETE (${read.failures.length} read failure(s): ${read.failures.slice(0, 3).join("; ")}): every document is withheld from every wire peer until a recount reads whole; the next classification write or board change retries it`);
+        // A LOCKED VAULT IS NO TORN COUNT. Where every failure waits on the unlock (an ordinary locked boot), the line says
+        // so plainly; any other failure raises the alarm. The ward reads the same either way: nothing crosses uncounted.
+        if (read.locked === read.failures.length) console.log(`[kahu-realm] the protected canon stands LOCKED, UNCOUNTED (${read.locked} key read(s) wait on the vault: ${read.failures.slice(0, 3).join("; ")}): every document stays withheld from every wire peer until the unlock's recount reads whole`);
+        else console.error(`[kahu-realm] ⚠ THE PROTECTED CANON COUNT IS INCOMPLETE (${read.failures.length} read failure(s): ${read.failures.slice(0, 3).join("; ")}): every document is withheld from every wire peer until a recount reads whole; the next classification write or board change retries it`);
       }
       if (!was) { try { opts.onChange?.(); } catch { /* a listener never breaks the count */ } }
       return;

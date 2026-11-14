@@ -46,14 +46,18 @@ describe("T22 measure: a floor on a store a sovereign run left", () => {
     await floor.holder.lock();
     const holder = kahuProtectedHolder({ sealHome, canon: () => ({}) });
     const said = vi.spyOn(console, "error").mockImplementation(() => {});
+    const told = vi.spyOn(console, "log").mockImplementation(() => {});
     try {
       await holder.recount();
       expect(holder.incomplete(), "the locked derivation names its failure").toBe(true);
       // The one failure the count names is the key read under persona zero, no other throw (the cold read's SHOULD 1).
-      const lines = said.mock.calls.map((c) => c.map(String).join(" "));
-      expect(lines.some((l) => /\(1 read failure\(s\): persona zero's keys at /.test(l)), lines.join("\n")).toBe(true);
+      // A LOCKED VAULT READS AS LOCKED, never as a torn count: an ordinary locked boot says "locked, uncounted" on the plain
+      // log and raises no alarm line, while the ward stands exactly as a torn count's does (every document withheld).
+      const lines = told.mock.calls.map((c) => c.map(String).join(" "));
+      expect(lines.some((l) => /stands LOCKED, UNCOUNTED \(1 key read\(s\) wait on the vault: persona zero's keys at /.test(l)), lines.join("\n")).toBe(true);
+      expect(said.mock.calls.map((c) => c.map(String).join(" ")).filter((l) => /INCOMPLETE/.test(l)), "a locked vault raises no incomplete alarm").toEqual([]);
       expect(await guardOver(holder).withholds("dialed-hearth", KAHU_CANON_ID)).toBe(true);
-    } finally { said.mockRestore(); holder.close(); await floor.drop(); }
+    } finally { said.mockRestore(); told.mockRestore(); holder.close(); await floor.drop(); }
   });
 
   test("CONTROL: a seal home with no charter reads whole and withholds an unclassed document from nobody", async () => {
