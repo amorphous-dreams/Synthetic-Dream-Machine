@@ -38,7 +38,7 @@ import {
 import { isStillJoining, resolveBootDoc } from "./repo-helpers.js";
 import { nodeNewSyncChannel, nodeSpawnDaemonWorker } from "./worker-handle.js";
 import type { IslandCasData } from "./node-cas.js";
-import { PLANE_LABELS, personaScopeTag, standControlHome, daemonFaceCanonBag, type CapabilityRecord } from "@lararium/mesh";
+import { PLANE_LABELS, personaScopeTag, standControlHome, daemonFaceCanonBag, floorCidToMount, type CapabilityRecord } from "@lararium/mesh";
 
 const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.url);
 
@@ -207,6 +207,16 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
     // back to its canon source where one stands; the control document and the daemon document hold none. The verified founding relation names the folders that face projects on
     // every device; no worn face projects no private kahua layer.
     ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
+    // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
+    // face's `meme get|list --bag <house canon>` answers the released canon from its next composition on. A control document
+    // that reads nothing (a locked floor) names no pin, and the island reads its genesis seed's floor.
+    floorCid: () => {
+      let doc: LarDoc | undefined;
+      try { doc = controlHandle.doc(); } catch { return null; }
+      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      if (pick.note) console.info(`[floor] ${pick.note}`);
+      return pick.source === "pin" ? pick.cid : null;
+    },
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
   });
 }

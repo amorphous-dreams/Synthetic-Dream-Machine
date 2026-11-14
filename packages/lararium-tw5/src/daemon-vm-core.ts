@@ -186,6 +186,13 @@ export interface DaemonVmCoreOptions {
   /** The daemon wiki's disk mirrors (its working layer → `<projections>/wikis/daemon-<F>/`); a node host mints them, a browser passes none. Rides the manifest's
    *  `diskMirrors` so the worker's `onBoot` can mount the same projector a wiki island mounts. */
   diskMirrors?:    readonly { bagId: string; mirrorRoot: string; scope: string; mirrorClass?: "recovery"; titlePaths?: boolean; tempLayer?: boolean }[];
+  /**
+   * The floor manifest the vessel's accepted pin names (`floor-pin` `floorCidToMount`), or a read of it: the daemon island's
+   * manifest carries it, so the island mounts the floor the vessel accepted. Absent or null: the island reads its genesis
+   * seed's own floor witness. A walked hearth read a promoted record `not-found` from every face outside the Kahu cabal after
+   * `floor accept`, since this manifest named no floor and the island's `--bag` read door answered the genesis snapshot.
+   */
+  floorCid?:       string | null | (() => string | null);
   /** Compiled daemon-island Worker script URL. */
   workerScriptUrl: URL;
   /** Override the ea silence budget in ms (tests). */
@@ -781,6 +788,9 @@ export function openDaemonVmCore(host: DaemonVmHost, opts: DaemonVmCoreOptions):
       ...(pluginCids?.length ? { pluginCids } : {}),
       ...(diskMirrors?.length ? { diskMirrors } : {}),
       ...(ownedDocument && owned ? { ownedDocument: { ...ownedDocument, syncPort: owned.syncPort } } : {}),
+      // THE FLOOR THE VESSEL PINNED, read at each post (a replayed manifest reads the pin as it stands then): the daemon island
+      // mounts the accepted floor as each wiki island does, so its read doors answer the release the vessel accepted.
+      ...((): { floorCid?: string } => { const cid = typeof opts.floorCid === "function" ? opts.floorCid() : opts.floorCid; return cid ? { floorCid: cid } : {}; })(),
     });
     return { msg, transfer: owned ? [primary.syncPort, owned.syncPort] : [primary.syncPort], ...(afterPost ? { afterPost } : {}) };
   };

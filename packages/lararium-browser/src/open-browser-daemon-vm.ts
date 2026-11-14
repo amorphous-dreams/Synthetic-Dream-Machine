@@ -21,6 +21,7 @@ import {
   emptyLarDoc,
   daemonFaceCanonBag,
   standControlHome,
+  floorCidToMount,
   type Repo, type AutomergeUrl, type LarDoc,
   type WikiRecipe,
   type IslandMsg_Manifest,
@@ -163,6 +164,14 @@ export async function openBrowserDaemonVm(
       documentUrl: daemonUrl,
       storage: { type: "idb" as const, dbName: ownedDaemonDbName(daemonUrl) },
     } } : {}),
+    // THE VESSEL'S FLOOR PIN, off the control document (one shape with the node host): the daemon island mounts the floor this
+    // vessel accepted; a control document that reads nothing names no pin, and the island reads its genesis seed's floor.
+    floorCid: () => {
+      let doc: LarDoc | undefined;
+      try { doc = controlHandle.doc(); } catch { return null; }
+      const pick = floorCidToMount({ controlDoc: doc, nexus: null, genesis: null });
+      return pick.source === "pin" ? pick.cid : null;
+    },
     workerScriptUrl,
   });
 }
