@@ -56,9 +56,9 @@
       "import": "./dist/cascade.js",
       "types": "./dist/cascade.d.ts"
     },
-    "./keyslot": {
-      "import": "./dist/keyslot.js",
-      "types": "./dist/keyslot.d.ts"
+    "./keyslot-door": {
+      "import": "./dist/keyslot-door.js",
+      "types": "./dist/keyslot-door.d.ts"
     },
     "./crypto": {
       "import": "./dist/crypto.js",

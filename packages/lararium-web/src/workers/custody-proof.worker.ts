@@ -7,7 +7,7 @@
 // THE LISTENER STANDS FIRST. The proof's modules load by a dynamic import, after this entry's own synchronous body set its
 // message listener: a module graph that awaits at its top level would otherwise start the worker's event loop before any
 // listener stood, and the one question would drop unheard with no error to name it. A graph that does not load answers
-// `proof:failed`. The proof door rides `@lararium/mesh/keyslot` alone (no WASM, no Repo), so it stands under any policy.
+// `proof:failed`. The proof door rides `@lararium/mesh/keyslot-door` alone (no WASM, no Repo), so it stands under any policy.
 import type { ProofAnswer, ProofAsk } from "../ceremony-protocol.js";
 
 const scope = self as unknown as { postMessage(msg: ProofAnswer): void; addEventListener(type: "message", l: (e: MessageEvent) => void): void };

@@ -21,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
  */
 // The keyslot door alone: the proof loads no Repo and no WASM, so the ceremony's worker stands under any policy.
-import { decodeSlotTree, nobleKdf, openTreeKey, type Credential, type KdfPort } from "@lararium/mesh/keyslot";
+import { decodeSlotTree, nobleKdf, openTreeKey, type Credential, type KdfPort } from "@lararium/mesh/keyslot-door";
 
 /** The keystore's object store, the place tree's row and each custody prefix, as the two custody modules write them
  *  (`browser-custody.ts`, `browser-face-custody.ts`; `tests/browser-custody-proof.test.ts` welds them). */
