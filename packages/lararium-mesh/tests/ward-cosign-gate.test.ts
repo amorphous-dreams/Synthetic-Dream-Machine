@@ -30,15 +30,15 @@ test("WITNESS: the gate decides through `judgeCosign` and never calls `mayAct`; 
   expect(code(src("../../lararium-keyhive/src/face-intent-door.ts"))).toMatch(/mayAct\(/);
 });
 
-test("WITNESS: each co-signed ward act's door runs the gate: the kāpae lower, the house cap and the push go; the share stays ungated", () => {
+test("WITNESS: each co-signed ward act's door runs the gate: the kāpae lower, the house cap and the push lei; the share stays ungated", () => {
   const board = code(src("../src/promote-board-door.ts")), swarm = code(src("../src/swarm-door.ts"));
   expect(board).toMatch(/const port = await ports\.cosign\(\);/);
   expect(board).toMatch(/wardCosignGate\(port, \{ verb: "ward-kapae-lower"/);
   expect(swarm).toMatch(/verb: "ward-house-cap"/);
-  // a go asks the gate under its own rite's verb (`ward-<rite>-go`), never a fixed one
-  expect(swarm).toMatch(/const verb = wardGoVerb\(rite\), goHead = swarmGoHead\(\{ rite, branch, after, \.\.\.terms \}\);/);
-  expect(swarm).toMatch(/gated\(deps, \{ verb, wiki: "daemon", head: goHead \}/);
-  expect(swarm).not.toMatch(/"ward-(push|restart)-go"/);
+  // a go asks the gate under its own rite's verb (`ward-<rite>-lei`), never a fixed one
+  expect(swarm).toMatch(/const verb = wardLeiVerb\(rite\), leiHead = swarmLeiHead\(\{ rite, branch, after, \.\.\.terms \}\);/);
+  expect(swarm).toMatch(/gated\(deps, \{ verb, wiki: "daemon", head: leiHead \}/);
+  expect(swarm).not.toMatch(/"ward-(push|restart)-lei"/);
   expect(swarm).not.toMatch(/ward-lane-share/);
   // each vessel composition hands its door the port
   expect(code(src("../../lararium-node/src/commands/promote.ts"))).toMatch(/cosign: \(\) => nodeWardCosignPortOf\(/);
@@ -63,7 +63,7 @@ test("WITNESS: each reader of a ward act's effect asks the co-sign witness: the 
   expect(board).toMatch(/!raw\.body\.raised\) \{\s*const ward = wardActRefusal\(face\.ward, \{ verb: "ward-kapae-lower"/);
   expect(swarm).toMatch(/act\.body\.act === "cap"\) \{\s*const ward = wardActRefusal\(face\.ward, \{ verb: "ward-house-cap"/);
   // the go's reader walks only the gos that stand beside their co-sign
-  expect(go).toMatch(/resting\.map\(\(g\) => wardActRefusal\(ward, \{ verb: wardGoVerb\(g\.body\.rite\)/);
+  expect(go).toMatch(/resting\.map\(\(g\) => wardActRefusal\(ward, \{ verb: wardLeiVerb\(g\.body\.rite\)/);
   expect(go).toMatch(/resting\.filter\(\(_, i\) => wardReads\[i\] === null\)/);
   expect(swarm).not.toMatch(/act === "share" && !face\.ward/);
 });

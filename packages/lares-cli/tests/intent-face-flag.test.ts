@@ -55,9 +55,9 @@ describe("intent CLI co-sign detail", () => {
     const digest = "d".repeat(64);
     expect(await run("ask", "intent-1", "--face", "0", "--detail", digest)).toBe(0);
     expect(seam.calls[1]).toEqual(["intent-ask", expect.objectContaining({ target: "intent-1", detail: digest })]);
-    seam.output = { cid: "answer-1", shown: { verb: "ward-push-go", askedBy: "a".repeat(64), intent: "intent-1", detail: digest } };
+    seam.output = { cid: "answer-1", shown: { verb: "ward-push-lei", askedBy: "a".repeat(64), intent: "intent-1", detail: digest } };
     expect(await run("answer", "ask-1", "--face", "0", "--executor", "b".repeat(64))).toBe(0);
-    expect(lines.join("\n")).toMatch(new RegExp(`act ward-push-go asked-by=a+ intent=intent-1 detail=${digest}\\nanswer-1`));
+    expect(lines.join("\n")).toMatch(new RegExp(`act ward-push-lei asked-by=a+ intent=intent-1 detail=${digest}\\nanswer-1`));
   });
 });
 

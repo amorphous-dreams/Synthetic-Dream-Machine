@@ -1,7 +1,7 @@
 /**
  * ward-cosign-gate: the hook a ward act runs before its effect, calling the co-sign judge (`judgeCosign`).
  *
- * A ward act whose effect leaves the device (a kāpae lowered, the house cap, a push go) names itself by its verb, the wiki it
+ * A ward act whose effect leaves the device (a kāpae lowered, the house cap, a push lei) names itself by its verb, the wiki it
  * binds and the head it acts over. The gate first reads the fleet's signed frontier head: one that does not read `known` (an
  * admission or a raise may not have synced here) refuses `ward-cosign-frontier-unknown`, one device or two, since the device count
  * it would read may be short. It then folds the face's intent plane and asks the judge:

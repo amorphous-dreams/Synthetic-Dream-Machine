@@ -174,7 +174,7 @@ describe("hand-only verbs", () => {
 });
 
 describe("the daemon island's hand-only table carries the swarm verbs", () => {
-  const SWARM = ["swarm-cap-set", "swarm-share-set", "swarm-go-issue"] as const;
+  const SWARM = ["swarm-cap-set", "swarm-share-set", "swarm-lei-issue"] as const;
   async function standIsland() {
     const tw5 = new FakeTW5Engine() as unknown as TW5Engine;
     const daemon = makeDaemon();

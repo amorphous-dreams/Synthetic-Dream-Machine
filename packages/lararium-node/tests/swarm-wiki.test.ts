@@ -6,7 +6,7 @@
  */
 import { expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, ownEntry, swarmGoRowTitle, swarmGoTitle, swarmGoSpentTitle, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, ownEntry, swarmLeiRowTitle, swarmLeiTitle, swarmLeiSpentTitle, type LarDoc } from "@lararium/mesh";
 import { controlSwarmWiki } from "../src/swarm-wiki.js";
 
 function stand() {
@@ -17,7 +17,7 @@ function stand() {
 
 test("RED: a written record reads back and carries no residency field; CONTROL: an unwritten title reads null and a rewrite replaces", async () => {
   const { handle, wiki } = stand();
-  const title = swarmGoTitle("push", "feature/x");
+  const title = swarmLeiTitle("push", "feature/x");
   expect(await wiki.read(title)).toBeNull();
   await wiki.write(title, "one");
   expect(await wiki.read(title)).toBe("one");
@@ -28,27 +28,27 @@ test("RED: a written record reads back and carries no residency field; CONTROL: 
 
 test("RED: racing writeNew claims land exactly one and the winner's text stands; CONTROL: a claim at another title lands", async () => {
   const { wiki } = stand();
-  const title = swarmGoSpentTitle("c".repeat(64), 1);
+  const title = swarmLeiSpentTitle("c".repeat(64), 1);
   const landed = await Promise.all([1, 2, 3, 4].map((n) => wiki.writeNew(title, `spender-${n}`)));
   expect(landed.filter(Boolean)).toHaveLength(1);
   expect(await wiki.read(title)).toBe(`spender-${landed.indexOf(true) + 1}`);
-  expect(await wiki.writeNew(swarmGoSpentTitle("d".repeat(64), 1), "other")).toBe(true);
+  expect(await wiki.writeNew(swarmLeiSpentTitle("d".repeat(64), 1), "other")).toBe(true);
 });
 
 test("RED: a prototype-keyed title reads as absent, never an inherited member; CONTROL: writing a title that is not one reads it back", async () => {
   const { wiki } = stand();
   expect(await wiki.read("constructor")).toBeNull();
   expect(await wiki.read("__proto__")).toBeNull();
-  await wiki.write("$:/lares/swarm/go/constructor", "x");
-  expect(await wiki.read("$:/lares/swarm/go/constructor")).toBe("x");
+  await wiki.write("$:/lares/swarm/lei/constructor", "x");
+  expect(await wiki.read("$:/lares/swarm/lei/constructor")).toBe("x");
 });
 
 test("RED: a branch's go rows list under its family title, and only its own (a go reader walks them all); CONTROL: another branch's row stays out", async () => {
   const { wiki } = stand();
-  const rowA = swarmGoRowTitle("push", "feature/x", "a".repeat(64)), rowB = swarmGoRowTitle("push", "feature/x", "b".repeat(64));
+  const rowA = swarmLeiRowTitle("push", "feature/x", "a".repeat(64)), rowB = swarmLeiRowTitle("push", "feature/x", "b".repeat(64));
   await wiki.writeNew(rowA, "a");
   await wiki.writeNew(rowB, "b");
-  await wiki.writeNew(swarmGoRowTitle("push", "feature/x/y", "c".repeat(64)), "c");
-  expect([...await wiki.list(`${swarmGoTitle("push", "feature/x")}/`)].sort()).toEqual([rowA, rowB].sort());
-  expect(await wiki.list(`${swarmGoTitle("push", "feature/z")}/`)).toEqual([]);
+  await wiki.writeNew(swarmLeiRowTitle("push", "feature/x/y", "c".repeat(64)), "c");
+  expect([...await wiki.list(`${swarmLeiTitle("push", "feature/x")}/`)].sort()).toEqual([rowA, rowB].sort());
+  expect(await wiki.list(`${swarmLeiTitle("push", "feature/z")}/`)).toEqual([]);
 });

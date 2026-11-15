@@ -10,7 +10,7 @@ import {
   storeDoorReactors, type StoreDoorDeps,
 } from "../src/store-door-verbs.js";
 
-const ROWS = ["swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-go-issue"] as const;
+const ROWS = ["swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-issue"] as const;
 
 test("RED: every swarm row is a store-door verb that acts as a face; CONTROL: the kahua operator rows stay as they stood", () => {
   for (const row of ROWS) {
@@ -21,7 +21,7 @@ test("RED: every swarm row is a store-door verb that acts as a face; CONTROL: th
 });
 
 test("RED: the hand-only swarm rows carry `swarm-needs-hand`; CONTROL: swarm-show is not hand-only", () => {
-  expect(Object.fromEntries(SWARM_HAND_CODES)).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-go-issue": "swarm-needs-hand" });
+  expect(Object.fromEntries(SWARM_HAND_CODES)).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-issue": "swarm-needs-hand" });
   expect(SWARM_HAND_CODES.has("swarm-show")).toBe(false);
 });
 
@@ -35,7 +35,7 @@ test("RED: with no standing daemon wiki every swarm row refuses by name and load
   const deps: StoreDoorDeps = { storageDir: "/tmp/unused", sealHome: "/tmp/unused-seal", repo: {} as StoreDoorDeps["repo"] };
   const rows = storeDoorReactors(deps);
   const worn = { worn: { ordinal: 0 } } as never;
-  for (const [row, args] of [["swarm-show", {}], ["swarm-cap-set", { value: 1 }], ["swarm-share-set", { lane: "a", value: 1 }], ["swarm-go-issue", { branch: "b", head: "a".repeat(40) }]] as const) {
+  for (const [row, args] of [["swarm-show", {}], ["swarm-cap-set", { value: 1 }], ["swarm-share-set", { lane: "a", value: 1 }], ["swarm-lei-issue", { branch: "b", head: "a".repeat(40) }]] as const) {
     const out = await rows[row](args, worn);
     expect(out["refused"], row).toContain("no standing daemon: swarm controls need the founded wiki");
     expect(out["refusal"], row).toBe(`${row}-refused`);

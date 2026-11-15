@@ -84,12 +84,12 @@ describe("intent command guards", () => {
     const verbs = faceIntentVerbs();
     const fold = (records: SignedIntentEntry[]) => readIntentPlane({ group: "scratch-face", records, verbs, standing: () => "stands",
       face: { devices: [f.atom.key, other.key], rosterCids: ["r"], admittedAt: new Map([[f.atom.key, "r"], [other.key, "r"]]), lineage } });
-    const call = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "ward-push-go", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" }, verbs });
-    const id = intentId(call.body as never), detail = cosignDigest({ act: "ward-push-go", face: "scratch-face", wiki: "daemon", head: "h1" });
+    const call = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "ward-push-lei", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" }, verbs });
+    const id = intentId(call.body as never), detail = cosignDigest({ act: "ward-push-lei", face: "scratch-face", wiki: "daemon", head: "h1" });
     const bare = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval" });
     expect(askShown(fold([call, bare]), intentEntryCid(bare))?.detail).toBeNull();
     const ask = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval", detail });
-    expect(askShown(fold([call, ask]), intentEntryCid(ask))).toEqual({ intent: id, verb: "ward-push-go", issuer: f.atom.key, askedBy: f.atom.key, detail, cosign: true, spent: false });
+    expect(askShown(fold([call, ask]), intentEntryCid(ask))).toEqual({ intent: id, verb: "ward-push-lei", issuer: f.atom.key, askedBy: f.atom.key, detail, cosign: true, spent: false });
     expect(askShown(fold([call, ask]), "missing")).toBeNull();
     const plain = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "face-join", args: {}, nonce: "p", audience: { mode: "asks" }, verbs });
     const plainAsk = await buildAsks({ group: "scratch-face", signer: f.atom, intent: intentId(plain.body as never), needs: "approval", detail: "x" });
@@ -102,7 +102,7 @@ describe("intent command guards", () => {
     const verbs = faceIntentVerbs();
     const fold = (records: SignedIntentEntry[]) => readIntentPlane({ group: "scratch-face", records, verbs, standing: () => "stands",
       face: { devices: [f.atom.key, other.key], rosterCids: ["r"], admittedAt: new Map([[f.atom.key, "r"], [other.key, "r"]]), lineage } });
-    const call = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "ward-push-go", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" }, verbs });
+    const call = await buildIntent({ group: "scratch-face", signer: f.atom, verb: "ward-push-lei", args: { head: "h1" }, nonce: "n", audience: { mode: "asks" }, verbs });
     const id = intentId(call.body as never);
     const own = await buildAsks({ group: "scratch-face", signer: f.atom, intent: id, needs: "approval", detail: "d" });
     const foreign = await buildAsks({ group: "scratch-face", signer: other, intent: id, needs: "approval", detail: "d" });
