@@ -18,8 +18,8 @@
  *       states, and the remote's own id never rests bare
  *   V5  RESUMPTION: across a restart a (face, Nexus) keeps its store id, mints a fresh peer id, and reads back the sync
  *       state it rested for that peer
- *   V6  a leg whose seat names no (face, Nexus) for a peer says nothing to it: no identifier leaves, the composition's
- *       own included
+ *   V6  a gate's leg (the engine's server adapter, its seat read for each peer) says nothing to a peer its seat does
+ *       not name; CONTROL: a seated session reads the alias a dial seated for the same (face, Nexus) presents
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat
  */
@@ -27,8 +27,12 @@ import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Repo, type AutomergeUrl, type Chunk, type DocHandle, type NetworkAdapterInterface, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
+import { once } from "node:events";
+import type { AddressInfo } from "node:net";
+import { WebSocketServer } from "ws";
+import { Repo, type AutomergeUrl, type Chunk, type DocHandle, type NetworkAdapterInterface, type PeerId, type StorageAdapterInterface, type StorageKey } from "@automerge/automerge-repo";
 import { MessageChannelNetworkAdapter } from "@automerge/automerge-repo-network-messagechannel";
+import { NodeWSServerAdapter, WebSocketClientAdapter } from "@automerge/automerge-repo-network-websocket";
 import { wireIdentityOf } from "@lararium/mesh";
 import { DurableNodeFSStorageAdapter } from "../src/durable-storage-adapter.js";
 
@@ -83,7 +87,7 @@ function compose(face: string | null): { readonly identity: Identity; readonly v
 }
 
 /** Seat one leg of `vessel` for `seat` and meet a fresh recording peer over it. */
-async function meet(c: { readonly identity: Identity; readonly vessel: Repo }, seat: Seat | ((remote: string) => Seat | null), opts: { readonly expectMet?: boolean } = {}): Promise<Meeting> {
+async function meet(c: { readonly identity: Identity; readonly vessel: Repo }, seat: Seat): Promise<Meeting> {
   const { port1, port2 } = new MessageChannel();
   const recorderStore = new MemoryStore();
   await recorderStore.save(["storage-adapter-id"], new TextEncoder().encode(REMOTE_STORE));
@@ -95,17 +99,9 @@ async function meet(c: { readonly identity: Identity; readonly vessel: Repo }, s
   const onVesselPeer = (p: { peerId: string; peerMetadata: { storageId?: string } }): void => { if (p.peerId === recorder.peerId) atVessel.push(p.peerMetadata.storageId); };
   c.vessel.networkSubsystem.on("peer", onVesselPeer);
   cleanups.push(async () => { c.vessel.networkSubsystem.off("peer", onVesselPeer); await recorder.shutdown(); port1.close(); port2.close(); });
-  // THE TREE BEFORE THE SECOND CUT hands no `leg`: the adapter then joins bare, as every leg joined, and the reds below
-  // measure what a peer read of it.
-  const bare = new MessageChannelNetworkAdapter(port1);
-  const seatLeg = (c.identity as { leg?: (adapter: NetworkAdapterInterface, at: typeof seat) => NetworkAdapterInterface }).leg;
-  const leg: NetworkAdapterInterface = typeof seatLeg === "function" ? seatLeg(bare, seat) : bare;
+  const leg: NetworkAdapterInterface = c.identity.leg(new MessageChannelNetworkAdapter(port1), seat);
   c.vessel.networkSubsystem.addNetworkAdapter(leg);
   recorder.networkSubsystem.addNetworkAdapter(new MessageChannelNetworkAdapter(port2));
-  if (opts.expectMet === false) {
-    await new Promise((r) => setTimeout(r, 300));
-    return { peerId: seen[0]?.peerId ?? "", storageId: seen[0]?.storageId, remoteStoreAtVessel: atVessel[0], recorder, shared };
-  }
   await vi.waitFor(() => { expect(seen.length).toBeGreaterThan(0); expect(atVessel.length).toBeGreaterThan(0); }, { timeout: 10_000 });
   const met = [...new Set(seen.map((p) => `${p.peerId}\u0000${p.storageId ?? ""}`))];
   expect(met.length, "the recording peer met one vessel peer").toBe(1);
@@ -185,15 +181,40 @@ describe("the veil's second cut: one composition presents each (face, Nexus) its
     expect(await again.identity.storage.load(key), "the (face, Nexus) reads back the sync state it rested").toBeDefined();
   });
 
-  test("V6: a leg whose seat names no (face, Nexus) for a peer says nothing to it", async () => {
+  test("V6: a gate's leg, which seats each peer, says nothing to a peer its seat does not name", async () => {
     const c = compose(FACE_A);
-    const unseated = await meet(c, () => null, { expectMet: false });
-    expect(unseated.peerId, "an unseated peer read an identifier of this vessel").toBe("");
-    expect(unseated.storageId).toBeUndefined();
-    // CONTROL: the same seat form, naming a (face, Nexus) for the peer, meets it under that scope's alias.
-    const seated = await meet(c, () => ({ face: FACE_B, nexus: NEXUS_2 }));
+    // A GATE'S LEG as the vessel stands it: the engine's own server adapter, many sessions on one adapter, the seat read
+    // for each remote peer. Its composer settles a pair's alias before that session's first word (`alias`).
+    const wss = new WebSocketServer({ port: 0, host: "127.0.0.1" });
+    await once(wss, "listening");
+    cleanups.push(() => new Promise<void>((done) => { for (const s of wss.clients) s.terminate(); wss.close(() => done()); }));
+    const url = `ws://127.0.0.1:${(wss.address() as AddressInfo).port}`;
+    const seats = new Map<string, Seat>([["seated-peer", { face: FACE_B, nexus: NEXUS_2 }]]);
+    const refusals: string[] = [];
+    await c.identity.alias({ face: FACE_B, nexus: NEXUS_2 });
+    c.vessel.networkSubsystem.addNetworkAdapter(c.identity.leg(new NodeWSServerAdapter(wss as never, 60_000), (remote) => seats.get(remote) ?? null, (refusal, peer) => refusals.push(`${refusal}:${peer}`)));
+    const dial = (peerId: string) => {
+      const recorder = new Repo({ peerId: peerId as PeerId, network: [new WebSocketClientAdapter(url, 60_000)] });
+      const seen: Array<{ peerId: string; storageId: string | undefined }> = [];
+      recorder.networkSubsystem.on("peer", (p) => { seen.push({ peerId: p.peerId, storageId: p.peerMetadata.storageId }); });
+      cleanups.push(() => recorder.shutdown());
+      return { recorder, seen };
+    };
+    const stranger = dial("unseated-peer");
+    const seated = dial("seated-peer");
+    await vi.waitFor(() => { expect(seated.seen.length).toBeGreaterThan(0); }, { timeout: 10_000 });
+    await vi.waitFor(() => { expect(refusals).toContain("unseated:unseated-peer"); }, { timeout: 10_000 });
+    await new Promise((r) => setTimeout(r, 200));
+    expect(stranger.seen, "an unseated peer read an identifier of this vessel").toEqual([]);
+    expect(c.vessel.peers, "the Repo met a peer its gate's seat does not name").toEqual(["seated-peer"]);
+    // CONTROL: the seated session reads the alias a dial seated for the same (face, Nexus) presents, and sync crosses it.
     const fixed = await meet(c, { face: FACE_B, nexus: NEXUS_2 });
-    expect(seated.peerId).toBe(fixed.peerId);
-    expect(seated.storageId).toBe(fixed.storageId);
+    expect(seated.seen[0]!.peerId).toBe(fixed.peerId);
+    expect(seated.seen[0]!.storageId).toBe(fixed.storageId);
+    expect(seated.seen[0]!.peerId).not.toBe(c.identity.peerId);
+    const shared = seated.recorder.create<Doc>({ marks: {} });
+    const handle = await c.vessel.find<Doc>(shared.url as AutomergeUrl);
+    handle.change((d) => { d.marks["gate"] = 1; });
+    await vi.waitFor(() => { expect(shared.doc()!.marks["gate"]).toBe(1); }, { timeout: 10_000 });
   });
 });

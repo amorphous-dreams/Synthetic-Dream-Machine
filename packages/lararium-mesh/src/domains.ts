@@ -260,6 +260,9 @@ export const CANON_OFFER_KEY_DOMAIN = mint("canon-offer-key");
 /** The digest that names a worn face's WIRE SCOPE inside a vessel's own store (`wire-identity`): the store keeps one store id
  *  for each scope, and the scope's name there carries no PersonaGroup. */
 export const WIRE_SCOPE_DOMAIN = mint("wire-scope");
+/** The digest under which a face scope's own secret and a Nexus derive what one (face, Nexus) presents at the wire
+ *  (`wire-identity`): the pair's store id and its local scope. Its own name, so no alias reads as a scope's name. */
+export const WIRE_ALIAS_DOMAIN = mint("wire-alias");
 /** The steward's RETIRE of one canon offer after its promotion, keyed to the offer's CID. Its own name, so no offer verifies as one. */
 export const CANON_OFFER_RETIRE_DOMAIN = mint("canon-offer-retire");
 /** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so
