@@ -91,6 +91,18 @@ function containerRoot(compose: string): string | null {
   return value === undefined ? null : value.replace(/^(["'])(.*)\1$/, "$2");
 }
 
+/** The committed bin of the clone's CLI, the entry a steady seat runs from. */
+export const CLI_BIN = join("packages", "lares-cli", "bin", "lares.mjs");
+
+/**
+ * The steady seat over a surface command: `node <clone>/packages/lares-cli/bin/lares.mjs mcp steady -- <command> <args…>`.
+ * The seat holds the client's stdio and spawns the surface as its child, so a surface that restarts never reaches the
+ * client (`mcp-steady.ts`). The env rides the seat's own process, and the child inherits it.
+ */
+export function steadySeatOver(clone: string, surface: LaresMcpCommand): LaresMcpCommand {
+  return { command: "node", args: [join(clone, CLI_BIN), "mcp", "steady", "--", surface.command, ...surface.args], env: surface.env };
+}
+
 /**
  * Resolve the `lares` MCP server invocation that binds THE HEARTH, or null when its pieces stand absent.
  *
@@ -100,9 +112,10 @@ function containerRoot(compose: string): string | null {
  * alone; unnamed resolves no seat), and the entry carries it in BOTH forms:
  *
  *   container  the operator's `~/.lares` holds the surface env (`lares-surface.env`), so the hearth stands in the
- *              surface container. The entry execs the image's seat there through the clone's compose file
- *              and forwards `LAR_ROOT` by name (`exec -e LAR_ROOT`), its value the container's own root as
- *              the compose file names it. The image carries its own interpreter and pinned `mcp`.
+ *              surface container. The entry names the STEADY SEAT (`steadySeatOver`), a host process that holds the
+ *              client's stdio across a container restart; its child execs the image's seat through the clone's
+ *              compose file and forwards `LAR_ROOT` by name (`exec -e LAR_ROOT`), its value the container's own
+ *              root as the compose file names it. The image carries its own interpreter and pinned `mcp`.
  *   native     the entry spawns the clone's `lares_mcp.py` on THE venv (`~/.venv`, or `LARES_PYTHON`),
  *              with `LAR_ROOT` and the mempalace import root in its env; null while no sensorium stands
  *              under the hearth (`lares sense setup` stands it) or no interpreter holds mempalace.
@@ -116,11 +129,11 @@ export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
     const compose = join(clone, SURFACE_COMPOSE);
     const root = containerRoot(compose);
     if (root === null) return null;
-    return {
+    return steadySeatOver(clone, {
       command: "docker",
       args: ["compose", "--env-file", surfaceEnv, "-f", compose, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", IMAGE_SEAT],
       env: { LAR_ROOT: root },
-    };
+    });
   }
   // NATIVE: the seat binds the house root this shell names, absolute.
   const hearth = namedRoot();
