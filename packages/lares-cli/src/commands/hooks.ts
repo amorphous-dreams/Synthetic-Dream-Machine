@@ -1,9 +1,9 @@
 /**
  * `lares hooks <pause|resume|status>` — the hook-lever on its own.
  *
- * Pauses / resumes the capture + ingest hooks (the `lares-mempalace-ingest-hook.sh`
- * and its `lares capture/subagents/telemetry` legs) by writing / removing a marker
- * file the hook scripts check and NO-OP on when present. This lets a migration or a
+ * Pauses / resumes capture hooks (whatever runs the `lares capture/subagents/telemetry`
+ * legs on a session event) by writing / removing a marker file a capture hook checks
+ * and steps aside on when present. This lets a migration or a
  * `lares palace-teardown` run WITHOUT spawn-contention — the discipline made a
  * switch, so the daemon-minting stops at the source instead of playing whack-a-mole
  * with the spawned children.
@@ -25,7 +25,7 @@ function cmdPause(args: ParsedArgs): number {
     data: { wasPaused: before.paused, hooksPaused: true, marker: st.marker, since: st.since, reason: st.reason },
     human: () => {
       console.log("lares hooks pause\n");
-      console.log(before.paused ? "  hooks already paused — reason refreshed." : "  hooks PAUSED — capture/ingest no-op until resumed.");
+      console.log(before.paused ? "  hooks already paused — reason refreshed." : "  hooks PAUSED — a capture hook steps aside until resumed.");
       console.log(`  marker: ${st.marker}`);
       console.log("  run `lares mempalace quiesce` to drain the warm daemons, `lares hooks resume` to un-pause.");
     },
@@ -42,7 +42,7 @@ function cmdResume(args: ParsedArgs): number {
     human: () => {
       console.log("lares hooks resume\n");
       console.log(before.paused
-        ? "  hooks UN-PAUSED — capture/ingest mint the warm daemon lazily again."
+        ? "  hooks UN-PAUSED — capture mints the warm daemon lazily again."
         : "  hooks were already live — nothing to do (idempotent no-op).");
     },
   });
@@ -66,7 +66,7 @@ function cmdStatus(args: ParsedArgs): number {
 function printHelp(): void {
   console.log("lares hooks <verb>\n");
   console.log("Verbs:");
-  console.log("  pause [--reason <t>]  suppress capture/ingest minting (write the marker)");
+  console.log("  pause [--reason <t>]  suppress capture minting (write the marker)");
   console.log("  resume                un-pause the hooks (remove the marker)");
   console.log("  status                report the pause state");
   console.log(`\nMarker file: ${hookPauseMarkerPath()}`);

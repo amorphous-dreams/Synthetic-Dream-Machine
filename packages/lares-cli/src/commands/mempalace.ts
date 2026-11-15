@@ -3,8 +3,8 @@
  * daemon/hook/capture topology OBSERVABLE and GRACEFULLY-DRAINABLE.
  *
  * The daemon-spawn whack-a-mole: warm write-daemons spawn ON-DEMAND (a client mine
- * hands off to a per-palace daemon, auto-starting it), and the `lares` capture +
- * ingest hooks mint one on every dispatch. Killing the children never stops the
+ * hands off to a per-palace daemon, auto-starting it), and the `lares` capture
+ * legs mint one on every dispatch. Killing the children never stops the
  * spawner. These verbs surface the whole topology (`status`), then drain it
  * gracefully — PAUSE the hooks first (stop the minting), THEN SIGTERM-drain the
  * warm daemons (`quiesce`), and un-pause when the storm passes (`resume`).
@@ -373,7 +373,7 @@ export function runResume(args: ParsedArgs, door: DoorScope): number {
     human: () => {
       console.log(`${door.label} resume\n`);
       console.log(before.paused
-        ? "  hooks UN-PAUSED — capture/ingest mint the warm daemon lazily again."
+        ? "  hooks UN-PAUSED — capture mints the warm daemon lazily again."
         : "  hooks were already live — nothing to do (idempotent no-op).");
     },
   });

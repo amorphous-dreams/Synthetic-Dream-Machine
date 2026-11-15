@@ -1,17 +1,16 @@
 /**
- * hook-pause — the hook-lever: a marker file the capture + ingest hooks check and
- * NO-OP on when present, so a migration / teardown runs WITHOUT spawn-contention.
+ * hook-pause — the hook-lever: a marker file a capture hook checks and steps aside on, so a
+ * migration / teardown runs WITHOUT spawn-contention.
  *
- * The daemon-spawn whack-a-mole's root is the SPAWNER, not the children: the
- * `lares-mempalace-ingest-hook.sh` (and its `lares capture/subagents/telemetry`
- * legs) mint a warm write-daemon on every Stop / SessionEnd / subagent-dispatch.
- * Killing daemons never stops the minting. This lever pauses the minting itself —
- * the discipline made a switch: `lares hooks pause` writes the marker, the hook
- * script's guard exits early, `lares mempalace quiesce` can then drain to zero.
+ * The daemon-spawn whack-a-mole roots at the SPAWNER, never the children: whatever runs the
+ * `lares capture/subagents/telemetry` legs on a session event mints a warm write-daemon each
+ * time. Killing daemons never stops the minting. This lever pauses the minting itself:
+ * `lares hooks pause` writes the marker, a capture hook's guard exits early, and
+ * `lares mempalace quiesce` then drains to zero.
  *
- * The marker lives at `<root>/run/hooks.paused` (the house root's transient levers),
- * so the same path resolves in TS (here) and in bash (the hook script computes it
- * as `$LAR_ROOT/run/hooks.paused`, and steps aside whole while LAR_ROOT names no root).
+ * The marker lives at `<root>/run/hooks.paused` (the house root's transient levers). The tree
+ * carries no capture hook; a hook that runs those legs reads this marker first, and the rites
+ * that write and clear it (`quiesce`, `resume`, the re-pave) hold that contract for it.
  *
  * Meme: lar:///ha.ka.ba/lararium/mempalace/palace-path
  */
@@ -20,7 +19,7 @@ import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node
 import { dirname, join } from "node:path";
 import { larRuntimeHome } from "@lararium/node";
 
-/** The absolute path of the hook-pause marker — one spelling, TS + bash agree. */
+/** The absolute path of the hook-pause marker — one spelling, which a capture hook reads as `$LAR_ROOT/run/hooks.paused`. */
 export function hookPauseMarkerPath(): string {
   return join(larRuntimeHome(), "hooks.paused");
 }

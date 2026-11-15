@@ -286,13 +286,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   hooks: {
     usage: "usage: lares hooks <pause|resume|status>",
     synopsis:
-      "The hook-lever on its own: `pause` / `resume` / `status` the capture + ingest hooks by writing / " +
-      "removing a marker file the hook scripts check and NO-OP on when present. Lets a migration or a " +
+      "The hook-lever on its own: `pause` / `resume` / `status` capture hooks by writing / " +
+      "removing a marker file a capture hook checks and steps aside on when present. Lets a migration or a " +
       "`lares sense teardown` run WITHOUT daemon-spawn contention. `lares mempalace quiesce` pauses AND " +
       "drains in one gesture; this verb is the lever alone (suppress minting without touching live daemons).",
     examples: [
       "lares hooks status                 # is minting paused?",
-      "lares hooks pause                  # suppress capture/ingest minting",
+      "lares hooks pause                  # suppress capture minting",
       "lares hooks pause --reason migrate # ... with a recorded reason",
       "lares hooks resume                 # un-pause",
     ],

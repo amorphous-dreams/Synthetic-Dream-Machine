@@ -74,7 +74,7 @@ Static corpus Sensoriums use the same composition with a different source and or
 
 !! Pause the minting, drain the holders
 
-`lares hooks pause` writes `<state>/hooks.paused`; the parent ingest hook checks that marker before starting a job. The upstream hook scripts now match upstream `develop` and carry no Lararium pause check. The marker stops new Lararium hook work, but never proves an existing holder drained or an independently enabled upstream hook stopped. A teardown or comparator re-pave must pause its actual intake, drain and verify holders, act on the named store, then resume only the intake it held. Host hooks and a containerized vessel inhabit different path namespaces; a host marker does not automatically appear under `/state`.
+`lares hooks pause` writes `<state>/hooks.paused`; a capture hook checks that marker before starting a job, and the tree carries none. The upstream hook scripts now match upstream `develop` and carry no Lararium pause check. The marker stops new Lararium hook work, but never proves an existing holder drained or an independently enabled upstream hook stopped. A teardown or comparator re-pave must pause its actual intake, drain and verify holders, act on the named store, then resume only the intake it held. Host hooks and a containerized vessel inhabit different path namespaces; a host marker does not automatically appear under `/state`.
 
 The current `lares mempalace repave` still expects the operator to quiesce holders first. Its preview's quiesce wording must not be read as an enacted drain. The current operator lifecycle and measure-first law stand at <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>.
 
@@ -212,6 +212,6 @@ CloudEvents [source plus id](https://github.com/cloudevents/spec/blob/v1.0.2/clo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;HHUCo1ibi9HzU5mEQcGHrFSHghbNK5qO2RzEnO4BKvE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iPq5hODGD5K_--DpAld7mDDuvBQmrm1Vyu9Xhh4PwQ4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
