@@ -28,7 +28,7 @@ import {
   buildDeviceDelegationRootHalf,
   faceAtomKeyFromSeed,
   leaseEpochPrefix, readControlHome, readFace,
-  seatDeviceInFace, DeviceSeatRefused, ed25519VerifyingKeyFromSeed,
+  seatDeviceInFace, DeviceSeatRefused, ed25519VerifyingKeyFromSeed, hearthDaemonOf,
   tiddlerText, FLEET_HAND, AutomergeDocStore, type LarDoc, ownEntry, findOrThrow, DOCUMENT_HANG_BOUND_MS} from "@lararium/mesh";
 import { makeCatalogAccessor } from "@lararium/tw5";
 import { larBootstrapPath, larSealHome } from "../vessel-paths.js";
@@ -403,6 +403,10 @@ export async function runDeviceAdmit(opts: DeviceAdmitOptions): Promise<DeviceAd
     personaGroupId, reading, issuerAnchor, records, leaseSlotValues, signerSeed, hearthTrueName, deviceKey,
     kelEpoch: personaKelChain[personaKelChain.length - 1]!.seq,
     vesselTag: opts.vesselTag,
+    // THE HEARTH'S DAEMON WORKING DOCUMENT (road row `L4f`): the working slot this vessel's own control document names for the
+    // face, read off the map the lease fence read above. The root signs it into the joinee's edge act, so the joinee's page
+    // at this hearth mounts the document this hearth projects; a vessel that stands no slot for the face names none.
+    hearthDaemon: hearthDaemonOf(controlMap, personaGroupId),
     rootHalf: buildDeviceDelegationRootHalf,
     enrol: async ({ boundEpoch, personaActs, signedEdge }) => {
       const operation = { store: operationStore, atomSeed,

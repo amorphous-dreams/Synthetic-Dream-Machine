@@ -174,18 +174,20 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
   // THE HEARTH'S DAEMON WORKING DOCUMENT RIDES THE SIGNED EDGE ACT (road row `L4f`): the door reads the working slot its own
   // control document names for the face, and the root signs it into the joinee's `device-edge` act.
   const WORKING_ROW = `${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent("group-zero")}`;
+  /** A control row in the stored record's own shape (the door reads its text through the mesh's reader). */
+  const row = (text: string) => ({ text, tiddler: { text } });
   const edgeActs = (acts: readonly Act[]) => acts.filter((a) => a.body["act"] === "device-edge");
 
   test("RED (L4f): the hearth's working slot stands, and the seated device's edge act names it under the root's signature", async () => {
-    seam.control = { [WORKING_ROW]: { text: "automerge:hearth-working" } };
+    seam.control = { [WORKING_ROW]: row("automerge:hearth-working") };
     const { acts } = await seatFirst();
     expect(edgeActs(acts).map((a) => a.body["hearthDaemon"])).toEqual(["automerge:hearth-working"]);
   });
 
   test("CONTROL (L4f): a hearth that stands no working slot for the face, only a draft slot or another face's, names none", async () => {
     seam.control = {
-      [`${CONTROL_HOME_ID}/daemon-slot/draft/${encodeURIComponent("group-zero")}`]: { text: "automerge:draft" },
-      [`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent("group-two")}`]: { text: "automerge:other-working" },
+      [`${CONTROL_HOME_ID}/daemon-slot/draft/${encodeURIComponent("group-zero")}`]: row("automerge:draft"),
+      [`${CONTROL_HOME_ID}/daemon-slot/working/${encodeURIComponent("group-two")}`]: row("automerge:other-working"),
     };
     const { acts } = await seatFirst();
     expect(edgeActs(acts).map((a) => "hearthDaemon" in a.body)).toEqual([false]);
@@ -193,7 +195,7 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
 
   test("RED (L4f): a device seated before the hearth's working slot stood takes the name at its next answer: one edge act, the seated digest, no second admission", async () => {
     const { acts } = await seatFirst();
-    seam.control = { [WORKING_ROW]: { text: "automerge:hearth-working" } };
+    seam.control = { [WORKING_ROW]: row("automerge:hearth-working") };
     const replay = await answer("nonce-2");
     const appended = seam.appended as Act[];
     expect(appended.map((a) => a.body["act"])).toEqual(["device-edge"]);
@@ -203,7 +205,7 @@ describe("a replayed answer carries the seated edge, never a re-minted one", () 
   });
 
   test("CONTROL (L4f): a seated device whose edge act already names the hearth's working slot takes no act at a replay, and a renewal keeps the name where the door reads none", async () => {
-    seam.control = { [WORKING_ROW]: { text: "automerge:hearth-working" } };
+    seam.control = { [WORKING_ROW]: row("automerge:hearth-working") };
     await seatFirst();
     await answer("nonce-2");
     expect(seam.appended).toEqual([]);
