@@ -15,8 +15,10 @@
  *     readings could present one id and rest another. Here a scope's id reads or mints once for a composition, and every
  *     later reading answers those bytes.
  *   · A FACE'S SYNC STATE RESTS UNDER THAT FACE. A composition reads back only the sync state its own scope rested.
- *   · A FRESH PEER ID FOR EACH COMPOSITION. A face switch tears the composition down and stands a fresh one; each mints its
- *     peer id from fresh randomness here, by this module's own hand, never by an engine default.
+ *   · A FRESH PEER ID FOR EACH COMPOSITION. A MOUNT switch (`vault unlock --face N`) tears the composition down and stands
+ *     a fresh one; each mints its peer id from fresh randomness here, by this module's own hand, never by an engine
+ *     default. A SESSION switch (`session:switch`) and a sibling's light recompose nothing, so each rides the worn
+ *     composition's peer id and store id (the veil's second cut, road `C1`, scopes both to the face).
  *   · DOCUMENTS STAY ONE SET. The scope moves the identity alone; every document chunk passes untouched.
  *
  * A scope's name in the store derives from the PersonaGroup by a one-way digest, so the store's own key names hold no
