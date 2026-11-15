@@ -1,5 +1,5 @@
 /**
- * swarm-door — the hand-only verbs over the swarm model: `show`, `cap-set`, `share-set`, `lei-issue`.
+ * swarm-door — the hand-only verbs over the swarm model: `show`, `cap-set`, `share-set`, `lei-kui`.
  *
  * ADVISORY at this slice: a client names its own hand, so the socket gate (`SWARM_VERB_HAND_CODES`) and the `who` check here refuse a
  * seat but cannot bind a script holding the face's custody; the ward slice binds them. The signer arrives as a `SwarmSignerPort`, so
@@ -20,7 +20,7 @@ import { WardRefused } from "./ward-slots.js";
 
 /** The verbs only a hand runs, by the code each refuses under. `swarm-show` stays open to a seat. */
 export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = {
-  "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-issue": "swarm-needs-hand",
+  "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-kui": "swarm-needs-hand",
 };
 
 export type SwarmRequest =
@@ -32,7 +32,7 @@ export type SwarmRequest =
   /** `rite`: the one power the lei carries (`push` · `restart`); the door refuses a lei that names none. `after`: the cid of the lei
    *  this one follows at its rite's line for the branch (`show` names it), null for the first there. One issue names one lei, so a
    *  fresh lei for one head asks afresh, and a replay of an approved lei names the same intent and refuses spent. */
-  | { readonly action: "lei-issue"; readonly rite: SwarmLeiRite; readonly branch: string; readonly after: string | null;
+  | { readonly action: "lei-kui"; readonly rite: SwarmLeiRite; readonly branch: string; readonly after: string | null;
       /** The lei's reach. Absent reads `wide`, the default: the lei names no head and needs `returns`, the count of spends the hand
        *  writes into it. `head` pins one head and needs `head`. A lei that mixes the two refuses. */
       readonly reach?: SwarmLeiReach; readonly returns?: number; readonly head?: string };
@@ -103,7 +103,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   }
   if (deps.who.kind !== "hand") throw new SwarmRefused("swarm-needs-hand", "a hand must decide");
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
-  if (req.action === "lei-issue") {
+  if (req.action === "lei-kui") {
     if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push or restart)");
     if (typeof req.branch !== "string" || req.branch.length === 0) throw new SwarmRefused("swarm-lei-malformed", "a lei names a branch");
     // THE REACH: wide stands as the default, and each reach holds its own terms whole.
@@ -178,3 +178,10 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   await deps.board.land(act);
   return { lane: req.lane, share: req.value, cid: swarmBoardActCid(act) };
 }
+
+/**
+ * Kui: string a lei. The hand grants one rite at one branch under one reach, and the door's `lei-kui` act runs it: the same
+ * checks, the same co-sign gate, the same row. A caller that holds the lei's terms names them here without spelling the action.
+ */
+export const kuiLei = (lei: Omit<Extract<SwarmRequest, { readonly action: "lei-kui" }>, "action">, deps: SwarmDoorDeps): Promise<Record<string, unknown>> =>
+  swarmCommand({ action: "lei-kui", ...lei }, deps);

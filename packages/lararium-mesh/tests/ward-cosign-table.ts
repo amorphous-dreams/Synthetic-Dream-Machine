@@ -122,7 +122,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "lei", device
     who: { kind: "hand" as const, id: root.key }, cosign: () => doorPort };
   if (kind === "lower") await board.kapae({ action: "raise", wiki: "daemon", digest: D, who: hand });
   /** A lei names the lei it follows at its branch (`after`): null for the branch's first. */
-  const issue = (after: string | null): Promise<unknown> => swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after }, swarmDeps);
+  const issue = (after: string | null): Promise<unknown> => swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after }, swarmDeps);
   const run = (): Promise<unknown> => kind === "lower" ? board.kapae({ action: "lower", wiki: "daemon", digest: D, who: hand })
     : kind === "cap" ? swarmCommand({ action: "cap-set", value: 7 }, swarmDeps)
     : issue(null);

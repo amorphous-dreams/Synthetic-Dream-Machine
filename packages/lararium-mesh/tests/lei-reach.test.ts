@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import type { LarDoc } from "../src/base-doc.js";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
-import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
+import { kuiLei, swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import {
   putSwarmAct, readLei, readSwarmRecord, signSwarmAct, spendLei, swarmActCid, swarmLeiHead, swarmLeiNarrowedTitle, swarmLeiRowTitle, swarmLeiSpentTitle,
   swarmReceiptTitle, type SwarmBodyParts, type SwarmWikiPort,
@@ -209,23 +209,31 @@ describe("the door issues a lei under its reach", () => {
     return { deps, wiki };
   }
 
-  test("RED: a lei-issue that names no reach issues a WIDE lei and needs its returns; one that names a head beside the wide reach, or no returns, refuses and writes nothing; CONTROL: the wide lei lands and shows its returns", async () => {
+  test("RED: a lei-kui that names no reach issues a WIDE lei and needs its returns; one that names a head beside the wide reach, or no returns, refuses and writes nothing; CONTROL: the wide lei lands and shows its returns", async () => {
     const s = await stand();
     for (const bad of [{}, { returns: 0 }, { returns: 2, head: HEAD }, { head: HEAD }, { reach: "all", returns: 2 }, { reach: "head" }, { reach: "head", head: HEAD, returns: 2 }]) {
-      await expect(swarmCommand({ action: "lei-issue", rite: "push", branch: BRANCH, after: null, ...bad } as never, s.deps), JSON.stringify(bad)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
+      await expect(swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, after: null, ...bad } as never, s.deps), JSON.stringify(bad)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
     }
     expect([...s.wiki.rows.keys()]).toEqual([]);
-    expect(await swarmCommand({ action: "lei-issue", rite: "push", branch: BRANCH, returns: 4, after: null }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "wide", returns: 4 });
+    expect(await swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, returns: 4, after: null }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "wide", returns: 4 });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true, reach: "wide", returnsLeft: 4 } });
     // The same words again name the lei that already rests: nothing more lands.
     const rows = s.wiki.rows.size;
-    await expect(swarmCommand({ action: "lei-issue", rite: "push", branch: BRANCH, returns: 4, after: null }, s.deps)).rejects.toBeDefined();
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, returns: 4, after: null }, s.deps)).rejects.toBeDefined();
     expect(s.wiki.rows.size).toBe(rows);
   });
 
-  test("CONTROL: a lei-issue naming the head reach pins one head, and show reads it standing at that head alone", async () => {
+  test("CONTROL: `kuiLei` strings the same lei the door's `lei-kui` act strings, and a replay through either lands nothing more", async () => {
     const s = await stand();
-    expect(await swarmCommand({ action: "lei-issue", rite: "push", branch: BRANCH, reach: "head", head: HEAD, after: null }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD });
+    expect(await kuiLei({ rite: "push", branch: BRANCH, returns: 2, after: null }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "wide", returns: 2 });
+    const rows = s.wiki.rows.size;
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, returns: 2, after: null }, s.deps)).rejects.toBeDefined();
+    expect(s.wiki.rows.size).toBe(rows);
+  });
+
+  test("CONTROL: a lei-kui naming the head reach pins one head, and show reads it standing at that head alone", async () => {
+    const s = await stand();
+    expect(await swarmCommand({ action: "lei-kui", rite: "push", branch: BRANCH, reach: "head", head: HEAD, after: null }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true, reach: "head", returnsLeft: 1 } });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD2 }, s.deps)).toMatchObject({ lei: { standing: false, refusal: "head-mismatch" } });
   });

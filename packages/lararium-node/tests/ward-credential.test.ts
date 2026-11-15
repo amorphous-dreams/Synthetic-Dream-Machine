@@ -99,7 +99,7 @@ describe("a ticket names its act (S2 cold read, P2-1)", () => {
     const wc = await import("../src/ward-credential.js") as unknown as {
       parkWardTicket: (w: unknown, bind?: unknown) => string; takeWardTicket: (raw: unknown, use?: unknown) => unknown; dropWardTickets: () => void;
     };
-    const bind = { verb: "swarm-lei-issue", args: { branch: "x", head: "h" } };
+    const bind = { verb: "swarm-lei-kui", args: { branch: "x", head: "h" } };
     const parked = wc.parkWardTicket(W(), bind);
     wc.dropWardTickets();
     expect(wc.takeWardTicket(parked, bind)).toBeUndefined();

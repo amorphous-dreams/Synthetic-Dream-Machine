@@ -84,37 +84,37 @@ const rest = async (s: { wiki: SwarmWikiPort; root: { key: string; sign(b: Uint8
 };
 
 describe("the hand issues a lei", () => {
-  test("RED: lei-issue lands a hand-signed lei that reads for its branch and head; CONTROL: a later issue, naming the lei it follows, replaces it", async () => {
+  test("RED: lei-kui lands a hand-signed lei that reads for its branch and head; CONTROL: a later issue, naming the lei it follows, replaces it", async () => {
     const s = await stand();
-    const out = await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: null }, s.deps);
+    const out = await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: null }, s.deps);
     expect(out).toMatchObject({ branch: "feature/x", head: HEAD });
     expect(await readLei(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, cosignPortWitness(soloCosign(GROUP, s.root)))).toMatchObject({ ok: true });
     const first = latestLei(s.rows);
     const shown = await swarmCommand({ action: "show", rite: "push", branch: "feature/x", head: HEAD }, s.deps) as { lei: { after: string } };
     expect(shown.lei.after).toBe(swarmActCid(first!));
-    await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: shown.lei.after }, s.deps);
+    await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: shown.lei.after }, s.deps);
     expect(swarmActCid(latestLei(s.rows)!)).not.toBe(swarmActCid(first!));
     expect(await swarmCommand({ action: "show", rite: "push", branch: "feature/x", head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true } });
   });
 
   test("RED: a second lei naming an `after` a lei already follows refuses `swarm-lei-forked` and writes nothing, and one naming no lei of the chain refuses `swarm-lei-after-moved`; CONTROL: naming the tip lands", async () => {
     const s = await stand();
-    await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: null }, s.deps);
+    await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: null }, s.deps);
     const first = latestLei(s.rows);
     const before = s.rows.size;
-    await expect(swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-forked" });
-    await expect(swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: "9".repeat(64) }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-after-moved" });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-forked" });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: "9".repeat(64) }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-after-moved" });
     expect(s.rows.size).toBe(before);
-    await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(first!) }, s.deps);
+    await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(first!) }, s.deps);
     expect(await readLei(s.wiki, { rite: "push", branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, cosignPortWitness(soloCosign(GROUP, s.root)))).toMatchObject({ ok: true });
   });
 
   test("RED: a rollback (an older lei written again, at its row and at the branch's title) never stands; CONTROL: the chain's tip still does", async () => {
     const s = await stand();
     const witness = cosignPortWitness(soloCosign(GROUP, s.root));
-    await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: null }, s.deps);
+    await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: null }, s.deps);
     const g1 = latestLei(s.rows)!;
-    await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(g1) }, s.deps);
+    await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(g1) }, s.deps);
     await putSwarmAct(s.wiki, `${swarmLeiTitle("push", "feature/x")}/${swarmActCid(g1)}`, g1);
     await putSwarmAct(s.wiki, swarmLeiTitle("push", "feature/x"), g1);
     expect(await readLei(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toMatchObject({ ok: false });
@@ -128,7 +128,7 @@ describe("the hand issues a lei", () => {
     expect(await readLei(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toEqual({ ok: false, refusal: "forked" });
     expect(await readLei(s.wiki, { rite: "push", branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, witness)).toEqual({ ok: false, refusal: "forked" });
     expect(right).not.toBe(left);
-    await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: "c".repeat(40), after: left }, s.deps);
+    await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: "c".repeat(40), after: left }, s.deps);
     expect(await readLei(s.wiki, { rite: "push", branch: "feature/x", head: "c".repeat(40) }, s.trust, GROUP, witness)).toMatchObject({ ok: true });
   });
 
@@ -139,7 +139,7 @@ describe("the hand issues a lei", () => {
     expect(await readLei(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toMatchObject({ ok: false });
     const c = await stand();
     let after: string | null = null;
-    for (const head of ["1", "2", "3"].map((h) => h.repeat(40))) { await swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head, after }, c.deps); after = swarmActCid(latestLei(c.rows)!); }
+    for (const head of ["1", "2", "3"].map((h) => h.repeat(40))) { await swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head, after }, c.deps); after = swarmActCid(latestLei(c.rows)!); }
     expect(await readLei(c.wiki, { rite: "push", branch: "feature/x", head: "3".repeat(40) }, c.trust, GROUP, witness)).toMatchObject({ ok: true });
     for (const head of ["1", "2"].map((h) => h.repeat(40))) expect(await readLei(c.wiki, { rite: "push", branch: "feature/x", head }, c.trust, GROUP, witness)).toEqual({ ok: false, refusal: "head-mismatch" });
   });
@@ -161,10 +161,10 @@ describe("the hand issues a lei", () => {
 
   test("RED: a lei with no head, an empty branch, or no `after` (or one that names no cid) refuses; CONTROL: show of an unissued branch reads not standing", async () => {
     const s = await stand();
-    await expect(swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", after: null } as never, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
-    await expect(swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "", head: HEAD, after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
-    await expect(swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: HEAD } as never, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
-    await expect(swarmCommand({ action: "lei-issue", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: "not-a-cid" }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", after: null } as never, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "", head: HEAD, after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: HEAD } as never, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
+    await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: "feature/x", head: HEAD, after: "not-a-cid" }, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
     expect(s.rows.size).toBe(0);
     expect(await swarmCommand({ action: "show", rite: "push", branch: "nope", head: HEAD }, s.deps)).toMatchObject({ lei: { standing: false, refusal: "absent", after: null } });
   });
@@ -173,7 +173,7 @@ describe("the hand issues a lei", () => {
 describe("hand, grant and the standing daemon", () => {
   test("RED: a seat sets, issues nothing: each mutating action refuses `swarm-needs-hand` and writes nothing; CONTROL: a seat reads show", async () => {
     const s = await stand({ who: { kind: "seat", id: "lead-a" } });
-    for (const req of [{ action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "lei-issue", rite: "push", reach: "head", branch: "b", head: HEAD, after: null }] as const) {
+    for (const req of [{ action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "lei-kui", rite: "push", reach: "head", branch: "b", head: HEAD, after: null }] as const) {
       await expect(swarmCommand(req, s.deps), req.action).rejects.toMatchObject({ code: "swarm-needs-hand" });
     }
     expect(swarmBoardRecords(s.doc, GROUP)).toHaveLength(0);
@@ -192,7 +192,7 @@ describe("hand, grant and the standing daemon", () => {
     const { wiki: _wiki, ...bare } = (await stand()).deps;
     const doc = { tiddlers: {} } as LarDoc;
     const noWiki = { ...bare, board: { records: async () => [], land: async (act: never) => { writeSwarmBoardAct(doc, act); } } } as SwarmDoorDeps;
-    for (const req of [{ action: "show" }, { action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "lei-issue", rite: "push", reach: "head", branch: "b", head: HEAD, after: null }] as const) {
+    for (const req of [{ action: "show" }, { action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "lei-kui", rite: "push", reach: "head", branch: "b", head: HEAD, after: null }] as const) {
       await expect(swarmCommand(req, noWiki), req.action).rejects.toMatchObject({ code: "swarm-no-daemon", message: expect.stringContaining("no standing daemon: swarm controls need the founded wiki") });
     }
     expect(swarmBoardRecords(doc, GROUP)).toHaveLength(0);
@@ -200,7 +200,7 @@ describe("hand, grant and the standing daemon", () => {
   });
 
   test("RED: the hand codes name the three mutating verbs and leave show open; CONTROL: every code reads swarm-needs-hand", () => {
-    expect(SWARM_VERB_HAND_CODES).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-issue": "swarm-needs-hand" });
+    expect(SWARM_VERB_HAND_CODES).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-kui": "swarm-needs-hand" });
     expect(Object.hasOwn(SWARM_VERB_HAND_CODES, "swarm-show")).toBe(false);
   });
 });

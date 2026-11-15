@@ -22,7 +22,7 @@ import { claimStore } from "../src/owned-store.js";
 
 const KAHUA_ROWS = ["kahua-mint", "kahua-propose", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
-  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-issue"] as const;
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui"] as const;
 
 const face = (name: string): SessionFace => ({
   personaGroup: `group-${name}`, proofSubject: `proof-${name}`, admitRef: `admit-${name}`, causalRevision: `revision-${name}`,
@@ -142,10 +142,10 @@ test("RED: a seat session's promote commit, drop and orphan refuse `promote-need
   }
 });
 
-test("RED: a seat session's swarm cap-set, share-set and lei-issue refuse `swarm-needs-hand` and run nothing; CONTROL: the seat reads swarm-show, and the cli hand runs all four", async () => {
+test("RED: a seat session's swarm cap-set, share-set and lei-kui refuse `swarm-needs-hand` and run nothing; CONTROL: the seat reads swarm-show, and the cli hand runs all four", async () => {
   const v = await stand();
   const seat = await v.open("hint-a", "seat");
-  for (const act of ["swarm-cap-set", "swarm-share-set", "swarm-lei-issue"]) {
+  for (const act of ["swarm-cap-set", "swarm-share-set", "swarm-lei-kui"]) {
     expect(await v.peer.ask({ op: "session:act", ...seat, requestId: `seat-${act}`, act, args: { value: 1 } }), act)
       .toMatchObject({ kind: "session:refused", refusal: "swarm-needs-hand" });
   }
@@ -154,7 +154,7 @@ test("RED: a seat session's swarm cap-set, share-set and lei-issue refuse `swarm
     .toMatchObject({ kind: "session:act-result", answer: { verb: "swarm-show", ran: true } });
   const w = await stand();
   const cli = await w.open("hint-a", "cli");
-  for (const act of ["swarm-cap-set", "swarm-share-set", "swarm-lei-issue", "swarm-show"]) {
+  for (const act of ["swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-show"]) {
     expect(await w.peer.ask({ op: "session:act", ...cli, requestId: `cli-${act}`, act, args: { value: 1 } }), act)
       .toMatchObject({ kind: "session:act-result", answer: { verb: act, ran: true } });
   }

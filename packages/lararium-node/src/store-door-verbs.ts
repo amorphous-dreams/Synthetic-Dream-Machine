@@ -209,7 +209,7 @@ export const STORE_DOOR_VERBS = [
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status", "intent-relay-rotate",
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
-  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-issue",
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -230,7 +230,7 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "intent-relay-enable", "intent-relay-disable", "intent-relay-status",
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
-  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-issue",
+  "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui",
 ]);
 
 /**
@@ -377,13 +377,13 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
   };
   const promoteRow = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
     runPromoteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("restartWiki", deps.restartWiki), ...opt("ward", wardOf(args)) });
-  const swarmRow = (action: "show" | "cap-set" | "share-set" | "lei-issue", args: Readonly<Record<string, unknown>>) =>
+  const swarmRow = (action: "show" | "cap-set" | "share-set" | "lei-kui", args: Readonly<Record<string, unknown>>) =>
     runSwarmVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki), ...opt("ward", wardOf(args)) });
   return {
     "swarm-show": (args) => answer("swarm-show", () => swarmRow("show", args)),
     "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmRow("cap-set", args)),
     "swarm-share-set": (args) => answer("swarm-share-set", () => swarmRow("share-set", args)),
-    "swarm-lei-issue": (args) => answer("swarm-lei-issue", () => swarmRow("lei-issue", args)),
+    "swarm-lei-kui": (args) => answer("swarm-lei-kui", () => swarmRow("lei-kui", args)),
     "promote-prepare": (args) => answer("promote-prepare", () => promoteRow("prepare", args)),
     "promote-commit": (args) => answer("promote-commit", () => promoteRow("commit", args)),
     "promote-drop": (args) => answer("promote-drop", () => promoteRow("drop", args)),

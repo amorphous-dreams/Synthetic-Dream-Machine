@@ -55,7 +55,7 @@ export async function runSwarmVerb(opts: {
     // follows on its rite's line at the branch (`show` reads it), null for the first there; an absent one refuses.
     // The reach: absent reads wide (the lei names its `returns` and no head); `reach: "head"` pins the `head` it names. The door
     // refuses a lei that mixes the two, so a head handed in beside the wide default never passes as a pin.
-    : { action: "lei-issue", rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), after: opts.args["after"] as string | null,
+    : { action: "lei-kui", rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), after: opts.args["after"] as string | null,
         ...(opts.args["reach"] !== undefined ? { reach: opts.args["reach"] as SwarmLeiReach } : {}),
         ...(opts.args["returns"] !== undefined ? { returns: opts.args["returns"] as number } : {}),
         ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}) };

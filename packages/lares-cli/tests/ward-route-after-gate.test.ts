@@ -110,7 +110,7 @@ describe("a co-signed ward act on a standing vessel", () => {
 
   it("CONTROL: the house cap and a go ride the same order; a lane share, which no gate holds, asks its route first", async () => {
     vi.mocked(udsAlive).mockResolvedValue(true);
-    for (const [verb, args] of [["swarm-cap-set", { value: 7, face: 0 }], ["swarm-lei-issue", { branch: "b", head: "a".repeat(40), face: 0 }]] as const) {
+    for (const [verb, args] of [["swarm-cap-set", { value: 7, face: 0 }], ["swarm-lei-kui", { branch: "b", head: "a".repeat(40), face: 0 }]] as const) {
       asked = 0; acted.length = 0; answers = [{ refused: "ward-awaiting-cosign: " + "c".repeat(64), refusal: "swarm-refused" }];
       await expect(storeVerb(verb, { ...args })).rejects.toThrow(/ward-awaiting-cosign/);
       expect(asked).toBe(0);
