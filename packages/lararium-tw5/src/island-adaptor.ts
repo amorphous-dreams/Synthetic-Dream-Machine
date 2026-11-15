@@ -1476,8 +1476,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // A newer hand of the source made meanwhile stands: it leaves as its own owed title, slots and all.
     if (!this._removalStands(title, removal)) return;
     // THE SLOTS FOLLOW THEIR ROOT. The source left for its target, durably acknowledged (the save order): each
-    // slot still beneath the old address re-titles under the target, its body untouched, and its old title
-    // leaves as a hand's own delete. Where the target no longer stands the slots stay as they stand: orphans,
+    // slot still beneath the source address re-titles under the target, its body untouched, and its source title
+    // leaves as a hand's own delete. Where no target stands the slots stay as they stand: orphans,
     // kept and flagged, never dropped.
     if (wiki.getTiddler(removal.target)) retitleSlotsInWiki(wiki as unknown as FamilyRenameWiki, title, removal.target);
     if (wiki.getTiddler(title)) wiki.deleteTiddler(title);

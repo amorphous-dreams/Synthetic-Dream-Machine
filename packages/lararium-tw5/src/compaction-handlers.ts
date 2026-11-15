@@ -142,7 +142,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
 // Whole-wiki "fresh start" lever. Composes Epoch (mint new canonical doc)
 // with recipe mutation (insert old canonical as a previous-canon underlay
 // slot at lower priority). Operator wants a clean canonical surface but
-// keeps the old canon accessible read-only, addressed by its own document id
+// keeps the superseded canon accessible read-only, addressed by its own document id
 // and linked to the canon it followed (`rotated-from`): no counter orders them.
 
 export type RotateRecipeOptions = EpochHandlerOptions;

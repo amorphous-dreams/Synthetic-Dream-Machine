@@ -61,7 +61,7 @@ export function briefLine(rows: readonly Row[]): string {
   return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares home read)${apart ? `; ${apart}` : ""}${lift}`;
 }
 
-/** What a tend lifted, one line per target: the house hook scripts a row named before it and names no longer. */
+/** What a tend lifted, one line per target: the house hook scripts a row named before the tend and no row names after it. */
 export function liftedLines(before: readonly Row[], after: readonly Row[]): string[] {
   const key = (r: Row): string => `${r.id}\n${r.path}`;
   const held = new Set(after.filter((r) => r.state === "aligned").map(key));

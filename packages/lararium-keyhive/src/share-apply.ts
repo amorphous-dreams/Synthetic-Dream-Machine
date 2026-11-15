@@ -136,9 +136,9 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   const rows = await deps.rows();
   const halves = new Map<number, Awaited<ReturnType<ShareLitFace["catalog"]>>>();
   for (const face of deps.faces) {
-    const tc = Date.now();
+    const tc = performance.now();
     halves.set(face.handleIndex, await face.catalog().catch(() => null));
-    if (face.group) deps.log?.(`[share-apply] h${face.handleIndex}'s catalog half ${halves.get(face.handleIndex) ? "read" : "opens at that face's own wear"} (${Date.now() - tc}ms)`);
+    if (face.group) deps.log?.(`[share-apply] h${face.handleIndex}'s catalog half ${halves.get(face.handleIndex) ? "read" : "opens at that face's own wear"} (${Math.round(performance.now() - tc)}ms)`);
   }
   const rowIn = (doc: LarDoc | undefined, bag: string): StoredLarRecord | undefined => ownEntry(doc?.tiddlers, bag) as StoredLarRecord | undefined;
   // THE WEAR LIFTS WHAT CARRIED, here as at the worn face's own stand (`liftCarriedShares`).
@@ -166,11 +166,11 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     return null;
   };
   const grants = owedGrants({ rows, faces: deps.faces, ownerOf, houseCanon: isHouseCanonBag });
-  const t0 = Date.now();
+  const t0 = performance.now();
   deps.log?.(`[share-apply] ${rows.length} row(s), ${deps.faces.filter((f) => f.group).length} lit face(s), ${grants.length} grant(s) owed`);
   let granted = 0, pending = 0, carried = 0, moved = 0;
   for (const g of grants) {
-    const tg = Date.now();
+    const tg = performance.now();
     const flag = sharePendingTitle(g, deps.salt);
     const waited = deps.flag.has ? await deps.flag.has(flag).catch(() => false) : false;
     const owner = deps.faces.find((f) => f.handleIndex === g.owner), grantee = deps.faces.find((f) => f.handleIndex === g.grantee);
@@ -196,8 +196,8 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
       granted++;
       // WHAT MOVED: a delegation the roster did not hold, a row this landing wrote, or a grant that had waited behind its flag.
       if (fresh || wrote || waited) moved++;
-      deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} landed in ${Date.now() - tg}ms`);
-    } catch { await deps.flag.set(flag); pending++; deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} waits (${Date.now() - tg}ms)`); }
+      deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} landed in ${Math.round(performance.now() - tg)}ms`);
+    } catch { await deps.flag.set(flag); pending++; deps.log?.(`[share-apply] grant ${g.bag} h${g.owner} -> h${g.grantee} waits (${Math.round(performance.now() - tg)}ms)`); }
   }
   const workbenches: ShareWorkbenchLanded[] = [];
   if (deps.workbench) {
@@ -219,14 +219,14 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
         if (!face?.group) continue;   // a shut face seats at its next light: its canon grant already waits behind a flag
         members.push({ handleIndex: index, group: face.group, access: answer.write.includes(index) ? "write" : "read" });
       }
-      const tw = Date.now();
+      const tw = performance.now();
       workbenches.push({ ...(await deps.workbench(row, { handleIndex: owner.handleIndex, group: owner.group }, members)), owner: owner.handleIndex });
-      deps.log?.(`[share-apply] workbench ${row.slug} (${members.length} member face(s)) landed in ${Date.now() - tw}ms`);
+      deps.log?.(`[share-apply] workbench ${row.slug} (${members.length} member face(s)) landed in ${Math.round(performance.now() - tw)}ms`);
     }
   }
   const waiting = new Set<string>();
   for (const row of rows) for (const name of resolveShare({ bag: shareRowBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
-  deps.log?.(`[share-apply] done in ${Date.now() - t0}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
+  deps.log?.(`[share-apply] done in ${Math.round(performance.now() - t0)}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
   const unowned = rows.filter((row) => !isHouseCanonBag(shareRowBag(row)) && ownerOf(shareRowBag(row)) === null).map((row) => row.slug).sort();
   return { granted, moved, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned };
 }

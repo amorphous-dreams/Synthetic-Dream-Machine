@@ -211,7 +211,7 @@ export function openFloorSnapshot(bytes: Uint8Array, cid: string):
 export function cutCanonFloor(args: {
   readonly prior: FloorManifest;
   readonly canon: Readonly<Record<string, Readonly<Record<string, LarTiddlerRecord>>>>;
-  /** Slugs the prior floor names that this cut leaves off (a bag whose declared tier no longer rides the floor, `floorCarriesTier`). */
+  /** Slugs the prior floor names that this cut leaves off (a bag whose declared tier rides no floor of this cut, `floorCarriesTier`). */
   readonly drop?: readonly string[];
 }): { readonly manifest: FloorManifest; readonly manifestCid: string; readonly manifestBytes: Uint8Array; readonly snapshots: Readonly<Record<string, FloorSnapshot>> } {
   const snapshots: Record<string, FloorSnapshot> = {};

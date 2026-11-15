@@ -39,7 +39,7 @@ export const OWNED_STORAGE_PREFIX = "lares:";
  * the ceremony burns or the person declines, and when the page withdraws the ask ("not now"), so a settled id stands no
  * ceremony again. localStorage carries it because the ceremony's window opens with no opener and shares no sessionStorage.
  *
- * WHAT THIS DEFENDS: a bare inbound link, and an id that no longer stands. WHAT IT CANNOT: script already running in a page of
+ * WHAT THIS DEFENDS: a bare inbound link, and an id no standing ask answers to. WHAT IT CANNOT: script already running in a page of
  * this origin writes the same storage a page writes, and deletes a database as the burn does. The confirm gate asks the
  * device's holder; it stands against a hand at the device and a mistaken press, never against that script.
  */
