@@ -4,8 +4,8 @@
  *
  * A node's Repo reaches the wire by two legs. The SYNC GATE's leg (the engine's server adapter over gated sessions,
  * `gate-sync-server`) seats many sessions on one adapter; the CLIENT DIAL's leg (`nexus-client-dial`) presents one face
- * at one hearth. Unseated, each presented the composition's one peer id and one store id, so a peer seated under one
- * face read the ids every other face of the vessel showed.
+ * at one hearth. An unseated leg presents the composition's one peer id and one store id, so a peer seated under one
+ * face reads the ids every other face of the vessel shows; a seated leg presents its own pair alone.
  *
  *   · A GATE SESSION FACES ONE LOCAL FACE AT ITS NEXUS (`gateLegAt`). A same-operator session proved a PersonaGroup of
  *     this vessel (a device of that face, lit here or worn): it faces THAT face. Every other session (a contracted
