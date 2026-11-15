@@ -24,6 +24,7 @@ import { CONTROL_HOME_ID, DAEMON_BAG_ID, bagUri } from "./lar-uris.js";
 import { daemonFaceCanonBag, wikiSlotUri } from "./wiki-recipe.js";
 import { tiddlerText, type LarDoc } from "./base-doc.js";
 import { documentIdOfUrl, type SealedBag } from "./sealed-rest.js";
+import { ownEntry, type StoredTiddlers } from "./stored-value.js";
 
 /** Every row of the floor's registry rests under this prefix of the place's daemon document. */
 export const FLOOR_REGISTRY_ROOT = `${DAEMON_BAG_ID}/floor/`;
@@ -63,8 +64,8 @@ export function daemonSlotTitle(kind: string, group: string): string { return `$
  * `group`'s working slot of the daemon wiki, or null where it names none. The root holder's admit door reads it here and
  * signs it into a joining device's `device-edge` act, so a leaf at its own hearth mounts the document the hearth projects.
  */
-export function hearthDaemonOf(controlTiddlers: LarDoc["tiddlers"] | null | undefined, group: string): string | null {
-  const url = tiddlerText(controlTiddlers?.[daemonSlotTitle("working", group)]);
+export function hearthDaemonOf(controlTiddlers: StoredTiddlers | null | undefined, group: string): string | null {
+  const url = tiddlerText(ownEntry(controlTiddlers, daemonSlotTitle("working", group)));
   return typeof url === "string" && url.length > 0 ? url : null;
 }
 
