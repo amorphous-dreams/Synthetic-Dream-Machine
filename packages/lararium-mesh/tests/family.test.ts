@@ -223,6 +223,29 @@ describe("consequence — what follows, named before the act", () => {
   });
 });
 
+describe("★ L46: delete-receipt-names-the-family ★", () => {
+  const SLOTS = [`${R}#/a`, `${R}#/a/deep`, `${R}#/b`, `${R}#/c`];
+  /** Every title a consequence names: the target, each act and its `to`, each leave, orphan and refusal. */
+  const named = (c: ReturnType<typeof consequence>): Set<string> => new Set<string>([
+    c.target, ...c.acts.flatMap((row) => (row.to === undefined ? [row.title] : [row.title, row.to])),
+    ...c.leaves.map((row) => row.title), ...c.orphans, ...c.refusals.map((row) => row.title),
+  ]);
+
+  test("★ RED: a delete over a wiki of unrelated tiddlers names versions for the family alone ★", () => {
+    const records = fixture();
+    for (let n = 0; n < 200; n += 1) records[`$:/boot/noise-${n}`] = { type: "text/vnd.tiddlywiki" };
+    const c = consequence(viewOf(records), { kind: "delete", title: R });
+    expect(Object.keys(c.versions).filter((title) => title.startsWith("$:/boot/"))).toEqual([]);
+    expect(Object.keys(c.versions).sort()).toEqual([...named(c)].sort());
+    for (const title of [R, ...SLOTS]) expect(c.versions[title]).toBe(`v:${title}`);
+  });
+
+  test("CONTROL: a plain delete names its own title's version", () => {
+    const c = consequence(viewOf(fixture()), { kind: "delete", title: "Plain Note" });
+    expect(c.versions).toEqual({ "Plain Note": "v:Plain Note" });
+  });
+});
+
 describe("caps versus family — where a cap alone cannot decide", () => {
   const CANON = "bag:canon";
   const WORKING = "bag:working";
