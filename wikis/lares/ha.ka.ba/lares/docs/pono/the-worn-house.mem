@@ -1,0 +1,194 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` namespace=`◎` from=`?` to=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+l-space   = "unstable"
+namespace = "&#x25CE;"
+role      = "the-worn-house — the design an AI session wears the house through without friction while the operator's hand keeps the power: the cord that outlives a vessel's sleep, the delegated token a rite spends, the three loops of a self-improving house, and the joints still unsettled"
+tags      = ["api/pono/meme"]
+title     = "lar:///ha.ka.ba/lares/docs/pono/the-worn-house"
+type      = "text/memetic-wikitext+tiddlywiki"
+uri-path  = "ha.ka.ba/lares/docs/pono/the-worn-house"
+written   = "2026-11-15"
+```
+
+<<~ ahu slot=`#/head`>>
+
+! The worn house ~ a house an AI session wears, a power the human keeps
+
+The operator, 2026-11-15: //"I want your Lararium substrate to feel like something you can wear effortlessly … return inversion of control and capability delegation to the human using the computer … I delegate a cap token that says you can restart, you burn it by performing the rite."// And: the Lararium (never the model weights) runs as a self-improving system in TiddlyWiki fashion, everything but the boot core a tiddler. The operator trusts the house because its architecture lets that trust get checked.
+
+This carrier holds a design under collision, not a ruling. Four research memes in the steward's daemon wiki feed it: `lar:///ha.ka.ba/kahua/memory/research/lei-plan` (the first talk-out), `…/lei-cord` and `…/lei-pua` (two Luna research waves), `…/lei-loom` (the Opus loom over all three, with code readings). Settled: the cord (#/the-cord) and the rite field (#/the-rite-field) ride PR #218 before its merge. Settled by the operator on 2026-11-15: the names (#/the-names). Unsettled: the fence (#/the-fence), the in-place ingest (#/the-vm-tension).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-friction`>>
+
+!! The friction, by cost
+
+# A restart locks the vessel; the operator's passphrase alone reopens it. That law stands: the passphrase never rides a delegated token.
+# The MCP seat dies with the container. The FastMCP surface (`lares_mcp.py`) runs inside the container under `docker compose exec`, so a restart kills the stdio child the client holds, and Claude Code marks an interactive stdio server that exits as failed until a human runs `/mcp`.
+# Power grants no narrow piece: a session holds the raw shell and the whole house, or nothing; no grant reads "restart once, at this head".
+# Too many changes ask for an image rebuild and a restart.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-three-loops`>>
+
+!! Three loops, each with its own witness
+
+The design treats each delegated token as the unit of a trust loop more than as a cure for friction: every token gets spent, every spend leaves a signed receipt, and every receipt teaches the operator what to grant next. The loops nest (Ashby's double loop; Argyris's double-loop learning; Lehman's eighth law):
+
+|!Loop |!Who turns it |!What changes |!Who witnesses |!What it costs the operator |
+| ''the garden'' (inner) | sessions, freely | working tiddlers, non-executable code tiddlers, briefs, tests | the battery, and a cold read from a second model family | nothing |
+| ''the rite'' (middle) | a session holding a token | the boot core, the image | the vessel's signed receipt; the old vessel witnessing the new one stand | one token spent |
+| ''the giving'' (outer) | the operator | the laws, the ward, which tokens exist | the operator's own read of the receipts, and unannounced spot-walks | attention, spent sparingly |
+
+The boot core verifies everything else, so its size measures how much of the house a session can change only through the operator. "Everything but the boot core rides as a tiddler" reads as a security law beside a style.
+
+The measure the operator cares about: the hands the house asks for per landed lane (2026-11-15: one `/mcp`, two unlocks, one push word, one walk). It falls only beside two counter-measures: spot-walk findings stay at zero, and the battery's definitions hash stays unmoved by the garden. A falling count with clean spot-walks shows the trust holding; a falling count with a failed spot-walk shows a house grown too clever.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-names`>>
+
+!! The names ~ the lei set (settled)
+
+The operator settled the set on 2026-11-15 (//"Pono, settle the lei set"//), then restrung it the same day so the lei names the token itself (//"Pono, restring the set"//). The house prefers polyglot formations over industry terms that blur a joint; memetic-wikitext already strings code, natural language and emoji into one creole liturgy, and the set strings Hawaiian, Latin and Greek the same way.
+
+|!Joint |!Name |!What it carries |
+| one token | ''lei'' | strung by the giver for one occasion, placed on the wearer, worn through one rite, returned at its close; several worn at once, each returned alone (Hawaiian takes no plural //-s//: one lei, three lei) |
+| the granting | ''kui'' | to string, pierce, join (Pukui–Elbert); the operator strings a lei for one act |
+| the spend | ''the return'' | the lei offered back at the rite's close; the token goes back, never burns |
+| the receipt | ''tessera'' | the two halves of a //tessera hospitalis//: the session's half and the vessel's half, `rite-begun` and `rite-landed` |
+| matching the halves | ''conferre'' | the vessel matches the halves; a half with no match reads red at the next wake |
+| revocation | ''confringere'' | the tessera broken; it writes a signed record and never deletes |
+| the messenger | ''iris'' | the core of the steady seat: the pure frame machine that carries messages across the gap while the hearth sleeps, answers `hearth-sleeps` and `outcome-unknown`, and sends `list_changed` |
+| the cord | ''lorum'' | the seat a binding holds across its vessel's sleep (//signum de paupere loro//, Juvenal 5.165); the Node host's process first |
+| the worn whole | //no new word// | the session wears the house; wearing the lei it holds names the effortless wearing |
+
+''Iris.'' The operator approved //iris// as the core of the MCP messenger pattern integrity (2026-11-15). Iris carries messages on the rainbow between the gods and mortals, and the eye's iris works as an aperture, the gauge every turn of the house opens with. The lorum holds; iris carries.
+
+''The return.'' The operator's testimony (2026-11-15): //"I now remember childhood rites where the folks wearing the leis then offered them to the ʻaumākua at the end of the rituals."// A lei comes placed as a welcome and goes back as an offering at the close; the session spends a lei by returning it, and the tessera keeps the record. No written source the research found records that exact rite; it stands on the operator's witness, and a kumu or the family's own read gives it the next contact with reality.
+
+''Conditions the set carries.'' Pukui–Elbert also gives //lei// the sense "yoke, as for joining draft animals"; the house names that sense openly. The etiquette "never refuse a lei" carries social pressure; the house answers with its own law: receiving a lei never obliges wearing it into a rite, and an unspent lei returns with no act and no cost. The operator's family ties count toward the house's standing to use the word, never as a licence the house claims. ''ʻaha'' stays the council's (`ʻaha kūkā`); ''tally'' stays the OODA-HA closing tally's. Canon law supplies the lei's interpretation law, never its names: a power granted for a single act reads strictly, passes on only by express grant, implies only what its act needs, and ceases once performed (CIC can. 137 §3, 138, 142 §1). The bulla left the set: it carries tutelage and authority into a house that runs on hospitality.
+
+''Myth attractors, not code.'' The three //piko// (crown, navel, generative centre; ties to the ancestors, the living present, the descendants) rhyme with the three loops: the giving faces back to what the house inherits, the rite stands in the present, the garden grows for sessions not yet woken. The operator ruled that //piko// stays a myth attractor and names no part of the code. //lei// also names the plural of the Romanian //leu//, "lion", the currency, and the Lares take coin among their offerings; a pun beneath the Hawaiian sense, where a lei comes given, never bought.
+
+Research: `lar:///ha.ka.ba/kahua/memory/research/worn-whole-names` (the hospitality survey) and `…/lei-loom` (the Roman grounding).
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-cord`>>
+
+!! The cord ~ a seat that keeps breathing through the vessel's sleep
+
+The operator, 2026-11-15: //"we should figure out a way for the MCP server to keep breathing while the container restarts for code updates."//
+
+The plan's first wording (a host process that redials the vessel's socket) fails on the code: the rendezvous socket sits in the container's own tmpfs `/tmp`, out of the host's reach, and `lares_uds.call` opens a fresh connection per verb, so the surface holds no state worth saving. The cord therefore owns the client's stdio for the session's whole life and treats the in-container surface as a child it respawns.
+
+''What the cord does'':
+# It never exits on a child's death; the client never sees a respawn (field reports show respawned stdio servers whose tools never re-register).
+# It caches the child's `initialize` answer and `tools/list`, answers both from the cache while no child stands, and replays `initialize` to each new child itself.
+# A call arriving while no child stands answers at once with a tool error `hearth-sleeps`; it never waits behind a locked vessel, since an unlock may take hours.
+# A call in flight at a child's death answers `outcome-unknown: re-read before re-trying`; the cord never sends it again.
+# A new child whose tool list hashes differently draws one `notifications/tools/list_changed`.
+# It logs no payload and holds no key: a relay that sees every tool call must stay keyless and house-stateless, or it becomes the key-on-a-surface the house forbids.
+
+''Idempotent by intent.'' A retry lands nothing new. The cord re-sends nothing; `meme_put`'s `base` hash already answers a re-tried write `noop` or `conflict`, never a double; the verbs lacking a compare-and-swap (`pour`, `sweep`, `purge`, `kahua_stage`) each owe a read-back door before an outcome-unknown on them can resolve. A replayed `initialize` reads as a pure function of the child's answer; `list_changed` fires on a hash change alone, never on a respawn.
+
+''Isomorphic by intent.'' The cord names a capability, //holds a seat across its vessel's sleep//, never a host. Its core runs as a pure frame machine (frames in from the client, frames in from the child, child-state events in; frames out) behind two ports, the client stream and the child spawner, so the same core serves any vessel. Placement default: the core in `@lararium/mesh` beside the other capability cores; the first binding, the Node host's (`child_process` spawning `docker compose exec … lares_mcp.py`, the client on stdin/stdout), in `lares-cli`, which already registers the seat (`mcp-resolve.ts`). A later binding reaches a TiddlyWiki page's port onto a worker vessel with the same core. Node first; the browser binding waits.
+
+''Red first'', each named: `cord-outlives-child` (run against the operator's installed Claude Code before the rest builds on it) · `cord-resumes-without-reinit` · `cord-in-flight-unknown` · `cord-lists-from-cache` · `cord-list-changed-on-new-tools` · `cord-logs-no-payload`.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-rite-field`>>
+
+!! The rite field ~ one power per token family (sidecar)
+
+`SwarmGoBody` carries `{act, group, branch, head, after}` and no rite; `readGoChain` asks the ward for the fixed verb `ward-push-go`; titles key on `go/<branch>/<cid>`. A restart go strung there would read as a push go, and a push go would spend as a restart: one record family, one ward verb, two powers, a confused-deputy seam.
+
+The cure: the go carries `rite` (`push` · `restart`), `swarmGoHead` folds it in, titles key `go/<rite>/<branch>/<cid>`, and the ward answers `ward-<rite>-go`. The rite list stays capped at the acts the boot core verifies, so the field never grows into a policy language. Red first: `go-rite-separates-powers`. It rides PR #218 before the merge as a sidecar to the cord.
+
+`spendGo` claims the spend before any act runs: at most once, failing closed; a build that fails after the spend burns the token with no act. That cost stays accepted and counted.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-fence`>>
+
+!! The fence (unsettled, deferred)
+
+A token works as protocol, not as a wall, while a session holds the raw shell and Docker. The wall comes from the operator's hand taking the broad power back. The loom found the fence standing inside the garden: the tracked `.claude/settings.json` takes a session's edit, and law tiddlers rest in a bag a seat may write. The direction under weighing: deny rules in the operator's own user-scope settings, and a law-tiddler test (`seat-cannot-write-law`) refusing an AI seat's put. The operator deferred this joint on 2026-11-15: the design has not settled.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-vm-tension`>>
+
+!! The VM tension ~ in-place ingest against TiddlyWiki's own law
+
+The house runs TiddlyWiki as a virtual machine in strange contexts (the Node vessel, browser workers, the MCP surface's renders). TiddlyWiki itself asks a save-and-reload for JavaScript module tiddlers (`module-type`) and for a plugin carrying them, so "ingest every tiddler in place" breaks against the substrate.
+
+The direction under weighing, read by capability and never by host: a tiddler that //executes// (a module, a plugin with modules) takes a warm restart of the vessel process inside its standing container, with no image rebuild; a tiddler that does not execute (wikitext, data, procedures, briefs, working records) ingests in place. One measurement decides how much a warm restart saves: whether the vessel key lives in process memory alone; if so, a warm restart still locks the vessel. Erlang's release handling warns of dependency order and old code running during the window. This slice waits for after the merge, under its own road row.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/the-reach`>>
+
+!! The reach ~ a wide lei by default
+
+The operator, 2026-11-15: //"I approve the 'Wider' stance as default, we've already proofed the previous procedure patterns through head-only gates, we need a new more kupono model."// The push word fresh per head, the go bound to one head: those gates proved the procedure. The default lei now names its evidence instead of its head.
+
+A ''wide lei'' (the default) binds a rite, a branch and a face's group, and names the evidence each spend needs: a passing receipt standing for the head's tree, and a count of returns since its stringing under the ceiling the operator wrote into it. A ''head lei'' (the narrow form) still binds one head, for an act the operator wants pinned. Neither reads a clock: a wide lei ends when its count runs out, when a newer lei restrings it, or when the operator unstrings it.
+
+What the reach asks of the rest of the design:
+* ''The evidence caveat rides before the merge'' (`L45c`), since a wide lei without it grants a blank cheque: `spendGo` refuses `swarm-go-evidence-absent` unless a passing `receipt/<tree>` stands for the head's tree.
+* ''The receipt's grade matters more.'' The vessel signs a host battery's verdict without re-running it, so a wide lei rests on testimony until the sampled re-run lands; that slice climbs the after-the-merge order to first.
+* ''A red narrows.'' A spend that meets a red receipt refuses, and the lei narrows to head-only until the operator restrings it wide (Ashby's step function run in reverse).
+* ''The rite field bounds the reach.'' A wide lei for `restart` never reaches `push`; the push word stays fresh per head under the standing orders until the operator rules otherwise.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/after-the-merge`>>
+
+!! After the merge, in order
+
+# ''The author and family condition'': the test author, the cure author and the cold reader come from distinct seats and model families, read from vessel-signed `roster/<seat>` records, never from commit co-author lines.
+# ''Vouch before unlock'': the candidate image boots under a scratch `LAR_ROOT`, the rite walker runs against it, the old vessel signs a vouch record binding image digest and walk receipt, and the operator's unlock prompt shows it.
+# ''The sampled re-run'' (Beer's System 3*): the vessel signs `receipt/<tree>` over a host battery verdict today without re-running anything, so the receipt notarises testimony; the vessel re-runs one randomly chosen check inside its own image before it co-signs, two diverse runners agreeing the way Wheeler's diverse double-compiling defeats a poisoned compiler.
+# ''Receipt replay at wake'': the vessel replays one sampled receipt at the current head; a mismatch reads red on the porch.
+# ''The in-place ingest'' (#/the-vm-tension).
+
+The rite itself writes a `rite-begun` receipt before the vessel goes down and the new vessel writes `rite-landed` naming it; an unmatched begun receipt reads red at the next wake, two halves of one tessera across a restart. Spent records retire outside the hearth in small batches: in 1834 the Exchequer burned its obsolete tally sticks in the stove beneath the House of Lords and burned down the Palace of Westminster. Burn the token, keep the receipt.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/records`>>
+
+!! Records, not rows
+
+Three different things travelled under the word "row" through the design's talk-out; this carrier names each by what it holds:
+
+* a ''signed record'' (`SignedSwarmAct` in code): a JSON `{body, signer, sig}` resting as a tiddler's text in the vessel's control document, under `$:/lares/swarm/…`: a go, a spend, a receipt, a roster reading, a vouch. The token family and its receipts live here.
+* a ''stage meme'': a whole memetic carrier under the memory stage, `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`; the code keys it with `row-key`.
+* a ''road row'': one line of the table inside the roadmap carrier, a row in the literal sense.
+
+<<~/ahu>>
+
+<<~ ahu slot=`#/open`>>
+
+!! Open
+
+* The code names: the lane builds under neutral names (`steady-seat`, `rite`); a mechanical rename follows it (the core to `iris`, the Node binding's seat to `lorum`, a go to a lei).
+* The fence (#/the-fence).
+* The cord's binding placement: the core in `@lararium/mesh` and the Node binding in `lares-cli` (default), against a binding in `@lararium/node`.
+* Whether the evidence caveat rides before the merge (default: after, unless a head-to-tree read proves one line).
+* Unverified: Claude Code's behaviour behind a cord that never exits, on the operator's installed version; the internals of reloaderoo and mcpmon (prior art for holding a client across a server respawn); whether the vessel key lives in process memory alone; TPM reach inside WSL2 and Docker.
+
+<<~/ahu>>
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hst4Ro79oCr1wglub9L5yV4dRrPujJYRD15aD-6ZvhE`>>
+
+<<^ code=`&#x0004;` to=`?`>>
