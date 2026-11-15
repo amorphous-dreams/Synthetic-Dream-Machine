@@ -387,7 +387,7 @@ export interface Consequence {
   readonly orphans: readonly string[];
   /** Why the act refuses. A consequence that names one lands nothing. */
   readonly refusals: ReadonlyArray<{ readonly title: string; readonly code: FamilyRefusalCode }>;
-  /** The version of every title the reading read or the act would write: a later apply binds to these. */
+  /** The version of every title the consequence names (the target, each act and its `to`, each leave, orphan and refusal): a later apply binds to these. A scan the reading ran over the wiki names nothing, so it adds nothing here. */
   readonly versions: Readonly<Record<string, string | null>>;
 }
 
@@ -427,12 +427,7 @@ function inboundReferences(view: FamilyView, members: readonly string[]): Array<
  * that lands the act, so the two can never read the family differently.
  */
 export function consequence(view: FamilyView, act: FamilyAct): Consequence {
-  const touched = new Set<string>();
-  const tracked: FamilyView = {
-    ...view,
-    titles: () => view.titles(),
-    read: (title) => { touched.add(title); return view.read(title); },
-  };
+  const tracked: FamilyView = view;
   const reading = familyOf(tracked, act.title, act.kind === "field" ? { field: act.field } : {});
   const bare = "bare" in act && act.bare === true;
   const acts: ConsequenceAct[] = [];
@@ -500,9 +495,13 @@ export function consequence(view: FamilyView, act: FamilyAct): Consequence {
 
   const done = (): Consequence => {
     if (view.readOnly === true && acts.length > 0) refusals.push({ title: act.title, code: "read-only-seat" });
-    for (const row of acts) { touched.add(row.title); if (row.to !== undefined) touched.add(row.to); }
+    const named = new Set<string>([act.title]);
+    for (const row of acts) { named.add(row.title); if (row.to !== undefined) named.add(row.to); }
+    for (const row of leaves) named.add(row.title);
+    for (const title of orphans) named.add(title);
+    for (const row of refusals) named.add(row.title);
     const versions: Record<string, string | null> = {};
-    for (const title of [...touched].sort()) versions[title] = view.version?.(title) ?? null;
+    for (const title of [...named].sort()) versions[title] = view.version?.(title) ?? null;
     return { act: act.kind, target: act.title, bare, position: reading.position, family: reading.root, acts, leaves, orphans, refusals, versions };
   };
 

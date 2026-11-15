@@ -596,11 +596,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     // layers the composition holds, and a refusal lands nothing. The read stays meme-aware (never `bare`): this door
     // strands no slot.
     const layers = await layerFactsFor(opts, anchor, ctx.cap, view, mayRead, title);
-    const whole = consequence(familyViewAt(anchor, view, layers), { kind: "delete", title, mode });
-    // EVERY ANSWER STAYS BOUNDED: the law names the version of every title its reading touched (a scan for inbound
-    // references touches the whole wiki); the answer keeps the versions of the titles the consequence itself names.
-    const namedTitles = new Set<string>([title, ...whole.acts.map((row) => row.title), ...whole.leaves.map((row) => row.title), ...whole.orphans, ...whole.refusals.map((row) => row.title)]);
-    const read: Consequence = { ...whole, versions: Object.fromEntries(Object.entries(whole.versions).filter(([name]) => namedTitles.has(name))) };
+    const read: Consequence = consequence(familyViewAt(anchor, view, layers), { kind: "delete", title, mode });
     const refused = (refusal: string, why: string): Record<string, unknown> =>
       ({ recipe: "default", title, decision: "refused", mode, refusal, why: `${refusal}: ${why}`, tombstoned: [], retracted: [], hash, consequence: read });
     const tombstones = tombstonesOf(read);

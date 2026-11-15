@@ -216,10 +216,11 @@ describe("consequence — what follows, named before the act", () => {
     expect(c).toMatchObject({ position: "field", family: R, acts: [{ title: R, act: "put", bag: null }], leaves: [{ title: R, why: "block-check-re-mints" }] });
   });
 
-  test("versions name every title read or written, so an apply can bind to them", () => {
+  test("versions name every title the consequence names, so an apply can bind to them", () => {
     const c = consequence(viewOf(fixture()), { kind: "delete", title: R });
     for (const title of [R, ...SLOTS]) expect(c.versions[title]).toBe(`v:${title}`);
-    expect(c.versions[`${R}#/gone`]).toBeNull();
+    for (const row of c.leaves) expect(c.versions[row.title]).toBe(`v:${row.title}`);
+    expect(c.versions[`${R}#/gone`]).toBeUndefined();
   });
 });
 

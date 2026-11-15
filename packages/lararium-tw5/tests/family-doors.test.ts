@@ -85,6 +85,15 @@ describe("meme delete — the family leaves as one change", () => {
     expect(await readMeme(`${URI}/sub`, sink)).not.toBeNull();
   });
 
+  test("★ L46: the receipt's versions name the family the act touched, never every tiddler the wiki composes ★", async () => {
+    const sink = memorySink();
+    await placeMeme({ uri: URI, text: meme(URI, ["a", "b", "c"]) }, sink);
+    for (let n = 0; n < 120; n += 1) sink.store.set(`$:/boot/noise-${n}`, { title: `$:/boot/noise-${n}`, type: "text/vnd.tiddlywiki", text: "x" });
+    const r = await removeMeme({ uri: URI }, sink) as Awaited<ReturnType<typeof removeMeme>> & { consequence?: { versions: Record<string, string | null> } };
+    expect(Object.keys(r.consequence?.versions ?? {}).sort()).toEqual([URI, `${URI}#/a`, `${URI}#/b`, `${URI}#/c`]);
+    expect(JSON.stringify(r).length).toBeLessThan(4000);
+  });
+
   test("control: a sink with no family verb still removes every member, one title at a time", async () => {
     const sink = memorySink();
     delete (sink as { tombstoneFamily?: unknown }).tombstoneFamily;
