@@ -40,7 +40,7 @@ import {
   ENGINE_CORE_ID,
   resolveRecipePluginCids, offeringAnnouncesFromDoc, type OfferingLookup,
   personaMultitudeView, renameOwnPersona,
-  DeterministicFederationGate, federationShareDecision, shareConfigOf, wireIdentityOf, type FederationGate,
+  DeterministicFederationGate, federationShareDecision, shareConfigOf, wireIdentityOf, seatDialLeg, type FederationGate,
   GatedSyncLeg, oneWayDocumentsGate,
   LarWSClientAdapter,
   standSiblingChannel, siblingRefusalLine, groupSecretSealTitle, verifyGroupSecretSeal,
@@ -830,8 +830,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     // the Repo's stand-down ends the wait by name.
     hydrates: true,
   });
-  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): this boot presents the store id of the face it
-  // wears and a peer id minted for this boot alone; the floor presents its own. The face settles below, after an admit or a
+  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): this boot's Repo holds the store id of the face
+  // it wears and a peer id minted for this boot alone (the floor holds its own), and each leg that reaches a peer (the
+  // relay, the sibling channel) presents the alias of its (face, Nexus). The face settles below, after an admit or a
   // founding has had its turn, and before any adapter that reaches a peer stands: the store id waits on it, and no
   // document's bytes do. A boot that ends before it settles never reads a store id: its teardown leaves the scope unsettled,
   // so no read reaches a store the teardown already closed, and the Repo it stood presented nothing.
@@ -1370,10 +1371,13 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     console.warn(`[lararium-browser] the relay dial is idle: ${why}`);
   }
   if (relayUrl && social.contactCard && relayHeld !== null && facePresentation !== null && sovereignNexus !== null) {
-    const adapter = new LarWSClientAdapter({
+    // THE LEG'S SEAT (`seatDialLeg`, the door the node's client dial calls too): the dialed hearth reads the alias of the
+    // worn face at the Nexus this relay names, and its own store id rests here under that pair's scope. The face settled
+    // above, so the seat names it outright; every listener and wrapper below stands on the seated adapter.
+    const adapter = seatDialLeg(wire, new LarWSClientAdapter({
       url: relayUrl, pins: gatePins, hearth: hearthNameOf(relayUrl), nexus: sovereignNexus,
       presentation: facePresentation, audience: DAEMON_BAG_ID, deadlines: dialDeadlines(),
-    });
+    }), { face: social.personaGroupId ?? null, nexus: sovereignNexus });
     observeRelayConnection(connectionState, adapter);
     relayAdapter = adapter;
     held.stood.push({ what: "relay adapter", down: () => adapter.disconnect() });

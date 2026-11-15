@@ -319,3 +319,16 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
     storeId: async () => new TextDecoder().decode(await storage.load([STORE_ID])),
   };
 }
+
+/**
+ * SEAT A DIAL'S LEG: the adapter a vessel dials one hearth with, seated for the face that dial presents at the Nexus it
+ * dials, before the adapter joins the Repo. The ONE door both vessels call for a dial (the node's client dial, the
+ * browser's relay), so every dial of a vessel presents its (face, Nexus) alias and rests the hearth's store id under
+ * that pair's scope by one derivation (`WireIdentity.leg`). A vessel at the veil floor hands a null face; a wrapper that
+ * gates or shores the adapter wraps the seated adapter.
+ */
+export function seatDialLeg<T extends object>(
+  wire: Pick<WireIdentity, "leg">, adapter: T, at: WireLegAt, onRefusal?: (refusal: WireLegRefusal, peerId: string) => void,
+): T {
+  return wire.leg(adapter, at, onRefusal);
+}

@@ -98,6 +98,16 @@ const ROSTER = [
     why: "the ONE PersonaGroup identity-slot ring assembly. Both shores call it and only the grant path's proof source differs: the node reads the key its inbound gate proved, a leaf reads the gate key its outbound socket proved by a signed verdict. Both read the device key a sibling proved over the sibling session by the ring's own sibling path, which stands the sibling gate: the face's own planes and the public boards, never the @daemon, never another face's planes. Every leaf runs it: a face of an operator's PersonaGroup where a listening vessel exists, a single user device, and one device of a user-caps-only fleet where no vessel listens (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",
   },
   {
+    symbol: "wireIdentityOf",
+    pkg: "@lararium/mesh",
+    why: "the wire identity a vessel stands its Repo on: the store under the worn face's scope, a peer id minted for the composition, and the seat of every wire leg. A shore without it presents one store id under every face (lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat).",
+  },
+  {
+    symbol: "seatDialLeg",
+    pkg: "@lararium/mesh",
+    why: "the ONE seat of a dial's leg: the adapter a vessel dials a hearth with presents the alias of its (face, Nexus) and rests the hearth's store id under that pair's scope. A shore that joins its dial bare presents one store id at every Nexus its face dials (lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat).",
+  },
+  {
     symbol: "standSiblingChannel",
     pkg: "@lararium/mesh",
     why: "the ONE sibling-channel composition: a face's siblings prove their device edges to each other through a herm, under the PersonaGroup secret delivered at enrolment and the lease epoch the vessel holds, and sync over the session the proof binds. Both shores call it; only seed custody differs, riding in as the signer and the secret's opener (lar:///ha.ka.ba/lares/docs/pono/identity-slot-policy#/the-leaf-taxonomy).",

@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -3236,7 +3236,7 @@ async function prepareNodeBootOn(
           // THE RETURN ON SOCKET A — a return re-folds the boards a partition staled.
           onReconnect: async () => { await afterRoll(); },
           // THE LEG'S SEAT: the dialed hearth reads the alias of the worn face at the Nexus this dial names.
-          leg: (adapter) => wire.leg(adapter, { face: custodyGroup, nexus: dialNexus }),
+          leg: (adapter) => seatDialLeg(wire, adapter, { face: custodyGroup, nexus: dialNexus }),
           // THE ARRIVAL'S SEAT, before the adapter joins: the dialed peer's relation stands on its arrival on THIS adapter, so a
           // replacement arrival of its id elsewhere drops it (and an impostor of a live inbound id on this adapter drops that).
           beforeJoin: (adapter) => {

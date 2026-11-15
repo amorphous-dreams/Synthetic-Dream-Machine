@@ -145,7 +145,10 @@ describe("the node's wire legs seat for the (face, Nexus) each serves", () => {
     const vessel = read("open-node-vessel.ts");
     expect(vessel, "the sync gate's adapter joins the Repo unseated").toMatch(/const network\s*=\s*seatGateLeg\(wire, new ListeningWSServerAdapter\(/);
     expect(vessel, "the gate sync server settles no alias before a session opens").toMatch(/settle: gateSessionSettles\(wire, custodyGroup\)/);
-    expect(vessel, "the client dial joins the Repo unseated").toMatch(/leg: \(adapter\) => wire\.leg\(adapter, \{ face: custodyGroup, nexus: dialNexus \}/);
+    expect(vessel, "the client dial joins the Repo unseated").toMatch(/leg: \(adapter\) => seatDialLeg\(wire, adapter, \{ face: custodyGroup, nexus: dialNexus \}/);
+    // The browser's relay seats through the same door (`seatDialLeg`), so the two vessels' dials hold one derivation.
+    const page = readFileSync(fileURLToPath(new URL("../../lararium-browser/src/open-browser-vessel.ts", import.meta.url)), "utf8");
+    expect(page, "the browser's relay joins the Repo unseated").toMatch(/const adapter = seatDialLeg\(wire, new LarWSClientAdapter\(/);
     expect(read("nexus-client-dial.ts"), "the dial joins its adapter before the seat").toMatch(/addNetworkAdapter\(shoreInbound\(cfg\.leg \? cfg\.leg\(adapter\) : adapter\)\)/);
   });
 });
