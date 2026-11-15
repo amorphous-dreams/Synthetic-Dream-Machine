@@ -191,8 +191,12 @@ test("H6 no verifier, no pass: custody that reads and a proof that cannot stand 
   for (const painted of ["typed-phrase", "passphrase", "typed-phrase-unopened"] as const) {
     expect(await refusalOf(passCriticalGate(RESET_PROCEDURE, throwing, { value: RESET_PHRASE }, painted)), painted).toBe("gate-verifier-absent");
   }
-  // A worker whose script does not load.
-  const unloaded: GateEnv = ambientGateEnv(() => new Worker(new URL("/no-such-proof-worker.js", location.href), { type: "module" }), [idbName]);
+  // A worker whose script does not load. Its address names a blob this document revoked, so no server answers it: a path
+  // the dev server holds no file for comes back as the app's own index.html, whose module graph the server then loads,
+  // optimizes afresh and reloads the test page under (the next file's iframe never stands).
+  const revoked = URL.createObjectURL(new Blob(["postMessage(0)"], { type: "text/javascript" }));
+  URL.revokeObjectURL(revoked);
+  const unloaded: GateEnv = ambientGateEnv(() => new Worker(revoked, { type: "module" }), [idbName]);
   expect(await refusalOf(readGateStanding(unloaded))).toBe("gate-verifier-absent");
   expect(await stands(idbName)).toBe(true);
   indexedDB.deleteDatabase(idbName);
