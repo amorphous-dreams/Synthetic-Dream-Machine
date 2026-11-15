@@ -102,6 +102,9 @@ export interface DeviceDaemonDocs {
   /** The group whose daemon WORKING slot `documentId` holds, as the control document names it; null for every other document
    *  (a draft or personal slot, a canon, a floor slot, a slot no registry names yet). The hearth's share verdict reads it. */
   workingGroupOf(documentId: string): string | null;
+  /** The document the control document's latest read names as `group`'s daemon WORKING slot, or null: the CURRENT binding, never
+   *  a document an earlier row named. The hearth's fleet gate reads it. */
+  workingOf(group: string): string | null;
   /** The sealed bag of a device document under the lit set: the OWNER's face where the owner stands in `lit`, else a null face
    *  (held); undefined where the document files as none (or as the floor's, which the vessel's held homes answer). */
   bagOf(documentId: string, lit: LitDeviceFaces): SealedBag | undefined;
@@ -134,6 +137,9 @@ export function deviceDaemonDocs(io: {
 }): DeviceDaemonDocs {
   const owners = new Map<string, { readonly bagId: string; readonly owner: Owner }>();
   const released = new Set<string>();
+  // THE CURRENT WORKING BINDING per group (road row `L4f`): the latest control read's `daemon-slot/working/<group>` row. A slot the
+  // row moves leaves its old document filed (its sealed bag still answers) yet outside the group's working slot.
+  const working = new Map<string, string>();
   const floorWikiFiled = (documentId: string): { readonly bagId: string; readonly owner: Owner } | null => {
     const filed = owners.get(documentId);
     return filed !== undefined && !filed.bagId.startsWith(DAEMON_SLOT_PREFIX) && (filed.owner.kind === "floor" || filed.owner.kind === "unnamed") ? filed : null;
@@ -164,6 +170,7 @@ export function deviceDaemonDocs(io: {
           const [kind, group] = title.slice(slotPrefix.length).split("/");
           // No control row names the floor: its registry rests in the daemon document (`readFloor`), and no group answers that word.
           if (!kind || !group || group === "floor") continue;
+          if (kind === "working") working.set(decodeURIComponent(group), documentId);
           moved = file(documentId, wikiSlotUri("daemon", kind as never), { kind: "group", group: decodeURIComponent(group) }) || moved;
         } else if (title.startsWith(canonPrefix)) {
           const relation = decodeURIComponent(title.slice(canonPrefix.length));
@@ -204,8 +211,10 @@ export function deviceDaemonDocs(io: {
     has: (documentId) => owners.has(documentId),
     workingGroupOf(documentId) {
       const filed = owners.get(documentId);
-      return filed !== undefined && filed.bagId === DAEMON_WORKING_BAG && filed.owner.kind === "group" ? filed.owner.group : null;
+      if (filed === undefined || filed.bagId !== DAEMON_WORKING_BAG || filed.owner.kind !== "group") return null;
+      return working.get(filed.owner.group) === documentId ? filed.owner.group : null;
     },
+    workingOf: (group) => working.get(group) ?? null,
     floorWiki: (documentId) => floorWikiFiled(documentId) !== null,
     release(documentId) {
       const filed = floorWikiFiled(documentId);
