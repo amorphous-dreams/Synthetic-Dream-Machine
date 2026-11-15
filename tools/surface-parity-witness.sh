@@ -12,10 +12,8 @@
 # verb would put N unsynchronised holders on one operator's keys. The operator's hand keeps those.
 #
 # ── WHY THIS WITNESS EXISTS AT ALL ──────────────────────────────────────────────────────────────
-# Both descriptions of the MCP surface had drifted, each in the same direction: `mcp-resolve.ts` named
-# nine verbs and `mcp-tool-registry.mem` named ten, while the live surface carried THIRTY. A hand-written
-# list cannot notice what it missed, and both lists read as authoritative to anyone who found them. So the
-# count is DERIVED here and nowhere transcribed.
+# A hand-written list of the MCP surface cannot notice what it missed, and it reads as authoritative to
+# anyone who finds it. So the count is DERIVED here and nowhere transcribed.
 #
 # Exit 0 = every MCP tool has a CLI door.
 set -uo pipefail
