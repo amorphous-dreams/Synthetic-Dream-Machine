@@ -93,7 +93,6 @@ const KIND_TAG: Readonly<Record<ProcKind, string>> = {
   "chroma":        "CHROMA ",
   "node-vessel":   "VESSEL ",
   "capture-holder":"CAP-HOLD",
-  "ingest-hook":   "HOOK   ",
   "capture-job":   "CAPTURE",
   "subagents-job": "SPIRITS",
   "telemetry-job": "TELEM  ",
@@ -179,7 +178,7 @@ function cmdStatus(args: ParsedArgs): number {
 
 /**
  * A proc the drain TERMs: the store-HOLDERS *and* the daemon-MINTING spawner jobs
- * (`lares capture/subagents/telemetry` legs + the ingest hook). Holders alone left
+ * (the `lares capture/subagents/telemetry` legs). Holders alone left
  * a wedged spawner surviving every drain, dead-ending the teardown into --force.
  * The spawner jobs run watermark-idempotent by design, so a TERM stays re-runnable.
  * (The node vessel — holdsStore:false, mintsDaemons:false — stays untouched.)

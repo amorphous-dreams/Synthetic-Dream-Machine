@@ -5,13 +5,13 @@ import {
 } from "../src/palace-procs.js";
 
 // A fixture `ps -eo pid=,ppid=,etime=,args=` dump modeling the whack-a-mole:
-// a Claude session (pid 100) fires the ingest hook (200), which spawns a `lares
+// a Claude session (pid 100) runs a capture script (200), which spawns a `lares
 // capture` leg (300) + a `lares subagents` leg (310); the capture mine hands off to
 // a warm write-daemon (400, reparented to init after the client exits), and a recall
 // MCP holder (500) + a chroma backend (510) + the node vessel (600) run alongside.
 const PS_FIXTURE = `
   100     1    02:14:03 claude
-  200   100       00:03 bash /home/joshu/Synthetic-Dream-Machine/packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh
+  200   100       00:03 bash /home/joshu/scripts/file-this-session.sh
   300   200       00:02 node /home/joshu/.local/bin/lares.mjs capture /tmp/stage.x --wing wing_synthetic_dream_machine
   310   200       00:02 node /home/joshu/.local/bin/lares.mjs subagents /home/joshu/.claude/sess.jsonl --wing wing_synthetic_dream_machine
   400     1       00:41 /home/joshu/.venv/bin/python3 -m mempalace.daemon serve --palace /home/joshu/.mempalace/palace
@@ -57,10 +57,7 @@ describe("classifyKind", () => {
   it("catches a one-shot mine", () => {
     expect(classifyKind("mempalace --palace /p mine --source ndjson /tmp/b")).toBe("one-shot-mine");
   });
-  it("catches the ingest hook wrapper by script name", () => {
-    expect(classifyKind("bash /x/lares-mempalace-ingest-hook.sh")).toBe("ingest-hook");
-  });
-  it("catches the lares hook legs", () => {
+  it("catches the lares capture legs", () => {
     expect(classifyKind("node lares.mjs capture /s --wing w")).toBe("capture-job");
     expect(classifyKind("node lares.mjs subagents /s --wing w")).toBe("subagents-job");
     expect(classifyKind("node lares.mjs telemetry --wing w")).toBe("telemetry-job");
@@ -68,6 +65,7 @@ describe("classifyKind", () => {
   it("returns null for unrelated processes", () => {
     expect(classifyKind("grep -r foo")).toBeNull();
     expect(classifyKind("claude")).toBeNull();
+    expect(classifyKind("bash /home/joshu/scripts/file-this-session.sh")).toBeNull();
   });
 });
 
@@ -75,19 +73,19 @@ describe("classifyPalaceProcs", () => {
   const table = parseProcTable(PS_FIXTURE);
   const procs = classifyPalaceProcs(table, { vesselPids: [600], vesselPort: 8080 });
 
-  it("finds every palace proc + the vessel, and NO noise (pids 100/700 dropped)", () => {
+  it("finds every palace proc + the vessel, and NO noise (pids 100/200/700 dropped)", () => {
     const pids = procs.map((p) => p.pid).sort((a, b) => a - b);
-    expect(pids).toEqual([200, 300, 310, 400, 500, 510, 600]);
+    expect(pids).toEqual([300, 310, 400, 500, 510, 600]);
     const kinds = procs.map((p) => p.kind).sort();
     expect(kinds).toEqual(
-      ["capture-job", "chroma", "ingest-hook", "node-vessel", "read-holder", "subagents-job", "write-daemon"],
+      ["capture-job", "chroma", "node-vessel", "read-holder", "subagents-job", "write-daemon"],
     );
   });
 
   it("resolves each proc's SPAWNER from the same table", () => {
     const capture = procs.find((p) => p.pid === 300)!;
     expect(capture.ppid).toBe(200);
-    expect(capture.spawnerCmd).toContain("lares-mempalace-ingest-hook.sh");
+    expect(capture.spawnerCmd).toContain("file-this-session.sh");
     // A daemon reparented to init reads as orphaned.
     const daemon = procs.find((p) => p.pid === 400)!;
     expect(daemon.spawnerCmd).toBe("init (orphaned)");
@@ -103,9 +101,9 @@ describe("classifyPalaceProcs", () => {
     const daemon = procs.find((p) => p.pid === 400)!;
     expect(daemon.holdsStore).toBe(true);
     expect(daemon.mintsDaemons).toBe(false);
-    const hook = procs.find((p) => p.pid === 200)!;
-    expect(hook.mintsDaemons).toBe(true);
-    expect(hook.holdsStore).toBe(false);
+    const leg = procs.find((p) => p.pid === 300)!;
+    expect(leg.mintsDaemons).toBe(true);
+    expect(leg.holdsStore).toBe(false);
   });
 
   it("drops our own ps-launching pid via selfPid", () => {
@@ -122,7 +120,7 @@ describe("classifyPalaceProcs", () => {
 
 describe("KIND_META coverage", () => {
   it("every ProcKind classifyKind can emit has metadata", () => {
-    for (const k of ["write-daemon", "read-holder", "one-shot-mine", "chroma", "node-vessel", "ingest-hook", "capture-job", "subagents-job", "telemetry-job"] as const) {
+    for (const k of ["write-daemon", "read-holder", "one-shot-mine", "chroma", "node-vessel", "capture-job", "subagents-job", "telemetry-job"] as const) {
       expect(KIND_META[k]).toBeDefined();
     }
   });
@@ -151,7 +149,7 @@ describe("procInPalaceScope — one island per door", () => {
     pid: 2, ppid: 1, kind: "capture-holder", serves: `${MEMORY}/content`, uptimeSec: 1, spawnerCmd: "x",
     holdsStore: true, mintsDaemons: false, cmd: "capture_session.py --serve",
   };
-  const spawner: PalaceProc = { // an ingest-hook leg — mints the sovereign capture, keyed by WING not path
+  const spawner: PalaceProc = { // a capture leg — mints the sovereign capture, keyed by WING not path
     pid: 3, ppid: 1, kind: "capture-job", serves: "wing_x", uptimeSec: 1, spawnerCmd: "x",
     holdsStore: false, mintsDaemons: true, cmd: "lares capture --wing wing_x",
   };

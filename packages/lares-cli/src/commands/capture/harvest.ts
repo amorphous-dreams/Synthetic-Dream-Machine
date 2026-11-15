@@ -206,7 +206,7 @@ export function repaveVerdict(counts: {
 /**
  * The wing a re-pave fills, from the ONE law.
  *
- * `wingFromDir` is that law, and the hook already reaches it through `lares wing-of`. A second
+ * `wingFromDir` is that law, and a script reaches it through `lares wing-of`. A second
  * derivation sends a bulk pass to a wing the per-transcript pass never writes, so a recall over
  * either name reads half a corpus while both verbs report success.
  */
@@ -401,7 +401,7 @@ export async function cmdPour(args: ParsedArgs): Promise<number> {
  *  Idempotent — a re-run catches up, a fresh sensorium fills fully. */
 export async function cmdSweep(args: ParsedArgs): Promise<number> {
   const surface = typeof args.options["surface"] === "string" ? (args.options["surface"] as string) : "all";
-  // ONE WING LAW. `wingFromDir` decides it everywhere — the hook reaches it through `lares wing-of`,
+  // ONE WING LAW. `wingFromDir` decides it everywhere — a script reaches it through `lares wing-of`,
   // the bearing leg calls it directly. A second derivation here sent this leg to a name the
   // per-transcript leg never wrote, so an unflagged fill split one corpus across two wings.
   const wing = repaveWing(args);

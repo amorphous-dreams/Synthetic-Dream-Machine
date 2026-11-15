@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { execFileSync } from "node:child_process";
 import {
-  chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
+  chmodSync, existsSync, lstatSync, statSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, symlinkSync, writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
@@ -253,7 +253,7 @@ describe("the home radius", () => {
 
   // ── THE HOUSE OWNS ITS HOOKS FOLDER: a hook file names no script there that no row declares for it ──────────────
   const HOOKS = "packages/lares-cli/.claude-plugin/hooks";
-  const INGEST = "lares-mempalace-ingest-hook.sh";
+  const STRAY = "lares-stray-hook.sh";
   /**
    * A scratch home whose three hook files name scripts under the house's hooks folder that no row declares, each beside
    * another hand's command; `lares-unlisted-hook.sh` stands in for any script at all, one no carrier names.
@@ -263,17 +263,17 @@ describe("the home radius", () => {
     writeFileSync(join(native, ".claude/settings.json"), `${JSON.stringify({
       model: "m",
       hooks: {
-        Stop: [{ hooks: [{ type: "command", command: `bash "${under(INGEST)}"`, timeout: 30 }, { type: "command", command: "my-own-stop" }] }],
-        SessionEnd: [{ hooks: [{ type: "command", command: `bash "${under(INGEST)}"`, timeout: 60 }] }],
+        Stop: [{ hooks: [{ type: "command", command: `bash "${under(STRAY)}"`, timeout: 30 }, { type: "command", command: "my-own-stop" }] }],
+        SessionEnd: [{ hooks: [{ type: "command", command: `bash "${under(STRAY)}"`, timeout: 60 }] }],
         SessionStart: [{ hooks: [{ type: "command", command: `bash /old/clone/${HOOKS}/lares-wake-hook.sh` }] }],
         Notification: [{ matcher: "idle", hooks: [{ type: "command", command: "node", args: [under("lares-unlisted-hook.sh")] }, { type: "command", command: "bash /opt/mine/hooks/lares-notes.sh" }] }],
       },
     }, null, 2)}\n`);
     writeFileSync(join(native, ".codex/config.toml"),
-      `model = "m"\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = ${JSON.stringify(under(INGEST))}\ntimeout = 60\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "my-own-stop"\n`);
+      `model = "m"\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = ${JSON.stringify(under(STRAY))}\ntimeout = 60\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "my-own-stop"\n`);
     mkdirSync(join(native, ".copilot/hooks"), { recursive: true });
     writeFileSync(join(native, ".copilot/hooks/lares.json"),
-      `${JSON.stringify({ version: 1, hooks: { sessionEnd: [{ type: "command", bash: under(INGEST), timeoutSec: 60 }, { type: "command", bash: "my-own-end" }] } }, null, 2)}\n`);
+      `${JSON.stringify({ version: 1, hooks: { sessionEnd: [{ type: "command", bash: under(STRAY), timeoutSec: 60 }, { type: "command", bash: "my-own-end" }] } }, null, 2)}\n`);
   }
   const OWNED = ["claude.hooks-owned", "codex.hooks-owned", "copilot.hooks-owned"];
 
@@ -284,10 +284,10 @@ describe("the home radius", () => {
     const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
     const owned = OWNED.map((id) => rows.find((r) => r.id === id)!);
     expect(owned.map((r) => r?.state)).toEqual(["drift", "drift", "drift"]);
-    expect(owned[0]!.lifts).toEqual([INGEST, "lares-unlisted-hook.sh", "lares-wake-hook.sh"]);
-    expect(owned[0]!.detail).toBe(`names house hook script(s) no row declares (${INGEST}, lares-unlisted-hook.sh, lares-wake-hook.sh); tend lifts each`);
-    expect(owned[1]!.lifts).toEqual([INGEST]);
-    expect(owned[2]!.lifts).toEqual([INGEST]);
+    expect(owned[0]!.lifts).toEqual([STRAY, "lares-unlisted-hook.sh", "lares-wake-hook.sh"]);
+    expect(owned[0]!.detail).toBe(`names house hook script(s) no row declares (${STRAY}, lares-unlisted-hook.sh, lares-wake-hook.sh); tend lifts each`);
+    expect(owned[1]!.lifts).toEqual([STRAY]);
+    expect(owned[2]!.lifts).toEqual([STRAY]);
     expect(briefLine(rows)).toMatch(/; 3 item\(s\) name a house hook script no row declares: claude\.hooks-owned, codex\.hooks-owned, copilot\.hooks-owned \(lares home tend lifts each\)$/);
   });
 
@@ -300,7 +300,7 @@ describe("the home radius", () => {
     const before = read(items(), l);
     const r = await tend(items(), l);
     const settings = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8"));
-    for (const gone of [INGEST, "lares-wake-hook.sh", "lares-unlisted-hook.sh"]) expect(JSON.stringify(settings), gone).not.toContain(gone);
+    for (const gone of [STRAY, "lares-wake-hook.sh", "lares-unlisted-hook.sh"]) expect(JSON.stringify(settings), gone).not.toContain(gone);
     expect(settings.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: "my-own-stop" }] }]);
     expect(settings.hooks.SessionEnd).toBeUndefined();
     // CONTROL: a command of another hand that names no script under the house's folder never moves, its matcher with it.
@@ -309,14 +309,14 @@ describe("the home radius", () => {
     // The rows' own hooks stand: the wake at SessionStart, where the undeclared one stood.
     expect(JSON.stringify(settings.hooks.SessionStart)).toContain(`${root}/${HOOKS}/lares-wake-hook.mjs`);
     const toml = readFileSync(join(h.native, ".codex/config.toml"), "utf8");
-    expect(toml).not.toContain(INGEST);
+    expect(toml).not.toContain(STRAY);
     expect(toml).toContain('command = "my-own-stop"');
     const copilot = JSON.parse(readFileSync(join(h.native, ".copilot/hooks/lares.json"), "utf8"));
     expect(copilot.hooks.sessionEnd).toEqual([{ type: "command", bash: "my-own-end" }]);
     expect(liftedLines(before, r.rows)).toEqual([
-      `  lifted ${INGEST}, lares-unlisted-hook.sh, lares-wake-hook.sh from ${join(h.native, ".claude/settings.json")} (claude.hooks-owned)`,
-      `  lifted ${INGEST} from ${join(h.native, ".codex/config.toml")} (codex.hooks-owned)`,
-      `  lifted ${INGEST} from ${join(h.native, ".copilot/hooks/lares.json")} (copilot.hooks-owned)`,
+      `  lifted ${STRAY}, lares-unlisted-hook.sh, lares-wake-hook.sh from ${join(h.native, ".claude/settings.json")} (claude.hooks-owned)`,
+      `  lifted ${STRAY} from ${join(h.native, ".codex/config.toml")} (codex.hooks-owned)`,
+      `  lifted ${STRAY} from ${join(h.native, ".copilot/hooks/lares.json")} (copilot.hooks-owned)`,
     ]);
     const after = read(items(), l);
     expect(OWNED.map((id) => after.find((x) => x.id === id)!.state)).toEqual(["aligned", "aligned", "aligned"]);
@@ -340,7 +340,7 @@ describe("the home radius", () => {
   it("Codex: a block that shares an undeclared house hook with another command reads foreign, never stripped", () => {
     const root = clone();
     const h = homes();
-    const mixed = `[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "${root}/${HOOKS}/${INGEST}"\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "mine.sh"\n`;
+    const mixed = `[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "${root}/${HOOKS}/${STRAY}"\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "mine.sh"\n`;
     writeFileSync(join(h.native, ".codex/config.toml"), mixed);
     const row = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger()).find((r) => r.id === "codex.hooks-owned")!;
     expect(row.state).toBe("foreign");
@@ -354,6 +354,14 @@ describe("the home radius", () => {
     expect(d.hooks).toBe(HOOKS);
     expect(d.home.filter((s) => typeof s["script"] === "string" && !String(s["script"]).startsWith(`${d.hooks}/`)).map((s) => s.id)).toEqual([]);
     expect(d.home.filter((s) => /-hooks-owned$/.test(s.kind)).map((s) => s.id)).toEqual(OWNED);
+  });
+
+  it("every script in the house's hooks folder stands declared by a home row, or loaded by one a row declares", () => {
+    const d = declared(REPO);
+    const held = d.home.filter((s) => typeof s["script"] === "string").map((s) => String(s["script"]).split("/").at(-1)!);
+    const loaded = (name: string): boolean => held.some((h) => readFileSync(join(REPO, d.hooks, h), "utf8").includes(name));
+    const scripts = readdirSync(join(REPO, d.hooks)).filter((f) => f !== "hooks.json");
+    expect(scripts.filter((f) => !held.includes(f) && !loaded(f))).toEqual([]);
   });
 
   it("a host whose home stands absent reads absent; a seat whose MCP pieces stand absent reads unreachable", () => {

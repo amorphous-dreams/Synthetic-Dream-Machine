@@ -3,7 +3,7 @@
  *
  * Witness-spirits, harness-staged sandbox runs, and scratch sessions pollute the rhizome when the
  * palace ingests them as memory. This module reads ONE verdict per session transcript, honored
- * at the three ingest gates (the hook · `lares sense capture` · `lares sense subagents`),
+ * at the two ingest gates (`lares sense capture` · `lares sense subagents`),
  * in two grains:
  *
  *   (a) DERIVED — the session's own recorded cwd (its first-line `cwd`, the same row the wing
@@ -18,13 +18,10 @@
  *
  * The verdict reads off the transcript's CONTENT (grain a + the cwd half of b), so it survives
  * staging/hardlink copies; the sibling-marker half of (b) reads beside the ORIGINAL transcript
- * only (a staged copy carries no sibling — the hook gate, which sees the original, honors it).
+ * only (a staged copy carries no sibling).
  *
  * EPHEMERAL ≠ DELETED: the transcript survives on disk untouched; only the palace ingest
  * declines. Every gate MUST log one loud line per skipped session — silence never hides a skip.
- *
- * The bash twin of grain (a)+(b) lives in `.claude-plugin/hooks/lares-mempalace-ingest-hook.sh`
- * (gate 1 — skip staging entirely); keep the two in lockstep.
  */
 
 import { existsSync, readFileSync } from "node:fs";

@@ -158,7 +158,7 @@ function humanBytes(n: number): string {
 /**
  * Live palace processes that BLOCK a clean teardown — not just the store-HOLDERS
  * (write-daemon / recall MCP / one-shot mine / chroma) but the SPAWNERS too (the
- * ingest hook + its `lares sense capture/subagents/telemetry` legs): a live spawner
+ * `lares sense capture/subagents/telemetry` legs): a live spawner
  * re-mints a warm daemon mid-tear and the removed dir refills → ENOTEMPTY. So the
  * refusal broadened from "holders only" to "holders OR spawners", each carrying its
  * OWN spawner so the message can teach kill-the-parent. Best-effort + advisory: a
