@@ -12,7 +12,7 @@ import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   SwarmRefused, faceRecordsOf, promotePlaneUrl, swarmBoardRecords, swarmCommand, writeSwarmBoardAct,
-  type LarDoc, type SwarmGoRite, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
+  type LarDoc, type SwarmGoReach, type SwarmGoRite, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 
@@ -53,7 +53,12 @@ export async function runSwarmVerb(opts: {
     : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     // `rite` names the go's one power (push or restart); the door refuses a go that names none. `after` names the go this one
     // follows on its rite's line at the branch (`show` reads it), null for the first there; an absent one refuses.
-    : { action: "go-issue", rite: opts.args["rite"] as SwarmGoRite, branch: str("branch"), head: str("head"), after: opts.args["after"] as string | null };
+    // The reach: absent reads wide (the go names its `returns` and no head); `reach: "head"` pins the `head` it names. The door
+    // refuses a go that mixes the two, so a head handed in beside the wide default never passes as a pin.
+    : { action: "go-issue", rite: opts.args["rite"] as SwarmGoRite, branch: str("branch"), after: opts.args["after"] as string | null,
+        ...(opts.args["reach"] !== undefined ? { reach: opts.args["reach"] as SwarmGoReach } : {}),
+        ...(opts.args["returns"] !== undefined ? { returns: opts.args["returns"] as number } : {}),
+        ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}) };
   return await swarmCommand(request, {
     group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: opts.wiki,
     // The vessel and lead trust join at the slices that sign roster, receipt and lane state; at S1 the hand alone signs.

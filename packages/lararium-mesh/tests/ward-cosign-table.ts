@@ -122,7 +122,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
     who: { kind: "hand" as const, id: root.key }, cosign: () => doorPort };
   if (kind === "lower") await board.kapae({ action: "raise", wiki: "daemon", digest: D, who: hand });
   /** A go names the go it follows at its branch (`after`): null for the branch's first. */
-  const issue = (after: string | null): Promise<unknown> => swarmCommand({ action: "go-issue", rite: "push", branch: BRANCH, head: HEAD, after }, swarmDeps);
+  const issue = (after: string | null): Promise<unknown> => swarmCommand({ action: "go-issue", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after }, swarmDeps);
   const run = (): Promise<unknown> => kind === "lower" ? board.kapae({ action: "lower", wiki: "daemon", digest: D, who: hand })
     : kind === "cap" ? swarmCommand({ action: "cap-set", value: 7 }, swarmDeps)
     : issue(null);
@@ -140,7 +140,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
     else if (kind === "cap") writeSwarmBoardAct(swarmDoc, await signSwarmCap({ group: GROUP, epoch: 0, value: 7, parents: [] }, root));
     else {
       // a go rests at its own row under the branch's family title: the forge lands it there, and at the family title itself
-      const go = await signSwarmAct({ act: "go", group: GROUP, rite: "push", branch: BRANCH, head: HEAD, after: null }, root);
+      const go = await signSwarmAct({ act: "go", group: GROUP, rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null }, root);
       await putSwarmAct(wiki, `${swarmGoTitle("push", BRANCH)}/${swarmActCid(go)}`, go);
       await putSwarmAct(wiki, swarmGoTitle("push", BRANCH), go);
     }
@@ -151,7 +151,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
   const act = (): WardCosignAct => kind === "lower"
     ? { verb: "ward-kapae-lower", wiki: "daemon", head: kapaeLowerHead(D, readPromoteBoard(acts, readFace).kapaeHeads("daemon", D)) }
     : kind === "cap" ? { verb: "ward-house-cap", wiki: "daemon", head: sha256HexBytesSync(canonicalJsonBytes({ value: 7, parents: [], supersede: false })) }
-    : { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead({ rite: "push", branch: BRANCH, head: HEAD, after: null }) };
+    : { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead({ rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null }) };
   /** One device's answer to an ask, as it signs it; hands back the answer's cid. An approve carries the ward signature of `ward`
    *  (the answering device's own ward key, unless named; null signs with the atom alone) over the frontier it read (the head, unless
    *  named); a deny carries no ward. */

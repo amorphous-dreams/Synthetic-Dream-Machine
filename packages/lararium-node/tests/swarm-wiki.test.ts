@@ -28,11 +28,11 @@ test("RED: a written record reads back and carries no residency field; CONTROL: 
 
 test("RED: racing writeNew claims land exactly one and the winner's text stands; CONTROL: a claim at another title lands", async () => {
   const { wiki } = stand();
-  const title = swarmGoSpentTitle("c".repeat(64));
+  const title = swarmGoSpentTitle("c".repeat(64), 1);
   const landed = await Promise.all([1, 2, 3, 4].map((n) => wiki.writeNew(title, `spender-${n}`)));
   expect(landed.filter(Boolean)).toHaveLength(1);
   expect(await wiki.read(title)).toBe(`spender-${landed.indexOf(true) + 1}`);
-  expect(await wiki.writeNew(swarmGoSpentTitle("d".repeat(64)), "other")).toBe(true);
+  expect(await wiki.writeNew(swarmGoSpentTitle("d".repeat(64), 1), "other")).toBe(true);
 });
 
 test("RED: a prototype-keyed title reads as absent, never an inherited member; CONTROL: writing a title that is not one reads it back", async () => {

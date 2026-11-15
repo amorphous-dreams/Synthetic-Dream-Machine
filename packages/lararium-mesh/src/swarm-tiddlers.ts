@@ -15,6 +15,12 @@
  *                              rite's go never reads, co-signs or spends as the other's
  *   lane/<lane>/state          a lead's lane state, signed under the lead's own seat name
  *   roster/<seat>              a seat's spend reading, signed by the VESSEL as witness, never by the measured lead
+ *                              A go's REACH: a `wide` go (the default) names no head and carries `returns`, the count of spends
+ *                              the hand wrote into it; a `head` go pins one head and spends once. Every spend names the head's
+ *                              tree and needs a passing receipt standing for it (`swarm-go-evidence-absent`).
+ *   go-spent/<go cid>/<n>      one spend of a go, the vessel's witness: `n` counts from 1 to the go's returns, each row claimed
+ *                              atomically; any row under `go-spent/<go cid>/` counts against the go, signed or not
+ *   go-narrowed/<go cid>       a wide go met a red receipt: the vessel's witness; any row here ends the go's wide reach
  *   receipt/<tree>             a check seat's verdict over a tree, signed by the VESSEL
  *   house-cap · lane/<lane>/share
  *                              ride the face-private board (`swarm-board.ts`) so a fleet folds one cap; their titles belong to this family
@@ -102,21 +108,37 @@ function riteSegment(rite: unknown): SwarmGoRite {
 /** The family title one rite's gos at a branch rest under; each go rests at its own row beneath it (`swarmGoRowTitle`). */
 export const swarmGoTitle = (rite: SwarmGoRite, branch: string): string => `${SWARM_URI_PREFIX}go/${riteSegment(rite)}/${branchSegment(branch)}`;
 export const swarmGoRowTitle = (rite: SwarmGoRite, branch: string, goCid: string): string => `${swarmGoTitle(rite, branch)}/${segment(goCid)}`;
-export const swarmGoSpentTitle = (goCid: string): string => `${SWARM_URI_PREFIX}go-spent/${segment(goCid)}`;
+/** The prefix every spend of one go rests under; a row here counts against the go whatever it holds. */
+export const swarmGoSpentPrefix = (goCid: string): string => `${SWARM_URI_PREFIX}go-spent/${segment(goCid)}/`;
+/** The `n`th spend of a go, counted from 1. */
+export const swarmGoSpentTitle = (goCid: string, n: number): string => {
+  if (!positive(n)) malformed("a spend counts from 1");
+  return `${swarmGoSpentPrefix(goCid)}${n}`;
+};
+export const swarmGoNarrowedTitle = (goCid: string): string => `${SWARM_URI_PREFIX}go-narrowed/${segment(goCid)}`;
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
 
 /** The fields a swarm record rests under: its text. The record rests in the control document, which no mirror names. */
 export const swarmRecordFields = (text: string): Record<string, string> => ({ text });
 
+/**
+ * A go's reach, and what each reach binds. `wide` (the default): the go names no head; it names its evidence instead, and
+ * `returns` holds the count of spends the hand wrote into it. `head`: the go pins one head and spends once.
+ */
+export type SwarmGoReach = "wide" | "head";
+export type SwarmGoTerms = { readonly reach: "wide"; readonly returns: number } | { readonly reach: "head"; readonly head: string };
 /** `rite` names the one power the go carries. `after` names the go this one follows at its rite's title for the branch (its
  *  cid), or null for the first there: one issue, one go. */
-export interface SwarmGoBody { readonly act: "go"; readonly group: string; readonly rite: SwarmGoRite; readonly branch: string; readonly head: string; readonly after: string | null }
-export interface SwarmGoSpentBody { readonly act: "go-spent"; readonly group: string; readonly branch: string; readonly head: string; readonly go: string }
+export type SwarmGoBody = { readonly act: "go"; readonly group: string; readonly rite: SwarmGoRite; readonly branch: string; readonly after: string | null } & SwarmGoTerms;
+/** One spend: the go, its count `n`, and the head and tree the vessel spent it at (the vessel testifies that the tree belongs to the head). */
+export interface SwarmGoSpentBody { readonly act: "go-spent"; readonly group: string; readonly branch: string; readonly head: string; readonly tree: string; readonly go: string; readonly n: number }
+/** A wide go that met a red receipt: the go, and the head and tree whose receipt read `fail`. */
+export interface SwarmGoNarrowedBody { readonly act: "go-narrowed"; readonly group: string; readonly go: string; readonly head: string; readonly tree: string }
 export interface SwarmLaneStateBody { readonly act: "lane-state"; readonly group: string; readonly lane: string; readonly seat: string; readonly state: Readonly<Record<string, string | number | boolean | null>> }
 export interface SwarmRosterBody { readonly act: "roster"; readonly group: string; readonly seat: string; readonly model: string; readonly mode: string; readonly reading: number; readonly ceiling: number; readonly outcome: string }
 export interface SwarmReceiptBody { readonly act: "receipt"; readonly group: string; readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }
-export type SwarmBodyParts = SwarmGoBody | SwarmGoSpentBody | SwarmLaneStateBody | SwarmRosterBody | SwarmReceiptBody;
+export type SwarmBodyParts = SwarmGoBody | SwarmGoSpentBody | SwarmGoNarrowedBody | SwarmLaneStateBody | SwarmRosterBody | SwarmReceiptBody;
 export type SwarmBody = SwarmBodyParts & { readonly kind: typeof SWARM_ACT_DOMAIN };
 export interface SignedSwarmAct { readonly body: SwarmBody; readonly signer: string; readonly sig: string }
 export type SwarmReadRefusal = "absent" | "shape" | "domain" | "group" | "signature" | "title" | "role";
@@ -124,13 +146,17 @@ export type SwarmReadRefusal = "absent" | "shape" | "domain" | "group" | "signat
 const object = (x: unknown): x is Record<string, unknown> => typeof x === "object" && x !== null && !Array.isArray(x);
 const str = (x: unknown): x is string => typeof x === "string" && x.length > 0;
 const count = (x: unknown): x is number => typeof x === "number" && Number.isSafeInteger(x) && x >= 0;
+function positive(x: unknown): x is number { return typeof x === "number" && Number.isSafeInteger(x) && x >= 1; }
 const hex = (x: unknown, n: number): boolean => typeof x === "string" && new RegExp(`^[0-9a-f]{${n}}$`).test(x);
 
 function shape(b: Record<string, unknown>): boolean {
   if (!str(b["group"])) return false;
   switch (b["act"]) {
-    case "go": return isSwarmGoRite(b["rite"]) && str(b["branch"]) && str(b["head"]) && (b["after"] === null || hex(b["after"], 64));
-    case "go-spent": return str(b["branch"]) && str(b["head"]) && hex(b["go"], 64);
+    // A go holds one reach whole: a wide go carries its returns and no head, a head go its head and no returns.
+    case "go": return isSwarmGoRite(b["rite"]) && str(b["branch"]) && (b["after"] === null || hex(b["after"], 64))
+      && (b["reach"] === "wide" ? positive(b["returns"]) && !("head" in b) : b["reach"] === "head" ? str(b["head"]) && !("returns" in b) : false);
+    case "go-spent": return str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["go"], 64) && positive(b["n"]);
+    case "go-narrowed": return hex(b["go"], 64) && str(b["head"]) && str(b["tree"]);
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
     case "receipt": return str(b["tree"]) && Array.isArray(b["checks"]) && b["checks"].every(str) && (b["verdict"] === "pass" || b["verdict"] === "fail") && hex(b["definitions"], 64);
@@ -143,7 +169,8 @@ function titleOf(b: SwarmBody): string | null {
   try {
     switch (b.act) {
       case "go": return swarmGoTitle(b.rite, b.branch);
-      case "go-spent": return swarmGoSpentTitle(b.go);
+      case "go-spent": return swarmGoSpentTitle(b.go, b.n);
+      case "go-narrowed": return swarmGoNarrowedTitle(b.go);
       case "lane-state": return swarmLaneStateTitle(b.lane);
       case "roster": return swarmRosterTitle(b.seat);
       case "receipt": return swarmReceiptTitle(b.tree);
@@ -163,7 +190,7 @@ const allowed = (b: SwarmBody, key: string, trust: SwarmTrust): boolean => {
   switch (b.act) {
     case "go": return trust.hand(key);
     case "lane-state": return trust.lead(b.seat, b.lane, key);
-    case "go-spent": case "roster": case "receipt": return trust.vessel(key);
+    case "go-spent": case "go-narrowed": case "roster": case "receipt": return trust.vessel(key);
   }
 };
 
@@ -188,9 +215,12 @@ export function verifySwarmRecord(text: string | null, title: string, trust: Swa
 export async function putSwarmAct(wiki: SwarmWikiPort, title: string, act: SignedSwarmAct): Promise<void> { await wiki.write(title, JSON.stringify(act)); }
 export async function readSwarmRecord(wiki: SwarmWikiPort, title: string, trust: SwarmTrust, group: string) { return verifySwarmRecord(await wiki.read(title), title, trust, group); }
 
-/** The head a go's co-sign names: its rite, its branch, its head and the go it follows. */
-export const swarmGoHead = (go: { readonly rite: SwarmGoRite; readonly branch: string; readonly head: string; readonly after: string | null }): string =>
-  sha256HexBytesSync(canonicalJsonBytes({ rite: go.rite, branch: go.branch, head: go.head, after: go.after }));
+/** The head a go's co-sign names: its rite, its branch, its reach with what that reach binds (a wide go's returns, a head go's
+ *  head) and the go it follows. A second device answers the reach it read, so a wide go never rides a head go's answer. */
+export const swarmGoHead = (go: { readonly rite: SwarmGoRite; readonly branch: string; readonly after: string | null } & SwarmGoTerms): string =>
+  sha256HexBytesSync(canonicalJsonBytes(go.reach === "wide"
+    ? { rite: go.rite, branch: go.branch, reach: go.reach, returns: go.returns, after: go.after }
+    : { rite: go.rite, branch: go.branch, reach: go.reach, head: go.head, after: go.after }));
 
 /** Which gos a reader asks for: one rite's, at one branch. */
 export interface SwarmGoLine { readonly rite: SwarmGoRite; readonly branch: string }
@@ -234,31 +264,73 @@ export async function readGoChain(wiki: SwarmWikiPort, line: SwarmGoLine, trust:
 
 /**
  * The go of one rite standing for one branch at one head: the one go that ends that rite's longest co-signed `after` chain at the
- * branch (`readGoChain`), naming that head, with no spend of it resting. Two tips read as a fork (`forked`) and neither stands
- * until a fresh go names one.
+ * branch (`readGoChain`). A HEAD go stands for the head it names alone (`head-mismatch`) and for one spend (`spent`). A WIDE go
+ * stands for any head while returns stay (`returns-spent` once the rows under its spend prefix reach its count) and until a
+ * narrowing rests for it (`narrowed`). A newer go on the chain replaces the tip, so a fresh go restrings a spent or narrowed
+ * line. Two tips read as a fork (`forked`) and neither stands until a fresh go names one. Evidence belongs to the spend
+ * (`spendGo`): this read names the go, never the receipt.
  * On a face of two devices a go the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
 export async function readGo(wiki: SwarmWikiPort, at: SwarmGoLine & { readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
-  Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "spent" | "forked" }> {
+  Promise<{ ok: true; act: SignedSwarmAct; cid: string; reach: SwarmGoReach; returnsLeft: number } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "spent" | "returns-spent" | "narrowed" | "forked" }> {
   const chain = await readGoChain(wiki, at, trust, group, ward);
   if (chain.tips.length > 1) return { ok: false, refusal: "forked" };
   const tip = chain.tips[0];
   if (!tip) return { ok: false, refusal: chain.refusal ?? "absent" };
-  if (tip.body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
-  // Any row at the spend title blocks the go, signed or not: a forged spend fails closed.
-  if ((await wiki.read(swarmGoSpentTitle(tip.cid))) !== null) return { ok: false, refusal: "spent" };
-  return { ok: true, act: tip.act, cid: tip.cid };
+  const body = tip.body;
+  if (body.reach === "head" && body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
+  // Any row at the narrowing title narrows the go, signed or not: a forged narrowing fails closed.
+  if (body.reach === "wide" && (await wiki.read(swarmGoNarrowedTitle(tip.cid))) !== null) return { ok: false, refusal: "narrowed" };
+  // Every row under the spend prefix counts, signed or not: a forged spend fails closed.
+  const returns = body.reach === "wide" ? body.returns : 1;
+  const taken = (await wiki.list(swarmGoSpentPrefix(tip.cid))).length;
+  if (taken >= returns) return { ok: false, refusal: body.reach === "wide" ? "returns-spent" : "spent" };
+  return { ok: true, act: tip.act, cid: tip.cid, reach: body.reach, returnsLeft: returns - taken };
 }
 
-/** Spend a go of the named rite: the vessel writes one spend record, claimed atomically, so a second spend of the same go refuses
- *  `swarm-go-spent`. The spend names the go by its cid, which binds the rite; a go of the other rite stays unspent. */
-export async function spendGo(wiki: SwarmWikiPort, at: SwarmGoLine & { readonly head: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness): Promise<{ go: string }> {
+/**
+ * Spend a go of the named rite at one head. The spend names the go by its cid, which binds the rite and the reach.
+ *
+ * THE EVIDENCE: the spender names the head's `tree`, and a passing `receipt/<tree>` the vessel signed must stand for it, else the
+ * spend refuses `swarm-go-evidence-absent` and claims nothing. This core reads no repository, so THE SPENDER DERIVES THE TREE
+ * (the vessel reads it off the head) and the spend record carries head and tree together under the vessel's signature: the
+ * vessel testifies the pairing, and a reader holds the record to it.
+ *
+ * A RED NARROWS: a receipt standing `fail` for the tree refuses `swarm-go-evidence-red`. For a wide go the vessel first rests a
+ * signed narrowing at `go-narrowed/<go cid>`, and from then the go spends nothing (`swarm-go-narrowed`): the line reads
+ * head-only until a fresh go follows it (a head go pins one head; a wide go restrings the reach). A head go already reads
+ * narrow, so its red writes nothing.
+ *
+ * THE COUNT: a wide go spends `returns` times and a head go once. Each spend claims the lowest free row under
+ * `go-spent/<go cid>/` atomically, so racing spends land no more than the count; past it a wide go refuses
+ * `swarm-go-returns-spent` and a head go `swarm-go-spent`. No clock reads anywhere: the go ends by count, by narrowing or by a
+ * newer go.
+ */
+export async function spendGo(wiki: SwarmWikiPort, at: SwarmGoLine & { readonly head: string; readonly tree: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness): Promise<{ go: string; reach: SwarmGoReach; n: number }> {
   const go = await readGo(wiki, at, trust, group, ward);
   if (!go.ok) throw new SwarmRefused(`swarm-go-${go.refusal}`, `the ${at.rite} go for "${at.branch}" at ${at.head} does not stand (${go.refusal})`);
   if (!trust.vessel(spender.key.toLowerCase())) throw new SwarmRefused("swarm-spend-role", "the vessel alone spends a go");
-  const spent = await signSwarmAct({ act: "go-spent", group, branch: at.branch, head: at.head, go: go.cid }, spender);
-  if (!(await wiki.writeNew(swarmGoSpentTitle(go.cid), JSON.stringify(spent)))) throw new SwarmRefused("swarm-go-spent", "this go was already spent");
-  return { go: go.cid };
+  const absent = (): never => { throw new SwarmRefused("swarm-go-evidence-absent", `no passing receipt stands for the tree of ${at.head}; a spend names the head's tree and rests on its receipt`); };
+  if (!str(at.tree)) absent();
+  const receiptTitle = swarmReceiptTitle(at.tree);
+  const receipt = verifySwarmRecord(await wiki.read(receiptTitle), receiptTitle, trust, group);
+  if (!receipt.ok || receipt.act.body.act !== "receipt") return absent();
+  if (receipt.act.body.verdict !== "pass") {
+    if (go.reach === "wide") {
+      const narrowed = await signSwarmAct({ act: "go-narrowed", group, go: go.cid, head: at.head, tree: at.tree }, spender);
+      // The first red rests; a second one finds the go narrowed already.
+      await wiki.writeNew(swarmGoNarrowedTitle(go.cid), JSON.stringify(narrowed));
+    }
+    throw new SwarmRefused("swarm-go-evidence-red", `the receipt for the tree of ${at.head} reads fail${go.reach === "wide" ? "; the go narrows to head-only until a fresh go follows it" : ""}`);
+  }
+  const returns = go.reach === "wide" ? (go.act.body as Extract<SwarmGoBody, { reach: "wide" }>).returns : 1;
+  for (let n = 1; n <= returns; n++) {
+    const spent = await signSwarmAct({ act: "go-spent", group, branch: at.branch, head: at.head, tree: at.tree, go: go.cid, n }, spender);
+    if (await wiki.writeNew(swarmGoSpentTitle(go.cid, n), JSON.stringify(spent))) return { go: go.cid, reach: go.reach, n };
+  }
+  throw go.reach === "wide"
+    ? new SwarmRefused("swarm-go-returns-spent", "this go's returns ran out; a fresh go restrings it")
+    : new SwarmRefused("swarm-go-spent", "this go was already spent");
 }
 
 /** The sum law, share side: shares never sum past the house cap. `null` stands where the law holds. */

@@ -36,7 +36,7 @@ test("WITNESS: each co-signed ward act's door runs the gate: the kāpae lower, t
   expect(board).toMatch(/wardCosignGate\(port, \{ verb: "ward-kapae-lower"/);
   expect(swarm).toMatch(/verb: "ward-house-cap"/);
   // a go asks the gate under its own rite's verb (`ward-<rite>-go`), never a fixed one
-  expect(swarm).toMatch(/const verb = wardGoVerb\(rite\), goHead = swarmGoHead\(\{ rite, branch, head, after \}\);/);
+  expect(swarm).toMatch(/const verb = wardGoVerb\(rite\), goHead = swarmGoHead\(\{ rite, branch, after, \.\.\.terms \}\);/);
   expect(swarm).toMatch(/gated\(deps, \{ verb, wiki: "daemon", head: goHead \}/);
   expect(swarm).not.toMatch(/"ward-(push|restart)-go"/);
   expect(swarm).not.toMatch(/ward-lane-share/);
