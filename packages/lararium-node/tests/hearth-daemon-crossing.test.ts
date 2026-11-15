@@ -9,9 +9,10 @@
  */
 import { describe, expect, test } from "vitest";
 import { generateAutomergeUrl, interpretAsDocumentId, type DocumentId } from "@automerge/automerge-repo";
-import { CONTROL_HOME_ID, DAEMON_BAG_ID, deviceDaemonDocs, emptyLarDoc, makeVesselOnlyDocs, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, storedLarRecord, type FaceGrantReading, type LarDoc } from "@lararium/mesh";
+import { CONTROL_HOME_ID, DAEMON_BAG_ID, DeterministicFederationGate, deviceDaemonDocs, emptyLarDoc, makeVesselOnlyDocs, personaBagIdFor, personaMembershipEntries, personaSiblingBagIds, storedLarRecord, type FaceGrantReading, type LarDoc } from "@lararium/mesh";
 import { faceFleetViews } from "../src/face-fleet-view.js";
 import { vesselOnlyClass, vesselOnlyShareVerdict } from "../src/vessel-only-share.js";
+import { selfSlotShareDecision, NO_BANS, NOBODY_ASIDE, NOTHING_CLASSED } from "../src/self-slot-share.js";
 
 const G1 = "0x" + "11".repeat(16), G2 = "0x" + "22".repeat(16);
 const ISLANDS = new Set(["island"]);
@@ -68,6 +69,26 @@ describe("a face's fleet view reads that face's daemon working slot", () => {
     expect(await views.gateFor("leaf")!.mayFederate(idOf(WORKING_ONE))).toBe(true);
     views.seat("lit", grant(G2));   // a face the vessel carries beside the worn one reads its own slot
     expect(await views.gateFor("lit")!.mayFederate(idOf(WORKING_TWO))).toBe(true);
+  });
+
+  test("RED: through the composed share verdict (the vessel-only class, then the lanes) a same-operator session of the face reads its working slot; CONTROL: a session of another face and a peer with no view read none", async () => {
+    const control = emptyLarDoc();
+    const w1 = String(idOf(WORKING_ONE));
+    control.tiddlers[slot(G1)] = storedLarRecord(slot(G1), { text: WORKING_ONE }, "test");
+    const device = deviceDaemonDocs({ enrollFloor: () => {} });
+    device.readControl(control as LarDoc);
+    const docs = vesselOnlyClass({ named: makeVesselOnlyDocs(), held: new Set<string>(), device, catalog: () => undefined });
+    const views = faceFleetViews(() => bootstrap(ONE, TWO), () => G1, undefined, undefined, undefined, workingOf);
+    views.seat("leaf", grant(G1)); views.seat("other", grant(G2));
+    const verdict = async (peer: string) => vesselOnlyShareVerdict(docs, ISLANDS, peer, w1, true, false, views.faceOf(peer) !== null && device.workingGroupOf(w1) === views.faceOf(peer))
+      ?? await selfSlotShareDecision({
+        hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: new DeterministicFederationGate("ab".repeat(32)), antigenRing: NO_BANS, membership: null, planeSeal: null,
+        federationPosture: "private", peerId: peer, documentId: idOf(WORKING_ONE), sessionFace: views.gateFor(peer),
+        shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
+      });
+    expect(await verdict("leaf")).toBe(true);
+    expect(await verdict("other")).toBe(false);
+    expect(await verdict("stranger")).toBe(false);
   });
 
   test("CONTROL: another face's working slot, a hearth that names none and a closed view read nothing", async () => {

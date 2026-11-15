@@ -1,7 +1,16 @@
 import { CONTROL_HOME_ID, DAEMON_SLOT_PREFIX, SECRET_HOME_ID, bagUri, documentIdOfUrl, tiddlerText, type LarDoc } from "@lararium/mesh";
 
-export function vesselOnlyShareVerdict(docs: { has(id: string): boolean }, islands: { has(id: string): boolean }, peerId: string, documentId: string | undefined, hasSocket: boolean, sibling = false): boolean | undefined {
-  if (documentId && docs.has(documentId)) return !hasSocket && !sibling && islands.has(peerId);
+/**
+ * A vessel-only document reaches the house's own proven islands alone. ONE DOCUMENT YIELDS (road row `L4f`): the daemon
+ * wiki's working slot of the face a wire peer's session proved (`ownFaceWorking`, the caller's reading of the device table
+ * against the peer's proven face). For it the verdict answers nothing, so the lanes below decide, and the face's own fleet
+ * view lets it through (`faceFleetViews`, `daemonWorkingOf`). A sibling keeps its own lane and reads none of it.
+ */
+export function vesselOnlyShareVerdict(docs: { has(id: string): boolean }, islands: { has(id: string): boolean }, peerId: string, documentId: string | undefined, hasSocket: boolean, sibling = false, ownFaceWorking = false): boolean | undefined {
+  if (documentId && docs.has(documentId)) {
+    if (ownFaceWorking && hasSocket && !sibling) return undefined;
+    return !hasSocket && !sibling && islands.has(peerId);
+  }
   return undefined;
 }
 

@@ -1212,7 +1212,9 @@ async function prepareNodeBootOn(
   const faceViews = faceFleetViews(() => (wornFaceProven ? faceBootTiddlers : null), () => custodyGroup,
     () => (catalogForViews ? bridgeBooks(catalogForViews(), kahuCanon) : new Set<string>()),
     (group) => (wornKahua && wornKahua.group === group ? wornKahua.url : null),
-    (group) => (wornPromoteGroup === group ? wornPromote : null));
+    (group) => (wornPromoteGroup === group ? wornPromote : null),
+    // THE FACE'S DAEMON WORKING SLOT (road row `L4f`): the document the control document names for that face's working slot.
+    (group) => { const id = deviceDocs.ids().find((d) => deviceDocs.workingGroupOf(d)?.toLowerCase() === group.toLowerCase()); return id ? `automerge:${id}` : null; });
   stood.push({ what: "the face views", down: () => faceViews.close() });
   // THIS HEARTH'S OWN HOSTING DOCS — one per Nexus it carries, under its own gate key. A contracted peer (a carrier
   // of that Nexus) replicates them for the cross-check every walker's fork reading rests on. Filled once the vessel
@@ -1384,7 +1386,11 @@ async function prepareNodeBootOn(
       // house's own proven islands alone, never a wire peer, sibling or other device, whatever lane would otherwise admit them.
       // It reads BY BAG as well as by name: a device-private document any boot-time source files (a held home, an announced
       // device slot, a catalog row) stays here before the control document hydrates and while its custody row cannot read.
-      const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), { has: (p) => houseIslands.has(p) && (!wikiIslands.has(p) || (documentId !== undefined && deviceDocs.floorWiki(documentId))) }, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)));
+      // ONE DOCUMENT YIELDS (road row `L4f`): the daemon wiki's working slot of the face this peer's session proved. The lanes
+      // below then decide it, and that face's own fleet view lets it through (`faceFleetViews`).
+      const peerFace = faceViews.faceOf(peerId);
+      const ownFaceWorking = peerFace !== null && documentId !== undefined && deviceDocs.workingGroupOf(String(documentId))?.toLowerCase() === peerFace.toLowerCase();
+      const vesselVerdict = vesselOnlyShareVerdict(vesselOnlyClass({ named: vesselOnly, held: secretHomes, device: deviceDocs, catalog: () => sealedCells.catalog() }), { has: (p) => houseIslands.has(p) && (!wikiIslands.has(p) || (documentId !== undefined && deviceDocs.floorWiki(documentId))) }, peerId, documentId, !!wsSocket, Boolean(siblings?.provenKeyOf(peerId as PeerId)), ownFaceWorking);
       if (vesselVerdict !== undefined) return vesselVerdict;
       // OUTER peer-admission gate (unchanged): a WS peer whose session no face gate opened is not in
       // `peerIdentifierMap` → deny; an in-process island peer (no WS socket) is a house member → admit.
