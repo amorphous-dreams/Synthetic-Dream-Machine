@@ -343,14 +343,17 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
    * bytes stay a real carrier's, the reading must not move, and a scan that spells SOH by hand alone
    * goes red on every carrier this reaches.
    */
-  test("★ every corpus carrier re-spelled in its family's OTHER code reads the same marks ★", () => {
+  // THE CORPUS READS IN QUARTERS. The law reads every carrier twice (as it stands, and re-spelled), which costs the
+  // whole reader over the whole corpus twice inside one test; each quarter carries a quarter of that, and holds its
+  // own share of the floor, so a quarter the substitution never reached reads red by its own number.
+  const QUARTERS = 4, RESPELLED_FLOOR = 695;
+  test.each(Array.from({ length: QUARTERS }, (_, q) => q))("★ every corpus carrier re-spelled in its family's OTHER code reads the same marks ★ (quarter %i)", (quarter) => {
     const sibling = new Map<string, string>([["&#x0001;", "&#x0011;"]]);
-    const files = carrierFiles(REPO);
+    const files = carrierFiles(REPO).filter((_, i) => i % QUARTERS === quarter);
     let moved = 0;
     const drifted: string[] = [];
     for (const f of files) {
       const text = readFileSync(path.join(REPO, f), "utf8");
-      const before = readCarrierShape(text);
       // Only the FRAME SIGILS are re-spelled; prose that teaches a code stays as it stands.
       let after = text;
       for (const [from, to] of sibling) {
@@ -358,13 +361,15 @@ describe("the frame codes the reader takes are the frame codes the corpus writes
       }
       if (after === text) continue;
       moved++;
+      // The reader runs for a carrier the re-spelling reached, on both spellings; one it left alone has nothing to compare.
+      const before = readCarrierShape(text);
       const afterShape = readCarrierShape(after);
       if (afterShape.marks.eot !== before.marks.eot || afterShape.marks.head !== before.marks.head) {
         drifted.push(`${f} — eot ${before.marks.eot}→${afterShape.marks.eot}, head ${before.marks.head}→${afterShape.marks.head}`);
       }
     }
     // A substitution that reached nothing would report a perfectly clean run.
-    expect(moved, "no corpus carrier carried a code to re-spell — this walk saw nothing").toBeGreaterThanOrEqual(695);
+    expect(moved, "no corpus carrier of this quarter carried a code to re-spell — this walk saw nothing").toBeGreaterThanOrEqual(Math.floor(RESPELLED_FLOOR / QUARTERS));
     expect(drifted, `a family's second code does not reach this reader:\n${drifted.join("\n")}`).toEqual([]);
   });
 
