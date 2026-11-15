@@ -4,6 +4,16 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### Wave two's first batch: the face's own page mounts its daemon wiki, the rite walks itself, the legs wear their face
+
+**Added**
+- **A joined page at its own hearth opens the face's daemon working document** (road `L4f`). The root signs the hearth's working slot into the joining device's `device-edge` act (`hearthDaemon`), the hearth's vessel-only verdict yields that one document to a session that proved its face, and the island mounts it through the working-bag grant. The device table answers each face's current binding alone, so a slot the control row moves shares nowhere.
+- **The rite walker** (road `L42a`, `tools/rite-walk.mjs`). One script walks the runbook's three-face rite on a scratch hearth, binds each of its 49 steps to its runbook line, and reports pass, fail or unreached with the quoted answer; its JSON receipt carries the head, the runbook's sha and bcc, the walker's hash and an `outcomes` digest.
+- **A node's legs wear their face at each Nexus** (road `C1`, first slice). Each seated dial and gate leg presents a store id and a peer id aliased per (face, Nexus) from a store-held per-face secret; a remote store id rests under the local pair's scope and resumption holds; the sibling channel's peer id scopes to the face.
+
+**Fixed**
+- **The hearth's daemon name reads through the record door.** `hearthDaemonOf` reads the control row through `ownEntry`, and the stored-value census reads green.
+
 ### The first live walk's cures: a joined vessel reloads, a first put founds
 
 **Fixed**
