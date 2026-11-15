@@ -313,7 +313,7 @@ Keyhive keeps the PersonaGroup's private membership and its content keys. The fa
 
 ''Each face holds its own group secrets, channel tags and actor ids.'' No identifier at the vessel's level reappears through a lower layer: an actor id, a sibling peer id, a channel tag or a presentation lineage shared across two faces would rebuild the link the proof removed.
 
-''The sync engine's own names follow the same law.'' A Repo names itself to every peer by a peer id and, in its peer metadata, by the id of its store. A vessel keeps one store for every face, so the store keeps one id for each worn face and one for the veil floor, and each composition mints its own peer id (`packages/lararium-mesh/src/wire-identity.ts`): a gate, a hearth or a sibling that meets one vessel under two faces reads two unrelated pairs. The same face keeps its store id across a restart, since a peer keys the sync state it rests for this vessel on that id. One face still presents one pair at every Nexus it stands in (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat`>>).
+''The sync engine's own names follow the same law.'' A Repo names itself to every peer by a peer id and, in its peer metadata, by the id of its store. A vessel keeps one store for every face, so the store keeps one id for each worn face and one for the veil floor, and each composition mints its own peer id (`packages/lararium-mesh/src/wire-identity.ts`): a gate, a hearth or a sibling that meets one vessel under two faces reads two unrelated pairs. The same face keeps its store id across a restart, since a peer keys the sync state it rests for this vessel on that id. Each seated wire leg (a gate session, a dial, a browser's relay, a sibling channel) presents the alias of the (face, Nexus) it serves, so one face shows a pair for each Nexus it stands in (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat`>>).
 
 ''The reason'': a sibling can open the inner proof. Were it to carry a device edge, a co-member of two faces would link both to one vessel from protocol artifacts alone.
 
@@ -396,6 +396,6 @@ The design names that unavailability and does not cure it. A recovery authority 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;092KTNnrLosI3LL5XChFCGc9bmWq6bKGOLwMQ5VjtXs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YvuPIIS9Q92TWDYbZ5zotA67Sh5_yCPgKBNdXp0X7Vk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
