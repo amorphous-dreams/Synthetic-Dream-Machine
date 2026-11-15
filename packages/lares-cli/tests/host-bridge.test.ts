@@ -68,7 +68,7 @@ describe("decideRoute — every branch", () => {
   });
 
   it("host verbs stay local: home, repo, help, wing-of, mempalace, mcp", () => {
-    for (const argv of [["home", "read"], ["home", "tend"], ["repo", "tend"], ["help"], ["wing-of", "t.jsonl"], ["mempalace", "status"], ["mcp", "steady", "--", "surface"]]) {
+    for (const argv of [["home", "read"], ["home", "tend"], ["repo", "tend"], ["help"], ["wing-of", "t.jsonl"], ["mempalace", "status"], ["mcp", "aho", "--", "surface"]]) {
       expect(decideRoute(input(argv)), argv.join(" ")).toBe("local");
     }
   });

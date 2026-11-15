@@ -9,7 +9,7 @@
  *   native     the hearth's root is `LAR_ROOT`; the entry spawns the main clone's `lares_mcp.py` with `LAR_ROOT`
  *              in its env
  *   container  the operator's `~/.lares` holds the surface env (`lares-surface.env`), so the hearth stands in the
- *              surface container; the entry names the steady seat (`lares mcp steady`), which execs the image's
+ *              surface container; the entry names the aho (`lares mcp aho`), which execs the image's
  *              seat there as its child and forwards the container's own root, read from the compose file, by name
  *
  * The entry also aims at the MAIN clone, never at the worktree a command ran from, so a lane's removal
@@ -89,16 +89,16 @@ describe("the seat names the hearth's root", () => {
     expect(mcp!.env["PYTHONPATH"]).toBe(join(clone, "mempalace"));
   });
 
-  it("container: the operator's surface env names the steady seat over the image's seat, and forwards the compose file's root by name", () => {
+  it("container: the operator's surface env names the aho over the image's seat, and forwards the compose file's root by name", () => {
     const clone = fakeClone();
     delete process.env["LAR_ROOT"];          // the host shell names no house root; the surface env alone decides the form
     const file = surfaceEnv();
     const mcp = resolveLaresMcp(clone);
     expect(mcp).not.toBeNull();
-    // The entry names the steady seat, which holds the client's stdio and spawns the container's surface as its child.
+    // The entry names the aho, which holds the client's stdio and spawns the container's surface as its child.
     expect(mcp!.command).toBe("node");
     expect(mcp!.args).toEqual([
-      join(clone, "packages", "lares-cli", "bin", "lares.mjs"), "mcp", "steady", "--",
+      join(clone, "packages", "lares-cli", "bin", "lares.mjs"), "mcp", "aho", "--",
       "docker", "compose", "--env-file", file, "-f", join(clone, "docker-compose.surface.yml"),
       "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", `/app/${SEAT}`,
     ]);

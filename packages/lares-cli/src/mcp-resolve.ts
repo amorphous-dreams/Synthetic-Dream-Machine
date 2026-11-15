@@ -91,16 +91,16 @@ function containerRoot(compose: string): string | null {
   return value === undefined ? null : value.replace(/^(["'])(.*)\1$/, "$2");
 }
 
-/** The committed bin of the clone's CLI, the entry a steady seat runs from. */
+/** The committed bin of the clone's CLI, the entry an aho runs from. */
 export const CLI_BIN = join("packages", "lares-cli", "bin", "lares.mjs");
 
 /**
- * The steady seat over a surface command: `node <clone>/packages/lares-cli/bin/lares.mjs mcp steady -- <command> <args…>`.
+ * The aho over a surface command: `node <clone>/packages/lares-cli/bin/lares.mjs mcp aho -- <command> <args…>`.
  * The seat holds the client's stdio and spawns the surface as its child, so a surface that restarts never reaches the
- * client (`mcp-steady.ts`). The env rides the seat's own process, and the child inherits it.
+ * client (`mcp-aho.ts`). The env rides the seat's own process, and the child inherits it.
  */
-export function steadySeatOver(clone: string, surface: LaresMcpCommand): LaresMcpCommand {
-  return { command: "node", args: [join(clone, CLI_BIN), "mcp", "steady", "--", surface.command, ...surface.args], env: surface.env };
+export function ahoOver(clone: string, surface: LaresMcpCommand): LaresMcpCommand {
+  return { command: "node", args: [join(clone, CLI_BIN), "mcp", "aho", "--", surface.command, ...surface.args], env: surface.env };
 }
 
 /**
@@ -112,7 +112,7 @@ export function steadySeatOver(clone: string, surface: LaresMcpCommand): LaresMc
  * alone; unnamed resolves no seat), and the entry carries it in BOTH forms:
  *
  *   container  the operator's `~/.lares` holds the surface env (`lares-surface.env`), so the hearth stands in the
- *              surface container. The entry names the STEADY SEAT (`steadySeatOver`), a host process that holds the
+ *              surface container. The entry names the AHO (`ahoOver`), a host process that holds the
  *              client's stdio across a container restart; its child execs the image's seat through the clone's
  *              compose file and forwards `LAR_ROOT` by name (`exec -e LAR_ROOT`), its value the container's own
  *              root as the compose file names it. The image carries its own interpreter and pinned `mcp`.
@@ -129,7 +129,7 @@ export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
     const compose = join(clone, SURFACE_COMPOSE);
     const root = containerRoot(compose);
     if (root === null) return null;
-    return steadySeatOver(clone, {
+    return ahoOver(clone, {
       command: "docker",
       args: ["compose", "--env-file", surfaceEnv, "-f", compose, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", IMAGE_SEAT],
       env: { LAR_ROOT: root },

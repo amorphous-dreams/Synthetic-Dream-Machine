@@ -284,15 +284,15 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
   },
 
   mcp: {
-    usage: "usage: lares mcp steady -- <child argv…>",
+    usage: "usage: lares mcp aho -- <child argv…>",
     synopsis:
-      "The steady seat: it holds an MCP client's stdio for the session's whole life and spawns the surface (the argv " +
+      "The aho: it holds an MCP client's stdio for the session's whole life and spawns the surface (the argv " +
       "after `--`) as a child that may fall and rise, so a surface restart never reaches the client. While no child " +
       "stands the seat answers `initialize` and the tool list from what the child last answered; a call answers the " +
       "tool error `hearth-sleeps` at once. A call in flight at a child's death answers `outcome-unknown: re-read " +
       "before re-trying`, and the seat never sends it again. The seat logs event names and counts alone, and holds no key.",
     examples: [
-      "lares mcp steady -- docker compose -f docker-compose.surface.yml exec -T lares python3 /app/packages/lararium-sensorium/scripts/lares_mcp.py",
+      "lares mcp aho -- docker compose -f docker-compose.surface.yml exec -T lares python3 /app/packages/lararium-sensorium/scripts/lares_mcp.py",
       "lares home tend                    # writes the seat into each harness config",
     ],
     next: ["lares home read   # the seat each harness config names"],

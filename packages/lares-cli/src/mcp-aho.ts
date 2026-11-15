@@ -1,5 +1,5 @@
 /**
- * mcp-steady — the Node host's binding of the steady seat: `lares mcp steady -- <child argv…>`.
+ * mcp-aho — the aho (the cord): the seat a Node host holds across its vessel's sleep, `lares mcp aho -- <child argv…>`.
  *
  * The core (`@lararium/mesh/iris`) holds the seat as a pure frame machine. This binding hands it the two ports a Node
  * host owns: the client on this process's stdin and stdout, and the surface as a `child_process` it spawns from the argv after
@@ -10,7 +10,7 @@
  * up to `capMs`; a child the core reports `standing` starts the pacing over. A surface down for hours costs one spawn per
  * `capMs`.
  *
- * IT LOGS NO PAYLOAD AND HOLDS NO KEY. Every line it writes to stderr reads `steady-seat: <event> generation=N pending=N`:
+ * IT LOGS NO PAYLOAD AND HOLDS NO KEY. Every line it writes to stderr reads `aho: <event> generation=N pending=N`:
  * the core's own event names, plus `frame-unparsed` for a line that parses as no JSON. No frame's bytes reach the log. This
  * module imports the core and Node's own modules, nothing of custody, the vessel or the house root. The child's stderr passes
  * through untouched, as it does with no seat between.
@@ -21,20 +21,20 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
 import { iris, type IrisEvent, type IrisFrame } from "@lararium/mesh/iris";
 
-export interface SteadySeatPacing { readonly firstMs: number; readonly capMs: number }
-export const STEADY_SEAT_PACING: SteadySeatPacing = { firstMs: 250, capMs: 15_000 };
+export interface AhoPacing { readonly firstMs: number; readonly capMs: number }
+export const AHO_PACING: AhoPacing = { firstMs: 250, capMs: 15_000 };
 
-export interface SteadySeatHostOptions {
+export interface AhoHostOptions {
   /** The surface's command and arguments, spawned as written (no shell). */
   readonly argv: readonly string[];
   readonly stdin: NodeJS.ReadableStream;
   readonly stdout: NodeJS.WritableStream;
   readonly stderr: NodeJS.WritableStream;
   readonly env?: NodeJS.ProcessEnv;
-  readonly pacing?: SteadySeatPacing;
+  readonly pacing?: AhoPacing;
 }
 
-export interface SteadySeatHost {
+export interface AhoHost {
   /** Settles with the seat's exit code once the client closed and the seat let its child go. */
   readonly done: Promise<number>;
   /** End the seat as the client's close does. */
@@ -58,16 +58,16 @@ function lines(stream: NodeJS.ReadableStream, each: (frame: unknown, parsed: boo
   });
 }
 
-export function steadySeatHost(opts: SteadySeatHostOptions): SteadySeatHost {
+export function ahoHost(opts: AhoHostOptions): AhoHost {
   const seat = iris();
-  const pacing = opts.pacing ?? STEADY_SEAT_PACING;
+  const pacing = opts.pacing ?? AHO_PACING;
   let child: ChildProcess | null = null;
   let timer: NodeJS.Timeout | null = null;
   let wait = 0, generation = 0, pending = 0, ended = false;
   let finish!: (code: number) => void;
   const done = new Promise<number>((resolve) => { finish = resolve; });
 
-  const note = (event: string): void => { opts.stderr.write(`steady-seat: ${event} generation=${generation} pending=${pending}\n`); };
+  const note = (event: string): void => { opts.stderr.write(`aho: ${event} generation=${generation} pending=${pending}\n`); };
   const write = (stream: NodeJS.WritableStream | null | undefined, frame: IrisFrame): void => {
     if (stream && (stream as { writable?: boolean }).writable !== false) stream.write(`${JSON.stringify(frame)}\n`);
   };
@@ -142,12 +142,12 @@ export function steadySeatHost(opts: SteadySeatHostOptions): SteadySeatHost {
   return { done, close };
 }
 
-export const STEADY_USAGE = "usage: lares mcp steady -- <child argv…>   hold this client's MCP seat, and spawn the surface as a child that may fall and rise";
+export const AHO_USAGE = "usage: lares mcp aho -- <child argv…>   hold this client's MCP seat, and spawn the surface as a child that may fall and rise";
 
 /** The process entry: this process's own stdio, its stop signals, and its exit code. */
-export async function steadySeatMain(argv: readonly string[]): Promise<number> {
-  if (argv.length === 0) { process.stderr.write(`${STEADY_USAGE}\n`); return 2; }
-  const host = steadySeatHost({ argv, stdin: process.stdin, stdout: process.stdout, stderr: process.stderr });
+export async function ahoMain(argv: readonly string[]): Promise<number> {
+  if (argv.length === 0) { process.stderr.write(`${AHO_USAGE}\n`); return 2; }
+  const host = ahoHost({ argv, stdin: process.stdin, stdout: process.stdout, stderr: process.stderr });
   for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"] as const) process.once(signal, () => host.close());
   const code = await host.done;
   // The client's stream closed; stdin may still hold the loop open on a terminal.

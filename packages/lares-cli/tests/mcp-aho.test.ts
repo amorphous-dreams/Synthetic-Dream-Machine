@@ -1,8 +1,8 @@
 /**
- * mcp-steady — the Node host's binding of the steady seat (road L45a): `lares mcp steady -- <child argv…>`.
+ * mcp-aho — the Node host's binding of the aho (road L45a): `lares mcp aho -- <child argv…>`.
  *
  * The binding owns the client's stdio, spawns the surface as a child, frames JSON-RPC by the line and paces each respawn on
- * its own timer. A FAKE child stands in for the surface here (`fixtures/steady-seat/fake-mcp-child.mjs`): the test kills it,
+ * its own timer. A FAKE child stands in for the surface here (`fixtures/aho/fake-mcp-child.mjs`): the test kills it,
  * lets it die mid-call, and holds it down, and the client's stream reads on through every one. No container runs.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -11,9 +11,9 @@ import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "no
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
-import { steadySeatHost, type SteadySeatHost } from "../src/mcp-steady.js";
+import { ahoHost, type AhoHost } from "../src/mcp-aho.js";
 
-const CHILD = join(import.meta.dirname, "fixtures", "steady-seat", "fake-mcp-child.mjs");
+const CHILD = join(import.meta.dirname, "fixtures", "aho", "fake-mcp-child.mjs");
 const BIN = join(import.meta.dirname, "..", "bin", "lares.mjs");
 const MARK = "s3cr3t-payload-marker";
 const INIT = { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "fixture-client", version: "1" } };
@@ -60,9 +60,9 @@ const alive = (pid: number): boolean => { try { process.kill(pid, 0); return tru
 const until = async (holds: () => boolean): Promise<void> => { while (!holds()) await new Promise((r) => setTimeout(r, 5)); };
 
 let dir: string;
-let host: SteadySeatHost | null;
+let host: AhoHost | null;
 beforeEach(() => {
-  dir = mkdtempSync(join(tmpdir(), "mcp-steady-"));
+  dir = mkdtempSync(join(tmpdir(), "mcp-aho-"));
   writeFileSync(join(dir, "tools.json"), JSON.stringify(["echo", "hang", "die"]));
   host = null;
 });
@@ -79,7 +79,7 @@ const seen = (): { pid: number; method: string | null; params: unknown }[] =>
 /** A seat over the fake child, its client streams in hand, opened through `initialize` and the first tool list. */
 async function opened() {
   const stdin = new PassThrough(), stdout = new PassThrough(), stderr = new PassThrough();
-  host = steadySeatHost({ argv: [process.execPath, CHILD, dir], stdin, stdout, stderr, pacing: { firstMs: 5, capMs: 40 } });
+  host = ahoHost({ argv: [process.execPath, CHILD, dir], stdin, stdout, stderr, pacing: { firstMs: 5, capMs: 40 } });
   const client = wire((line) => stdin.write(line), stdout), log = ear(stderr);
   const init = await client.ask({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT });
   client.send({ jsonrpc: "2.0", method: "notifications/initialized" });
@@ -87,7 +87,7 @@ async function opened() {
   return { stdin, client, log, init, listed };
 }
 
-describe("the steady seat's Node binding, over a fake child", () => {
+describe("the aho's Node binding, over a fake child", () => {
   it("seat-outlives-child: the child killed three times over leaves the seat open and the client's stream whole", async () => {
     const s = await opened();
     expect(s.init["result"]).toMatchObject({ serverInfo: { name: "fake-surface" }, capabilities: { tools: { listChanged: true } } });
@@ -180,14 +180,14 @@ describe("the steady seat's Node binding, over a fake child", () => {
     await s.log.heard(/child-standing generation=2\b/);
     await s.log.heard(/frame-unparsed/);
     expect(s.log.text()).not.toContain(MARK);
-    for (const line of s.log.text().trim().split("\n")) expect(line).toMatch(/^steady-seat: [a-z-]+ generation=\d+ pending=\d+$/);
+    for (const line of s.log.text().trim().split("\n")) expect(line).toMatch(/^aho: [a-z-]+ generation=\d+ pending=\d+$/);
     expect(JSON.stringify(seen())).toContain(MARK);
   });
 });
 
-describe("`lares mcp steady` as a process", () => {
+describe("`lares mcp aho` as a process", () => {
   it("the committed bin runs the seat: it answers through the fake child, outlives it, and exits 0 when the client closes", async () => {
-    const proc = spawn(process.execPath, [BIN, "mcp", "steady", "--", process.execPath, CHILD, dir], { stdio: ["pipe", "pipe", "pipe"] });
+    const proc = spawn(process.execPath, [BIN, "mcp", "aho", "--", process.execPath, CHILD, dir], { stdio: ["pipe", "pipe", "pipe"] });
     const client = wire((line) => proc.stdin.write(line), proc.stdout), log = ear(proc.stderr);
     const exit = new Promise<number | null>((done) => proc.on("exit", (code) => done(code)));
     try {
@@ -211,9 +211,9 @@ describe("`lares mcp steady` as a process", () => {
   });
 
   it("a seat named no child refuses by usage and exits 2", async () => {
-    const proc = spawn(process.execPath, [BIN, "mcp", "steady", "--"], { stdio: ["ignore", "ignore", "pipe"] });
+    const proc = spawn(process.execPath, [BIN, "mcp", "aho", "--"], { stdio: ["ignore", "ignore", "pipe"] });
     const log = ear(proc.stderr);
     expect(await new Promise<number | null>((done) => proc.on("exit", (code) => done(code)))).toBe(2);
-    expect(log.text()).toMatch(/lares mcp steady -- <child argv/);
+    expect(log.text()).toMatch(/lares mcp aho -- <child argv/);
   });
 });

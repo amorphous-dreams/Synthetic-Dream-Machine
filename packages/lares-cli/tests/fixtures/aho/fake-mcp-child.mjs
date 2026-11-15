@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * fake-mcp-child — a small surface that speaks MCP over stdio (one JSON-RPC message per line), for the steady seat's binding test.
+ * fake-mcp-child — a small surface that speaks MCP over stdio (one JSON-RPC message per line), for the aho's binding test.
  *
  *   node fake-mcp-child.mjs <dir>
  *
