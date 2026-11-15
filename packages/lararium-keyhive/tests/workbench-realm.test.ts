@@ -22,7 +22,7 @@ import { describe, test, expect } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore } from "../src/index.js";
 import {
   admitWorkbenchFace, foundWorkbench, landWorkbench, removeWorkbenchFace, requireWorkbenchWriter, standWorkbench, workbenchFaceHolds,
-  adoptWorkbench, projectWorkbenchRoster, faceWorkbenchRealm, workbenchWriterSeat,
+  adoptWorkbench, projectWorkbenchRoster, faceWorkbenchRealm, workbenchWriterSeat, workbenchFoundsOnWrite,
   type LedgerDoc,
 } from "../src/workbench-realm.js";
 import {
@@ -218,6 +218,17 @@ describe("K11 — one vessel binds a slug to one realm, and a seat in the realm'
     expect([...workbenchSeats(ledger.d, s!, "lares").keys()], "the engineer's ask drops no seat row of the steward's realm").toEqual(["group-steward"]);
     // A slug no face of the vessel stood still founds under the face that stands it first.
     expect(await faceWorkbenchRealm(engineer.hive, ledger, "garden", "group-engineer", true), "CONTROL: the first face to stand a wiki founds its cabal of one").toBe(privateCabalRealmId("group-engineer", "garden"));
+  });
+
+  test("RED a write founds the workbench of a slug no face of the vessel stood, and founds none where the ledger binds it; the reading founds nothing", async () => {
+    const steward = await composedFace(0x93), engineer = await composedFace(0x94);
+    const ledger = memDoc();
+    expect(await workbenchFoundsOnWrite(steward.hive, ledger.d, "book", "group-steward"), "no face stood the wiki: the first write founds its workbench").toBe(true);
+    expect(ledgerWorkbenches(ledger.d), "the reading founds nothing").toEqual([]);
+    const s = await faceWorkbenchRealm(steward.hive, ledger, "book", "group-steward", true);
+    expect(await workbenchFoundsOnWrite(steward.hive, ledger.d, "book", "group-steward"), "CONTROL: a seated face founds nothing more").toBe(false);
+    expect(await workbenchFoundsOnWrite(engineer.hive, ledger.d, "book", "group-engineer"), "CONTROL: the ledger binds the slug under another face's realm").toBe(false);
+    expect(ledgerWorkbenches(ledger.d).map((b) => b.realmId)).toEqual([s]);
   });
 
   test("a seat reads its hand: the owner and a writer write, a reader reads and never writes", async () => {

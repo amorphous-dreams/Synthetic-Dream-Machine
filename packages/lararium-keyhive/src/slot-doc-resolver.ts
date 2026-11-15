@@ -107,6 +107,11 @@ export interface SlotDocResolverArgs {
    */
   readonly workbenchRealm?: (slug: string, mint: boolean) => Promise<string | null>;
   /**
+   * Whether a write from THIS face founds the wiki's workbench (`workbenchFoundsOnWrite`): no realm seats the face and the
+   * vessel's ledger binds the slug under no other face's realm. Such a face writes `working`, and the write's mint founds.
+   */
+  readonly workbenchFounds?: (slug: string) => Promise<boolean>;
+  /**
    * Whether THIS face holds a writer's seat in the wiki's workbench (`workbenchWriterSeat`). Absent, a face that mounts a
    * workbench writes it (a rig with no roster). A face that answers false writes its `personal` layer of the wiki.
    */
@@ -265,9 +270,14 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     return binding("personal", fingerprint, recipeTrace);
   };
 
-  /** A seated face's write layer: `working` where it holds a writer's seat in a workbench that answers, `personal` otherwise. */
-  const seatedWriteSlot = async (slug: string, working: SlotDoc | null): Promise<"working" | "personal"> =>
-    working !== null && (args.workbenchWrites ? await args.workbenchWrites(slug) : true) ? "working" : "personal";
+  /**
+   * A seated face's write layer: `working` where it holds a writer's seat in a workbench that answers, and where no workbench
+   * stands for the wiki on this vessel, so the face's own write founds one (`workbenchFounds`); `personal` otherwise.
+   */
+  const seatedWriteSlot = async (slug: string, working: SlotDoc | null): Promise<"working" | "personal"> => {
+    if (working === null) return (await args.workbenchFounds?.(slug)) === true ? "working" : "personal";
+    return (args.workbenchWrites ? await args.workbenchWrites(slug) : true) ? "working" : "personal";
+  };
 
   const draftDoc = async (slug: string, fingerprint: string, recipeTrace: RecipeTrace): Promise<SlotDoc> =>
     resolveSlotDoc({
@@ -483,6 +493,8 @@ export interface LitFaceSlotSpec {
   readonly workbenchRealm?: (slug: string, mint: boolean) => Promise<string | null>;
   /** Whether THIS face holds a writer's seat in a wiki's workbench. */
   readonly workbenchWrites?: (slug: string) => Promise<boolean>;
+  /** Whether a write from THIS face founds a wiki's workbench (no realm seats it, and the ledger binds the slug nowhere else). */
+  readonly workbenchFounds?: (slug: string) => Promise<boolean>;
 }
 
 /** The lit set's slot resolvers: one per lit face, each under that face's own group, secret, hive and door. */
@@ -499,7 +511,7 @@ export interface LitFaceSlotDocs {
  * wiki's device slots stand under the sibling's group in the control document (`daemon-slot/<kind>/<group>`), so each face's
  * memory lands in its own documents. A lit face is seated by being lit: its hive holds its group.
  */
-export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "floor" | "personaGroupId" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "workbenchRealm" | "workbenchWrites" | "mintedByHex" | "vesselDid">): LitFaceSlotDocs {
+export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "floor" | "personaGroupId" | "faceDoor" | "keyhive" | "faceSeated" | "seatSettled" | "workbenchRealm" | "workbenchWrites" | "workbenchFounds" | "mintedByHex" | "vesselDid">): LitFaceSlotDocs {
   const byGroup = new Map<string, SlotDocResolver>();
   return {
     of(spec) {
@@ -515,6 +527,7 @@ export function litFaceSlotDocs(base: Omit<SlotDocResolverArgs, "floor" | "perso
         ...(spec.faceDoor ? { faceDoor: spec.faceDoor } : {}),
         ...(spec.workbenchRealm ? { workbenchRealm: spec.workbenchRealm } : {}),
         ...(spec.workbenchWrites ? { workbenchWrites: spec.workbenchWrites } : {}),
+        ...(spec.workbenchFounds ? { workbenchFounds: spec.workbenchFounds } : {}),
       });
       byGroup.set(spec.group, resolver);
       return resolver;

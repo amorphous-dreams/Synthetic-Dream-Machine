@@ -34,7 +34,7 @@ import {
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
-import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
+import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
 import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
 import type { IslandBehavior, IslandContext, DaemonBehaviorOptions, VerbReactor, VerbTable } from "@lararium/tw5";
@@ -463,6 +463,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           keyhive: provider as never,
           workbenchRealm: faceWorkbench(ctx, () => provider, entry.personaGroupId),
           workbenchWrites: faceWrites(ctx, () => provider),
+          workbenchFounds: faceFounds(ctx, () => provider, entry.personaGroupId),
           faceDoor: makeFaceBagDoor({ face: provider as never, groupId: entry.personaGroupId }),
         });
         const out = await announcing(resolver).slotDoc(DAEMON_WIKI_SLUG, kind);
@@ -510,6 +511,11 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
     const hive = provider();
     return hive ? workbenchWriterSeat(hive, (await workbenchLedgerOf(ctx)).doc(), slug) : false;
   };
+  /** Whether one face's write founds a wiki's workbench (`workbenchFoundsOnWrite`): the first face to stand a wiki writes the workbench it founds. */
+  const faceFounds = (ctx: IslandContext, provider: () => KeyhiveProvider | null | undefined, face: string) => async (slug: string): Promise<boolean> => {
+    const hive = provider();
+    return hive ? workbenchFoundsOnWrite(hive, (await workbenchLedgerOf(ctx)).doc(), slug, face) : false;
+  };
   // THE FLOOR'S REGISTRY (`floor-registry`): the daemon document's floor rows, gated on the floor's rest key as the vessel
   // granted it for this composition. A grant that names none reads as a place that derives no floor key.
   let floorRegistry: FloorRegistry | null = null;
@@ -537,7 +543,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       faceSeated: async () => faceSeat ? faceSeat.seated() : !!(kh && daemonAuth.personaGroupId && await kh.knowsAgent(daemonAuth.personaGroupId)),
       seatSettled: async () => { await faceSeat?.settled(); },
       // THE WORKING SLOT'S PORTS: the wiki's realm workbench under the worn face, and its document at the fixed address.
-      ...(daemonAuth.personaGroupId ? { workbenchRealm: faceWorkbench(ctx, () => kh, daemonAuth.personaGroupId), workbenchWrites: faceWrites(ctx, () => kh) } : {}),
+      ...(daemonAuth.personaGroupId ? { workbenchRealm: faceWorkbench(ctx, () => kh, daemonAuth.personaGroupId), workbenchWrites: faceWrites(ctx, () => kh), workbenchFounds: faceFounds(ctx, () => kh, daemonAuth.personaGroupId) } : {}),
       workbenchDoc: (url) => materializeSharedLarDoc(ctx.repo, url as AutomergeUrl, "board:workbench"),
     }));
     return slotDocs;

@@ -196,6 +196,15 @@ export async function faceWorkbenchRealm(provider: KeyhiveProvider, ledger: Ledg
 }
 
 /**
+ * WHETHER A WRITE FROM `face` FOUNDS THE WORKBENCH of `slug`: no realm seats this hive, and the ledger binds the slug under no
+ * other face's realm, so the face's first stand founds its private cabal of one (`faceWorkbenchRealm` with `mint`) and the write
+ * lands in the workbench. It reads alone and founds nothing.
+ */
+export async function workbenchFoundsOnWrite(provider: KeyhiveProvider, ledger: LarDoc | undefined | null, slug: string, face: string): Promise<boolean> {
+  return (await seatedWorkbenches(provider, ledger, slug)).length === 0 && !boundElsewhere(ledger, slug, face);
+}
+
+/**
  * WHETHER THIS HIVE HOLDS A WRITER'S SEAT in the workbench of `slug`: the realm that seats it, read on that realm's own key
  * Document, answers `admin`. A reader's seat, no seat, and two seats all answer false: such a face writes its own `personal`
  * layer of the wiki and never the workbench.

@@ -49,6 +49,9 @@ describe("every lit face resolves its own slots", () => {
     expect(await writer.writeSlot("garden"), "CONTROL: a writer's seat writes the workbench").toBe("working");
     expect(await reader.writeSlot("garden"), "a reader's seat writes personal").toBe("personal");
     expect(await unseated.writeSlot("garden"), "no seat writes personal").toBe("personal");
+    // A slug no face of the vessel stood: the first write founds the workbench, so the write layer reads `working` before any realm answers.
+    const first = slots.of({ group: "group-h3", atomKey: "a3".repeat(32), faceDoor: door, workbenchRealm: async (_slug, mint) => mint ? REALM : null, workbenchFounds: async () => true, workbenchWrites: async () => false });
+    expect(await first.writeSlot("book"), "RED: a write that founds the workbench lands in it").toBe("working");
     const trace = { wikiDocId: "automerge:2ZcLTyZGscnNvcFcXGyuAuuXVpd6", libraryBagDocIds: [] as readonly string[] };
     const fingerprint = await computeRecipeFingerprint(trace);
     const w = await writer.bindings(fingerprint, trace, "garden");
