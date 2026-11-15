@@ -144,9 +144,9 @@
       "import": "./dist/sensorium-fusion.js",
       "types": "./dist/sensorium-fusion.d.ts"
     },
-    "./steady-seat": {
-      "import": "./dist/steady-seat.js",
-      "types": "./dist/steady-seat.d.ts"
+    "./iris": {
+      "import": "./dist/iris.js",
+      "types": "./dist/iris.d.ts"
     },
     "./host-task": {
       "import": "./dist/host-task.js",

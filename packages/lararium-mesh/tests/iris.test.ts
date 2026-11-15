@@ -1,27 +1,27 @@
 /**
- * steady-seat — the core that holds a client's MCP seat across its child's sleep (road L45a).
+ * iris — the messenger core that holds a client's MCP seat across its child's sleep (road L45a).
  *
  * The pure frame machine alone runs here: client frames in, child frames in, child-state events in; frames and spawn/kill
  * intents out. No process spawns and no clock ticks. A scripted child answers the frames the seat hands it.
  */
 import { describe, expect, test } from "vitest";
-import { HEARTH_SLEEPS, OUTCOME_UNKNOWN, VESSEL_LOCKED, steadySeat, type SeatEffect, type SeatEvent, type SeatFrame } from "../src/steady-seat.js";
+import { HEARTH_SLEEPS, OUTCOME_UNKNOWN, VESSEL_LOCKED, iris, type IrisEffect, type IrisEvent, type IrisFrame } from "../src/iris.js";
 
 const INIT_PARAMS = { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "fixture-client", version: "1" } };
 const tool = (name: string) => ({ name, description: `the ${name} door`, inputSchema: { type: "object" } });
 
 /** A seat with a scripted child beside it. The child answers `initialize` and `tools/list`, and holds every other request open. */
 function fixture(firstTools: readonly string[] = ["status", "recall"]) {
-  const seat = steadySeat();
-  const seen = { client: [] as SeatFrame[], child: [] as SeatFrame[], effects: [] as SeatEffect[] };
+  const seat = iris();
+  const seen = { client: [] as IrisFrame[], child: [] as IrisFrame[], effects: [] as IrisEffect[] };
   let tools = firstTools, up = false;
-  const answer = (frame: SeatFrame): SeatFrame | null => {
+  const answer = (frame: IrisFrame): IrisFrame | null => {
     if (frame["method"] === "initialize") return { jsonrpc: "2.0", id: frame["id"], result: { protocolVersion: "2025-06-18", capabilities: { tools: { listChanged: false } }, serverInfo: { name: "fixture-surface", version: "7" }, instructions: "read the house" } };
     if (frame["method"] === "tools/list") return { jsonrpc: "2.0", id: frame["id"], result: { tools: tools.map(tool) } };
     return null;
   };
-  const step = (event: SeatEvent): SeatEffect[] => {
-    const out: SeatEffect[] = [], queue: SeatEvent[] = [event];
+  const step = (event: IrisEvent): IrisEffect[] => {
+    const out: IrisEffect[] = [], queue: IrisEvent[] = [event];
     while (queue.length > 0) {
       for (const effect of seat.step(queue.shift()!)) {
         out.push(effect); seen.effects.push(effect);
@@ -37,8 +37,8 @@ function fixture(firstTools: readonly string[] = ["status", "recall"]) {
   };
   const api = {
     seat, seen, step,
-    client: (frame: SeatFrame) => step({ type: "client-frame", frame }),
-    child: (frame: SeatFrame) => step({ type: "child-frame", frame }),
+    client: (frame: IrisFrame) => step({ type: "client-frame", frame }),
+    child: (frame: IrisFrame) => step({ type: "child-frame", frame }),
     up: (next?: readonly string[]) => { if (next) tools = next; up = true; return step({ type: "child-up" }); },
     down: () => { up = false; return step({ type: "child-down" }); },
     /** The whole opening: the seat starts, its first child stands, the client initializes and reads the tools. */
@@ -53,10 +53,10 @@ function fixture(firstTools: readonly string[] = ["status", "recall"]) {
   return api;
 }
 
-const toClient = (effects: readonly SeatEffect[]): SeatFrame[] => effects.flatMap((e) => (e.type === "to-client" ? [e.frame] : []));
-const toChild = (effects: readonly SeatEffect[]): SeatFrame[] => effects.flatMap((e) => (e.type === "to-child" ? [e.frame] : []));
-const kinds = (effects: readonly SeatEffect[]): string[] => effects.map((e) => e.type);
-const errorText = (frame: SeatFrame | undefined): unknown => ((frame?.["result"] as { content?: { text?: string }[] } | undefined)?.content ?? [])[0]?.text;
+const toClient = (effects: readonly IrisEffect[]): IrisFrame[] => effects.flatMap((e) => (e.type === "to-client" ? [e.frame] : []));
+const toChild = (effects: readonly IrisEffect[]): IrisFrame[] => effects.flatMap((e) => (e.type === "to-child" ? [e.frame] : []));
+const kinds = (effects: readonly IrisEffect[]): string[] => effects.map((e) => e.type);
+const errorText = (frame: IrisFrame | undefined): unknown => ((frame?.["result"] as { content?: { text?: string }[] } | undefined)?.content ?? [])[0]?.text;
 
 describe("seat-outlives-child", () => {
   test("RED: a child's death draws a spawn intent and no exit, through three deaths; CONTROL: the client's close ends the seat", () => {
@@ -94,7 +94,7 @@ describe("seat-outlives-child", () => {
     f.client({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT_PARAMS });
     const fell = toClient(f.down());
     expect(fell).toHaveLength(1);
-    expect(fell[0]).toMatchObject({ id: 1, result: { serverInfo: { name: "steady-seat" }, capabilities: { tools: { listChanged: true } } } });
+    expect(fell[0]).toMatchObject({ id: 1, result: { serverInfo: { name: "iris" }, capabilities: { tools: { listChanged: true } } } });
   });
 
   test("RED: a child that never stood leaves the client an answered initialize and an empty tool list, and the first real list draws one list_changed", () => {
@@ -202,7 +202,7 @@ describe("seat-lists-from-cache", () => {
 });
 
 describe("seat-list-changed-on-new-tools", () => {
-  const changed = (frames: readonly SeatFrame[]) => frames.filter((x) => x["method"] === "notifications/tools/list_changed");
+  const changed = (frames: readonly IrisFrame[]) => frames.filter((x) => x["method"] === "notifications/tools/list_changed");
 
   test("RED: a new child with another tool list draws exactly one list_changed, and the cache turns; CONTROL: a mere respawn draws none", () => {
     const f = fixture().open();
@@ -252,8 +252,8 @@ describe("seat-logs-no-payload", () => {
     f.client({ jsonrpc: "2.0", id: `${MARK}-3`, method: `${MARK}/method`, params: {} });
     f.down();
     f.client({ jsonrpc: "2.0", id: `${MARK}-4`, method: "tools/call", params: { name: `${MARK}-tool`, arguments: { text: MARK } } });
-    f.client(MARK as unknown as SeatFrame);
-    f.child([MARK] as unknown as SeatFrame);
+    f.client(MARK as unknown as IrisFrame);
+    f.child([MARK] as unknown as IrisFrame);
     f.up([`${MARK}-tool`, `${MARK}-other`]);
     f.step({ type: "client-closed" });
     const logs = f.seen.effects.filter((e) => e.type === "log");
@@ -298,9 +298,9 @@ describe("the seat keeps the two id spaces apart", () => {
 
 describe("seat-tells-locked-from-down", () => {
   const call = (f: ReturnType<typeof fixture>, id: number) => toChild(f.client({ jsonrpc: "2.0", id, method: "tools/call", params: { name: "status", arguments: {} } }))[0]!;
-  const answer = (f: ReturnType<typeof fixture>, rides: SeatFrame, text: string, isError = true) =>
+  const answer = (f: ReturnType<typeof fixture>, rides: IrisFrame, text: string, isError = true) =>
     f.child({ jsonrpc: "2.0", id: rides["id"], result: { content: [{ type: "text", text }], isError } });
-  const states = (effects: readonly SeatEffect[]) => effects.flatMap((e) => (e.type === "state" ? [e.state] : []));
+  const states = (effects: readonly IrisEffect[]) => effects.flatMap((e) => (e.type === "state" ? [e.state] : []));
 
   test("RED: a child that stands answers a call `vessel-locked`, and the seat's state reads `locked`, apart from `sleeps`", () => {
     const f = fixture();

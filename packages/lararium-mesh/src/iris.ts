@@ -1,5 +1,5 @@
 /**
- * steady-seat — the core that holds a client's MCP seat across its child's sleep.
+ * iris — the messenger core: the pure frame machine that carries a client's MCP messages across its child's sleep.
  *
  * The capability: a seat that keeps breathing while the surface behind it restarts. The client speaks to the seat for its
  * session's whole life; the surface runs as a child the seat asks its binding to spawn again each time it falls. The core
@@ -12,7 +12,7 @@
  *   a call with no child standing          answers the tool error `hearth-sleeps` at once; nothing waits in the seat
  *   a call in flight at the death          answers the tool error `outcome-unknown: re-read before re-trying`; never sent again
  *   a new tool list                        draws one `notifications/tools/list_changed`; a mere respawn draws none
- *   it logs no payload and holds no key    a log names an event from `SeatLogEvent` and two counts, nothing of any frame
+ *   it logs no payload and holds no key    a log names an event from `IrisLogEvent` and two counts, nothing of any frame
  *
  * IDEMPOTENT BY INTENT. The seat sends a client's request to one child, once. The handshake it replays reads as a pure
  * function of the client's `initialize` params, and the tool-list notice fires on a hash change alone.
@@ -32,9 +32,9 @@
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 
 /** One JSON-RPC message, already parsed: the binding owns the framing. */
-export type SeatFrame = Record<string, unknown>;
+export type IrisFrame = Record<string, unknown>;
 
-export type SeatEvent =
+export type IrisEvent =
   | { readonly type: "start" }
   | { readonly type: "client-frame"; readonly frame: unknown }
   | { readonly type: "client-closed" }
@@ -45,28 +45,28 @@ export type SeatEvent =
   | { readonly type: "child-down" };
 
 /** The whole vocabulary a log speaks. */
-export type SeatLogEvent =
+export type IrisLogEvent =
   | "start" | "child-up" | "child-standing" | "child-down" | "client-closed" | "frame-refused" | "answer-unowned"
   | "call-while-asleep" | "call-outcome-unknown" | "tools-changed" | "handshake-refused" | "vessel-locked" | "vessel-opened";
 
 /** Where the seat stands: no child (`sleeps`), a child that takes calls (`standing`), or a child whose surface answers `vessel-locked` (`locked`). */
-export type SeatState = "sleeps" | "standing" | "locked";
+export type IrisState = "sleeps" | "standing" | "locked";
 
-export type SeatEffect =
-  | { readonly type: "to-client"; readonly frame: SeatFrame }
-  | { readonly type: "to-child"; readonly frame: SeatFrame }
+export type IrisEffect =
+  | { readonly type: "to-client"; readonly frame: IrisFrame }
+  | { readonly type: "to-child"; readonly frame: IrisFrame }
   /** A child stands wanted; the binding paces the spawn. */
   | { readonly type: "spawn" }
   | { readonly type: "kill" }
   /** The child completed its handshake and takes calls. */
   | { readonly type: "standing" }
   /** The seat's state moved; a session reads `locked` as the sign to call the operator, `sleeps` as a sleep that mends itself. */
-  | { readonly type: "state"; readonly state: SeatState }
+  | { readonly type: "state"; readonly state: IrisState }
   | { readonly type: "exit" }
   /** `generation` counts the children that came up; `pending` counts the client's requests in flight. */
-  | { readonly type: "log"; readonly event: SeatLogEvent; readonly generation: number; readonly pending: number };
+  | { readonly type: "log"; readonly event: IrisLogEvent; readonly generation: number; readonly pending: number };
 
-export interface SteadySeat { step(event: SeatEvent): SeatEffect[]; state(): SeatState }
+export interface Iris { step(event: IrisEvent): IrisEffect[]; state(): IrisState }
 
 export const HEARTH_SLEEPS = "hearth-sleeps: the vessel rests and this call never left the seat; re-try once it wakes";
 /** The name a surface leads a tool answer with while the vessel stays locked: `vessel-locked: run lares vault unlock`. */
@@ -74,7 +74,7 @@ export const VESSEL_LOCKED = "vessel-locked";
 export const OUTCOME_UNKNOWN = "outcome-unknown: re-read before re-trying";
 
 const LIST_CHANGED = "notifications/tools/list_changed";
-const SEAT_ERROR = -32000;
+const IRIS_ERROR = -32000;
 
 type Id = string | number;
 type Owner =
@@ -82,35 +82,35 @@ type Owner =
   | { readonly kind: "init" }
   | { readonly kind: "list"; readonly acc: unknown[] };
 
-const object = (x: unknown): x is SeatFrame => typeof x === "object" && x !== null && !Array.isArray(x);
+const object = (x: unknown): x is IrisFrame => typeof x === "object" && x !== null && !Array.isArray(x);
 const isId = (x: unknown): x is Id => typeof x === "string" || (typeof x === "number" && Number.isFinite(x));
 const key = (id: Id): string => `${typeof id}:${String(id)}`;
-const toolError = (id: Id, text: string): SeatFrame => ({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text }], isError: true } });
+const toolError = (id: Id, text: string): IrisFrame => ({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text }], isError: true } });
 /** Whether a child's answer to a call reads as the locked vessel's tool error. */
-const lockedAnswer = (frame: SeatFrame): boolean => {
+const lockedAnswer = (frame: IrisFrame): boolean => {
   const result = frame["result"];
   if (!object(result) || result["isError"] !== true || !Array.isArray(result["content"])) return false;
   const first: unknown = result["content"][0];
   return object(first) && typeof first["text"] === "string" && first["text"].startsWith(VESSEL_LOCKED);
 };
-const rpcError = (id: Id, message: string): SeatFrame => ({ jsonrpc: "2.0", id, error: { code: SEAT_ERROR, message } });
+const rpcError = (id: Id, message: string): IrisFrame => ({ jsonrpc: "2.0", id, error: { code: IRIS_ERROR, message } });
 
 /** A tool list's hash, blind to the order the child lists in. */
 export function toolListHash(tools: readonly unknown[]): string {
   return sha256HexBytesSync(canonicalJsonBytes(tools.map((t) => sha256HexBytesSync(canonicalJsonBytes(t))).sort()));
 }
 
-export function steadySeat(): SteadySeat {
+export function iris(): Iris {
   let closed = false, generation = 0, nextId = 0;
   let child: "none" | "up" | "standing" = "none";
   let handshaking = false;
-  let state: SeatState = "sleeps";
+  let state: IrisState = "sleeps";
   /** Whether any spawn has fallen: before the first fall, the first child may still stand. */
   let fell = false;
   /** The client's own `initialize` params, replayed to every child. */
   let clientInit: unknown | undefined;
   let clientHasInit = false, clientReady = false;
-  let initResult: SeatFrame | null = null;
+  let initResult: IrisFrame | null = null;
   let tools: { readonly list: readonly unknown[]; readonly hash: string } | null = null;
   const owners = new Map<number, Owner>();
   /** A client request's id -> the id it rides under toward the child. */
@@ -119,17 +119,17 @@ export function steadySeat(): SteadySeat {
   const childAsks = new Map<string, Id>(), askIds = new Map<string, string>();
   const initWaiters: Id[] = [], listWaiters: Id[] = [];
 
-  let out: SeatEffect[] = [];
+  let out: IrisEffect[] = [];
   const pending = (): number => [...owners.values()].filter((o) => o.kind === "client").length;
-  const log = (event: SeatLogEvent): void => { out.push({ type: "log", event, generation, pending: pending() }); };
-  const move = (next: SeatState): void => {
+  const log = (event: IrisLogEvent): void => { out.push({ type: "log", event, generation, pending: pending() }); };
+  const move = (next: IrisState): void => {
     if (state === next) return;
     state = next;
     out.push({ type: "state", state });
     if (next === "locked") log("vessel-locked");
   };
-  const client = (frame: SeatFrame): void => { out.push({ type: "to-client", frame }); };
-  const send = (frame: SeatFrame): void => { out.push({ type: "to-child", frame }); };
+  const client = (frame: IrisFrame): void => { out.push({ type: "to-client", frame }); };
+  const send = (frame: IrisFrame): void => { out.push({ type: "to-child", frame }); };
   const ask = (owner: Owner, method: string, params?: unknown): number => {
     const id = nextId++;
     owners.set(id, owner);
@@ -138,10 +138,10 @@ export function steadySeat(): SteadySeat {
   };
 
   /** The answer the client reads for `initialize`: the child's own, with the seat's vow to send `list_changed` added. */
-  const initAnswer = (): SeatFrame => {
-    const base: SeatFrame = initResult ?? {
+  const initAnswer = (): IrisFrame => {
+    const base: IrisFrame = initResult ?? {
       protocolVersion: object(clientInit) && typeof clientInit["protocolVersion"] === "string" ? clientInit["protocolVersion"] : "2025-06-18",
-      capabilities: {}, serverInfo: { name: "steady-seat", version: "0" },
+      capabilities: {}, serverInfo: { name: "iris", version: "0" },
     };
     const caps = object(base["capabilities"]) ? base["capabilities"] : {};
     return { ...base, capabilities: { ...caps, tools: { ...(object(caps["tools"]) ? caps["tools"] : {}), listChanged: true } } };
@@ -220,7 +220,7 @@ export function steadySeat(): SteadySeat {
     if (typeof method === "string") {
       if (isId(id)) {
         // A request the child sends the client rides under the seat's own id, so a later child's ids never meet it.
-        const outward = `seat-${nextId++}`;
+        const outward = `iris-${nextId++}`;
         childAsks.set(key(outward), id); askIds.set(key(id), outward);
         client({ ...frame, id: outward });
         return;

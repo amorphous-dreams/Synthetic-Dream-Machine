@@ -1,7 +1,7 @@
 /**
  * mcp-steady — the Node host's binding of the steady seat: `lares mcp steady -- <child argv…>`.
  *
- * The core (`@lararium/mesh/steady-seat`) holds the seat as a pure frame machine. This binding hands it the two ports a Node
+ * The core (`@lararium/mesh/iris`) holds the seat as a pure frame machine. This binding hands it the two ports a Node
  * host owns: the client on this process's stdin and stdout, and the surface as a `child_process` it spawns from the argv after
  * `--`. Each stream carries JSON-RPC as MCP's stdio transport frames it: one message per line.
  *
@@ -19,7 +19,7 @@
  */
 import { spawn, type ChildProcess } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
-import { steadySeat, type SeatEvent, type SeatFrame } from "@lararium/mesh/steady-seat";
+import { iris, type IrisEvent, type IrisFrame } from "@lararium/mesh/iris";
 
 export interface SteadySeatPacing { readonly firstMs: number; readonly capMs: number }
 export const STEADY_SEAT_PACING: SteadySeatPacing = { firstMs: 250, capMs: 15_000 };
@@ -59,7 +59,7 @@ function lines(stream: NodeJS.ReadableStream, each: (frame: unknown, parsed: boo
 }
 
 export function steadySeatHost(opts: SteadySeatHostOptions): SteadySeatHost {
-  const seat = steadySeat();
+  const seat = iris();
   const pacing = opts.pacing ?? STEADY_SEAT_PACING;
   let child: ChildProcess | null = null;
   let timer: NodeJS.Timeout | null = null;
@@ -68,7 +68,7 @@ export function steadySeatHost(opts: SteadySeatHostOptions): SteadySeatHost {
   const done = new Promise<number>((resolve) => { finish = resolve; });
 
   const note = (event: string): void => { opts.stderr.write(`steady-seat: ${event} generation=${generation} pending=${pending}\n`); };
-  const write = (stream: NodeJS.WritableStream | null | undefined, frame: SeatFrame): void => {
+  const write = (stream: NodeJS.WritableStream | null | undefined, frame: IrisFrame): void => {
     if (stream && (stream as { writable?: boolean }).writable !== false) stream.write(`${JSON.stringify(frame)}\n`);
   };
 
@@ -104,7 +104,7 @@ export function steadySeatHost(opts: SteadySeatHostOptions): SteadySeatHost {
     });
   }
 
-  function feed(event: SeatEvent): void {
+  function feed(event: IrisEvent): void {
     for (const effect of seat.step(event)) {
       switch (effect.type) {
         case "to-client": write(opts.stdout, effect.frame); break;
