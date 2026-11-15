@@ -316,10 +316,11 @@ describe("⑧ a joined vessel reads its Nexus's board", () => {
     const pin = readFileSync(
       join(import.meta.dirname, "..", "..", "lararium-node", "src", "hearth-dial-pin.ts"), "utf8");
     // BOTH HALVES OR NEITHER: a url with no gate key dials a door it cannot prove, and a key with no url
-    // names no door — the packer returns `{}` unless it holds both.
+    // names no door — the packer packs the dial rows (the sync url among them) only where it holds both. The
+    // gate key alone still packs as the island half, which names a board and dials nothing.
     expect(pin).toMatch(/HEARTH_SYNC_URL_TIDDLER/);
     expect(pin).toMatch(/HEARTH_GATE_KEY_TIDDLER/);
-    expect(pin, "the packer lets a half pin through").toMatch(/if \(!syncUrl \|\| !gatePubKey\) return \{\};/);
+    expect(pin, "the packer lets a half pin through").toMatch(/\.\.\.\(syncUrl && gatePubKey \? \{[\s\S]{0,400}?row\(HEARTH_SYNC_URL_TIDDLER, syncUrl\),\s*\} : \{\}\),/);
     // And the boot READS it — a pin nothing consults leaves the hearth re-learning by hand, which is the
     // deferral's own words.
     const boot = readFileSync(
