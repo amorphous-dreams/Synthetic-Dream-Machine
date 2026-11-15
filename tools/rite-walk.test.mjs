@@ -1,0 +1,230 @@
+// rite-walk.test — the reds the rite walker owes, planted against the runbook's own bytes, stub hands and scratch trees.
+// No vessel stands here: the walk itself runs once at each merge (`node tools/rite-walk.mjs --out <dir>`).
+import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+import { RUNBOOK, STEPS, assertBound, assertScratchRoot, bindSteps, receipt, receiptFaults, riteCommands, riteSlot, verdict, walk } from "./rite-walk/steps.mjs";
+import { carrierIdentity, parseArgs } from "./rite-walk.mjs";
+
+const ROOT = fileURLToPath(new URL("..", import.meta.url)).replace(/\/$/, "");
+const WALKER = join(ROOT, "tools/rite-walk.mjs");
+const LIVE = readFileSync(join(ROOT, RUNBOOK), "utf8");
+const scratch = () => realpathSync(mkdtempSync(join(tmpdir(), "rite-walk-test-")));
+const refuses = (fn, pattern) => assert.throws(fn, (e) => e.name === "RiteWalkRefusal" && pattern.test(e.message), `expected a RiteWalkRefusal matching ${pattern}`);
+/** Walk the live join with hands that pass every step they reach; answers the rows and the steps the hands ran. */
+async function stubWalk(run = async () => ({ ok: true, answer: "ok" })) {
+  const ran = [], stood = [];
+  const rows = await walk(assertBound(bindSteps(LIVE)), {
+    run: async (step) => { ran.push(step.id); return await run(step); },
+    standIn: async (step) => { stood.push(step.id); return "the stub cleared the hearth"; },
+    now: () => 0,
+  });
+  return { rows, ran, stood };
+}
+const row = (rows, id) => rows.find((r) => r.step === id);
+
+// ── rite-walk-binds-every-line ──────────────────────────────────────────────────────────────────────────────────────
+
+test("rite-walk-binds-every-line: every `lares` command of the rite's fences binds one step, and every step binds a line of the slot", () => {
+  const joined = bindSteps(LIVE);
+  assert.deepEqual({ unmapped: joined.unmapped, orphans: joined.orphans, unquoted: joined.unquoted }, { unmapped: [], orphans: [], unquoted: [] });
+  const commands = riteCommands(LIVE);
+  assert.ok(commands.length >= 30, `the probe read ${commands.length} fence commands; the rite carries more`);
+  assert.equal(joined.bound.filter((s) => s.fence !== undefined).length, commands.length);
+  const slot = riteSlot(LIVE);
+  for (const s of joined.bound) assert.ok(s.line >= slot[0].line && s.line <= slot.at(-1).line, `${s.id} binds line ${s.line}, outside the slot`);
+  assert.equal(new Set(STEPS.map((s) => s.id)).size, STEPS.length, "step ids repeat");
+});
+
+test("rite-walk-binds-every-line: a runbook that gains a `lares` line no step walks reads red, by line and command", () => {
+  const fixture = LIVE.replace("lares wiki init notes\n", "lares wiki init notes\nlares frobnicate --now      # a command no step walks\n");
+  assert.notEqual(fixture, LIVE);
+  const joined = bindSteps(fixture);
+  assert.equal(joined.unmapped.length, 1);
+  assert.equal(joined.unmapped[0].command, "lares frobnicate --now");
+  assert.equal(fixture.split("\n")[joined.unmapped[0].line - 1].startsWith("lares frobnicate"), true);
+  refuses(() => assertBound(joined), /unmapped: runbook line \d+ instructs `lares frobnicate --now`/);
+});
+
+test("rite-walk-binds-every-line: the walker refuses a drifted runbook before any act (rc 2, no root minted, no receipt)", () => {
+  const dir = scratch();
+  try {
+    const fixture = join(dir, "runbook.mem");
+    writeFileSync(fixture, LIVE.replace("lares wiki init notes\n", "lares wiki init notes\nlares frobnicate --now\n"));
+    const stage = join(dir, "stage");
+    mkdirSync(stage);
+    const r = spawnSync(process.execPath, [WALKER, "--runbook", fixture, "--out", join(dir, "out")], { encoding: "utf8", env: { ...process.env, LAR_STAGE_DIR: stage } });
+    assert.equal(r.status, 2, r.stderr);
+    assert.match(r.stderr, /RiteWalkRefusal: the step table and the runbook disagree/);
+    assert.match(r.stderr, /lares frobnicate --now/);
+    assert.deepEqual(readdirSync(stage), []);
+    assert.equal(existsSync(join(dir, "out")), false);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("rite-walk-binds-every-line: a step whose command the rite dropped reads orphan; an expected answer the rite stopped quoting reads unquoted", () => {
+  const dropped = bindSteps(LIVE.replace("lares wiki share notes --list\n", ""));
+  assert.deepEqual(dropped.orphans.map((o) => o.step), ["notes-list"]);
+  refuses(() => assertBound(dropped), /orphan: step notes-list/);
+  const requoted = bindSteps(LIVE.replaceAll("ok — 1 of 1 seats", "ok, one seat"));
+  assert.deepEqual(requoted.unquoted.map((u) => u.step), ["promote-open"]);
+  refuses(() => assertBound(requoted), /unquoted: step promote-open/);
+});
+
+test("CONTROL rite-walk-binds-every-line: a passing stand step names its runbook line and the answer the runbook quotes", async () => {
+  const { rows } = await stubWalk();
+  const share = row(rows, "share-lares");
+  const line = Number(share.runbook.split(":")[1]);
+  assert.match(share.runbook, /^founding-runbook\.mem:\d+$/);
+  assert.equal(LIVE.split("\n")[line - 1].startsWith("lares wiki share lares --write joshua-fontany-engineer --read joshua-fontany-referee"), true);
+  assert.equal(share.outcome, "pass");
+  assert.ok(LIVE.includes(share.expect), "the step's expected answer stands in the runbook, verbatim");
+});
+
+// ── rite-walk-names-unreached ───────────────────────────────────────────────────────────────────────────────────────
+
+test("rite-walk-names-unreached: the shim's reset, the image and the browser read unreached with their cause, and never run", async () => {
+  const { rows, ran, stood } = await stubWalk();
+  assert.deepEqual([row(rows, "reset").outcome, row(rows, "reset").cause], ["unreached", "host-shim"]);
+  assert.deepEqual([row(rows, "image").outcome, row(rows, "image").cause], ["unreached", "image"]);
+  assert.deepEqual([row(rows, "browser").outcome, row(rows, "browser").cause], ["unreached", "browser"]);
+  for (const id of ["reset", "image", "browser"]) assert.equal(ran.includes(id), false, `${id} ran`);
+  assert.equal(verdict(row(rows, "reset")), "unreached: host-shim");
+  assert.deepEqual(stood, ["reset"], "the reset's stand-in keeps the ground for the re-founding, and the row still reads unreached");
+  assert.equal(row(rows, "refound").outcome, "pass");
+  assert.deepEqual(receiptFaults(rows), []);
+});
+
+test("rite-walk-names-unreached: a passphrase ward the staged custody answered reads `pass (staged-custody)`, never a bare pass", async () => {
+  const { rows } = await stubWalk();
+  const wards = STEPS.filter((s) => s.via === "staged-custody").map((s) => s.id);
+  assert.ok(wards.length >= 20, `only ${wards.length} steps name the staged custody`);
+  for (const id of ["found", "up", "persona-engineer", "unlock-all", "wear-steward", "lift", "promote-open", "refound"]) assert.ok(wards.includes(id), `${id} names no staged custody`);
+  for (const id of wards) assert.equal(verdict(row(rows, id)), "pass (staged-custody)");
+  assert.equal(verdict(row(rows, "memory")), "pass (seat-stdio)");
+  // Every `vault unlock` and `persona new` of the fences rides the ward.
+  for (const s of STEPS.filter((x) => /^lares (vault unlock|persona new|found|up)\b/.test(x.fence ?? ""))) assert.equal(s.via, "staged-custody", s.id);
+});
+
+test("rite-walk-names-unreached: a receipt that turns an unreached step into a pass, drops a cause or bares a stand-in reads faults by name", async () => {
+  const { rows } = await stubWalk();
+  const forged = (id, change) => rows.map((r) => (r.step === id ? { ...r, ...change } : r));
+  assert.match(receiptFaults(forged("reset", { outcome: "pass", cause: undefined })).join("\n"), /reset: the table marks it unreached \(host-shim\) and the receipt reads pass/);
+  assert.match(receiptFaults(forged("image", { cause: undefined })).join("\n"), /image: unreached and names no cause/);
+  assert.match(receiptFaults(forged("found", { via: undefined })).join("\n"), /found: a bare pass over a staged-custody stand-in/);
+  assert.match(receiptFaults(rows.filter((r) => r.step !== "export")).join("\n"), /export: the receipt carries no row/);
+  assert.match(receiptFaults(forged("seed", { runbook: "founding-runbook.mem" })).join("\n"), /seed: names no runbook line/);
+});
+
+test("rite-walk-names-unreached: a step whose ground never stood reads `unreached: blocked:<step>`; hands that cannot reach answer their own cause", async () => {
+  const failed = await stubWalk(async (step) => (step.id === "found" ? { ok: false, answer: "the founding refused" } : { ok: true, answer: "ok" }));
+  assert.equal(row(failed.rows, "found").outcome, "fail");
+  assert.deepEqual([row(failed.rows, "up").outcome, row(failed.rows, "up").cause], ["unreached", "blocked:found"]);
+  assert.deepEqual([row(failed.rows, "seed").outcome, row(failed.rows, "seed").cause], ["unreached", "blocked:up"]);
+  assert.deepEqual(failed.rows.filter((r) => r.outcome === "pass").map((r) => r.step), []);
+  assert.deepEqual(failed.stood, [], "no stand-in clears a hearth the walk never reached");
+  assert.equal(row(failed.rows, "reset").cause, "host-shim");
+  const thrown = await stubWalk(async (step) => { if (step.id === "seed") throw new Error("the seed threw"); return { ok: true, answer: "ok" }; });
+  assert.deepEqual([row(thrown.rows, "seed").outcome, row(thrown.rows, "seed").answer], ["fail", "the seed threw"]);
+  const seatless = await stubWalk(async (step) => (step.id === "memory" ? { unreached: "seat-interpreter" } : { ok: true, answer: "ok" }));
+  assert.deepEqual([row(seatless.rows, "memory").outcome, row(seatless.rows, "memory").cause], ["unreached", "seat-interpreter"]);
+  assert.deepEqual(receiptFaults(seatless.rows), []);
+});
+
+test("CONTROL rite-walk-names-unreached: the receipt names the head and the carrier, and its outcome digest moves with an outcome and never with an answer", async () => {
+  const { rows } = await stubWalk();
+  const inputs = { head: "0".repeat(40), dirty: false, runbook: carrierIdentity(RUNBOOK, LIVE), walker: "sha256:w" };
+  const a = receipt({ ...inputs, rows });
+  assert.equal(a.kind, "rite-walk-receipt");
+  assert.equal(a.inputs.head, "0".repeat(40));
+  assert.match(a.inputs.runbook.sha256, /^[0-9a-f]{64}$/);
+  assert.match(a.inputs.runbook.bcc, /^ni:\/\/\/sha-256;/);
+  assert.equal(a.tally.pass + a.tally.fail + a.tally.unreached, STEPS.length);
+  assert.deepEqual([a.tally.unreached, a.tally.fail, a.tally.firstFail], [3, 0, null]);
+  const b = receipt({ ...inputs, rows: rows.map((r) => ({ ...r, answer: "another founding minted other ids", ms: 99 })) });
+  assert.equal(b.outcomes, a.outcomes);
+  const c = receipt({ ...inputs, rows: rows.map((r) => (r.step === "seed" ? { ...r, outcome: "fail" } : r)) });
+  assert.notEqual(c.outcomes, a.outcomes);
+  assert.equal(c.tally.firstFail, "seed");
+  assert.ok(Buffer.byteLength(row((await stubWalk(async () => ({ ok: true, answer: "é".repeat(900) }))).rows, "seed").answer) <= 400);
+});
+
+// ── rite-walk-scratch-only ──────────────────────────────────────────────────────────────────────────────────────────
+
+test("rite-walk-scratch-only: a root outside the scratch prefix, in the checkout or in a home refuses by name", () => {
+  const dir = scratch();
+  try {
+    const home = join(dir, "home");
+    mkdirSync(join(home, ".lares"), { recursive: true });
+    const guard = { checkout: ROOT, home, prefixes: [dir], env: {} };
+    refuses(() => assertScratchRoot("/var/lib/lares-rite", guard), /outside every scratch prefix/);
+    refuses(() => assertScratchRoot(dir, guard), /outside every scratch prefix/);
+    refuses(() => assertScratchRoot(join(ROOT, "scratch-root"), { ...guard, prefixes: [dir, ROOT] }), /overlaps the checkout/);
+    refuses(() => assertScratchRoot(join(ROOT, "scratch-root"), guard), /outside every scratch prefix/);
+    refuses(() => assertScratchRoot(home, guard), /holds the home/);
+    refuses(() => assertScratchRoot(join(home, ".lares", "house"), guard), /stands inside .*\.lares/);
+    refuses(() => assertScratchRoot(join(home, ".claude"), guard), /stands inside .*\.claude/);
+    refuses(() => assertScratchRoot("", guard), /no root named/);
+    refuses(() => assertScratchRoot(join(dir, "r"), { ...guard, prefixes: [] }), /no scratch prefix named/);
+    // A link under the prefix that leads into the checkout reads by where it lands.
+    symlinkSync(ROOT, join(dir, "link"));
+    refuses(() => assertScratchRoot(join(dir, "link", "scratch-root"), guard), /outside every scratch prefix/);
+    // A standing directory no harness marked.
+    mkdirSync(join(dir, "held"));
+    writeFileSync(join(dir, "held", "someone-elses-file"), "x");
+    refuses(() => assertScratchRoot(join(dir, "held"), guard), /no \.lar-test-scratch marker/);
+    // The canon source and genesis ride the scratch root alone.
+    refuses(() => assertScratchRoot(join(dir, "r"), { ...guard, env: { LAR_BAGS: join(ROOT, "bags") } }), /LAR_BAGS stands set/);
+    refuses(() => assertScratchRoot(join(dir, "r"), { ...guard, env: { LAR_GENESIS: join(ROOT, "genesis") } }), /LAR_GENESIS stands set/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("CONTROL rite-walk-scratch-only: an unminted path under the prefix and a root a harness marked both pass", () => {
+  const dir = scratch();
+  try {
+    const guard = { checkout: ROOT, home: join(dir, "home"), prefixes: [dir], env: {} };
+    assert.equal(assertScratchRoot(join(dir, "fresh"), guard), join(dir, "fresh"));
+    mkdirSync(join(dir, "marked"));
+    writeFileSync(join(dir, "marked", ".lar-test-scratch"), "staged\n");
+    writeFileSync(join(dir, "marked", "genesis"), "x");
+    assert.equal(assertScratchRoot(join(dir, "marked"), guard), join(dir, "marked"));
+    mkdirSync(join(dir, "empty"));
+    assert.equal(assertScratchRoot(join(dir, "empty"), guard), join(dir, "empty"));
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("rite-walk-scratch-only: the walker refuses a root in the checkout or a home before any act (rc 2; nothing minted, staged or written)", () => {
+  const dir = scratch();
+  try {
+    const home = join(dir, "home"), stage = join(dir, "stage");
+    mkdirSync(join(home, ".lares"), { recursive: true });
+    mkdirSync(stage);
+    // LAR_BAGS names the checkout's canon: the walker drops it, and the refusal below still lands before a byte moves.
+    const env = { ...process.env, HOME: home, LAR_STAGE_DIR: stage, LAR_BAGS: join(ROOT, "bags") };
+    for (const [root, pattern] of [
+      [join(ROOT, "scratch-root"), /outside every scratch prefix/],
+      [join(home, ".lares"), /outside every scratch prefix|stands inside/],
+      ["/var/lib/lares-rite", /outside every scratch prefix/],
+    ]) {
+      const r = spawnSync(process.execPath, [WALKER, "--root", root, "--out", join(dir, "out")], { encoding: "utf8", env });
+      assert.equal(r.status, 2, `${root}: ${r.stderr}`);
+      assert.match(r.stderr, /^RiteWalkRefusal: /);
+      assert.match(r.stderr, pattern);
+      assert.equal(r.stdout, "", "a refused walk ran no step");
+    }
+    assert.equal(existsSync(join(ROOT, "scratch-root")), false);
+    assert.deepEqual(readdirSync(join(home, ".lares")), []);
+    assert.deepEqual(readdirSync(stage), []);
+    assert.equal(existsSync(join(dir, "out")), false);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("rite-walk-scratch-only: the walker's arguments refuse by name", () => {
+  refuses(() => parseArgs(["--out"]), /--out names nothing/);
+  refuses(() => parseArgs(["--live"]), /unknown argument --live/);
+  assert.deepEqual(parseArgs(["--out", "o", "--to", "seed", "--keep"]), { keep: true, bind: false, out: "o", to: "seed" });
+});
