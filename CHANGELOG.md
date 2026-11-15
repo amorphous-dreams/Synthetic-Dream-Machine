@@ -4,6 +4,14 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### The worn house: a seat that keeps breathing, and one power per go
+
+**Added**
+- **The steady seat** (road `L45a`). `lares mcp steady -- <child argv…>` holds an MCP client's stdio for the session's whole life and spawns the surface as a child that may fall and rise, so a container restart for a code update never reaches the client. The seat answers `initialize` and the tool list from what the child answered, replays the handshake to each new child itself, answers a call `hearth-sleeps` at once while no child stands and `outcome-unknown: re-read before re-trying` for one in flight at a death (never sent again), and sends one `notifications/tools/list_changed` when a new child lists other tools. Its core runs as a pure frame machine in `@lararium/mesh` (`steady-seat.ts`); the Node binding in `lares-cli` owns the respawn pacing, logs event names and counts alone, and loads no custody. The resolver's container form names the seat, so `lares home tend` re-aims each harness config at it.
+
+**Changed**
+- **A go names its rite** (road `L45b`). A swarm go carries `rite` (`push` · `restart`): the rite rides its signed body, its co-sign head, its title (`$:/lares/swarm/go/<rite>/<branch>/<go cid>`) and its ward verb (`ward-<rite>-go`), and `readGo`, `readGoChain` and `spendGo` take it, so a push go never spends as a restart. `swarm-go-issue` refuses a go that names no rite, and `swarm-show` reads one rite's go. A go resting under the rite-less title reads as absent.
+
 ### Wave two's first batch: the face's own page mounts its daemon wiki, the rite walks itself, the legs wear their face
 
 **Added**
