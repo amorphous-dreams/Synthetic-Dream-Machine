@@ -347,9 +347,9 @@ def test_a_refused_write_reaches_the_caller_naming_decision_reason_and_live_hash
     result = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "sdm", "base": "sha256-stale"})
     assert result.is_error
     assert "meme-put conflict" in _said(result) and "both-moved" in _said(result) and "sha256-live" in _said(result)
-    daemon.output = dict(_PUT_OUTPUT, decision="refuse", landed=[], warnings=["row-key-missing: the stage row names no row-key"])
+    daemon.output = dict(_PUT_OUTPUT, decision="refuse", landed=[], warnings=["stage-path-shape: the stage meme path reads no segment"])
     result = _seat_call("meme_put", {"uri": _URI, "text": "the body", "recipe": "default"})
-    assert result.is_error and "meme-put refuse" in _said(result) and "row-key-missing" in _said(result)
+    assert result.is_error and "meme-put refuse" in _said(result) and "stage-path-shape" in _said(result)
 
 
 def test_every_refusal_family_reaches_the_caller_by_name(daemon, monkeypatch):
@@ -424,13 +424,12 @@ def _described(name: str) -> str:
     return next(t.description for t in asyncio.run(mcp.list_tools()) if t.name == name)
 
 
-def test_meme_put_text_names_the_stage_row_key_law():
-    # A writer meets the law in the tool's own text, before the gate refuses: a record under the memory stage carries
-    # its `row-key`, and each refusal the law answers stands named.
+def test_meme_put_text_names_the_stage_meme_law():
+    # A writer meets the law in the tool's own text, before the gate refuses: a meme under the memory stage carries
+    # its stage path in the title, and the refusal the law answers stands named. The retired `row-key` stays unnamed.
     said = _described("meme_put")
-    assert 'lar:///ha.ka.ba/kahua/memory/<class>/<slug>' in said and 'row-key = "<class>/<slug>"' in said
-    for code in ("row-key-missing", "row-key-title", "row-key-shape"):
-        assert code in said
+    assert 'lar:///ha.ka.ba/kahua/memory/<class>/<slug>' in said and "stage-path-shape" in said
+    assert "row-key" not in said
 
 
 def test_meme_list_text_promises_a_row_bag_for_a_named_recipe_alone():

@@ -1045,11 +1045,10 @@ def build_mcp(coordinator: LaresCoordinator):
         tombstoned, canonicalHash, warnings, diagnostics} for a write that stands (`ingest`, or `noop` where the
         records already say it). A WRITE THAT NEVER LANDED RAISES: `refuse` and `conflict` answer a tool error
         naming the decision, its reason or warnings, and the live hash to re-read against; a locked vessel
-        answers `vessel-locked: run lares vault unlock`. THE STAGE ROW LAW: a record under the memory stage,
-        `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`, carries `row-key = "<class>/<slug>"` in its toml meta block
-        (one or two lowercase, hyphen-joined segments; the title derives from the key). Without the key the put
-        refuses `row-key-missing`; a key that derives another title refuses `row-key-title`; a key that reads no
-        path refuses `row-key-shape`. Rides the @daemon wire, never a store."""
+        answers `vessel-locked: run lares vault unlock`. THE STAGE MEME LAW: a meme under the memory stage,
+        `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`, carries its stage path in its title and `uri-path` (one or two
+        lowercase, hyphen-joined segments). A path that reads otherwise refuses `stage-path-shape`. Rides the @daemon
+        wire, never a store."""
         args: dict = {**_meme_container("meme_put", recipe, bag), "uri": uri, "text": text}
         if base is not None:
             args["base"] = base
@@ -1268,7 +1267,7 @@ def build_mcp(coordinator: LaresCoordinator):
         THE FENCES, each refused by name: a meme root or slot takes a field or tag patch here, and its text, type or
         carriage fields refuse `tiddler-put-in-a-family` (use `meme_put`); a `$:/` title or tag, a module or plugin
         field, a script type refuse `tiddler-put-code-class`; a title that stays home refuses `tiddler-withheld`; a
-        title under the memory stage needs its `row-key` (`row-key-missing`). CONTAINER LAW: exactly one of `recipe` /
+        title under the memory stage reads one or two lowercase, hyphen-joined path segments (`stage-path-shape`). CONTAINER LAW: exactly one of `recipe` /
         `bag`; this phase answers `recipe="default"`."""
         args: dict = {**_meme_container("tiddler_put", recipe, bag), "title": title}
         if fields is not None:

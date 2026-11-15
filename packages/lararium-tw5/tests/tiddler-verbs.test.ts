@@ -270,8 +270,8 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
       { title: "$:/config/x", text: "y" }, { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
       { title: "Tagged", tagsAdd: "$:/tags/StartupAction" }, { title: "Tagged", fields: { tags: "$:/tags/Global" } }, { title: "$:/temp/lares/secret", text: "y" },
     ]) await expect(put({ ...A, ...bad }, ctx())).rejects.toMatchObject({ reason: expect.stringMatching(/^(tiddler-put-code-class|tiddler-withheld)$/) });
-    await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "row-key-missing" });
-    expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y", fields: { "row-key": "feedback/x" } }, ctx())).toMatchObject({ decision: "put" });
+    await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/Feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "stage-path-shape" });
+    expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
   });
 
   test("tiddler-delete: a meme root or slot answers its consequence and refuses without the family flag; a plain tiddler leaves with its consequence named; a stale base moves nothing", async () => {

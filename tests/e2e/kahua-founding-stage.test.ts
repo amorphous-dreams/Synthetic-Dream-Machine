@@ -85,7 +85,7 @@ describe.skipIf(!stagedTarget || !built)("the founding pins the face's kahua sta
     // its projection; the face rides the folder name alone.
     const source = join(hearth!.root, "stage-row.mem");
     const uri = "lar:///ha.ka.ba/kahua/memory/kahua-founding-stage-row";
-    writeFileSync(source, `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\nrow-key = "kahua-founding-stage-row"\n\`\`\`\n\n! A stage row\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
+    writeFileSync(source, `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${uri.slice("lar:///".length)}"\n\`\`\`\n\n! A stage meme\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`);
     const put = await hearth!.cli(["meme", "put", uri, "--recipe", "default", "--file", source, "--json"]);
     expect(put.json?.["ok"], said(put)).toBe(true);
     // LIVENESS: both event waits fail on a stalled projector; the journal names the completed mirror roots.

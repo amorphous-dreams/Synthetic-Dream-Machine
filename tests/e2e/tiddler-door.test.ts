@@ -41,11 +41,11 @@ const key = (n: number): string => `feedback/note-${String(n).padStart(2, "0")}`
 const uriOf = (n: number): string => `${STAGE}${key(n)}`;
 const NOTES = 12;
 
-/** One memory meme: a stage row keyed by its `row-key`, tagged, with a rule slot that links note 01 and a why slot. */
+/** One memory meme: a stage meme at its stage path, tagged, with a rule slot that links note 01 and a why slot. */
 const memory = (n: number): string => {
   const uri = uriOf(n);
   return `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\n` +
-    `uri-path = "ha.ka.ba/kahua/memory/${key(n)}"\nkind = "memory"\nrow-key = "${key(n)}"\ntags = "memory ${n % 2 ? "feedback" : "project"}"\nstatus = "open"\n\`\`\`\n\n` +
+    `uri-path = "ha.ka.ba/kahua/memory/${key(n)}"\nkind = "memory"\ntags = "memory ${n % 2 ? "feedback" : "project"}"\nstatus = "open"\n\`\`\`\n\n` +
     `<<~ ahu slot=\`#/rule\`>>\n\n! Rule ${n}\n\n${n === 1 ? "The first rule stands alone." : `Rule ${n} builds on [[${uriOf(1)}]].`}\n\n<<~/ahu>>\n\n` +
     `<<~ ahu slot=\`#/why\`>>\n\n! Why ${n}\n\nBecause walk ${n} measured it.\n\n<<~/ahu>>\n\n` +
     `<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
@@ -229,7 +229,7 @@ describe.skipIf(gaps.length > 0)("★ THE TIDDLER DOOR on a hearth — the CLI a
     say("CLI tiddler get --skinny", dataOf(cliSkinny));
     expect(cliSkinny.code, cliSkinny.stderr).toBe(0);
     const skinny = dataOf(cliSkinny)["tiddler"] as { fields: Record<string, string>; position: string; omitted: string[]; hash: string };
-    expect(skinny.fields).toMatchObject({ title: uriOf(3), tags: "memory feedback", status: "open", "row-key": key(3) });
+    expect(skinny.fields).toMatchObject({ title: uriOf(3), tags: "memory feedback", status: "open" });
     expect(skinny.fields["text"]).toBeUndefined();
     expect(skinny).toMatchObject({ position: "root", omitted: ["text"] });
     const cliSlot = await lar.cli(["tiddler", "get", uriOf(3), "--slot", "#/why", ...D]);

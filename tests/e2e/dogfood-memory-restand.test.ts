@@ -1,9 +1,9 @@
 /**
  * LEAD RUNS: this proof founds and boots two staged vessels and exercises the daemon's projection journal.
- * The content key keeps the same memory title across a state-home re-stand; a changed key makes a new title.
- * Road L9: a stage row's title derives from its `row-key` alone (`lar:///ha.ka.ba/kahua/memory/<row-key>`), the
- * Confluence gate refuses a row at any other title (`row-key-title`), and `lares meme put` re-pours an exported
- * projection byte for byte. The projection aligns its meta, so the fields read by name, never by spacing.
+ * The stage path keeps the same memory title across a state-home re-stand; a changed path makes a new title.
+ * Road L9: a stage meme's title carries its stage path (`lar:///ha.ka.ba/kahua/memory/<stage-path>`), the
+ * Confluence gate refuses a path that reads no one or two lowercase segments (`stage-path-shape`), and `lares meme put`
+ * re-pours an exported projection byte for byte. The projection aligns its meta, so the fields read by name, never by spacing.
  */
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs";
@@ -11,16 +11,16 @@ import { join, relative } from "node:path";
 import { daemonWikiDir, openStaged, stageDir, type LarInstance } from "../harness/instance.js";
 import { expectEntry } from "../harness/journal-expect.js";
 
-const ROW = { rowKey: "dogfood-memory-row-76f4a2ff", text: "The memory crosses a re-stand by its content key." };
-// An independent spelling of the house derivation (`stageRowTitle`), so a drift in either reads red here.
-const titleFor = (rowKey: string): string => `lar:///ha.ka.ba/kahua/memory/${rowKey}`;
+const ROW = { stagePath: "dogfood-memory-row-76f4a2ff", text: "The memory crosses a re-stand by its stage path." };
+// An independent spelling of the house derivation (`stageMemeTitle`), so a drift in either reads red here.
+const titleFor = (stagePath: string): string => `lar:///ha.ka.ba/kahua/memory/${stagePath}`;
 /** One meta field by name, whatever column the canonical render aligns its `=` at. */
 const field = (text: string, name: string): string | undefined =>
   new RegExp(`^${name}\\s*=\\s*"([^"]*)"$`, "m").exec(text)?.[1];
 const pathFor = (uri: string): string => uri.slice("lar:///".length);
-const carrier = (uri: string, rowKey = ROW.rowKey): string => {
+const carrier = (uri: string): string => {
   const path = pathFor(uri);
-  return `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${path}"\nkind = "memory"\nsteward = "dogfood"\nrow-key = "${rowKey}"\n\`\`\`\n\n! Dogfood memory\n\n${ROW.text}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+  return `<<^ code=\`&#x0001;\` from=\`?\` to=\`${uri}\`>>\n<<^ code=\`&#x0002;\`>>\n\n\`\`\`toml meta\nuri-path = "${path}"\nkind = "memory"\nsteward = "dogfood"\n\`\`\`\n\n! Dogfood memory\n\n${ROW.text}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 };
 
 let original: LarInstance | undefined;
@@ -49,7 +49,7 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
   });
 
   test("RED: rename the old state home, re-found, and re-pour the old projection with the same title, fields, and text", async () => {
-    const uri = titleFor(ROW.rowKey);
+    const uri = titleFor(ROW.stagePath);
     const path = pathFor(uri);
     const source = join(originalRoot, "memory.mem");
     writeFileSync(source, carrier(uri));
@@ -77,7 +77,7 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     // The face folder comes from the old projection itself; it remains inside the renamed state home.
     const archivedProjection = join(asideRoot, oldProjectionRelative);
     const priorWiki = readFileSync(archivedProjection, "utf8");
-    expect(field(priorWiki, "row-key")).toBe(ROW.rowKey);
+    expect(field(priorWiki, "uri-path")).toBe(path);
     const sourceAgain = join(freshRoot, "re-pour.mem");
     writeFileSync(sourceAgain, priorWiki);
     const poured = await restored!.cli(["meme", "put", uri, "--recipe", "default", "--file", sourceAgain, "--json"]);
@@ -88,7 +88,7 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     expect(data["uri"]).toBe(uri);
     expect(data["text"]).toBe(priorWiki);
     const text = String(data["text"]);
-    expect([field(text, "kind"), field(text, "steward"), field(text, "row-key"), field(text, "title")]).toEqual(["memory", "dogfood", ROW.rowKey, uri]);
+    expect([field(text, "kind"), field(text, "steward"), field(text, "uri-path"), field(text, "title")]).toEqual(["memory", "dogfood", path, uri]);
     const newProjection = join(daemonWikiDir(freshRoot), `${path}.mem`);
     await expectEntry(restored!, {
       kind: "bag-projected",
@@ -100,26 +100,27 @@ describe("dogfood memory survives a content-keyed re-stand", () => {
     expect(readFileSync(newProjection, "utf8")).toBe(priorWiki);
   }, 900_000); // LIVENESS: bound stalled stop/re-found/project events; assertions use event barriers and exact bytes.
 
-  test("CONTROL: a changed content key writes under a different title", async () => {
-    const changedKey = `${ROW.rowKey}-changed`;
-    const changedUri = titleFor(changedKey);
-    expect(changedUri).not.toBe(titleFor(ROW.rowKey));
+  test("CONTROL: a changed stage path writes under a different title", async () => {
+    const changedPath = `${ROW.stagePath}-changed`;
+    const changedUri = titleFor(changedPath);
+    expect(changedUri).not.toBe(titleFor(ROW.stagePath));
     const source = join(freshRoot, "changed-row.mem");
-    writeFileSync(source, carrier(changedUri, changedKey));
+    writeFileSync(source, carrier(changedUri));
     const put = await restored!.cli(["meme", "put", changedUri, "--recipe", "default", "--file", source, "--json"]);
     expect(put.json?.["ok"], `${put.stdout}\n${put.stderr}`).toBe(true);
     const fetched = await restored!.cli(["meme", "get", changedUri, "--recipe", "default", "--json"]);
     expect(fetched.json?.["ok"], `${fetched.stdout}\n${fetched.stderr}`).toBe(true);
     const text = String((fetched.json?.["data"] as Record<string, unknown>)["text"]);
-    expect([field(text, "row-key"), field(text, "title")]).toEqual([changedKey, changedUri]);
+    expect([field(text, "uri-path"), field(text, "title")]).toEqual([pathFor(changedUri), changedUri]);
 
-    // The gate holds the derivation: the changed row placed at the old row's title refuses by name, and the old row stands.
-    const drifted = join(freshRoot, "drifted-row.mem");
-    writeFileSync(drifted, carrier(titleFor(ROW.rowKey), changedKey));
-    const refused = await restored!.cli(["meme", "put", titleFor(ROW.rowKey), "--recipe", "default", "--file", drifted, "--json"]);
+    // The gate holds the stage path's shape: a path of uppercase letters refuses by name, and the old stage meme stands.
+    const malformedUri = titleFor("Dogfood-Memory");
+    const malformed = join(freshRoot, "malformed-row.mem");
+    writeFileSync(malformed, carrier(malformedUri));
+    const refused = await restored!.cli(["meme", "put", malformedUri, "--recipe", "default", "--file", malformed, "--json"]);
     expect(refused.json?.["ok"], `${refused.stdout}\n${refused.stderr}`).toBe(false);
-    expect(JSON.stringify(refused.json?.["error"])).toContain("row-key-title");
-    const kept = await restored!.cli(["meme", "get", titleFor(ROW.rowKey), "--recipe", "default", "--json"]);
-    expect(field(String((kept.json?.["data"] as Record<string, unknown>)["text"]), "row-key")).toBe(ROW.rowKey);
+    expect(JSON.stringify(refused.json?.["error"])).toContain("stage-path-shape");
+    const kept = await restored!.cli(["meme", "get", titleFor(ROW.stagePath), "--recipe", "default", "--json"]);
+    expect(field(String((kept.json?.["data"] as Record<string, unknown>)["text"]), "uri-path")).toBe(pathFor(titleFor(ROW.stagePath)));
   });
 });

@@ -58,7 +58,7 @@ import {
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
 import { consequence, familyOf, retractsOf, rootAddressOf, tombstonesOf, type Consequence, type DeleteMode, type FamilyPosition, type FamilyView } from "@lararium/mesh/family";
 import { anchorBagOf, readContainer } from "./meme-verbs.js";
-import { wikiFamilyView, stageRowTitle, ROW_KEY_FIELD, ROW_KEY_MISSING_CODE, ROW_KEY_SHAPE_CODE, ROW_KEY_TITLE_CODE, STAGE_ROW_PREFIX } from "./place-meme.js";
+import { wikiFamilyView, stageMemeTitle, STAGE_PATH_SHAPE_CODE, STAGE_MEME_PREFIX } from "./place-meme.js";
 import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -484,15 +484,11 @@ function refuseCodeClass(title: string, next: Record<string, string>, tags: read
   if (systemTag !== undefined) wall(`"${title}" would carry the system tag "${systemTag}"`);
 }
 
-/** The stage row law (`place-meme.ts`), on a plain record: a title under the memory stage derives from its row key. */
-function refuseUnkeyedStageRow(title: string, next: Record<string, string>): void {
-  if (!title.startsWith(STAGE_ROW_PREFIX)) return;
-  const rowKey = next[ROW_KEY_FIELD];
-  if (rowKey === undefined) throw new VerbRefusal(ROW_KEY_MISSING_CODE, `${ROW_KEY_MISSING_CODE}: ${title} stands under the memory stage and carries no \`${ROW_KEY_FIELD}\`; a stage row's title derives from its row key.`);
-  let derived: string;
-  try { derived = stageRowTitle(rowKey); }
-  catch (fault) { throw new VerbRefusal(ROW_KEY_SHAPE_CODE, fault instanceof Error ? fault.message : String(fault)); }
-  if (derived !== title) throw new VerbRefusal(ROW_KEY_TITLE_CODE, `${ROW_KEY_TITLE_CODE}: ${title} carries row key "${rowKey}", which derives ${derived}; a row stands at its derived title alone.`);
+/** The stage meme law (`place-meme.ts`), on a plain record: a title under the memory stage reads one or two lowercase path segments. */
+function refuseMalformedStagePath(title: string): void {
+  if (!title.startsWith(STAGE_MEME_PREFIX)) return;
+  try { stageMemeTitle(title.slice(STAGE_MEME_PREFIX.length)); }
+  catch (fault) { throw new VerbRefusal(STAGE_PATH_SHAPE_CODE, fault instanceof Error ? `${fault.message} (${title})` : String(fault)); }
 }
 
 /** The field patch a put names: string values alone, at most 256 of them. */
@@ -561,7 +557,7 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
       throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
     }
     refuseCodeClass(title, next, tags);
-    refuseUnkeyedStageRow(title, next);
+    refuseMalformedStagePath(title);
 
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });

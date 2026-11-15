@@ -321,9 +321,9 @@ export const STEPS = Object.freeze([
     run: cli(["wiki", "share", "lares", "--write", FACES.engineer, "--read", FACES.referee, "--no-json"], ["workbench: wiki lares rides realm", "(2 member face(s))"]) },
 
   // Memory, the lift, another face.
-  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "meme_put lands a keyed row; meme_get reads it back",
+  { id: "memory", prose: "''Memory.''", via: "seat-stdio", needs: ["wear-steward"], expect: "meme_put lands a stage meme; meme_get reads it back",
     run: async (ctx) => {
-      const text = memeText(MEMORY, "the rite walk wrote this row through the seat", ['row-key = "project/rite-walk"']);
+      const text = memeText(MEMORY, "the rite walk wrote this stage meme through the seat");
       const seat = await ctx.seat([
         { name: "meme_put", arguments: { uri: MEMORY, text, recipe: "default" } },
         { name: "meme_get", arguments: { uri: MEMORY, recipe: "default" } },
