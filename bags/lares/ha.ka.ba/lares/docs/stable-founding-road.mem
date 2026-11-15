@@ -518,7 +518,7 @@ The operator approved the house's defaults (operator, 2026-11-06: //"Approve you
 !!! Operator rulings, 2026-11-09 and 2026-11-10 ~ the placement leap and the locked floor
 * ''Placement over patterns'' (operator, 2026-11-09, the placement leap). Where a record rests decides where it reaches disk: a record projects by the bag that holds it and that bag's mirror grant, never by its title or a field it carries; a record that must stay off disk rests where no mirror reaches (the control document, the secret home, the shadow layer, a board no recipe mounts). <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-filter`>>; `tools/placement-residency-witness.mjs` reads it.
 * ''Parity across vessel types'' (operator, 2026-11-09: //"the system get idempotent-by-intent and isomorphic-by-intent partity between all vessel types."//). A host-shaped deviation never rides as a filed row: it cures before its leap lands, behind one shared helper, so node, browser and the CLI's direct holder cannot drift.
-* ''A locked hearth fails closed'' (operator, 2026-11-09). Every act that needs the vessel's control document refuses `vessel-locked` until custody opens; the custody door (unlock, lock, census) stays carved out; no receipt claims durability over memory; a refused unlock says why. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/one-floor`>>.
+* ''A locked hearth fails closed'' (operator, 2026-11-09). Every act that needs the vessel's control document refuses `vessel-locked` until custody opens; the custody door (unlock, lock, census) stays carved out; no receipt claims durability over memory; a refused unlock says why. <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-shape`>>.
 * ''The secret home and the control document mint with the face'' (operator, 2026-11-09). A face's founding or admission mints both under one custody row; a place (a herm, a hearth before its face) mints neither, and its control stand-in refuses `control-home-unnamed`.
 * ''One control document, face-held'' (operator, 2026-11-09). Every control family rests in the one control document; nothing stands a second control home.
 * ''The carriage log, and a sixth floor duty'' (operator, 2026-11-09). A place's relay state rests in its public carriage log: append-only, unsealed, keyed by the carriage's own id, each receipt signed under the place key as the sixth floor duty, `CARRIAGE_RECEIPT_DOMAIN` (`place-signer.ts`), herm and hearth alike. <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters#/the-carriage-log`>>.
@@ -1550,6 +1550,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;80h_08xcbgt-VOgUf3L4EzdPGiX6-Sp4iwjQSwanY_Y`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3dzrSKxd9CUAJ5RAf8yJpSydRzU3HLIRe9W4G2Zlsqk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
