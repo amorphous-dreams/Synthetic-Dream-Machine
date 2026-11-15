@@ -200,6 +200,14 @@ interface BrowserBootstrap extends VesselBootstrap {
   /** The canon documents that hearth's admit named (canon title → document url). A crossing to the vessel's
    *  own hearth federates exactly these, and the vessel's oracle replica points at them. */
   hearthCanonDocs?:      HearthCanonDocs;
+  /**
+   * THE ISLAND THE HEARTH RESOLVED WHEN IT MINTED THIS FACE'S ADMISSION (`hearthIslandKind` / `hearthIslandScope`, a snapshot),
+   * kept as the admit carried it. The landing seats the face's persona-KEL chain on the board this island keys, and the admit
+   * rides one boot alone, so every later boot that stands on this overlay resolves its island from here, through the same
+   * `admittedJoineeIsland` ruling the landing composed. Absent on a face this vessel founded: its chain seats on the vessel's
+   * own gradient.
+   */
+  hearthIsland?:         { readonly kind: string; readonly scope: string } | null;
 }
 
 /** One face's overlay as the boot record keeps it: every field a face's landing wrote, and neither the floor nor another face. */
@@ -217,6 +225,33 @@ function overlayFace(prior: BrowserBootstrap | undefined, landed: BrowserBootstr
 /** A boot record a face stands over: the five pins a face's proof and its gate read. */
 type FacedBootstrap = BrowserBootstrap & { personaGroupId: string; meshCabalDocIdHex: string; signerDid: string; personaKelPrefix: string };
 const facedBootstrap = (b: BrowserBootstrap): FacedBootstrap | null => (b.personaGroupId && b.signerDid && b.personaKelPrefix && b.meshCabalDocIdHex !== undefined ? b as FacedBootstrap : null);
+
+/**
+ * WHAT THE FOUNDING ASK FOUNDS over the record as it rests: `first` where the record boots no face and the ask reads `true`,
+ * `beside` where the ask names exactly the faces that stand, else nothing. Run again over the record it already wrote, either
+ * ask matches nothing (no counter, no clock: the standing set itself answers). One reading for the island this boot resolves
+ * and for the founding itself, so the two never part.
+ */
+function foundingAskOf(record: BrowserBootstrap | undefined, ask: BrowserVesselOptions["foundFace"]): "first" | "beside" | null {
+  if (ask === true) return record === undefined || facedBootstrap(record) === null ? "first" : null;
+  if (typeof ask !== "object" || ask === null) return null;
+  const standing = Object.keys(overlaysOf(record)).sort(), beside = [...ask.beside].sort();
+  return beside.length > 0 && beside.length === standing.length && beside.every((g, i) => g === standing[i]) ? "beside" : null;
+}
+
+/**
+ * THE JOINED OVERLAY THIS BOOT STANDS ON, read off the record at rest before the island resolves: the face a session's hello
+ * names, else the face the record boots. Null where this boot lands an admit (the admit names its own island), founds a
+ * face (a founding seats on the vessel's own gradient), stands at the floor, wears a face founded here, or wears a face
+ * whose custody tree left this browser (the burn's fall back returns the vessel to its floor further down).
+ */
+async function joinedOverlayOfBoot(idbName: string, record: BrowserBootstrap | undefined, face: string | null | undefined, lands: boolean): Promise<(FaceOverlay & { hearthIsland: { kind: string; scope: string } }) | null> {
+  if (lands || record === undefined) return null;
+  const overlay = face && face !== record.personaGroupId ? record.faces?.[face] : overlayOf(record);
+  if (!overlay?.personaGroupId || !overlay.hearthIsland) return null;
+  if (record.floor && !(await faceTreeStands(idbName, overlay.personaGroupId))) return null;
+  return overlay as FaceOverlay & { hearthIsland: { kind: string; scope: string } };
+}
 
 // The oracle doc needs no IDB rendezvous key: it lives under the DETERMINISTIC
 // doc id (oracleGenesisDocUrl), so a reboot RELOADS it by find-first from IndexedDB and
@@ -917,7 +952,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   const walked = relayUrl && walkInvite ? await takeInvite(walkStore, walkInvite) : null;
   if (relayUrl && walkInvite && walked === null) console.warn("[lararium-browser] the carried invite does not read — no walk stands");
   const walk: WalkRecord | null = walked?.record ?? null;
-  // A leaf names no anchor: a joined face's island rides its admit, and a device at the floor stands on its own key.
+  // A leaf names no anchor: a joined face's island rides its admit at the landing and rests in the face's overlay for every
+  // boot after (`hearthIsland`), and a device at the floor stands on its own key.
   const nexusStandsAt: NexusIdentityAt = {
     explicitScope: walk?.nexusAid ?? null,
     anchorGateKey: null,
@@ -928,6 +964,10 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // on, never `kind: "anchor"` off a raw gate key: the node's own admit door reads the same ruling
   // (`admittedJoineeIsland`, `@lararium/mesh`), which is PURE and platform-blind, so this leaf composes the SAME
   // ruling the node's `init.ts` does, not a second reading of it.
+  // THE RECORD AT REST, read before the island resolves: a joined face's overlay names the island its landing seeded.
+  const bootKeys = await readBootKeys(idbName);
+  const foundingAsk = admit ? null : foundingAskOf(bootKeys.bootstrap, opts.foundFace);
+  const joinedOverlay = await joinedOverlayOfBoot(idbName, bootKeys.bootstrap, opts.face, admit !== undefined || foundingAsk !== null);
   let nexusPubkey: string;
   if (admit) {
     // The node must carry the island relation it resolved at admission. Without both fields this
@@ -942,6 +982,18 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     });
     console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (admitted — the founder's resolved `
       + `island at mint time, kind=${admit.hearthIslandKind})`);
+  } else if (joinedOverlay) {
+    // A RELOAD OF A JOINED FACE STANDS WHERE ITS LANDING STOOD. The admit rode one boot; its island rests in the face's
+    // overlay, and this boot composes the same ruling over it. The vessel's own gradient names a board the landing never
+    // wrote, where the Binding Gate below refuses the face (fail-closed).
+    nexusPubkey = admittedJoineeIsland({
+      hearthGatePubKey:  joinedOverlay.hearthGatePubKey,
+      hearthIslandKind:  joinedOverlay.hearthIsland.kind,
+      hearthIslandScope: joinedOverlay.hearthIsland.scope,
+      ownVesselKey:      vesselVerifyingKey,
+    });
+    console.log(`[lararium-browser] island ${nexusPubkey.slice(0, 18)}… (joined — the island this face's admit named `
+      + `at its landing, kind=${joinedOverlay.hearthIsland.kind})`);
   } else {
     const nexusStanding = nexusIdentity(nexusStandsAt);
     nexusPubkey = nexusScopeOrThrow(nexusStanding);
@@ -976,7 +1028,6 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
     realmId:      null,   // a leaf keeps no seal home → no charter → no realm to re-announce
   });
 
-  const bootKeys = await readBootKeys(idbName);
   const bootKeyWrites: BootKeyWrites = {};
   let bootstrap = bootKeys.bootstrap;
   // AN ADMIT SUPERSEDES AN ANON BOOTSTRAP. A vessel MUST boot anon first — it needs a key before anyone
@@ -1078,17 +1129,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       hearthGatePin: admit.hearthGatePin ?? null,
       hearthFloorPins: admit.hearthFloorPins ?? null,
       hearthCanonDocs: admittedCanonDocs(admit.hearthCanonDocs, nexusPubkey),
+      // THE ISLAND THIS LANDING SEEDED RESTS WITH THE FACE: every later boot on this overlay resolves it from here.
+      hearthIsland: { kind: admit.hearthIslandKind, scope: admit.hearthIslandScope },
     });
     bootKeyWrites.bootstrap = bootstrap;
   }
   // THE FOUNDING ASK NAMES WHAT STOOD WHEN THE PERSON ACTED: `true` founds a first face where the record boots none, and
   // `{ beside }` founds one more face where exactly the named faces stand. Run again over the record it already wrote, either ask
   // matches nothing and founds nothing (no counter, no clock: the standing set itself answers).
-  const standingFaces = Object.keys(overlaysOf(bootstrap)).sort();
-  const besideAsked = typeof opts.foundFace === "object" && opts.foundFace !== null ? [...opts.foundFace.beside].sort() : null;
-  const foundsFirst = opts.foundFace === true && facedBootstrap(bootstrap) === null;
-  const foundsBeside = besideAsked !== null && besideAsked.length > 0 && besideAsked.length === standingFaces.length && besideAsked.every((g, i) => g === standingFaces[i]);
-  if (!admit && (foundsFirst || foundsBeside)) {
+  // The ask reads the record as it rested when this boot began (`foundingAskOf`): the island above resolved on the same answer.
+  const foundsFirst = foundingAsk === "first";
+  if (foundingAsk !== null) {
     const floor: BrowserBootstrap = bootstrap;
     // FOUND, BY ASK (`foundFace`). The founding act asks for a face; no host trait founds one. The floor above stands first,
     // and the face lands OVER it (`foundTheFace` on the floor's own daemon document, the composition the node's
