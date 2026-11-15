@@ -65,7 +65,7 @@ Lady Aki walks between shrines, kingdoms, roads, and glades. Her rites bind. Her
 | Ephyra and homunculi | RULING | Social responsibilities, task boundaries, upkeep and household symbiosis; no invented numerical social capacity. |
 | Backgrounds | RULING | Alchemist and Priestess stand as distinct Path-Magic Background Traits, not a combined custom Trait. |
 | Ranks and XP | OPEN | Each Background tentatively carries the former combined +3 pending purchase/progression evidence. |
-| Inventory | RULING + SOURCE + OPEN | Aki uses 5/7 personal outer slots; 2-slot backpack includes four-position harness; 3/6 packed subset slots occupied; three shrine-held full kits, nested 18-pocket bandolier ledger, grimoire + two Thawnettes on toolbelt. Kit provenance, belt bulk and satchel load remain OPEN. |
+| Inventory | RULING + SOURCE + OPEN | Aki uses 5/7 personal outer slots; 2-slot backpack includes four-position harness; 3/6 packed subset slots occupied; original quantum kit in shrinebeest body Slot 1, three shrine-held professional stock categories, nested 18-pocket bandolier ledger, grimoire + two Thawnettes on toolbelt. Kit provenance, belt bulk and satchel load remain OPEN. |
 | Path-Magic | RULING (scope) + PROPOSAL (mechanics) | Craft/refine/attune reagents and condensed resources; conversion, stacking and shelf-life rates not yet fixed. |
 | Exuberant | SOURCE | Each Life point spent by Aki counts as two for Power payment; outside source interactions not assumed. |
 | Morale | SOURCE + PROPOSAL | Apparent effortless power may trigger referee-called NPC morale test; no automatic penalty. |
@@ -381,9 +381,15 @@ The backpack's two outer slots ''include'' the harness; its structure does not c
 
 ''Preparation cost:'' Pocketed objects carry no free extra attacks or automatic Power activations. For rope darts and spell-bearing charms, apply actual recipes, spells known, materials, charge durations and resource expenditure; twelve physical charm positions do not create twelve unpaid spells. Equipped grimoire occupies T-02 without automatically supplying extra spells.
 
+!!! Original Quantum Expedition Kit — Shrinebeest Slot 1 (RULING + VERIFIED SOURCE)
+
+''RULING / EXISTING SOURCE:'' Aki's original one-sack, ten-stone quantum expedition kit stays aboard the Faerie-Ring Strandbeest-Shrine. Its companion inventory already assigns body ''Slot 1'' to "Aki's quantum alchemist kit" (1 sk, alchemy supplies, reagents, tools), in `bags/elyncia/ha.ka.ba/elyncia/characters/companions/strandbeest-shrine.mem` at `feature/lady-aki-character-sheet`. Confirm this existing entry; do NOT create a new shrine cargo item or a second slot charge.
+
+''No duplication:'' The Quickstart's original kit permits up to ten mundane quantum item selections. The three professional stock categories below may overlap this existing kit; any additional full kits require documented acquisition and cargo placement. No new free quantum selection pool arises from subdividing kit materials, and no full ten-stone kit rides in Aki's satchel or backpack.
+
 !!! Three Full Kits — Shrine-Held, No Duplication
 
-''RULING:'' The full Alchemist, Priestess and Spinneret professional kits stay at the Faerie-Ring Strandbeest-Shrine (including its attached cargo arrangements). Aki takes ONLY prepared field subsets in BP-01 through BP-03; she does not carry three full kits. The shoulder satchel holds a small reserve of ordinary field items, not the former full-sack kit.
+''RULING:'' The original ten-stone quantum expedition kit remains aboard the shrinebeest in body Slot 1, as its canonical sheet already records. Full Alchemist, Priestess and Spinneret professional stock categories stay at the shrine or attached cargo; they are not automatically three additional purchased full sacks beyond the original kit. Aki takes ONLY prepared field subsets in BP-01 through BP-03; she does not carry three full kits. The shoulder satchel holds a small reserve of ordinary field items, not the former full-sack kit.
 
 ''Provenance guard (SOURCE / OPEN):'' The earlier sheet grants one combined Alchemist/Priestess ten-stone quantum starting kit, and separately records a one-stone Spinneret toolkit. It does NOT award three free ten-stone quantum kits. This operator ruling specifies three shrine-held full professional stocks; how the combined original kit splits, whether supplementary stock must be acquired or crafted, and the full Spinneret kit's extended size and provenance remain OPEN. Quantum selection limits do not reset simply by splitting equipment into new containers.
 
@@ -391,7 +397,7 @@ The backpack's two outer slots ''include'' the harness; its structure does not c
 
 ''Robe pockets:'' The original Silksteel robes retain their 7 sp of separate small-goods space (Bell-Tikker Clicker 1 sp, Safety Netsuke 1 sp, DreamNet Prayer Relay Ofuda x5 with exact per-ofuda bulk OPEN); never conflate these with the 18 bandolier pocket positions.
 
-''Current totals:'' Outer Aki Items 5 / 7 used (2 free); backpack BP 3 / 6 packed (3 free); three bandoliers 18 / 18 pocket positions assigned by role, H-3's six pockets individually unfilled until a prepared manifest assigns items; H-4 carries Thawnettes and grimoire. Full professional kits remain with shrine stores, subject to shrine/wagon cargo placement audit.
+''Current totals:'' Outer Aki Items 5 / 7 used (2 free); backpack BP 3 / 6 packed (3 free); shrinebeest body Slot 1 holds the original 1-sk / 10-st quantum kit; three bandoliers 18 / 18 pocket positions assigned by role, H-3's six pockets individually unfilled until a prepared manifest assigns items; H-4 carries Thawnettes and grimoire. Full professional kits remain with shrine stores, subject to shrine/wagon cargo placement audit.
 
 <<~/ahu>>
 
@@ -499,15 +505,21 @@ The operator places full Alchemist, Priestess and Spinneret working kits with th
 
 !! Gear — In Shrine
 
-''Operator ruling — three full professional kits stored with the shrine:''
+''Operator ruling — original quantum expedition kit aboard shrinebeest, plus professional stock categories:''
+
+| Source-backed kit | Physical location | Accounting |
+|---|---|---|
+| Original Alchemist/Priestess quantum expedition kit | Shrinebeest body ''Slot 1'', source calls it "Aki's quantum alchemist kit" | 1 sk / 10 st; one existing kit, not a fourth free kit |
+
+''Other shrine-held professional kit stocks (acquisition and bulk OPEN):''
 
 | Full kit | Source / acquisition status | Field issue |
 |---|---|---|
-| Alchemist professional kit | Split/expand original combined 10-stone quantum kit; supplemental stock procurement OPEN | BP-01: one-stone prepared subset |
+| Alchemist professional kit | Draws on original quantum kit already stored in shrinebeest Slot 1; extra full stock procurement OPEN | BP-01: one-stone prepared subset |
 | Priestess professional kit | Split/expand original combined 10-stone quantum kit; supplemental stock procurement OPEN | BP-02: one-stone prepared subset |
 | Spinneret professional kit | Existing 1-stone Spinneret Kit provides a source basis; any full workshop extension/capacity remains OPEN | BP-03: one-stone prepared subset |
 
-''Logistics:'' These three full stocks stay within the shrine's workshop and/or attached wagon inventory (exact compartment and total cargo allocation OPEN). Material transferred to a field subset remains deducted/checked out of shrine stores until returned or consumed; no duplication, no new free quantum selection pool.
+''Logistics:'' The original quantum expedition kit already occupies shrinebeest body Slot 1; do not allocate it again. The three professional kit stock categories stay with shrine/workshop/wagon; supplemental physical inventories beyond the source kit need explicit acquisition, bulk and cargo positions (OPEN). Material transferred to a field subset remains deducted/checked out of shrine stores until returned or consumed; no duplication, no new free quantum selection pool.
 
 | Gear | Canon Basis | Use |
 |---|---|---|
@@ -881,7 +893,7 @@ The current operator-approved nested ledger runs 5/7 occupied personal Item slot
 * Confirm Alchemist and Priestess as separately Skilled +3 Background purchases/starting grants, and reconstruct XP spent, earned and banked.
 * Confirm shrine Hallmark's Trait versus Item slot, XP investment, and interaction with the non-PC living-automaton chassis.
 * Amend the Hallmark-only Powered Symbiote rules while preserving Ichi's personhood and established mechanics.
-* Confirm three full shrine-held kit acquisitions, capacities, wagon/storage placement and check-out records; establish prepared field-subset contents, physical bulk, satchel reserve, belt slot capacity, bandolier pocket size compliance, purchase costs and Ichi compatibility.
+* Original quantum kit confirmed in shrinebeest body Slot 1; confirm any supplemental full professional kit acquisitions, capacities, wagon/storage placement and check-out records; establish prepared field-subset contents, physical bulk, satchel reserve, belt slot capacity, bandolier pocket size compliance, purchase costs and Ichi compatibility.
 * Define Path-Magic reagent yields, permissible substrate sources, renewable rate, duration, product limits, stacking order and failure consequences.
 * Define how Social Inventory upkeep and reciprocity interact with action economy and disrupted relationships.
 * Reconcile one-unit cash difference and check later branch changes before canon promotion.
