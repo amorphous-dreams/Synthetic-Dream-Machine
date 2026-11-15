@@ -83,7 +83,7 @@ The verbs live in `packages/lararium-tw5/src/tiddler-verbs.ts`; one table (`pack
 # ''Group acts.'' Remove a family whole; list roots with their slot trees; carry a family across bags by residency (`promote`).
 # ''Projection through the house templates'' (`mem`, `md`, `html`, `tid`, `json`), the `md` sidecar and its dialect weave.
 # ''Corpus readings'' over files: gradient, edges, sitting.
-# ''Stage laws'' keyed on title shape, such as the row-key law under `lar:///ha.ka.ba/kahua/memory/` (`place-meme.ts:264-300`), which bind a meme's meta field.
+# ''Stage laws'' keyed on title shape, such as the stage meme law under `lar:///ha.ka.ba/kahua/memory/` (`place-meme.ts`), which binds the title's path.
 
 ''The line between them'' [inferred]: an operation belongs to the tiddler layer when its input and output name single records and fields; it belongs to the meme layer when it needs the frame, the block check, the family hash or the group law to mean anything. The meme layer composes tiddler operations and never replaces them: a meme put lands N tiddler puts and M tombstones in one family write.
 
@@ -120,7 +120,7 @@ The verbs live in `packages/lararium-tw5/src/tiddler-verbs.ts`; one table (`pack
 | `list` / `get` / `kahua_list` / `kahua_get` | ''(a)'' | the verified stage's items with `cid`, `text`, `fields` |
 | `lift`, `withdraw`, `carry`, `mint` | ''(a)'' / ''(w)'' | a signed lift of one staged row by digest; `mint` founds the stage (container) |
 
-''🜁 ! on the stage row law'' (the one place the kahua path meets meme structure): `meme_put` into `lar:///ha.ka.ba/kahua/memory/…` refuses without a `row-key` in the toml meta (`place-meme.ts:288-300`); `kahua_stage` takes the key as a plain title. The law binds a TITLE SHAPE, which tiddler-level code can check; it reaches into the meme frame only because the meme door reads its key from meta. Sort: a tiddler law the meme door happens to enforce, ''(a)'' by nature.
+''🜁 ! on the stage meme law'' (the one place the kahua path meets meme structure): `meme_put` into `lar:///ha.ka.ba/kahua/memory/…` refuses `stage-path-shape` where the title's path reads no one or two lowercase segments (`place-meme.ts`); `kahua_stage` takes the path as a plain title. The law binds a TITLE SHAPE, which tiddler-level code checks without reaching into the meme frame. Sort: a tiddler law the meme door enforces, ''(a)'' by nature.
 
 !!! Container, vessel and switcher verbs
 
@@ -418,7 +418,7 @@ The Mu sort drives all four: class (a) operations live at a tiddler door, class 
 * ''The tiddler door (class a).'' MCP `tiddler_get`, `tiddler_put`, `tiddler_delete`, `wiki_filter`, `wiki_render`, `wiki_act`, `wiki_catalog`; CLI `lares tiddler get|put|delete` and `lares wiki filter|render|act|catalog` beside the switcher; console `lares("tiddler", "get", …)`, `lares("wiki", "filter", …)`; page: the port asks it already makes. Each row maps to one port message: get to `load`, put and delete to `write`, filter to `filter`, render to `render`, act to `act` then `write`, catalog to `catalog`.
 * ''The meme door (class b, and the meme part of c).'' `meme put|get|delete` (the family: split, recompose, family hash, group sweep), `meme list` (roots and slot trees), `meme project` (house templates), `normalize`, `check`, `sitting` (local), `promote` (sealed families). Each composes the tiddler door: a meme put lands its records as one port `write` under one `txId`.
 * ''Elsewhere, unchanged.'' (w) `lares wiki` container verbs and the switcher; (a)+(w) `lares act` residency verbs; (v) the console's vessel rows; `offer` and `kahua` verbs keep their doors, since they already take titles and fields.
-* ''Wards see.'' The lease grant (`faceId`, `bags`, `edits`, `admin`, `casTier`, `kahu`); the invoke gate's authority check run at fire time; `verbCap` on every bag grant; the act ward's diff judgment on daemon and kahua wikis (`codeClassOf`, control families, custody verbs, the `tm-*` allowlist), and on a user's wiki the same diff as a preview the caller may skip only by naming `apply` on a digest it holds; the row-key law and canon floors in the write path, unchanged.
+* ''Wards see.'' The lease grant (`faceId`, `bags`, `edits`, `admin`, `casTier`, `kahu`); the invoke gate's authority check run at fire time; `verbCap` on every bag grant; the act ward's diff judgment on daemon and kahua wikis (`codeClassOf`, control families, custody verbs, the `tm-*` allowlist), and on a user's wiki the same diff as a preview the caller may skip only by naming `apply` on a digest it holds; the stage meme law and canon floors in the write path, unchanged.
 * ''Consequence before commit.'' Every write-bearing verb (put, delete, rename, move, act) answers a preview first, carrying the `consequence` object of `#/meme-aware-actions` (position, family, acts, leaves, orphans, refusals), computed in the island by ONE family law; `apply` takes the preview's digest and lands exactly that, once. A plain tiddler's preview reads `position: plain` and costs one round trip, which a caller may skip with `preview: false` where the act ward allows it.
 * ''Costs.'' The port gains two asks and a relay; read scope stays one island, one face, so a daemon relay serving a second face on the same island waits on the owed per-bag read lend; the snapshot machinery reads heavy for a one-shot CLI call (a relay opens at width `none` and asks only); the port's `filter` answer needs a cap and cursor it lacks today.
 
@@ -610,6 +610,6 @@ Each phase names what it unlocks for a dogfooding session, its reds (by name fro
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fz25-gfw1fb7zwGE3rvtwf8CAkONuPLwYuecdqH0TW4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9h-3m91TThCvNhIeW4uk5uQhCjXPBHGisD48559V79s`>>
 
 <<^ code=`&#x0004;` to=`?`>>

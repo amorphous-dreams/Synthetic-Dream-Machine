@@ -414,7 +414,7 @@ lares wiki share lares --write joshua-fontany-engineer --read joshua-fontany-ref
 
 ''The steward seeds first.'' House canon takes the Kahu steward's hand, and the Kahu predicate reads the face the vessel wears, so the seed that lays canon runs while face 0 stands worn: here, straight after `up`. A seed worn as any other face names each house canon holding `house canon, written by the Kahu steward (h0); this face reads the floor`, lands none of it and reads clean, so a hearth seeded only as the engineer holds empty canon documents and its release cut refuses `floor-cut-thin`. Every holding the seed feeds stands under the canon source BEFORE the vessel boots: the house canon seats once, at boot, and a holding that lands there afterwards refuses `house-canon-unseated` at the seed and mints nothing; run `lares down && lares up` (the steward's boot lands it in the realm), then seed again. `lares vessel floor status` answers once the vessel has stood once; on a store no boot has touched it refuses `floor-no-genesis`.
 
-''Memory.'' The `lares` MCP server runs inside the standing container (`docker compose exec`), so `/mcp` connects only after `up`. Reconnect `/mcp`, and the AI writes memories into the worn face's daemon wiki: `meme_put` with `recipe="default"`, each row under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` and carrying `row-key = "<class>/<slug>"` in its toml meta block (a row there with no key refuses `row-key-missing`; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage#/the-hearth-lane`>>). The seat names every refusal in the refusal's own words.
+''Memory.'' The `lares` MCP server runs inside the standing container (`docker compose exec`), so `/mcp` connects only after `up`. Reconnect `/mcp`, and the AI writes memories into the worn face's daemon wiki: `meme_put` with `recipe="default"`, each stage meme under `lar:///ha.ka.ba/kahua/memory/<class>/<slug>` (a path that reads no one or two lowercase segments refuses `stage-path-shape`; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage#/the-hearth-lane`>>). The seat names every refusal in the refusal's own words.
 
 ''The lift.'' The AI stages a row for the fleet (the MCP tool `kahua_stage`, or `lares kahua stage <title> --face 1 --text …`), and the stage answers the ROW digest (the body and the carried fields). The hand lifts it at a terminal: `lares kahua lift <title> --face 1 --taint none` prints the staged row, lifts only on that row digest's first 8 hex typed back (a bare `--yes` lifts nothing), and then ALWAYS asks the face's passphrase, since a lift signs under the face's root; `--digest <hex>` spares the typed-back digest alone, never the passphrase. Where the AI proposed first (`kahua_propose`, or `lares kahua propose`), the lift names it with `--proposal <intent-id>`: a proposal carries the BODY digest (the body bytes alone), which the lift compares with the staged body, so the two digests never need to match each other. The lift unions the proposal's taint with `--taint`.
 
@@ -536,6 +536,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;j3QCspU5PTn97gZU3zhuEAe-d6D5WJexGfXanqWOM3k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6eLsWrqB1VA_WiRfcmWDGbbaIBtHZ5iEl4CdJeMcPYw`>>
 
 <<^ code=`&#x0004;` to=`?`>>
