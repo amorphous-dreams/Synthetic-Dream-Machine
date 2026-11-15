@@ -173,6 +173,10 @@ export interface IslandGrants {
   /** The face's kahua stage, the url its VERIFIED `plane` act pins (`adoptKahuaPlane`); `bags/kahua` mounts from this
    *  grant alone and never from a catalog row. Absent/null: the layer stands absent. */
   kahuaUrl?:    string | null;
+  /** The HEARTH's daemon working document (road row `L4f`): the url the worn face's signed log names for this device, granted
+   *  to the daemon island of a vessel that crosses to its own hearth. The daemon wiki's working slot mounts it. Absent/null:
+   *  the slot stays this device's own. */
+  hearthWorkingUrl?: string | null;
   /** The vessel's CONTROL document (`control-home`), granted to the daemon island alone: an access grant, never a recipe
    *  slot. The island's control store stands over it; absent on every wiki island. */
   controlUrl?:  string | null;

@@ -63,6 +63,12 @@ export interface SlotDocResolverArgs {
   readonly liftReadBoundMs?: number;
   readonly repo: SlotDocRepo;
   readonly deviceScoped?: (slug: string) => boolean;
+  /**
+   * THE HEARTH'S DAEMON WORKING DOCUMENT (road row `L4f`): the url the worn face's signed log names for this device, handed
+   * only by a vessel that crosses to its own hearth (the island's grant, `IslandGrants.hearthWorkingUrl`). Where it answers
+   * one, the face's working device slot mounts that document; null or absent, the slot stays this device's own.
+   */
+  readonly hearthWorking?: () => string | null;
   readonly control?: CompositeStore;
   /**
    * THE FLOOR'S REGISTRY (`floorRegistryOf` over the daemon composite): where the floor's own documents take their names,
@@ -318,6 +324,18 @@ export function makeSlotDocResolver(args: SlotDocResolverArgs): SlotDocResolver 
     }
     const title = names.title;
     const named = await names.get();
+    // AT ITS OWN HEARTH A LEAF MOUNTS THE HEARTH'S WORKING DOCUMENT (road row `L4f`): the vessel hands the document its worn
+    // face's signed log names for this device, and the face's working slot answers it. The control row takes that name (the
+    // vessel's sealed map hears the id first), so the document files under the face that owns the slot and seals under its
+    // key like a slot minted here; a slot this device stood before the name arrived stays in the repo, unnamed by the row.
+    const hearth = owner !== null && kind === "working" ? (args.hearthWorking?.() ?? null) : null;
+    if (hearth) {
+      if (named !== hearth) {
+        args.announceDevice?.(kind, hearth.replace(/^automerge:/, ""));
+        await names.put(hearth);
+      }
+      return { url: hearth, reach: "vessel-only" };
+    }
     if (named) return { url: named, reach: "vessel-only" };
     if (!mint) return null;
     const pending = deviceMints.get(title);

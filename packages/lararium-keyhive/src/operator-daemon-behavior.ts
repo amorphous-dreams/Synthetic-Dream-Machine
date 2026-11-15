@@ -527,6 +527,8 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       repo: askReceipt ? restingMinter(ctx.repo, (ids) => askReceipt(ids,
         gateCleared ? undefined : gateClear, islandHeadsOf(ctx.repo, ids))) : ctx.repo,
       deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx), floor: floorOf(ctx),
+      // The hearth's daemon working document, where the vessel granted one (a leaf at its own hearth, road row `L4f`).
+      hearthWorking: () => ctx.hearthWorkingUrl ?? null,
       ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
       // THE VEIL FLOOR'S WIKI SLOT names itself to the vessel as the vessel's own, before its first byte (it seals under the floor's rest key).
       ...(docStoreDoor ? { announceFloor: (slug: string, kind: "working" | "draft" | "personal", documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId, true) } : {}),

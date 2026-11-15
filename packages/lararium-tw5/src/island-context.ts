@@ -47,6 +47,9 @@ export interface IslandContext {
   faceCatalogUrl?: string | null;
   /** The face's kahua stage the manifest granted (`IslandGrants.kahuaUrl`); `bags/kahua` mounts from this alone. */
   kahuaUrl?: string | null;
+  /** The hearth's daemon working document the manifest granted (`IslandGrants.hearthWorkingUrl`, road row `L4f`); the daemon
+   *  wiki's working slot mounts it where it stands. */
+  hearthWorkingUrl?: string | null;
   /** The face the kahua stage folds under (its group and its grant); null or absent, the stage reads empty. */
   kahuaFace?: () => import("@lararium/mesh").KahuaStageFace | null;
   /** Wakes the kahua layer's re-fold when the face's lineage moves under the running island (`liveKahuaFace`). */
