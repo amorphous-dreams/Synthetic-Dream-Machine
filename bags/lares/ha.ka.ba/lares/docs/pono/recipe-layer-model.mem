@@ -399,7 +399,7 @@ A meme's root and its component slots leave together (the family law, `packages/
 * ''Promotion disagrees with itself over a kāpae.'' A titled `MOVE` of a tombstoned source deletes canon's record (lands a tombstone in canon); a layer `MOVE` skips tombstones. One law owes: does promoting a workbench kāpae delete canon? (An operator ruling.)
 * ''No road proposes a canon delete from outside the Kahu.'' The offer carries live titles alone, so a face's kāpae over house canon stays in its workbench or margin; a "propose removal" offer stays unbuilt.
 * ''Case (a) under kāpae hides a future lower arrival.'' A kāpae over a title no lower layer held still stands up when canon later gains that title, so the face never sees canon's arrival. Whether a delete with nothing beneath should default to reveal stays an operator question.
-* ''The consequence before the tiddler door's change named a shadow only where the record's own layer refused the write'' (`shadows`); case (b) read as a plain tombstone. The `holds`/`shadowed` fields heal it only where a view lends `layersOf`; the meme door's receipt names `tombstonedIn` and no shadowed bags.
+* ''A shadow goes unnamed where the view lends no layers.'' A consequence names `holds` and `shadowed` only where its view lends `layersOf` (`packages/lararium-mesh/src/family.ts`); the meme door's receipt names `tombstonedIn` and no shadowed bags (`packages/lararium-tw5/src/meme-verbs.ts`), so case (b) reads there as a plain tombstone.
 * ''A face with no writer's seat.'' `meme delete --recipe <slug>` lands in the record's designated bag (the working slot), which such a face mounts read-only; whether the delete refuses or lands in its `personal` layer stands unwitnessed.
 * ''A reveal racing a seated writer's edit'' in the workbench (a retract against a concurrent put, under Automerge's merge): unmeasured.
 * ''The domain wiki through the tiddler door'' (lane 2): the door answers the anchor alone, so every row above for a domain wiki reads from the island adaptor and the meme door.
@@ -437,6 +437,6 @@ A meme's root and its component slots leave together (the family law, `packages/
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xs5jOCxoIcU8zLnRIskkUwSbBY3XeXuCstS8FtNeZXM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y-VxEyYXhky9C2ZRP534_yf1CP07IfxG5OFx_lvQIc8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -80,7 +80,7 @@ A face that holds no writer's seat in a wiki's workbench reads canon (from the f
 * ''One face across Nexuses'' presents one peer id within a boot and one store id across boots at every Nexus its face stands in. The adapter mints both for each Nexus.
 * ''The browser's presence broadcast'' announces one vessel key under every face (`open-browser-vessel.ts`, `afterLive`). It leaves, or goes per face.
 * ''The sibling light's Keyhive exchange'' runs at every light (`operator-daemon-behavior.ts`): the lit face's hive takes the worn face's contact card and hands it its cap events, so each face's event store and archive, and a bundle cut from either, name the other face. Read, never walked. It runs only where a share row names the pair.
-* ''The sibling channel's peer id'' derives from the sibling's proven key (`siblingPeerIdOf`, `sibling-channel.ts`), where face-proof #/the-sibling-channel holds that no peer id derives from a device key; the canon and the code meet in the second cut.
+* ''The sibling channel's peer id'' derives from the sibling's proven key (`siblingPeerIdOf`, `sibling-channel.ts`), so one key's peer id reads the same under every face it proves; face-proof #/the-sibling-channel states it, and the second cut scopes that peer id to the face.
 * ''The recovery's remainder.'' The genesis commitment keeps the bare digest, since the prefix derives from it; every wired founding commits the face's own self-recovery key there, one of one, while `provisionThresholdRecoveryAtFounding` (no door calls it) would commit contacts bare. A rotation reveals the contacts' keys, so a key a contact reused shows on both logs once both faces rotate.
 * ''Content provenance'' (road `C11`, design first): one store holds every face's documents, so a shared document arrives under face B already holding face A's unpublished changes.
 * ''Transport and timing'' (road `C12`, design first): one address, port and origin serve every face, and reconnect timing after a mount switch tells a watcher the faces swapped; no identifier scheme hides either.
@@ -175,6 +175,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;aps3jpJawOQ0upN2bGI0HIh3ihCbH4kKq_idgq4-U28`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;u9hn68hbsw7NqCqMwxwkz7Wuej-7qaYOEXxsS4iOUIs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
