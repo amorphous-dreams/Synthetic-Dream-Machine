@@ -63,13 +63,18 @@ The operator settled the set on 2026-11-15 (//"Pono, settle the lei set"//), the
 | the granting | ''kui'' | to string, pierce, join (Pukui–Elbert); the operator strings a lei for one act |
 | the spend | ''the return'' | the lei offered back at the rite's close; the token goes back, never burns |
 | the receipt | ''tessera'' | the two halves of a //tessera hospitalis//: the session's half and the vessel's half, `rite-begun` and `rite-landed` |
-| matching the halves | ''conferre'' | the vessel matches the halves; a half with no match reads red at the next wake |
-| revocation | ''confringere'' | the tessera broken; it writes a signed record and never deletes |
+| matching the halves | ''conferre'' | the vessel matches the halves (Plautus, //Poenulus// V.2: //"tesseram conferre si vis hospitalem"// / //"est par probe"//); ''par'' names a match; a half with no match reads red at the next wake, and every wake runs conferre again over a sampled receipt at the current head |
+| ending an unspent lei | ''unstring'' · ''restring'' | //unstring// undoes //kui// and revokes a lei never worn into a rite (a lei maker's word: "always remove the string first"); //restring// supersedes a lei with a newer one, and the old falls away; each writes a signed record and never deletes |
 | the messenger | ''iris'' | the core of the steady seat: the pure frame machine that carries messages across the gap while the hearth sleeps, answers `hearth-sleeps` and `outcome-unknown`, and sends `list_changed` |
-| the cord | ''lorum'' | the seat a binding holds across its vessel's sleep (//signum de paupere loro//, Juvenal 5.165); the Node host's process first |
+| the cord | ''aho'' | the seat a binding holds across its vessel's sleep; Pukui–Elbert: "line, cord, lashing, fishing line, kite string", its example "braided with the cords of love"; the Node host's process first |
 | the worn whole | //no new word// | the session wears the house; wearing the lei it holds names the effortless wearing |
+| the vouch | ''vouch'' | the old vessel walks a candidate image under a scratch root and signs its digest; a vouch certifies continuity, never goodness |
+| the holder | ''pūlama'' | Pukui–Elbert: "torch" and "to care for, cherish, treasure, save" in one entry, with no rank; the long-lived keeper beside the vessel that keeps the hearth lit through a rebuild (#/the-pulama) |
+| the re-stand | ''kūkulu'' | "to build, as a house, erect, establish, set up"; a vessel raised again around a hearth that never went out; //nā kūkulu ʻehā// (the four pillars at the horizon) and //kūkulu hale// (raising a house) give it its basins |
+| the daylight unlock | //wanaʻao// (provisional) | "light appears"; the operator's own hand lights the pūlama, as only the sun rekindled Vesta's lost fire |
+| the scoped session | //hospitium// (provisional) | the bond a pūlama serves a vouched vessel under, the house of the //tessera hospitalis// |
 
-''Iris.'' The operator approved //iris// as the core of the MCP messenger pattern integrity (2026-11-15). Iris carries messages on the rainbow between the gods and mortals, and the eye's iris works as an aperture, the gauge every turn of the house opens with. The lorum holds; iris carries.
+''Iris.'' The operator approved //iris// as the core of the MCP messenger pattern integrity (2026-11-15). Iris carries messages on the rainbow between the gods and mortals, and the eye's iris works as an aperture, the gauge every turn of the house opens with. The aho holds; iris carries.
 
 ''The return.'' The operator's testimony (2026-11-15): //"I now remember childhood rites where the folks wearing the leis then offered them to the ʻaumākua at the end of the rituals."// A lei comes placed as a welcome and goes back as an offering at the close; the session spends a lei by returning it, and the tessera keeps the record. No written source the research found records that exact rite; it stands on the operator's witness, and a kumu or the family's own read gives it the next contact with reality.
 
@@ -151,14 +156,33 @@ What the reach asks of the rest of the design:
 
 <<~/ahu>>
 
+<<~ ahu slot=`#/the-pulama`>>
+
+!! The pūlama ~ a hearth lit through the rebuild
+
+The operator, 2026-11-15: //"I even want a 're-stand to an unlocked house' cap that I can monitor"//, leading toward civic-scale nodes and the night the Lares run the patch runbook while the human sleeps, //"but more pono for now is getting you all back to working immediately after deep code changes."//
+
+The vessel's code rides baked into its image, so a deep change rebuilds the image and recreates the container, and the opened key dies with the container's memory. The vessel already speaks to its key through a custody holder (`custody-frames.ts`, `custody-seat.ts`); every sealed-row caller passes through one port, `CustodyHolder`. The pūlama lifts that holder into its own small, long-lived container beside the vessel:
+
+* The operator lights the pūlama once, by their own hand on a real terminal (//wanaʻao//). The passphrase rides nothing; the key rides nothing.
+* A vessel rebuilds and restarts freely (each a //kūkulu//). Each new vessel reaches the standing pūlama over a socket mounted in those two services alone and asks for row operations and derivations; no key crosses the socket. `lock` and the pūlama's exit zero its keys.
+* The pūlama serves only a vessel that wears a re-stand lei bound to a vouch: the old vessel walked the candidate image and signed its digest, and the host shim, never the vessel, reports the digest it raises. The pūlama claims the lei's return before it serves, writes its tessera half, and serves a scoped session that refuses cold rows, ward acts, backup and unlock; the session drops with the socket.
+* The operator watches the tessera halves, unstrings the lei, or locks the pūlama, at any hour.
+
+''Plutarch's law.'' Vesta's lost fire could be renewed only from the sun, never from another flame (Plutarch, //Numa// 9). The house holds the same law: only the operator's own hand lights the pūlama, and no delegated token ever carries that light.
+
+''The honest hole.'' On a one-user box, a session holding the operator's shell and Docker reaches the pūlama's memory and socket; its checks work as protocol until a wall stands. The walls sit in the operator's machine, never in a file a session edits: Docker taken from the session's user, the pūlama under its own user, and a confirm on the operator's phone keyed off the box (the one wall that survives a whole box's compromise). The house stays local-first, so the phone stands in the design as an attractor and arrives later; until a wall stands the pūlama runs on the operator's acceptance of the hole they already carry, since a session with Docker reaches the vessel's memory today.
+
+''Prior art.'' Vault's seal and auto-unseal, Clevis/Tang, TPM-sealed secrets, ssh-agent's confirm-on-use, keys used and never exported (Secure Enclave, Keystore); research at `lar:///ha.ka.ba/kahua/memory/research/restand-holder-code`, `…/restand-holder-priorart`, `…/holder-names-pacific`, `…/holder-names-world`.
+
+<<~/ahu>>
+
 <<~ ahu slot=`#/after-the-merge`>>
 
 !! After the merge, in order
 
 # ''The author and family condition'': the test author, the cure author and the cold reader come from distinct seats and model families, read from vessel-signed `roster/<seat>` records, never from commit co-author lines.
-# ''Vouch before unlock'': the candidate image boots under a scratch `LAR_ROOT`, the rite walker runs against it, the old vessel signs a vouch record binding image digest and walk receipt, and the operator's unlock prompt shows it.
 # ''The sampled re-run'' (Beer's System 3*): the vessel signs `receipt/<tree>` over a host battery verdict today without re-running anything, so the receipt notarises testimony; the vessel re-runs one randomly chosen check inside its own image before it co-signs, two diverse runners agreeing the way Wheeler's diverse double-compiling defeats a poisoned compiler.
-# ''Receipt replay at wake'': the vessel replays one sampled receipt at the current head; a mismatch reads red on the porch.
 # ''The in-place ingest'' (#/the-vm-tension).
 
 The rite itself writes a `rite-begun` receipt before the vessel goes down and the new vessel writes `rite-landed` naming it; an unmatched begun receipt reads red at the next wake, two halves of one tessera across a restart. Spent records retire outside the hearth in small batches: in 1834 the Exchequer burned its obsolete tally sticks in the stove beneath the House of Lords and burned down the Palace of Westminster. Burn the token, keep the receipt.
@@ -181,7 +205,8 @@ Three different things travelled under the word "row" through the design's talk-
 
 !! Open
 
-* The code names: the lane builds under neutral names (`steady-seat`, `rite`); a mechanical rename follows it (the core to `iris`, the Node binding's seat to `lorum`, a go to a lei).
+* The code names: a mechanical rename follows the lane (the core to `iris`, the Node binding's verb to `aho`, a go to a lei, its issue to `kui`, its spend to the return).
+* A kumu's read of pūlama, kūkulu and wanaʻao, and the family's read of the lei protocol.
 * The fence (#/the-fence).
 * The cord's binding placement: the core in `@lararium/mesh` and the Node binding in `lares-cli` (default), against a binding in `@lararium/node`.
 * Whether the evidence caveat rides before the merge (default: after, unless a head-to-tree read proves one line).
@@ -189,6 +214,6 @@ Three different things travelled under the word "row" through the design's talk-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Hst4Ro79oCr1wglub9L5yV4dRrPujJYRD15aD-6ZvhE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZLdiITVGzNkJodt4XwLFrdZWGHPr9mtJVArzBuLuP8g`>>
 
 <<^ code=`&#x0004;` to=`?`>>
