@@ -8,7 +8,7 @@
 import { describe, expect, test } from "vitest";
 import { CARRIER_TYPE } from "../src/carrier-type.js";
 import {
-  consequence, familyMembers, familyOf, memeOrphanAlertTitle, orphanFamilies, orphansUnder, tombstonesOf,
+  consequence, componentsBeneath, familyOf, memeOrphanAlertTitle, orphanFamilies, orphansUnder, tombstonesOf,
   type FamilyFields, type FamilyReference, type FamilyView,
 } from "../src/family.js";
 
@@ -61,7 +61,7 @@ describe("three-laws-agree — one answer to which records make a family", () =>
   });
 
   test("the family holds the root, every edge child and every called child that stands, at every depth", () => {
-    expect(familyMembers(view, R)).toEqual(FAMILY);
+    expect(componentsBeneath(view, R)).toEqual(FAMILY);
   });
 
   test("every member reads the same family, whichever title a caller names", () => {
@@ -96,7 +96,7 @@ describe("three-laws-agree — one answer to which records make a family", () =>
 
   test("the view's own child index answers the same family as the scan", () => {
     const indexed = viewOf(records, { childrenOf: (parent) => Object.keys(records).filter((t) => records[t]!["$fragment-parent"] === parent) });
-    expect(familyMembers(indexed, R)).toEqual(FAMILY);
+    expect(componentsBeneath(indexed, R)).toEqual(FAMILY);
   });
 });
 
@@ -116,7 +116,7 @@ describe("orphans — a parent chain that reaches no standing record", () => {
     delete records[`${R}#/a`];
     const view = viewOf(records);
     expect(orphanFamilies(view)).toEqual(new Map([[R, [`${R}#/a/deep`]]]));
-    expect(familyMembers(view, R)).toEqual([R, `${R}#/b`, `${R}#/c`]);
+    expect(componentsBeneath(view, R)).toEqual([R, `${R}#/b`, `${R}#/c`]);
   });
 
   test("a whole family holds no orphan", () => {

@@ -324,13 +324,6 @@ export function componentsBeneath(view: FamilyView, title: string): string[] {
   return view.read(title) === undefined ? [] : closure(view, title).members;
 }
 
-/** The standing titles of the family a root address heads: the root and its component slots. Empty where no root stands. */
-export function familyMembers(view: FamilyView, root: string): string[] {
-  const fields = view.read(root);
-  if (fields === undefined || parentOf(fields) !== null) return [];
-  return closure(view, root).members;
-}
-
 // ─────────────────────────────────────────────────────────────────────────────────────────────────────────
 // THE CONSEQUENCE
 // ─────────────────────────────────────────────────────────────────────────────────────────────────────────
