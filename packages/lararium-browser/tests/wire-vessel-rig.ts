@@ -91,20 +91,21 @@ export function fakeAdmitResult(input?: { readonly payload?: { readonly deviceEd
  * signing key is `gateKey` (the gate the crossing pins), a Nexus, and a presentation. The relay transport is a fake
  * beneath the vessel, so it reads none of the three; they let the vessel stand the dial the policy wire sits behind.
  */
-function heldRelayDial(gateKey: string): NonNullable<BrowserVesselOptions["relayDial"]> {
+function heldRelayDial(gateKey: string, nexus: string): NonNullable<BrowserVesselOptions["relayDial"]> {
   return {
     pins: { get: () => ({ tier: "sovereign", signingKey: gateKey }), put: () => false } as unknown as HearthPinIndex,
-    nexus: "ab".repeat(16),
+    nexus,
     presentation: {} as never,
   };
 }
 
-/** Options for a boot that dials the gate `pinnedGateKey` names after admission (none: no relay); the store name is unique per boot. */
-export function bootOptions(admit: CarriedAdmitPayload, pinnedGateKey: string | null): BrowserVesselOptions {
+/** Options for a boot that dials the gate `pinnedGateKey` names after admission (none: no relay), at the Nexus `nexus`
+ *  names; the store name is unique per boot. */
+export function bootOptions(admit: CarriedAdmitPayload, pinnedGateKey: string | null, nexus: string = "ab".repeat(16)): BrowserVesselOptions {
   return {
     idbName: `wire-rig-${crypto.randomUUID()}`,
     admit,
-    ...(pinnedGateKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayDial: heldRelayDial(pinnedGateKey) } : {}),
+    ...(pinnedGateKey ? { relayUrl: "ws://wire-rig.invalid/ws", relayDial: heldRelayDial(pinnedGateKey, nexus) } : {}),
     onPhase: (phase: string) => { if (phase === "catalog-ready") throw new BootHalted(); },
   } as BrowserVesselOptions;
 }
