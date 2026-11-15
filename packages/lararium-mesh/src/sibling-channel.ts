@@ -40,7 +40,7 @@
  *
  * AUTOMERGE RIDES ONLY THE SESSION. `SiblingNetworkAdapter` takes the automerge-repo `NetworkAdapter` shape. A
  * sibling becomes a peer (`peer-candidate`) only once its proof passed AND it named, inside the sealed session, the
- * repo peer id its proven device key derives (`siblingPeerIdOf`); any other id refuses. Its messages ride under that
+ * repo peer id its proven device key derives under this face (`siblingPeerIdOf`); any other id refuses. Its messages ride under that
  * derived id both ways, so a sibling never stands under an id another adapter carries and never inherits that
  * peer's verdict, and one id never names two carriers (`bindRepo`: a collision either way surfaces as `route`).
  * Every sync message is CBOR sealed under the session. `provenKeyOf(peerId)` names the device key a peer proved —
@@ -184,12 +184,15 @@ export function siblingRefusalLine(r: SiblingRefusal): string {
 
 /**
  * The repo peer id a sibling stands under: a hash, under `SIBLING_PEER_ID_INFO`, of the device key it proved over
- * the session. A sibling NAMES this id inside the session and the leaf refuses any other, so a sibling never
+ * the session and the FACE the session proves under (the persona KEL's prefix, which both ends hold and every event of
+ * that KEL carries). A sibling NAMES this id inside the session and the leaf refuses any other, so a sibling never
  * stands under an id another adapter carries (the operator's own node, a relay peer, an island worker) and never
- * inherits that peer's share verdict. The id is derived on both sides alone; nothing a sibling chooses enters it.
+ * inherits that peer's share verdict. Both sides derive the id alone; nothing a sibling chooses enters it. The face
+ * rides the derivation so one key's peer id differs under each face it proves: a peer that meets the key under two
+ * faces reads two ids (residency-follows-the-contract#/faces-sit-flat).
  */
-export function siblingPeerIdOf(deviceKey: string): PeerId {
-  return `sibling-${hex(sha256(canonicalJsonBytes({ domain: SIBLING_PEER_ID_INFO, key: deviceKey.toLowerCase() })))}` as PeerId;
+export function siblingPeerIdOf(deviceKey: string, face: string): PeerId {
+  return `sibling-${hex(sha256(canonicalJsonBytes({ domain: SIBLING_PEER_ID_INFO, face, key: deviceKey.toLowerCase() })))}` as PeerId;
 }
 
 /**
@@ -380,6 +383,10 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     this.#kel = opts.kel;
   }
 
+  /** The face this channel proves under: the prefix every event of its KEL carries (the empty text while it holds none,
+   *  where the leaf stands under no standing and names no peer id). */
+  #face(): string { return this.#kel[0]?.prefix ?? ""; }
+
   isReady(): boolean { return this.#ready; }
   isStopped(): boolean { return this.#stopped; }
 
@@ -454,7 +461,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     // One standing session carries it — the one over the lowest-indexed herm that stands.
     for (const [slotKey, slot] of this.#slotsOf(key)) {
       if (!slot.session || slot.session.refusal !== null || !slot.peerId) continue;
-      this.#sendSealed(slotKey, slot.session, { t: "msg", m: { ...message, senderId: siblingPeerIdOf(self.deviceKey) } as Message });
+      this.#sendSealed(slotKey, slot.session, { t: "msg", m: { ...message, senderId: siblingPeerIdOf(self.deviceKey, this.#face()) } as Message });
       return;
     }
   }
@@ -866,7 +873,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
       }
       if (body?.t === "peer") {
         if (typeof body.peerId !== "string" || slot!.peerId) { this.#refusePeer(from, via, "a sibling named its peer id twice", true); return; }
-        const peerId = siblingPeerIdOf(from);
+        const peerId = siblingPeerIdOf(from, this.#face());
         if (body.peerId !== peerId) { this.#refusePeer(from, via, "a sibling named a repo peer id its proven device key does not derive", true); return; }
         // A sibling already standing as a peer over another herm takes this session as a second path, and the
         // repo hears of it once.
@@ -899,7 +906,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
     this.#siblings.set(slotKey, { session, via });
     const self = this.#self;
     if (!self) return;
-    this.#sendSealed(slotKey, session, { t: "peer", peerId: siblingPeerIdOf(self.deviceKey), ...(this.peerMetadata ? { peerMetadata: this.peerMetadata } : {}) });
+    this.#sendSealed(slotKey, session, { t: "peer", peerId: siblingPeerIdOf(self.deviceKey, this.#face()), ...(this.peerMetadata ? { peerMetadata: this.peerMetadata } : {}) });
   }
 }
 
