@@ -111,7 +111,7 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
     board: { records: async () => acts, land: async (x) => { if (x.body.act === "kapae" && !x.body.raised) effects.n++; acts.push(x); } }, projection: () => ({ planes: {} }), cosign: () => doorPort });
   // the swarm board and wiki
   const swarmDoc = { tiddlers: {} } as LarDoc, rows = new Map<string, string>();
-  const goEffect = (t: string): void => { if (t.startsWith(swarmGoTitle(BRANCH))) effects.n++; };
+  const goEffect = (t: string): void => { if (t.startsWith(swarmGoTitle("push", BRANCH))) effects.n++; };
   const wiki: SwarmWikiPort = { read: async (t) => rows.get(t) ?? null, write: async (t, x) => { goEffect(t); rows.set(t, x); },
     writeNew: async (t, x) => (rows.has(t) ? false : (goEffect(t), rows.set(t, x), true)), list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
   const swarmFace = { group: GROUP, grant: (k: string) => k === root.key };
@@ -122,36 +122,36 @@ async function stand(vessel: CosignVessel, kind: "lower" | "cap" | "go", devices
     who: { kind: "hand" as const, id: root.key }, cosign: () => doorPort };
   if (kind === "lower") await board.kapae({ action: "raise", wiki: "daemon", digest: D, who: hand });
   /** A go names the go it follows at its branch (`after`): null for the branch's first. */
-  const issue = (after: string | null): Promise<unknown> => swarmCommand({ action: "go-issue", branch: BRANCH, head: HEAD, after }, swarmDeps);
+  const issue = (after: string | null): Promise<unknown> => swarmCommand({ action: "go-issue", rite: "push", branch: BRANCH, head: HEAD, after }, swarmDeps);
   const run = (): Promise<unknown> => kind === "lower" ? board.kapae({ action: "lower", wiki: "daemon", digest: D, who: hand })
     : kind === "cap" ? swarmCommand({ action: "cap-set", value: 7 }, swarmDeps)
     : issue(null);
   /** Whether the act stands as its READERS read it: the board's fold, the cap's fold, the go's reader, each under the witness. */
   const landed = async (): Promise<boolean> => kind === "lower" ? readPromoteBoard(acts, readFace).kapae("daemon", D) === "withdrawn"
     : kind === "cap" ? readSwarmBoard(swarmBoardRecords(swarmDoc, GROUP), swarmReadFace).cap === 7
-    : (await readGo(wiki, { branch: BRANCH, head: HEAD }, trust, GROUP, witness)).ok;
+    : (await readGo(wiki, { rite: "push", branch: BRANCH, head: HEAD }, trust, GROUP, witness)).ok;
   /** The name the reader refuses the act under, where it refuses one. */
   const refusal = async (): Promise<string | undefined> => kind === "lower" ? readPromoteBoard(acts, readFace).refused.map((r) => r.refusal).find((r) => r !== undefined)
     : kind === "cap" ? readSwarmBoard(swarmBoardRecords(swarmDoc, GROUP), swarmReadFace).refused.map((r) => r.refusal).find((r) => r !== undefined)
-    : ((g) => (g.ok ? undefined : g.refusal))(await readGo(wiki, { branch: BRANCH, head: HEAD }, trust, GROUP, witness));
+    : ((g) => (g.ok ? undefined : g.refusal))(await readGo(wiki, { rite: "push", branch: BRANCH, head: HEAD }, trust, GROUP, witness));
   /** The act signed OUTSIDE the door: the root opened through the ward route, no gate asked, no co-sign. */
   const forge = async (): Promise<void> => {
     if (kind === "lower") acts.push(await signPromoteKapae({ group: GROUP, epoch: 0, wiki: "daemon", digest: D, raised: false, parents: readPromoteBoard(acts, readFace).kapaeHeads("daemon", D) }, await held.signer()));
     else if (kind === "cap") writeSwarmBoardAct(swarmDoc, await signSwarmCap({ group: GROUP, epoch: 0, value: 7, parents: [] }, root));
     else {
       // a go rests at its own row under the branch's family title: the forge lands it there, and at the family title itself
-      const go = await signSwarmAct({ act: "go", group: GROUP, branch: BRANCH, head: HEAD, after: null }, root);
-      await putSwarmAct(wiki, `${swarmGoTitle(BRANCH)}/${swarmActCid(go)}`, go);
-      await putSwarmAct(wiki, swarmGoTitle(BRANCH), go);
+      const go = await signSwarmAct({ act: "go", group: GROUP, rite: "push", branch: BRANCH, head: HEAD, after: null }, root);
+      await putSwarmAct(wiki, `${swarmGoTitle("push", BRANCH)}/${swarmActCid(go)}`, go);
+      await putSwarmAct(wiki, swarmGoTitle("push", BRANCH), go);
     }
   };
   /** The cid of the go the door wrote last under the branch, as its bytes read. */
-  const goCid = (): string | null => { const text = [...rows].filter(([t]) => t.startsWith(swarmGoTitle(BRANCH))).at(-1)?.[1]; return text ? swarmActCid(JSON.parse(text)) : null; };
+  const goCid = (): string | null => { const text = [...rows].filter(([t]) => t.startsWith(swarmGoTitle("push", BRANCH))).at(-1)?.[1]; return text ? swarmActCid(JSON.parse(text)) : null; };
   /** The act the door gates, as the gate names it. */
   const act = (): WardCosignAct => kind === "lower"
     ? { verb: "ward-kapae-lower", wiki: "daemon", head: kapaeLowerHead(D, readPromoteBoard(acts, readFace).kapaeHeads("daemon", D)) }
     : kind === "cap" ? { verb: "ward-house-cap", wiki: "daemon", head: sha256HexBytesSync(canonicalJsonBytes({ value: 7, parents: [], supersede: false })) }
-    : { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead({ branch: BRANCH, head: HEAD, after: null }) };
+    : { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead({ rite: "push", branch: BRANCH, head: HEAD, after: null }) };
   /** One device's answer to an ask, as it signs it; hands back the answer's cid. An approve carries the ward signature of `ward`
    *  (the answering device's own ward key, unless named; null signs with the atom alone) over the frontier it read (the head, unless
    *  named); a deny carries no ward. */

@@ -13,6 +13,7 @@ import {
   SwarmRefused, readGo, readGoChain, signSwarmAct, swarmActCid, swarmCapRefusal, swarmGoHead, swarmGoRowTitle, swarmShareRefusal, swarmShareTitle,
   type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
+import { isSwarmGoRite, wardGoVerb, type SwarmGoRite } from "./swarm-go-rite.js";
 import { cosignPortWitness, WardActAlreadyRun, wardCosignGate, type WardCosignAct, type WardCosignPort } from "./ward-cosign-gate.js";
 import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
 import { WardRefused } from "./ward-slots.js";
@@ -23,13 +24,15 @@ export const SWARM_VERB_HAND_CODES: Readonly<Record<string, string>> = {
 };
 
 export type SwarmRequest =
-  | { readonly action: "show"; readonly branch?: string; readonly head?: string }
+  /** `rite`, `branch` and `head` together ask after one rite's go; a branch and head with no rite refuse. */
+  | { readonly action: "show"; readonly rite?: SwarmGoRite; readonly branch?: string; readonly head?: string }
   /** `supersede`: the hand starts an unavailable or braked line again, citing its dangling heads; on a line that folds clear it refuses. */
   | { readonly action: "cap-set"; readonly value: unknown; readonly supersede?: boolean }
   | { readonly action: "share-set"; readonly lane: string; readonly value: unknown; readonly supersede?: boolean }
-  /** `after`: the cid of the go this one follows at the branch (`show` names it), null for the branch's first. One issue names one
-   *  go, so a fresh go for one head asks afresh, and a replay of an approved go names the same intent and refuses spent. */
-  | { readonly action: "go-issue"; readonly branch: string; readonly head: string; readonly after: string | null };
+  /** `rite`: the one power the go carries (`push` · `restart`); the door refuses a go that names none. `after`: the cid of the go
+   *  this one follows at its rite's line for the branch (`show` names it), null for the first there. One issue names one go, so a
+   *  fresh go for one head asks afresh, and a replay of an approved go names the same intent and refuses spent. */
+  | { readonly action: "go-issue"; readonly rite: SwarmGoRite; readonly branch: string; readonly head: string; readonly after: string | null };
 
 export interface SwarmDoorDeps {
   readonly group: string;
@@ -78,10 +81,11 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   const reading = async () => readSwarmBoard(await deps.board.records(), { ...deps.face, ward: await witness() });
   if (req.action === "show") {
     const r = await reading();
-    const at = req.branch !== undefined && req.head !== undefined ? { branch: req.branch, head: req.head } : undefined;
+    if (req.branch !== undefined && req.head !== undefined && !isSwarmGoRite(req.rite)) throw new SwarmRefused("swarm-go-malformed", "a go names its rite (push or restart): show reads one rite's go");
+    const at = req.branch !== undefined && req.head !== undefined ? { rite: req.rite as SwarmGoRite, branch: req.branch, head: req.head } : undefined;
     const go = at ? await readGo(wiki, at, deps.trust, deps.group, await witness()) : undefined;
     // `after` names only a standing go: the one tip of the branch's longest co-signed chain; a fork names its tips instead.
-    const chain = at ? await readGoChain(wiki, at.branch, deps.trust, deps.group, await witness()) : undefined;
+    const chain = at ? await readGoChain(wiki, at, deps.trust, deps.group, await witness()) : undefined;
     const follows = chain ? (chain.tips.length === 1 ? chain.tips[0]!.cid : null) : undefined;
     const forks = chain && chain.tips.length > 1 ? chain.tips.map((g) => g.cid) : undefined;
     return {
@@ -97,22 +101,24 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   if (deps.who.kind !== "hand") throw new SwarmRefused("swarm-needs-hand", "a hand must decide");
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
   if (req.action === "go-issue") {
+    if (!isSwarmGoRite(req.rite)) throw new SwarmRefused("swarm-go-malformed", "a go names its rite (push or restart)");
     if (typeof req.branch !== "string" || req.branch.length === 0 || typeof req.head !== "string" || req.head.length === 0) throw new SwarmRefused("swarm-go-malformed", "a go names a branch and a head");
     if (req.after !== null && !(typeof req.after === "string" && /^[0-9a-f]{64}$/.test(req.after))) throw new SwarmRefused("swarm-go-malformed", "a go names the go it follows at its branch (`after`, a cid), or null for the branch's first");
-    const branch = req.branch, head = req.head, after = req.after;
+    const rite = req.rite, branch = req.branch, head = req.head, after = req.after;
+    const verb = wardGoVerb(rite), goHead = swarmGoHead({ rite, branch, head, after });
     // A fork or a moved chain refuses before the gate asks, so no second device answers an act that cannot land.
-    const early = goFollowRefusal(await readGoChain(wiki, branch, deps.trust, deps.group, await witness()), branch, head, after);
+    const early = goFollowRefusal(await readGoChain(wiki, { rite, branch }, deps.trust, deps.group, await witness()), branch, head, after);
     if (early) throw early;
-    return gated(deps, { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead({ branch, head, after }) }, async () => {
-      const chain = await readGoChain(wiki, branch, deps.trust, deps.group, await witness());
+    return gated(deps, { verb, wiki: "daemon", head: goHead }, async () => {
+      const chain = await readGoChain(wiki, { rite, branch }, deps.trust, deps.group, await witness());
       // A REPLAY RUNS NOTHING: this very go (its branch, head and `after`) already rests, its outcome never landed; the gate lands it.
-      if (chain.resting.some((g) => g.body.head === head && g.body.after === after)) throw new WardActAlreadyRun("ward-push-go", swarmGoHead({ branch, head, after }));
+      if (chain.resting.some((g) => g.body.head === head && g.body.after === after)) throw new WardActAlreadyRun(verb, goHead);
       const refused = goFollowRefusal(chain, branch, head, after);
       if (refused) throw refused;
-      const act = await signSwarmAct({ act: "go", group: deps.group, branch, head, after }, deps.signer);
+      const act = await signSwarmAct({ act: "go", group: deps.group, rite, branch, head, after }, deps.signer);
       // Each go claims its own row: a second writer of the same go lands nothing more.
-      if (!(await wiki.writeNew(swarmGoRowTitle(branch, swarmActCid(act)), JSON.stringify(act)))) throw new WardActAlreadyRun("ward-push-go", swarmGoHead({ branch, head, after }));
-      return { branch, head };
+      if (!(await wiki.writeNew(swarmGoRowTitle(rite, branch, swarmActCid(act)), JSON.stringify(act)))) throw new WardActAlreadyRun(verb, goHead);
+      return { rite, branch, head };
     });
   }
   const r = await reading();

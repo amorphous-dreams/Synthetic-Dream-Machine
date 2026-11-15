@@ -72,76 +72,76 @@ describe("the hand sets the cap and the shares", () => {
 
 /** The go the door wrote last under the branch. */
 const latestGo = (rows: ReadonlyMap<string, string>): SignedSwarmAct | null => {
-  const text = [...rows].filter(([t]) => t.startsWith(swarmGoTitle("feature/x"))).at(-1)?.[1];
+  const text = [...rows].filter(([t]) => t.startsWith(swarmGoTitle("push", "feature/x"))).at(-1)?.[1];
   return text ? JSON.parse(text) as SignedSwarmAct : null;
 };
 /** A hand-signed go rested straight into the wiki, past the door: at its own row under the branch, and at the branch's title. */
 const rest = async (s: { wiki: SwarmWikiPort; root: { key: string; sign(b: Uint8Array): Promise<string> } }, head: string, after: string | null): Promise<string> => {
-  const go = await signSwarmAct({ act: "go", group: GROUP, branch: "feature/x", head, after }, s.root);
-  await putSwarmAct(s.wiki, `${swarmGoTitle("feature/x")}/${swarmActCid(go)}`, go);
-  await putSwarmAct(s.wiki, swarmGoTitle("feature/x"), go);
+  const go = await signSwarmAct({ act: "go", group: GROUP, rite: "push", branch: "feature/x", head, after }, s.root);
+  await putSwarmAct(s.wiki, `${swarmGoTitle("push", "feature/x")}/${swarmActCid(go)}`, go);
+  await putSwarmAct(s.wiki, swarmGoTitle("push", "feature/x"), go);
   return swarmActCid(go);
 };
 
 describe("the hand issues a go", () => {
   test("RED: go-issue lands a hand-signed go that reads for its branch and head; CONTROL: a later issue, naming the go it follows, replaces it", async () => {
     const s = await stand();
-    const out = await swarmCommand({ action: "go-issue", branch: "feature/x", head: HEAD, after: null }, s.deps);
+    const out = await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: HEAD, after: null }, s.deps);
     expect(out).toMatchObject({ branch: "feature/x", head: HEAD });
-    expect(await readGo(s.wiki, { branch: "feature/x", head: HEAD }, s.trust, GROUP, cosignPortWitness(soloCosign(GROUP, s.root)))).toMatchObject({ ok: true });
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, cosignPortWitness(soloCosign(GROUP, s.root)))).toMatchObject({ ok: true });
     const first = latestGo(s.rows);
-    const shown = await swarmCommand({ action: "show", branch: "feature/x", head: HEAD }, s.deps) as { go: { after: string } };
+    const shown = await swarmCommand({ action: "show", rite: "push", branch: "feature/x", head: HEAD }, s.deps) as { go: { after: string } };
     expect(shown.go.after).toBe(swarmActCid(first!));
-    await swarmCommand({ action: "go-issue", branch: "feature/x", head: HEAD, after: shown.go.after }, s.deps);
+    await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: HEAD, after: shown.go.after }, s.deps);
     expect(swarmActCid(latestGo(s.rows)!)).not.toBe(swarmActCid(first!));
-    expect(await swarmCommand({ action: "show", branch: "feature/x", head: HEAD }, s.deps)).toMatchObject({ go: { standing: true } });
+    expect(await swarmCommand({ action: "show", rite: "push", branch: "feature/x", head: HEAD }, s.deps)).toMatchObject({ go: { standing: true } });
   });
 
   test("RED: a second go naming an `after` a go already follows refuses `swarm-go-forked` and writes nothing, and one naming no go of the chain refuses `swarm-go-after-moved`; CONTROL: naming the tip lands", async () => {
     const s = await stand();
-    await swarmCommand({ action: "go-issue", branch: "feature/x", head: HEAD, after: null }, s.deps);
+    await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: HEAD, after: null }, s.deps);
     const first = latestGo(s.rows);
     const before = s.rows.size;
-    await expect(swarmCommand({ action: "go-issue", branch: "feature/x", head: "b".repeat(40), after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-go-forked" });
-    await expect(swarmCommand({ action: "go-issue", branch: "feature/x", head: "b".repeat(40), after: "9".repeat(64) }, s.deps)).rejects.toMatchObject({ code: "swarm-go-after-moved" });
+    await expect(swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: "b".repeat(40), after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-go-forked" });
+    await expect(swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: "b".repeat(40), after: "9".repeat(64) }, s.deps)).rejects.toMatchObject({ code: "swarm-go-after-moved" });
     expect(s.rows.size).toBe(before);
-    await swarmCommand({ action: "go-issue", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(first!) }, s.deps);
-    expect(await readGo(s.wiki, { branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, cosignPortWitness(soloCosign(GROUP, s.root)))).toMatchObject({ ok: true });
+    await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(first!) }, s.deps);
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, cosignPortWitness(soloCosign(GROUP, s.root)))).toMatchObject({ ok: true });
   });
 
   test("RED: a rollback (an older go written again, at its row and at the branch's title) never stands; CONTROL: the chain's tip still does", async () => {
     const s = await stand();
     const witness = cosignPortWitness(soloCosign(GROUP, s.root));
-    await swarmCommand({ action: "go-issue", branch: "feature/x", head: HEAD, after: null }, s.deps);
+    await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: HEAD, after: null }, s.deps);
     const g1 = latestGo(s.rows)!;
-    await swarmCommand({ action: "go-issue", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(g1) }, s.deps);
-    await putSwarmAct(s.wiki, `${swarmGoTitle("feature/x")}/${swarmActCid(g1)}`, g1);
-    await putSwarmAct(s.wiki, swarmGoTitle("feature/x"), g1);
-    expect(await readGo(s.wiki, { branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toMatchObject({ ok: false });
-    expect(await readGo(s.wiki, { branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, witness)).toMatchObject({ ok: true });
+    await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: "b".repeat(40), after: swarmActCid(g1) }, s.deps);
+    await putSwarmAct(s.wiki, `${swarmGoTitle("push", "feature/x")}/${swarmActCid(g1)}`, g1);
+    await putSwarmAct(s.wiki, swarmGoTitle("push", "feature/x"), g1);
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toMatchObject({ ok: false });
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, witness)).toMatchObject({ ok: true });
   });
 
   test("RED: two gos that name one `after` read as a fork, and neither stands until a fresh go names one tip; CONTROL: that fresh go stands", async () => {
     const s = await stand();
     const witness = cosignPortWitness(soloCosign(GROUP, s.root));
     const [left, right] = [await rest(s, HEAD, null), await rest(s, "b".repeat(40), null)];
-    expect(await readGo(s.wiki, { branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toEqual({ ok: false, refusal: "forked" });
-    expect(await readGo(s.wiki, { branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, witness)).toEqual({ ok: false, refusal: "forked" });
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toEqual({ ok: false, refusal: "forked" });
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: "b".repeat(40) }, s.trust, GROUP, witness)).toEqual({ ok: false, refusal: "forked" });
     expect(right).not.toBe(left);
-    await swarmCommand({ action: "go-issue", branch: "feature/x", head: "c".repeat(40), after: left }, s.deps);
-    expect(await readGo(s.wiki, { branch: "feature/x", head: "c".repeat(40) }, s.trust, GROUP, witness)).toMatchObject({ ok: true });
+    await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: "c".repeat(40), after: left }, s.deps);
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: "c".repeat(40) }, s.trust, GROUP, witness)).toMatchObject({ ok: true });
   });
 
   test("RED: a go chained onto an orphan (an `after` no go of the branch's chain carries) never stands; CONTROL: a straight chain stands at its tip alone", async () => {
     const s = await stand();
     const witness = cosignPortWitness(soloCosign(GROUP, s.root));
     await rest(s, HEAD, "7".repeat(64));
-    expect(await readGo(s.wiki, { branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toMatchObject({ ok: false });
+    expect(await readGo(s.wiki, { rite: "push", branch: "feature/x", head: HEAD }, s.trust, GROUP, witness)).toMatchObject({ ok: false });
     const c = await stand();
     let after: string | null = null;
-    for (const head of ["1", "2", "3"].map((h) => h.repeat(40))) { await swarmCommand({ action: "go-issue", branch: "feature/x", head, after }, c.deps); after = swarmActCid(latestGo(c.rows)!); }
-    expect(await readGo(c.wiki, { branch: "feature/x", head: "3".repeat(40) }, c.trust, GROUP, witness)).toMatchObject({ ok: true });
-    for (const head of ["1", "2"].map((h) => h.repeat(40))) expect(await readGo(c.wiki, { branch: "feature/x", head }, c.trust, GROUP, witness)).toEqual({ ok: false, refusal: "head-mismatch" });
+    for (const head of ["1", "2", "3"].map((h) => h.repeat(40))) { await swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head, after }, c.deps); after = swarmActCid(latestGo(c.rows)!); }
+    expect(await readGo(c.wiki, { rite: "push", branch: "feature/x", head: "3".repeat(40) }, c.trust, GROUP, witness)).toMatchObject({ ok: true });
+    for (const head of ["1", "2"].map((h) => h.repeat(40))) expect(await readGo(c.wiki, { rite: "push", branch: "feature/x", head }, c.trust, GROUP, witness)).toEqual({ ok: false, refusal: "head-mismatch" });
   });
 
   test("RED: `show` advertises `after` only from a standing go: on a face of two devices a go the root signed outside the door names none; CONTROL: a one-device face's go names itself", async () => {
@@ -153,27 +153,27 @@ describe("the hand issues a go", () => {
       face: () => ({ devices: [s.root.key, other.key], rosterCids: ["admit"], admittedAt: new Map([[s.root.key, "admit"], [other.key, "admit"]]), lineage }),
       standing: () => "stands", frontier: () => "0".repeat(64), stoodAt: () => true }) };
     await rest(s, HEAD, null);
-    expect(await swarmCommand({ action: "show", branch: "feature/x", head: HEAD }, s.deps)).toMatchObject({ go: { standing: false, after: null } });
+    expect(await swarmCommand({ action: "show", rite: "push", branch: "feature/x", head: HEAD }, s.deps)).toMatchObject({ go: { standing: false, after: null } });
     const c = await stand();
     const cid = await rest(c, HEAD, null);
-    expect(await swarmCommand({ action: "show", branch: "feature/x", head: HEAD }, c.deps)).toMatchObject({ go: { standing: true, after: cid } });
+    expect(await swarmCommand({ action: "show", rite: "push", branch: "feature/x", head: HEAD }, c.deps)).toMatchObject({ go: { standing: true, after: cid } });
   });
 
   test("RED: a go with no head, an empty branch, or no `after` (or one that names no cid) refuses; CONTROL: show of an unissued branch reads not standing", async () => {
     const s = await stand();
-    await expect(swarmCommand({ action: "go-issue", branch: "feature/x", after: null } as never, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
-    await expect(swarmCommand({ action: "go-issue", branch: "", head: HEAD, after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
-    await expect(swarmCommand({ action: "go-issue", branch: "feature/x", head: HEAD } as never, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
-    await expect(swarmCommand({ action: "go-issue", branch: "feature/x", head: HEAD, after: "not-a-cid" }, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
+    await expect(swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", after: null } as never, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
+    await expect(swarmCommand({ action: "go-issue", rite: "push", branch: "", head: HEAD, after: null }, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
+    await expect(swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: HEAD } as never, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
+    await expect(swarmCommand({ action: "go-issue", rite: "push", branch: "feature/x", head: HEAD, after: "not-a-cid" }, s.deps)).rejects.toMatchObject({ code: "swarm-go-malformed" });
     expect(s.rows.size).toBe(0);
-    expect(await swarmCommand({ action: "show", branch: "nope", head: HEAD }, s.deps)).toMatchObject({ go: { standing: false, refusal: "absent", after: null } });
+    expect(await swarmCommand({ action: "show", rite: "push", branch: "nope", head: HEAD }, s.deps)).toMatchObject({ go: { standing: false, refusal: "absent", after: null } });
   });
 });
 
 describe("hand, grant and the standing daemon", () => {
   test("RED: a seat sets, issues nothing: each mutating action refuses `swarm-needs-hand` and writes nothing; CONTROL: a seat reads show", async () => {
     const s = await stand({ who: { kind: "seat", id: "lead-a" } });
-    for (const req of [{ action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "go-issue", branch: "b", head: HEAD, after: null }] as const) {
+    for (const req of [{ action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "go-issue", rite: "push", branch: "b", head: HEAD, after: null }] as const) {
       await expect(swarmCommand(req, s.deps), req.action).rejects.toMatchObject({ code: "swarm-needs-hand" });
     }
     expect(swarmBoardRecords(s.doc, GROUP)).toHaveLength(0);
@@ -192,7 +192,7 @@ describe("hand, grant and the standing daemon", () => {
     const { wiki: _wiki, ...bare } = (await stand()).deps;
     const doc = { tiddlers: {} } as LarDoc;
     const noWiki = { ...bare, board: { records: async () => [], land: async (act: never) => { writeSwarmBoardAct(doc, act); } } } as SwarmDoorDeps;
-    for (const req of [{ action: "show" }, { action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "go-issue", branch: "b", head: HEAD, after: null }] as const) {
+    for (const req of [{ action: "show" }, { action: "cap-set", value: 1 }, { action: "share-set", lane: "a", value: 1 }, { action: "go-issue", rite: "push", branch: "b", head: HEAD, after: null }] as const) {
       await expect(swarmCommand(req, noWiki), req.action).rejects.toMatchObject({ code: "swarm-no-daemon", message: expect.stringContaining("no standing daemon: swarm controls need the founded wiki") });
     }
     expect(swarmBoardRecords(doc, GROUP)).toHaveLength(0);

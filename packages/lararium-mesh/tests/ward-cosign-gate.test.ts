@@ -35,7 +35,10 @@ test("WITNESS: each co-signed ward act's door runs the gate: the kāpae lower, t
   expect(board).toMatch(/const port = await ports\.cosign\(\);/);
   expect(board).toMatch(/wardCosignGate\(port, \{ verb: "ward-kapae-lower"/);
   expect(swarm).toMatch(/verb: "ward-house-cap"/);
-  expect(swarm).toMatch(/verb: "ward-push-go"/);
+  // a go asks the gate under its own rite's verb (`ward-<rite>-go`), never a fixed one
+  expect(swarm).toMatch(/const verb = wardGoVerb\(rite\), goHead = swarmGoHead\(\{ rite, branch, head, after \}\);/);
+  expect(swarm).toMatch(/gated\(deps, \{ verb, wiki: "daemon", head: goHead \}/);
+  expect(swarm).not.toMatch(/"ward-(push|restart)-go"/);
   expect(swarm).not.toMatch(/ward-lane-share/);
   // each vessel composition hands its door the port
   expect(code(src("../../lararium-node/src/commands/promote.ts"))).toMatch(/cosign: \(\) => nodeWardCosignPortOf\(/);
@@ -60,7 +63,7 @@ test("WITNESS: each reader of a ward act's effect asks the co-sign witness: the 
   expect(board).toMatch(/!raw\.body\.raised\) \{\s*const ward = wardActRefusal\(face\.ward, \{ verb: "ward-kapae-lower"/);
   expect(swarm).toMatch(/act\.body\.act === "cap"\) \{\s*const ward = wardActRefusal\(face\.ward, \{ verb: "ward-house-cap"/);
   // the go's reader walks only the gos that stand beside their co-sign
-  expect(go).toMatch(/resting\.map\(\(g\) => wardActRefusal\(ward, \{ verb: "ward-push-go"/);
+  expect(go).toMatch(/resting\.map\(\(g\) => wardActRefusal\(ward, \{ verb: wardGoVerb\(g\.body\.rite\)/);
   expect(go).toMatch(/resting\.filter\(\(_, i\) => wardReads\[i\] === null\)/);
   expect(swarm).not.toMatch(/act === "share" && !face\.ward/);
 });

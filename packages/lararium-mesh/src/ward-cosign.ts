@@ -23,6 +23,7 @@ import { WARD_COSIGN_DIGEST_DOMAIN } from "./domains.js";
 import { intentId } from "./intent-entry.js";
 import { mayAct, type IntentState, type IntentView } from "./intent-read.js";
 import { WARD_COSIGN_VERBS } from "./intent-verbs.js";
+import type { WardGoVerb } from "./swarm-go-rite.js";
 import { wardAnswerHolds } from "./ward-answer.js";
 import type { PersonaProjection } from "./persona-act.js";
 
@@ -30,7 +31,7 @@ type Standing = "stands" | "aside" | "unknown";
 
 /** One ward act, as its digest names it: the verb, the wiki it binds and the head it acts over. */
 export interface WardCosignAct {
-  readonly verb: "ward-kapae-lower" | "ward-house-cap" | "ward-push-go";
+  readonly verb: "ward-kapae-lower" | "ward-house-cap" | WardGoVerb;
   readonly wiki: string;
   readonly head: string;
 }

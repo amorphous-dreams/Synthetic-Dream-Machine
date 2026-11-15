@@ -6,10 +6,13 @@
  * shape, domain, face group, signature, the title the body belongs at, and the role of the signer. Any failure reads as refused, and the
  * caller treats a refused record as absent, so a read fails closed.
  *
- *   go/<branch>/<go cid>       a go binds a branch, a head and the go it follows there (`after`: that go's cid, null for the branch's
- *                              first); each go rests at its own row; signed by the face's hand; read only beside its co-sign; the
- *                              branch's standing go ends the longest co-signed `after` chain from its first go (two tips read as a
- *                              fork, and neither stands); spent once (`go-spent/<go cid>`, the vessel's witness)
+ *   go/<rite>/<branch>/<go cid>
+ *                              a go binds a rite (`push` · `restart`, `swarm-go-rite.ts`), a branch, a head and the go it follows
+ *                              there (`after`: that go's cid, null for the first of its rite at the branch); each go rests at its
+ *                              own row; signed by the face's hand; read only beside its co-sign, asked under `ward-<rite>-go`; a
+ *                              rite's standing go at a branch ends the longest co-signed `after` chain from its first go (two tips
+ *                              read as a fork, and neither stands); spent once (`go-spent/<go cid>`, the vessel's witness). One
+ *                              rite's go never reads, co-signs or spends as the other's
  *   lane/<lane>/state          a lead's lane state, signed under the lead's own seat name
  *   roster/<seat>              a seat's spend reading, signed by the VESSEL as witness, never by the measured lead
  *   receipt/<tree>             a check seat's verdict over a tree, signed by the VESSEL
@@ -23,6 +26,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { SWARM_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { SWARM_URI_PREFIX } from "./lar-uris.js";
+import { isSwarmGoRite, wardGoVerb, type SwarmGoRite } from "./swarm-go-rite.js";
 import { wardActRefusal, type WardActRefusal, type WardActWitness } from "./ward-cosign.js";
 
 export { SWARM_URI_PREFIX } from "./lar-uris.js";
@@ -90,9 +94,14 @@ function branchSegment(branch: unknown): string {
 export const swarmHouseCapTitle = (): string => `${SWARM_URI_PREFIX}house-cap`;
 export const swarmShareTitle = (lane: string): string => `${SWARM_URI_PREFIX}lane/${segment(lane)}/share`;
 export const swarmLaneStateTitle = (lane: string): string => `${SWARM_URI_PREFIX}lane/${segment(lane)}/state`;
-/** The family title a branch's gos rest under; each go rests at its own row beneath it (`swarmGoRowTitle`). */
-export const swarmGoTitle = (branch: string): string => `${SWARM_URI_PREFIX}go/${branchSegment(branch)}`;
-export const swarmGoRowTitle = (branch: string, goCid: string): string => `${swarmGoTitle(branch)}/${segment(goCid)}`;
+/** A go's rite as a title segment: one of the listed rites, or the name refuses. */
+function riteSegment(rite: unknown): SwarmGoRite {
+  if (!isSwarmGoRite(rite)) malformed("a go's rite names one listed power (push, restart)");
+  return rite as SwarmGoRite;
+}
+/** The family title one rite's gos at a branch rest under; each go rests at its own row beneath it (`swarmGoRowTitle`). */
+export const swarmGoTitle = (rite: SwarmGoRite, branch: string): string => `${SWARM_URI_PREFIX}go/${riteSegment(rite)}/${branchSegment(branch)}`;
+export const swarmGoRowTitle = (rite: SwarmGoRite, branch: string, goCid: string): string => `${swarmGoTitle(rite, branch)}/${segment(goCid)}`;
 export const swarmGoSpentTitle = (goCid: string): string => `${SWARM_URI_PREFIX}go-spent/${segment(goCid)}`;
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
@@ -100,8 +109,9 @@ export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}r
 /** The fields a swarm record rests under: its text. The record rests in the control document, which no mirror names. */
 export const swarmRecordFields = (text: string): Record<string, string> => ({ text });
 
-/** `after` names the go this one follows at the branch's title (its cid), or null for the branch's first: one issue, one go. */
-export interface SwarmGoBody { readonly act: "go"; readonly group: string; readonly branch: string; readonly head: string; readonly after: string | null }
+/** `rite` names the one power the go carries. `after` names the go this one follows at its rite's title for the branch (its
+ *  cid), or null for the first there: one issue, one go. */
+export interface SwarmGoBody { readonly act: "go"; readonly group: string; readonly rite: SwarmGoRite; readonly branch: string; readonly head: string; readonly after: string | null }
 export interface SwarmGoSpentBody { readonly act: "go-spent"; readonly group: string; readonly branch: string; readonly head: string; readonly go: string }
 export interface SwarmLaneStateBody { readonly act: "lane-state"; readonly group: string; readonly lane: string; readonly seat: string; readonly state: Readonly<Record<string, string | number | boolean | null>> }
 export interface SwarmRosterBody { readonly act: "roster"; readonly group: string; readonly seat: string; readonly model: string; readonly mode: string; readonly reading: number; readonly ceiling: number; readonly outcome: string }
@@ -119,7 +129,7 @@ const hex = (x: unknown, n: number): boolean => typeof x === "string" && new Reg
 function shape(b: Record<string, unknown>): boolean {
   if (!str(b["group"])) return false;
   switch (b["act"]) {
-    case "go": return str(b["branch"]) && str(b["head"]) && (b["after"] === null || hex(b["after"], 64));
+    case "go": return isSwarmGoRite(b["rite"]) && str(b["branch"]) && str(b["head"]) && (b["after"] === null || hex(b["after"], 64));
     case "go-spent": return str(b["branch"]) && str(b["head"]) && hex(b["go"], 64);
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
@@ -132,7 +142,7 @@ function shape(b: Record<string, unknown>): boolean {
 function titleOf(b: SwarmBody): string | null {
   try {
     switch (b.act) {
-      case "go": return swarmGoTitle(b.branch);
+      case "go": return swarmGoTitle(b.rite, b.branch);
       case "go-spent": return swarmGoSpentTitle(b.go);
       case "lane-state": return swarmLaneStateTitle(b.lane);
       case "roster": return swarmRosterTitle(b.seat);
@@ -169,7 +179,7 @@ export function verifySwarmRecord(text: string | null, title: string, trust: Swa
   try { if (!verifyEd25519(raw["sig"], canonicalJsonBytes(body), raw["signer"] as string)) return { ok: false, refusal: "signature" }; } catch { return { ok: false, refusal: "signature" }; }
   const act = raw as unknown as SignedSwarmAct, cid = swarmActCid(act);
   let at: string | null;
-  try { at = body.act === "go" ? swarmGoRowTitle(body.branch, cid) : titleOf(body); } catch { at = null; }
+  try { at = body.act === "go" ? swarmGoRowTitle(body.rite, body.branch, cid) : titleOf(body); } catch { at = null; }
   if (at !== title) return { ok: false, refusal: "title" };
   if (!allowed(body, raw["signer"] as string, trust)) return { ok: false, refusal: "role" };
   return { ok: true, act, cid };
@@ -178,29 +188,35 @@ export function verifySwarmRecord(text: string | null, title: string, trust: Swa
 export async function putSwarmAct(wiki: SwarmWikiPort, title: string, act: SignedSwarmAct): Promise<void> { await wiki.write(title, JSON.stringify(act)); }
 export async function readSwarmRecord(wiki: SwarmWikiPort, title: string, trust: SwarmTrust, group: string) { return verifySwarmRecord(await wiki.read(title), title, trust, group); }
 
-/** The head a go's co-sign names: its branch, its head and the go it follows. */
-export const swarmGoHead = (go: { readonly branch: string; readonly head: string; readonly after: string | null }): string =>
-  sha256HexBytesSync(canonicalJsonBytes({ branch: go.branch, head: go.head, after: go.after }));
+/** The head a go's co-sign names: its rite, its branch, its head and the go it follows. */
+export const swarmGoHead = (go: { readonly rite: SwarmGoRite; readonly branch: string; readonly head: string; readonly after: string | null }): string =>
+  sha256HexBytesSync(canonicalJsonBytes({ rite: go.rite, branch: go.branch, head: go.head, after: go.after }));
+
+/** Which gos a reader asks for: one rite's, at one branch. */
+export interface SwarmGoLine { readonly rite: SwarmGoRite; readonly branch: string }
 
 type GoRow = { readonly act: SignedSwarmAct; readonly cid: string; readonly body: SwarmGoBody };
 
 /**
- * A branch's gos as its reader holds them. `resting`: every row under the branch that verifies as the hand's go for it, co-signed
- * or not. `cosigned`: those that stand beside their co-sign (`ward`). `tips`: the ends of the LONGEST co-signed `after` chain from
- * the branch's first go (`after: null`); a go whose `after` no chain go carries (an orphan) stands on no chain, and an older go
- * written again changes nothing, since the chain it ends stays shorter. `refusal`: the first refusal a row read, where no go rests.
+ * One rite's gos at a branch as their reader holds them. `resting`: every row under the rite's title for the branch that verifies
+ * as the hand's go for it, co-signed or not. `cosigned`: those that stand beside their co-sign (`ward`, asked under the rite's own
+ * verb). `tips`: the ends of the LONGEST co-signed `after` chain from the first go there (`after: null`); a go whose `after` no
+ * chain go carries (an orphan) stands on no chain, and an older go written again changes nothing, since the chain it ends stays
+ * shorter. `refusal`: the first refusal a row read, where no go rests. A go of the other rite rests under another title and
+ * never enters this read.
  */
-export async function readGoChain(wiki: SwarmWikiPort, branch: string, trust: SwarmTrust, group: string, ward: WardActWitness): Promise<{
+export async function readGoChain(wiki: SwarmWikiPort, line: SwarmGoLine, trust: SwarmTrust, group: string, ward: WardActWitness): Promise<{
   readonly resting: readonly GoRow[]; readonly cosigned: readonly GoRow[]; readonly tips: readonly GoRow[]; readonly refusal: SwarmReadRefusal | WardActRefusal | null;
 }> {
   const resting: GoRow[] = [], refusals: SwarmReadRefusal[] = [];
-  for (const title of [...await wiki.list(`${swarmGoTitle(branch)}/`)].sort()) {
+  const { rite, branch } = line;
+  for (const title of [...await wiki.list(`${swarmGoTitle(rite, branch)}/`)].sort()) {
     const read = verifySwarmRecord(await wiki.read(title), title, trust, group);
     if (!read.ok) { refusals.push(read.refusal); continue; }
     const body = read.act.body;
-    if (body.act === "go" && body.branch === branch) resting.push({ act: read.act, cid: read.cid, body });
+    if (body.act === "go" && body.rite === rite && body.branch === branch) resting.push({ act: read.act, cid: read.cid, body });
   }
-  const wardReads = resting.map((g) => wardActRefusal(ward, { verb: "ward-push-go", wiki: "daemon", head: swarmGoHead(g.body) }));
+  const wardReads = resting.map((g) => wardActRefusal(ward, { verb: wardGoVerb(g.body.rite), wiki: "daemon", head: swarmGoHead(g.body) }));
   const cosigned = resting.filter((_, i) => wardReads[i] === null);
   const children = new Map<string | null, GoRow[]>();
   for (const g of cosigned) children.set(g.body.after, [...(children.get(g.body.after) ?? []), g]);
@@ -217,13 +233,14 @@ export async function readGoChain(wiki: SwarmWikiPort, branch: string, trust: Sw
 }
 
 /**
- * The go standing for one branch at one head: the one go that ends the branch's longest co-signed `after` chain (`readGoChain`),
- * naming that head, with no spend of it resting. Two tips read as a fork (`forked`) and neither stands until a fresh go names one.
+ * The go of one rite standing for one branch at one head: the one go that ends that rite's longest co-signed `after` chain at the
+ * branch (`readGoChain`), naming that head, with no spend of it resting. Two tips read as a fork (`forked`) and neither stands
+ * until a fresh go names one.
  * On a face of two devices a go the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
-export async function readGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
+export async function readGo(wiki: SwarmWikiPort, at: SwarmGoLine & { readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
   Promise<{ ok: true; act: SignedSwarmAct; cid: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "spent" | "forked" }> {
-  const chain = await readGoChain(wiki, at.branch, trust, group, ward);
+  const chain = await readGoChain(wiki, at, trust, group, ward);
   if (chain.tips.length > 1) return { ok: false, refusal: "forked" };
   const tip = chain.tips[0];
   if (!tip) return { ok: false, refusal: chain.refusal ?? "absent" };
@@ -233,10 +250,11 @@ export async function readGo(wiki: SwarmWikiPort, at: { readonly branch: string;
   return { ok: true, act: tip.act, cid: tip.cid };
 }
 
-/** Spend a go: the vessel writes one spend record, claimed atomically, so a second spend of the same go refuses `swarm-go-spent`. */
-export async function spendGo(wiki: SwarmWikiPort, at: { readonly branch: string; readonly head: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness): Promise<{ go: string }> {
+/** Spend a go of the named rite: the vessel writes one spend record, claimed atomically, so a second spend of the same go refuses
+ *  `swarm-go-spent`. The spend names the go by its cid, which binds the rite; a go of the other rite stays unspent. */
+export async function spendGo(wiki: SwarmWikiPort, at: SwarmGoLine & { readonly head: string }, trust: SwarmTrust, group: string, spender: SwarmSignerPort, ward: WardActWitness): Promise<{ go: string }> {
   const go = await readGo(wiki, at, trust, group, ward);
-  if (!go.ok) throw new SwarmRefused(`swarm-go-${go.refusal}`, `the go for "${at.branch}" at ${at.head} does not stand (${go.refusal})`);
+  if (!go.ok) throw new SwarmRefused(`swarm-go-${go.refusal}`, `the ${at.rite} go for "${at.branch}" at ${at.head} does not stand (${go.refusal})`);
   if (!trust.vessel(spender.key.toLowerCase())) throw new SwarmRefused("swarm-spend-role", "the vessel alone spends a go");
   const spent = await signSwarmAct({ act: "go-spent", group, branch: at.branch, head: at.head, go: go.cid }, spender);
   if (!(await wiki.writeNew(swarmGoSpentTitle(go.cid), JSON.stringify(spent)))) throw new SwarmRefused("swarm-go-spent", "this go was already spent");

@@ -17,7 +17,7 @@ function stand() {
 
 test("RED: a written record reads back and carries no residency field; CONTROL: an unwritten title reads null and a rewrite replaces", async () => {
   const { handle, wiki } = stand();
-  const title = swarmGoTitle("feature/x");
+  const title = swarmGoTitle("push", "feature/x");
   expect(await wiki.read(title)).toBeNull();
   await wiki.write(title, "one");
   expect(await wiki.read(title)).toBe("one");
@@ -45,10 +45,10 @@ test("RED: a prototype-keyed title reads as absent, never an inherited member; C
 
 test("RED: a branch's go rows list under its family title, and only its own (a go reader walks them all); CONTROL: another branch's row stays out", async () => {
   const { wiki } = stand();
-  const rowA = swarmGoRowTitle("feature/x", "a".repeat(64)), rowB = swarmGoRowTitle("feature/x", "b".repeat(64));
+  const rowA = swarmGoRowTitle("push", "feature/x", "a".repeat(64)), rowB = swarmGoRowTitle("push", "feature/x", "b".repeat(64));
   await wiki.writeNew(rowA, "a");
   await wiki.writeNew(rowB, "b");
-  await wiki.writeNew(swarmGoRowTitle("feature/x/y", "c".repeat(64)), "c");
-  expect([...await wiki.list(`${swarmGoTitle("feature/x")}/`)].sort()).toEqual([rowA, rowB].sort());
-  expect(await wiki.list(`${swarmGoTitle("feature/z")}/`)).toEqual([]);
+  await wiki.writeNew(swarmGoRowTitle("push", "feature/x/y", "c".repeat(64)), "c");
+  expect([...await wiki.list(`${swarmGoTitle("push", "feature/x")}/`)].sort()).toEqual([rowA, rowB].sort());
+  expect(await wiki.list(`${swarmGoTitle("push", "feature/z")}/`)).toEqual([]);
 });

@@ -12,14 +12,14 @@ import type { WardCredential } from "../ward-credential.js";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   SwarmRefused, faceRecordsOf, promotePlaneUrl, swarmBoardRecords, swarmCommand, writeSwarmBoardAct,
-  type LarDoc, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
+  type LarDoc, type SwarmGoRite, type SwarmRequest, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 
 export async function runSwarmVerb(opts: {
   repo: Repo; catalogUrl?: string; face?: number; action: SwarmRequest["action"];
   args: Readonly<Record<string, unknown>>; wiki?: SwarmWikiPort;
-  /** The face's ward route for this act: the house cap, a lane share and a push go each sign under it alone (seat-harness#/the-ward). */
+  /** The face's ward route for this act: the house cap, a lane share and a go of either rite each sign under it alone (seat-harness#/the-ward). */
   ward?: WardCredential;
 }): Promise<Record<string, unknown>> {
   if (!opts.wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: swarm controls need the founded wiki");
@@ -48,11 +48,12 @@ export async function runSwarmVerb(opts: {
     } };
   }
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
-  const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") && str("head") ? { branch: str("branch"), head: str("head") } : {}) }
+  const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") && str("head") ? { rite: opts.args["rite"] as SwarmGoRite, branch: str("branch"), head: str("head") } : {}) }
     : opts.action === "cap-set" ? { action: "cap-set", value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
-    // `after` names the go this one follows at the branch (`show` reads it), null for the branch's first; an absent one refuses.
-    : { action: "go-issue", branch: str("branch"), head: str("head"), after: opts.args["after"] as string | null };
+    // `rite` names the go's one power (push or restart); the door refuses a go that names none. `after` names the go this one
+    // follows on its rite's line at the branch (`show` reads it), null for the first there; an absent one refuses.
+    : { action: "go-issue", rite: opts.args["rite"] as SwarmGoRite, branch: str("branch"), head: str("head"), after: opts.args["after"] as string | null };
   return await swarmCommand(request, {
     group, face: { group, grant }, signer: signing, epoch: () => face.lineage[face.lineage.length - 1]!.epoch, wiki: opts.wiki,
     // The vessel and lead trust join at the slices that sign roster, receipt and lane state; at S1 the hand alone signs.

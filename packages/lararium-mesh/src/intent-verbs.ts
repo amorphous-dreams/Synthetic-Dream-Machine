@@ -1,10 +1,11 @@
 import type { IntentAudience } from "./intent-entry.js";
+import { SWARM_GO_RITES, wardGoVerb } from "./swarm-go-rite.js";
 
 export type IntentVerbClass = "idempotent" | "per-device" | "single-effect";
 /** `cosign`: the verb's answer counts only from a device other than the issuer (a ward verb whose effect leaves the device). */
 export interface IntentVerbDeclaration { readonly class: IntentVerbClass; readonly fenced?: boolean; readonly cosign?: boolean }
-/** The ward verbs whose effect leaves the device: a kapae lowered, the house cap, a push go. */
-export const WARD_COSIGN_VERBS: readonly string[] = Object.freeze(["ward-kapae-lower", "ward-house-cap", "ward-push-go"]);
+/** The ward verbs a second device of the face co-signs: a kapae lowered, the house cap, and a go of each rite (`ward-<rite>-go`). */
+export const WARD_COSIGN_VERBS: readonly string[] = Object.freeze(["ward-kapae-lower", "ward-house-cap", ...SWARM_GO_RITES.map(wardGoVerb)]);
 export interface IntentVerbRegistry {
   declareIntentVerb(verb: string, classification: IntentVerbClass | IntentVerbDeclaration): void;
   classOfVerb(verb: string): IntentVerbDeclaration | null;

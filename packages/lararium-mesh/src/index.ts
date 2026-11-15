@@ -90,6 +90,7 @@ export * from "./kahua-staged.js";
 export * from "./promote.js";
 export * from "./promote-kapae.js";
 export * from "./promote-board.js";
+export * from "./swarm-go-rite.js";
 export * from "./swarm-tiddlers.js";
 export * from "./swarm-board.js";
 export * from "./swarm-door.js";
