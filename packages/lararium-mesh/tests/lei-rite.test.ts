@@ -13,7 +13,7 @@ import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { SWARM_LEI_RITES, wardLeiVerb } from "../src/swarm-lei-rite.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, spendLei, swarmActCid, swarmLeiHead, swarmLeiRowTitle, swarmLeiTitle, swarmReceiptTitle,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRowTitle, swarmLeiTitle, swarmReceiptTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import type { WardCosignAct } from "../src/ward-cosign.js";
@@ -82,14 +82,14 @@ describe("lei-rite-separates-powers", () => {
   test("RED: a push lei never spends as a restart, and spending it leaves the restart lei of the same head unspent; CONTROL: each spends once under its own rite", async () => {
     const f = await fixture();
     const push = await f.issue("push");
-    await expect(spendLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-absent" });
+    await expect(returnLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-absent" });
     const restart = await f.issue("restart");
     expect(restart.cid).not.toBe(push.cid);
-    await expect(spendLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: push.cid, reach: "head", n: 1 });
-    expect(await readLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "spent" });
+    await expect(returnLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: push.cid, reach: "head", n: 1 });
+    expect(await readLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "returned" });
     expect(await readLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toMatchObject({ ok: true, cid: restart.cid });
-    await expect(spendLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: restart.cid, reach: "head", n: 1 });
-    await expect(spendLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-spent" });
+    await expect(returnLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: restart.cid, reach: "head", n: 1 });
+    await expect(returnLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returned" });
   });
 
   test("RED: the rite list holds two names, and a lei of any other rite forms no record, no title and no ward verb; CONTROL: both rites register as co-signed ward verbs", async () => {

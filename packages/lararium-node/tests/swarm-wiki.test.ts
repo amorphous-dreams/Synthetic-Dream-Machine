@@ -6,7 +6,7 @@
  */
 import { expect, test } from "vitest";
 import { Repo } from "@automerge/automerge-repo";
-import { emptyLarDoc, ownEntry, swarmLeiRowTitle, swarmLeiTitle, swarmLeiSpentTitle, type LarDoc } from "@lararium/mesh";
+import { emptyLarDoc, ownEntry, swarmLeiRowTitle, swarmLeiTitle, swarmLeiReturnedTitle, type LarDoc } from "@lararium/mesh";
 import { controlSwarmWiki } from "../src/swarm-wiki.js";
 
 function stand() {
@@ -28,11 +28,11 @@ test("RED: a written record reads back and carries no residency field; CONTROL: 
 
 test("RED: racing writeNew claims land exactly one and the winner's text stands; CONTROL: a claim at another title lands", async () => {
   const { wiki } = stand();
-  const title = swarmLeiSpentTitle("c".repeat(64), 1);
+  const title = swarmLeiReturnedTitle("c".repeat(64), 1);
   const landed = await Promise.all([1, 2, 3, 4].map((n) => wiki.writeNew(title, `spender-${n}`)));
   expect(landed.filter(Boolean)).toHaveLength(1);
   expect(await wiki.read(title)).toBe(`spender-${landed.indexOf(true) + 1}`);
-  expect(await wiki.writeNew(swarmLeiSpentTitle("d".repeat(64), 1), "other")).toBe(true);
+  expect(await wiki.writeNew(swarmLeiReturnedTitle("d".repeat(64), 1), "other")).toBe(true);
 });
 
 test("RED: a prototype-keyed title reads as absent, never an inherited member; CONTROL: writing a title that is not one reads it back", async () => {

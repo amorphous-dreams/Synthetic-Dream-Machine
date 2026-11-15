@@ -11,7 +11,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { kuiLei, swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import {
-  putSwarmAct, readLei, readSwarmRecord, signSwarmAct, spendLei, swarmActCid, swarmLeiHead, swarmLeiNarrowedTitle, swarmLeiRowTitle, swarmLeiSpentTitle,
+  putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiNarrowedTitle, swarmLeiRowTitle, swarmLeiReturnedTitle,
   swarmReceiptTitle, type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
@@ -43,9 +43,9 @@ async function fixture() {
   /** A receipt over a tree, standing at its title (a later one replaces it). */
   const receipt = async (tree: string, verdict: "pass" | "fail", signer = vessel) =>
     putSwarmAct(wiki, swarmReceiptTitle(tree), await signSwarmAct({ act: "receipt", group: GROUP, tree, checks: ["typecheck"], verdict, definitions: "d".repeat(64) }, signer));
-  const spend = (head: string, tree: string, rite: "push" | "restart" = "push", spender = vessel) => spendLei(wiki, { rite, branch: BRANCH, head, tree }, trust, GROUP, spender, ONE_DEVICE);
+  const spend = (head: string, tree: string, rite: "push" | "restart" = "push", spender = vessel) => returnLei(wiki, { rite, branch: BRANCH, head, tree }, trust, GROUP, spender, ONE_DEVICE);
   const read = (head: string, rite: "push" | "restart" = "push") => readLei(wiki, { rite, branch: BRANCH, head }, trust, GROUP, ONE_DEVICE);
-  const spendRows = (cid: string) => [...wiki.rows.keys()].filter((t) => t.startsWith(`${swarmLeiSpentTitle(cid, 1).slice(0, -1)}`));
+  const spendRows = (cid: string) => [...wiki.rows.keys()].filter((t) => t.startsWith(`${swarmLeiReturnedTitle(cid, 1).slice(0, -1)}`));
   return { hand, vessel, outsider, trust, wiki, wide, pinned, receipt, spend, read, spendRows, rest };
 }
 
@@ -65,8 +65,8 @@ describe("lei-wide-needs-evidence", () => {
     await expect(f.spend(HEAD, TREE)).resolves.toEqual({ lei: cid, reach: "wide", n: 1 });
     // The lei named no head: a second head spends under it, on its own tree's receipt.
     await expect(f.spend(HEAD2, TREE2)).resolves.toEqual({ lei: cid, reach: "wide", n: 2 });
-    const spent = await readSwarmRecord(f.wiki, swarmLeiSpentTitle(cid, 1), f.trust, GROUP);
-    expect(spent).toMatchObject({ ok: true, act: { body: { act: "lei-spent", lei: cid, n: 1, head: HEAD, tree: TREE, branch: BRANCH } } });
+    const spent = await readSwarmRecord(f.wiki, swarmLeiReturnedTitle(cid, 1), f.trust, GROUP);
+    expect(spent).toMatchObject({ ok: true, act: { body: { act: "lei-returned", lei: cid, n: 1, head: HEAD, tree: TREE, branch: BRANCH } } });
   });
 
   test("RED: a wide lei's body names no head, and a lei that mixes the two reaches forms no record; CONTROL: each reach signs in its own shape and names its own co-sign head", async () => {
@@ -131,7 +131,7 @@ describe("lei-red-narrows-to-head", () => {
     const f = await fixture();
     const cid = await f.wide(5);
     await f.receipt(TREE, "fail");
-    await expect(f.spend(HEAD, TREE, "push", f.outsider)).rejects.toMatchObject({ code: "swarm-spend-role" });
+    await expect(f.spend(HEAD, TREE, "push", f.outsider)).rejects.toMatchObject({ code: "swarm-return-role" });
     expect(f.wiki.rows.has(swarmLeiNarrowedTitle(cid))).toBe(false);
     f.wiki.rows.set(swarmLeiNarrowedTitle(cid), "forged");
     await f.receipt(TREE, "pass");
@@ -158,7 +158,7 @@ describe("lei-count-runs-out", () => {
     await expect(f.spend(HEAD, TREE)).resolves.toMatchObject({ n: 2 });
     await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-returns-spent" });
     expect(await f.read(HEAD)).toEqual({ ok: false, refusal: "returns-spent" });
-    expect(f.spendRows(cid).sort()).toEqual([swarmLeiSpentTitle(cid, 1), swarmLeiSpentTitle(cid, 2)]);
+    expect(f.spendRows(cid).sort()).toEqual([swarmLeiReturnedTitle(cid, 1), swarmLeiReturnedTitle(cid, 2)]);
   });
 
   test("RED: five spends racing a lei of three returns land exactly three; a forged row under the lei's spend title counts against it; CONTROL: a fresh lei restrings the count", async () => {
@@ -170,14 +170,14 @@ describe("lei-count-runs-out", () => {
     expect(results.filter((r) => r.status === "rejected").every((r) => (r as PromiseRejectedResult).reason.code === "swarm-lei-returns-spent")).toBe(true);
     expect(f.spendRows(cid)).toHaveLength(3);
     const next = await f.wide(2, { after: cid });
-    f.wiki.rows.set(`${swarmLeiSpentTitle(next, 1).slice(0, -1)}forged`, "not a record");
+    f.wiki.rows.set(`${swarmLeiReturnedTitle(next, 1).slice(0, -1)}forged`, "not a record");
     await expect(f.spend(HEAD, TREE)).resolves.toMatchObject({ lei: next, n: 1 });
     await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-returns-spent" });
   });
 });
 
 describe("a head lei stays the narrow form", () => {
-  test("CONTROL: a head lei spends once at its head with evidence; RED: with none it refuses `swarm-lei-evidence-absent`, at another head `swarm-lei-head-mismatch`, and a second time `swarm-lei-spent`", async () => {
+  test("CONTROL: a head lei spends once at its head with evidence; RED: with none it refuses `swarm-lei-evidence-absent`, at another head `swarm-lei-head-mismatch`, and a second time `swarm-lei-returned`", async () => {
     const f = await fixture();
     const cid = await f.pinned(HEAD);
     await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
@@ -185,14 +185,14 @@ describe("a head lei stays the narrow form", () => {
     await expect(f.spend(HEAD2, TREE2)).rejects.toMatchObject({ code: "swarm-lei-head-mismatch" });
     expect(await f.read(HEAD)).toMatchObject({ ok: true, cid, reach: "head", returnsLeft: 1 });
     await expect(f.spend(HEAD, TREE)).resolves.toEqual({ lei: cid, reach: "head", n: 1 });
-    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-spent" });
-    expect(await f.read(HEAD)).toEqual({ ok: false, refusal: "spent" });
+    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-returned" });
+    expect(await f.read(HEAD)).toEqual({ ok: false, refusal: "returned" });
   });
 
   test("RED: a spend that names no tree refuses before it reads a receipt", async () => {
     const f = await fixture();
     await f.wide(2);
-    await expect(spendLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD } as never, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(returnLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD } as never, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
   });
 });
 
