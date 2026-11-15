@@ -133,7 +133,7 @@ export interface DeviceAdmitPayload {
   readonly personaKelPrefix:       string;
   /** The founder's persona-KEL chain SNAPSHOT (as of admit) — the joinee seeds its LOCAL KEL board from it so
    *  its very first boot walks to a head WITHOUT waiting on a federated sync (no-global-now: local seed, never
-   *  a global lookup). REQUIRED — early alpha, no back-compat: a payload minted without it names a vessel that
+   *  a global lookup). REQUIRED: a payload minted without it names a vessel that
    *  would RE-FOUND rather than join, so `runApplyAdmitPayload` refuses it by a named error instead of silently
    *  falling back to a federated-board wait. */
   readonly personaKelChain:       readonly PersonaKelEvent[];
@@ -156,7 +156,7 @@ export interface DeviceAdmitPayload {
    * The founder's persona doc URL — the joinee resolves/syncs it to receive the
    * shared veiled identity (PersonaGroup), the membership-sync foundation. The daemon bag
    * stays sovereign-per-vessel (the joinee seeds its own); the persona plane crosses by membership.
-   * REQUIRED — early alpha, no back-compat: a payload minted without it would have the joinee seed a
+   * REQUIRED: a payload minted without it would have the joinee seed a
    * FRESH local persona doc (a silent RE-FOUND, never a join); `runApplyAdmitPayload` refuses such a
    * payload by a named error instead.
    */
@@ -187,7 +187,7 @@ export interface DeviceAdmitPayload {
    * and writing to it, with the hearth observing the change over the same crossed socket. Naming the door is
    * what was missing, never the opening of it.
    *
-   * REQUIRED — early alpha, no back-compat: a payload minted without it would leave the joinee holding
+   * REQUIRED: a payload minted without it would leave the joinee holding
    * standing with no route to ask for anything; `runApplyAdmitPayload` refuses such a payload by a named
    * error instead of silently seating it door-less. Still nullable: a founder with no door to name says
    * so explicitly (`hearthDaemonUrl: null`), which is a stated absence, never a missing field.

@@ -140,7 +140,7 @@ export function installRootServices(tw: Tw): void {
       dontRenameInLists: p["renameInLists"] === "false" || p["renameInLists"] === "no",
     });
     // THE SLOTS FOLLOW THEIR ROOT: stock re-titles the one record, and a meme root's slots would stand
-    // stranded under the source address. The root moved first, so its writes lead its slots'.
+    // stranded under the old address. The root moved first, so its writes lead its slots'.
     if (method === "renameTiddler") retitleSlotsInWiki(wiki as unknown as FamilyRenameWiki, from, p["to"]);
   };
   root.addEventListener("tm-rename-tiddler", rename("renameTiddler"));
