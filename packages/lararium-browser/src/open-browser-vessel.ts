@@ -69,7 +69,7 @@ import { composeBrowserFacePresentation } from "./browser-face-presentation.js";
 import { browserIslandReceipt, browserSessionLift, type BrowserUnlockedSession } from "./browser-island-caps.js";
 import { browserLiftsAtPlace, mintBrowserPlaceSession, type PlaceLiftReading } from "./browser-place-session.js";
 import { composeVessel, islandFloorStack, islandLiftStack, larVesselOf } from "@lararium/mesh";
-import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
+import { admittedCanonDocs, hearthCanonDocIds, hearthCrossingOf, provenCrossingPlanes, provenHearthDaemon, seatHearthCanon, type HearthCanonDocs } from "./hearth-canon.js";
 import { makeSurfaceReturnLeg, type ReturnLegVerdict } from "./surface-return-leg.js";
 import { readLarControlResult, readLarFrame, type LarMsg_ControlEvent, type LarMsg_ControlResult, type LarMsg_Frame, ownEntry } from "@lararium/mesh";
 import { createBrowserConnectionState, crossingStandingOf, observeRelayConnection } from "./browser-connection-state.js";
@@ -707,6 +707,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // grew meets the new answer. `repo` reads late: no growth comes before it stands.
   const reverdict = (): void => { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } };
   const vesselOnly = vesselOnlyBook(() => repo);
+  // THE HEARTH'S DAEMON WORKING DOCUMENT this vessel's own-hearth crossing opened (road row `L4f`), by document id: empty until
+  // the worn face's proof names one for this device, and at every crossing but the vessel's own hearth.
+  const hearthDaemonDocs = new Set<string>();
   let houseIslands: { has(peerId: string): boolean } = new Set<string>();
   // The wiki islands among them (the pool marks each): they render pages and receive no custody document.
   let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
@@ -845,7 +848,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       gate: () => siblingGate,
       // THE DYAD'S SHADOW (kapae#/reach): a sibling whose device the fleet root set aside reaches nothing.
       aside: (peerId) => siblingAside(peerId),
-    }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }, { has: (peerId) => wikiIslands.has(peerId) }, { has: (id) => deviceDocs.floorWiki(id) }),
+    }, { has: (id) => vesselOnly.has(id) || secretHomes.has(id) }, { has: (peerId) => houseIslands.has(peerId) }, { has: (peerId) => wikiIslands.has(peerId) }, { has: (id) => deviceDocs.floorWiki(id) }, hearthDaemonDocs),
   });
   // THE SECRET HOME'S REST, bound to this Repo: an enrollment or an open maps the home before its first byte.
   bindSecretHomeRest(repo, secretHomes.rest((documentId) => sealedRest.restsSealed(documentId), () => {
@@ -1737,6 +1740,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
         // `bags/kahua` from this grant alone, and the catalog row rides as a hint that refuses by name when it disagrees.
         let provenKahuaUrl: string | null = null;
         let provenPromoteUrl: string | null = null;
+        let provenHearthWorkingUrl: string | null = null;
         const provenPlanes = new Map<string, string>();
         let wornFaceProjection: Parameters<typeof provenPlaneUrls>[0] | null = null;
         let wornRelation: string | null = null;
@@ -1795,10 +1799,18 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           // THE WORN FACE'S PLANES CROSS AT ITS OWN HEARTH as its signed log names them, and only now: no plane url read off the
           // unsealed bootstrap crossed before this proof. The repo asks the hearth again for what the gate now opens.
           // The face's kahua stage crosses with them where its signed log pins the face's derived stage.
-          if (crossing.openFacePlanes(provenCrossingPlanes(proof.projection, {
+          const planesOpened = crossing.openFacePlanes(provenCrossingPlanes(proof.projection, {
             persona: wornPlaneUrl, intents: wornIntentsUrl, kahua: provenKahuaUrl, promote: provenPromoteUrl,
             ...(foundingFace ? { identities: social.identitiesUrl, circles: social.circlesUrl, sessions: social.sessionsUrl } : {}),
-          }))) { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }
+          }));
+          // THE HEARTH'S DAEMON WORKING DOCUMENT CROSSES WITH THEM (road row `L4f`), where the face's signed log names one for this
+          // device and this crossing reaches the vessel's own hearth: the gate opens it, the share verdict lets that one
+          // vessel-only document reach the relay, and the daemon island mounts it as the daemon wiki's working slot (the grant
+          // below). A guest page, a face founded here and a log that names none open nothing and keep the device's own slot.
+          const hearthDaemonUrl = provenHearthDaemon(proof.projection, wornAtom.key);
+          const hearthDaemonId = crossing.openHearthDaemon(hearthDaemonUrl);
+          if (hearthDaemonId && hearthDaemonUrl) { hearthDaemonDocs.add(hearthDaemonId); provenHearthWorkingUrl = hearthDaemonUrl; }
+          if (planesOpened || hearthDaemonId) { try { repo.shareConfigChanged(); } catch { /* the repo may be closing */ } }
           provenWornPlaneUrl = wornPlaneUrl;
           provenPlanes.set(wornGroup, wornPlaneUrl);
           for (const plane of social.personaPlanes) {
@@ -1915,7 +1927,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
             held.stood.push({ what: "the face documents join", down: () => joining.stop() });
           }
         }
-        return { wornMount, wornGroup, wornEdge, wornAtomSeed, wornAtom, wornAtomArchive, wornAddressSecret, placeKel, faceAnchor, personaKelPrefix, personaKelChain, provenWornPlaneUrl, provenKahuaUrl, provenPromoteUrl, provenPlanes, wornFaceProjection, wornRelation, daemonCanon };
+        return { wornMount, wornGroup, wornEdge, wornAtomSeed, wornAtom, wornAtomArchive, wornAddressSecret, placeKel, faceAnchor, personaKelPrefix, personaKelChain, provenWornPlaneUrl, provenKahuaUrl, provenPromoteUrl, provenHearthWorkingUrl, provenPlanes, wornFaceProjection, wornRelation, daemonCanon };
       })(bootFace);
       const wornMount = faced?.wornMount ?? null;
       const wornGroup = faced?.wornGroup ?? null;
@@ -1930,6 +1942,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
       const personaKelChain = faced?.personaKelChain ?? null;
       const provenWornPlaneUrl = faced?.provenWornPlaneUrl ?? null;
       const provenKahuaUrl = faced?.provenKahuaUrl ?? null;
+      const provenHearthWorkingUrl = faced?.provenHearthWorkingUrl ?? null;
       const wornRelation = faced?.wornRelation ?? null;
       const daemonCanon = faced?.daemonCanon ?? null;
       const provenPlanes = faced?.provenPlanes ?? new Map<string, string>();
@@ -2163,6 +2176,9 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           ...(daemonCanon ? { canonUrl: daemonCanon.url } : {}),
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(provenKahuaUrl ? { kahuaUrl: provenKahuaUrl } : {}),
+          // The hearth's daemon working document, from the face's signed log and the own-hearth crossing alone (road row `L4f`):
+          // the daemon wiki's working slot mounts it, so a page edit lands in the document the hearth projects.
+          ...(provenHearthWorkingUrl ? { hearthWorkingUrl: provenHearthWorkingUrl } : {}),
         },
         daemonAuth,
       });
@@ -2743,13 +2759,17 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
  * A SIBLING — a peer the sibling channel proved — never reads as a house member: `siblings` hands it to the
  * sibling gate, the ring's sibling path, and nothing else reaches it.
  */
-export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, vesselOnly?: { has(id: string): boolean }, islands?: { has(id: string): boolean }, wikiIslands?: { has(id: string): boolean }, floorWiki?: { has(id: string): boolean }) {
+export function browserShareConfig(relayPeers: ReadonlySet<string>, fedGateOf: () => FederationGate | null, siblings?: SiblingShare | null, vesselOnly?: { has(id: string): boolean }, islands?: { has(id: string): boolean }, wikiIslands?: { has(id: string): boolean }, floorWiki?: { has(id: string): boolean }, hearthDaemon?: { has(id: string): boolean }) {
   // `siblings.aside` carries the dyad's shadow: mesh's one law reads it ahead of the sibling gate.
   // VESSEL-ONLY DOCUMENTS (the secret home, the control document and what it names) reach only this vessel's own DAEMON
   // island: a wiki island renders pages and never needs a custody document, so it never receives one (`wikiIslands`).
   // A VEIL FLOOR'S WIKI SLOT (`floorWiki`) alone reaches a wiki island too: it holds the wiki's own working layer, the vessel's
   // own content, and the wiki island mounts it. It still reaches no relay peer and no sibling.
+  // THE HEARTH'S DAEMON WORKING DOCUMENT (`hearthDaemon`, road row `L4f`) alone reaches a relay peer: the own-hearth crossing
+  // opened it off the worn face's signed log, this vessel's control row names it as the face's working slot, and the
+  // crossing's gate decides it like any plane that crossing opened. A sibling and a wiki island still read none of it.
   return shareConfigOf(async (peerId, documentId) => {
+    if (documentId && hearthDaemon?.has(documentId) && relayPeers.has(peerId) && !siblings?.isSibling(peerId)) return federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null);
     if (documentId && vesselOnly?.has(documentId)) return !relayPeers.has(peerId) && !siblings?.isSibling(peerId) && !!islands?.has(peerId) && (!wikiIslands?.has(peerId) || !!floorWiki?.has(documentId));
     return federationShareDecision(relayPeers, fedGateOf(), peerId, documentId, siblings ?? null);
   });
