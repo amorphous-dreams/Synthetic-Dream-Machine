@@ -428,7 +428,7 @@ lares wiki share notes --write joshua-fontany-engineer --read joshua-fontany-ref
 lares wiki share notes --list
 ```
 
-A share's landing may outrun the verb's local wait; the verb then reads its own receipt by request id until the vessel answers, and names the landing's outcome. Write from two faces and watch one merged working layer: `lares meme put … --recipe notes` answers the layer it landed in (`layer: working` for a seated writer, `layer: personal` for the referee, who reads the workbench and writes its own margin; a face the row leaves unnamed holds no recipe row of `notes` at all). One folder answers the workbench, `<projections>/wikis/notes`, whichever seated writer wears. A wiki that stands cold projects a put to disk only once it wakes (`lares wiki hold notes`; a walked hearth read both writers' pages in the one folder after the hold, and a put made while the wiki stood cold reached the folder at its next wake); read the row back through `lares meme get … --recipe notes` before trusting the folder.
+A share's landing may outrun the verb's local wait; the verb then reads its own receipt by request id until the vessel answers, and names the landing's outcome. Write from two faces and watch one merged working layer: `lares meme put … --recipe notes` answers the layer it landed in (`layer: working` for a seated writer, `layer: personal` for the referee, who reads the workbench and writes its own margin; a face the row leaves unnamed holds no recipe row of `notes` at all). One folder answers the workbench, `<projections>/wikis/notes`, whichever seated writer wears. A wiki that stands cold projects a put to disk only once it wakes (`lares wiki hold notes` by a seated writer: both writers' pages then rest in the one folder, and a put made while the wiki stood cold reaches the folder at that wake); read the row back through `lares meme get … --recipe notes` before trusting the folder.
 
 ''Offer, promote, release, accept.'' Wearing the engineer, write the record as the `lares` wiki (`lares meme put <uri> --recipe lares --file …`). The answer names where it landed: `layer: personal` on this vessel (the rest gate above), mirrored to the engineer's own folder `<projections>/personal/<F>/lares`, and never into the checkout. The steward's own working copies of a checkout-sourced wiki mirror into `wikis/lares/` in the checkout, by design (the repo workspace: git tracks them), so a steward's smoke row belongs in `notes`. Then `lares meme offer <uri> --bag lares`: the offer reads the face's view above canon (its `personal` layer over the workbench it may read, named in the answer's `source`), carries the meme whole, its root with its slot records, and canon stays unmoved. The engineer reads house canon from the floor: `lares meme list --recipe lares`, `lares meme list --bag lararium` and `lares meme get … --bag lares` answer each bag's floor snapshot and say so (`floor: true`), since a face outside the Kahu cabal holds no read on the live documents (its hive registers the slots of the wiki it stands and never a house canon bag, that wiki's own canon bag included); a contract-tier holding the floor never carries (`elyncia-referee`) still asks its read grant. Wearing the steward (`lares vault unlock --face 0`, the passphrase again): `lares meme offer list --bag lares`, then `lares meme offer promote <cid>`. The promotion asks the charter seat first, so a vessel that holds no seat refuses by name before canon moves; then it writes the Kahu realm's standing document and retires the offer as one outcome. The release runs three steps:
 
@@ -451,7 +451,8 @@ The cut refuses `floor-cut-thin` by slug where a bag's live rows count under hal
 ''Carry across a re-founding'' (11a's law; this walk adds the three faces):
 
 ```sh
-lares vault unlock --face 2 && lares wiki hold notes                      # each face that put a page into a wiki it never woke wakes it once: the put reaches its mirror at the wake
+lares vault unlock --face 2 && lares wiki hold notes                      # the referee's wake: its own margin of `notes` reaches `personal/<F>/notes`, and no page of the workbench moves
+lares vault unlock --face 0 && lares wiki hold notes                      # a seated writer's wake: the workbench's pages reach `wikis/notes`, the one folder the export reads
 lares export ~/.lares/config/carry-2                                      # names each wiki that still stands cold (`cold-wikis`)
 lares down && lares reset
 lares found --hearth --name 'joshua-fontany' --chair 'dreamnet-kahu-0'
@@ -465,6 +466,8 @@ lares vault unlock --face 1 && lares vessel seed --apply --yes            # the 
 lares vessel seed --apply --lift-kahua <N>                                # still wearing the engineer: its kahua items, on the count its seed previewed
 lares vault unlock --face 2 && lares vessel seed --apply --yes            # the referee's own seed; where it previews kahua items of its own, lift them the same way
 ```
+
+''A seated writer holds before the export.'' The export copies disk, and only a seated writer's wear writes a workbench's one folder: a face seated `read` (the referee here) designates no working mirror, so its hold wakes the wiki for its own `personal` margin alone. Each face that put a page into a wiki it never woke wakes it once, and a face that holds a writer's seat on each shared workbench (its owner, or a face the share row seats `write`) holds last; the export then carries the workbench's pages, and an export taken after a reader's hold alone carries none of them and names no omission for that.
 
 ''What a seed lays, and at whose wear.'' A face's private documents (its daemon memory, its `personal` layer of a wiki, its kahua stage) lay at that face's OWN wear: each rests sealed under its own face's key, so a seed worn as another face names the wait (`<pet-name> stands open, and its own layer lays at its own face's wear`, `lifts at its own face's wear`) and exits 0. A wiki's workbench lays ONCE, for its document, at the wear of a face that holds a writer's seat there; a shared wiki mints again and lays at its OWNER's wear (the share row names the owner by pet-name, and the wiki mints from that row even where no page of it reached a mirror), and the seed then lands the shares again, seating each named face by pet-name. Under any other face the folder waits by name and the seed exits 0. A seed says `shares:` only where a grant or a seat moved.
 
@@ -533,6 +536,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;kqvduD1YSj_4Za4pSSQOUDwRjP69Y7WF8_HqMPBVj6U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j3QCspU5PTn97gZU3zhuEAe-d6D5WJexGfXanqWOM3k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

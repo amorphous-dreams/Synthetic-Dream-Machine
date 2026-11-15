@@ -204,7 +204,7 @@ The store door hands the kahua rows the worn face, refuses a write row for any o
 
 * `wiki-not-anchored` for `works` on the tiddler door (`L17-2a`): the daemon-wiki bridge carries the wave meanwhile.
 * The rest gate (`C2`): only the steward's wear writes `works`' workbench on one vessel.
-* A cold wiki's put reaches disk only once the wiki wakes (`lares wiki hold works`; road `C8`, cured as a named wait by `6d8d8a5d8`).
+* A cold wiki's put reaches disk only once the wiki wakes (`lares wiki hold works`, by a face that holds a writer's seat there; an export names a wiki that still stands cold as `cold-wikis`).
 * The road's slot law awaits a ruling before `L17-2d` writes rows.
 * No provenance tells one spirit's write from another's (`F11`); the `spirit` field designates.
 
@@ -225,7 +225,7 @@ The store door hands the kahua rows the worn face, refuses a write row for any o
 !!! The rite script
 
 * ''One entry'': `tools/rite-walk.mjs [--from <step>] [--to <step>] --out <dir>`, run on the e2e harness: `openStaged` and `foundStagedHearth` (`tests/harness/instance.ts`), the staged test custody for every passphrase act (`tools/unlock-test-custody.mjs`'s `unlockTestCustody(root, "unlock", face)`), and the browser leg through Playwright with `armTestCustody` (`packages/lararium-node/dist/probes/browser-test-custody.js`), as the walker's `b6-hearth3.mjs` and `keeper.mts` already do. It refuses any root outside a scratch prefix (the walker's own guard), unsets `LAR_BAGS` and `LAR_GENESIS`, and runs under a scratch `HOME` and `LAR_ROOT`.
-* ''Its steps'' bind to the runbook by line (measured at `founding-runbook.mem` as it stands after `7bc2e42fb`): the Stand block (`:402-410`, ten commands), memory (`:417`, an MCP `meme_put` of a keyed row), the lift (`:419`, `kahua stage`, then `kahua lift --digest` under test custody), wearing another face (`:421`), the shared workbench (`:426-428`), offer, promote, release and accept (`:433-440`), the browser leg (`:449`), and the carry across a re-founding (`:454-465`), then the read-backs (`:472`, `:474`). Each step names its runbook line, the command, the expected answer as the runbook quotes it (a `layer: working`, an `ok — 1 of 1 seats`, a `pinSource: genesis`), and an outcome.
+* ''Its steps'' bind to the runbook by line (measured at `founding-runbook.mem` as it stands): the Stand block (`:402-410`, ten commands), memory (`:417`, an MCP `meme_put` of a keyed row), the lift (`:419`, `kahua stage`, then `kahua lift --digest` under test custody), wearing another face (`:421`), the shared workbench (`:426-428`), offer, promote, release and accept (`:433-440`), the browser leg (`:449`), and the carry across a re-founding (`:454-467`), then the read-backs (`:476`, `:478`). Each step names its runbook line, the command, the expected answer as the runbook quotes it (a `layer: working`, an `ok — 1 of 1 seats`, a `pinSource: genesis`), and an outcome.
 * ''A drift witness'': each `lares …` line inside the rite's `sh` fences maps to one step, so a runbook edit that adds a command without a step reads red at the join.
 * ''The report'' (`<out>/rite-report.json`, and where a hearth answers, the tiddler `lar:///ha.ka.ba/works/rite/<head>`): per step `{step, runbook, command, expect, outcome: "pass" | "fail" | "unreached", answer (the quoted line, at most 400 bytes), ms}`; fields on the tiddler `head`, `pass`, `fail`, `unreached`, `first-fail`; tags `works/rite`.
 * ''What it cannot reach, and how the report names each'': a real terminal's passphrase ward (the staged custody stands in: every such step reads `pass (staged-custody)`, never a bare `pass`); `lares reset` through the host shim (`tools/lares-container.sh reset`, and `C10`'s gate on it: `unreached: host-shim`, while the script resets through the CLI's own `reset` on the scratch root); Docker and the product image (the script runs the host's built `dist`: `unreached: image`, and the ready state of rank 2 still builds and walks the image once); the browser's paper card typed back by a human (`pass (staged-custody)` through the test route); `/mcp` reconnect inside a Claude session (the script speaks the seat's stdio as `tests/e2e/tiddler-door.test.ts` does: `pass (seat-stdio)`).
@@ -337,13 +337,15 @@ The lanes below own new files alone, except `L40b`, so each takes a free slot be
 
 !! The handoff walk ~ what the outgoing controller does on the fresh hearth before a new main session takes over
 
-Each step names the call, the answer expected, and a mark: ''day one'' (reachable on the freshly founded hearth with the tree at `96b6e59a3` and wave one landed), or ''after <row>''.
+As of 2026-11-14 the span's head stands pushed to origin at `dbe351551`, the hearth stands cleared and unfounded, awaiting the operator's founding, and a burn-and-sweep pass flies; the walk follows the founding (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/state`>>).
+
+Each step names the call, the answer expected, and a mark: ''day one'' (reachable on the freshly founded hearth), or ''after <row>''.
 
 !!! What the wake hook prints, and what stays owed
 
 ''Built'' (road `L43`; `packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.mjs` over `lares-wake-core.mjs`, registered as a `SessionStart` hook in the operator's `~/.claude/settings.json` with a 15-second timeout, and as the plugin's own `hooks/hooks.json`): the wake starts three reads together under one 12-second budget, the container's observation (`tools/lares-container.sh vessel stand --observe --json`), the memory index (`wiki filter '[tag[stage/index]]' --recipe default --fields title,description --limit 32 --max-bytes 4096 --json` through the shim) and the homes line (`lares home read --brief`), and emits one `additionalContext` string: the observation frame, `Lares homes: <the brief line>`, then `Lares memory index: <N> rows`, one line per row (`title — description`) and the call that reads further. A fault prints `memory index unread: <cause>`; a vessel that answers no "up" skips the index read and says so once; a read still open at the budget stops and reports itself. `lares-compact-hook.mjs` rides `PreCompact` and hands the compaction the index and the rows in play by address (the open ledger, the standing orders), and the wake that fires on a session start of source `compact` adds the same rows-in-play line.
 
-''Owed'' (road `L44`): the operator's one `lares home tend` after the merge, which seats the compaction hook (`claude.compact-hook`) and lifts the retired ingest hook registrations from Claude's `Stop` and `SessionEnd`, Codex's `Stop` and Copilot's `sessionEnd`; until it runs, the homes line of every wake names the retired items and the act. The script those registrations name, `lares-mempalace-ingest-hook.sh`, calls no mempalace: it feeds the sensorium and exits at once where `LAR_ROOT` stands unset, as on the host. Also owed: the real shim's answer inside `docker compose exec`, and one live session's wake and compaction witnessed.
+''Owed'' (road `L44`): the operator's one `lares home tend` after the merge, which seats the compaction hook and lifts every host hook command that names a script in the house's hooks folder which no `[[home]]` row of the reality tunnel declares; every other hand's command stays, and a second tend writes nothing (<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>). Also owed: the real shim's answer inside `docker compose exec`, and one live session's wake and compaction witnessed.
 
 !!! The checklist
 
@@ -357,7 +359,7 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 # ''Read back through the CLI'' (day one): `tools/lares-container.sh wiki filter '[tag[stage/index]]' --recipe default --json` and `tools/lares-container.sh tiddler get <title> --skinny --recipe default --json` answer the same rows and fields; `tiddler get` with no `--recipe default` refuses `no-container`.
 # ''Read back on disk'' (day one): each row's file under `<projections>/wikis/daemon-<F>/`, read by the operator (spirits read nothing under `~/.lares`).
 # ''Read back in the browser'' (after `L4f`): a joined own-hearth page mounts the daemon document only once `L4f` widens the admit carriage; until then the page shows the floor and the shared wikis, never the daemon rows.
-# ''Read back at wake'' (after the operator's one `lares home tend`, road `L44`): a new session's `SessionStart` context carries `Lares memory index: 6 rows` and a line per row. The wake's index read needs no config act and rides the merged tree; the tend seats the compaction hook and lifts the retired hooks the homes line names.
+# ''Read back at wake'' (after the operator's one `lares home tend`, road `L44`): a new session's `SessionStart` context carries `Lares memory index: 6 rows` and a line per row. The wake's index read needs no config act and rides the merged tree; the tend seats the compaction hook and lifts each host hook command that names a house hook script no `[[home]]` row declares.
 # ''A restart'' (day one): `tools/lares-container.sh down`, then `up` (the passphrase at the terminal), then step 7 again answers the same rows and hashes.
 # ''A re-wear'' (day one): `lares vault unlock --face 1`, `wiki_filter(…)` answers the engineer's own daemon wiki and none of the steward's rows (reach law); `lares vault unlock --face 0` and the rows answer again.
 # ''The works wiki'' (day one for the mint, at the operator's terminal; after `L17-2a` for its filter): `tools/lares-container.sh wiki init works` wearing the steward, since the seat's `wiki` tool carries `switch`, `hold`, `release` and `active` and mints nothing; then `wiki(verb="hold", slug="works")` or `lares wiki hold works`, and the first bridge card put into the steward's daemon wiki at `lar:///ha.ka.ba/works/lane/…`.
@@ -386,10 +388,8 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 * ''The bridge's move'': daemon-wiki cards re-put into `works`, then kāpae'd in the daemon wiki once each receipt stands. Default: re-put, never a residency `MOVE`, since the daemon working layer refuses every share.
 * ''The house wiki's name'': `house`. Default: `house`, a plain word every face reads.
 * ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
-* ''The mempalace hooks in the operator's settings'': still registered on `Stop` and `SessionEnd`. Default: named to the operator once, at the walk, as a cleanup of their own config.
-
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;PCpZuc0CxH_ec-56SM9QDGFeNpbpynX6xm42PxeRlt4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9YC-I_i1qT0zbPcm1Boxccn80XWcY0OJTRe2R7a5ooo`>>
 
 <<^ code=`&#x0004;` to=`?`>>
