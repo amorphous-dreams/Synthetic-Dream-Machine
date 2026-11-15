@@ -607,7 +607,7 @@ export function wikiRenderPlan(args: ParsedArgs): DoorPlan {
 }
 
 /** `lares wiki status`: the daemon verb `wiki-status` and its args. */
-export function wikiStatusPlan(args: ParsedArgs): DoorPlan {
+function wikiStatusPlan(args: ParsedArgs): DoorPlan {
   return { verb: "wiki-status", args: { ...containerArgs(args, "wiki status") } };
 }
 
@@ -618,7 +618,7 @@ interface FilterRowOut { title: string; fields: Record<string, string>; omitted?
  * continues it); `--all` follows the cursor to the end and prints every title. A cursor that fails to advance refuses
  * by name, and a wiki that moved mid-walk answers the verb's own `filter-cursor-stale`.
  */
-export async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
+async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
   return guardDoor(args, "wiki filter", async () => {
     const plan = wikiFilterPlan(args);
     const titles: string[] = [];
@@ -661,7 +661,7 @@ export async function cmdWikiFilter(args: ParsedArgs): Promise<number> {
   });
 }
 
-export async function cmdWikiRender(args: ParsedArgs): Promise<number> {
+async function cmdWikiRender(args: ParsedArgs): Promise<number> {
   return guardDoor(args, "wiki render", async () => {
     const ran = await runDoor(args, "wiki render", wikiRenderPlan(args));
     if (!ran.ok) return ran.exit;
@@ -678,7 +678,7 @@ export async function cmdWikiRender(args: ParsedArgs): Promise<number> {
   });
 }
 
-export async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
+async function cmdWikiStatus(args: ParsedArgs): Promise<number> {
   return guardDoor(args, "wiki status", async () => {
     const ran = await runDoor(args, "wiki status", wikiStatusPlan(args));
     if (!ran.ok) return ran.exit;

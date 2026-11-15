@@ -40,7 +40,7 @@ export const KAHUA_HEADS_FILE = "kahua-heads.json";
 
 /** A row's layer: what it carries and how the import lands it. */
 export type CarryLayer = "working" | "kapae" | "draft" | "temp" | "kahua-carrier" | "kahua-head" | "bag" | "daemon-canon" | "wiki-working" | "personal";
-export const CARRY_LAYERS: readonly CarryLayer[] = ["working", "kapae", "draft", "temp", "kahua-carrier", "kahua-head", "bag", "daemon-canon", "wiki-working", "personal"];
+const CARRY_LAYERS: readonly CarryLayer[] = ["working", "kapae", "draft", "temp", "kahua-carrier", "kahua-head", "bag", "daemon-canon", "wiki-working", "personal"];
 
 /** One file the bundle holds, with the bytes' sha-256: the tamper check reads every one. */
 export interface CarryFile { readonly path: string; readonly sha256: string; readonly bytes: number }

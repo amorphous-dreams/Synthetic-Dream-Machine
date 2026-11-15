@@ -195,7 +195,7 @@ export interface MirrorSeedResult {
   /**
    * THE FACES THAT WAIT THEIR TURN: each face whose folders (its own, or a former face's it adopts) stand on disk while that face
    * stands SHUT, or (`why: "unresolved"`) stands open where the island resolves no layer of its own for a wave naming it
-   * (`face-unresolved`), or (`why: "unworn"`) stands open and unworn while its workbench folders (`folders`) wait for its own wear.
+   * (`face-unresolved`), or (`why: "unworn"`) stands open and unworn while its `personal` folders (`folders`) wait for its own wear.
    * Nothing of theirs laid into any layer; their folders stay until their own seed lands them.
    */
   readonly waiting: ReadonlyArray<{ readonly handleIndex: number; readonly petname: string | null; readonly relations: readonly string[]; readonly why?: "unresolved" | "unworn"; readonly folders?: readonly string[] }>;
