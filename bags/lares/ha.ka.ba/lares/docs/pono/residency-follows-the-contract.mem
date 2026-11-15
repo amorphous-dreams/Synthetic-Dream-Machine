@@ -49,7 +49,7 @@ A moʻolelo of the talk-story between the operator and the house on 2026-11-14, 
 
 !! The unseated face writes its margin
 
-A face that holds no writer's seat in a wiki's workbench reads canon (from the floor where it stands outside the cabal) and writes into its own `personal` layer of that wiki. It offers from there. It founds no second working realm of a wiki another face on the vessel already stands. The recipe order already carried the place: canon -> working -> personal -> draft -> temp, with the operator's 2026-11-11 ruling //"Personal can absorb the new caps."//
+A face that holds no writer's seat in a wiki's workbench reads canon (from the floor where it stands outside the cabal) and writes into its own `personal` layer of that wiki. It offers from there. It founds no second working realm of a wiki another face on the vessel already stands; where no face of the vessel stands the wiki, its first put founds the workbench and lands in `working` (`workbenchFoundsOnWrite`). The recipe order already carried the place: canon -> working -> personal -> draft -> temp, with the operator's 2026-11-11 ruling //"Personal can absorb the new caps."//
 
 * ''Gaia 2026.'' A person opens the `lares` wiki wearing a face with no seat, edits a page, and sees the edit over canon, alone. Nothing presents that edit as the shared draft.
 * ''Elyncia 5492.'' A visiting scribe annotates the temple's book in a margin of their own, then petitions the keepers.
@@ -175,6 +175,6 @@ On the road (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;u9hn68hbsw7NqCqMwxwkz7Wuej-7qaYOEXxsS4iOUIs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WJqlcjSs796JOXr1j92_GFdbrMsePRq-iF-vvnmJBMk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
