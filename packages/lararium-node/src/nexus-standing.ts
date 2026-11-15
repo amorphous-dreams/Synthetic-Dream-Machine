@@ -42,7 +42,7 @@ import { nexusIdentity, nexusScopeOrThrow, nexusIslandsBelow, nexusAidOf, type N
 export { admittedJoineeIsland } from "@lararium/mesh";
 
 import { readNexusDoc, nexusCharterStands } from "./nexus-doc.js";
-import { readHearthDialPin } from "./hearth-dial-pin.js";
+import { readHearthIslandPin } from "./hearth-dial-pin.js";
 import { larSealHome, larBootstrapPath } from "./vessel-paths.js";
 
 /**
@@ -62,7 +62,9 @@ export function nodeNexusStandsAt(opts: {
   readonly bootstrapPath?: string;
 }): NexusIdentityAt {
   const sealHome  = opts.sealHome ?? larSealHome();
-  const hearthPin = readHearthDialPin(opts.bootstrapPath ?? larBootstrapPath());
+  // THE ISLAND HALF OF THE ADMISSION, never the dial: an answer that named no sync url pins no dial and still names the island
+  // its landing seeded (`hearthDialTiddlers`), so a restart reads the board the landing wrote.
+  const hearthPin = readHearthIslandPin(opts.bootstrapPath ?? larBootstrapPath());
   const ownGenesis       = nexusAidOf(readNexusDoc(sealHome));
   const ownCharterStands = nexusCharterStands(sealHome);
   // A vessel admitted onto a climbed founder holds no charter RECORD of its own (`ownGenesis`/
