@@ -16,6 +16,9 @@
  *     seated it (`floorPins`), with the place's floor pin claims and KEL rows beside them where it stands a KEL (`floorProof`). The
  *     verified crossing is the authenticated relation the dialer files them under. A floor
  *     session, a session naming no Nexus, an empty set or a provider that fails sends nothing; the session stands.
+ *   · A SESSION SETTLES BEFORE THE ADAPTER HEARS IT (`settle`): the composer readies what the adapter's first answer to
+ *     the session needs (the wire alias of the pair the session faces, `wire-legs`). A session that cannot settle
+ *     closes, and the adapter never sees it.
  *
  * Meme: lar:///ha.ka.ba/lararium/node/gate-sync-server
  */
@@ -59,6 +62,8 @@ export interface GateSyncServerOptions {
   readonly onSession?: (socket: GateSyncSocket, body: unknown) => void;
   /** The floor pins this hearth stands at `nexus` (the AID text), sent to each sovereign session at open. */
   readonly floorPins?: (nexus: string) => readonly GateBundlePin[] | Promise<readonly GateBundlePin[]>;
+  /** Runs once for each opened session, before the adapter sees it; a rejection closes the session's channel. */
+  readonly settle?: (session: GateSession) => Promise<void>;
   /** The floor pin CLAIMS for those pins and the place KEL rows that fold to their head, sent beside the set (null sends the set bare). */
   readonly floorProof?: (pins: readonly GateBundlePin[]) => Promise<HearthFloorProof | null>;
 }
@@ -130,7 +135,11 @@ export function gateSyncServer(opts: GateSyncServerOptions = {}): GateSyncServer
   return {
     wss,
     onOpen(channel, session) {
-      const handOff = (): void => {
+      const handOff = async (): Promise<void> => {
+        if (opts.settle && !closed && channel.state === "open") {
+          pending.add(channel);
+          try { await opts.settle(session); } catch { pending.delete(channel); channel.close(); return; }
+        }
         pending.delete(channel);
         if (closed || channel.state !== "open") return;
         const socket = socketOver(channel);
@@ -142,7 +151,7 @@ export function gateSyncServer(opts: GateSyncServerOptions = {}): GateSyncServer
       if (opts.adapterConnected) {
         pending.add(channel);
         void opts.adapterConnected.then(handOff, () => { pending.delete(channel); channel.close(); });
-      } else handOff();
+      } else void handOff();
     },
     sessionOf: (socket) => (socket !== null && typeof socket === "object" ? sessions.get(socket) ?? null : null),
     close() {

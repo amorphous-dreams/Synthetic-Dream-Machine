@@ -153,6 +153,7 @@ import { makeCarriageLog, placeSignerKeyAt, type PlaceKelEvent } from "@lararium
 import { CARRIAGE_LOG_FILE, fileCarriageJournal } from "./carriage-log-file.js";
 import { openRelayGateSeed } from "./relay-gate-seed.js";
 import { maybeStartNexusClientDial, type NexusClientDial } from "./nexus-client-dial.js";
+import { gateSessionSettles, seatGateLeg } from "./wire-legs.js";
 import { nodeDialSocket } from "./node-dial-socket.js";
 import { loadFaceAtomOfGroup } from "./face-atom-store.js";
 import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-store.js";
@@ -348,6 +349,13 @@ export function parseFormVector(document: string): SparseFormVector | null {
  * doc relay deadlocks silently (no reply, not even doc-unavailable).
  */
 export class ListeningWSServerAdapter extends NodeWSServerAdapter {
+  /** The socket whose message the adapter reads right now, or null between messages: the adapter announces a joining
+   *  peer before it files that peer's socket, and the leg's seat reads the arrival's session here (`wire-legs`). */
+  arriving: unknown = null;
+  override receiveMessage(...args: Parameters<NodeWSServerAdapter["receiveMessage"]>): void {
+    this.arriving = args[1];
+    try { super.receiveMessage(...args); } finally { this.arriving = null; }
+  }
   private resolveConnected!: () => void;
   private rejectConnected!: (reason: unknown) => void;
   readonly connected = new Promise<void>((resolve, reject) => { this.resolveConnected = resolve; this.rejectConnected = reject; });
@@ -1067,13 +1075,19 @@ async function prepareNodeBootOn(
   let adapterConnected!: () => void;
   let adapterFailed!: (reason: unknown) => void;
   const adapterReady = new Promise<void>((resolve, reject) => { adapterConnected = resolve; adapterFailed = reject; });
-  const gateSync = gateSyncServer({ adapterConnected: adapterReady, floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()), floorProof: hearthFloorProof });
+  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): the Repo holds the worn face's own store id and
+  // a peer id minted for this composition alone, and each wire leg presents the alias of the (face, Nexus) it serves
+  // (`wire-legs`): a session on the sync gate reads the pair it faces, the client dial the pair it presents. A face
+  // switch recomposes, so no peer reads one identifier under two faces of this vessel, lit together or worn in turn.
+  const wire = wireIdentityOf({ store: sealedRest.store, face: custodyGroup });
+  const gateSync = gateSyncServer({ adapterConnected: adapterReady, settle: gateSessionSettles(wire, custodyGroup), floorPins: async (nexus) => hearthFloorPins(nexus, await vesselFloorKeyDoor()), floorProof: hearthFloorProof });
   const syncSessions = gateSessionRegistry((channel, session) => gateSync.onOpen(channel, session));
   const gateServer = faceGateServer({
     onRefuse: (path, refusal) => console.warn(`[lar-gate] an upgrade on ${path.slice(0, 24)}… refused before any 101 (${refusal})`),
   });
   stood.push({ what: "the sync gates", down: () => { gateServer.close(); syncSessions.close(); gateSync.close(); } });
-  const network  = new ListeningWSServerAdapter(gateSync.wss as unknown as typeof wss);
+  const network  = seatGateLeg(wire, new ListeningWSServerAdapter(gateSync.wss as unknown as typeof wss), gateSync, custodyGroup,
+    (refusal, peerId) => { if (refusal !== "store-gossip") console.warn(`[wire] the sync gate's leg said nothing to ${peerId.slice(0, 12)}… (${refusal})`); });
   adapterReady.catch(() => { /* the connect throw rides its own caller; the gate closes each held channel on this rejection */ });
   network.connected.then(adapterConnected, adapterFailed);
   const peerIdentifierMap = new Map<string, string>();
@@ -1352,10 +1366,6 @@ async function prepareNodeBootOn(
   let wikiIslands: { has(peerId: string): boolean } = new Set<string>();
   // The deny set GROWS as the control document names device documents: each growth re-asks every cached verdict.
   const vesselOnly = vesselOnlyBook(() => repo);
-  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): this composition presents the worn face's own
-  // store id and a peer id minted for this composition alone; the floor presents its own. A face switch recomposes, so no
-  // peer reads one identifier under two faces of this vessel.
-  const wire = wireIdentityOf({ store: sealedRest.store, face: custodyGroup });
   const repo = new Repo({
     storage: wire.storage,
     peerId: wire.peerId,
@@ -3225,6 +3235,8 @@ async function prepareNodeBootOn(
           onLog: (line) => console.log(`[nexus-join] ${line}`),
           // THE RETURN ON SOCKET A — a return re-folds the boards a partition staled.
           onReconnect: async () => { await afterRoll(); },
+          // THE LEG'S SEAT: the dialed hearth reads the alias of the worn face at the Nexus this dial names.
+          leg: (adapter) => wire.leg(adapter, { face: custodyGroup, nexus: dialNexus }),
           // THE ARRIVAL'S SEAT, before the adapter joins: the dialed peer's relation stands on its arrival on THIS adapter, so a
           // replacement arrival of its id elsewhere drops it (and an impostor of a live inbound id on this adapter drops that).
           beforeJoin: (adapter) => {

@@ -47,8 +47,10 @@ export type WornFace = string | null | Promise<string | null>;
 export interface WireLegAt { readonly face: string | null; readonly nexus: string | null }
 
 /** A leg's seat: one (face, Nexus) for every peer it meets (a dial), or a reading of the pair for each remote peer (a
- *  gate, which seats many sessions). A reading that answers null names no pair: the leg says nothing to that peer. */
-export type WireLegSeat = WireLegAt | ((remote: PeerId) => WireLegAt | null);
+ *  gate, which seats many sessions). A reading that answers null names no pair: the leg says nothing to that peer.
+ *  `arriving` reads true while the leg announces the peer (its `peer-candidate`), where an adapter may not yet have
+ *  filed the peer's own connection, and false for every word after. */
+export type WireLegSeat = WireLegAt | ((remote: PeerId, arriving: boolean) => WireLegAt | null);
 
 /** What one (face, Nexus) presents at the wire in one composition. */
 export interface WireAlias {
@@ -256,8 +258,8 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
     const standIn = freshWirePeerId();
     let ownMetadata: PeerMetadata = {};
     const refuse = (refusal: WireLegRefusal, peer: unknown): void => { try { onRefusal?.(refusal, String(peer ?? "?")); } catch { /* a sink never decides the leg */ } };
-    const heldFor = (remote: unknown): WireAlias | null => {
-      const at = fixed ?? (typeof remote === "string" && typeof seat === "function" ? seat(remote as PeerId) : null);
+    const heldFor = (remote: unknown, arriving = false): WireAlias | null => {
+      const at = fixed ?? (typeof remote === "string" && typeof seat === "function" ? seat(remote as PeerId, arriving) : null);
       if (at === null) { refuse("unseated", remote); return null; }
       const held = settled.get(pairOf(at)) ?? null;
       if (held === null) refuse("alias-unsettled", remote);
@@ -268,8 +270,9 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
     const relayed = (held: WireAlias, name: unknown, digits: number): string =>
       BigInt(`0x${sha256HexSync(`${WIRE_ALIAS_DOMAIN}\nrelay\n${salts.get(held) ?? ""}\n${String(name)}`).slice(0, digits)}`).toString(36);
 
-    target.connect = (_repoPeerId, peerMetadata) => {
-      ownMetadata = peerMetadata ?? {};
+    target.connect = (repoPeerId, peerMetadata) => {
+      // The Repo connects the leg once, under its own id; an adapter that re-dials hands back what this seat gave it.
+      if (repoPeerId === peerId) ownMetadata = peerMetadata ?? {};
       if (fixed === null) return connect(standIn, {});
       return alias(fixed).then((held) => connect(held.peerId, storeIdOf(ownMetadata, held)));
     };
@@ -292,7 +295,7 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
     target.emit = (event, ...args) => {
       if (event === "peer-candidate") {
         const arrival = args[0] as { peerId?: unknown; peerMetadata?: PeerMetadata } | undefined;
-        const held = heldFor(arrival?.peerId);
+        const held = heldFor(arrival?.peerId, true);
         if (held === null) return false;
         const metadata = arrival?.peerMetadata ?? {};
         // THE REMOTE STORE ID RESTS UNDER THIS PAIR'S SCOPE: the Repo keys a peer's sync state on it.
