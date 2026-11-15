@@ -62,6 +62,9 @@ export interface DeviceSeatInput<P extends { readonly deviceEdge: Parameters<typ
   /** The joining atom's verifying key, 64 lower-case hex. */
   readonly deviceKey: string;
   readonly vesselTag: { readonly vesselTag?: unknown; readonly vesselSig?: unknown; readonly wardKey?: unknown; readonly wardPop?: unknown };
+  /** The daemon working document this hearth projects for the face (`hearthDaemonOf` over its control document), or null/absent
+   *  where the root holder stands none. The root signs it into the device's edge act (road row `L4f`). */
+  readonly hearthDaemon?: string | null;
   /** The root's signature over the joinee's edge (`buildDeviceDelegationRootHalf`), handed in so the caller's own import signs. */
   readonly rootHalf: (args: { personaRootSeed: Uint8Array; deviceVerifyingKey: string; hearthTrueName: string; boundEpoch: number }) => Promise<DeviceDelegationRootHalf>;
   /** The enrolment over the acts this seat carries: the caller's door mints the payload a joinee founds by. */
@@ -118,17 +121,22 @@ export async function seatDeviceInFace<P extends { readonly deviceEdge: Paramete
   const servedDigest = edgeBodyDigest(signedEdge);
   const signer = { key: signerKey, sign: ed25519SignerFromSeed(signerSeed) };
   const epoch = input.kelEpoch;
+  // THE HEARTH'S DAEMON DOCUMENT RIDES THE EDGE ACT (road row `L4f`): the door names the working document it projects for
+  // this face, and the root signs that name beside the edge's digest. A door that reads none (a root holder with no hearth,
+  // a slot not yet stood) keeps the name the log already seats for the device, so a renewal never drops it; a seated device
+  // whose act names another document, or none, takes one edge act carrying the door's name.
+  const seatedDaemon = seatedAdmission ? projection.hearthDaemons[deviceKey] : undefined;
+  const servedDaemon = input.hearthDaemon || seatedDaemon;
+  const edgeFields = { deviceKey, edgeDigest: servedDigest, ...(servedDaemon ? { hearthDaemon: servedDaemon } : {}) };
   let appended: SignedPersonaAct[] = [];
   if (!seatedAdmission) {
     const admission = await signPersonaAct(projection.head, { group: personaGroupId, act: "admission", epoch,
       fields: { deviceKey, vesselTag, vesselSig, wardKey, wardPop } }, signer);
     const edgeAct = await signPersonaAct({ seq: admission.body.seq, cid: actCid(admission.body) },
-      { group: personaGroupId, act: "device-edge", epoch,
-        fields: { deviceKey, edgeDigest: servedDigest } }, signer);
+      { group: personaGroupId, act: "device-edge", epoch, fields: edgeFields }, signer);
     appended = [admission, edgeAct];
-  } else if (seatedDigest !== servedDigest) {
-    appended = [await signPersonaAct(projection.head, { group: personaGroupId, act: "device-edge", epoch,
-      fields: { deviceKey, edgeDigest: servedDigest } }, signer)];
+  } else if (seatedDigest !== servedDigest || seatedDaemon !== servedDaemon) {
+    appended = [await signPersonaAct(projection.head, { group: personaGroupId, act: "device-edge", epoch, fields: edgeFields }, signer)];
   }
   const payload = await input.enrol({ boundEpoch, personaActs: [...records, ...appended], signedEdge });
   // WHAT THE ANSWER SERVES EQUALS WHAT THE LOG HOLDS: the operation cache never decides a replay. A request whose cached

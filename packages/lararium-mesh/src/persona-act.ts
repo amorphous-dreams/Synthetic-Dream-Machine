@@ -50,6 +50,9 @@ export interface PersonaProjection {
   readonly admissionRefusals: readonly { readonly refusal: AdmissionRefusal; readonly cid: string }[];
   /** device key -> edge digest, from verified device-edge acts. */
   readonly edges: Readonly<Record<string, string>>;
+  /** device key -> the hearth's daemon working document its latest verified device-edge act names (road row `L4f`): the one
+   *  document a leaf at its own hearth mounts as its daemon wiki's working slot. A device whose act names none has no entry. */
+  readonly hearthDaemons: Readonly<Record<string, string>>;
   /** a fork the fold stopped at, else null. */
   readonly fork: ActFold["fork"];
   /** the verified head, for the anchor's frontier. */
@@ -87,7 +90,7 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
     link: (body, prior) => prior === null || (body as PersonaActBody).epoch >= (prior as PersonaActBody).epoch,
   });
   let personaKelPrefix: string | null = null, rootCommitment: string | null = null;
-  const planes: Record<string, string> = {}, edges: Record<string, string> = {};
+  const planes: Record<string, string> = {}, edges: Record<string, string> = {}, hearthDaemons: Record<string, string> = {};
   const planeRewrites: { plane: string; cid: string }[] = [];
   // The founding span: the founding act and its plane acts, up to the first admission. A plane takes its pin inside it and nowhere later.
   let foundingClosed = false;
@@ -123,7 +126,15 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
         wardKeys[deviceKey.toLowerCase()] = b["wardKey"] as string;
         break;
       }
-      case "device-edge": if (typeof b["deviceKey"] === "string" && !barred.has(b["deviceKey"]) && typeof b["edgeDigest"] === "string") edges[b["deviceKey"]] = b["edgeDigest"]; break;
+      case "device-edge":
+        if (typeof b["deviceKey"] === "string" && !barred.has(b["deviceKey"]) && typeof b["edgeDigest"] === "string") {
+          edges[b["deviceKey"]] = b["edgeDigest"];
+          // THE HEARTH'S DAEMON DOCUMENT RIDES THE EDGE ACT (road row `L4f`): the latest verified edge act for a device decides,
+          // so an act that names none clears the name an earlier one carried.
+          if (typeof b["hearthDaemon"] === "string" && b["hearthDaemon"].length > 0) hearthDaemons[b["deviceKey"]] = b["hearthDaemon"];
+          else delete hearthDaemons[b["deviceKey"]];
+        }
+        break;
       case "plane":
         if (typeof b["plane"] === "string" && typeof b["url"] === "string") {
           // A pinned plane takes its FIRST pin only: no code path re-pins a plane after the founding mints it (a rotation carries the pins forward),
@@ -136,7 +147,7 @@ export function projectPersonaLog(records: readonly unknown[], opts: {
   }
   const last = fold.chain[fold.chain.length - 1];
   return {
-    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, planeRewrites, devices: [...devices].sort(), vesselTags: [...tagsStanding], admissions, wardKeys, admissionRefusals, edges,
+    founded: fold.chain.length > 0, personaKelPrefix, rootCommitment, planes, planeRewrites, devices: [...devices].sort(), vesselTags: [...tagsStanding], admissions, wardKeys, admissionRefusals, edges, hearthDaemons,
     fork: fold.fork, head: last ? { seq: last.act.body.seq, cid: last.cid } : null, cids: fold.chain.map((e) => e.cid),
   };
 }

@@ -52,6 +52,21 @@ export function floorSlotOf(title: string): { readonly slug: string; readonly ki
 
 /** The daemon wiki's device slot bags share this prefix (`wikis/daemon/<kind>`). */
 export const DAEMON_SLOT_PREFIX = wikiSlotUri("daemon", "working").replace(/working$/, "");
+/** The daemon wiki's working device slot bag (`wikis/daemon/working`). */
+const DAEMON_WORKING_BAG = wikiSlotUri("daemon", "working");
+
+/** The control row naming `group`'s `kind` device slot of the daemon wiki. */
+export function daemonSlotTitle(kind: string, group: string): string { return `${CONTROL_HOME_ID}/daemon-slot/${kind}/${encodeURIComponent(group)}`; }
+
+/**
+ * THE HEARTH'S DAEMON WORKING DOCUMENT FOR A FACE (road row `L4f`): the url the vessel's control document names for
+ * `group`'s working slot of the daemon wiki, or null where it names none. The root holder's admit door reads it here and
+ * signs it into a joining device's `device-edge` act, so a leaf at its own hearth mounts the document the hearth projects.
+ */
+export function hearthDaemonOf(controlTiddlers: LarDoc["tiddlers"] | null | undefined, group: string): string | null {
+  const url = tiddlerText(controlTiddlers?.[daemonSlotTitle("working", group)]);
+  return typeof url === "string" && url.length > 0 ? url : null;
+}
 
 type Owner =
   | { readonly kind: "floor" }
@@ -83,6 +98,9 @@ export interface DeviceDaemonDocs {
   announced(bagId: string, documentId: string): boolean;
   /** A face's daemon canon minted (its document named before its first byte), owned by `relation`. */
   canonMinted(bagId: string, documentId: string, relation: string): boolean;
+  /** The group whose daemon WORKING slot `documentId` holds, as the control document names it; null for every other document
+   *  (a draft or personal slot, a canon, a floor slot, a slot no registry names yet). The hearth's share verdict reads it. */
+  workingGroupOf(documentId: string): string | null;
   /** The sealed bag of a device document under the lit set: the OWNER's face where the owner stands in `lit`, else a null face
    *  (held); undefined where the document files as none (or as the floor's, which the vessel's held homes answer). */
   bagOf(documentId: string, lit: LitDeviceFaces): SealedBag | undefined;
@@ -183,6 +201,10 @@ export function deviceDaemonDocs(io: {
     },
     docsOf: (bagId, lit) => [...owners].filter(([, f]) => f.bagId === bagId && ownerIn(f.owner, lit) !== null).map(([id]) => id),
     has: (documentId) => owners.has(documentId),
+    workingGroupOf(documentId) {
+      const filed = owners.get(documentId);
+      return filed !== undefined && filed.bagId === DAEMON_WORKING_BAG && filed.owner.kind === "group" ? filed.owner.group : null;
+    },
     floorWiki: (documentId) => floorWikiFiled(documentId) !== null,
     release(documentId) {
       const filed = floorWikiFiled(documentId);
