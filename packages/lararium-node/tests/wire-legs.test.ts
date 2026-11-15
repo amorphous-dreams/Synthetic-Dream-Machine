@@ -73,7 +73,7 @@ async function standGate(worn: string | null, store = new MemoryStore()) {
   const wire = wireIdentityOf({ store, face: worn });
   let connected!: () => void;
   const adapterReady = new Promise<void>((r) => { connected = r; });
-  const gateSync = gateSyncServer({ adapterConnected: adapterReady, settle: legs!.gateSessionSettles(wire, worn) } as Parameters<typeof gateSyncServer>[0]);
+  const gateSync = gateSyncServer({ adapterConnected: adapterReady, settle: legs!.gateSessionSettles(wire, worn) });
   const network = legs!.seatGateLeg(wire, new ListeningWSServerAdapter(gateSync.wss as never), gateSync, worn);
   void network.connected.then(connected);
   const repo = new Repo({ storage: wire.storage, peerId: wire.peerId, network: [network] });
@@ -83,7 +83,7 @@ async function standGate(worn: string | null, store = new MemoryStore()) {
   const join = async (session: GateSession, peerId: string) => {
     const c = fakeChannel();
     gateSync.onOpen(c.channel, session);
-    c.deliver({ kind: "sync", bytes: cbor.encode({ type: "join", senderId: peerId, peerMetadata: {}, supportedProtocolVersions: ["1"] }) } as SealedMessage);
+    c.deliver({ kind: "sync", bytes: cbor.encode({ type: "join", senderId: peerId, peerMetadata: {}, supportedProtocolVersions: ["1"] }) } as unknown as SealedMessage);
     await settle();
     const words = c.sent.filter((m) => m.kind === "sync").map((m) => cbor.decode(m.bytes) as { type: string; senderId: string; peerMetadata?: { storageId?: string } });
     return { words, peer: words.find((w) => w.type === "peer") ?? null, channel: c };

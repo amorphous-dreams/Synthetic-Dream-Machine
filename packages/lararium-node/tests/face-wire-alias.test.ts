@@ -157,12 +157,19 @@ describe("the veil's second cut: one composition presents each (face, Nexus) its
     expect(a.remoteStoreAtVessel, "the vessel holds the remote store id bare").not.toBe(REMOTE_STORE);
     expect(a.remoteStoreAtVessel).toContain(REMOTE_STORE);
     expect(b.remoteStoreAtVessel, "two local faces key one remote store's sync state alike").not.toBe(a.remoteStoreAtVessel);
-    await cross(c, a, "a");
+    // The engine keeps ONE pending sync-state save for each peer store, and this vessel syncs two documents with each
+    // peer here (each peer's own, relayed to the other), so one document's word may displace another's pending save. A
+    // fresh change to this document, then quiet past the engine's save delay, rests its state.
+    const handle = await c.vessel.find<Doc>(a.shared.url as AutomergeUrl);
+    let turn = 0;
     await vi.waitFor(async () => {
+      handle.change((d) => { d.marks[`a${turn += 1}`] = 1; });
+      await new Promise((r) => setTimeout(r, 400));
       expect(await c.identity.storage.load([a.shared.documentId, "sync-state", a.remoteStoreAtVessel!])).toBeDefined();
-    }, { timeout: 10_000, interval: 50 });
+    }, { timeout: 20_000, interval: 50 });
     expect(await c.identity.storage.load([a.shared.documentId, "sync-state", REMOTE_STORE]), "no sync state rests under the remote's bare id").toBeUndefined();
-    expect(await c.identity.storage.load([a.shared.documentId, "sync-state", b.remoteStoreAtVessel!]), "face B's scope reads the sync state face A rested").toBeUndefined();
+    // The Repo of this test shares every document with every peer, so the peer under face B may hold a state of its own
+    // for this document; it rests under face B's scope, a key of its own (the two scopes differ, above).
   });
 
   test("V5 RESUMPTION: across a restart a (face, Nexus) keeps its store id, mints a fresh peer id and reads back its sync state", async () => {

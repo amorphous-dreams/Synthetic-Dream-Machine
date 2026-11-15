@@ -38,6 +38,8 @@ export const heavy = [
   // a real worker thread: the herm's daemon door settles a receipt round (L29 mirror)
   "tests/herm-daemon-settlement.test.ts",
   "tests/nexus-client-dial.test.ts",
+  // a real WebSocketServer under the engine's own server adapter: a gate's leg seats each dialing peer (V6)
+  "tests/face-wire-alias.test.ts",
   "tests/nexus-client-dial-listener-order.test.ts",
   "tests/live-wire-node-crossing.test.ts",
   "tests/crossing-matrix.test.ts",
