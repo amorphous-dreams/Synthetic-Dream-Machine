@@ -288,3 +288,23 @@ describe("★ L9: a stage row's title derives from its row key, never a clock or
     expect((await readMeme(uri, b))!.text).toBe(exported);
   });
 });
+
+describe("★ the stage meme law: the title and uri-path carry the stage path, no row-key field ★", () => {
+  test("★ RED: a stage meme put without a row-key lands at its title ★", async () => {
+    const sink = memorySink();
+    const uri = `${STAGE_ROW_PREFIX}feedback/never-stash`;
+    const r = await placeMeme({ uri, text: stageRow(uri, null) }, sink);
+    expect(r.diagnostics.map((d) => d.code)).toEqual([]);
+    expect(r.decision).toBe("ingest");
+    expect(sink.store.get(uri)?.["row-key"]).toBeUndefined();
+  });
+
+  test.each(["L9", "a/b/c", "a/", "../x", "a b"])("★ RED: a stage meme at a malformed stage path refuses `stage-path-shape`: %j ★", async (tail) => {
+    const sink = memorySink();
+    const uri = `${STAGE_ROW_PREFIX}${tail}`;
+    const r = await placeMeme({ uri, text: stageRow(uri, null) }, sink);
+    expect(r.decision).toBe("refuse");
+    expect(r.diagnostics.map((d) => d.code)).toEqual(["stage-path-shape"]);
+    expect(sink.store.size).toBe(0);
+  });
+});
