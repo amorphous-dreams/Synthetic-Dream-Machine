@@ -337,7 +337,7 @@ The lanes below own new files alone, except `L40b`, so each takes a free slot be
 
 !! The handoff walk ~ what the outgoing controller does on the fresh hearth before a new main session takes over
 
-As of 2026-11-14 the span's head stands pushed to origin at `dbe351551`, the hearth stands cleared and unfounded, awaiting the operator's founding, and a burn-and-sweep pass flies; the walk follows the founding (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/state`>>).
+As of 2026-11-14 the span's head carries the burn-and-sweep pass under a labelled genesis re-bake, and the hearth stands cleared and unfounded, awaiting the operator's founding; the walk follows the founding (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff#/state`>>).
 
 Each step names the call, the answer expected, and a mark: ''day one'' (reachable on the freshly founded hearth), or ''after <row>''.
 
@@ -359,7 +359,7 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 # ''Read back through the CLI'' (day one): `tools/lares-container.sh wiki filter '[tag[stage/index]]' --recipe default --json` and `tools/lares-container.sh tiddler get <title> --skinny --recipe default --json` answer the same rows and fields; `tiddler get` with no `--recipe default` refuses `no-container`.
 # ''Read back on disk'' (day one): each row's file under `<projections>/wikis/daemon-<F>/`, read by the operator (spirits read nothing under `~/.lares`).
 # ''Read back in the browser'' (after `L4f`): a joined own-hearth page mounts the daemon document only once `L4f` widens the admit carriage; until then the page shows the floor and the shared wikis, never the daemon rows.
-# ''Read back at wake'' (after the operator's one `lares home tend`, road `L44`): a new session's `SessionStart` context carries `Lares memory index: 6 rows` and a line per row. The wake's index read needs no config act and rides the merged tree; the tend seats the compaction hook and lifts each host hook command that names a house hook script no `[[home]]` row declares.
+# ''Read back at wake'' (after the operator's one `lares home tend`, road `L44`): a new session's `SessionStart` context carries `Lares memory index: 6 rows` and a line per row. The wake's index read needs no config act and rides the merged tree; the tend seats the compaction hook and lifts each host hook command that names a house hook script no `[[home]]` row declares, printing `lifted <scripts> from <path> (<id>)` per hook file (`claude.hooks-owned`, `codex.hooks-owned`, `copilot.hooks-owned`); before it, `lares home read --brief` names those items beside `lares home tend`.
 # ''A restart'' (day one): `tools/lares-container.sh down`, then `up` (the passphrase at the terminal), then step 7 again answers the same rows and hashes.
 # ''A re-wear'' (day one): `lares vault unlock --face 1`, `wiki_filter(…)` answers the engineer's own daemon wiki and none of the steward's rows (reach law); `lares vault unlock --face 0` and the rows answer again.
 # ''The works wiki'' (day one for the mint, at the operator's terminal; after `L17-2a` for its filter): `tools/lares-container.sh wiki init works` wearing the steward, since the seat's `wiki` tool carries `switch`, `hold`, `release` and `active` and mints nothing; then `wiki(verb="hold", slug="works")` or `lares wiki hold works`, and the first bridge card put into the steward's daemon wiki at `lar:///ha.ka.ba/works/lane/…`.
@@ -390,6 +390,6 @@ Each step names the call, the answer expected, and a mark: ''day one'' (reachabl
 * ''The unit suites' JSON reporter'': a `ci.yml` edit. Default: the controller's hand, in `L42b`'s window.
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;9YC-I_i1qT0zbPcm1Boxccn80XWcY0OJTRe2R7a5ooo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6GG7zegr053NfMaLUx-_-aaINKEDf2qs2_43WNqFluo`>>
 
 <<^ code=`&#x0004;` to=`?`>>

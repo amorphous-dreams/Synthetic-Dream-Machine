@@ -7,6 +7,7 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 ### The burn and the sweep: canon reads what stands
 
 **Changed**
+- **The house owns its hooks folder.** The reality tunnel names the folder (`hooks`), and three items (`claude.hooks-owned`, `codex.hooks-owned`, `copilot.hooks-owned`) keep each host's hook file free of every command naming a script there that no `[[home]]` item declares: `lares home read` names each such script, `read --brief` names the item beside `lares home tend`, and `tend` lifts each and prints `lifted <scripts> from <path> (<id>)`. The set derives from the home items alone; the tunnel's `[[retired]]` class and `lares-mempalace-ingest-hook.sh` leave the tree with the pieces that served them, and the hook-pause lever stands, naming a capture hook as its reader.
 - **The road sheds what landed.** The Pono roadmap's order table drops its wave-one band; `C8` (the carry residue) and `L36` (the recipe and delete law) rest in its ashes with their owed pieces moved to the rows that own them, and `C1`, `C4`, `L17`, `L35`, `L43` and `L44` read only what stays owed. `L44` reads the tend as the house owning its hooks folder: one `lares home tend` lifts any host hook command naming a house hook script that no `[[home]]` row declares, keeps every other hand's command, and a second tend writes nothing.
 - **The carry block holds as a seated writer.** The founding runbook's carry across a re-founding wakes each shared wiki under a face that holds a writer's seat before the export, since a reader's hold writes no workbench folder and the export copies disk.
 - **Canon trued to the code.** `residency-follows-the-contract`, `wiki-surface-scout`, `recipe-layer-model`, `first-three-wave-map`, `controller-handoff` and the landmark map read as the tree stands; the superseded `mcp-tool-registry` carrier burns.
@@ -16,7 +17,7 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 **Added**
 - **The wake reads the memory index.** The session-start hook starts three reads under one budget (the vessel's observation, the worn face's `[tag[stage/index]]` view through the tiddler door, the homes line) and prints the index rows with the call that reads further; a fault names its cause, and a vessel that stands down skips the read once. A compaction hook carries the rows in play by address, and the wake fires again after a compaction.
-- **One tend aligns every host's hooks.** `lares home tend` seats the compaction hook and lifts house hook commands the reality tunnel no longer declares.
+- **One tend aligns every host's hooks.** `lares home tend` seats the compaction hook and lifts every host hook command naming a house hook script no `[[home]]` item declares.
 
 ### Wave one's carry residue
 
