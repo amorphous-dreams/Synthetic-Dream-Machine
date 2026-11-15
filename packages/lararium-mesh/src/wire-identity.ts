@@ -50,7 +50,7 @@ const SYNC_STATE = "sync-state";
 const FLOOR_SCOPE = "floor";
 
 /** The scope a worn face names in the store: a one-way digest of its PersonaGroup, or the floor's own. */
-export function wireScopeOf(face: string | null): string {
+function wireScopeOf(face: string | null): string {
   return face === null ? FLOOR_SCOPE : `face-${sha256HexSync(`${WIRE_SCOPE_DOMAIN}\n${face}`).slice(0, 32)}`;
 }
 
@@ -64,7 +64,7 @@ function freshStoreId(): string {
 }
 
 /** A fresh peer id, shaped as the engine's own (`peer-` and a short base-36 tail) so it marks no house. */
-export function freshWirePeerId(): PeerId {
+function freshWirePeerId(): PeerId {
   const bytes = globalThis.crypto.getRandomValues(new Uint8Array(8));
   let n = 0n;
   for (const b of bytes) n = (n << 8n) | BigInt(b);
@@ -76,7 +76,7 @@ export function freshWirePeerId(): PeerId {
  * other key passes as written. A range read answers this scope's rows under the engine's own keys and passes over
  * every other scope's.
  */
-export function wireScopedStore(store: StorageAdapterInterface, face: WornFace): StorageAdapterInterface {
+function wireScopedStore(store: StorageAdapterInterface, face: WornFace): StorageAdapterInterface {
   const scope = Promise.resolve(face).then(wireScopeOf);
   // A boot that refuses before its face settles rejects the scope; each act then refuses by that reason, never unhandled here.
   scope.catch(() => {});

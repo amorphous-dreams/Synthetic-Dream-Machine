@@ -214,8 +214,6 @@ export type { DeviceAdmitOptions, DeviceAdmitPayload, DeviceAdmitResult } from "
 // and abandons in its own process, with no vessel standing.
 export { runFleetJoinOffer, runFleetJoinAnswer, runFleetJoinRequest, runFleetJoinLand, runFleetJoinAbandon, FleetJoinRefused } from "./commands/fleet-join.js";
 export { runIntentCommand, resolveIntentFaceIndex, intentAudience, IntentRefused } from "./commands/intent.js";
-// The face whose per-Nexus key stewards the Kahu realm: the one face whose seat writes canon back beside its source.
-export { kahuRealmHandleIndex } from "./kahu-realm.js";
 export { runKahuaCommand, KahuaRefused, type KahuaAction, type KahuaCommandOptions } from "./commands/kahua.js";
 export { kahuaDoor, type KahuaDoorPorts, type KahuaLiftInput, type KahuaProposeInput } from "./kahua-door.js";
 export type { FleetJoinAnswerOptions } from "./commands/fleet-join.js";
