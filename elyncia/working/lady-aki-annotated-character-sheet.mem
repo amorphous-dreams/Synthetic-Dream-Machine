@@ -65,7 +65,7 @@ Lady Aki walks between shrines, kingdoms, roads, and glades. Her rites bind. Her
 | Ephyra and homunculi | RULING | Social responsibilities, task boundaries, upkeep and household symbiosis; no invented numerical social capacity. |
 | Backgrounds | RULING | Alchemist and Priestess stand as distinct Path-Magic Background Traits, not a combined custom Trait. |
 | Ranks and XP | OPEN | Each Background tentatively carries the former combined +3 pending purchase/progression evidence. |
-| Inventory | SOURCE + RULING | Ichi removed from the seven personal readied-item entries; satchel bulk and harness compatibility still unresolved. |
+| Inventory | RULING + SOURCE + OPEN | Aki uses 5/7 personal outer slots; 2-slot backpack includes four-position harness; 3/6 packed subset slots occupied; three shrine-held full kits, nested 18-pocket bandolier ledger, grimoire + two Thawnettes on toolbelt. Kit provenance, belt bulk and satchel load remain OPEN. |
 | Path-Magic | RULING (scope) + PROPOSAL (mechanics) | Craft/refine/attune reagents and condensed resources; conversion, stacking and shelf-life rates not yet fixed. |
 | Exuberant | SOURCE | Each Life point spent by Aki counts as two for Power payment; outside source interactions not assumed. |
 | Morale | SOURCE + PROPOSAL | Apparent effortless power may trigger referee-called NPC morale test; no automatic penalty. |
@@ -322,37 +322,75 @@ The Quickstart's Armor/Ward wording supports the gear-counts reading for worn eq
 
 <<~ ahu slot=`#/inventory`>>
 
-!! Inventory — Slots, Bulk, Readiness and Access
+!! Inventory — Current Harness, Field Kits and Shrine Stores (RULING)
 
-''Item slots:'' 7 + Strength 0 = ''7''. One sack (sk) = 10 stones (st); one stone = 10 soaps (sp); one soap = 25 cash.
+''Item slots:'' 7 + Strength 0 = ''7''. Source rule: one sack (sk) = ten stones (st), one stone = ten soaps (sp); an ordinary available item costs at least one slot, and accessing packed gear normally needs an action. The nested carriers below enact an operator-approved playtest exception to separate outer Item slots from named bandolier pocket slots.
 
-!!! Ready / Carried Item Tally (RULING + SOURCE)
+!!! Aki's Personal Item Inventory (current ruling)
 
-| Recorded entry | Size as on source sheet | Slots | Readiness / note |
-|---|---|---:|---|
-| Spinneret Kit | 1 st | 1 | Silk/thread tools, ready |
-| Silksteel Ritual Miko Robes | 1 st | 1 | Worn, Ruffle Coat comparator, Armor +2 |
-| Veiled Miko Work Hat | 1 st | 1 | Worn, Moss Hat comparator, Ward +2 |
-| Silk Filter Menpo | 1 st | 1 | Worn, Dust Face comparator, Ward +1 |
-| Silkthorn Thawnette x2 | 1 st each | 2 | Two readied entangling thrown nets |
-| Expedition Satchel | 1 sk kit container | 1 (provisional) | Packed quantum kit; full-sack bulk and actual carrier unresolved |
-| ''Recorded ready / carried total'' | | ''7 / 7'' | Ichi no longer occupies a personal Hallmark slot |
+| Worn / carried equipment | Outer Item slots | Current disposition |
+|---|---:|---|
+| Silksteel Ritual Miko Robes + Veiled Miko Work Hat + Silk Filter Menpo | 1 | One coherent worn outfit only while kept together; preserve the items' separately recorded effects subject to defense-stacking review |
+| Backpack with integrated four-position harness | 2 | One combined two-slot outer carrier, NOT 2+1 for backpack and harness; includes three bandoliers plus one toolbelt |
+| Shoulder satchel | 1 (provisional) | Compact field bag; no longer carries the full ten-stone quantum starting kit |
+| Naginata | 1 | External/ready polearm; its provenance and final weapon profile remain separately tracked |
+| ''Used'' | ''5 / 7'' | No separate outer slot charges for harness, bandolier contents, toolbelt grimoire or toolbelt Thawnettes |
+| ''Free'' | ''2 / 7'' | Available for other personal gear; bulk and carrying compatibility still matter |
 
-''Robes' pockets:'' 7 sp of free small-item storage, not seven additional inventory slots. Existing pocket contents: Bell-Tikker Clicker 1 sp, Safety Netsuke 1 sp, DreamNet Prayer Relay Ofuda x5. Exact per-ofuda bulk remains inherited from the source sheet.
+''Historical source tally (SUPERSEDED):'' The original recorded Spinneret Kit 1 slot, three separately worn robe/hat/menpo slots, two independent Thawnette slots, a full-sack Expedition Satchel counted provisionally as one, and Ichi as a Hallmark. Current rulings move Ichi to Social Inventory, combine the three worn pieces, nest two Thawnettes and the grimoire in the integrated toolbelt, relocate full professional kits to the shrine, and allow only a compact shoulder field satchel.
 
-!!! Annotation — The Missing Distinction (SOURCE)
-An available/readied item consumes a slot and can be used immediately. Packed items consolidate bulk but require at least one action to retrieve. Bandolier, belt, ready sling and pocket placement manage availability; backpack, bags, satchel and shrine wagon manage packing and load. They do not automatically erase slot costs.
+!!! Backpack's Internal Packed Inventory — 6 one-stone positions
 
-!!! Annotation — Aki's Load-Bearing Harness (PROPOSAL)
-A tailored harness can stabilize the robes, satchel, bandolier, ofuda, silk tools and Ichi interfaces; track any item-specific bonus, Armor/Ward stacking or free ready slots as an explicit purchased feature or table ruling, not as a free assumption. Keep outer armor versus under-armor passives and pockets separate while Ichi encloses Aki.
+| Position | Prepared subset, not another full quantum kit | Ready state |
+|---|---|---|
+| BP-01 | Alchemist field subset drawn from shrine-held Alchemist professional kit | Packed; at least one action to retrieve |
+| BP-02 | Priestess field subset drawn from shrine-held Priestess professional kit | Packed; at least one action to retrieve |
+| BP-03 | Spinneret field subset drawn from shrine-held Spinneret full kit | Packed; at least one action to retrieve |
+| BP-04 | EMPTY | Available packed capacity |
+| BP-05 | EMPTY | Available packed capacity |
+| BP-06 | EMPTY | Available packed capacity |
+| ''Used'' | ''3 / 6'' | |
+| ''Free'' | ''3 / 6'' | |
 
-!!! Annotation — Satchel Capacity (OPEN)
-The original one-sack background kit weighs 10 stones and may not fit the claimed single stone-scale personal slot without an actual container capacity or declared transport arrangement. Preferred logistics direction: the full alchemy kit rides shrine/wagon cargo; Aki draws a clearly limited ready subset into personal slots before danger. No relocation is presumed complete until the quartermaster tally changes.
+''Field subset constraint:'' Each subset occupies one packed stone position. Prepare and replenish these subsets from actual shrine stocks; moving equipment does not clone it. Their precise list of tools, consumables, preparation yields, and any separate acquisition cost remain OPEN. Mess and camping kits have been explicitly removed from this personal loadout.
 
-!!! Annotation — Ichi and Social Inventory (RULING)
-Ichi rides under relationship and responsibility rather than occupying a Hallmark Item or Trait slot. Their physical 2-stone armor body, when worn, transported, or parked, still requires credible spatial/compatibility handling; Social Inventory does not make mass vanish. Autonomous Ichi uses their own sheet and gear accounting.
+!!! Integrated Harness Positions (nested management slots, zero extra outer cost)
 
-''Carrying audit:'' The prior eighth-slot problem resolves at the personal-slot tally once Ichi leaves the tally. Packed satchel bulk, harness rights and physical symbiosis remain explicitly open.
+The backpack's two outer slots ''include'' the harness; its structure does not charge an additional outer slot. Four attachments fit: positions H-1, H-2, H-3 carry one bandolier each, and H-4 carries one toolbelt. Each bandolier has SIX separately accountable pockets; each pocket carries up to FIVE soaps, totaling 3 stones per bandolier. These pocket positions belong ON the character sheet; they must not be counted as personal 1-stone slots a second time.
+
+| Harness position | Contents | Nested pocket positions |
+|---|---|---|
+| H-1 · Dart bandolier | Twelve prepared chitin rope darts, two per pocket | D-01 through D-06, each 5 sp |
+| H-2 · Charm bandolier | Twelve prepared silken omamori charms, two per pocket | O-01 through O-06, each 5 sp |
+| H-3 · Alchemical bandolier | Balefire, spore charges, reagents and components as prepared and sized | A-01 through A-06, each 5 sp |
+| H-4 · Tool/Sword/Gun belt | T-01: both Silkthorn Thawnettes together in one nested belt item slot; T-02: grimoire; remaining belt positions OPEN | Belt slot limit and size accounting OPEN |
+
+''Bandolier pocket ledger:''
+
+| Pocket number | H-1: rope darts | H-2: charms | H-3: alchemical supply |
+|---:|---|---|---|
+| 01 | Darts 01–02 | Charms 01–02 | A-01: unassigned (max 5 sp) |
+| 02 | Darts 03–04 | Charms 03–04 | A-02: unassigned (max 5 sp) |
+| 03 | Darts 05–06 | Charms 05–06 | A-03: unassigned (max 5 sp) |
+| 04 | Darts 07–08 | Charms 07–08 | A-04: unassigned (max 5 sp) |
+| 05 | Darts 09–10 | Charms 09–10 | A-05: unassigned (max 5 sp) |
+| 06 | Darts 11–12 | Charms 11–12 | A-06: unassigned (max 5 sp) |
+
+''Required size check:'' To store two darts or charms in each 5-sp pocket, each complete dart (including its rope trail) or complete charm must fit within 2.5 sp; larger objects use more pocket capacity or fewer items. Do not assume a Balefire grenade fits a 5-sp pocket without a packaged size. The special toolbelt rule nests both Thawnettes in a single belt ''management'' position; their original one-stone-apiece physical bulk does not disappear, and belt load/maximum positions await definition.
+
+''Preparation cost:'' Pocketed objects carry no free extra attacks or automatic Power activations. For rope darts and spell-bearing charms, apply actual recipes, spells known, materials, charge durations and resource expenditure; twelve physical charm positions do not create twelve unpaid spells. Equipped grimoire occupies T-02 without automatically supplying extra spells.
+
+!!! Three Full Kits — Shrine-Held, No Duplication
+
+''RULING:'' The full Alchemist, Priestess and Spinneret professional kits stay at the Faerie-Ring Strandbeest-Shrine (including its attached cargo arrangements). Aki takes ONLY prepared field subsets in BP-01 through BP-03; she does not carry three full kits. The shoulder satchel holds a small reserve of ordinary field items, not the former full-sack kit.
+
+''Provenance guard (SOURCE / OPEN):'' The earlier sheet grants one combined Alchemist/Priestess ten-stone quantum starting kit, and separately records a one-stone Spinneret toolkit. It does NOT award three free ten-stone quantum kits. This operator ruling specifies three shrine-held full professional stocks; how the combined original kit splits, whether supplementary stock must be acquired or crafted, and the full Spinneret kit's extended size and provenance remain OPEN. Quantum selection limits do not reset simply by splitting equipment into new containers.
+
+''Readiness and carrying:'' The backpack holds six packed one-stone positions; the three subsets use three. Harness supplies ready pocket positions; retrieval from backpack or satchel follows usual packed-item timing unless explicitly readied. Backpack-integrated harness costs 2 outer slots total. Standalone harness costs 1 outer slot if used without an integrated backpack/rucksack. A future rucksack's own stated slot cost already incorporates its harness rather than stacking surcharge. Check movement, Ichi compatibility, weight/bulk and physical carrying separately: three full kits stored with the shrine do not burden Aki during solo travel.
+
+''Robe pockets:'' The original Silksteel robes retain their 7 sp of separate small-goods space (Bell-Tikker Clicker 1 sp, Safety Netsuke 1 sp, DreamNet Prayer Relay Ofuda x5 with exact per-ofuda bulk OPEN); never conflate these with the 18 bandolier pocket positions.
+
+''Current totals:'' Outer Aki Items 5 / 7 used (2 free); backpack BP 3 / 6 packed (3 free); three bandoliers 18 / 18 pocket positions assigned by role, H-3's six pockets individually unfilled until a prepared manifest assigns items; H-4 carries Thawnettes and grimoire. Full professional kits remain with shrine stores, subject to shrine/wagon cargo placement audit.
 
 <<~/ahu>>
 
@@ -381,6 +419,8 @@ Ichi rides under relationship and responsibility rather than occupying a Hallmar
 
 !! Gear — On Body
 
+''CURRENT RULING (see #/inventory):'' Full Spinneret Kit moves to shrine, prepared subset rides packed in BP-03; Silksteel robes, hat and menpo together consume one outer slot; both Thawnettes and grimoire ride the nested H-4 toolbelt. The inherited table below preserves original item comparators, not their former personal-slot tally.
+
 | Gear | Canon Basis | Rules / Effect |
 |---|---|---|
 | Spinneret Kit | Spider Folk toolkit | tool edge for silk/web/thread craft |
@@ -396,8 +436,8 @@ Ichi rides under relationship and responsibility rather than occupying a Hallmar
 The hat uses a wide-brimmed traveling shrine silhouette, not a tall ritual hat. It gives dust, sun, insect, modesty, anonymity, and threshold-focus fiction.
 
 
-!!! Annotation — Ready-Access Bandolier and Harness (PROPOSAL)
-Use a dedicated bandolier or sash to stage selected vials, ofuda, charms and thrown gear as ''available''; stowed copies and alchemy refills remain ''packed''. The robe pockets already hold tiny instruments. Aki's existing silksteel robes keep their priced Armor and pocket properties; the draft does not award a free bandolier, extra slots, or equipment stacking before a specific gear entry and cost have been chosen.
+!!! Annotation — Ready-Access Bandolier and Harness (RULING, bulk details OPEN)
+The 2-slot backpack includes its own harness, carrying three bandoliers and the toolbelt without additional outer inventory slots. Record all six 5-soap pockets of each bandolier individually on the sheet; the toolbelt holds the grimoire and two Thawnettes sharing one nested belt position. See #/inventory for pocket ledger and exact allocations. Pocket nesting changes accessibility and slot management, not Power costs or physical item mass.
 
 <<~/ahu>>
 
@@ -411,9 +451,9 @@ Use a dedicated bandolier or sash to stage selected vials, ofuda, charms and thr
 * travel cloak / weather mantle
 * underlayers suitable for Ichi symbiosis
 
-!!! Alchemist / Priestess Background Expedition Satchel
+!!! Alchemist / Priestess Background Expedition Satchel — SOURCE HISTORY (SUPERSEDED CARRIAGE)
 
-One bag with 10 stones of quantum gear.
+The original sheet described one bag with 10 stones of quantum gear. ''Current operator ruling:'' the full professional stocks remain at the shrine and three prepared one-stone field subsets ride inside Aki's backpack. The shoulder satchel now holds a small, separately accountable everyday field reserve; do not treat its contents as the whole original ten-stone sack. The inherited example contents below remain possible stock choices, not automatically duplicated satchel inventory.
 
 Likely contents:
 * chalk
@@ -448,14 +488,24 @@ Functions:
 * ritual relay geometry.
 
 
-!!! Annotation — One Kit, Two Relevant Backgrounds (SOURCE + RULING)
-The Quickstart grants a useful kit for a Background Trait, not one full free sack for every Background. Aki's listed kit remains one 10-stone sack (up to ten quantum mundane items), linked to her Alchemist or Priestess training. Reagent refinement into condensed spell fuel requires an additional explicit crafting/rules procedure; ordinary starting kit contents do not grant such fuel for free.
+!!! Annotation — Three Full Shrine Kits / Three Prepared Subsets (RULING + SOURCE / OPEN)
+The operator places full Alchemist, Priestess and Spinneret working kits with the shrine, then prepares a compact subset of each in backpack positions BP-01 through BP-03. The Quickstart grants only one starting 10-stone quantum kit for one Background, and the inherited sheet names one combined Alchemist/Priestess sack plus a separate 1-stone Spinneret toolkit. Additional full professional stock requires identified acquisition, expansion or crafting; it does not materialize as extra free quantum starting kits. The shoulder satchel carries ordinary field supplies, no longer the full sack. Reagent-to-spell-fuel conversion requires its own recipe and cost procedure.
 
 <<~/ahu>>
 
 <<~ ahu slot=`#/gear-in-shrine`>>
 
 !! Gear — In Shrine
+
+''Operator ruling — three full professional kits stored with the shrine:''
+
+| Full kit | Source / acquisition status | Field issue |
+|---|---|---|
+| Alchemist professional kit | Split/expand original combined 10-stone quantum kit; supplemental stock procurement OPEN | BP-01: one-stone prepared subset |
+| Priestess professional kit | Split/expand original combined 10-stone quantum kit; supplemental stock procurement OPEN | BP-02: one-stone prepared subset |
+| Spinneret professional kit | Existing 1-stone Spinneret Kit provides a source basis; any full workshop extension/capacity remains OPEN | BP-03: one-stone prepared subset |
+
+''Logistics:'' These three full stocks stay within the shrine's workshop and/or attached wagon inventory (exact compartment and total cargo allocation OPEN). Material transferred to a field subset remains deducted/checked out of shrine stores until returned or consumed; no duplication, no new free quantum selection pool.
 
 | Gear | Canon Basis | Use |
 |---|---|---|
@@ -822,14 +872,14 @@ Two base tables ride until the referee rules (see #defense-source-fork). The ans
 Mental Defense by 4 and her Physical by 2.
 
 <<~ pranala slot=`#open-slot-tally` from=`?` to=`lar:///elyncia.neo-thracia.opens/playtest/aki-slot-tally`>>
-The ready item tally now runs 7/7 after Ichi's move to Social Inventory. The full-sack quantum kit, physical armor/harness fit, and shrine transport allocations remain unclosed (see #/inventory).
+The current operator-approved nested ledger runs 5/7 occupied personal Item slots, 3/6 occupied internal backpack slots, and three six-pocket bandoliers nested under its integrated harness. Shrine-held full-kit acquisition, outer satchel bulk, Naginata handling, belt fit and Ichi compatibility remain open (see #/inventory).
 
 
 !!! Additional Open Decisions after the Operator Rulings
 * Confirm Alchemist and Priestess as separately Skilled +3 Background purchases/starting grants, and reconstruct XP spent, earned and banked.
 * Confirm shrine Hallmark's Trait versus Item slot, XP investment, and interaction with the non-PC living-automaton chassis.
 * Amend the Hallmark-only Powered Symbiote rules while preserving Ichi's personhood and established mechanics.
-* Assign satchel/pack cargo properly; confirm bandolier/harness purchase, accessibility, bulk and Ichi compatibility.
+* Confirm three full shrine-held kit acquisitions, capacities, wagon/storage placement and check-out records; establish prepared field-subset contents, physical bulk, satchel reserve, belt slot capacity, bandolier pocket size compliance, purchase costs and Ichi compatibility.
 * Define Path-Magic reagent yields, permissible substrate sources, renewable rate, duration, product limits, stacking order and failure consequences.
 * Define how Social Inventory upkeep and reciprocity interact with action economy and disrupted relationships.
 * Reconcile one-unit cash difference and check later branch changes before canon promotion.
@@ -877,6 +927,6 @@ Only this annotated working document carries these proposed rules and clarified 
 
 //Unsealed annotated working draft. Do not reuse the source sheet's integrity digest; reseal only after reviewed promotion.//
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;SQ4jiQ1nWcLMV-m8eePJmaK7gpV-kERaa0DUmdw9oq8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NEYdo6zTyshr0MUL1RSOOGmt-_bOkW2eH4Jx22uXdao`>>
 
 <<^ code=`&#x0004;` to=`?`>>
