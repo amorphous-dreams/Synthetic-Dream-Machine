@@ -3732,7 +3732,8 @@ async function prepareNodeBootOn(
         const leaseSlotsNow = (): Array<string | null> => Object.entries(leaseHandle.doc()?.tiddlers ?? {})
           .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
         siblings = await standSiblingChannel({
-          repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
+          // THE CHANNEL SEATS AS THE WIRE LEG OF THIS FACE AT THIS NEXUS: a sibling reads the pair's alias store id.
+          repo, wire, face: personaGroupId, herms: siblingHerms, nexusPubkey, personaKelPrefix,
           deviceKey: activeAtom?.key ?? "", sign: (image) => {
             if (!activeAtom) throw new Error("this face holds no atom; re-found or re-admit it");
             return activeAtom.sign(image);

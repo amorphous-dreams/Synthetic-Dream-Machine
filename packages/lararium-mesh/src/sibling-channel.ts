@@ -43,6 +43,11 @@
  * repo peer id its proven device key derives under this face (`siblingPeerIdOf`); any other id refuses. Its messages ride under that
  * derived id both ways, so a sibling never stands under an id another adapter carries and never inherits that
  * peer's verdict, and one id never names two carriers (`bindRepo`: a collision either way surfaces as `route`).
+ * THE METADATA A SIBLING READS SCOPES TO THE FACE (`seatSiblingLeg`). The peer metadata a leaf names inside the session
+ * carries a store id, and a vessel that lights two faces stands one Repo behind both channels. Each channel seats as a
+ * wire leg for its (face, Nexus) (`wire-identity`, `leg`): it names that pair's alias store id, never the Repo's own, and
+ * hands the Repo a sibling's store id under the pair's local scope, so a party that proves under two faces reads two
+ * unrelated store ids and each face keeps its own sync state with that party.
  * Every sync message is CBOR sealed under the session. `provenKeyOf(peerId)` names the device key a peer proved —
  * the sibling source a PersonaGroup ring reads. A proven sibling holds STANDING, never the vessel: the ring admits
  * it to its face's own planes and the public boards, and to nothing else.
@@ -98,6 +103,7 @@ import {
   depositPersonaKelChain, httpPersonaKelDropHerm, pullPersonaKelSuccessors, type PersonaKelDropHerm, type PersonaKelPull,
 } from "./persona-kel-drop.js";
 import { shoreInbound } from "./prototype-key-shore.js";
+import type { WireIdentity, WireLegAt, WireLegRefusal } from "./wire-identity.js";
 
 
 /** The session kind a leaf joins its channel under. Body: `{ channels }` — a later join REPLACES the set. */
@@ -193,6 +199,19 @@ export function siblingRefusalLine(r: SiblingRefusal): string {
  */
 export function siblingPeerIdOf(deviceKey: string, face: string): PeerId {
   return `sibling-${hex(sha256(canonicalJsonBytes({ domain: SIBLING_PEER_ID_INFO, face, key: deviceKey.toLowerCase() })))}` as PeerId;
+}
+
+/**
+ * SEAT A SIBLING CHANNEL AS THE WIRE LEG OF ITS (FACE, NEXUS), before it joins the Repo: the door `standSiblingChannel`
+ * calls for both vessels. The channel then names the pair's alias store id inside each proven session and rests a
+ * sibling's store id under the pair's local scope (`WireIdentity.leg`); the peer id a sibling reads stays the one its
+ * proven key derives under the face (`siblingPeerIdOf`). `at.face` names the PersonaGroup the channel proves for, the
+ * name every other leg of that face seats under, so one face reads one alias at one Nexus on every leg.
+ */
+export function seatSiblingLeg<T extends object>(
+  wire: Pick<WireIdentity, "leg">, adapter: T, at: WireLegAt, onRefusal?: (refusal: WireLegRefusal, peerId: string) => void,
+): T {
+  return wire.leg(adapter, at, onRefusal);
 }
 
 /**
@@ -957,6 +976,10 @@ export function siblingLeafOf(opts: {
  */
 export async function standSiblingChannel(opts: {
   readonly repo: Repo;
+  /** The wire identity of the composition `repo` stands on: the channel seats as one of its legs (`seatSiblingLeg`). */
+  readonly wire: Pick<WireIdentity, "leg">;
+  /** The PersonaGroup this channel proves for: with `nexusPubkey`, the (face, Nexus) its leg seats under. */
+  readonly face: string;
   /** The herms' pinned relay addresses, `ws://host:port#<gate key hex>`: two or more under distinct gate keys for
    *  tolerance, one for the degraded mode. The channel dials every one, and every one carries the drops. */
   readonly herms: readonly string[];
@@ -1018,7 +1041,8 @@ export async function standSiblingChannel(opts: {
     ...(opts.onRefusal ? { onRefusal: opts.onRefusal } : {}),
   });
   if (refusal === undefined) board.on("change", () => { void adapter.relicense(eventsNow()); });
-  opts.repo.networkSubsystem.addNetworkAdapter(shoreInbound(adapter));
+  // THE SEAT STANDS BEFORE THE CHANNEL JOINS: the Repo connects it under the alias of its (face, Nexus).
+  opts.repo.networkSubsystem.addNetworkAdapter(shoreInbound(seatSiblingLeg(opts.wire, adapter, { face: opts.face, nexus: opts.nexusPubkey })));
   adapter.bindRepo(opts.repo);
   return adapter;
 }

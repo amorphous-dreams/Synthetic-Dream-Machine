@@ -50,7 +50,8 @@ describe("standSiblingChannel — the sibling dial ships SHUT by name", () => {
     const inception = await inceptionOf();
     const key = await pubOf(seed(55));
     const adapter = await standSiblingChannel({
-      repo, herms: [...herms], nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
+      // A pass-through seat: this suite reads the channel's refusal, never what its leg presents.
+      repo, wire: { leg: (leg) => leg }, face: "persona-group-channel-stand", herms: [...herms], nexusPubkey: NEXUS, personaKelPrefix: inception.prefix,
       deviceKey: key, sign: ed25519SignerFromSeed(seed(55)),
       enrolment: await enrolDevice({ opSeed: seed(51), prefix: inception.prefix, deviceVerifyingKey: key, hearthTrueName: "", boundEpoch: 0 }),
       open: groupSecretOpenerFromSeed(seed(55)), expectedEpoch: () => 0, onRefusal: (r) => refusals.push(r),

@@ -2263,7 +2263,8 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
           const leaseSlotsNow = (): Array<string | null> => Object.entries(daemon.controlHandle.doc()?.tiddlers ?? {})
             .filter(([title]) => title.startsWith(leasePrefix)).map(([, rec]) => tiddlerText(rec));
           siblings = await standSiblingChannel({
-            repo, herms: siblingHerms, nexusPubkey, personaKelPrefix,
+            // THE CHANNEL SEATS AS THE WIRE LEG OF THIS FACE AT THIS NEXUS: a sibling reads the pair's alias store id.
+            repo, wire, face: group, herms: siblingHerms, nexusPubkey, personaKelPrefix,
             deviceKey: wornAtom.key, sign: wornAtom.sign,
             enrolment: { edge: siblingEdge, seal }, open: wornAtom.opener,
             expectedEpoch: () => readFace(siblingKel.chain, faceAnchor ?? undefined)?.leaseEpoch(group, leaseSlotsNow()) ?? null,
