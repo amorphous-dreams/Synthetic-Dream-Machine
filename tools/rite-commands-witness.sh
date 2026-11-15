@@ -50,6 +50,27 @@ rite = "\n".join(r.read_text() for r in RITES)
 cmds = {m.group(1) for m in re.finditer(
     r'(?m)^\s*lares ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite)}
 
+# THE HOST `lares` ANSWERS THE SHIM'S OWN VERBS. With the container house standing, the host's `lares <verb>` hands
+# a vessel verb to the shim with the same argv (`packages/lares-cli/src/host-bridge.ts`), and the bridge names the
+# verbs the shim alone answers (`SHIM_VERB_HELP`: `lares up --help` reads its row there). So a bare `lares up` in
+# a rite claims the shim's door, as a shim line does. The set DERIVES from the bridge's own table, each name held
+# against a `<verb>)` case in the shim, so a verb either side drops reads red here by name.
+_bridge = pathlib.Path("packages/lares-cli/src/host-bridge.ts").read_text()
+_table = re.search(r'const SHIM_VERB_HELP\b[^=]*=\s*\{(.*?)\n\};', _bridge, re.S)
+HOST_SHIM = set(re.findall(r'(?m)^\s*([a-z][a-z0-9-]*):\s*\{\s*usage:', _table.group(1))) if _table else set()
+if not HOST_SHIM:
+    print("[rite-commands] host-bridge.ts PARSED TO ZERO SHIM VERBS — the probe binds `<verb>: { usage:` rows of SHIM_VERB_HELP.")
+    sys.exit(1)
+_shim = pathlib.Path("tools/lares-container.sh").read_text()
+_orphans = sorted(v for v in HOST_SHIM if not re.search(rf'(?m)^\s*{re.escape(v)}\)', _shim))
+if _orphans:
+    print(f"[rite-commands] the host bridge names shim verbs the shim holds no case for: {', '.join(_orphans)}")
+    sys.exit(1)
+_bare_shim = {c for c in cmds if c.split()[0] in HOST_SHIM}
+cmds -= _bare_shim
+if any(c.split()[0] == "found" for c in _bare_shim):
+    cmds.add("vessel found")
+
 # A rite that walks the container instructs through the HOST SHIM. The shim keeps five verbs of its
 # own (the engine's: up, down, logs, build; and reset, which clears the hearth on the host), spells the founding act `found`, and hands every other word to
 # the CLI. So a shim line claims a CLI door exactly as a bare `lares` line does.
