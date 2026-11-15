@@ -52,8 +52,8 @@ const WORKING_ONE = generateAutomergeUrl(), WORKING_TWO = generateAutomergeUrl()
 function bootstrap(...faces: Array<ReturnType<typeof urls>>): Record<string, { text?: string }> {
   const out: Record<string, { text?: string }> = { [DAEMON_BAG_ID]: { text: generateAutomergeUrl() } };
   for (const f of faces) {
-    for (const e of personaMembershipEntries({ personaGroupId: f.group, url: f.persona })) out[e.title] = { text: e.text ?? undefined };
-    const sib = personaSiblingBagIds(personaBagIdFor(f.group));
+    for (const e of personaMembershipEntries({ personaGroupId: f.group, url: f.persona })) out[e.title] = e.text ? { text: e.text } : {};
+    const sib = personaSiblingBagIds(personaBagIdFor(f.group))!;
     out[sib.identities] = { text: f.identities }; out[sib.circles] = { text: f.circles }; out[sib.sessions] = { text: f.sessions }; out[sib.intents] = { text: f.intents };
   }
   return out;
@@ -83,7 +83,7 @@ describe("a face's fleet view reads that face's daemon working slot", () => {
     const verdict = async (peer: string) => vesselOnlyShareVerdict(docs, ISLANDS, peer, w1, true, false, views.faceOf(peer) !== null && device.workingGroupOf(w1) === views.faceOf(peer))
       ?? await selfSlotShareDecision({
         hasWsSocket: true, peerClass: "same-operator", selfSlotFedGate: new DeterministicFederationGate("ab".repeat(32)), antigenRing: NO_BANS, membership: null, planeSeal: null,
-        federationPosture: "private", peerId: peer, documentId: idOf(WORKING_ONE), sessionFace: views.gateFor(peer),
+        peerId: peer, documentId: idOf(WORKING_ONE), sessionFace: views.gateFor(peer),
         shadow: NOBODY_ASIDE, protectedDocs: NOTHING_CLASSED,
       });
     expect(await verdict("leaf")).toBe(true);
