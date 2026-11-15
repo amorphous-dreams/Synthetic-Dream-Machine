@@ -55,17 +55,17 @@ export function briefLine(rows: readonly Row[]): string {
     ...(gone.length === 0 ? [] : [`${gone.length} item(s) the house once wrote, changed since, on a host now absent here: ${ids(gone)}`]),
   ].join("; ");
   if (off.length === 0) return `reality tunnel: every item holds${apart ? ` (${apart})` : ""}`;
-  // A retired hook that still stands needs no reading to cure: the line names the act that lifts it.
-  const standing = off.filter((r) => r.retired && r.state === "drift").sort((a, b) => a.id.localeCompare(b.id));
-  const lift = standing.length === 0 ? "" : `; ${standing.length} retired item(s) still stand: ${ids(standing)} (lares home tend removes them)`;
-  return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares home read)${lift}${apart ? `; ${apart}` : ""}`;
+  // A house hook script no row declares needs no reading to cure: the line names the act that lifts it.
+  const stray = off.filter((r) => r.lifts !== undefined && r.state === "drift").sort((a, b) => a.id.localeCompare(b.id));
+  const lift = stray.length === 0 ? "" : `; ${stray.length} item(s) name a house hook script no row declares: ${ids(stray)} (lares home tend lifts each)`;
+  return `reality tunnel: ${off.length} item(s) off the tunnel — ${ids(off)} (lares home read)${apart ? `; ${apart}` : ""}${lift}`;
 }
 
-/** The retired items a tend lifted: each stood before it and stands no longer. */
-export function liftedBy(before: readonly Row[], after: readonly Row[]): Row[] {
+/** What a tend lifted, one line per target: the house hook scripts a row named before it and names no longer. */
+export function liftedLines(before: readonly Row[], after: readonly Row[]): string[] {
   const key = (r: Row): string => `${r.id}\n${r.path}`;
-  const stood = new Set(before.filter((r) => r.retired && r.state === "drift").map(key));
-  return after.filter((r) => r.retired && r.state === "aligned" && stood.has(key(r)));
+  const held = new Set(after.filter((r) => r.state === "aligned").map(key));
+  return before.filter((r) => r.lifts !== undefined && held.has(key(r))).map((r) => `  lifted ${r.lifts!.join(", ")} from ${r.path} (${r.id})`);
 }
 
 function show(rows: readonly Row[], brief: boolean): void {
@@ -132,14 +132,14 @@ export async function cmdTunnelDoor(door: Door, args: ParsedArgs): Promise<numbe
     if (door === "home" && writes.length > 0 && !(await consent(writes, args))) return EXIT.usage;
     const r = await tend(items, ledger, { force: args.flags["force"] === true, lock: hostLocker, radiusLock });
     const code = r.refused.length > 0 ? EXIT.foreign : r.failed.length > 0 ? EXIT.unreachable : exitOf(r.rows);
-    const retired = liftedBy(before, r.rows);
+    const lifted = liftedLines(before, r.rows);
     emit(args, {
       ok: code === 0,
-      data: { radius: door, wrote: r.wrote, retired: retired.map((x) => x.id), refused: r.refused, generation: r.generation?.gen ?? null, rows: r.rows, exit: code },
+      data: { radius: door, wrote: r.wrote, lifted: lifted.map((x) => x.trim()), refused: r.refused, generation: r.generation?.gen ?? null, rows: r.rows, exit: code },
       human: () => {
         console.log(r.wrote.length ? `tended ${r.wrote.length} target(s)${r.generation ? ` · generation ${r.generation.gen}` : ""}` : "every item already holds; nothing written");
         for (const w of r.wrote) console.log(`  wrote ${w}`);
-        for (const x of retired) console.log(`  retired ${x.id}: lifted from ${x.path} (${x.what})`);
+        for (const x of lifted) console.log(x);
         for (const f of r.refused) console.log(`  refused ${f.path}: ${f.detail} (--force takes it; the ledger keeps its bytes)`);
         for (const f of r.failed) console.log(`  unreachable ${f.id}: ${f.detail}`);
         const off = r.rows.filter((x) => x.state !== "aligned" && x.state !== "absent");

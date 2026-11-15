@@ -41,8 +41,8 @@ export interface Item {
   readonly absent?: string | null;
   /** The host stands but a piece the item needs does not: the item cannot act, and the exit reads 4. */
   readonly unreachable?: string | null;
-  /** A RETIRED item: it names the script a hook once ran, and its transform lifts every command that still names it. */
-  readonly retires?: string;
+  /** The house hook scripts the current bytes name that no row declares: the names this item's transform lifts. */
+  readonly lifts?: (current: string | null) => string[];
 }
 
 export interface External {
@@ -65,8 +65,8 @@ export interface Row {
   /** The live bytes differ from what the house last wrote here. */
   readonly touched: boolean;
   readonly detail: string;
-  /** The row answers a retired item: drift here means a retired hook still stands in the target. */
-  readonly retired?: true;
+  /** The house hook scripts a tend lifts from this target, by file name; absent when it lifts none. */
+  readonly lifts?: readonly string[];
 }
 
 /** A target's live form: file bytes, a link's target, or absent. */
@@ -172,7 +172,7 @@ export function read(items: readonly Item[], ledger: Ledger, reader: Reader = di
 }
 
 function rowOf(it: Item, live: Live, touched: boolean): Row {
-  const base = { id: it.id, host: it.host, path: it.path, what: it.what, touched, ...(it.retires === undefined ? {} : { retired: true as const }) };
+  const base = { id: it.id, host: it.host, path: it.path, what: it.what, touched };
   if (it.absent) return { ...base, state: "absent", detail: it.absent };
   if (it.unreachable) return { ...base, state: "unreachable", detail: it.unreachable };
   if (it.external) {
@@ -193,11 +193,8 @@ function rowOf(it: Item, live: Live, touched: boolean): Row {
   const why = it.foreign?.(cur) ?? null;
   if (why) return { ...base, state: "foreign", detail: why };
   const want = it.transform ? it.transform(cur) : cur;
-  if (it.retires !== undefined) {
-    return want === cur
-      ? { ...base, state: "aligned", detail: "retired, and none stands" }
-      : { ...base, state: "drift", detail: `a retired hook still stands (${it.retires}); tend removes it` };
-  }
+  const lifts = it.lifts?.(cur) ?? [];
+  if (lifts.length > 0) return { ...base, state: "drift", lifts, detail: `names house hook script(s) no row declares (${lifts.join(", ")}); tend lifts each` };
   if (want === cur) return { ...base, state: "aligned", detail: cur === null ? "absent, as intended" : "holds" };
   return { ...base, state: "drift", detail: cur === null ? "absent; tend writes it" : want === null ? "present; tend lifts it" : "differs; tend rewrites it" };
 }

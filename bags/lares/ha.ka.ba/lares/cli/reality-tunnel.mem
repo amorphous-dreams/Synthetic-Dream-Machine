@@ -44,10 +44,11 @@ An operator's machine holds what the operator declares, through one door per RAD
 
 !! The declared tunnel
 
-Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. A `[[retired]]` item names a hook the house once seated and withdrew, by its script: `read` answers drift while any command in the host's hook file still names that script, `lares home read --brief` (the wake's homes line) names it beside the act that cures it, and `tend` lifts every such command under any event, keeps each other hand's command, and says `retired <id>`. The catalog refuses a carrier where a `[[home]]` row names a retired script, so no tend plants one again.
+Each item names its radius, its host, its kind and the target it keeps. `{repo}` reads the checkout, `{clone}` the main clone a worktree belongs to, `{seed}` the boot seed's path. A home item names `homes = "all"` to reach every home on the device, or reaches the native home alone. `hooks` names the house's hooks folder: every script a home item names stands under it, and the catalog refuses a carrier where one stands outside. The house owns that folder's name in each host's hook file. A `*-hooks-owned` item keeps one hook file (Claude's `settings.json`, Codex's `config.toml`, Copilot's `hooks/lares.json`) free of every command that names a script under the folder which no `[[home]]` item declares for that host and file: `read` answers drift and names each such script, `lares home read --brief` (the wake's homes line) names the item beside the act that cures it, and `tend` lifts each such command under any event, keeps each other hand's command, and says `lifted <scripts> from <path> (<id>)`. The set derives from the `[[home]]` items alone, so a second `tend` writes nothing, a home that carries no such command takes nothing, and a command that names no script under the folder never moves. A Codex block that carries such a script beside another command reads foreign.
 
 ```toml reality-tunnel
 seed = "bags/lares/ha.ka.ba/lares/api/noosphere-boot.mem"
+hooks = "packages/lares-cli/.claude-plugin/hooks"
 
 # ── the checkout ────────────────────────────────────────────────────────────────────────────────
 
@@ -280,41 +281,28 @@ file = ".local/bin/lares"
 target = "packages/lares-cli/bin/lares.mjs"
 what = "`lares` answers on the operator's path"
 
-# ── retired: what a home once held at the house's hand and holds no longer ──────────────────────
-# A tend lifts every command that names the script, under any event, and keeps each other hand's command.
-# No [[home]] row names the same script (the catalog refuses the pair), so no tend plants it again.
+# ── the house's hooks folder: each host's hook file names no script under it that no item above declares ──────────
 
-[[retired]]
-id = "claude.ingest-hook"
+[[home]]
+id = "claude.hooks-owned"
 host = "claude"
-kind = "claude-hook"
+kind = "json-hooks-owned"
 file = ".claude/settings.json"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
-what = "the mempalace ingest hook on Stop and SessionEnd: mempalace burned on 2026-10-13, and the sensorium's capture stays deferred"
+what = "Claude's hooks name no house hook script beyond the ones this tunnel declares"
 
-[[retired]]
-id = "claude.wake-hook-sh"
-host = "claude"
-kind = "claude-hook"
-file = ".claude/settings.json"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.sh"
-what = "the bash wake hook: the tree dropped it for lares-wake-hook.mjs"
-
-[[retired]]
-id = "codex.ingest-hook"
+[[home]]
+id = "codex.hooks-owned"
 host = "codex"
-kind = "toml-hook"
+kind = "toml-hooks-owned"
 file = ".codex/config.toml"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
-what = "the mempalace ingest hook on Codex's Stop"
+what = "Codex's hooks name no house hook script beyond the ones this tunnel declares"
 
-[[retired]]
-id = "copilot.ingest-hook"
+[[home]]
+id = "copilot.hooks-owned"
 host = "copilot"
-kind = "copilot-hook"
+kind = "json-hooks-owned"
 file = ".copilot/hooks/lares.json"
-script = "packages/lares-cli/.claude-plugin/hooks/lares-mempalace-ingest-hook.sh"
-what = "the mempalace ingest hook on Copilot's sessionEnd"
+what = "Copilot's house hook file names no house hook script beyond the ones this tunnel declares"
 ```
 
 <<~/ahu>>
@@ -323,7 +311,7 @@ what = "the mempalace ingest hook on Copilot's sessionEnd"
 
 !! The proofs
 
-* `packages/lares-cli/tests/reality-tunnel.test.ts` plant each kind's red against scratch homes and clones: a second `tend` writes nothing, foreign bytes refuse, `undo` restores, the floor never lowers.
+* `packages/lares-cli/tests/reality-tunnel.test.ts` plant each kind's red against scratch homes and clones: a second `tend` writes nothing, foreign bytes refuse, `undo` restores, the floor never lowers, a hook file sheds a house hook script no item declares and keeps every other command.
 * `tools/repo-tunnel-witness.sh` reads the checkout through `lares repo read`; `.githooks/pre-commit` refuses a commit whose index `lares repo read --staged` reads off the tunnel.
 * A witness reads this carrier's reality-tunnel fence parsing whole, so a carrier the engine cannot read reds before any door goes blind.
 
@@ -341,6 +329,6 @@ what = "the mempalace ingest hook on Copilot's sessionEnd"
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hx_nPklemAspmm_v08jTf4XxPt479od7GvNwc76FA3M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LnVzaSNqfXQRkKGeGP5rbg7kolZJOmW1Op-Hwj70D6o`>>
 
 <<^ code=`&#x0004;` to=`?`>>

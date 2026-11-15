@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { EXIT, Ledger, exitOf, read, tend, undo, type External, type Item, type Row } from "../src/reality-tunnel/engine.js";
 import { windowsProfile } from "../src/reality-tunnel/homes.js";
 import { radiusLock } from "../src/reality-tunnel/lock.js";
-import { briefLine, indexReader } from "../src/commands/tunnel-door.js";
+import { briefLine, indexReader, liftedLines } from "../src/commands/tunnel-door.js";
 import {
   claudeHook, headLine, jsonFloor, tomlHookForeign, jsonForeign, jsonIncludes, jsonSet, namesSeed, seedless, tomlHook, tomlMcpServer,
   tomlTableKey, tomlTableUnset, tomlTopFloor,
@@ -251,83 +251,109 @@ describe("the home radius", () => {
     expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-wake-hook.mjs")] }]);
   });
 
-  // ── THE AFTERMATH: a hook the house once seated and has since retired leaves every home at the next tend ──────────
+  // ── THE HOUSE OWNS ITS HOOKS FOLDER: a hook file names no script there that no row declares for it ──────────────
+  const HOOKS = "packages/lares-cli/.claude-plugin/hooks";
   const INGEST = "lares-mempalace-ingest-hook.sh";
-  /** A scratch home as an older tend left it: the retired ingest hook on three hosts, beside commands of other hands. */
-  function plantRetired(native: string, root: string): void {
-    const ingest = `${root}/packages/lares-cli/.claude-plugin/hooks/${INGEST}`;
+  /**
+   * A scratch home whose three hook files name scripts under the house's hooks folder that no row declares, each beside
+   * another hand's command; `lares-unlisted-hook.sh` stands in for any script at all, one no carrier names.
+   */
+  function plantStrays(native: string, root: string): void {
+    const under = (name: string): string => `${root}/${HOOKS}/${name}`;
     writeFileSync(join(native, ".claude/settings.json"), `${JSON.stringify({
       model: "m",
       hooks: {
-        Stop: [{ hooks: [{ type: "command", command: `bash "${ingest}"`, timeout: 30 }, { type: "command", command: "my-own-stop" }] }],
-        SessionEnd: [{ hooks: [{ type: "command", command: `bash "${ingest}"`, timeout: 60 }] }],
-        SessionStart: [{ hooks: [{ type: "command", command: "bash /old/clone/hooks/lares-wake-hook.sh" }] }],
+        Stop: [{ hooks: [{ type: "command", command: `bash "${under(INGEST)}"`, timeout: 30 }, { type: "command", command: "my-own-stop" }] }],
+        SessionEnd: [{ hooks: [{ type: "command", command: `bash "${under(INGEST)}"`, timeout: 60 }] }],
+        SessionStart: [{ hooks: [{ type: "command", command: `bash /old/clone/${HOOKS}/lares-wake-hook.sh` }] }],
+        Notification: [{ matcher: "idle", hooks: [{ type: "command", command: "node", args: [under("lares-unlisted-hook.sh")] }, { type: "command", command: "bash /opt/mine/hooks/lares-notes.sh" }] }],
       },
     }, null, 2)}\n`);
     writeFileSync(join(native, ".codex/config.toml"),
-      `model = "m"\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = ${JSON.stringify(ingest)}\ntimeout = 60\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "my-own-stop"\n`);
+      `model = "m"\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = ${JSON.stringify(under(INGEST))}\ntimeout = 60\n\n[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "my-own-stop"\n`);
     mkdirSync(join(native, ".copilot/hooks"), { recursive: true });
     writeFileSync(join(native, ".copilot/hooks/lares.json"),
-      `${JSON.stringify({ version: 1, hooks: { sessionEnd: [{ type: "command", bash: ingest, timeoutSec: 60 }, { type: "command", bash: "my-own-end" }] } }, null, 2)}\n`);
+      `${JSON.stringify({ version: 1, hooks: { sessionEnd: [{ type: "command", bash: under(INGEST), timeoutSec: 60 }, { type: "command", bash: "my-own-end" }] } }, null, 2)}\n`);
   }
+  const OWNED = ["claude.hooks-owned", "codex.hooks-owned", "copilot.hooks-owned"];
 
-  it("a home that still carries a retired hook reads as drift by name, and the wake's line sends the operator to tend", () => {
+  it("a hook file that names a house hook script no row declares reads as drift by script, and the wake's line names the cure", () => {
     const root = clone();
     const h = homes();
-    plantRetired(h.native, root);
+    plantStrays(h.native, root);
     const rows = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
-    for (const id of ["claude.ingest-hook", "codex.ingest-hook", "copilot.ingest-hook", "claude.wake-hook-sh"]) {
-      const row = rows.find((r) => r.id === id)!;
-      expect(row, id).toBeDefined();
-      expect(row.state, id).toBe("drift");
-      expect(row.retired, id).toBe(true);
-      expect(row.detail, id).toMatch(/^a retired hook still stands \(.+\); tend removes it$/);
-    }
-    const line = briefLine(rows);
-    expect(line).toContain("claude.ingest-hook");
-    expect(line).toMatch(/4 retired item\(s\) still stand: claude\.ingest-hook, claude\.wake-hook-sh, codex\.ingest-hook, copilot\.ingest-hook \(lares home tend removes them\)/);
+    const owned = OWNED.map((id) => rows.find((r) => r.id === id)!);
+    expect(owned.map((r) => r?.state)).toEqual(["drift", "drift", "drift"]);
+    expect(owned[0]!.lifts).toEqual([INGEST, "lares-unlisted-hook.sh", "lares-wake-hook.sh"]);
+    expect(owned[0]!.detail).toBe(`names house hook script(s) no row declares (${INGEST}, lares-unlisted-hook.sh, lares-wake-hook.sh); tend lifts each`);
+    expect(owned[1]!.lifts).toEqual([INGEST]);
+    expect(owned[2]!.lifts).toEqual([INGEST]);
+    expect(briefLine(rows)).toMatch(/; 3 item\(s\) name a house hook script no row declares: claude\.hooks-owned, codex\.hooks-owned, copilot\.hooks-owned \(lares home tend lifts each\)$/);
   });
 
-  it("a tend removes every retired hook, keeps each other hand's command, and never plants one again", async () => {
+  it("a tend lifts every such command under any event, keeps each other hand's command, and a second tend writes nothing", async () => {
     const root = clone();
     const h = homes();
-    plantRetired(h.native, root);
+    plantStrays(h.native, root);
     const l = ledger();
     const items = () => homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false });
-    await tend(items(), l);
+    const before = read(items(), l);
+    const r = await tend(items(), l);
     const settings = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8"));
-    expect(JSON.stringify(settings)).not.toContain(INGEST);
-    expect(JSON.stringify(settings)).not.toContain("lares-wake-hook.sh");
+    for (const gone of [INGEST, "lares-wake-hook.sh", "lares-unlisted-hook.sh"]) expect(JSON.stringify(settings), gone).not.toContain(gone);
     expect(settings.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: "my-own-stop" }] }]);
     expect(settings.hooks.SessionEnd).toBeUndefined();
+    // CONTROL: a command of another hand that names no script under the house's folder never moves, its matcher with it.
+    expect(settings.hooks.Notification).toEqual([{ matcher: "idle", hooks: [{ type: "command", command: "bash /opt/mine/hooks/lares-notes.sh" }] }]);
     expect(settings.model).toBe("m");
+    // The rows' own hooks stand: the wake at SessionStart, where the undeclared one stood.
+    expect(JSON.stringify(settings.hooks.SessionStart)).toContain(`${root}/${HOOKS}/lares-wake-hook.mjs`);
     const toml = readFileSync(join(h.native, ".codex/config.toml"), "utf8");
     expect(toml).not.toContain(INGEST);
     expect(toml).toContain('command = "my-own-stop"');
     const copilot = JSON.parse(readFileSync(join(h.native, ".copilot/hooks/lares.json"), "utf8"));
     expect(copilot.hooks.sessionEnd).toEqual([{ type: "command", bash: "my-own-end" }]);
-    // The retired rows read aligned now, and a second tend writes nothing: no row re-plants what another removes.
+    expect(liftedLines(before, r.rows)).toEqual([
+      `  lifted ${INGEST}, lares-unlisted-hook.sh, lares-wake-hook.sh from ${join(h.native, ".claude/settings.json")} (claude.hooks-owned)`,
+      `  lifted ${INGEST} from ${join(h.native, ".codex/config.toml")} (codex.hooks-owned)`,
+      `  lifted ${INGEST} from ${join(h.native, ".copilot/hooks/lares.json")} (copilot.hooks-owned)`,
+    ]);
     const after = read(items(), l);
-    expect(after.filter((r) => r.retired).map((r) => r.state)).toEqual(["aligned", "aligned", "aligned", "aligned"]);
-    expect(briefLine(after)).not.toContain("retired");
-    expect((await tend(items(), l)).wrote).toEqual([]);
+    expect(OWNED.map((id) => after.find((x) => x.id === id)!.state)).toEqual(["aligned", "aligned", "aligned"]);
+    expect(briefLine(after)).not.toContain("no row declares");
+    const second = await tend(items(), l);
+    expect(second.wrote).toEqual([]);
+    expect(liftedLines(after, second.rows)).toEqual([]);
   });
 
-  it("a fresh home takes no retired hook, and a retired row writes no file of its own", async () => {
+  it("a fresh home takes nothing from the rule: its rows read aligned, and no hook file it lacked appears", async () => {
     const root = clone();
     const h = homes();
-    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger());
-    for (const f of [".claude/settings.json", ".codex/config.toml"]) expect(readFileSync(join(h.native, f), "utf8")).not.toContain(INGEST);
+    const l = ledger();
+    const first = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l);
+    expect(OWNED.map((id) => first.find((x) => x.id === id)!.state)).toEqual(["aligned", "aligned", "aligned"]);
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l);
     expect(existsSync(join(h.native, ".copilot/hooks/lares.json"))).toBe(false);
+    expect(readFileSync(join(h.native, ".codex/config.toml"), "utf8")).not.toContain("hooks");
   });
 
-  it("the live carrier names no home item whose script left the tree, and none a retired row names", () => {
+  it("Codex: a block that shares an undeclared house hook with another command reads foreign, never stripped", () => {
+    const root = clone();
+    const h = homes();
+    const mixed = `[[hooks.Stop]]\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "${root}/${HOOKS}/${INGEST}"\n\n[[hooks.Stop.hooks]]\ntype = "command"\ncommand = "mine.sh"\n`;
+    writeFileSync(join(h.native, ".codex/config.toml"), mixed);
+    const row = read(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), ledger()).find((r) => r.id === "codex.hooks-owned")!;
+    expect(row.state).toBe("foreign");
+    expect(row.detail).toMatch(/shares a house hook script no row declares/);
+  });
+
+  it("the live carrier names the house's hooks folder, and every script a home row names stands in the tree under it", () => {
     const d = declared(REPO);
     const missing = d.home.filter((s) => typeof (s["script"] ?? s["target"]) === "string" && !existsSync(join(REPO, String(s["script"] ?? s["target"]))));
     expect(missing.map((s) => s.id)).toEqual([]);
-    expect(d.retired.length).toBeGreaterThan(0);
-    const retiredBases = d.retired.map((s) => String(s["script"]).split("/").at(-1));
-    expect(d.home.filter((s) => retiredBases.includes(String(s["script"] ?? "").split("/").at(-1))).map((s) => s.id)).toEqual([]);
+    expect(d.hooks).toBe(HOOKS);
+    expect(d.home.filter((s) => typeof s["script"] === "string" && !String(s["script"]).startsWith(`${d.hooks}/`)).map((s) => s.id)).toEqual([]);
+    expect(d.home.filter((s) => /-hooks-owned$/.test(s.kind)).map((s) => s.id)).toEqual(OWNED);
   });
 
   it("a host whose home stands absent reads absent; a seat whose MCP pieces stand absent reads unreachable", () => {
