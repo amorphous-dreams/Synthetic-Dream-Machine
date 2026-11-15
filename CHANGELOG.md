@@ -4,6 +4,17 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### The first live walk's cures: a joined vessel reloads, a first put founds
+
+**Fixed**
+- **A joined browser reloads onto the island it joined.** A joined face's overlay of the browser's boot record keeps the island its admit named (`hearthIsland`), and every boot that stands on that overlay resolves its island there through `admittedJoineeIsland`, the ruling the landing composed. A reload without it resolved the vessel's own key, and the Binding Gate refused a persona-KEL chain its board never held.
+- **A joined node restarts onto the island it joined.** The bootstrap keeps the island half of an admission (the gate key, the resolved kind and scope) whether or not the answer named a sync url, and the boot reads it through `readHearthIslandPin`; `readHearthDialPin` answers a dial only where a sync url and a gate key both rest, and a torn half refuses the whole dial.
+- **A face's first put founds the workbench.** A put into a wiki no face of the vessel stands lands in the `working` layer of the workbench it founds (`workbenchFoundsOnWrite`), so `lares meme put --recipe <book>` followed by `act MOVE --from wikis/<book>/working` finds its row; a face in a wiki another face stands still writes its own `personal` layer. The `workbench-seat` verb's summary names both answers.
+- **CI reads green on the span.** The reset gate's unloaded-worker case names a revoked blob, an address no dev server answers; the carrier-shape corpus walk asks each tracked file's bytes and decodes only a carrier, and the re-spelled-code law reads in four quarters, so both fit their turn under the suite's load.
+
+**Changed**
+- **Witnesses read the tree as it stands.** The capability inventory names the worker handle's one shared listener and the critical gate's custody-proof worker; the rite-commands witness derives the host shim's verbs from the bridge's table and reads a bare `lares up`, `down` or `found --hearth` as a shim line; the seed census counts five consumers of the browser vessel's place name; a rig's slot stores wear no domain spelling; the evergreen boundary's ceilings come down to clock 52 and narration 160, with share-apply's spans read off `performance.now()`.
+
 ### The burn and the sweep: canon reads what stands
 
 **Changed**
