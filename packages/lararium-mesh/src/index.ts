@@ -176,6 +176,7 @@ export * from "./capture-nalu.js";
 export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./host-task.js";
+export * from "./steady-seat.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";
