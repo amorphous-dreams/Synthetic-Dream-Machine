@@ -78,9 +78,30 @@ describe("seat-outlives-child", () => {
     expect(kinds(f.down())).not.toContain("spawn");
   });
 
+  test("RED: an initialize that arrives before the first child stands waits for that child's own answer; CONTROL: it reads the child's serverInfo", () => {
+    const f = fixture();
+    f.step({ type: "start" });
+    // The client writes at once; the first spawn has neither stood nor fallen.
+    expect(toClient(f.client({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT_PARAMS }))).toEqual([]);
+    const stood = toClient(f.up());
+    expect(stood).toHaveLength(1);
+    expect(stood[0]).toMatchObject({ id: 1, result: { serverInfo: { name: "fixture-surface" }, instructions: "read the house" } });
+  });
+
+  test("RED: a first child that falls with the initialize unanswered leaves the client a plain answer, never silence", () => {
+    const f = fixture();
+    f.step({ type: "start" });
+    f.client({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT_PARAMS });
+    const fell = toClient(f.down());
+    expect(fell).toHaveLength(1);
+    expect(fell[0]).toMatchObject({ id: 1, result: { serverInfo: { name: "steady-seat" }, capabilities: { tools: { listChanged: true } } } });
+  });
+
   test("RED: a child that never stood leaves the client an answered initialize and an empty tool list, and the first real list draws one list_changed", () => {
     const f = fixture();
     f.step({ type: "start" });
+    // The first spawn failed: the seat knows no child stands.
+    f.down();
     const init = toClient(f.client({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT_PARAMS }));
     expect(init).toHaveLength(1);
     expect(init[0]).toMatchObject({ id: 1, result: { protocolVersion: "2025-06-18", capabilities: { tools: { listChanged: true } } } });

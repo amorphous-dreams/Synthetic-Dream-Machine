@@ -25,7 +25,9 @@
  * the spawn it performs, and reads `standing` as the sign to start its pacing over.
  *
  * WITH NO CHILD AND NO CACHE the seat still answers: `initialize` reads a plain answer naming the seat itself, and the tool
- * list reads empty. The first real list then hashes differently and draws the one `list_changed`.
+ * list reads empty. The first real list then hashes differently and draws the one `list_changed`. One wait stands: an
+ * `initialize` that arrives while the FIRST spawn has neither stood nor fallen waits for that child, so a client that
+ * writes at once reads the child's own answer; the child's fall ends the wait with the plain answer.
  */
 import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 
@@ -88,6 +90,8 @@ export function steadySeat(): SteadySeat {
   let closed = false, generation = 0, nextId = 0;
   let child: "none" | "up" | "standing" = "none";
   let handshaking = false;
+  /** Whether any spawn has fallen: before the first fall, the first child may still stand. */
+  let fell = false;
   /** The client's own `initialize` params, replayed to every child. */
   let clientInit: unknown | undefined;
   let clientHasInit = false, clientReady = false;
@@ -167,13 +171,13 @@ export function steadySeat(): SteadySeat {
     if (method === "ping") { client({ jsonrpc: "2.0", id, result: {} }); return; }
     if (method === "initialize") {
       clientInit = frame["params"]; clientHasInit = true;
-      if (initResult !== null || child === "none") { client({ jsonrpc: "2.0", id, result: initAnswer() }); return; }
+      if (initResult !== null || (child === "none" && fell)) { client({ jsonrpc: "2.0", id, result: initAnswer() }); return; }
       initWaiters.push(id);
-      if (!handshaking) handshake();
+      if (child !== "none" && !handshaking) handshake();
       return;
     }
     if (method === "tools/list") {
-      if (tools !== null || child !== "up" || !handshaking) { answerList(id); return; }
+      if (tools !== null || !handshaking) { answerList(id); return; }
       listWaiters.push(id);
       return;
     }
@@ -239,7 +243,7 @@ export function steadySeat(): SteadySeat {
       log("call-outcome-unknown");
     }
     owners.clear(); clientIds.clear(); childAsks.clear(); askIds.clear();
-    child = "none"; handshaking = false;
+    child = "none"; handshaking = false; fell = true;
     for (const waiter of initWaiters.splice(0)) client({ jsonrpc: "2.0", id: waiter, result: initAnswer() });
     for (const waiter of listWaiters.splice(0)) answerList(waiter);
     log("child-down");
