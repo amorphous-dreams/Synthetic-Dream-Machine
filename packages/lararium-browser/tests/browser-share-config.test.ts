@@ -63,8 +63,9 @@ describe("browserShareConfig", () => {
   test("the ring composed onto the gate is the verdict — no second ring socket stands beside it", async () => {
     // The config reads the relay set, the gate, the siblings, the vessel-only documents, the vessel's own islands and the
     // wiki islands among them (which receive no custody document), and the veil floor's own wiki slots, the one class of
-    // vessel-held document a wiki island mounts (the-veil-ladder#/the-base-model).
-    expect(browserShareConfig.length).toBe(7);
+    // vessel-held document a wiki island mounts (the-veil-ladder#/the-base-model), and the hearth's daemon document the
+    // own-hearth crossing opened, the one vessel-only document that reaches a relay (road row `L4f`).
+    expect(browserShareConfig.length).toBe(8);
     const base = new DeterministicFederationGate(NEXUS);
     let fedGate: FederationGate | null = base;
     const cfg = browserShareConfig(new Set(["relay"]), () => fedGate);
