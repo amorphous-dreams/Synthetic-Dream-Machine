@@ -520,6 +520,36 @@ for (const [name, shim] of shims) {
     assert.match(r.calls, /down --remove-orphans --timeout 5/);
   });
 
+  // THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
+  // still stands, before the census; a keep that refuses never blocks the down.
+  const fakeHostCli = async (rc) => {
+    const d = await mkdtemp(join(tmpdir(), "lares-keep-cli-"));
+    const f = join(d, "lares");
+    await writeFile(f, `#!/bin/sh\nprintf 'HOSTCLI %s\\n' "$*" >> "$CALL_LOG"\nexit ${rc}\n`);
+    await chmod(f, 0o755);
+    return f;
+  };
+  test(`${name}: down-keeps-the-house-first: a named keep workspace runs rite keep --if-due before the census`, async () => {
+    const cli = await fakeHostCli(0);
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /HOSTCLI rite keep --if-due --no-json/);
+    assert.ok(r.calls.indexOf("HOSTCLI rite keep") < r.calls.indexOf("vessel census"), r.calls);
+  });
+  test(`${name}: down-goes-on-past-a-refused-keep: the keep's refusal is named and the down still stops the vessel`, async () => {
+    const cli = await fakeHostCli(1);
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_KEEP_WORKSPACE: "house-backup", LARES_HOST_CLI: cli } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.stderr, /the keep did not complete/);
+    assert.match(r.calls, /down --remove-orphans/);
+  });
+  test(`${name}: CONTROL down with no keep workspace named runs no keep`, async () => {
+    const cli = await fakeHostCli(0);
+    const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: CLEAN, LARES_HOST_CLI: cli } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.doesNotMatch(r.calls, /HOSTCLI/);
+  });
+
   test(`${name}: a census naming items refuses with no terminal, listing each, and stops nothing`, async () => {
     const r = await run(shim, ["down"], { env: { ...STANDING, FAKE_CENSUS_OUTPUT: ITEMS, FAKE_CENSUS_RC: "3" } });
     assert.equal(r.status, 2);

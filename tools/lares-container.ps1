@@ -341,6 +341,18 @@ function OfferAcceptLoss {
 function Indent([string]$text) {
   foreach ($line in ($text -split "`r?`n")) { if ($line) { [Console]::Error.WriteLine("  $line") } }
 }
+# THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
+# still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
+# host's lares door, else the checkout's own bin under the host's node.
+function KeepBeforeDown {
+  if ([string]::IsNullOrEmpty((ValueOf 'LARES_KEEP_WORKSPACE') + (ValueOf 'LARES_WORKSPACES'))) { return }
+  $hostCli = ValueOf 'LARES_HOST_CLI'
+  if ($hostCli) { $cmd = $hostCli; $pre = @() }
+  elseif (Get-Command node -ErrorAction SilentlyContinue) { $cmd = 'node'; $pre = @((Join-Path $Root 'packages/lares-cli/bin/lares.mjs')) }
+  else { [Console]::Error.WriteLine('lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand'); return }
+  & $cmd @pre rite keep --if-due --no-json
+  if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine('lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand') }
+}
 function CensusBeforeStop {
   $psi = [System.Diagnostics.ProcessStartInfo]::new('docker')
   foreach ($a in (@('compose') + $Base + @('exec', '-T', 'lares', 'node', $Cli, 'vessel', 'census', '--no-json'))) { $psi.ArgumentList.Add([string]$a) }
@@ -495,7 +507,7 @@ switch ($verb) {
       [Console]::Error.WriteLine('lares-container: down refuses a silent stop: docker compose ps failed, so whether a vessel stands reads unknown')
       [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
       OfferAcceptLoss
-    } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { CensusBeforeStop }
+    } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { KeepBeforeDown; CensusBeforeStop }
     if ($pulama -eq 'running') {
       # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
       Compose (@('stop') + $rest + @('lares')); Compose @('rm', '-f', 'lares')

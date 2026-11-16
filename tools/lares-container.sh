@@ -114,6 +114,18 @@ for class in $HOUSE_CLASSES; do
   case "$env_real" in "$house_real/$class"|"$house_real/$class"/*) die "the env file $ENV_FILE sits inside LARES_HOUSE's $class bind — keep it outside every bind" ;; esac
 done
 
+# THE HOUSE KEEPS ITSELF: where a keep workspace stands named, down runs the host's `rite keep --if-due` while the vessel
+# still stands (it keeps only a house that moved); a keep that refuses never blocks the down. LARES_HOST_CLI names the
+# host's lares door, else the checkout's own bin under the host's node.
+keep_before_down() {
+  [ -n "$(value_of LARES_KEEP_WORKSPACE)$(value_of LARES_WORKSPACES)" ] || return 0
+  host_cli=$(value_of LARES_HOST_CLI)
+  if [ -n "$host_cli" ]; then set -- "$host_cli"
+  elif command -v node >/dev/null 2>&1; then set -- node "$ROOT/packages/lares-cli/bin/lares.mjs"
+  else printf '%s\n' 'lares-container: no host node answers, so down keeps nothing; `lares rite keep` keeps by hand' >&2; return 0; fi
+  "$@" rite keep --if-due --no-json || printf '%s\n' 'lares-container: the keep did not complete (above); down goes on, and `lares rite keep` keeps by hand' >&2
+}
+
 # Make every bound class as the operator, so the engine never makes one owned by root.
 ensure_house() {
   for class in $HOUSE_CLASSES; do
@@ -541,6 +553,7 @@ case "$verb" in
       printf '%s\n' 'lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.' >&2
       offer_accept_loss
     elif [ -n "$down_id" ]; then
+      keep_before_down
       census_before_stop
     fi
     if [ "$pulama" = running ]; then
