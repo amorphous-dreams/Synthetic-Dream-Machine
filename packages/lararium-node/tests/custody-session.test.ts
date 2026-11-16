@@ -16,7 +16,7 @@ import { createHash } from "node:crypto";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
-import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, floorRestKey, encodeIndexRow, mintOutboxKey, readIndexRow, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
+import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, floorRestKey, encodeIndexEntry, mintOutboxKey, readIndexEntry, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { appendFaceEntry } from "../src/face-index.js";
 import { handleRowPathIn } from "./face-paths.js";
@@ -283,8 +283,8 @@ describe("custodyStatus", () => {
   test("RED: a file spelled like a plain row answers to that row's law: a rest name its bytes fail, bytes of no rest kind, and a seal no rotation re-seals, each read as a fault", async () => {
     const f = await foundCustody({ io, homes, slots: [TEST_SLOT] });
     const hex32 = (byte: string) => byte.repeat(32);
-    const row = encodeIndexRow({ bag: hex32("a1"), keyVersion: hex32("b2"), role: "blob", address: `blake3:${hex32("c3")}`, locator: hex32("d4"), parents: [], manifest: hex32("e5") } as never);
-    expect(readIndexRow(row)).not.toBeNull();                                                               // the fixture reads as a real index row
+    const row = encodeIndexEntry({ bag: hex32("a1"), keyVersion: hex32("b2"), role: "blob", address: `blake3:${hex32("c3")}`, locator: hex32("d4"), parents: [], manifest: hex32("e5") } as never);
+    expect(readIndexEntry(row)).not.toBeNull();                                                               // the fixture reads as a real index row
     const key = new TextEncoder().encode("a private key a hand dropped here");
     const index = join(homes.storage, "sealed", "index");
     mkdirSync(index, { recursive: true });

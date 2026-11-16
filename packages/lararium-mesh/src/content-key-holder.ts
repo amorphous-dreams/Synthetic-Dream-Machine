@@ -76,7 +76,7 @@ import {
   type ContentKey, type KeyVersionId, type SealContext, type SealedAddress,
 } from "./sealed-chunk.js";
 import {
-  authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexRowsOf, joinProofOf, joinProven, readBagLocator, readRecord,
+  authorizeFromManifest, bagLocatorOf, entryLocatorOf, factOfRecord, indexEntriesOf, joinProofOf, joinProven, readBagLocator, readRecord,
   recordIdOf, recordWriterSubject, signRecord,
   type BagLocator, type CheckpointBody, type HandOverBody, type KeyVersionBody, type KeyVersionPrivate, type LockboxRecord, type ManifestBody, type ManifestEntry,
   type RecordBodies, type RecordId, type RecordKind, type RecordPrivates, type RecordSigner, type SealedRecord, type VerifiedRecord,
@@ -585,7 +585,7 @@ export class ContentKeyHolder {
     // its manifest and their index rows rest; a stop before it leaves the base unstood, and the repair cuts it afresh.
     await this.#rest(() => this.#ports.values.write(sealed.chunk.address, sealed.chunk.sealed));
     const id = await this.#rest(() => store.putRecord(named.carried));
-    await this.#rest(() => store.putIndexRows(indexRowsOf(named.verified)));
+    await this.#rest(() => store.putIndexEntries(indexEntriesOf(named.verified)));
     this.#rested(line, id, named.verified);
     await this.#rest(() => store.putRecord(record.carried));
     return true;
@@ -715,7 +715,7 @@ export class ContentKeyHolder {
       // A lock that landed while the manifest signed overwrote the key, so the record above never read back.
       await this.#rest(() => this.#ports.values.write(body.cid, body.ciphertext));
       const id = await this.#rest(() => store.putRecord(signed.carried));
-      await this.#rest(() => store.putIndexRows(indexRowsOf(signed.verified)));
+      await this.#rest(() => store.putIndexEntries(indexEntriesOf(signed.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
       this.#rested(line, id, signed.verified);
       return { body, manifest: id, founding: line.locator, ...(founded ? { founded } : {}), ...(at.joined ? { joined: at.joined } : {}) };
@@ -796,7 +796,7 @@ export class ContentKeyHolder {
       const checkpointIds: RecordId[] = [];
       for (const record of checkpoints) checkpointIds.push(await this.#rest(() => store.putRecord(record)));
       const id = await this.#rest(() => store.putRecord(signed.carried));
-      await this.#rest(() => store.putIndexRows(indexRowsOf(signed.verified)));
+      await this.#rest(() => store.putIndexEntries(indexEntriesOf(signed.verified)));
       await this.#rest(() => this.#noteHead(line, at.head));
       this.#rested(line, id, signed.verified);
       return {
@@ -1240,7 +1240,7 @@ export class ContentKeyHolder {
         const id = recordIdOf("manifest", carried.body);
         if (!arrived.has(id) && before.has(version)) continue;
         const manifest = await this.#manifest(bag, line, key, id);
-        if (manifest !== null) await this.#rest(() => store.putIndexRows(indexRowsOf(manifest)));
+        if (manifest !== null) await this.#rest(() => store.putIndexEntries(indexEntriesOf(manifest)));
       }
     }
   }

@@ -18,7 +18,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, verifyBundle, zeroCounts, type CarryFile, type CarryManifest } from "../src/carry-manifest.js";
 import { KEEP_CHECK, KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
-import type { RiteRowAnswer } from "../src/rite-kukulu.js";
+import type { RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { RiteUsage, keepPlan } from "../src/commands/rite.js";
 import { parseArgs } from "../src/parse-args.js";
 
@@ -43,7 +43,7 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): Car
 }
 
 /** The vessel's rows and the cut, recorded; `lei` names what the keep line reads, `begin` what the begin row answers. */
-function rig(over: { lei?: Record<string, unknown>; begin?: RiteRowAnswer; notes?: Record<string, string> } = {}) {
+function rig(over: { lei?: Record<string, unknown>; begin?: RiteVerbAnswer; notes?: Record<string, string> } = {}) {
   const calls: string[] = [], stagedAtBegin: string[] = [];
   const state = { notes: over.notes ?? { heron: "remember the heron\n" }, begin: over.begin, lei: over.lei ?? { standing: true, reach: "wide", returnsLeft: 2, after: LEI } };
   const ports: KeepPorts = {

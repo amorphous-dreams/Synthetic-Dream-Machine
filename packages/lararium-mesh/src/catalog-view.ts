@@ -35,7 +35,7 @@ export type CatalogHalf = "floor" | "face";
 export { FACE_CATALOG_BAG_ID } from "./register-bags.js";
 
 const REALM_ROOT = bagUri("realm");
-const FLOOR_ROWS: ReadonlySet<string> = new Set([
+const FLOOR_ENTRIES: ReadonlySet<string> = new Set([
   CATALOG_DOC_URI, ORACLE_DOC_URI, CROSSROADS_DOC_URI, DAEMON_BAG_ID, LARES_DOC_URI, LARARIUM_DOC_URI, REALM_ROOT,
   // The daemon wiki's recipe and canon bag stand on the floor with the daemon document (U1): its slots are D.
   recipeUri("catalog", "daemon"),
@@ -43,14 +43,14 @@ const FLOOR_ROWS: ReadonlySet<string> = new Set([
 const WIKIS_ROOT = `${wikiUri("")}`;
 
 /** The field a bag's catalog row carries its declared read tier in (the declaring act stamps it). */
-export const CATALOG_ROW_TIER_FIELD = "cap-tier";
+export const CATALOG_ENTRY_TIER_FIELD = "cap-tier";
 
 /**
  * A PUBLIC book's row: a bag id whose row carries the exact tier `public`. Any other value, a missing field or a title
  * that names no bag fails toward the face, never toward F.
  */
 export function isPublicBagRow(title: string, row: StoredLarRecord | null | undefined): boolean {
-  return isBagId(title) && !!row && plainField(row, CATALOG_ROW_TIER_FIELD) === "public";
+  return isBagId(title) && !!row && plainField(row, CATALOG_ENTRY_TIER_FIELD) === "public";
 }
 
 /**
@@ -78,7 +78,7 @@ export function isVeilBagRow(title: string, row: StoredLarRecord | null | undefi
 export function catalogRowHalf(title: string, row?: StoredLarRecord | null): CatalogHalf {
   if (row !== undefined && row !== null && isPublicBagRow(title, row)) return "floor";
   if (row !== undefined && row !== null && isVeilBagRow(title, row)) return "floor";
-  if (FLOOR_ROWS.has(title) || isHouseCanonBag(title)) return "floor";
+  if (FLOOR_ENTRIES.has(title) || isHouseCanonBag(title)) return "floor";
   if (title.startsWith(CATALOG_CORPUS_PREFIX) || title.startsWith(`${REALM_ROOT}/`)) return "floor";
   if (title.startsWith(WIKIS_ROOT) && /\/drafts\/[^/]+$/.test(title)) return "floor";
   return "face";
@@ -355,7 +355,7 @@ export interface FaceViewBook {
   /** The view a face reads and registers through: the worn face's own, else a sibling's F with its own D. */
   viewOf(group: string): DocHandle<LarDoc>;
   /** Every row any face's view reads, merged (the vessel's own bridge reading, never a face's). */
-  everyRow(): LarDoc | undefined;
+  everyEntry(): LarDoc | undefined;
 }
 
 /**
@@ -374,7 +374,7 @@ export function faceViewBook(floor: DocHandle<LarDoc>, worn: { readonly group: s
   };
   return {
     viewOf,
-    everyRow: () => {
+    everyEntry: () => {
       const docs = [worn?.view.doc() ?? floor.doc(), ...[...siblings.values()].map((v) => v.doc())].filter((d): d is LarDoc => d !== undefined);
       if (docs.length <= 1) return docs[0];
       return { ...docs[0]!, tiddlers: Object.assign({}, ...docs.map((d) => d.tiddlers)) } as LarDoc;

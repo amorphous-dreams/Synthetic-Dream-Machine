@@ -36,12 +36,12 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { canonicalJson, defaultCryptoProvider, hex, hexToBytes, utf8Bytes, type RandomProvider } from "./crypto.js";
 import {
-  SEALED_INDEX_ROW_DOMAIN, SEALED_LOCKBOX_RECORD_DOMAIN, SEALED_OUTBOX_KEY_INFO, SEALED_OUTBOX_PARCEL_DOMAIN, SEALED_RECORD_REST_DOMAIN,
+  SEALED_INDEX_ENTRY_DOMAIN, SEALED_LOCKBOX_RECORD_DOMAIN, SEALED_OUTBOX_KEY_INFO, SEALED_OUTBOX_PARCEL_DOMAIN, SEALED_RECORD_REST_DOMAIN,
 } from "./domains.js";
 import { isChunkRole, readKeyVersionId, readSealedAddress, readSealedImage, sealedImage, type KeyVersionId, type SealedAddress } from "./sealed-chunk.js";
 import {
   RECORD_KINDS, readBagLocator, readRecordId, recordIdOf,
-  type BagLocator, type LockboxRecord, type RecordBodies, type RecordId, type RecordKind, type SealedChunkIndexRow, type SealedRecord,
+  type BagLocator, type LockboxRecord, type RecordBodies, type RecordId, type RecordKind, type SealedChunkIndexEntry, type SealedRecord,
 } from "./sealed-records.js";
 
 // ── The port ────────────────────────────────────────────────────────────────────────────────────
@@ -163,13 +163,13 @@ export function readCarriedRecord(bytes: unknown): SealedRecord | null {
 }
 
 /** One row of the chunk index as it rests. Throws on a row that reads malformed. */
-export function encodeIndexRow(row: SealedChunkIndexRow): Uint8Array {
-  if (readIndexRowFields(row) === null) throw new TypeError("sealed-store-rest: an index row names a bag locator, a key version, a role, an address, an entry locator, its parents and a manifest");
-  return sealedImage(SEALED_INDEX_ROW_DOMAIN, hexToBytes(row.bag), hexToBytes(row.keyVersion), utf8Bytes(row.role), utf8Bytes(row.address),
+export function encodeIndexEntry(row: SealedChunkIndexEntry): Uint8Array {
+  if (readIndexEntryFields(row) === null) throw new TypeError("sealed-store-rest: an index row names a bag locator, a key version, a role, an address, an entry locator, its parents and a manifest");
+  return sealedImage(SEALED_INDEX_ENTRY_DOMAIN, hexToBytes(row.bag), hexToBytes(row.keyVersion), utf8Bytes(row.role), utf8Bytes(row.address),
     hexToBytes(row.locator), listField(row.parents.map((parent) => utf8Bytes(parent))), hexToBytes(row.manifest));
 }
 /** A row's fields, each through its own reader: parents unique and ascending, and none under a blob. */
-function readIndexRowFields(row: SealedChunkIndexRow): SealedChunkIndexRow | null {
+function readIndexEntryFields(row: SealedChunkIndexEntry): SealedChunkIndexEntry | null {
   if (typeof row !== "object" || row === null || !Array.isArray(row.parents)) return null;
   const bag = readBagLocator(row.bag), keyVersion = readKeyVersionId(row.keyVersion), address = readSealedAddress(row.address), manifest = readRecordId(row.manifest);
   if (bag === null || keyVersion === null || address === null || manifest === null || !isChunkRole(row.role) || readKeyVersionId(row.locator) === null) return null;
@@ -182,14 +182,14 @@ function readIndexRowFields(row: SealedChunkIndexRow): SealedChunkIndexRow | nul
   if (row.role === "blob" && parents.length > 0) return null;
   return { bag, keyVersion, role: row.role, address, locator: row.locator, parents, manifest };
 }
-export function readIndexRow(bytes: unknown): SealedChunkIndexRow | null {
+export function readIndexEntry(bytes: unknown): SealedChunkIndexEntry | null {
   try {
-    const fields = readSealedImage(SEALED_INDEX_ROW_DOMAIN, bytes, 7);
+    const fields = readSealedImage(SEALED_INDEX_ENTRY_DOMAIN, bytes, 7);
     if (fields === null || fields[0]!.length !== 32 || fields[1]!.length !== 32 || fields[4]!.length !== 32 || fields[6]!.length !== 32) return null;
     const parents = readListField(fields[5]!);
     if (parents === null) return null;
-    return readIndexRowFields({
-      bag: hex(fields[0]!) as BagLocator, keyVersion: hex(fields[1]!) as KeyVersionId, role: utf8(fields[2]!) as SealedChunkIndexRow["role"],
+    return readIndexEntryFields({
+      bag: hex(fields[0]!) as BagLocator, keyVersion: hex(fields[1]!) as KeyVersionId, role: utf8(fields[2]!) as SealedChunkIndexEntry["role"],
       address: utf8(fields[3]!) as SealedAddress, locator: hex(fields[4]!), parents: parents.map((parent) => utf8(parent) as SealedAddress),
       manifest: hex(fields[6]!) as RecordId,
     });
@@ -204,7 +204,7 @@ export function lockboxNameOf(record: LockboxRecord): string { return `${record.
 /** `<record id>.<digest>`: two unlike sealed parts under one record id rest side by side. */
 export function recordNameOf(record: SealedRecord): string { return `${recordIdOf(record.kind, record.body)}.${restDigest(encodeCarriedRecord(record))}`; }
 /** `<bag locator>.<key version>.<entry locator>.<digest>`: an entry's rows list by prefix. */
-export function indexRowNameOf(row: SealedChunkIndexRow): string { return `${row.bag}.${row.keyVersion}.${row.locator}.${restDigest(encodeIndexRow(row))}`; }
+export function indexEntryNameOf(row: SealedChunkIndexEntry): string { return `${row.bag}.${row.keyVersion}.${row.locator}.${restDigest(encodeIndexEntry(row))}`; }
 
 // ── The outbox's seal ───────────────────────────────────────────────────────────────────────────
 declare const outboxKeyBrand: unique symbol;
@@ -326,8 +326,8 @@ export class SealedStore {
   }
   records<K extends RecordKind>(kind: K): Promise<SealedRecord<K>[]> { return this.#records(kind); }
 
-  async putIndexRows(rows: readonly SealedChunkIndexRow[]): Promise<void> {
-    for (const row of rows) await this.#rest.put("index", indexRowNameOf(row), encodeIndexRow(row));
+  async putIndexEntries(rows: readonly SealedChunkIndexEntry[]): Promise<void> {
+    for (const row of rows) await this.#rest.put("index", indexEntryNameOf(row), encodeIndexEntry(row));
   }
   /** NAMES ALONE: what rests for a locator, and for a key version under it. Reads no value. */
   async heldNames(bag: BagLocator, keyVersion?: KeyVersionId): Promise<{ readonly lockboxes: readonly string[]; readonly rows: readonly string[] }> {
@@ -336,23 +336,23 @@ export class SealedStore {
     const rows = await this.#rest.list("index", keyVersion === undefined ? `${bag}.` : `${bag}.${keyVersion}.`);
     return { lockboxes, rows };
   }
-  async #rows(prefix: string): Promise<SealedChunkIndexRow[]> {
-    const out: SealedChunkIndexRow[] = [];
+  async #rows(prefix: string): Promise<SealedChunkIndexEntry[]> {
+    const out: SealedChunkIndexEntry[] = [];
     for (const name of await this.#rest.list("index", prefix)) {
       const bytes = await this.#whole("index", name);
-      const row = bytes === null ? null : readIndexRow(bytes);
+      const row = bytes === null ? null : readIndexEntry(bytes);
       // A row moved under another name keeps its digest and loses its place: its own fields must spell the name.
-      if (row !== null && indexRowNameOf(row) === name) out.push(row);
+      if (row !== null && indexEntryNameOf(row) === name) out.push(row);
     }
     return out;
   }
   /** The decoded rows of a locator, or of one key version under it. */
-  rowsOf(bag: BagLocator, keyVersion?: KeyVersionId): Promise<SealedChunkIndexRow[]> {
+  rowsOf(bag: BagLocator, keyVersion?: KeyVersionId): Promise<SealedChunkIndexEntry[]> {
     if (readBagLocator(bag) === null || (keyVersion !== undefined && readKeyVersionId(keyVersion) === null)) return Promise.resolve([]);
     return this.#rows(keyVersion === undefined ? `${bag}.` : `${bag}.${keyVersion}.`);
   }
   /** The rows one entry locator names under one key version. */
-  rowsAt(bag: BagLocator, keyVersion: KeyVersionId, locator: string): Promise<SealedChunkIndexRow[]> {
+  rowsAt(bag: BagLocator, keyVersion: KeyVersionId, locator: string): Promise<SealedChunkIndexEntry[]> {
     if (readBagLocator(bag) === null || readKeyVersionId(keyVersion) === null || readKeyVersionId(locator) === null) return Promise.resolve([]);
     return this.#rows(`${bag}.${keyVersion}.${locator}.`);
   }

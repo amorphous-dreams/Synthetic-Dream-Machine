@@ -8,7 +8,7 @@
  *   SA3 — a house canon bag owes no grant (it rests in the Kahu realm); a pet-name no face carries waits, named
  */
 import { describe, expect, test } from "vitest";
-import { bagUri, recipeUri, emptyLarDoc, seatHouseCanon, storedLarRecord, SHARE_PENDING_PREFIX, type LarDoc, type ShareRow } from "@lararium/mesh";
+import { bagUri, recipeUri, emptyLarDoc, seatHouseCanon, storedLarRecord, SHARE_PENDING_PREFIX, type LarDoc, type ShareEntry } from "@lararium/mesh";
 import { applyShares, type ShareLitFace } from "../src/share-apply.js";
 
 const NOTES = bagUri("notes"), SDM = bagUri("sdm");
@@ -27,7 +27,7 @@ function rig(opts: { granteeLit: boolean }) {
     { handleIndex: 0, petname: "owner", group: "g0", catalog: async () => ownerHalf },
     { handleIndex: 1, petname: "reader", group: granteeLit ? "g1" : null, catalog: async () => (granteeLit ? granteeHalf : null) },
   ];
-  const rows: ShareRow[] = [
+  const rows: ShareEntry[] = [
     { slug: "notes", kind: "bag", read: "reader nobody", write: "" },
     { slug: "sdm", kind: "bag", read: "*", write: "" },
   ];
@@ -71,7 +71,7 @@ describe("the share config lands", () => {
       list: async (group: string) => [...carried.values()].filter((c) => c.group === group).map((c) => ({ bag: c.bag, row: c.row as never })),
       clear: async (group: string, bag: string) => { carried.delete(`${group}\n${bag}`); },
     };
-    const rows: ShareRow[] = [{ slug: "notes", kind: "bag", read: "reader", write: "reader" }];
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "reader", write: "reader" }];
     // `worn` names the one face whose catalog half this island opens; a lit sibling's half answers null, at once.
     const run = (worn: 0 | 1) => applyShares({
       rows: async () => rows, salt: "salt", carry,
@@ -110,7 +110,7 @@ describe("the share config lands", () => {
       list: async (group: string) => [...carried.values()].filter((c) => c.group === group).map((c) => ({ bag: c.bag, row: c.row as never })),
       clear: async (group: string, bag: string) => { carried.delete(`${group}\n${bag}`); },
     };
-    const rows: ShareRow[] = [{ slug: "notes", kind: "wiki", read: "reader", write: "" }];
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "wiki", read: "reader", write: "" }];
     const run = (worn: 0 | 1) => applyShares({
       rows: async () => rows, salt: "salt", carry,
       faces: [
@@ -136,7 +136,7 @@ describe("the share config lands", () => {
   });
 
   test("RED SA6 — a row whose bag no open catalog half names owes nothing here, and the landing names it instead of answering a bare zero", async () => {
-    const rows: ShareRow[] = [{ slug: "ghost", kind: "wiki", read: "reader", write: "" }];
+    const rows: ShareEntry[] = [{ slug: "ghost", kind: "wiki", read: "reader", write: "" }];
     const out = await applyShares({
       rows: async () => rows, salt: "salt",
       faces: [{ handleIndex: 0, petname: "owner", group: "g0", catalog: async () => half() }, { handleIndex: 1, petname: "reader", group: "g1", catalog: async () => null }],
@@ -162,7 +162,7 @@ describe("the share config lands", () => {
     const granteeHalf = half();
     const roster = new Set<string>();
     const flags = new Set<string>();
-    const rows: ShareRow[] = [{ slug: "notes", kind: "bag", read: "reader", write: "" }];
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "reader", write: "" }];
     const run = (granteeLit = true) => applyShares({
       rows: async () => rows, salt: "salt",
       faces: [{ handleIndex: 0, petname: "owner", group: "g0", catalog: async () => ownerHalf }, { handleIndex: 1, petname: "reader", group: granteeLit ? "g1" : null, catalog: async () => (granteeLit ? granteeHalf : null) }],
@@ -181,7 +181,7 @@ describe("the share config lands", () => {
     const ownerHalf = half({ [NOTES]: "automerge:notesDoc" });
     const granteeHalf = half({ [NOTES]: "automerge:notesDoc" });
     const grants: Array<[number, number]> = [];
-    const rows: ShareRow[] = [{ slug: "notes", kind: "wiki", read: "reader other", write: "", owner: "owner" }];
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "wiki", read: "reader other", write: "", owner: "owner" }];
     const run = (worn: 0 | 1) => applyShares({
       rows: async () => rows, salt: "salt",
       carry: { put: async () => {}, list: async () => [], clear: async () => {} },

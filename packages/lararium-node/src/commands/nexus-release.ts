@@ -20,7 +20,7 @@
 import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  FLOOR_RELEASE_SURFACE, assembleFloorRelease, publicationDocUrl, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc,
+  FLOOR_RELEASE_SURFACE, assembleFloorRelease, publicationDocUrl, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc,
   openFloorReleaseBody, readPromotionApproval, resolveFloor, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   type FloorRelease, type FloorReleaseStanding, type FloorReleaseRefusal,
 } from "@lararium/mesh";
@@ -53,7 +53,7 @@ export async function runFloorReleaseStanding(opts: {
 }): Promise<FloorReleaseStanding & { readonly nexus: string }> {
   const core = await cabalCore(opts.repo, opts.sealHome, opts.aid, opts.vesselKey);
   const board = await publicationBoard(opts.repo, core, opts.vesselKey);
-  const standing = await foldFloorReleases({ rows: floorReleaseRowsFromBoard(board.doc()), nexus: core.nexus, manifestBytesOf: opts.manifestBytesOf });
+  const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: core.nexus, manifestBytesOf: opts.manifestBytesOf });
   return { ...standing, nexus: core.nexus };
 }
 
@@ -93,7 +93,7 @@ export async function runFloorRelease(opts: {
   // THE PRIOR is the head of the chain the rows' own bodies spell: the release no other row names as its prior. This
   // door cannot verify an older release (it holds this manifest's bytes alone), so it reads the structure; every
   // reader re-verifies every row before it counts one.
-  const parsed = floorReleaseRowsFromBoard(board.doc())
+  const parsed = floorReleaseEntriesFromBoard(board.doc())
     .map((r) => r.record as { body?: { prior?: unknown; manifest?: unknown }; cid?: unknown })
     .filter((r) => typeof r.cid === "string" && typeof r.body === "object");
   const cited = new Set(parsed.map((r) => r.body?.prior).filter((p): p is string => typeof p === "string"));

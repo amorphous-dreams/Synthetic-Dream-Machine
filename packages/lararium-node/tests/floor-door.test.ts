@@ -20,7 +20,7 @@ import {
   BAG_IDS, DAEMON_BAG_ID, REALM_ID_TIDDLER, emptyLarDoc, foldRealmBags, genesisFloorCidOf, materializeSharedLarDoc, realmDocPointer, realmDocUrl, resolveFloor,
   sha256HexBytesSync, storedLarRecord, writeRealmStanding, type LarDoc,
 } from "@lararium/mesh";
-import { STORE_DOOR_FACE_ROWS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorDirect } from "../src/store-door-verbs.js";
+import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorDirect } from "../src/store-door-verbs.js";
 import { genesisCasDir, loadOrMaterializeOracle, readGenesisCasManifest } from "../src/genesis-artifact.js";
 import { casDirForStorage, mirrorGenesisCasFs, readVerifiedCasBlobFromFs } from "../src/node-cas.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
@@ -33,8 +33,8 @@ import { foundHearthDirect } from "./found-route.js";
 describe("the floor rows on the node's store door", () => {
   test("both rows stand, as rows of the place: no face row carries the pin", () => {
     expect(STORE_DOOR_VERBS).toEqual(expect.arrayContaining(["floor-status", "floor-accept"]));
-    expect(STORE_DOOR_FACE_ROWS.has("floor-status")).toBe(false);
-    expect(STORE_DOOR_FACE_ROWS.has("floor-accept")).toBe(false);
+    expect(STORE_DOOR_FACE_VERBS.has("floor-status")).toBe(false);
+    expect(STORE_DOOR_FACE_VERBS.has("floor-accept")).toBe(false);
   });
 
   test("RED: the accept rides a person's hand alone; the status stays open to a seat", () => {

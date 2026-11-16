@@ -303,7 +303,7 @@ function floorPinOrRefuse(raw: string | undefined, nym: string, aid: string, car
   }
   const kel: PlaceKelEvent[] = [];
   for (const row of file.placeKel) { const event = decodePlaceKelEvent(row); if (event === null) throw new NexusContractError("carry REFUSED: a --floor-pin KEL row does not read. Nothing was written."); kel.push(event); }
-  const read = readPlaceFloorPin(file.floorPin, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: kel, standing: { via: "carrier", carriers: new Set([nym]) } });
+  const read = readPlaceFloorPin(file.floorPin, { nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelEntries: kel, standing: { via: "carrier", carriers: new Set([nym]) } });
   if ("refusal" in read) throw new NexusContractError(`carry REFUSED: the --floor-pin claim does not read for this place at this Nexus (${read.refusal}). Nothing was written.`);
   const folded = foldClaimHead(kel, read.aid, read.head);
   if (!folded.ok || !verifyCarrierContractAtHead({ nym, sealEpochCid, sig: carrierSeal.sig }, folded.head)) {

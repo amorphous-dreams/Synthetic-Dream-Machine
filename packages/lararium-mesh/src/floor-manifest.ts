@@ -276,7 +276,7 @@ export function floorBlobCids(manifestCid: string, m: FloorManifest): string[] {
 }
 
 /** Each snapshot's rows in the manifest's slug order: the read-only layers the oracle floor stacks. */
-export function floorRowsInOrder(floor: ResolvedFloor): Readonly<Record<string, LarTiddlerRecord>>[] {
+export function floorRecordsInOrder(floor: ResolvedFloor): Readonly<Record<string, LarTiddlerRecord>>[] {
   return floorSlugs(floor.manifest).map((slug) => floor.snapshots[slug]!);
 }
 

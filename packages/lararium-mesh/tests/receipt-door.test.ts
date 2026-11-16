@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { beginRite } from "../src/swarm-tessera.js";
 import {
-  putSwarmAct, readSwarmRecord, restReceipt, signSwarmAct, swarmActCid, swarmLeiNarrowedTitle, swarmLeiRowTitle, swarmReceiptTitle,
+  putSwarmAct, readSwarmRecord, restReceipt, signSwarmAct, swarmActCid, swarmLeiNarrowedTitle, swarmLeiRecordTitle, swarmReceiptTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 
@@ -25,7 +25,7 @@ async function fixture() {
     list: async (prefix) => [...rows.keys()].filter((t) => t.startsWith(prefix)) };
   const kui = async (terms: Record<string, unknown>): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after: null, ...terms } as unknown as SwarmBodyParts, hand);
-    await putSwarmAct(wiki, swarmLeiRowTitle("kukulu", BRANCH, swarmActCid(lei)), lei);
+    await putSwarmAct(wiki, swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(lei)), lei);
     return swarmActCid(lei);
   };
   const receipt = (verdict: "pass" | "fail", signer = vessel, over: Record<string, unknown> = {}) =>
@@ -81,7 +81,7 @@ describe("kukulu-refuses-a-failing-receipt", () => {
     await f.receipt("pass");
     await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-narrowed" });
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after: cid, reach: "head", head: HEAD } as SwarmBodyParts, f.hand);
-    await putSwarmAct(f.wiki, swarmLeiRowTitle("kukulu", BRANCH, swarmActCid(lei)), lei);
+    await putSwarmAct(f.wiki, swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(lei)), lei);
     await expect(f.begin()).resolves.toMatchObject({ lei: swarmActCid(lei), n: 1 });
   });
 });

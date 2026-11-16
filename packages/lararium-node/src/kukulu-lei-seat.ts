@@ -30,7 +30,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import {
-  SwarmRefused, beginRite, landRite, signSwarmAct, swarmActCid, swarmLeiRowTitle, swarmLeiUnstrungTitle, swarmReceiptTitle, verifySwarmRecord,
+  SwarmRefused, beginRite, landRite, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle, swarmReceiptTitle, verifySwarmRecord,
   type SignedSwarmAct, type SwarmTrust, type SwarmWikiPort, type WardActWitness,
 } from "@lararium/mesh";
 import type { KukuluRiteAt, KukuluRitePort } from "./kukulu-gate.js";
@@ -50,7 +50,7 @@ async function landOffered(records: SwarmWikiPort, raw: unknown, trust: SwarmTru
   let title: string;
   try {
     const act = raw as SignedSwarmAct;
-    if (act.body.act === "lei") title = swarmLeiRowTitle(act.body.rite, act.body.branch, swarmActCid(act));
+    if (act.body.act === "lei") title = swarmLeiRecordTitle(act.body.rite, act.body.branch, swarmActCid(act));
     else if (act.body.act === "lei-unstrung") title = swarmLeiUnstrungTitle(act.body.lei);
     else return;
     if (act.body.act === "lei" && (act.body.rite !== "kukulu" || act.body.branch !== at.branch)) return;

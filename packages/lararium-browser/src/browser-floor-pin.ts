@@ -15,7 +15,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin
  */
 import {
-  acceptFloorRelease, floorAnswerRows, readFloorStatus, sha256HexBytesSync,
+  acceptFloorRelease, floorAnswerEntries, readFloorStatus, sha256HexBytesSync,
   type FloorAcceptOutcome, type FloorPinHome, type FloorPinPorts, type FloorRemount, type FloorStatus,
 } from "@lararium/mesh";
 import { OPFS_CAS_DIR, readCasBlobFromOpfs } from "./browser-genesis.js";
@@ -71,7 +71,7 @@ export function browserFloorPorts(b: BrowserFloorBinding): (FloorPinPorts & { re
     rows: async () => {
       const res = await doFetch(`${origin}/floor/${nexus}`);
       if (!res.ok) throw new Error(`floor-porch-silent: the porch answered ${res.status}`);
-      const opened = floorAnswerRows(await res.json(), nexus);
+      const opened = floorAnswerEntries(await res.json(), nexus);
       if ("refusal" in opened) throw new Error(`floor-porch-silent: ${opened.refusal}`);
       return opened.rows;
     },

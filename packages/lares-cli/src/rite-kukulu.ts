@@ -24,7 +24,7 @@
  * signs the landing under it.
  */
 
-export type RiteRowAnswer =
+export type RiteVerbAnswer =
   | { readonly ok: true; readonly output: Record<string, unknown> }
   | { readonly ok: false; readonly code: string; readonly message: string };
 
@@ -32,7 +32,7 @@ export interface RitePorts {
   /** The checkout's head and the branch it rides. */
   checkout(): Promise<{ readonly head: string; readonly branch: string }>;
   /** One store row, answered by the vessel that stands (or the offline door where none does). */
-  row(verb: "rite-begin" | "rite-land" | "rite-offer", args: Record<string, unknown>): Promise<RiteRowAnswer>;
+  row(verb: "rite-begin" | "rite-land" | "rite-offer", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
   /** The digest of the image the build left, as the HOST reads it; null where the host names none. Absent, the rite writes no offer. */
   image?(): Promise<string | null>;
   /** One verb of the host shim; the answer carries its exit code. */

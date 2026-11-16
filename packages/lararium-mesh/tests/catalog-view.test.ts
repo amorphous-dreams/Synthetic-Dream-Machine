@@ -177,7 +177,7 @@ describe("the catalog splits by face (U1)", () => {
     expect(titlesOf((await faceA).doc())).not.toContain(rowB);
     expect(titlesOf(floor.doc())).not.toContain(rowA);
     expect(titlesOf(floor.doc())).not.toContain(rowB);
-    expect(titlesOf(book.everyRow())).toEqual(expect.arrayContaining([rowA, rowB]));
+    expect(titlesOf(book.everyEntry())).toEqual(expect.arrayContaining([rowA, rowB]));
   });
 });
 

@@ -20,7 +20,7 @@ import { existsSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
-  AutomergeDocStore, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseRowsFromBoard, foldFloorReleases,
+  AutomergeDocStore, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
   publicationDocUrl, materializeSharedLarDoc, realmStandingDocUrl, sha256HexBytesSync,
   type CapTier, type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
 } from "@lararium/mesh";
@@ -121,7 +121,7 @@ export async function runFloorCut(opts: {
     bagTier: (slug) => declaredBagTier(daemonBagsDir(), slug),
     ...(opts.thin ? { thin: opts.thin } : {}),
     prior: async () => {
-      const standing = await foldFloorReleases({ rows: floorReleaseRowsFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
+      const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
       return standing.standing === "released" ? standing.head.body.manifest : floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin.manifest;
     },
   });

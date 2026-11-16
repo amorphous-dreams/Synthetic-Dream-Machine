@@ -1,7 +1,7 @@
 import { ed25519 } from "@noble/curves/ed25519.js";
 import { describe, expect, it } from "vitest";
 import { canonicalJsonBytes, hex } from "../src/crypto.js";
-import { acceptPlaceHead, foldPlaceKel, mintPlaceInception, mintPlaceRotation, PLACE_KEL_FORK_EVIDENCE, PLACE_KEL_ROWS_PER_AID, type PlaceKelEvent } from "../src/vessel-kel.js";
+import { acceptPlaceHead, foldPlaceKel, mintPlaceInception, mintPlaceRotation, PLACE_KEL_FORK_EVIDENCE, PLACE_KEL_ENTRIES_PER_AID, type PlaceKelEvent } from "../src/vessel-kel.js";
 
 const seed = (n: number) => new Uint8Array(32).fill(n);
 const key = (n: number) => hex(ed25519.getPublicKey(seed(n)));
@@ -94,10 +94,10 @@ describe("place KEL reader", () => {
     return { start, chain };
   };
   it("a lawful chain at the ceiling folds; a board past it refuses in bounded work", () => {
-    const at = lawful(PLACE_KEL_ROWS_PER_AID - 1);
+    const at = lawful(PLACE_KEL_ENTRIES_PER_AID - 1);
     const read = foldPlaceKel(at.chain, { aid: at.start.aid });
-    expect(read.ok && read.seq).toBe(PLACE_KEL_ROWS_PER_AID - 1);
-    const past = lawful(PLACE_KEL_ROWS_PER_AID + 1);   // one rotation past the ceiling
+    expect(read.ok && read.seq).toBe(PLACE_KEL_ENTRIES_PER_AID - 1);
+    const past = lawful(PLACE_KEL_ENTRIES_PER_AID + 1);   // one rotation past the ceiling
     expect(refusal(foldPlaceKel(past.chain, { aid: past.start.aid }))).toBe("too-many-rows");
   }, 240_000);
   it("a key-holder fork flood reads the fork with bounded evidence, and unsigned or foreign rows never reach a digest walk", () => {

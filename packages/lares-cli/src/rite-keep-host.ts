@@ -29,7 +29,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./carry-manifest.js";
 import { KEEP_INTO, KeepRefused, RITE_KEEP } from "./rite-keep.js";
-import type { RiteRowAnswer } from "./rite-kukulu.js";
+import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 /**
  * The secret-shaped strings no keep pushes, the same list the operator's claude-backup sync scans with: an Anthropic key, a
@@ -45,7 +45,7 @@ export interface KeepHostPorts {
   /** The workspace's directory as THIS machine reads it; throws a refusal by name where none stands. */
   workspaceDir(name: string): string;
   /** One vessel row: the vessel half (`keep-cut`), conferre's read (`receipts`), or a landing (`land`). */
-  row(verb: "keep-cut" | "receipts" | "land", args: Record<string, unknown>): Promise<RiteRowAnswer>;
+  row(verb: "keep-cut" | "receipts" | "land", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
   /** git in `dir`; never throws. */
   git(dir: string, argv: readonly string[]): Promise<GitAnswer>;
   say(line: string): void;

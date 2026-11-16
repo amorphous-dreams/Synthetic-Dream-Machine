@@ -351,7 +351,7 @@ export const SEALED_LOCKBOX_REF_INFO = mint("sealed-lockbox-ref");
 /** A signed RECORD as it rests and travels: its kind, its clear part and its sealed part. */
 export const SEALED_RECORD_REST_DOMAIN = mint("sealed-record-rest");
 /** One ROW of the chunk index as it rests. */
-export const SEALED_INDEX_ROW_DOMAIN = mint("sealed-index-row");
+export const SEALED_INDEX_ENTRY_DOMAIN = mint("sealed-index-row");
 /** A HAND-OVER RECORD: its clear part hashes to the record id under this name. */
 export const SEALED_HAND_OVER_DOMAIN = mint("sealed-hand-over");
 /** A PER-NEXUS KEY HAND-OVER: a face's key at one Nexus hands its standing on to a fresh key; both keys sign. */

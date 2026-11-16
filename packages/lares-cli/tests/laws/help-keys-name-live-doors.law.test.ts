@@ -18,7 +18,7 @@ import { COMMAND_HELP } from "../../src/command-help.js";
 import { COMMAND_NAMES, dispatch } from "../../src/bin/lares.js";
 import { SHIM_VERBS } from "../../src/host-bridge.js";
 import { COMMANDS } from "../../src/bin/lares.js";
-import { KAHUA_OPERATOR_ROWS } from "@lararium/node";
+import { KAHUA_OPERATOR_VERBS } from "@lararium/node";
 
 /** One dispatch's exit and what it printed to each stream. */
 async function said(argv: string[]): Promise<{ code: number; out: string; err: string }> {
@@ -83,7 +83,7 @@ describe("the per-command help registry", () => {
 
   test("the top-level ✍ mark says which of kahua's sub-verbs hold a key: the hand-only rows the store door names, no others", async () => {
     const kahua = COMMANDS.find((c) => c.name === "kahua")!;
-    expect([...(kahua.signsOnly ?? [])].sort()).toEqual([...KAHUA_OPERATOR_ROWS].map((row) => row.replace(/^kahua-/, "")).sort());
+    expect([...(kahua.signsOnly ?? [])].sort()).toEqual([...KAHUA_OPERATOR_VERBS].map((row) => row.replace(/^kahua-/, "")).sort());
     const r = await said(["help"]);
     expect(r.out).toMatch(/^\s+✍ kahua\s.*\(✍ mint, lift, withdraw, carry alone\)$/m);
     // CONTROL: a command that holds a key whole draws no such line.

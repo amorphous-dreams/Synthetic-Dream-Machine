@@ -20,8 +20,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareRowBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
-  type ShareFace, type ShareRow,
+  parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareEntryBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
+  type ShareFace, type ShareEntry,
 } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
 import { LIVE_SHARE_DOORS, landShares, type ShareDoors } from "../share-doors.js";
@@ -41,12 +41,12 @@ export function petnamesOf(filter: string, faces: readonly ShareFace[]): string 
 }
 
 /** The lines `--list` prints: each row and the one resolver's answer. */
-export function shareListLines(rows: readonly ShareRow[], faces: readonly ShareFace[]): string[] {
+export function shareListLines(rows: readonly ShareEntry[], faces: readonly ShareFace[]): string[] {
   if (rows.length === 0) return ["share: no row stands; house canon reads the floor for every face, and every other bag stays its owner's"];
   const label = (i: number): string => { const f = faces.find((x) => x.handleIndex === i); return f?.petname ? `${f.petname} (h${i})` : `h${i}`; };
   const out: string[] = [];
   for (const row of rows) {
-    const a = resolveShare({ bag: shareRowBag(row), rows, faces });
+    const a = resolveShare({ bag: shareEntryBag(row), rows, faces });
     out.push(`${row.kind} ${row.slug}: read ${a.read.map(label).join(", ") || "(none named)"} · write ${a.write.map(label).join(", ") || "(none named)"}${row.note ? ` · ${row.note}` : ""}`);
     for (const w of a.waiting) out.push(`  waits: "${w}" names no face here; it lands when a face carries that pet-name`);
   }
@@ -56,7 +56,7 @@ export function shareListLines(rows: readonly ShareRow[], faces: readonly ShareF
 export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DOORS): (args: ParsedArgs) => Promise<number> {
   return async (args) => {
     const text = doors.file.read();
-    let rows: ShareRow[];
+    let rows: ShareEntry[];
     try { rows = text === null ? [] : parseShareFile(text); }
     catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)} (in ${SHARE_CONFIG_FILE})`); return 2; }
     const faces = await doors.faces().catch(() => [] as ShareFace[]);
@@ -77,7 +77,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     const workspace = kind === "wiki" ? args.options["workspace"] : undefined;
     if (kind === "bag" && args.options["workspace"] !== undefined) { doors.err("lares bag share: --workspace names where a WIKI's workbench rests; a bag takes none"); return 2; }
     const prior = rows.find((r) => r.slug === slug && r.kind === kind);
-    const row: ShareRow = { slug, kind, read, write, ...(workspace ? { workspace } : {}), ...(prior?.owner ? { owner: prior.owner } : {}), ...(note ? { note } : {}) };
+    const row: ShareEntry = { slug, kind, read, write, ...(workspace ? { workspace } : {}), ...(prior?.owner ? { owner: prior.owner } : {}), ...(note ? { note } : {}) };
     const next = [...rows.filter((r) => r.slug !== slug), row];
     try { serializeShareFile(next); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
     doors.file.write(serializeShareFile(next));
@@ -107,7 +107,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
       for (const w of Array.isArray(applied["waiting"]) ? applied["waiting"] as string[] : []) doors.out(`  waits: "${w}" names no face here`);
       for (const slug of Array.isArray(applied["unowned"]) ? applied["unowned"] as string[] : []) doors.out(`  waits: "${slug}" stands in no catalog the worn face reads: wear the face that owns it (\`lares vault unlock --face N\`) and share again, or stand it first (\`lares wiki init ${slug}\`)`);
     }
-    for (const w of resolveShare({ bag: shareRowBag(row), rows: next, faces }).waiting) doors.err(`  "${w}" names no face here; the row keeps it, and it lands when a face carries that pet-name`);
+    for (const w of resolveShare({ bag: shareEntryBag(row), rows: next, faces }).waiting) doors.err(`  "${w}" names no face here; the row keeps it, and it lands when a face carries that pet-name`);
     return 0;
   };
 }

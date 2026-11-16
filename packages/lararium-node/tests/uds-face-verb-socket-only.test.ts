@@ -1,5 +1,5 @@
 /**
- * K20: A FACE ROW'S ANSWER RIDES THE SOCKET ALONE. A session's face row (`STORE_DOOR_FACE_ROWS`: `cabal-face`,
+ * K20: A FACE ROW'S ANSWER RIDES THE SOCKET ALONE. A session's face row (`STORE_DOOR_FACE_VERBS`: `cabal-face`,
  * `cabal-vouch`, `edge-partial` and their kin) answers in the `session:act` shape: the door runs it as the face the
  * session wears (its ordinal and the presenter the door verified), the answer returns on this socket, and the one
  * record it leaves names the act and the face, never an argument or the answer. So no synced record pairs the face's

@@ -107,7 +107,7 @@ const HOUSE_WRITERS = {
   writeHandleAnnounce:   "a handle card",
   announceToWhoFace:     "a handle card",
 };
-const HOUSE_READERS = ["publicRealmBooksFromDoc", "offeringAnnouncesFromDoc", "readOfferingAnnounces", "floorReleaseRowsFromBoard", "nodeOfferingLookup", "browserOfferingLookup", "ingestAnnounceDoc"];
+const HOUSE_READERS = ["publicRealmBooksFromDoc", "offeringAnnouncesFromDoc", "readOfferingAnnounces", "floorReleaseEntriesFromBoard", "nodeOfferingLookup", "browserOfferingLookup", "ingestAnnounceDoc"];
 const writerCall = new RegExp(`(\\w+)\\.change\\(\\s*\\(?\\w+\\)?\\s*=>\\s*\\{?\\s*(${Object.keys(HOUSE_WRITERS).filter((w) => w.startsWith("write")).join("|")})\\(`, "g");
 const readerCall = new RegExp(`\\b(${HOUSE_READERS.join("|")})\\(\\s*(?:[\\w.]+,\\s*)?([\\w.]+)`, "g");
 const sourceFiles = execSync("git ls-files 'packages/*/src/*.ts'", { cwd: new URL(".", root), encoding: "utf8" }).split("\n").filter(Boolean);

@@ -25,7 +25,7 @@ import {
   workbenchSeats, workbenchSeatHolds, requireWorkbenchShareable, workbenchDecider, workbenchDocIds, WorkbenchRefusal,
 } from "../src/workbench.js";
 import { realmVouchBoardDocUrl, materializeSharedLarDoc, deterministicDocUrl } from "../src/deterministic-doc.js";
-import { parseShareFile, shareRowOf, shareRowTitle, ShareConfigRefusal, serializeShareFile } from "../src/share-config.js";
+import { parseShareFile, shareEntryOf, shareEntryTitle, ShareConfigRefusal, serializeShareFile } from "../src/share-config.js";
 import { defaultWritableSlot, expandRecipe, wikiSlotUri, wikiBagUri, ORACLE_BAG } from "../src/wiki-recipe.js";
 import { protectedDocGuard } from "../src/protected-doc-guard.js";
 import { shareConfigOf } from "../src/federation-gate.js";
@@ -66,8 +66,8 @@ describe("W2 — the daemon wiki holds one face's memory and never shares", () =
     expect(() => requireWorkbenchShareable({ slug: "notes" })).not.toThrow();
   });
   test("the share row refuses at its title, reads as no row, and a hand-edited share file refuses it", () => {
-    try { shareRowTitle("daemon"); expect.unreachable(); } catch (e) { expect((e as ShareConfigRefusal).reason).toBe("share-face-private"); }
-    expect(shareRowOf({ title: "$:/config/lares/share/daemon", kind: "wiki", read: "*", write: "*" })).toBeNull();
+    try { shareEntryTitle("daemon"); expect.unreachable(); } catch (e) { expect((e as ShareConfigRefusal).reason).toBe("share-face-private"); }
+    expect(shareEntryOf({ title: "$:/config/lares/share/daemon", kind: "wiki", read: "*", write: "*" })).toBeNull();
     const file = "title: $:/config/lares/share/daemon\nkind: wiki\nread: *\nwrite: *\ntype: text/vnd.tiddlywiki\n\n";
     try { parseShareFile(file); expect.unreachable(); } catch (e) { expect((e as ShareConfigRefusal).reason).toBe("share-face-private"); }
   });

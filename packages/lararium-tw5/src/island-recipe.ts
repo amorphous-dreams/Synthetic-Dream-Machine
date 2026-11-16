@@ -49,7 +49,7 @@ export interface BuildIslandRecipeInput {
   /** Resolved CRDT handles keyed by slot URI. temp has no entry. */
   ready: readonly RecipeReadyBinding[];
   /** Pinned system snapshots beneath the live oracle seed. */
-  floorRows?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
+  floorRecords?: readonly Readonly<Record<string, LarTiddlerRecord>>[];
   /** The face holds no writer's seat in the wiki's workbench: its `personal` slot takes the default write (cabal-realm#/the-workbench). */
   writeSlot?: "personal";
   /** The face the kahua stage reads under; absent or null, the kahua layer stands empty. */
@@ -74,7 +74,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
   adaptor: IslandAdaptor;
   stores: Array<{ slot: SlotUri; store: LarTiddlerStore }>;
 } {
-  const { tw5, composite, recipe, ready, floorRows, writeSlot } = input;
+  const { tw5, composite, recipe, ready, floorRecords, writeSlot } = input;
   // The titles TW5's own startup pass already ran over the preloads: these never run again.
   const STARTUP_ACTIONS = "[all[shadows+tiddlers]tag[$:/tags/StartupAction]!has[draft.of]]";
   const ranAtBoot = new Set<string>(tw5.$tw.wiki.filterTiddlers(STARTUP_ACTIONS));
@@ -102,7 +102,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     const base: LarTiddlerStore = slot === KAHUA_BAG
       ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
       : new AutomergeDocStore(handle, slot);
-    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRows ?? [], base, bagId: slot }) : base;
+    const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRecords ?? [], base, bagId: slot }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
     // slot's store directly, carrying the bag on the put option — never a field on the record. The

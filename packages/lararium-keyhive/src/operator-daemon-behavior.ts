@@ -30,7 +30,7 @@ import {
   makeCircleReactors,
   makeCabalRealmReactors,
   makeIntentViewReactor, runLocalVerb, INTENT_VIEW_CAP, controlOf, MemoryTiddlerStore,
-  makeShareSetReactor, makeShareListReactor, readShareRows,
+  makeShareSetReactor, makeShareListReactor, readShareEntries,
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
@@ -1625,7 +1625,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const control = controlOf(ctx);
         const ORIGIN = { kind: "lares-verb", requestId: "share-apply" } as const;
         const applied = await applyShares({
-          rows: () => readShareRows(control), faces,
+          rows: () => readShareEntries(control), faces,
           salt: daemonAuth.placeVerifyingKey,
           log: (line) => console.log(line),
           carry: shareCarryOver(control),

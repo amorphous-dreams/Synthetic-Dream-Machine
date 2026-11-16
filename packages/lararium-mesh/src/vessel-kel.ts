@@ -128,7 +128,7 @@ export function verifyPlaceKel(chain: readonly PlaceKelEvent[]): PlaceKelReading
 }
 
 /** The most rows one AID's fold examines; a board holding more reads `too-many-rows`, and a lawful chain stays below it. */
-export const PLACE_KEL_ROWS_PER_AID = 64;
+export const PLACE_KEL_ENTRIES_PER_AID = 64;
 /** The most competing successors a fork reading carries: the ones at the first fork seq, in digest order. */
 export const PLACE_KEL_FORK_EVIDENCE = 8;
 
@@ -146,7 +146,7 @@ function extendOne(state: { aid: string; seq: number; head: PlaceKelEvent; headD
 }
 
 /**
- * Read unordered board rows from the pinned inception, in work bounded by `PLACE_KEL_ROWS_PER_AID`. A row of another AID or a
+ * Read unordered board rows from the pinned inception, in work bounded by `PLACE_KEL_ENTRIES_PER_AID`. A row of another AID or a
  * row that does not decode strictly drops before any digest or signature. ORDER RIDES THE HASH CHAIN ALONE: the signed rows that
  * remain index by the predecessor digest each names (`prev`), and the walk descends from the inception one link at a time, so
  * each step meets only the candidates for the head it stands on and each row is met at most once. `seq` orders nothing: it stays
@@ -179,7 +179,7 @@ export function foldPlaceKel(events: readonly unknown[], pinned: { aid: string; 
   const chain: PlaceKelEvent[] = [first];
   const state = { aid: pinned.aid, seq: 0, head: first as PlaceKelEvent, headDigest: pinned.aid, commitments: new Set([first.next]), keys: new Set([first.key]) };
   for (;;) {
-    if (chain.length > PLACE_KEL_ROWS_PER_AID) return { ok: false, refusal: "too-many-rows" };
+    if (chain.length > PLACE_KEL_ENTRIES_PER_AID) return { ok: false, refusal: "too-many-rows" };
     const candidates = byPrev.get(state.headDigest) ?? [];
     const valid = candidates.filter((e) => extendOne(state, e) === null);
     if (valid.length > 1) {

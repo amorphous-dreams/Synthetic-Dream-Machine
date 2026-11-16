@@ -7,7 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
-  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, restReceipt, signSwarmAct, swarmActCid, swarmLeiRowTitle, swarmLeiUnstrungTitle,
+  ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, restReceipt, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiUnstrungTitle,
   verifyKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
@@ -64,7 +64,7 @@ async function stand() {
   const wiki = controlWiki();
   const string = async (terms: SwarmLeiTerms, after: string | null = null): Promise<SignedSwarmAct> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "kukulu", branch: BRANCH, after, ...terms }, hand);
-    await wiki.write(swarmLeiRowTitle("kukulu", BRANCH, swarmActCid(lei)), JSON.stringify(lei));
+    await wiki.write(swarmLeiRecordTitle("kukulu", BRANCH, swarmActCid(lei)), JSON.stringify(lei));
     return lei;
   };
   const receipt = (verdict: "pass" | "fail") => restReceipt(wiki, { tree: TREE, checks: ["typecheck", "mesh"], verdict, definitions: "d".repeat(64) }, trust, GROUP, atom);

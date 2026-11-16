@@ -11,7 +11,7 @@ import { afterAll, beforeAll, describe, expect, test, vi } from "vitest";
 import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { KAHUA_BAG, emptyLarDoc, kahuaRowDigest, kahuaStageDocUrl, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, stageKahuaRow, tiddlerText, type LarDoc } from "@lararium/mesh";
+import { KAHUA_BAG, emptyLarDoc, kahuaMemeDigest, kahuaStageDocUrl, personaBagIdFor, personaSiblingBagIds, PERSONA_GROUP_ID_TIDDLER, stageKahuaMeme, tiddlerText, type LarDoc } from "@lararium/mesh";
 import { runFoundTheFace } from "../src/index.js";
 import { ownedStore } from "../src/owned-store.js";
 import { storeDoorDirect, storeDoorReactors } from "../src/store-door-verbs.js";
@@ -73,7 +73,7 @@ const standing = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<stri
       const catalogUrl = readFileSync(join(storage, "catalog-url"), "utf8").trim();
       // THE FACE'S LOCAL CANON bags/daemon-<F> as the standing vessel opens it: the rows a lift names stand staged there.
       const canon = repo.create<LarDoc>(emptyLarDoc());
-      canon.change((d) => { for (const r of staged) stageKahuaRow(d, r, "test"); });
+      canon.change((d) => { for (const r of staged) stageKahuaMeme(d, r, "test"); });
       const reactors = storeDoorReactors({ storageDir: storage, sealHome: larSealHome(), repo, catalogUrl, faceCanon: async () => canon,
         askIsland: async (asked) => (asked === "kahua-cap" ? { verb: asked, held, ...(held ? {} : { reason: "not a member" }) } : {}) });
       return reactors[verb](args, { worn: { ordinal: 0 } } as never) as Promise<Record<string, unknown>>;
@@ -81,7 +81,7 @@ const standing = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<stri
   });
 const src = [{ title: "daemon/note", revision: "r1" }];
 const STAGED = [{ title: "note", text: "x" }, { title: "seat", text: "x" }];
-const X = kahuaRowDigest({ text: "x", fields: {} });
+const X = kahuaMemeDigest({ text: "x", fields: {} });
 
 describe("lares kahua over a founded face", () => {
   test("RED: the founding pinned the stage, so a mint no-ops; CONTROL: the mint answers the face's derived stage and registers bags/kahua", async () => {

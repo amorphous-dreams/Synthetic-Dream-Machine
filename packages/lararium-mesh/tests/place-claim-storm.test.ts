@@ -14,7 +14,7 @@ import { carriageEntriesFromBoard, writeCarriageEntry } from "../src/carriage-bo
 import { foldCarrierSet, signCarriageQuorum, signCarrierContract, type CarriageEntry } from "../src/carriage-registry.js";
 import type { LarDoc } from "../src/base-doc.js";
 import { filePlaceFloorPins, placeFloorPinsFromBoard, writePlaceFloorPin } from "../src/place-floor-pin.js";
-import { placeKelRowsFromBoard, writePlaceKelEvent } from "../src/place-kel-board.js";
+import { placeKelEntriesFromBoard, writePlaceKelEvent } from "../src/place-kel-board.js";
 import { claimAt, floorPinFor, headOf, prng, rotatePlace, shuffled, stormStages, type StormStage } from "./place-claim-fixture.js";
 import { seatedCharter, type SeatedCharter } from "./charter-fixture.js";
 import * as ed from "@noble/ed25519";
@@ -45,7 +45,7 @@ async function itemsOf(charter: SeatedCharter, stages: readonly StormStage[]): P
 async function refresh(charter: SeatedCharter, board: LarDoc, index: HearthPinIndex): Promise<void> {
   const carriers = await foldCarrierSet(carriageEntriesFromBoard(board), charter.roster);
   filePlaceFloorPins(index, placeFloorPinsFromBoard(board), {
-    nexusHex: hex(utf8Bytes(charter.aid)), route: "/flow", kelRows: placeKelRowsFromBoard(board), standing: { via: "carrier", carriers },
+    nexusHex: hex(utf8Bytes(charter.aid)), route: "/flow", kelEntries: placeKelEntriesFromBoard(board), standing: { via: "carrier", carriers },
   });
 }
 const stands = (charter: SeatedCharter, index: HearthPinIndex, stages: readonly StormStage[], at: number): { served: unknown; head: string | undefined; seq: number | undefined } => {

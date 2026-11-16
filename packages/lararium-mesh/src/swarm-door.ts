@@ -10,7 +10,7 @@
  */
 import { readSwarmBoard, readSwarmBoardAct, signSwarmCap, signSwarmShare, swarmBoardActCid, swarmCapHead, type SignedSwarmBoardAct, type SwarmBoardFace } from "./swarm-board.js";
 import {
-  SwarmRefused, readLei, readLeiChain, swarmLeiReturnedPrefix, swarmLeiUnstrungTitle, signSwarmAct, swarmActCid, swarmCapRefusal, swarmLeiHead, swarmLeiRowTitle, swarmShareRefusal, swarmShareTitle,
+  SwarmRefused, readLei, readLeiChain, swarmLeiReturnedPrefix, swarmLeiUnstrungTitle, signSwarmAct, swarmActCid, swarmCapRefusal, swarmLeiHead, swarmLeiRecordTitle, swarmShareRefusal, swarmShareTitle,
   type SwarmSignerPort, type SwarmTrust, type SwarmLeiReach, type SwarmLeiTerms, type SwarmWikiPort,
 } from "./swarm-tiddlers.js";
 import { isSwarmLeiRite, leiRiteCosigns, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
@@ -179,7 +179,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
       if (refused) throw refused;
       const act = await signSwarmAct({ act: "lei", group: deps.group, rite, branch, after, ...terms }, deps.signer);
       // Each lei claims its own row: a second writer of the same lei lands nothing more.
-      if (!(await wiki.writeNew(swarmLeiRowTitle(rite, branch, swarmActCid(act)), JSON.stringify(act)))) throw replay();
+      if (!(await wiki.writeNew(swarmLeiRecordTitle(rite, branch, swarmActCid(act)), JSON.stringify(act)))) throw replay();
       return { rite, branch, ...terms };
     };
     // THE CO-SIGN WEIGHS REACH: a rite whose effect leaves the device waits on a second device at the gate; one that stays home

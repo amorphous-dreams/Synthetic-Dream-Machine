@@ -110,9 +110,9 @@ function riteSegment(rite: unknown): SwarmLeiRite {
   if (!isSwarmLeiRite(rite)) malformed(`a lei's rite names one listed power (${SWARM_LEI_RITES.join(", ")})`);
   return rite as SwarmLeiRite;
 }
-/** The family title one rite's lei at a branch rest under; each lei rests at its own row beneath it (`swarmLeiRowTitle`). */
+/** The family title one rite's lei at a branch rest under; each lei rests at its own row beneath it (`swarmLeiRecordTitle`). */
 export const swarmLeiTitle = (rite: SwarmLeiRite, branch: string): string => `${SWARM_URI_PREFIX}lei/${riteSegment(rite)}/${branchSegment(branch)}`;
-export const swarmLeiRowTitle = (rite: SwarmLeiRite, branch: string, leiCid: string): string => `${swarmLeiTitle(rite, branch)}/${segment(leiCid)}`;
+export const swarmLeiRecordTitle = (rite: SwarmLeiRite, branch: string, leiCid: string): string => `${swarmLeiTitle(rite, branch)}/${segment(leiCid)}`;
 /** The prefix every spend of one lei rests under; a row here counts against the lei whatever it holds. */
 export const swarmLeiReturnedPrefix = (leiCid: string): string => `${SWARM_URI_PREFIX}lei-returned/${segment(leiCid)}/`;
 /** The `n`th spend of a lei, counted from 1. */
@@ -231,7 +231,7 @@ export function verifySwarmRecord(text: string | null, title: string, trust: Swa
   try { if (!verifyEd25519(raw["sig"], canonicalJsonBytes(body), raw["signer"] as string)) return { ok: false, refusal: "signature" }; } catch { return { ok: false, refusal: "signature" }; }
   const act = raw as unknown as SignedSwarmAct, cid = swarmActCid(act);
   let at: string | null;
-  try { at = body.act === "lei" ? swarmLeiRowTitle(body.rite, body.branch, cid) : titleOf(body); } catch { at = null; }
+  try { at = body.act === "lei" ? swarmLeiRecordTitle(body.rite, body.branch, cid) : titleOf(body); } catch { at = null; }
   if (at !== title) return { ok: false, refusal: "title" };
   if (!allowed(body, raw["signer"] as string, trust)) return { ok: false, refusal: "role" };
   return { ok: true, act, cid };
@@ -250,7 +250,7 @@ export const swarmLeiHead = (lei: { readonly rite: SwarmLeiRite; readonly branch
 /** Which lei a reader asks for: one rite's, at one branch. */
 export interface SwarmLeiLine { readonly rite: SwarmLeiRite; readonly branch: string }
 
-type LeiRow = { readonly act: SignedSwarmAct; readonly cid: string; readonly body: SwarmLeiBody };
+type LeiRecord = { readonly act: SignedSwarmAct; readonly cid: string; readonly body: SwarmLeiBody };
 
 /**
  * One rite's lei at a branch as their reader holds them. `resting`: every row under the rite's title for the branch that verifies
@@ -261,9 +261,9 @@ type LeiRow = { readonly act: SignedSwarmAct; readonly cid: string; readonly bod
  * never enters this read.
  */
 export async function readLeiChain(wiki: SwarmWikiPort, line: SwarmLeiLine, trust: SwarmTrust, group: string, ward: WardActWitness): Promise<{
-  readonly resting: readonly LeiRow[]; readonly cosigned: readonly LeiRow[]; readonly tips: readonly LeiRow[]; readonly refusal: SwarmReadRefusal | WardActRefusal | null;
+  readonly resting: readonly LeiRecord[]; readonly cosigned: readonly LeiRecord[]; readonly tips: readonly LeiRecord[]; readonly refusal: SwarmReadRefusal | WardActRefusal | null;
 }> {
-  const resting: LeiRow[] = [], refusals: SwarmReadRefusal[] = [];
+  const resting: LeiRecord[] = [], refusals: SwarmReadRefusal[] = [];
   const { rite, branch } = line;
   for (const title of [...await wiki.list(`${swarmLeiTitle(rite, branch)}/`)].sort()) {
     const read = verifySwarmRecord(await wiki.read(title), title, trust, group);
@@ -274,10 +274,10 @@ export async function readLeiChain(wiki: SwarmWikiPort, line: SwarmLeiLine, trus
   // A rite that stays on the device asks no co-sign: its lei stands on the hand's signature alone.
   const wardReads = resting.map((g) => (leiRiteCosigns(g.body.rite) ? wardActRefusal(ward, { verb: wardLeiVerb(g.body.rite), wiki: "daemon", head: swarmLeiHead(g.body) }) : null));
   const cosigned = resting.filter((_, i) => wardReads[i] === null);
-  const children = new Map<string | null, LeiRow[]>();
+  const children = new Map<string | null, LeiRecord[]>();
   for (const g of cosigned) children.set(g.body.after, [...(children.get(g.body.after) ?? []), g]);
   // Walk the chain level by level from the branch's first lei: the deepest level holds the tips.
-  let level = children.get(null) ?? [], tips: LeiRow[] = [];
+  let level = children.get(null) ?? [], tips: LeiRecord[] = [];
   const seen = new Set<string>();
   while (level.length > 0) {
     tips = level;

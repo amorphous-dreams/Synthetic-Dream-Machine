@@ -204,7 +204,7 @@ export type { CircleVerbOptions, ResolveCirclesStore } from "./circle-verbs.js";
 // stays local to whichever node holds it). Store-level moves alone: no verb answers them, and the vessel's main
 // thread calls them from its custody door.
 export { readPersonaSelves, writePersonaSelfName } from "./persona-selves-plane.js";
-export type { PersonaSelfRow } from "./persona-selves-plane.js";
+export type { PersonaSelfEntry } from "./persona-selves-plane.js";
 // The CABAL-REALM verbs over daemon-plane — the OFFERING that feeds a realm, and the verdict-free capture-clock.
 export { makeCabalRealmReactors, makeRealmFeedReactor, makeRealmClockReactor } from "./cabal-realm-verbs.js";
 export type { CabalRealmVerbOptions, ResolveDaemonStore } from "./cabal-realm-verbs.js";
@@ -316,6 +316,6 @@ export type { CarrierLifecycle, LifecycleStage } from "./carrier-lifecycle.js";
 export { placedAskIsLocal } from "./daemon-behavior.js";
 
 export { makePromoteStateReactor, seedPromoteUiTiddlers, PROMOTE_PANEL_TITLE, PROMOTE_STATE_TITLE } from "./promote-ui-tiddlers.js";
-export { makeShareSetReactor, makeShareListReactor, readShareRows } from "./share-verbs.js";
+export { makeShareSetReactor, makeShareListReactor, readShareEntries } from "./share-verbs.js";
 // The ONE spelling of a person's view-state set: the shared workbench's admit filter reads it (cabal-realm#/the-workbench).
 export { isPersonalTitle } from "./filters/lar-kind.js";

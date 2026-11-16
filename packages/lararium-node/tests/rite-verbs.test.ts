@@ -5,7 +5,7 @@
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { expect, test } from "vitest";
-import { STORE_DOOR_FACE_ROWS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
+import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
 
 const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer"] as const;
@@ -13,7 +13,7 @@ const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-
 test("RED: every rite row is a store-door verb that acts as a face; CONTROL: a seat may run each, and none asks a ward route", () => {
   for (const row of ROWS) {
     expect(STORE_DOOR_VERBS as readonly string[], row).toContain(row);
-    expect(STORE_DOOR_FACE_ROWS.has(row as never), row).toBe(true);
+    expect(STORE_DOOR_FACE_VERBS.has(row as never), row).toBe(true);
     // The lei carries the grant: the hand strung it (a ward act), and the rite spends it.
     expect(STORE_DOOR_HAND_ONLY_ACTS.has(row), row).toBe(false);
     expect(storeVerbNeedsWard(row, {}), row).toBe(false);

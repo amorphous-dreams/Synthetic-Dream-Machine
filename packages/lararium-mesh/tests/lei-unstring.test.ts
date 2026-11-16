@@ -10,7 +10,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { SWARM_VERB_HAND_CODES, restringLei, swarmCommand, unstringLei, type SwarmDoorDeps } from "../src/swarm-door.js";
 import {
-  putSwarmAct, readLei, readSwarmRecord, returnLei, signSwarmAct, swarmActCid, swarmLeiRowTitle, swarmLeiTitle, swarmLeiUnstrungTitle, swarmReceiptTitle,
+  putSwarmAct, readLei, readSwarmRecord, returnLei, signSwarmAct, swarmActCid, swarmLeiRecordTitle, swarmLeiTitle, swarmLeiUnstrungTitle, swarmReceiptTitle,
   type SignedSwarmAct, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
@@ -56,7 +56,7 @@ describe("lei-unstring-ends-the-lei", () => {
     expect(await swarmCommand({ action: "lei-unstring", rite: "push", branch: BRANCH, lei: cid! }, s.deps)).toEqual({ rite: "push", branch: BRANCH, lei: cid, unstrung: true });
     // One record more, and none fewer: unstring writes and never deletes.
     expect(s.rows.size).toBe(before + 1);
-    expect(s.rows.has(swarmLeiRowTitle("push", BRANCH, cid!))).toBe(true);
+    expect(s.rows.has(swarmLeiRecordTitle("push", BRANCH, cid!))).toBe(true);
     expect(await readSwarmRecord(s.wiki, swarmLeiUnstrungTitle(cid!), s.trust, GROUP)).toMatchObject({ ok: true, act: { signer: s.root.key, body: { act: "lei-unstrung", lei: cid, rite: "push", branch: BRANCH } } });
     expect(await s.read()).toEqual({ ok: false, refusal: "unstrung" });
     await expect(s.giveBack()).rejects.toMatchObject({ code: "swarm-lei-unstrung" });
@@ -103,8 +103,8 @@ describe("lei-restring-supersedes", () => {
     expect(await restringLei({ rite: "push", branch: BRANCH, reach: "head", head: HEAD }, s.deps)).toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, restrung: old });
     const [, fresh] = s.line();
     // The newer lei names the one it supersedes, under the hand's signature; the old row rests where it stood.
-    expect(JSON.parse(s.rows.get(swarmLeiRowTitle("push", BRANCH, fresh!))!)).toMatchObject({ signer: s.root.key, body: { act: "lei", after: old, reach: "head" } });
-    expect(s.rows.has(swarmLeiRowTitle("push", BRANCH, old!))).toBe(true);
+    expect(JSON.parse(s.rows.get(swarmLeiRecordTitle("push", BRANCH, fresh!))!)).toMatchObject({ signer: s.root.key, body: { act: "lei", after: old, reach: "head" } });
+    expect(s.rows.has(swarmLeiRecordTitle("push", BRANCH, old!))).toBe(true);
     expect(await s.read()).toMatchObject({ ok: true, cid: fresh, reach: "head" });
     await expect(s.giveBack()).resolves.toMatchObject({ lei: fresh, n: 1 });
   });

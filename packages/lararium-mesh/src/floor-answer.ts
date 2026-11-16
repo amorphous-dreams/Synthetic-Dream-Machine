@@ -62,7 +62,7 @@ const HEX64 = /^[0-9a-f]{64}$/;
 
 /** The release rows a porch answer carries for `nexus`, or the refusal by name. Verifies nothing beyond the shape: the
  *  fold verifies each row (`foldFloorReleases`), and the vessel's pin doors read the same rows (`floor-pin`). */
-export function floorAnswerRows(answer: unknown, nexus: string):
+export function floorAnswerEntries(answer: unknown, nexus: string):
   | { readonly rows: ReadonlyArray<{ readonly keyCid: string; readonly record: unknown }> }
   | { readonly refusal: "answer-malformed" | "foreign-nexus" } {
   const a = answer as Partial<FloorAnswer> | null;
@@ -87,7 +87,7 @@ export async function readFloorAnswer(args: {
   readonly fetchCas: (cid: string) => Promise<Uint8Array | null>;
 }): Promise<FloorRead> {
   const none: readonly FloorReleaseRefused[] = [];
-  const opened = floorAnswerRows(args.answer, args.nexus);
+  const opened = floorAnswerEntries(args.answer, args.nexus);
   if ("refusal" in opened) return { ok: false, reason: opened.refusal, refused: none };
   const rows = opened.rows;
   const fetched = new Map<string, Uint8Array | null>();

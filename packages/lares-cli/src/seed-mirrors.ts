@@ -67,7 +67,7 @@ import {
   larProjectionsHome, larConfigHome, mirrorDirFileToUri, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug,
   daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR,
 } from "@lararium/node";
-import { parseShareFile, type ShareRow } from "@lararium/mesh";
+import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_CARRY_DOORS, litFaceOf, unlockItLine, FACE_LAYER_WAITS, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
@@ -135,7 +135,7 @@ export interface MirrorDoors {
    */
   readonly benchSeat?: (slug: string) => Promise<{ readonly writeSlot: "working" | "personal" | null; readonly bound: boolean }>;
   /** The share rows the vessel-private file holds (`config/share.tid`); absent: none. */
-  readonly shareRows?: () => readonly ShareRow[];
+  readonly shareRows?: () => readonly ShareEntry[];
   /** Land the shares again (`share-apply`), seating each named face by pet-name; null where no vessel answers. Absent: no landing. */
   readonly landShares?: () => Promise<Record<string, unknown> | null>;
 }

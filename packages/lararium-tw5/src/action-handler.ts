@@ -1201,7 +1201,7 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
  * carrier asks the same law first (`storableTitleFault`, `@lararium/mesh` `title-law.ts`) and names the
  * refusal in that carrier's row; the door still stands behind it.
  */
-function sessionFormRow(uri: string, titles: readonly string[]): Record<string, unknown> | null {
+function sessionFormRecord(uri: string, titles: readonly string[]): Record<string, unknown> | null {
   for (const title of [uri, ...titles]) {
     const fault = storableTitleFault(title);
     if (fault !== null) return { uri, decision: "refuse", code: SESSION_FORM_TITLE_CODE, reason: fault, warnings: [fault] };
@@ -1328,7 +1328,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       continue;
     }
     // The carrier's own address, ahead of every write path below (a skinny handle lands before any parse).
-    const sessionFormCarrier = sessionFormRow(uri, []);
+    const sessionFormCarrier = sessionFormRecord(uri, []);
     if (sessionFormCarrier) { results.push(sessionFormCarrier); continue; }
     // Scenario B: an OVERSIZED RAW shard rides a skinny handle — the body stays in the cid/
     // tier, never materializing as a CRDT scalar-string (the automerge OOM wall). The gate
@@ -1398,7 +1398,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
     let packInfo: { packPath: string; members: string[] } | null = null;
     if (memetic) {
       const parsedFields = memeticWikitextDeserializer(carrierText, { title: uri });
-      const sessionForm = sessionFormRow(uri, parsedFields.map((fields) => String(fields["title"] ?? uri)));
+      const sessionForm = sessionFormRecord(uri, parsedFields.map((fields) => String(fields["title"] ?? uri)));
       if (sessionForm) { results.push(sessionForm); continue; }
       // The ONE placement law (place-meme.ts): group · gate · land · tombstone, over a bag sink.
       // The gesture's Synced-tree hash rides as the base the gate merges against.
@@ -1452,7 +1452,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
         const own = typeof fields["title"] === "string" ? (fields["title"] as string) : "";
         return { ...fields, title: own || uri };
       });
-      const sessionForm = sessionFormRow(uri, freshRecords.map((record) => String(record["title"] ?? uri)));
+      const sessionForm = sessionFormRecord(uri, freshRecords.map((record) => String(record["title"] ?? uri)));
       if (sessionForm) { results.push(sessionForm); continue; }
       // Pack detection: any member whose title is NOT the carrier's own `lar:` URI
       // came from a bundle (the file's tiddlers self-title). Record the WHOLE

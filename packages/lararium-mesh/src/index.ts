@@ -36,7 +36,7 @@ export type { Heads, Doc as AutomergeDoc } from "@automerge/automerge";
 export * from "./base-doc.js";
 export * from "./stored-value.js";
 export * from "./stored-record.js";
-export * from "./catalog-row.js";
+export * from "./catalog-entry.js";
 export * from "./floor-manifest.js";
 export * from "./cas.js";
 export * from "./lar-camera.js";

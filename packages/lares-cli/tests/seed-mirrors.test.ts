@@ -39,7 +39,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
-import { daemonFaceCanonBag, carrierHash, type ShareRow } from "@lararium/mesh";
+import { daemonFaceCanonBag, carrierHash, type ShareEntry } from "@lararium/mesh";
 import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
@@ -92,7 +92,7 @@ class FakeHouse {
   /** The writer seats each wiki's workbench holds, by relation; a slug with no entry stands unbound (no face stood it yet). */
   seats = new Map<string, Set<string>>();
   /** The share rows the vessel-private file holds, and how many times the seed landed them. */
-  shareRows: ShareRow[] = [];
+  shareRows: ShareEntry[] = [];
   shareLandings = 0;
   /** The `wikis` dir beside the canon source, and the slugs that stand sourced there (none: no canon source stands). */
   canonWikis: string | null = null;

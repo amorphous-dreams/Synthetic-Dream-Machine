@@ -78,7 +78,7 @@ import { closeSync, openSync, readdirSync, readSync, statSync, type Dirent } fro
 import { basename, join } from "node:path";
 import {
   REST_KINDS, ROTATING_SUFFIX, SEALING_SUFFIX, S_SEAL_MIN_LENGTH,
-  readCarriedRecord, readIndexRow, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
+  readCarriedRecord, readIndexEntry, readLockboxRecord, readsAsOutboxSeal, readSCarrier, restNameHolds, rotateTreeKey,
   type CustodyIo, type KeyClass, type SealedCarrier, type SlotSpec, type SlotTree, type TreeKey,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
@@ -270,7 +270,7 @@ const restFileHolds = (file: string, bytes: Uint8Array): boolean => {
   const [, kind, name] = file.split("/");
   if (kind === undefined || name === undefined || !restNameHolds(name, bytes)) return false;
   if (kind === "lockbox") return readLockboxRecord(bytes) !== null;
-  if (kind === "index") return readIndexRow(bytes) !== null;
+  if (kind === "index") return readIndexEntry(bytes) !== null;
   if (kind === "outbox") return readsAsOutboxSeal(bytes);
   return readCarriedRecord(bytes)?.kind === kind;
 };

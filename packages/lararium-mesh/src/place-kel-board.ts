@@ -33,16 +33,16 @@ export function writePlaceKelEvent(draft: LarDoc, aid: string, event: PlaceKelEv
 }
 
 /** The most KEL rows one board read takes, and the longest payload one row may carry: a lawful event is under a kilobyte. */
-export const PLACE_KEL_BOARD_ROWS = 4096;
-export const PLACE_KEL_ROW_CHARS = 2048;
+export const PLACE_KEL_BOARD_ENTRIES = 4096;
+export const PLACE_KEL_ENTRY_CHARS = 2048;
 
 /** Read the rows under `prefix` in key order, bounded at the board: a payload past the byte bound is noise, and no more than the row bound parse. */
 function boundedRows(doc: LarDoc | undefined | null, prefix: string): unknown[] {
   const out: unknown[] = [];
   for (const title of Object.keys(doc?.tiddlers ?? {}).filter((t) => t.startsWith(prefix)).sort()) {
-    if (out.length >= PLACE_KEL_BOARD_ROWS) break;
+    if (out.length >= PLACE_KEL_BOARD_ENTRIES) break;
     const text = tiddlerText(ownEntry(doc!.tiddlers, title));
-    if (text === null || text.length > PLACE_KEL_ROW_CHARS) continue;
+    if (text === null || text.length > PLACE_KEL_ENTRY_CHARS) continue;
     try { out.push(JSON.parse(text) as unknown); } catch { /* a torn row files nothing */ }
   }
   return out;
@@ -54,7 +54,7 @@ export function placeKelEventsFromBoard(doc: LarDoc | undefined | null, aid: str
 }
 
 /** Every parseable place KEL payload on the board, across all inception AIDs, bounded. The carry reader verifies each chain. */
-export function placeKelRowsFromBoard(doc: LarDoc | undefined | null): unknown[] {
+export function placeKelEntriesFromBoard(doc: LarDoc | undefined | null): unknown[] {
   return boundedRows(doc, PLACE_KEL_PREFIX);
 }
 

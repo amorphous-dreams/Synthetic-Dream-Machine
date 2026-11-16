@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ROW_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareRowOf, shareRowFields, reconcileShareRows, shareRowTitle, type ShareRow } from "@lararium/mesh";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, type ShareEntry } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -2549,11 +2549,11 @@ async function prepareNodeBootOn(
   const reconcileShareConfig = async (control: DocHandle<LarDoc>): Promise<void> => {
     const path = join(larConfigHome(), SHARE_CONFIG_FILE);
     const file = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : null;
-    const held = Object.entries(control.doc()?.tiddlers ?? {}).map(([, r]) => shareRowOf((plainRecordOrNull(r as never)?.tiddler ?? {}) as Record<string, unknown>)).filter((r): r is ShareRow => r !== null);
-    const { put, remove } = reconcileShareRows(file, held);
+    const held = Object.entries(control.doc()?.tiddlers ?? {}).map(([, r]) => shareEntryOf((plainRecordOrNull(r as never)?.tiddler ?? {}) as Record<string, unknown>)).filter((r): r is ShareEntry => r !== null);
+    const { put, remove } = reconcileShareEntries(file, held);
     if (put.length + remove.length === 0) return;
     control.change((doc) => {
-      for (const row of put) { const { title: _t, ...fields } = shareRowFields(row); const title = shareRowTitle(row.slug); doc.tiddlers[title] = storedLarRecord(title, fields, "share-config"); }
+      for (const row of put) { const { title: _t, ...fields } = shareEntryFields(row); const title = shareEntryTitle(row.slug); doc.tiddlers[title] = storedLarRecord(title, fields, "share-config"); }
       for (const title of remove) delete doc.tiddlers[title];
     });
     console.log(`[share] the share config's file reconciled into the control document: ${put.length} row(s) written, ${remove.length} removed`);
@@ -3319,18 +3319,18 @@ async function prepareNodeBootOn(
     // a face lit beside it (a relay face, `lightFace`) through its own F with its own D, never the worn face's.
     const wornView = catalogViewOf(assembly.catalogHandle);
     const faceViews = faceViewBook(wornView?.floorHandle ?? assembly.catalogHandle, personaGroupId && wornFaceProved ? { group: personaGroupId, view: assembly.catalogHandle } : null);
-    catalogForViews = () => faceViews.everyRow();
-    const bagTierOfRow = makeBagTierReader();
+    catalogForViews = () => faceViews.everyEntry();
+    const bagTierOfEntry = makeBagTierReader();
     const registerInCatalogOf = (group: string | null | undefined) => (bagId: string, url: string | null | undefined, privateSynced = false): void => {
       const into = group ? faceViews.viewOf(group) : assembly.catalogHandle;
       if (!url) return;
       // THE DECLARED TIER RIDES THE ROW: a bag whose own declaration reads `public` stamps `cap-tier = public`, which routes
       // its row onto the floor catalog (a public book a herm lists); any other tier stamps nothing and the row stays the face's.
-      const tier = !privateSynced && bagTierOfRow(bagId) === "public" ? "public" : null;
+      const tier = !privateSynced && bagTierOfEntry(bagId) === "public" ? "public" : null;
       const standing = ownEntry(into.doc()?.tiddlers, bagId);
-      if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ROW_TIER_FIELD) ?? null) === tier && (plainField(standing, "kind") === "private-synced") === privateSynced) return;
+      if (tiddlerText(standing) === url && (plainField(standing, CATALOG_ENTRY_TIER_FIELD) ?? null) === tier && (plainField(standing, "kind") === "private-synced") === privateSynced) return;
       into.change((doc) => {
-        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: privateSynced ? "private-synced" : "oracle", ...(tier ? { [CATALOG_ROW_TIER_FIELD]: tier } : {}) }, "vessel-boot");
+        doc.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: privateSynced ? "private-synced" : "oracle", ...(tier ? { [CATALOG_ENTRY_TIER_FIELD]: tier } : {}) }, "vessel-boot");
       });
     };
     const registerInCatalog = registerInCatalogOf(personaGroupId);
@@ -4405,7 +4405,7 @@ async function prepareNodeBootOn(
     // checkout or the hearth, or for a checkout-sourced slug, refuses by name and its workbench projects under projections.
     const workspaces = (() => {
       const path = join(larConfigHome(), SHARE_CONFIG_FILE);
-      let rows: ShareRow[] = [];
+      let rows: ShareEntry[] = [];
       try { rows = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : []; } catch (err) { console.warn(`[workspaces] the share file reads as none: ${String(err)}`); }
       const read = workspaceRootsOf({ rows, workspacesHome: larWorkspacesHome(), checkoutRoot: dirname(resolvePath(daemonBagsDir())), hearth: larHearthHome(), sourcedSlugs: projection.sourcedSlugs() });
       for (const line of read.refused) console.warn(`[workspaces] refused: ${line}`);

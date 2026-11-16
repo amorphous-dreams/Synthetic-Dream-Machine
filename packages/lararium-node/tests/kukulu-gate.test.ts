@@ -8,7 +8,7 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
   conferre, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, kukuluVouchDigest, signKukuluVouch, signSwarmAct, swarmActCid, swarmLeiNarrowedTitle,
-  swarmLeiReturnedPrefix, swarmLeiRowTitle, swarmReceiptTitle, swarmTesseraPrefix, verifySwarmRecord,
+  swarmLeiReturnedPrefix, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraPrefix, verifySwarmRecord,
   type KukuluVouchParts, type SignedKukuluVouch, type SignedSwarmAct, type SwarmLeiTerms, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import type { CustodyHolder } from "../src/custody-holder.js";
@@ -79,7 +79,7 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     await expect(vessel.updateColdRow("identity", "intent-relay-key.bin", () => ({ plaintext: new Uint8Array(32), value: null }))).rejects.toMatchObject({ reading: "needs-the-human" });
 
     // The offered lei landed at the family's own title and reads there as the hand's.
-    const leiTitle = swarmLeiRowTitle("kukulu", BRANCH, cid);
+    const leiTitle = swarmLeiRecordTitle("kukulu", BRANCH, cid);
     expect(verifySwarmRecord(await s.records.read(leiTitle), leiTitle, s.trust, GROUP)).toMatchObject({ ok: true, cid });
     // THE RETURN, the receipt and the guest half each carry the pūlama's own key: no key a vessel holds signed them.
     const returned = JSON.parse((await s.records.read(`${swarmLeiReturnedPrefix(cid)}1`))!) as SignedSwarmAct;

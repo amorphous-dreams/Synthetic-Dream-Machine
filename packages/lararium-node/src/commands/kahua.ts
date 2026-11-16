@@ -54,7 +54,7 @@ export interface KahuaCommandOptions {
   /** A stage's body and fields; a lift carries the staged row's own and takes neither from the hand. */
   readonly text?: string;
   readonly fields?: Readonly<Record<string, string>>;
-  /** The staged row's content digest a lift names (`kahuaRowDigest`). */
+  /** The staged row's content digest a lift names (`kahuaMemeDigest`). */
   readonly digest?: string;
   readonly taint?: readonly string[];
   readonly sources?: readonly KahuaSource[];

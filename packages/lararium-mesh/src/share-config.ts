@@ -55,7 +55,7 @@ export function shareCarryOf(title: string): { readonly group: string; readonly 
 export const SHARE_CONFIG_FILE = "share.tid";
 
 /** One share row: the slug it shares (a bag's or a wiki's), the read and write title lists, and its note. */
-export interface ShareRow {
+export interface ShareEntry {
   readonly slug: string;
   readonly kind: "bag" | "wiki";
   /** A title list of face pet-names, `*`, or empty. */
@@ -85,14 +85,14 @@ export class ShareConfigRefusal extends Error {
 const SLUG = /^[a-z0-9][a-z0-9._-]*$/;
 
 /** The row title for a slug. The daemon wiki (and each face's `daemon-<F>`) refuses `share-face-private`: it never shares. */
-export function shareRowTitle(slug: string): string {
+export function shareEntryTitle(slug: string): string {
   if (!SLUG.test(slug)) throw new ShareConfigRefusal("share-slug-malformed", `"${slug}" names no bag or wiki slug`);
   if (isFacePrivateSlug(slug)) throw new ShareConfigRefusal("share-face-private", `"${slug}" holds one face's memory (the daemon wiki), a named exception: it takes no share row`);
   return `${SHARE_CONFIG_PREFIX}${slug}`;
 }
 
 /** A row's workspace name, checked: empty or absent reads none; a name outside the grammar refuses `share-workspace-malformed`. */
-export function shareRowWorkspace(row: Pick<ShareRow, "workspace">): string | null {
+export function shareEntryWorkspace(row: Pick<ShareEntry, "workspace">): string | null {
   const name = (row.workspace ?? "").trim();
   if (name === "") return null;
   if (!WORKSPACE_NAME_RE.test(name)) throw new ShareConfigRefusal("share-workspace-malformed", `"${name}" names no workspace (lower-case letters, digits, '.', '_' and '-')`);
@@ -100,7 +100,7 @@ export function shareRowWorkspace(row: Pick<ShareRow, "workspace">): string | nu
 }
 
 /** The bag a row shares: a wiki's row shares its canon bag. */
-export function shareRowBag(row: Pick<ShareRow, "slug">): string { return bagUri(row.slug); }
+export function shareEntryBag(row: Pick<ShareEntry, "slug">): string { return bagUri(row.slug); }
 
 /**
  * Read a share filter as the title list a TW5 filter of bare titles reads as: bare words, `[[bracketed names]]`, and `*` for
@@ -151,12 +151,12 @@ export interface ShareAnswer {
  */
 export function resolveShare(input: {
   readonly bag: string;
-  readonly rows: readonly ShareRow[];
+  readonly rows: readonly ShareEntry[];
   readonly faces: readonly ShareFace[];
   readonly owner?: number | null;
   readonly houseCanon?: boolean;
 }): ShareAnswer {
-  const row = input.rows.find((r) => shareRowBag(r) === input.bag) ?? null;
+  const row = input.rows.find((r) => shareEntryBag(r) === input.bag) ?? null;
   const every = input.faces.map((f) => f.handleIndex);
   const owner = input.owner ?? null;
   const pick = (filter: string, waiting: Set<string>): number[] => {
@@ -188,10 +188,10 @@ export interface OwedGrant { readonly bag: string; readonly owner: number; reado
  * THE GRANTS A ROW OWES: for each custom bag a row shares, every face its answer names other than the owner takes a
  * delegation from the owner's hive (`edit` for a writer, else `read`). A house canon bag owes none: it rests in the Kahu realm.
  */
-export function owedGrants(input: { readonly rows: readonly ShareRow[]; readonly faces: readonly ShareFace[]; readonly ownerOf: (bag: string) => number | null; readonly houseCanon: (bag: string) => boolean }): OwedGrant[] {
+export function owedGrants(input: { readonly rows: readonly ShareEntry[]; readonly faces: readonly ShareFace[]; readonly ownerOf: (bag: string) => number | null; readonly houseCanon: (bag: string) => boolean }): OwedGrant[] {
   const out: OwedGrant[] = [];
   for (const row of input.rows) {
-    const bag = shareRowBag(row);
+    const bag = shareEntryBag(row);
     if (input.houseCanon(bag)) continue;
     const owner = input.ownerOf(bag);
     if (owner === null) continue;
@@ -211,17 +211,17 @@ export function sharePendingTitle(grant: OwedGrant, vesselSalt: string): string 
 }
 
 /** A row as its control-document record's fields. */
-export function shareRowFields(row: ShareRow): Record<string, string> {
+export function shareEntryFields(row: ShareEntry): Record<string, string> {
   return {
-    title: shareRowTitle(row.slug), kind: row.kind, read: row.read, write: row.write,
-    ...(shareRowWorkspace(row) !== null ? { workspace: shareRowWorkspace(row)! } : {}),
+    title: shareEntryTitle(row.slug), kind: row.kind, read: row.read, write: row.write,
+    ...(shareEntryWorkspace(row) !== null ? { workspace: shareEntryWorkspace(row)! } : {}),
     ...(row.owner ? { owner: row.owner } : {}),
     ...(row.note ? { text: row.note } : {}), type: "text/vnd.tiddlywiki",
   };
 }
 
 /** Read a row back off its record's fields; null for a title outside the share prefix. */
-export function shareRowOf(fields: Readonly<Record<string, unknown>>): ShareRow | null {
+export function shareEntryOf(fields: Readonly<Record<string, unknown>>): ShareEntry | null {
   const title = typeof fields["title"] === "string" ? fields["title"] : "";
   if (!title.startsWith(SHARE_CONFIG_PREFIX)) return null;
   const slug = title.slice(SHARE_CONFIG_PREFIX.length);
@@ -238,18 +238,18 @@ export function shareRowOf(fields: Readonly<Record<string, unknown>>): ShareRow 
  * THE FILE (`$LAR_ROOT/config/share.tid`): each row as a TW5 `.tid` record (field lines, a blank line, the note), records
  * apart by a line of three dashes. A person edits it by hand; the boot reads it whole and the file wins.
  */
-export function serializeShareFile(rows: readonly ShareRow[]): string {
+export function serializeShareFile(rows: readonly ShareEntry[]): string {
   const sorted = [...rows].sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
   return sorted.map((r) => {
-    const f = shareRowFields(r);
+    const f = shareEntryFields(r);
     const head = ["title", "kind", "read", "write", ...(f["workspace"] ? ["workspace"] : []), ...(f["owner"] ? ["owner"] : []), "type"].map((k) => `${k}: ${f[k] ?? ""}`).join("\n");
     return `${head}\n\n${r.note ?? ""}\n`;
   }).join("---\n");
 }
 
 /** Parse the file; a record that names no share title refuses `share-file-malformed` by its place. */
-export function parseShareFile(text: string): ShareRow[] {
-  const rows: ShareRow[] = [];
+export function parseShareFile(text: string): ShareEntry[] {
+  const rows: ShareEntry[] = [];
   const records = text.split(/^---\s*$/m).map((r) => r.replace(/^\n+/, "")).filter((r) => r.trim().length > 0);
   records.forEach((record, n) => {
     const blank = record.search(/\n\s*\n/);
@@ -265,11 +265,11 @@ export function parseShareFile(text: string): ShareRow[] {
     if (title.startsWith(SHARE_CONFIG_PREFIX) && isFacePrivateSlug(title.slice(SHARE_CONFIG_PREFIX.length))) {
       throw new ShareConfigRefusal("share-face-private", `record ${n + 1} shares "${title.slice(SHARE_CONFIG_PREFIX.length)}", the daemon wiki: it holds one face's memory and takes no share row`);
     }
-    const row = shareRowOf(fields);
+    const row = shareEntryOf(fields);
     if (row === null) throw new ShareConfigRefusal("share-file-malformed", `record ${n + 1} names no share row (a title under ${SHARE_CONFIG_PREFIX})`);
     parseShareFilter(row.read);
     parseShareFilter(row.write);
-    shareRowWorkspace(row);
+    shareEntryWorkspace(row);
     rows.push(row);
   });
   return rows;
@@ -279,11 +279,11 @@ export function parseShareFile(text: string): ShareRow[] {
  * THE BOOT'S RECONCILE: the file wins. Answers the rows the control document must hold and each title to remove (a row the
  * control document holds that the file does not name). With no file standing, the control document's rows stand.
  */
-export function reconcileShareRows(file: readonly ShareRow[] | null, control: readonly ShareRow[]): { readonly put: readonly ShareRow[]; readonly remove: readonly string[] } {
+export function reconcileShareEntries(file: readonly ShareEntry[] | null, control: readonly ShareEntry[]): { readonly put: readonly ShareEntry[]; readonly remove: readonly string[] } {
   if (file === null) return { put: [], remove: [] };
-  const named = new Set(file.map((r) => shareRowTitle(r.slug)));
-  const same = (a: ShareRow, b: ShareRow): boolean => a.kind === b.kind && a.read === b.read && a.write === b.write && (a.note ?? "") === (b.note ?? "") && (a.workspace ?? "") === (b.workspace ?? "");
+  const named = new Set(file.map((r) => shareEntryTitle(r.slug)));
+  const same = (a: ShareEntry, b: ShareEntry): boolean => a.kind === b.kind && a.read === b.read && a.write === b.write && (a.note ?? "") === (b.note ?? "") && (a.workspace ?? "") === (b.workspace ?? "");
   const put = file.filter((r) => { const held = control.find((c) => c.slug === r.slug); return held === undefined || !same(held, r); });
-  const remove = control.map((c) => shareRowTitle(c.slug)).filter((t) => !named.has(t));
+  const remove = control.map((c) => shareEntryTitle(c.slug)).filter((t) => !named.has(t));
   return { put, remove };
 }

@@ -4,7 +4,7 @@
  * Every red pairs with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { describe, expect, test } from "vitest";
-import { PROMOTE_PANEL_OWNED_ROWS } from "@lararium/mesh";
+import { PROMOTE_PANEL_OWNED_VERBS } from "@lararium/mesh";
 import { VerbTable } from "@lararium/tw5";
 import { registerStoreDoorReactors } from "../src/store-door-registry.js";
 
@@ -12,13 +12,13 @@ const reactor = (tag: string) => async () => ({ tag });
 
 describe("registering the store door's reactors", () => {
   test("RED: the owned set is exactly the four shared promote verbs; CONTROL: promote-orphan and the prepare, flag and list rows are not in it", () => {
-    expect([...PROMOTE_PANEL_OWNED_ROWS].sort()).toEqual(["kapae-lower", "kapae-raise", "promote-commit", "promote-drop"]);
-    for (const open of ["promote-orphan", "promote-prepare", "kapae-flag", "promote-list"]) expect(PROMOTE_PANEL_OWNED_ROWS.has(open), open).toBe(false);
+    expect([...PROMOTE_PANEL_OWNED_VERBS].sort()).toEqual(["kapae-lower", "kapae-raise", "promote-commit", "promote-drop"]);
+    for (const open of ["promote-orphan", "promote-prepare", "kapae-flag", "promote-list"]) expect(PROMOTE_PANEL_OWNED_VERBS.has(open), open).toBe(false);
   });
 
   test("RED: an owned name keeps the panel's handler on the island route while the door's own reactor stays on the door; CONTROL: every other row registers", async () => {
     const registry = new VerbTable();
-    for (const name of PROMOTE_PANEL_OWNED_ROWS) registry.register(name, reactor(`panel:${name}`));
+    for (const name of PROMOTE_PANEL_OWNED_VERBS) registry.register(name, reactor(`panel:${name}`));
     const doors = { "promote-commit": reactor("door:commit"), "kapae-raise": reactor("door:raise"), "promote-orphan": reactor("door:orphan"), "intent-show": reactor("door:intent") };
     registerStoreDoorReactors(registry, doors);
     const run = (name: string) => (registry.get(name) as unknown as (a: Record<string, unknown>, c: unknown) => Promise<{ tag: string }>)({}, {});

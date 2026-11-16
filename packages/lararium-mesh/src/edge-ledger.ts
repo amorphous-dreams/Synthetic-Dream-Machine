@@ -36,7 +36,7 @@ import { NEXUS_AID_PATTERN } from "./wax-stamp.js";
 import { verifiedSeatRoll, type SignedSeatRoll } from "./seat-duties.js";
 import {
   edgeKapaeActsFromRecords, edgeRollAnchorsFromRecords, edgeRollAnchorCid, writeEdgeKapae, writeEdgeRollAnchor, mergeEdgeActs, mergeEdgeRollAnchors,
-  readEdgeBoard, type CountedEdgeBoard, type EdgeAuthority, type EdgeBoardRead, type EdgeCharter, type EdgeKapae, type EdgeRollAnchor, type KeptEdgeRows,
+  readEdgeBoard, type CountedEdgeBoard, type EdgeAuthority, type EdgeBoardRead, type EdgeCharter, type EdgeKapae, type EdgeRollAnchor, type KeptEdgeEntries,
 } from "./edge-kapae.js";
 import { ownEntry } from "./stored-value.js";
 
@@ -65,7 +65,7 @@ function marksOf(ledger: LarDoc | undefined | null, scope: string, kind: "rolled
 }
 
 /** What this vessel kept for one board. Shape only: `readEdgeBoard` counts every kept act again. */
-export function keptFromLedger(ledger: LarDoc | undefined | null, scope: string): KeptEdgeRows {
+export function keptFromLedger(ledger: LarDoc | undefined | null, scope: string): KeptEdgeEntries {
   return {
     acts:       edgeKapaeActsFromRecords(rowsOf(ledger, scope, "act")),
     anchors:    edgeRollAnchorsFromRecords(rowsOf(ledger, scope, "anchor")),

@@ -21,7 +21,7 @@
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseRowsFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest, floorBlobCids,
+  NEXUS_AID_PATTERN, publicationDocUrl, floorAnswerOf, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc, readFloorManifest, floorBlobCids,
   type LarDoc,
 } from "@lararium/mesh";
 import { CAS_BLOB_RE, answerClosedDoor } from "./bulb-routes.js";
@@ -38,7 +38,7 @@ export async function releasedFloorCids(opts: {
   readonly casDir: string;
 }): Promise<ReadonlySet<string>> {
   const standing = await foldFloorReleases({
-    rows: floorReleaseRowsFromBoard(opts.board), nexus: opts.nexus,
+    rows: floorReleaseEntriesFromBoard(opts.board), nexus: opts.nexus,
     manifestBytesOf: (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
   });
   if (standing.standing !== "released") return new Set();
@@ -79,7 +79,7 @@ export function mountFloorPorch(args: {
     if (floor) {
       if (!answers || floor[1] !== nexusPubkey) { answerClosedDoor(res); return; }
       void boardOf().then((b) => {
-        const body = Buffer.from(JSON.stringify(floorAnswerOf(nexusPubkey, floorReleaseRowsFromBoard(b.doc()))));
+        const body = Buffer.from(JSON.stringify(floorAnswerOf(nexusPubkey, floorReleaseEntriesFromBoard(b.doc()))));
         if (res.headersSent || res.writableEnded) return;
         res.writeHead(200, { "access-control-allow-origin": "*", "content-type": "application/json", "cache-control": "no-store" });
         if (req.method === "HEAD") res.end(); else res.end(body);

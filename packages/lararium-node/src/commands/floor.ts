@@ -19,7 +19,7 @@
  */
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  acceptFloorRelease, floorReleaseRowsFromBoard, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
+  acceptFloorRelease, floorReleaseEntriesFromBoard, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
   oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
@@ -91,7 +91,7 @@ export async function nodeFloorPorts(opts: NodeFloorOptions): Promise<FloorPinPo
   return {
     alerted,
     home: control, nexus, genesisManifest,
-    rows: async () => floorReleaseRowsFromBoard(board.doc()),
+    rows: async () => floorReleaseEntriesFromBoard(board.doc()),
     fetchCas: async (cid) => {
       const local = readVerifiedCasBlobFromFs(cid, opts.casDir);
       if (local) return local;

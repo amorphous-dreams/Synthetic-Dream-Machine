@@ -15,7 +15,7 @@ import { WARD_COSIGN_VERBS, faceIntentVerbs } from "../src/intent-verbs.js";
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { LEI_RETURNS_ASK_ABOVE, swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { leiRiteCosigns } from "../src/swarm-lei-rite.js";
-import { putSwarmAct, readLei, signSwarmAct, swarmActCid, swarmLeiRowTitle, type SwarmBodyParts, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
+import { putSwarmAct, readLei, signSwarmAct, swarmActCid, swarmLeiRecordTitle, type SwarmBodyParts, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
 import type { WardCosignAct } from "../src/ward-cosign.js";
 import type { WardCosignPort } from "../src/ward-cosign-gate.js";
 import { soloCosign } from "./ward-cosign-table.js";
@@ -48,7 +48,7 @@ describe("the co-sign weighs reach: a kukulu lei stays home", () => {
     const none = { accepts: (act: WardCosignAct) => { asked.push(act); return false; } };
     for (const rite of ["push", "kukulu"] as const) {
       const lei = await signSwarmAct({ act: "lei", group: GROUP, rite, reach: "wide", returns: 2, branch: BRANCH, after: null } as SwarmBodyParts, s.root);
-      await putSwarmAct(s.wiki, swarmLeiRowTitle(rite, BRANCH, swarmActCid(lei)), lei);
+      await putSwarmAct(s.wiki, swarmLeiRecordTitle(rite, BRANCH, swarmActCid(lei)), lei);
     }
     expect(await readLei(s.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD }, s.trust, GROUP, none)).toMatchObject({ ok: true, reach: "wide" });
     expect(asked).toEqual([]);

@@ -8,8 +8,8 @@
 import { describe, expect, test } from "vitest";
 import * as nobleEd from "@noble/ed25519";
 import { hex } from "../src/crypto.js";
-import { PLACE_FLOOR_PIN_REFUSALS, PLACE_FLOOR_PIN_ROWS, PLACE_FLOOR_PIN_ROW_CHARS, foldClaimHead, placeFloorPinsFromBoard, placeFloorPinKey, readPlaceFloorPin, writePlaceFloorPin, filePlaceFloorPins, type ClaimReadAt } from "../src/place-floor-pin.js";
-import { PLACE_KEL_BOARD_ROWS, PLACE_KEL_ROW_CHARS, PLACE_KEL_PREFIX, placeKelRowsFromBoard } from "../src/place-kel-board.js";
+import { PLACE_FLOOR_PIN_REFUSALS, PLACE_FLOOR_PIN_ENTRIES, PLACE_FLOOR_PIN_ENTRY_CHARS, foldClaimHead, placeFloorPinsFromBoard, placeFloorPinKey, readPlaceFloorPin, writePlaceFloorPin, filePlaceFloorPins, type ClaimReadAt } from "../src/place-floor-pin.js";
+import { PLACE_KEL_BOARD_ENTRIES, PLACE_KEL_ENTRY_CHARS, PLACE_KEL_PREFIX, placeKelEntriesFromBoard } from "../src/place-kel-board.js";
 import { hearthPinIndex } from "../src/admit-gate-pin.js";
 import type { LarDoc } from "../src/base-doc.js";
 import { claimAt, digests, floorPinFor, forgedClaim, foundPlace, headOf, keyOf, rotatePlace, rowsOf, seedOf } from "./place-claim-fixture.js";
@@ -19,7 +19,7 @@ const NEXUS_HEX = hex(new TextEncoder().encode(NEXUS));
 const pinAt = (fill: number, route = "/flow") => floorPinFor(NEXUS, route, fill);
 const carriedBy = (...keys: string[]): ClaimReadAt["standing"] => ({ via: "carrier", carriers: new Set(keys) });
 const at = (rows: unknown[], standing: ClaimReadAt["standing"], over: Partial<ClaimReadAt> = {}): ClaimReadAt =>
-  ({ nexusHex: NEXUS_HEX, route: "/flow", kelRows: rows, standing, ...over });
+  ({ nexusHex: NEXUS_HEX, route: "/flow", kelEntries: rows, standing, ...over });
 const refusal = (r: unknown): string | null => (typeof r === "object" && r !== null && "refusal" in r ? String((r as { refusal: string }).refusal) : null);
 
 describe("a floor pin claim reads at the head it names", () => {
@@ -143,20 +143,20 @@ describe("a floor pin claim reads at the head it names", () => {
     writePlaceFloorPin(board, claim);                                          // CONTROL: the honest row reads
     expect(placeFloorPinsFromBoard(board)).toHaveLength(1);
     const text = JSON.stringify(claim);
-    for (let i = 0; i < PLACE_FLOOR_PIN_ROWS + 50; i++) {
+    for (let i = 0; i < PLACE_FLOOR_PIN_ENTRIES + 50; i++) {
       board.tiddlers[`${placeFloorPinKey(claim).replace(/[^/]+$/, "")}${String(i).padStart(4, "0")}x`] = { tiddler: { title: "x", text } } as never;
     }
-    board.tiddlers[`${placeFloorPinKey(claim)}-fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_FLOOR_PIN_ROW_CHARS + 1) + text } } as never;
-    expect(placeFloorPinsFromBoard(board)).toHaveLength(PLACE_FLOOR_PIN_ROWS);
+    board.tiddlers[`${placeFloorPinKey(claim)}-fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_FLOOR_PIN_ENTRY_CHARS + 1) + text } } as never;
+    expect(placeFloorPinsFromBoard(board)).toHaveLength(PLACE_FLOOR_PIN_ENTRIES);
     const kelBoard = { tiddlers: {} } as unknown as LarDoc;
     const row = JSON.stringify(place.chain[0]);
-    for (let i = 0; i < PLACE_KEL_BOARD_ROWS + 10; i++) kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/${String(i).padStart(5, "0")}`] = { tiddler: { title: "x", text: row } } as never;
-    kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_KEL_ROW_CHARS + 1) + row } } as never;
-    expect(placeKelRowsFromBoard(kelBoard)).toHaveLength(PLACE_KEL_BOARD_ROWS);
+    for (let i = 0; i < PLACE_KEL_BOARD_ENTRIES + 10; i++) kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/${String(i).padStart(5, "0")}`] = { tiddler: { title: "x", text: row } } as never;
+    kelBoard.tiddlers[`${PLACE_KEL_PREFIX}${place.aid}/fat`] = { tiddler: { title: "x", text: " ".repeat(PLACE_KEL_ENTRY_CHARS + 1) + row } } as never;
+    expect(placeKelEntriesFromBoard(kelBoard)).toHaveLength(PLACE_KEL_BOARD_ENTRIES);
     // A pass over the surplus files the one honest head once and reads the same in the same order.
     const index = hearthPinIndex();
     const report = filePlaceFloorPins(index, placeFloorPinsFromBoard(board), at(rowsOf(place), { via: "anchor", aid: place.aid }));
-    expect(report.filed.length).toBe(PLACE_FLOOR_PIN_ROWS);
+    expect(report.filed.length).toBe(PLACE_FLOOR_PIN_ENTRIES);
     expect(index.size).toBe(1);
   }, 120_000);
 });

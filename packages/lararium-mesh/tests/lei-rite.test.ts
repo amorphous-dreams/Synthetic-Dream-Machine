@@ -13,7 +13,7 @@ import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { SWARM_LEI_RITES, leiRiteCosigns, wardLeiVerb } from "../src/swarm-lei-rite.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRowTitle, swarmLeiTitle, swarmReceiptTitle,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRecordTitle, swarmLeiTitle, swarmReceiptTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import type { WardCosignAct } from "../src/ward-cosign.js";
@@ -36,7 +36,7 @@ async function fixture() {
   /** A hand-signed lei of one rite, at its own row; hands back the record and its cid. */
   const issue = async (rite: "push" | "kukulu" | "keep") => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite, reach: "head", branch: BRANCH, head: HEAD, after: null }, hand);
-    await putSwarmAct(wiki, swarmLeiRowTitle(rite, BRANCH, swarmActCid(lei)), lei);
+    await putSwarmAct(wiki, swarmLeiRecordTitle(rite, BRANCH, swarmActCid(lei)), lei);
     return { lei, cid: swarmActCid(lei) };
   };
   // Every spend rests on a passing receipt for the head's tree (`lei-reach.test.ts`); one stands here for each spend below.
@@ -73,11 +73,11 @@ describe("lei-rite-separates-powers", () => {
     const { lei, cid } = await f.issue("push");
     expect(swarmLeiTitle("push", BRANCH)).toBe("$:/lares/swarm/lei/push/feature%2Fx");
     expect(swarmLeiTitle("kukulu", BRANCH)).toBe("$:/lares/swarm/lei/kukulu/feature%2Fx");
-    const moved = swarmLeiRowTitle("kukulu", BRANCH, cid);
+    const moved = swarmLeiRecordTitle("kukulu", BRANCH, cid);
     f.wiki.rows.set(moved, JSON.stringify(lei));
     expect(await readSwarmRecord(f.wiki, moved, f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
     expect(await readLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "title" });
-    expect(await readSwarmRecord(f.wiki, swarmLeiRowTitle("push", BRANCH, cid), f.trust, GROUP)).toMatchObject({ ok: true });
+    expect(await readSwarmRecord(f.wiki, swarmLeiRecordTitle("push", BRANCH, cid), f.trust, GROUP)).toMatchObject({ ok: true });
   });
 
   test("RED: a push lei never spends as a kukulu, and spending it leaves the kukulu lei of the same head unspent; CONTROL: each spends once under its own rite", async () => {

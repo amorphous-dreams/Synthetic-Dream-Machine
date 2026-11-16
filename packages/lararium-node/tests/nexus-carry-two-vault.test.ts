@@ -29,7 +29,7 @@ vi.mock("../src/seat-key-store.js", async (importOriginal) => {
   };
 });
 import { mintColdKey, seatFingerprint, cidV1Sha256, foldCarrierSet, carriageEntriesFromBoard, carriageDocUrl, materializeSharedLarDoc,
-  foundingRoster, placeFloorPinsFromBoard, placeKelRowsFromBoard, filePlaceFloorPins, hearthPinIndex, FLOW_SOCKET_ROUTE, type CofoundOffer } from "@lararium/mesh";
+  foundingRoster, placeFloorPinsFromBoard, placeKelEntriesFromBoard, filePlaceFloorPins, hearthPinIndex, FLOW_SOCKET_ROUTE, type CofoundOffer } from "@lararium/mesh";
 import { charterHomeFor, carriedCharterHome } from "../src/carried-set.js";
 import { NexusContractError, runNexusCarryFor, runNexusContractOpen, runNexusContractPartial } from "../src/commands/nexus-contract.js";
 import { takeCarryBundle, type CarryBundle } from "../src/carry-bundle.js";
@@ -110,7 +110,7 @@ async function boardOf(v: Vault, aid: string) {
 const filedFrom = async (v: Vault, aid: string): Promise<string[]> => {
   const { doc, roster } = await boardOf(v, aid);
   return [...filePlaceFloorPins(hearthPinIndex(), placeFloorPinsFromBoard(doc), {
-    nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelRows: placeKelRowsFromBoard(doc),
+    nexusHex: Buffer.from(aid, "utf8").toString("hex"), route: FLOW_SOCKET_ROUTE, kelEntries: placeKelEntriesFromBoard(doc),
     standing: { via: "carrier", carriers: await foldCarrierSet(carriageEntriesFromBoard(doc), roster) },
   }).filed];
 };
@@ -142,7 +142,7 @@ describe("a two-founder Nexus carries a place across its two vaults", () => {
     const onB = (await boardOf(B, aid)).doc;
     expect(carriageEntriesFromBoard(onB)).toHaveLength(1);
     expect(placeFloorPinsFromBoard(onB)).toHaveLength(1);
-    expect(placeKelRowsFromBoard(onB).length).toBeGreaterThan(0);
+    expect(placeKelEntriesFromBoard(onB).length).toBeGreaterThan(0);
     expect(await filedFrom(B, aid)).toEqual([seal.nym]);
 
     at(A);

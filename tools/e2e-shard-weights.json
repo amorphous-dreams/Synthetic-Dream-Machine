@@ -483,7 +483,7 @@
     "tests/uds-channel-h1-ledger.test.ts": 16,
     "tests/uds-channel-receipt-ledger.test.ts": 1,
     "tests/uds-channel-routing.test.ts": 1,
-    "tests/uds-face-row-socket-only.test.ts": 1,
+    "tests/uds-face-verb-socket-only.test.ts": 1,
     "tests/uds-front.test.ts": 1,
     "tests/uds-session-door.test.ts": 1,
     "tests/uds-session-fault.test.ts": 1,

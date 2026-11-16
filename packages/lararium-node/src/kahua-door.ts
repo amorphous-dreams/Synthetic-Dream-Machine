@@ -11,9 +11,9 @@
  *               linear `@persona` chain, so a pin signed outside the founding act, on two replicas standing even one act
  *               apart, would sign two acts at one seq and fork the whole log. The founding act stands at seq 0 alone.
  *   propose   — the device's atom signs ONE batch on the face's intents plane (any seat may; it grants nothing).
- *   stage     — one row into the face's LOCAL canon `bags/daemon-<F>` (`stageKahuaRow`): local and unsigned, the first of
+ *   stage     — one row into the face's LOCAL canon `bags/daemon-<F>` (`stageKahuaMeme`): local and unsigned, the first of
  *               memory's two crossings; any seat may stage, and staging lifts nothing.
- *   lift      — names a STAGED row by title and content digest (`kahuaRowDigest`): the door reads the row back from
+ *   lift      — names a STAGED row by title and content digest (`kahuaMemeDigest`): the door reads the row back from
  *               `daemon-<F>`, refuses `kahua-lift-unstaged` where none stands and `kahua-lift-digest-moved` where it moved,
  *               and lifts the row's own body and fields, never a body from the hand; the digest rides the signed act's
  *               sources. A lift of a row the head already carries lands nothing and opens no root. Then the lōkahi CAP
@@ -28,10 +28,10 @@
 import { randomBytes } from "node:crypto";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
 import {
-  KAHUA_BAG, buildKahuaProposal, buildOutcome, intentEntryCid, intentId, faceRelationOf, readKahuaStagedRow, stageKahuaRow, kahuaStagedSource,
+  KAHUA_BAG, buildKahuaProposal, buildOutcome, intentEntryCid, intentId, faceRelationOf, readKahuaStagedMeme, stageKahuaMeme, kahuaStagedSource,
   KAHUA_CARRY_MAX, kahuaActRecords, kahuaBodyDigest, kahuaCarryCandidates, kahuaPlaneUrl, findKahuaProposal, readKahuaAct,
   readKahuaStage, signKahuaCarry, signKahuaLift, signKahuaWithdraw, writeIntentEntry, writeKahuaAct,
-  type IntentVerbRegistry, type KahuaItem, type KahuaStagedRow, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
+  type IntentVerbRegistry, type KahuaItem, type KahuaStagedMeme, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
 } from "@lararium/mesh";
 
 export class KahuaRefused extends Error { override name = "KahuaRefused"; }
@@ -83,7 +83,7 @@ export interface KahuaDoorPorts {
 export interface KahuaLiftInput {
   /** The staged row's title in `bags/daemon-<F>`: the item's title on the stage. */
   readonly title: string;
-  /** The staged row's content digest (`kahuaRowDigest`) as the person read it in the preview. */
+  /** The staged row's content digest (`kahuaMemeDigest`) as the person read it in the preview. */
   readonly digest: string;
   readonly taint: readonly string[]; readonly sources?: readonly KahuaSource[];
   /** The revision this lift supersedes; absent: the standing head (none for a first lift). Naming a non-head makes a sibling. */
@@ -150,9 +150,9 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return { relation, handle };
   };
   /** The staged row a lift names, read back from the local canon and checked against the digest the person read. */
-  const stagedRow = async (title: string, digest: string): Promise<KahuaStagedRow> => {
+  const stagedRow = async (title: string, digest: string): Promise<KahuaStagedMeme> => {
     const { relation, handle } = await canon("kahua-lift-unstaged");
-    const row = readKahuaStagedRow(handle.doc(), title);
+    const row = readKahuaStagedMeme(handle.doc(), title);
     if (!row) throw new KahuaRefused(`kahua-lift-unstaged: bags/daemon-${relation} holds no row "${title}"; stage it there first (\`lares kahua stage\`)`);
     if (row.digest !== digest) throw new KahuaRefused(`kahua-lift-digest-moved: the row "${title}" in bags/daemon-${relation} reads digest ${row.digest}, not the ${digest} named; preview it again`);
     return row;
@@ -186,10 +186,10 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       return { id: intentId(entry.body as unknown as { issuer: string; verb: string; args: unknown; nonce: string }), cid: intentEntryCid(entry) };
     },
 
-    async staged(title: string): Promise<KahuaStagedRow & { readonly relation: string }> {
+    async staged(title: string): Promise<KahuaStagedMeme & { readonly relation: string }> {
       wornOrRefuse("a staged row's read");
       const { relation, handle } = await canon("kahua-lift-unstaged");
-      const row = readKahuaStagedRow(handle.doc(), title);
+      const row = readKahuaStagedMeme(handle.doc(), title);
       if (!row) throw new KahuaRefused(`kahua-lift-unstaged: bags/daemon-${relation} holds no row "${title}"; stage it there first (\`lares kahua stage\`)`);
       return { ...row, relation };
     },
@@ -200,10 +200,10 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       if (typeof input.text !== "string") throw new KahuaRefused("kahua-stage-text: name the row's body");
       const { relation, handle } = await canon("kahua-stage-no-canon");
       // A row that already reads the same digest takes no write inside the change, so a replay lands nothing.
-      let out: { row: KahuaStagedRow; wrote: boolean } | null = null;
-      handle.change((d) => { out = stageKahuaRow(d, input, "kahua-stage"); });
+      let out: { row: KahuaStagedMeme; wrote: boolean } | null = null;
+      handle.change((d) => { out = stageKahuaMeme(d, input, "kahua-stage"); });
       if (out === null) throw new KahuaRefused("kahua-stage-unwritten: the local canon took no change");
-      const done: { row: KahuaStagedRow; wrote: boolean } = out;
+      const done: { row: KahuaStagedMeme; wrote: boolean } = out;
       if (done.wrote) await ports.repo.flush();
       return { title: done.row.title, digest: done.row.digest, relation, staged: done.wrote };
     },

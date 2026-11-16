@@ -231,7 +231,7 @@ export function writeFloorRelease(draft: LarDoc, release: FloorRelease): void {
 }
 
 /** Every record a board carries under the release prefix, as the unread JSON beside the CID its key names. A torn row drops. */
-export function floorReleaseRowsFromBoard(doc: LarDoc | undefined | null): Array<{ readonly keyCid: string; readonly record: unknown }> {
+export function floorReleaseEntriesFromBoard(doc: LarDoc | undefined | null): Array<{ readonly keyCid: string; readonly record: unknown }> {
   const out: Array<{ keyCid: string; record: unknown }> = [];
   for (const [title, row] of Object.entries(doc?.tiddlers ?? {})) {
     if (!title.startsWith(FLOOR_RELEASE_PREFIX)) continue;

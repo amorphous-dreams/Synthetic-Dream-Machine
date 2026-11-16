@@ -13,8 +13,8 @@
  */
 import { describe, expect, test } from "vitest";
 import {
-  ShareConfigRefusal, owedGrants, parseShareFile, parseShareFilter, reconcileShareRows, resolveShare, serializeShareFile,
-  shareRowBag, shareRowOf, shareRowFields, sharePendingTitle, SHARE_PENDING_PREFIX, type ShareFace, type ShareRow,
+  ShareConfigRefusal, owedGrants, parseShareFile, parseShareFilter, reconcileShareEntries, resolveShare, serializeShareFile,
+  shareEntryBag, shareEntryOf, shareEntryFields, sharePendingTitle, SHARE_PENDING_PREFIX, type ShareFace, type ShareEntry,
 } from "../src/share-config.js";
 import { bagUri } from "../src/lar-uris.js";
 
@@ -38,14 +38,14 @@ describe("the share config", () => {
     expect(resolveShare({ bag: sdm, rows: [], faces: FACES, houseCanon: true })).toMatchObject({ read: [0, 1, 2], write: [], source: "house-canon" });
     expect(resolveShare({ bag: sdm, rows: [{ slug: "sdm", kind: "bag", read: "*", write: "*" }], faces: FACES, owner: 1, houseCanon: true })).toMatchObject({ write: [], source: "house-canon" });
     expect(resolveShare({ bag: garden, rows: [], faces: FACES, owner: 1 })).toMatchObject({ read: [1], write: [1], source: "private" });
-    const rows: ShareRow[] = [{ slug: "notes", kind: "bag", read: "[[joshua fontany referee]] nobody-here", write: "joshua-fontany" }];
+    const rows: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "[[joshua fontany referee]] nobody-here", write: "joshua-fontany" }];
     const answer = resolveShare({ bag: notes, rows, faces: FACES, owner: 1 });
     expect(answer).toMatchObject({ read: [0, 1, 2], write: [0, 1], waiting: ["nobody-here"], source: "row" });
-    expect(shareRowBag(rows[0]!)).toBe(notes);
+    expect(shareEntryBag(rows[0]!)).toBe(notes);
   });
 
   test("SC3 — the grants a row owes; house canon owes none", () => {
-    const rows: ShareRow[] = [
+    const rows: ShareEntry[] = [
       { slug: "notes", kind: "bag", read: "[[joshua fontany referee]]", write: "joshua-fontany" },
       { slug: "sdm", kind: "bag", read: "*", write: "" },
     ];
@@ -64,7 +64,7 @@ describe("the share config", () => {
   });
 
   test("SC5 — the file round-trips and reads a hand's edit; a torn record refuses", () => {
-    const rows: ShareRow[] = [
+    const rows: ShareEntry[] = [
       { slug: "notes", kind: "bag", read: "[[joshua fontany referee]]", write: "joshua-fontany", note: "the referee reads the notes" },
       { slug: "garden", kind: "wiki", read: "*", write: "" },
     ];
@@ -73,15 +73,15 @@ describe("the share config", () => {
     const edited = text.replace("write: joshua-fontany", "write: joshua-fontany joshua-fontany-engineer");
     expect(parseShareFile(edited).find((r) => r.slug === "notes")!.write).toBe("joshua-fontany joshua-fontany-engineer");
     expect(() => parseShareFile("title: not-a-share-row\n\n")).toThrow(/share-file-malformed: record 1/);
-    expect(shareRowOf(shareRowFields(rows[0]!))).toEqual(rows[0]);
+    expect(shareEntryOf(shareEntryFields(rows[0]!))).toEqual(rows[0]);
   });
 
   test("SC6 — the file wins at boot; with no file nothing moves", () => {
-    const control: ShareRow[] = [{ slug: "notes", kind: "bag", read: "a", write: "" }, { slug: "old", kind: "bag", read: "*", write: "" }];
-    const file: ShareRow[] = [{ slug: "notes", kind: "bag", read: "a b", write: "" }, { slug: "new", kind: "bag", read: "*", write: "" }];
-    const r = reconcileShareRows(file, control);
+    const control: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "a", write: "" }, { slug: "old", kind: "bag", read: "*", write: "" }];
+    const file: ShareEntry[] = [{ slug: "notes", kind: "bag", read: "a b", write: "" }, { slug: "new", kind: "bag", read: "*", write: "" }];
+    const r = reconcileShareEntries(file, control);
     expect(r.put.map((x) => x.slug).sort()).toEqual(["new", "notes"]);
     expect(r.remove).toEqual(["$:/config/lares/share/old"]);
-    expect(reconcileShareRows(null, control)).toEqual({ put: [], remove: [] });
+    expect(reconcileShareEntries(null, control)).toEqual({ put: [], remove: [] });
   });
 });

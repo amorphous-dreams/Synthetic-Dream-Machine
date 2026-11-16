@@ -25,14 +25,14 @@ import {
 } from "./persona-selves.js";
 
 /** One own persona as the plane holds it: the two names that ride, keyed by handle-index. */
-export interface PersonaSelfRow {
+export interface PersonaSelfEntry {
   readonly handleIndex: number;
   readonly petname?: string;
   readonly handle?: string;
 }
 
 /** Every own persona the plane names, ascending. Reads the selves titles alone. */
-export async function readPersonaSelves(store: LarTiddlerStore): Promise<readonly PersonaSelfRow[]> {
+export async function readPersonaSelves(store: LarTiddlerStore): Promise<readonly PersonaSelfEntry[]> {
   const prefix = `${PERSONA_SELVES_PREFIX}/`;
   const titles = (await store.listVisible()).filter((t) => t.startsWith(prefix)).sort();
   const rows: Array<{ title: string; fields: PersonaSelfFields }> = [];

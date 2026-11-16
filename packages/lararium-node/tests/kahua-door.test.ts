@@ -9,7 +9,7 @@ import * as Automerge from "@automerge/automerge";
 import { Repo, generateAutomergeUrl, interpretAsDocumentId, type AutomergeUrl, type DocHandle } from "@automerge/automerge-repo";
 import {
   DAEMON_BAG_ID, KAHUA_BAG, KAHUA_PLANE, isFaceScopedBag, personaMembershipEntries, PERSONA_GROUP_ID_TIDDLER, SessionDocumentView, emptyLarDoc, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed,
-  FACE_PLANE, kahuaRowDigest, readKahuaStagedRow, stageKahuaRow,
+  FACE_PLANE, kahuaMemeDigest, readKahuaStagedMeme, stageKahuaMeme,
   faceIntentVerbs, intentEntryRecordsOfGroup, materializeSharedLarDoc, kahuaBodyDigest, kahuaPlaneUrl, kahuaStageDocUrl, makeHandLineage, personaActRecordsOfGroup, personaBagIdFor,
   personaSiblingBagIds, projectPersonaLog, signFoundingLog, signPersonaAct, signsAtEpoch, buildKahuaProposal, intentId, writeIntentEntry, storedLarRecord, tiddlerText, writePersonaAct, type LarDoc,
 } from "@lararium/mesh";
@@ -43,10 +43,10 @@ async function face(opts: { readonly pinned?: boolean } = {}) {
   const roots = { n: 0 };
   // THE FACE'S LOCAL CANON bags/daemon-<F>: every lift reads its staged row here (the first crossing, unsigned).
   const canon = repo.create<LarDoc>(emptyLarDoc());
-  /** Stage a row into the local canon (`stageKahuaRow`) and answer the lift's name for it: title and content digest. */
+  /** Stage a row into the local canon (`stageKahuaMeme`) and answer the lift's name for it: title and content digest. */
   const st = (title: string, text: string, fields: Record<string, string> = {}): { title: string; digest: string } => {
-    canon.change((d) => { stageKahuaRow(d, { title, text, fields }, "test"); });
-    return { title, digest: kahuaRowDigest({ text, fields }) };
+    canon.change((d) => { stageKahuaMeme(d, { title, text, fields }, "test"); });
+    return { title, digest: kahuaMemeDigest({ text, fields }) };
   };
   const ports = (over: Partial<KahuaDoorPorts> = {}): KahuaDoorPorts => ({
     repo, group: GROUP, verbs: faceIntentVerbs(),
@@ -174,7 +174,7 @@ describe("the lift and withdraw doors", () => {
     await kahuaDoor(f.ports()).mint();
     await expect(kahuaDoor(f.ports()).lift({ ...f.st("t", "x"), sources: src } as never)).rejects.toThrow(/taint/);
     const lifted = await kahuaDoor(f.ports()).lift({ ...f.st("t", "x"), taint: [], sources: [] });
-    expect((await kahuaDoor(f.ports()).get("t"))?.heads[0]).toMatchObject({ cid: lifted.cid, sources: [{ title: "t", revision: `staged:${kahuaRowDigest({ text: "x", fields: {} })}` }] });
+    expect((await kahuaDoor(f.ports()).get("t"))?.heads[0]).toMatchObject({ cid: lifted.cid, sources: [{ title: "t", revision: `staged:${kahuaMemeDigest({ text: "x", fields: {} })}` }] });
   });
 
   test("RED: a lift whose parent is not the head surfaces a sibling; CONTROL: a lift naming no parent supersedes the standing head", async () => {
@@ -213,7 +213,7 @@ describe("the lift names a staged row (two crossings: working -> daemon-<F> unsi
     const f = await face();
     const door = kahuaDoor(f.ports());
     await door.mint();
-    await expect(door.lift({ title: "never-staged", digest: kahuaRowDigest({ text: "typed by a hand", fields: {} }), taint: [], sources: src })).rejects.toThrow(/^kahua-lift-unstaged: /);
+    await expect(door.lift({ title: "never-staged", digest: kahuaMemeDigest({ text: "typed by a hand", fields: {} }), taint: [], sources: src })).rejects.toThrow(/^kahua-lift-unstaged: /);
     expect(f.roots.n).toBe(0);
     expect(await door.list()).toEqual([]);
     // No local canon open at all (a direct act) refuses by the same name, never a body from the hand.
@@ -245,7 +245,7 @@ describe("the lift names a staged row (two crossings: working -> daemon-<F> unsi
     const door = kahuaDoor(f.ports());
     await door.mint();
     const named = f.st("t", "the row", { tags: "memory", caption: "C" });
-    expect(readKahuaStagedRow(f.canon.doc(), "t")?.digest).toBe(named.digest);
+    expect(readKahuaStagedMeme(f.canon.doc(), "t")?.digest).toBe(named.digest);
     const first = await door.lift({ ...named, taint: [], sources: src });
     expect(first.landed).toBe(true);
     const head = (await door.get("t"))!.heads[0]!;
@@ -262,7 +262,7 @@ describe("the lift names a staged row (two crossings: working -> daemon-<F> unsi
     const f = await face();
     const door = kahuaDoor(f.ports());
     const staged = await door.stage({ title: "s", text: "body", fields: { tags: "x", "kahua-cid": "dropped" } });
-    expect(staged).toEqual({ title: "s", digest: kahuaRowDigest({ text: "body", fields: { tags: "x" } }), relation: RELATION, staged: true });
+    expect(staged).toEqual({ title: "s", digest: kahuaMemeDigest({ text: "body", fields: { tags: "x" } }), relation: RELATION, staged: true });
     expect(await door.stage({ title: "s", text: "body", fields: { tags: "x" } })).toMatchObject({ staged: false });
     expect(await door.staged("s")).toMatchObject({ title: "s", text: "body", fields: { tags: "x" }, digest: staged.digest, relation: RELATION });
     expect(f.roots.n).toBe(0);

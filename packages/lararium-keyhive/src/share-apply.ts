@@ -24,8 +24,8 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  isHouseCanonBag, owedGrants, ownEntry, plainRecordOrNull, recipeUri, resolveShare, sharePendingTitle, shareRowBag, storedRecord,
-  type LarDoc, type OwedGrant, type ShareFace, type ShareRow, type StoredLarRecord,
+  isHouseCanonBag, owedGrants, ownEntry, plainRecordOrNull, recipeUri, resolveShare, sharePendingTitle, shareEntryBag, storedRecord,
+  type LarDoc, type OwedGrant, type ShareFace, type ShareEntry, type StoredLarRecord,
 } from "@lararium/mesh";
 
 /** A face of the vessel as the share door reads it: its handle index, its pet-name, and, while lit, its group and catalog half. */
@@ -36,7 +36,7 @@ export interface ShareLitFace extends ShareFace {
 }
 
 export interface ShareApplyDeps {
-  readonly rows: () => Promise<readonly ShareRow[]>;
+  readonly rows: () => Promise<readonly ShareEntry[]>;
   readonly faces: readonly ShareLitFace[];
   /**
    * The rows that wait for a face's wear, in the control document: `put` keeps one catalog row for (grantee group, row title:
@@ -70,7 +70,7 @@ export interface ShareApplyDeps {
    * Absent: the canon bag's owner alone.
    */
   readonly workbenchOwner?: (slug: string) => Promise<{ readonly bound: number | null; readonly founder: number | null; readonly boundElsewhere: boolean }>;
-  readonly workbench?: (row: ShareRow, owner: { readonly handleIndex: number; readonly group: string }, members: ReadonlyArray<{ readonly handleIndex: number; readonly group: string; readonly access: "read" | "write" }>) => Promise<ShareWorkbenchLanded>;
+  readonly workbench?: (row: ShareEntry, owner: { readonly handleIndex: number; readonly group: string }, members: ReadonlyArray<{ readonly handleIndex: number; readonly group: string; readonly access: "read" | "write" }>) => Promise<ShareWorkbenchLanded>;
 }
 
 /** One wiki row's workbench as the landing reports it. */
@@ -151,7 +151,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   // alone opens and would read as the owner's. Where a row names its owner by pet-name, only that face owns the bag here: a
   // reader never delegates the bag onward, and the grant waits for its owner's wear, unnamed and unflagged.
   const namedOwner = (bag: string): number | null | undefined => {
-    const pet = rows.find((r) => shareRowBag(r) === bag && typeof r.owner === "string" && r.owner !== "")?.owner;
+    const pet = rows.find((r) => shareEntryBag(r) === bag && typeof r.owner === "string" && r.owner !== "")?.owner;
     if (pet === undefined) return undefined;
     const named = deps.faces.filter((f) => f.petname === pet);
     return named.length === 1 ? named[0]!.handleIndex : null;
@@ -180,7 +180,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     if (!owner?.group || !grantee?.group || !ownerHalf || (!granteeHalf && !deps.carry)) { await deps.flag.set(flag); pending++; continue; }
     // BY REFERENCE: the grantee's catalog half names the owner's ONE document; nothing copies its content. A WIKI row hands
     // over the wiki's own recipe row beside its canon's, so the grantee mounts the wiki and never only holds its bag.
-    const titles = [g.bag, ...rows.filter((r) => r.kind === "wiki" && shareRowBag(r) === g.bag).map((r) => recipeUri("catalog", r.slug))];
+    const titles = [g.bag, ...rows.filter((r) => r.kind === "wiki" && shareEntryBag(r) === g.bag).map((r) => recipeUri("catalog", r.slug))];
     const owned = titles.map((title) => ({ title, row: plainRecordOrNull(rowIn(ownerHalf.doc(), title) as never) })).filter((t) => t.row !== null);
     let wrote = false;
     if (granteeHalf) {
@@ -203,7 +203,7 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
   if (deps.workbench) {
     for (const row of rows) {
       if (row.kind !== "wiki") continue;
-      const bag = shareRowBag(row);
+      const bag = shareEntryBag(row);
       // THE OWNER: the face whose realm the ledger binds the slug under; a slug bound under a face that stands shut waits for
       // its light. Where no face stood the wiki yet, the canon's owner founds it, and a house canon wiki's lander does.
       const seat = await deps.workbenchOwner?.(row.slug) ?? null;
@@ -225,8 +225,8 @@ export async function applyShares(deps: ShareApplyDeps): Promise<ShareApplied> {
     }
   }
   const waiting = new Set<string>();
-  for (const row of rows) for (const name of resolveShare({ bag: shareRowBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
+  for (const row of rows) for (const name of resolveShare({ bag: shareEntryBag(row), rows, faces: deps.faces }).waiting) waiting.add(name);
   deps.log?.(`[share-apply] done in ${Math.round(performance.now() - t0)}ms: ${granted} granted (${carried} carried to a face's next wear), ${lifted} lifted, ${pending} pending, ${workbenches.length} workbench(es)`);
-  const unowned = rows.filter((row) => !isHouseCanonBag(shareRowBag(row)) && ownerOf(shareRowBag(row)) === null).map((row) => row.slug).sort();
+  const unowned = rows.filter((row) => !isHouseCanonBag(shareEntryBag(row)) && ownerOf(shareEntryBag(row)) === null).map((row) => row.slug).sort();
   return { granted, moved, pending, carried, lifted, waiting: [...waiting].sort(), workbenches, unowned };
 }

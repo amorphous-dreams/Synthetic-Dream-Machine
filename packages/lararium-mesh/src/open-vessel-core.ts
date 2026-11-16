@@ -31,7 +31,7 @@ import { slotLayerFlags, wikiSlotUri } from "./wiki-recipe.js";
 import { resolveBootDoc, isStillJoining } from "./boot-resolver.js";
 import { isCondemned, isUnresolved, type DocLoadProbe, type ProbeResult } from "./doc-load-probe-contract.js";
 import { storedLarRecord } from "./stored-record.js";
-import { resolveCatalogRow } from "./catalog-row.js";
+import { resolveCatalogEntry } from "./catalog-entry.js";
 import { floorCanonAddress } from "./house-canon-doc.js";
 import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { PLANE_LABELS } from "./plane-labels.js";
@@ -338,7 +338,7 @@ export async function mountWikiSlot(
   // Resolve the CANON doc by its content key (bags/{slug}) — where the mint
   // writer keys it. The wiki IDENTITY (wikis/{slug}, slot.wikiKey) is a separate
   // registry entry, not the canon-doc lookup.
-  const wikiHandle = presetWikiHandle ?? (isHouseCanonBag(slot.wikiBagId) ? null : await resolveCatalogRow(
+  const wikiHandle = presetWikiHandle ?? (isHouseCanonBag(slot.wikiBagId) ? null : await resolveCatalogEntry(
     catalogHandle, slot.wikiBagId,
     (url) => url ? waitHandle<LarDoc>(url as AutomergeUrl, () => blankDoc(repo)) : blankDoc(repo),
     "vessel-boot",

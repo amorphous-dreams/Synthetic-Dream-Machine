@@ -22,12 +22,12 @@ import { requireKahuReach, type KahuReachSource } from "../src/kahu-canon-reach.
 import { AutomergeDocStore } from "../src/automerge-doc-store.js";
 import { storedLarRecord } from "../src/stored-record.js";
 import {
-  CANON_OFFER_PREFIX, CANON_OFFER_RETIRED_PREFIX, CANON_OFFER_ROW_MAX, CanonOfferRefused, foldCanonOffers, offerCanonRecords, offerWithheldTitle,
+  CANON_OFFER_PREFIX, CANON_OFFER_RETIRED_PREFIX, CANON_OFFER_RECORD_MAX, CanonOfferRefused, foldCanonOffers, offerCanonRecords, offerWithheldTitle,
   promoteCanonOffer, readCanonOffers, showCanonOffer, canonOfferCid, openCanonOffer, signCanonOffer, cutReleaseFloor,
   retireCanonOffer, signCanonOfferRetire, writeCanonOfferRetire, CANON_OFFER_RETIRE_DOMAIN, type OfferSteward, type OfferSeat,
   type CanonOfferBoard, type CanonOfferPorts, type OfferRecordReader, type OfferRecordWriter, type OfferSigner,
 } from "../src/canon-offer.js";
-import { cutFloorSnapshot, floorManifestBytes, floorReadFace, floorRowsInOrder, resolveFloor, type FloorManifest } from "../src/floor-manifest.js";
+import { cutFloorSnapshot, floorManifestBytes, floorReadFace, floorRecordsInOrder, resolveFloor, type FloorManifest } from "../src/floor-manifest.js";
 import { assembleFloorRelease, openFloorReleaseBody } from "../src/floor-release.js";
 import { acceptFloorRelease, type FloorPinPorts } from "../src/floor-pin.js";
 import { sha256HexBytesSync } from "../src/crypto.js";
@@ -129,7 +129,7 @@ describe("the offer", () => {
 
   /**
    * THE OFFER'S TWO BOUNDS READ AS ONE LAW. An offer carries at most `CANON_OFFER_MAX_MEMES` MEMES (a root and the slot records
-   * it calls count once, so any single meme rides whole), and its board row holds at most `CANON_OFFER_ROW_MAX` characters (the
+   * it calls count once, so any single meme rides whole), and its board row holds at most `CANON_OFFER_RECORD_MAX` characters (the
    * bound every reader already folds by). Either bound refuses at the open, by name, before any row lands.
    */
   test("RED: one meme of 105 slot records offers whole (CONTROL: sixty-five memes refuse offer-too-many, and sixty-four land)", async () => {
@@ -148,14 +148,14 @@ describe("the offer", () => {
     expect((await offerCanonRecords({ ...ports(memoryBoard(), memoryStore()), source: memoryStore(pages), signer: h1 }, { bag: "lares", titles: many(64) })).landed).toBe(true);
   });
 
-  test("RED: an offer whose board row would pass CANON_OFFER_ROW_MAX refuses offer-too-large and lands no row (CONTROL: a meme just under the bound lands and folds)", async () => {
+  test("RED: an offer whose board row would pass CANON_OFFER_RECORD_MAX refuses offer-too-large and lands no row (CONTROL: a meme just under the bound lands and folds)", async () => {
     const h1 = await signer(11);
-    const heavy = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_ROW_MAX)) });
+    const heavy = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_RECORD_MAX)) });
     const board = memoryBoard();
     await expect(offerCanonRecords({ ...ports(board, memoryStore()), source: heavy, signer: h1 }, { bag: "lares", titles: [T1] }))
       .rejects.toMatchObject({ refusal: "offer-too-large" });
     expect(Object.keys(board.doc()!.tiddlers)).toEqual([]);
-    const under = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_ROW_MAX - 4096)) });
+    const under = memoryStore({ [T1]: rec(T1, "x".repeat(CANON_OFFER_RECORD_MAX - 4096)) });
     const out = await offerCanonRecords({ ...ports(board, memoryStore()), source: under, signer: h1 }, { bag: "lares", titles: [T1] });
     expect(out.landed).toBe(true);
     const folded = foldCanonOffers(board.doc(), NEXUS);
@@ -405,7 +405,7 @@ describe("the loop", () => {
     // 5 · h1 READS the promoted record on its floor.
     const floor = await resolveFloor(cut.manifestCid, async (cid) => local.get(cid) ?? null);
     if ("refusal" in floor) throw new Error(floor.refusal);
-    const face = floorReadFace({ rows: floorRowsInOrder(floor) });
+    const face = floorReadFace({ rows: floorRecordsInOrder(floor) });
     const read = await face.get(T1);
     expect(read?.tiddler.text).toBe("the referee's revised page");
     expect(carrierHashOf(read!.tiddler as Record<string, unknown>)).toBe(offer.body.records[0]!.digest);
@@ -415,7 +415,7 @@ describe("the loop", () => {
     // CONTROL: the genesis floor still reads the old page (the pin moved, the old floor did not).
     const old = await resolveFloor(gCid, async (cid) => local.get(cid) ?? null);
     if ("refusal" in old) throw new Error(old.refusal);
-    expect((await floorReadFace({ rows: floorRowsInOrder(old) }).get(T1))?.tiddler.text).toBe("canon says one");
+    expect((await floorReadFace({ rows: floorRecordsInOrder(old) }).get(T1))?.tiddler.text).toBe("canon says one");
   });
 });
 

@@ -118,7 +118,7 @@ export function fileSessionClaims(index: ClaimDoor, hearth: string, nexusHex: st
   const aid = adoptedAnchor(index, hearth, proof.claims);
   if (aid === null) return { filed: [], refused: proof.claims.map(() => "statement-malformed" as const), held: [] };
   const filings: ClaimFilingReport[] = proof.claims.map((claim) => filePlaceFloorPins(index, [claim],
-    { nexusHex, route: (claim as { pin?: { route?: string } })?.pin?.route ?? "", kelRows: proof.kel, standing: { via: "anchor", aid } }, () => hearth));
+    { nexusHex, route: (claim as { pin?: { route?: string } })?.pin?.route ?? "", kelEntries: proof.kel, standing: { via: "anchor", aid } }, () => hearth));
   return { filed: filings.flatMap((f) => f.filed), refused: filings.flatMap((f) => f.refused), held: filings.flatMap((f) => f.held) };
 }
 
@@ -205,7 +205,7 @@ export type VerifiedFloorCard =
 export function verifyHearthFloorCard(card: HearthFloorCard | null, anchor: FloorAnchor | null | undefined): VerifiedFloorCard {
   if (card === null) return { refusal: "statement-malformed" };
   if (!anchor || typeof anchor.aid !== "string") return { refusal: "place-unanchored" };
-  const read = readPlaceFloorPin(card.claim, { nexusHex: card.claim?.pin?.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelRows: card.kel, standing: { via: "anchor", aid: anchor.aid } });
+  const read = readPlaceFloorPin(card.claim, { nexusHex: card.claim?.pin?.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelEntries: card.kel, standing: { via: "anchor", aid: anchor.aid } });
   return "refusal" in read ? { refusal: read.refusal } : { card, reading: read, publisher: read.signerKey };
 }
 
@@ -222,7 +222,7 @@ export function fileHearthFloorCard(index: HearthPinIndex, hearth: string, card:
   const verified = verifyHearthFloorCard(card, anchor);
   if ("refusal" in verified) {
     if (verified.refusal === "kel-forked" && card) {
-      const again = readPlaceFloorPin(card.claim, { nexusHex: card.claim.pin.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelRows: card.kel, standing: { via: "anchor", aid: anchor!.aid } });
+      const again = readPlaceFloorPin(card.claim, { nexusHex: card.claim.pin.nexus, route: HEARTH_FLOOR_CARD_ROUTE, kelEntries: card.kel, standing: { via: "anchor", aid: anchor!.aid } });
       if ("fork" in again && again.fork) index.noteKelFork(again.fork);
     }
     return { filed: false, refusal: verified.refusal };

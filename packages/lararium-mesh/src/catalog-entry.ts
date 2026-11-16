@@ -1,5 +1,5 @@
 /**
- * catalog-row — the vessel's own `@catalog` row resolving a document, in one place.
+ * catalog-entry — the vessel's own `@catalog` row resolving a document, in one place.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/base-doc
  */
@@ -10,7 +10,7 @@ import { storedLarRecord } from "./stored-record.js";
 import { ownEntry } from "./stored-value.js";
 
 /**
- * resolveCatalogRow — the catalog-row resolution protocol, in one place.
+ * resolveCatalogEntry — the catalog-entry resolution protocol, in one place.
  *
  * A catalog row (a tiddler of the vessel's own `@catalog`) holds the `automerge:` URL of a satellite doc (wiki,
  * draft, …) in its `text` field. Every vessel runs the same three-step protocol
@@ -27,7 +27,7 @@ import { ownEntry } from "./stored-value.js";
  * read → resolve → write-back-on-mint shape lives here once; both vessel
  * factories compose it for their wiki and draft satellites.
  */
-export async function resolveCatalogRow(
+export async function resolveCatalogEntry(
   catalogHandle: DocHandle<LarDoc>,
   rowKey:     string,
   resolve:       (rowUrl: string | null) => Promise<DocHandle<LarDoc>> | DocHandle<LarDoc>,

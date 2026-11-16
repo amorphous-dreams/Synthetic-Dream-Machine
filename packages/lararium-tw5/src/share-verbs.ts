@@ -13,20 +13,20 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  mutableLarRecord, parseShareFilter, shareRowFields, shareRowOf, shareRowTitle, shareRowWorkspace, ShareConfigRefusal, SHARE_CONFIG_PREFIX, VerbRefusal,
-  type CompositeStore, type ShareRow,
+  mutableLarRecord, parseShareFilter, shareEntryFields, shareEntryOf, shareEntryTitle, shareEntryWorkspace, ShareConfigRefusal, SHARE_CONFIG_PREFIX, VerbRefusal,
+  type CompositeStore, type ShareEntry,
 } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
 
 const ORIGIN = { kind: "lares-verb", requestId: "share-config" } as const;
 
 /** Every share row the control document holds. */
-export async function readShareRows(control: CompositeStore): Promise<ShareRow[]> {
-  const out: ShareRow[] = [];
+export async function readShareEntries(control: CompositeStore): Promise<ShareEntry[]> {
+  const out: ShareEntry[] = [];
   for (const title of await control.listVisible()) {
     if (!title.startsWith(SHARE_CONFIG_PREFIX)) continue;
     const record = await control.get(title);
-    const row = record ? shareRowOf(record.tiddler as Record<string, unknown>) : null;
+    const row = record ? shareEntryOf(record.tiddler as Record<string, unknown>) : null;
     if (row) out.push(row);
   }
   return out.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
@@ -37,7 +37,7 @@ export function makeShareSetReactor(opts: { readonly control: () => CompositeSto
     const slug = typeof args["slug"] === "string" ? args["slug"].trim() : "";
     let title: string;
     // A malformed slug and the daemon wiki (face-private, `share-face-private`) both refuse by their own name.
-    try { title = shareRowTitle(slug); } catch (e) { throw new VerbRefusal(e instanceof ShareConfigRefusal ? e.reason : "share-slug-malformed", e instanceof Error ? e.message : String(e)); }
+    try { title = shareEntryTitle(slug); } catch (e) { throw new VerbRefusal(e instanceof ShareConfigRefusal ? e.reason : "share-slug-malformed", e instanceof Error ? e.message : String(e)); }
     const control = opts.control();
     if (args["remove"] === true) {
       await control.remove(title, ORIGIN);
@@ -49,18 +49,18 @@ export function makeShareSetReactor(opts: { readonly control: () => CompositeSto
       try { parseShareFilter(f); } catch (e) { throw new VerbRefusal("share-filter-unsupported", e instanceof Error ? e.message : String(e)); }
     }
     const workspace = typeof args["workspace"] === "string" ? args["workspace"].trim() : "";
-    const row: ShareRow = {
+    const row: ShareEntry = {
       slug, kind: args["kind"] === "wiki" ? "wiki" : "bag", read, write,
       ...(workspace ? { workspace } : {}),
       ...(typeof args["note"] === "string" && args["note"].length > 0 ? { note: args["note"] } : {}),
     };
-    try { shareRowWorkspace(row); } catch (e) { throw new VerbRefusal("share-workspace-malformed", e instanceof Error ? e.message : String(e)); }
-    const { title: _t, ...fields } = shareRowFields(row);
+    try { shareEntryWorkspace(row); } catch (e) { throw new VerbRefusal("share-workspace-malformed", e instanceof Error ? e.message : String(e)); }
+    const { title: _t, ...fields } = shareEntryFields(row);
     await control.put(mutableLarRecord(title, fields, "share-config"), ORIGIN);
     return { ok: true, slug, row: { ...row } };
   };
 }
 
 export function makeShareListReactor(opts: { readonly control: () => CompositeStore }): VerbReactor {
-  return async () => ({ ok: true, rows: (await readShareRows(opts.control())).map((r) => ({ ...r })) });
+  return async () => ({ ok: true, rows: (await readShareEntries(opts.control())).map((r) => ({ ...r })) });
 }

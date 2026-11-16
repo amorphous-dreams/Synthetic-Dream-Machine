@@ -72,7 +72,7 @@ export interface UdsChannelOptions {
   readonly switchActs?: SwitchActLog;
   /**
    * The acts that act as a face and what runs one: the sealed acts (`SESSION_ACTS`, on the custody door's chain) and the
-   * store door's face rows (`STORE_DOOR_FACE_ROWS`, main's handler wearing the session's face). A `session:act` frame
+   * store door's face rows (`STORE_DOOR_FACE_VERBS`, main's handler wearing the session's face). A `session:act` frame
    * binds the session's face to the act, hands `run` the face it wears (its ordinal and the presenter the door
    * verified), answers on this socket and leaves a receipt naming the act and the face alone.
    */
@@ -82,10 +82,10 @@ export interface UdsChannelOptions {
     /** Fires once per RUN act after its reply left (or failed to), with the very `args` object `run` took; a refused act fires nothing. */
     readonly settled?: (act: string, args: Record<string, unknown>) => void;
   };
-  /** Verbs that act as a face (`STORE_DOOR_FACE_ROWS`): the maintenance frame refuses one `face-row-rides-a-session`. */
+  /** Verbs that act as a face (`STORE_DOOR_FACE_VERBS`): the maintenance frame refuses one `face-row-rides-a-session`. */
   readonly sessionVerbs?: ReadonlySet<string>;
   /**
-   * Acts a person's hand alone runs (`KAHUA_OPERATOR_ROWS`: the kahua pin, lift and withdraw). A session whose door
+   * Acts a person's hand alone runs (`KAHUA_OPERATOR_VERBS`: the kahua pin, lift and withdraw). A session whose door
    * seated the `seat` profile (a spirit's hand: an agent, the MCP surface) refuses one `beyond-profile` before it runs.
    */
   readonly handOnlyActs?: ReadonlySet<string>;

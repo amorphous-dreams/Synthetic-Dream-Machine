@@ -12,7 +12,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { buildIslandRecipe } from "../src/island-recipe.js";
 import {
-  CompositeStore, GENESIS_FLOOR_TIDDLER, ORACLE_BAG, floorRowsInOrder, resolveFloor, wikiSlotUri,
+  CompositeStore, GENESIS_FLOOR_TIDDLER, ORACLE_BAG, floorRecordsInOrder, resolveFloor, wikiSlotUri,
   type DocHandle, type LarDoc, type LarTiddlerChange, type LarTiddlerRecord,
 } from "@lararium/mesh";
 import type { TW5Engine } from "../src/tw5-vm.js";
@@ -55,7 +55,7 @@ describe("the floor replays into the island", () => {
         [SEED_TITLE]: { tiddler: { title: SEED_TITLE, text: "seed" } },
         [SHADOWED]: { tiddler: { title: SHADOWED, text: "seed copy" } },
       }) }],
-      floorRows: [{
+      floorRecords: [{
         [FLOOR_TITLE]: { tiddler: { title: FLOOR_TITLE, text: "floor", tags: ["$:/tags/lares/Landing"] } },
         [SHADOWED]: { tiddler: { title: SHADOWED, text: "floor copy" } },
       }],
@@ -84,7 +84,7 @@ describe("the floor replays into the island", () => {
     const seen = heard(composite);
     buildIslandRecipe({ tw5: fakeTw5(), composite, recipe: { wikiSlug: "lares" },
       ready: [{ slot: ORACLE_BAG, handle: fakeHandle() }, { slot: wikiSlotUri("lares", "working"), handle: fakeHandle() }],
-      floorRows: floorRowsInOrder(floor) });
+      floorRecords: floorRecordsInOrder(floor) });
     const welcome = seen.get("lar:///ha.ka.ba/lares/docs/welcome")?.record?.tiddler;
     expect(welcome?.tags).toContain("$:/tags/lares/Landing");
     const palette = seen.get("lar:///ha.ka.ba/lararium/tw5/palette/gruvbox-dark#/palette")?.record?.tiddler;

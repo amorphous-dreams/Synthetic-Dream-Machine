@@ -100,12 +100,12 @@ export interface CarryRedeclareFace {
  * PET-NAME. A bundle counts as the operator's own private carry; these names join one human's faces, so a bundle handed to
  * another party would leak that map (cabal-realm#/the-workbench: no roster joins a human's faces).
  */
-export interface CarryShareRow { readonly slug: string; readonly kind: "bag" | "wiki"; readonly read: string; readonly write: string; readonly owner?: string; readonly workspace?: string; readonly note?: string }
+export interface CarryShareEntry { readonly slug: string; readonly kind: "bag" | "wiki"; readonly read: string; readonly write: string; readonly owner?: string; readonly workspace?: string; readonly note?: string }
 /**
  * The re-declare list. `wikis` names every user wiki the catalog held, by slug: a wiki stands as a catalog row before it holds a
  * page, so a wiki with no workbench row (nothing under `wikis/<slug>/working`) still carries, and the import mints it.
  */
-export interface CarryRedeclare { readonly schema: typeof CARRY_SCHEMA; readonly faces: readonly CarryRedeclareFace[]; readonly shares?: readonly CarryShareRow[]; readonly wikis?: readonly string[] }
+export interface CarryRedeclare { readonly schema: typeof CARRY_SCHEMA; readonly faces: readonly CarryRedeclareFace[]; readonly shares?: readonly CarryShareEntry[]; readonly wikis?: readonly string[] }
 
 /** One standing head of a face's kahua stage, as the fold read it: the import re-lifts it under the new grant. */
 export interface CarryKahuaHead {

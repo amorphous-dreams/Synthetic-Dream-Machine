@@ -393,7 +393,7 @@ function within(child: string, parent: string): boolean {
 }
 
 /** One wiki row's workspace as the vessel reads it: the slug, and the workspace name the row names. */
-export interface WorkspaceRow { readonly slug: string; readonly kind: "bag" | "wiki"; readonly workspace?: string }
+export interface WorkspaceEntry { readonly slug: string; readonly kind: "bag" | "wiki"; readonly workspace?: string }
 
 /**
  * THE WORKSPACE ROOTS a shared wiki's workbench mirror may rest in: each `kind: "wiki"` share row naming a workspace maps its
@@ -403,7 +403,7 @@ export interface WorkspaceRow { readonly slug: string; readonly kind: "bag" | "w
  * workspace with no directory standing (no bind) waits by name, and its workbench projects under the projections root.
  */
 export function workspaceRootsOf(opts: {
-  readonly rows: readonly WorkspaceRow[];
+  readonly rows: readonly WorkspaceEntry[];
   readonly workspacesHome: string;
   readonly checkoutRoot: string | null;
   readonly hearth: string;

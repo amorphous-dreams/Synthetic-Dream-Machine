@@ -1,6 +1,6 @@
 import {
   PromoteRefused, promoteClass, promoteDigest, promoteEdgeKey, promotePreloadBytes,
-  ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionRows, isWardBoundWiki, signPromotionWard,
+  ledgerCommit, ledgerUnpromote, ledgerDecideOrphan, reconcilePromotions, verifyPromotionEntries, isWardBoundWiki, signPromotionWard,
   type PromoteWho, type PromotionLedger, type PromotionTombstone, type PromotionWardFace,
 } from "./promote.js";
 import { kapaeNoteArrival, kapaeBootSet, kapaeStanding, type KapaeLocal } from "./promote-kapae.js";
@@ -156,7 +156,7 @@ export function promotions(ports: PromotionPorts) {
       // owner, no bound row runs.
       const owner = ports.owner;
       const floor = board && owner ? { owner, dropped: () => board!.droppedBy(owner) } : null;
-      const { verified, voided } = verifyPromotionRows(own(ledger), ports.face, ledger, floor);
+      const { verified, voided } = verifyPromotionEntries(own(ledger), ports.face, ledger, floor);
       // A TOMBSTONE AN EARLIER VERB OWED lands now, best-effort: boot never waits on it, and the promise rides out for a witness.
       const owed = ledger.dropped ?? [];
       const floorLanded: Promise<void> = owed.length > 0 && ports.landDrops ? ports.landDrops(owed).then(() => undefined, () => undefined) : Promise.resolve();

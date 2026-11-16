@@ -11,7 +11,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { kuiLei, swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import {
-  putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiNarrowedTitle, swarmLeiRowTitle, swarmLeiReturnedTitle,
+  putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiNarrowedTitle, swarmLeiRecordTitle, swarmLeiReturnedTitle,
   swarmReceiptTitle, type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 import { soloCosign } from "./ward-cosign-table.js";
@@ -33,7 +33,7 @@ async function fixture() {
   const wiki = wikiPort();
   const rest = async (parts: Record<string, unknown>): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "push", branch: BRANCH, after: null, ...parts } as unknown as SwarmBodyParts, hand);
-    await putSwarmAct(wiki, swarmLeiRowTitle((parts["rite"] as "push" | "kukulu" | undefined) ?? "push", BRANCH, swarmActCid(lei)), lei);
+    await putSwarmAct(wiki, swarmLeiRecordTitle((parts["rite"] as "push" | "kukulu" | undefined) ?? "push", BRANCH, swarmActCid(lei)), lei);
     return swarmActCid(lei);
   };
   /** A hand-signed wide lei at its own row; hands back its cid. */

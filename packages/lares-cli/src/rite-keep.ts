@@ -35,7 +35,7 @@ import { repoRoot } from "@lararium/mesh/node";
 import { WORKSPACE_NAME_RE } from "@lararium/mesh";
 import { larHearthHome, larWorkspacesHome } from "@lararium/node";
 import { CARRY_SCHEMA, MANIFEST_FILE, sha256Hex, unsafeRelPath, verifyBundle, type CarryManifest } from "./carry-manifest.js";
-import type { RiteRowAnswer } from "./rite-kukulu.js";
+import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 export const RITE_KEEP = "keep";
 /** The check a keep's receipt names: the bundle read back whole against its manifest. */
@@ -51,7 +51,7 @@ export class KeepRefused extends Error {
 
 export interface KeepPorts {
   /** One store row, answered by the vessel that stands. */
-  row(verb: "swarm-show" | "rite-receipt" | "rite-begin", args: Record<string, unknown>): Promise<RiteRowAnswer>;
+  row(verb: "swarm-show" | "rite-receipt" | "rite-begin", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
   /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`carryExport`). */
   cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean }): Promise<CarryManifest>;
 }

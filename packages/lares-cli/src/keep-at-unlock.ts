@@ -10,7 +10,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import type { Credential } from "@lararium/mesh";
-import type { RiteRowAnswer } from "./rite-kukulu.js";
+import type { RiteVerbAnswer } from "./rite-kukulu.js";
 import { RITE_KEEP } from "./rite-keep.js";
 
 /** The returns a keep lei strung at unlock carries: the most a kui takes without its `--yes` confirm. */
@@ -22,7 +22,7 @@ export interface KeepOfferPorts {
   /** One yes-or-no question on that terminal. */
   ask(question: string): Promise<boolean>;
   /** One store row; a ward act takes `route` as its route, asked of nobody. */
-  row(verb: "swarm-show" | "swarm-lei-kui", args: Record<string, unknown>, route?: readonly Credential[]): Promise<RiteRowAnswer>;
+  row(verb: "swarm-show" | "swarm-lei-kui", args: Record<string, unknown>, route?: readonly Credential[]): Promise<RiteVerbAnswer>;
   say(line: string): void;
 }
 

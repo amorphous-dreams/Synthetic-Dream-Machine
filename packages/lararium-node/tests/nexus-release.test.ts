@@ -28,7 +28,7 @@ import {
 import { storeDoorReactors } from "../src/store-door-verbs.js";
 import { runOfferRetire } from "../src/commands/offer-retire.js";
 import {
-  crossroadsDocUrl, publicationDocUrl, floorReleaseRowsFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
+  crossroadsDocUrl, publicationDocUrl, floorReleaseEntriesFromBoard, materializeSharedLarDoc, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   assembleFloorRelease, openFloorReleaseBody, foundingRoster, readPromotionApproval, FLOOR_RELEASE_SURFACE, cutFloorSnapshot, floorManifestBytes,
 } from "@lararium/mesh";
 import { readCasBlobFromFs, writeCasEntriesFs } from "../src/node-cas.js";
@@ -122,9 +122,9 @@ describe("a one-seat hearth publishes its floor release", () => {
     await withRoot(0, async (repo) => {
       const island = nodeNexusIsland({ ownVesselKey: await loadVesselVerifyingKey(), sealHome: larSealHome() });
       const board = await materializeSharedLarDoc(repo, publicationDocUrl(island), "board:publication");
-      expect(floorReleaseRowsFromBoard(board.doc()).map((r) => r.keyCid).sort()).toEqual([first.release.cid, second.release.cid].sort());
+      expect(floorReleaseEntriesFromBoard(board.doc()).map((r) => r.keyCid).sort()).toEqual([first.release.cid, second.release.cid].sort());
       const crossroads = await materializeSharedLarDoc(repo, crossroadsDocUrl(island), "board:crossroads");
-      expect(floorReleaseRowsFromBoard(crossroads.doc()), "the crossroads mirror would write it to disk").toEqual([]);
+      expect(floorReleaseEntriesFromBoard(crossroads.doc()), "the crossroads mirror would write it to disk").toEqual([]);
     });
   });
 

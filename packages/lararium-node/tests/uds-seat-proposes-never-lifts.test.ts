@@ -16,7 +16,7 @@ import { Repo } from "@automerge/automerge-repo";
 import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, concludeVerb, wikiSlotUri,
   type LarDoc, type SessionFace } from "@lararium/mesh";
 import { HAND_PROFILES } from "@lararium/mesh/session-contract";
-import { KAHUA_OPERATOR_ROWS, PROMOTE_HAND_CODES, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS } from "../src/store-door-verbs.js";
+import { KAHUA_OPERATOR_VERBS, PROMOTE_HAND_CODES, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS } from "../src/store-door-verbs.js";
 import { makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
@@ -119,7 +119,7 @@ test("CONTROL: the operator's hand (a cli session) runs the kahua lift row", asy
   const env = await v.open("hint-a", "cli");
   expect(await v.peer.ask({ op: "session:act", ...env, requestId: "cli-lift", act: "kahua-lift", args: { title: "t", text: "x", taint: [] } }))
     .toMatchObject({ kind: "session:act-result", answer: { verb: "kahua-lift", ran: true } });
-  expect(KAHUA_OPERATOR_ROWS).toEqual(new Set(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]));
+  expect(KAHUA_OPERATOR_VERBS).toEqual(new Set(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]));
 });
 
 test("RED: a seat session's promote commit, drop and orphan refuse `promote-needs-hand`, its kapae raise and lower refuse `kapae-needs-hand`, and nothing runs; CONTROL: the seat prepares, flags and reads, and the kahua rows keep `beyond-profile`", async () => {

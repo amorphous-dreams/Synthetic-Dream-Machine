@@ -9,7 +9,7 @@
 import { describe, expect, it } from "vitest";
 import { parseArgs } from "../src/parse-args.js";
 import { RiteUsage, ritePlan } from "../src/commands/rite.js";
-import { riteKukulu, type RitePorts, type RiteRowAnswer } from "../src/rite-kukulu.js";
+import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
 
@@ -17,7 +17,7 @@ const HEAD = "a".repeat(40), TESSERA = "c".repeat(64);
 const plan = (...line: string[]) => ritePlan(parseArgs(["rite", ...line]));
 
 /** Ports that record every call in order and answer from a script. */
-function fakes(over: { begin?: RiteRowAnswer; land?: RiteRowAnswer; shim?: Partial<Record<"build" | "down" | "up", number>> } = {}) {
+function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; shim?: Partial<Record<"build" | "down" | "up", number>> } = {}) {
   const calls: string[] = [], said: string[] = [];
   const ports: RitePorts = {
     checkout: async () => { calls.push("checkout"); return { head: HEAD, branch: "main" }; },

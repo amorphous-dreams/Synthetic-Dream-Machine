@@ -30,7 +30,7 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
-import { riteKukulu, type RitePorts, type RiteRowAnswer } from "../rite-kukulu.js";
+import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, riteKeep, type KeepPorts } from "../rite-keep.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
@@ -135,7 +135,7 @@ async function runKeepCut(args: ParsedArgs): Promise<number> {
   }
 }
 
-async function runRow(args: ParsedArgs, plan: RitePlan): Promise<number> {
+async function runRiteVerb(args: ParsedArgs, plan: RitePlan): Promise<number> {
   try {
     const { output } = await storeVerb(plan.verb, plan.args);
     emit(args, { ok: true, data: output, human: () => console.log(JSON.stringify(output)) });
@@ -158,7 +158,7 @@ const git = (argv: readonly string[]): Promise<string> => new Promise((resolve, 
 });
 
 /** One line of this CLI again, answered as a row: the bridge forwards it into the vessel where a container house stands. */
-const cliRow = (line: readonly string[]): Promise<RiteRowAnswer> => new Promise<RiteRowAnswer>((resolve) => {
+const cliVerb = (line: readonly string[]): Promise<RiteVerbAnswer> => new Promise<RiteVerbAnswer>((resolve) => {
   const child = spawn(process.execPath, [BIN, ...line, "--json"], { stdio: ["inherit", "pipe", "inherit"] });
   let text = "";
   child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
@@ -194,7 +194,7 @@ function hostPorts(runShim: (verb: string) => Promise<number>, face: string | un
   return {
     image,
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
-    row: (verb, rowArgs) => cliRow(["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs), ...(face === undefined ? [] : ["--face", face])]),
+    row: (verb, rowArgs) => cliVerb(["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs), ...(face === undefined ? [] : ["--face", face])]),
     shim: (verb) => runShim(verb),
     say,
   };
@@ -245,7 +245,7 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
   }
   const ports: KeepHostPorts = {
     workspaceDir: hostWorkspaceDir,
-    row: (verb, rowArgs) => cliRow(["rite", verb, ...flagsOf(rowArgs)]),
+    row: (verb, rowArgs) => cliVerb(["rite", verb, ...flagsOf(rowArgs)]),
     git: gitIn,
     say: (line) => console.error(line),
   };
@@ -284,5 +284,5 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     if (err instanceof RiteUsage) return refuseUsage(args, "rite", helpLines("rite"), err.message);
     throw err;
   }
-  return runRow(args, plan);
+  return runRiteVerb(args, plan);
 }

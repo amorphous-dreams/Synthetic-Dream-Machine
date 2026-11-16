@@ -51,7 +51,7 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf, parseShareFile, serializeShareFile, type ShareRow } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf, parseShareFile, serializeShareFile, type ShareEntry } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, PERSONAL_PROJECTION_DIR, daemonBagsDir,
@@ -74,7 +74,7 @@ import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-pers
 import {
   CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, CarryBundleRefused,
   type CarryFace, type CarryFile, type CarryKahuaHead, type CarryManifest, type CarryOmission, type CarryRedeclare,
-  type CarryRedeclareFace, type CarryRow, type CarryShareRow, type VerifiedBundle,
+  type CarryRedeclareFace, type CarryRow, type CarryShareEntry, type VerifiedBundle,
 } from "../carry-manifest.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 
@@ -197,7 +197,7 @@ export interface CarryDoors {
   /** The worn face's seat on a wiki's workbench (`workbench-seat`). Absent (a rig with no roster): the worn face writes every workbench. */
   readonly benchSeat?: (slug: string) => Promise<{ readonly writeSlot: "working" | "personal" | null; readonly bound: boolean }>;
   /** The vessel-private share rows (`config/share.tid`), read and written whole. Absent: no rows travel and none land. */
-  readonly shareRows?: { read(): readonly ShareRow[]; write(rows: readonly ShareRow[]): void };
+  readonly shareRows?: { read(): readonly ShareEntry[]; write(rows: readonly ShareEntry[]): void };
   /** Land the shares again (`share-apply`); null where no vessel answers. */
   readonly landShares?: () => Promise<Record<string, unknown> | null>;
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
@@ -628,7 +628,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       schema: CARRY_SCHEMA,
       faces: named.map((f): CarryRedeclareFace => ({ face: keyOf.get(f.handleIndex)!, handleIndex: f.handleIndex, petname: f.petname!, handle: f.handle, seat: f.seat, chair: f.seat ? f.chair : null })),
       // THE SHARE ROWS travel with the workbenches they seat: owner and seats by pet-name, the operator's own private carry.
-      ...((): { shares?: CarryShareRow[] } => { const rows = doors.shareRows?.read() ?? []; return rows.length > 0 ? { shares: rows.map((r) => ({ ...r })) } : {}; })(),
+      ...((): { shares?: CarryShareEntry[] } => { const rows = doors.shareRows?.read() ?? []; return rows.length > 0 ? { shares: rows.map((r) => ({ ...r })) } : {}; })(),
       // EVERY USER WIKI, by slug: a wiki stands before it holds a page, so one with no workbench row still re-stands at the import.
       ...(userWikis.length > 0 ? { wikis: userWikis } : {}),
     };
@@ -868,7 +868,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const daemonWaiting: Array<{ petname: string; handleIndex: number }> = [];
   const standingShares = [...(doors.shareRows?.read() ?? [])];
   const carriedShares = (redeclare.shares ?? []).filter((r) => !standingShares.some((x) => x.slug === r.slug));
-  const allShares: ShareRow[] = [...standingShares, ...carriedShares.map((r): ShareRow => ({ ...r }))];
+  const allShares: ShareEntry[] = [...standingShares, ...carriedShares.map((r): ShareEntry => ({ ...r }))];
   if (apply && carriedShares.length > 0 && doors.shareRows) doors.shareRows.write(allShares);
   const wornPet = litFaceOf(faces)?.petname ?? null;
   const gates = new Map<string, { why: "writer" | "owner"; owner?: string } | null>();

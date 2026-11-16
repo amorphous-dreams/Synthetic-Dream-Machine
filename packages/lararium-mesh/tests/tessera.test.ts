@@ -9,7 +9,7 @@ import { describe, expect, test } from "vitest";
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { beginRite, conferre, landRite, riteReceipts, tesseraOf } from "../src/swarm-tessera.js";
 import {
-  putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRowTitle, swarmReceiptTitle, swarmTesseraTitle,
+  putSwarmAct, readSwarmRecord, signSwarmAct, swarmActCid, swarmLeiReturnedTitle, swarmLeiRecordTitle, swarmReceiptTitle, swarmTesseraTitle,
   type SwarmBodyParts, type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
 
@@ -26,7 +26,7 @@ async function fixture() {
   /** A hand-signed lei at its own row; hands back its cid. */
   const kui = async (rite: "push" | "kukulu", terms: Record<string, unknown>, after: string | null = null): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite, branch: BRANCH, after, ...terms } as unknown as SwarmBodyParts, hand);
-    await putSwarmAct(wiki, swarmLeiRowTitle(rite, BRANCH, swarmActCid(lei)), lei);
+    await putSwarmAct(wiki, swarmLeiRecordTitle(rite, BRANCH, swarmActCid(lei)), lei);
     return swarmActCid(lei);
   };
   const receipt = async (verdict: "pass" | "fail" = "pass") =>

@@ -14,7 +14,7 @@
  * wiki-minting and composing verbs. Each runs unledgered like every floor act; what it writes names itself in the floor's
  * registry and seals under the floor's key. A locked hearth and a herm pass none of them.
  */
-import { STORE_DOOR_FACE_ROWS, STORE_DOOR_VERBS } from "./store-door-verbs.js";
+import { STORE_DOOR_FACE_VERBS, STORE_DOOR_VERBS } from "./store-door-verbs.js";
 
 /** The read-only queries a floor answers: each reads the catalog and the bags it registers, and writes nothing. */
 export const FLOOR_QUERY_VERBS: readonly string[] = ["where", "resolve", "unbound-docs"];
@@ -22,7 +22,7 @@ export const FLOOR_QUERY_VERBS: readonly string[] = ["where", "resolve", "unboun
 /** Every verb the verb door runs while the control document stands as a stand-in. */
 export const FLOOR_VERBS: ReadonlySet<string> = new Set<string>([
   ...FLOOR_QUERY_VERBS,
-  ...STORE_DOOR_VERBS.filter((verb) => !STORE_DOOR_FACE_ROWS.has(verb)),
+  ...STORE_DOOR_VERBS.filter((verb) => !STORE_DOOR_FACE_VERBS.has(verb)),
 ]);
 
 /** The wiki-minting and composing verbs a veil floor answers as itself (the island's gate names the same four). */

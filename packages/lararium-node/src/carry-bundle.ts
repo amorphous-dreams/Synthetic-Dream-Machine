@@ -28,7 +28,7 @@ import {
   foundingRoster, materializeSharedLarDoc, placeArmFor, placeFloorPinsFromBoard, readPlaceFloorPin, writeCarriageEntry,
   writePlaceFloorPin, writeRollAnchor, rollAnchorsFromBoard, isRollAnchor, carriageAncestryFromBoard,
   epochSeats, rollAnchorCounts, verifySealLineage,
-  decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, placeKelRowsFromBoard, writePlaceKelEvent,
+  decodePlaceKelEvent, foldPlaceKel, placeKelEventDigest, placeKelEntriesFromBoard, writePlaceKelEvent,
   CARRY_BUNDLE_DOMAIN, NEXUS_AID_PATTERN, FLOW_SOCKET_ROUTE,
   type CarriageEntry, type PlaceFloorPinStatement, type RollAnchor, type SealEpoch, type PlaceKelEvent,
 } from "@lararium/mesh";
@@ -69,7 +69,7 @@ export async function carryBundleFrom(opts: {
   // The arm's lineage carries its acts and the anchors that chain them to the head; the bundle keeps the two apart.
   const acts = arm.lineage.filter((act): act is CarriageEntry => !isRollAnchor(act));
   return { kind: CARRY_BUNDLE_KIND, aid: opts.aid, contract: arm.contract, lineage: acts,
-    floorPins: placeFloorPinsFromBoard(opts.board), placeKel: placeKelRowsFromBoard(opts.board), peers, rollAnchors: ancestry.anchors };
+    floorPins: placeFloorPinsFromBoard(opts.board), placeKel: placeKelEntriesFromBoard(opts.board), peers, rollAnchors: ancestry.anchors };
 }
 
 /** Walk each pinned inception one step at a time. A gap, forged step, or fork leaves only the verified prefix. */
@@ -183,11 +183,11 @@ export async function takeCarryBundle(opts: {
   const carriers = await foldCarrierSet(union, roster, ancestry);
   const nexusHex = Buffer.from(aid, "utf8").toString("hex");
   const kel = landingPlaceKel(placeKel);
-  const kelRows = kel.map((row) => row.event);
+  const kelEntries = kel.map((row) => row.event);
   const landing: PlaceFloorPinStatement[] = [];
   const landed: string[] = [];
   for (const raw of floorPins) {
-    const read = readPlaceFloorPin(raw, { nexusHex, route: FLOW_SOCKET_ROUTE, kelRows, standing: { via: "carrier", carriers } });
+    const read = readPlaceFloorPin(raw, { nexusHex, route: FLOW_SOCKET_ROUTE, kelEntries, standing: { via: "carrier", carriers } });
     if (!("refusal" in read)) { landing.push(raw as PlaceFloorPinStatement); landed.push(read.aid); }
   }
   handle.change((d) => {

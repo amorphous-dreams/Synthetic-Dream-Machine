@@ -7,7 +7,7 @@ import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
-import { storeDoorReactors, STORE_DOOR_FACE_ROWS } from "../src/store-door-verbs.js";
+import { storeDoorReactors, STORE_DOOR_FACE_VERBS } from "../src/store-door-verbs.js";
 
 // Every row resolves its homes under a scratch LAR_ROOT, so a row that runs (the parent's leak) writes nowhere real.
 const roots: string[] = [];
@@ -53,8 +53,8 @@ test("every face row takes the binding: none reaches its command under another f
   const rows = door();
   const worn = { ordinal: 1, presenter: ATOM_1 };
   const leaked: string[] = [];
-  expect(STORE_DOOR_FACE_ROWS.size).toBeGreaterThan(20);           // silent-zero guard: the set the sweep reads
-  for (const verb of STORE_DOOR_FACE_ROWS) {
+  expect(STORE_DOOR_FACE_VERBS.size).toBeGreaterThan(20);           // silent-zero guard: the set the sweep reads
+  for (const verb of STORE_DOOR_FACE_VERBS) {
     const r = await rows[verb]({ face: 0 }, ctxOf(worn)).catch((e: Error) => ({ threw: e.message }));
     if (!/face-row-other-face/.test(String((r as { refused?: string }).refused ?? ""))) leaked.push(`${verb}: ${JSON.stringify(r).slice(0, 120)}`);
   }
@@ -65,19 +65,19 @@ test("RED: the relay rows that read a face are face rows: another face refuses, 
   const rows = door();
   const worn = { ordinal: 1, presenter: ATOM_1 };
   for (const verb of ["intent-relay-enable", "intent-relay-disable", "intent-relay-status"] as const) {
-    expect(STORE_DOOR_FACE_ROWS.has(verb), verb).toBe(true);
+    expect(STORE_DOOR_FACE_VERBS.has(verb), verb).toBe(true);
     expect(await rows[verb]({ face: 0 }, ctxOf(worn))).toMatchObject({ refused: expect.stringMatching(/face-row-other-face/) });
     expect(await rows[verb]({}, ctxOf())).toMatchObject({ refused: expect.stringMatching(/face-row-rides-a-session/) });
     // CONTROL: the session's own face passes the binding and reaches the relay's own reading (this scratch root holds no face).
     const own = await rows[verb]({}, ctxOf(worn)).catch((e: Error) => ({ threw: e.message }));
     expect(JSON.stringify(own)).not.toMatch(/face-row-/);
   }
-  expect(STORE_DOOR_FACE_ROWS.has("intent-relay-rotate")).toBe(false);
+  expect(STORE_DOOR_FACE_VERBS.has("intent-relay-rotate")).toBe(false);
 });
 
 test("RED: the feed is a face row on main (the bond and the ask never leave it); CONTROL: cabal-face answers no bond", async () => {
   const rows = door();
-  expect(STORE_DOOR_FACE_ROWS.has("cabal-feed" as never)).toBe(true);
+  expect(STORE_DOOR_FACE_VERBS.has("cabal-feed" as never)).toBe(true);
   expect(await (rows as Record<string, (a: unknown, c: unknown) => Promise<unknown>>)["cabal-feed"]!({ realm: "ab".repeat(32) }, ctxOf()))
     .toMatchObject({ refused: expect.stringMatching(/face-row-rides-a-session/) });
 });

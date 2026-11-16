@@ -11,7 +11,7 @@ import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed255
 import { PROMOTE_ACT_DOMAIN, SWARM_ACT_DOMAIN } from "../src/domains.js";
 import { canonicalJsonBytes } from "../src/crypto.js";
 import {
-  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmCapRefusal, swarmLeiNarrowedTitle, swarmLeiRowTitle, swarmLeiReturnedTitle, swarmLeiTitle, swarmHouseCapTitle,
+  SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmCapRefusal, swarmLeiNarrowedTitle, swarmLeiRecordTitle, swarmLeiReturnedTitle, swarmLeiTitle, swarmHouseCapTitle,
   swarmLaneStateTitle, swarmReceiptTitle, swarmRecordFields, swarmRosterTitle, swarmShareRefusal, swarmShareTitle, SWARM_URI_PREFIX,
   type SwarmWikiPort,
 } from "../src/swarm-tiddlers.js";
@@ -78,7 +78,7 @@ describe("verify-on-read fails closed", () => {
     const roster = await signSwarmAct({ act: "roster", group: GROUP, seat: "seat-1", model: "gpt-5.3-codex", mode: "build", reading: 10, ceiling: 100, outcome: "running" }, f.vessel);
     const receipt = await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, f.vessel);
     const state = await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-a", seat: "lead-a", state: { phase: "build" } }, f.lead);
-    for (const [title, act] of [[swarmLeiRowTitle("push", "feature/x", swarmActCid(lei)), lei], [swarmRosterTitle("seat-1"), roster], [swarmReceiptTitle(TREE), receipt], [swarmLaneStateTitle("lane-a"), state]] as const) {
+    for (const [title, act] of [[swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei], [swarmRosterTitle("seat-1"), roster], [swarmReceiptTitle(TREE), receipt], [swarmLaneStateTitle("lane-a"), state]] as const) {
       await putSwarmAct(f.wiki, title, act);
       expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP), title).toMatchObject({ ok: true });
     }
@@ -90,7 +90,7 @@ describe("verify-on-read fails closed", () => {
     const vesselGo = await signSwarmAct({ act: "lei", ...f.leiBody() }, f.vessel);
     const cases = [
       [swarmRosterTitle("lead-a"), await signSwarmAct(roster, f.lead)],
-      [swarmLeiRowTitle("push", "feature/x", swarmActCid(vesselGo)), vesselGo],
+      [swarmLeiRecordTitle("push", "feature/x", swarmActCid(vesselGo)), vesselGo],
       [swarmLaneStateTitle("lane-b"), await signSwarmAct({ act: "lane-state", group: GROUP, lane: "lane-b", seat: "lead-b", state: {} }, f.lead)],
       [swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: [], verdict: "pass", definitions: "d".repeat(64) }, f.outsider)],
     ] as const;
@@ -102,7 +102,7 @@ describe("verify-on-read fails closed", () => {
   test("RED: a tampered body, a torn text, an absent title, another face's record and a record at another act's title each refuse by name; CONTROL: the untouched record reads", async () => {
     const f = await fixture();
     const good = await signSwarmAct({ act: "lei", ...f.leiBody() }, f.hand);
-    const title = swarmLeiRowTitle("push", "feature/x", swarmActCid(good));
+    const title = swarmLeiRecordTitle("push", "feature/x", swarmActCid(good));
     await putSwarmAct(f.wiki, title, good);
     expect(await readSwarmRecord(f.wiki, title, f.trust, GROUP)).toMatchObject({ ok: true });
     f.wiki.rows.set(title, JSON.stringify({ ...good, body: { ...good.body, head: "c".repeat(40) } }));
@@ -112,8 +112,8 @@ describe("verify-on-read fails closed", () => {
     expect(await readSwarmRecord(f.wiki, swarmLeiTitle("push", "absent"), f.trust, GROUP)).toEqual({ ok: false, refusal: "absent" });
     await putSwarmAct(f.wiki, title, good);
     expect(await readSwarmRecord(f.wiki, title, f.trust, "other-group")).toEqual({ ok: false, refusal: "group" });
-    f.wiki.rows.set(swarmLeiRowTitle("push", "other", swarmActCid(good)), JSON.stringify(good));
-    expect(await readSwarmRecord(f.wiki, swarmLeiRowTitle("push", "other", swarmActCid(good)), f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
+    f.wiki.rows.set(swarmLeiRecordTitle("push", "other", swarmActCid(good)), JSON.stringify(good));
+    expect(await readSwarmRecord(f.wiki, swarmLeiRecordTitle("push", "other", swarmActCid(good)), f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
     // a lei at its branch's family title, never its own row, reads as misplaced
     f.wiki.rows.set(swarmLeiTitle("push", "feature/x"), JSON.stringify(good));
     expect(await readSwarmRecord(f.wiki, swarmLeiTitle("push", "feature/x"), f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
@@ -135,7 +135,7 @@ describe("a lei binds branch and head and is spent once", () => {
   /** A hand-signed lei at its own row under the branch; hands back its cid. */
   const issue = async (f: Awaited<ReturnType<typeof fixture>>, over: Record<string, unknown> = {}, signer = f.hand): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", ...f.leiBody(over) }, signer);
-    await putSwarmAct(f.wiki, swarmLeiRowTitle("push", "feature/x", swarmActCid(lei)), lei);
+    await putSwarmAct(f.wiki, swarmLeiRecordTitle("push", "feature/x", swarmActCid(lei)), lei);
     // A spend rests on a passing receipt for the head's tree (`lei-reach.test.ts`): one stands beside every lei issued here.
     await putSwarmAct(f.wiki, swarmReceiptTitle(TREE), await signSwarmAct({ act: "receipt", group: GROUP, tree: TREE, checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }, f.vessel));
     return swarmActCid(lei);

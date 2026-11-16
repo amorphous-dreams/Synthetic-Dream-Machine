@@ -8,6 +8,6 @@ export {
   sha256Hex, bundleIdOf, zeroCounts, unsafeRelPath, walkBundle, bundleBytes, verifyBundle, relUnder,
 } from "@lararium/node";
 export type {
-  CarryLayer, CarryFile, CarryRow, CarryFace, CarryOmission, CarryManifest, CarryRedeclareFace, CarryShareRow, CarryRedeclare,
+  CarryLayer, CarryFile, CarryRow, CarryFace, CarryOmission, CarryManifest, CarryRedeclareFace, CarryShareEntry, CarryRedeclare,
   CarryKahuaHead, VerifiedBundle,
 } from "@lararium/node";

@@ -83,8 +83,8 @@ vi.mock("../src/store-door.js", async (importOriginal) => {
     ) => {
       if (faceless.up) {
         faceless.rows.push(verb);
-        const { STORE_DOOR_FACE_ROWS, SealedActRefused } = await import("@lararium/node");
-        if (STORE_DOOR_FACE_ROWS.has(verb) && args["face"] === undefined) throw new SealedActRefused("act-refused", "this vessel holds no face open");
+        const { STORE_DOOR_FACE_VERBS, SealedActRefused } = await import("@lararium/node");
+        if (STORE_DOOR_FACE_VERBS.has(verb) && args["face"] === undefined) throw new SealedActRefused("act-refused", "this vessel holds no face open");
       }
       if (verb === "nexus-roll-anchor-edge" && locking.atEdge) throw new real.RoutedVerbRefused("local session refused: face-locked", "face-locked");
       if (verb === "nexus-roll-anchor") {

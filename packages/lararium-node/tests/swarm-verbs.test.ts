@@ -6,7 +6,7 @@
  */
 import { expect, test } from "vitest";
 import {
-  KAHUA_OPERATOR_ROWS, PROMOTE_HAND_CODES, STORE_DOOR_FACE_ROWS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, SWARM_HAND_CODES,
+  KAHUA_OPERATOR_VERBS, PROMOTE_HAND_CODES, STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, SWARM_HAND_CODES,
   storeDoorReactors, type StoreDoorDeps,
 } from "../src/store-door-verbs.js";
 
@@ -15,9 +15,9 @@ const ROWS = ["swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui",
 test("RED: every swarm row is a store-door verb that acts as a face; CONTROL: the kahua operator rows stay as they stood", () => {
   for (const row of ROWS) {
     expect(STORE_DOOR_VERBS as readonly string[], row).toContain(row);
-    expect(STORE_DOOR_FACE_ROWS.has(row as never), row).toBe(true);
+    expect(STORE_DOOR_FACE_VERBS.has(row as never), row).toBe(true);
   }
-  expect(KAHUA_OPERATOR_ROWS).toEqual(new Set(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]));
+  expect(KAHUA_OPERATOR_VERBS).toEqual(new Set(["kahua-mint", "kahua-lift", "kahua-withdraw", "kahua-carry"]));
 });
 
 test("RED: the hand-only swarm rows carry `swarm-needs-hand`; CONTROL: swarm-show is not hand-only", () => {
@@ -26,7 +26,7 @@ test("RED: the hand-only swarm rows carry `swarm-needs-hand`; CONTROL: swarm-sho
 });
 
 test("RED: the socket's hand-only table holds the kahua, promote and swarm rows together; CONTROL: the promote codes stand unchanged and the open rows join none", () => {
-  for (const row of [...KAHUA_OPERATOR_ROWS, ...PROMOTE_HAND_CODES.keys(), ...SWARM_HAND_CODES.keys()]) expect(STORE_DOOR_HAND_ONLY_ACTS.has(row), row).toBe(true);
+  for (const row of [...KAHUA_OPERATOR_VERBS, ...PROMOTE_HAND_CODES.keys(), ...SWARM_HAND_CODES.keys()]) expect(STORE_DOOR_HAND_ONLY_ACTS.has(row), row).toBe(true);
   for (const [row, code] of [...PROMOTE_HAND_CODES, ...SWARM_HAND_CODES]) expect(STORE_DOOR_HAND_CODES.get(row), row).toBe(code);
   for (const open of ["swarm-show", "promote-prepare", "kapae-flag", "promote-list", "kahua-propose"]) expect(STORE_DOOR_HAND_ONLY_ACTS.has(open), open).toBe(false);
 });

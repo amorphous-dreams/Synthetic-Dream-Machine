@@ -18,7 +18,7 @@ const keyFor = (name: string, route = "/flow") => ({ hearth: name, nexus: NEXUS_
 
 /** Read a claim (anchored to `place`'s AID, over `rows`) into the stand the index files. */
 async function stood(place: TestPlace, fill: number, rows: unknown[] = rowsOf(place)): Promise<PlaceFloorPinReading> {
-  const read = readPlaceFloorPin(await claimAt(place, pinAt(fill)), { nexusHex: NEXUS_HEX, route: "/flow", kelRows: rows, standing: { via: "anchor", aid: place.aid } });
+  const read = readPlaceFloorPin(await claimAt(place, pinAt(fill)), { nexusHex: NEXUS_HEX, route: "/flow", kelEntries: rows, standing: { via: "anchor", aid: place.aid } });
   if ("refusal" in read) throw new Error(`fixture claim refuses: ${read.refusal}`);
   return read;
 }
@@ -218,7 +218,7 @@ describe("a pin that rides no claim keeps the unclaimed rule (claims always use 
     const p0 = foundPlace(1), p1 = rotatePlace(p0);
     const ix = hearthPinIndex();
     const claims = [await claimAt(p1, pinAt(11)), await claimAt(p0, pinAt(10))];
-    const report = filePlaceFloorPins(ix, claims, { nexusHex: NEXUS_HEX, route: "/flow", kelRows: rowsOf(p1), standing: { via: "anchor", aid: p0.aid } });
+    const report = filePlaceFloorPins(ix, claims, { nexusHex: NEXUS_HEX, route: "/flow", kelEntries: rowsOf(p1), standing: { via: "anchor", aid: p0.aid } });
     expect(report.filed).toEqual([headOf(p1).signerKey]);
     expect(report.held).toEqual(["rollback"]);
     expect(dialPinKeyOf(headOf(p1).signerKey, pinAt(11)).hearth).toBe(headOf(p1).signerKey);

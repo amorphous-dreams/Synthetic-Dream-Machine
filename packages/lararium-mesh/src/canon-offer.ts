@@ -60,13 +60,13 @@ export const CANON_OFFER_RETIRED_PREFIX = "$:/lar/canon-offer-retired/" as const
  * THE OFFER'S BOUNDS, ONE LAW IN TWO MEASURES. An offer stays a gift a person reviews, never a bulk import:
  *   · it carries at most `CANON_OFFER_MAX_MEMES` MEMES. A meme rests as a root record and the slot records it calls
  *     (`<root>#/<slot>`), and the whole meme counts ONCE (`offeredMemeRoot`), so any single meme rides whole whatever its slot count;
- *   · its board row holds at most `CANON_OFFER_ROW_MAX` characters, the bound every reader folds by (a write to a shared board
+ *   · its board row holds at most `CANON_OFFER_RECORD_MAX` characters, the bound every reader folds by (a write to a shared board
  *     never buys unbounded parsing). The row bound caps the bytes the meme count leaves open.
  * `openCanonOffer` refuses either by name (`offer-too-many`, `offer-too-large`) before a row lands, so no offer lands that its
  * readers then set aside.
  */
 export const CANON_OFFER_MAX_MEMES = 64;
-export const CANON_OFFER_ROW_MAX = 1024 * 1024;
+export const CANON_OFFER_RECORD_MAX = 1024 * 1024;
 /** The row's envelope beside its body (`{"body":…,"cid":"<64 hex>","sig":"<128 hex>"}`), with room: the open weighs the body plus this. */
 const CANON_OFFER_ENVELOPE_MAX = 512;
 
@@ -83,7 +83,7 @@ export type CanonOfferRefusal =
   | "offer-not-canon"          // the bag names no house-canon bag
   | "offer-empty"              // no record named
   | "offer-too-many"           // past CANON_OFFER_MAX_MEMES (a root and its slot records count once)
-  | "offer-too-large"          // the board row would pass CANON_OFFER_ROW_MAX
+  | "offer-too-large"          // the board row would pass CANON_OFFER_RECORD_MAX
   | "offer-withheld-title"     // a withheld or `cap/**` title never leaves its home
   | "offer-title-doubled"      // one title named twice
   | "offer-not-in-source"      // the source layer holds no live record of the title
@@ -267,7 +267,7 @@ export function openCanonOffer(parts: {
   records.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
   const body: CanonOfferBody = { kind: CANON_OFFER_DOMAIN, nexus: parts.nexus.trim(), bag, offerer: parts.offerer, records };
   const weight = JSON.stringify(body).length + CANON_OFFER_ENVELOPE_MAX;
-  if (weight > CANON_OFFER_ROW_MAX) throw new CanonOfferRefused("offer-too-large", `this offer's board row would hold about ${weight} characters, past the ${CANON_OFFER_ROW_MAX} every reader folds; offer fewer memes at once`);
+  if (weight > CANON_OFFER_RECORD_MAX) throw new CanonOfferRefused("offer-too-large", `this offer's board row would hold about ${weight} characters, past the ${CANON_OFFER_RECORD_MAX} every reader folds; offer fewer memes at once`);
   return body;
 }
 
@@ -385,13 +385,13 @@ export function verifyCanonOfferRetire(value: unknown, args: { readonly nexus: s
 export interface CanonOfferBoard { doc(): LarDoc | undefined; change(fn: (draft: LarDoc) => void): void }
 
 /** Land an offer row. Call INSIDE `change()`. Answers false where the row already stands (a replay lands nothing); THROWS
- *  `offer-too-large` for a row past `CANON_OFFER_ROW_MAX`, which no reader would fold. */
+ *  `offer-too-large` for a row past `CANON_OFFER_RECORD_MAX`, which no reader would fold. */
 export function writeCanonOffer(draft: LarDoc, offer: CanonOffer): boolean {
   const key = `${CANON_OFFER_PREFIX}${offer.cid}`;
   if (Object.hasOwn(draft.tiddlers, key)) return false;
   const text = JSON.stringify(offer);
   // The last guard of the row bound (`openCanonOffer` weighs it first): a row no reader folds never lands.
-  if (text.length > CANON_OFFER_ROW_MAX) throw new CanonOfferRefused("offer-too-large", `this offer's board row holds ${text.length} characters, past the ${CANON_OFFER_ROW_MAX} every reader folds`);
+  if (text.length > CANON_OFFER_RECORD_MAX) throw new CanonOfferRefused("offer-too-large", `this offer's board row holds ${text.length} characters, past the ${CANON_OFFER_RECORD_MAX} every reader folds`);
   draft.tiddlers[key] = storedLarRecord(key, { text }, "canon-offer");
   return true;
 }
@@ -422,7 +422,7 @@ function rowsUnder(doc: LarDoc | undefined, prefix: string): Array<{ key: string
   for (const [title, row] of Object.entries(doc?.tiddlers ?? {})) {
     if (!title.startsWith(prefix)) continue;
     const text = tiddlerText(row);
-    if (text === null || text.length > CANON_OFFER_ROW_MAX) { out.push({ key: title.slice(prefix.length), value: undefined }); continue; }
+    if (text === null || text.length > CANON_OFFER_RECORD_MAX) { out.push({ key: title.slice(prefix.length), value: undefined }); continue; }
     try { out.push({ key: title.slice(prefix.length), value: JSON.parse(text) as unknown }); } catch { out.push({ key: title.slice(prefix.length), value: undefined }); }
   }
   return out;

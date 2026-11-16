@@ -22,7 +22,7 @@
  */
 import {
   carriageAncestryFromBoard, foldCarriageDetails, foldCarrierSet, filePlaceFloorPins, gateNativeCarriagePull, placeArmFor, placeFloorPinKey, placeFloorPinsFromBoard,
-  placeKelRowsFromBoard, placeKelKey, verifyPlaceKel, writePlaceKelEvent,
+  placeKelEntriesFromBoard, placeKelKey, verifyPlaceKel, writePlaceKelEvent,
   signPlaceFloorPin, tiddlerText, writePlaceFloorPin, carriageDocUrl, FLOW_SOCKET_ROUTE,
   deriveGateBundle, floorGateRoot, floorRoute,
   type DialSocket, type FloorKeyDoor, type FacePresentation, type GateBundlePin, type HearthPinIndex, type LarDoc,
@@ -106,14 +106,14 @@ export function vesselCarriagePull<T = unknown>(deps: VesselCarriagePullDeps): (
       }
       const nexusHex = Buffer.from(r.aid, "utf8").toString("hex");
       const statements = placeFloorPinsFromBoard(board);
-      const kelRows = placeKelRowsFromBoard(board);
+      const kelEntries = placeKelEntriesFromBoard(board);
       // WHICH READING READ WHICH BOARD: the reading's way in, its board, the carriers its own replica counts and the
       // places whose statements that board holds, so a refused pin names the relation it missed.
       const named = (keys: Iterable<string>): string => [...keys].map((k) => k.slice(0, 8)).sort().join(",") || "none";
       const stated = statements.map((s) => (typeof s === "object" && s !== null && typeof (s as { aid?: unknown }).aid === "string" ? (s as { aid: string }).aid : "?"));
       const acts = [...r.denyBoard].filter((e) => e.action === "carry" || e.action === "uncarry")
         .map((e) => `${e.action}:${e.nym.slice(0, 8)}@${e.sealEpochCid.slice(-8)}`).sort().join(",") || "none";
-      const { filed, refused, held } = filePlaceFloorPins(deps.pins, statements, { nexusHex, route: FLOW_SOCKET_ROUTE, kelRows, standing: { via: "carrier", carriers } });
+      const { filed, refused, held } = filePlaceFloorPins(deps.pins, statements, { nexusHex, route: FLOW_SOCKET_ROUTE, kelEntries, standing: { via: "carrier", carriers } });
       if (refused.length > 0 && deps.onLog) {
         const folded = await foldCarriageDetails(r.denyBoard, r.roster, ancestry);
         const reasons = folded.entries.filter((e) => e.action === "carry" || e.action === "uncarry")
