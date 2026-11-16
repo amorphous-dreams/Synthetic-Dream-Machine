@@ -588,13 +588,15 @@ const importPreview = async (c) => {
 
 const importApply = async (c) => {
   const h = c.hands("new");
-  const answers = [];
+  const answers = []; const unread = [];
   for (const face of [0, 1, 2]) {
     const w = await wear(c, "new", face);
     if (!w.ok) return { ok: false, answer: `face ${face} never stood worn: ${tail(w.transcript)}` };
     const r = await h.pty(h.shimLine(["import", importSource(c), "--apply", "--json"]), { says: CARRY_SAYS.import, route: TEST_PASSPHRASE, timeout: 1_800_000 });
     const answer = json(r.stdout);
     answers.push({ code: r.code, json: answer });
+    // An apply that answered no JSON keeps its terminal: the prompts it asked, the transcript's tail and the exit name the cause.
+    if (answer === null) unread.push(`face ${face} exit ${r.code}, asked ${JSON.stringify(promptsOf(flat(r.stdout)))}: ${tail(r.stdout)}`);
     mkdirSync(c.scope.census, { recursive: true });
     const file = join(c.scope.census, `import-${face}.json`);
     writeFileSync(file, `${JSON.stringify(answer, null, 2)}\n`);
@@ -602,7 +604,7 @@ const importApply = async (c) => {
   }
   const j = judgeImport(answers, { expectedStandoff: c.vars.expectedStandoff ?? [] });
   c.vars.importTallies = answers.map((a) => a.json?.data?.tallies ?? null);
-  return { ok: j.ok, answer: j.ok ? `stood off exactly the named set ${JSON.stringify(j.stoodOff)}; landed ${JSON.stringify(j.landed)}` : j.faults.join("; "), measures: { exits: answers.map((a) => a.code), stoodOff: j.stoodOff, refused: j.refused, landed: j.landed } };
+  return { ok: j.ok, answer: j.ok ? `stood off exactly the named set ${JSON.stringify(j.stoodOff)}; landed ${JSON.stringify(j.landed)}` : [...j.faults, ...unread].join("; "), measures: { exits: answers.map((a) => a.code), stoodOff: j.stoodOff, refused: j.refused, landed: j.landed, unread } };
 };
 
 const reimport = async (c) => {
