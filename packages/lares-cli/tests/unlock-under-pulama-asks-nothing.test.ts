@@ -2,7 +2,7 @@
  * unlock-under-pulama-asks-nothing — `lares vault unlock` at a vessel whose custody a pūlama holds gathers no credential: it
  * reads the door first, sends an unlock that carries none, and names the pūlama and what it waits on.
  */
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
@@ -31,15 +31,31 @@ beforeAll(async () => {
 
 let out: string[];
 let root: string;
+// Every HOME here stands under the scratch root, so the surface env file a pūlama reading looks for never names the real one.
+const PULAMA_KEYS = ["HOME", "LARES_PULAMA", "LAR_PULAMA_SOCKET"] as const;
+let priorEnv: Record<string, string | undefined>;
 beforeEach(() => {
   prompts = 0; frames.length = 0; out = [];
   root = mkdtempSync(join(tmpdir(), "unlock-pulama-"));
   process.env["LAR_ROOT"] = root;
+  priorEnv = Object.fromEntries(PULAMA_KEYS.map((k) => [k, process.env[k]]));
+  process.env["HOME"] = join(root, "operator");
+  delete process.env["LARES_PULAMA"];
+  delete process.env["LAR_PULAMA_SOCKET"];
   vi.spyOn(console, "log").mockImplementation((...a: unknown[]) => { out.push(a.join(" ")); });
   vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { out.push(a.join(" ")); });
   vi.spyOn(process.stdout, "write").mockImplementation((c) => { out.push(String(c)); return true; });
 });
-afterEach(() => { vi.restoreAllMocks(); delete process.env["LAR_ROOT"]; rmSync(root, { recursive: true, force: true }); });
+afterEach(() => {
+  vi.restoreAllMocks(); delete process.env["LAR_ROOT"];
+  for (const k of PULAMA_KEYS) { if (priorEnv[k] === undefined) delete process.env[k]; else process.env[k] = priorEnv[k]; }
+  rmSync(root, { recursive: true, force: true });
+});
+/** The surface env file at the scratch operator's `~/.lares`, as the host shim reads it. */
+const surfaceEnvFile = (text: string): void => {
+  mkdirSync(join(process.env["HOME"]!, ".lares"), { recursive: true });
+  writeFileSync(join(process.env["HOME"]!, ".lares", "lares-surface.env"), text);
+};
 
 const custody = (pulama?: { session: boolean; waits: string | null }) => ({ op: "custody", unlocked: pulama?.session === true, slot: null, attemptsLeft: 0, standing: "herm", ...(pulama ? { pulama } : {}) });
 const run = (...argv: string[]): Promise<number> => cmdVault(parseArgs(["vault", ...argv, "--json"]));
@@ -88,5 +104,48 @@ describe("RED unlock-under-pulama-asks-nothing (the command)", () => {
     expect(prompts).toBeGreaterThan(0);
     expect(frames).toHaveLength(2);
     expect(frames[1]).toMatchObject({ op: "unlock", credentials: [{ kind: "passphrase", passphrase: "a-route-nobody-should-be-asked-for" }] });
+  });
+});
+
+describe("RED unlock-refuses-on-unread-probe (the custody door reads no answer)", () => {
+  it("unlock-refuses-on-unread-probe-under-a-pulama: the vessel's own socket names a pūlama, the probe reads nothing; refuse by name, ask nothing, send no unlock", async () => {
+    process.env["LAR_PULAMA_SOCKET"] = "/pulama/socket/pulama.sock";
+    door = () => null;
+    expect(await run("unlock")).toBe(1);
+    expect(prompts).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }]);
+    const a = answer();
+    expect(a.ok).toBe(false);
+    expect(a.error?.code).toBe("custody-probe-unread");
+    expect(a.error?.message).toMatch(/pūlama/);
+    expect(a.error?.message).toMatch(/lares vault status/);
+  });
+
+  it("unlock-refuses-on-unread-probe-under-a-pulama: the host env names LARES_PULAMA=1, a route flag changes nothing", async () => {
+    process.env["LARES_PULAMA"] = "1";
+    door = () => null;
+    expect(await run("unlock", "--passphrase")).toBe(1);
+    expect(prompts).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }]);
+    expect(answer().error?.code).toBe("custody-probe-unread");
+  });
+
+  it("unlock-unread-probe-reads-the-surface-env-file: no env names the pūlama, the surface env file does", async () => {
+    surfaceEnvFile("LARES_HOUSE=/nowhere\nLARES_PULAMA=1\n");
+    door = () => null;
+    expect(await run("unlock")).toBe(1);
+    expect(prompts).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }]);
+    expect(answer().error?.code).toBe("custody-probe-unread");
+  });
+
+  it("CONTROL unlock-unread-probe-without-a-pulama-still-prompts: no pūlama named anywhere (the file's last line turns it off), the route gets gathered as before", async () => {
+    surfaceEnvFile("LARES_PULAMA=1\nLARES_PULAMA=0\n");
+    door = () => null;
+    expect(await run("unlock", "--passphrase")).toBe(1);
+    expect(prompts).toBeGreaterThan(0);
+    expect(frames[0]).toEqual({ op: "custody" });
+    expect(frames[1]).toMatchObject({ op: "unlock", credentials: [{ kind: "passphrase" }] });
+    expect(answer().error?.code).toBe("daemon-unreachable");
   });
 });
