@@ -1,13 +1,13 @@
-// rite-walk/carry-leg — the rite's CARRY LEG: a house stands on the old image, is seeded, censused and exported; the same
+// rite-walk/carry-leg — the rite's CARRY LEG: a house stands on the source image, is seeded, censused and exported; the same
 // tag rebuilds at the pinned head, a brand-new house stands there, imports the bundle, and the parity witness compares the
 // two houses' censuses (`tools/carry-parity.mjs`). The rehearsal of the carry PR #218's merge rides on, on scratch houses.
 //
-// TWO PHASES, ONE SCOPE. Every vessel verb runs inside the container, so `export` runs on the OLD CLI in the old image and
+// TWO PHASES, ONE SCOPE. Every vessel verb runs inside the container, so `export` runs on the source CLI in the source image and
 // `import` on the NEW CLI in the new one. Each phase stands on its own clone of the checkout (`old-src` at `--from-rev`,
 // `new-src` at the pinned head), its own workspace clone and house, and its own compose copy; the shim each phase runs
 // is the one in its clone (running a clone's shim edits no `tools/lares-container.sh`). The image leg's scope holds
 // unchanged (`assertImageScope`, the docker wrapper, the scratch HOME), and the base must stand under
-// `~/.lares-scratch/rehearsal/`. One tag serves both images in turn, so the old house goes down before the new image builds.
+// `~/.lares-scratch/rehearsal/`. One tag serves both images in turn, so the source house goes down before the new image builds.
 //
 // THE PIN. A walk pins the head it starts at (or `--pin <sha>`) into its kept state, and the new phase clones that sha
 // alone: a sibling committing mid-walk never moves the image under proof. A resume that names another pin refuses.
@@ -160,7 +160,7 @@ export function treeDigest(root) {
 // ── the terminal answers ────────────────────────────────────────────────────────────────────────────────────────────
 
 /**
- * A new face's route, in the words the old image asked on a terminal (measured 2026-11-16, the probe to `persona-1`):
+ * A new face's route, in the words the source image asked on a terminal (the probe to `persona-1`):
  * "Face h1 takes a route of its own, apart from this vessel's. …", then the menu, the passphrase and its confirm. No ward
  * prompt and no "same typed route" question follow on a standing vessel.
  */
@@ -284,7 +284,7 @@ const unlockAll = (phase) => async (c) => {
   return { ok: r.code === 0 && unlocked === true, answer: `exit ${r.code}; unlocked ${unlocked} · ${tail(r.stdout)}`, measures: { prompts: promptsOf(flat(r.stdout)) } };
 };
 
-/** The three canon memes the plan forks over, read from the old clone, and the prose it borrows. */
+/** The three canon memes the plan forks over, read from the source clone, and the prose it borrows. */
 async function canonFor(c) {
   const src = c.scope.oldSrc;
   const carriers = (await hostGit(c, ["-C", src, "ls-tree", "-r", "--name-only", c.vars.oldRev, "--", "bags/lares/ha.ka.ba/lares/docs"])).split("\n").filter(Boolean);
@@ -449,7 +449,7 @@ const foundNew = async (c) => {
   return await found(c.hands("new"));
 };
 
-/** The temp consent and expiry the old house carried, re-stated by hand in the new house's config. */
+/** The temp consent and expiry the source house carried, re-stated by hand in the new house's config. */
 const configRestate = async (c) => {
   const read = (p) => (existsSync(p) ? JSON.parse(readFileSync(p, "utf8")) : {});
   const old = read(join(c.scope.houseOld, "config", "config.json"));
@@ -611,7 +611,7 @@ const teardown = async (c) => {
 const SC = "staged-custody";
 const PTY = "pty";
 export const CARRY_STEPS = Object.freeze([
-  // The old house.
+  // The source house.
   { id: "src-old", command: "git clone --local --no-checkout · checkout --detach <from-rev> · submodule update --init TiddlyWiki5 mempalace", expect: "a clean clone at the old revision", run: srcStep("old") },
   { id: "build-old", command: "old-src/tools/lares-container.sh build", needs: ["src-old"], expect: "the image stamped at the old revision", run: buildStep("old") },
   { id: "stage-custody-old", command: "test-scratch-marker.mjs /lar && seed-test-custody.mjs /lar (old image)", via: SC, needs: ["build-old"], expect: "the marker and the custody tree stand", run: onPhase("old", stageCustody) },
@@ -701,7 +701,7 @@ export function parseCarryArgs(argv) {
   return opts;
 }
 
-/** The carry leg's receipt: the image leg's fields, the pinned head and the old revision, and what the carry measured. */
+/** The carry leg's receipt: the image leg's fields, the pinned head and the source revision, and what the carry measured. */
 export function carryReceipt({ head, dirty, walker, scope, rows, legs, docker, vars }) {
   const tally = { pass: 0, fail: 0, unreached: 0 };
   for (const r of rows) tally[r.outcome] += 1;

@@ -1,7 +1,7 @@
-// rite-walk/carry-seed — the carry leg's seed, as data: what the old house holds before its export, generated from a seed
+// rite-walk/carry-seed — the carry leg's seed, as data: what the source house holds before its export, generated from a seed
 // string alone, so a re-run writes the same bytes. Pure: no Docker, no disk, no clock.
 //
-// THE OLD GATE. At the old revision the memory stage keys every row by its `row-key` meta field, and the row stands at
+// THE SOURCE GATE. At the source revision the memory stage keys every row by its `row-key` meta field, and the row stands at
 // `STAGE_PREFIX` + key alone (`row-key-missing`, `row-key-title`, `row-key-shape`). So every stage meme here carries
 // `row-key = "<class>/<slug>"`, equal to its title path. The new house reads no such field; the leg's sweep (`sweepRowKey`)
 // strips it after the parity reads par.
@@ -103,7 +103,7 @@ function workingCopy(canonText, why) {
 const withSlots = (text, n) => text.replace("\n<<^ code=`&#x0003;`", Array.from({ length: n }, (_, i) => `\n<<~ ahu slot=\`#/note-${i + 1}\`>>\n\nslot ${i + 1} of the rehearsal row.\n\n<<~/ahu>>\n`).join("") + "\n<<^ code=`&#x0003;`");
 
 /**
- * The whole seed. `canon` names three canon memes of the old revision: `still` (unchanged to the pinned head), `moved`
+ * The whole seed. `canon` names three canon memes of the source revision: `still` (unchanged to the pinned head), `moved`
  * (changed), each with its old text, and `kapae` (a title to shadow). `bodies` lends prose lines from tracked carriers.
  */
 export function seedPlan({ seed = "carry-rehearsal", count = 300, canon, bodies = [] } = {}) {
@@ -180,7 +180,7 @@ export function seedFiles(plan) {
   return out;
 }
 
-/** Pick the canon memes the plan forks over, from the tracked `bags/lares` carriers at the old revision and the moved set. */
+/** Pick the canon memes the plan forks over, from the tracked `bags/lares` carriers at the source revision and the moved set. */
 export function pickCanon({ carriers, moved }) {
   const movedSet = new Set(moved);
   const memes = [...carriers].filter((p) => /^bags\/lares\/ha\.ka\.ba\/lares\/docs\/[a-z0-9-]+\.mem$/.test(p)).sort();
