@@ -31,6 +31,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n` +
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
+      `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
@@ -768,3 +770,40 @@ for (const [name, shim] of shims) {
   });
 }
 async function lone(shim, sig, standing) { return loneSignal(shim, sig, { standing }); }
+
+// ── THE PŪLAMA (road L47e): the house's custody holder standing in its own container beside the vessel ──
+const PULAMA_ENV = "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\nLARES_PULAMA=1\n";
+for (const [name, shim, skip] of [["sh", SH, false], ["ps1", PS1, !havePwsh]]) {
+test(`${name}: pulama-mode up stands the pūlama first, reports the image digest to it, then raises the vessel over its socket`, { skip }, async () => {
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+  assert.equal(r.status, 0, r.stderr);
+  const lines = r.calls.split("\n");
+  const pul = lines.findIndex((l) => /--profile pulama up -d --no-recreate pulama/.test(l));
+  const img = lines.findIndex((l) => /exec -T pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js image sha256:abc123/.test(l));
+  const ves = lines.findIndex((l) => /up -d --wait lares/.test(l));
+  assert.ok(pul >= 0 && img > pul && ves > img, `order pūlama, digest, vessel:\n${r.calls}`);
+});
+test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
+  const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });
+  assert.equal(r.status, 0, r.stderr);
+  assert.doesNotMatch(r.calls, /pulama/);
+});
+test(`${name}: down-leaves-pulama-standing: with a pūlama running, down stops and removes the vessel alone`, { skip }, async () => {
+  const r = await run(shim, ["down"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /stop lares/);
+  assert.match(r.calls, /rm -f lares/);
+  assert.doesNotMatch(r.calls, / down /);
+});
+test(`${name}: pulama light reaches the pūlama's hand verb, and pulama down stops it`, { skip }, async () => {
+  const light = await run(shim, ["pulama", "light"], { envFile: PULAMA_ENV });
+  assert.equal(light.status, 0, light.stderr);
+  assert.match(light.calls, /--profile pulama exec (-T )?pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js light/);
+  const down = await run(shim, ["pulama", "down"], { envFile: PULAMA_ENV });
+  assert.equal(down.status, 0, down.stderr);
+  assert.match(down.calls, /--profile pulama stop pulama/);
+  const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
+  assert.equal(bad.status, 2);
+  assert.match(bad.stderr, /pulama takes/);
+});
+}
