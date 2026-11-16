@@ -231,7 +231,7 @@ describe("meme normalize — a SHIFTED check is REPLACED, never duplicated", () 
 
     const { out, code } = meme("normalize", file);
     expect(code).toBe(1);
-    expect(out).toMatch(/trailer form retired/);
+    expect(out).toMatch(/holds its check as ``bcc=/);
     expect(readFileSync(file, "utf8"), "a torn frame gets no stamp").toBe(trailer);
   });
 
