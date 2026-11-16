@@ -131,3 +131,70 @@ test("the compaction carry hands the summary the index and the rows in play", as
   const slow = await compactCarry({ budgetMs: 30, run: runner({ index: hung([], "index") }) });
   assert.match(slow, /memory index unread: no answer inside the wake's budget/);
 });
+
+// Road `L48`: the wake shows the lei and the unmatched tessera halves; each read stands behind a port, answered here by fixtures.
+const { leiArgv, halvesArgv, gitArgv, unmatchedHalves, LOCKED_LINE } = core;
+const SHA = "0123456789abcdef0123456789abcdef01234567";
+const CID = "a".repeat(64);
+const gitHead = () => answered(`${SHA}\nlane/l48-wake\n`);
+const lei = (data) => answered(JSON.stringify({ ok: true, data }));
+
+test("wake-names-the-lei: the wake names the lei a session wears at its branch, one read per rite", async () => {
+  const calls = [];
+  const run = (name, argv) => {
+    calls.push([name, argv]);
+    return ({
+      observe: answered(UP), homes: answered("h"), index: answered(page([])), git: gitHead(),
+      lei: lei(argv[3] === "push" ? { lei: { standing: true, after: CID } } : { lei: { standing: false, refusal: "absent", after: null } }),
+    })[name];
+  };
+  const context = await wake({ run });
+  assert.match(context, new RegExp(`Lares lei: this session wears push \\(follows ${"a".repeat(12)}\\) at lane/l48-wake@01234567`));
+  assert.doesNotMatch(context, /kukulu \(/);
+  assert.deepEqual(calls.filter(([n]) => n === "lei").map(([, a]) => a), [leiArgv("push", "lane/l48-wake", SHA), leiArgv("kukulu", "lane/l48-wake", SHA)]);
+  assert.deepEqual(calls.find(([n]) => n === "git")[1], gitArgv());
+});
+
+test("wake-names-the-lei: the door's present `go` key reads as a lei, a fork names its tips, and no lei reads as none worn", async () => {
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])), git: gitHead() };
+  const old = await wake({ run: runner({ ...base, lei: lei({ go: { standing: true, after: null } }) }) });
+  assert.match(old, /wears push \(the branch's first\), kukulu \(the branch's first\) at/);
+  const forked = await wake({ run: runner({ ...base, lei: lei({ lei: { standing: false, refusal: "forked", after: null, forks: [CID, "b".repeat(64)] } }) }) });
+  assert.match(forked, new RegExp(`push forked at ${"a".repeat(12)} \\| ${"b".repeat(12)}`));
+  const none = await wake({ run: runner({ ...base, lei: lei({ lei: { standing: false, refusal: "absent", after: null } }) }) });
+  assert.match(none, /Lares lei: none worn at lane\/l48-wake@01234567/);
+});
+
+test("wake-names-the-lei: a locked vessel gives the operator's call, and a read fault names its cause", async () => {
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])), git: gitHead() };
+  const locked = await wake({ run: runner({ ...base, lei: answered(JSON.stringify({ ok: false, error: { code: "vessel-locked", message: "vessel-locked: run lares vault unlock" } }), 4) }) });
+  assert.ok(locked.includes(LOCKED_LINE));
+  assert.match(LOCKED_LINE, /tell the operator now/);
+  const broken = await wake({ run: runner({ ...base, lei: answered("", 127) }) });
+  assert.match(broken, /Lares lei unread: push: the read exited 127 with no answer; kukulu: /);
+  // CONTROL: a runner that wires no lei, git or halves port leaves the wake as it stood.
+  const plain = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])) }) });
+  assert.doesNotMatch(plain, /Lares lei|tessera conferre/);
+  // CONTROL: a vessel that answers down starts no lei read.
+  const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })), lei: lei({ lei: { standing: true } }) }) });
+  assert.doesNotMatch(down, /Lares lei/);
+});
+
+test("wake-names-unmatched-half: a begun half without its landed, and a landed without its begun, each name themselves", async () => {
+  const receipts = [
+    { act: "rite-begun", rite: "push", tessera: "t-one" }, { act: "rite-landed", rite: "push", tessera: "t-one" },
+    { act: "rite-begun", rite: "kukulu", tessera: "t-two" },
+    { act: "rite-landed", rite: "push", tessera: "t-three" },
+  ];
+  assert.deepEqual(unmatchedHalves(receipts), [{ half: "begun", rite: "kukulu", tessera: "t-two" }, { half: "landed", rite: "push", tessera: "t-three" }]);
+  const calls = {};
+  const context = await wake({ run: runner({
+    observe: answered(UP), homes: answered("h"), index: answered(page([])), halves: answered(JSON.stringify({ ok: true, data: { receipts } })),
+  }, calls) });
+  assert.match(context, /Lares tessera conferre: 1 par, 2 red \(no match\): kukulu t-two guest half begun, no host half landed; push t-three host half landed, no guest half begun/);
+  assert.deepEqual(calls.halves, halvesArgv());
+  // CONTROL: every half paired reads as one standing line.
+  const paired = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), halves: answered(JSON.stringify({ ok: true, data: { receipts: receipts.slice(0, 2) } })) }) });
+  assert.match(paired, /Lares tessera conferre: 1 par, every half has its match/);
+  assert.deepEqual(unmatchedHalves(undefined), []);
+});

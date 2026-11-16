@@ -6,6 +6,10 @@
  * ride the checkout's container shim, `homes` rides the host CLI. Everything else here reads as text in, text out,
  * so a test drives it with no container and no child process.
  *
+ * Four more reads stand behind ports, each optional: `git` names the checkout's head and branch; `lei` reads the lei a session
+ * wears at that branch, one read per rite, through the swarm door; `halves` reads the tessera receipts the rite writes
+ * (`rite-begun`, `rite-landed`). A runner that answers none of them leaves the wake as it stood.
+ *
  * ONE BUDGET. The harness bounds a hook (`hooks/hooks.json`, 15 seconds), and past that bound it discards the hook's
  * whole answer. So the three reads start together and share one budget that closes inside the harness's bound: a read
  * still open then stops and reports itself by name, and the wake carries what the other reads answered. The budget
@@ -49,7 +53,7 @@ export function shimRunner(hookUrl) {
   const hookDir = dirname(fileURLToPath(hookUrl));
   const laresBin = join(hookDir, "..", "..", "bin", "lares.mjs");
   const shim = join(hookDir, "..", "..", "..", "..", "tools", "lares-container.sh");
-  return (name, argv) => (name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : spawnRead(shim, argv));
+  return (name, argv) => (name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv));
 }
 
 /** The tag of the one cold-boot view (first-three-wave-map#/the-handoff-walk; road `L43`). */
@@ -70,6 +74,13 @@ const CURE = "stand it with tools/lares-container.sh up";
 const VIEW = `wiki_filter(filter="${INDEX_FILTER}", recipe="default", fields=["title","description"]`;
 const bytes = (text) => Buffer.byteLength(text, "utf8");
 
+/** The rites a lei carries, and the shim's argv for the checkout's head then branch. */
+export const LEI_RITES = ["push", "kukulu"];
+export const gitArgv = () => ["rev-parse", "HEAD", "--abbrev-ref", "HEAD"];
+/** The shim's argv for one rite's lei at a branch and head: the swarm door's `show`. */
+export const leiArgv = (rite, branch, head) => ["swarm", "show", "--rite", rite, "--branch", branch, "--head", head, "--json"];
+/** The shim's argv for the tessera receipts the rite writes. */
+export const halvesArgv = () => ["rite", "receipts", "--json"];
 /** The shim's argv for the vessel observation. */
 export const observeArgv = () => ["vessel", "stand", "--observe", "--json"];
 /** The shim's argv for one page of the memory index, read in the worn face's daemon wiki. */
@@ -166,6 +177,82 @@ export function indexLines(result) {
   return renderIndex(answer);
 }
 
+/** The refusal a locked vessel answers, in the words a session reads: it calls the operator at once. */
+export const LOCKED_LINE = "vessel locked: tell the operator now (the harness's push notification) to run `lares vault unlock`; tool calls answer `vessel-locked` until it opens";
+
+/** Whether a door's answer names the locked vessel, by its error code or the lead of its message. */
+const refusesLocked = (answer) => {
+  const error = answer?.error ?? {};
+  return String(error.code ?? "") === "vessel-locked" || String(error.message ?? "").startsWith("vessel-locked");
+};
+
+/** The checkout's head and branch from the `git` read; null where it answered neither. */
+export function checkoutOf(result) {
+  if (!result || result === BUDGET || result.error) return null;
+  const [head, branch] = String(result.stdout ?? "").trim().split("\n").map((x) => x.trim());
+  return head && branch && branch !== "HEAD" ? { head, branch } : null;
+}
+
+/**
+ * The lei line for one session: `results` holds one answer per rite (a rite whose read never started stays out). A standing lei names
+ * its rite and the lei it follows; a fork names its tips; a refusal `absent` reads as no lei; a locked vessel gives the operator's call.
+ */
+export function leiLines(checkout, results) {
+  const worn = [], forked = [], bare = [], faults = [];
+  for (const [rite, result] of Object.entries(results)) {
+    if (result === BUDGET) { faults.push(`${rite}: ${CLOSED}`); continue; }
+    const answer = parseAnswer(result?.stdout);
+    if (answer === null) { faults.push(`${rite}: ${readFault(result, "read") ?? "the answer did not parse"}`); continue; }
+    if (refusesLocked(answer)) return [LOCKED_LINE];
+    if (answer.ok === false) { faults.push(`${rite}: ${answer.error?.code ?? "refused"}`); continue; }
+    // The lane renames the door's `go` to `lei`; the reader takes either.
+    const lei = answer.data?.lei ?? answer.data?.go;
+    if (lei?.standing === true) worn.push(lei.after ? `${rite} (follows ${String(lei.after).slice(0, 12)})` : `${rite} (the branch's first)`);
+    else if (Array.isArray(lei?.forks) && lei.forks.length > 0) forked.push(`${rite} forked at ${lei.forks.map((c) => String(c).slice(0, 12)).join(" | ")}`);
+    else bare.push(rite);
+  }
+  const at = `${checkout.branch}@${checkout.head.slice(0, 8)}`;
+  const lines = [];
+  if (worn.length > 0 || forked.length > 0) lines.push(`Lares lei: this session wears ${[...worn, ...forked].join(", ")} at ${at}`);
+  else if (bare.length > 0 && faults.length === 0) lines.push(`Lares lei: none worn at ${at}`);
+  if (faults.length > 0) lines.push(`Lares lei unread: ${faults.join("; ")}`);
+  return lines;
+}
+
+/**
+ * The tessera halves with no match, from the receipts the rite writes. A record reads `{ act: "rite-begun" | "rite-landed", rite, tessera }`
+ * and the `tessera` id pairs a begun with its landed.
+ */
+export function unmatchedHalves(records) {
+  const begun = new Map(), landed = new Map();
+  for (const r of Array.isArray(records) ? records : []) {
+    if (r?.act === "rite-begun") begun.set(String(r.tessera), String(r.rite ?? "?"));
+    else if (r?.act === "rite-landed") landed.set(String(r.tessera), String(r.rite ?? "?"));
+  }
+  return [
+    ...[...begun].filter(([id]) => !landed.has(id)).map(([id, rite]) => ({ half: "begun", rite, tessera: id })),
+    ...[...landed].filter(([id]) => !begun.has(id)).map(([id, rite]) => ({ half: "landed", rite, tessera: id })),
+  ];
+}
+
+/**
+ * The line for the receipts read. A tessera holds two halves, a guest half (`begun`) and a host half (`landed`); conferre sets each against
+ * its match, a match reads par, and a half with no match reads red by name.
+ */
+export function halvesLines(result) {
+  if (result === BUDGET) return `Lares tessera conferre unread: ${CLOSED}`;
+  const answer = parseAnswer(result?.stdout);
+  if (answer === null) return `Lares tessera conferre unread: ${readFault(result, "read") ?? "the answer did not parse"}`;
+  if (refusesLocked(answer)) return null;
+  if (answer.ok === false) return `Lares tessera conferre unread: ${answer.error?.code ?? "refused"}`;
+  const records = answer.data?.receipts;
+  const red = unmatchedHalves(records);
+  const par = new Set((Array.isArray(records) ? records : []).filter((r) => r?.act === "rite-begun").map((r) => String(r.tessera))).size - red.filter((h) => h.half === "begun").length;
+  if (red.length === 0) return `Lares tessera conferre: ${par} par, every half has its match`;
+  const word = (h) => (h.half === "begun" ? "guest half begun, no host half landed" : "host half landed, no guest half begun");
+  return `Lares tessera conferre: ${par} par, ${red.length} red (no match): ${red.map((h) => `${h.rite} ${h.tessera.slice(0, 12)} ${word(h)}`).join("; ")}`;
+}
+
 /** The line that keeps the rows in play by address across a context turn. */
 export const rowsInPlayLine = () =>
   `Lares rows in play: ${ROWS_IN_PLAY.join(" · ")} (read each again with meme_get(uri=…, recipe="default"))`;
@@ -188,12 +275,23 @@ function underBudget(budgetMs) {
  */
 export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "" }) {
   const reads = { observe: run("observe", observeArgv()), index: run("index", indexArgv()), homes: run("homes", homesArgv()) };
+  // The optional reads: a runner that answers none leaves their lines out.
+  const optional = (name, argv) => run(name, argv) ?? null;
+  const gitRead = optional("git", gitArgv());
+  const halvesRead = optional("halves", halvesArgv());
   const budget = underBudget(budgetMs);
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) { try { reads.index.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, halvesRead]) { try { read?.kill(); } catch { /* the read already left */ } }
   const index = seen.up ? await budget.settle(reads.index) : null;
+  const leiAnswers = {};
+  const checkout = gitRead && seen.up ? checkoutOf(await budget.settle(gitRead)) : null;
+  if (checkout) {
+    const started = LEI_RITES.map((rite) => [rite, optional("lei", leiArgv(rite, checkout.branch, checkout.head))]).filter(([, read]) => read !== null);
+    for (const [rite, read] of started) leiAnswers[rite] = await budget.settle(read);
+  }
+  const halves = halvesRead && seen.up ? await budget.settle(halvesRead) : null;
   const homes = await homesRead;
   budget.close();
   const homesLine = homes === BUDGET
@@ -205,6 +303,8 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "" }) {
     `Lares homes: ${homesLine}`,
     seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)",
   ];
+  if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
+  if (halves !== null) { const line = halvesLines(halves); if (line) lines.push(line); }
   if (source === "compact") lines.push(rowsInPlayLine());
   return lines.join("\n");
 }
