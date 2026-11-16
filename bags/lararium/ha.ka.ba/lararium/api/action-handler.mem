@@ -86,19 +86,19 @@ ALL CAPS by convention. The first six draw from set-algebra + cataloging, ''neve
    cut: [[kapae|lar:///ha.ka.ba/lares/api/pono/kapae]])
 # ''Parse-or-reject.'' `parseResidencyAction(invocation)` validates verb
    membership + per-verb required args; malformed input throws before dispatch.
-# ''A dropped bag takes no landing.'' DROP writes one `bag-retired` disposition at a
-   fixed title (the `RETIRED_EVENT_ID` leaf under `<bag>/ledger/residency/`) in the bag's own doc, and a second DROP
-   keeps the first marker. The registry row STAYS, the name's only pointer to the dropped
+# ''A retired bag takes no landing.'' DROP writes one `bag-retired` disposition at a
+   fixed title (`<bag>/ledger/residency/retired`) in the bag's own doc, and a second DROP
+   keeps the first marker. The registry row STAYS, the name's only pointer to the retired
    doc and its ledger. Every verb that writes a bag (ADD, COPY, MOVE, CLEAR, LOAD and INGEST,
    a watcher's unattended wave among them; `writesBag` in the residency verb table) reads the
    marker on its destination and refuses by name (`bag-retired: …`), pointing at CREATE; a
    preview refuses the same. A wiki island's own writes reach a bag through the composite's
    write door instead (`CompositeStore`: a save, a delete, the delete `lares shore remove`
    makes, a write into a named bag), and that door reads the target layer's marker before
-   anything lands: a write into a dropped bag refuses by the same name, lands nothing, and the
+   anything lands: a write into a retired bag refuses by the same name, lands nothing, and the
    island holds the hand owed on its alert rail. A write that only adds new live effect records naming that
    bag, exactly as the ledger's own builder writes them, to its own residency ledger passes, so the record that retires the bag lands; no tombstone,
-   removal, overwrite or write of the marker's own title passes. CREATE reads a dropped doc as absent: it mints a fresh doc and re-points the
+   removal, overwrite or write of the marker's own title passes. CREATE reads a retired doc as absent: it mints a fresh doc and re-points the
    row, so a retirement always names the doc the row pointed at when DROP ran. A wiki's
    recipe slot belongs to the wiki (`lares wiki remove-bag`), never to a bag verb.
 
@@ -134,6 +134,6 @@ is shared, not duplicated (Sprint 6 parity).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xZGtgu2SdlI631zaMK9x81K1QVhxIHn_wtpaB6xucw8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;e6Cj5e-l5O4GvUkAdLmSwCSHIcHjHYBpl2wp8rz_610`>>
 
 <<^ code=`&#x0004;` to=`?`>>
