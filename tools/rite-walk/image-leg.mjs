@@ -74,10 +74,10 @@ export function assertImageScope({ base, project, port, image, realHome = homedi
 }
 
 /** The scratch surface env, as compose and the host shim read it. */
-export function surfaceEnvText(scope, { uid, gid }) {
+export function surfaceEnvText(scope, { uid, gid, pulama = false }) {
   return [
     `LARES_HOUSE=${scope.house}`, `LARES_WORKSPACE=${scope.workspace}`, `LARES_PORT=${scope.port}`, "LARES_BIND=127.0.0.1",
-    `LARES_IMAGE=${scope.image}`, "LARES_PULAMA=1", `LARES_UID=${uid}`, `LARES_GID=${gid}`, `COMPOSE_PROJECT_NAME=${scope.project}`, "",
+    `LARES_IMAGE=${scope.image}`, ...(pulama ? ["LARES_PULAMA=1"] : []), `LARES_UID=${uid}`, `LARES_GID=${gid}`, `COMPOSE_PROJECT_NAME=${scope.project}`, "",
   ].join("\n");
 }
 
@@ -233,20 +233,29 @@ function run(command, args, { env, timeout = 120_000, input } = {}) {
   });
 }
 
-/** Run one command under a pseudo-terminal (`script`), typing `answer` once `prompt` shows. */
-function runPty(commandLine, { env, prompt, answer, timeout = 60_000 }) {
+/**
+ * Run one command under a pseudo-terminal (`script`), typing each answer once its prompt shows, in order. `route` names
+ * the one answer the quoted output redacts.
+ */
+function runPty(commandLine, { env, says, route, timeout = 60_000 }) {
   return new Promise((settle) => {
     const from = performance.now();
     const child = spawn("script", ["-qfec", commandLine, "/dev/null"], { env, stdio: ["pipe", "pipe", "pipe"] });
-    let out = "", typed = false, timedOut = false;
+    let out = "", at = 0, next = 0, timedOut = false;
     const see = (b) => {
       out += String(b);
-      if (!typed && out.includes(prompt)) { typed = true; child.stdin.write(`${answer}\r`); }
+      while (next < says.length) {
+        const found = out.indexOf(says[next].prompt, at);
+        if (found < 0) break;
+        at = found + says[next].prompt.length;
+        child.stdin.write(`${says[next].answer}\r`);
+        next += 1;
+      }
     };
     child.stdout.on("data", see);
     child.stderr.on("data", see);
     const bound = setTimeout(() => { timedOut = true; child.kill("SIGKILL"); }, timeout);
-    child.once("close", (code) => { clearTimeout(bound); settle({ code: timedOut ? 124 : code ?? 1, stdout: out.split(answer).join("<route>"), typed, ms: Math.round(performance.now() - from) }); });
+    child.once("close", (code) => { clearTimeout(bound); settle({ code: timedOut ? 124 : code ?? 1, stdout: route ? out.split(route).join("<route>") : out, typed: next === says.length, ms: Math.round(performance.now() - from) }); });
   });
 }
 
@@ -312,7 +321,7 @@ export function imageHands(scope, state) {
     return {
       ...e, HOME: scope.home, PATH: `${scope.bin}:${e.PATH}`, COMPOSE_PROJECT_NAME: scope.project, LARES_COMPOSE_FILE: scope.compose,
       LARES_HOUSE: scope.house, LARES_WORKSPACE: scope.workspace, LARES_PORT: String(scope.port), LARES_BIND: "127.0.0.1",
-      LARES_IMAGE: scope.image, LARES_PULAMA: "1", LARES_UID: String(uid), LARES_GID: String(gid), NO_COLOR: "1",
+      LARES_IMAGE: scope.image, ...(state.vars.pulama ? { LARES_PULAMA: "1" } : {}), LARES_UID: String(uid), LARES_GID: String(gid), NO_COLOR: "1",
     };
   })();
   const shimPath = join(CHECKOUT, "tools", "lares-container.sh");
@@ -335,11 +344,17 @@ export function imageHands(scope, state) {
       const real = execFileSync("sh", ["-c", "command -v docker"], { encoding: "utf8" }).trim();
       if (within(scope.base, real)) throw new RiteWalkRefusal(`docker already resolves inside the base (${real})`);
       for (const dir of [scope.bin, join(scope.home, ".lares"), ...["hearth", "sensoriums", "projections", "library", "config", "pulama/socket", "pulama/state"].map((c) => join(scope.house, c))]) mkdirSync(dir, { recursive: true });
-      writeFileSync(scope.envFile, surfaceEnvText(scope, { uid, gid }));
+      writeFileSync(scope.envFile, surfaceEnvText(scope, { uid, gid, pulama: state.vars.pulama === true }));
       writeFileSync(join(scope.bin, "docker"), dockerWrapperText({ real, project: scope.project, image: scope.image, log: scope.dockerLog }));
       chmodSync(join(scope.bin, "docker"), 0o755);
       writeFileSync(scope.compose, composeCopy(readFileSync(join(CHECKOUT, SURFACE_COMPOSE), "utf8"), { project: scope.project, context: CHECKOUT }));
       if (!existsSync(scope.workspace)) execFileSync("git", ["-C", CHECKOUT, "worktree", "add", "--detach", scope.workspace, "HEAD"], { stdio: "pipe" });
+    },
+    /** Stand the house with a pūlama (`LARES_PULAMA=1` in the surface env and this walk's own) or without one. */
+    pulamaMode(on) {
+      state.vars.pulama = on;
+      if (on) env.LARES_PULAMA = "1"; else delete env.LARES_PULAMA;
+      writeFileSync(scope.envFile, surfaceEnvText(scope, { uid, gid, pulama: on }));
     },
     /** What compose itself resolves: the project, the vessel's image and published port, every bind source. Refuses outside the scope. */
     async proveScope() {
@@ -394,6 +409,8 @@ const READ_TOOL = "status";
 const json = (text) => { try { return JSON.parse(text); } catch { return null; } };
 /** The last JSON object a mixed answer carries. */
 const lastJson = (text) => { const at = text.lastIndexOf("\n{"); return json(at < 0 ? text.trim() : text.slice(at + 1).trim()) ?? json(text.trim()); };
+/** The custody door's one word, as the shim reads it: `{ unlocked }`, null where the answer names none. */
+const unlockedOf = (text) => { const m = /"unlocked"\s*:\s*(true|false)/.exec(text); return { unlocked: m ? m[1] === "true" : null }; };
 const refusal = (r) => `exit ${r.code}: ${lineOf(`${r.stdout}\n${r.stderr}`)}`;
 
 const build = async (h) => {
@@ -423,6 +440,7 @@ const found = async (h) => {
 };
 
 const pulamaUp = async (h) => {
+  h.pulamaMode(true);
   const r = await h.shim(["pulama", "up"], { timeout: 180_000 });
   if (r.code !== 0) return { ok: false, answer: refusal(r) };
   let line = "", status = "";
@@ -467,7 +485,7 @@ const pulamaStatus = (wantLit) => async (h) => {
 };
 
 const pulamaLight = async (h) => {
-  const r = await h.pty(h.shimLine(["pulama", "light"]), { prompt: "route: ", answer: TEST_PASSPHRASE, timeout: 120_000 });
+  const r = await h.pty(h.shimLine(["pulama", "light"]), { says: [{ prompt: "route: ", answer: TEST_PASSPHRASE }], route: TEST_PASSPHRASE, timeout: 120_000 });
   const after = await h.shim(["pulama", "status"]);
   const status = lastJson(after.stdout);
   const flat = r.stdout.replace(/\r/g, "").trim();
@@ -477,21 +495,51 @@ const pulamaLight = async (h) => {
 const vesselLog = async (h) => { const id = await h.cid("lares"); return id ? h.said(await h.docker(["logs", id])) : ""; };
 const pulamaLines = (log) => log.split("\n").filter((l) => l.includes("[pulama]")).map((l) => l.trim());
 
-const up = async (h) => {
-  const r = await h.shim(["up"], { timeout: 420_000 });
+/** The unlock's three prompts on a terminal, answered under the published test route. */
+const UNLOCK_SAYS = [{ prompt: "(p): ", answer: "p" }, { prompt: "passphrase: ", answer: TEST_PASSPHRASE }, { prompt: "[y/N]: ", answer: "n" }];
+const tail = (text) => quote(text.replace(/\r/g, "").split("\n").map((l) => l.trim()).filter(Boolean).slice(-2).join(" · "));
+/** `up` on a terminal, as the operator runs it: the shim stands the vessel, then runs the unlock attached. */
+const upOnTerminal = (h) => h.pty(h.shimLine(["up"]), { says: UNLOCK_SAYS, route: TEST_PASSPHRASE, timeout: 420_000 });
+const unlockOnTerminal = (h) => h.pty(h.shimLine(["vault", "unlock", "--all", "--face", "0"]), { says: UNLOCK_SAYS, route: TEST_PASSPHRASE, timeout: 120_000 });
+const vaultUnlocked = async (h) => unlockedOf((await h.shim(["vault", "status", "--json"])).stdout).unlocked;
+
+const upOwn = async (h) => {
+  const r = await upOnTerminal(h);
+  const unlocked = await vaultUnlocked(h);
+  return { ok: r.code === 0 && unlocked === true, answer: `exit ${r.code}; the unlock ran attached: ${r.typed}; vault unlocked: ${unlocked} · ${tail(r.stdout)}`, measures: { seconds: Math.round(r.ms / 1000), unlocked } };
+};
+
+/** The first `up` beside a lit pūlama: the vessel seats its holder over the socket and offers what it wears. */
+const upPulama = async (h) => {
+  const before = await h.cid("lares");
+  const r = await upOnTerminal(h);
+  const after = await h.cid("lares");
   const lines = pulamaLines(await vesselLog(h));
-  return { ok: r.code === 0, answer: r.code === 0 ? `the vessel answers healthy · ${lines.at(-1) ?? "its log carries no [pulama] line"}` : refusal(r), measures: { seconds: Math.round(r.ms / 1000), shim: lineOf(r.stderr), pulamaLines: lines.slice(-6) } };
+  const unlocked = await vaultUnlocked(h);
+  return { ok: r.code === 0 && lines.length > 0, answer: `exit ${r.code}; a new vessel container: ${after !== before}; ${lines.at(-1) ?? "its log carries no [pulama] line"}; vault unlocked: ${unlocked} · ${tail(r.stdout)}`,
+    measures: { seconds: Math.round(r.ms / 1000), recreated: after !== before, unlockPrompted: r.typed, unlocked, pulamaLines: lines.slice(-6) } };
+};
+
+/** `vault unlock` at a vessel whose holder rests at the pūlama: the terminal's answer, quoted. */
+const unlockUnderPulama = async (h) => {
+  if (await vaultUnlocked(h) === true) return { ok: true, answer: "the vessel already stands unlocked by the pūlama's session; no unlock ran" };
+  const r = await unlockOnTerminal(h);
+  const unlocked = await vaultUnlocked(h);
+  const said = tail(r.stdout);
+  return { ok: unlocked === true, answer: `exit ${r.code}; the terminal asked for the route: ${r.typed}; vault unlocked: ${unlocked} · ${said}`, measures: { exit: r.code, routePrompted: r.typed, unlocked, said } };
 };
 
 const observe = async (h) => {
   const seen = await h.shim(["vessel", "stand", "--observe", "--json"]);
   const vault = await h.shim(["vault", "status", "--json"]);
   const standing = json(seen.stdout.trim())?.data?.standing ?? json(seen.stdout.trim())?.standing ?? null;
-  const custody = json(vault.stdout.trim())?.data ?? json(vault.stdout.trim());
+  const custody = unlockedOf(vault.stdout);
   const lines = pulamaLines(await vesselLog(h));
   const pulama = await h.shim(["pulama", "status"]);
   const status = lastJson(pulama.stdout);
-  const ok = seen.code === 0 && standing !== null && custody?.unlocked === true && (status?.sessions ?? 0) >= 1;
+  // THE SEAT, not the session: the vessel's own `[pulama]` line proves its holder dialed the socket. Whether the pūlama
+  // served it (a kūkulu wearing a vouched lei) rides the answer and the measures.
+  const ok = seen.code === 0 && standing !== null && lines.length > 0;
   return { ok, answer: `standing ${JSON.stringify(standing)} · vault unlocked: ${custody?.unlocked} · pūlama sessions: ${status?.sessions} · ${lines.at(-1) ?? "no [pulama] line"}`, measures: { standing, custody, pulama: status, pulamaLines: lines.slice(-6) } };
 };
 
@@ -519,17 +567,22 @@ const ahoHandshake = async (h) => {
   return { ok: tools.includes(READ_TOOL) && !read.error, answer: `protocol ${h.vars.protocol} · ${tools.length} tools · ${READ_TOOL} → ${read.text.slice(0, 160)}`, measures };
 };
 
-/** Poll the read tool until it answers clean, naming each distinct answer on the way. */
+/**
+ * Poll the read tool until it answers clean, naming each distinct answer on the way. A vessel that returns from a fall
+ * rests at the floor, so the first `vessel-locked` answer runs the unlock on a terminal once, as the operator would.
+ */
 async function untilReads(seat, h, bound = 240_000) {
   const from = performance.now(), seen = [];
+  let unlockedAt = null;
   while (performance.now() - from < bound) {
     const r = await call(seat, 30_000);
-    const word = r.error ? r.text.slice(0, 80) : "ok";
+    const word = r.error ? r.text.replace(/^Error executing tool \S+: /, "").slice(0, 60) : "ok";
     if (seen.at(-1)?.answer !== word) seen.push({ atMs: Math.round(performance.now() - from), answer: word });
-    if (!r.error) return { ok: true, ms: Math.round(performance.now() - from), seen };
+    if (!r.error) return { ok: true, ms: Math.round(performance.now() - from), seen, unlockedAt };
+    if (unlockedAt === null && r.text.includes("vessel-locked")) { await unlockOnTerminal(h); unlockedAt = Math.round(performance.now() - from); continue; }
     await h.sleep(500);
   }
-  return { ok: false, ms: Math.round(performance.now() - from), seen };
+  return { ok: false, ms: Math.round(performance.now() - from), seen, unlockedAt };
 }
 
 const ahoStop = async (h) => {
@@ -545,7 +598,7 @@ const ahoStop = async (h) => {
   const started = performance.now();
   const start = await h.shim(["up"], { timeout: 420_000 });
   const back = await untilReads(seat, h);
-  const inits = seat.events.filter((e) => e.at >= from).map((e) => e.event);
+  const inits = seat.events.filter((e) => e.at >= from).map((e) => `${Math.round(e.at - from)}:${e.event}`);
   const measures = {
     childDiedMs: fell ? Math.round(fell.at - from) : null, composeStopMs: stopped.ms, ahoAlive: alive,
     asleepAnswer: asleep.text.slice(0, 120), asleepMs: asleep.ms, upMs: start.ms, readsAgainMs: Math.round(performance.now() - started), interim: back.seen, ahoEvents: inits,
@@ -628,7 +681,7 @@ const riteKukulu = async (h) => {
   const r = await h.hostCli(["rite", "kukulu", "--no-json"], { timeout: 45 * 60_000 });
   const after = await h.cid("lares");
   const vault = await h.shim(["vault", "status", "--json"]);
-  const custody = json(vault.stdout.trim())?.data ?? json(vault.stdout.trim());
+  const custody = unlockedOf(vault.stdout);
   const rose = after !== "" && after !== before;
   const ok = r.code === 0 && rose && custody?.unlocked === true;
   return { ok, answer: `exit ${r.code}: ${lineOf(h.said(r))} · a new vessel rose: ${rose} · vault unlocked with no unlock typed: ${custody?.unlocked}`, measures: { seconds: Math.round(r.ms / 1000), before: before.slice(0, 12), after: after.slice(0, 12), custody, said: quote(h.said(r)) } };
@@ -644,12 +697,14 @@ const riteReceipts = async (h) => {
 };
 
 const shimDown = async (h) => {
-  const r = await h.shim(["down"], { timeout: 180_000 });
+  // On a terminal, as the operator runs it. A vessel at the floor answers no census, so `down` asks for `accept-loss`.
+  const r = await h.pty(h.shimLine(["down"]), { says: [{ prompt: "Type accept-loss to stop anyway: ", answer: "accept-loss" }], timeout: 180_000 });
+  r.stderr = "";
   const vessel = await h.cid("lares");
   const pulama = await h.cid("pulama");
   const running = pulama ? (await h.docker(["inspect", "--format", "{{.State.Status}}", pulama])).stdout.trim() : "absent";
   const status = lastJson((await h.shim(["pulama", "status"])).stdout);
-  return { ok: r.code === 0 && vessel === "" && running === "running" && status?.lit === true, answer: `exit ${r.code}: ${lineOf(h.said(r))} · vessel container: ${vessel ? "stands" : "gone"} · pūlama: ${running}, lit ${status?.lit}`, measures: { exit: r.code, said: quote(h.said(r)), pulama: status } };
+  return { ok: r.code === 0 && vessel === "" && running === "running" && status?.lit === true, answer: `exit ${r.code}; accept-loss asked: ${r.typed}; vessel container: ${vessel ? "stands" : "gone"} · pūlama: ${running}, lit ${status?.lit} · ${tail(r.stdout)}`, measures: { exit: r.code, acceptLossAsked: r.typed, said: quote(r.stdout.replace(/\r/g, "")), pulama: status } };
 };
 
 const teardown = async (h) => {
@@ -664,21 +719,25 @@ export const IMAGE_STEPS = Object.freeze([
   { id: "build", command: "lares-container.sh build", expect: "the image stands stamped at the checkout's head", run: build },
   { id: "stage-custody", command: "test-scratch-marker.mjs /lar && seed-test-custody.mjs /lar (in the image)", via: SC, needs: ["build"], expect: "the marker and the custody tree stand", run: stageCustody },
   { id: "found", command: `lares found --hearth --name '${STEWARD}' --chair 'dreamnet-kahu-0'`, via: SC, needs: ["stage-custody"], expect: "the hearth stands", run: found },
-  { id: "pulama-up", command: "lares-container.sh pulama up", needs: ["found"], expect: "standing unlit", run: pulamaUp },
-  { id: "pulama-status", command: "lares-container.sh pulama status", needs: ["pulama-up"], expect: "lit: false", run: pulamaStatus(false) },
-  { id: "pulama-measure", command: "docker inspect · stat (the read-only root, the uid, the socket)", needs: ["pulama-up"], expect: "read-only root; the operator's uid owns the socket; the path fits", run: pulamaMeasure },
-  { id: "pulama-light", command: "lares-container.sh pulama light", via: "pty", needs: ["pulama-up"], expect: "lit: true", run: pulamaLight },
-  { id: "up", command: "lares-container.sh up", needs: ["pulama-light"], expect: "the vessel answers healthy", run: up },
-  { id: "vessel-observe", command: "lares-container.sh vessel stand --observe --json", needs: ["up"], expect: "a verdict; the vault reads unlocked by the pūlama's session", run: observe },
+  // The vessel holds its own custody: the hand strings a lei only at a vessel its own route opened.
+  { id: "up", command: "lares-container.sh up", via: "pty", needs: ["found"], expect: "the vessel answers healthy, then the unlock on the terminal", run: upOwn },
   { id: "aho-handshake", command: "lares mcp aho -- docker compose -p <project> … exec -T -e LAR_ROOT lares python3 lares_mcp.py", via: "seat-stdio", needs: ["up"], expect: "initialize, tools/list, one read", run: ahoHandshake },
   { id: "aho-stop", command: "docker compose stop lares · a call · lares-container.sh up", via: "seat-stdio", needs: ["aho-handshake"], expect: "hearth-sleeps at once; the seat reads again with no initialize", run: ahoStop },
   { id: "aho-restart", command: "docker compose restart lares", via: "seat-stdio", needs: ["aho-handshake"], expect: "the child falls and a fresh one stands under the same seat", run: ahoRestart },
   { id: "aho-in-flight", command: "docker compose pause lares · a call · docker compose kill lares", via: "seat-stdio", needs: ["aho-handshake"], expect: "outcome-unknown", run: ahoInFlight },
   { id: "lei-kui", command: "lares lei kui --rite kukulu --branch <branch> --returns 2", via: SC, needs: ["up"], expect: "the lei strings", run: leiKui },
   { id: "rite-receipt", command: "lares rite receipt --tree <head tree> --checks … --verdict pass --definitions …", needs: ["up"], expect: "the receipt rests", run: riteReceipt },
-  { id: "rite-kukulu", command: "lares rite kukulu", needs: ["lei-kui"], expect: "a new vessel rises served by the pūlama with no unlock", run: riteKukulu },
+  // The pūlama stands beside the vessel (LARES_PULAMA=1 from here on).
+  { id: "pulama-up", command: "lares-container.sh pulama up", needs: ["found"], expect: "standing unlit", run: pulamaUp },
+  { id: "pulama-status", command: "lares-container.sh pulama status", needs: ["pulama-up"], expect: "lit: false", run: pulamaStatus(false) },
+  { id: "pulama-measure", command: "docker inspect · stat (the read-only root, the uid, the socket)", needs: ["pulama-up"], expect: "read-only root; the operator's uid owns the socket; the path fits", run: pulamaMeasure },
+  { id: "pulama-light", command: "lares-container.sh pulama light", via: "pty", needs: ["pulama-up"], expect: "lit: true", run: pulamaLight },
+  { id: "rite-kukulu", command: "lares rite kukulu", needs: ["lei-kui", "pulama-light"], expect: "a new vessel rises served by the pūlama with no unlock", run: riteKukulu },
+  { id: "up-by-pulama", command: "lares-container.sh up", via: "pty", needs: ["pulama-light"], expect: "the vessel seats its holder over the pūlama's socket", run: upPulama },
+  { id: "vessel-observe", command: "lares-container.sh vessel stand --observe --json", needs: ["up-by-pulama"], expect: "a verdict; the vessel's own line names what the pūlama answered", run: observe },
+  { id: "unlock-by-pulama", command: "lares-container.sh vault unlock --all --face 0", via: "pty", needs: ["up-by-pulama"], expect: "the vessel stands unlocked", run: unlockUnderPulama },
   { id: "rite-receipts", command: "lares rite receipts", needs: ["rite-kukulu"], expect: "conferre reads par", run: riteReceipts },
-  { id: "shim-down", command: "lares-container.sh down", needs: ["up"], expect: "the vessel leaves; the pūlama stays lit", run: shimDown },
+  { id: "shim-down", command: "lares-container.sh down", via: "pty", needs: ["pulama-light"], expect: "the vessel leaves; the pūlama stays lit", run: shimDown },
   { id: "teardown", command: "docker compose down --remove-orphans · rm the base", expect: "no container of the project stands; the base is gone", run: teardown },
 ]);
 
@@ -747,7 +806,7 @@ export async function imageWalk(opts, say = console.log) {
     "", "every docker call, in order:", ...docker,
   ];
   writeFileSync(join(opts.out, "image-report.txt"), `${lines.join("\n")}\n`);
-  say(lines.find((l) => l.startsWith("pass ")));
+  say(lines.find((l) => /^pass \d/.test(l)));
   say(`receipt: ${join(opts.out, "image-report.json")}${opts.keep && !state.vars.tornDown ? ` · base kept: ${scope.base}` : ""}`);
   return { code: report.tally.fail > 0 ? 1 : 0, report };
 }

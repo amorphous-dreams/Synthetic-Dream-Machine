@@ -257,7 +257,8 @@ test("image-compose-copy-names-the-project: the live surface file rewrites its n
   assert.match(copy, /^ {4}context: \/abs\/checkout$/m);
   assert.equal(copy.split("\n").length, live.split("\n").length);
   refuses(() => imageLeg.composeCopy(live.replace(/^name: lares-surface$/m, "name: other"), { project: "p", context: "/c" }), /carries 0/);
-  const env = imageLeg.surfaceEnvText(imageLeg.assertImageScope(SCOPE), { uid: 1000, gid: 1000 });
+  assert.doesNotMatch(imageLeg.surfaceEnvText(imageLeg.assertImageScope(SCOPE), { uid: 1000, gid: 1000 }), /LARES_PULAMA/, "the vessel holds its own custody until the walk stands the pūlama");
+  const env = imageLeg.surfaceEnvText(imageLeg.assertImageScope(SCOPE), { uid: 1000, gid: 1000, pulama: true });
   assert.match(env, /^LARES_PORT=4399$/m);
   assert.match(env, /^COMPOSE_PROJECT_NAME=lares-rehearsal$/m);
   assert.match(env, /^LARES_PULAMA=1$/m);
