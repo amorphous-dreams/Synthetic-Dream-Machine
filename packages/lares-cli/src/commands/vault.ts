@@ -26,6 +26,7 @@ import { sealedActVia } from "../sealed-act-door.js";
 import { handFaceRouteToVessel, seatNewFaceRoute } from "../face-route-prompt.js";
 import { udsAlive } from "../local-connector.js";
 import { sendCustodyFrame, type CustodyDoorAnswer } from "../custody-door.js";
+import { pulamaStands } from "../house-config.js";
 import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
@@ -264,10 +265,17 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   return 1;
 }
 
+const CUSTODY_PROBE_UNREAD = "the vessel stands and its custody door read no answer; a pūlama keeps this house, so no route is asked here: run `lares vault status`, then unlock again";
+
 async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
   // THE DOOR READS FIRST, before any prompt: a vessel standing by a pūlama takes no route here, so none gets gathered.
   if (daemonUp) {
     const door = await sendCustodyFrame({ op: "custody" });
+    // AN UNREAD PROBE NEVER READS AS "NO PŪLAMA": where the house's own signal names one, refuse before any prompt.
+    if ((door === null || door["op"] !== "custody") && pulamaStands()) {
+      emit(args, { ok: false, error: { code: "custody-probe-unread", message: CUSTODY_PROBE_UNREAD }, human: () => console.error(`lares vault unlock: ${CUSTODY_PROBE_UNREAD}`) });
+      return 1;
+    }
     if (typeof door?.["pulama"] === "object" && door["pulama"] !== null) return await vaultUnlockByPulama(args);
   }
   const homes = custodyHomes();
