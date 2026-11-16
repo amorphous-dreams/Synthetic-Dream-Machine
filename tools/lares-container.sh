@@ -552,10 +552,16 @@ case "$verb" in
     case "${1:-}" in
       up) ensure_house; compose --profile pulama up -d --no-recreate pulama ;;
       down) compose --profile pulama stop pulama ;;
-      light|admit|lock|status|tessera)
-        # light and admit read the operator's route on a real terminal inside the pūlama, never through a pipe.
+      light|lock|status|tessera)
+        # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" "$1" ;;
+      admit)
+        # admit reads the route the same way; a face ordinal names the face where several stand open.
+        [ "$#" -le 2 ] || die "pulama admit takes at most a face ordinal"
+        case "${2:-0}" in *[!0-9]*) die "pulama admit takes a face ordinal (a number)" ;; esac
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" admit ${2:+"$2"} ;;
       *) die "pulama takes up, down, light, admit, lock, status or tessera" ;;
     esac ;;
   reset)

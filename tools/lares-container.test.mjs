@@ -822,6 +822,9 @@ test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama
   const admit = await run(shim, ["pulama", "admit"], { envFile: PULAMA_ENV });
   assert.equal(admit.status, 0, admit.stderr);
   assert.match(admit.calls, /--profile pulama exec (-T )?pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js admit/);
+  const face = await run(shim, ["pulama", "admit", "2"], { envFile: PULAMA_ENV });
+  assert.equal(face.status, 0, face.stderr);
+  assert.match(face.calls, /pulama-main\.js admit 2/);
   const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
   assert.match(bad.stderr, /pulama takes up, down, light, admit, lock, status or tessera/);
 });
