@@ -27,7 +27,7 @@ import { copyFileSync, existsSync, readFileSync, readdirSync, rmSync, writeFileS
 import { join } from "node:path";
 import { hostingActCid, claimDigest, lineageOf, mintHostingAct, readFckCarrier, redeemClaim } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, FaceLocked } from "../src/custody-holder.js";
-import { seatedCustody, writeCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {
   rollHosting, readHostingState, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount,
   DEFAULT_HOSTING_CAP, HostingStateMoved,
@@ -221,10 +221,10 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     const enc = (v: unknown): Uint8Array => new TextEncoder().encode(typeof v === "string" ? v : JSON.stringify(v));
     const spendRow = `${hostingRowDir(0, AID)}/${(await spendsOf(e))[0]!}`;
     for (const line of ["n only-two", `m ${n} ${"01".repeat(32)}`, `n ${n} ${"01".repeat(32)} extra`, ""]) {
-      await writeCustodyRow("identity", spendRow, enc(line));                         // sealed under the right key, of the wrong shape
+      await writeCustodyRecord("identity", spendRow, enc(line));                         // sealed under the right key, of the wrong shape
       expect(await refusal(spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) })), JSON.stringify(line)).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("identity", spendRow, enc(`n ${n} ${"01".repeat(32)}`));    // control: the true shape answers again
+    await writeCustodyRecord("identity", spendRow, enc(`n ${n} ${"01".repeat(32)}`));    // control: the true shape answers again
     expect(await spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "01".repeat(32) })).toBe("retry");
 
     const stateRow = `${hostingRowDir(0, AID)}/state.json`;
@@ -241,11 +241,11 @@ describe("the burn — once, sealed, refuse before destroy", () => {
       [act],
     ];
     for (const shape of shapes) {
-      await writeCustodyRow("identity", stateRow, enc(shape));
+      await writeCustodyRecord("identity", stateRow, enc(shape));
       expect(await refusal(readHostingState(AID)), JSON.stringify(shape).slice(0, 60)).toMatchObject({ reading: "malformed" });
       expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("identity", stateRow, enc({ current: act, previous: null, depth: 1 }));
+    await writeCustodyRecord("identity", stateRow, enc({ current: act, previous: null, depth: 1 }));
     expect((await readHostingState(AID))!.current).toEqual(act);
     // Bare bytes (an earlier build's cleartext state) refuse too, and nothing rolls over them.
     writeFileSync(join(hostingDirPath(0, AID)!, "state.json"), JSON.stringify({ current: act, previous: null, depth: 1 }));

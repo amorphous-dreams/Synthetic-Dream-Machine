@@ -22,7 +22,7 @@ import {
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFleetJoinAbandon, runFleetJoinRequest } from "../src/commands/fleet-join.js";
 import { runFoundTheFace } from "../src/commands/init.js";
-import { readCustodyRow, seatedCustody, unseatCustody } from "../src/custody-seat.js";
+import { readCustodyRecord, seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { generateOrLoadVesselIdentity, vesselFloorKeyDoor } from "../src/node-vessel-identity.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { carrierTable } from "../src/vault-carriers.js";
@@ -100,7 +100,7 @@ describe("the vessel tag secret rests per face", () => {
       // T1: the floor door derives no child under the tag secret's old name.
       await expect((async () => (await vesselFloorKeyDoor()).derive(OLD_TAG_SECRET_NAME))()).rejects.toThrow(/refused domain/);
       // T3: the secret rests in the face's own row, a random 32 bytes.
-      const row = await readCustodyRow("identity", tagRowOf(GROUP_A));
+      const row = await readCustodyRecord("identity", tagRowOf(GROUP_A));
       expect(row?.length).toBe(32);
       expect(existsSync(groupRecordPath(GROUP_A, tagRowOf(GROUP_A)))).toBe(true);
       expect((await vesselFaceTagFields(row!, GROUP_A, first.atomKey, first.wardKey, NO_POP)).vesselTag).toBe(first.vesselTag);
@@ -117,7 +117,7 @@ describe("the vessel tag secret rests per face", () => {
       const other = await runFleetJoinRequest({ offer: offerFor(GROUP_B) });
       expect(other.vesselTag).not.toBe(first.vesselTag);
       expect(other.vesselTag).not.toBe(await tagFromPlaceSeed(GROUP_B, other.atomKey));
-      expect((await readCustodyRow("identity", tagRowOf(GROUP_B)))?.length).toBe(32);
+      expect((await readCustodyRecord("identity", tagRowOf(GROUP_B)))?.length).toBe(32);
       expect(await runFleetJoinAbandon()).toBe(true);
     });
   }, 180_000);
@@ -133,7 +133,7 @@ describe("the vessel tag secret rests per face", () => {
       const group = founded.personaGroupId;
       expect(existsSync(groupRecordPath(group, tagRowOf(group)))).toBe(true);
       expect(faceRecordNames().filter((name) => name.startsWith("vessel-face-tag-ask-"))).toEqual([]);
-      const secret = await readCustodyRow("identity", tagRowOf(group));
+      const secret = await readCustodyRecord("identity", tagRowOf(group));
       expect(secret?.length).toBe(32);
       const atomKey = "00".repeat(32);
       expect((await vesselFaceTagFields(secret!, group, atomKey, ANY_WARD_KEY, NO_POP)).vesselTag).not.toBe(await tagFromPlaceSeed(group, atomKey));

@@ -4,7 +4,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
 import { EMPTY_LEDGER, EMPTY_KAPAE_LOCAL, decodeLedger, decodeKapaeLocal, encodeLedger, encodeKapaeLocal, sha256HexBytesSync } from "@lararium/mesh";
-import { readCustodyRow, updateCustodyRow, writeCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, updateCustodyRecord, writeCustodyRecord } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { pinCas, writeCasEntriesFs } from "./node-cas.js";
 import type { KapaeLocal, PromotionLedger } from "@lararium/mesh";
@@ -27,15 +27,15 @@ export function nodePromoteStores(group: string): { ledger: Rows<PromotionLedger
   const ledgerFile = promotedFile(group), localFile = kapaeFile(group);
   return {
     ledger: {
-      async read() { const bytes = await readCustodyRow("identity", ledgerFile); return bytes === null ? EMPTY_LEDGER : decodeLedger(bytes); },
-      async write(ledger) { await writeCustodyRow("identity", ledgerFile, encodeLedger(ledger)); },
+      async read() { const bytes = await readCustodyRecord("identity", ledgerFile); return bytes === null ? EMPTY_LEDGER : decodeLedger(bytes); },
+      async write(ledger) { await writeCustodyRecord("identity", ledgerFile, encodeLedger(ledger)); },
       // One custody-holder hold across the read, the decision and the write: two commits never lose each other.
-      update: (fn) => updateCustodyRow("identity", ledgerFile, (bytes) => { const next = fn(bytes === null ? EMPTY_LEDGER : decodeLedger(bytes)); return { plaintext: encodeLedger(next), value: next }; }),
+      update: (fn) => updateCustodyRecord("identity", ledgerFile, (bytes) => { const next = fn(bytes === null ? EMPTY_LEDGER : decodeLedger(bytes)); return { plaintext: encodeLedger(next), value: next }; }),
     },
     local: {
-      async read() { const bytes = await readCustodyRow("identity", localFile); return bytes === null ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes); },
-      async write(local) { await writeCustodyRow("identity", localFile, encodeKapaeLocal(local)); },
-      update: (fn) => updateCustodyRow("identity", localFile, (bytes) => { const next = fn(bytes === null ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes)); return { plaintext: encodeKapaeLocal(next), value: next }; }),
+      async read() { const bytes = await readCustodyRecord("identity", localFile); return bytes === null ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes); },
+      async write(local) { await writeCustodyRecord("identity", localFile, encodeKapaeLocal(local)); },
+      update: (fn) => updateCustodyRecord("identity", localFile, (bytes) => { const next = fn(bytes === null ? EMPTY_KAPAE_LOCAL : decodeKapaeLocal(bytes)); return { plaintext: encodeKapaeLocal(next), value: next }; }),
     },
   };
 }

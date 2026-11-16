@@ -43,7 +43,7 @@ import {
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { FsCustodyIo } from "../src/custody-io.js";
-import { seatCustody, unseatCustody, updateColdCustodyRow } from "../src/custody-seat.js";
+import { seatCustody, unseatCustody, updateColdCustodyRecord } from "../src/custody-seat.js";
 import { foundCustody } from "../src/custody-session.js";
 import { nexusCharterDocPath, readNexusDoc, writeNexusDoc } from "../src/nexus-doc.js";
 import { generateOrLoadPersonaGroupRoot, makeNodePersonaDeclarationStore } from "../src/node-vessel-identity.js";
@@ -258,10 +258,10 @@ describe("the rite arms its heads behind the door", () => {
     expect(await seatKeysOfFace(0)).toEqual([zero.keys[0]]);
     expect(await seatKeysOfFace(1)).toEqual([one]);
     const rows = faceRecordNames().filter((f) => f.startsWith("seat-key-h0-"));
-    await updateColdCustodyRow("identity", `seat-key-h2-${"0".repeat(32)}.bin`, () => ({ plaintext: chairSeed(2, 0, "a8"), value: undefined }));
+    await updateColdCustodyRecord("identity", `seat-key-h2-${"0".repeat(32)}.bin`, () => ({ plaintext: chairSeed(2, 0, "a8"), value: undefined }));
     copyFileSync(handleRecordPath(rows[0]!), handleRecordPath(`seat-key-h2-${"0".repeat(32)}.bin`));
     expect(await seatKeysOfFace(2).catch((e: unknown) => e)).toMatchObject({ reading: "key-fails" });
-    await updateColdCustodyRow("identity", seatKeyFile(one, 3), () => ({ plaintext: chairSeed(0, 0, "a8"), value: undefined }));
+    await updateColdCustodyRecord("identity", seatKeyFile(one, 3), () => ({ plaintext: chairSeed(0, 0, "a8"), value: undefined }));
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toBeInstanceOf(CustodyRowUnavailable);
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toMatchObject({ reading: "names-another-key" });
   });

@@ -23,7 +23,7 @@ import {
 import { serveHostingCarry } from "../src/hosting-carry.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
 import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
-import { readCustodyRow } from "../src/custody-seat.js";
+import { readCustodyRecord } from "../src/custody-seat.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID = "nexus-" + "a".repeat(64);
@@ -126,7 +126,7 @@ describe("the walker's carriage over the session verbs", () => {
       for (const f of readdirSync(d)) {
         const p = join(d, f);
         if (statSync(p).isDirectory()) await walk(p, `${rel}/${f}`, f === "blobs");
-        else if (inBlobs) out.push({ path: p, name: f, bytes: (await readCustodyRow("identity", `${rel}/${f}`))! });
+        else if (inBlobs) out.push({ path: p, name: f, bytes: (await readCustodyRecord("identity", `${rel}/${f}`))! });
       }
     };
     await walk(base, hostingRowDir(0, AID), false);

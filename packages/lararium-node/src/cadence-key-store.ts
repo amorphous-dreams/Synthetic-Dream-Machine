@@ -27,7 +27,7 @@ import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:cr
 import { faceFileNames } from "./face-index.js";
 import { cadenceNextDigest, sha256HexBytesSync, type CadenceHolder } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, openedCustody, removeColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
+import { openColdCustodyRecord, openedCustody, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The cadence key's file, for the carrier table: `cadence-key-h<N>-<32 hex of the key's name>.bin`, in the face that minted it. */
@@ -88,7 +88,7 @@ export async function mintCadenceKey(handleIndex: number): Promise<CadenceHolder
     const key = publicOf(secret.subarray(0, 32));
     const next = cadenceNextDigest(publicOf(secret.subarray(32)));
     const file = cadenceKeyFile(handleIndex, key);
-    await updateColdCustodyRow("identity", file, (bytes) => {
+    await updateColdCustodyRecord("identity", file, (bytes) => {
       if (bytes !== null) throw new CustodyRowUnavailable("identity", file, "names-another-key");
       return { plaintext: secret, value: undefined };
     });
@@ -104,7 +104,7 @@ export async function signAsCadence(verifyingKey: string, image: Uint8Array): Pr
     await openedCustody();
     throw new CustodyRowUnavailable("identity", `cadence-key-${cadenceKeyName(key)}`, "absent");
   }
-  return openColdCustodyRow("identity", file, (secret) => {
+  return openColdCustodyRecord("identity", file, (secret) => {
     if (secret.length !== ROW_BYTES) throw new CustodyRowUnavailable("identity", file, "malformed");
     const own = secret.subarray(0, 32);
     if (publicOf(own) !== key) throw new CustodyRowUnavailable("identity", file, "names-another-key");
@@ -121,7 +121,7 @@ export async function retireCadenceKey(verifyingKey: string): Promise<boolean> {
   const file = heldCadenceFile(key);
   if (file === null) { await openedCustody(); return false; }
   let reading: "malformed" | "names-another-key" | null = null;
-  const left = await removeColdCustodyRow("identity", file, (secret) => {
+  const left = await removeColdCustodyRecord("identity", file, (secret) => {
     reading = secret.length !== ROW_BYTES ? "malformed" : publicOf(secret.subarray(0, 32)) !== key ? "names-another-key" : null;
     return reading === null;
   });

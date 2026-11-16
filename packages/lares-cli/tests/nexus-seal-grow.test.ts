@@ -19,7 +19,7 @@ import { cmdNexus } from "../src/commands/nexus.js";
 import type { ParsedArgs } from "../src/parse-args.js";
 import { larSealHome, larDataDir } from "../src/env.js";
 import {
-  generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, readCustodyRow,
+  generateOrLoadPersonaGroupRoot, makeNodePersonaPetnameStore, makeNodePersonaDeclarationStore, readNexusDoc, readCustodyRecord,
   type ReserveTransition,
 } from "@lararium/node";
 import {

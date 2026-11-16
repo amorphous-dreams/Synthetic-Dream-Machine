@@ -29,7 +29,7 @@ import {
   coldKeyCode, deriveSelfRecoveryKey, enrolRecoveryContacts, foldPersonaContests, recoveryContactPossessionBytes, recoveryContactRegistrationCard, hex,
   type RecoveryContactEnrolmentOffer, type RecoveryContactKeysOfFace, type RecoveryContactRegistration, type PersonaKelEvent,
 } from "@lararium/mesh";
-import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
 import { listPersonaRosterLines, loadPersonaGroupRootSeed } from "./node-vessel-identity.js";
 import { refuseWhileProvisional } from "./face-provisional.js";
@@ -108,7 +108,7 @@ function readRecord(bytes: Uint8Array | null): RecoveryContactSetRecord | null {
 
 /** One face's recovery-contact-set record, or null where none stands. */
 export async function readRecoveryContactSet(handleIndex: number): Promise<RecoveryContactSetRecord | null> {
-  return readRecord(await readCustodyRow("identity", recoveryContactSetFile(handleIndex)));
+  return readRecord(await readCustodyRecord("identity", recoveryContactSetFile(handleIndex)));
 }
 
 /** The recovery contact keys every face of this vessel but `handleIndex` holds in its set. */
@@ -168,7 +168,7 @@ export async function runRecoveryContactEnrolment(input: {
     const record: RecoveryContactSetRecord = {
       prefix, recoveryContactSetHash: result.recoveryContactSetHash, threshold, recoveryContacts: offers.map((o) => o.registration),
     };
-    await updateCustodyRow("identity", recoveryContactSetFile(handleIndex), (standing) => {
+    await updateCustodyRecord("identity", recoveryContactSetFile(handleIndex), (standing) => {
       const held = readRecord(standing);
       if (held && held.recoveryContactSetHash !== record.recoveryContactSetHash) {
         return refuse("record-names-another-set", `a record of another recovery contact set stands for h${handleIndex} while its key history still stands one-of-one: the same offers complete that enrolment; nothing moved`);

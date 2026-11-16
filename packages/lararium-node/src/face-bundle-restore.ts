@@ -63,7 +63,7 @@ import { faceStands, runFoundTheFace } from "./commands/init.js";
 import type { BackupDoor } from "./face-bundle-cut.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, removeColdCustodyRow, updateColdCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { openColdCustodyRecord, removeColdCustodyRecord, updateColdCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { recoveryContactKeysOfOtherFaces, recoveryContactSetFile, readRecoveryContactSet, type RecoveryContactSetRecord } from "./recovery-contact-enrolment.js";
 import { couldConfirm, markProvisional } from "./face-provisional.js";
 import { faceProofKeyStanding, landFaceProofKey } from "./face-key-custody.js";
@@ -207,7 +207,7 @@ async function readPending(): Promise<Pending | null> {
   if (standing.length === 0) return null;
   if (standing.length > 1) throw new RestoreRefused("restore-pending", "more than one face holds a restore pending on this vessel; run each face's own restore again, lowest handle index first. Nothing moved.");
   const file = standing[0]!;
-  return await openColdCustodyRow("identity", file, (bytes) => {
+  return await openColdCustodyRecord("identity", file, (bytes) => {
     let raw: { target?: unknown; body?: unknown };
     try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as typeof raw; }
     catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
@@ -297,7 +297,7 @@ async function land(pending: Pending, head: { readonly seq: number; readonly eve
   let recoveryContactSet: "landed" | "held" | null = null;
   const record = recoveryContactRecordOf(body);
   if (record !== null) {
-    recoveryContactSet = await updateCustodyRow("identity", recoveryContactSetFile(target), (standing) => {
+    recoveryContactSet = await updateCustodyRecord("identity", recoveryContactSetFile(target), (standing) => {
       if (standing === null) return { plaintext: new TextEncoder().encode(JSON.stringify(record)), value: "landed" as const };
       const held = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(standing)) as RecoveryContactSetRecord;
       if (held.recoveryContactSetHash !== record.recoveryContactSetHash || held.prefix !== record.prefix) {
@@ -385,7 +385,7 @@ export async function restoreFaceBody(args: {
       // the face asks for), and the pending row rests under that face's own key.
       await ensureFaceCustodyAtHandle(target, `h${target}`, (slots) => { ward ??= wardCredentialOfRoute(slots) ?? undefined; });
       try {
-        await updateColdCustodyRow("identity", restorePendingFile(target), (standing) => {
+        await updateColdCustodyRecord("identity", restorePendingFile(target), (standing) => {
           if (standing !== null) throw new RestoreRefused("restore-pending", "a restore's commit row appeared while this one checked its rows. Run the restore again.");
           return { plaintext: row, value: undefined };
         });
@@ -405,7 +405,7 @@ export async function restoreFaceBody(args: {
     if (!lit.alreadyStood && lit.personaKelPrefix !== pending.body.anchors.personaKelPrefix) {
       throw new Error(`face-bundle-restore: the face lit under prefix ${lit.personaKelPrefix}, and the bundle carried ${pending.body.anchors.personaKelPrefix}; the pending row stays for a person to read`);
     }
-    await removeColdCustodyRow("identity", restorePendingFile(pending.target));
+    await removeColdCustodyRecord("identity", restorePendingFile(pending.target));
     return {
       face: { handleIndex: pending.target, verifyingKey: pending.body.root.verifyingKey },
       prefix: pending.body.anchors.personaKelPrefix, resumed, checked: { seq: checked.seq, from: checked.from }, landed,

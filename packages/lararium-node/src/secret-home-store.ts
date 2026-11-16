@@ -26,7 +26,7 @@ import {
   SecretHomeUnavailable, type SecretHome, type SecretHomeAddress,
 } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The row the vessel's secret home's address rests in. */
@@ -34,7 +34,7 @@ export const SECRET_HOME_FILE = "secret-home.json";
 
 /** The address this vessel's custody keeps, or null where no home enrolled. A read never mints. */
 export async function readSecretHomeAddress(): Promise<SecretHomeAddress | null> {
-  const bytes = await readCustodyRow("identity", SECRET_HOME_FILE);
+  const bytes = await readCustodyRecord("identity", SECRET_HOME_FILE);
   if (bytes === null) return null;
   try {
     const address = decodeSecretHomeAddress(bytes);
@@ -47,7 +47,7 @@ export async function readSecretHomeAddress(): Promise<SecretHomeAddress | null>
 async function keepSecretHomeAddress(address: SecretHomeAddress): Promise<void> {
   const bytes = encodeSecretHomeAddress(address);
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await updateCustodyRow("identity", SECRET_HOME_FILE, (standing) => {
+  await updateCustodyRecord("identity", SECRET_HOME_FILE, (standing) => {
     if (standing === null) return { plaintext: bytes, value: undefined };
     if (!bytesEqual(standing, bytes)) throw new CustodyRowUnavailable("identity", SECRET_HOME_FILE, "names-another-key");
     return { plaintext: null, value: undefined };

@@ -23,7 +23,7 @@ import { mkdirSync } from "node:fs";
 import { vesselFaceTagFields, type VesselFaceTagDoor } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import type { FaceRef } from "./custody-holder.js";
-import { faceStandingCustody, faceWardKeyCustody, moveCustodyRow, readCustodyRow, updateCustodyRow, withWardKeyCustody } from "./custody-seat.js";
+import { faceStandingCustody, faceWardKeyCustody, moveCustodyRecord, readCustodyRecord, updateCustodyRecord, withWardKeyCustody } from "./custody-seat.js";
 import type { WardCredential } from "./ward-credential.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -44,7 +44,7 @@ export const vesselFaceTagAskFile = (askDigest: string): string => {
 /** The secret at `file`, minted at random where none stands, under one custody holder. The caller zeroes its copy. */
 function standSecret(file: string): Promise<Uint8Array> {
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  return updateCustodyRow("identity", file, (standing) => {
+  return updateCustodyRecord("identity", file, (standing) => {
     if (standing !== null) {
       if (standing.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
       return { plaintext: null, value: Uint8Array.from(standing) };
@@ -86,7 +86,7 @@ export function foundingVesselFaceTagDoor(askDigest: string, ward?: WardCredenti
     const askStands = await faceStandingCustody({ ask: askDigest }) !== null;
     const groupStands = await faceStandingCustody({ group: personaGroupDigest(group) }) !== null;
     const read = async (file: string): Promise<Uint8Array | null> => {
-      const bytes = await readCustodyRow("identity", file);
+      const bytes = await readCustodyRecord("identity", file);
       if (bytes !== null && bytes.length !== 32) { bytes.fill(0); throw new CustodyRowUnavailable("identity", file, "malformed"); }
       return bytes;
     };
@@ -101,7 +101,7 @@ export function foundingVesselFaceTagDoor(askDigest: string, ward?: WardCredenti
 /** The founding's settle: the ask's tag secret moves onto the group's row. An ask that holds none moves nothing. */
 export async function settleFoundingVesselFaceTag(askDigest: string, personaGroup: string): Promise<void> {
   const source = vesselFaceTagAskFile(askDigest);
-  const secret = await readCustodyRow("identity", source);
+  const secret = await readCustodyRecord("identity", source);
   if (secret === null) return;
-  try { await moveCustodyRow("identity", source, vesselFaceTagFile(personaGroup), secret); } finally { secret.fill(0); }
+  try { await moveCustodyRecord("identity", source, vesselFaceTagFile(personaGroup), secret); } finally { secret.fill(0); }
 }

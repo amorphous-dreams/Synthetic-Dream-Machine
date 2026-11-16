@@ -36,7 +36,7 @@ import {
   type LarSessionMsg, type LeafIdentity, type WalkFault, type WalkRecord,
 } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
-import { writeCustodyRow } from "../src/custody-seat.js";
+import { writeCustodyRecord } from "../src/custody-seat.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { listWalkRecords, nodeWalkStore, walkRowFile, WalksElsewhere } from "../src/node-walk-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
@@ -135,12 +135,12 @@ describe("a walk record at rest", () => {
       { gatePubKey: GATE, record: { nexusAid: AID, grant: { nexusAid: "nexus-" + "b".repeat(64), leaf: "ab".repeat(32), epoch: "e".repeat(64), lineage: "d".repeat(64), survived: 0, from: "host", tag: "f".repeat(128) } } },
     ];
     for (const shape of shapes) {
-      await writeCustodyRow("identity", walkRowFile(0, GATE), enc(shape));              // sealed under the right key, of the wrong shape
+      await writeCustodyRecord("identity", walkRowFile(0, GATE), enc(shape));              // sealed under the right key, of the wrong shape
       expect(await refusal(store().read(GATE))).toMatchObject({ reading: "malformed" });
       expect(await refusal(listWalkRecords())).toMatchObject({ reading: "malformed" });
       expect(await refusal(put(GATE, RECORD))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("identity", walkRowFile(0, GATE), enc({ gatePubKey: GATE, record: RECORD }));   // control: the true shape opens again
+    await writeCustodyRecord("identity", walkRowFile(0, GATE), enc({ gatePubKey: GATE, record: RECORD }));   // control: the true shape opens again
     writeFileSync(join(rowPath(), "..", "a-stray-name.txt"), "not a row");
     expect(await listWalkRecords()).toEqual([{ face: 0, gatePubKey: GATE, record: RECORD }]);
     // An update whose decision answers a malformed record seals nothing, and the standing row stays.

@@ -50,7 +50,7 @@ import {
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
-import { removeCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
+import { removeCustodyRecord, seatedCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import { cutFaceBundle } from "../src/face-bundle-cut.js";
 import { RESTORE_REFUSALS, RestoreRefused, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.js";
@@ -521,7 +521,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // AN ORPHAN ROOT under another key: a root row with no roster line (an act that stopped between its two writes).
     await foundVessel("orphan", "charter");
-    expect(await removeCustodyRow("identity", ".persona-roster-h0.json")).toBe(true);
+    expect(await removeCustodyRecord("identity", ".persona-roster-h0.json")).toBe(true);
     expect(await listPersonaRosterLines()).toEqual([]);
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, withRepo }))).toBe("orphan-names-another-key");
@@ -683,7 +683,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
 
     // A CARRIED KEY ANOTHER FACE OF THIS VESSEL GUARDS WITH refuses, naming that face.
     const shared = { prefix: "persona-" + "00".repeat(32), recoveryContactSetHash: sealKeySetHash([recoveryContacts[1]!.recoveryPubKey], 1), threshold: 1, recoveryContacts: [a.body.recoveryContactSet!.recoveryContacts[1]!] };
-    await writeCustodyRow("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(shared)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(shared)));
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("recovery-contact-key-serves-another-face");
     expect(homeTree()).toBe(before);
@@ -692,12 +692,12 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await foundVessel("f");
     const fresh = await publicOf(secretOf(71));
     const stale = { prefix: a.prefix, recoveryContactSetHash: sealKeySetHash([fresh], 1), threshold: 1, recoveryContacts: [recoveryContactRegistrationCard("contact-a", fresh, null)] };
-    await writeCustodyRow("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify(stale)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify(stale)));
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toBe("row-conflict");
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
-    await writeCustodyRow("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.recoveryContactSet })));
+    await writeCustodyRecord("identity", recoveryContactSetFile(1), new TextEncoder().encode(JSON.stringify({ prefix: a.prefix, ...a.body.recoveryContactSet })));
     expect((await restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo })).recoveryContactSet).toBe("held");
   });
   test("R15 — a restored face standing provisional, and a face this vessel founded, each open a session at the place through the production door, so persona.confirm and the recovery contact enrolment ride it", async () => {

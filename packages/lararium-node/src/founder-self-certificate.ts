@@ -36,7 +36,7 @@ import {
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "./face-key-custody.js";
 import { FaceProvisional, refuseWhileProvisional } from "./face-provisional.js";
-import { updateCustodyRow } from "./custody-seat.js";
+import { updateCustodyRecord } from "./custody-seat.js";
 import { faceJoinRecordFile, readFaceJoinRecord } from "./fleet-join-custody.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { loadIdentityAnchors } from "./identity-anchors.js";
@@ -195,7 +195,7 @@ async function mergeAtScope(args: { readonly personaGroup: string; readonly root
   const file = faceJoinRecordFile(args.personaGroup);
   const ours = String((args.certificate as { vesselFaceKey?: unknown }).vesselFaceKey ?? "").toLowerCase();
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  await updateCustodyRow("identity", file, (standing) => {
+  await updateCustodyRecord("identity", file, (standing) => {
     let held: Record<string, unknown> = { certificates: [], grants: [] };
     if (standing !== null) {
       try { held = JSON.parse(new TextDecoder().decode(standing)) as Record<string, unknown>; }

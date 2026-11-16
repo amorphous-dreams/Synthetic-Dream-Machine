@@ -2,7 +2,7 @@
 import { createHash } from "node:crypto";
 import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRecords, type StoredLarRecord } from "@lararium/mesh";
 import { openCheckpoint } from "@lararium/keyhive";
-import { readCustodyRow, removeCustodyRow, updateCustodyRow, moveCustodyRow, withCustodyRows } from "./custody-seat.js";
+import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, moveCustodyRecord, withCustodyRecords } from "./custody-seat.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { FaceLocked } from "./custody-holder.js";
 import { ensureFaceCustodyOfAsk } from "./face-route.js";
@@ -38,7 +38,7 @@ export const pendingFoundingFile = (ask: FoundingAtomAsk): string => `face-atom-
 
 /** Retire an ask only when a group row already holds its exact seed. */
 export async function sweepFoundingSeeds(): Promise<void> {
-  await withCustodyRows(async (rows) => {
+  await withCustodyRecords(async (rows) => {
     const groupsByAsk = new Map<string, Set<string>>();
     for (const index of await listAnchoredPersonas(rows.read)) {
       const anchors = await loadIdentityAnchors(index, rows.read);
@@ -76,18 +76,18 @@ export async function sweepFoundingSeeds(): Promise<void> {
 
 /** Read an ask seed without minting one. */
 export async function loadPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Uint8Array | null> {
-  const seed = await readCustodyRow("identity", pendingFoundingFile(ask));
+  const seed = await readCustodyRecord("identity", pendingFoundingFile(ask));
   if (seed && seed.length !== 32) throw new Error("pending founding atom holds no 32-byte seed");
   return seed;
 }
 
 /** Adapt the custody seat's synchronous decision to the mesh row's asynchronous step. */
 export const nodeFaceAtomRecords: FaceAtomRecords = {
-  async read(group) { return (await readCustodyRow("identity", faceAtomGroupFile(group))) ?? undefined; },
+  async read(group) { return (await readCustodyRecord("identity", faceAtomGroupFile(group))) ?? undefined; },
   async withRecord<T>(group: string, step: (standing: Uint8Array | undefined, write: (seed: Uint8Array) => Promise<void>) => Promise<T>): Promise<T> {
     let result: Promise<T> | undefined;
     let deciding = false;
-    await updateCustodyRow("identity", faceAtomGroupFile(group), (standing) => {
+    await updateCustodyRecord("identity", faceAtomGroupFile(group), (standing) => {
       let next: Uint8Array | null = null;
       deciding = true;
       result = step(standing ?? undefined, async (seed) => {
@@ -129,7 +129,7 @@ export async function loadFaceAtom(handleIndex: number): Promise<Uint8Array | nu
 export async function standPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Uint8Array> {
   // THE FACE'S CUSTODY STANDS BEFORE ITS FIRST ROW, under the route the face asks for; the ask names it until a group exists.
   await ensureFaceCustodyOfAsk(foundingAskDigest(ask), `h${ask.handleIndex}`, ask.handleIndex);
-  return updateCustodyRow("identity", pendingFoundingFile(ask), (standing) => {
+  return updateCustodyRecord("identity", pendingFoundingFile(ask), (standing) => {
     if (standing) {
       if (standing.length !== 32) throw new Error("pending founding atom holds no 32-byte seed");
       return { plaintext: null, value: Uint8Array.from(standing) };
@@ -141,13 +141,13 @@ export async function standPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Ui
 
 /** Clear the ask row after the group row keeps its seed. */
 export async function retirePendingFoundingSeed(ask: FoundingAtomAsk): Promise<void> {
-  await removeCustodyRow("identity", pendingFoundingFile(ask));
+  await removeCustodyRecord("identity", pendingFoundingFile(ask));
 }
 
 /** Hand the founding seed from its ask row to its group row under one custody claim. */
 export async function keepAndRetireFoundingSeed(group: string, ask: FoundingAtomAsk, seed: Uint8Array): Promise<void> {
   if (seed.length !== 32) throw new Error("founding atom holds no 32-byte seed");
-  await moveCustodyRow("identity", pendingFoundingFile(ask), faceAtomGroupFile(group), seed);
+  await moveCustodyRecord("identity", pendingFoundingFile(ask), faceAtomGroupFile(group), seed);
 }
 
 /**
@@ -170,7 +170,7 @@ export async function recoverFoundingSeedFromGroup(
   }
   let matched: Uint8Array | null = null;
   for (const file of faceFileNames(larIdentityDir()).filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
-    const seed = await readCustodyRow("identity", file);
+    const seed = await readCustodyRecord("identity", file);
     if (!seed || seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
     for (const body of bodies) {
       let checkpoint: { scope?: unknown; result?: { personaGroupId?: unknown } };

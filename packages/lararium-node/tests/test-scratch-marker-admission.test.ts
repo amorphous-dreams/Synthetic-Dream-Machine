@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { makeCustodyHolder } from "../src/custody-holder.js";
 import { FsCustodyIo } from "../src/custody-io.js";
-import { readCustodyRow, seatCustody } from "../src/custody-seat.js";
+import { readCustodyRecord, seatCustody } from "../src/custody-seat.js";
 import { testScratchNotice } from "../src/test-scratch-notice.js";
 import { vesselCustodyHomes } from "../src/vault-carriers.js";
 
@@ -40,7 +40,7 @@ describe("scratch marker admission at the node floor", () => {
 
     expect(testScratchNotice(root)).toMatch(/TEST SCRATCH ROOT.*\.lar-test-scratch/);
     expect(holder.isUnlocked()).toBe(false);
-    await expect(readCustodyRow("identity", "missing-sealed-row")).rejects.toThrow(/key rests unopened/);
+    await expect(readCustodyRecord("identity", "missing-sealed-row")).rejects.toThrow(/key rests unopened/);
     expect(holder.isUnlocked()).toBe(false);
   });
 

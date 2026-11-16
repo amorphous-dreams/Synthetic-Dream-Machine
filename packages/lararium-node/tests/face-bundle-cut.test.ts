@@ -39,7 +39,7 @@ import {
 } from "../src/node-vessel-identity.js";
 import * as carriers from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { removeCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
+import { removeCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
 import { faceAddressSecretFile, landFaceAddressSecret } from "../src/fleet-join-custody.js";
 import { recoveryContactSetFile } from "../src/recovery-contact-enrolment.js";
 
@@ -224,7 +224,7 @@ describe("a cut refuses by name, and a refused cut seals nothing", () => {
   });
 
   test("C4 — a face whose address secret stands nowhere here refuses `no-address-secret`, before any island ask", async () => {
-    await removeCustodyRow("identity", faceAddressSecretFile(GROUP0));
+    await removeCustodyRecord("identity", faceAddressSecretFile(GROUP0));
     const lend = door();
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: lend.door }))).toBe("no-address-secret");
     expect(lend.asked).toEqual([]);
@@ -293,7 +293,7 @@ describe("the recovery contact set rides where the face's key history commits it
     const recoveryContact = await publicOf(secretOf(81));
     const set = { recoveryContactSetHash: sealKeySetHash([recoveryContact], 1), threshold: 1, recoveryContacts: [recoveryContactRegistrationCard("contact-a", recoveryContact, null)] };
     const recordOf = (prefix: string) => new TextEncoder().encode(JSON.stringify({ prefix, ...set }));
-    await writeCustodyRow("identity", recoveryContactSetFile(0), recordOf(kel0[0]!.prefix));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), recordOf(kel0[0]!.prefix));
     // PENDING: the record stands and the head still stands one-of-one.
     let key = mintBundleKey();
     let cut = await cutFaceBundle({ face: 0, bundleKey: key, door: door().door });
@@ -309,7 +309,7 @@ describe("the recovery contact set rides where the face's key history commits it
     expect(opened(cut.sealedBody, key).body.recoveryContactSet).toEqual(JSON.parse(JSON.stringify(set)));
     expect(cut.carries.recoveryContacts).toBe(1);
     // A RECORD UNDER ANOTHER PREFIX stays, even beside a head that commits its digest.
-    await writeCustodyRow("identity", recoveryContactSetFile(0), recordOf("persona-" + "ee".repeat(32)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), recordOf("persona-" + "ee".repeat(32)));
     key = mintBundleKey();
     cut = await cutFaceBundle({ face: 0, bundleKey: key, door: door({ kel: async () => enrolled }).door });
     expect(opened(cut.sealedBody, key).body.recoveryContactSet).toBeNull();

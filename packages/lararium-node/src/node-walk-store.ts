@@ -25,7 +25,7 @@
  * whole record or refuses.
  *
  * ── ONE HAND AT A TIME ──────────────────────────────────────────────────────────────────────────
- * `update` reads the standing row, decides and seals under ONE custody holder (`updateCustodyRow`), so no other
+ * `update` reads the standing row, decides and seals under ONE custody holder (`updateCustodyRecord`), so no other
  * writer in any process lands between the read and the write.
  *
  * Meme: lar:///ha.ka.ba/lararium/mesh/membership-doctrine#/the-invite
@@ -33,7 +33,7 @@
 
 import { decodeInvite, isWalkRecord, sha256HexSync, type WalkRecord, type WalkStore } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { readCustodyRow, unlockedFaceOrdinals, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, unlockedFaceOrdinals, updateCustodyRecord } from "./custody-seat.js";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -92,13 +92,13 @@ export function nodeWalkStore(opts: { readonly face: number; readonly oneHearth?
   return {
     async read(gatePubKey) {
       const file = walkRowFile(face, gatePubKey);
-      const bytes = await readCustodyRow("identity", file);
+      const bytes = await readCustodyRecord("identity", file);
       return bytes === null ? null : parseWalkFile(bytes, file, face).record;
     },
     async update(gatePubKey, decide) {
       const gate = gatePubKey.toLowerCase();
       const file = walkRowFile(face, gate);
-      return updateCustodyRow<WalkRecord | null>("identity", file, (standing) => {
+      return updateCustodyRecord<WalkRecord | null>("identity", file, (standing) => {
         const next = decide(standing === null ? null : parseWalkFile(standing, file, face).record);
         if (next === null) return { plaintext: null, value: null };
         // The row takes a whole record that agrees with its hearth, so the next read opens what this write sealed.
@@ -122,7 +122,7 @@ export async function listWalkRecords(): Promise<ReadonlyArray<{ readonly face: 
   for (const name of faceFileNames(larIdentityDir()).sort()) {
     const m = WALK_FILE.exec(name);
     if (!m || !open.has(Number(m[1]))) continue;
-    const bytes = await readCustodyRow("identity", name);
+    const bytes = await readCustodyRecord("identity", name);
     if (bytes !== null) out.push({ ...parseWalkFile(bytes, name, Number(m[1])), face: Number(m[1]) });
   }
   return out.sort((a, b) => a.gatePubKey.localeCompare(b.gatePubKey));

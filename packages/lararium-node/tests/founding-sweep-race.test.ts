@@ -9,7 +9,7 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { runFoundTheFace } from "../src/commands/init.js";
-import { seatedCustody, unseatCustody, readCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, unseatCustody, readCustodyRecord } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
 import { faceAtomGroupFile, pendingFoundingFile, sweepFoundingSeeds, type FoundingAtomAsk } from "../src/face-atom-store.js";
 import { loadIdentityAnchors } from "../src/identity-anchors.js";
@@ -59,7 +59,7 @@ describe("the founding sweep and a live handoff", () => {
         // This control observes the settled state after both operations; it does not instrument claim-queue entry.
         const rows = faceRecordNames().filter((file) => file === pendingFoundingFile(ask) || file === faceAtomGroupFile(face.personaGroupId));
         expect(rows, "exactly one row holds the live founding seed").toEqual([faceAtomGroupFile(face.personaGroupId)]);
-        expect(await readCustodyRow("identity", rows[0]!), "the surviving group row holds the seed").toHaveLength(32);
+        expect(await readCustodyRecord("identity", rows[0]!), "the surviving group row holds the seed").toHaveLength(32);
         expect(await loadIdentityAnchors(0), "the face stands after the race").toMatchObject({ personaGroupId: face.personaGroupId });
       } finally { releaseRemoval.resolve(); spy.mockRestore(); }
     });

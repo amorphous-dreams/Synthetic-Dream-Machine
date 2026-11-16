@@ -19,7 +19,7 @@
  * that face.
  *
  * ── ONE HOLDER PER WRITE, AND A WRITE ONLY ACCRETES ─────────────────────────────────────────────
- * A write reads the standing row, decides and seals under one custody hold (`updateCustodyRow`), and lands only
+ * A write reads the standing row, decides and seals under one custody hold (`updateCustodyRecord`), and lands only
  * over nothing or over a row that reads whole. A row's plaintext lists events, and nothing else lands: bytes that
  * read as no list refuse, and a standing row that opens to no list refuses `malformed` and keeps its bytes. The
  * arriving list must hold every event the row holds, each compared in its canonical spelling: a write that would
@@ -48,7 +48,7 @@
  */
 import { GATE_MEMORY_RECORD_MAX_BYTES, canonicalJson, type GateMemoryRecords } from "@lararium/mesh";
 import { CustodyRowUnavailable, type CustodyHolder } from "./custody-holder.js";
-import { readCustodyRow, standingCustody, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, standingCustody, updateCustodyRecord } from "./custody-seat.js";
 
 /** A row's name: a proof-subject digest, 64 characters of bare lower-case hex. */
 const RECORD_NAME = /^[0-9a-f]{64}$/;
@@ -81,7 +81,7 @@ function makeRecords(gateFace: number): GateMemoryRecords {
   return Object.freeze({
     async read(name: string): Promise<Uint8Array | null> {
       const file = gateMemoryRecordFile(gateFace, name);
-      const bytes = await readCustodyRow("identity", file);
+      const bytes = await readCustodyRecord("identity", file);
       // A row that opens to no list refuses by name, exactly as one that does not open: the gate that asked
       // falls silent, where a row read as nothing would let it treat the face as never learned.
       if (bytes !== null && eventsOf(bytes) === null) throw new CustodyRowUnavailable("identity", file, "malformed");
@@ -97,7 +97,7 @@ function makeRecords(gateFace: number): GateMemoryRecords {
       if (arriving === null) throw new GateMemoryRecordRefused("a gate memory row lists events: these bytes read as no list");
       // The decision runs only over a row that reads whole or over nothing: every other reading refuses first,
       // and a locked seat refuses before the decision runs, so a refused write leaves no directory behind.
-      await updateCustodyRow("identity", file, (standing) => {
+      await updateCustodyRecord("identity", file, (standing) => {
         if (standing !== null) {
           const held = eventsOf(standing);
           if (held === null) throw new CustodyRowUnavailable("identity", file, "malformed");

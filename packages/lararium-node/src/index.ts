@@ -528,7 +528,7 @@ export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SESSION_A
 export { gateMemoryRecords, gateMemoryRecordFile, GateMemoryRecordRefused } from "./gate-memory-records.js";
 export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
 export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
-export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRow, writeCustodyRow, updateCustodyRow, openColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
+export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRecord, writeCustodyRecord, updateCustodyRecord, openColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 export type { RowUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
 // The ward (seat-harness#/the-ward): the face root seed opens fresh under a human route for one act.

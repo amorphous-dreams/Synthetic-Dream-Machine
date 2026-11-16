@@ -86,7 +86,7 @@ import { nodeRecoveryShareStore } from "./recovery-share-store.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import {
-  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRow, updateCustodyRow, withWardKeyCustody,
+  openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRecord, updateCustodyRecord, withWardKeyCustody,
 } from "./custody-seat.js";
 
 /**
@@ -606,7 +606,7 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 //     vessel's own key, so this vessel wrote it) and records its line.
 //   · A roster line whose root row went missing, or whose root row names another key, REFUSES by name at the act
 //     that needs the seed. Nothing mints over it.
-// The root's mint reads, decides and writes under one custody holder (`updateColdCustodyRow`), so two acts in two
+// The root's mint reads, decides and writes under one custody holder (`updateColdCustodyRecord`), so two acts in two
 // processes converge on one root and never write over each other's.
 
 const utf8 = new TextEncoder();
@@ -666,7 +666,7 @@ function parseRoster(bytes: Uint8Array | null, file: string): PersonaRosterLine[
 /** One face's roster line (its own row, in its own directory); null where it holds none. */
 async function readRosterLine(handleIndex: number): Promise<PersonaRosterLine | null> {
   const file = personaRosterFileName(handleIndex);
-  return parseRoster(await readCustodyRow("identity", file), file).find((l) => l.handleIndex === handleIndex) ?? null;
+  return parseRoster(await readCustodyRecord("identity", file), file).find((l) => l.handleIndex === handleIndex) ?? null;
 }
 
 /** The roster of the faces standing UNLOCKED, ascending: each face keeps its own line, so a locked face names itself by the floor index alone. */
@@ -729,7 +729,7 @@ async function commitRoot(handleIndex: number, keypair: PersistedKeypair, ward: 
     return { plaintext: encodeRow(persisted), value: { root: keypair, wrote: true } };
   }), `the face root at h${handleIndex}`);
   const rosterFile = personaRosterFileName(handleIndex);
-  await updateCustodyRow("identity", rosterFile, (bytes) => {
+  await updateCustodyRecord("identity", rosterFile, (bytes) => {
     const roster = parseRoster(bytes, rosterFile);
     const standing = roster.find((l) => l.handleIndex === handleIndex);
     if (standing) {
@@ -950,7 +950,7 @@ export async function orphanPersonaRoots(): Promise<number[]> {
 //   · the PUBLIC handle record (`.persona-public-handles-h<N>.json`) — the vessel's memory of ITS OWN
 //     published glamour faces (index → nym/glamour/causal heads), so a re-publish extends the local frontier
 //     (persona-glamour). Distinct from the pet-name map and from the handle-book (others' nyms).
-// Each map changes under one custody holder (`updateCustodyRow`): a set or a clear reads the map, changes one
+// Each map changes under one custody holder (`updateCustodyRecord`): a set or a clear reads the map, changes one
 // entry and writes it, so two acts in two processes never drop each other's entry.
 
 /** The private pet-name map filename. */
@@ -986,7 +986,7 @@ function changeIndexMap<T>(
   file: string, field: string, shaped: (entry: unknown) => entry is T, change: (map: Record<string, T>) => void,
 ): Promise<void> {
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
-  return updateCustodyRow("identity", file, (bytes) => {
+  return updateCustodyRecord("identity", file, (bytes) => {
     const map = parseIndexMap(bytes, file, field, shaped);
     change(map);
     return { plaintext: encodeRow({ [field]: map }), value: undefined };
@@ -1002,7 +1002,7 @@ const isLabel = (entry: unknown): entry is string => typeof entry === "string";
  */
 export async function makeNodePersonaPetnameStore(): Promise<OwnPersonaPetnameStore> {
   const fileOf = (handleIndex: number): string => personaPetnameFileName(handleIndex);
-  const read = async (handleIndex: number): Promise<Record<string, string>> => parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "names", isLabel);
+  const read = async (handleIndex: number): Promise<Record<string, string>> => parseIndexMap(await readCustodyRecord("identity", fileOf(handleIndex)), fileOf(handleIndex), "names", isLabel);
   return {
     async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
     set(handleIndex, petname) { return changeIndexMap(fileOf(handleIndex), "names", isLabel, (names) => { names[String(handleIndex)] = petname; }); },
@@ -1046,7 +1046,7 @@ const isDeclaration = (entry: unknown): entry is PersonaDeclaration => {
 export async function makeNodePersonaDeclarationStore(): Promise<PersonaDeclarationStore> {
   const fileOf = (handleIndex: number): string => personaDeclarationFileName(handleIndex);
   const read = async (handleIndex: number): Promise<Record<string, PersonaDeclaration>> =>
-    parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "declarations", isDeclaration);
+    parseIndexMap(await readCustodyRecord("identity", fileOf(handleIndex)), fileOf(handleIndex), "declarations", isDeclaration);
   return {
     async get(handleIndex) { return (await read(handleIndex))[String(handleIndex)]; },
     set(handleIndex, declaration) { return changeIndexMap(fileOf(handleIndex), "declarations", isDeclaration, (all) => { all[String(handleIndex)] = declaration; }); },
@@ -1076,7 +1076,7 @@ export async function makeNodePublicHandleStore(): Promise<OwnPublicHandleStore>
     return map;
   };
   const read = async (handleIndex: number): Promise<Record<string, PersonaPublicHandleRecord>> =>
-    keyed(parseIndexMap(await readCustodyRow("identity", fileOf(handleIndex)), fileOf(handleIndex), "handles", isPublicHandle), fileOf(handleIndex));
+    keyed(parseIndexMap(await readCustodyRecord("identity", fileOf(handleIndex)), fileOf(handleIndex), "handles", isPublicHandle), fileOf(handleIndex));
   return {
     async load(handleIndex) { return (await read(handleIndex))[String(handleIndex)] ?? null; },
     save(record) { return changeIndexMap(fileOf(record.handleIndex), "handles", isPublicHandle, (handles) => { keyed(handles, fileOf(record.handleIndex)); handles[String(record.handleIndex)] = record; }); },

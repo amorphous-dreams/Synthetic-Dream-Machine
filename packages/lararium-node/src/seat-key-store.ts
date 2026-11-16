@@ -44,7 +44,7 @@ import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:cr
 import { faceFileNames } from "./face-index.js";
 import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, openedCustody, removeColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
+import { openColdCustodyRecord, openedCustody, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The seat key's file, for the carrier table: `seat-key-h<N>-<32 hex of the key's name>.bin`. */
@@ -125,7 +125,7 @@ export async function seatKeysOfFace(handleIndex: number): Promise<string[]> {
   const keys: string[] = [];
   for (const held of listSeatKeys()) {
     if (held.handleIndex !== handleIndex) continue;
-    keys.push(await openColdCustodyRow("identity", held.file, (secret) => {
+    keys.push(await openColdCustodyRecord("identity", held.file, (secret) => {
       if (secret.length !== 32) throw new CustodyRowUnavailable("identity", held.file, "malformed");
       const key = publicOf(secret);
       if (seatKeyName(key) !== held.name) throw new CustodyRowUnavailable("identity", held.file, "names-another-key");
@@ -147,7 +147,7 @@ export async function storeSeatKey(handleIndex: number, secret: Uint8Array): Pro
   try {
     const verifyingKey = publicOf(own);
     const file = seatKeyFile(verifyingKey, handleIndex);
-    await updateColdCustodyRow("identity", file, (bytes) => {
+    await updateColdCustodyRecord("identity", file, (bytes) => {
       // The look at the other faces' rows runs under the same custody hold as the write: two stores of one key
       // under two faces never both land.
       const standing = heldSeatKey(verifyingKey);
@@ -182,7 +182,7 @@ export async function signAsSeat(verifyingKey: string, image: Uint8Array): Promi
     await openedCustody();
     throw new CustodyRowUnavailable("identity", `seat-key-h*-${seatKeyName(key)}.bin`, "absent");
   }
-  return openColdCustodyRow("identity", held.file, (secret) => {
+  return openColdCustodyRecord("identity", held.file, (secret) => {
     if (secret.length !== 32) throw new CustodyRowUnavailable("identity", held.file, "malformed");
     if (publicOf(secret) !== key) throw new CustodyRowUnavailable("identity", held.file, "names-another-key");
     return new Uint8Array(sign(null, Buffer.from(image), keyOf(secret)));
@@ -200,7 +200,7 @@ export async function retireSeatKey(verifyingKey: string): Promise<boolean> {
   // The row's own bytes answer for it, under the same hold as the removal: a row under this key's name that holds
   // another key, or another length, stays and refuses by name.
   const row: { reading: "malformed" | "names-another-key" | null } = { reading: null };
-  const left = await removeColdCustodyRow("identity", held.file, (secret) => {
+  const left = await removeColdCustodyRecord("identity", held.file, (secret) => {
     row.reading = secret.length !== 32 ? "malformed" : publicOf(secret) !== key ? "names-another-key" : null;
     return row.reading === null;
   });

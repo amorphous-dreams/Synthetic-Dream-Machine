@@ -9,7 +9,7 @@ import { afterAll, describe, expect, test, vi } from "vitest";
 import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { runFoundTheFace } from "../src/commands/init.js";
 import { FsCustodyIo } from "../src/custody-io.js";
-import { seatedCustody, unseatCustody, readCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, unseatCustody, readCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
 import { pendingFoundingFile, loadPendingFoundingSeed, sweepFoundingSeeds, faceAtomGroupFile, foundingAskDigest, type FoundingAtomAsk } from "../src/face-atom-store.js";
 import { askRecordPath, faceRecordNames, groupRecordPath } from "./face-paths.js";
@@ -38,15 +38,15 @@ describe("the founding seed sweep", () => {
     const { root, genesisDir, ask } = await rig();
     await withLarRoot(root, async () => {
       const face = await foundFace({ storageDir: larDataDir(), genesisDir });
-      const groupSeed = await readCustodyRow("identity", faceAtomGroupFile(face.personaGroupId));
+      const groupSeed = await readCustodyRecord("identity", faceAtomGroupFile(face.personaGroupId));
       expect(groupSeed, "control: the related group holds its founding seed").toHaveLength(32);
       const unrelated = { ...ask, handleIndex: 1 };
       expect(pendingFoundingFile(unrelated)).not.toBe(pendingFoundingFile(ask));
       await ensureFaceCustodyOfAsk(foundingAskDigest(unrelated), "unrelated");
-      await writeCustodyRow("identity", pendingFoundingFile(unrelated), groupSeed!);
+      await writeCustodyRecord("identity", pendingFoundingFile(unrelated), groupSeed!);
       await sweepFoundingSeeds();
       expect(await loadPendingFoundingSeed(unrelated), "a matching seed cannot retire an ask with another digest").toEqual(groupSeed);
-      expect(await readCustodyRow("identity", faceAtomGroupFile(face.personaGroupId)), "control: the anchored group keeps its seed").toEqual(groupSeed);
+      expect(await readCustodyRecord("identity", faceAtomGroupFile(face.personaGroupId)), "control: the anchored group keeps its seed").toEqual(groupSeed);
     });
   }, 180_000);
   test("a crash at the move seam keeps the ask until anchors name it, then sweep retires it", async () => {
@@ -64,14 +64,14 @@ describe("the founding seed sweep", () => {
       const names = () => faceRecordNames().filter((name) => name === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(name)).sort();
       expect(names(), "the interrupted move exposes both sealed rows").toHaveLength(2);
       const [groupFile] = names().filter((name) => name.startsWith("face-atom-g"));
-      expect(await readCustodyRow("identity", groupFile!)).toEqual(await loadPendingFoundingSeed(ask));
+      expect(await readCustodyRecord("identity", groupFile!)).toEqual(await loadPendingFoundingSeed(ask));
       await sweepFoundingSeeds();
       expect(names(), "without committed anchors the ask still names the pending founding").toHaveLength(2);
       const face = await foundFace({ storageDir: larDataDir(), genesisDir });
       expect(faceAtomGroupFile(face.personaGroupId)).toBe(groupFile);
       // Recreate the residue after the resumed founding retires it; the anchored relation now permits sweep.
       await ensureFaceCustodyOfAsk(foundingAskDigest(ask), "residue");
-      await writeCustodyRow("identity", pendingFoundingFile(ask), (await readCustodyRow("identity", groupFile!))!);
+      await writeCustodyRecord("identity", pendingFoundingFile(ask), (await readCustodyRecord("identity", groupFile!))!);
       await sweepFoundingSeeds();
       expect(names(), "one group row keeps the seed").toEqual([groupFile]);
       const bytes = readFileSync(groupRecordPath(face.personaGroupId, groupFile!));

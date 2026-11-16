@@ -10,7 +10,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/the-veil-ladder#/the-base-model
  */
 import { signVeilLift, verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh";
-import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { loadVesselVerifyingKey } from "./node-vessel-identity.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 
@@ -30,7 +30,7 @@ const recordOf = async (bytes: Uint8Array | null | undefined): Promise<VeilLiftR
 
 /** The link this node holds for `group`, verified; null where none rests or the bytes read as no link. */
 export async function readNodeVeilLift(group: string): Promise<VeilLiftRecord | null> {
-  return recordOf(await readCustodyRow("identity", veilLiftGroupFile(group)));
+  return recordOf(await readCustodyRecord("identity", veilLiftGroupFile(group)));
 }
 
 /**
@@ -43,6 +43,6 @@ export async function keepNodeVeilLift(group: string, atomSeed: Uint8Array): Pro
   const bytes = new TextEncoder().encode(JSON.stringify(record));
   const standing = await readNodeVeilLift(group);
   if (standing !== null && standing.veil === record.veil && standing.atom === record.atom && standing.face === group) return standing;
-  await updateCustodyRow("identity", veilLiftGroupFile(group), () => ({ plaintext: bytes, value: undefined }));
+  await updateCustodyRecord("identity", veilLiftGroupFile(group), () => ({ plaintext: bytes, value: undefined }));
   return record;
 }

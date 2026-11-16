@@ -51,7 +51,7 @@ import {
   type HostingAct, type HostingEpoch,
 } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openedCustody, readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { openedCustody, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRowDir } from "./hosting-face.js";
 import { ownerOnlyDir } from "./fs-atomic.js";
 
@@ -107,7 +107,7 @@ export async function readHostingState(nexusAid: string): Promise<HostingState |
   const face = await hostingFaceOf(nexusAid, false);
   if (face === null) { await openedCustody(); return null; }
   const file = stateFile(face, nexusAid);
-  const bytes = await readCustodyRow("identity", file);
+  const bytes = await readCustodyRecord("identity", file);
   return bytes === null ? null : parseState(bytes, file);
 }
 
@@ -162,7 +162,7 @@ export async function rollHosting(opts: {
   const minted = await mintHostingAct({ leafSeed: opts.leafSeed, nexusAid: opts.nexusAid, prev: priorCid, cap });
   const state: HostingState = { current: minted.act, previous: prior?.current ?? null, depth: (prior?.depth ?? 0) + 1 };
   await standHostingDir(face, opts.nexusAid);
-  await updateCustodyRow("identity", file, (standing) => {
+  await updateCustodyRecord("identity", file, (standing) => {
     const held = standing === null ? null : parseState(standing, file);
     if ((held ? hostingActCid(held.current) : null) !== priorCid) throw new HostingStateMoved();
     return { plaintext: utf8.encode(JSON.stringify(state)), value: undefined };
@@ -172,7 +172,7 @@ export async function rollHosting(opts: {
   for (const name of await spendNames(face, opts.nexusAid)) {
     if (live.has(SPEND_FILE.exec(name)![1]!)) continue;
     const row = `${hostingRowDir(face, opts.nexusAid)}/${name}`;
-    try { await removeCustodyRow("identity", row); }
+    try { await removeCustodyRecord("identity", row); }
     catch (err) { if (err instanceof CustodyRowUnavailable) unswept.push(row); else throw err; }
   }
   return { act: minted.act, state, unswept };
@@ -196,7 +196,7 @@ async function burn(nexusAid: string, epochCid: string, tag: "n" | "m", key: str
   await standHostingDir(face, nexusAid);
   // The row binds its own key beside its value: a digest collision in the name never reads as that key's burn.
   const line = `${tag} ${key} ${value}`;
-  return updateCustodyRow<SpendOutcome>("identity", file, (standing) => {
+  return updateCustodyRecord<SpendOutcome>("identity", file, (standing) => {
     if (standing === null) return { plaintext: utf8.encode(line), value: "fresh" };
     let held: string;
     try { held = new TextDecoder("utf-8", { fatal: true }).decode(standing); } catch { throw malformed(file); }

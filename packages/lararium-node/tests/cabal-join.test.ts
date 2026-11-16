@@ -277,10 +277,10 @@ describe("cabal join — the crossing, and what it refuses", () => {
       const packedTiddlers = { [DAEMON_BAG_ID]: { title: DAEMON_BAG_ID, text: handle.url, kind: "oracle" } };
       writeFileSync(larBootstrapPath(), JSON.stringify({ text: JSON.stringify({ tiddlers: packedTiddlers }) }), "utf8");
     });
-    const { updateCustodyRow } = await import("../src/custody-seat.js");
+    const { updateCustodyRecord } = await import("../src/custody-seat.js");
     const { SECRET_HOME_FILE } = await import("../src/secret-home-store.js");
     const { decodeSecretHomeAddress, encodeSecretHomeAddress } = await import("@lararium/mesh");
-    await updateCustodyRow("identity", SECRET_HOME_FILE, (standing) => {
+    await updateCustodyRecord("identity", SECRET_HOME_FILE, (standing) => {
       const address = standing ? decodeSecretHomeAddress(standing) : null;
       if (!address) throw new Error("fixture: no secret home address stands");
       return { plaintext: encodeSecretHomeAddress({ documentId: address.documentId, key: address.key }), value: undefined };

@@ -25,7 +25,7 @@ import { dirname, join } from "node:path";
 import { afterEach, describe, expect, test } from "vitest";
 import { carryRecordKey, ciphertextCid, readFckCarrier } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
-import { writeCustodyRow } from "../src/custody-seat.js";
+import { writeCustodyRecord } from "../src/custody-seat.js";
 import { depositCarried, fetchCarried, noteContact, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";
 
 import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
@@ -91,7 +91,7 @@ describe("the carriage at rest", () => {
     await custody("carry-k2");
     // A deposit stood its rhythm row and stopped before its blob: it counts nothing, and no value answers.
     mkdirSync(join(await guestDir(), "blobs"), { recursive: true });
-    await writeCustodyRow("identity", rhythmRow(), enc({ lastSeen: 3, gap: 0, pending: null }));
+    await writeCustodyRecord("identity", rhythmRow(), enc({ lastSeen: 3, gap: 0, pending: null }));
     const a = blob(60, 1), b = blob(30, 2);
     expect(await readCarryRecord(AID, KEY)).toMatchObject({ bytes: 0 });
     expect(await fetchCarried(AID, KEY, a.cid)).toBeNull();
@@ -140,11 +140,11 @@ describe("the carriage at rest", () => {
     expect(await put(blob(10, 1))).toBe("held");
     for (const shape of [{ lastSeen: 1, gap: 0 }, { lastSeen: -1, gap: 0, pending: null }, { lastSeen: 1, gap: "0", pending: null },
       { lastSeen: 1, gap: 0, pending: 1.5 }, { lastSeen: 1, gap: 0, pending: null, bytes: 10 }, [1], "x"]) {
-      await writeCustodyRow("identity", rhythmRow(), enc(shape));
+      await writeCustodyRecord("identity", rhythmRow(), enc(shape));
       expect(await refusal(readCarryRecord(AID, KEY)), JSON.stringify(shape)).toMatchObject({ reading: "malformed" });
       expect(await refusal(noteContact(AID, KEY, 2))).toMatchObject({ reading: "malformed" });
     }
-    await writeCustodyRow("identity", rhythmRow(), enc({ lastSeen: 1, gap: 0, pending: null }));   // control: the true shape reads again
+    await writeCustodyRecord("identity", rhythmRow(), enc({ lastSeen: 1, gap: 0, pending: null }));   // control: the true shape reads again
     expect(await readCarryRecord(AID, KEY)).toMatchObject({ bytes: 10 });
   });
 
@@ -190,7 +190,7 @@ describe("the carriage at rest", () => {
     expect(again).toMatchObject({ home: "identity", file: `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}` });
     // A row this vessel's key opens to OTHER bytes than its address names refuses too.
     rmSync(join(await guestDir(), "blobs", name));
-    await writeCustodyRow("identity", `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
+    await writeCustodyRecord("identity", `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
     expect(await refusal(put(doc))).toMatchObject({ reading: "holds other bytes than its address names" });
   });
 

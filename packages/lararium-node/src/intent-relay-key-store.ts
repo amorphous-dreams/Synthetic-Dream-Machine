@@ -3,7 +3,7 @@ import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:cr
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { openColdCustodyRow, updateColdCustodyRow } from "./custody-seat.js";
+import { openColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 export const INTENT_RELAY_KEY_FILE = "intent-relay-key.bin";
@@ -25,25 +25,25 @@ export function heldIntentRelayKey(): boolean { return existsSync(join(larIdenti
 export async function mintIntentRelayKey(): Promise<{ key: string }> {
   const secret = randomFillSync(new Uint8Array(32));
   try {
-    return await updateColdCustodyRow("identity", INTENT_RELAY_KEY_FILE, (prior) => {
+    return await updateColdCustodyRecord("identity", INTENT_RELAY_KEY_FILE, (prior) => {
       if (prior !== null) throw new CustodyRowUnavailable("identity", INTENT_RELAY_KEY_FILE, "names-another-key");
       return { plaintext: secret, value: { key: publicOf(secret) } };
     });
   } finally { secret.fill(0); }
 }
 export async function intentRelayPublicKey(): Promise<string> {
-  return openColdCustodyRow("identity", INTENT_RELAY_KEY_FILE, (secret) => publicOf(requireSecret(secret)));
+  return openColdCustodyRecord("identity", INTENT_RELAY_KEY_FILE, (secret) => publicOf(requireSecret(secret)));
 }
 /** Sign exactly the supplied image through this row's scoped custody door. */
 export async function signAsIntentRelay(image: Uint8Array): Promise<string> {
-  return openColdCustodyRow("identity", INTENT_RELAY_KEY_FILE, (secret) =>
+  return openColdCustodyRecord("identity", INTENT_RELAY_KEY_FILE, (secret) =>
     Buffer.from(sign(null, Buffer.from(image), privateOf(requireSecret(secret)))).toString("hex"));
 }
 /** Rotation takes one custody hold and answers both public keys. */
 export async function rotateIntentRelayKey(): Promise<{ previous: string; key: string }> {
   const next = randomFillSync(new Uint8Array(32));
   try {
-    return await updateColdCustodyRow("identity", INTENT_RELAY_KEY_FILE, (prior) => {
+    return await updateColdCustodyRecord("identity", INTENT_RELAY_KEY_FILE, (prior) => {
       if (prior === null) throw new CustodyRowUnavailable("identity", INTENT_RELAY_KEY_FILE, "absent");
       return { plaintext: next, value: { previous: publicOf(requireSecret(prior)), key: publicOf(next) } };
     });

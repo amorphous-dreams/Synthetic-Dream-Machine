@@ -63,7 +63,7 @@ import {
   RECLAIM_RATIO, HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND,
 } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { readCustodyRow, removeCustodyRow, updateCustodyRow, writeCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, writeCustodyRecord } from "./custody-seat.js";
 import { readHostingState, liveEpochs } from "./hosting-store.js";
 import { hostingDirPath, hostingFaceOf, hostingRowDir } from "./hosting-face.js";
 import type { HostingGrant, LarSessionMsg, PeerClass } from "@lararium/mesh";
@@ -174,7 +174,7 @@ function parseRhythm(bytes: Uint8Array, file: string): CarryRhythm {
 
 async function readRhythm(home: Home, key: string): Promise<CarryRhythm | null> {
   const file = recordFile(home, key);
-  const bytes = await readCustodyRow("identity", file);
+  const bytes = await readCustodyRecord("identity", file);
   return bytes === null ? null : parseRhythm(bytes, file);
 }
 
@@ -196,7 +196,7 @@ async function updateRhythm<T>(
 ): Promise<T> {
   const file = recordFile(home, key);
   mkdirSync(carryPath(home, segment(key), "blobs"), { recursive: true, mode: 0o700 });
-  return updateCustodyRow("identity", file, (standing) => {
+  return updateCustodyRecord("identity", file, (standing) => {
     const d = decide(standing === null ? null : parseRhythm(standing, file));
     return { plaintext: d.next === null ? null : new TextEncoder().encode(JSON.stringify(d.next)), value: d.value };
   });
@@ -257,7 +257,7 @@ async function reclaim(home: Home, depth: number, need: number, limits: CarryLim
       await updateRhythm(home, key, (standing) => ({ next: standing ? { ...standing, pending: depth } : null, value: undefined }));   // notice first
     } else if (lapseRatio(depth, record.pending, record.gap) > RECLAIM_RATIO) {
       // The blob rows leave first; the mark clears once they have left, so a discard that stops midway keeps its mark.
-      for (const blob of await standingBlobs(home, key)) await removeCustodyRow("identity", blob.file);
+      for (const blob of await standingBlobs(home, key)) await removeCustodyRecord("identity", blob.file);
       await updateRhythm(home, key, (standing) => ({ next: standing ? { ...standing, pending: null } : null, value: undefined }));
     }
   }
@@ -294,7 +294,7 @@ async function depositInTurn(opts: {
   if (twin) {
     // Already carried: idempotent. The row must open to the same bytes before this hearth says so; a row that
     // stands and does not open refuses by name, where an answer of `held` would promise bytes nobody can fetch.
-    const standing = await readCustodyRow("identity", twin.file);
+    const standing = await readCustodyRecord("identity", twin.file);
     if (standing !== null && standing.length === size && standing.every((byte, i) => byte === opts.ciphertext[i])) return "held";
     throw new CustodyRowUnavailable("identity", twin.file, "holds other bytes than its address names");
   }
@@ -303,7 +303,7 @@ async function depositInTurn(opts: {
       && !(await reclaim(home, opts.depth, size, limits, opts.key))) return "pressure";
   // The rhythm stands before the blob, and counts nothing; the blob row then commits the deposit.
   await updateRhythm(home, opts.key, (standing) => ({ next: standing ? null : { lastSeen: opts.depth, gap: 0, pending: null }, value: undefined }));
-  await writeCustodyRow("identity", `${guestRowDir(home, opts.key)}/blobs/${address[1]}.${size}`, opts.ciphertext);
+  await writeCustodyRecord("identity", `${guestRowDir(home, opts.key)}/blobs/${address[1]}.${size}`, opts.ciphertext);
   return "held";
 }
 
@@ -317,7 +317,7 @@ export async function fetchCarried(nexusAid: string, key: string, cid: string): 
   const home = await homeOf(nexusAid, false);
   if (home === null) return null;
   const blob = (await standingBlobs(home, key)).find((b) => b.digest === address[1]);
-  return blob ? readCustodyRow("identity", blob.file) : null;
+  return blob ? readCustodyRecord("identity", blob.file) : null;
 }
 
 /**

@@ -29,7 +29,7 @@
 import { SwitchActsSetAsideFull, type SwitchIntent, type SwitchOutcome } from "@lararium/mesh";
 import { existsSync, mkdirSync, renameSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -96,7 +96,7 @@ function setAsideRow(): string {
 }
 
 const writeAct = (record: SwitchActRecord, fresh?: SwitchActReset) =>
-  updateCustodyRow("identity", SWITCH_ACTS_FILE, (plaintext) => {
+  updateCustodyRecord("identity", SWITCH_ACTS_FILE, (plaintext) => {
     let standing: SwitchActRecord[];
     if (fresh !== undefined) standing = [fresh];
     else {
@@ -111,7 +111,7 @@ const writeAct = (record: SwitchActRecord, fresh?: SwitchActReset) =>
 
 /** Whether the row opens now: a writer before this one may have set it aside and started a fresh ring. */
 async function rowOpens(): Promise<boolean> {
-  try { await readCustodyRow("identity", SWITCH_ACTS_FILE); return true; }
+  try { await readCustodyRecord("identity", SWITCH_ACTS_FILE); return true; }
   catch (error) { if (error instanceof CustodyRowUnavailable) return false; throw error; }
 }
 
@@ -139,5 +139,5 @@ export const nodeSwitchActLog: SwitchActLog = {
 
 /** The acts the row holds, oldest first. A malformed row refuses by name. */
 export async function readSwitchActs(): Promise<readonly SwitchActRecord[]> {
-  return parse(await readCustodyRow("identity", SWITCH_ACTS_FILE));
+  return parse(await readCustodyRecord("identity", SWITCH_ACTS_FILE));
 }

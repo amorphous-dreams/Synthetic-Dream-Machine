@@ -17,7 +17,7 @@ import { readFileSync } from "node:fs";
 import * as ed from "@noble/ed25519";
 import { hex } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "../src/custody-holder.js";
-import { removeCustodyRow } from "../src/custody-seat.js";
+import { removeCustodyRecord } from "../src/custody-seat.js";
 import {
   generateOrLoadPersonaGroupRoot, landPersonaRoot, listPersonaRosterLines, loadPersonaGroupRootSeed, orphanPersonaRootKey,
 } from "../src/node-vessel-identity.js";
@@ -75,7 +75,7 @@ describe("a restore lands a carried root", () => {
     expect(await orphanPersonaRootKey(4)).toBeNull();
     // The roster row leaves: the root row stands with no line, an orphan.
     const roster = ".persona-roster-h1.json";
-    expect(await removeCustodyRow("identity", roster)).toBe(true);
+    expect(await removeCustodyRecord("identity", roster)).toBe(true);
     expect(await orphanPersonaRootKey(1)).toBe(carried.verifyingKey);
     // Another key refuses over the orphan, and the refusal adopts nothing: no roster line appears.
     const before = bytesOf();

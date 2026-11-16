@@ -26,7 +26,7 @@ import {
   RECOVERY_CONTACT_ENROLMENT_KIND, coldKeySeedFromCode, foldPersonaContests, recoveryContactPossessionBytes, hex, recoverySetCommitment,
 } from "@lararium/mesh";
 import * as init from "../src/commands/init.js";
-import { seatedCustody, unseatCustody, writeCustodyRow } from "../src/custody-seat.js";
+import { seatedCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {
   RecoveryContactEnrolmentRefused, recoveryContactOffer, recoveryContactSetFile, recoveryContactStanding, readRecoveryContactSet, readRecoveryContactOffer, runRecoveryContactEnrolment,
 } from "../src/recovery-contact-enrolment.js";
@@ -142,7 +142,7 @@ describe("a face enrols its first recovery contacts on this vessel", () => {
     // The record landed and the event did not: write the record a stopped run leaves.
     const record = { prefix: prefix0, recoveryContactSetHash: recoverySetCommitment(prefix0, trio.map((o) => o.recoveryPubKey), 2), threshold: 2,
       recoveryContacts: trio.map((o, i) => ({ slot: i === 0 ? "contact-a" : "contact-b", label: "Recovery-contact-A (unassigned)", recoveryPubKey: o.recoveryPubKey, confirmPhrase: "" })) };
-    await writeCustodyRow("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(record)));
+    await writeCustodyRecord("identity", recoveryContactSetFile(0), new TextEncoder().encode(JSON.stringify(record)));
     expect(await refusalOf(enrol(0, [(await recoveryContactOffer(prefix0)).offer, (await recoveryContactOffer(prefix0)).offer, (await recoveryContactOffer(prefix0)).offer], 2))).toBe("record-names-another-set");
     expect(await lineage(prefix0)).toHaveLength(1);
     expect(await withRepo((repo) => recoveryContactStanding(repo, 0))).toMatchObject({ committed: false, headSet: null, recoveryContactSetHash: record.recoveryContactSetHash });

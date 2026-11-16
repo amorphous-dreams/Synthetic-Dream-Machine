@@ -32,7 +32,7 @@
 import { mkdirSync } from "node:fs";
 import { HandleBook, HANDLE_BOOK_SNAPSHOT_ERA, type HandleBookSnapshot } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
-import { readCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The recogniser's serialised handle-book of ONE face: others' nyms and the private labels that face keeps for them, in that face's own row. */
@@ -68,7 +68,7 @@ function parseSnapshot(bytes: Uint8Array, file: string): HandleBookSnapshot {
  */
 export async function loadNodeHandleBook(face: number): Promise<HandleBook> {
   const file = handleBookFile(face);
-  const bytes = await readCustodyRow("identity", file);
+  const bytes = await readCustodyRecord("identity", file);
   if (bytes === null) return new HandleBook();
   return HandleBook.restore(parseSnapshot(bytes, file));
 }
@@ -82,7 +82,7 @@ export async function saveNodeHandleBook(face: number, book: HandleBook): Promis
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   const file = handleBookFile(face);
   const next = utf8.encode(JSON.stringify(book.snapshot(), null, 2));
-  await updateCustodyRow("identity", file, (bytes) => {
+  await updateCustodyRecord("identity", file, (bytes) => {
     if (bytes !== null) parseSnapshot(bytes, file);
     return { plaintext: next, value: undefined };
   });

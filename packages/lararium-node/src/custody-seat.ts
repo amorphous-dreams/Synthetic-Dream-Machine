@@ -19,16 +19,16 @@
  * refuses `CustodyLocked`.
  *
  * ── A ROW READS WHOLE OR REFUSES ────────────────────────────────────────────────────────────────
- *   `readCustodyRow`   the row's plaintext; `null` when nothing stands at its path, and for that reading alone.
+ *   `readCustodyRecord`   the row's plaintext; `null` when nothing stands at its path, and for that reading alone.
  *                      Locked refuses `CustodyLocked`. A row that stands and does not open (torn, bare, an
  *                      earlier shape, another key's) refuses `CustodyRowUnavailable` naming what stands.
- *   `writeCustodyRow`  the one sealed writer, under the key the seat holds.
- *   `updateCustodyRow` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
+ *   `writeCustodyRecord`  the one sealed writer, under the key the seat holds.
+ *   `updateCustodyRecord` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
  *                      on its standing ones. The decision receives the row's plaintext (`null` when nothing stands)
  *                      and every other reading refuses before it runs, so it decides over the row itself or not at all.
- *   `removeCustodyRow` a removal under ONE custody holder, of a row the seat's key opens; any other standing row
+ *   `removeCustodyRecord` a removal under ONE custody holder, of a row the seat's key opens; any other standing row
  *                      refuses and stays.
- *   `openColdCustodyRow` / `updateColdCustodyRow`  the same two doors for a COLD row: its plaintext lives for one
+ *   `openColdCustodyRecord` / `updateColdCustodyRecord`  the same two doors for a COLD row: its plaintext lives for one
  *                      act and zero-fills when the act settles.
  *   `exclusiveCustody` one act under the custody claim while the key stands open, for a FLOOR row whose mint must
  *                      land once (the vessel key and its inception). It opens no row.
@@ -113,7 +113,7 @@ export async function openedCustody(): Promise<CustodyHolder> {
 }
 
 /** One sealed row's plaintext, or `null` when nothing stands there. Every other reading refuses by name. */
-export async function readCustodyRow(home: CustodyHome, file: string): Promise<Uint8Array | null> {
+export async function readCustodyRecord(home: CustodyHome, file: string): Promise<Uint8Array | null> {
   const r = await (await openedCustody()).readRow(home, file);
   if (r.reading === "opens") return r.plaintext;
   if (r.reading === "absent") return null;
@@ -122,7 +122,7 @@ export async function readCustodyRow(home: CustodyHome, file: string): Promise<U
 }
 
 /** Seal `plaintext` as one row, through the one sealed writer, under the key the seat holds. */
-export async function writeCustodyRow(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void> {
+export async function writeCustodyRecord(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void> {
   await (await openedCustody()).writeRow(home, file, plaintext);
 }
 
@@ -130,7 +130,7 @@ export async function writeCustodyRow(home: CustodyHome, file: string, plaintext
  * Read one sealed row, decide, and write it, as one custody holder. `decide` receives the row's plaintext, or `null`
  * when nothing stands there, and answers its next plaintext (`null` writes nothing) beside the caller's answer.
  */
-export async function updateCustodyRow<T>(
+export async function updateCustodyRecord<T>(
   home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
 ): Promise<T> {
   return (await openedCustody()).updateRow(home, file, (r) => {
@@ -147,17 +147,17 @@ export async function updateCustodyRow<T>(
  * destroys bytes this vessel's key did not seal. `when`, where given, reads the standing plaintext under the same
  * hold: a row it declines stays, and the removal answers false.
  */
-export async function removeCustodyRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
+export async function removeCustodyRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
   return (await openedCustody()).removeRow(home, file, when);
 }
 
 /** Move a row pair under one holder claim; both rows keep standing if the destination holds other bytes. */
-export async function moveCustodyRow(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void> {
+export async function moveCustodyRecord(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void> {
   return (await openedCustody()).moveRow(home, source, destination, expected);
 }
 
 /** Hold the founding custody claim across a row scan and every retirement it decides. */
-export async function withCustodyRows<T>(act: (rows: {
+export async function withCustodyRecords<T>(act: (rows: {
   read(home: CustodyHome, file: string): Promise<Uint8Array | null>;
   remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean>;
 }) => Promise<T>): Promise<T> {
@@ -169,7 +169,7 @@ export async function withCustodyRows<T>(act: (rows: {
  * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays. `when`, where
  * given, reads the standing plaintext under the same hold: a row it declines stays, and the removal answers false.
  */
-export async function removeColdCustodyRow(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
+export async function removeColdCustodyRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
   return (await openedCustody()).removeColdRow(home, file, when);
 }
 
@@ -178,7 +178,7 @@ export async function removeColdCustodyRow(home: CustodyHome, file: string, when
  * act copies out what it keeps. A row with nothing at its path refuses `CustodyRowUnavailable` reading `absent`,
  * as every reading but a whole one does: a cold row holds a secret some act already counted on.
  */
-export async function openColdCustodyRow<T>(
+export async function openColdCustodyRecord<T>(
   home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T,
 ): Promise<T> {
   return (await openedCustody()).openColdRow(home, file, act);
@@ -190,7 +190,7 @@ export async function openColdCustodyRow<T>(
  * The plaintext handed in zero-fills once `decide` returns. A row that stands and does not open refuses by name
  * before `decide` runs, so a mint never lands over a secret it could not read.
  */
-export async function updateColdCustodyRow<T>(
+export async function updateColdCustodyRecord<T>(
   home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
 ): Promise<T> {
   return (await openedCustody()).updateColdRow(home, file, (r) => {

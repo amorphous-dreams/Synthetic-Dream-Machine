@@ -37,7 +37,7 @@ import {
 } from "@lararium/mesh";
 import { readLocalPersonaKelEvents } from "./local-persona-kel.js";
 import { readCarriedCharters } from "./carried-set.js";
-import { readCustodyRow, removeCustodyRow, updateCustodyRow } from "./custody-seat.js";
+import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { readRecoveryContactSet } from "./recovery-contact-enrolment.js";
 import { readNexusDoc } from "./nexus-doc.js";
 import { heldSeatKey, signAsSeat } from "./seat-key-store.js";
@@ -90,7 +90,7 @@ function readMark(bytes: Uint8Array | null): ProvisionalMark | null {
 
 /** The face's provisional mark, or null where the face stands confirmed (or never stood restored here). */
 export async function readProvisionalMark(handleIndex: number): Promise<ProvisionalMark | null> {
-  return readMark(await readCustodyRow("identity", faceProvisionalFile(handleIndex)));
+  return readMark(await readCustodyRecord("identity", faceProvisionalFile(handleIndex)));
 }
 
 /**
@@ -99,7 +99,7 @@ export async function readProvisionalMark(handleIndex: number): Promise<Provisio
  */
 export async function markProvisional(handleIndex: number, mark: ProvisionalMark): Promise<void> {
   const bytes = new TextEncoder().encode(JSON.stringify({ prefix: mark.prefix, head: { seq: mark.head.seq, eventCid: mark.head.eventCid }, from: mark.from }));
-  await updateCustodyRow("identity", faceProvisionalFile(handleIndex), (standing) => {
+  await updateCustodyRecord("identity", faceProvisionalFile(handleIndex), (standing) => {
     const held = readMark(standing);
     const same = held !== null && held.prefix === mark.prefix && held.head.eventCid === mark.head.eventCid && held.from === mark.from;
     return { plaintext: same ? null : bytes, value: undefined };
@@ -174,7 +174,7 @@ export async function confirmProvisional(input: { readonly handleIndex: number; 
   if (view.seq !== mark.head.seq || view.eventCid !== mark.head.eventCid) {
     return refuse("view-disagrees", `the ${view.party} holds head ${view.seq} (${view.eventCid.slice(0, 20)}…), and the restore read head ${mark.head.seq} (${mark.head.eventCid.slice(0, 20)}…): the face stays provisional. A head the restore never read may stand; the recovery contacts' recovery path answers a fork.`);
   }
-  await removeCustodyRow("identity", faceProvisionalFile(handleIndex));
+  await removeCustodyRecord("identity", faceProvisionalFile(handleIndex));
   return { handleIndex, party: view.party, key: view.key, head: mark.head };
 }
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { readCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
+import { readCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
 import { enabledIntentRelayFaces, enableIntentRelayFace, disableIntentRelayFace, intentRelayRing, IntentRelayRingMalformed, INTENT_RELAY_FACES_FILE } from "../src/intent-relay-ring.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
 
@@ -16,7 +16,7 @@ describe("the per-face relay ring", () => {
       await disableIntentRelayFace(a); await disableIntentRelayFace(a);
       expect(await enabledIntentRelayFaces()).toEqual([b]);
       expect(await intentRelayRing().admits(a)).toBe(false);
-      expect((await readCustodyRow("identity", INTENT_RELAY_FACES_FILE))?.length).toBeGreaterThan(0);
+      expect((await readCustodyRecord("identity", INTENT_RELAY_FACES_FILE))?.length).toBeGreaterThan(0);
     } finally { await seat.drop(); }
   });
 
@@ -25,7 +25,7 @@ describe("the per-face relay ring", () => {
     try {
       await enableIntentRelayFace(a);
       expect(await intentRelayRing().admits(a)).toBe(true);
-      await writeCustodyRow("identity", INTENT_RELAY_FACES_FILE, new TextEncoder().encode('{ "faces": ["' + a + '"] }'));
+      await writeCustodyRecord("identity", INTENT_RELAY_FACES_FILE, new TextEncoder().encode('{ "faces": ["' + a + '"] }'));
       await expect(enabledIntentRelayFaces()).rejects.toBeInstanceOf(IntentRelayRingMalformed);
       expect(await intentRelayRing().admits(a)).toBe(false);
     } finally { await seat.drop(); }

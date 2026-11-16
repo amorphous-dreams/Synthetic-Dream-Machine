@@ -27,7 +27,7 @@ vi.mock("../src/identity-anchors.js", async (importActual) => {
 });
 
 import { runFoundTheFace } from "../src/commands/init.js";
-import { readCustodyRow, seatedCustody, unseatCustody } from "../src/custody-seat.js";
+import { readCustodyRecord, seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { faceAtomGroupFile, loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { loadIdentityAnchors, veilArchivePath } from "../src/identity-anchors.js";
 import { larBootstrapPath, larDataDir, larIdentityDir } from "../src/vessel-paths.js";
@@ -62,7 +62,7 @@ function removePlaneEntry(group: string): void {
 async function groupRows(): Promise<Array<{ file: string; seed: Uint8Array }>> {
   const files = faceRecordNames().filter((name) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(name));
   return Promise.all(files.map(async (file) => {
-    const seed = await readCustodyRow("identity", file);
+    const seed = await readCustodyRecord("identity", file);
     expect(seed, `${file} opens through custody`).toHaveLength(32);
     return { file, seed: seed! };
   }));

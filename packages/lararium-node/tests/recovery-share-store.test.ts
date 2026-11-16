@@ -19,7 +19,7 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
 import { readFckCarrier, type RecoveryShare } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
-import { seatCustody, writeCustodyRow } from "../src/custody-seat.js";
+import { seatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {
   RecoveryShareStands, deviceShareFile, loadRecoveryDeviceShare, persistRecoveryDeviceShare,
 } from "../src/recovery-share-store.js";
@@ -101,7 +101,7 @@ describe("the device recovery share at rest", () => {
 
   test("D4 — a row that opens to another shape refuses malformed at the read and at the write", async () => {
     await custody("share-d4");
-    await writeCustodyRow("identity", deviceShareFile(0), new TextEncoder().encode(JSON.stringify({ x: 3, ys: "not-a-list", custodian: "device", recoveryEpoch: 1 })));
+    await writeCustodyRecord("identity", deviceShareFile(0), new TextEncoder().encode(JSON.stringify({ x: 3, ys: "not-a-list", custodian: "device", recoveryEpoch: 1 })));
     const standing = readFileSync(handleRecordPath(deviceShareFile(0)));
     expect(await refusal(loadRecoveryDeviceShare(0))).toMatchObject({ reading: "malformed" });
     expect(await refusal(persistRecoveryDeviceShare(share(6), 0))).toMatchObject({ reading: "malformed" });
