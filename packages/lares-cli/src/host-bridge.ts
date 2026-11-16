@@ -79,7 +79,7 @@ export function shimHelpLines(verb: string): string[] | null {
 const HOST_COMMANDS: ReadonlySet<string> = new Set(["home", "repo", "help", "wing-of", "mempalace", "mcp"]);
 
 /** Commands with some sub-verbs local and the rest in the vessel. */
-const MIXED_COMMANDS: ReadonlySet<string> = new Set(["meme"]);
+const MIXED_COMMANDS: ReadonlySet<string> = new Set(["meme", "rite"]);
 
 export type CommandScope = "host" | "vessel" | "mixed";
 
@@ -159,6 +159,8 @@ export function decideRoute(input: RouteInput): Route {
     if (!input.commands.includes(name)) return "local";
     if (HOST_COMMANDS.has(name)) return "local";
     if (name === "meme" && memeLocal(args)) return "local";
+    // kūkulu calls the shim, so it runs where the shim stands; its rows forward into the vessel.
+    if (name === "rite" && (args.positional[0] === "kukulu" || args.positional[0] === "kūkulu")) return "local";
   }
 
   const envFile = surfaceEnvPath(env);

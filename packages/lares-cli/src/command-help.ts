@@ -78,6 +78,21 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--returns <n>   a wide lei's count of returns (more than twelve asks --yes)", "--reach wide|head   the lei's reach (wide where absent)", "--after <cid>   (kui) the lei this one follows; absent for the first",
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
   },
+  rite: {
+    usage: "usage: lares rite kukulu [--branch <name>] | begin --rite <r> --branch <name> --head <commit> | land --tessera <id> --head <commit> | receipts [--face N]",
+    synopsis:
+      "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
+      "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
+      "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
+    examples: [
+      "lares lei kui --rite kukulu --branch main --returns 3   # the hand strings the lei first",
+      "lares rite kukulu                                       # begin, rebuild, raise, land",
+      "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
+      "lares rite receipts --json                              # data.receipts, data.conferre",
+    ],
+    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, land) the head",
+      "--tessera <id>   (land) the tessera a begin answered", "--face N   face index"],
+  },
   kapae: {
     usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
     synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
