@@ -171,7 +171,7 @@ event = "PreCompact"
 script = "packages/lares-cli/.claude-plugin/hooks/lares-compact-hook.mjs"
 runner = "node"
 timeout = 15
-what = "a compaction's summary keeps the memory index and the rows in play by `lar:` address"
+what = "a compaction's summary keeps the memory index and the items in play by `lar:` address"
 
 [[home]]
 id = "claude.loads-hook"
@@ -319,16 +319,16 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~ ahu slot=`#/the-research`>>
 
-!! Open research ~ each row names its instrument
+!! Open research ~ each item names its instrument
 
 * ''A Windows-side seed seat.'' A Claude session on the Windows profile would import the seed across `\\wsl.localhost\…`; the guard reaches that profile today, the seat does not. A `/context` probe from a Windows-side session measures it.
 * ''Native Windows on the path.'' The `bin.lares` item links a POSIX path and reads absent on native Windows; a `.cmd`/`.ps1` owned-file item and a native probe settle it.
 * ''Compaction beyond Claude.'' The load log reads a Claude compact (`load_reason = "compact"`); Codex and Copilot carry their instructions as context a compact may summarize. A hash probe after each host's compact.
 * ''VS Code agent mode and Copilot's cloud surfaces.'' Whether each reads CLAUDE.md's include, and whether code review cuts an instruction file short; a probe for the seed's final hash on each.
-* ''Seats outside the clone for Codex and Copilot.'' Each loads a home file beside the project's with no exclude, so their homes stay seedless; the row opens again when a host offers an exclude or a per-directory scope.
+* ''Seats outside the clone for Codex and Copilot.'' Each loads a home file beside the project's with no exclude, so their homes stay seedless; the item opens again when a host offers an exclude or a per-directory scope.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;LnVzaSNqfXQRkKGeGP5rbg7kolZJOmW1Op-Hwj70D6o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x9Ip6N-NT0KI69fedlvufXn2CO1VA9WtKwRp9eZ41U8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

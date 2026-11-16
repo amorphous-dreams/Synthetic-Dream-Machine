@@ -7,7 +7,7 @@
 cacheable = true
 l-space   = "stable"
 namespace = "&#x2299;"
-role      = "the has sigil — one relation in three slots: an ENTITY, a NAME, and what that name HOLDS. Names the copula-free predicate the corpus authors rows with; states the quoting law and the text law that decide what a slot receives; routes the relations has refuses (sequence, crossing, grade) to their own verbs"
+role      = "the has sigil — one relation in three slots: an ENTITY, a NAME, and what that name HOLDS. Names the copula-free predicate the corpus authors holdings with; states the quoting law and the text law that decide what a slot receives; routes the relations has refuses (sequence, crossing, grade) to their own verbs"
 tags      = ["lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-has"]
 title     = "lar:///ha.ka.ba/lares/api/pono/has"
 type      = "text/memetic-wikitext+tiddlywiki"
@@ -35,11 +35,11 @@ what held it; a name that drops one keeps its address and keeps its name.
 
 ''The entity rides FIRST, so one definition answers for every family.'' The boot seats
 eight of them on the relation directly — `mu` · `carry` · `persona` · `frame` ·
-`season` · `config` · `integrity` · `shrine` — and the corpus authors rows under
+`season` · `config` · `integrity` · `shrine` — and the corpus authors holdings under
 seventy-five entities besides. Each names a region; each writes the same three slots.
 The boot seed states the relation once, and the shelf answers for it everywhere else.
 
-''Two regions wear the same word, and the field parts them.'' `has` authors a row in a
+''Two regions wear the same word, and the field parts them.'' `has` authors a holding in a
 carrier's ''body'' — an entity a reader meets in prose. `has-stack` governs a carrier's
 ''own'' stack in the meta `tags` field — what THIS carrier wears. One law reads what a
 body says; the other reads what a carrier composes from.
@@ -62,14 +62,14 @@ body says; the other reads what a carrier composes from.
 
 # ''Order, crossing and grade each ride their own verb.'' `has` carries what a name
    holds and states no order over it. A relation that //sequences//, //crosses// or
-   //grades// slips the dead water past a `has` row; `#/when-not-has` routes each to
+   //grades// slips the dead water past a `has` call; `#/when-not-has` routes each to
    its verb.
 
-''A row's steering data rides the `~` red aside'' (`element/Fire ~ rating/GR2` —
-confidence · provenance · resolved-status): red annotates the row, never black-asserts
+''A call's steering data rides the `~` red aside'' (`element/Fire ~ rating/GR2` —
+confidence · provenance · resolved-status): red annotates the call, never black-asserts
 it, and the aside stays out of the carrier's canonical bytes.
 
-''A row states a holding; it opens no query face.'' The predicate runs over the `tags`
+''A call states a holding; it opens no query face.'' The predicate runs over the `tags`
 field instead, through the filter `has-stack` names — `[stack[]]` / `[stack:has[<name>]]`.
 
 <<~ pranala slot=`#shelf` from=`?` to=`packages/lararium-tw5/tiddlers/sigil-has.tid` family=`code` role=`has`>>
@@ -81,8 +81,8 @@ field instead, through the filter `has-stack` names — `[stack[]]` / `[stack:ha
 !! The three slots, and the three laws that decide what a slot receives
 
 | ''slot'' | ''carries'' | ''shape'' |
-|1 · ENTITY (`entity=`) |the family — the region the row belongs to |one word |
-|2 · NAME (`name=`) |the row — the member within that family |one word |
+|1 · ENTITY (`entity=`) |the family — the region the call belongs to |one word |
+|2 · NAME (`name=`) |the member within that family |one word |
 |3 · HOLDS (`params=`) |what that name holds, whole |ONE backtick value |
 
 ''One relation names every family, and the family rides as its first word.''
@@ -97,7 +97,7 @@ the compound branch reaches a DEFINITION. Measured at the render:
 
 A claim by the rule and a call to the definition name different acts, and the tight form
 performs the first alone; the head decides the route, and the measurement above reads the
-positional spelling the rows wore then. Three hundred and sixty-five rows crossed to `has` wearing the
+positional spelling the calls wore then. Three hundred and sixty-five calls crossed to `has` wearing the
 tight spelling, each one reading live on the page and reaching nothing.
 
 ''A CALL NAMES EVERY VALUE.'' The third slot carries slashes, colons, arrows and prose.
@@ -107,7 +107,7 @@ after `params=` makes the whole payload ONE value, and the `=` binds ahead of an
 payload carries. The same law holds for the other two slots: `entity=` and `name=` ride
 named, because TiddlyWiki reads a backtick as quoting only after `name=`.
 
-''AND IT RENDERS AS TEXT.'' What a row holds carries square brackets, arrows and
+''AND IT RENDERS AS TEXT.'' What a call holds carries square brackets, arrows and
 backticks. A filtered transclusion would render each as a LINK to a tiddler nobody
 wrote, and wikitext would read `[Fiduciary: POA]` as a wikilink. A value names no
 address; the shelf renders the slot through `<$text>` so the bytes a reader typed reach
@@ -126,16 +126,16 @@ The Mu table, as a table — the header vows, the cells honor by position:
 |Wand |* |Fire |🜂 |ignition |
 |Arcana |0 |Orichalcum |🜍 |reset |
 
-The same fact, as rows — ''one relation, and the family rides as its first word'':
+The same fact, as calls — ''one relation, and the family rides as its first word'':
 
 <<~ has entity=`Mu` name=`Wand` params=`ascii/* glyph/🜂 element/Fire pull/ignition`>>
 <<~ has entity=`Mu` name=`Arcana` params=`ascii/0 glyph/🜍 element/Orichalcum pull/reset`>>
 
-The Wand-row wears all five; the Arcana-row wears the ground member's own, written where
-a reader can see them. Neither row carries a null, and neither leans on a constructor.
+The Wand call wears all five; the Arcana call wears the ground member's own, written where
+a reader can see them. Neither call carries a null, and neither leans on a constructor.
 
-''A DEFAULT LIVES IN A DEFINITION WHILE A CARRIER HOLDS NO DEFINITIONS.'' A row leaning
-on a default reads empty to everyone who never opens the constructor. Every row writes
+''A DEFAULT LIVES IN A DEFINITION WHILE A CARRIER HOLDS NO DEFINITIONS.'' A call leaning
+on a default reads empty to everyone who never opens the constructor. Every call writes
 what it holds where a reader can see it.
 
 A holding too wide for one line takes a second call under the same entity and name,
@@ -149,12 +149,12 @@ never a truncation: the slot states no order, so what one call writes two calls 
 
 `has` cures one fused relation: ''identity'' (`X ${copula} Y`, map welded to territory).
 The dead water welds //other// relations too — sequence, crossing, grade — and `has`
-flattens each. A row that //orders//, //moves// or //ranks// wants its own verb. Reach
-past `has` only once a row fails the ''holds-test''.
+flattens each. A call that //orders//, //moves// or //ranks// wants its own verb. Reach
+past `has` only once a call fails the ''holds-test''.
 
 !!! The diagnostic ~ ask one question
 
-Ask of the row's relation: ''what does it DO?'' The answer routes the verb.
+Ask of the call's relation: ''what does it DO?'' The answer routes the verb.
 
 | ''when the relation…'' | ''rides…'' | ''authors as…'' | ''and cures the dead water of…'' |
 |''holds · wears'' //(default)// |a holding under a name |``<<~ has entity=`entity` name=`name` params=`family/member …`>>`` |identity |
@@ -197,7 +197,7 @@ Anchors read `member[@coord][~ descriptor]` — `@n` a point, `@lo..hi` a band; 
 ascends, never sorted. A descriptor //describes// what a level looks like; it rides the
 droppable red aside and never welds the number to the meaning.
 
-!!! A row that MOVES ACROSS ~ the transition (trigger · guard · effect)
+!!! A relation that MOVES ACROSS ~ the transition (trigger · guard · effect)
 
 A relation that carries a thing //across// conditions — a phase change, an off-true
 re-standing — moves as transition. The state-machine grammar runs verb-forward by nature: a
@@ -218,6 +218,6 @@ after welded to the before. The trigger does the work the dead water would have 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4EeRDaPIOq8KmvRwhanqsZ-fYIr6qAgcd6Fyocezh5k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZwAe8DOrcdqd0WIidDC9CIEXLTIQLbY-EImQ5Z056cU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

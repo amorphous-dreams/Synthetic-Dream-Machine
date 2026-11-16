@@ -155,7 +155,7 @@ The house proves a zero with a known positive: an instrument that reads nothing 
 * ''`tools/barrier-witness.sh` reads the e2e set'' (`packages/*/tests/e2e/**`, `tests/e2e/**`). It flags an absence assertion (a `.not.` form with a literal, a `toEqual` or `toBe` on a value the test's own name calls unchanged, a `toBe(0)` or `toHaveLength(0)` count) that follows no barrier after the test's last act.
 * ''A barrier is one of three.'' An awaited call that names a sentinel; an awaited `expect.poll` or `waitForFunction` that reads the SAME thing the assertion reads, or names an answer; or a comment `// barrier: <the far-side event>`. A bare or vague marker reads red, and a barrier above the act bars nothing.
 * ''A poll on a near-shore event bars nothing about a far shore.'' A tab that opened says the page's own event happened, and says nothing of what the island has yet to answer.
-* ''Allowances name an owner row'': the lane whose landing kills the allowance. A bare allowance and a stale one read red. The open backlog stands against a ceiling that only comes down.
+* ''Allowances name an owner item'': the lane whose landing kills the allowance. A bare allowance and a stale one read red. The open backlog stands against a ceiling that only comes down.
 
 <<~/ahu>>
 
@@ -213,6 +213,6 @@ Straight to the operator, at once: a classifier refusal; a destroy-class act pas
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;2y5clKsZyeEQM0B7kFmZxeZ2FzcYxepzdm36bDh_iRI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i9xF66DrlKmI-m0ViGQEentkwfTwItzjJO37Z4q6rzg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

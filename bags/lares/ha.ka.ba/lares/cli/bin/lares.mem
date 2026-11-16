@@ -19,12 +19,12 @@ The `lares` binary holds the operator's only top-level ceremony surface. It disp
 * Scripted commands shell out to the existing tsx scripts via `runTsxScript` / `runCommand`.
 * Status is a pure local probe (storage size, port in use, bootstrap presence).
 
-The binary holds NO domain logic. Adding a new operator ceremony means: add the handler, add the COMMANDS row, optionally add a meme anchor.
+The binary holds NO domain logic. Adding a new operator ceremony means: add the handler, add the COMMANDS entry, optionally add a meme anchor.
 
 Architecture invariants this entry preserves: web2 smell test (no HTTP/RPC dispatch — `act` rides verb-tiddlers through the admin doc), TW5 vm primacy (handlers are widget-friendly), and the corpus-vs-engine category boundary (this file lives in an engine package, NOT a corpus one).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XNqz8M1uQ4DQPE3vGJjSFawscEQce4tWfupBP0cumtM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vIrJrBWvSPaVdMG0y6AFmZ1d1MMd38dD8-kja0KMT_o`>>
 
 <<^ code=`&#x0004;` to=`?`>>
