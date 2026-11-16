@@ -27,7 +27,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
-import { isAbsolute, join } from "node:path";
+import { isAbsolute, join, resolve } from "node:path";
 import { resolveLaresMcpSpawn } from "@lararium/mempalace";
 import { HouseRootUnnamed, larHouseRoot, memorySensoriumDir } from "@lararium/node";
 
@@ -76,11 +76,40 @@ function relativeHearth(): string | null {
 
 /** Why no seat resolves, in the form the hearth stands in: the refusal a missing seat reads. */
 export function seatAbsentCause(): string {
-  if (hearthSurfaceEnv() !== null) return `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`;
+  if (hearthSurfaceEnv() !== null) {
+    const named = composeOverride();
+    return named === null
+      ? `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`
+      : `the hearth stands in the surface container (${SURFACE_ENV}), and the compose file LARES_COMPOSE_FILE names (${named}) stands absent or names no LAR_ROOT`;
+  }
   if (namedRoot() === null) return new HouseRootUnnamed().message;
   const relative = relativeHearth();
   if (relative !== null) return `LAR_ROOT names a relative hearth (${relative}); name it by an absolute path`;
   return "lares_mcp.py, python or the sensorium stands absent; `lares mempalace install` and `lares sense setup` lay them down";
+}
+
+/**
+ * THE SHIM'S TWO OVERRIDES, read exactly as `tools/lares-container.sh` reads them, so the aho's child reaches the house the
+ * shim reaches and never a neighbour's:
+ *
+ *   LARES_COMPOSE_FILE     names the compose file in place of the clone's (the shim: `${LARES_COMPOSE_FILE:-$ROOT/…}`); a
+ *                          relative one reads from the working directory and travels absolute
+ *   COMPOSE_PROJECT_NAME   names the project; the shim passes no `-p`, so compose reads this name from the environment (or
+ *                          the env file), else the compose file's own `name:`. The child passes none either: it carries the
+ *                          name in its env where one stands
+ */
+const composeOverride = (): string | null => {
+  const named = (process.env["LARES_COMPOSE_FILE"] ?? "").trim();
+  return named === "" ? null : resolve(named);
+};
+const projectOverride = (): string | null => {
+  const named = (process.env["COMPOSE_PROJECT_NAME"] ?? "").trim();
+  return named === "" ? null : named;
+};
+/** The overrides as env a harness entry and the child both carry; empty where the shell names neither. */
+function shimOverrides(): Record<string, string> {
+  const file = composeOverride(), project = projectOverride();
+  return { ...(file === null ? {} : { LARES_COMPOSE_FILE: file }), ...(project === null ? {} : { COMPOSE_PROJECT_NAME: project }) };
 }
 
 /** The vessel's root inside the surface container, as the compose file's environment names it. */
@@ -98,14 +127,19 @@ export const AHO_VERB: readonly string[] = ["mcp", "aho"];
  * THE ENTRY A HARNESS CONFIG RECORDS: `lares mcp aho`, and no more. The `lares` verb stands as the CLI's unchanging surface,
  * so the entry names no clone path, no interpreter, no compose file and no container: the aho resolves its own child at each
  * spawn (`resolveLaresSurface`, read through `mcp-aho-child.ts`), and everything beneath the verb may change with no config
- * rewritten. The env carries the one thing a harness's own environment lacks: the native hearth's root. A container house
- * names itself through the operator's surface env, so its entry carries none.
+ * rewritten. The env carries what a harness's own environment lacks: the native hearth's root; or, for a container house
+ * that stands under another compose file or project than the clone's own, the shim's two overrides (`LARES_COMPOSE_FILE`,
+ * `COMPOSE_PROJECT_NAME`). A container house under the clone's own file names itself through the operator's surface env, so
+ * its entry carries none.
  *
  * Null while no surface resolves, so a missing seat still reads its cause (`seatAbsentCause`).
  */
 export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
   if (resolveLaresSurface(clone) === null) return null;
-  const hearth = hearthSurfaceEnv() !== null ? null : namedRoot();
+  // A container house may stand under another compose file and project than the clone's own: the entry carries the two
+  // names the resolving shell held, since a harness's own environment holds neither.
+  if (hearthSurfaceEnv() !== null) return { command: "lares", args: [...AHO_VERB], env: shimOverrides() };
+  const hearth = namedRoot();
   return { command: "lares", args: [...AHO_VERB], env: hearth === null ? {} : { LAR_ROOT: hearth } };
 }
 
@@ -132,13 +166,15 @@ export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
 export function resolveLaresSurface(clone: string): LaresMcpCommand | null {
   const surfaceEnv = hearthSurfaceEnv();
   if (surfaceEnv !== null) {
-    const compose = join(clone, SURFACE_COMPOSE);
+    // The file the shim would read, and the project compose resolves as it does for the shim (`composeOverride`).
+    const compose = composeOverride() ?? join(clone, SURFACE_COMPOSE);
     const root = containerRoot(compose);
     if (root === null) return null;
+    const project = projectOverride();
     return {
       command: "docker",
       args: ["compose", "--env-file", surfaceEnv, "-f", compose, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", IMAGE_SEAT],
-      env: { LAR_ROOT: root },
+      env: { LAR_ROOT: root, ...(project === null ? {} : { COMPOSE_PROJECT_NAME: project }) },
     };
   }
   // NATIVE: the seat binds the house root this shell names, absolute.
