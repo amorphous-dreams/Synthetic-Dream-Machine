@@ -10,13 +10,13 @@
  * nothing). Legs run in the table's order whatever order `--legs` names them, and every chosen leg runs past a red one.
  * Each prints `== <leg>`, `rc=<code>` and up to three tally lines off its tail; its whole output lands in
  * `<out>/<leg>.out` (`--out` defaults to a fresh dir under the passwd home's `.lares-scratch`). Every leg runs with
- * LAR_BAGS unset and LAR_ROOT at `<out>/lar-root`, so no leg writes the tracked tree's bags or the operator's house.
+ * LAR_BAGS unset and a per-run LAR_ROOT under os.tmpdir(); Vitest workers mint their own roots.
  *
  * Exit: 0 every leg green · 1 a leg red (named) · 2 usage or an unknown leg · 64 the lock refused.
  */
 import { spawnSync } from "node:child_process";
 import { appendFileSync, closeSync, mkdirSync, mkdtempSync, openSync, readFileSync } from "node:fs";
-import { userInfo } from "node:os";
+import { tmpdir, userInfo } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -53,10 +53,10 @@ export function countsOf(text) {
   return lines.slice(-6).filter((l) => /tests |pass |fail |ok /i.test(l)).slice(0, 3);
 }
 
-/** A leg's environment: LAR_BAGS unset, LAR_ROOT a scratch root under the run's out dir. */
-export function legEnv(env, out) {
-  const { LAR_BAGS: _bags, ...rest } = env;
-  return { ...rest, LAR_ROOT: join(out, "lar-root") };
+/** A leg's environment: LAR_BAGS unset, with per-worker roots for the Vitest legs. */
+export function legEnv(env, root, name) {
+  const { LAR_BAGS: _bags, LAR_ROOT: _root, ...rest } = env;
+  return ["mesh", "node", "cli"].includes(name) ? rest : { ...rest, LAR_ROOT: root };
 }
 
 /** Runs each leg through `run(leg) -> {status, output}` and reports; answers the red legs. */
@@ -92,12 +92,11 @@ if (import.meta.url === pathToFileURL(process.argv[1] ?? "").href) {
   if (outArg) { out = resolve(outArg); mkdirSync(out, { recursive: true }); }
   else { const base = join(userInfo().homedir, ".lares-scratch"); mkdirSync(base, { recursive: true }); out = mkdtempSync(join(base, "battery-legs-")); }
   console.log(`battery-legs: outputs under ${out}`);
-  mkdirSync(join(out, "lar-root"), { recursive: true });
-  const env = legEnv(process.env, out);
+  const root = mkdtempSync(join(tmpdir(), "battery-legs-root-"));
   const { red } = runLegs(legs, (leg) => {
     // One fd for both streams keeps the leg's own order, so its tally stays at the tail.
     const file = join(out, `${leg.name}.out`), fd = openSync(file, "w");
-    const r = spawnSync(leg.cmd, leg.args, { cwd: ROOT, env, stdio: ["ignore", fd, fd] });
+    const r = spawnSync(leg.cmd, leg.args, { cwd: ROOT, env: legEnv(process.env, root, leg.name), stdio: ["ignore", fd, fd] });
     closeSync(fd);
     if (r.error) appendFileSync(file, `\n${r.error.message}\n`);
     return { status: r.status ?? 1, output: readFileSync(file, "utf8") };

@@ -41,11 +41,14 @@ test("countsOf reads the tallies a suite or witness prints at its tail, at most 
   assert.deepEqual(countsOf("x\n"), []);
 });
 
-test("a leg runs under a scratch LAR_ROOT with LAR_BAGS unset", () => {
-  const env = legEnv({ PATH: "/bin", LAR_BAGS: "/checkout/bags", LAR_ROOT: "/lar" }, "/scratch/out");
+test("non-vitest legs use a per-run temporary root while vitest workers mint their own", () => {
+  const source = { PATH: "/bin", LAR_BAGS: "/checkout/bags", LAR_ROOT: "/lar" };
+  const root = join(tmpdir(), "battery-run-root");
+  const env = legEnv(source, root, "shims");
   assert.equal(env.LAR_BAGS, undefined);
-  assert.equal(env.LAR_ROOT, "/scratch/out/lar-root");
+  assert.equal(env.LAR_ROOT, root);
   assert.equal(env.PATH, "/bin");
+  for (const name of ["mesh", "node", "cli"]) assert.equal(legEnv(source, root, name).LAR_ROOT, undefined, name);
 });
 
 test("an unknown leg exits 2 by name before the lock or any leg", () => {
