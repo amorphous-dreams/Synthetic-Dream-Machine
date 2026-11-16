@@ -10,15 +10,15 @@
  *   lock     every session drops and every key zero-fills.
  *   status   lit or not, the faces open, the sessions standing, attempts left, the image the host reported. Opens nothing.
  *   image    THE HOST'S REPORT of the image digest it raises (the kūkulu gate's input port).
- *   tessera  the pūlama's signed halves, as they rest.
+ *   tessera  the tessera halves the pūlama witnessed, as they rest: `rite-begun` for each kūkulu it served, `rite-landed`
+ *            for each that composed.
  *
  * An answer names a reading, a count or a public digest. No answer and no log line carries a route or a key.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import type { Credential, SwarmWikiPort } from "@lararium/mesh";
+import { swarmTesseraPrefix, type Credential, type SwarmWikiPort } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import type { PulamaServer } from "./pulama-server.js";
-import { PULAMA_TESSERA_PREFIX } from "./pulama-state.js";
 
 export type PulamaHandAnswer = Readonly<Record<string, unknown>> & { readonly op: string };
 
@@ -68,7 +68,7 @@ export function pulamaHandDoor(a: {
       }
       case "tessera": {
         const halves: unknown[] = [];
-        for (const title of await a.records.list(PULAMA_TESSERA_PREFIX)) { const text = await a.records.read(title); if (text !== null) { try { halves.push(JSON.parse(text)); } catch { /* a row that forms no record lists as nothing */ } } }
+        for (const title of await a.records.list(swarmTesseraPrefix())) { const text = await a.records.read(title); if (text !== null) { try { halves.push(JSON.parse(text)); } catch { /* a row that forms no record lists as nothing */ } } }
         return { op: "tessera", halves };
       }
       default: return { op: String(f["op"] ?? ""), reading: "unknown-act" };

@@ -45,6 +45,8 @@ export interface PulamaHolder extends CustodyHolder {
   onClosed(listener: () => void): () => void;
   /** The face the standing session's lei names, by its ordinal; null with no session or no face bound. */
   wears(): number | null;
+  /** Tell the pūlama this vessel composed over its session: it rests the host half of the tessera the session began under. */
+  landRite(): Promise<{ readonly par: boolean }>;
 }
 
 interface Session {
@@ -224,6 +226,7 @@ export function makePulamaHolder(a: {
     onOpened(listener) { openedListeners.add(listener); return () => { openedListeners.delete(listener); }; },
     onClosed(listener) { closedListeners.add(listener); return () => { closedListeners.delete(listener); }; },
     wears: () => session?.scope.ordinal ?? null,
+    async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
     openedSlot: () => session?.standing.slot ?? null,
     async readRow(home, file) {

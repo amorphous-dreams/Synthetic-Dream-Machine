@@ -18,6 +18,8 @@
  *                  composition reads unattended); a cold write, a cold removal and every other cold row refuse
  *   warded rows    refuse `needs-the-human`: a ward opens only fresh from a human route
  *   derivations    the children under the domains `derives` names, carried in the session frame; no other domain derives
+ *   `rite.land`    the vessel says it composed over its session; the pūlama rests the host half of the tessera the gate
+ *                  began, once (the scope's `land`), and answers whether the pair reads par
  *   everything else (an unlock, a proof for a backup, an adoption, a founding, a ward act, a rewrap, a lock) holds no
  *                  operation here and refuses `needs-the-human`
  *
@@ -38,6 +40,8 @@ export interface PulamaScope {
   readonly face: { readonly fcid: string; readonly ordinal: number } | null;
   /** The carrier rows (by row name) whose COLD plaintext the session may read; every other cold row refuses. */
   readonly coldReads: readonly string[];
+  /** Rest the host half of the tessera this session began under, once the vessel composed; absent where the gate began no rite. */
+  readonly land?: () => Promise<{ readonly par: boolean }>;
 }
 
 /** The gate a hello passes: it reads the offer, claims what the offer spends, and answers the scope or a refusal's reading. */
@@ -245,6 +249,10 @@ export function servePulama(a: {
           if ("fcid" in f && inScope(s, f)) out.push({ ordinal, fcid: f.fcid, unlocked: open.has(f.fcid) });
         });
         return out;
+      }
+      case "rite.land": {
+        if (!s.scope.land) throw new PulamaRefused("rite-not-begun", "this session began under no rite, so no tessera waits on a host half");
+        return s.scope.land();
       }
       default:
         throw new PulamaRefused("needs-the-human", `a pūlama session carries no ${JSON.stringify(op)}: that act asks the operator's own hand`);

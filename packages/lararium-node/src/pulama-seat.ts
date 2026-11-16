@@ -77,6 +77,11 @@ export async function standByPulama(a: {
     a.onLog("the sovereign composition did not stand on the pūlama's session; the session left");
     return false;
   }
-  a.onLog(`standing by the pūlama${wears !== null ? `; face h${wears} worn` : ""} (${stood.standing})`);
+  // THE HOST HALF: the vessel composed, so the pūlama rests `rite-landed` beside the half it began under. A landing that
+  // refuses leaves the guest half alone, which conferre reads red; the vessel keeps standing.
+  let landed = "";
+  try { landed = (await a.holder.landRite()).par ? "; the tessera reads par" : "; the tessera's halves differ"; }
+  catch (err) { landed = `; the host half did not land (${(err as { reading?: string }).reading ?? (err instanceof Error ? err.message : String(err))})`; }
+  a.onLog(`standing by the pūlama${wears !== null ? `; face h${wears} worn` : ""} (${stood.standing})${landed}`);
   return true;
 }

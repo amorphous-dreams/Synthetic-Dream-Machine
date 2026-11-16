@@ -5,8 +5,10 @@
  * writes it, so a vessel never forges or drops the record of what the pūlama served it. Every row holds a signed record
  * or a public digest; a key never rests here.
  *
- *   records/<sha256(title)>.json   one row per title: `{ title, text }`. `writeNew` lands a row only where none stands
- *                                   (an exclusive create), which gives a lei's return and a tessera half their one claim.
+ *   records/<sha256(title)>.json   one row per title: `{ title, text }`, under the swarm family's own titles (the offered
+ *                                   lei, its returns, the receipt the pūlama rests for a vouch, the tessera's halves).
+ *                                   `writeNew` lands a row only where none stands (an exclusive create), which gives a
+ *                                   lei's return and a tessera half their one claim.
  *   image                           the digest of the image the host raises, as the host shim reported it at the hand door.
  *
  * The record store answers the wiki port the swarm's lei family reads and writes through (`read`, `write`, `writeNew`,
@@ -17,7 +19,6 @@ import { createHash } from "node:crypto";
 import { closeSync, fsyncSync, mkdirSync, openSync, readFileSync, readdirSync, renameSync, writeSync } from "node:fs";
 import { join } from "node:path";
 import type { SwarmWikiPort } from "@lararium/mesh";
-import type { PulamaTesseraPort } from "./kukulu-gate.js";
 
 const rowName = (title: string): string => `${createHash("sha256").update(title).digest("hex")}.json`;
 
@@ -54,13 +55,6 @@ export function pulamaRecords(dir: string): SwarmWikiPort {
     },
   };
 }
-
-/** The title a kūkulu's tessera half rests at, by the lei it began under. */
-export const pulamaTesseraTitle = (lei: string): string => `$:/lares/pulama/tessera/${lei}/rite-begun`;
-export const PULAMA_TESSERA_PREFIX = "$:/lares/pulama/tessera/";
-
-/** The tessera port over the record store: one half per lei, written once. */
-export const pulamaTessera = (records: SwarmWikiPort): PulamaTesseraPort => ({ land: (lei, text) => records.writeNew(pulamaTesseraTitle(lei), text) });
 
 const IMAGE_DIGEST = /^[a-z0-9]+:[0-9a-f]{32,128}$/;
 

@@ -28,11 +28,13 @@ import { dirname } from "node:path";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { FsCustodyIo } from "./custody-io.js";
 import { PULAMA_SESSION_DERIVES, kukuluGate } from "./kukulu-gate.js";
-import { kukuluLeiOver } from "./kukulu-lei-seat.js";
+import { kukuluRiteOver } from "./kukulu-lei-seat.js";
+import { seatCustody } from "./custody-seat.js";
+import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "./pulama-hand.js";
 import { servePulama } from "./pulama-server.js";
 import { listenPulama, socketPathFits } from "./pulama-socket.js";
-import { pulamaImage, pulamaRecords, pulamaTessera } from "./pulama-state.js";
+import { pulamaImage, pulamaRecords } from "./pulama-state.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 
 class PulamaUnnamed extends Error {
@@ -50,11 +52,14 @@ async function serve(): Promise<void> {
   const socket = socketPathFits(named("LAR_PULAMA_SOCKET")), hand = socketPathFits(named("LAR_PULAMA_HAND")), state = named("LAR_PULAMA_STATE");
   const homes = vesselCustodyHomes();
   const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
+  // The pūlama's holder sits in this process's one custody seat, so the roster's reader reaches it and no other holder.
+  seatCustody(holder);
   const records = pulamaRecords(state), image = pulamaImage(state);
   const log = (line: string): void => console.log(`[pulama] ${line}`);
   const server = servePulama({
     holder, derives: PULAMA_SESSION_DERIVES, onLog: log,
-    gate: kukuluGate({ holder, lei: kukuluLeiOver(records), image: () => image.raised(), tessera: pulamaTessera(records) }),
+    // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder.
+    gate: kukuluGate({ holder, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => image.raised() }),
   });
   const door = pulamaHandDoor({ holder, server, image, records, onLog: log });
 

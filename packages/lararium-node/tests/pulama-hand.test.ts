@@ -8,11 +8,11 @@ import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
-import { kukuluLeiOver } from "../src/kukulu-lei-seat.js";
 import { pulamaHandDoor } from "../src/pulama-hand.js";
 import { KUKULU_OFFER_ENV, PULAMA_SOCKET_ENV, readKukuluOffer, standByPulama, vesselPulamaHolder } from "../src/pulama-seat.js";
 import { servePulama } from "../src/pulama-server.js";
-import { pulamaImage, pulamaRecords, pulamaTessera, pulamaTesseraTitle } from "../src/pulama-state.js";
+import { swarmTesseraTitle } from "@lararium/mesh";
+import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 import { SESSION_DERIVES, fixtureSlots, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
@@ -27,20 +27,20 @@ afterEach(async () => { await fx?.drop(); fx = null; for (const d of dirs.splice
 describe("the pūlama's state holds signed rows and a public digest", () => {
   test("a row claims once, lists under its prefix, and the image report reads back only as a digest", async () => {
     const dir = scratch();
-    const records = pulamaRecords(dir), tessera = pulamaTessera(records), image = pulamaImage(dir);
-    expect(await tessera.land("lei-1", "half-1")).toBe(true);
-    expect(await tessera.land("lei-1", "half-other")).toBe(false);
-    expect(await records.read(pulamaTesseraTitle("lei-1"))).toBe("half-1");
+    const records = pulamaRecords(dir), image = pulamaImage(dir), guest = swarmTesseraTitle("ab".repeat(32), "guest");
+    expect(await records.writeNew(guest, "half-1")).toBe(true);
+    expect(await records.writeNew(guest, "half-other")).toBe(false);
+    expect(await records.read(guest)).toBe("half-1");
     await records.write("$:/lares/swarm/other", "x");
-    expect(await records.list("$:/lares/pulama/")).toEqual([pulamaTesseraTitle("lei-1")]);
+    expect(await records.list("$:/lares/swarm/tessera/")).toEqual([guest]);
+    await records.write("$:/lares/swarm/other", "y");
+    expect(await records.read("$:/lares/swarm/other")).toBe("y");
     expect(await records.read("$:/lares/swarm/absent")).toBeNull();
     expect(image.raised()).toBeNull();
     expect(() => image.report("not a digest")).toThrow(RangeError);
     image.report("sha256:" + "ab".repeat(32));
     expect(pulamaImage(dir).raised()).toBe("sha256:" + "ab".repeat(32));
     expect(readdirSync(dir).sort()).toEqual(["image", "records"]);
-    // The lei family's seat refuses until its kūkulu rite sits there: nothing verifies a lei, so nothing returns one.
-    expect(await kukuluLeiOver(records).readLei({}, "g", () => true)).toEqual({ ok: false, refusal: "unseated" });
   });
 });
 
@@ -61,7 +61,7 @@ describe("only the hand door lights the pūlama", () => {
     expect(lit).toMatchObject({ op: "light", reading: "opens", faceReadings: ["opens"], lit: true, faces: 1 });
     expect(await door({ op: "image", digest: "sha256:" + "cd".repeat(32) })).toEqual({ op: "image", reading: "reported", image: "sha256:" + "cd".repeat(32) });
     expect(await door({ op: "image", digest: "../../etc" })).toEqual({ op: "image", reading: "malformed" });
-    await pulamaTessera(records).land("lei-9", JSON.stringify({ body: { act: "rite-begun" } }));
+    await records.writeNew(swarmTesseraTitle("cd".repeat(32), "guest"), JSON.stringify({ body: { act: "rite-begun" } }));
     expect(await door({ op: "tessera" })).toEqual({ op: "tessera", halves: [{ body: { act: "rite-begun" } }] });
     expect(await door({ op: "unlock-everything" })).toEqual({ op: "unlock-everything", reading: "unknown-act" });
     expect(await door({ op: "lock" })).toMatchObject({ op: "lock", lit: false, faces: 0 });

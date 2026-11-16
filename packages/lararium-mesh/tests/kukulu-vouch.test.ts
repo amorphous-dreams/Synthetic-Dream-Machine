@@ -6,7 +6,7 @@ import { ALL_DOMAINS, PULAMA_TESSERA_DOMAIN, SWARM_ACT_DOMAIN, KUKULU_VOUCH_DOMA
 import { ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed } from "../src/ed25519-door.js";
 import { signKukuluVouch, verifyKukuluVouch, kukuluVouchDigest, type KukuluVouchParts } from "../src/kukulu-vouch.js";
 
-const PARTS: KukuluVouchParts = { group: "group-a", branch: "feature/x", tree: "tree-1", image: "sha256:" + "ab".repeat(32), verdict: "pass", receipt: null };
+const PARTS: KukuluVouchParts = { group: "group-a", branch: "feature/x", head: "a".repeat(40), tree: "tree-1", image: "sha256:" + "ab".repeat(32), verdict: "pass", receipt: null };
 const keyed = async (n: number) => { const seed = new Uint8Array(32).fill(n); return { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) }; };
 
 describe("a vouch", () => {
@@ -37,7 +37,7 @@ describe("a vouch", () => {
   test("the digest moves with each field and with the signer, so a lei bound to one vouch names no other", async () => {
     const signer = await keyed(1), base = kukuluVouchDigest(await signKukuluVouch(PARTS, signer));
     const moved: KukuluVouchParts[] = [
-      { ...PARTS, group: "group-b" }, { ...PARTS, branch: "main" }, { ...PARTS, tree: "tree-2" },
+      { ...PARTS, group: "group-b" }, { ...PARTS, branch: "main" }, { ...PARTS, tree: "tree-2" }, { ...PARTS, head: "b".repeat(40) },
       { ...PARTS, image: "sha256:" + "cd".repeat(32) }, { ...PARTS, verdict: "fail" }, { ...PARTS, receipt: "ef".repeat(32) },
     ];
     const digests = new Set([base]);

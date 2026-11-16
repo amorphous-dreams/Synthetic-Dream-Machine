@@ -1,37 +1,41 @@
 /**
- * kukulu-gate — THE GATE a kūkulu passes before the pūlama serves it: a lei bound to a vouch, its return claimed first.
+ * kukulu-gate — THE GATE a kūkulu passes before the pūlama serves it: a strung lei beside a vouch, its return claimed first.
  *
- * A rebuilt vessel offers two records in its hello: the kūkulu lei the operator's hand strung, and the vouch the standing
- * vessel signed over the candidate image it walked. The gate reads both against what the pūlama itself holds and what the
- * host reports, claims the lei's return, writes the pūlama's tessera half, and only then answers a session's scope.
+ * A rebuilt vessel offers two things in its hello: the kūkulu lei the operator's hand strung (with the lei it follows, where
+ * it follows one), and the vouch the standing vessel signed over the candidate image it walked. The gate reads both against
+ * what the pūlama itself holds and what the host reports, begins the rite in the pūlama's own records (the lei's return,
+ * then the guest half of its tessera), and only then answers a session's scope.
  *
  * ── WHAT THE GATE READS, IN ORDER; EACH MISS REFUSES BY NAME ────────────────────────────────────
  *   `kukulu-unvouched`          the offer carries no vouch
  *   `kukulu-vouch-<reading>`    the vouch reads no vouch, or another key than the custody root's vouch child signed it
- *   `kukulu-walk-red`           the vouch's walk did not pass
  *   `kukulu-face-absent` · `kukulu-face-locked`   the vouch's group names no face standing open at this pūlama
- *   `kukulu-ward-key-absent`    that face's ward holds no key row, so no hand's signature reads
- *   `kukulu-lei-<reading>`      the lei reads no standing kūkulu lei of that face's hand (`KukuluLeiPort.readLei`)
- *   `kukulu-lei-unbound`        the lei names another vouch's digest, another group or another branch than the vouch carries
+ *   `kukulu-hand-absent`        the pūlama's own custody names no hand's key for that face, so no lei reads
  *   `kukulu-image-unreported`   the host reported no image digest
  *   `kukulu-image-mismatch`     the vouch walked another image than the one the host raises
- *   `kukulu-lei-returned`       the lei's return was already claimed
- *   `kukulu-tessera-unwritten`  the pūlama's tessera half did not land; the return stays claimed and nothing serves
+ *   the lei family's own readings (`KukuluRitePort.begin`): `swarm-lei-absent` (no lei of this face's hand stands for the
+ *   vouch's branch), `swarm-lei-head-mismatch` (a lei that pins a head pins another than the vouch's), `swarm-lei-returned` ·
+ *   `swarm-lei-returns-spent`, `swarm-lei-unstrung`, `swarm-lei-narrowed`, `swarm-lei-forked`, `swarm-lei-evidence-red` (the
+ *   vouch's walk did not pass; a wide lei narrows), `rite-begun-stands`
  *
  * ── THE RETURN CLAIMS BEFORE ANYTHING SERVES ────────────────────────────────────────────────────
- * The claim lands once, atomically, ahead of the session. A fault between the claim and the session burns the return and
- * serves nothing: the gate fails closed.
+ * The rite begins once every other reading passed: the return lands atomically, then the guest half. A fault after the
+ * return burns it and serves nothing: the gate fails closed.
  *
  * ── THE HOST REPORTS THE IMAGE, NEVER THE VESSEL ────────────────────────────────────────────────
  * `image` is an input port: the host shim writes the digest of the image it raises at the pūlama's hand door. The offer
  * carries no image field the gate trusts; the vouch's own digest must equal the host's.
  *
- * ── THE LEI FAMILY RIDES A PORT ─────────────────────────────────────────────────────────────────
- * The lei's record, its chain and its return belong to the swarm's lei family (`@lararium/mesh`). The gate names what it
- * asks of that family as `KukuluLeiPort`, so the family's own reader and return seat here through a thin adapter.
+ * ── THE HAND'S KEY COMES OFF THE PŪLAMA'S OWN CUSTODY ───────────────────────────────────────────
+ * `hand` reads the key the face's hand strings a lei under (the face's root key, off its roster row) through the pūlama's
+ * own holder. The offer names no key the gate trusts.
+ *
+ * ── THE HOST HALF ───────────────────────────────────────────────────────────────────────────────
+ * The scope carries `land`: once the vessel composed over its session it asks the pūlama to rest the tessera's host half,
+ * and conferre then reads the pair `par`. A kūkulu that never composed leaves the guest half alone, which reads red.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, PULAMA_TESSERA_DOMAIN, KUKULU_VOUCH_DOMAIN, canonicalJsonBytes, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyKukuluVouch } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyKukuluVouch } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import type { PulamaGate, PulamaScope } from "./pulama-server.js";
@@ -39,27 +43,27 @@ import type { PulamaGate, PulamaScope } from "./pulama-server.js";
 /** A signing seat: a verifying key (64 lower hex) and its signature over bytes. */
 export interface KukuluSigner { readonly key: string; readonly sign: (bytes: Uint8Array) => Promise<string> }
 
-/** What the gate asks of the lei family, for the one rite `kukulu`. */
-export interface KukuluLeiPort {
+/** What a kūkulu's rite names: the face's group, the branch, and the head and tree the vouch walked. */
+export interface KukuluRiteAt {
+  readonly group: string; readonly branch: string; readonly head: string; readonly tree: string;
+  /** Whether a key signs as the face's hand. */
+  readonly hand: (key: string) => boolean;
+  /** The pūlama's own signer: the witness of every record it rests. */
+  readonly by: KukuluSigner;
+}
+
+/** What the gate asks of the lei family and its tessera, for the one rite `kukulu` (`kukulu-lei-seat`). */
+export interface KukuluRitePort {
   /**
-   * Read an offered lei: it verifies as a `kukulu` lei for `group` that a key `hand` accepts strung, it stands (no newer lei
-   * restrung it, none unstrung it) and its return rests unclaimed. Answers what it binds, or the family's own refusal reading.
+   * Begin the rite over what the vessel offered: the offered lei rows land where they verify as the hand's, the vouch stands
+   * as the return's evidence (`vouch`: its digest; `verdict`: its walk's), the lei returns once, and the guest half rests.
+   * Answers the tessera, or the family's own refusal reading.
    */
-  readLei(offered: unknown, group: string, hand: (key: string) => boolean): Promise<
-    { readonly ok: true; readonly cid: string; readonly branch: string; readonly head: string } | { readonly ok: false; readonly refusal: string }>;
-  /** Claim the lei's return, once, signed by the pūlama: false where a return of it already rests. */
-  returnLei(cid: string, by: KukuluSigner): Promise<boolean>;
+  begin(offer: { readonly lei?: unknown; readonly unstrung?: unknown }, at: KukuluRiteAt & { readonly vouch: string; readonly verdict: "pass" | "fail" }):
+    Promise<{ readonly ok: true; readonly tessera: string; readonly lei: string; readonly n: number } | { readonly ok: false; readonly refusal: string }>;
+  /** Rest the host half of `tessera` at the head the rite began at; answers whether the pair reads par. */
+  land(tessera: string, at: KukuluRiteAt): Promise<{ readonly par: boolean }>;
 }
-
-/** The pūlama's tessera half: the signed record that a kūkulu began under one lei, one vouch and one image. */
-export interface PulamaTesseraBody {
-  readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "rite-begun"; readonly rite: "kukulu";
-  readonly group: string; readonly branch: string; readonly lei: string; readonly vouch: string; readonly image: string;
-}
-export interface SignedPulamaTessera { readonly body: PulamaTesseraBody; readonly signer: string; readonly sig: string }
-
-/** Where the pūlama's tessera halves rest: one row per lei, written once. */
-export interface PulamaTesseraPort { land(lei: string, text: string): Promise<boolean> }
 
 /**
  * The cold rows a working vessel reads with nobody at a terminal: `face-proof-key`, the per-Nexus key a face presents at
@@ -86,7 +90,7 @@ export async function vouchSignerOf(holder: Pick<CustodyHolder, "derive">): Prom
   };
 }
 
-/** The key the pūlama signs its tessera halves and its lei returns under. */
+/** The key the pūlama witnesses under: every return, receipt and tessera half in its own records carries it. */
 export async function pulamaSignerOf(holder: Pick<CustodyHolder, "derive">): Promise<KukuluSigner> {
   const seed = holder.derive(PULAMA_TESSERA_DOMAIN);
   let key: string;
@@ -95,46 +99,40 @@ export async function pulamaSignerOf(holder: Pick<CustodyHolder, "derive">): Pro
 }
 
 export function kukuluGate(a: {
-  /** The pūlama's own holder: the gate reads the face's standing, the ward's public key and two derived children off it. */
+  /** The pūlama's own holder: the gate reads the face's standing and two derived children off it. */
   readonly holder: CustodyHolder;
-  readonly lei: KukuluLeiPort;
+  /** The key the hand of the face at `ordinal` strings a lei under, read off the pūlama's own custody; null where it names none. */
+  readonly hand: (ordinal: number) => Promise<string | null | undefined>;
+  readonly rite: KukuluRitePort;
   /** THE HOST'S REPORT of the image it raises, or null where it reported none. */
   readonly image: () => string | null | Promise<string | null>;
-  readonly tessera: PulamaTesseraPort;
   readonly coldReads?: readonly string[];
 }): PulamaGate {
   const { holder } = a;
   const refuse = (reading: string, why?: string) => ({ ok: false as const, reading, ...(why ? { why } : {}) });
   return {
     async admit(offer) {
-      const o = (typeof offer === "object" && offer !== null ? offer : {}) as { lei?: unknown; vouch?: unknown };
+      const o = (typeof offer === "object" && offer !== null ? offer : {}) as { lei?: unknown; unstrung?: unknown; vouch?: unknown };
       if (o.vouch === undefined || o.vouch === null) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
       const vouched = verifyKukuluVouch(o.vouch, await vouchKeyOf(holder));
       if (!vouched.ok) return refuse(`kukulu-vouch-${vouched.refusal}`);
       const { body } = vouched.vouch;
-      if (body.verdict !== "pass") return refuse("kukulu-walk-red", "the walk the vouch names did not pass");
-      const groupDigest = personaGroupDigest(body.group);
-      const face = await holder.faceStanding({ group: groupDigest });
+      const face = await holder.faceStanding({ group: personaGroupDigest(body.group) });
       if (face === null) return refuse("kukulu-face-absent");
       if (!face.unlocked) return refuse("kukulu-face-locked", "the face the vouch names rests unopened at this pūlama");
-      // THE HAND'S KEY comes off the pūlama's own custody (the face's ward key row), never off the offer.
-      const hand = await holder.wardPublicKey({ group: groupDigest });
-      if (hand === null) return refuse("kukulu-ward-key-absent");
-      const lei = await a.lei.readLei(o.lei, body.group, (key) => key.toLowerCase() === hand);
-      if (!lei.ok) return refuse(`kukulu-lei-${lei.refusal}`);
-      if (lei.head !== vouched.digest || lei.branch !== body.branch) return refuse("kukulu-lei-unbound", "the lei names another vouch than the one offered beside it");
+      const handKey = (await a.hand(face.ordinal))?.toLowerCase();
+      if (!handKey) return refuse("kukulu-hand-absent", "this pūlama's custody names no hand's key for the face the vouch names");
       const raised = await a.image();
       if (raised === null) return refuse("kukulu-image-unreported", "the host reported no image digest at the pūlama's hand door");
       if (raised !== body.image) return refuse("kukulu-image-mismatch", "the vouch walked another image than the one the host raises");
+      const at: KukuluRiteAt = { group: body.group, branch: body.branch, head: body.head, tree: body.tree, hand: (key) => key.toLowerCase() === handKey, by: await pulamaSignerOf(holder) };
       // THE RETURN CLAIMS FIRST: from here a fault burns the return and serves nothing.
-      const signer = await pulamaSignerOf(holder);
-      if (!(await a.lei.returnLei(lei.cid, signer))) return refuse("kukulu-lei-returned", "this lei's return was already claimed");
-      const half: PulamaTesseraBody = { kind: PULAMA_TESSERA_DOMAIN, act: "rite-begun", rite: "kukulu", group: body.group, branch: body.branch, lei: lei.cid, vouch: vouched.digest, image: raised };
-      const signed: SignedPulamaTessera = { body: half, signer: signer.key, sig: await signer.sign(canonicalJsonBytes(half)) };
-      let landed = false;
-      try { landed = await a.tessera.land(lei.cid, JSON.stringify(signed)); } catch { landed = false; }
-      if (!landed) return refuse("kukulu-tessera-unwritten");
-      const scope: PulamaScope = { face: { fcid: face.fcid, ordinal: face.ordinal }, coldReads: a.coldReads ?? KUKULU_COLD_READS };
+      const begun = await a.rite.begin({ lei: o.lei, unstrung: o.unstrung }, { ...at, vouch: vouched.digest, verdict: body.verdict });
+      if (!begun.ok) return refuse(begun.refusal);
+      const scope: PulamaScope = {
+        face: { fcid: face.fcid, ordinal: face.ordinal }, coldReads: a.coldReads ?? KUKULU_COLD_READS,
+        land: () => a.rite.land(begun.tessera, at),
+      };
       return { ok: true, scope };
     },
   };
