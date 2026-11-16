@@ -15,7 +15,9 @@
  *   3. the cut      a bundle written beside the dest and read back whole (`verifyBundle`); its id names this keep's head
  *   4. the standing a dest that already holds this very bundle ends the rite: nothing spends and nothing moves
  *   5. rite-receipt IN THE VESSEL: the verify handed in as the receipt the return rests on (`receipt/<bundle id>`)
- *   6. rite-begin   IN THE VESSEL: return the keep lei at that head and rest the guest half of a tessera (`rite-begun`)
+ *   6. rite-begin   IN THE VESSEL: name the staged bundle by its place inside the workspace; the vessel reads it back itself,
+ *                   derives the bundle id, refuses a head the tree never derived, returns the keep lei at that head and rests
+ *                   the guest half of a tessera (`rite-begun`)
  *   7. the move     the cut takes the dest's name; the bundle it replaces leaves whole
  *
  * THE RETURN COMES BEFORE THE MOVE, as every rite's does: a begin the vessel refuses leaves the workspace as it stood. A keep
@@ -28,7 +30,7 @@
  */
 import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, renameSync, rmSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { basename, dirname, join, sep } from "node:path";
+import { basename, dirname, join, relative, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { WORKSPACE_NAME_RE } from "@lararium/mesh";
 import { larHearthHome, larWorkspacesHome } from "@lararium/node";
@@ -120,7 +122,9 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     }
     const receipt = await ports.row("rite-receipt", { tree: bundleId, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(CARRY_SCHEMA), ...face });
     if (!receipt.ok) throw new KeepRefused(receipt.code, receipt.message);
-    const begun = await ports.row("rite-begin", { rite: RITE_KEEP, branch: name, head: bundleId, ...face });
+    // THE VESSEL READS THE TREE ITSELF: the begin names where the cut stands, never only the id this seat heard.
+    const staged = relative(wsDir, staging).split(sep).join("/");
+    const begun = await ports.row("rite-begin", { rite: RITE_KEEP, branch: name, head: bundleId, staged, ...face });
     if (!begun.ok) throw new KeepRefused(begun.code, begun.message);
     // THE MOVE: the earlier bundle steps aside, the cut takes the name, and the earlier one leaves whole.
     const aside = join(parent, `.${basename(target)}.kept-${tag}`);

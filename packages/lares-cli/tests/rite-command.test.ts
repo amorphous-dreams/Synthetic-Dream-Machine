@@ -92,6 +92,7 @@ describe("lares rite plans one store row per vessel sub-verb", () => {
     expect(plan("begin", "--rite", "kukulu", "--branch", "main", "--head", HEAD)).toEqual({ verb: "rite-begin", args: { rite: "kukulu", branch: "main", head: HEAD } });
     expect(plan("land", "--tessera", TESSERA, "--head", HEAD, "--face", "1")).toEqual({ verb: "rite-land", args: { tessera: TESSERA, head: HEAD, face: 1 } });
     expect(plan("receipts")).toEqual({ verb: "rite-receipts", args: {} });
+    expect(plan("begin", "--rite", "keep", "--branch", "backup", "--head", "c".repeat(64), "--staging", ".house.keep-0a")).toEqual({ verb: "rite-begin", args: { rite: "keep", branch: "backup", head: "c".repeat(64), staged: ".house.keep-0a" } });
     // receipt-door-signs-the-tree: the host battery hands the vessel its verdict over a tree.
     expect(plan("receipt", "--tree", "b".repeat(40), "--checks", "typecheck, mesh,cli", "--verdict", "pass", "--definitions", "d".repeat(64)))
       .toEqual({ verb: "rite-receipt", args: { tree: "b".repeat(40), checks: ["typecheck", "mesh", "cli"], verdict: "pass", definitions: "d".repeat(64) } });

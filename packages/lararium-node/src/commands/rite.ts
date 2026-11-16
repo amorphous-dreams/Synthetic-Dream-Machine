@@ -1,7 +1,7 @@
 /**
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
- * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` reads its bundle id, `riteTreeOf`), returns the
+ * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
  * rite's lei at that head (the testimony, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
  * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in; `offer` gathers what a
@@ -20,14 +20,18 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import type { Repo } from "@automerge/automerge-repo";
+import { lstatSync, realpathSync } from "node:fs";
+import { join, sep } from "node:path";
 import {
-  SwarmRefused, beginRite, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
+  WORKSPACE_NAME_RE, SwarmRefused, beginRite, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
   type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
 import { openedCustody } from "../custody-seat.js";
 import { kukuluOfferPath, writeKukuluOffer } from "../kukulu-offer.js";
+import { larWorkspacesHome } from "../vessel-paths.js";
+import { CarryBundleRefused, unsafeRelPath, verifyBundle } from "../carry-manifest.js";
 
 export type RiteAction = "begin" | "land" | "receipts" | "receipt" | "offer";
 
@@ -44,16 +48,38 @@ export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
 export const gitTreeOf = (head: string, checkouts: readonly string[] = RITE_CHECKOUTS): Promise<string> => treeOfHead(head, checkouts);
 
 /**
+ * THE STAGED BUNDLE A KEEP BEGINS OVER, read by this vessel: the keep cuts its bundle beside its dest inside the bound
+ * workspace (`<workspaces>/<branch>/<staged>`), and the vessel reads every byte of it back against its manifest and derives the
+ * bundle id over the file list (`verifyBundle`). A workspace name the grammar refuses, a staged path that escapes the
+ * workspace, and a tree that reads as no whole bundle each refuse `rite-tree-unreadable`.
+ */
+export function keepStagedTree(branch: string, staged: string, home: string = larWorkspacesHome()): string {
+  if (!WORKSPACE_NAME_RE.test(branch) || branch === "." || branch === "..") throw new SwarmRefused("rite-tree-unreadable", `a keep's branch names its workspace, and ${JSON.stringify(branch.slice(0, 80))} names none`);
+  const unsafe = unsafeRelPath(staged);
+  if (staged === "" || unsafe !== null) throw new SwarmRefused("rite-tree-unreadable", `a keep names its staged bundle by a plain path inside the workspace, and ${JSON.stringify(staged.slice(0, 80))} names ${unsafe ?? "none"}`);
+  let ws: string, dir: string;
+  try { ws = realpathSync(join(home, branch)); dir = realpathSync(join(ws, ...staged.split("/"))); }
+  catch { throw new SwarmRefused("rite-tree-unreadable", `no staged bundle stands at ${staged} in the workspace "${branch}"`); }
+  if (!dir.startsWith(ws + sep) || !lstatSync(dir).isDirectory()) throw new SwarmRefused("rite-tree-unreadable", `the staged path ${staged} resolves outside the workspace "${branch}" or to no directory`);
+  try { return verifyBundle(dir).manifest.bundleId; }
+  catch (e) { if (e instanceof CarryBundleRefused) throw new SwarmRefused("rite-tree-unreadable", `the staged bundle reads unwhole: ${e.message}`); throw e; }
+}
+
+/**
  * THE TREE A RITE'S RETURN RESTS ON. A rite over the checkout (`push`, `kukulu`) reads its tree off the head through git. A
  * `keep` runs over no checkout: its head names a carry bundle by its id (the sha-256 over the bundle's sorted file list), and
- * a content name already names its tree, so the id stands as both. A keep head that spells no bundle id refuses
- * `rite-tree-unreadable`. The receipt a keep returns under rests at that id, handed in by the seat that cut the bundle and read
- * every byte back (`rite-receipt`): this vessel signs what it heard, as it does for every receipt.
+ * a content name already names its tree. THE VESSEL DERIVES THAT ID ITSELF from the staged bundle (`keepTree`), so a keep
+ * never rests on an id its spender chose: a head that spells no bundle id, or a keep that names no staged bundle, refuses
+ * `rite-tree-unreadable`; a staged tree that derives another id than the head refuses `rite-tree-differs`. The receipt the
+ * return then rests on stands at the id this vessel derived.
  */
-export async function riteTreeOf(rite: SwarmLeiRite, head: string, gitTree: (head: string) => Promise<string> = gitTreeOf): Promise<string> {
+export async function riteTreeOf(rite: SwarmLeiRite, head: string, gitTree: (head: string) => Promise<string> = gitTreeOf, keepTree?: () => string): Promise<string> {
   if (rite !== "keep") return gitTree(head);
   if (!/^[0-9a-f]{64}$/.test(head)) throw new SwarmRefused("rite-tree-unreadable", `a keep's head names a carry bundle by its id (64 hex), and ${JSON.stringify(head.slice(0, 80))} spells none`);
-  return head;
+  if (keepTree === undefined) throw new SwarmRefused("rite-tree-unreadable", "a keep names the bundle it staged (`staged`, a path inside its workspace), so the vessel derives the id itself");
+  const derived = keepTree();
+  if (derived !== head) throw new SwarmRefused("rite-tree-differs", `the staged bundle derives ${derived}, and the keep names ${head}; the vessel begins no keep over an id the tree never derived`);
+  return derived;
 }
 
 export async function runRiteVerb(opts: {
@@ -63,6 +89,8 @@ export async function runRiteVerb(opts: {
   treeOf?: (head: string) => Promise<string>;
   /** Where an `offer` rests; the house's config home where the caller seats none. */
   offerPath?: string;
+  /** Where a keep's workspaces stand; the house's workspaces home where the caller seats none. */
+  workspacesHome?: string;
 }): Promise<Record<string, unknown>> {
   if (!opts.wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: a rite's records need the founded wiki");
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
@@ -98,7 +126,8 @@ export async function runRiteVerb(opts: {
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");
   // The caller names the head; this vessel derives the tree, so a return never rests on a tree its spender chose.
-  const tree = await riteTreeOf(rite, str("head"), opts.treeOf ?? gitTreeOf);
+  const keepTree = str("staged") === "" ? undefined : (): string => keepStagedTree(str("branch"), str("staged"), opts.workspacesHome);
+  const tree = await riteTreeOf(rite, str("head"), opts.treeOf ?? gitTreeOf, keepTree);
   let ward;
   try { ward = cosignPortWitness(await nodeWardCosignPortOf(opts.repo, loaded)); }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", e.message); throw e; }

@@ -44,18 +44,19 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): Car
 
 /** The vessel's rows and the cut, recorded; `lei` names what the keep line reads, `begin` what the begin row answers. */
 function rig(over: { lei?: Record<string, unknown>; begin?: RiteRowAnswer; notes?: Record<string, string> } = {}) {
-  const calls: string[] = [];
+  const calls: string[] = [], stagedAtBegin: string[] = [];
   const state = { notes: over.notes ?? { heron: "remember the heron\n" }, begin: over.begin, lei: over.lei ?? { standing: true, reach: "wide", returnsLeft: 2, after: LEI } };
   const ports: KeepPorts = {
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
       if (verb === "swarm-show") return { ok: true, output: { lei: state.lei } };
       if (verb === "rite-receipt") return { ok: true, output: { tree: args["tree"], verdict: "pass" } };
+      if (typeof args["staged"] === "string") stagedAtBegin.push(verifyBundle(join(workspace(), ...String(args["staged"]).split("/"))).manifest.bundleId);
       return state.begin ?? { ok: true, output: { tessera: TESSERA, rite: "keep", lei: LEI, n: 1, begun: "b".repeat(64) } };
     },
     cut: async (dest, opts) => { calls.push(`cut ${opts.workspace} accept=${opts.acceptOmissions}`); mkdirSync(dest, { recursive: true }); return writeBundle(dest, state.notes); },
   };
-  return { calls, ports, state };
+  return { calls, stagedAtBegin, ports, state };
 }
 
 const workspace = (): string => join(root, "workspaces", "backup");
@@ -94,8 +95,10 @@ describe("the keep rite, vessel half", () => {
       `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup" })}`,
       `cut ${workspace()} accept=false`,
       `rite-receipt ${JSON.stringify({ tree: id, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(CARRY_SCHEMA) })}`,
-      `rite-begin ${JSON.stringify({ rite: "keep", branch: "backup", head: id })}`,
+      expect.stringMatching(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${id}","staged":"\\.house\\.keep-[0-9a-f]{12}"\\}$`)),
     ]);
+    // The begin names the staged tree by its place inside the workspace, and the tree stands whole there when the vessel reads it.
+    expect(r.stagedAtBegin).toEqual([id]);
     expect(readFileSync(join(dest, "faces/f0/working/heron.tid"), "utf8")).toBe("remember the heron\n");
     expect(readdirSync(workspace()).sort()).toEqual([".git", "README.md", "house"]);
     expect(readFileSync(join(workspace(), "README.md"), "utf8")).toBe("the operator's own backup repo\n");
@@ -105,7 +108,7 @@ describe("the keep rite, vessel half", () => {
     expect(there.dest).toBe(join(workspace(), "devices", "one", "house"));
     expect(deep.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 1 })}`);
     expect(deep.calls[1]).toBe(`cut ${workspace()} accept=true`);
-    expect(deep.calls[3]).toBe(`rite-begin ${JSON.stringify({ rite: "keep", branch: "backup", head: there.bundleId, face: 1 })}`);
+    expect(deep.calls[3]).toMatch(new RegExp(`^rite-begin \\{"rite":"keep","branch":"backup","head":"${there.bundleId}","staged":"devices/one/\\.house\\.keep-[0-9a-f]{12}","face":1\\}$`));
   });
 
   test("K3 RED: a begin the vessel refuses leaves the workspace as it stood; CONTROL: the earlier bundle still verifies, byte for byte", async () => {

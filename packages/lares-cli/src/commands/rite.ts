@@ -55,8 +55,9 @@ export function ritePlan(args: ParsedArgs): RitePlan {
   if (act === "receipts") return { verb: "rite-receipts", args: { ...face } };
   if (act === "begin") {
     const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
-    if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit>");
-    return { verb: "rite-begin", args: { rite, branch, head, ...face } };
+    if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit> (a keep adds --staging <path>, the bundle it staged inside its workspace)");
+    const staged = word(args.options["staging"]);
+    return { verb: "rite-begin", args: { rite, branch, head, ...(staged === undefined ? {} : { staged }), ...face } };
   }
   if (act === "receipt") {
     // `--tree` reads as a bare flag across this CLI (the parser's boolean list), so the tree itself rides the next word:
