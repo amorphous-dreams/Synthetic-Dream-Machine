@@ -613,10 +613,10 @@ const utf8 = new TextEncoder();
 const HEX64 = /^[0-9a-f]{64}$/;
 const isIndex = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
 const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
-const encodeRow = (value: unknown): Uint8Array => utf8.encode(JSON.stringify(value, null, 2));
+const encodeRecord = (value: unknown): Uint8Array => utf8.encode(JSON.stringify(value, null, 2));
 
 /** The JSON a row's plaintext carries; bytes that hold no JSON refuse `malformed`. */
-function parseRow(bytes: Uint8Array, file: string): unknown {
+function parseRecord(bytes: Uint8Array, file: string): unknown {
   try { return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
   catch { throw malformed(file); }
 }
@@ -648,7 +648,7 @@ export interface PersonaRosterLine {
 /** The roster a row's plaintext carries (ascending); nothing standing reads as no root held, any other shape refuses. */
 function parseRoster(bytes: Uint8Array | null, file: string): PersonaRosterLine[] {
   if (bytes === null) return [];
-  const roots = objectOf(parseRow(bytes, file), file)["roots"];
+  const roots = objectOf(parseRecord(bytes, file), file)["roots"];
   if (!Array.isArray(roots)) throw malformed(file);
   const seen = new Set<number>();
   const out: PersonaRosterLine[] = [];
@@ -692,7 +692,7 @@ function verifyingKeyOfSeed(signingKeyHex: string): string {
  * names none.
  */
 function parseRootRow(bytes: Uint8Array, file: string): PersistedKeypair {
-  const raw = objectOf(parseRow(bytes, file), file);
+  const raw = objectOf(parseRecord(bytes, file), file);
   const verifyingKey = raw["verifyingKey"];
   const signingKey = raw["signingKey"];
   if (typeof verifyingKey !== "string" || !HEX64.test(verifyingKey) || typeof signingKey !== "string" || !HEX64.test(signingKey)) throw malformed(file);
@@ -726,7 +726,7 @@ async function commitRoot(handleIndex: number, keypair: PersistedKeypair, ward: 
   const kept = await withWardKeyCustody({ ordinal: handleIndex }, ward, (seat) => seat.update(rootFile, (bytes) => {
     if (bytes !== null) return { plaintext: null, value: { root: parseRootRow(bytes, rootFile), wrote: false } };
     const persisted = { verifyingKey: keypair.verifyingKey, signingKey: keypair.signingKey };
-    return { plaintext: encodeRow(persisted), value: { root: keypair, wrote: true } };
+    return { plaintext: encodeRecord(persisted), value: { root: keypair, wrote: true } };
   }), `the face root at h${handleIndex}`);
   const rosterFile = personaRosterFileName(handleIndex);
   await updateCustodyRecord("identity", rosterFile, (bytes) => {
@@ -737,7 +737,7 @@ async function commitRoot(handleIndex: number, keypair: PersistedKeypair, ward: 
       return { plaintext: null, value: undefined };
     }
     const next = [...roster, { handleIndex, verifyingKey: kept.root.verifyingKey }].sort((a, b) => a.handleIndex - b.handleIndex);
-    return { plaintext: encodeRow({ roots: next }), value: undefined };
+    return { plaintext: encodeRecord({ roots: next }), value: undefined };
   });
   return kept;
 }
@@ -968,7 +968,7 @@ function personaPublicHandleFileName(handleIndex: number): string {
 function parseIndexMap<T>(bytes: Uint8Array | null, file: string, field: string, shaped: (entry: unknown) => entry is T): Record<string, T> {
   const out: Record<string, T> = Object.create(null) as Record<string, T>;
   if (bytes === null) return out;
-  const map = objectOf(objectOf(parseRow(bytes, file), file)[field], file);
+  const map = objectOf(objectOf(parseRecord(bytes, file), file)[field], file);
   for (const [key, entry] of Object.entries(map)) {
     if (!/^(0|[1-9]\d*)$/.test(key) || !isIndex(Number(key)) || !shaped(entry)) throw malformed(file);
     out[key] = entry;
@@ -989,7 +989,7 @@ function changeIndexMap<T>(
   return updateCustodyRecord("identity", file, (bytes) => {
     const map = parseIndexMap(bytes, file, field, shaped);
     change(map);
-    return { plaintext: encodeRow({ [field]: map }), value: undefined };
+    return { plaintext: encodeRecord({ [field]: map }), value: undefined };
   });
 }
 

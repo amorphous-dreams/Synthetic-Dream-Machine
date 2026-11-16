@@ -51,6 +51,6 @@ describe("the node's veil-lift link", () => {
     const row = carrierTable().find((r) => r.row === "veil-lift");
     expect(row, "the carrier table names the veil-lift row").toBeDefined();
     expect(row!.custody).toBe("face-hot");
-    expect(row!.faceRow?.inner.test(veilLiftGroupFile("group-veil-a"))).toBe(true);
+    expect(row!.faceRecord?.inner.test(veilLiftGroupFile("group-veil-a"))).toBe(true);
   });
 });

@@ -8,9 +8,9 @@
  * body under that key. Ciphertext leaves; no row's plaintext does.
  *
  * ── THE TABLE PICKS THE ROWS ────────────────────────────────────────────────────────────────────
- * The carrier table's `bundle` column names every row a bundle carries (`bundleRows`). The cut walks that column
+ * The carrier table's `bundle` column names every row a bundle carries (`bundleCarriers`). The cut walks that column
  * and runs one extractor per row; a row the column names with no extractor here refuses the cut, and
- * `BUNDLE_EXTRACTOR_ROWS` lets a test hold the two sets equal. No hand picks a row.
+ * `BUNDLE_EXTRACTOR_CARRIERS` lets a test hold the two sets equal. No hand picks a row.
  *
  * ── WHAT A CUT REFUSES ──────────────────────────────────────────────────────────────────────────
  * The cut reads its vessel's own edge shadow ONCE, at its entry, and refuses under it before any row opens
@@ -39,7 +39,7 @@ import {
   listPersonaRosterLines, loadPersonaGroupRootSeed, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
   type PersonaRosterLine,
 } from "./node-vessel-identity.js";
-import { bundleRows } from "./vault-carriers.js";
+import { bundleCarriers } from "./vault-carriers.js";
 
 /** The names a cut refuses under (custody#/the-cut). */
 export const CUT_REFUSALS = ["face-not-held", "face-not-worn", "own-edge-shadowed", "key-history-unread", "memory-unavailable", "no-address-secret"] as const;
@@ -147,7 +147,7 @@ const EXTRACTORS: Readonly<Record<string, Extractor>> = {
 };
 
 /** The rows this module extracts, for the test that holds them equal to the table's column. */
-export const BUNDLE_EXTRACTOR_ROWS: readonly string[] = Object.freeze(Object.keys(EXTRACTORS));
+export const BUNDLE_EXTRACTOR_CARRIERS: readonly string[] = Object.freeze(Object.keys(EXTRACTORS));
 
 /** What a cut answers: the sealed body, what its memory section holds, and the face it carries. Nothing secret. */
 export interface FaceBundleCut {
@@ -180,7 +180,7 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   if (door.cutMemory === null) throw new BackupRefused("memory-unavailable", "no daemon island stands in this vessel, so no content-key holder answers the memory section");
 
   const parts: Parts = { names: {} };
-  for (const { row } of bundleRows()) {
+  for (const { row } of bundleCarriers()) {
     const extract = EXTRACTORS[row];
     if (!extract) throw new Error(`face-bundle-cut: the carrier table's bundle column names "${row}" and no extractor reads it; nothing was cut`);
     await extract(line, parts, args.ward);

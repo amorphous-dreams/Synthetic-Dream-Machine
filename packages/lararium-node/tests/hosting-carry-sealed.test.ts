@@ -28,7 +28,7 @@ import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRecord } from "../src/custody-seat.js";
 import { depositCarried, fetchCarried, noteContact, readCarryRecord, type CarryLimits } from "../src/hosting-carry.js";
 
-import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
+import { hostingDirPath, hostingRecordDir } from "../src/hosting-face.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 const AID = "nexus-" + "a".repeat(64);
@@ -42,7 +42,7 @@ function blob(n: number, fill: number): { cid: string; ciphertext: Uint8Array } 
 }
 const put = (b: { cid: string; ciphertext: Uint8Array }, depth = 1, limits = ROOMY, key = KEY) =>
   depositCarried({ nexusAid: AID, key, depth, ...b, limits });
-const rhythmRow = (key = KEY): string => `${hostingRowDir(0, AID)}/carry/${key}/record.json`;
+const rhythmRow = (key = KEY): string => `${hostingRecordDir(0, AID)}/carry/${key}/record.json`;
 const enc = (v: unknown): Uint8Array => new TextEncoder().encode(JSON.stringify(v));
 
 const drops: Array<() => Promise<void>> = [];
@@ -124,7 +124,7 @@ describe("the carriage at rest", () => {
     copyFileSync(join(bDir, "blobs", name), join(aDir, "blobs", name));
     const fetched = await refusal(fetchCarried(AID, KEY, doc.cid));
     expect(fetched).toBeInstanceOf(CustodyRowUnavailable);
-    expect(fetched).toMatchObject({ home: "identity", file: `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}` });
+    expect(fetched).toMatchObject({ home: "identity", file: `${hostingRecordDir(0, AID)}/carry/${KEY}/blobs/${name}` });
     // B's rhythm row at A's path: nothing reads, counts a contact or lands a deposit over it.
     copyFileSync(join(bDir, "record.json"), join(aDir, "record.json"));
     const foreign = readFileSync(join(aDir, "record.json"));
@@ -187,10 +187,10 @@ describe("the carriage at rest", () => {
     copyFileSync(bBlob, join(await guestDir(), "blobs", name));                     // a row another face sealed, under the same name
     const again = await refusal(put(doc));
     expect(again).toBeInstanceOf(CustodyRowUnavailable);
-    expect(again).toMatchObject({ home: "identity", file: `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}` });
+    expect(again).toMatchObject({ home: "identity", file: `${hostingRecordDir(0, AID)}/carry/${KEY}/blobs/${name}` });
     // A row this vessel's key opens to OTHER bytes than its address names refuses too.
     rmSync(join(await guestDir(), "blobs", name));
-    await writeCustodyRecord("identity", `${hostingRowDir(0, AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
+    await writeCustodyRecord("identity", `${hostingRecordDir(0, AID)}/carry/${KEY}/blobs/${name}`, new Uint8Array(40).fill(6));
     expect(await refusal(put(doc))).toMatchObject({ reading: "holds other bytes than its address names" });
   });
 

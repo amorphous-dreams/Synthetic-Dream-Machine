@@ -65,7 +65,7 @@ import {
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, writeCustodyRecord } from "./custody-seat.js";
 import { readHostingState, liveEpochs } from "./hosting-store.js";
-import { hostingDirPath, hostingFaceOf, hostingRowDir } from "./hosting-face.js";
+import { hostingDirPath, hostingFaceOf, hostingRecordDir } from "./hosting-face.js";
 import type { HostingGrant, LarSessionMsg, PeerClass } from "@lararium/mesh";
 
 /**
@@ -119,7 +119,7 @@ function segment(key: string): string {
 }
 /** Where a Nexus's carriage rests: the face that holds its hosting, and the AID. */
 interface Home { readonly face: number; readonly nexusAid: string }
-const guestRowDir = (home: Home, key: string): string => `${hostingRowDir(home.face, home.nexusAid)}/carry/${segment(key)}`;
+const guestRowDir = (home: Home, key: string): string => `${hostingRecordDir(home.face, home.nexusAid)}/carry/${segment(key)}`;
 const recordFile = (home: Home, key: string): string => `${guestRowDir(home, key)}/record.json`;
 /** The Nexus's carriage home when a face holds its hosting (`create` founds it under the face named, else the one face standing open); null where none does. */
 async function homeOf(nexusAid: string, create: boolean): Promise<Home | null> {
@@ -142,7 +142,7 @@ function namesUnder(dir: string, row: string): string[] {
 
 /** The record keys standing under one Nexus's carriage root. */
 async function carriedKeys(home: Home): Promise<string[]> {
-  return namesUnder(carryPath(home), `${hostingRowDir(home.face, home.nexusAid)}/carry`).filter((key) => SEGMENT.test(key)).sort();
+  return namesUnder(carryPath(home), `${hostingRecordDir(home.face, home.nexusAid)}/carry`).filter((key) => SEGMENT.test(key)).sort();
 }
 
 interface StandingBlob { readonly digest: string; readonly bytes: number; readonly file: string }

@@ -151,7 +151,7 @@ export type FaceUnlock =
   | { readonly reading: "index-mismatch"; readonly fcid: string; readonly why: string };
 
 /** The D row a face's directory keeps to authenticate the floor index entry that routed to it. */
-export interface FaceOwnerRow { readonly fcid: string; readonly group: string | null }
+export interface FaceOwnerRecord { readonly fcid: string; readonly group: string | null }
 
 export const UNLOCK_ATTEMPTS_PER_BOOT = 3;
 
@@ -401,8 +401,8 @@ export function makeCustodyHolder(a: {
     const seed = wardSigningSeed(ward);
     try { return new TextEncoder().encode(await wardPublicKeyOf(seed)); } finally { seed.fill(0); }
   };
-  const encodeOwner = (owner: FaceOwnerRow): Uint8Array => new TextEncoder().encode(JSON.stringify({ fcid: owner.fcid, group: owner.group }));
-  const decodeOwner = (bytes: Uint8Array): FaceOwnerRow | null => {
+  const encodeOwner = (owner: FaceOwnerRecord): Uint8Array => new TextEncoder().encode(JSON.stringify({ fcid: owner.fcid, group: owner.group }));
+  const decodeOwner = (bytes: Uint8Array): FaceOwnerRecord | null => {
     try {
       const v = JSON.parse(new TextDecoder().decode(bytes)) as Record<string, unknown>;
       if (Object.keys(v).sort().join(",") !== "fcid,group" || typeof v["fcid"] !== "string" || !(v["group"] === null || typeof v["group"] === "string")) return null;
@@ -461,7 +461,7 @@ export function makeCustodyHolder(a: {
   };
   /** The warded row a file names inside one face's directory, as a carrier; anything but a warded row refuses. */
   const wardCarrierOf = (fcid: string, file: string): FaceCarrier => {
-    const row = carrierTable().find((r) => r.custody === "ward-cold" && r.faceRow !== undefined && r.faceRow.inner.test(file));
+    const row = carrierTable().find((r) => r.custody === "ward-cold" && r.faceRecord !== undefined && r.faceRecord.inner.test(file));
     if (!row) throw new CustodyRowUnknown("identity", file, "no warded row matches");
     return faceCarrierFor(a.homes, fcid, file, row);
   };
@@ -535,9 +535,9 @@ export function makeCustodyHolder(a: {
   /** The files of one face's directory that a warded row names. */
   const wardFilesOf = async (fcid: string): Promise<string[]> => {
     const dir = faceDir(a.homes.identity, fcid);
-    const rows = carrierTable().filter((r) => r.custody === "ward-cold" && r.faceRow !== undefined);
+    const rows = carrierTable().filter((r) => r.custody === "ward-cold" && r.faceRecord !== undefined);
     return (await a.io.list()).filter((p) => p.startsWith(`${dir}/`)).map((p) => p.slice(dir.length + 1))
-      .filter((f) => !f.includes("/") && rows.some((r) => r.faceRow!.inner.test(f)));
+      .filter((f) => !f.includes("/") && rows.some((r) => r.faceRecord!.inner.test(f)));
   };
   const doRewrapWard = async (by: FaceRef, credentials: readonly Credential[]): Promise<{ readonly rewrapped: number }> => {
     const { fcid } = await openFaceFor(by);
@@ -696,13 +696,13 @@ export function makeCustodyHolder(a: {
       if (sRow.custody === "cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRecord");
       return { kind: "treeKey", row: sRow, path: `${a.homes[home]}/${file}`, name: `${home}/${file}` };
     }
-    const faceRow = home === "identity" ? carrierTable().find((r) => r.faceRow !== undefined && r.faceRow.select !== null && r.faceRow.inner.test(file)) : undefined;
+    const faceRow = home === "identity" ? carrierTable().find((r) => r.faceRecord !== undefined && r.faceRecord.select !== null && r.faceRecord.inner.test(file)) : undefined;
     // A warded row never answers a door of unlocked custody: it opens only inside a fresh ward act (`withWardKey`).
-    const warded = home === "identity" ? carrierTable().find((r) => r.custody === "ward-cold" && r.faceRow !== undefined && r.faceRow.inner.test(file)) : undefined;
+    const warded = home === "identity" ? carrierTable().find((r) => r.custody === "ward-cold" && r.faceRecord !== undefined && r.faceRecord.inner.test(file)) : undefined;
     if (warded) throw new WardNeedsFreshUnlock(`identity/${file}`);
-    if (!faceRow || faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) === null) throw new CustodyRowUnknown(home, file);
+    if (!faceRow || faceRow.faceRecord!.select(faceRow.faceRecord!.inner.exec(file)!) === null) throw new CustodyRowUnknown(home, file);
     if (faceRow.custody === "face-cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRecord");
-    const selector = faceRow.faceRow!.select(faceRow.faceRow!.inner.exec(file)!) as Exclude<FaceSelector, null>;
+    const selector = faceRow.faceRecord!.select(faceRow.faceRecord!.inner.exec(file)!) as Exclude<FaceSelector, null>;
     let found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
     if (!found && forWrite && faceAutoFounder) {
       // Two writers racing to the same absent face found it once: the loser finds the winner's face standing.

@@ -16,13 +16,13 @@
  *       writer refuses `TreeKeyRefusal` for either row, and no byte moves.
  *                                                  control: a holder over the new S key signs under both rows
  *   K8  the carrier table names both rows as the library names them: `face-proof-key` cold and of ONE face,
- *       `vessel-face-key` hot and of its face; and the table's shapes match `FACE_PROOF_CUSTODY_ROWS`.
+ *       `vessel-face-key` hot and of its face; and the table's shapes match `FACE_PROOF_CUSTODY_RECORDS`.
  */
 import { createPrivateKey, createPublicKey, verify } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { mintFck, readFckCarrier, writeFaceCarrier, TreeKeyRefusal } from "@lararium/mesh";
-import { FACE_PROOF_CUSTODY_ROWS } from "../../lararium-mesh/src/face-authority.js";
+import { FACE_PROOF_CUSTODY_RECORDS } from "../../lararium-mesh/src/face-authority.js";
 import {
   faceProofKeyFile, vesselFaceKeyFile, storeFaceProofKey, storeVesselFaceKey, nodeFaceKeyCustody, nodeVesselFaceKeyCustody,
 } from "../src/face-key-custody.js";
@@ -188,6 +188,6 @@ describe("the face proof's custody rows and signing doors", () => {
     expect(face.face(face.match.exec(`faces/${"ab".repeat(16)}/${faceProofKeyFile(4, scope.nexus)}`)!)).toBe(4);
     expect([vessel.row, vessel.custody, vessel.keyClass]).toEqual(["vessel-face-key", "face-hot", "device-minted"]);
     expect(vessel.face(vessel.match.exec(`faces/${"ab".repeat(16)}/${vesselFaceKeyFile(4, scope)}`)!)).toBe(4);
-    expect(FACE_PROOF_CUSTODY_ROWS.map((r) => [r.row, r.custody])).toEqual([["face-proof-key", "cold"], ["vessel-face-key", "hot"]]);
+    expect(FACE_PROOF_CUSTODY_RECORDS.map((r) => [r.row, r.custody])).toEqual([["face-proof-key", "cold"], ["vessel-face-key", "hot"]]);
   });
 });

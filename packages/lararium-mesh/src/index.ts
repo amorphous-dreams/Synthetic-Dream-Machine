@@ -370,7 +370,7 @@ export * from "./nexus-partial.js";
 export * from "./roll-circle.js";
 // PRIVATE AUTHORITY FOR THE FACE PROOF, named here by its first caller: the device removal door, which signs a
 // certificate withdrawal beside each dyad raise (`device-removal`).
-export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_ROWS } from "./face-authority.js";
+export { withdrawKey, foldWithdrawals, heldWithdrawals, learnWithdrawals, isWithdrawalMemory, FACE_PROOF_CUSTODY_RECORDS } from "./face-authority.js";
 export {
   NEXUS_KEY_HAND_OVER_DOMAIN, NEXUS_KEY_HAND_OVER_PREFIX, NEXUS_KEY_LINE_BOUND,
   nexusKeyHandOverBytes, nexusKeyHandOverId, nexusKeyHandOverKey, signNexusKeyHandOver, readNexusKeyHandOver,

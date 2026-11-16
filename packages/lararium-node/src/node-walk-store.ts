@@ -41,7 +41,7 @@ import { larIdentityDir } from "./vessel-paths.js";
 const WALK_FILE = /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/;
 
 /** The row one hearth's walk record rests in for face `face`: keyed by a digest of its gate key. */
-export function walkRowFile(face: number, gatePubKey: string): string {
+export function walkRecordFile(face: number, gatePubKey: string): string {
   if (!Number.isSafeInteger(face) || face < 0) throw new RangeError(`node-walk-store: handle-index out of range: ${face}`);
   return `walk-h${face}-${sha256HexSync(gatePubKey.toLowerCase()).slice(0, 32)}.json`;
 }
@@ -77,7 +77,7 @@ function parseWalkFile(bytes: Uint8Array, file: string, face: number): WalkFile 
   const { gatePubKey, record, ...rest } = raw as Record<string, unknown>;
   if (Object.keys(rest).length > 0 || typeof gatePubKey !== "string" || !isWalkRecord(record)) throw malformed();
   // The row's name derives from the hearth it names: a record filed under another hearth's name refuses.
-  if (gatePubKey !== gatePubKey.toLowerCase() || walkRowFile(face, gatePubKey) !== file) throw malformed();
+  if (gatePubKey !== gatePubKey.toLowerCase() || walkRecordFile(face, gatePubKey) !== file) throw malformed();
   if (!agrees(gatePubKey, record)) throw malformed();
   return { gatePubKey, record };
 }
@@ -91,13 +91,13 @@ export function nodeWalkStore(opts: { readonly face: number; readonly oneHearth?
   const { face } = opts;
   return {
     async read(gatePubKey) {
-      const file = walkRowFile(face, gatePubKey);
+      const file = walkRecordFile(face, gatePubKey);
       const bytes = await readCustodyRecord("identity", file);
       return bytes === null ? null : parseWalkFile(bytes, file, face).record;
     },
     async update(gatePubKey, decide) {
       const gate = gatePubKey.toLowerCase();
-      const file = walkRowFile(face, gate);
+      const file = walkRecordFile(face, gate);
       return updateCustodyRecord<WalkRecord | null>("identity", file, (standing) => {
         const next = decide(standing === null ? null : parseWalkFile(standing, file, face).record);
         if (next === null) return { plaintext: null, value: null };

@@ -3,7 +3,7 @@
  *
  * The face proof's library (`@lararium/mesh` `face-authority`) holds no secret at rest and writes no row: it mints a
  * key as bytes the caller hands straight to its custody row, and every signature comes back through a door the
- * caller supplies. This module stands as that caller's shore on a node vessel. `FACE_PROOF_CUSTODY_ROWS` names the
+ * caller supplies. This module stands as that caller's shore on a node vessel. `FACE_PROOF_CUSTODY_RECORDS` names the
  * two rows, and the carrier table (`vault-carriers`) carries them under the same names:
  *
  *   face-proof-key    COLD. One face's key at one Nexus, its PER-NEXUS KEY: 32 secret bytes minted at random,
@@ -62,7 +62,7 @@ function scopeName(scope: FaceKeyScope): string {
 }
 /** The name a face's per-Nexus key gives its row: a digest of the Nexus alone, so a face finds its key at a Nexus
  *  by the Nexus, and a listing names no Nexus. */
-export function nexusKeyRowName(nexus: string): string {
+export function nexusKeyRecordName(nexus: string): string {
   const aid = nexus.trim().toLowerCase();
   if (aid.length === 0) throw new RangeError("face-key-custody: a per-Nexus key names its Nexus");
   return sha256HexBytesSync(utf8.encode(`face-proof-key\n${aid}`)).slice(0, 32);
@@ -71,7 +71,7 @@ export function nexusKeyRowName(nexus: string): string {
 /** Face `handleIndex`'s per-Nexus key row at `nexus`. */
 export function faceProofKeyFile(handleIndex: number, nexus: string): string {
   if (!Number.isSafeInteger(handleIndex) || handleIndex < 0) throw new RangeError(`face-key-custody: handle-index out of range: ${handleIndex}`);
-  return `face-proof-key-h${handleIndex}-${nexusKeyRowName(nexus)}.bin`;
+  return `face-proof-key-h${handleIndex}-${nexusKeyRecordName(nexus)}.bin`;
 }
 export function vesselFaceKeyFile(handleIndex: number, scope: FaceKeyScope): string {
   if (!Number.isSafeInteger(handleIndex) || handleIndex < 0) throw new RangeError(`face-key-custody: handle-index out of range: ${handleIndex}`);
@@ -116,7 +116,7 @@ function standingOf(bytes: Uint8Array): Uint8Array | null {
 
 /** Every face's per-Nexus row at `nexus` this vessel holds. Reads names alone. */
 function rowsAtNexus(nexus: string): string[] {
-  const name = nexusKeyRowName(nexus);
+  const name = nexusKeyRecordName(nexus);
   let names: string[];
   try { names = faceFileNames(larIdentityDir()); } catch { return []; }
   return names.filter((n) => FACE_PROOF_KEY_FILE.exec(n)?.[2] === name).sort();
@@ -321,7 +321,7 @@ export const nodeFaceKeyCustody = {
     if (candidates.length === 0) {
       // The seat still answers first: a locked vessel refuses `CustodyLocked` before it says what it holds.
       return updateColdCustodyRecord("identity", faceProofKeyFile(0, scope.nexus), () => {
-        throw new CustodyRowUnavailable("identity", `face-proof-key-h*-${nexusKeyRowName(scope.nexus)}.bin`, "absent");
+        throw new CustodyRowUnavailable("identity", `face-proof-key-h*-${nexusKeyRecordName(scope.nexus)}.bin`, "absent");
       });
     }
     for (const file of candidates) {

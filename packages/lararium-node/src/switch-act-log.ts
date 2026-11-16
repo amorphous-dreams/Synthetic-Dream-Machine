@@ -84,7 +84,7 @@ export function switchActsSetAsideDir(): string {
  * Move the unopenable row's bytes, unchanged, to the next free `switch-acts.set-aside-<n>.json`; answers its name. Past
  * the cap it moves nothing and refuses `SwitchActsSetAsideFull`.
  */
-function setAsideRow(): string {
+function setAsideRecord(): string {
   const dir = switchActsSetAsideDir();
   mkdirSync(dir, { recursive: true, mode: 0o700 });
   let n = 1;
@@ -128,7 +128,7 @@ export const nodeSwitchActLog: SwitchActLog = {
         if (!(error instanceof CustodyRowUnavailable)) throw error;
         // RE-READ BEFORE ANY RENAME: the row moves aside only while it still does not open.
         if (await rowOpens()) { await writeAct(record); return; }
-        const name = setAsideRow();
+        const name = setAsideRecord();
         await writeAct(record, { phase: "reset", reason: `the row did not open (${error.reading}); its bytes rest set aside as ${name}` });
       }
     });

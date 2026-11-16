@@ -25,7 +25,7 @@ import {
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { FaceNotNamed } from "../src/face-selector.js";
 import { handleRecordPath, faceRecordNames } from "./face-paths.js";
-import { walkRowFile } from "../src/node-walk-store.js";
+import { walkRecordFile } from "../src/node-walk-store.js";
 import { dirname } from "node:path";
 import { nexusLeafFor, faceNexusLeaf } from "../src/nexus-leaf.js";
 import { nodeWalkStore, listWalkRecords } from "../src/node-walk-store.js";
@@ -46,7 +46,7 @@ async function invite(gate = GATE, relay: string | null = RELAY): Promise<string
   epoch ??= await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: null, cap: 3 });
   return encodeInvite({ nexusAid: AID, gatePubKey: gate, token: mintHostToken(epoch), ...(relay ? { relay } : {}) });
 }
-const walkDirOf = (): string => dirname(handleRecordPath(walkRowFile(0, GATE)));
+const walkDirOf = (): string => dirname(handleRecordPath(walkRecordFile(0, GATE)));
 
 describe("lares walk — take, as the named face, at one hearth", () => {
   it("RED: a take naming no face on a vessel of two takes no invite and writes nothing; CONTROL: named, the take keeps it as that face", async () => {

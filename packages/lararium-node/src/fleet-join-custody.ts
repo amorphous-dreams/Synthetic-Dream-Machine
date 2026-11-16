@@ -44,24 +44,24 @@ const utf8 = new TextEncoder();
 const PERSONA_GROUP = /^(?:0x)?(?:[0-9a-f]{2}){4,64}$/;
 
 /** The row name's digest IS the group digest the floor index holds, so the face that owns the row is found by it before any face opens. */
-function faceRowName(_row: string, personaGroup: string): string {
+function faceRecordName(_row: string, personaGroup: string): string {
   if (!PERSONA_GROUP.test(personaGroup)) throw new RangeError("fleet-join-custody: a PersonaGroup id reads as lower-case hex");
   return `g${personaGroupDigest(personaGroup)}`;
 }
 
 /** The row a face's address secret rests in, named by a digest of its PersonaGroup. */
 export function faceAddressSecretFile(personaGroup: string): string {
-  return `face-address-secret-${faceRowName("face-address-secret", personaGroup)}.bin`;
+  return `face-address-secret-${faceRecordName("face-address-secret", personaGroup)}.bin`;
 }
 
 /** The row a face's pending join rests in, named by a digest of its PersonaGroup: two faces' joins never share a row. */
 export function fleetJoinPendingFile(personaGroup: string): string {
-  return `fleet-join-pending-${faceRowName("fleet-join-pending", personaGroup)}.json`;
+  return `fleet-join-pending-${faceRecordName("fleet-join-pending", personaGroup)}.json`;
 }
 
 /** The row a joined face's record rests in, named by a digest of its PersonaGroup. */
 export function faceJoinRecordFile(personaGroup: string): string {
-  return `face-join-record-${faceRowName("face-join-record", personaGroup)}.json`;
+  return `face-join-record-${faceRecordName("face-join-record", personaGroup)}.json`;
 }
 
 /** The face's address secret this vessel holds (32 bytes, the caller's to zero-fill), or null. A read never mints. */

@@ -153,7 +153,7 @@ const RULED: Record<string, CustodyClass> = {
   "transition-pending": "floor-plain", "transitions": "floor-plain",
   // The face root seed rests under the face's WARD key, which stays sealed while custody stands unlocked (seat-harness#/the-ward).
   "persona-root": "ward-cold", "ward-slots": "floor", "device-share": "face-cold",
-  // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_ROWS`, mesh `face-authority`).
+  // The face proof's two rows, as its library rules them (`FACE_PROOF_CUSTODY_RECORDS`, mesh `face-authority`).
   "vessel-face-key": "face-hot", "face-proof-key": "face-cold", "face-provisional": "face-hot",
   // The fleet-join door's three rows: a face's address secret, a join half done, and the joined face's record.
   "face-address-secret": "face-hot", "fleet-join-pending": "face-hot", "face-join-record": "face-hot",

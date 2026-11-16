@@ -24,7 +24,7 @@ export type { IdentityAnchors } from "@lararium/mesh";
 // anchors, no matching root.
 const anchorsFile = (handleIndex: number): string => `anchors-h${handleIndex}.json`;
 
-type RowReader = typeof readCustodyRecord;
+type RecordReader = typeof readCustodyRecord;
 const utf8 = new TextEncoder();
 const text = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
 
@@ -65,7 +65,7 @@ export async function persistIdentityAnchors(anchors: IdentityAnchors, handleInd
 
 /** Read ONE persona's anchor set back, or null when the index holds no persona. `handleIndex` selects which
  *  persona (0 = founding). */
-export async function loadIdentityAnchors(handleIndex = 0, read: RowReader = readCustodyRecord): Promise<IdentityAnchors | null> {
+export async function loadIdentityAnchors(handleIndex = 0, read: RecordReader = readCustodyRecord): Promise<IdentityAnchors | null> {
   const file = anchorsFile(handleIndex);
   const bytes = await read("identity", file);
   if (bytes === null) return null;
@@ -81,7 +81,7 @@ export async function loadIdentityAnchors(handleIndex = 0, read: RowReader = rea
  * that face's own directory, so no shared roster names them; a face that rests locked names itself through the floor index alone
  * (`listFaceOrdinals`) and its anchors read once it unlocks.
  */
-export async function listAnchoredPersonas(read: RowReader = readCustodyRecord): Promise<number[]> {
+export async function listAnchoredPersonas(read: RecordReader = readCustodyRecord): Promise<number[]> {
   const out: number[] = [];
   for (const handleIndex of await unlockedFaceOrdinals()) {
     if (await read("identity", anchorsFile(handleIndex)) !== null) out.push(handleIndex);

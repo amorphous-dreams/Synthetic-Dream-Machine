@@ -22,7 +22,7 @@ import {
 } from "@lararium/mesh";
 import { serveHostingCarry } from "../src/hosting-carry.js";
 import { rollHosting, readHostingState, liveEpochs } from "../src/hosting-store.js";
-import { hostingDirPath, hostingRowDir } from "../src/hosting-face.js";
+import { hostingDirPath, hostingRecordDir } from "../src/hosting-face.js";
 import { readCustodyRecord } from "../src/custody-seat.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
@@ -129,7 +129,7 @@ describe("the walker's carriage over the session verbs", () => {
         else if (inBlobs) out.push({ path: p, name: f, bytes: (await readCustodyRecord("identity", `${rel}/${f}`))! });
       }
     };
-    await walk(base, hostingRowDir(0, AID), false);
+    await walk(base, hostingRecordDir(0, AID), false);
     return out;
   }
   /** The hearth names a carried value's row by its address's hex, then its length. */

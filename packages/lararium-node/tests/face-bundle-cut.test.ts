@@ -27,7 +27,7 @@ import {
   openMemorySection, readFaceBundleBody, sealMemorySection, signHandleCard,
   type FaceBundleBody, type HandleCard, type HandleKelEvent, type PersonaKelEvent,
 } from "@lararium/mesh";
-import { BUNDLE_EXTRACTOR_ROWS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
+import { BUNDLE_EXTRACTOR_CARRIERS, BackupRefused, CUT_REFUSALS, cutFaceBundle, type BackupDoor } from "../src/face-bundle-cut.js";
 import { storeFaceProofKey, storeVesselFaceKey } from "../src/face-key-custody.js";
 import { persistIdentityAnchors } from "../src/identity-anchors.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
@@ -199,9 +199,9 @@ describe("a cut carries one face's standing section and its memory section", () 
 
 describe("the table picks the rows a bundle carries", () => {
   test("C3 — the bundle column and the cut's extractors name the same rows", () => {
-    expect([...BUNDLE_EXTRACTOR_ROWS].sort()).toEqual(carriers.bundleRows().map((r) => r.row).sort());
+    expect([...BUNDLE_EXTRACTOR_CARRIERS].sort()).toEqual(carriers.bundleCarriers().map((r) => r.row).sort());
     // The law's table (custody#/the-table): five rows ride whole, four ride as one face's lines, the rest stay.
-    const by = (t: string): string[] => carriers.bundleRows().filter((r) => r.bundle === t).map((r) => r.row).sort();
+    const by = (t: string): string[] => carriers.bundleCarriers().filter((r) => r.bundle === t).map((r) => r.row).sort();
     expect(by("whole")).toEqual(["face-address-secret", "face-proof-key", "handle-book", "persona-root", "recovery-contact-set"]);
     expect(by("lines")).toEqual(["anchors", "persona-declarations", "persona-petnames", "persona-roster"]);
     for (const stays of ["face-atom", "veil-archive", "vessel-face-key", "gate-memory", "device-share", "public-handles", "restore-pending", "gate-root", "seat-key", "fleet-join-pending", "face-join-record"]) {
@@ -210,8 +210,8 @@ describe("the table picks the rows a bundle carries", () => {
   });
 
   test("C3 — a row the column names with no extractor refuses the cut, and nothing gets sealed", async () => {
-    const real = carriers.bundleRows();
-    const spy = vi.spyOn(carriers, "bundleRows").mockReturnValue([...real, { row: "gate-memory", bundle: "whole" }]);
+    const real = carriers.bundleCarriers();
+    const spy = vi.spyOn(carriers, "bundleCarriers").mockReturnValue([...real, { row: "gate-memory", bundle: "whole" }]);
     try {
       await expect(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: door().door })).rejects.toThrow(/no extractor reads it/);
     } finally { spy.mockRestore(); }

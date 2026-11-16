@@ -52,7 +52,7 @@ import {
 } from "@lararium/mesh";
 import { CustodyRowUnavailable } from "./custody-holder.js";
 import { openedCustody, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
-import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRowDir } from "./hosting-face.js";
+import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRecordDir } from "./hosting-face.js";
 import { ownerOnlyDir } from "./fs-atomic.js";
 
 /** The allowance cap a hearth hosts under until its operator names another. */
@@ -80,7 +80,7 @@ export async function standHostingDir(face: number, nexusAid: string): Promise<s
   return dir;
 }
 
-const stateFile = (face: number, nexusAid: string): string => `${hostingRowDir(face, nexusAid)}/state.json`;
+const stateFile = (face: number, nexusAid: string): string => `${hostingRecordDir(face, nexusAid)}/state.json`;
 
 function parseState(bytes: Uint8Array, file: string): HostingState {
   let raw: unknown;
@@ -131,7 +131,7 @@ async function spendNames(face: number, nexusAid: string): Promise<string[]> {
   try { return readdirSync(dir).filter((n) => SPEND_FILE.test(n)); }
   catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw new CustodyRowUnavailable("identity", hostingRowDir(face, nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
+    throw new CustodyRowUnavailable("identity", hostingRecordDir(face, nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
   }
 }
 
@@ -171,7 +171,7 @@ export async function rollHosting(opts: {
   const unswept: string[] = [];
   for (const name of await spendNames(face, opts.nexusAid)) {
     if (live.has(SPEND_FILE.exec(name)![1]!)) continue;
-    const row = `${hostingRowDir(face, opts.nexusAid)}/${name}`;
+    const row = `${hostingRecordDir(face, opts.nexusAid)}/${name}`;
     try { await removeCustodyRecord("identity", row); }
     catch (err) { if (err instanceof CustodyRowUnavailable) unswept.push(row); else throw err; }
   }
@@ -185,7 +185,7 @@ function spendFile(face: number, nexusAid: string, epochCid: string, tag: "n" | 
   const epoch = epochCid.toLowerCase();
   if (!HEX64.test(epoch)) throw new Error("[hosting-store] a spend names its epoch by a 64-hex act id");
   // The tag in the name keeps a nonce's row and a marker's row apart; the digest hides the value itself.
-  return `${hostingRowDir(face, nexusAid)}/spent-${epoch}-${tag}-${sha256HexSync(key).slice(0, 32)}`;
+  return `${hostingRecordDir(face, nexusAid)}/spent-${epoch}-${tag}-${sha256HexSync(key).slice(0, 32)}`;
 }
 
 /** Read one spend row, decide and write it under one custody holder: the row's presence IS the burn. */

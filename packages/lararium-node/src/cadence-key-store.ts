@@ -36,7 +36,7 @@ export const CADENCE_KEY_FILE = /^cadence-key-h(0|[1-9]\d*)-([0-9a-f]{32})\.bin$
 const utf8 = new TextEncoder();
 const PKCS8_ED25519 = Buffer.from("302e020100300506032b657004220420", "hex");
 const HEX64 = /^[0-9a-f]{64}$/;
-const ROW_BYTES = 64;
+const RECORD_BYTES = 64;
 
 function assertKey(verifyingKey: string): string {
   const key = typeof verifyingKey === "string" ? verifyingKey.toLowerCase() : "";
@@ -82,7 +82,7 @@ export function heldCadenceKey(verifyingKey: string): boolean {
  * returns. A row that already stands under the minted name refuses untouched.
  */
 export async function mintCadenceKey(handleIndex: number): Promise<CadenceHolder> {
-  const secret = new Uint8Array(ROW_BYTES);
+  const secret = new Uint8Array(RECORD_BYTES);
   try {
     randomFillSync(secret);
     const key = publicOf(secret.subarray(0, 32));
@@ -105,7 +105,7 @@ export async function signAsCadence(verifyingKey: string, image: Uint8Array): Pr
     throw new CustodyRowUnavailable("identity", `cadence-key-${cadenceKeyName(key)}`, "absent");
   }
   return openColdCustodyRecord("identity", file, (secret) => {
-    if (secret.length !== ROW_BYTES) throw new CustodyRowUnavailable("identity", file, "malformed");
+    if (secret.length !== RECORD_BYTES) throw new CustodyRowUnavailable("identity", file, "malformed");
     const own = secret.subarray(0, 32);
     if (publicOf(own) !== key) throw new CustodyRowUnavailable("identity", file, "names-another-key");
     return Buffer.from(sign(null, Buffer.from(image), keyOf(own))).toString("hex");
@@ -122,7 +122,7 @@ export async function retireCadenceKey(verifyingKey: string): Promise<boolean> {
   if (file === null) { await openedCustody(); return false; }
   let reading: "malformed" | "names-another-key" | null = null;
   const left = await removeColdCustodyRecord("identity", file, (secret) => {
-    reading = secret.length !== ROW_BYTES ? "malformed" : publicOf(secret.subarray(0, 32)) !== key ? "names-another-key" : null;
+    reading = secret.length !== RECORD_BYTES ? "malformed" : publicOf(secret.subarray(0, 32)) !== key ? "names-another-key" : null;
     return reading === null;
   });
   if (reading !== null) throw new CustodyRowUnavailable("identity", file, reading);

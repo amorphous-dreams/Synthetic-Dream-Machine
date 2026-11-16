@@ -34,7 +34,7 @@ import {
 import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
-import { bundleRows, carrierCensus, carrierTable } from "../src/vault-carriers.js";
+import { bundleCarriers, carrierCensus, carrierTable } from "../src/vault-carriers.js";
 import { faceRecordNames, handleRecordPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
@@ -242,14 +242,14 @@ describe("a seat's own key on the custody seat", () => {
 
   test("S10 — the carrier table names the row: cold, a seed, of one face, in no bundle", async () => {
     const file = seatKeyFile(KEY, 4);
-    const row = carrierTable().find((r) => r.home === "identity" && (r.faceRow?.inner.test(file) ?? r.match.test(file)))!;
+    const row = carrierTable().find((r) => r.home === "identity" && (r.faceRecord?.inner.test(file) ?? r.match.test(file)))!;
     expect([row.row, row.custody, row.keyClass, row.bundle, row.bare]).toEqual(["seat-key", "face-cold", "seed", "stays", null]);
     // The table spells the file as the store does (the table cannot import the store: the store stands on the seat).
     expect(row.match.test(`faces/${"ab".repeat(16)}/${file}`)).toBe(true);
     expect(SEAT_KEY_FILE.test(file)).toBe(true);
     expect(row.face(row.match.exec(`faces/${"ab".repeat(16)}/${file}`)!)).toBe(4);
     expect(row.name(row.match.exec(`faces/${"ab".repeat(16)}/${file}`)!)).toBe(`seat-key-h4-${seatKeyName(KEY)}`);
-    expect(bundleRows().map((r) => r.row)).not.toContain("seat-key");
+    expect(bundleCarriers().map((r) => r.row)).not.toContain("seat-key");
     await storeSeatKey(4, SECRET);
     expect(carrierCensus(c.homes).find((e) => e.file.endsWith(`/${file}`))).toMatchObject({ row: "seat-key", custody: "face-cold", keyClass: "seed", face: 4 });
   });

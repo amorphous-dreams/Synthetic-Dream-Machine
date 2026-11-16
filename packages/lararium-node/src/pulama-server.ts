@@ -75,9 +75,9 @@ function classify(home: CustodyHome, file: string): RecordClass {
   });
   if (node) return { kind: "node", cold: node.custody === "cold", row: node.row };
   if (home !== "identity") return { kind: "unknown" };
-  if (table.some((r) => r.custody === "ward-cold" && r.faceRow !== undefined && r.faceRow.inner.test(file))) return { kind: "warded" };
-  const face = table.find((r) => r.faceRow !== undefined && r.faceRow.select !== null && r.faceRow.inner.test(file));
-  const selector = face ? face.faceRow!.select(face.faceRow!.inner.exec(file)!) : null;
+  if (table.some((r) => r.custody === "ward-cold" && r.faceRecord !== undefined && r.faceRecord.inner.test(file))) return { kind: "warded" };
+  const face = table.find((r) => r.faceRecord !== undefined && r.faceRecord.select !== null && r.faceRecord.inner.test(file));
+  const selector = face ? face.faceRecord!.select(face.faceRecord!.inner.exec(file)!) : null;
   if (!face || selector === null) return { kind: "unknown" };
   return { kind: "face", cold: face.custody === "face-cold", row: face.row, selector };
 }
