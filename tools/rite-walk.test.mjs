@@ -424,6 +424,22 @@ test("carry-standoff-reads-a-named-set: the import's stand-offs judge against th
     const argv = kapaeArgs({ title: "lar:///ha.ka.ba/lares/docs/art-sigils", recipe: "default" });
     for (const f of ["--family", "--recipe", "default", "--mode", "kapae"]) assert.ok(argv.includes(f), `the kapae call carries ${f}`);
   }
+  {
+    // The source export names the wikis no island mounts at that instant: one the steward woke at hold-old projected its
+    // pages, so its cold-wikis and its working bag's override-bases omissions read excused BY NAME; an unwoken one reads red.
+    const { judgeExport } = present(carryLeg);
+    const ok0 = { code: 0, stdout: "" };
+    const cold = (items) => ({ kind: "cold-wikis", items, count: items.length, detail: `${items.join(", ")} stand cold` });
+    const bases = (bag) => ({ kind: "override-bases-unread", detail: `the daemon's override-bases read did not answer for ${bag} (wiki not mounted): …` });
+    const woke = judgeExport(ok0, { data: { omissions: [cold(["lares"]), bases("lar:///ha.ka.ba/wikis/lares/working"), { kind: "parallel-drafts" }] } }, { woken: ["lares", "notes", "cold-shelf"] });
+    assert.equal(woke.ok, true, JSON.stringify(woke.faults));
+    assert.deepEqual(woke.excused.map((e) => e.kind).sort(), ["cold-wikis", "override-bases-unread"]);
+    const unwoken = judgeExport(ok0, { data: { omissions: [cold(["works"])] } }, { woken: ["lares"] });
+    assert.equal(unwoken.ok, false);
+    assert.match(unwoken.faults.join(" "), /cold-wikis.*works/, "a red omission quotes its detail");
+    const strayBag = judgeExport(ok0, { data: { omissions: [bases("lar:///ha.ka.ba/wikis/works/working")] } }, { woken: ["lares"] });
+    assert.equal(strayBag.ok, false, "an override-bases omission over an unwoken wiki's bag reads red");
+  }
   const { judgeImport } = present(carryLeg);
   const moved = CANON.moved.uri;
   const tallies = (stoodOff = [], refused = []) => ({ memes: { landed: 3, already: 0, planned: 0, waiting: 0, stoodOff, refused } });

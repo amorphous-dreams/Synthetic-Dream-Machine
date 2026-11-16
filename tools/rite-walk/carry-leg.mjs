@@ -14,7 +14,9 @@
 //
 // WHAT THE LEG NEVER DOES: call the shim's `reset` (no step names it), type `accept-loss` (a `down` that asks for it reads
 // fail: a drop is exactly what the rehearsal must catch), export with `--accept-omissions` (an omission other than
-// `parallel-drafts` reads fail), or read a stand-off as a bare exit code: the import exits 1 for rows over canon that moved
+// `parallel-drafts` reads fail, save the source's `cold-wikis` and `override-bases-unread` over wikis the steward woke at
+// hold-old: the source holds two rotatable pins, so a house of three shared wikis always leaves one cold at the export,
+// and a woken wiki projected its pages first; `judgeExport` excuses those by name), or read a stand-off as a bare exit code: the import exits 1 for rows over canon that moved
 // between the revisions, and the leg judges its stand-offs against the plan's named set (`judgeImport`) and hands each
 // import answer to the parity witness (`--imports`), which excuses those uris by name. The pūlama stands only at the end,
 // on the carried house (carry → light): the image leg's pūlama phase, once parity reads par.
@@ -142,12 +144,23 @@ export function judgeImport(answers, { expectedStandoff = [] } = {}) {
   return { ok: faults.length === 0, faults, stoodOff: [...stood], refused, landed };
 }
 
-/** Judge the export's answer: exit 0, and no omission but the allowed ones. */
-export function judgeExport(r, answer) {
-  if (r.code !== 0 || !answer?.data) return { ok: false, faults: [refusal(r)] };
-  const kinds = (answer.data.omissions ?? []).map((o) => o.kind);
-  const bad = kinds.filter((k) => !ALLOWED_OMISSIONS.includes(k));
-  return { ok: bad.length === 0, faults: bad.map((k) => `omission ${k}`), kinds };
+/** Judge the export's answer: exit 0, and no omission but the allowed ones. A wiki the steward woke at hold-old projected
+ *  its pages before the budget let it fall cold, so the source export's `cold-wikis` over woken slugs alone, and its
+ *  `override-bases-unread` over a woken wiki's working bag, read excused by name (`excused`); any other omission reads red
+ *  and quotes its detail. */
+export function judgeExport(r, answer, { woken = [] } = {}) {
+  if (r.code !== 0 || !answer?.data) return { ok: false, faults: [refusal(r)], excused: [] };
+  const omissions = answer.data.omissions ?? [];
+  const kinds = omissions.map((o) => o.kind);
+  const wokenBag = (detail) => { const bag = /\bfor (\S+)/.exec(String(detail ?? ""))?.[1] ?? ""; return woken.some((slug) => bag.split("/").includes(slug)); };
+  const excused = []; const faults = [];
+  for (const o of omissions) {
+    if (ALLOWED_OMISSIONS.includes(o.kind)) continue;
+    if (o.kind === "cold-wikis" && (o.items ?? []).length > 0 && o.items.every((slug) => woken.includes(slug))) { excused.push({ kind: o.kind, items: o.items }); continue; }
+    if (o.kind === "override-bases-unread" && wokenBag(o.detail)) { excused.push({ kind: o.kind, detail: String(o.detail).slice(0, 200) }); continue; }
+    faults.push(`omission ${o.kind}: ${String(o.detail ?? "").slice(0, 300)}`);
+  }
+  return { ok: faults.length === 0, faults, kinds, excused };
 }
 
 /** The parity witness's compare line (the contract on the span): census readings per side, the base, each import answer, each named stand-off. */
@@ -417,6 +430,7 @@ const holdOld = async (c) => {
     for (const slug of SHARED_WIKIS) {
       const r = await h.shim(["wiki", "hold", slug, "--no-json"]);
       said_.push(`${face}/${slug}: ${r.code === 0 ? "held" : refusal(r)}`);
+      if (face === 0 && r.code === 0) c.vars.woken = [...new Set([...(c.vars.woken ?? []), slug])];
       if (face === 0 && r.code !== 0) return { ok: false, answer: said_.join(" · ") };
     }
   }
@@ -447,8 +461,8 @@ const exportStep = async (c) => {
   if (!w.ok) return { ok: false, answer: `the steward never stood worn: ${tail(w.transcript)}` };
   const r = await h.shim(["export", BUNDLE, "--json"], { timeout: 1_800_000 });
   const answer = json(r.stdout);
-  const j = judgeExport(r, answer);
-  c.vars.bundle = { id: answer?.data?.bundleId ?? null, counts: answer?.data?.counts ?? null, omissions: j.kinds ?? null };
+  const j = judgeExport(r, answer, { woken: c.vars.woken ?? [] });
+  c.vars.bundle = { id: answer?.data?.bundleId ?? null, counts: answer?.data?.counts ?? null, omissions: j.kinds ?? null, excused: j.excused ?? [] };
   return { ok: j.ok, answer: j.ok ? `bundle ${String(c.vars.bundle.id).slice(0, 16)} · faces ${JSON.stringify(answer.data.faces)} · counts ${JSON.stringify(answer.data.counts)}` : j.faults.join("; "), measures: c.vars.bundle };
 };
 
@@ -710,9 +724,9 @@ export const CARRY_STEPS = Object.freeze([
   { id: "persona-2", command: "lares persona new 2 --name 'joshua-fontany-referee'", via: PTY, needs: ["up-old"], expect: "persona h2 minted", run: personaStep("old", 2) },
   { id: "unlock-all-old", command: "lares vault unlock --all --face 1", via: PTY, needs: ["persona-1", "persona-2"], expect: "every face opens", run: unlockAll("old") },
   { id: "seed-content-old", command: "wiki init · wiki share · bag share · library acquire · meme put ×N per face · kapae · kahua stage/lift", via: PTY, needs: ["unlock-all-old", "seed-canon-old"], expect: "every planned row lands", run: seedContent },
-  { id: "hold-old", command: "lares wiki hold <slug> per face, readers first", via: PTY, needs: ["seed-content-old"], expect: "no shared wiki rests cold", run: holdOld },
+  { id: "hold-old", command: "lares wiki hold <slug> per face, readers first", via: PTY, needs: ["seed-content-old"], expect: "every shared wiki wakes under the steward; the slugs woken read into the export's judge", run: holdOld },
   { id: "census-old", command: "carry-parity.mjs census --root house-old --lares old-src/tools/lares-container.sh (per worn face)", via: PTY, needs: ["hold-old"], expect: "three readings of the old house", run: censusStep("old", "old") },
-  { id: "export", command: `lares export ${BUNDLE} --json`, via: PTY, needs: ["census-old"], expect: "the bundle reads back; no omission but parallel-drafts", run: exportStep },
+  { id: "export", command: `lares export ${BUNDLE} --json`, via: PTY, needs: ["census-old"], expect: "the bundle reads back; no omission but parallel-drafts and the woken wikis' cold-wikis and override-bases, excused by name", run: exportStep },
   { id: "keep-lei-old", command: `lares lei kui --rite keep --branch ${KEEP_WORKSPACE} --returns 2`, via: PTY, needs: ["export"], expect: "the keep lei strings under the ward", run: keepLeiOld },
   { id: "keep-old", command: `lares rite keep --workspace ${KEEP_WORKSPACE} (on the host, into a clone of a scratch bare remote) · lares rite receipts`, via: PTY, needs: ["keep-lei-old"], expect: "pushed, landed; conferre reads the keep's tessera par", run: keepOld },
   { id: "down-old", command: "old-src/tools/lares-container.sh down (no accept-loss)", via: PTY, needs: ["census-old", "export"], expect: "the vessel leaves; the census asks for no loss", run: downOld },
