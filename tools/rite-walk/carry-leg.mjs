@@ -251,7 +251,7 @@ const srcStep = (phase) => async (c) => {
 };
 
 /**
- * The keep's ground, before the old house's `up` binds it: a scratch bare remote standing in for the operator's repo, holding one
+ * The keep's ground, before the source house's `up` binds it: a scratch bare remote standing in for the operator's repo, holding one
  * commit of `* -text`, and the workspace clone of it (a local identity, so the host half commits under no operator's name).
  */
 async function layKeepGround(c) {
@@ -472,7 +472,7 @@ const keepLeiOld = async (c) => {
 };
 
 /**
- * `lares rite keep` on the host (the walker's own CLI, through the bridge into the old vessel): guard, cut, commit, push to the
+ * `lares rite keep` on the host (the walker's own CLI, through the bridge into the source vessel): guard, cut, commit, push to the
  * scratch remote, land; conferre then reads the keep's tessera par.
  */
 const keepOld = async (c) => {
