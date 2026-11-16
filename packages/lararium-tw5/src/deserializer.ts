@@ -315,7 +315,7 @@ function readStream(text: string): StreamReading {
   const carrierEnd = from + (close ? close.end : text.length - from);
   // ETX AND EOT ARE DIFFERENT GLYPHS AND STAY APART. The slot between them carries the block check and
   // nothing else; content stranded there stays legible to the carrier check instead of vanishing in the
-  // render — which is how two `#edges` blocks were once lost.
+  // render.
   const release = frame.etx && frame.eot ? frame.eot : null;
   const slotText = release ? text.slice(from + frame.etx!.end, from + release.index) : "";
   // Past the release there stands only the frame's own trailing newline; the postamble reads to the end.
@@ -791,12 +791,11 @@ export type FieldsReader = (title: string) => TiddlerFields | undefined;
 // carriage — the prologue, the preamble, the header text, the slot a fragment fills, the parent it
 // hangs from, the bytes trailing the frame — rides the `$…` namespace TW5 keeps for a host, which
   // `emitMetaToml` drops wholesale. An author writing `postamble` or `slot` receives an ordinary
-// custom field that round-trips like any other, because the grammar stopped standing on those words.
+// custom field that round-trips like any other, because the grammar stands on no bare word.
 //
-// That move also closed a hole the name-list could not: `preamble` and `carrier-sila` were read as
-// carriage and denied nowhere, so they emitted into the meta AND rebuilt as structure — an operator's
-// value came back undefined and the projection stopped settling. A namespace covers what a list
-// forgets.
+// A namespace covers what a name-list forgets: a carriage word read as carriage and denied nowhere
+// would emit into the meta AND rebuild as structure, so an operator's value comes back undefined and
+// the projection never settles.
 const META_DENY: ReadonlySet<string> = new Set([
   // The host's two, and the record stratum they arrive with. TiddlyWiki restricts no field name;
   // MultiWikiServer overwrites `title` and `revision` on every read.
@@ -1016,9 +1015,8 @@ function expandRefs(reader: FieldsReader, rootUri: string, text: string, parentF
 export function expandMemeRefs(reader: FieldsReader, memeUri: string): string | null {
   const f = reader(memeUri);
   if (!f) return null;
-  // A RECORD THAT IS NOT A CARRIER PROJECTS TO NOTHING, and until it said so this was the quietest
-  // failure in the tree: a type the reader does not admit returns null, the projection writes no file,
-  // and nothing anywhere reports which record went missing or why.
+  // A RECORD THAT IS NOT A CARRIER PROJECTS TO NOTHING, and says so: a type the reader does not
+  // admit returns null, the projection writes no file, and this names which record went missing and why.
   if (!isCarrierType(f.type)) {
     if (typeof f["type"] === "string" && (f["type"] as string).includes("memetic-wikitext")) {
       console.warn(`[memetic-deserializer] ${memeUri} declares type "${f["type"] as string}" — not a spelling this reader admits (${CARRIER_TYPES.join(" · ")}); it will not project`);

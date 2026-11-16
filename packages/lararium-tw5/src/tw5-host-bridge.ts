@@ -316,7 +316,7 @@ function makeBrowserWorkerBootEnv(): HeadlessBootEnv {
     preSeedTw:  { boot: { suppressBoot: true }, node: {}, browser: null },
     // The eval-scoped `process` capability (the third runtime is neither browser nor node;
     // the host injects what the kernel's module-execute sandbox closes over). NOT undefined —
-    // that was the 77389c01 regression that routed boot into the node `process.exit` branch.
+    // an undefined `process` routes boot into the node `process.exit` branch.
     processArg: makeBrowserProcessShim(),
   };
 }

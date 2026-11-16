@@ -128,9 +128,8 @@ export interface VesselResidency {
 
 // ── Pin durability — the admin-doc write/read half of residency-tiers.mem#/pin-flag ─────────────
 //
-// `BagStowage.pin()` is purely in-memory; nothing before this made an operator pin survive a
-// daemon restart, though the canon and the (until now unused) `pinTiddlerUri` both assumed one
-// did. `writePinTiddler`/`removePinTiddler` persist the durable half under the daemon bag;
+// `BagStowage.pin()` is purely in-memory; this half makes an operator pin survive a daemon
+// restart, as the canon and `pinTiddlerUri` assume. `writePinTiddler`/`removePinTiddler` persist the durable half under the daemon bag;
 // `replayPinsFromDaemonDoc` — called at boot, BEFORE `residency.startSweeper()`, so a replayed
 // pin can never lose a race to the first sweep tick — restores them into a fresh collector.
 

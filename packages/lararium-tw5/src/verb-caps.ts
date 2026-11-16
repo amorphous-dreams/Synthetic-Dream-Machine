@@ -179,7 +179,7 @@ export interface DaemonVerbProvider {
    *  Fire-and-forget — the convergence twin of the CLI-side worldline KG valid-close. */
   placeStructurepalaceKapae(turnKey: string, ended?: string): void;
   /** Derive a session transcript's spawn/handback edges (worldline-compare's edge-DAG source). The CRUNCH
-   *  now lives in python (beside the transcript data) — this provider ROUTES to the capture holder's
+   *  lives in python (beside the transcript data) — this provider ROUTES to the capture holder's
    *  `subagent-edges` serve-op, so it reads async. `sensoriumRoot` addresses a holder (absent → memory). */
   subagentEdges(input: { transcript: string; sensoriumRoot?: string }): Promise<readonly SubagentEdgePair[]>;
   /** Well 1 — the concurrent-capable causal verdict between two handles, IN the daemon VM. */
@@ -610,7 +610,7 @@ export function worldlineVerbCap(): CapModule {
       const form   = resolve<FormPalaceProvider>(VERB_PROVIDER.formPalace);
       return (registry: VerbTable) => {
         // worldline-compare (Well 1, ITC LIVE-READ): two handles → the concurrent-capable causal verdict.
-        // The host derives the edge-DAG from a session `transcript` — the CRUNCH now lives in python (the
+        // The host derives the edge-DAG from a session `transcript` — the CRUNCH lives in python (the
         // capture holder's `subagent-edges` serve-op, routed through the provider) — and ships it; the
         // WORKER projects the registry + runs the ITC tree-leq.
         registry.register("worldline-compare", async (args) => {

@@ -158,8 +158,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
   const delegations = makeDelegationBook((msg) => _post(msg));
 
   // The daemon island is a nameless cap stack: #has engine-watch + #has daemon-dispatch (the
-  // VerbDispatcher + the daemon:* signal family). The dispatch cap below holds what once was the
-  // whole behavior, minus the engine-watch (now its own shared cap).
+  // VerbDispatcher + the daemon:* signal family). The dispatch cap below holds the
+  // whole behavior but the engine-watch, which stands as its own shared cap.
   const dispatchCap: IslandCap = {
     name: "daemon-dispatch",
     async onWritable(ctx: IslandContext) {

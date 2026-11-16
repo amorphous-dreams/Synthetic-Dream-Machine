@@ -52,7 +52,7 @@ export interface EpochHandlerOptions {
  *
  * The change SYNCS to every island holding the bag; each reconciles on its own
  * cadence (live recipe-watch is F-arc; today, next boot). The daemon does NOT
- * hot-swap any running wiki's composite layer — that was web2 residue. Residency
+ * hot-swap any running wiki's composite layer (a web2 shape). Residency
  * needs no re-pin: the manager keys by the bag's lar-URI, which is unchanged
  * across the epoch (only the doc the oracle points at moves).
  *
