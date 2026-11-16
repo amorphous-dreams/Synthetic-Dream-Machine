@@ -198,7 +198,7 @@ Each line names what the code does today and where its law lives; the verifier h
 
 The second crossing names its stage meme. Memory climbs working -> `daemon-<F>` (unsigned) -> `kahua-<F>` (signed), and the signed step now binds to what the first step left.
 
-* ''Stage.'' `lares kahua stage <title> --text <body> | --file <path> [--fields <json>]` rides the store verb `kahua-stage`: it writes one stage meme into the face's local canon `bags/daemon-<F>`, unsigned and local, and answers the stage meme's digest. Any seat may stage, and the MCP seat stages through the tool `kahua_stage`, which mirrors the verb beside `kahua_propose` and names only the worn face; a stage meme that already reads the same digest takes no write. The law lives in `kahua-staged.ts` (mesh): `kahuaRowDigest` hashes the body beside the carried fields, key-sorted, so a moved field moves the digest.
+* ''Stage.'' `lares kahua stage <title> --text <body> | --file <path> [--fields <json>]` rides the store verb `kahua-stage`: it writes one stage meme into the face's local canon `bags/daemon-<F>`, unsigned and local, and answers the stage meme's digest. Any seat may stage, and the MCP seat stages through the tool `kahua_stage`, which mirrors the verb beside `kahua_propose` and names only the worn face; a stage meme that already reads the same digest takes no write. The law lives in `kahua-staged.ts` (mesh): `kahuaMemeDigest` hashes the body beside the carried fields, key-sorted, so a moved field moves the digest.
 * ''The lift names the stage meme.'' The door's lift takes `{title, digest}` and no body (`kahua-door.ts`). It reads the stage meme back from `bags/daemon-<F>` through the vessel's `faceCanon` port (the control document's `daemon-canon/<F>` names the document), and refuses by name: `kahua-lift-unstaged` where no stage meme stands, the face names no relation, or no canon opens (a direct act); `kahua-lift-digest-moved` where the stage meme moved since its preview. The act carries the stage meme's own body and fields, and its signed `sources` carry `staged:<digest>`, so the grant covers the digest.
 * ''Lift with eyes.'' `lares kahua lift <title>` first reads the stage meme's preview (`kahua-read` `staged`: title, digest, fields, body, and whether a standing head already carries it), then lifts only on the digest's first eight hex typed back at a terminal, or on `--digest <hex>` naming the digest the preview printed. A bare `--yes` names no digest and lifts nothing (`kahua-lift-unconfirmed`); a lift handed `--text`, `--file` or `--fields` refuses and sends the hand to stage first.
 * ''A replay lands nothing.'' A lift whose stage meme the item's one head already carries answers that head, signs nothing and opens no root.
@@ -368,6 +368,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y8jt-cMs7xUwJ9LdyLkF09_i9GccqU9ImMoS49D3pA4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UJ2JWaUfuaPNyeWnLMcKe10suXxBbRPt1wc_rbpoCA8`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -111,9 +111,9 @@ Records whose class includes ''LEAD'' block byte movement until their payload an
 !!! Custody census — browser
 
 
-The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/browser-custody.ts:54-68`. They currently share one `custody-slots` tree and one S key for sealed writes (`:2-12,95,386-402`), held since the lift on the vessel worker's thread rather than the page's. Beside them the vessel worker now stands the target shape for D (`packages/lararium-browser/src/browser-face-custody.ts`, browser-vessel-lift slice 3 part ii): one slot tree and one FCK per PersonaGroup, a clear `face-index` that routes and never decides, records sealed under the face's FCK, the first persistence and the root mint refusing `no-custody-slot`, a clear that names one face, and the isolation red run on the worker's thread; the listed records rest under it in production, each named by its PersonaGroup (`face-root/<G>` for the root), and the place tree keeps `vessel-key` and `walk/*` alone; no `h<N>` record maps anywhere, since the shared tree's earlier shape refuses the boot `face-row-shared` and a face founded in it re-founds (browser-vessel-lift slice 3's production reach). `catalog-url` is explicitly outside that matcher and public (`:5-13`). The target has no browser S key and no browser S.
+The exact `CUSTODY_RECORD` alternatives are at `packages/lararium-browser/src/browser-custody.ts:54-68`. They currently share one `custody-slots` tree and one S key for sealed writes (`:2-12,95,386-402`), held since the lift on the vessel worker's thread rather than the page's. Beside them the vessel worker now stands the target shape for D (`packages/lararium-browser/src/browser-face-custody.ts`, browser-vessel-lift slice 3 part ii): one slot tree and one FCK per PersonaGroup, a clear `face-index` that routes and never decides, records sealed under the face's FCK, the first persistence and the root mint refusing `no-custody-slot`, a clear that names one face, and the isolation red run on the worker's thread; the listed records rest under it in production, each named by its PersonaGroup (`face-root/<G>` for the root), and the place tree keeps `vessel-key` and `walk/*` alone; no `h<N>` record maps anywhere, since the shared tree's earlier shape refuses the boot `face-row-shared` and a face founded in it re-founds (browser-vessel-lift slice 3's production reach). `catalog-url` is explicitly outside that matcher and public (`:5-13`). The target has no browser S key and no browser S.
 
-| Current `CUSTODY_ROW` alternative | Target class, principal and split |
+| Current `CUSTODY_RECORD` alternative | Target class, principal and split |
 | `vessel-key` | ''F and place KEL seed:'' the public verifying key routes the browser vessel; its private seed signs the place KEL alone and grants no face identity. |
 | `keyhive-archive` | ''Retired:'' a clear or sealed vessel Individual Archive refuses browser boot by name; the selected face keeps its own `veil-archive-g<PersonaGroup>` record. |
 | `veil-archive-g<PersonaGroup>` | ''D:'' the browser rests the face atom's Archive under its PersonaGroup; the node rests the corresponding record under a digest of that name. |
@@ -126,7 +126,7 @@ The exact `CUSTODY_ROW` alternatives are at `packages/lararium-browser/src/brows
 | `fleet-join-pending` `fleet-join-custody.ts` | face-hot | ''D:'' one pending join per target face, `fleet-join-pending-g<group digest>.json` in that face (its X25519 secret and request); the joiner founds the face's custody at its request, so a pending join with no face refuses by name. |
 | `walk/*` | ''D/F split, LEAD:'' private face receipt/relationship D; proved blind ciphertext carriage F. |
 
-The browser's clear-before-slot allowance for `vessel-key` and `veil-archive-g<PersonaGroup>` (`browser-custody.ts:writeKeystoreRowHeld`) does not apply to target D. Every face secret needs its own slot tree before first persistence, including first fleet join (`stable-founding-road.mem:200`). `tm-clear-password` currently clears the common tree and records (`browser-custody.ts:34-39,613-650`); target clear/removal acts name one face and cannot clear another.
+The browser's clear-before-slot allowance for `vessel-key` and `veil-archive-g<PersonaGroup>` (`browser-custody.ts:writeKeystoreRecordHeld`) does not apply to target D. Every face secret needs its own slot tree before first persistence, including first fleet join (`stable-founding-road.mem:200`). `tm-clear-password` currently clears the common tree and records (`browser-custody.ts:34-39,613-650`); target clear/removal acts name one face and cannot clear another.
 
 <<~/ahu>>
 
@@ -278,6 +278,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NLgHfbKKQrtSV87DuvVsSTjJUsdWTbnT36yRSGxOSqs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iOOSgBsxQwFEtn3pU0bU1YLMbliTF65VE4k5W_DmYPc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

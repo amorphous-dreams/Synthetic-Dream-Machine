@@ -416,7 +416,7 @@ The same law carries a second gift: records, not plugins. A face that holds no s
 
 * The offering face's ''offer key at that Nexus'' signs `{kind, nexus, bag, offerer, records}`, and `offerer` names that key. The key derives from the face's atom seed and the Nexus (`nexusOfferSigner`), so one face reads as one offerer at one Nexus and as an unrelated key at every other; the body names no PersonaGroup and no atom key, and an entry carrying any further field reads malformed (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat`>>). Each record carries its fields, its carrier digest (`carrierHashOf`, the identity every carrier already carries — "memes already have hashes") and its ''fork base'': the canon carrier its working copy forked from (`overrideBase`), or none for a new title.
 * ''A named title carries its fragments.'' A meme rests as a root record that calls its slot records (`<root>#/<slot>`); the offer takes every live record the working layer holds under `<title>#` with the title that names it, so a promoted meme reads back in canon as the text the working layer read before the offer. A root offered alone would land as calls with nothing behind them.
-* ''The offer's bounds: one law in two measures.'' An offer stays a gift a person reviews, never a bulk import. It carries at most 64 ''memes'' (`CANON_OFFER_MAX_MEMES`): a root and the slot records it calls count once, so any single meme rides whole whatever its slot count. Its board entry holds at most 1 MiB of text (`CANON_OFFER_ROW_MAX`), the bound every reader folds by. `openCanonOffer` refuses either by name (`offer-too-many`, `offer-too-large`) before an entry lands, so no offer reads `landed` that its readers then set aside.
+* ''The offer's bounds: one law in two measures.'' An offer stays a gift a person reviews, never a bulk import. It carries at most 64 ''memes'' (`CANON_OFFER_MAX_MEMES`): a root and the slot records it calls count once, so any single meme rides whole whatever its slot count. Its board entry holds at most 1 MiB of text (`CANON_OFFER_RECORD_MAX`), the bound every reader folds by. `openCanonOffer` refuses either by name (`offer-too-many`, `offer-too-large`) before an entry lands, so no offer reads `landed` that its readers then set aside.
 * The CID names the body's canonical bytes. No clock, counter or arrival order rides it, so the same offer twice keys one entry: ''a replay lands nothing''.
 * A withheld title (the projection filter's base), a control or secret home record, and every `cap/**` record under a bag home refuse to leave home (`offer-withheld-title`); an entry forged past the door carrying one never counts on the board.
 
@@ -515,6 +515,6 @@ One board per Nexus (`canonOfferDocUrl`). Appending a self-certifying entry gran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Ctx1U78vp49jjVwR4X-M8SYsVpe6ZFZEysf0Z51jHA8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dMsPOg8hD5c44450R6rCdp4gyC0AvCLDfC9qCcc-DKQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

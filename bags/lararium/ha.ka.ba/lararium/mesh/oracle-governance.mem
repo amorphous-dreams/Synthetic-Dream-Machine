@@ -27,7 +27,7 @@ written    = "2026-06-29"
 > served at the porch (`floor-release.ts`, `floor-answer.ts`, `floor-porch.ts`); the
 > flow map keeps its own signed monotone pointer under the `flow-pointer` domain
 > (`flow-substrate.ts`, `flow-read-client.ts`, `flow-read-face.ts`, route `/flow`). Each
-> vessel's own document pointers rest in its own `@catalog` entries (`catalog-row.ts`), so
+> vessel's own document pointers rest in its own `@catalog` entries (`catalog-entry.ts`), so
 > no shared `@oracle` registry stands. The threshold-steward source and the three
 > couplings below ride ahead of code; read each `@oracle` below as that public answer.
 
@@ -189,6 +189,6 @@ it through a different door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/peer-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;L2qctuNllVbg9oi4Oi4L18mF8kZph4fWBdqYdd2nwBY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;UtPZcQAxSzj_38TgCHml3gf5bxirq1opfUOO0jmwVdI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

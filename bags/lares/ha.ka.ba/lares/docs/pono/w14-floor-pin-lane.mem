@@ -34,7 +34,7 @@ Three road items share one shape: the `#floor=` card read unsigned on origin tru
 * ''First contact takes an anchor apart from the card.'' Three conveyances stand: the founder's own genesis; an authenticated admit (a claim set a sovereign crossing carried, whose first claim adopts the AID, and every later claim must descend from it); a deliberate person-to-person transfer (the place AID, printed on its own banner line and carried alone to the page's carriage door; no URL carries it). The card alone never anchors: an unanchored or forged card refuses by name.
 * ''Two-vault carry.'' A carry partial (`nexus-partial`, family `carry`) crosses with its claim and the KEL events that fold to its head. The claim files ONLY atomically with the counted act, in one write; a partial below the quorum exposes no pin. The carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`). The herm carries the claim opaque.
 * ''Rotation carries again.'' A carry names the signer at the head, so a rotated place is carried again under its new signer; the older signer's name answers nothing once the new claim replaces the old.
-* ''Hostile entries are bounded at the board.'' A board read takes at most `PLACE_FLOOR_PIN_ROWS` (512) claims and `PLACE_KEL_BOARD_ROWS` (4096) KEL events in key order, treats a payload past its byte bound as noise, folds each (AID, head) once per filing pass, and the index keeps at most 256 claims per set and 1024 noted KEL forks.
+* ''Hostile entries are bounded at the board.'' A board read takes at most `PLACE_FLOOR_PIN_ENTRIES` (512) claims and `PLACE_KEL_BOARD_ENTRIES` (4096) KEL events in key order, treats a payload past its byte bound as noise, folds each (AID, head) once per filing pass, and the index keeps at most 256 claims per set and 1024 noted KEL forks.
 * ''The sovereign tier is fenced.'' Sovereign pins follow custody-key changes by their own signed relation; a place-KEL claim never orders them, and the index refuses a claim over a sovereign pin by name.
 
 <<~/ahu>>
@@ -66,6 +66,6 @@ Three road items share one shape: the `#floor=` card read unsigned on origin tru
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ldOpISEI_6Rkvkwwe1EvcAp3nvh_K7LEkWRmcSDYly4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jNrlMHo9yAZJ9V6GFDTKnn84uIUZAcflvyjDvZ8wdE4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
