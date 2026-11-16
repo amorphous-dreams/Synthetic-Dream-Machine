@@ -318,8 +318,12 @@ function toolAnswer(msg) {
   return { error: msg.result?.isError === true, text: text || JSON.stringify(msg.result?.structuredContent ?? msg.result ?? null) };
 }
 
-/** The hands the image steps run with, over one scope. */
-export function imageHands(scope, state) {
+/**
+ * The hands the image steps run with, over one scope. `checkout` names the tree the shim, the tools, the compose source,
+ * the build context and the workspace clone come from: the checkout by default, a clone pinned at one revision for a leg
+ * that walks two images (`carry-leg.mjs`).
+ */
+export function imageHands(scope, state, { checkout = CHECKOUT } = {}) {
   const uid = process.getuid(), gid = process.getgid();
   const env = (() => {
     const e = { ...process.env };
@@ -330,7 +334,7 @@ export function imageHands(scope, state) {
       LARES_IMAGE: scope.image, ...(state.vars.pulama ? { LARES_PULAMA: "1" } : {}), LARES_UID: String(uid), LARES_GID: String(gid), NO_COLOR: "1",
     };
   })();
-  const shimPath = join(CHECKOUT, "tools", "lares-container.sh");
+  const shimPath = join(checkout, "tools", "lares-container.sh");
   const composeArgs = ["compose", "-p", scope.project, "--env-file", scope.envFile, "-f", scope.compose];
   const docker = (args, opts) => run("docker", args, { env, ...opts });
   const compose = (args, opts) => docker([...composeArgs, ...args], opts);
@@ -340,11 +344,11 @@ export function imageHands(scope, state) {
   let aho = null;
 
   const hands = {
-    scope, env, vars: state.vars, uid, gid, docker, compose, shim, said, cid, sleep,
-    head: () => execFileSync("git", ["-C", CHECKOUT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+    scope, env, vars: state.vars, uid, gid, docker, compose, shim, said, cid, sleep, checkout,
+    head: () => execFileSync("git", ["-C", checkout, "rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
     shimLine: (args) => `${shimPath} ${args.join(" ")}`,
     pty: (commandLine, opts) => runPty(commandLine, { env, ...opts }),
-    hostCli: (args, opts) => run(process.execPath, [join(CHECKOUT, CLI_IN_IMAGE), ...args], { env, ...opts }),
+    hostCli: (args, opts) => run(process.execPath, [join(checkout, CLI_IN_IMAGE), ...args], { env, ...opts }),
     /** Lay the scratch ground: the base, the home and its env file, the wrapper, the compose copy, the house classes, the workspace worktree. */
     stage() {
       const real = execFileSync("sh", ["-c", "command -v docker"], { encoding: "utf8" }).trim();
@@ -353,12 +357,12 @@ export function imageHands(scope, state) {
       writeFileSync(scope.envFile, surfaceEnvText(scope, { uid, gid, pulama: state.vars.pulama === true }));
       writeFileSync(join(scope.bin, "docker"), dockerWrapperText({ real, project: scope.project, image: scope.image, log: scope.dockerLog }));
       chmodSync(join(scope.bin, "docker"), 0o755);
-      writeFileSync(scope.compose, composeCopy(readFileSync(join(CHECKOUT, SURFACE_COMPOSE), "utf8"), { project: scope.project, context: CHECKOUT }));
+      writeFileSync(scope.compose, composeCopy(readFileSync(join(checkout, SURFACE_COMPOSE), "utf8"), { project: scope.project, context: checkout }));
       // THE WORKSPACE IS A CLONE, never a worktree: a worktree's `.git` is a file naming a host path no container
       // reaches, and the vessel asks git in `/workspace` for the head's tree. A local clone carries its own objects.
       if (!existsSync(scope.workspace)) {
-        const head = execFileSync("git", ["-C", CHECKOUT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
-        execFileSync("git", ["clone", "--quiet", "--local", "--no-checkout", CHECKOUT, scope.workspace], { stdio: "pipe" });
+        const head = execFileSync("git", ["-C", checkout, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+        execFileSync("git", ["clone", "--quiet", "--local", "--no-checkout", checkout, scope.workspace], { stdio: "pipe" });
         execFileSync("git", ["-C", scope.workspace, "checkout", "--quiet", "--detach", head], { stdio: "pipe" });
       }
     },
@@ -387,7 +391,7 @@ export function imageHands(scope, state) {
     aho() {
       if (aho === null || !aho.alive()) {
         const line = ["docker", ...composeArgs, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", IMAGE_SEAT];
-        aho = ahoSession([join(CHECKOUT, CLI_IN_IMAGE), "mcp", "aho", "--", ...line], { ...env, LAR_ROOT: "/lar" });
+        aho = ahoSession([join(checkout, CLI_IN_IMAGE), "mcp", "aho", "--", ...line], { ...env, LAR_ROOT: "/lar" });
         aho.line = `lares mcp aho -- ${line.join(" ")}`;
         aho.fresh = true;
       }
@@ -412,17 +416,17 @@ export function imageHands(scope, state) {
 
 // ── the step table ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-const TEST_PASSPHRASE = "test-founding-passphrase";
+export const TEST_PASSPHRASE = "test-founding-passphrase";
 const STEWARD = "joshua-fontany";
 const READ_TOOL = "status";
 const json = (text) => { try { return JSON.parse(text); } catch { return null; } };
 /** The last JSON object a mixed answer carries. */
-const lastJson = (text) => { const at = text.lastIndexOf("\n{"); return json(at < 0 ? text.trim() : text.slice(at + 1).trim()) ?? json(text.trim()); };
+export const lastJson = (text) => { const at = text.lastIndexOf("\n{"); return json(at < 0 ? text.trim() : text.slice(at + 1).trim()) ?? json(text.trim()); };
 /** The custody door's one word, as the shim reads it: `{ unlocked }`, null where the answer names none. */
-const unlockedOf = (text) => { const m = /"unlocked"\s*:\s*(true|false)/.exec(text); return { unlocked: m ? m[1] === "true" : null }; };
-const refusal = (r) => `exit ${r.code}: ${lineOf(`${r.stdout}\n${r.stderr}`)}`;
+export const unlockedOf = (text) => { const m = /"unlocked"\s*:\s*(true|false)/.exec(text); return { unlocked: m ? m[1] === "true" : null }; };
+export const refusal = (r) => `exit ${r.code}: ${lineOf(`${r.stdout}\n${r.stderr}`)}`;
 
-const build = async (h) => {
+export const build = async (h) => {
   const head = h.head();
   const r = await h.shim(["build"], { timeout: 45 * 60_000 });
   if (r.code !== 0) return { ok: false, answer: refusal(r), measures: { seconds: Math.round(r.ms / 1000) } };
@@ -432,16 +436,16 @@ const build = async (h) => {
   return { ok: revision === head, answer: `${h.scope.image} ${id} stamped revision ${revision}${revision === head ? "" : ` (the checkout stands at ${head})`}`, measures: { seconds: Math.round(r.ms / 1000), imageId: id, revision, bytes: Number(size) } };
 };
 
-const stageCustody = async (h) => {
-  const tools = `${join(CHECKOUT, "tools")}:/app/tools:ro`;
+export const stageCustody = async (h) => {
+  const tools = `${join(h.checkout, "tools")}:/app/tools:ro`;
   const r = await h.compose(["--profile", "offline", "run", "--rm", "-T", "--entrypoint", "sh", "-v", `${h.scope.house}:/lar`, "-v", tools, "offline", "-ec",
     "node tools/test-scratch-marker.mjs /lar && node tools/seed-test-custody.mjs /lar"], { timeout: 180_000 });
   const marker = existsSync(join(h.scope.house, ".lar-test-scratch"));
   return { ok: r.code === 0 && marker, answer: r.code === 0 ? `the marker stands at the house root: ${marker}; the custody tree stands under the published test route` : refusal(r) };
 };
 
-const found = async (h) => {
-  const r = await h.compose(["--profile", "offline", "run", "--rm", "-T", "-v", `${join(CHECKOUT, "tools")}:/app/tools:ro`,
+export const found = async (h) => {
+  const r = await h.compose(["--profile", "offline", "run", "--rm", "-T", "-v", `${join(h.checkout, "tools")}:/app/tools:ro`,
     "-v", `${join(h.scope.house, ".lar-test-scratch")}:/lar/.lar-test-scratch:ro`, "-e", `NODE_OPTIONS=${TEST_ROUTE}`,
     "offline", "vessel", "found", "--skip-build", "--root", "/lar", "--genesis", "/app/genesis", "--hearth", "--name", STEWARD, "--chair", "dreamnet-kahu-0", "--no-json"], { timeout: 300_000 });
   const text = h.said(r);
@@ -505,14 +509,14 @@ const vesselLog = async (h) => { const id = await h.cid("lares"); return id ? h.
 const pulamaLines = (log) => log.split("\n").filter((l) => l.includes("[pulama]")).map((l) => l.trim());
 
 /** The unlock's three prompts on a terminal, answered under the published test route. */
-const UNLOCK_SAYS = [{ prompt: "(p): ", answer: "p" }, { prompt: "passphrase: ", answer: TEST_PASSPHRASE }, { prompt: "[y/N]: ", answer: "n" }];
-const tail = (text) => quote(text.replace(/\r/g, "").split("\n").map((l) => l.trim()).filter(Boolean).slice(-2).join(" · "));
+export const UNLOCK_SAYS = [{ prompt: "(p): ", answer: "p" }, { prompt: "passphrase: ", answer: TEST_PASSPHRASE }, { prompt: "[y/N]: ", answer: "n" }];
+export const tail = (text) => quote(text.replace(/\r/g, "").split("\n").map((l) => l.trim()).filter(Boolean).slice(-2).join(" · "));
 /** `up` on a terminal, as the operator runs it: the shim stands the vessel, then runs the unlock attached. */
 const upOnTerminal = (h) => h.pty(h.shimLine(["up"]), { says: UNLOCK_SAYS, route: TEST_PASSPHRASE, timeout: 420_000 });
 const unlockOnTerminal = (h) => h.pty(h.shimLine(["vault", "unlock", "--all", "--face", "0"]), { says: UNLOCK_SAYS, route: TEST_PASSPHRASE, timeout: 120_000 });
 const vaultUnlocked = async (h) => unlockedOf((await h.shim(["vault", "status", "--json"])).stdout).unlocked;
 
-const upOwn = async (h) => {
+export const upOwn = async (h) => {
   const r = await upOnTerminal(h);
   const unlocked = await vaultUnlocked(h);
   return { ok: r.code === 0 && unlocked === true, answer: `exit ${r.code}; the unlock ran attached: ${r.typed}; vault unlocked: ${unlocked} · ${tail(r.stdout)}`, measures: { seconds: Math.round(r.ms / 1000), unlocked } };
@@ -654,7 +658,7 @@ const ahoInFlight = async (h) => {
 const branchOf = () => { try { return execFileSync("git", ["-C", CHECKOUT, "symbolic-ref", "--short", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return "HEAD"; } };
 const doorAbsent = (text) => /unknown (command|verb|sub-?verb|flag)|no such (command|verb)|name a sub-verb|not a lares command/i.test(text);
 /** A ward act on a terminal: the one prompt a ward asks, answered under the published test route. */
-const WARD_SAYS = [{ prompt: "passphrase for this one act: ", answer: TEST_PASSPHRASE }];
+export const WARD_SAYS = [{ prompt: "passphrase for this one act: ", answer: TEST_PASSPHRASE }];
 
 const leiKui = async (h) => {
   const branch = branchOf();
