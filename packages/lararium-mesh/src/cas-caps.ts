@@ -51,7 +51,7 @@ export interface PrefetchCap {
 /**
  * Does a PIN hold `cid` under this holder's CURRENT fence? Presence alone decides when no fence was ever
  * recorded (`pin.fence === undefined` — the sidecar-presence law); a recorded fence that `currentFence` has
- * since moved past no longer holds. Never a clock comparison either way (M7 — lost `now`).
+ * since moved past holds nothing. Never a clock comparison either way (M7 — lost `now`).
  */
 export function pinHolds(pin: PinCap | undefined, cid: string, currentFence: number): boolean {
   if (!pin) return false;

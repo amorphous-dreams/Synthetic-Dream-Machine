@@ -221,7 +221,7 @@ export interface GenesisInputs {
  *
  * The three region CIDs are INPUTS (content functions), not derived from the saved
  * bytes — so the witness tiddlers carry them in a SINGLE write pass. No self-referential
- * fixpoint: the old "strip the genesis-cid tiddler → hash === preSha256" dance is gone.
+ * fixpoint: no witness strips itself out to re-hash the rest.
  */
 export interface GenesisArtifact {
   readonly bytes:      Uint8Array;
@@ -293,8 +293,8 @@ const GENESIS_BLOB_CID = /^[0-9a-f]{64}$/;
 /**
  * Derive the logical CAS inventory from the immutable seed.
  *
- * The inventory remains a useful in-memory bulb/public-wire payload, but it is
- * no longer a second boot file.  This function is deliberately strict: a seed
+ * The inventory serves as an in-memory bulb/public-wire payload, never a
+ * second boot file.  This function is deliberately strict: a seed
  * with a malformed blob row, duplicate CID, or missing region witness cannot
  * quietly turn into an empty or widened CAS set.
  */
@@ -781,7 +781,7 @@ export function buildGenesisDoc(inputs: GenesisInputs): GenesisArtifact {
   const grammarCid = computeGrammarCid(inputs.plugins);
   const pluginsCid = computePluginsCid(inputs.plugins);
 
-  // The CAS plane: the bytes the CRDT no longer carries, keyed by sha256 (the CID). EVERY vendored blob
+  // The CAS plane: the bytes the CRDT leaves out, keyed by sha256 (the CID). EVERY vendored blob
   // ships — grammar, base seed and operator plugins alike. Which REGION a blob names is a separate
   // question from whether it travels: the base seed rides here and stands in no region at all.
   // The build sink writes each to genesis/cas/<cid>; the loader mirrors them by manifest.

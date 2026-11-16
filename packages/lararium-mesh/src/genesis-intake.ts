@@ -4,9 +4,8 @@
  * The emitter lives next door (genesis-doc.ts: buildGenesisDoc /
  * verifyGenesisArtifact); this module carries the receiving side every
  * vessel runs: validate bytes → import → post-import verify, and the
- * CID-diverge reconcile. This logic once lived twice —
- * genesis-artifact.ts (node) ⇆ browser-genesis.ts — and drifted
- * (record shape, authority string). One hull now; the platform
+ * CID-diverge reconcile. One hull, so the node and browser intake
+ * cannot drift apart on record shape or authority string; the platform
  * wrappers keep only their byte SOURCES (fs · bundle/IDB/OPFS/peer)
  * and their held offices (mintLaresIfAbsent stays in the node genesis
  * office — the gate enforces by placement).
@@ -92,7 +91,7 @@ export async function importGenesisIsland(
 }
 
 /**
- * materializeGenesisIsland — the slice-2 boot intake: RELOAD-OR-MATERIALIZE the oracle doc.
+ * materializeGenesisIsland — the boot intake: RELOAD-OR-MATERIALIZE the oracle doc.
  *
  * The oracle island is a LIVE CRDT, not a shipped binary. This boot path reads no Automerge-binary
  * boot seed and never merges into a stale doc:

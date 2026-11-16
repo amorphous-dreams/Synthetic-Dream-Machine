@@ -247,7 +247,7 @@ export interface LarTiddlerStore {
   tombstone(title: string, origin: ChangeOrigin, options?: { readonly base?: readonly string[] }): Promise<void>;
 
   /**
-   * Write a meme FAMILY — a root, its slot children, and the orphan children it no longer declares —
+   * Write a meme FAMILY — a root, its slot children, and the orphan children it leaves undeclared —
    * as ONE atomic change, so no peer ever sees the root pointing at a tombstoned child or a child
    * without its root. `options.bag` routes exactly as `put`'s does. A store that cannot write
    * atomically omits this and its callers write member by member.

@@ -24,7 +24,7 @@ export interface CasBlobLike {
   readonly blob?:     unknown;
 }
 
-// ── Genesis CAS manifest (the byte SOURCE the genesis doc no longer carries) ──
+// ── Genesis CAS manifest (the byte SOURCE the genesis doc leaves out) ──
 //
 // The genesis CRDT (materialized only for verification) holds blob METADATA only; the engine + plugin
 // bytes ship as content-addressed `genesis/cas/<cid>` files. This manifest names
