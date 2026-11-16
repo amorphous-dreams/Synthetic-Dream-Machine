@@ -65,7 +65,7 @@ The operator settled the set on 2026-11-15 (//"Pono, settle the lei set"//), the
 | the receipt | ''tessera'' | the two halves of a //tessera hospitalis//: the session's half and the vessel's half, `rite-begun` and `rite-landed` |
 | matching the halves | ''conferre'' | the vessel matches the halves (Plautus, //Poenulus// V.2: //"tesseram conferre si vis hospitalem"// / //"est par probe"//); ''par'' names a match; a half with no match reads red at the next wake, and every wake runs conferre again over a sampled receipt at the current head |
 | ending an unspent lei | ''unstring'' · ''restring'' | //unstring// undoes //kui// and revokes a lei never worn into a rite (a lei maker's word: "always remove the string first"); //restring// supersedes a lei with a newer one, and the old falls away; each writes a signed record and never deletes |
-| the messenger | ''iris'' | the core of the steady seat: the pure frame machine that carries messages across the gap while the hearth sleeps, answers `hearth-sleeps` and `outcome-unknown`, and sends `list_changed` |
+| the messenger | ''iris'' | the core of the seat (`@lararium/mesh/iris`): the pure frame machine that carries messages across the gap while the hearth sleeps, answers `hearth-sleeps` and `outcome-unknown`, and sends `list_changed` |
 | the cord | ''aho'' | the seat a binding holds across its vessel's sleep; Pukui–Elbert: "line, cord, lashing, fishing line, kite string", its example "braided with the cords of love"; the Node host's process first |
 | the worn whole | //no new word// | the session wears the house; wearing the lei it holds names the effortless wearing |
 | the vouch | ''vouch'' | the old vessel walks a candidate image under a scratch root and signs its digest; a vouch certifies continuity, never goodness |
@@ -114,11 +114,11 @@ The plan's first wording (a host process that redials the vessel's socket) fails
 
 !! The rite field ~ one power per token family (sidecar)
 
-`SwarmGoBody` carries `{act, group, branch, head, after}` and no rite; `readGoChain` asks the ward for the fixed verb `ward-push-go`; titles key on `go/<branch>/<cid>`. A restart go strung there would read as a push go, and a push go would spend as a restart: one record family, one ward verb, two powers, a confused-deputy seam.
+A lei that named no rite would let one record family serve two powers under one ward verb: a kukulu lei strung there would read as a push lei, and a push lei would return as a kukulu, a confused-deputy seam.
 
-The cure: the go carries `rite` (`push` · `restart`), `swarmGoHead` folds it in, titles key `go/<rite>/<branch>/<cid>`, and the ward answers `ward-<rite>-go`. The rite list stays capped at the acts the boot core verifies, so the field never grows into a policy language. Red first: `go-rite-separates-powers`. It rides PR #218 before the merge as a sidecar to the cord.
+The cure stands: the lei carries `rite` (`push` · `kukulu`), `swarmLeiHead` folds it in, titles key `lei/<rite>/<branch>/<cid>`, and a rite that co-signs answers under `ward-<rite>-lei` (the co-sign weighs reach: a push lei waits on a second device, a kukulu lei on none). The rite list stays capped at the acts the boot core verifies, so the field never grows into a policy language. Red: `go-rite-separates-powers`.
 
-`spendGo` claims the spend before any act runs: at most once, failing closed; a build that fails after the spend burns the token with no act. That cost stays accepted and counted.
+`returnLei` claims the return before any act runs: at most once per count, failing closed; a build that fails after the return spends it with no act. That cost stays accepted and counted.
 
 <<~/ahu>>
 
@@ -144,15 +144,15 @@ The direction under weighing, read by capability and never by host: a tiddler th
 
 !! The reach ~ a wide lei by default
 
-The operator, 2026-11-15: //"I approve the 'Wider' stance as default, we've already proofed the previous procedure patterns through head-only gates, we need a new more kupono model."// The push word fresh per head, the go bound to one head: those gates proved the procedure. The default lei now names its evidence instead of its head.
+The operator, 2026-11-15: //"I approve the 'Wider' stance as default, we've already proofed the previous procedure patterns through head-only gates, we need a new more kupono model."// The push word fresh per head, the lei bound to one head: those gates proved the procedure. The default lei now names its evidence instead of its head.
 
 A ''wide lei'' (the default) binds a rite, a branch and a face's group, and names the evidence each spend needs: a passing receipt standing for the head's tree, and a count of returns since its stringing under the ceiling the operator wrote into it. A ''head lei'' (the narrow form) still binds one head, for an act the operator wants pinned. Neither reads a clock: a wide lei ends when its count runs out, when a newer lei restrings it, or when the operator unstrings it.
 
 What the reach asks of the rest of the design:
-* ''The evidence caveat rides before the merge'' (`L45c`), since a wide lei without it grants a blank cheque: `spendGo` refuses `swarm-go-evidence-absent` unless a passing `receipt/<tree>` stands for the head's tree.
+* ''The evidence caveat rides before the merge'' (`L45c`), since a wide lei without it grants a blank cheque: `returnLei` refuses `swarm-lei-evidence-absent` unless a passing `receipt/<tree>` stands for the head's tree.
 * ''The receipt's grade matters more.'' The vessel signs a host battery's verdict without re-running it, so a wide lei rests on testimony until the sampled re-run lands; that slice climbs the after-the-merge order to first.
 * ''A red narrows.'' A spend that meets a red receipt refuses, and the lei narrows to head-only until the operator restrings it wide (Ashby's step function run in reverse).
-* ''The rite field bounds the reach.'' A wide lei for `restart` never reaches `push`; the push word stays fresh per head under the standing orders until the operator rules otherwise.
+* ''The rite field bounds the reach.'' A wide lei for `kukulu` never reaches `push`; the push word stays fresh per head under the standing orders until the operator rules otherwise.
 
 <<~/ahu>>
 
@@ -206,7 +206,7 @@ The rite itself writes a `rite-begun` receipt before the vessel goes down and th
 
 Three different things travelled under the word "row" through the design's talk-out; this carrier names each by what it holds:
 
-* a ''signed record'' (`SignedSwarmAct` in code): a JSON `{body, signer, sig}` resting as a tiddler's text in the vessel's control document, under `$:/lares/swarm/…`: a go, a spend, a receipt, a roster reading, a vouch. The token family and its receipts live here.
+* a ''signed record'' (`SignedSwarmAct` in code): a JSON `{body, signer, sig}` resting as a tiddler's text in the vessel's control document, under `$:/lares/swarm/…`: a lei, its return, a tessera half, a receipt, a roster reading, a vouch. The token family and its receipts live here.
 * a ''stage meme'': a whole memetic carrier under the memory stage, `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`; the code keys it with `row-key`.
 * a ''road row'': one line of the table inside the roadmap carrier, a row in the literal sense.
 
@@ -216,7 +216,7 @@ Three different things travelled under the word "row" through the design's talk-
 
 !! Open
 
-* The code names: a mechanical rename follows the lane (the core to `iris`, the Node binding's verb to `aho`, a go to a lei, its issue to `kui`, its spend to the return).
+* The code wears the names (the core `iris`, the Node binding's verb `lares mcp aho`, the lei, `kui`, the return, `unstring`, `restring`, the tessera, conferre). What still waits: iris on the 2026-07-28 MCP revision; a writer for `receipt/<tree>`; the rite against a real container house.
 * A kumu's read of pūlama, kūkulu and wanaʻao, and the family's read of the lei protocol.
 * The fence (#/the-fence).
 * The cord's binding placement: the core in `@lararium/mesh` and the Node binding in `lares-cli` (default), against a binding in `@lararium/node`.
@@ -225,6 +225,6 @@ Three different things travelled under the word "row" through the design's talk-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;70_Q7OBq7dx4a2FHFazHpU0_AFo5HGYAO3GS1bLc3d4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IJ4Y9BOa_a-jg4-RE3DBUMprPPpHUFSBYJV-trsa3D0`>>
 
 <<^ code=`&#x0004;` to=`?`>>
