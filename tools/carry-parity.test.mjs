@@ -4,10 +4,11 @@
 //   P1  the comparison over census readings: equal readings read par; a missing, a changed and an extra row each name their
 //       class and key; the classes the carry re-mints by design (face relations, kahua cids, CRDT heads, the Nexus AID, the
 //       floor pin) never decide the verdict; a new-base reading takes the new house's own founding rows out of `extra`.
-//   P2  TWO REAL HOUSES: found a scratch house, write memory into its steward's daemon wiki and share a wiki, `lares export`,
-//       take its census into a file and take it down (the rite's order: the two houses never stand at once), found a
-//       brand-new scratch house under the same pet-names, `lares import --apply`, and the witness reads par of the snapshot
-//       against the new house's real read doors. Then on the new house delete one meme, change another and drop one share: the witness reads red,
+//   P2  TWO REAL HOUSES: found a scratch house, write memory into its steward's daemon wiki (a free-titled record among it),
+//       found a second face after the stand, share one wiki with a page and one with none, `lares export`, take its census
+//       into a file and take it down (the rite's order: the two houses never stand at once), found a brand-new scratch house
+//       under the same pet-names, `lares import --apply`, and the witness reads par of the snapshot against the new house's
+//       real read doors. Then on the new house delete one meme, change another and drop one share: the witness reads red,
 //       exits non-zero, and names all three (beside the kāpae shadow the delete itself raises, and nothing else).
 //
 // Each house stands under its own marked scratch LAR_ROOT through the test custody doors; no LAR_BAGS, no docker.
@@ -184,12 +185,10 @@ async function standHouse(tag, name) {
       else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`${tag} daemon exited ${child.exitCode} before live:\n${log.slice(-3000)}`)); }
     }, 200);
   });
-  const unlock = async ({ again = false } = {}) => {
-    // A face born after the stand opens in custody at once but composes no provider until the vessel composes again:
-    // lock, then unlock every face wearing h0 (`lares vault lock` · `lares vault unlock --all --face 0`).
-    if (again) await unlockTestCustody(root, "lock");
+  const unlock = async () => {
+    // Every face wearing h0 (`lares vault unlock --all --face 0`). A face born after the stand already stands lit, so a second
+    // unlock after a `persona new` answers `already-unlocked` and reads the new face open beside the first.
     const a = await unlockTestCustody(root, "unlock", 0);
-    // A second unlock after a `persona new` answers `already-unlocked` and opens the new face beside the first.
     assert.ok(a?.held === true || a?.reading === "opens" || a?.reading === "already-unlocked", `${tag} unlock: ${JSON.stringify(a)}`);
     assert.ok((a?.faceReadings ?? []).every((f) => f.reading === "opened"), `${tag} every face opens: ${JSON.stringify(a)}`);
   };
@@ -213,6 +212,7 @@ const POND = "lar:///ha.ka.ba/kahua/memory/reference/pond";
 const KITE = "lar:///ha.ka.ba/kahua/memory/feedback/kite";
 const PLAIN = "lar:///ha.ka.ba/notes/plain-record";
 const PAGE = "lar:///ha.ka.ba/notes/shared-page";
+const FREE = "plain note";
 
 /** Run the instrument over the exporting house's snapshot and the standing new house; answers its exit and its receipt. */
 const witness = (snapshot, fresh, importAnswer) => {
@@ -253,10 +253,14 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     old.must(["persona", "new", "1", "--name", "engineer"]);
     old.must(["wiki", "init", "notes", "--json"]);
     old.must(["wiki", "share", "notes", "--read", "engineer"]);
-    await old.unlock({ again: true });
+    // A wiki that holds no page carries by its catalog row, beside its share row.
+    old.must(["wiki", "init", "quiet", "--json"]);
+    old.must(["wiki", "share", "quiet", "--read", "engineer"]);
+    await old.unlock();
     // The rite holds each workbench before the export (a cold wiki reads `document-unavailable`), and the wiki carries a page,
     // so its workbench travels and the import re-stands it (an empty wiki carries its share row alone).
     old.must(["wiki", "hold", "notes"]);
+    old.must(["wiki", "hold", "quiet"]);
     const page = join(scratch, "page.mem");
     writeFileSync(page, memeText(PAGE, "a page on the shared wiki", ""));
     old.must(["meme", "put", PAGE, "--recipe", "notes", "--file", page, "--json"]);
@@ -265,9 +269,10 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
       writeFileSync(file, memeText(uri, body, meta));
       old.must(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
     }
-    // A plain record (no uri-path) under a stable name. A free title ("plain note") derives no address from its mirror file and
-    // the import skips it by name, so it never carries (a gap the receipt names as `plain missing`).
+    // Plain records (no uri-path): one under a stable name, and one under a free title, which the mirror sites at the flattened
+    // default (`plain note.tid`) and the carry names by the title its own file states.
     old.must(["tiddler", "put", PLAIN, "--recipe", "default", "--text", "a plain record", "--json"]);
+    old.must(["tiddler", "put", FREE, "--recipe", "default", "--text", "a free-titled note", "--json"]);
     const bundle = join(scratch, "bundle");
     old.must(["export", bundle, "--json"]);
     // THE SNAPSHOT BEFORE DOWN: the rite takes the exporting house down before the new one stands (one image tag, one port),
@@ -281,7 +286,7 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     const fresh = await standHouse("new", "steward");
     houses.push(fresh);
     fresh.must(["persona", "new", "1", "--name", "engineer"]);
-    await fresh.unlock({ again: true });
+    await fresh.unlock();
     // The import's exit is no verdict here (it exits 1 on an expected stand-off); its --json answer rides to the witness,
     // which reads each stood-off row as a named may-differ.
     const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
@@ -289,15 +294,17 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     writeFileSync(importAnswer, imported.stdout);
     assert.equal(JSON.parse(imported.stdout.trim().split("\n").pop()).data?.applied, true, `import: ${imported.stdout}\n${imported.stderr}`);
     fresh.must(["wiki", "hold", "notes"]);
+    fresh.must(["wiki", "hold", "quiet"]);
 
     // ── PAR over the real read doors ────────────────────────────────────────────────────────────────────────────
     const par = witness(snapshot, fresh, importAnswer);
     const parAnswer = par.answer;
     assert.equal(parAnswer.verdict, "par", `${JSON.stringify(parAnswer.differences, null, 1)}\nimport: ${imported.stdout.slice(0, 4000)}`);
-    assert.ok(parAnswer.counts.plain >= 1, `the reading saw the plain record: ${JSON.stringify(parAnswer.counts)}`);
+    assert.ok(parAnswer.counts.plain >= 2, `the reading saw both plain records: ${JSON.stringify(parAnswer.counts)}`);
+    assert.ok(parAnswer.counts.wikis >= 2, `the reading saw both shared wikis: ${JSON.stringify(parAnswer.counts)}`);
     assert.equal(par.status, 0);
     assert.ok(parAnswer.counts.memes >= 3, `the reading saw the carried memes: ${JSON.stringify(parAnswer.counts)}`);
-    assert.ok(parAnswer.counts.shares >= 1, `the reading saw the share: ${JSON.stringify(parAnswer.counts)}`);
+    assert.ok(parAnswer.counts.shares >= 2, `the reading saw both shares: ${JSON.stringify(parAnswer.counts)}`);
 
     // ── THE INSTRUMENT FAILS: delete one meme, change another, drop one share ───────────────────────────────────
     fresh.must(["meme", "delete", POND, "--recipe", "default", "--json"]);
