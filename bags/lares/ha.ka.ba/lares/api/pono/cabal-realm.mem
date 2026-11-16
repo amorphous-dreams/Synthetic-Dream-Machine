@@ -218,7 +218,7 @@ The Ostrom principles above still hold ''unchanged'' under the cut; they govern 
 * ''A counted record carries its stewards' seals and no other key.'' The fold reads each seal under the exact name the record keeps, once (`packages/lararium-mesh/src/steward-seal.ts`). A face seal never counts for a Handle's name, and a Handle seal never counts for a key.
 * ''A record still short of a seal rests under a key of its own'', so an ask never unseats the registration that stands.
 * ''The widest consented set stands.'' Counted records for one bag that agree on the doc fold to the one whose `keptBy` holds every other's: each wider record carries the narrower one's stewards' own seals. Two docs under one name tie, and so do two steward sets where neither holds the other; a tie leaves the bag unregistered and grants no write. Any realm member who writes a rival counted record can force that tie.
-* ''A Handle seal reads against the chain it carries, and a reader's own chain outranks it.'' A reader with no owner heads trusts a chain that holds its inception alone. A vessel reads every Handle seal against the chain its own handle book holds for that Handle: a seal under a head that book saw retired reads stale or burned. A reader that holds no chain learns of a later rotation or burn from a fresh seal.
+* ''A Handle seal reads against the chain it carries, and a reader's own chain outranks it.'' A reader with no owner heads trusts a chain that holds its inception alone. A vessel reads every Handle seal against the chain its own handle book holds for that Handle: a seal under a head that book saw rotate out or burn reads stale or burned. A reader that holds no chain learns of a later rotation or burn from a fresh seal.
 
 > ''A house reading, marked as one.'' A Handle steward's seal carries the head key's signature alone, as a card and an attestation carry it. Any threshold over a collective act belongs to the charter's classes.
 
@@ -330,6 +330,6 @@ The honest wall, kept lit: ''"valid trace to lineage L" reads as a hard crypto f
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/multi-fractal`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/carry-contract`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;b8D-Jm6ACJdZZMfRYm8s0tTO-1VjYkwuuXehp0ZZJDc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EwVzkOPbjwp05-guTigsscowGAUDxNxHhpKavX7GcIo`>>
 
 <<^ code=`&#x0004;` to=`?`>>
