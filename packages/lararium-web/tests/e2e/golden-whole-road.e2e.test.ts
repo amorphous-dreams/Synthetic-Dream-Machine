@@ -76,7 +76,18 @@ async function makeTiddler(title: string, text: string): Promise<void> {
   await wiki().locator("textarea.tc-edit-texteditor-body").fill(text);
   await wiki().locator('button[title="Confirm changes to this tiddler"]').click();
   await page!.waitForFunction((t) => !!document.querySelector("#projection")?.shadowRoot
-    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]:not(.tc-tiddler-edit-frame)`), title, { timeout: WAIT });
+    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]:not(.tc-tiddler-edit-frame)`), title, { timeout: WAIT })
+    .catch(told(`the confirmed ${title} never stood out of its edit frame`));
+}
+
+/**
+ * A wait that times out carries what the page and the hearth said, so a red run names its own trigger: CI uploads no
+ * scratch, and the afterAll's hearth.log and page.log stay on the runner.
+ */
+function told(what: string): (err: unknown) => never {
+  return (err) => {
+    throw new Error(`${what}: ${String((err as Error)?.message ?? err)}\n--- page ---\n${consoleLines.slice(-80).join("\n")}\n--- hearth ---\n${hearth?.bootLog().slice(-3000) ?? ""}`);
+  };
 }
 
 /**
@@ -93,7 +104,8 @@ async function raiseSentinel(): Promise<void> {
 async function closeTiddler(title: string): Promise<void> {
   await wiki().evaluate((host, t) => (host.shadowRoot!.querySelector(`.tc-tiddler-frame[data-tiddler-title="${t}"] button[title="Close this tiddler"]`) as HTMLElement).click(), title);
   await page!.waitForFunction((t) => !document.querySelector("#projection")?.shadowRoot
-    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), title, { timeout: WAIT });
+    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]`), title, { timeout: WAIT })
+    .catch(told(`the closed ${title} never left the river`));
 }
 
 /** Record `defaultPrevented` of each click as it reaches the document, after the sink's handler ran. */
