@@ -800,6 +800,24 @@ test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's 
   assert.match(r.calls, /rm -f lares/);
   assert.doesNotMatch(r.calls, / down /);
 });
+test(`${name}: route-stays-out-of-the-vessel: under a pūlama, a stand on a terminal never attaches the vessel's unlock`, { skip: skip || !haveScript }, async () => {
+  const locked = '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}';
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_IMAGE_ID: "sha256:abc123", FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: locked } });
+  assert.equal(r.status, 0, r.stdout);
+  const unlocks = r.calls.split("\n").filter((l) => / vault unlock/.test(l));
+  assert.ok(unlocks.length > 0, `the stand ran no unlock:\n${r.calls}`);
+  for (const line of unlocks) assert.match(line, / -T /, `an unlock reached the vessel attached:\n${line}`);
+  const asked = await run(shim, ["vault", "unlock", "--face", "1"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid" } });
+  assert.equal(asked.status, 0, asked.stdout);
+  assert.match(asked.calls, /exec (?:-e \S+ )*-T lares node \S+ vault unlock --face 1/);
+});
+test(`${name}: CONTROL with no pūlama, a stand on a terminal still attaches the unlock for the operator's route`, { skip: skip || !haveScript }, async () => {
+  const locked = '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}';
+  const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n", tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: locked } });
+  assert.equal(r.status, 0, r.stdout);
+  const unlock = r.calls.split("\n").find((l) => / vault unlock --all/.test(l));
+  assert.ok(unlock && !/ -T /.test(unlock), `the unlock should attach:\n${r.calls}`);
+});
 test(`${name}: image-digest-names-the-raised-image: the rite reads, as the last stdout line, the digest up reports to the pūlama`, { skip }, async () => {
   const r = await run(shim, ["image-digest"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
   assert.equal(r.status, 0, r.stderr);

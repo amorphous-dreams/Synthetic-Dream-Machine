@@ -184,6 +184,14 @@ remember_worn_face() { # the argv of a `vault unlock` that landed
 unlock_or_name() {
   if key_held; then return 0; fi
   wear=$(last_worn_face)
+  if [ -n "$PULAMA_MODE" ]; then
+    # UNDER A PŪLAMA THE ROUTE GOES TO THE PŪLAMA ALONE. The vessel's own unlock asks nothing there (it redials the
+    # pūlama), so it runs detached from this terminal: an image that prompts anyway reads no keystroke.
+    # shellcheck disable=SC2046
+    waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all --face "$wear" </dev/null && return 0
+    printf '%s\n' 'lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.sh pulama status`, light it with `lares-container.sh pulama light` and run `lares-container.sh vault unlock` (it asks nothing), or raise a served vessel with `lares rite kukulu`' >&2
+    return 0
+  fi
   if [ -n "$HAVE_TTY" ]; then
     printf 'lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, wearing h%s)\n' "$wear" >&2
     # shellcheck disable=SC2046
@@ -622,7 +630,13 @@ case "$verb" in
     esac ;;
   vault)
     # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
-    if route_cli "$verb" "$@"; then rc=0; else rc=$?; fi
+    # Under a pūlama the unlock runs detached from this terminal: the route goes to the pūlama (pulama light), never
+    # into a vessel's prompt.
+    if [ -n "$PULAMA_MODE" ] && [ "${1:-}" = unlock ]; then
+      attached=$HAVE_TTY; HAVE_TTY=""
+      if route_cli "$verb" "$@" </dev/null; then rc=0; else rc=$?; fi
+      HAVE_TTY=$attached
+    elif route_cli "$verb" "$@"; then rc=0; else rc=$?; fi
     if [ "$rc" -eq 0 ] && [ "${1:-}" = unlock ]; then remember_worn_face "$@"; fi
     exit "$rc" ;;
   *) route_cli "$verb" "$@" ;;

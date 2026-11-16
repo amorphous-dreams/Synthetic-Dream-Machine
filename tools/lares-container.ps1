@@ -254,9 +254,21 @@ function RememberWornFace([string[]]$argv) {
 # credential opens (`--all`) and wears the last worn face again (or face 0); without one, name that command. A refused or
 # abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
 # bare command that fails on a vessel of several faces.
+# UNDER A PŪLAMA THE ROUTE GOES TO THE PŪLAMA ALONE. The vessel's own unlock asks nothing there (it redials the pūlama),
+# so it runs detached from this terminal, its stdin empty: an image that prompts anyway reads no keystroke.
+function DetachedUnlock([string[]]$argv) {
+  $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli vault unlock @argv
+  return $LASTEXITCODE
+}
 function UnlockOrName {
   if (KeyHeld) { return }
   $wear = LastWornFace
+  if ($PulamaMode) {
+    if ((DetachedUnlock @('--all', '--face', "$wear")) -ne 0) {
+      [Console]::Error.WriteLine('lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.ps1 pulama status`, light it with `lares-container.ps1 pulama light` and run `lares-container.ps1 vault unlock` (it asks nothing), or raise a served vessel with `lares rite kukulu`')
+    }
+    return
+  }
   if ($script:Tty) {
     [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, wearing h$wear)")
     & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock --all --face $wear
@@ -529,6 +541,15 @@ switch ($verb) {
   }
   'vault' {
     # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
+    # Under a pūlama the unlock runs detached from this terminal: the route goes to the pūlama (pulama light), never
+    # into a vessel's prompt.
+    if ($PulamaMode -and $rest.Count -gt 0 -and $rest[0] -eq 'unlock') {
+      if (-not (HasRunningVessel)) { Die 'vault unlock under a pūlama needs a standing vessel; run up' }
+      $rc = DetachedUnlock @($rest | Select-Object -Skip 1)
+      if ($rc -ne 0) { exit $rc }
+      RememberWornFace $rest
+      return
+    }
     RouteCli (@($verb) + $rest) $true
     if ($rest.Count -gt 0 -and $rest[0] -eq 'unlock') { RememberWornFace $rest }
   }
