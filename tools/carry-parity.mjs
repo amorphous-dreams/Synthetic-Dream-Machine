@@ -1,7 +1,8 @@
 #!/usr/bin/env node
-// carry-parity — the QA proof of a carry: read two houses (the old one and the brand-new one an import filled) and answer
-// `par`, or name every difference, per class, as missing (the old house holds it, the new one does not), changed (both hold
-// it, the bytes differ) or extra (the new house holds it, the old one and the new house's own founding do not).
+// carry-parity — the QA proof of a carry: read two houses (`--old`, the house an export read, and `--new`, the brand-new house an
+// import filled) and answer `par`, or name every difference, per class, as missing (the exporting house holds it, the new one
+// does not), changed (both hold it, the bytes differ) or extra (the new house holds it, and neither the exporting house nor the
+// new house's own founding does).
 //
 // WHERE IT READS FROM: THE HOUSE'S OWN READ DOORS. Every meme, index row, plain record and kahua head comes back through the
 // `lares` CLI (`persona list`, `kahua list`, `wiki list`, `meme list`, `wiki filter`, and `tiddler get` for a record too large
@@ -107,8 +108,8 @@ function compareMap(scope, cls, old, fresh, base, differences) {
 }
 
 /**
- * Compare the old side's readings with the new side's, taking the new-base readings' rows out of `extra`.
- * Answers the receipt body: the verdict, every difference by scope, class, kind and key, the counts the old side held,
+ * Compare the `--old` side's readings with the `--new` side's, taking the new-base readings' rows out of `extra`.
+ * Answers the receipt body: the verdict, every difference by scope, class, kind and key, the counts the `--old` side held,
  * and the may-differ list.
  */
 export function compareCensus(oldReadings, newReadings, baseReadings = []) {

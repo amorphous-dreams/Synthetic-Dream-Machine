@@ -83,7 +83,7 @@ test("P1 a missing, a changed and an extra row each read red under their class a
   assert.equal(changed.new, "sha256:a2");
 });
 
-test("P1 a face the old house wore and the new census never read reads red by name, never as par", () => {
+test("P1 a face the exporting house wore and the new census never read reads red by name, never as par", () => {
   const fresh = reading();
   fresh.face = {};
   const r = compareCensus([reading()], [fresh]);
@@ -192,7 +192,7 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
   const scratch = mkdtempSync(join(tmpdir(), "lares-carry-parity-files-"));
   const houses = [];
   try {
-    // ── the old house: a steward and an engineer, memory in the steward's daemon wiki, one shared wiki ──────────
+    // ── the exporting house: a steward and an engineer, memory in the steward's daemon wiki, one shared wiki ──────────
     const old = await standHouse("old", "steward");
     houses.push(old);
     old.must(["persona", "new", "1", "--name", "engineer"]);
