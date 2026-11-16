@@ -40,7 +40,7 @@ wall-clock reading. The act SHOULD retain `sealEpochCid` as a separate field. Th
 
 The deterministic board MUST still be derived from the resolved Nexus scope, and a receiver MUST read
 only the board for its locally resolved scope. Board scoping remains necessary for routing, locality, and
-replication. It is not sufficient as cryptographic provenance: a copied signed row can be written into a
+replication. It is not sufficient as cryptographic provenance: a copied signed record can be written into a
 different board, and a board location is not part of the current OfferingKapae signature bytes.
 
 !! Local evidence
@@ -82,7 +82,7 @@ receiver consults, keeps Antigen per-Nexus, and allows a copied board to remain 
 It cannot answer whether an act //means// what the copied board says it means. In the current shape,
 two boards can carry the same signed `OfferingKapaeEntry`; the verifier sees the same offering, action,
 parents, seal epoch, and quorum signatures in both places. If the receiving code trusts the board's
-address as an implicit scope, a copied row can be laundered into another board or a stale board can be
+address as an implicit scope, a copied record can be laundered into another board or a stale board can be
 presented under a new route without changing its semantic bytes.
 
 This is the exact failure mode the no-global-now and identity-as-relation laws warn about: location is a
@@ -114,7 +114,7 @@ be known and coherent under its local charter chain.
 | act copied while the local charter is torn or absent | unavailable local authority; fail closed | a private `own` scope may substitute |
 
 The audit surface may report rejected foreign acts and their CIDs. The authority fold MUST exclude them,
-so an imported row cannot create a ban. Conversely, a foreign `un_kapae` MUST NOT be able to lift a local
+so an imported record cannot create a ban. Conversely, a foreign `un_kapae` MUST NOT be able to lift a local
 ban. The local scope check is therefore a refusal boundary, not a merge preference.
 
 !! Capability placement
@@ -205,6 +205,6 @@ those movements silently changes which Nexus the record speaks for.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;WfMNmdP-XMR5mpllDVo14YqmvpTXDAErsKYQDTbD5Q8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WfuddX1BpAiD5gv-Vt-47Wyyuy2ON8LXutEtC8N_5vg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

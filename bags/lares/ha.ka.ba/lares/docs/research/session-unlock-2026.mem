@@ -31,7 +31,7 @@ A YIN and a YANG Luna-6 spirit researched apart with live web search, then trade
 !! What both faces hold, sourced
 
 * ''The per-tab ruling holds on every surface walked.'' Each session asks and wears its own face; two faces never share an opening.
-* ''The holder keeps each face's content keys only while some session wearing that face stands unlocked, and never one face's keys for another face's session'' (operator, 2026-10-18, approving the house reading). Each tab's own ask proves the person present for that tab and admits the tab to its face's open hive; it derives no key of its own, so two tabs of one face hold one opening, never two. The last session of a face to close locks that face's hive and overwrites its keys. On a node the boot opens the face and each run proves it at the gate. The holder lives where the face's Keyhive seat lives (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>> #/the-store, the content-key holder), and it answers a port only for a session it admitted, never for every port on the origin; that guard carries the reading, and row `B1` owes its red: an unadmitted port that asks for a sealed body refuses by name.
+* ''The holder keeps each face's content keys only while some session wearing that face stands unlocked, and never one face's keys for another face's session'' (operator, 2026-10-18, approving the house reading). Each tab's own ask proves the person present for that tab and admits the tab to its face's open hive; it derives no key of its own, so two tabs of one face hold one opening, never two. The last session of a face to close locks that face's hive and overwrites its keys. On a node the boot opens the face and each run proves it at the gate. The holder lives where the face's Keyhive seat lives (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>> #/the-store, the content-key holder), and it answers a port only for a session it admitted, never for every port on the origin; that guard carries the reading, and item `B1` owes its red: an unadmitted port that asks for a sealed body refuses by name.
 * ''A synced passkey never counts as device-bound custody.'' Apple's iCloud Keychain and Google Password Manager both sync passkeys across devices. This confirms the caution of <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/secure-context`>> #/custody-leans: a synced passkey reads `cloud-synced`, and a PRF wrap stands as one keyslot beside passphrase and paper, never alone.
 * ''No browser worker gives a durable vault.'' SharedWorker and ServiceWorker lifetimes end when their last reference goes; browser storage stays evictable by default.
 * ''Native keystores reach no web code.'' The Secure Enclave and Android Keystore hardware-back keys for native code; a native surface reaches them only through its own adapter, its hardware level measured.
@@ -42,7 +42,7 @@ A YIN and a YANG Luna-6 spirit researched apart with live web search, then trade
 
 !! Leads, each with the probe that settles it
 
-* ''PRF per browser, OS, authenticator and sync provider.'' The W3C spec settles PRF's semantics and no vendor publishes a coverage matrix. The house scout's dated table already names the shipping releases (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/capability-table), and one tablet advertises `extension:prf` with the derivation unmeasured (#/measured-tablet there). The probe: register, request PRF, sync the credential, compare the output on a second device. It rides `tools/capability-probe/` on the operator's devices, row `B3`.
+* ''PRF per browser, OS, authenticator and sync provider.'' The W3C spec settles PRF's semantics and no vendor publishes a coverage matrix. The house scout's dated table already names the shipping releases (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026`>> #/capability-table), and one tablet advertises `extension:prf` with the derivation unmeasured (#/measured-tablet there). The probe: register, request PRF, sync the credential, compare the output on a second device. It rides `tools/capability-probe/` on the operator's devices, item `B3`.
 * ''Lifecycle signals'' (suspend, OS lock, tab freeze, process kill) arrive unevenly by platform. Until each device class measures them, a walk-up lock stands as an explicit lock plus best-effort signals, and no clock decides.
 * ''A container's TPM reach'' depends on its host's device passthrough, and gets measured per deployment.
 
@@ -104,7 +104,7 @@ Yang's evidence did not overturn my per-session conclusion. It sharpens platform
 |---|---|---|---|---|
 | Morning / second session | Each tab asks; reload/new tab starts locked. SharedWorker may coordinate store only. | Foreground session asks; relaunch/eviction means re-open. | TTY/owner socket ceremony per command/session. | Herm floor; native session asks; attached surfaces inherit vessel session. |
 | Two faces / walk-up / last close | One face per tab; explicit lock and clear tab key on close. Screen-lock signals are advisory. | Same boundary; lifecycle kill can drop key, not guarantee a lock event. | Bind owner-socket response to caller; exit/lock drops session key. | No vessel-wide active face; native keystore may wrap, not merge sessions. |
-| Quiet sync | Shared holder passes sealed rows; only matching authorized session decrypts. | Queue sealed changes until session open. | Daemon ingests ciphertext at floor; caller session opens permitted rows. | Adapter transports ciphertext; surface session opens its own permitted data. |
+| Quiet sync | Shared holder passes sealed records; only matching authorized session decrypts. | Queue sealed changes until session open. | Daemon ingests ciphertext at floor; caller session opens permitted records. | Adapter transports ciphertext; surface session opens its own permitted data. |
 | Restart / spirit + watcher | Browser stays locked absent ceremony. | No background unlock assumed. | Restart at public/nonsecret floor; ember may only serve within its explicit ceiling. Spirit and watcher receive separate, narrow leases. | No special AI principal; future adapter must preserve same leases and human route. |
 
 These paths follow the house's one-face-per-session law. Device lifecycle timing and PRF support are not treated as universal guarantees.
@@ -156,7 +156,7 @@ Platform-source access date is 2026-10-18 unless a publication date is given. �
 
 ## Converged scenario × vessel
 
-In every cell a session gets its own face-bound capability in its own live boundary; sealed data may move, but only that capability opens authorized rows. “Ask” is the human route, with optional authenticator wrapper only after a local capability probe.
+In every cell a session gets its own face-bound capability in its own live boundary; sealed data may move, but only that capability opens authorized records. “Ask” is the human route, with optional authenticator wrapper only after a local capability probe.
 
 | Scenario | Desktop browser | Mobile browser / PWA | Container node / CLI / MCP | Herm / native / Mudlet / Unreal |
 |---|---|---|---|---|
@@ -165,7 +165,7 @@ In every cell a session gets its own face-bound capability in its own live bound
 | Two faces | Separate sessions and keys; no shared holder key cache. | Same. | Separate capabilities via owner socket. | Separate leases; no vessel-wide active face. |
 | Walk-up | Explicit lock; lifecycle signals advisory. | Lock on available background signal, re-ask on resume. | Lock/terminate local session. | Platform lock can trigger lock; verify behavior. |
 | Last close | Drop tab capability. | Drop session capability; eviction/reap is expected. | Drop process/session capability; floor may continue. | Drop surface lease. |
-| Quiet sync | Replicate ciphertext; authorized tab opens its rows. | Same; foreground session opens after arrival. | Daemon ingests sealed bytes; session opens. | Surface transports ciphertext under a lease. |
+| Quiet sync | Replicate ciphertext; authorized tab opens its records. | Same; foreground session opens after arrival. | Daemon ingests sealed bytes; session opens. | Surface transports ciphertext under a lease. |
 | Unattended restart | Locked floor. | Locked floor. | Floor by default; bounded ember may raise serving tier only. | Herm floor; native key wrapper requires adapter and human recovery. |
 | Spirit + watcher | Each is a distinct, narrow lease/session. | Background watcher not assumed durable. | Spirit and disk watcher each lease narrowly; no ambient root. | Attach through vessel lease; no independent custody. |
 
@@ -205,6 +205,6 @@ This retains my wave-one per-tab ruling and the twin’s strongest correction: b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nt0nGp1Dcj1rZ2x2EUjZFzcAKzXYP8rJj7ifYkljPMM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;VjR2do0vK1P8WcpDpPuBA4Gple2FJmMIAh3RvGkA3QM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -42,7 +42,7 @@ Orchestration studies: an Opus lead over Sonnet subagents beat a single Opus by 
 
 ''The one-hour subagent cache works.'' Sonnet lead cache write:read fell from 0.079 to 0.010 and writes fell from 64% to 22% of Sonnet lead cost (MEASURED; E1 of `model-roster-2026` reads PASS on the API meter, the plan meter unread). Every large cache rewrite followed an idle gap over one hour; idle rewrites made about a third of three standing Fable leads' bill (MEASURED).
 
-''Fable paid in bursts, not in waits.'' Two standing Fable leads (17 to 19 hours) ran $6.2 and $8.6 API-eq per commit; a fresh Fable lead from a cold brief ran 1.6 hours, 19 commits, 8 reds, $2.1 per commit, no rewrite, and its live stand measured four faults and cured three (MEASURED). An Opus lead ran $2.4, a Sonnet lead on a listable lane $1.1, Sonnet leads on hygiene lanes $0.9 per commit; the Fable lanes held the most integration-dense rows, so cost per commit flatters the listed lanes (REASONED). The same tokens priced at Opus rates cost 0.50 to 0.57 of their Fable bill (MEASURED).
+''Fable paid in bursts, not in waits.'' Two standing Fable leads (17 to 19 hours) ran $6.2 and $8.6 API-eq per commit; a fresh Fable lead from a cold brief ran 1.6 hours, 19 commits, 8 reds, $2.1 per commit, no rewrite, and its live stand measured four faults and cured three (MEASURED). An Opus lead ran $2.4, a Sonnet lead on a listable lane $1.1, Sonnet leads on hygiene lanes $0.9 per commit; the Fable lanes held the most integration-dense items, so cost per commit flatters the listed lanes (REASONED). The same tokens priced at Opus rates cost 0.50 to 0.57 of their Fable bill (MEASURED).
 
 ''Terra yields on lists.'' Twenty-one Terra build seats: 11 full, 5 partial, 5 empty, about $2.5 API-eq for the day; 6 of 6 full on listed census slices, 0 of 3 on integration slices (MEASURED, seat `final.md`). Yield tracks the slice, not the lead's tier (REASONED).
 
@@ -91,6 +91,6 @@ A walled Codex seat writes and stops; the lead commits at each red and fix bound
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/model-roster-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/mixed-model-swarm`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mcYmVpvaUWSFpJOpuoPgf8oVUpkIM0kbhqSI_CaKer4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;wgDCmto_yikI8GXUvK8AFe-MnUx-NvpY5jmDf6HQmm0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

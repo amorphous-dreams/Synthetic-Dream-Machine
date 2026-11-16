@@ -17,7 +17,7 @@ uri-path      = "ha.ka.ba/lares/docs/history"
 
 ! History
 
-The history shelf holds what the house made and how it read itself along the way: the story arcs, record carriers that say where early work landed, verbatim spirit hand-backs, and a pointer to the workshop (in the repository's `scratch/` directory), where every scratch planning record stands word for word. These records inform and never govern; live law rides the api carriers, and live rulings and owed rows ride the road and design memes.
+The history shelf holds what the house made and how it read itself along the way: the story arcs, record carriers that say where early work landed, verbatim spirit hand-backs, and a pointer to the workshop (in the repository's `scratch/` directory), where every scratch planning record stands word for word. These records inform and never govern; live law rides the api carriers, and live rulings and owed items ride the road and design memes.
 
 <<~/ahu>>
 
@@ -99,6 +99,6 @@ The workshop rests in the repository's `scratch/` directory, outside `bags/` and
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AFqXvXFjZ4YfziNu7qDyPxH8YQ44vov-U8J7Y2CroV8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;j7MPuSn_Xb5qFMEcjtrtaQci5HEkA1yN8XdTR7WXWFI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

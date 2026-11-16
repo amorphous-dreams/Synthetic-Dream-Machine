@@ -106,7 +106,7 @@ The model tier reads as the rank of the spirit called: Haiku as the household wi
 
 !!! What stands ready
 
-* ''Reach vault, the key's home'' ~ MEASURED, `bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem`: the vessel holds foreign credentials in confidence and speaks a foreign wire at an island boundary; "BRIDGE, never present-as-actor, never cap-translation". The model key fits this row exactly. INVENTED: the provider enters as one more foreign wire, and the pool needs no new plane for custody.
+* ''Reach vault, the key's home'' ~ MEASURED, `bags/lararium/ha.ka.ba/lararium/mesh/reach-plane.mem`: the vessel holds foreign credentials in confidence and speaks a foreign wire at an island boundary; "BRIDGE, never present-as-actor, never cap-translation". The model key fits this item exactly. INVENTED: the provider enters as one more foreign wire, and the pool needs no new plane for custody.
 * ''The herm'' ~ MEASURED, `project_herm_is_essential` and `vessel-caps.mem` (line 128): a herm "decides WHO-CONNECTS, never WHO-READS", carries sealed bytes, admits near-open "by lease and rate". The pool's "herm meter" asks more than that: the herm would hold a provider key and read a prompt in the clear. That reading contradicts the herm's floor-only transport key (`project_herm_is_essential`; the Keyhive ruling at road line 203 demands a red test that a herm "can neither author, resolve nor observe a face's capabilities"). INVENTED fix: name the meter a ''bridge-warden'', a tending seat the Kahu quorum charters on a Nexus vessel that holds the reach vault, and keep the herm as its dumb relay. The word "herm" for the meter overreaches the measured herm.
 * ''Cap tiers'' ~ MEASURED, `packages/lararium-mesh/src/cap-tier.ts` (per `project_cap_tier_model`): `resolveTier = meet(declared, floor)`, a declared tier only tightens. Attenuation by `meet` stands built for read-scope. The spirit-rank ladder (wisp < Lar < oracle) wants the same shape: INVENTED, a total order whose `meet` caps a delegated pour.
 * ''Facet attenuation'' ~ MEASURED, `spectral-keel-cap.ts`: a cap attenuates by handing over a narrower object, and a capless island lacks the method. That pattern reads as the house idiom for "Sonnet rank at most".
@@ -116,7 +116,7 @@ The model tier reads as the rank of the spirit called: Haiku as the household wi
 
 !!! What the road owes before the pool can stand
 
-* MEASURED, road line 193 (`W25`): the bag plane leaks its creator in the clear until measured red-first. Gate any third human's data crossing off-island on that row.
+* MEASURED, road line 193 (`W25`): the bag plane leaks its creator in the clear until measured red-first. Gate any third human's data crossing off-island on that item.
 * MEASURED, road line 134: the chartered classes (ordinary 1-of-1, high-impact 3-of-5) stand built. INVENTED mapping: minting pool caps for a Temple tier takes the high-impact class; a Household pour takes ordinary.
 * MEASURED, `dreamnet-rhizome.mem` line 66: "feed `admission-price` from a live vouch ledger" still owes its wiring. The incense feed needs that same ledger first.
 * MEASURED, `admission-on-a-lineage.mem`: the Sybil bound held, and no lineage instrument tells deferred reciprocity from fake. Incense must price and bound and never adjudicate ("anergy-not-ban"). So a failed incense claim leaves a user at the floor with a smaller pour, never refused.
@@ -150,7 +150,7 @@ The model tier reads as the rank of the spirit called: Haiku as the household wi
 * May the meter carry the name "herm", or does the herm's read-nothing law bind it to the name bridge-warden?
 * Does a pour cap survive a Persona split (`project_cap_stacks_compose_on_persona`: combined by default)? A user who splits personas to multiply ceilings acts as a Sybil; the cap needs a ceiling per person, not per face.
 * Does the privacy cost ("this leaves the island") require a sealed-bytes-only tier by default, given `project_cleartext_only_on_disk_projection`?
-* Alpha line says no back-compat (`project_alpha_line_no_back_compass`): does the pool launch as W-row on the road, or wait until after the founding proof?
+* Alpha line says no back-compat (`project_alpha_line_no_back_compass`): does the pool launch as a W item on the road, or wait until after the founding proof?
 
 !!! Ratchet
 
@@ -324,7 +324,7 @@ oracle (Fable)      $0.053    $0.0238           $0.0119
 
 !! The Wave
 
-''Composed by the controller'' from the two ratchets above (#/hearth-reader, #/shore-reader). The wave carries only what both readers signed; where they still part, it names the fork for the operator. Nothing here reads as a road row until the operator places it.
+''Composed by the controller'' from the two ratchets above (#/hearth-reader, #/shore-reader). The wave carries only what both readers signed; where they still part, it names the fork for the operator. Nothing here reads as a road item until the operator places it.
 
 !!! Rulings ~ the operator, 2026-10-31 (talk-story)
 
@@ -686,6 +686,6 @@ Each stands as a proposal; the operator's mind originates and none binds until r
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/infrastructure-as-myth`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/federation`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XWdfNQ4XOPF6G69s-dJXm4LeY5cfXcyvXQWYhRxae1k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yYG0BlN8qn6Nq8Rqo_zEbw8LLKaJZv5UfVIdsKWiy9g`>>
 
 <<^ code=`&#x0004;` to=`?`>>
