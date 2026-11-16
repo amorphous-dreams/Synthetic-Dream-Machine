@@ -92,6 +92,7 @@ export * from "./promote-kapae.js";
 export * from "./promote-board.js";
 export * from "./swarm-lei-rite.js";
 export * from "./swarm-tiddlers.js";
+export * from "./swarm-tessera.js";
 export * from "./swarm-board.js";
 export * from "./swarm-door.js";
 export * from "./kukulu-vouch.js";

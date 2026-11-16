@@ -23,6 +23,9 @@
  *   lei-narrowed/<lei cid>       a wide lei met a red receipt: the vessel's witness; any row here ends the lei's wide reach
  *   lei-unstrung/<lei cid>     the hand unstrung a lei that still held returns: signed by the face's hand; any row here ends
  *                              the lei, and the lei's own row rests on
+ *   tessera/<tessera>/guest · tessera/<tessera>/host
+ *                              the two halves of one rite across a restart (`swarm-tessera.ts`): `rite-begun` rests before the
+ *                              vessel goes down, `rite-landed` after it stands again; each the VESSEL's witness
  *   receipt/<tree>             a check seat's verdict over a tree, signed by the VESSEL
  *   house-cap · lane/<lane>/share
  *                              ride the face-private board (`swarm-board.ts`) so a fleet folds one cap; their titles belong to this family
@@ -118,6 +121,13 @@ export const swarmLeiReturnedTitle = (leiCid: string, n: number): string => {
   return `${swarmLeiReturnedPrefix(leiCid)}${n}`;
 };
 export const swarmLeiNarrowedTitle = (leiCid: string): string => `${SWARM_URI_PREFIX}lei-narrowed/${segment(leiCid)}`;
+/** The prefix every tessera half rests under. */
+export const swarmTesseraPrefix = (): string => `${SWARM_URI_PREFIX}tessera/`;
+/** One half of a tessera: the `guest` half (`rite-begun`) or the `host` half (`rite-landed`). */
+export const swarmTesseraTitle = (tessera: string, half: "guest" | "host"): string => {
+  if (half !== "guest" && half !== "host") malformed("a tessera holds a guest half and a host half");
+  return `${swarmTesseraPrefix()}${segment(tessera)}/${half}`;
+};
 export const swarmLeiUnstrungTitle = (leiCid: string): string => `${SWARM_URI_PREFIX}lei-unstrung/${segment(leiCid)}`;
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
@@ -143,7 +153,11 @@ export interface SwarmRosterBody { readonly act: "roster"; readonly group: strin
 export interface SwarmReceiptBody { readonly act: "receipt"; readonly group: string; readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }
 /** The hand unstrung a lei: the lei, and the rite and branch whose line it rests on. */
 export interface SwarmLeiUnstrungBody { readonly act: "lei-unstrung"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly lei: string }
-export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiNarrowedBody | SwarmLeiUnstrungBody | SwarmLaneStateBody | SwarmRosterBody | SwarmReceiptBody;
+/** The guest half: the rite began. `lei` and `n` name the return that paid for it; `head` and `tree` name what the rite runs at. */
+export interface SwarmRiteBegunBody { readonly act: "rite-begun"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly head: string; readonly tree: string; readonly lei: string; readonly n: number; readonly tessera: string }
+/** The host half: the vessel stood again. `begun` names the guest half by its cid; `head` names the head the vessel stands at. */
+export interface SwarmRiteLandedBody { readonly act: "rite-landed"; readonly group: string; readonly rite: SwarmLeiRite; readonly tessera: string; readonly begun: string; readonly head: string }
+export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiNarrowedBody | SwarmLeiUnstrungBody | SwarmRiteBegunBody | SwarmRiteLandedBody | SwarmLaneStateBody | SwarmRosterBody | SwarmReceiptBody;
 export type SwarmBody = SwarmBodyParts & { readonly kind: typeof SWARM_ACT_DOMAIN };
 export interface SignedSwarmAct { readonly body: SwarmBody; readonly signer: string; readonly sig: string }
 export type SwarmReadRefusal = "absent" | "shape" | "domain" | "group" | "signature" | "title" | "role";
@@ -163,6 +177,8 @@ function shape(b: Record<string, unknown>): boolean {
     case "lei-returned": return str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]);
     case "lei-narrowed": return hex(b["lei"], 64) && str(b["head"]) && str(b["tree"]);
     case "lei-unstrung": return hex(b["lei"], 64) && isSwarmLeiRite(b["rite"]) && str(b["branch"]);
+    case "rite-begun": return isSwarmLeiRite(b["rite"]) && str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]) && hex(b["tessera"], 64);
+    case "rite-landed": return isSwarmLeiRite(b["rite"]) && hex(b["tessera"], 64) && hex(b["begun"], 64) && str(b["head"]);
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
     case "receipt": return str(b["tree"]) && Array.isArray(b["checks"]) && b["checks"].every(str) && (b["verdict"] === "pass" || b["verdict"] === "fail") && hex(b["definitions"], 64);
@@ -178,6 +194,8 @@ function titleOf(b: SwarmBody): string | null {
       case "lei-returned": return swarmLeiReturnedTitle(b.lei, b.n);
       case "lei-narrowed": return swarmLeiNarrowedTitle(b.lei);
       case "lei-unstrung": return swarmLeiUnstrungTitle(b.lei);
+      case "rite-begun": return swarmTesseraTitle(b.tessera, "guest");
+      case "rite-landed": return swarmTesseraTitle(b.tessera, "host");
       case "lane-state": return swarmLaneStateTitle(b.lane);
       case "roster": return swarmRosterTitle(b.seat);
       case "receipt": return swarmReceiptTitle(b.tree);
@@ -197,7 +215,7 @@ const allowed = (b: SwarmBody, key: string, trust: SwarmTrust): boolean => {
   switch (b.act) {
     case "lei": case "lei-unstrung": return trust.hand(key);
     case "lane-state": return trust.lead(b.seat, b.lane, key);
-    case "lei-returned": case "lei-narrowed": case "roster": case "receipt": return trust.vessel(key);
+    case "lei-returned": case "lei-narrowed": case "rite-begun": case "rite-landed": case "roster": case "receipt": return trust.vessel(key);
   }
 };
 
