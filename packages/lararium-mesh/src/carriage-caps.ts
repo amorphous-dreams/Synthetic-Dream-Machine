@@ -179,11 +179,11 @@ export function dampedRadius(rCurrent: number, degree: number, gamma = R_DAMP): 
   return (1 - gamma) * rCurrent + gamma * rTarget;
 }
 
-// ── MeshSelf — the ONE derived mesh self-dial (the 6-param sprawl collapsed) ──────────────────────
+// ── MeshSelf — the ONE derived mesh self-dial ──────────────────────
 
 /**
- * A vessel's mesh standing — the single bundle the options layer carries (was six scattered params:
- * selfCoord, selfBearing, selfEndpoint, peers, maxFanout, seed). `composeHerm`/`openNodeVessel` unpack
+ * A vessel's mesh standing — the single bundle the options layer carries (selfCoord, selfBearing,
+ * selfEndpoint, peers, maxFanout, seed). `composeHerm`/`openNodeVessel` unpack
  * it back into the caps' granular interface; the self-announce dial DERIVES from bearing + endpoint
  * Present → self-announce + self-peer + proximity re-rank + r-drift; absent
  * → a leaf that only carries what it pulls.
@@ -211,7 +211,7 @@ export function hashUnit(s: string): number {
 }
 
 /**
- * deriveMeshSelf — the ONE mesh self-dial derivation (was duplicated across main.ts's two branches).
+ * deriveMeshSelf — the ONE mesh self-dial derivation; every boot branch reads this one.
  * Every vessel is a NODE on the chart: θ = a content-blind FNV hash of the address, r = carriage standing
  * (radius, default 1 — the node entry supplies `LAR_RADIUS`), bearing = `…/bags/oracle/node/<label>` (`LAR_SEED` label, else hash-derived).
  */

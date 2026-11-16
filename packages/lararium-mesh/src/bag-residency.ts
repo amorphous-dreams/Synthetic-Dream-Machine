@@ -37,9 +37,9 @@ export type BagUrl = string;
  *   wela ("hot")  — live + reacting; handle in cache; the island's Worker runs.
  *   anu  ("cold") — torn down; URL known, doc not loaded; resume by spawn + `ea`.
  *
- * TWO states only. The `warm` (mahana) middle tier was cut: a suspended Worker
- * still holds its heap, so warm did NOT shed the memory this model exists to
- * bound, and it had no actor-system precedent (the Orleans/Akka two-state
+ * TWO states only, no `warm` (mahana) middle tier: a suspended Worker
+ * still holds its heap, so warm would NOT shed the memory this model exists to
+ * bound, and it carries no actor-system precedent (the Orleans/Akka two-state
  * virtual-actor model). Reintroduce only behind a measured resume-cost problem
  * AND a real memory-shedding suspend (isolate evicted, handle-cache retained).
  *

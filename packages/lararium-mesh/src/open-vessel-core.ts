@@ -80,7 +80,7 @@ export interface VesselKeel {
   catalogHandle: DocHandle<LarDoc>;
   /** Resolve-or-fallback a doc handle.
    *
-   *  ⚠ NOT `allowableStates` — that option carries `@deprecated This no longer has any effect` in the
+   *  ⚠ NOT `allowableStates` — that option carries an upstream deprecation tag and takes no effect in the
    *  pinned automerge-repo, so a strategy resting on it rests on nothing. Progress reads through
    *  `findWithProgress`, which reports per-source state rather than one collapsed verdict. */
   waitHandle:    <T>(url: AutomergeUrl, fallback: () => DocHandle<T>) => Promise<DocHandle<T>>;

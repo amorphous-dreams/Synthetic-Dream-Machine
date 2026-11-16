@@ -349,19 +349,19 @@ export type JoinedFaceAuth = Required<Pick<NonNullable<IslandMsg_Manifest["daemo
  * Cool the wiki slot from `wela` (hot) to `anu` (cold) — teardown; thread
  * terminates. Type literal `"hooanu"` — Hawaiian: hoʻoanu, "to cool."
  *
- * The temperature register replaces an organizational rank register (the old
- * `"demote"`) that would conflict with the residency-model ACTION verb surface.
+ * The verb rides a temperature register, never an organizational rank register (a
+ * `"demote"`), which would conflict with the residency-model ACTION verb surface.
  * The two thermal states wear ʻōlelo Hawaiʻi: `wela` / `anu` (see
  * residency-tiers.md).
  *
  * Counterpart: `anu` → `wela` (hoʻowela, "to heat") happens at the vessel layer
  * via `vessel-island-pool.mountWiki` — a fresh worker boots and runs `ea` — not
  * via a worker-side signal. A `warm` middle tier (suspended-not-terminated,
- * resume by a hoʻomahana signal) was proposed and CUT: a
- * suspended Worker still holds its heap, so it did not shed memory, and the
+ * resume by a hoʻomahana signal) stays out: a
+ * suspended Worker still holds its heap, so it would not shed memory, and the
  * proven virtual-actor runtimes use two states. Reintroduce only behind a
  * measured resume-cost problem AND a memory-shedding suspend — reopening
- * condition in residency-tiers.md #warm-cut. No HooMahana signal type today.
+ * condition in residency-tiers.md #warm-cut. No HooMahana signal type stands.
  */
 export interface IslandMsg_HooAnu {
   type: "hooanu";

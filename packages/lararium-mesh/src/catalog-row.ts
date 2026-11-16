@@ -22,7 +22,7 @@ import { ownEntry } from "./stored-value.js";
  *
  * Divergence stays in the two arguments, never the protocol: `resolve` carries
  * the platform's repo strategy (node races whenReady; browser uses
- * `findWithProgress` — `allowableStates` reads `@deprecated … no longer has any effect`), and
+ * `findWithProgress` — `allowableStates` carries an upstream deprecation tag and takes no effect), and
  * `provenance` carries the authority stamp. The
  * read → resolve → write-back-on-mint shape lives here once; both vessel
  * factories compose it for their wiki and draft satellites.
