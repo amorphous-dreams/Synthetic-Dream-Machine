@@ -228,3 +228,100 @@ test("rite-walk-scratch-only: the walker's arguments refuse by name", () => {
   refuses(() => parseArgs(["--live"]), /unknown argument --live/);
   assert.deepEqual(parseArgs(["--out", "o", "--to", "seed", "--keep"]), { keep: true, bind: false, out: "o", to: "seed" });
 });
+
+// ── the image leg ───────────────────────────────────────────────────────────────────────────────────────────────────
+
+const imageLeg = await import("./rite-walk/image-leg.mjs");
+const SCOPE = { base: "/tmp/rite-image-test/base", project: "lares-rehearsal", port: "4399", image: "lares-rehearsal:local", realHome: "/home/someone", checkout: ROOT };
+
+test("image-scope-refuses-the-operators-surface: project, port, image and home each refuse by name before any act", () => {
+  const scope = imageLeg.assertImageScope(SCOPE);
+  for (const path of [scope.home, scope.house, scope.workspace, scope.envFile, scope.compose, scope.bin, scope.dockerLog]) assert.ok(path.startsWith(`${scope.base}/`), path);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, project: "lares-surface" }), /operator's own surface/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, project: "lares-surface-two" }), /operator's own surface/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, port: "4321" }), /operator's own surface port/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, image: "lares-surface:local" }), /operator's own image/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, image: "lares-surface:other" }), /operator's own image/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, base: "/home/someone" }), /holds the home/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, base: "/home" }), /holds the home/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, base: "/home/someone/.lares/x" }), /stands inside/);
+  refuses(() => imageLeg.assertImageScope({ ...SCOPE, base: join(ROOT, "scratch-house") }), /overlaps the checkout/);
+  for (const name of ["base", "project", "port", "image"]) refuses(() => imageLeg.assertImageScope({ ...SCOPE, [name]: undefined }), /names nothing/);
+});
+
+test("image-compose-copy-names-the-project: the live surface file rewrites its name and its build context once each", () => {
+  const live = readFileSync(join(ROOT, "docker-compose.surface.yml"), "utf8");
+  const copy = imageLeg.composeCopy(live, { project: "lares-rehearsal", context: "/abs/checkout" });
+  assert.match(copy, /^name: lares-rehearsal$/m);
+  assert.doesNotMatch(copy, /^name: lares-surface$/m);
+  assert.match(copy, /^ {4}context: \/abs\/checkout$/m);
+  assert.equal(copy.split("\n").length, live.split("\n").length);
+  refuses(() => imageLeg.composeCopy(live.replace(/^name: lares-surface$/m, "name: other"), { project: "p", context: "/c" }), /carries 0/);
+  const env = imageLeg.surfaceEnvText(imageLeg.assertImageScope(SCOPE), { uid: 1000, gid: 1000 });
+  assert.match(env, /^LARES_PORT=4399$/m);
+  assert.match(env, /^COMPOSE_PROJECT_NAME=lares-rehearsal$/m);
+  assert.match(env, /^LARES_PULAMA=1$/m);
+});
+
+test("image-docker-wrapper-holds-the-scope: every call logs, compose carries the project, the operator's names refuse", () => {
+  const dir = scratch();
+  try {
+    const real = join(dir, "real-docker"), wrapper = join(dir, "docker"), log = join(dir, "docker.log");
+    // The stand-in engine prints its argv; `container inspect` answers the project label of the container named.
+    writeFileSync(real, "#!/bin/sh\nif [ \"$1\" = container ]; then case \"$5\" in mine) echo lares-rehearsal ;; theirs) echo another ;; *) exit 1 ;; esac; exit 0; fi\nprintf 'REAL'; for a in \"$@\"; do printf ' %s' \"$a\"; done; printf '\\n'\n", { mode: 0o755 });
+    writeFileSync(wrapper, imageLeg.dockerWrapperText({ real, project: "lares-rehearsal", image: "lares-rehearsal:local", log }), { mode: 0o755 });
+    const docker = (...args) => spawnSync(wrapper, args, { encoding: "utf8" });
+    assert.equal(docker("compose", "--env-file", "/e", "ps", "-q").stdout.trim(), "REAL compose -p lares-rehearsal --env-file /e ps -q");
+    assert.equal(docker("compose", "-p", "lares-rehearsal", "ps").stdout.trim(), "REAL compose -p lares-rehearsal ps");
+    assert.equal(docker("image", "inspect", "--format", "{{.Id}}", "lares-rehearsal:local").status, 0);
+    assert.equal(docker("inspect", "--format", "{{.State.Status}}", "mine").status, 0);
+    const refused = [
+      ["compose", "-p", "lares-surface", "ps"], ["compose", "-p", "other", "ps"], ["compose", "ps", "-p", "other"], ["compose", "--project-name=other", "ps"],
+      ["image", "inspect", "lares-surface:local"], ["image", "inspect", "node:24-slim"], ["image", "rm", "lares-rehearsal:local"],
+      ["rm", "-f", "lares-surface-lares-1"], ["stop", "theirs"], ["exec", "theirs", "sh"], ["run", "--rm", "-p", "127.0.0.1:4321:4321", "x"],
+      ["system", "prune"], ["rmi", "lares-rehearsal:local"], ["volume", "rm", "x"], ["ps"],
+    ];
+    for (const args of refused) { const r = docker(...args); assert.equal(r.status, 97, args.join(" ")); assert.doesNotMatch(r.stdout, /REAL/, args.join(" ")); }
+    const lines = readFileSync(log, "utf8").trim().split("\n");
+    assert.equal(lines.length, 4 + refused.length, "every call, passed or refused, rests in the log");
+    assert.match(lines[0], /\tdocker compose -p lares-rehearsal --env-file \/e ps -q$/);
+    assert.equal(lines.filter((l) => l.includes("\tREFUSED (")).length, refused.length);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("image-walk-keeps-the-outcome-law: a blocked step reads unreached, a throw fails, a stand-in never reads a bare pass", async () => {
+  const steps = [
+    { id: "a", command: "a", via: "pty" }, { id: "b", command: "b", needs: ["a"] }, { id: "c", command: "c" },
+    { id: "d", command: "d", needs: ["c"] }, { id: "e", command: "e" },
+  ];
+  const rows = await imageLeg.walkImage(steps, {
+    now: () => 0,
+    run: async (step) => {
+      if (step.id === "c") throw new Error("the engine never answered");
+      if (step.id === "e") return { unreached: "door-absent", answer: "exit 2: unknown command" };
+      return { ok: true, answer: "ok", measures: { n: 1 } };
+    },
+  });
+  assert.deepEqual(rows.map((r) => [r.step, verdict(r)]), [["a", "pass (pty)"], ["b", "pass"], ["c", "fail"], ["d", "unreached: blocked:c"], ["e", "unreached: door-absent"]]);
+  assert.equal(row(rows, "c").answer, "the engine never answered");
+  assert.deepEqual(row(rows, "a").measures, { n: 1 });
+  assert.deepEqual(imageLeg.imageReceiptFaults(rows, steps), []);
+  assert.match(imageLeg.imageReceiptFaults([{ ...row(rows, "a"), via: undefined }, ...rows.slice(1)], steps).join("\n"), /a: a bare pass over a pty stand-in/);
+  assert.match(imageLeg.imageReceiptFaults(rows.slice(1), steps).join("\n"), /a: the receipt carries no row/);
+  assert.match(imageLeg.imageReceiptFaults([{ ...row(rows, "d"), cause: undefined }, ...rows.filter((r) => r.step !== "d")], steps).join("\n"), /d: unreached and names no cause/);
+});
+
+test("image-leg-table-ends-in-teardown, and the line refuses before any act where it names no scope", () => {
+  const ids = imageLeg.IMAGE_STEPS.map((s) => s.id);
+  assert.equal(ids.at(-1), "teardown");
+  assert.equal(new Set(ids).size, ids.length);
+  for (const step of imageLeg.IMAGE_STEPS) for (const need of step.needs ?? []) assert.ok(ids.indexOf(need) < ids.indexOf(step.id), `${step.id} needs ${need}, which stands later`);
+  assert.equal(imageLeg.IMAGE_STEPS.find((s) => s.id === "teardown").needs, undefined, "teardown waits on nothing");
+  refuses(() => imageLeg.parseImageArgs(["--image-leg", "--prune"]), /unknown argument/);
+  const bare = spawnSync(process.execPath, [WALKER, "--image-leg", "--out", "/tmp/never"], { encoding: "utf8" });
+  assert.equal(bare.status, 2, bare.stderr);
+  assert.match(bare.stderr, /--base names nothing/);
+  const theirs = spawnSync(process.execPath, [WALKER, "--image-leg", "--base", "/tmp/rite-image-never/base", "--project", "lares-surface", "--port", "4399", "--image", "lares-rehearsal:local", "--out", "/tmp/never"], { encoding: "utf8" });
+  assert.equal(theirs.status, 2, theirs.stderr);
+  assert.ok(!existsSync("/tmp/rite-image-never"), "a refused line lays no ground");
+});
