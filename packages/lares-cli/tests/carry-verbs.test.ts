@@ -427,6 +427,27 @@ describe("the carry verbs", () => {
     expect(after.records.has("lar:///ha.ka.ba/notes/elsewhere")).toBe(false);
   });
 
+  test("carry-mints-an-empty-shared-wiki — every wiki the catalog holds carries, a wiki with no page and its share row among them", async () => {
+    const shares = [{ slug: "quiet", kind: "wiki" as const, read: "hearth-one", write: "", owner: "hearth-one" }];
+    const before = oldVessel();
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: { ...before.doors(), shareRows: { read: () => shares, write: () => {} }, userWikis: async () => ["quiet", "unshared"] } });
+    expect(manifest.files.some((f) => f.path.startsWith("wikis/quiet/"))).toBe(false);
+    const after = refound();
+    after.held = new Set(["garden"]);
+    const wikiMints: string[] = [];
+    let written: readonly unknown[] = [];
+    const doors = { ...after.doors(), mintWiki: async (slug: string) => { wikiMints.push(slug); after.held.add(slug); }, shareRows: { read: () => [], write: (rows: readonly unknown[]) => { written = rows; } } };
+    const preview = await carryImport(out, { apply: false, doors });
+    expect(preview.minted).toEqual(["lar:///ha.ka.ba/bags/quiet", "lar:///ha.ka.ba/bags/unshared"]);
+    expect(wikiMints).toEqual([]);
+    const result = await carryImport(out, { apply: true, doors });
+    expect(result.minted).toEqual(["lar:///ha.ka.ba/bags/quiet", "lar:///ha.ka.ba/bags/unshared"]);
+    expect(wikiMints).toEqual(["quiet", "unshared"]);
+    expect(written).toEqual(shares);
+    // CONTROL: a wiki the vessel already holds mints nothing again.
+    expect(after.mints).toEqual([]);
+  });
+
   test("C12 — the manifest lists the library's collections by index digest; no original enters the bundle", async () => {
     put("library/books/index.mem", "the books index\n");
     put("library/books/abc123/moby-dick.txt", "Call me Ishmael.");

@@ -101,7 +101,11 @@ export interface CarryRedeclareFace {
  * another party would leak that map (cabal-realm#/the-workbench: no roster joins a human's faces).
  */
 export interface CarryShareRow { readonly slug: string; readonly kind: "bag" | "wiki"; readonly read: string; readonly write: string; readonly owner?: string; readonly workspace?: string; readonly note?: string }
-export interface CarryRedeclare { readonly schema: typeof CARRY_SCHEMA; readonly faces: readonly CarryRedeclareFace[]; readonly shares?: readonly CarryShareRow[] }
+/**
+ * The re-declare list. `wikis` names every user wiki the catalog held, by slug: a wiki stands as a catalog row before it holds a
+ * page, so a wiki with no workbench row (nothing under `wikis/<slug>/working`) still carries, and the import mints it.
+ */
+export interface CarryRedeclare { readonly schema: typeof CARRY_SCHEMA; readonly faces: readonly CarryRedeclareFace[]; readonly shares?: readonly CarryShareRow[]; readonly wikis?: readonly string[] }
 
 /** One standing head of a face's kahua stage, as the fold read it: the import re-lifts it under the new grant. */
 export interface CarryKahuaHead {
@@ -243,6 +247,9 @@ export function verifyBundle(root: string): VerifiedBundle {
     }
   }
   if ((redeclareRaw.faces as unknown[]).length !== faceKeys.size) throw new CarryBundleRefused("bundle-redeclare-shape: the re-declare list and the manifest name different faces");
+  if (redeclareRaw.wikis !== undefined && (!Array.isArray(redeclareRaw.wikis) || (redeclareRaw.wikis as unknown[]).some((w) => !isStr(w) || !/^[a-z0-9][a-z0-9-]*$/.test(w)))) {
+    throw new CarryBundleRefused("bundle-redeclare-shape: the re-declare list's wikis name something no wiki slug spells");
+  }
 
   const fileSha = new Map((files as CarryFile[]).map((f) => [f.path, f.sha256] as const));
   const heads = new Map<string, CarryKahuaHead[]>();

@@ -46,7 +46,7 @@ const reading = (over = {}) => ({
       ...over.steward,
     },
   },
-  house: { shares: { "wiki notes": "owner=steward read=engineer write=" }, ...over.house },
+  house: { shares: { "wiki notes": "owner=steward read=engineer write=" }, wikis: { notes: "user", quiet: "user" }, ...over.house },
   allowed: { relations: { steward: "11111111-1111-4111-8111-111111111111" }, kahuaCids: {}, ...over.allowed },
 });
 
@@ -68,7 +68,7 @@ test("P1 a missing, a changed and an extra row each read red under their class a
     steward: {
       memes: { "default lar:///ha.ka.ba/kahua/memory/state/heron": "sha256:a2", "default lar:///ha.ka.ba/kahua/memory/feedback/kite": "sha256:dd" },
     },
-    house: { shares: {} },
+    house: { shares: {}, wikis: { notes: "user" } },
   });
   const r = compareCensus([old], [fresh]);
   assert.equal(r.verdict, "red");
@@ -78,6 +78,7 @@ test("P1 a missing, a changed and an extra row each read red under their class a
     "face:steward memes extra default lar:///ha.ka.ba/kahua/memory/feedback/kite",
     "face:steward memes missing default lar:///ha.ka.ba/kahua/memory/reference/pond",
     "house shares missing wiki notes",
+    "house wikis missing quiet",
   ]);
   const changed = r.differences.find((d) => d.kind === "changed");
   assert.equal(changed.old, "sha256:aa");

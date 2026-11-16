@@ -21,7 +21,8 @@
  *      copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
  *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
  *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
- *   5. writes `manifest.json` and `re-declare.json`, reads every byte back against the manifest, and only then moves
+ *   5. writes `manifest.json` and `re-declare.json` (with every user wiki the catalog holds, by slug, so a wiki that holds no
+ *      page still carries), reads every byte back against the manifest, and only then moves
  *      the bundle into place.
  *
  * IMPORT (previews by default; `--apply` writes):
@@ -167,6 +168,8 @@ export interface CarryDoors {
   readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[]; readonly inWiki?: boolean; readonly wiki?: string; readonly face?: number }) => Promise<CarryIngestAnswer>;
   /** The wiki slugs this vessel's catalog registers. */
   readonly heldSlugs: () => Promise<ReadonlySet<string>>;
+  /** The USER wikis this vessel's catalog registers (`list-wikis`, kind `user`), by slug: each carries, a wiki with no page among them. Absent: none travels. */
+  readonly userWikis?: () => Promise<readonly string[]>;
   /** Mint a bag through the existing CREATE road. It stands the bag alone: no recipe row, so no wiki answers to the slug. */
   readonly mintBag: (bagUri: string) => Promise<void>;
   /** Mint a WIKI through the wiki door (`init-wiki`: its canon, its draft and its recipe row), idempotent. Absent: `mintBag`. */
@@ -265,6 +268,12 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
     if (r.status === "error") throw new Error(r.errorMessage ?? "list-wikis refused");
     const wikis = (summaryOutput(r) as { wikis?: Array<{ slug?: unknown }> } | null)?.wikis ?? [];
     return new Set(wikis.map((w) => String(w.slug)));
+  },
+  userWikis: async () => {
+    const r = await runVerb("list-wikis", {}, await vesselDid());
+    if (r.status === "error") throw new Error(r.errorMessage ?? "list-wikis refused");
+    const wikis = (summaryOutput(r) as { wikis?: Array<{ slug?: unknown; kind?: unknown }> } | null)?.wikis ?? [];
+    return wikis.filter((w) => w.kind === "user").map((w) => String(w.slug)).sort();
   },
   mintBag: async (bagUri) => {
     // The CREATE road `lares act CREATE --bag` walks (`act.ts`): the catalog plane, a fresh change nonce in the effect key.
@@ -570,6 +579,12 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
   const cold = doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : [];
   if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki hold <slug>\`), then export again`, items: [...cold].sort(), count: cold.length });
+  // A WIKI THAT HOLDS NO PAGE carries by its catalog row alone; a sourced wiki rides git with its canon, and the daemon wiki is each face's own.
+  let userWikis: string[] = [];
+  if (doors.userWikis) {
+    try { userWikis = [...(await doors.userWikis())].filter((slug) => slug !== "daemon" && doors.sourced?.(slug) !== true && !isPrivateProjectionSlug(slug)).sort(); }
+    catch (e) { throw new CarryRefused("carry-wikis-unread", `the catalog's wiki list would not read (${e instanceof Error ? e.message : String(e)}), so a wiki that holds no page would stay behind unnamed: stand the vessel and export again`); }
+  }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
@@ -610,6 +625,8 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       faces: named.map((f): CarryRedeclareFace => ({ face: keyOf.get(f.handleIndex)!, handleIndex: f.handleIndex, petname: f.petname!, handle: f.handle, seat: f.seat, chair: f.seat ? f.chair : null })),
       // THE SHARE ROWS travel with the workbenches they seat: owner and seats by pet-name, the operator's own private carry.
       ...((): { shares?: CarryShareRow[] } => { const rows = doors.shareRows?.read() ?? []; return rows.length > 0 ? { shares: rows.map((r) => ({ ...r })) } : {}; })(),
+      // EVERY USER WIKI, by slug: a wiki stands before it holds a page, so one with no workbench row still re-stands at the import.
+      ...(userWikis.length > 0 ? { wikis: userWikis } : {}),
     };
     put(REDECLARE_FILE, `${JSON.stringify(redeclare, null, 2)}\n`);
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
@@ -1038,7 +1055,9 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
 
   // EVERY OTHER WIKI AND HOUSE-MINTED BAG, by slug: a slug this vessel does not hold mints first, through CREATE.
   const slugsOf = (re: RegExp): string[] => [...new Set(manifest.files.map((f) => re.exec(f.path)?.[1]).filter((s): s is string => s !== undefined))].sort();
-  const bagSlugs = slugsOf(/^bags\/([^/]+)\//), wikiSlugs = slugsOf(/^wikis\/([^/]+)\/working\//);
+  const bagSlugs = slugsOf(/^bags\/([^/]+)\//);
+  // A wiki re-stands from its workbench rows or from the catalog row the re-declare list names (a wiki that holds no page).
+  const wikiSlugs = [...new Set([...slugsOf(/^wikis\/([^/]+)\/working\//), ...(redeclare.wikis ?? [])])].sort();
   /** The slugs this vessel did not hold before the import: their layers mint fresh, so no mirror file reads already landed there. */
   const freshSlugs = new Set<string>();
   /** The slugs that wait for their owner's wear: nothing of them mints or lands under this face. */

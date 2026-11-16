@@ -23,7 +23,9 @@
 //   kahua   the face's kahua heads: title -> sha256(text) (the cid is recorded, never compared);
 //   kapae   each kāpae shadow under the projections: `<layer> <title>`, the face relation in the layer named by pet-name;
 // and house-wide:
-//   shares  each share row: `<kind> <slug>` -> owner, readers and writers by pet-name.
+//   shares  each share row: `<kind> <slug>` -> owner, readers and writers by pet-name;
+//   wikis   each wiki the catalog lists (`wiki list`): slug -> kind, so a wiki that holds no page still reads, and a carry that
+//           leaves one behind reads red by name.
 //
 // WHAT MAY DIFFER, BY NAME (`MAY_DIFFER`): what a founding re-mints and the carry never carries. The census records the face
 // relations and kahua cids under `allowed` so a person sees them; nothing there decides the verdict.
@@ -69,7 +71,7 @@ const RELATION = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g
 const byPetname = (s, relationToPetname) => s.replace(RELATION, (rel) => relationToPetname[rel] ?? "<F>");
 
 export const FACE_CLASSES = ["memes", "unread", "index", "plain", "kahua", "kapae"];
-export const HOUSE_CLASSES = ["shares"];
+export const HOUSE_CLASSES = ["shares", "wikis"];
 
 /** What a founding re-mints and the carry never carries: named, recorded where a door reads it, never compared. */
 export const MAY_DIFFER = [
@@ -174,7 +176,7 @@ export function stoodOffUris(importText) {
 export function receiptLines(receipt) {
   const c = receipt.counts;
   if (receipt.verdict === "par") {
-    return [`carry-parity: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows read equal`, ...standOffLines(receipt)];
+    return [`carry-parity: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows, ${c.wikis} wikis read equal`, ...standOffLines(receipt)];
   }
   const lines = [`carry-parity: red — ${receipt.differences.length} difference(s)`];
   for (const d of receipt.differences) {
@@ -277,11 +279,12 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
   }
   const relationToPetname = Object.fromEntries(Object.entries(relations).map(([pet, rel]) => [rel, pet]));
   const reading = { schema: CENSUS_SCHEMA, label, faces, face: {}, house: {}, allowed: { relations, kahuaCids } };
+  const wikis = read(lares, ["wiki", "list", "--json"]).wikis ?? [];
   if (worn) {
     const pet = worn.face.petname ?? `h${worn.face.handleIndex}`;
     const classes = { memes: {}, unread: {}, index: {}, plain: {}, kahua: {}, kapae: {} };
     const unreadDetail = {};
-    const slugs = (read(lares, ["wiki", "list", "--json"]).wikis ?? []).map((w) => String(w.slug)).filter((s) => s !== "daemon").sort();
+    const slugs = wikis.map((w) => String(w.slug)).filter((s) => s !== "daemon").sort();
     for (const recipe of ["default", ...slugs]) {
       // A wiki whose listing refuses reads as a row of its own (`unread`), never as an empty listing: the door's code
       // compares across the houses, and the receipt names every wiki that stood unread on either side.
@@ -326,6 +329,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
     if (Object.keys(unreadDetail).length > 0) reading.unread = { [pet]: unreadDetail };
   }
   reading.house.shares = root ? await shareRows(root) : {};
+  reading.house.wikis = Object.fromEntries(wikis.map((w) => [String(w.slug), String(w.kind ?? "")]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)));
   return reading;
 }
 
