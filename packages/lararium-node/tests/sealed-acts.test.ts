@@ -181,7 +181,7 @@ describe("the sealed-act table", () => {
 
   test("T6 — an act that meets a row it cannot open refuses under the row's name", async () => {
     const c = await vessel("acts-t6");
-    await c.holder.writeRow("identity", handleBookFile(0), new TextEncoder().encode("{}"));
+    await c.holder.writeRecord("identity", handleBookFile(0), new TextEncoder().encode("{}"));
     writeFileSync(handleRecordPath(handleBookFile(0)), "{\"cleartext\":true}");
     const refusal = await runSealedAct("handle-book.load", { face: 0 }, ctx).catch((e: unknown) => e);
     expect(refusal).toBeInstanceOf(CustodyRowUnavailable);

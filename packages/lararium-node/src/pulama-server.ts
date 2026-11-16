@@ -12,7 +12,7 @@
  * reading. The gate claims the lei's return before it answers, so nothing serves ahead of the claim.
  *
  * ── THE SESSION SERVES A WORKING VESSEL AND NOTHING A HUMAN ROUTE GUARDS ────────────────────────
- *   hot rows       read, write, update, move, remove, and the two claims (`withRows`, `exclusive`)
+ *   hot rows       read, write, update, move, remove, and the two claims (`withRecords`, `exclusive`)
  *   face rows      of the face the lei names; another face's rows refuse `outside-the-lei`
  *   cold rows      refuse `needs-the-human`, but for a READ of a row the scope's `coldReads` names (the rows a boot to
  *                  composition reads unattended); a cold write, a cold removal and every other cold row refuse
@@ -29,7 +29,7 @@
  * runs the same lock.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import type { CustodyHolder, FaceRef, RowReading } from "./custody-holder.js";
+import type { CustodyHolder, FaceRef, RecordReading } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import { PulamaRefused, copyReading, packRefusal, readingOf, sameBytes, sameReading, type PulamaChannel, type PulamaFrame } from "./pulama-wire.js";
 import { carrierTable, type CustodyHome, type FaceSelector } from "./vault-carriers.js";
@@ -59,14 +59,14 @@ export interface PulamaServer {
   sessions(): number;
 }
 
-type RowClass =
+type RecordClass =
   | { readonly kind: "node"; readonly cold: boolean; readonly row: string }
   | { readonly kind: "face"; readonly cold: boolean; readonly row: string; readonly selector: Exclude<FaceSelector, null> }
   | { readonly kind: "warded" }
   | { readonly kind: "unknown" };
 
 /** Which carrier row a `(home, file)` names, as the holder's own resolver reads the table. */
-function classify(home: CustodyHome, file: string): RowClass {
+function classify(home: CustodyHome, file: string): RecordClass {
   const table = carrierTable();
   const node = table.find((r) => {
     if (r.home !== home || (r.custody !== "hot" && r.custody !== "cold")) return false;
@@ -84,7 +84,7 @@ function classify(home: CustodyHome, file: string): RowClass {
 
 const HOMES: ReadonlySet<string> = new Set(["identity", "storage", "seal"]);
 
-interface Claim { rows: Parameters<Parameters<CustodyHolder["withRows"]>[0]>[0] | null; readonly end: () => void; done: Promise<unknown> }
+interface Claim { rows: Parameters<Parameters<CustodyHolder["withRecords"]>[0]>[0] | null; readonly end: () => void; done: Promise<unknown> }
 interface Session { readonly channel: PulamaChannel; readonly scope: PulamaScope; readonly claims: Map<number, Claim>; open: boolean }
 
 export function servePulama(a: {
@@ -158,14 +158,14 @@ export function servePulama(a: {
   const inScope = (s: Session, found: { readonly fcid: string } | null): boolean => found === null || s.scope.face === null || found.fcid === s.scope.face.fcid;
 
   /** A row's standing reading through the holder's update door, which reads under the holder's own claim and writes nothing. */
-  const standingRow = (home: CustodyHome, file: string, cold: boolean): Promise<RowReading> =>
-    cold ? holder.updateColdRow(home, file, (r) => ({ plaintext: null, value: copyReading(r) }))
-      : holder.updateRow(home, file, (r) => ({ plaintext: null, value: copyReading(r) }));
+  const standingRow = (home: CustodyHome, file: string, cold: boolean): Promise<RecordReading> =>
+    cold ? holder.updateColdRecord(home, file, (r) => ({ plaintext: null, value: copyReading(r) }))
+      : holder.updateRecord(home, file, (r) => ({ plaintext: null, value: copyReading(r) }));
 
   const run = async (s: Session, op: string, args: Record<string, unknown>): Promise<unknown> => {
     switch (op) {
-      case "row.read": { const { home, file } = rowOf(args); await guard(s, home, file, "hot"); return holder.readRow(home, file); }
-      case "row.write": { const { home, file } = rowOf(args); await guard(s, home, file, "cold-write"); return holder.writeRow(home, file, bytesOf(args["plaintext"])); }
+      case "row.read": { const { home, file } = rowOf(args); await guard(s, home, file, "hot"); return holder.readRecord(home, file); }
+      case "row.write": { const { home, file } = rowOf(args); await guard(s, home, file, "cold-write"); return holder.writeRecord(home, file, bytesOf(args["plaintext"])); }
       case "row.standing": {
         const { home, file } = rowOf(args), cold = args["cold"] === true;
         await guard(s, home, file, cold ? "cold-read" : "hot");
@@ -176,29 +176,29 @@ export function servePulama(a: {
         await guard(s, home, file, cold ? "cold-write" : "hot");
         const expect = readingOf(args["expect"]), plaintext = bytesOf(args["plaintext"]);
         if (expect === null) throw new PulamaRefused("pulama-frame-malformed", "a swap names the reading it decided over");
-        const decide = (r: RowReading) => sameReading(r, expect) ? { plaintext, value: true } : { plaintext: null, value: false };
-        return cold ? holder.updateColdRow(home, file, decide) : holder.updateRow(home, file, decide);
+        const decide = (r: RecordReading) => sameReading(r, expect) ? { plaintext, value: true } : { plaintext: null, value: false };
+        return cold ? holder.updateColdRecord(home, file, decide) : holder.updateRecord(home, file, decide);
       }
       case "row.remove": {
         const { home, file } = rowOf(args), cold = args["cold"] === true;
         await guard(s, home, file, cold ? "cold-write" : "hot");
-        if (args["expect"] === undefined) return cold ? holder.removeColdRow(home, file) : holder.removeRow(home, file);
+        if (args["expect"] === undefined) return cold ? holder.removeColdRecord(home, file) : holder.removeRecord(home, file);
         const expect = bytesOf(args["expect"]);
         let stood = false;
         const when = (bytes: Uint8Array): boolean => { stood = true; return sameBytes(bytes, expect); };
-        const removed = cold ? await holder.removeColdRow(home, file, when) : await holder.removeRow(home, file, when);
+        const removed = cold ? await holder.removeColdRecord(home, file, when) : await holder.removeRecord(home, file, when);
         return { removed, stood };
       }
       case "row.cold-open": {
         const { home, file } = rowOf(args);
         await guard(s, home, file, "cold-read");
-        return holder.openColdRow(home, file, (plaintext) => Uint8Array.from(plaintext));
+        return holder.openColdRecord(home, file, (plaintext) => Uint8Array.from(plaintext));
       }
       case "row.move": {
         const { home, file: source } = rowOf(args, "source"), { file: destination } = rowOf(args, "destination");
         await guard(s, home, source, "cold-write");
         await guard(s, home, destination, "cold-write");
-        return holder.moveRow(home, source, destination, bytesOf(args["expected"]));
+        return holder.moveRecord(home, source, destination, bytesOf(args["expected"]));
       }
       case "claim.begin": {
         const kind = args["kind"], id = nextClaim++;
@@ -215,7 +215,7 @@ export function servePulama(a: {
             entered({ claim: id });
             await until;
           };
-          claim.done = (kind === "rows" ? holder.withRows((rows) => hold(rows)) : holder.exclusive(() => hold(null)))
+          claim.done = (kind === "rows" ? holder.withRecords((rows) => hold(rows)) : holder.exclusive(() => hold(null)))
             .catch((err: unknown) => { refused(err); });
         });
       }

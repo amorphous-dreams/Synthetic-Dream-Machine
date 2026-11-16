@@ -71,10 +71,10 @@ describe("the identity home's sealed family", () => {
   });
 
   test("A3 a row that opens and holds another shape refuses by name", async () => {
-    await c.holder.writeRow("identity", "anchors-h0.json", new TextEncoder().encode(JSON.stringify({ personaGroupId: "aa11" })));
+    await c.holder.writeRecord("identity", "anchors-h0.json", new TextEncoder().encode(JSON.stringify({ personaGroupId: "aa11" })));
     await expect(loadIdentityAnchors()).rejects.toThrow(CustodyRowUnavailable);
     await expect(loadIdentityAnchors()).rejects.toThrow(/anchors-h0\.json reads malformed/);
-    await c.holder.writeRow("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ ...anchors, deviceEdge: "not-an-object" })));
+    await c.holder.writeRecord("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ ...anchors, deviceEdge: "not-an-object" })));
     await expect(loadIdentityAnchors(1)).rejects.toThrow(/malformed/);
     // control
     await persistIdentityAnchors(anchors, 3);

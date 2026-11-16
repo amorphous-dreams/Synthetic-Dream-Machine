@@ -88,7 +88,7 @@ describe("the custody seat's removal door", () => {
   test("X4 — a cold row's removal reads the row first: a row it declines stays, and the one it accepts leaves", async () => {
     const c = await custody("remove-x4");
     const COLD = "recovery-device-share-h0.bin";
-    await c.holder.writeRow("identity", COLD, text("a cold share"));
+    await c.holder.writeRecord("identity", COLD, text("a cold share"));
     const cold = handleRecordPathIn(c.homes.identity, COLD);
     const standing = readFileSync(cold);
     const seen: string[] = [];
@@ -98,7 +98,7 @@ describe("the custody seat's removal door", () => {
     expect(await removeColdCustodyRecord("identity", COLD, (plaintext) => new TextDecoder().decode(plaintext) === "a cold share")).toBe(true);
     expect(existsSync(cold)).toBe(false);
     // control: with no reading asked, a cold row its key opens leaves
-    await c.holder.writeRow("identity", COLD, text("a cold share"));
+    await c.holder.writeRecord("identity", COLD, text("a cold share"));
     expect(await removeColdCustodyRecord("identity", COLD)).toBe(true);
   });
 });

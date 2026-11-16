@@ -38,7 +38,7 @@ describe("RED pulama-session-drops-with-socket", () => {
     let channel: PulamaChannel | null = null;
     const vessel = makePulamaHolder({ homes: fx.seat.homes, offer: () => ({}), dial: async () => (channel = await dialPulama(path)) });
     expect((await vessel.unlock([])).reading).toBe("opens");
-    await vessel.writeRow("identity", HOT, Uint8Array.from([5]));
+    await vessel.writeRecord("identity", HOT, Uint8Array.from([5]));
     expect(fx.server.sessions()).toBe(1);
     let closed = 0;
     vessel.onClosed(() => { closed += 1; });
@@ -59,15 +59,15 @@ describe("RED pulama-session-drops-with-socket", () => {
     expect(localRan).toBe(true);
     await vi.waitFor(() => expect(closed).toBe(1));
     expect(vessel.isUnlocked()).toBe(false);
-    await expect(vessel.writeRow("identity", HOT, Uint8Array.from([6]))).rejects.toBeInstanceOf(CustodyLocked);
-    expect(await vessel.readRow("identity", HOT)).toEqual({ reading: "locked" });
+    await expect(vessel.writeRecord("identity", HOT, Uint8Array.from([6]))).rejects.toBeInstanceOf(CustodyLocked);
+    expect(await vessel.readRecord("identity", HOT)).toEqual({ reading: "locked" });
     // The pūlama stays lit through the drop, and the row the session wrote stands.
     expect(fx.kept.isUnlocked()).toBe(true);
-    expect(await fx.kept.readRow("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([5]) });
+    expect(await fx.kept.readRecord("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([5]) });
 
     // CONTROL: the same vessel dials again and the pūlama serves it.
     expect((await vessel.unlock([])).reading).toBe("opens");
-    expect(await vessel.readRow("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([5]) });
+    expect(await vessel.readRecord("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([5]) });
     // The listener's close drops the session too, and removes the socket file.
     await listener.close(); listener = null;
     await vi.waitFor(() => expect(vessel.isUnlocked()).toBe(false));

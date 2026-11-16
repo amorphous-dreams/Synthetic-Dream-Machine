@@ -47,43 +47,43 @@ async function stand() {
 describe("RED remote-holder-matches-local: the vessel's side of a pūlama answers as the in-process holder does", () => {
   test("hot rows read, write, update, move and remove alike, and each sees the other's writes", async () => {
     const { both, fx: f, remote } = await stand();
-    expect(await both((h) => h.readRow("identity", HOT))).toEqual({ value: { reading: "absent" } });
-    await remote.writeRow("identity", HOT, bytes(1, 2, 3));
-    expect(await both((h) => h.readRow("identity", HOT))).toEqual({ value: { reading: "opens", plaintext: bytes(1, 2, 3) } });
+    expect(await both((h) => h.readRecord("identity", HOT))).toEqual({ value: { reading: "absent" } });
+    await remote.writeRecord("identity", HOT, bytes(1, 2, 3));
+    expect(await both((h) => h.readRecord("identity", HOT))).toEqual({ value: { reading: "opens", plaintext: bytes(1, 2, 3) } });
     // A decision runs on the caller's side and its write lands under the holder's claim.
-    expect(await both((h) => h.updateRow("identity", HOT, (r) => ({ plaintext: r.reading === "opens" ? Uint8Array.from([...r.plaintext, 9]) : null, value: r.reading })))).toEqual({ value: "opens" });
-    expect(await f.local.readRow("identity", HOT)).toEqual({ reading: "opens", plaintext: bytes(1, 2, 3, 9, 9) });
+    expect(await both((h) => h.updateRecord("identity", HOT, (r) => ({ plaintext: r.reading === "opens" ? Uint8Array.from([...r.plaintext, 9]) : null, value: r.reading })))).toEqual({ value: "opens" });
+    expect(await f.local.readRecord("identity", HOT)).toEqual({ reading: "opens", plaintext: bytes(1, 2, 3, 9, 9) });
     // A decision that writes nothing leaves the row, and one that throws lands nothing.
-    expect(await both((h) => h.updateRow("identity", HOT, () => ({ plaintext: null, value: "left" })))).toEqual({ value: "left" });
-    expect(await both((h) => h.updateRow("identity", HOT, () => { throw new Error("the decision refused"); }))).toEqual({ refused: "Error", message: "the decision refused" });
+    expect(await both((h) => h.updateRecord("identity", HOT, () => ({ plaintext: null, value: "left" })))).toEqual({ value: "left" });
+    expect(await both((h) => h.updateRecord("identity", HOT, () => { throw new Error("the decision refused"); }))).toEqual({ refused: "Error", message: "the decision refused" });
     // A removal's predicate reads the standing bytes; a row it declines stays.
-    expect(await both((h) => h.removeRow("identity", HOT, (p) => p.length === 1))).toEqual({ value: false });
-    expect(await both((h) => h.removeRow("identity", ".persona-grant-pending.json"))).toEqual({ value: false });
+    expect(await both((h) => h.removeRecord("identity", HOT, (p) => p.length === 1))).toEqual({ value: false });
+    expect(await both((h) => h.removeRecord("identity", ".persona-grant-pending.json"))).toEqual({ value: false });
     // A predicate over a row nothing stands at removes nothing, and never runs.
-    expect(await both((h) => h.removeRow("identity", ".persona-grant-pending.json", () => true))).toEqual({ value: false });
-    expect(await remote.removeRow("identity", HOT, (p) => p.length === 5)).toBe(true);
-    expect(await both((h) => h.readRow("identity", HOT))).toEqual({ value: { reading: "absent" } });
+    expect(await both((h) => h.removeRecord("identity", ".persona-grant-pending.json", () => true))).toEqual({ value: false });
+    expect(await remote.removeRecord("identity", HOT, (p) => p.length === 5)).toBe(true);
+    expect(await both((h) => h.readRecord("identity", HOT))).toEqual({ value: { reading: "absent" } });
     // A row no carrier names, and a cold row at a hot door, refuse by the holder's own name on both sides.
-    expect((await both((h) => h.readRow("identity", "no-such-row.bin")) as { refused: string }).refused).toBe(new CustodyRowUnknown("identity", "x").name);
-    expect((await both((h) => h.readRow("identity", "intent-relay-key.bin")) as { refused: string }).refused).toBe("CustodyRowUnknown");
+    expect((await both((h) => h.readRecord("identity", "no-such-row.bin")) as { refused: string }).refused).toBe(new CustodyRowUnknown("identity", "x").name);
+    expect((await both((h) => h.readRecord("identity", "intent-relay-key.bin")) as { refused: string }).refused).toBe("CustodyRowUnknown");
   });
 
   test("face rows, a row move and the rows claim answer alike", async () => {
     const { both, fx: f, remote } = await stand();
     const atom = faceAtomGroupFile(GROUP);
-    await remote.writeRow("identity", atom, bytes(7, 7));
-    expect(await both((h) => h.readRow("identity", atom))).toEqual({ value: { reading: "opens", plaintext: bytes(7, 7) } });
-    expect(await both((h) => h.withRows(async (rows) => [await rows.read("identity", atom), await rows.read("identity", HOT), await rows.remove("identity", atom, (b) => b.length === 9)]))).toEqual({ value: [bytes(7, 7), null, false] });
-    expect(await remote.withRows((rows) => rows.remove("identity", atom, (b) => b.length === 2))).toBe(true);
-    expect(await f.local.readRow("identity", atom)).toEqual({ reading: "absent" });
+    await remote.writeRecord("identity", atom, bytes(7, 7));
+    expect(await both((h) => h.readRecord("identity", atom))).toEqual({ value: { reading: "opens", plaintext: bytes(7, 7) } });
+    expect(await both((h) => h.withRecords(async (rows) => [await rows.read("identity", atom), await rows.read("identity", HOT), await rows.remove("identity", atom, (b) => b.length === 9)]))).toEqual({ value: [bytes(7, 7), null, false] });
+    expect(await remote.withRecords((rows) => rows.remove("identity", atom, (b) => b.length === 2))).toBe(true);
+    expect(await f.local.readRecord("identity", atom)).toEqual({ reading: "absent" });
     // The exclusive claim runs the caller's act while the pūlama holds the custody claim, and releases it after.
     expect(await both((h) => h.exclusive(async () => "ran"))).toEqual({ value: "ran" });
     expect(await both((h) => h.exclusive(async () => { throw new Error("the act refused"); }))).toEqual({ refused: "Error", message: "the act refused" });
-    await f.local.writeRow("identity", HOT, bytes(4));
-    expect(await both((h) => h.readRow("identity", HOT))).toEqual({ value: { reading: "opens", plaintext: bytes(4) } });
+    await f.local.writeRecord("identity", HOT, bytes(4));
+    expect(await both((h) => h.readRecord("identity", HOT))).toEqual({ value: { reading: "opens", plaintext: bytes(4) } });
     // A face the index does not name reads absent and removes nothing, on both sides.
-    expect(await both((h) => h.readRow("identity", faceAtomGroupFile("group-nobody-founded")))).toEqual({ value: { reading: "absent" } });
-    expect(await both((h) => h.removeRow("identity", faceAtomGroupFile("group-nobody-founded")))).toEqual({ value: false });
+    expect(await both((h) => h.readRecord("identity", faceAtomGroupFile("group-nobody-founded")))).toEqual({ value: { reading: "absent" } });
+    expect(await both((h) => h.removeRecord("identity", faceAtomGroupFile("group-nobody-founded")))).toEqual({ value: false });
   });
 
   test("a face's standing, its ward key, the derived children and the cold read the scope names answer alike", async () => {
@@ -99,25 +99,25 @@ describe("RED remote-holder-matches-local: the vessel's side of a pūlama answer
     expect(() => remote.derive(PERSONA_SCOPE_INFO)).toThrow(PulamaRefused);
     // The per-Nexus key a boot reads unattended: a cold row the scope names reads through, and both sides read the same bytes.
     const proof = faceProofKeyFile(0, NEXUS);
-    await f.local.updateColdRow("identity", proof, () => ({ plaintext: new Uint8Array(32).fill(5), value: null }));
-    expect(await both((h) => h.updateColdRow("identity", proof, (r) => ({ plaintext: null, value: r.reading === "opens" ? [...r.plaintext] : r.reading })))).toEqual({ value: new Array(32).fill(5) });
-    expect(await both((h) => h.openColdRow("identity", proof, (p) => [...p]))).toEqual({ value: new Array(32).fill(5) });
+    await f.local.updateColdRecord("identity", proof, () => ({ plaintext: new Uint8Array(32).fill(5), value: null }));
+    expect(await both((h) => h.updateColdRecord("identity", proof, (r) => ({ plaintext: null, value: r.reading === "opens" ? [...r.plaintext] : r.reading })))).toEqual({ value: new Array(32).fill(5) });
+    expect(await both((h) => h.openColdRecord("identity", proof, (p) => [...p]))).toEqual({ value: new Array(32).fill(5) });
   });
 
   test("a locked pūlama answers the vessel as a locked holder answers: rows refuse CustodyLocked, a locked face FaceLocked", async () => {
     const { fx: f, face, remote } = await stand();
     await f.kept.lockFace(face.fcid);
-    await expect(remote.writeRow("identity", faceAtomGroupFile(GROUP), bytes(1))).rejects.toBeInstanceOf(FaceLocked);
-    expect(await remote.readRow("identity", faceAtomGroupFile(GROUP))).toEqual({ reading: "locked", fcid: face.fcid });
-    await f.local.writeRow("identity", HOT, bytes(1));
-    await f.local.updateRow("identity", HOT, () => ({ plaintext: bytes(0xff), value: null }));
+    await expect(remote.writeRecord("identity", faceAtomGroupFile(GROUP), bytes(1))).rejects.toBeInstanceOf(FaceLocked);
+    expect(await remote.readRecord("identity", faceAtomGroupFile(GROUP))).toEqual({ reading: "locked", fcid: face.fcid });
+    await f.local.writeRecord("identity", HOT, bytes(1));
+    await f.local.updateRecord("identity", HOT, () => ({ plaintext: bytes(0xff), value: null }));
     // A row that stands and does not open names what stands, across the channel, as the same class.
-    const torn = remote.updateRow("identity", HOT, (r) => { if (r.reading === "unavailable") throw new CustodyRowUnavailable("identity", HOT, r.why); return { plaintext: null, value: r.reading }; });
+    const torn = remote.updateRecord("identity", HOT, (r) => { if (r.reading === "unavailable") throw new CustodyRowUnavailable("identity", HOT, r.why); return { plaintext: null, value: r.reading }; });
     await expect(torn).resolves.toBe("opens");
     await f.server.lock();
     expect(remote.isUnlocked()).toBe(false);
-    expect(await remote.readRow("identity", HOT)).toEqual({ reading: "locked" });
-    await expect(remote.writeRow("identity", HOT, bytes(2))).rejects.toBeInstanceOf(CustodyLocked);
+    expect(await remote.readRecord("identity", HOT)).toEqual({ reading: "locked" });
+    await expect(remote.writeRecord("identity", HOT, bytes(2))).rejects.toBeInstanceOf(CustodyLocked);
     expect(() => remote.derive(FLOOR_REST_KEY_INFO)).toThrow(CustodyLocked);
   });
 });

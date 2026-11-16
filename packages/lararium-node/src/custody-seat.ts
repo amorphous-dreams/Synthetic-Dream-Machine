@@ -37,7 +37,7 @@
  * Node-main only: a worker never imports this module.
  */
 import { FLOOR_REST_KEY_INFO, GATE_FLOOR_BUNDLE_INFO, WardRefused, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RowUpdate, type WardSeat } from "./custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RecordUpdate, type WardSeat } from "./custody-holder.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
@@ -114,7 +114,7 @@ export async function openedCustody(): Promise<CustodyHolder> {
 
 /** One sealed row's plaintext, or `null` when nothing stands there. Every other reading refuses by name. */
 export async function readCustodyRecord(home: CustodyHome, file: string): Promise<Uint8Array | null> {
-  const r = await (await openedCustody()).readRow(home, file);
+  const r = await (await openedCustody()).readRecord(home, file);
   if (r.reading === "opens") return r.plaintext;
   if (r.reading === "absent") return null;
   if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
@@ -123,7 +123,7 @@ export async function readCustodyRecord(home: CustodyHome, file: string): Promis
 
 /** Seal `plaintext` as one row, through the one sealed writer, under the key the seat holds. */
 export async function writeCustodyRecord(home: CustodyHome, file: string, plaintext: Uint8Array): Promise<void> {
-  await (await openedCustody()).writeRow(home, file, plaintext);
+  await (await openedCustody()).writeRecord(home, file, plaintext);
 }
 
 /**
@@ -131,9 +131,9 @@ export async function writeCustodyRecord(home: CustodyHome, file: string, plaint
  * when nothing stands there, and answers its next plaintext (`null` writes nothing) beside the caller's answer.
  */
 export async function updateCustodyRecord<T>(
-  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
+  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RecordUpdate<T>,
 ): Promise<T> {
-  return (await openedCustody()).updateRow(home, file, (r) => {
+  return (await openedCustody()).updateRecord(home, file, (r) => {
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
     if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
@@ -148,12 +148,12 @@ export async function updateCustodyRecord<T>(
  * hold: a row it declines stays, and the removal answers false.
  */
 export async function removeCustodyRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
-  return (await openedCustody()).removeRow(home, file, when);
+  return (await openedCustody()).removeRecord(home, file, when);
 }
 
 /** Move a row pair under one holder claim; both rows keep standing if the destination holds other bytes. */
 export async function moveCustodyRecord(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void> {
-  return (await openedCustody()).moveRow(home, source, destination, expected);
+  return (await openedCustody()).moveRecord(home, source, destination, expected);
 }
 
 /** Hold the founding custody claim across a row scan and every retirement it decides. */
@@ -161,7 +161,7 @@ export async function withCustodyRecords<T>(act: (rows: {
   read(home: CustodyHome, file: string): Promise<Uint8Array | null>;
   remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean>;
 }) => Promise<T>): Promise<T> {
-  return (await openedCustody()).withRows(act);
+  return (await openedCustody()).withRecords(act);
 }
 
 /**
@@ -170,7 +170,7 @@ export async function withCustodyRecords<T>(act: (rows: {
  * given, reads the standing plaintext under the same hold: a row it declines stays, and the removal answers false.
  */
 export async function removeColdCustodyRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
-  return (await openedCustody()).removeColdRow(home, file, when);
+  return (await openedCustody()).removeColdRecord(home, file, when);
 }
 
 /**
@@ -181,7 +181,7 @@ export async function removeColdCustodyRecord(home: CustodyHome, file: string, w
 export async function openColdCustodyRecord<T>(
   home: CustodyHome, file: string, act: (plaintext: Uint8Array) => Promise<T> | T,
 ): Promise<T> {
-  return (await openedCustody()).openColdRow(home, file, act);
+  return (await openedCustody()).openColdRecord(home, file, act);
 }
 
 /**
@@ -191,9 +191,9 @@ export async function openColdCustodyRecord<T>(
  * before `decide` runs, so a mint never lands over a secret it could not read.
  */
 export async function updateColdCustodyRecord<T>(
-  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RowUpdate<T>,
+  home: CustodyHome, file: string, decide: (plaintext: Uint8Array | null) => RecordUpdate<T>,
 ): Promise<T> {
-  return (await openedCustody()).updateColdRow(home, file, (r) => {
+  return (await openedCustody()).updateColdRecord(home, file, (r) => {
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
     if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();

@@ -86,7 +86,7 @@ async function seedPublic(seed: Uint8Array): Promise<string> {
 function rootFile(i: number): string { return `.persona-group-root-h${i}.json`; }
 /** One cold row's JSON, opened for this one read through the fixture's own holder. */
 const cold = <T>(file: string): Promise<T> =>
-  c.holder.openColdRow("identity", file, (plain) => JSON.parse(new TextDecoder().decode(plain)) as T);
+  c.holder.openColdRecord("identity", file, (plain) => JSON.parse(new TextDecoder().decode(plain)) as T);
 /** A face root row rests under the face's WARD: unlocked custody never reaches it. These two doors run the ward route (one fresh unlock per act). */
 const rootIndexOf = (file: string): number => Number(/-h(\d+)\.json$/.exec(file)![1]);
 const wardCold = <T>(file: string): Promise<T> =>
@@ -116,7 +116,7 @@ describe("sealed vessel identity family", () => {
     expect(minted.created).toBe(true);
     expect(existsSync(at(rosterFile(0)))).toBe(true);
     expect(read(rosterFile(0)).length).toBeGreaterThan(0);
-    const rosterRow = await c.holder.readRow("identity", rosterFile(0));
+    const rosterRow = await c.holder.readRecord("identity", rosterFile(0));
     expect(rosterRow.reading).toBe("opens");
     if (rosterRow.reading === "opens") expect(JSON.parse(new TextDecoder().decode(rosterRow.plaintext))).toEqual({ roots: [{ handleIndex: 0, verifyingKey: minted.verifyingKey }] });
     const lines = await listPersonaRosterLines();
@@ -132,7 +132,7 @@ describe("sealed vessel identity family", () => {
   test("V2 an unrostered standing root has no readers and adoption preserves its bytes", async () => {
     const first = await generateOrLoadPersonaGroupRoot(2);
     const roster = read(rosterFile(2));
-    await c.holder.updateRow("identity", rosterFile(2), () => ({ plaintext: enc({ roots: [] }), value: undefined }));
+    await c.holder.updateRecord("identity", rosterFile(2), () => ({ plaintext: enc({ roots: [] }), value: undefined }));
     const orphan = read(rootFile(2));
     expect(await listPersonaRoots()).toEqual([]);
     expect(await personaRootExists(2)).toBe(false);
@@ -171,8 +171,8 @@ describe("sealed vessel identity family", () => {
   test("V3b unlocked custody never reaches the face root row; the ward route opens it", async () => {
     const minted = await generateOrLoadPersonaGroupRoot(0);
     await expect(cold(rootFile(0))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
-    await expect(c.holder.readRow("identity", rootFile(0))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
-    await expect(c.holder.writeRow("identity", rootFile(0), enc({}))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    await expect(c.holder.readRecord("identity", rootFile(0))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
+    await expect(c.holder.writeRecord("identity", rootFile(0), enc({}))).rejects.toBeInstanceOf(WardNeedsFreshUnlock);
     // control: the ward route opens it
     expect((await wardCold<{ verifyingKey: string }>(rootFile(0))).verifyingKey).toBe(minted.verifyingKey);
   });
@@ -236,7 +236,7 @@ describe("sealed vessel identity family", () => {
       const before = existsSync(at(file)) ? read(file) : null;
       for (const shape of shapes) {
         const shaped = typeof shape === "string" ? bytes(shape) : enc(shape);
-        if (file === rootFile(0)) await wardWrite(file, shaped); else await c.holder.writeRow("identity", file, shaped);
+        if (file === rootFile(0)) await wardWrite(file, shaped); else await c.holder.writeRecord("identity", file, shaped);
         const standing = read(file);
         await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(CustodyRowUnavailable);
         await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(new RegExp(`${file.replace(/[.]/g, "\\.")} reads malformed`));
@@ -308,7 +308,7 @@ describe("sealed vessel identity family", () => {
       expect(read(petFile(i)).includes(Buffer.from(`label-${i}`))).toBe(false);
       expect(read(publicFile(i)).includes(Buffer.from(`nym-${i}`))).toBe(false);
       for (const [file, field] of [[petFile(i), "names"], [declarationFile(i), "declarations"], [publicFile(i), "handles"]] as const) {
-        const row = await c.holder.readRow("identity", file);
+        const row = await c.holder.readRecord("identity", file);
         expect(row.reading, `${file} opens`).toBe("opens");
         if (row.reading === "opens") expect(Object.keys(JSON.parse(new TextDecoder().decode(row.plaintext))[field]), `${file} carries only its face`).toEqual([String(i)]);
       }
@@ -345,7 +345,7 @@ describe("sealed vessel identity family", () => {
     for (const i of [3, 4, 5]) await pets.clear(i); // found each face with an empty map before the second holder writes
     const other = makeCustodyHolder({ io: c.io, homes: c.homes }); await other.adopt(c.treeKey);
     await other.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
-    const viaOther = (i: number) => other.updateRow("identity", petFile(i), (row) => {
+    const viaOther = (i: number) => other.updateRecord("identity", petFile(i), (row) => {
       const names = row.reading === "opens" ? JSON.parse(new TextDecoder().decode(row.plaintext)).names as Record<string, string> : {};
       names[String(i)] = `p${i}`; return { plaintext: enc({ names }), value: undefined };
     });
@@ -456,7 +456,7 @@ describe("sealed vessel identity family", () => {
   test("V16 an orphan root reads by its canonical name alone", async () => {
     const minted = await generateOrLoadPersonaGroupRoot(1);
     const sealedRoot = read(rootFile(1));
-    await c.holder.updateRow("identity", rosterFile(1), () => ({ plaintext: enc({ roots: [] }), value: undefined }));
+    await c.holder.updateRecord("identity", rosterFile(1), () => ({ plaintext: enc({ roots: [] }), value: undefined }));
     writeFileSync(at(".persona-group-root-h01.json"), sealedRoot);
     expect(await orphanPersonaRoots()).toEqual([1]);          // control: the canonical spelling names the orphan
     rmSync(at(rootFile(1)));

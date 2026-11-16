@@ -117,7 +117,7 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
   beforeEach(async () => { custody = await seatScratchCustody(); await generateOrLoadPersonaGroupRoot(0); });
   afterEach(async () => { await custody.drop(); });
   const openBook = async (): Promise<{ records: Array<{ nym: string; petname?: string }> }> => {
-    const row = await custody.holder.readRow("identity", ".handle-book-h0.json");
+    const row = await custody.holder.readRecord("identity", ".handle-book-h0.json");
     if (row.reading !== "opens") throw new Error(`the handle-book reads ${row.reading}`);
     return JSON.parse(new TextDecoder().decode(row.plaintext));
   };

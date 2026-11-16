@@ -23,7 +23,7 @@
  */
 import {
   CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown, FaceCustodyAbsent, FaceLocked, WardAbsent, WardNeedsFreshUnlock,
-  type RowReading,
+  type RecordReading,
 } from "./custody-holder.js";
 import type { CustodyHome } from "./vault-carriers.js";
 
@@ -121,14 +121,14 @@ export function unpackRefusal(raw: unknown): Error {
 }
 
 /** A row's reading, copied: the bytes a holder hands a decision zero-fill once it returns, so what crosses holds its own. */
-export function copyReading(r: RowReading): RowReading {
+export function copyReading(r: RecordReading): RecordReading {
   return r.reading === "opens" ? { reading: "opens", plaintext: Uint8Array.from(r.plaintext) } : r;
 }
 
 export const sameBytes = (a: Uint8Array, b: Uint8Array): boolean => a.length === b.length && a.every((x, i) => x === b[i]);
 
 /** Whether two readings name the same standing row: the same reading, the same bytes, the same refusal. */
-export function sameReading(a: RowReading, b: RowReading): boolean {
+export function sameReading(a: RecordReading, b: RecordReading): boolean {
   if (a.reading !== b.reading) return false;
   if (a.reading === "opens" && b.reading === "opens") return sameBytes(a.plaintext, b.plaintext);
   if (a.reading === "unavailable" && b.reading === "unavailable") return a.why === b.why;
@@ -137,7 +137,7 @@ export function sameReading(a: RowReading, b: RowReading): boolean {
 }
 
 /** A reading as it arrived off the channel, or null where the value forms none. */
-export function readingOf(raw: unknown): RowReading | null {
+export function readingOf(raw: unknown): RecordReading | null {
   const r = raw as { reading?: unknown; plaintext?: unknown; why?: unknown; fcid?: unknown } | null;
   if (typeof r !== "object" || r === null) return null;
   if (r.reading === "opens" && r.plaintext instanceof Uint8Array) return { reading: "opens", plaintext: r.plaintext };

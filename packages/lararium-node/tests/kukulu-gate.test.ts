@@ -73,10 +73,10 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     const vessel = s.fx.vessel({ lei, vouch: v });
     expect((await vessel.unlock([])).reading).toBe("opens");
     expect(vessel.wears()).toBe(0);
-    await vessel.writeRow("identity", HOT, Uint8Array.from([1]));
-    expect(await vessel.readRow("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([1]) });
+    await vessel.writeRecord("identity", HOT, Uint8Array.from([1]));
+    expect(await vessel.readRecord("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([1]) });
     expect(KUKULU_COLD_READS).toEqual(["face-proof-key", "intent-relay-key"]);
-    await expect(vessel.updateColdRow("identity", "intent-relay-key.bin", () => ({ plaintext: new Uint8Array(32), value: null }))).rejects.toMatchObject({ reading: "needs-the-human" });
+    await expect(vessel.updateColdRecord("identity", "intent-relay-key.bin", () => ({ plaintext: new Uint8Array(32), value: null }))).rejects.toMatchObject({ reading: "needs-the-human" });
 
     // The offered lei landed at the family's own title and reads there as the hand's.
     const leiTitle = swarmLeiRecordTitle("kukulu", BRANCH, cid);

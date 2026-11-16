@@ -18,9 +18,9 @@
  * pūlama's own hand door. `lock` leaves the session and never dims the pūlama.
  *
  * ── A DECISION RUNS HERE, THE WRITE LANDS THERE ─────────────────────────────────────────────────
- * `updateRow` reads the row's standing, decides on this side, and asks the pūlama to write only where the row still
+ * `updateRecord` reads the row's standing, decides on this side, and asks the pūlama to write only where the row still
  * stands as decided over; a row that moved meanwhile decides again. So no writer lands between the reading a decision
- * saw and its write, as one holder's claim gives the in-process holder. `withRows` and `exclusive` hold the pūlama's
+ * saw and its write, as one holder's claim gives the in-process holder. `withRecords` and `exclusive` hold the pūlama's
  * claim across the act and release it when the act settles or the channel drops.
  *
  * `derive` answers synchronously from the children the session carried, under the domains the pūlama serves a session.
@@ -29,7 +29,7 @@
  */
 import {
   CustodyLocked, CustodyRowUnavailable,
-  type CustodyHolder, type FaceRef, type FaceUnlock, type HolderUnlock, type RowReading, type RowUpdate,
+  type CustodyHolder, type FaceRef, type FaceUnlock, type HolderUnlock, type RecordReading, type RecordUpdate,
 } from "./custody-holder.js";
 import { PulamaRefused, copyReading, readingOf, unpackRefusal, type PulamaChannel, type PulamaFrame } from "./pulama-wire.js";
 import type { CustodyHome, CustodyHomes } from "./vault-carriers.js";
@@ -160,14 +160,14 @@ export function makePulamaHolder(a: {
     return { reading: "opens", slot: stood.standing.slot ?? "pulama" };
   };
 
-  const reading = async (op: string, args: Readonly<Record<string, unknown>>): Promise<RowReading> => {
+  const reading = async (op: string, args: Readonly<Record<string, unknown>>): Promise<RecordReading> => {
     const r = readingOf(await call(op, args));
     if (r === null) throw new PulamaRefused("pulama-frame-malformed", "the pūlama answered no row reading");
     return r;
   };
 
   /** Read, decide here, write there only where the row still stands as decided over. */
-  const update = async <T>(home: CustodyHome, file: string, cold: boolean, decide: (standing: RowReading) => RowUpdate<T>): Promise<T> => {
+  const update = async <T>(home: CustodyHome, file: string, cold: boolean, decide: (standing: RecordReading) => RecordUpdate<T>): Promise<T> => {
     for (;;) {
       const standing = await reading("row.standing", { home, file, cold });
       // The swap compares against what the pūlama read, held apart: a decision that writes into the bytes it was handed never moves it.
@@ -177,7 +177,7 @@ export function makePulamaHolder(a: {
         if (standing.reading === "opens") standing.plaintext.fill(0);
         if (expect.reading === "opens") expect.plaintext.fill(0);
       };
-      let next: RowUpdate<T>;
+      let next: RecordUpdate<T>;
       let write: Uint8Array | null;
       try {
         next = decide(standing);
@@ -239,14 +239,14 @@ export function makePulamaHolder(a: {
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
     openedSlot: () => session?.standing.slot ?? null,
-    async readRow(home, file) {
+    async readRecord(home, file) {
       if (session === null) return { reading: "locked" };
       return reading("row.read", { home, file });
     },
-    async writeRow(home, file, plaintext) { await call("row.write", { home, file, plaintext }); },
-    updateRow: (home, file, decide) => update(home, file, false, decide),
-    async moveRow(home, source, destination, expected) { await call("row.move", { home, source, destination, expected }); },
-    withRows(act) {
+    async writeRecord(home, file, plaintext) { await call("row.write", { home, file, plaintext }); },
+    updateRecord: (home, file, decide) => update(home, file, false, decide),
+    async moveRecord(home, source, destination, expected) { await call("row.move", { home, source, destination, expected }); },
+    withRecords(act) {
       return claimed("rows", (claim) => act({
         async read(home, file) { return await call("rows.read", { claim, home, file }) as Uint8Array | null; },
         async remove(home, file, when) {
@@ -258,13 +258,13 @@ export function makePulamaHolder(a: {
         },
       }));
     },
-    removeRow: (home, file, when) => remove(home, file, false, when),
-    removeColdRow: (home, file, when) => remove(home, file, true, when),
-    async openColdRow(home, file, act) {
+    removeRecord: (home, file, when) => remove(home, file, false, when),
+    removeColdRecord: (home, file, when) => remove(home, file, true, when),
+    async openColdRecord(home, file, act) {
       const plaintext = await call("row.cold-open", { home, file }) as Uint8Array;
       try { return await act(plaintext); } finally { plaintext.fill(0); }
     },
-    updateColdRow: (home, file, decide) => update(home, file, true, decide),
+    updateColdRecord: (home, file, decide) => update(home, file, true, decide),
     exclusive: (act) => claimed("exclusive", () => act()),
     derive(domain) {
       if (session === null) throw new CustodyLocked();

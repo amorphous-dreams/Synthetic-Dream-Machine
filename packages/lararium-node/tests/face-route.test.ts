@@ -60,7 +60,7 @@ describe("a face founds under the route it asks for", () => {
     await settleFaceCustody(foundingAskDigest(ask), group, () => keepAndRetireFoundingSeed(group, ask, seed));
     expect(await loadFaceAtomOfGroup(group)).toEqual(seed);
     const holder = seatedCustody()!;
-    expect((await holder.readRow("identity", pendingFoundingFile(ask))).reading).toBe("absent");
+    expect((await holder.readRecord("identity", pendingFoundingFile(ask))).reading).toBe("absent");
     expect(await holder.faceStanding({ group: personaGroupDigest(group) })).toMatchObject({ ask: null, group: personaGroupDigest(group), unlocked: true });
     expect(faceAtomGroupFile(group)).toMatch(/^face-atom-g[0-9a-f]{64}\.bin$/);
     // the same settle again moves nothing and refuses nothing

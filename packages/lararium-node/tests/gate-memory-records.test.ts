@@ -234,7 +234,7 @@ describe("a gate's memory behind the custody seat", () => {
     expect(JSON.parse(new TextDecoder().decode((await rows.read(OTHER))!))).toEqual([e("z"), e("y")]);
     // A standing row that opens to no list refuses by name and keeps its bytes.
     const MAL = "ef".repeat(32);
-    await c.holder.writeRow("identity", gateMemoryRecordFile(0, MAL), text("{}"));
+    await c.holder.writeRecord("identity", gateMemoryRecordFile(0, MAL), text("{}"));
     const malformed = readFileSync(rowPath(c, MAL));
     const refused = await rows.write(MAL, text("[1]")).catch((err: unknown) => err);
     expect(refused).toBeInstanceOf(CustodyRowUnavailable);

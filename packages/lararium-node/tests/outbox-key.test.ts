@@ -62,7 +62,7 @@ describe("the outbox key's row", () => {
     await expect(openOutboxKey(0)).rejects.toBeInstanceOf(CustodyLocked);
     expect(existsSync(path())).toBe(false);
     await c.holder.adopt(c.treeKey);
-    await c.holder.writeRow("identity", outboxKeyFile(0), new Uint8Array(16));
+    await c.holder.writeRecord("identity", outboxKeyFile(0), new Uint8Array(16));
     const before = readFileSync(path());
     await expect(openOutboxKey(0)).rejects.toBeInstanceOf(OutboxKeyUnreadable);
     expect(readFileSync(path()).equals(before)).toBe(true);

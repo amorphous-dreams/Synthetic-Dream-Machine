@@ -529,7 +529,7 @@ export { gateMemoryRecords, gateMemoryRecordFile, GateMemoryRecordRefused } from
 export { gateGrantFor, gateGrantRing } from "./gate-rings.js";
 export type { GateGrantRing, GateGrantRingReaders, GateRootHolding } from "./gate-rings.js";
 export { custodyGateDoor, seatCustody, unseatCustody, seatCustodyWhenNeeded, seatedCustody, custodyHeld, openedCustody, readCustodyRecord, writeCustodyRecord, updateCustodyRecord, openColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
-export type { RowUpdate } from "./custody-holder.js";
+export type { RecordUpdate } from "./custody-holder.js";
 export type { CustodyOpener } from "./custody-seat.js";
 // The ward (seat-harness#/the-ward): the face root seed opens fresh under a human route for one act.
 export { WardNeedsFreshUnlock, WardAbsent } from "./custody-holder.js";
@@ -543,7 +543,7 @@ export { bindFaceSlot, unbindFaceSlot, FaceTreeUnreadable } from "./face-slot-op
 export { openFaceTree } from "./face-custody.js";
 export { faceRouteSeated, seatFaceRoute, faceRouteBindDigest, parkFaceRoute, gatherFaceRoute, ensureFaceCustodyOfGroup, ensureFaceCustodyOfAsk, FaceRouteAbsent } from "./face-route.js";
 export type { FaceRouteGatherer } from "./face-route.js";
-export type { CustodyHolder, HolderUnlock, RowReading } from "./custody-holder.js";
+export type { CustodyHolder, HolderUnlock, RecordReading } from "./custody-holder.js";
 export { custodyFrameHandler, isCustodyFrame } from "./custody-frames.js";
 // The verb socket's front, named here for a suite that stands a custody door as the vessel's main thread does.
 export { serveUdsFront, makeUdsSeat, type UdsFront, type UdsSessionDoor, type UdsSessionSupply, type SessionAnchor } from "./uds-channel.js";

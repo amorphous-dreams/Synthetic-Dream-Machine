@@ -530,7 +530,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     // A NAMES ROW THAT STANDS AND DOES NOT READ WHOLE refuses by its own name before the commit row: the landing
     // meets no row the preflight has not already read.
     await foundVessel("torn");
-    await seatedCustody()!.writeRow("identity", ".persona-petnames-h1.json", new TextEncoder().encode("{ this row reads as no map"));
+    await seatedCustody()!.writeRecord("identity", ".persona-petnames-h1.json", new TextEncoder().encode("{ this row reads as no map"));
     before = homeTree();
     expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody row identity\/\.persona-petnames.*reads malformed/);
     expect(homeTree()).toBe(before);

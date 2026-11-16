@@ -248,8 +248,8 @@ describe("a cut refuses by name, and a refused cut seals nothing", () => {
   test("C4 — under its own shadow the cut refuses `own-edge-shadowed`: the shadow reads once, no island ask leaves and no root row opens", async () => {
     let reads = 0;
     const lend = door({ ownEdgeShadowed: async () => { reads++; return true; } });
-    const openCold = vi.spyOn(seat.holder, "openColdRow");
-    const readHot = vi.spyOn(seat.holder, "readRow");
+    const openCold = vi.spyOn(seat.holder, "openColdRecord");
+    const readHot = vi.spyOn(seat.holder, "readRecord");
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: lend.door }))).toBe("own-edge-shadowed");
     expect(reads).toBe(1);
     expect(lend.asked).toEqual([]);

@@ -70,7 +70,7 @@ describe("the face proof's custody rows and signing doors", () => {
     const moved = Uint8Array.from(IMAGE); moved[0]! ^= 1;
     expect(verifies(scope.faceKey, moved, signature)).toBe(false);
     // cold: a hot read of the row refuses; it opens per act alone
-    await expect(c.holder.readRow("identity", file)).rejects.toThrow(/cold rows require openColdRow/);
+    await expect(c.holder.readRecord("identity", file)).rejects.toThrow(/cold rows require openColdRecord/);
   });
 
   test("K2 — the vessel face key rests sealed and hot; the door signs under the key it holds and no other", async () => {
@@ -129,7 +129,7 @@ describe("the face proof's custody rows and signing doors", () => {
       }
       writeFileSync(at(file), intact);
       await door();   // control: the intact row signs again
-      await c.holder.writeRow("identity", file, new Uint8Array(31));
+      await c.holder.writeRecord("identity", file, new Uint8Array(31));
       await expect(door(), file).rejects.toThrow(/reads malformed/);
     }
   });

@@ -77,7 +77,7 @@ describe("a seat's own key on the custody seat", () => {
     // An upper-case spelling of the same key reaches the same row.
     expect(verifies(key, IMAGE, await signAsSeat(key.toUpperCase(), IMAGE))).toBe(true);
     // cold: a hot read of the row refuses; it opens per act alone
-    await expect(c.holder.readRow("identity", file)).rejects.toThrow(/cold rows require openColdRow/);
+    await expect(c.holder.readRecord("identity", file)).rejects.toThrow(/cold rows require openColdRecord/);
     // A stored secret rests sealed too, and no byte of it reads in the clear.
     await storeSeatKey(0, SECRET);
     expect(readFileSync(at(seatKeyFile(KEY, 0))).includes(Buffer.from(SECRET))).toBe(false);
@@ -119,7 +119,7 @@ describe("a seat's own key on the custody seat", () => {
     await expect(storeSeatKey(1, SECRET)).rejects.toThrow(/stands under another face/);
     expect(seatFiles()).toEqual([file]);
     // Other bytes standing under this key's own name refuse, and stay.
-    await c.holder.writeRow("identity", file, secretOf(60));
+    await c.holder.writeRecord("identity", file, secretOf(60));
     const planted = readFileSync(at(file));
     await expect(storeSeatKey(0, SECRET)).rejects.toThrow(/reads names-another-key/);
     expect(readFileSync(at(file)).equals(planted)).toBe(true);
@@ -143,10 +143,10 @@ describe("a seat's own key on the custody seat", () => {
     }
     writeFileSync(at(file), intact);
     expect(verifies(KEY, IMAGE, await signAsSeat(KEY, IMAGE)), "control: the intact row signs again").toBe(true);
-    await c.holder.writeRow("identity", file, new Uint8Array(31));
+    await c.holder.writeRecord("identity", file, new Uint8Array(31));
     await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(/reads malformed/);
     // A whole secret of ANOTHER key under this key's name: the door signs nothing under it.
-    await c.holder.writeRow("identity", file, secretOf(60));
+    await c.holder.writeRecord("identity", file, secretOf(60));
     await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(/reads names-another-key/);
   });
 
@@ -205,14 +205,14 @@ describe("a seat's own key on the custody seat", () => {
     await storeSeatKey(0, SECRET);
     const file = seatKeyFile(KEY, 0);
     for (const [planted, reading] of [[secretOf(60), /reads names-another-key/], [new Uint8Array(31), /reads malformed/]] as const) {
-      await c.holder.writeRow("identity", file, planted);
+      await c.holder.writeRecord("identity", file, planted);
       const standing = readFileSync(at(file));
       await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRowUnavailable);
       await expect(retireSeatKey(KEY)).rejects.toThrow(reading);
       expect(readFileSync(at(file)).equals(standing), "the planted row stays, byte for byte").toBe(true);
     }
     // control: the row's own key retires it
-    await c.holder.writeRow("identity", file, SECRET);
+    await c.holder.writeRecord("identity", file, SECRET);
     expect(await retireSeatKey(KEY)).toBe(true);
     expect(seatFiles()).toEqual([]);
   });

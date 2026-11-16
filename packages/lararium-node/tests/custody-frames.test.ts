@@ -90,9 +90,9 @@ function harness(opts: {
     isUnlocked: () => unlocked,
     attemptsLeft: () => 3 - spent,
     openedSlot: () => (unlocked ? "slot-1" : null),
-    readRow: async () => ({ reading: "locked" }),
-    writeRow: async () => {},
-    openColdRow: async () => { throw new Error("unused"); },
+    readRecord: async () => ({ reading: "locked" }),
+    writeRecord: async () => {},
+    openColdRecord: async () => { throw new Error("unused"); },
     derive: () => new Uint8Array(),
   } as unknown as CustodyHolder;
   const recomposed: boolean[] = [];

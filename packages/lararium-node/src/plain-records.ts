@@ -11,7 +11,7 @@
 import { join } from "node:path";
 import { FsCustodyIo } from "./custody-io.js";
 import { vesselCustodyHomes, type CustodyHome } from "./vault-carriers.js";
-import type { RowUpdate } from "./custody-holder.js";
+import type { RecordUpdate } from "./custody-holder.js";
 
 const ioOf = (): { readonly io: FsCustodyIo; readonly homes: ReturnType<typeof vesselCustodyHomes> } => {
   const homes = vesselCustodyHomes();
@@ -25,7 +25,7 @@ export async function readPlainRecord(home: CustodyHome, file: string): Promise<
 }
 
 /** Read the record, decide and write the next one under the custody claim; a `null` plaintext writes nothing. */
-export async function updatePlainRecord<T>(home: CustodyHome, file: string, decide: (standing: Uint8Array | null) => RowUpdate<T>): Promise<T> {
+export async function updatePlainRecord<T>(home: CustodyHome, file: string, decide: (standing: Uint8Array | null) => RecordUpdate<T>): Promise<T> {
   const { io } = ioOf();
   const path = pathOf(home, file);
   return io.exclusive(async () => {
