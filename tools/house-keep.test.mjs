@@ -8,7 +8,8 @@
 //   H3  the host half (`rite keep`, git on the host): a workspace with no `* -text` guard refuses, and so does one with a change
 //       outside `house/`; with the remote broken the rite commits, the push fails, the tessera stays `landed-absent` and the
 //       answer names the cure; the remote mended, the rite run again pushes what waits and lands the tessera at the bundle id
-//       the pushed manifest names, and conferre reads it par. A keep after that commits nothing and spends nothing.
+//       the pushed manifest names, and conferre reads it par. A keep after that commits nothing and spends nothing, and
+//       `--if-due` (the call `down` makes) over the unmoved house keeps nothing and asks no remote.
 //   H4  THE RESTORE DRILL: the exporting house goes down; a brand-new scratch house founds under the same pet-name, imports the
 //       bundle out of a FRESH CLONE of the remote, and `carry-parity` reads par against the census taken before the down. A
 //       clone with one byte flipped refuses first (`bundle-hash-mismatch`), and nothing of it lands.
@@ -178,6 +179,10 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.deepEqual({ committed: still.committed, pushed: still.pushed, landed: still.landed }, { committed: false, pushed: false, landed: [] });
     assert.equal(git(workspace, "rev-list", "--count", "HEAD"), commits, "an unchanged keep commits nothing");
     assert.equal(line("keep").returnsLeft, 1, "and spends nothing");
+    // `down`'s one call: an unmoved house keeps nothing and asks no remote.
+    const idle = old.answer(old.must(["rite", "keep", "--if-due", "--workspace", "backup", "--json"])).data;
+    assert.deepEqual({ due: idle.due, committed: idle.committed, pushed: idle.pushed, landed: idle.landed }, { due: false, committed: false, pushed: false, landed: [] }, JSON.stringify(idle));
+    assert.equal(line("keep").returnsLeft, 1, "an unmoved --if-due spends nothing");
 
     // ── the census before the down ──────────────────────────────────────────────────────────────────────────────
     const snapshot = join(scratch, "census-old.json");
