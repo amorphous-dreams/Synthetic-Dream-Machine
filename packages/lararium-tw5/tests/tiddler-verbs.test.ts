@@ -6,7 +6,7 @@
  * A real engine boots here (`bootTestWiki`), so a filter, a backlink and a render answer as TiddlyWiki answers them.
  */
 import { describe, test, expect } from "vitest";
-import { CompositeStore, bagUri } from "@lararium/mesh";
+import { CompositeStore, bagUri, VERB_URI_PREFIX } from "@lararium/mesh";
 import { CARRIER_TYPE as CARRIER } from "@lararium/mesh/carrier-type";
 import { tombstonesOf, type Consequence } from "@lararium/mesh/family";
 import { MemoryTiddlerStore } from "../src/memory-store.js";
@@ -15,7 +15,7 @@ import {
   makeWikiFilterReactor, makeTiddlerGetReactor, makeWikiRenderReactor, makeTiddlerPutReactor, makeTiddlerDeleteReactor,
   makeWikiStatusReactor, pageFilterAnswer, WIKI_FILTER_ROWS, type FilterPage, type TiddlerVerbOptions,
 } from "../src/tiddler-verbs.js";
-import { AUDIT_ARRAY_CAP, boundOutcomeOutput } from "../src/verb-vm.js";
+import { AUDIT_ARRAY_CAP, boundOutcomeOutput, placeVerb, removeVerb } from "../src/verb-vm.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { bootTestWiki, skipNote, wikiSkip } from "./test-wiki.js";
 
@@ -127,6 +127,39 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(filter({ ...A, filter: "[tag[memory]sort[title]]", limit: 5, after: first["next"] }, ctx())).resolves.toMatchObject({ total: 12 });
     r.engine.setTiddler({ title: "Note 00", tags: "memory", text: "arrived" });
     await expect(filter({ ...A, filter: "[tag[memory]sort[title]]", limit: 5, after: first["next"] }, ctx())).rejects.toMatchObject({ reason: "filter-cursor-stale" });
+  });
+
+  test("filter-pages-past-its-own-verb-trail: each call's own invocation record never moves the answer it pages; CONTROL: a foreign write between pages still refuses stale", async () => {
+    const r = await rig();
+    const seed = Array.from({ length: 40 }, (_, i) => `Plain ${String(i + 1).padStart(2, "0")}`);
+    for (const title of seed) r.engine.setTiddler({ title, text: "plain" });
+    const expected = r.engine.wiki.filterTiddlers("[!is[system]!has[uri-path]sort[]]");
+    expect(expected).toEqual(expect.arrayContaining(seed));
+    const filter = makeWikiFilterReactor(r.opts);
+    // As the dispatcher calls it: the invocation rests in the daemon wiki at lar:///lararium.local.vm/verbs/<id> while
+    // the reactor runs, and leaves when the outcome concludes.
+    const call = async (args: Record<string, unknown>): Promise<Record<string, unknown>> => {
+      const id = placeVerb(r.engine, { verb: "wiki-filter", args, requestedBy: "operator-test" });
+      try { return await filter(args, ctx()); } finally { removeVerb(r.engine, `${VERB_URI_PREFIX}${id}`); }
+    };
+    const PLAIN = "[!is[system]!has[uri-path]]";
+    const seen: string[] = [];
+    let after: string | null = null;
+    let pages = 0;
+    for (;;) {
+      const page: Record<string, unknown> = await call({ ...A, filter: PLAIN, ...(after ? { after } : {}) });
+      seen.push(...(page["titles"] as string[]));
+      pages++;
+      if (page["next"] === null) break;
+      after = page["next"] as string;
+    }
+    expect(pages).toBeGreaterThan(1);
+    expect([...seen].sort()).toEqual([...expected].sort());
+    expect(seen.some((t) => t.startsWith(VERB_URI_PREFIX))).toBe(false);
+    // CONTROL: a real write from outside the walk between pages moves the answer, and the cursor says so.
+    const first = await call({ ...A, filter: PLAIN });
+    r.engine.setTiddler({ title: "Plain 00", text: "arrived mid-walk" });
+    await expect(call({ ...A, filter: PLAIN, after: first["next"] })).rejects.toMatchObject({ reason: "filter-cursor-stale" });
   });
 
   test("wiki-filter-malformed-refuses-by-name; CONTROL: the well-formed filter answers", async () => {
