@@ -78,7 +78,7 @@ export interface CabalRealm {
  * belongs to the vessel that admits. This addresses the REALM'S feed, the heartbeat its members keep
  * together, which has to take a peer's write. They share a key BY CONSTRUCTION, not by debt: a cabal IS
  * the shared relation over its realm's resources, so identity-as-relation names it by that realm's doc.
- * One name is correct; one SLOT was not.
+ * One name holds; one SLOT does not.
  *
  * Addressed alike they are ONE SLOT, and each drives the other: feeding a realm stales its own invites,
  * and revoking an invite reads as somebody maintaining it.

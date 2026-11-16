@@ -76,7 +76,7 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
     const name = faceProofSubjectRef(scope);
     const known = verified.get(name);
     if (known !== undefined) return known;
-    // A read that began before a refused write dropped this row's view may hold bytes the row no longer holds:
+    // A read that began before a refused write dropped this row's view may hold bytes the row has since dropped:
     // it answers its own caller and seats nothing.
     const drops = dropped.get(name) ?? 0;
     const bytes = await rows.read(name);
@@ -108,7 +108,7 @@ export function storedWithdrawals(rows: GateMemoryRows, opts: { readonly onTorn?
         if (standing !== null && held.length === heldWithdrawals(standing).length) return;      // nothing new: nothing to write
         if (held.length === 0) return;
         // A write the vessel's door refuses (another writer moved the row since this view verified it) drops the
-        // view: the next read verifies the row again, and never answers from what the row no longer holds.
+        // view: the next read verifies the row again, and never answers from bytes the row has dropped.
         try { await rows.write(name, canonicalJsonBytes(held)); }
         catch (refused) { verified.delete(name); dropped.set(name, (dropped.get(name) ?? 0) + 1); throw refused; }
         verified.set(name, joined.memory);

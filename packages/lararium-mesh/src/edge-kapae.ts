@@ -658,7 +658,7 @@ export interface EdgeBoardInput {
   readonly charter?:     EdgeCharter | null;
 }
 
-/** One read of an edge board: the reading per edge, what counted, and what the board no longer carries. */
+/** One read of an edge board: the reading per edge, what counted, and what the board has dropped. */
 export interface EdgeBoardRead {
   readonly readings: ReadonlyMap<string, EdgeReading>;
   /** Every act and anchor that counted — what the vessel keeps in its ledger. */

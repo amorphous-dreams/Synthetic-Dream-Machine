@@ -489,7 +489,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
    * Stand this leaf again under a KEL it now carries. It deposits a KEL that moved at every pinned herm FIRST, so a
    * sibling that hears the close finds the move waiting — at most a herm's deadline, never longer. Then it judges
    * every standing session under the head: one whose sibling proved with an edge the head rolled past closes, the
-   * sibling hears why inside it while both still share the old channel, and only then does this leaf join the head's
+   * sibling hears why inside it while both still share the channel it leaves, and only then does this leaf join the head's
    * channel and say `here` — where the head re-enrolled that sibling it catches up and they prove again, and where it
    * revoked it the sibling says so itself. Moves judge one at a time, in arrival order.
    */
@@ -730,7 +730,7 @@ export class SiblingNetworkAdapter extends NetworkAdapter {
 
   /**
    * Close a session this leaf holds and tell the sibling why, inside the session, so its half closes too and it
-   * syncs nothing on into a session that no longer stands. The session stays readable only for the sibling's
+   * syncs nothing on into a session that has closed. The session stays readable only for the sibling's
    * frames already in flight.
    */
   #close(slotKey: string, session: LeafPeerSession, why: CloseWhy): void {

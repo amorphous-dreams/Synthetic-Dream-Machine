@@ -175,7 +175,7 @@ export function handleEventCidOf(core: HandleEventCore): string {
 /**
  * THE OWNER-BINDING. The Handle identifier — a content-address over the inception Handle key + the
  * GENESIS owner-SET digest + the pre-committed recovery digest. It stays FIXED for the Handle's whole
- * life, so the handle↔identity proof never detaches: re-writing the revealed owner set no longer
+ * life, so the handle↔identity proof never detaches: re-writing the revealed owner set never
  * derives the pinned prefix (the founding quorum is fixed in the name), and the SAME key under a
  * DIFFERENT genesis set mints a DIFFERENT identifier. `sealKeySetHash([ownerPrefix], 1)` for the
  * degenerate personal face is the same derivation, one member deep.

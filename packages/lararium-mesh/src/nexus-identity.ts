@@ -237,9 +237,9 @@ export function admittedJoineeIsland(opts: {
  *
  * A vessel that climbs from a private nexus of one to a seated charter re-keys every per-Nexus board
  * it stands on — crossroads, WHO, persona-KEL, antigen, carriage. Nothing carries
- * across on its own: the old board keeps every announce it ever held and the new one mints blank, so
- * books announced before the connect stay invisible to the island, and any peer still dialling the old
- * address reads a silence that looks exactly like a vessel going dark.
+ * across on its own: the board left behind keeps every announce it ever held and the new one mints blank, so
+ * books announced before the connect stay invisible to the island, and any peer still dialling the address
+ * left behind reads a silence that looks exactly like a vessel going dark.
  *
  * DESCENDING wants the same act for the opposite reason. Leaving a Nexus, or a Nexus dissolving, is
  * LEGITIMATE — and unless it arrives as an explicit act it reads on the wire byte-identically to state
