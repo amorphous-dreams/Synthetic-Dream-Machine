@@ -874,7 +874,7 @@ async function memeProject(args: ParsedArgs): Promise<number> {
   //     own reading that the operator may not have the render they asked for — over a carrier whose
   //     every byte an author wrote on purpose. Refusing is the move this house does not make.
   //
-  // AND THE FAULT IS A COMPOSITION FAULT, WHICH MEANS THE FIX IS NOT HERE. Two legal carriers joined into
+  // AND THE FAULT IS A COMPOSITION FAULT, WHICH MEANS THE CURE LIES ELSEWHERE. Two legal carriers joined into
   // an illegal one: no byte of the projection is wrong, and nothing this door could refuse would repair
   // the records behind it. Refusing would withhold the one artifact that SHOWS the operator the join.
   //

@@ -550,8 +550,8 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         return exitFor("request-interrupted");
       } else if (receipt?.state === "evicted") {
         // M1: the receipt ring dropped this id's outcome past its retention bound — its own code,
-        // never a bare "unknown" that would invite a re-run to re-read a receipt that no longer
-        // exists. Same shared helper as above.
+        // never a bare "unknown" that would invite a re-run to re-read a receipt the ring has
+        // dropped. Same shared helper as above.
         const hint = refusalHint("retention-gap", changeId)!;
         emit(args, {
           ok: false, requestId, error: { code: "retention-gap", message: msg, hint },
@@ -560,10 +560,10 @@ export async function cmdAct(args: ParsedArgs, claims: ActClaims = {}): Promise<
         });
         return exitFor("retention-gap");
       } else {
-        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID NO LONGER DOES (H4, generalized E1 commit
-        // 4′), AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
+        // THE HINT MUST NEVER PROMISE WHAT THE SPLIT ID DOES NOT DO (H4, E1),
+        // AND MUST NEVER CALL A FLAGLESS RE-RUN "SAFE" (M10) — a re-run that omits `--change-id`
         // mints a NEW change, which is exactly the double-run this hint exists to prevent. requestId
-        // is now a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
+        // is a FRESH nonce every verb's own attempt alone owns — re-running never reads IT back
         // (a fresh attempt mints its own) — so the hint names the EXACT gesture that keeps this a
         // retry rather than a new change: reuse `--change-id`.
         const hint = `this process stopped waiting after ${timeoutMs}ms (budgeted for ${carrierCount} carrier(s)${verb === "LOAD" ? " — a LOAD budgets 10s + 400ms per carrier" : ""}) and a ${READBACK_MS}ms read found no receipt yet for THIS attempt's own request id (${requestId}) — check it with \`lares receipt ${requestId}\`. Re-run with \`--change-id ${changeId}\`: if this attempt landed, the effect index answers it without running twice; a re-run WITHOUT it is a NEW change. The outcome, once written, lives at ${OUTCOME_URI_PREFIX}${requestId}.`;

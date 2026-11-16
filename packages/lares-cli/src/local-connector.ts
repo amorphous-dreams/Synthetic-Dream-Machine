@@ -182,9 +182,9 @@ export function procHolderPids(prefix: string): number[] {
  * TWO READINGS OF "NOTHING ANSWERED", NEVER FUSED (M4). Before this, every non-answer — an immediate
  * `ECONNREFUSED`/`ENOENT` (nobody there at all) AND a connection the OS accepted into its backlog but
  * whose process never read a byte (frozen, SIGSTOPped, wedged) — read as the SAME `null`, "no
- * discoverable holder". A live probe proved the difference matters: a SIGSTOPped holder answered
- * `null` at its timeout exactly as an unbound socket would, so a caller budgeting "unbound" patience
- * for a holder that was there the whole time spent the WRONG patience and named the wrong story.
+ * discoverable holder". The difference matters: a SIGSTOPped holder would answer `null` at its
+ * timeout exactly as an unbound socket does, so a caller budgeting "unbound" patience for a holder
+ * standing the whole time would spend the WRONG patience and name the wrong story.
  *   - `error` (ECONNREFUSED/ENOENT, before any `connect`) → UNBOUND: `null`, nothing to connect to.
  *   - `timeout` after a successful `connect` but before any line arrives → WEDGED: something accepted
  *     the connection and then never answered. `socketHolderPids` names it when it can.
@@ -347,10 +347,9 @@ function readOnlyQuery(op: ReadOnlyOp, requestId: string, opts: { dataDir?: stri
 }
 
 /**
- * Read a request id's receipt WITHOUT dispatching anything (H1). Replaces the old pattern of
- * calling `invokeLocal` a second time with the same request id as a "read-back" — that second call
- * went through the EXACT SAME dispatch path as the original, so an id this vessel had already
- * dropped as abandoned got run a second time, never a read. `queryReceipt` rides a dedicated
+ * Read a request id's receipt WITHOUT dispatching anything (H1). A second `invokeLocal` with the
+ * same request id as a "read-back" would ride the EXACT SAME dispatch path as the original, so an id
+ * this vessel already dropped as abandoned would run a second time, never a read. `queryReceipt` rides a dedicated
  * `{op:"receipt"}` line the vessel's own connection handler answers from its ledger + the durable
  * outcome doc alone.
  *

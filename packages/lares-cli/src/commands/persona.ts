@@ -140,7 +140,7 @@ function fleetStores(): {
 /**
  * `lares persona reissue [--nexus <aid>] [--face N]` — the face named (else the one face standing open) hands its key at one Nexus on to a fresh key
  * minted at random. Both keys sign one hand-over; it lands on that Nexus's carriage board, where every gate reads
- * it beside the face's admit, and the old key leaves this vessel. The admit keeps naming the key the Nexus admitted.
+ * it beside the face's admit, and the outgoing key leaves this vessel. The admit keeps naming the key the Nexus admitted.
  * A compromised key takes the face-key roll instead (a revoke and a fresh admit), never a re-issue.
  */
 async function personaReissue(args: ParsedArgs): Promise<number> {

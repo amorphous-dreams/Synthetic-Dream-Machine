@@ -2,9 +2,9 @@
  * `lares sense teardown` — completely tear down the local mempalace store and
  * the harvest idempotency state, so a re-pave starts from true zero.
  *
- * This has bitten us: a partial / interrupted re-pave leaves a half-mined chroma
+ * A partial / interrupted re-pave leaves a half-mined chroma
  * store, a stale `lar_hv` watermark that makes the next `harvest` SKIP turns it
- * thinks it already saw, and MCP servers holding the old store open. Hand-`rm`-ing
+ * thinks it already saw, and MCP servers holding the torn store open. Hand-`rm`-ing
  * the paths invites the confused-deputy trap (wipe an ambient default, miss the
  * watermark). This verb resolves every target explicitly, previews by default,
  * and removes only on `--confirm`.

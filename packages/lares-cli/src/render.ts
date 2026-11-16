@@ -43,7 +43,7 @@ export interface LaresError {
   /** Stable class: usage · not-found · daemon-unreachable · conflict · verb-error · cap-denied · error. */
   readonly code:    string;
   readonly message: string;
-  /** One actionable sentence, when the fix is obvious; omitted otherwise (never fabricated). */
+  /** One actionable sentence, when the cure is obvious; omitted otherwise (never fabricated). */
   readonly hint?:   string;
 }
 
@@ -80,7 +80,7 @@ export const EXIT_FOR: Readonly<Record<string, number>> = {
   "request-interrupted": 6,
   // A caller reused a requestId the vessel already arbitrated, but with CHANGED content (D1,
   // M3″ — `uds-channel.ts`'s `request-id-reused-with-changed-input`). A fresh code (2, the
-  // USAGE family) rather than `verb-error`'s 4: the fix is "mint a new id", a USAGE correction,
+  // USAGE family) rather than `verb-error`'s 4: the cure is "mint a new id", a USAGE correction,
   // never a fault in the act's own handler.
   "request-id-reused": 2,
   // THE SAME EXIT FAMILY AS outcome-unknown/request-abandoned (6): the receipt ring (D1, M1)
@@ -119,11 +119,10 @@ export function exitFor(code: string): number {
 /**
  * REFUSE with a usage reading — through the choke point, like every other refusal.
  *
- * Every hand-rolled `usage()` printed prose to stderr and returned a bare code, so under `--json` — the
- * mode that exists for agents and pipes — the caller received ZERO parseable bytes and an exit status.
- * Measured on the built binary: `lares library bogus-verb --json` wrote nothing at all to stdout, while
- * every ORDINARY error on the same door emitted `{ok:false,error:{…}}`. The exit vocabulary was never the
- * gap (`EXIT_FOR.usage` is 2 and the refusals returned it); the PAYLOAD was.
+ * A hand-rolled `usage()` prints prose to stderr and returns a bare code, so under `--json` — the mode
+ * that exists for agents and pipes — its caller receives ZERO parseable bytes and an exit status, while
+ * every ORDINARY error on the same door emits `{ok:false,error:{…}}`. This carries the PAYLOAD beside
+ * the exit code (`EXIT_FOR.usage`, 2).
  *
  * A human still reads the same prose, line for line. An agent reads the refusal every other error already
  * speaks, so "unknown sub-verb" stops being the one failure it cannot see.

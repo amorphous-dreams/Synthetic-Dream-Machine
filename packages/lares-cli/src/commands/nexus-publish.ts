@@ -51,8 +51,8 @@ const PUBLISH_USAGE: readonly string[] = [
  *
  * The read names the region a FRESH fold of `<dir>`'s blobs would carry, and the blobs themselves. A
  * read never bakes, signs, or touches bytes on disk beyond `<dir>` itself — it reports what `--apply`
- * WOULD announce, never genesis's own region (H3: genesis carries the boot set alone since the Streams
- * retirement, and was never a registry of what an operator may offer).
+ * WOULD announce, never genesis's own region (H3: genesis carries the boot set alone and names no
+ * registry of what an operator may offer).
  */
 async function publishPlugins(args: ParsedArgs): Promise<number> {
   const source = args.options["source"];

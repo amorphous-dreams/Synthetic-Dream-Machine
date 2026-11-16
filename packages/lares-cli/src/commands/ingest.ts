@@ -177,8 +177,8 @@ export async function cmdIngest(args: ParsedArgs, sink?: { fresher?: FresherCano
     }, tree);
   } catch (err) {
     // M3′: a LOCAL WAIT ENDING (`submitIngest`'s `runVerb` throws `LocalWaitExpired` exactly like
-    // `act.ts`'s own submit) was folded wholesale into `daemon-unreachable` — telling an operator
-    // whose write-door daemon stood the whole time to start a daemon already running. `verbFailure`
+    // `act.ts`'s own submit) never folds into `daemon-unreachable`, which would tell an operator
+    // whose write-door daemon stands to start a daemon already running. `verbFailure`
     // tells the fault apart by its own TYPE.
     const f = verbFailure(err);
     emit(args, {
