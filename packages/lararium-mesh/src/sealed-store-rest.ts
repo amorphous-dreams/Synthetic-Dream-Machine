@@ -7,7 +7,7 @@
  * addresses. So they rest as plain bytes, beside the sealed values, and a carrier may hold every one.
  *
  * EVERY NAME DERIVES FROM ITS OWN BYTES. A name ends in a digest of the value it names (the first sixteen
- * bytes of its SHA-256), a write lands whole and once, and a value that no longer matches its name reads as
+ * bytes of its SHA-256), a write lands whole and once, and a value that fails to match its name reads as
  * absent. The digest names a resting value; it authorizes nothing, and every name fits one file name
  * (255 characters). A restart therefore
  * finds what a vessel held and no second copy of it. The one exception, `own`, holds a vessel's local notes:

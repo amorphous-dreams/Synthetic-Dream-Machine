@@ -175,8 +175,8 @@ export async function buildDeviceDelegation(args: {
  *
  * MANDATORY PIN: `expectedOperatorDid` is the trusted operator root the edge MUST chain to.
  * A clear result proves the edge was signed by THAT root for THIS delegate — designation
- * carries authority, no ambient fallback. (verify proving only "someone signed" was the
- * confused-deputy bait the verification swarm flagged; the pin is now a required argument.)
+ * carries authority, no ambient fallback. (A verify proving only "someone signed" baits a
+ * confused deputy, so the pin rides as a required argument.)
  *
  * Lease: pass `opts.expectedEpoch` (the face's verified signed lease epoch) to enforce
  * non-renewal; an epoch-free edge then refuses because it carries no lease proof.

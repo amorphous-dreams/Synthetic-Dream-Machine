@@ -13,7 +13,7 @@
  *     by omission once every holder declares.
  *   · `relation`      — a secret a human holds BECAUSE OF A RELATION with another party: no house key derives it,
  *     and only that party re-issues it (a pending-admit secret, and the credentials for outside services). A tree key rotation RE-SEALS it and can never regenerate it, so a
- *     relation carrier the old tree key cannot open is a loss no house act repairs (`sealed-writer` says so by name).
+ *     relation carrier the outgoing tree key cannot open is a loss no house act repairs (`sealed-writer` says so by name).
  *
  * Pure and isomorphic: the node's census (fs), keyhive's veil brand and the browser's seed wrap all read this
  * one spelling. Meme: lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/device-seats

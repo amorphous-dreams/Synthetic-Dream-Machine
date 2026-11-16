@@ -3,7 +3,7 @@
  * its standing on to.
  *
  * A face holds one key at each Nexus, minted at random. The face's lineage re-issues it by a HAND-OVER: the
- * standing key and a fresh key both sign the same bytes, so the old key authorizes and the new key proves it
+ * standing key and a fresh key both sign the same bytes, so the standing key authorizes and the fresh key proves it
  * stands in the hand that signs. The records ride the Nexus's carriage board under their own prefix and accrete;
  * the fold, never the write, decides. A reader that admitted the first key walks the line from it and stands a
  * presenter under the line's HEAD alone. A key that hands one standing to two keys signed two lines: a FORK,

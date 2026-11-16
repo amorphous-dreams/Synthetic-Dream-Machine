@@ -22,8 +22,8 @@
  * THE SHAPE OF A WRITE: seal → write a SIDECAR → read it back → compare the bytes and open them → rename over the
  * carrier. It never seals in place, and a sidecar that does not read back as written never lands.
  *
- * A tree key ROTATION opens EVERY carrier under the old tree key before it writes a single temp: the failure that matters (a
- * carrier the old tree key does not open) costs nothing, because it surfaces while nothing has moved. Its carrier list
+ * A tree key ROTATION opens EVERY carrier under the outgoing tree key before it writes a single temp: the failure that matters (a
+ * carrier the outgoing tree key does not open) costs nothing, because it surfaces while nothing has moved. Its carrier list
  * comes from the one carrier table (the node's `vault-carriers`), and the rotation checks that list against the
  * store: a file bearing the tree key seal's magic that the list omits refuses the whole rotation (`CensusRefusal`), so a
  * partial list strands nothing. It then binds the new tree, writes and checks every carrier sidecar, writes the
@@ -507,7 +507,7 @@ async function rotateHeld<C extends SealedCarrier>(args: RotateTreeKeyArgs & { r
   }
   if (uncovered.length > 0) throw new CensusRefusal(uncovered.sort());
 
-  // PRE-VALIDATE: every carrier opens under the old tree key before a single temp exists.
+  // PRE-VALIDATE: every carrier opens under the outgoing tree key before a single temp exists.
   const opened: { carrier: C; plaintext: Uint8Array }[] = [];
   for (const carrier of args.carriers) {
     const o = seal.open(args.oldTreeKey, carrier, await io.read(carrier.path));

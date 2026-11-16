@@ -194,7 +194,7 @@ export async function provisionRecoveryCardsAtFounding(
 // ── FORK B — THRESHOLD-ATTEST recovery (identity-classes#the-two-forks) ────────────────────────────────
 // The strictest never-reconstruct: each recovery contact holds their OWN recovery keypair; inception pre-commits
 // the k-of-n DIGEST of their recovery PUBLIC keys; a rotation carries k recovery contact SIGNATURES verified against
-// that pre-commit. Recovery ROTATES a fresh op-key rather than resurrecting the old (the ruling, 2026-07-20).
+// that pre-commit. Recovery ROTATES a fresh op-key and never resurrects the lost one.
 // NOTHING reconstructs — no seed, no share, no `reconstructFromQuorum`. This path shares NOTHING with the
 // Shamir/recovery-share machinery above; it is a genuine k-of-n multisig over the persona-KEL rotation.
 
@@ -250,10 +250,10 @@ export interface RecoveryContactSigner {
 }
 
 /**
- * ATTEST-AND-ROTATE — the Reading-B recovery move (identity-classes#reading-b-recovery), replacing
- * reconstruct-then-resurrect. Gather ≥ k recovery contact SIGNATURES over the rotation event, verify them against
- * the pre-committed recovery set, and seat a FRESH operational key via a persona-KEL rotation. The old key
- * SUPERSEDES (the head advances past it); the caller kapae-shadows its membership resurrection (evict runs
+ * ATTEST-AND-ROTATE — the Reading-B recovery move (identity-classes#reading-b-recovery); nothing
+ * reconstructs and nothing resurrects. Gather ≥ k recovery contact SIGNATURES over the rotation event, verify them against
+ * the pre-committed recovery set, and seat a FRESH operational key via a persona-KEL rotation. The lost key
+ * stays SUPERSEDED (the head advances past it); the caller kapae-shadows its membership resurrection (evict runs
  * forward-only). NOTHING reconstructs — the recovery contacts each sign independently; no seed or share assembles,
  * so no transient impersonation-of-the-recovery-authority window opens (the Fork-A tradeoff, closed).
  *

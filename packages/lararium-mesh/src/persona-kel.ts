@@ -9,7 +9,7 @@
  *   · the IDENTIFIER PREFIX — a content-address over the inception op-key + the pre-committed recovery-set
  *     digest — stays FIXED across every rotation (the KERI autonomic-identifier / AID),
  *   · each event SEATS one operational key (`opKeyDid`); the LATEST head carries the authoritative key,
- *   · a rotation ADVANCES the head, hash-linked onto its predecessor; the old op-key SUPERSEDES, never
+ *   · a rotation ADVANCES the head, hash-linked onto its predecessor; the superseded op-key stays SUPERSEDED, never
  *     revives (evict runs forward-only — identity-classes#reading-b-recovery §4).
  *
  * FORK B — threshold-attest (identity-classes#the-two-forks): inception pre-commits the k-of-n DIGEST of

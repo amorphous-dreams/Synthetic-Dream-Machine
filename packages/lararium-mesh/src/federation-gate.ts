@@ -14,7 +14,7 @@
  * capability resolutions — the deterministic allow-set IS a degenerate cap set.
  * A capability slot binds nothing here unless it joins a PROVED peer or session
  * presenter to the decision (a self-DID verifier alone binds nothing); any
- * peer-bound restriction rides P27 (stable-founding-road, K23 retired).
+ * peer-bound restriction rides P27 (stable-founding-road).
  *
  * HONEST BOUND: this gate decides at this vessel's Repo alone, and it encrypts
  * nothing. Seated on both share hooks (`shareConfigOf`), it stops the repo
