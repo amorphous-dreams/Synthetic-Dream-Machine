@@ -13,6 +13,9 @@
  *   KH8  beside the container house, the host finds the workspace in LARES_WORKSPACES, the pairs the shim binds.
  *   KH10 a moved house after a pushed keep keeps again: the status read keeps git's leading column, so a tracked file the
  *        new cut changed inside `<into>` reads inside it.
+ *   KH9  keep-if-due-spends-nothing-on-an-unmoved-house: `--if-due` over a house that has not moved since the bundle its
+ *        remote-tracking branch holds, with no keep tessera owed, stops after the cut: no fetch, no push, no landing, nothing
+ *        spent; a moved house keeps as a plain keep does; `--if-due` with no workspace named reads the configured one.
  *
  * Real git over scratch repos; the vessel's rows answer from a recorded fake.
  */
@@ -24,6 +27,8 @@ import { dirname, join } from "node:path";
 import { CARRY_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type CarryFile } from "../src/carry-manifest.js";
 import { riteKeepHost, secretShapes, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../src/rite-keep-host.js";
 import { KeepRefused } from "../src/rite-keep.js";
+import { keepPlan } from "../src/commands/rite.js";
+import { parseArgs } from "../src/parse-args.js";
 
 let scratch: string, gitConfig: string;
 
@@ -202,6 +207,31 @@ describe("the keep rite, host half", () => {
       expect(() => workspaceFromPairs("backup", configured), configured).toThrow(KeepRefused);
     }
     try { workspaceFromPairs("backup", ""); } catch (e) { expect((e as KeepRefused).code).toBe("keep-workspace-unnamed-on-host"); }
+  });
+
+  test("KH9 keep-if-due-spends-nothing-on-an-unmoved-house: no fetch, no push, no landing; CONTROL: a moved house keeps", async () => {
+    const r = rig();
+    expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
+    const n = r.commits();
+    const argv: string[] = [];
+    const watched: KeepHostPorts = { ...r.ports, git: async (dir, a) => { argv.push(a[0]!); return runGit(dir, a); } };
+    r.calls.length = 0;
+    const idle = await riteKeepHost(watched, { workspace: "backup", ifDue: true });
+    expect(idle).toMatchObject({ code: 0, data: { kept: false, due: false } });
+    expect(argv.filter((a) => ["fetch", "push", "ls-remote", "commit", "rebase"].includes(a))).toEqual([]);
+    expect(r.calls.map((c) => c.split(" ")[0])).toEqual(["keep-cut", "receipts"]);
+    expect(r.state.n).toBe(1);
+    expect(r.commits()).toBe(n);
+    expect(r.said.at(-1)).toMatch(/has not moved since bundle/);
+    // CONTROL: the house moves, and the same line keeps, pushes and lands.
+    r.state.notes = { heron: "remember the heron\n", pond: "the pond at dusk\n" };
+    const moved = await riteKeepHost(watched, { workspace: "backup", ifDue: true });
+    expect(moved.data, JSON.stringify(moved.data)).toMatchObject({ kept: true, due: true, pushed: true, par: true });
+    expect(r.remoteManifest()).toBe(String(moved.data["bundleId"]));
+    // The line: `--if-due` alone names no workspace (the CLI reads the configured one); a plain keep still needs one.
+    expect(keepPlan(parseArgs(["rite", "keep", "--if-due"]))).toEqual({ acceptOmissions: false, ifDue: true });
+    expect(keepPlan(parseArgs(["rite", "keep", "--if-due", "--workspace", "backup"]))).toEqual({ workspace: "backup", acceptOmissions: false, ifDue: true });
+    expect(() => keepPlan(parseArgs(["rite", "keep"]))).toThrow();
   });
 
   test("KH10 RED: a moved house after a pushed keep keeps again; the bundle file the new cut changed reads inside <into>", async () => {

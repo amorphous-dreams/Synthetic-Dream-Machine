@@ -19,6 +19,10 @@
  * second run finds the bundle standing, pushes the commit that waits, and lands every keep tessera conferre reads open at
  * that bundle id. An unchanged keep commits nothing, pushes nothing and lands nothing.
  *
+ * `--if-due` (the call `down` makes): a house that has not moved since the bundle its remote-tracking branch already holds, with
+ * no keep tessera owed at that bundle, stops after the cut: no fetch, no push, no landing, nothing spent (`due: false`). A
+ * moved house, or a bundle that still waits for its push or its landing, keeps as a plain keep does (`due: true`).
+ *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { readFileSync } from "node:fs";
@@ -47,7 +51,7 @@ export interface KeepHostPorts {
   say(line: string): void;
 }
 
-export interface KeepHostOptions { readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number }
+export interface KeepHostOptions { readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number; readonly ifDue?: boolean }
 export interface KeepHostOutcome { readonly code: number; readonly data: Record<string, unknown> }
 
 /** A refusal the host half raises by name; the message carries the cure. */
@@ -147,6 +151,28 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       if (found.length > 0) hits.push(`${rel} (${found[0]!.slice(0, 8)}…)`);
     }
     if (hits.length > 0) throw new HostRefused("keep-secret-shaped", `the bundle holds secret-shaped strings: ${hits.join(", ")}; nothing commits. Inspect them, clear the record from the house, and keep again`, { secrets: hits });
+
+    // ── IF DUE: an unmoved house whose bundle the remote-tracking branch holds, with nothing owed, stops here ──────
+    if (opts.ifDue === true) {
+      let due = kept;
+      if (!due) {
+        const tracking = `refs/remotes/${remote}/${branch}`;
+        let held: unknown = null;
+        try { held = (JSON.parse(await git(["show", `${tracking}:${into}/${MANIFEST_FILE}`])) as { bundleId?: unknown }).bundleId; } catch { held = null; }
+        if (held !== bundleId) due = true;
+        else {
+          const read = await ports.row("receipts", { ...face });
+          if (!read.ok) throw new HostRefused(read.code, read.message);
+          const red = ((read.output["conferre"] as { red?: { rite: string | null; red?: string; branch?: string; head?: string }[] } | undefined)?.red ?? []);
+          due = red.some((t) => t.rite === RITE_KEEP && t.red === "landed-absent" && t.branch === name && t.head === bundleId);
+        }
+      }
+      base["due"] = due;
+      if (!due) {
+        ports.say(`keep: the house has not moved since bundle ${bundleId.slice(0, 16)}, which ${remote}/${branch} already holds; nothing spent, committed or pushed`);
+        return { code: 0, data: { ...base, committed: false, pushed: false, landed: [], par: true } };
+      }
+    }
 
     // ── 4. GIT: commit, rebase, push ──────────────────────────────────────────────────────────────────────────
     stage = "commit";

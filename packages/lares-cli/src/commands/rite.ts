@@ -5,7 +5,9 @@
  *              host shim to rebuild the image, take the vessel down and raise a new one, then lands the rite (`../rite-kukulu.ts`)
  *   keep       on the HOST: keep the house in the operator's repo. Guards the bound workspace, runs `keep-cut` in the vessel,
  *              then commits `<into>`, rebases, pushes, and lands the tessera at the bundle id the pushed tree holds
- *              (`--workspace <name> [--into <path>]`, `../rite-keep-host.ts`)
+ *              (`--workspace <name> [--into <path>]`, `../rite-keep-host.ts`); `--if-due` keeps only where the house moved since
+ *              the bundle its remote-tracking branch holds (or a keep still waits for its push or landing), and with no
+ *              `--workspace` reads the configured keep workspace (`../keep-config.ts`): the one call `down` makes
  *   keep-cut   IN THE VESSEL: the keep's vessel half: lay the house's authored memory, cut as a cleartext carry bundle, into the
  *              bound workspace, spending a return of the keep lei strung for that workspace (`../rite-keep.ts`)
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
@@ -33,6 +35,7 @@ import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, riteKeep, type KeepPorts } from "../rite-keep.js";
 import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
+import { configuredKeepWorkspace } from "../keep-config.js";
 import { carryExport, carryRefusal, LIVE_CARRY_DOORS } from "./carry.js";
 
 export class RiteUsage extends Error {}
@@ -82,12 +85,14 @@ export function ritePlan(args: ParsedArgs): RitePlan {
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */
-export function keepPlan(args: ParsedArgs): { readonly workspace: string; readonly into?: string; readonly acceptOmissions: boolean; readonly face?: number } {
+export function keepPlan(args: ParsedArgs): { readonly workspace?: string; readonly into?: string; readonly acceptOmissions: boolean; readonly face?: number; readonly ifDue?: true } {
   const word = (raw: string | undefined): string | undefined => (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined);
   const workspace = word(args.options["workspace"]), into = word(args.options["into"]), faceWord = word(args.options["face"]);
-  if (workspace === undefined) throw new RiteUsage("keep names the workspace it lays the bundle into: --workspace <name> [--into <path>]");
+  // `--if-due` (keep alone) may leave the workspace to the house config (`../keep-config.ts`); every other line names it.
+  const ifDue = args.positional[0] === "keep" && args.flags["if-due"] === true;
+  if (workspace === undefined && !ifDue) throw new RiteUsage("keep names the workspace it lays the bundle into: --workspace <name> [--into <path>] (or `keep --if-due`, which reads LARES_KEEP_WORKSPACE)");
   if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
-  return { workspace, ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}) };
+  return { ...(workspace !== undefined ? { workspace } : {}), ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}), ...(ifDue ? { ifDue: true as const } : {}) };
 }
 
 /** The keep's live ports: the vessel's rows through the store door, and the cut through the carry export. */
@@ -101,8 +106,13 @@ const KEEP_PORTS: KeepPorts = {
 
 /** The vessel half alone (`rite keep-cut`): the cut, the return and the guest half, with no git. */
 async function runKeepCut(args: ParsedArgs): Promise<number> {
-  let plan: ReturnType<typeof keepPlan>;
-  try { plan = keepPlan(args); }
+  let plan: ReturnType<typeof keepPlan> & { readonly workspace: string };
+  try {
+    const read = keepPlan(args);
+    // keep-cut takes no `--if-due`, so its line always names the workspace.
+    if (read.workspace === undefined) throw new RiteUsage("keep-cut names the workspace it lays the bundle into: --workspace <name> [--into <path>]");
+    plan = { ...read, workspace: read.workspace };
+  }
   catch (err) {
     if (err instanceof RiteUsage) return refuseUsage(args, "rite", helpLines("rite"), err.message);
     throw err;
@@ -226,13 +236,20 @@ async function runKeepHost(args: ParsedArgs): Promise<number> {
     emit(args, { ok: false, error: { code: "keep-host-half-in-vessel", message }, human: () => console.error(`lares rite: ${message}`) });
     return 2;
   }
+  // `--if-due` with no workspace named reads the house config's keep workspace; a config naming none keeps nothing, and says so.
+  const workspace = plan.workspace ?? configuredKeepWorkspace();
+  if (workspace === null) {
+    const data = { rite: "keep", due: false, workspace: null, why: "no keep workspace named (LARES_KEEP_WORKSPACE, or one LARES_WORKSPACES pair)" };
+    emit(args, { ok: true, data, human: () => console.error(`keep: ${data.why}; nothing kept`) });
+    return 0;
+  }
   const ports: KeepHostPorts = {
     workspaceDir: hostWorkspaceDir,
     row: (verb, rowArgs) => cliRow(["rite", verb, ...flagsOf(rowArgs)]),
     git: gitIn,
     say: (line) => console.error(line),
   };
-  const out = await riteKeepHost(ports, plan);
+  const out = await riteKeepHost(ports, { ...plan, workspace });
   const refusal = String(out.data["refusal"] ?? "keep-stopped");
   emit(args, out.code === 0
     ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
