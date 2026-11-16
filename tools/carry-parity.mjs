@@ -30,15 +30,22 @@
 //
 // USAGE
 //   node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N]
-//                               [--base <census.json>] [--json] [--out <receipt.json>] [--lares <cmd>]
+//                               [--base <census.json>] [--imports <import.json>]... [--stand-off <uri>]...
+//                               [--json] [--out <receipt.json>] [--lares <cmd>]
 //       both houses standing (or a census taken earlier on either side): census each, then compare.
 //   node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]
 //       one reading of the standing house's worn face, for a rite where the two houses never stand at once.
-//   node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out F]
+//   node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...]
+//                               [--imports <import.json>]... [--stand-off <uri>]... [--json] [--out F]
 //       several readings per side merge by face pet-name (one census per worn face).
 // `--lares <cmd>` names the CLI to call (a host shim, e.g. `lares`); by default the built CLI under this checkout, with
 // LAR_ROOT (and LAR_PORT where named) set to the house read. `--base` is a census of the new house taken after its founding
 // and seed and before the import: its rows leave `extra`, so a red never hides behind the new house's own genesis.
+// THE RITE'S ORDER: the exporting house goes down before the new one stands (one image tag, one port), so take its census
+// with `census --out` while it stands and hand that file to `--old` afterwards.
+// `--imports <file>` names each `lares import --apply --json` answer: every row it stood off (a working row forked over canon
+// that moved) reads as a named may-differ (`standOffs` in the receipt) where it reads changed or missing, never as red; an
+// import's exit decides nothing here. `--stand-off <uri>` names one by hand.
 // Exit: 0 par · 1 red · 2 a usage error or a door that would not read.
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -112,10 +119,11 @@ function compareMap(scope, cls, old, fresh, base, differences) {
  * Answers the receipt body: the verdict, every difference by scope, class, kind and key, the counts the `--old` side held,
  * and the may-differ list.
  */
-export function compareCensus(oldReadings, newReadings, baseReadings = []) {
+export function compareCensus(oldReadings, newReadings, baseReadings = [], { standOffs = [] } = {}) {
   const old = mergeReadings(oldReadings), fresh = mergeReadings(newReadings);
   const base = baseReadings.length > 0 ? mergeReadings(baseReadings) : null;
-  const differences = [];
+  const found = [];
+  const differences = found;
   for (const [pet, classes] of Object.entries(old.face)) {
     const scope = `face:${pet}`;
     const theirs = fresh.face[pet];
@@ -126,31 +134,55 @@ export function compareCensus(oldReadings, newReadings, baseReadings = []) {
     if (!(pet in old.face) && !(base && pet in base.face)) differences.push({ scope: `face:${pet}`, class: "face", kind: "extra", key: pet });
   }
   for (const c of HOUSE_CLASSES) compareMap("house", c, old.house[c], fresh.house[c], base?.house[c] ?? null, differences);
+  // AN IMPORT'S STAND-OFF IS A NAMED MAY-DIFFER: the gate kept the new house's row and wrote nothing over it, so that one
+  // uri may read changed or missing. It never excuses an extra row, and a uri the imports never named stays red.
+  const named = new Set(standOffs);
+  const keyUri = (key) => key.slice(key.indexOf(" ") + 1);
+  const stoodOff = found.filter((d) => d.kind !== "extra" && (d.class === "memes" || d.class === "plain") && named.has(keyUri(d.key)));
+  const red = found.filter((d) => !stoodOff.includes(d));
   const counts = { faces: Object.keys(old.face).length };
   for (const c of FACE_CLASSES) counts[c] = Object.values(old.face).reduce((n, f) => n + Object.keys(f[c] ?? {}).length, 0);
   for (const c of HOUSE_CLASSES) counts[c] = Object.keys(old.house[c]).length;
   return {
     schema: RECEIPT_SCHEMA,
-    verdict: differences.length === 0 ? "par" : "red",
+    verdict: red.length === 0 ? "par" : "red",
     from: { labels: old.labels }, to: { labels: fresh.labels }, ...(base ? { base: { labels: base.labels } } : {}),
-    counts, differences,
+    counts, differences: red, standOffs: stoodOff,
     allowed: { old: old.allowed, new: fresh.allowed },
     mayDiffer: MAY_DIFFER,
   };
+}
+
+const standOffLines = (receipt) => (receipt.standOffs ?? []).map((d) => `  stood off by the import (may differ): ${d.scope} · ${d.class}: ${d.kind} ${d.key}`);
+
+/**
+ * The uris an import stood off, read from its `--json` answer (`data.tallies.<class>.stoodOff`, each `<uri> (<why>)`). The
+ * answer counts, never the exit: an import exits 1 on an expected stand-off and still prints the whole answer.
+ */
+export function stoodOffUris(importText) {
+  const out = [];
+  for (const line of String(importText).trim().split("\n")) {
+    let answer;
+    try { answer = JSON.parse(line); } catch { continue; }
+    for (const tally of Object.values(answer?.data?.tallies ?? {})) {
+      for (const row of Array.isArray(tally?.stoodOff) ? tally.stoodOff : []) out.push(String(row).replace(/ \([^()]*\)$/, ""));
+    }
+  }
+  return out;
 }
 
 /** The receipt as a person reads it: one verdict line, then one line per difference. */
 export function receiptLines(receipt) {
   const c = receipt.counts;
   if (receipt.verdict === "par") {
-    return [`carry-parity: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows read equal`];
+    return [`carry-parity: par — ${c.faces} face(s): ${c.memes} memes, ${c.index} index rows, ${c.plain} plain records, ${c.kahua} kahua heads, ${c.kapae} kāpae, ${c.shares} share rows read equal`, ...standOffLines(receipt)];
   }
   const lines = [`carry-parity: red — ${receipt.differences.length} difference(s)`];
   for (const d of receipt.differences) {
     const values = d.kind === "changed" ? ` (old ${d.old} · new ${d.new})` : "";
     lines.push(`  ${d.scope} · ${d.class}: ${d.kind} ${d.key}${values}`);
   }
-  return lines;
+  return [...lines, ...standOffLines(receipt)];
 }
 
 // ── the census: one reading of a standing house, through its read doors ──────────────────────────────────────
@@ -301,8 +333,8 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
 // ── the command ───────────────────────────────────────────────────────────────────────────────────────────────
 
 function parse(argv) {
-  const opts = { _: [], old: [], new: [], base: [] };
-  const many = new Set(["old", "new", "base"]);
+  const opts = { _: [], old: [], new: [], base: [], imports: [], "stand-off": [] };
+  const many = new Set(["old", "new", "base", "imports", "stand-off"]);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (!a.startsWith("--")) { opts._.push(a); continue; }
@@ -316,9 +348,9 @@ function parse(argv) {
 }
 
 const USAGE = [
-  "usage: node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N] [--base <census.json>] [--json] [--out <receipt.json>] [--lares <cmd>]",
+  "usage: node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N] [--base <census.json>] [--imports <import.json>]... [--stand-off <uri>]... [--json] [--out <receipt.json>] [--lares <cmd>]",
   "       node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]",
-  "       node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--json] [--out <receipt.json>]",
+  "       node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--imports <import.json>]... [--stand-off <uri>]... [--json] [--out <receipt.json>]",
 ];
 
 const isCensusFile = (p) => existsSync(p) && statSync(p).isFile();
@@ -350,7 +382,8 @@ export async function main(argv) {
     const old = await side(opts.old, opts["old-port"], opts.lares, "old");
     const fresh = await side(opts.new, opts["new-port"], opts.lares, "new");
     const base = opts.base.map(loadCensus);
-    const receipt = compareCensus(old, fresh, base);
+    const standOffs = [...opts["stand-off"], ...opts.imports.flatMap((f) => stoodOffUris(readFileSync(f, "utf8")))];
+    const receipt = compareCensus(old, fresh, base, { standOffs });
     if (opts.out) writeFileSync(opts.out, `${JSON.stringify(receipt, null, 2)}\n`);
     if (opts.json) process.stdout.write(`${JSON.stringify(receipt)}\n`);
     else for (const line of receiptLines(receipt)) console.log(line);
