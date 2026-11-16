@@ -22,7 +22,8 @@
  * render COMPUTE over a reader's view of the wiki (`readerView`) that holds none of those records, so no operator and
  * no transclusion reads what the face may not: the gate stands inside the engine, never only on the answer. Every write
  * asks the Kahu predicate and the face's write cap on the bag the cascade lands in (wikis-first: the working layer).
- * A title that stays home (`offerWithheldTitle`: the temp and state namespaces, the control and secret homes, `cap/**`)
+ * A title that stays home (`offerWithheldTitle`: the temp and state namespaces, the control and secret homes, `cap/**`;
+ * and the volatile VM plane, the daemon's own scratch and verb trail)
  * answers no read and takes no write. A put that would land a code-bearing record (a `$:/` title or tag, a module or
  * plugin field, a script type) refuses `tiddler-put-code-class`: no eval door opens here. No action string and no
  * `tm-*` message rides this door (the `act` ask, phase 2).
@@ -52,7 +53,7 @@
  */
 
 import {
-  VerbRefusal, canonicalJsonBytes, offerWithheldTitle, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -155,11 +156,16 @@ function anchorOf(opts: TiddlerVerbOptions, args: Readonly<Record<string, unknow
   return { engine: engineOf(opts), bag: anchorBagOf(opts) };
 }
 
-/** True for a title that stays home: it answers no read here and takes no write. */
-const staysHome = (title: string): boolean => offerWithheldTitle(title) || localFilter(title);
+/**
+ * True for a title that stays home: it answers no read here and takes no write. The volatile VM plane
+ * (`lar:///lararium.local.vm/…`) stays home with the temp namespaces: it holds the daemon VM's own scratch, the verb
+ * trail among it (each call's invocation rests at `…/verbs/<requestId>` while its reactor runs), never shared truth.
+ * A read that counted it would move the answer it reads, and a paged filter would refuse its own cursor on every call.
+ */
+const staysHome = (title: string): boolean => offerWithheldTitle(title) || localFilter(title) || isVolatileVmUri(title);
 
 function refuseWithheld(title: string, verb: string): void {
-  if (staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
+  if (staysHome(title)) throw new VerbRefusal("tiddler-withheld", `tiddler-withheld: "${title}" stays home (a temp, state, volatile-VM, control, secret or cap/** title); ${verb} neither reads nor writes it.`);
 }
 
 /**
