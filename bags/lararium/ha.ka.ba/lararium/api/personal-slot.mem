@@ -210,7 +210,7 @@ Five forces converge here. Each one rules out a parallel storage option.
 !!! Binding tiddler shape
 
 ```toml
-title:        lar:///ha.ka.ba/bags/daemon/personal-bindings/${group}/${fingerprintHex}   # a seated face's row
+title:        lar:///ha.ka.ba/bags/daemon/personal-bindings/${group}/${fingerprintHex}   # a seated face's binding record
 text:         "automerge:abcdef..."   # the personal-slot doc URL
 kind:         "personal-binding"
 fingerprint:  "${fingerprintHex}"
@@ -220,7 +220,7 @@ face-reach:   "vessel-only" | "face"
 keyhive-doc-id: "<Keyhive DocumentId>"
 ```
 
-''One row for each face.'' The daemon document serves every face a vessel holds, and two faces that read one canon compute one fingerprint. A seated face's row therefore carries its PersonaGroup in the title (`slotBindingKey`: `personal-bindings/${group}/${fingerprintHex}`), and each face mounts the document it minted, sealed under its own key. A row with no group in its title (`personal-bindings/${fingerprintHex}`) names a document the faceless floor minted; a seated face that holds no row of its own reads that row, and the Lift moves the document under the face's own row and removes the floor's.
+''One binding record for each face.'' The daemon document serves every face a vessel holds, and two faces that read one canon compute one fingerprint. A seated face's binding record therefore carries its PersonaGroup in the title (`slotBindingKey`: `personal-bindings/${group}/${fingerprintHex}`), and each face mounts the document it minted, sealed under its own key. A binding record with no group in its title (`personal-bindings/${fingerprintHex}`) names a document the faceless floor minted; a seated face that holds no binding record of its own reads that binding record, and the Lift moves the document under the face's own binding record and removes the floor's.
 
 The text field carries the authoritative docUrl. The `kind` field tags the tiddler for filter queries (`[kind[personal-binding]]` returns all). The `fingerprint` field duplicates the title suffix for filter convenience. The `recipe-trace` field stores the inputs that produced the fingerprint — operator-facing diagnostic when a binding's recipe context needs inspection. The `minted-by` field names the device that first instantiated the binding. A mint writes no moment into the record: no wall clock decides anything a binding carries. `face-reach` records `vessel-only` or `face`. `keyhive-doc-id` holds the Keyhive DocumentId; a later process restores the provider's bag-to-document registration from this value before reusing the binding. A re-grant by a stand that holds no hand in that document (a document minted by a stand whose Archive nobody kept, as a vessel at the floor mints one) mints a fresh Keyhive document for the same docUrl and writes its DocumentId here: cap events carry a document's membership and never its creator's key agreement state, and a `vessel-only` binding gave nobody else reach through the document it replaces.
 
@@ -496,6 +496,6 @@ register's lived surface — the living grammar in use before curation lifts it 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;FMMPcq_r3Y5RemSwNpV06Oxx7ByRVmc_XL0mlG6mHLQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Y3jy75dgKDiqWziWRZxIavm2Sjlt-dUcrPceV-4Jm-4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

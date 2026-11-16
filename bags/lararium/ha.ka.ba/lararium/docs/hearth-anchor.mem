@@ -23,7 +23,7 @@ This design serves the ember's raise law (<<~ loulou uri=`lar:///ha.ka.ba/larari
 
 !! The threat ~ three hands, three reaches
 
-A disk copy carries the floor key, its signed floor announcement, both slot trees, the serving rows sealed under SK, and every bare pin and policy record; it can name the hearth and stand its floor routes. The copy lacks a non-exportable private key held in hardware outside that disk, so it cannot answer a fresh hardware challenge unless it can call the original hardware or someone lends it a fresh proof. A copied signed floor announcement, a new software nonce, or a counter stored on that same disk cannot distinguish the original from its copy.
+A disk copy carries the floor key, its signed floor announcement, both slot trees, the serving records sealed under SK, and every bare pin and policy record; it can name the hearth and stand its floor routes. The copy lacks a non-exportable private key held in hardware outside that disk, so it cannot answer a fresh hardware challenge unless it can call the original hardware or someone lends it a fresh proof. A copied signed floor announcement, a new software nonce, or a counter stored on that same disk cannot distinguish the original from its copy.
 
 A thief who takes the whole machine also takes its TPM, attached token, phone, or board anchor. Hardware may then answer fresh asks for that thief; the anchor proves possession of that machine's key and measured state, not the owner's continued consent or the machine's safe location. The thief can reach SERVING for parties already admitted, but SK grants no plaintext, grant-minting secret, identity root, seat key, or authority-changing signature.
 
@@ -99,12 +99,12 @@ For the operator's WSL2 hearth, keep every ember confirm-only today. The measure
 
 !! What the build owes ~ the anchor train
 
-* An `anchor-bind` record: anchor kind, pinned public key or AK, accepted attestation roots, measured-boot policy, the human confirmation that approved the binding, and a causal replacement/removal history. The private anchor key stays in hardware and never enters any custody row.
+* An `anchor-bind` record: anchor kind, pinned public key or AK, accepted attestation roots, measured-boot policy, the human confirmation that approved the binding, and a causal replacement/removal history. The private anchor key stays in hardware and never enters any custody record.
 * A single ask transcript: fresh ember nonce, blinded point, SERVING purpose, transport/channel binding, anchor identity and quote/signature. The ember rejects stale nonces, wrong channels, wrong purposes, unpinned keys, unacceptable PCRs and malformed evidence before it answers.
 * A floor gate that asks the anchor before any unattended slot answer; no anchor or failed proof means human confirm only. The floor announcement alone never counts as anchor evidence.
 * PCR policy and update handling, plus documented AK/EK trust: pin an AK at a human bind or validate its credential chain; never infer hardware trust from a self-asserted certificate. Name what PCRs cover and what they leave outside the measurement.
 * An explicit host-helper protocol for WSL2, with narrow commands, local-channel authentication, no arbitrary TPM command relay, and a proof that links each answer to the intended vessel. Until that proof lands, the helper cannot lift the confirm-only floor.
-* A custody entry for public anchor metadata and its allowed bare/sealed class; no anchor secret in a `floor`, `floor-plain`, `serving`, `hot`, or `cold` row. Keep `sk-rotation-owed` as a deny-only pre-ask check; state plainly that a disk rollback can omit it.
+* A custody entry for public anchor metadata and its allowed bare/sealed class; no anchor secret in a `floor`, `floor-plain`, `serving`, `hot`, or `cold` record. Keep `sk-rotation-owed` as a deny-only pre-ask check; state plainly that a disk rollback can omit it.
 * Anchor loss, replacement and TPM clear flows: fail closed to confirm, let the S key human route bind a new key, record the causal transition, and rotate SK where a removed anchor could still unwrap the old serving tier.
 * Attack rehearsal across a copied disk on another host, a copied WSL distro on the same Windows host, whole-machine theft, a stolen unlocked ember, a PCR-changing update, an absent token, a missing phone, and a crash between quote, count commit and SERVING start.
 
@@ -128,6 +128,6 @@ For the operator's WSL2 hearth, keep every ember confirm-only today. The measure
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;OAt_6byZKQH3krj7XuC3ajK1d-yM2SCHg6WPKLNxHZ0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5lVEDnUcvgWCQKWw_iIWwyo8oXAn3X1fWWGBhRlURt4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

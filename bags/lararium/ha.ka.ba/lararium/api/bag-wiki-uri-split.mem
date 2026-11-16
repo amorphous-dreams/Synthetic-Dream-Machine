@@ -66,7 +66,7 @@ at all'' — it answers to a hash, and a hash answers to nobody.
 ''The engine serves everyone; the corpus carries content.'' `@oracle` names ONE doc — the genesis island — and every wiki reaches it by ''two independent paths'' that no reader may fuse into one:
 
 * ''By CID, for its blobs — off the recipe entirely.'' The oracle doc's `blobs` carry the engine core (`engineCid`) and the memetic-wikitext plugin tiddlers (parser, grammar, all-memes modules). `pluginCidsFromIslandBlobs(islandHandle.doc()?.blobs)` derives that CID set once, and the daemon and every wiki island resolve the bytes ''from the local CAS by hash'' (the breath path), never CRDT-syncing them over the port. A wiki renders the grammar because CAS answers its hashes. No slot lays the engine, and no recipe can withhold it.
-* ''By slot, for its tiddlers — the cascade's floor.'' `expandRecipe` closes every recipe with `ORACLE_BAG`, lowest priority, so the system island's content (the seed rows `genesis-cid-engine`, `genesis-cid-plugins`, `genesis-cid-floor`, and the house-canon snapshots the floor manifest names) stands under every wiki, including a primary mount with no libraryBags.
+* ''By slot, for its tiddlers — the cascade's floor.'' `expandRecipe` closes every recipe with `ORACLE_BAG`, lowest priority, so the system island's content (the seed records `genesis-cid-engine`, `genesis-cid-plugins`, `genesis-cid-floor`, and the house-canon snapshots the floor manifest names) stands under every wiki, including a primary mount with no libraryBags.
 
 The catalog binds the two: `bags/oracle` → the genesis island's own doc URL, so the address a recipe floors on and the doc a CID pull reads name the same doc.
 
@@ -83,13 +83,13 @@ Two maps, cleanly separated — each the operator's own, never a registry of oth
 * ''bags'' — `bags/{slug}` → automerge url. Composable recipe pieces, each one doc, shared per the user's wish.
 * ''wikis'' — `wikis/{slug}` → recipe (the `#has` bag-stack). Per-wiki layers route from here.
 
-`@oracle` names the shared system floor from its genesis seed. The read-face projects only seed-named rows and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. It never hands the oracle document itself across the read-face. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>).
+`@oracle` names the shared system floor from its genesis seed. The read-face projects only seed-named records and blob descriptors as a content-addressed snapshot without Automerge history; the snapshot carries the seed CID beside its own CID. It never hands the oracle document itself across the read-face. The floor's frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. LAW THE BUILD OWES: one porch answer per Nexus names the floor CID and derived WHO board address; that Nexus's Kahu steward signs it, and a herm carries and presents it without signing it. No tender name reaches a stranger; the steward seal carries the authority (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/pronaos#/the-rung-ladder`>>).
 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/wiki-layer-ontology#/oracle-planes`>> — anchors the shared oracle surface model
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/the-oracle-plane`>> — sets the read-face projection and answer split
-<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor rows from vessel pointers
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/oracle-split`>> — separates floor records from vessel pointers
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/recipe-layer-model#/one-model`>> — places system floor beneath writable recipe layers
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;g4Rkq6s_dhoN2TcTF-yMK-S3v4xkQQOWYH9HXncveu8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lIxkSpy9JIWbQ6-mXCERuAAvAof_ab4wervyDJB61U4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

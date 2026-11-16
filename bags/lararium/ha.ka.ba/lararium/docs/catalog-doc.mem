@@ -18,7 +18,7 @@ uri-path      = "ha.ka.ba/lararium/docs/catalog-doc"
 
 ! Catalog Doc
 
-`CATALOG_DOC_URI = bagUri("catalog")` names the catalog document (`packages/lararium-mesh/src/lar-uris.ts`). Its `tiddlers` map holds registry records whose `text` fields carry Automerge document URLs. The genesis row gives the catalog `readPolicy: "public"` and `writePolicy: "private"` (`packages/lararium-mesh/src/genesis-doc.ts`).
+`CATALOG_DOC_URI = bagUri("catalog")` names the catalog document (`packages/lararium-mesh/src/lar-uris.ts`). Its `tiddlers` map holds registry records whose `text` fields carry Automerge document URLs. The genesis record gives the catalog `readPolicy: "public"` and `writePolicy: "private"` (`packages/lararium-mesh/src/genesis-doc.ts`).
 
 Keep the catalog small: registry pointers belong here; tiddler bodies and corpus content belong in their own documents. The content-plane law stands at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/automerge-tiga#/tiga-law`>>.
 
@@ -54,6 +54,6 @@ Wiki leaves use `wikiBagUri(slug) = bagUri(slug)` as catalog keys (`packages/lar
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nN6ITb9yQQto3IZs4SDCaxlHdnfiaiZHjEXITD9EQqA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NAwDKwEEBwoTAhavCaHfFmb60v2OEsMx7txGm6H-Dkc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

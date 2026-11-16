@@ -60,7 +60,7 @@ The working address takes a behavioural witness, never a declared red that pins 
 |---|---|
 | N | Consume final face identity and joint AID; leave charter and inception bytes with N. |
 | W | Take `open-node-vessel.ts` and `open-browser-vessel.ts` session hunks after W's socket cutover; leave W's wire and gate proof intact. |
-| S8 | Consume sealed selves rows; leave `persona-selves-plane.ts` and `sealed-acts.ts` with S8. |
+| S8 | Consume sealed selves records; leave `persona-selves-plane.ts` and `sealed-acts.ts` with S8. |
 | Sealed-store step 3 | Hand over verified face, signer and scoped fetch path before storage hydration changes. |
 | H and X | H consumes the worn face's hosting authority through its own delegation. X consumes O1's live browser and node legs; neither edits O1's address bytes. |
 
@@ -84,6 +84,6 @@ The roadmap's ONE FACE path and `F1`–`F12` name the session debt (<<~ loulou u
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;quDbPNKCpfA2rWbuU9ZcGS6E8Gl_VU9dYwWANOuvKV4`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6zQXqerWXXh5kdbOEUgiPnMMjUDu7M1QCDBHiw6S1BI`>>
 
 <<^ code=`&#x0004;` to=`?`>>

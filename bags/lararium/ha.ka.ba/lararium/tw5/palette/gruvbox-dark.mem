@@ -11,7 +11,7 @@ type     = "text/memetic-wikitext+tiddlywiki"
 uri-path = "ha.ka.ba/lararium/tw5/palette/gruvbox-dark"
 ```
 
-The Gruvbox Dark colours, as TiddlyWiki reads a palette: one `name: colour` row per line in the `#/palette` slot, typed `application/x-tiddler-dictionary` and tagged `$:/tags/Palette`, so `$:/palette` names the slot and `<<colour …>>` resolves through it.
+The Gruvbox Dark colours, as TiddlyWiki reads a palette: one `name: colour` entry per line in the `#/palette` slot, typed `application/x-tiddler-dictionary` and tagged `$:/tags/Palette`, so `$:/palette` names the slot and `<<colour …>>` resolves through it.
 
 <<~ ahu slot=`#/palette`>>
 
@@ -118,6 +118,6 @@ wikilist-toolbar-foreground: #ebdbb2
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CjeucJOE8kXcq5j3OxDnNmJOL7L1QaieP_lfjJ8WD64`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LncYssivtJSmxV_gYVkoPJSEJVPZNFJ9JDPP66QKIV4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

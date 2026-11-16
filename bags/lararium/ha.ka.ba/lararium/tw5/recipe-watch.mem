@@ -24,7 +24,7 @@ composite. The recipe reads from two planes (`wiki-layer-ontology#oracle-planes`
 a ''system'' wiki (`lares`/`lararium`) takes its default recipe from the
 ''`@oracle`'' doc and the vessel's own composition in `@catalog` shadows it
 (`effectiveRecipe`, own first). Every bag pointer resolves from `@catalog`; a
-house-canon bag carries no catalog row and resolves through the Kahu realm's
+house-canon bag carries no catalog entry and resolves through the Kahu realm's
 standing registration (`libraryDocUrl`).
 
 * ''bag added'' → resolve via the owning plane's oracle, insert the layer above
@@ -82,6 +82,6 @@ CRDT slot the oracles point at.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ir_AVM55q7sNNjjBgIt5-DIkKylShIYx1CEbasUeKNk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;cfIh5Ffe_cTKFOTzgfZePIqZHyGyiHjFefHPY-4jFRg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

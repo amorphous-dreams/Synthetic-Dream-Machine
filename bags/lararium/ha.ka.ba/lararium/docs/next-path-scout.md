@@ -15,7 +15,7 @@ Lane `scout` (controller-handoff `#/the-cloud-lanes`), read on `feature/green-je
 - **Owed, with no production caller anywhere:**
   - `openSignedSession` (`session-signer.ts:221`); `face-dial.ts:46` imports its type alone.
   - `openJoinedFaceSession`, asked by the gated red `JOINED_VESSEL_CERTIFIES_OWN_KEY` (`session-face-reissue.test.ts:9,51`; `unbuilt-laws.test.ts:463`); no source defines it.
-  - The vessel face-key certificate: `issueCertificate` and `requestCertificate` stand pure (`face-authority.ts:273,294`), and `storeVesselFaceKey` stands as a custody row (`face-key-custody.ts:229`).
+  - The vessel face-key certificate: `issueCertificate` and `requestCertificate` stand pure (`face-authority.ts:273,294`), and `storeVesselFaceKey` stands as a custody record (`face-key-custody.ts:229`).
   - The add-a-face grant: only Keyhive's `FaceGrantRecord` sign and verify stand (`face-grant-record.ts:36-80`).
   - **The fleet-join door**: no `fleetJoin` lives under `packages/*/src`.
 - **The old join doors still stand**, and the fleet-join door retires them all:
@@ -175,7 +175,7 @@ Gates: `nexus-contract` and `seal-ceremony` suites, the typecheck witness, one s
 
 1. **The act image.** Vectors for the operator-seat delegation, the hosting key's public identity, the act image and its three dials (`train-h-launch#/walk` step 1). Today `hosting.ts` signs a leaf and one cap (`unbuilt-laws.test.ts:534`).
 2. **H8's signed grant.** It replaces the keyed POPRF tag (`hosting.ts:34-37`, "a KEYED tag, not a signature") with a signed grant and a public-half verifier. The red stands declared as `SERVING_CHECKS_WALKER_GRANT_WITH_PUBLIC_HALF` (`unbuilt-laws.test.ts:547`).
-3. **The public-half derivation for serving rows**, inside the same re-cut, held pure until W hands over `socket-sorter.ts`.
+3. **The public-half derivation for serving records**, inside the same re-cut, held pure until W hands over `socket-sorter.ts`.
 
 Gates: mesh unit suites, the unbuilt-laws witness reading each declared red that greens, and the typecheck witness. The live cut (issuer, reader, `hosting-store.ts`, sorter) waits on W.
 
@@ -189,7 +189,7 @@ Gates: the browser walks (`tools/browser-ci.sh`), the e2e `tests` set and the he
 
 ### E: first three commits and gates
 
-1. **The serving tier's rows under SK and SK's rotation** (`E2`). Today the class stands in `vault-carriers.ts:79` and the census, but no serving row seals under SK.
+1. **The serving tier's records under SK and SK's rotation** (`E2`). Today the class stands in `vault-carriers.ts:79` and the census, but no serving record seals under SK.
 2. **`E3`, the serving gate's tier** in `gate-bundle.ts`: a third route tier, its own domain and pin.
 3. **`E4`, the raise ledger's commit point and its lapse at the next causal boundary** (`vessel-raise.ts`, `custody-seat.ts`).
 
@@ -222,10 +222,10 @@ Gates: the browser walks. The device measures go by hand on the operator's table
 5. **C** · W's dials: one per (hearth, Nexus) (`W7`), the sibling at face scope (`W9`, `W12`), canon.
 6. **C** · O1: sessions, working address, receipts, the switch.
 7. **C** · H live: the signed-byte cut, the introduction and answer, the strangers' dial.
-8. **C** · E: SK rows, the serving gate, the raise, the walker arm behind H8.
+8. **C** · E: SK records, the serving gate, the raise, the walker arm behind H8.
 9. **C** · Sealed-store step 3.
 10. **C** · B1, browser custody.
-11. **C** · The rows before the fence that no train names yet:
+11. **C** · The items before the fence that no train names yet:
     - `K13`, the sealed outbox;
     - `K14`, the restored face's provisional standing;
     - V's enrolled-set bundle and its restore as persona zero;
