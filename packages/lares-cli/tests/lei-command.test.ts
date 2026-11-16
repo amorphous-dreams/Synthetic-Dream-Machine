@@ -16,11 +16,14 @@ describe("lares lei plans one store row per sub-verb", () => {
   it("show: a rite, a branch and a head ask after one rite's lei; with none it reads the board alone", () => {
     expect(plan("show", "--rite", "push", "--branch", "feature/x", "--head", HEAD)).toEqual({ verb: "swarm-show", args: { rite: "push", branch: "feature/x", head: HEAD } });
     expect(plan("show")).toEqual({ verb: "swarm-show", args: {} });
+    // A wide lei names no head, so its line reads by rite and branch alone.
+    expect(plan("show", "--rite", "kukulu", "--branch", "main")).toEqual({ verb: "swarm-show", args: { rite: "kukulu", branch: "main" } });
     expect(plan("show", "--rite", "kukulu", "--branch", "main", "--head", HEAD, "--face", "1")).toEqual({ verb: "swarm-show", args: { rite: "kukulu", branch: "main", head: HEAD, face: 1 } });
   });
 
   it("kui: wide by default with its returns, and `after` null for the first on the line; the head reach pins the head it names", () => {
     expect(plan("kui", "--rite", "push", "--branch", "feature/x", "--returns", "3")).toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", returns: 3, after: null } });
+    expect(plan("kui", "--rite", "push", "--branch", "feature/x", "--returns", "40", "--yes")).toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", returns: 40, after: null, confirm: true } });
     expect(plan("kui", "--rite", "push", "--branch", "feature/x", "--reach", "head", "--head", HEAD, "--after", CID))
       .toEqual({ verb: "swarm-lei-kui", args: { rite: "push", branch: "feature/x", reach: "head", head: HEAD, after: CID } });
   });

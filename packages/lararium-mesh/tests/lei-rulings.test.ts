@@ -16,7 +16,8 @@ import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { LEI_RETURNS_ASK_ABOVE, swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
 import { leiRiteCosigns } from "../src/swarm-lei-rite.js";
 import { putSwarmAct, readLei, signSwarmAct, swarmActCid, swarmLeiRowTitle, type SwarmBodyParts, type SwarmWikiPort } from "../src/swarm-tiddlers.js";
-import type { WardCosignAct, WardCosignPort } from "../src/ward-cosign.js";
+import type { WardCosignAct } from "../src/ward-cosign.js";
+import type { WardCosignPort } from "../src/ward-cosign-gate.js";
 import { soloCosign } from "./ward-cosign-table.js";
 
 const GROUP = "face-group", BRANCH = "main", HEAD = "a".repeat(40);

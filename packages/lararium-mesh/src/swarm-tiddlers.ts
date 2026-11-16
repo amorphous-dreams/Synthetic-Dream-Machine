@@ -37,7 +37,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { SWARM_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { SWARM_URI_PREFIX } from "./lar-uris.js";
-import { isSwarmLeiRite, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
+import { isSwarmLeiRite, leiRiteCosigns, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
 import { wardActRefusal, type WardActRefusal, type WardActWitness } from "./ward-cosign.js";
 
 export { SWARM_URI_PREFIX } from "./lar-uris.js";
@@ -271,7 +271,8 @@ export async function readLeiChain(wiki: SwarmWikiPort, line: SwarmLeiLine, trus
     const body = read.act.body;
     if (body.act === "lei" && body.rite === rite && body.branch === branch) resting.push({ act: read.act, cid: read.cid, body });
   }
-  const wardReads = resting.map((g) => wardActRefusal(ward, { verb: wardLeiVerb(g.body.rite), wiki: "daemon", head: swarmLeiHead(g.body) }));
+  // A rite that stays on the device asks no co-sign: its lei stands on the hand's signature alone.
+  const wardReads = resting.map((g) => (leiRiteCosigns(g.body.rite) ? wardActRefusal(ward, { verb: wardLeiVerb(g.body.rite), wiki: "daemon", head: swarmLeiHead(g.body) }) : null));
   const cosigned = resting.filter((_, i) => wardReads[i] === null);
   const children = new Map<string | null, LeiRow[]>();
   for (const g of cosigned) children.set(g.body.after, [...(children.get(g.body.after) ?? []), g]);
@@ -296,14 +297,15 @@ export async function readLeiChain(wiki: SwarmWikiPort, line: SwarmLeiLine, trus
  * (`returnLei`): this read names the lei, never the receipt.
  * On a face of two devices a lei the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
-export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
-  Promise<{ ok: true; act: SignedSwarmAct; cid: string; reach: SwarmLeiReach; returnsLeft: number } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "unstrung" | "returned" | "returns-spent" | "narrowed" | "forked" }> {
+export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head?: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
+  Promise<{ ok: true; act: SignedSwarmAct; cid: string; reach: SwarmLeiReach; returnsLeft: number; head?: string } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "unstrung" | "returned" | "returns-spent" | "narrowed" | "forked" }> {
   const chain = await readLeiChain(wiki, at, trust, group, ward);
   if (chain.tips.length > 1) return { ok: false, refusal: "forked" };
   const tip = chain.tips[0];
   if (!tip) return { ok: false, refusal: chain.refusal ?? "absent" };
   const body = tip.body;
-  if (body.reach === "head" && body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
+  // A read that names no head asks after the line alone: a head lei then answers with the head it pins.
+  if (body.reach === "head" && at.head !== undefined && body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
   // Any row at the narrowing title narrows the lei, signed or not: a forged narrowing fails closed.
   // Any row at the unstrung title ends the lei, signed or not: a forged unstringing fails closed.
   if ((await wiki.read(swarmLeiUnstrungTitle(tip.cid))) !== null) return { ok: false, refusal: "unstrung" };
@@ -312,7 +314,7 @@ export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly
   const returns = body.reach === "wide" ? body.returns : 1;
   const taken = (await wiki.list(swarmLeiReturnedPrefix(tip.cid))).length;
   if (taken >= returns) return { ok: false, refusal: body.reach === "wide" ? "returns-spent" : "returned" };
-  return { ok: true, act: tip.act, cid: tip.cid, reach: body.reach, returnsLeft: returns - taken };
+  return { ok: true, act: tip.act, cid: tip.cid, reach: body.reach, returnsLeft: returns - taken, ...(body.reach === "head" ? { head: body.head } : {}) };
 }
 
 /**

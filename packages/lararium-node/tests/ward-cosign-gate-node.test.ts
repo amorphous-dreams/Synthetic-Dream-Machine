@@ -8,7 +8,7 @@ import { nodeWardCosignPort } from "../src/commands/intent.js";
 import { wardCosignTable } from "../../lararium-mesh/tests/ward-cosign-table.js";
 
 wardCosignTable({
-  name: "node", acts: ["lower", "cap", "go"],
+  name: "node", acts: ["lower", "cap", "lei"],
   port: ({ group, atom, plane, devices, lineage, aside, unknown, frontier, wardKeys }) => nodeWardCosignPort({ flush: async () => undefined } as never, {
     group, plane, verbs: faceIntentVerbs(), signer: atom,
     projection: { devices, cids: ["admit"], get admissions() { return devices.map((deviceKey) => ({ deviceKey, cid: "admit" })); },

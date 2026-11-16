@@ -4,9 +4,10 @@
  * A lei grants one rite (`push` · `kukulu`) at one branch under one reach. Each sub-verb plans one row of the store door and the
  * args it carries (`leiPlan`); the row runs in the vessel, where the hand-only gate, the ward and the co-sign stand:
  *
- *   show       `swarm-show`          reads the board; with `--rite --branch --head` it also reads one rite's standing lei (`data.lei`)
+ *   show       `swarm-show`          reads the board; with `--rite --branch [--head]` it also reads one rite's standing lei (`data.lei`)
  *   kui        `swarm-lei-kui`       strings a lei: wide by default (`--returns <n>`), or `--reach head --head <h>` to pin one head;
- *                                    `--after <lei cid>` names the lei it follows, absent for the first on the line
+ *                                    `--after <lei cid>` names the lei it follows, absent for the first on the line; more than
+ *                                    twelve returns asks `--yes`
  *   unstring   `swarm-lei-unstring`  revokes a lei that still holds returns (`--lei <cid>`): a signed record, nothing deleted
  *   restring   `swarm-lei-restring`  supersedes the standing lei with a newer one; the door fills `after` from the line's tip
  *
@@ -44,10 +45,10 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
   const head = word("head", args.options["head"], args.flags["head"]);
   const face = count("face", word("face", args.options["face"], args.flags["face"]), 0);
   if (act === "show") {
-    // The board reads with no line named; one rite's lei reads only where rite, branch and head all stand.
+    // The board reads with no line named; one rite's line reads by rite and branch, and a head rides along to ask after one head.
     if ([rite, branch, head].some((x) => x !== undefined)) {
-      if (rite === undefined || branch === undefined || head === undefined) throw new LeiUsage("show reads one rite's lei by --rite, --branch and --head together");
-      Object.assign(out, { rite, branch, head });
+      if (rite === undefined || branch === undefined) throw new LeiUsage("show reads one rite's line by --rite and --branch together (--head asks after one head)");
+      Object.assign(out, { rite, branch, ...(head !== undefined ? { head } : {}) });
     }
   } else {
     if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu");
@@ -66,6 +67,8 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
       const after = word("after", args.options["after"], args.flags["after"]);
       if (act === "restring") { if (after !== undefined) throw new LeiUsage("a restring follows the line's tip; it names no --after"); }
       else out["after"] = after ?? null;
+      // A count above twelve strings only with the hand's explicit confirm (`--yes`).
+      if (args.flags["yes"] === true) out["confirm"] = true;
     }
   }
   if (face !== undefined) out["face"] = face;
