@@ -11,6 +11,8 @@
  *   KH6  a bundle holding a secret-shaped string refuses and commits nothing; a PLANTED fixture passes;
  *   KH7  an upstream another clone moved rebases under the keep commit, and the push lands on top of it;
  *   KH8  beside the container house, the host finds the workspace in LARES_WORKSPACES, the pairs the shim binds.
+ *   KH10 a moved house after a pushed keep keeps again: the status read keeps git's leading column, so a tracked file the
+ *        new cut changed inside `<into>` reads inside it.
  *
  * Real git over scratch repos; the vessel's rows answer from a recorded fake.
  */
@@ -200,5 +202,14 @@ describe("the keep rite, host half", () => {
       expect(() => workspaceFromPairs("backup", configured), configured).toThrow(KeepRefused);
     }
     try { workspaceFromPairs("backup", ""); } catch (e) { expect((e as KeepRefused).code).toBe("keep-workspace-unnamed-on-host"); }
+  });
+
+  test("KH10 RED: a moved house after a pushed keep keeps again; the bundle file the new cut changed reads inside <into>", async () => {
+    const r = rig();
+    expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
+    r.state.notes = { heron: "remember the heron\n", pond: "the pond at dusk\n" };
+    const moved = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(moved.data, JSON.stringify(moved.data)).toMatchObject({ kept: true, committed: true, pushed: true, par: true });
+    expect(r.remoteManifest()).toBe(String(moved.data["bundleId"]));
   });
 });

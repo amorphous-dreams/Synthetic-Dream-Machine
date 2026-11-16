@@ -113,7 +113,12 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     if ((await ports.git(dir, ["remote", "get-url", remote])).code !== 0) throw new HostRefused("keep-remote-absent", `the workspace "${name}" names no remote "${remote}" for ${branch}; add the operator's repo (git -C ${dir} remote add ${remote} <url>)`);
     const attr = await git(["check-attr", "text", "--", `${into}/${MANIFEST_FILE}`], "keep-attributes-unread");
     if (!/: text: unset$/.test(attr)) throw new HostRefused("keep-text-guard-absent", `${into}/ reads \`text\` as ${attr.split(": ").pop() || "unspecified"} in the workspace "${name}"; a line-ending rewrite would move bytes the manifest hashes. Commit a .gitattributes holding \`* -text\` at the workspace's top first`);
-    const outside = async (): Promise<string[]> => changedPaths(await git(["status", "--porcelain=v1", "-z", "--untracked-files=all"], "keep-status-unread")).filter((p) => !under(p, into));
+    // The status reads raw: its first column may stand blank (` M <path>`), and a trim would eat it and the path's first letter.
+    const outside = async (): Promise<string[]> => {
+      const st = await ports.git(dir, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
+      if (st.code !== 0) throw new HostRefused("keep-status-unread", `git status answered ${st.code}: ${st.stderr.trim() || st.stdout.trim()}`);
+      return changedPaths(st.stdout).filter((p) => !under(p, into));
+    };
     const before = await outside();
     if (before.length > 0) throw new HostRefused("keep-tree-unclean", `the workspace "${name}" holds changes outside ${into}/ (${before.slice(0, 5).join(", ")}${before.length > 5 ? ", …" : ""}); commit or clear them first, since a keep commits ${into}/ alone`, { outside: before });
 
