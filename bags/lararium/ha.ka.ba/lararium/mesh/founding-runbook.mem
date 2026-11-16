@@ -340,7 +340,7 @@ A live vessel may continue with its local corpus while household HTTPS, browser 
 
 !! 11a · Carry memory across a re-founding
 
-A re-founding clears `$LARES_HOUSE/hearth` alone; the face's memory crosses as content, by `lares export` and `lares import`, onto the new face that carries the same pet-name.
+The re-founding stands at a fresh root, `~/.lares-next`, beside the old house, and swaps into `~/.lares` by rename once it reads par; the face's memory crosses as content, by `lares export` and `lares import`, onto the new face that carries the same pet-name.
 
 ''Do'': in this order.
 
@@ -351,14 +351,17 @@ tools/lares-container.sh export /lar/config/carry/bundle-one    # the host reads
 tools/lares-container.sh lei kui --rite keep --branch backup --returns 2   # the ward asks this one act's passphrase
 lares rite keep --workspace backup                               # on the host: cut into the clone's house/, commit, push, land
 tools/lares-container.sh down                                    # a locked hearth's census says: vault unlock, then down
-tools/lares-container.sh reset                                   # type re-found; projections stay
+# the new house founds at ~/.lares-next: LARES_HOUSE=~/.lares-next in the environment for the found, up, seed and import steps below
 tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
+mkdir -p ~/.lares-next/config && cp -r ~/.lares/config/carry ~/.lares-next/config/   # the bundle crosses by copy to the new root's config home
 tools/lares-container.sh up                                      # up unlocks on the attached terminal: no separate unlock step
 tools/lares-container.sh vessel seed --apply --yes               # canon first, then every mirror; the old face's folders adopt by pet-name
 tools/lares-container.sh vessel seed --apply --lift-kahua <N>    # the kahua items the seed previewed, on their count alone
 tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
 tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 ```
+
+''The swap.'' Once the census reads par and the lit house stands, `tools/lares-container.sh down`, then `mv ~/.lares ~/.lares-prior` and `mv ~/.lares-next ~/.lares`, copy `lares-surface.env` across (its `LARES_HOUSE=/home/joshu/.lares` stands as written), `tools/lares-container.sh up`, and a census reading par against the census before the swap. A rollback renames back; `~/.lares-prior` stands whole until the operator burns it.
 
 ''Wake each wiki in turn before the export.'' The source vessel holds two rotatable wiki pins, so a house of three shared wikis leaves one cold by the export, and a wiki that fell cold after its wake reads as a named omission: `cold-wikis` (and `override-bases-unread` over a woken wiki's working bag). Wearing each face that wrote there, `lares wiki hold <slug>` wakes each wiki `lares wiki list` names, the daemon aside, one after another; a woken wiki projected its pages, so its omissions read as named and lossless for records, while a cold wiki's working rows over canon travel without their override bases.
 
@@ -544,6 +547,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ShM-p3bhUBE-wP_9ssxlRFiOVIPIMdDSMjx0S5D5c68`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;mHT6J55FleQ2ZNcowZDtr354k6JBraMDV2nnZo-_8Hk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
