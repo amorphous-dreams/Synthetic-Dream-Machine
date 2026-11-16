@@ -283,7 +283,7 @@ It does not authenticate a non-browser peer. The served vessel still performs it
 capability/admission decision after the carrier introduces the transport.
 
 ''Local continuity, remote reach.'' A home carrier can disappear while leaf vessels retain local causal state and
-previously acquired public bytes. A regional Nexus can relay or cache selected public material without becoming a
+already-acquired public bytes. A regional Nexus can relay or cache selected public material without becoming a
 mandatory host or planetary authority. WAN recovery carries a later crossing; it does not rewrite the island.
 
 ''Generated receipt, not magic config.'' The operator's route receipt should render to NGINX, Caddy, cloud ingress,
@@ -469,6 +469,6 @@ deferred and does not enter this carrier meme by implication.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;MweII-CCzQQVulFVA3WEF9vjhKNR5PkheeCVdvw2l1k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5lLaj2ek3KaEqIZSVDrCE-ixSctpBQLXe1Lp8-KwCJw`>>
 
 <<^ code=`&#x0004;` to=`?`>>

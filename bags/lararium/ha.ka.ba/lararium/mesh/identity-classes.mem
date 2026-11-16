@@ -360,7 +360,7 @@ Four parts carry it:
   reveal; a compromise of the operational present cannot forge the recovery future.
 # ''Recovery signs a ROTATION EVENT, not a re-admit of the old key'' — the recovery authority signs an
   event that (a) reveals against the pre-committed recovery-key digest, (b) SEATS a FRESH operational
-  keypair the recovering vessel just minted, (c) marks the prior operational key retired, (d) hash-links
+  keypair the recovering vessel just minted, (c) marks the prior operational key rotated out, (d) hash-links
   onto the persona-KEL. This reads `rotateSealEpoch` applied at PERSONA scale
   ([[wax-stamp|lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-wax-stamp]]): reveal-the-pre-commit, seat-the-new-head,
   arm-the-next.
@@ -632,7 +632,7 @@ because the presentation still satisfies the current quorum.
   the prefix binds the GENESIS owner set (anti-swap: the name never moves), the rolling slot carries
   the CURRENT set. One signed graft event, cryptographic, no registry, no new persona bytes.
 * ''It answers both kept kue'' — a civic name's cryptographic continuity (the graft forms the chain, no
-  social hand-wave) and a crew resurrecting a name its holder can no longer cede (a k-of-n survives a
+  social hand-wave) and a crew resurrecting a name its holder cannot cede (a k-of-n survives a
   lost member; the crew forms the quorum). The willing-cede residue shrinks to "a threshold of the
   current set consents" and routes to the human floor.
 
@@ -641,7 +641,7 @@ because succession never named a new thing — the name stands as a cabal, and t
 
 ''THE FIELD NAMES BOTH FORMS'' (Deseriis, "improper names"; `api/pono/field-collision`): our
 quorum-Handle reads as a STUDIED social form, not a novelty. A ''multiple-use name'' — an open name hundreds
-present under, decentralized and idiosyncratic (Luther Blissett, 1994–99, VOLUNTARILY retired: a
+present under, decentralized and idiosyncratic (Luther Blissett, 1994–99, VOLUNTARILY laid down: a
 deliberate succession) — matches our k-of-n at large / the Dread Pirate Roberts. A ''collective pseudonym''
 — a specific controlled group behind one name (Wu Ming) — matches our chartered cabal. The vocabulary belongs to
 the field; the mechanism (grafting the presenting set, identifier fixed) belongs to this house.
@@ -695,6 +695,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;x3MziLzUYkXtcAoX84xvcUNGj82A_UyFAirWIWdxL5o`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fj60i7iCnesCn97UHg7uZEFOXoj9UdhXsFmKB6AstWU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

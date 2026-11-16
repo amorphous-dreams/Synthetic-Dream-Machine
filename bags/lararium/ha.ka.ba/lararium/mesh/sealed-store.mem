@@ -21,7 +21,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/sealed-store"
 
 Cleartext lives in two places alone: the live wiki in memory, and the files the operator projects to disk. Every other private byte rests as an ''authenticated sealed value'', and the same bytes serve at rest on a reader's own disk and in the hands of a carrier that holds no key. Carriage therefore comes down to copying.
 
-This carrier states that format: the keys, the sealed value, its address, the records that name and order sealed values, and the rules by which a bag's key changes. The format changes once, here. A vessel founded under an earlier shape re-founds; no reader relabels an earlier body as authenticated.
+This carrier states that format: the keys, the sealed value, its address, the records that name and order sealed values, and the rules by which a bag's key changes. The format changes once, here. A vessel whose bytes another format sealed re-founds; no reader relabels a body of another format as authenticated.
 
 > ''Register.'' The operator approved the model and ruled its scope, the history rule at admission and the mutual-removal ending (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/the-road`>>, the sealed store). The house settled the bytes, the record shapes and each reading marked below under those rulings.
 
@@ -428,6 +428,6 @@ Faces do not know each other: no face's hive or catalog half names another face.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;apha0VhPsXsGEdSs-LuHM1B0ceotr2Hkfo3FsKDxjvU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;m_8gqzOrszfOiuUCnAo6UYM5Bnoyg58PuTyhqzuk0ws`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -170,7 +170,7 @@ Each refusal names `serving-standing` and `lares vault unlock`.
 # ''The ledger commits the raise before anything serves.'' The hearth opens `raise-ledger`, reads the count, and seals one entry: the ordinal, the slot, a digest of each answering ember's key, the raise nonce and the boot epoch. The count gets spent at that entry's durable commit, before SERVING composes: a crash before the commit spends nothing and serves nothing; a crash after it burns the raise. A spent count refuses (`count-spent`): SK drops, the hearth stays at its floor, and the ember shows that a person must unlock the hearth.
 # ''The hearth stands at SERVING'' for one boot, and the raise lapses at the next causal boundary: a lock, a restart, a human unlock (which replaces the raise), or a counted removal of any ember (#/removal). That boundary stands as the expiry the waking floor requires of a raise (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor`>>); no timer and no heartbeat ends a standing.
 
-''A replayed ask yields nothing.'' An answer to an old blinded point opens nothing without the `e` that blinded it, and the hearth drew and dropped that `e`. A replayed answer meets a raise nonce the hearth no longer holds. ''A replayed raise yields nothing either'': a raise holds no bearer token, so nothing recorded lifts a fresh boot.
+''A replayed ask yields nothing.'' An answer to an old blinded point opens nothing without the `e` that blinded it, and the hearth drew and dropped that `e`. A replayed answer meets a raise nonce the hearth already dropped. ''A replayed raise yields nothing either'': a raise holds no bearer token, so nothing recorded lifts a fresh boot.
 
 !!! The count ~ a dial, never a clock
 
@@ -296,6 +296,6 @@ Each stands as a house ruling under the operator's delegation, with the conditio
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;NkQwJOf5VzCoxB4GlmGLPtTUPAV4YYCr_Us8LR0AZLo`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4hUseZR3STHnazQ_0rRzUNHMudXJ5_ZR2RaWQP9jYAg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

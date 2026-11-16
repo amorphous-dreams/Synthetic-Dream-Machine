@@ -558,7 +558,7 @@ A vessel that imports a bag from a foreign cabalGroup parses its memes, verifies
 
 !! The Golden Principles — what every plane above obeys
 
-''No-global-now / causal islands.'' ''"No-global-now stands as a HARD design parameter"'' (operator, 2026-09-06, quote license, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>> #/the-law). Federation reads as a presheaf of local causal-logs that forms NO sheaf — the local sections need not glue to a global section, and that failure carries the content: //"'no global now' IS the gluing obstruction"// (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>> #/law). The master cut rides above the gluing: ''AUTHORITY(safety) ⊥ FLOW(liveness)'' — flow may glue probabilistically and eventually, authority never. A vessel holds a snapshot of previously-synchronized state, never the whole distributed system "at once" (`causal-islands.mem` #/head).
+''No-global-now / causal islands.'' ''"No-global-now stands as a HARD design parameter"'' (operator, 2026-09-06, quote license, <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/registry-filter`>> #/the-law). Federation reads as a presheaf of local causal-logs that forms NO sheaf — the local sections need not glue to a global section, and that failure carries the content: //"'no global now' IS the gluing obstruction"// (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/federated-causal-islands`>> #/law). The master cut rides above the gluing: ''AUTHORITY(safety) ⊥ FLOW(liveness)'' — flow may glue probabilistically and eventually, authority never. A vessel holds a snapshot of state as of its last sync, never the whole distributed system "at once" (`causal-islands.mem` #/head).
 
 ''The registry filter.'' ''"If a fork's downstream builds a 'global registry' of even ONE-NEXUS scope, the fork is REJECTED"'' (operator, 2026-09-06, quote license, `registry-filter.mem` #/the-law) — the rule fires at DESIGN time, so a rejected fork never reaches code. The mechanical test, run on every plane above: ''CARRIAGE (passes)'' — authored announced-BY-the-subject, replicated causally, read as-of-my-last-sync, not enumerable by construction; ''REGISTRY (rejected, at ANY scope)'' — compiled ABOUT subjects, replicated authoritatively, read as-of-truth, and its compilation IS the product (`registry-filter.mem` #/the-test). ''The shadow-case:'' a key reused across contexts compiles a registry in the correlations it leaves, with or without a table — "the test reads OUTPUT SHAPES, not tables" (`registry-filter.mem` #/the-test).
 
@@ -725,6 +725,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;AgYdplJcBiTy0ddGjZj1FQOn2tS5YgNNOf-2rnqY2So`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MpiQOFLvskALWPH5nhX2oU7Kcp2ocEZpCjCA8jd-TTE`>>
 
 <<^ code=`&#x0004;` to=`?`>>

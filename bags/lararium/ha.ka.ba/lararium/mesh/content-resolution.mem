@@ -108,7 +108,7 @@ And ''even public keeps the gate'' —
 ''Tier-general mechanics'' (every plane carries these): big-on-fs by KIND (a pointer for every
 base64 family, the record inline for text), ~16KiB (Iroh) governing `@cad` CHUNKING alone; the blob carries a ''BLAKE3 outboard'' for range-verify; a ''self-describing''
 ''multihash'' `(algo, len, digest)` (multiformats / `ni://`) carries the address AND the
-in-band migration path (sha256→BLAKE3→future, old ids stay parseable). Retention rides two
+in-band hash agility (sha256→BLAKE3→future, every id stays parseable). Retention rides two
 tags — a cap-lifetime-bound tag ''PINs'', an untagged body ''CACHEs'' under LRU; GC runs
 mark-and-sweep from the tags (Iroh tags). ''Each island pins its own'' — it pays its own
 disk; a peer MAY opportunistically cache (best-effort, zero obligation). Filecoin
@@ -304,6 +304,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;gdglA_21Hkdg25lpLkq1Jjt1MW2KYgFYgnuzvoWRQdc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-E6y4IyAi3r7U0WvACBUMR1d2yOnz3ZDFEHpW0x6KbU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

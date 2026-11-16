@@ -198,8 +198,8 @@ and the house accepts that cost
 
 ''A SEAT HOLDS ITS OWN KEY.'' A seat key stands apart from the persona root and apart from the dialing
 leaf. Each seat commits the digest of its own ''cold key'': the next key, kept on paper off the machine
-and used only to roll. The shared reserve seed and its three cards stand retired: the quorum rite prints
-none and arms no head that cannot roll (#/nexus-scale).
+and used only to roll. No shared reserve seed stands: the quorum rite prints
+no reserve card and arms no head that cannot roll (#/nexus-scale).
 
 ''LOSS AT ALPHA.'' A lost cold key at a two-seat Nexus ends that Nexus: the founders found a successor and
 re-issue its admits. Recovery contacts recover a PERSON, never a Nexus seat. A seed that loses both its node and
@@ -396,8 +396,8 @@ threshold again, which must hash to the genesis's key-set (`roll-genesis-unrevea
 roll carries them. Every roll then refuses a key any earlier epoch seated (`roll-reuses-a-seated-key`).
 
 ''Built'': the charter commits `nextKeyDigests[]` · `nextThreshold` per seat (`wax-stamp.ts`), a roll takes
-each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, and an
-earlier shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing, and a roll that lists any
+each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, and a
+charter carrying one `nextKeyCommit` per epoch reads by name and licenses nothing, and a roll that lists any
 digest an earlier epoch listed refuses (`roll-respends-a-digest`). The signed roll below stands in code.
 
 ''THE KEYS A ROLL REVEALS SIGN IT.'' At least threshold of the revealed keys — the keys whose
@@ -440,7 +440,7 @@ key and a quorum-share stay two keys in two custodies, so one stolen object neve
 begins with one operator holding its seat and its recovery keys; a Nexus stands when two operators each
 seat their own key (#/seed-and-nexus).
 
-''Retired'': the shared reserve seed and the reserve-reveal verb.
+''Not in the house'': a shared reserve seed, and a reserve-reveal verb.
 
 ''Built — the re-found's seat half.'' The per-seat commitment and signed inception image move charter bytes, epoch CIDs and the Nexus AID. The charter carries one digest per seat; the rite prints each chair's cold-key card and
 `seal rotate` takes the cards back; the Stable founding act founds a hearth's seed charter at one seat, threshold
@@ -698,6 +698,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bNczLPLY8M8Meqgt2a5LPqNor6VtcChsRGxS_BMINRQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fttgk-ik4-g-18YcaKAwowRG5utyFQxEkWvXalQApTg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

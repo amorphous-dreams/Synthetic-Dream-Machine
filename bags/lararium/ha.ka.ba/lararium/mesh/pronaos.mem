@@ -162,7 +162,7 @@ capability    permits a particular action
 
 No relation grants the next. DNS and certificate custody can withhold or alter an outward signpost; they cannot
 claim a peer key, read a private bag, resolve a merge, or admit a member. A peer key survives a name move. Cache
-presence carries a previously acquired response, never authority, membership, freshness truth, or causal order.
+presence carries an already-acquired response, never authority, membership, freshness truth, or causal order.
 
 <<~/ahu>>
 
@@ -406,6 +406,6 @@ without making any approach keeper of every archive, persona, or causal island i
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ty88IIsQDJjNem1HPQUzygPNWL4E-pdIyCAY4OQSRSk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;igM-df6qFeNmI4tfozDdCbeYzB5MgsT-f2rWUxv7qdg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

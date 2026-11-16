@@ -14,7 +14,7 @@ uri-path  = "ha.ka.ba/lararium/mesh/vessel-caps"
 
 ! Vessel Caps ~ a vessel stands as its composed cap-stack
 
-A vessel does not have a ''type''. A vessel ''carries a composed `#has`-stack of capabilities'', and its role //emerges// from which caps it holds and lights. Enumerating vessel-kinds (node-lararium, node-relay, browser-lararium) re-grows the subclass-explosion the `#has`-ontology already retired (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>). This meme replaces that enumeration with ''composition'' — so a full node, a bare relay, a browser, a Mudlet instance, an Unreal Engine instance, and the next vessel nobody has built yet all mesh by the ''same move: declaring the caps they carry.''
+A vessel does not have a ''type''. A vessel ''carries a composed `#has`-stack of capabilities'', and its role //emerges// from which caps it holds and lights. Enumerating vessel-kinds (node-lararium, node-relay, browser-lararium) re-grows the subclass-explosion the `#has`-ontology refuses (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/has-stack`>>). This meme replaces that enumeration with ''composition'' — so a full node, a bare relay, a browser, a Mudlet instance, an Unreal Engine instance, and the next vessel nobody has built yet all mesh by the ''same move: declaring the caps they carry.''
 
 <<~ ahu slot=`#/the-five-caps`>>
 
@@ -195,6 +195,6 @@ What stays to ''write'' runs narrow and named — the cap //vocabulary// itself 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;hFvwXNGxAnPy2yYnVbu4uTiExh_9-_2k94_gd-Y9_Ps`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dzCQpT2CVxx_r6sGnZzWyuO1iUJPVaY017Wyj0AddE4`>>
 
 <<^ code=`&#x0004;` to=`?`>>
