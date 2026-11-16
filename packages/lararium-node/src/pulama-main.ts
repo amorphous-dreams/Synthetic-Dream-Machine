@@ -4,6 +4,8 @@
  * Usage (each inside the pūlama's own container or process):
  *   node dist/src/pulama-main.js serve              stand the pūlama: the vessel socket, the hand door, no key held
  *   node dist/src/pulama-main.js light              the operator lights it: reads the route on a real terminal, no echo
+ *   node dist/src/pulama-main.js admit [face]       the operator admits the image the host reports: reads the route on a real
+ *                                                   terminal, proves it against the lit holder, opens nothing
  *   node dist/src/pulama-main.js lock               drop every session, zero-fill every key
  *   node dist/src/pulama-main.js status             lit or not, faces open, sessions, attempts left, the reported image
  *   node dist/src/pulama-main.js image <digest>     the host shim reports the image digest it raises
@@ -31,7 +33,9 @@ import { PULAMA_SESSION_DERIVES, kukuluGate } from "./kukulu-gate.js";
 import { kukuluRiteOver } from "./kukulu-lei-seat.js";
 import { seatCustody } from "./custody-seat.js";
 import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
+import { pulamaAdmissions } from "./pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "./pulama-hand.js";
+import { PulamaVerbUsage, readRoute, runHandVerb } from "./pulama-verbs.js";
 import { servePulama } from "./pulama-server.js";
 import { listenPulama, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
@@ -54,14 +58,14 @@ async function serve(): Promise<void> {
   const holder = makeCustodyHolder({ io: new FsCustodyIo(homes), homes });
   // The pūlama's holder sits in this process's one custody seat, so the roster's reader reaches it and no other holder.
   seatCustody(holder);
-  const records = pulamaRecords(state), image = pulamaImage(state);
+  const records = pulamaRecords(state), image = pulamaImage(state), admissions = pulamaAdmissions(records);
   const log = (line: string): void => console.log(`[pulama] ${line}`);
   const server = servePulama({
     holder, derives: PULAMA_SESSION_DERIVES, onLog: log,
     // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder.
-    gate: kukuluGate({ holder, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => image.raised() }),
+    gate: kukuluGate({ holder, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => image.raised(), admissions }),
   });
-  const door = pulamaHandDoor({ holder, server, image, records, onLog: log });
+  const door = pulamaHandDoor({ holder, server, image, records, admissions, onLog: log });
 
   // THE VESSEL SOCKET CLAIMS FIRST: a second pūlama over the same socket refuses here, before it touches a hand door.
   const listener = await listenPulama(socket, (channel) => server.accept(channel));
@@ -120,41 +124,16 @@ function askHand(frame: Readonly<Record<string, unknown>>): Promise<PulamaHandAn
   });
 }
 
-/** Read the operator's route from a real terminal, with no echo. Anything but a terminal refuses: the route rides no pipe and no flag. */
-function readRoute(label: string): Promise<string> {
-  const { stdin, stderr } = process;
-  if (!stdin.isTTY) return Promise.reject(new Error("the pūlama lights only from a real terminal: its route rides no pipe, no flag and no environment"));
-  return new Promise((resolve, reject) => {
-    stderr.write(label);
-    stdin.setRawMode(true);
-    stdin.resume();
-    stdin.setEncoding("utf8");
-    let line = "";
-    const done = (act: () => void): void => { stdin.setRawMode(false); stdin.pause(); stdin.removeListener("data", onData); stderr.write("\n"); act(); };
-    const onData = (chunk: string): void => {
-      for (const ch of chunk) {
-        if (ch === "\r" || ch === "\n") return done(() => resolve(line));
-        if (ch === "\u0003" || ch === "\u0004") return done(() => reject(new Error("left unlit")));
-        if (ch === "\u007f" || ch === "\b") line = line.slice(0, -1);
-        else if (ch >= " ") line += ch;
-      }
-    };
-    stdin.on("data", onData);
-  });
-}
-
 async function main(): Promise<void> {
   const [verb = "serve", arg] = process.argv.slice(2);
   if (verb === "serve") return serve();
-  const print = (answer: PulamaHandAnswer): void => console.log(JSON.stringify(answer, null, 2));
-  if (verb === "light") {
-    const passphrase = await readRoute("pūlama route: ");
-    return print(await askHand({ op: "light", credentials: [{ kind: "passphrase", passphrase }] }));
+  try {
+    console.log(JSON.stringify(await runHandVerb(verb, arg, { ask: askHand, route: (label, what) => readRoute(label, what) }), null, 2));
+  } catch (err) {
+    if (!(err instanceof PulamaVerbUsage)) throw err;
+    console.error(err.message);
+    process.exit(2);
   }
-  if (verb === "lock" || verb === "status" || verb === "tessera") return print(await askHand({ op: verb }));
-  if (verb === "image" && arg) return print(await askHand({ op: "image", digest: arg }));
-  console.error("usage: pulama-main.js serve | light | lock | status | image <digest> | tessera");
-  process.exit(2);
 }
 
 main().catch((err: unknown) => {

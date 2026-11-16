@@ -62,7 +62,7 @@ describe("only the hand door lights the pūlama", () => {
     expect(await door({ op: "image", digest: "sha256:" + "cd".repeat(32) })).toEqual({ op: "image", reading: "reported", image: "sha256:" + "cd".repeat(32) });
     expect(await door({ op: "image", digest: "../../etc" })).toEqual({ op: "image", reading: "malformed" });
     await records.writeNew(swarmTesseraTitle("cd".repeat(32), "guest"), JSON.stringify({ body: { act: "rite-begun" } }));
-    expect(await door({ op: "tessera" })).toEqual({ op: "tessera", halves: [{ body: { act: "rite-begun" } }] });
+    expect(await door({ op: "tessera" })).toEqual({ op: "tessera", halves: [{ body: { act: "rite-begun" } }], admitted: [] });
     expect(await door({ op: "unlock-everything" })).toEqual({ op: "unlock-everything", reading: "unknown-act" });
     expect(await door({ op: "lock" })).toMatchObject({ op: "lock", lit: false, faces: 0 });
     // No answer and no log line carried the route.
