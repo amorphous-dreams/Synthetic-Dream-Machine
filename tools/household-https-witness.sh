@@ -183,7 +183,9 @@ services:
         read_only: true
 YAML
 
-mkdir -p "$SCRATCH/house/hearth" "$SCRATCH/house/sensoriums" "$SCRATCH/house/projections" "$SCRATCH/house/library" "$SCRATCH/house/config"
+# The runner makes every directory the surface binds out of the house, the pūlama's socket directory too: left absent,
+# the engine makes it (`bind.create_host_path`) owned by root, and the scratch drop cannot remove it.
+mkdir -p "$SCRATCH/house/hearth" "$SCRATCH/house/sensoriums" "$SCRATCH/house/projections" "$SCRATCH/house/library" "$SCRATCH/house/config" "$SCRATCH/house/pulama/socket"
 export LARES_HOUSE="$SCRATCH/house" LARES_WORKSPACE="$SCRATCH/workspace"
 export LARES_TLS_ZONE="$ZONE" LARES_TLS_NAME="$NAME"
 export LARES_TLS_DIR="$SCRATCH/tls" LARES_TLS_BIND=127.0.0.1 LARES_TLS_PORT="$TLS_PORT"
