@@ -151,7 +151,7 @@ commits the citation. The cadence image names no Nexus AID. Every holder signs t
 binds those holders to the founding seats and checks each signature. A household seed carries `founding: null`
 and no cadence inception.
 
-''What the code holds'': `cadence-lineage.ts` signs and verifies the cadence inception. The joint founding cites one inception signed by both hearths; each hearth keeps its own `cadence-key` row. ''Owed in code'': cadence seat events and the offer verifier. The household seed cites none; its one holder chooses each reboot.
+''What the code holds'': `cadence-lineage.ts` signs and verifies the cadence inception. The joint founding cites one inception signed by both hearths; each hearth keeps its own `cadence-key` record. ''Owed in code'': cadence seat events and the offer verifier. The household seed cites none; its one holder chooses each reboot.
 
 ''Still open'', each unruled:
 
@@ -286,11 +286,11 @@ Each item below stands unruled. Nothing in code decides one.
 ''What the code holds.'' `nexus seal show` reads SEED or NEXUS from two counts — seated keys this vault can
 produce, and seated keys it cannot (`nexus-phase.ts`) — and claims no proof of two humans; a
 seat claim takes no Handle and carries a private chair label; `nexus seal export` carries fingerprints and
-no label. A chair's key rests as a sealed seat row on the vessel whose face stood for it, minted at random
+no label. A chair's key rests as a sealed seat record on the vessel whose face stood for it, minted at random
 apart from every persona root (`seat-key-store.ts`, <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-table`>>):
 `seal seat` mints it, prints the chair's NEXT key as a cold-key card the operator reads back before the charter
 moves, and commits one digest per chair (`nextKeyDigests`); `seal rotate` takes each card back on a terminal and
-adopts each revealed key as its chair's seat key; the quorum doors sign with the rows (`held-quorum.ts`). An
+adopts each revealed key as its chair's seat key; the quorum doors sign with the records (`held-quorum.ts`). An
 earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. `seal cold rehearse`
 reads a card back against the head's digests, names the chair it would roll, and moves nothing; `--cold-key`
 stands in for its terminal only on a staged root whose custody proves the published test route. The Stable founding
@@ -363,7 +363,7 @@ reads its answer as an allow set.
 ''The subject stamp keys on the Nexus scope.'' An admit signed by a PersonaGroup ROOT correlates one
 human across every Nexus that admits them, so the subject stamp signs with the face's own
 key at that Nexus: 32 bytes minted at random where the face first presents there, resting sealed and cold in
-the face's row for that Nexus (`nexus-leaf.ts`), and related by no seed to the root or to the face's key at any
+the face's leaf record for that Nexus (`nexus-leaf.ts`), and related by no seed to the root or to the face's key at any
 other Nexus. ''The face's lineage re-issues that key'' by a hand-over the standing key and its successor both
 sign (`lares persona reissue`). The record rides the Nexus's carriage board; the admit keeps naming the key the
 Nexus admitted; a gate stands a presenter under the HEAD of that key's line alone and reads a line that forks
@@ -547,7 +547,7 @@ copy OUT of canon ask nothing.
 ''THE LIVE HOUSE-CANON DOCUMENTS REST IN THE REALM.'' The house canon holds `lares` and `lararium` on every vessel and
 every other disk-sourced holding but the public board `crossroads` (`houseCanonSlugs`). The founding mints one document
 per house-canon bag and registers each as a realm bag of the hearth's realm, sealed by persona zero's per-Nexus key as the steward (`kahu-realm.ts`,
-`landKahuRealm`; tier `contract`, kept by that one name). A document's id derives from the steward's own seed, a MAC under persona zero's per-Nexus seed over the Nexus and the bag (`kahuBagDocUrl`), so no peer can pre-seed the canon a founding adopts and a founding retried under that leaf registers the same document. A reader never recomputes it: the Kahu canon counts only registrations sealed by exactly that steward, the hearth keeps each registration it sealed and the kept copy stands first where it verifies, and the steward's seals over two documents for one bag stand none. What stays owed (roadmap row `P26`): a member's synced change counts only under Kahu reach, the steward's succession across a leaf reissue and a paper restore, and a whole-record conflict resolution verb. A vessel NAMES them at boot only where the board carries a
+`landKahuRealm`; tier `contract`, kept by that one name). A document's id derives from the steward's own seed, a MAC under persona zero's per-Nexus seed over the Nexus and the bag (`kahuBagDocUrl`), so no peer can pre-seed the canon a founding adopts and a founding retried under that leaf registers the same document. A reader never recomputes it: the Kahu canon counts only registrations sealed by exactly that steward, the hearth keeps each registration it sealed and the kept copy stands first where it verifies, and the steward's seals over two documents for one bag stand none. What stays owed (roadmap item `P26`): a member's synced change counts only under Kahu reach, the steward's succession across a leaf reissue and a paper restore, and a whole-record conflict resolution verb. A vessel NAMES them at boot only where the board carries a
 counted admission for the Kahu realm's group (`standKahuCanon`): the registrations come off the realm doc folded and
 seal-verified, the keel mounts exactly what it names (`keel.systemCanon`), and the registered bag set, the house-canon disk
 mirrors under `bags/` and the canon wikis' document urls follow the same naming; a bag the set gains after the founding
@@ -555,7 +555,7 @@ lands at the steward's next boot. The live documents rest at CONTRACT and their 
 (operator, 2026-11-11: //"veil ⊂ persona-group ⊂ contract ⊂ public -> Those note the 'access posture' for CRDTs, and the
 CRDTs for the canon rest under Kahu cabal contract. The CIDs are public."//). A vessel outside the cabal holds no
 pointer and no layer for any house-canon bag, projects nothing under `bags/`, and reads the floor through `@oracle`. No
-catalog row names a house-canon bag, and no face's sealed map carries one. A browser composes no board reader, so it reads as a stranger and keeps the floor; a
+catalog entry names a house-canon bag, and no face's sealed map carries one. A browser composes no board reader, so it reads as a stranger and keeps the floor; a
 browser Kahu hand rides Wave C's face context.
 
 <<~/ahu>>
@@ -567,7 +567,7 @@ browser Kahu hand rides Wave C's face context.
 ''ONE PORCH BODY PER NEXUS.'' The Kahu cabal releases a floor by one body, `{kind, nexus, epoch, prior, manifest}`: the
 `floor-release` signing domain as `kind`, the Nexus AID, the charter epoch whose seats sign, the CID of the release
 before it (null opens a Nexus's first) and the floor manifest's CID (`floor-release.ts`). Its canonical bytes name its
-CID, which keys its row on the Nexus's publication board (`$:/lar/floor-release/<cid>`); a reader RE-DERIVES that CID from the
+CID, which keys its entry on the Nexus's publication board (`$:/lar/floor-release/<cid>`); a reader RE-DERIVES that CID from the
 body and refuses on a mismatch before it trusts anything else.
 
 ''TWO HANDS, KEPT APART.'' A seated Kahu key seals the body's bytes as the steward (the publisher, face-free). The
@@ -698,6 +698,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fttgk-ik4-g-18YcaKAwowRG5utyFQxEkWvXalQApTg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5mEy_lCIPZxr3Ht1sKJs9bpRZcLsBrxXNJs-O3uk7cY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

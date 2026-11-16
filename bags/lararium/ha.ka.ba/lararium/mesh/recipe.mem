@@ -49,8 +49,8 @@ Recipes split by bag tier, each plane its own home:
   per-wiki by init-wiki and read+written via the catalog accessor (access≠load).
 
 Every bag pointer resolves from the vessel's `@catalog`; a house-canon bag carries
-no catalog row and resolves through the Kahu realm's standing registration
-(`libraryDocUrl`, `wiki-layer-ontology#oracle-planes`). A catalog row for a
+no catalog entry and resolves through the Kahu realm's standing registration
+(`libraryDocUrl`, `wiki-layer-ontology#oracle-planes`). A catalog entry for a
 house-canon bag — or a user recipe in `@oracle` — reads as a plane-leak.
 `lararium`-the-corpus stays pure tracked source; its live document rests in the
 Kahu realm, never in the seed tree.
@@ -76,6 +76,6 @@ class, where the alert stays the permanent mechanism.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;zFid__yWeSLWnnUXrXO7LhkkDPhU6w4YyCTWuHFE1NE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1RRHzIkGHWVtRnquunOvFN05tmzaJV_cgebYRIiKS7c`>>
 
 <<^ code=`&#x0004;` to=`?`>>

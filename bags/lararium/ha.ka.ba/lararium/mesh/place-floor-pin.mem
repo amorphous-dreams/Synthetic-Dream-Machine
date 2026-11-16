@@ -37,7 +37,7 @@ The place signs `{ kind, aid, seq, head, nexus, route, tier, digest }` (`PLACE_F
 carrying relation and never signs as the place. The claim names NO release head: W26's release tracks floor
 CONTENT, the claim tracks the place's KEY STATE, and nothing signs a release pointer into pin succession. It rides
 the Nexus's carriage board under a sidecar key apart from the acts (`PLACE_FLOOR_PIN_PREFIX`, keyed by the AID, the
-head and the pin's digest), beside the place's KEL rows (`place-kel-board`). Any replica writer may carry it; none can forge it.
+head and the pin's digest), beside the place's KEL events (`place-kel-board`). Any replica writer may carry it; none can forge it.
 
 <<~/ahu>>
 
@@ -48,7 +48,7 @@ head and the pin's digest), beside the place's KEL rows (`place-kel-board`). Any
 `readPlaceFloorPin` refuses by name, never throws, and files only when all of these hold:
 
 # the claim reads whole and its pin reads whole (`readGateBundlePin`), at FLOOR tier, at the Nexus the reader asked, on the route asked;
-# the reader's KEL rows fold to the named head (`foldClaimHead`: a walk from the head digest back through each event's `prev` to the inception that is the AID, every digest, reveal and cold signature verified), on no forked branch (`head-unreadable`, `kel-forked`); the claim's `seq` cross-checks the head's place on that chain and a disagreement refuses `kel-seq-mismatch`;
+# the reader's KEL events fold to the named head (`foldClaimHead`: a walk from the head digest back through each event's `prev` to the inception that is the AID, every digest, reveal and cold signature verified), on no forked branch (`head-unreadable`, `kel-forked`); the claim's `seq` cross-checks the head's place on that chain and a disagreement refuses `kel-seq-mismatch`;
 # the signer the KEL seats AT THAT HEAD signed this exact image (`verifyPlaceDutyAtHead`): an older signer after a rotation, and a forger, refuse `signature-refused`;
 # LAST, the standing: the signer at the head is a counted `carry` of the reader's OWN held root (`place-uncarried`), or the AID is the anchor the reader was handed apart from the card (`place-unanchored`).
 
@@ -81,7 +81,7 @@ orders them and the index refuses one by name (`claim-moves-no-sovereign-pin`).
 
 !! The carry lands the claim
 
-A carry crosses vaults as a PARTIAL with its claim and the KEL rows that fold to its head (`nexus-partial`, family `carry`). The claim
+A carry crosses vaults as a PARTIAL with its claim and the KEL events that fold to its head (`nexus-partial`, family `carry`). The claim
 files ONLY with the counted act, in one write: a partial below the quorum exposes no pin. The judge reads the claim for the named
 place at this Nexus, and the carrier seal verifies under the signer the KEL seats at the claim's head (`verifyCarrierContractAtHead`).
 The herm carries the claim opaque. A rotated place is carried again under its new signer.
@@ -113,6 +113,6 @@ counted `uncarry` that descends from it leaves the place with no arm to present.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/herm-carriage`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/carry-bundle`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;I20BF1GYsWqC_-OIX5ePPs58kjx_nhtclfi8gv5WpxA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Z-axmtnNIk-rw5UUcEc00vDTTFGRz6kNVvJ6RfPHir0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

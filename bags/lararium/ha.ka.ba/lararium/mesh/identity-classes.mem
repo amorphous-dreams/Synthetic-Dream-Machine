@@ -494,7 +494,7 @@ The forks answered different layers all along, and the ruling seats each where i
   belongs.
   `persona new` splits nothing by default, and `--split-root` opts in.
 * ''The CONTEST: FORK C, ON THE CHAIN'' — a recovery rotation enters the prefix's OWN KEL as
-  PROVISIONAL and hardens causally. NEVER a pending-row on any board — a board of pending recoveries
+  PROVISIONAL and hardens causally. NEVER a pending entry on any board — a board of pending recoveries
   makes a compiled registry of the vulnerable (the registry filter,
   `lar:///ha.ka.ba/lares/api/pono/registry-filter`). The private VENUE stands as a recovery-contact-cabal realm
   (the subject + their chosen recovery contacts, ciphered): the realm coordinates, the chain hardens.
@@ -695,6 +695,6 @@ Three walls hold this design, and each stays named:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;fj60i7iCnesCn97UHg7uZEFOXoj9UdhXsFmKB6AstWU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;PqCoSNcGPkl4xbERBJwpa_4ooucwUwx4BSHVzlQO5qU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

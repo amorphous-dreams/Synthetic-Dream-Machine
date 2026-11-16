@@ -90,7 +90,7 @@ WHO-axis recurring at the blob layer — carries the ruling law: ''the publicity
   address: convergent sealing leaves the private tier, since any insider could confirm a
   guessed body against a held address and the deduplication it bought ran small. The
   private tier keeps the ciphertext address, the blind verify and the capability gate.
-* ''System → `@oracle`.'' The genesis seed places system rows and blob descriptors in the `@oracle`
+* ''System → `@oracle`.'' The genesis seed places system records and blob descriptors in the `@oracle`
   island, and the CAS supplies the bytes by CID. The floor's frozen seed-derived address and its
   no-writer rule stand owed (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/oracle-governance`>>).
 
@@ -304,6 +304,6 @@ fork ④ stays open: the operator's priors decide it, and wave-3 may reopen any.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-E6y4IyAi3r7U0WvACBUMR1d2yOnz3ZDFEHpW0x6KbU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;n-t89u1Ch12jhA5yqG5Cv_h2YC1TeN5iwTa_arZSOiM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

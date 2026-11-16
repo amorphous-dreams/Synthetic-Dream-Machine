@@ -6,7 +6,7 @@
 ```toml meta
 cacheable   = true
 l-space     = "lararium"
-role        = "the LarDoc record/blob shapes + the catalog-row resolve-and-write-back primitive (`catalog-row.ts`) (resolveCatalogRow) + blob descriptor addressing"
+role        = "the LarDoc record/blob shapes + the catalog-entry resolve-and-write-back primitive (`catalog-row.ts`) (resolveCatalogRow) + blob descriptor addressing"
 source-file = "packages/lararium-mesh/src/base-doc.ts"
 title       = "lar:///ha.ka.ba/lararium/mesh/base-doc"
 type        = "text/memetic-wikitext+tiddlywiki"
@@ -33,7 +33,7 @@ turns a bag-URI into a live doc handle:
 * ''`resolveCatalogRow(registryHandle, rowKey, resolve, provenance)`'' — the
   read → resolve → write-back-on-first-mint shape for a bag→doc pointer.
   Reads the pointer (`text` field) from the registry doc; hands the URL (or
-  null) to the platform `resolve` strategy; writes the row back
+  null) to the platform `resolve` strategy; writes the entry back
   only on first mint. Platform divergence rides the two arguments (`resolve`
   = repo strategy, `provenance` = authority stamp), never the protocol.
 
@@ -44,13 +44,13 @@ turns a bag-URI into a live doc handle:
 !! One owner per registry (W26 slice 2, 2026-10-18)
 
 `resolveCatalogRow` takes the ''registry handle'' as an argument and stays plane-blind: it writes wherever the handed
-handle points. Today every caller (`open-vessel-core`) hands the vessel's own `@catalog`, so each vessel's bag→doc rows
+handle points. Today every caller (`open-vessel-core`) hands the vessel's own `@catalog`, so each vessel's bag→doc entries
 rest in its own registry and no shared `@oracle` registry carries a pointer. The house-canon bags (`lares` and `lararium` among
-them) carry no catalog row at all: their live documents rest in the Kahu realm (`kahu-realm.ts`, `realm-bag.ts`), and the genesis
+them) carry no catalog entry at all: their live documents rest in the Kahu realm (`kahu-realm.ts`, `realm-bag.ts`), and the genesis
 island document is the floor's read-face (`wiki-layer-ontology#oracle-planes`).
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iNuG4mpHQQJqiUgfYOPsgzQerT8inbgVRx9DazURDAQ`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L0J7KchaKq-Owd9MiFuUGKIehlCtYoG3W8y3cKewg6k`>>
 
 <<^ code=`&#x0004;` to=`?`>>

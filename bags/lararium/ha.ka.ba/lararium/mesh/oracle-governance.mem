@@ -27,7 +27,7 @@ written    = "2026-06-29"
 > served at the porch (`floor-release.ts`, `floor-answer.ts`, `floor-porch.ts`); the
 > flow map keeps its own signed monotone pointer under the `flow-pointer` domain
 > (`flow-substrate.ts`, `flow-read-client.ts`, `flow-read-face.ts`, route `/flow`). Each
-> vessel's own document pointers rest in its own `@catalog` rows (`catalog-row.ts`), so
+> vessel's own document pointers rest in its own `@catalog` entries (`catalog-row.ts`), so
 > no shared `@oracle` registry stands. The threshold-steward source and the three
 > couplings below ride ahead of code; read each `@oracle` below as that public answer.
 
@@ -75,7 +75,7 @@ address would not trigger anyway.
 
 Each Nexus has one WHO board address, derived from its Nexus key. One porch answer per Nexus, the floor release, names the Nexus AID, the charter epoch, the release before it and the floor manifest CID; a seated Kahu key seals it as the steward, the cabal's approval of the manifest's exact bytes rides attached, the Nexus's publication board carries it, and a herm carries and presents it without signing it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu`>> #/floor-release). No tender name reaches a stranger; the steward seal carries the authority.
 
-The public floor exposes one snapshot per public house-canon bag, as its manifest names them; a bag whose own `meta.mem` declares `contract` or tighter keys none (`floorCarriesTier`). Its read-face projects those rows alone as history-free content-addressed snapshots, which read public; the snapshot carries the seed CID beside its own CID. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
+The public floor exposes one snapshot per public house-canon bag, as its manifest names them; a bag whose own `meta.mem` declares `contract` or tighter keys none (`floorCarriesTier`). Its read-face projects those records alone as history-free content-addressed snapshots, which read public; the snapshot carries the seed CID beside its own CID. The Kahu Plane road owes the floor's frozen seed-derived address and no-writer rule.
 
 The Kahu Plane owns the steward-signing shape; R-WIRE owes the answer carriage. The board address derives without a pointer, so no public board document chooses its own address.
 
@@ -189,6 +189,6 @@ it through a different door (<<~ loulou uri=`lar:///ha.ka.ba/lararium/docs/peer-
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xmlXNCjHx1zG-szuXLiit1d-J9_eFTT9-_xPGvLi8XA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L2qctuNllVbg9oi4Oi4L18mF8kZph4fWBdqYdd2nwBY`>>
 
 <<^ code=`&#x0004;` to=`?`>>

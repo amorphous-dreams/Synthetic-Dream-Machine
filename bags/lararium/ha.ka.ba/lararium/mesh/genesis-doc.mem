@@ -53,11 +53,11 @@ Each later floor reaches a Nexus's vessels by that Nexus's release: one porch an
 
 !! Seed address — the floor derives from its genesis CID
 
-The seed names its exact rows and CAS inventory, and the floor manifest names the snapshots by CID, so the floor stays a pure function of its content with no Automerge history.
+The seed names its exact records and CAS inventory, and the floor manifest names the snapshots by CID, so the floor stays a pure function of its content with no Automerge history.
 
 The WHO board address derives from the Nexus key, and the porch answer (`/floor/<Nexus AID>`) rides the Nexus's publication board (`publicationDocUrl`), which no recipe mounts and no mirror names.
 
-Per-vessel daemon and face addresses resolve from that vessel's bootstrap. The live house-canon documents rest in the Kahu realm as realm bags at contract, held only by a vessel the Kahu cabal admitted, and no `@oracle` or catalog row names any of them.
+Per-vessel daemon and face addresses resolve from that vessel's bootstrap. The live house-canon documents rest in the Kahu realm as realm bags at contract, held only by a vessel the Kahu cabal admitted, and no `@oracle` or catalog entry names any of them.
 
 <<~/ahu>>
 
@@ -175,7 +175,7 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 * ''CID plane:'' the kernel resolves engine/plugins CAS-only by CID; no byte-blob rides the `@oracle` CRDT, where a merge into a stale persisted doc would leave an unresolved actor conflict (the boot-skew root).
 * ''Seed-canonical bundle:'' no binary and no sidecar carrier ships; the complete bundle comprises `seed.json` + `cas/<cid>`. The merge-conflict-on-bytes class cannot arise, by structure. Isomorphic (node fs · browser OPFS).
 
-* ''Genesis materializes the floor from its seed:'' the seed names the exact rows and CAS inventory. The read-face projects those rows alone without Automerge history. The frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. A seedless restart uses only already-held, hash-valid CAS.
+* ''Genesis materializes the floor from its seed:'' the seed names the exact records and CAS inventory. The read-face projects those records alone without Automerge history. The frozen seed-derived address and no-writer rule remain owed on the Kahu Plane road. A seedless restart uses only already-held, hash-valid CAS.
 
 <<~/ahu>>
 
@@ -196,6 +196,6 @@ Worse for a shelter brief: an implementation hash ''mandates a monoculture'', an
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XCkdsYwu-0E1yegNHQVDH9eYTSEeMNgHzUZ-y-h7flM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EBtD0NlEPibWQUDmF568QuG4dIUthwnwZsJHa61GlKc`>>
 
 <<^ code=`&#x0004;` to=`?`>>
