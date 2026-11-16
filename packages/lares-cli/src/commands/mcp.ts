@@ -14,6 +14,7 @@ export async function cmdMcp(args: ParsedArgs): Promise<number> {
     console.error(AHO_USAGE);
     return 2;
   }
-  // Everything after `--` lands positional, flags and all: the child's own line, passed on as written.
-  return ahoMain(args.positional.slice(1));
+  // Everything after `--` lands positional, flags and all: the child's own line, passed on as written. A line that names
+  // none takes the house's own surface.
+  return ahoMain(args.positional.length > 1 ? args.positional.slice(1) : null);
 }

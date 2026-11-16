@@ -276,6 +276,6 @@ describe("`lares mcp aho` as a process", () => {
     const proc = spawn(process.execPath, [BIN, "mcp", "aho", "--"], { stdio: ["ignore", "ignore", "pipe"] });
     const log = ear(proc.stderr);
     expect(await new Promise<number | null>((done) => proc.on("exit", (code) => done(code)))).toBe(2);
-    expect(log.text()).toMatch(/lares mcp aho -- <child argv/);
+    expect(log.text()).toMatch(/lares mcp aho \[-- <child argv/);
   });
 });

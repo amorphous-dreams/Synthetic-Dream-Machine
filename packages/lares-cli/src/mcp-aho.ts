@@ -1,5 +1,8 @@
 /**
- * mcp-aho — the aho (the cord): the seat a Node host holds across its vessel's sleep, `lares mcp aho -- <child argv…>`.
+ * mcp-aho — the aho (the cord): the seat a Node host holds across its vessel's sleep, `lares mcp aho`.
+ *
+ * THE VERB STANDS ALONE IN A HARNESS CONFIG. `lares mcp aho` resolves its own child at each spawn (`mcp-aho-child.ts`): the
+ * house's surface, container or native. `lares mcp aho -- <child argv…>` names one instead, for a test or another surface.
  *
  * The core (`@lararium/mesh/iris`) holds the seat as a pure frame machine. This binding hands it the two ports a Node
  * host owns: the client on this process's stdin and stdout, and the surface as a `child_process` it spawns from the argv after
@@ -29,9 +32,13 @@ import { iris, type IrisEvent, type IrisFrame } from "@lararium/mesh/iris";
 export interface AhoPacing { readonly firstMs: number; readonly capMs: number; readonly killMs?: number }
 export const AHO_PACING: AhoPacing = { firstMs: 250, capMs: 15_000, killMs: 5_000 };
 
+/** One child as a resolver names it: its argv, and the env it adds to this process's own. */
+export interface AhoChild { readonly argv: readonly string[]; readonly env?: Readonly<Record<string, string>> }
+
 export interface AhoHostOptions {
-  /** The surface's command and arguments, spawned as written (no shell). */
-  readonly argv: readonly string[];
+  /** The surface's command and arguments, spawned as written (no shell); or a resolver the aho asks at EACH spawn, so what
+   *  stands beneath the seat may change between two children. A resolver that names none reads as a spawn that failed. */
+  readonly argv: readonly string[] | (() => AhoChild | null);
   readonly stdin: NodeJS.ReadableStream;
   readonly stdout: NodeJS.WritableStream;
   readonly stderr: NodeJS.WritableStream;
@@ -100,8 +107,11 @@ export function ahoHost(opts: AhoHostOptions): AhoHost {
 
   function raise(): void {
     if (ended) return;
+    let named: AhoChild | null;
+    try { named = typeof opts.argv === "function" ? opts.argv() : { argv: opts.argv }; } catch { named = null; }
+    if (named === null || named.argv.length === 0) { note("child-unresolved"); feed({ type: "child-down" }); return; }
     let down = false;
-    const c = spawn(opts.argv[0]!, opts.argv.slice(1), { stdio: ["pipe", "pipe", "inherit"], env: opts.env ?? process.env });
+    const c = spawn(named.argv[0]!, named.argv.slice(1), { stdio: ["pipe", "pipe", "inherit"], env: { ...(opts.env ?? process.env), ...named.env } });
     child = c;
     const fell = (): void => {
       if (down) return;
@@ -161,12 +171,14 @@ export function ahoHost(opts: AhoHostOptions): AhoHost {
   return { done, close };
 }
 
-export const AHO_USAGE = "usage: lares mcp aho -- <child argv…>   hold this client's MCP seat, and spawn the surface as a child that may fall and rise";
+export const AHO_USAGE = "usage: lares mcp aho [-- <child argv…>]   hold this client's MCP seat; the surface runs as a child that may fall and rise (the house's own, unless the line names one)";
 
 /** The process entry: this process's own stdio, its stop signals, and its exit code. */
-export async function ahoMain(argv: readonly string[]): Promise<number> {
-  if (argv.length === 0) { process.stderr.write(`${AHO_USAGE}\n`); return 2; }
-  const host = ahoHost({ argv, stdin: process.stdin, stdout: process.stdout, stderr: process.stderr });
+export async function ahoMain(argv: readonly string[] | null): Promise<number> {
+  if (argv !== null && argv.length === 0) { process.stderr.write(`${AHO_USAGE}\n`); return 2; }
+  // A line that names no child takes the house's own surface, resolved again at each spawn (`mcp-aho-child.ts`).
+  const child = argv ?? (await import("./mcp-aho-child.js")).resolveAhoChild;
+  const host = ahoHost({ argv: child, stdin: process.stdin, stdout: process.stdout, stderr: process.stderr });
   for (const signal of ["SIGTERM", "SIGINT", "SIGHUP"] as const) process.once(signal, () => host.close());
   const code = await host.done;
   // The client's stream closed; stdin may still hold the loop open on a terminal.

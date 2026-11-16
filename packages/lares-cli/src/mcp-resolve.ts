@@ -91,20 +91,27 @@ function containerRoot(compose: string): string | null {
   return value === undefined ? null : value.replace(/^(["'])(.*)\1$/, "$2");
 }
 
-/** The committed bin of the clone's CLI, the entry an aho runs from. */
-export const CLI_BIN = join("packages", "lares-cli", "bin", "lares.mjs");
+/** The verb a harness config records: the bare `lares` on PATH and its `mcp aho` door, with nothing beneath it. */
+export const AHO_VERB: readonly string[] = ["mcp", "aho"];
 
 /**
- * The aho over a surface command: `node <clone>/packages/lares-cli/bin/lares.mjs mcp aho -- <command> <args…>`.
- * The seat holds the client's stdio and spawns the surface as its child, so a surface that restarts never reaches the
- * client (`mcp-aho.ts`). The env rides the seat's own process, and the child inherits it.
+ * THE ENTRY A HARNESS CONFIG RECORDS: `lares mcp aho`, and no more. The `lares` verb stands as the CLI's unchanging surface,
+ * so the entry names no clone path, no interpreter, no compose file and no container: the aho resolves its own child at each
+ * spawn (`resolveLaresSurface`, read through `mcp-aho-child.ts`), and everything beneath the verb may change with no config
+ * rewritten. The env carries the one thing a harness's own environment lacks: the native hearth's root. A container house
+ * names itself through the operator's surface env, so its entry carries none.
+ *
+ * Null while no surface resolves, so a missing seat still reads its cause (`seatAbsentCause`).
  */
-export function ahoOver(clone: string, surface: LaresMcpCommand): LaresMcpCommand {
-  return { command: "node", args: [join(clone, CLI_BIN), "mcp", "aho", "--", surface.command, ...surface.args], env: surface.env };
+export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
+  if (resolveLaresSurface(clone) === null) return null;
+  const hearth = hearthSurfaceEnv() !== null ? null : namedRoot();
+  return { command: "lares", args: [...AHO_VERB], env: hearth === null ? {} : { LAR_ROOT: hearth } };
 }
 
 /**
- * Resolve the `lares` MCP server invocation that binds THE HEARTH, or null when its pieces stand absent.
+ * Resolve the SURFACE the aho spawns as its child: the `lares` MCP server invocation that binds THE HEARTH, or null when its
+ * pieces stand absent.
  *
  * THE ENTRY NAMES THE HEARTH'S ROOT. The seat routes every verb over the daemon socket, and `lares_uds.py`
  * derives that socket from `LAR_ROOT`. A harness spawns the seat with its own environment, which names no
@@ -112,10 +119,9 @@ export function ahoOver(clone: string, surface: LaresMcpCommand): LaresMcpComman
  * alone; unnamed resolves no seat), and the entry carries it in BOTH forms:
  *
  *   container  the operator's `~/.lares` holds the surface env (`lares-surface.env`), so the hearth stands in the
- *              surface container. The entry names the AHO (`ahoOver`), a host process that holds the
- *              client's stdio across a container restart; its child execs the image's seat through the clone's
- *              compose file and forwards `LAR_ROOT` by name (`exec -e LAR_ROOT`), its value the container's own
- *              root as the compose file names it. The image carries its own interpreter and pinned `mcp`.
+ *              surface container. The surface execs the image's seat through the clone's compose file and
+ *              forwards `LAR_ROOT` by name (`exec -e LAR_ROOT`), its value the container's own root as the
+ *              compose file names it. The image carries its own interpreter and pinned `mcp`.
  *   native     the entry spawns the clone's `lares_mcp.py` on THE venv (`~/.venv`, or `LARES_PYTHON`),
  *              with `LAR_ROOT` and the mempalace import root in its env; null while no sensorium stands
  *              under the hearth (`lares sense setup` stands it) or no interpreter holds mempalace.
@@ -123,17 +129,17 @@ export function ahoOver(clone: string, surface: LaresMcpCommand): LaresMcpComman
  * `clone` names the MAIN clone (`mainCloneOf`), never the worktree a command runs from, so a lane's removal
  * strands no seat. Every path runs absolute: a harness spawns this with no venv active and no cwd guarantee.
  */
-export function resolveLaresMcp(clone: string): LaresMcpCommand | null {
+export function resolveLaresSurface(clone: string): LaresMcpCommand | null {
   const surfaceEnv = hearthSurfaceEnv();
   if (surfaceEnv !== null) {
     const compose = join(clone, SURFACE_COMPOSE);
     const root = containerRoot(compose);
     if (root === null) return null;
-    return ahoOver(clone, {
+    return {
       command: "docker",
       args: ["compose", "--env-file", surfaceEnv, "-f", compose, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", IMAGE_SEAT],
       env: { LAR_ROOT: root },
-    });
+    };
   }
   // NATIVE: the seat binds the house root this shell names, absolute.
   const hearth = namedRoot();

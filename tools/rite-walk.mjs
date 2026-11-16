@@ -125,8 +125,8 @@ async function hands(root, state, boxHome) {
       try {
         const node = await import(pathToFileURL(join(CHECKOUT, "packages/lararium-node/dist/src/index.js")).href);
         mkdirSync(node.memorySensoriumDir(), { recursive: true });
-        const { resolveLaresMcp } = await import(pathToFileURL(join(CHECKOUT, "packages/lares-cli/dist/src/mcp-resolve.js")).href);
-        entry = resolveLaresMcp(CHECKOUT);
+        const { resolveLaresSurface } = await import(pathToFileURL(join(CHECKOUT, "packages/lares-cli/dist/src/mcp-resolve.js")).href);
+        entry = resolveLaresSurface(CHECKOUT);
       } finally {
         if (prior.root === undefined) delete process.env.LAR_ROOT; else process.env.LAR_ROOT = prior.root;
         if (prior.python === undefined) delete process.env.LARES_PYTHON; else process.env.LARES_PYTHON = prior.python;
