@@ -7,7 +7,7 @@
  * caller treats a refused record as absent, so a read fails closed.
  *
  *   lei/<rite>/<branch>/<lei cid>
- *                              a lei binds a rite (`push` · `kukulu`, `swarm-lei-rite.ts`), a branch, a head and the lei it follows
+ *                              a lei binds a rite (`push` · `kukulu` · `keep`, `swarm-lei-rite.ts`), a branch, a head and the lei it follows
  *                              there (`after`: that lei's cid, null for the first of its rite at the branch); each lei rests at its
  *                              own row; signed by the face's hand; read only beside its co-sign, asked under `ward-<rite>-lei`; a
  *                              rite's standing lei at a branch ends the longest co-signed `after` chain from its first lei (two tips
@@ -37,7 +37,7 @@ import { canonicalJsonBytes, sha256HexBytesSync } from "./crypto.js";
 import { SWARM_ACT_DOMAIN } from "./domains.js";
 import { verifyEd25519 } from "./ed25519-door.js";
 import { SWARM_URI_PREFIX } from "./lar-uris.js";
-import { isSwarmLeiRite, leiRiteCosigns, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
+import { SWARM_LEI_RITES, isSwarmLeiRite, leiRiteCosigns, wardLeiVerb, type SwarmLeiRite } from "./swarm-lei-rite.js";
 import { wardActRefusal, type WardActRefusal, type WardActWitness } from "./ward-cosign.js";
 
 export { SWARM_URI_PREFIX } from "./lar-uris.js";
@@ -107,7 +107,7 @@ export const swarmShareTitle = (lane: string): string => `${SWARM_URI_PREFIX}lan
 export const swarmLaneStateTitle = (lane: string): string => `${SWARM_URI_PREFIX}lane/${segment(lane)}/state`;
 /** A lei's rite as a title segment: one of the listed rites, or the name refuses. */
 function riteSegment(rite: unknown): SwarmLeiRite {
-  if (!isSwarmLeiRite(rite)) malformed("a lei's rite names one listed power (push, kukulu)");
+  if (!isSwarmLeiRite(rite)) malformed(`a lei's rite names one listed power (${SWARM_LEI_RITES.join(", ")})`);
   return rite as SwarmLeiRite;
 }
 /** The family title one rite's lei at a branch rest under; each lei rests at its own row beneath it (`swarmLeiRowTitle`). */

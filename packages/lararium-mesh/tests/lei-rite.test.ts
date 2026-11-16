@@ -1,5 +1,5 @@
 /**
- * lei-rite — one power per lei (road L45b): a lei names its rite (`push` · `kukulu`), and the rite rides its head, its title
+ * lei-rite — one power per lei (road L45b): a lei names its rite (`push` · `kukulu` · `keep`), and the rite rides its head, its title
  * and the ward verb its co-sign answers under.
  *
  * A lei that named no rite would let one record family serve two powers: a push lei would spend as a kukulu. Every red pairs
@@ -11,7 +11,7 @@ import { WARD_COSIGN_VERBS, faceIntentVerbs } from "../src/intent-verbs.js";
 import type { LarDoc } from "../src/base-doc.js";
 import { swarmBoardRecords, writeSwarmBoardAct } from "../src/swarm-board.js";
 import { swarmCommand, type SwarmDoorDeps } from "../src/swarm-door.js";
-import { SWARM_LEI_RITES, wardLeiVerb } from "../src/swarm-lei-rite.js";
+import { SWARM_LEI_RITES, leiRiteCosigns, wardLeiVerb } from "../src/swarm-lei-rite.js";
 import {
   SwarmRefused, putSwarmAct, readLei, readSwarmRecord, signSwarmAct, returnLei, swarmActCid, swarmLeiHead, swarmLeiRowTitle, swarmLeiTitle, swarmReceiptTitle,
   type SwarmBodyParts, type SwarmWikiPort,
@@ -34,7 +34,7 @@ async function fixture() {
   const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
   const wiki = wikiPort();
   /** A hand-signed lei of one rite, at its own row; hands back the record and its cid. */
-  const issue = async (rite: "push" | "kukulu") => {
+  const issue = async (rite: "push" | "kukulu" | "keep") => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite, reach: "head", branch: BRANCH, head: HEAD, after: null }, hand);
     await putSwarmAct(wiki, swarmLeiRowTitle(rite, BRANCH, swarmActCid(lei)), lei);
     return { lei, cid: swarmActCid(lei) };
@@ -93,9 +93,9 @@ describe("lei-rite-separates-powers", () => {
     await expect(returnLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returned" });
   });
 
-  test("RED: the rite list holds two names, and a lei of any other rite forms no record, no title and no ward verb; CONTROL: the push rite registers its co-signed ward verb", async () => {
+  test("RED: the rite list holds three names, and a lei of any other rite forms no record, no title and no ward verb; CONTROL: the push rite registers its co-signed ward verb", async () => {
     const f = await fixture();
-    expect([...SWARM_LEI_RITES]).toEqual(["push", "kukulu"]);
+    expect([...SWARM_LEI_RITES]).toEqual(["push", "kukulu", "keep"]);
     for (const rite of ["merge", "", "PUSH", "push/x", undefined]) {
       await expect(signSwarmAct({ act: "lei", group: GROUP, rite, reach: "head", branch: BRANCH, head: HEAD, after: null } as unknown as SwarmBodyParts, f.hand), String(rite)).rejects.toMatchObject({ code: "swarm-shape" });
       expect(() => swarmLeiTitle(rite as never, BRANCH), String(rite)).toThrow(SwarmRefused);
@@ -103,6 +103,27 @@ describe("lei-rite-separates-powers", () => {
     }
     expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei"]);
     expect(faceIntentVerbs().classOfVerb(wardLeiVerb("push"))).toEqual({ class: "single-effect", cosign: true });
+  });
+});
+
+describe("keep-lei-keeps-its-own-power", () => {
+  test("RED: a keep lei forms a record at its own title and spends as keep alone, asking no co-sign; CONTROL: a push lei at the same line never spends as a keep, and the keep lei never as a push or a kukulu", async () => {
+    const f = await fixture();
+    await f.issue("push");
+    // A push lei at the workspace's line grants no keep: the house's memory leaves under its own lei alone.
+    await expect(returnLei(f.wiki, { rite: "keep" as never, branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-absent" });
+    const keep = await f.issue("keep");
+    expect(swarmLeiTitle("keep" as never, BRANCH)).toBe("$:/lares/swarm/lei/keep/feature%2Fx");
+    // The operator's own unlock strings it and no second device answers: the keep's cut rests on this device (`leiRiteCosigns`).
+    expect(leiRiteCosigns("keep" as never)).toBe(false);
+    const asked: WardCosignAct[] = [];
+    const none = { accepts: (act: WardCosignAct) => { asked.push(act); return false; } };
+    expect(await readLei(f.wiki, { rite: "keep" as never, branch: BRANCH, head: HEAD }, f.trust, GROUP, none)).toMatchObject({ ok: true, cid: keep.cid });
+    expect(asked).toEqual([]);
+    await expect(returnLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-absent" });
+    await expect(returnLei(f.wiki, { rite: "keep" as never, branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: keep.cid, reach: "head", n: 1 });
+    // The push lei beside it still stands unspent.
+    expect(await readLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toMatchObject({ ok: true });
   });
 });
 
