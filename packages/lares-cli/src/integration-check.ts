@@ -15,7 +15,6 @@ import { mempalaceHolderPresent, resolveMempalacePython } from "@lararium/mempal
 
 const MEMPALACE_DIR = join(repoRoot, "mempalace");
 const MEMPALACE_PKG = join(repoRoot, "packages", "lararium-mempalace");
-const MEMPALACE_PLUGIN = join(MEMPALACE_DIR, ".claude-plugin", "plugin.json");
 
 /**
  * The Python interpreter that holds mempalace (venv-aware). ONE source of truth:
@@ -52,7 +51,7 @@ export interface IntegrationReport {
 }
 
 /** The two checks that name the library itself: its source and the python that holds its deps. The
- *  integration package and the recall plugin ride the repository, so they say nothing of an install. */
+ *  integration package rides the repository, so it says nothing of an install. */
 const LIBRARY_CHECKS: ReadonlySet<string> = new Set(["submodule", "holder-deps"]);
 
 /** Read the standing off the checks alone: pure, so a stand and a vector read one law. */
@@ -119,15 +118,6 @@ export function checkMempalaceIntegration(): IntegrationReport {
     }
   }
   checks.push({ name: "holder-deps", ok: holderOk, detail: holderDetail });
-
-  const pluginOk = existsSync(MEMPALACE_PLUGIN);
-  checks.push({
-    name: "recall-plugin",
-    ok: pluginOk,
-    detail: pluginOk
-      ? "mempalace .claude-plugin present (enable recall via `/plugin`)"
-      : "mempalace .claude-plugin absent",
-  });
 
   return { ok: checks.every((c) => c.ok), standing: mempalaceStanding(checks), checks };
 }
