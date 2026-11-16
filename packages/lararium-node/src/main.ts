@@ -27,6 +27,9 @@
  *                      relay face's origin: relay = read for a herm, relay = read = Web for a lararium.
  *   LAR_LAN_DISCOVERY — `announce` answers mDNS questions for `_lararium._tcp` with a bare service and port
  *                      (candidates only; lar:///ha.ka.ba/lararium/mesh/harbor#/lan-discovery); unset or empty keeps it off.
+ *   LAR_PULAMA_SOCKET — the unix socket a pūlama answers at: set, this vessel keeps no key and asks the pūlama for its
+ *                      sealed rows (`pulama-seat`); unset or empty, it builds the in-process custody holder.
+ *   LAR_KUKULU_OFFER — the file holding the lei and the vouch this kūkulu offers the pūlama (`pulama-seat`).
  *
  * Bootstrap:
  *   The boot prints the catalog Automerge URL to stdout.
@@ -74,7 +77,8 @@ import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
-import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, setMountedFace } from "./node-vessel-identity.js";
+import { standByPulama, vesselPulamaHolder } from "./pulama-seat.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
@@ -349,7 +353,10 @@ async function main(): Promise<void> {
   // caller on, so an unlock frame never reaches a verb seat (its credential would ride a receipt digest there).
   const floor = await standNodeFloor(storageDir);
   const custodyHomes = vesselCustodyHomes();
-  const holder = makeCustodyHolder({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes });
+  // WHO HOLDS CUSTODY FOR THIS VESSEL: a pūlama, where the environment names one (the vessel then keeps no key and asks
+  // it for rows and derivations), else the holder this process builds. Every caller reaches either through the one seat.
+  const pulama = vesselPulamaHolder(custodyHomes);
+  const holder = pulama ?? makeCustodyHolder({ io: new FsCustodyIo(custodyHomes), homes: custodyHomes });
   // THE ONE SEAT. Every sealed row this process reads or writes reaches the holder through it, and the seat
   // carries no opener: the key arrives on the custody door alone, and a row asked for at the floor refuses.
   seatCustody(holder);
@@ -445,7 +452,14 @@ async function main(): Promise<void> {
   let firstStood: () => void = () => {};
   const first = new Promise<void>((resolve) => { firstStood = resolve; });
   let signalHeld: string | null = null;
-  const recompose = async (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
+  // ONE RECOMPOSITION AT A TIME: the custody door and a pūlama session's drop both ask for one, and each waits its turn.
+  let recomposing: Promise<unknown> = Promise.resolve();
+  const recompose = (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
+    const run = recomposing.then(() => composeAgain(sovereign, ward));
+    recomposing = run.catch(() => undefined);
+    return run;
+  };
+  const composeAgain = async (sovereign: boolean, ward?: WardCredential): Promise<{ standing: string; refused?: string }> => {
     await first;
     const prior = composition;
     composition = null;
@@ -478,8 +492,12 @@ async function main(): Promise<void> {
 
   composition = (await composeOrFloor(null)).stood;
   firstStood();
+  // A KŪKULU STANDS BY ITS PŪLAMA: one dial, the lei's face mounted, the sovereign composition over the session.
+  const byPulama = pulama !== null && await standByPulama({
+    holder: pulama, recompose: (sovereign) => recompose(sovereign), mount: setMountedFace, onLog: (line) => console.log(`[pulama] ${line}`),
+  });
   // A vessel stands holding no vessel key, whatever it composed over: say so once, with the one verb that opens it.
-  if (await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
+  if (!byPulama && await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
     console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");
   }
   // ONE pair of handlers for the process: a signal reaches whichever composition stands when it lands.
