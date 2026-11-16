@@ -47,6 +47,8 @@ export interface PulamaHolder extends CustodyHolder {
   wears(): number | null;
   /** Tell the pūlama this vessel composed over its session: it rests the host half of the tessera the session began under. */
   landRite(): Promise<{ readonly par: boolean }>;
+  /** What the pūlama answered this side's last hello, where it refused one and no session stood since; null otherwise. */
+  waits(): string | null;
 }
 
 interface Session {
@@ -86,6 +88,8 @@ export function makePulamaHolder(a: {
   let dialing: Promise<HolderUnlock> | null = null;
   /** Counts this side's leavings: a dial that began before a `lock` seats no session after it. */
   let left = 0;
+  /** The reading of the last hello the pūlama refused; a session clears it. */
+  let refused: string | null = null;
   const openedListeners = new Set<() => void>();
   const closedListeners = new Set<() => void>();
   const fire = (set: Set<() => void>): void => { for (const l of [...set]) { try { l(); } catch { /* a listener's fault never reaches the holder */ } } };
@@ -150,6 +154,7 @@ export function makePulamaHolder(a: {
       scope: { ordinal: typeof scope.ordinal === "number" ? scope.ordinal : null }, pending: new Map(),
     };
     session = stood;
+    refused = null;
     channel.onClose(() => drop(stood));
     fire(openedListeners);
     return { reading: "opens", slot: stood.standing.slot ?? "pulama" };
@@ -217,7 +222,11 @@ export function makePulamaHolder(a: {
     homes: a.homes,
     unlock() {
       if (session !== null) return Promise.resolve({ reading: "already-unlocked" });
-      return dialing ??= doDial().finally(() => { dialing = null; });
+      return dialing ??= doDial().catch((err: unknown) => {
+        const reading = (err as { reading?: unknown }).reading;
+        refused = typeof reading === "string" ? reading : "pulama-unreachable";
+        throw err;
+      }).finally(() => { dialing = null; });
     },
     proves: () => needsHuman("a proof of the vessel's route"),
     adopt: () => needsHuman("an adoption"),
@@ -226,6 +235,7 @@ export function makePulamaHolder(a: {
     onOpened(listener) { openedListeners.add(listener); return () => { openedListeners.delete(listener); }; },
     onClosed(listener) { closedListeners.add(listener); return () => { closedListeners.delete(listener); }; },
     wears: () => session?.scope.ordinal ?? null,
+    waits: () => (session === null ? refused : null),
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
     openedSlot: () => session?.standing.slot ?? null,

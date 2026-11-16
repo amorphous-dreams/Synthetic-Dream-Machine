@@ -78,7 +78,8 @@ import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
 import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, setMountedFace } from "./node-vessel-identity.js";
-import { standByPulama, vesselPulamaHolder } from "./pulama-seat.js";
+import { KUKULU_OFFER_ENV, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
+import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
 import { getMempalaceClient }           from "@lararium/mempalace";
 import { larDataDir }                   from "./vessel-paths.js";
@@ -469,8 +470,14 @@ async function main(): Promise<void> {
     if (signalHeld !== null) composition.onSignal(signalHeld);
     return { standing: out.stood.standing, ...(out.refused !== undefined ? { refused: out.refused } : {}) };
   };
+  // A KŪKULU STANDS BY ITS PŪLAMA: one dial path, run once at boot and again whenever the custody door hears `unlock`.
+  const standBy = pulama === null ? null : pulamaStandBy({
+    holder: pulama, recompose: (sovereign) => recompose(sovereign), mount: setMountedFace, onLog: (line) => console.log(`[pulama] ${line}`),
+    consumeOffer: () => consumeKukuluOffer(process.env[KUKULU_OFFER_ENV]),
+  });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
+    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.waits() }), dial: () => standBy.dial() } } : {}),
     lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
     dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
@@ -492,10 +499,8 @@ async function main(): Promise<void> {
 
   composition = (await composeOrFloor(null)).stood;
   firstStood();
-  // A KŪKULU STANDS BY ITS PŪLAMA: one dial, the lei's face mounted, the sovereign composition over the session.
-  const byPulama = pulama !== null && await standByPulama({
-    holder: pulama, recompose: (sovereign) => recompose(sovereign), mount: setMountedFace, onLog: (line) => console.log(`[pulama] ${line}`),
-  });
+  // The boot's one dial: the lei's face mounted, the sovereign composition over the session.
+  const byPulama = standBy !== null && (await standBy.dial()).session;
   // A vessel stands holding no vessel key, whatever it composed over: say so once, with the one verb that opens it.
   if (!byPulama && await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {
     console.log("[custody] this vessel stands holding no vessel key — open it on a terminal: lares vault unlock");

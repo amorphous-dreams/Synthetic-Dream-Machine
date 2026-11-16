@@ -12,7 +12,8 @@
  * ── THE VESSEL DIALS ONCE AT BOOT, AND AGAIN ONLY WHEN ASKED ────────────────────────────────────
  * After the floor composition stands, the vessel dials the pūlama. A session mounts the face its lei names and composes
  * with the sovereign rows; a refusal names itself once and the vessel keeps the floor. No timer redials: `lares vault
- * unlock` reaches the same holder's `unlock`, which dials again and sends no credential.
+ * unlock` asks the custody door, which runs this same dial. That unlock gathers no credential and sends none: the door
+ * names a pūlama in its `custody` reading, so the command asks nobody anything and answers what the pūlama waits on.
  *
  * When the session drops (the pūlama locked, its process ended, the socket went), the vessel composes at the floor.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
@@ -41,47 +42,68 @@ export function vesselPulamaHolder(homes: CustodyHomes, env: Readonly<Record<str
   return makePulamaHolder({ homes, dial: () => dialPulama(socket), offer: () => readKukuluOffer(env[KUKULU_OFFER_ENV]) });
 }
 
+/** What a dial left standing: a session, or the reading the pūlama waits on. */
+export interface PulamaStandingBy { readonly session: boolean; readonly waits: string | null }
+
 /**
- * Dial the pūlama once and compose on what it serves; seat the listener that composes at the floor when the session drops.
- * Answers whether a session stood.
+ * Seat the listener that composes at the floor when the session drops, and answer the one `dial` both the boot and the
+ * custody door's `unlock` run: ask the pūlama, compose on what it serves, rest the host half.
  */
-export async function standByPulama(a: {
+export function pulamaStandBy(a: {
   readonly holder: PulamaHolder;
   /** Compose again: with the sovereign rows, or at the floor. */
   readonly recompose: (sovereign: boolean) => Promise<{ readonly standing: string; readonly refused?: string }>;
   /** Mount the face the composition wears. */
   readonly mount: (ordinal: number) => void;
   readonly onLog: (line: string) => void;
-}): Promise<boolean> {
+  /** Remove the offer this vessel just spent; answers whether a file went. Absent, the offer stays where it rests. */
+  readonly consumeOffer?: () => boolean;
+}): { dial(): Promise<PulamaStandingBy> } {
   let leaving = false;
   a.holder.onClosed(() => {
     if (leaving) return;
     a.onLog("the pūlama session dropped; composing at the floor");
     a.recompose(false).catch((err: unknown) => a.onLog(`the floor did not compose after the session dropped: ${err instanceof Error ? err.message : String(err)}`));
   });
+  // ONE DIAL AT A TIME: a second caller waits on the dial in flight, so nobody reads a session the composition has yet to stand on.
+  let inflight: Promise<PulamaStandingBy> | null = null;
+  const dial = (): Promise<PulamaStandingBy> => inflight ??= dialOnce().finally(() => { inflight = null; });
+  const dialOnce = async (): Promise<PulamaStandingBy> => {
+  if (a.holder.isUnlocked()) return { session: true, waits: null };
   try {
     await a.holder.unlock([]);
   } catch (err) {
     const reading = (err as { reading?: unknown }).reading;
     a.onLog(`the pūlama serves no session: ${typeof reading === "string" ? reading : err instanceof Error ? err.message : String(err)}; this vessel keeps the floor`);
-    return false;
+    return { session: false, waits: a.holder.waits() ?? "pulama-unreachable" };
   }
   const wears = a.holder.wears();
   if (wears !== null) a.mount(wears);
-  const stood = await a.recompose(true);
+  let stood: { readonly standing: string; readonly refused?: string };
+  try { stood = await a.recompose(true); }
+  catch (err) { stood = { standing: "unknown", refused: err instanceof Error ? err.message : String(err) }; }
   if (stood.refused !== undefined) {
     // A SESSION NEVER RESTS OVER A FLOOR: held and standing never disagree.
     // The refused composition already left the floor standing, so this leaving asks for no second one.
     leaving = true;
     try { await a.holder.lock(); } finally { leaving = false; }
     a.onLog("the sovereign composition did not stand on the pūlama's session; the session left");
-    return false;
+    return { session: false, waits: "composition-refused" };
   }
+  // ONE KŪKULU, ONE OFFER: the vessel composed over its session, so the offer that opened it goes. A restart after this wears nothing.
+  if (a.consumeOffer?.()) a.onLog("the kūkulu offer served its one session and left the config home");
   // THE HOST HALF: the vessel composed, so the pūlama rests `rite-landed` beside the half it began under. A landing that
   // refuses leaves the guest half alone, which conferre reads red; the vessel keeps standing.
   let landed = "";
   try { landed = (await a.holder.landRite()).par ? "; the tessera reads par" : "; the tessera's halves differ"; }
   catch (err) { landed = `; the host half did not land (${(err as { reading?: string }).reading ?? (err instanceof Error ? err.message : String(err))})`; }
   a.onLog(`standing by the pūlama${wears !== null ? `; face h${wears} worn` : ""} (${stood.standing})${landed}`);
-  return true;
+  return { session: true, waits: null };
+  };
+  return { dial };
+}
+
+/** Seat the stand-by and dial once; answers whether a session stood. */
+export async function standByPulama(a: Parameters<typeof pulamaStandBy>[0]): Promise<boolean> {
+  return (await pulamaStandBy(a).dial()).session;
 }

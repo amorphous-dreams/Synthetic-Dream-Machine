@@ -233,7 +233,42 @@ function unlockLine(a: CustodyDoorAnswer): string {
  * opens. With no daemon up the credential gets proven against the slot tree and nothing stays open, since no
  * process stands to hold it.
  */
+/** What each reading a pūlama waits on asks of the operator. */
+function pulamaWaitsLine(waits: string): string {
+  const next = waits === "pulama-locked" ? "the pūlama rests unlit; light it by hand (`lares-container.sh pulama light`), then run this again"
+    : waits === "pulama-unreachable" ? "no pūlama answers its socket; raise it (`lares-container.sh pulama up`) and light it"
+    : waits.startsWith("kukulu-") || waits.startsWith("swarm-lei-") || waits.startsWith("rite-") ? "a rebuilt vessel enters by the rite: string a kukulu lei and run `lares rite kukulu`, which carries the lei and its vouch to the pūlama"
+    : "read the pūlama's own log for that reading";
+  return `this vessel's custody rests with a pūlama, and the pūlama serves it no session (${waits}). No route typed here opens it: ${next}.`;
+}
+
+/**
+ * `vault unlock` at a vessel whose custody a pūlama holds: ASK NOTHING. The route belongs at the pūlama's own hand door, so this
+ * command gathers no credential and sends none; the vessel asks its pūlama again and the answer names a session or what the
+ * pūlama waits on.
+ */
+async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
+  const a = await sendCustodyFrame({ op: "unlock" });
+  if (a === null) {
+    emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before it asked its pūlama" }, human: () => console.error("lares vault unlock: the vessel stopped answering before it asked its pūlama") });
+    return 1;
+  }
+  const standing = typeof a["standing"] === "string" ? a["standing"] : "?";
+  if (a["reading"] === "opens" || a["reading"] === "already-unlocked") {
+    emit(args, { ok: true, data: a, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${standing}. No route was asked.`) });
+    return 0;
+  }
+  const waits = typeof (a["pulama"] as { waits?: unknown } | undefined)?.waits === "string" ? (a["pulama"] as { waits: string }).waits : "unknown";
+  emit(args, { ok: false, error: { code: "pulama-waits", message: pulamaWaitsLine(waits) }, data: a, human: () => console.error(`lares vault unlock: ${pulamaWaitsLine(waits)}`) });
+  return 1;
+}
+
 async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
+  // THE DOOR READS FIRST, before any prompt: a vessel standing by a pūlama takes no route here, so none gets gathered.
+  if (daemonUp) {
+    const door = await sendCustodyFrame({ op: "custody" });
+    if (typeof door?.["pulama"] === "object" && door["pulama"] !== null) return await vaultUnlockByPulama(args);
+  }
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
   const creds = await gatherCredentials("lares vault unlock", routeFlag(args));

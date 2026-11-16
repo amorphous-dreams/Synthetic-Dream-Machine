@@ -86,7 +86,7 @@ export type CustodyAnswer =
   /** The node key opened and a face did not (`face-refused`), or the vessel holds several faces and none was named (`face-not-named`): nothing stays open. */
   | { readonly op: "unlock"; readonly reading: "face-refused" | "face-not-named"; readonly standing: string; readonly face?: number; readonly faceReading?: string; readonly faces?: readonly unknown[]; readonly faceReadings?: ReadonlyArray<{ readonly face: number; readonly reading: string }> }
   | ({ readonly op: "lock"; readonly locked: true; readonly was: "unlocked" | "locked"; readonly face?: number } & Partial<CustodyStanding>)
-  | { readonly op: "custody"; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
+  | { readonly op: "custody"; readonly pulama?: { readonly session: boolean; readonly waits: string | null }; readonly unlocked: boolean; readonly slot: string | null; readonly attemptsLeft: number; readonly standing: string; readonly wikiAwaits: string | null; readonly testScratch: boolean; readonly composing: boolean; readonly facesOpen?: number }
   | { readonly op: "act"; readonly act: string; readonly result: Record<string, unknown> }
   /** Each document with saves held in memory (`SealedDocumentStore.held`), by id and never by body; `standing` names
    *  the composition that answered ("recomposing" while none sits, when `held` reads null). */
@@ -112,6 +112,15 @@ export interface CustodyFrameDeps {
    *  `census` frame answers `held: null`. */
   readonly heldSaves?: () => readonly HeldSaves[] | null;
   readonly onLog: (line: string) => void;
+  /**
+   * Present where a pūlama holds this vessel's custody (`pulama-seat`). `standing` reads whether a session stands and what the
+   * pūlama last refused; `dial` asks the pūlama again and composes on what it serves. With it seated, an `unlock` frame
+   * carries no credential and reads none: the route belongs at the pūlama's own hand door.
+   */
+  readonly pulama?: {
+    readonly standing: () => { readonly session: boolean; readonly waits: string | null };
+    readonly dial: () => Promise<{ readonly session: boolean; readonly waits: string | null }>;
+  };
   /**
    * Run one act of the sealed-act table against the seated holder (`runSealedAct`, bound to what the standing
    * composition lends an act). Absent, every `act` frame refuses `acts-unavailable`.
@@ -450,6 +459,16 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       }
       const purpose = frame["purpose"] as "persona-new" | "bundle.restore";
       act = async () => { const ref = parkFaceRoute(slots, purpose, frame["argsDigest"] as string); deps.onLog("face-route: parked for one operation"); return { op: "face-route", ref }; };
+    } else if (op === "unlock" && deps.pulama) {
+      // A PŪLAMA HOLDS THIS VESSEL'S CUSTODY: the frame's credentials go unread (no route opens anything here), the vessel
+      // dials the pūlama again, and the answer names a session or what the pūlama waits on.
+      const pulama = deps.pulama;
+      act = composing(async (): Promise<CustodyAnswer> => {
+        const was = pulama.standing().session;
+        const now = was ? pulama.standing() : await pulama.dial();
+        deps.onLog(now.session ? "unlock: this vessel stands by its pūlama" : `unlock: the pūlama serves no session (${now.waits ?? "unknown"})`);
+        return { op: "unlock", reading: now.session ? (was ? "already-unlocked" : "opens") : "pulama-waits", pulama: now, held: now.session, standing: deps.standing() } as unknown as CustodyAnswer;
+      });
     } else if (op === "unlock") {
       const credentials = credentialsOf((parsed as { credentials?: unknown }).credentials);
       if (!credentials) {
@@ -500,6 +519,7 @@ export function custodyFrameHandler(deps: CustodyFrameDeps): CustodyDoor {
       // recomposes hears `composing: true` instead of waiting behind the recomposition.
       answer(sock, {
         op: "custody", unlocked: holder.isUnlocked(), slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), facesOpen: holder.unlockedFaces().length,
+        ...(deps.pulama ? { pulama: deps.pulama.standing() } : {}),
         standing: deps.standing(), wikiAwaits: deps.wikiAwaits?.() ?? null, testScratch: deps.testScratch, composing: composingDepth > 0,
       });
       return true;

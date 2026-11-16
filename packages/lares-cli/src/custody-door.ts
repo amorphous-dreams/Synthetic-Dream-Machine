@@ -12,6 +12,8 @@ import { udsSocketPath } from "./local-connector.js";
 
 export type CustodyFrame =
   | { readonly op: "unlock"; readonly credentials: readonly Credential[]; readonly face?: number; readonly all?: boolean }
+  /** An unlock at a vessel whose custody a pūlama holds: it carries no credential, and the vessel asks its pūlama again. */
+  | { readonly op: "unlock" }
   | { readonly op: "lock"; readonly face?: number }
   | { readonly op: "custody" }
   /** The census of saves the vessel holds in memory, read before a stop: no credential, answered at once. */

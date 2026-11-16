@@ -9,7 +9,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { makeCustodyHolder } from "../src/custody-holder.js";
 import { pulamaHandDoor } from "../src/pulama-hand.js";
-import { KUKULU_OFFER_ENV, PULAMA_SOCKET_ENV, readKukuluOffer, standByPulama, vesselPulamaHolder } from "../src/pulama-seat.js";
+import { KUKULU_OFFER_ENV, PULAMA_SOCKET_ENV, pulamaStandBy, readKukuluOffer, standByPulama, vesselPulamaHolder } from "../src/pulama-seat.js";
 import { servePulama } from "../src/pulama-server.js";
 import { swarmTesseraTitle } from "@lararium/mesh";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
@@ -101,6 +101,29 @@ describe("a vessel finds its pūlama by one name and stands by it", () => {
     expect(composed).toEqual([true]);
     await fx.server.lock();
     await vi.waitFor(() => expect(composed).toEqual([true, false]));
+    // TWO CALLERS, ONE DIAL: a second dial waits on the first, and neither reads a session before the composition stands.
+    await fx.kept.adopt(fx.treeKey);
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => { release = resolve; });
+    const slow: boolean[] = [];
+    const together = pulamaStandBy({ holder: fx.vessel(), mount: () => {}, onLog: () => {}, recompose: async (sovereign) => { slow.push(sovereign); await held; return { standing: "hearth" }; } });
+    const one = together.dial(), two = together.dial();
+    await vi.waitFor(() => expect(slow).toEqual([true]));
+    let settled = false;
+    void two.then(() => { settled = true; });
+    await Promise.resolve();
+    expect(settled).toBe(false);
+    release();
+    expect(await Promise.all([one, two])).toEqual([{ session: true, waits: null }, { session: true, waits: null }]);
+    expect(slow).toEqual([true]);
+    // A composition that throws leaves no session behind it, and the offer stays for the next dial.
+    let consumed = 0;
+    const thrown = fx.vessel();
+    const falls = pulamaStandBy({ holder: thrown, mount: () => {}, onLog: () => {}, consumeOffer: () => { consumed += 1; return true; }, recompose: async (sovereign) => { if (sovereign) throw new Error("the composition fell over"); return { standing: "floor" }; } });
+    expect(await falls.dial()).toEqual({ session: false, waits: "composition-refused" });
+    expect(thrown.isUnlocked()).toBe(false);
+    expect(consumed).toBe(0);
+    await fx.server.lock();
     // A hello the gate refuses names its reading once and composes nothing.
     await fx.kept.adopt(fx.treeKey);
     admit = false;
