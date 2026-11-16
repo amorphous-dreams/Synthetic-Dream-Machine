@@ -20,6 +20,8 @@
 //   --runbook <file>   read the rite from another carrier (a fixture)
 //   --image-leg        walk the image leg instead (the built image, the pūlama, the aho, the kūkulu, on a real container
 //                      under a named Docker scope); its own flags and law rest in `tools/rite-walk/image-leg.mjs`
+//   --carry-leg        walk the carry leg instead (an old image's house seeded, censused and exported; the same tag rebuilt at
+//                      a pinned head; a new house imports; the parity witness compares); its law rests in `tools/rite-walk/carry-leg.mjs`
 //   rc 0  no step failed · rc 1  a step failed · rc 2  the walk refused before any act
 import { execFileSync, spawn } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -234,7 +236,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     const argv = process.argv.slice(2);
     // THE IMAGE LEG walks its own table on a real container, inside the scope its line names (`rite-walk/image-leg.mjs`).
     const image = argv.includes("--image-leg") ? await import("./rite-walk/image-leg.mjs") : null;
-    const { code } = image ? await image.imageWalk(image.parseImageArgs(argv)) : await riteWalk(parseArgs(argv));
+    // THE CARRY LEG walks two images under the same scope (`rite-walk/carry-leg.mjs`).
+    const carry = argv.includes("--carry-leg") ? await import("./rite-walk/carry-leg.mjs") : null;
+    const { code } = carry ? await carry.carryWalk(carry.parseCarryArgs(argv))
+      : image ? await image.imageWalk(image.parseImageArgs(argv)) : await riteWalk(parseArgs(argv));
     process.exit(code);
   } catch (e) {
     console.error(e?.name === "RiteWalkRefusal" ? e.message : e);
