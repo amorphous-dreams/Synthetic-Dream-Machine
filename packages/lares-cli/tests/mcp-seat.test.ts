@@ -24,7 +24,7 @@ import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync,
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { memorySensoriumDir } from "@lararium/node";
-import { IMAGE_SEAT, hearthSurfaceEnv, resolveLaresMcp, seatAbsentCause } from "../src/mcp-resolve.js";
+import { IMAGE_SEAT, hearthSurfaceEnv, resolveLaresMcp, resolveLaresSurface, seatAbsentCause } from "../src/mcp-resolve.js";
 import { homeItems, mainCloneOf } from "../src/reality-tunnel/catalog.js";
 import { execFileSync } from "node:child_process";
 
@@ -82,7 +82,7 @@ describe("the seat names the hearth's root", () => {
     onTestFinished(() => { if (priorPython === undefined) delete process.env["LARES_PYTHON"]; else process.env["LARES_PYTHON"] = priorPython; });
     const clone = fakeClone();
     const root = scratchHearth();
-    const mcp = resolveLaresMcp(clone);
+    const mcp = resolveLaresSurface(clone);
     expect(mcp, "the resolver found no interpreter holding mempalace (~/.venv); `lares mempalace install` stands one").not.toBeNull();
     expect(mcp!.env["LAR_ROOT"]).toBe(root);
     expect(mcp!.args).toEqual([join(clone, SEAT)]);
@@ -93,13 +93,12 @@ describe("the seat names the hearth's root", () => {
     const clone = fakeClone();
     delete process.env["LAR_ROOT"];          // the host shell names no house root; the surface env alone decides the form
     const file = surfaceEnv();
-    const mcp = resolveLaresMcp(clone);
+    const mcp = resolveLaresSurface(clone);
     expect(mcp).not.toBeNull();
-    // The entry names the aho, which holds the client's stdio and spawns the container's surface as its child.
-    expect(mcp!.command).toBe("node");
+    // The surface the aho spawns as its child: the image's seat, through the clone's compose file.
+    expect(mcp!.command).toBe("docker");
     expect(mcp!.args).toEqual([
-      join(clone, "packages", "lares-cli", "bin", "lares.mjs"), "mcp", "aho", "--",
-      "docker", "compose", "--env-file", file, "-f", join(clone, "docker-compose.surface.yml"),
+      "compose", "--env-file", file, "-f", join(clone, "docker-compose.surface.yml"),
       "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", `/app/${SEAT}`,
     ]);
     // The container's root, read from the compose file the entry names, never typed here.
@@ -115,6 +114,30 @@ describe("the seat names the hearth's root", () => {
 
   it("control: with no sensorium stood under the hearth, the native form still refuses (null)", () => {
     const clone = fakeClone();
+    process.env["LAR_ROOT"] = join(dir, "bare-hearth");
+    expect(resolveLaresMcp(clone)).toBeNull();
+  });
+});
+
+describe("harness-seat-records-the-lares-verb-alone", () => {
+  it("RED: the entry a harness config records names `lares mcp aho` and nothing beneath it, in the container form and the native form alike; CONTROL: the surface the verb resolves still names the child", () => {
+    const clone = fakeClone();
+    delete process.env["LAR_ROOT"];
+    surfaceEnv();
+    const container = resolveLaresMcp(clone);
+    // No clone path, no node, no docker, no compose file: the bare verb on PATH, and the house's own resolver finds the child at run time.
+    expect(container).toEqual({ command: "lares", args: ["mcp", "aho"], env: {} });
+    expect(JSON.stringify(container)).not.toMatch(/docker|compose|lares\.mjs|python|\/app\//);
+    expect(resolveLaresSurface(clone)!.command).toBe("docker");
+  });
+
+  it("RED: the native entry carries the hearth's root for the verb to bind and names no interpreter or script; CONTROL: with no surface resolvable the entry stays null, so the cause still reads", () => {
+    const priorPython = process.env["LARES_PYTHON"];
+    process.env["LARES_PYTHON"] ??= join(priorHome ?? "", ".venv", "bin", "python3");
+    onTestFinished(() => { if (priorPython === undefined) delete process.env["LARES_PYTHON"]; else process.env["LARES_PYTHON"] = priorPython; });
+    const clone = fakeClone();
+    const root = scratchHearth();
+    expect(resolveLaresMcp(clone)).toEqual({ command: "lares", args: ["mcp", "aho"], env: { LAR_ROOT: root } });
     process.env["LAR_ROOT"] = join(dir, "bare-hearth");
     expect(resolveLaresMcp(clone)).toBeNull();
   });

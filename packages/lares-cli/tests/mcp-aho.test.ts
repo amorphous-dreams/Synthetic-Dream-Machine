@@ -185,6 +185,39 @@ describe("the aho's Node binding, over a fake child", () => {
   });
 });
 
+describe("the aho resolves its own child at each spawn", () => {
+  it("harness-seat-records-the-lares-verb-alone: a resolver that names no child leaves the seat answering, and the child it names later stands; a resolver's new answer rides the next spawn", async () => {
+    const other = mkdtempSync(join(tmpdir(), "mcp-aho-other-"));
+    writeFileSync(join(other, "tools.json"), JSON.stringify(["echo"]));
+    let child: { argv: string[] } | null = null;
+    let asked = 0;
+    const stdin = new PassThrough(), stdout = new PassThrough(), stderr = new PassThrough();
+    host = ahoHost({ argv: () => { asked++; return child; }, stdin, stdout, stderr, pacing: { firstMs: 5, capMs: 40 } });
+    const client = wire((line) => stdin.write(line), stdout), log = ear(stderr);
+    try {
+      // No child resolves: the seat answers the handshake itself and a call reads hearth-sleeps.
+      const init = await client.ask({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT });
+      expect(init["result"]).toMatchObject({ serverInfo: { name: "iris" } });
+      client.send({ jsonrpc: "2.0", method: "notifications/initialized" });
+      expect(textOf(await client.ask({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "echo", arguments: {} } }))).toMatch(/^hearth-sleeps\b/);
+      await log.heard(/child-unresolved/);
+      child = { argv: [process.execPath, CHILD, dir] };
+      await log.heard(/child-standing/);
+      expect(JSON.parse(textOf(await client.ask({ jsonrpc: "2.0", id: 3, method: "tools/call", params: { name: "echo", arguments: {} } })))).toMatchObject({ pid: pid() });
+      // What stands beneath the verb changes; the next spawn reads the resolver again.
+      child = { argv: [process.execPath, CHILD, other] };
+      const before = asked;
+      process.kill(pid(), "SIGKILL");
+      await client.next((f) => f["method"] === "notifications/tools/list_changed");
+      expect(asked).toBeGreaterThan(before);
+      expect(Number(readFileSync(join(other, "pid"), "utf8"))).toBeGreaterThan(0);
+    } finally {
+      host.close(); await host.done; host = null;
+      rmSync(other, { recursive: true, force: true });
+    }
+  });
+});
+
 describe("the binding bounds a child's death", () => {
   it("seat-child-death-bounded: a child that ignores the polite stop gets the hard kill inside the watchdog's wait, and a fresh child stands", async () => {
     writeFileSync(join(dir, "stubborn"), ""); writeFileSync(join(dir, "refuse"), "");
