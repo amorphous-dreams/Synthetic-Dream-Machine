@@ -52,6 +52,8 @@ $PulamaMode = (ValueOf 'LARES_PULAMA') -eq '1'
 if ($PulamaMode) {
   $HouseClasses += @('pulama/socket', 'pulama/state')
   [Environment]::SetEnvironmentVariable('LAR_PULAMA_SOCKET', '/pulama/socket/pulama.sock')
+  # The kūkulu's offer (its lei and the old vessel's vouch) rests in the config bind, which the rite writes on the host.
+  [Environment]::SetEnvironmentVariable('LAR_KUKULU_OFFER', '/lar/config/kukulu-offer.json')
 }
 $PulamaMain = 'packages/lararium-node/dist/src/pulama-main.js'
 # THE ENV FILE RESTS OUTSIDE EVERY BIND.
