@@ -159,7 +159,7 @@ export function seedPlan({ seed = "carry-rehearsal", count = 300, canon, bodies 
     { kind: "bag-share", face: 0, bag: "cold-shelf", read: [FACES.engineer, FACES.referee] },
     { kind: "kahua-lift", face: 1, title: "lar:///ha.ka.ba/kahua/law/carry-rehearsal-lifted", text: "the engineer staged and lifted this row" },
     { kind: "kahua-staged", face: 1, title: "lar:///ha.ka.ba/kahua/law/carry-rehearsal-staged", text: "the engineer staged this row and never lifted it" },
-    { kind: "kapae", face: 0, recipe: "lares", title: canon.kapae.uri },
+    { kind: "kapae", face: 0, recipe: "default", title: canon.kapae.uri },
     { kind: "temp-consent", slug: "notes", expiryDays: 30 },
     { kind: "library", collection: "rehearsal-shelf", files: [{ name: "field-notes.txt", text: body(next, 4, borrowed) }] },
     { kind: "sensorium", files: [{ name: "rehearsal/2026-11-16.txt", text: body(next, 2, borrowed) }, { name: "rehearsal/2026-11-15.txt", text: body(next, 1, borrowed) }] },

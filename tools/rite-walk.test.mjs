@@ -380,6 +380,9 @@ test("carry-seed-keys-every-stage-row: each stage meme carries `row-key` equal t
   for (const k of ["index", "stage", "margin", "page", "working-still", "working-moved", "non-nfc"]) assert.ok(kinds.has(k), `a ${k} row`);
   const edges = new Set(plan.edges.map((e) => e.kind));
   for (const k of ["wiki-init", "wiki-share", "bag-share", "kahua-lift", "kahua-staged", "kapae", "temp-consent", "library", "sensorium"]) assert.ok(edges.has(k), `a ${k} edge`);
+  // The kāpae rides the tiddler door, which answers the worn face's daemon wiki (`--recipe default`) alone; the carry
+  // manifest carries the shadow from that face's working layer.
+  for (const e of plan.edges.filter((x) => x.kind === "kapae")) assert.equal(e.recipe, "default", "the kapae edge plans the one recipe the tiddler door answers");
   assert.ok(rows.some((r) => Buffer.byteLength(r.text) >= 480 * 1024), "one body probes the size edge");
   assert.ok(rows.filter((r) => /slot=`#\/note-/.test(r.text)).length >= 12, "twelve rows carry ahu slots");
   assert.ok(rows.filter((r) => /ʻ/.test(r.text)).length >= 5, "five rows carry non-ASCII");
