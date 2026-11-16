@@ -437,8 +437,8 @@ export const STEPS = Object.freeze([
       }
       return { ok: true, answer: said.join(" · ") };
     } },
-  { id: "import", prose: "Then `lares import ~/.lares/config/carry-2 --apply`", needs: ["export", "seed-referee"], expect: "lands nothing and counts every row as `already` or `waiting`",
-    quoted: ["lands nothing and counts every row as `already`"],
+  { id: "import", prose: "Then `lares import ~/.lares/config/carry-2 --apply`", needs: ["export", "seed-referee"], expect: "lands nothing and counts every record as `already` or `waiting`",
+    quoted: ["lands nothing and counts every record as `already`"],
     run: async (ctx) => {
       const r = await ctx.cli(["import", ctx.carry(), "--apply", "--no-json"]);
       if (r.code !== 0) return { ok: false, answer: refusalOf(r) };
