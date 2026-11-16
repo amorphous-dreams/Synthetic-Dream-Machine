@@ -3,9 +3,9 @@
  * disk-guard — refuse new bulk when the disk beneath the house runs low.
  *
  * The WSL VHD never shrinks and sits on a C: drive that Linux cannot see filling: `df /` read 85% free while C: ran
- * out twice. This guard reads C: (when /mnt/c stands) and /, counts the built worktrees git lists (the main checkout
- * excluded) and the Codex worktree directories. Only trees under ~/.lares-scratch belong to the house and count toward the
- * built cap; any other tree lists by name as "not the house's". Codex worktrees (empty hash dirs excluded) are house spirit work and count against their own cap. Every reader injects, so a test never touches
+ * out twice. This guard reads C: (when /mnt/c stands) and /, counts lane worktrees git lists and the Codex
+ * worktree directories. Every lane branch counts toward the built cap, wherever it stands.
+ * Codex worktrees (empty hash dirs excluded) count against their own cap. Every reader injects, so a test never touches
  * the real disk. Limits come from the environment:
  *   LARES_DISK_MIN_C_GB (60) · LARES_DISK_MIN_ROOT_GB (40) · LARES_DISK_MAX_WORKTREES (6) · LARES_DISK_MAX_CODEX (12)
  */
@@ -41,14 +41,18 @@ export function readLimits(env = process.env) {
 /** The first record of `git worktree list --porcelain` names the main checkout; the rest stand built or prunable. */
 export function parseWorktrees(text) {
   const records = String(text).split(/\n\s*\n/).map(block => block.split('\n').filter(Boolean)).filter(lines => lines.length);
-  const built = [], prunable = [];
-  for (const lines of records.slice(1)) {
+  const built = [], prunable = [], lanes = [];
+  for (const [index, lines] of records.entries()) {
     const path = lines.find(line => line.startsWith('worktree '))?.slice('worktree '.length);
     if (!path) continue;
     if (lines.some(line => line === 'prunable' || line.startsWith('prunable '))) prunable.push(path);
-    else built.push(path);
+    else {
+      if (index > 0) built.push(path);
+      const branch = lines.find(line => line.startsWith('branch refs/heads/'))?.slice('branch refs/heads/'.length) ?? '';
+      if (branch.startsWith('lane/') || branch.startsWith('feature/green-jello-dinosaur-5--')) lanes.push(path);
+    }
   }
-  return { built, prunable };
+  return { built, prunable, lanes };
 }
 
 function availableGb(statfs, path) {
@@ -84,10 +88,9 @@ export function checkDisk(readers = {}) {
   const cFree = availableGb(statfs, C_MOUNT);
   const rootFree = availableGb(statfs, '/');
   const listed = parseWorktrees(worktreeList());
-  const houseRoot = join(home, '.lares-scratch') + sep;
   const standing = listed.built.filter(path => !resolve(path).startsWith(codexRoot));
-  const built = standing.filter(path => resolve(path).startsWith(houseRoot));
-  const notHouse = standing.filter(path => !resolve(path).startsWith(houseRoot));
+  const built = listed.lanes;
+  const notHouse = standing.filter(path => !built.includes(path));
   const codex = codexDirs(home).filter(dir => !dir.empty);
   const oldest = codex.map(dir => dir.mtimeMs).filter(ms => ms > 0).sort((a, b) => a - b)[0];
   const reasons = [], skipped = [];
@@ -95,7 +98,7 @@ export function checkDisk(readers = {}) {
   else if (cFree < limits.minC) reasons.push(`C: has ${cFree.toFixed(1)}G available, under the ${limits.minC}G floor`);
   if (rootFree === null) skipped.push('/ check skipped: statfs unreadable');
   else if (rootFree < limits.minRoot) reasons.push(`/ has ${rootFree.toFixed(1)}G available, under the ${limits.minRoot}G floor`);
-  if (built.length > limits.maxBuilt) reasons.push(`${built.length} house worktrees stand, over the ${limits.maxBuilt} cap`);
+  if (built.length > limits.maxBuilt) reasons.push(`${built.length} lane worktrees stand, over the ${limits.maxBuilt} cap`);
   if (codex.length > limits.maxCodex) reasons.push(`${codex.length} Codex worktrees stand${oldest ? `, oldest ${new Date(oldest).toISOString().slice(0, 10)}` : ''}, over the ${limits.maxCodex} cap`);
   return { ok: reasons.length === 0, reasons, skipped, cFree, rootFree, built, notHouse, codex, prunable: listed.prunable, limits };
 }
@@ -104,7 +107,7 @@ export function render(result) {
   const lines = [];
   const free = value => (value === null ? 'unread' : `${value.toFixed(1)}G`);
   lines.push(`C: free ${free(result.cFree)} (floor ${result.limits.minC}G) · / free ${free(result.rootFree)} (floor ${result.limits.minRoot}G)`);
-  lines.push(`house worktrees ${result.built.length}/${result.limits.maxBuilt} · Codex worktrees ${result.codex.length}/${result.limits.maxCodex} · prunable records ${result.prunable.length}`);
+  lines.push(`lane worktrees ${result.built.length}/${result.limits.maxBuilt} · Codex worktrees ${result.codex.length}/${result.limits.maxCodex} · prunable records ${result.prunable.length}`);
   for (const path of result.prunable) lines.push(`prunable: ${path}`);
   for (const path of result.notHouse) lines.push(`not the house's: ${path}`);
   for (const note of result.skipped) lines.push(note);

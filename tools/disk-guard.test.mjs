@@ -18,7 +18,7 @@ const reading = (over = {}) => ({
 function porcelain(built, prunable, root = '/home/u/.lares-scratch/wt') {
   const over_root = root;
   const out = ['worktree /main', 'HEAD aaa', 'branch refs/heads/x', ''];
-  for (let i = 0; i < built; i++) out.push(`worktree ${over_root}/${i}`, 'HEAD bbb', 'detached', '');
+  for (let i = 0; i < built; i++) out.push(`worktree ${over_root}/${i}`, 'HEAD bbb', `branch refs/heads/lane/${i}`, '');
   for (let i = 0; i < prunable; i++) out.push(`worktree /gone/${i}`, 'HEAD ccc', 'detached', 'prunable gitdir file points to non-existent location', '');
   return out.join('\n');
 }
@@ -38,14 +38,14 @@ test('/ at 39G refuses; 41G passes', () => {
 });
 
 test('seven house trees refuse; six pass; the main checkout never counts', () => {
-  assert.match(checkDisk(reading({ built: 7 })).reasons.join('\n'), /7 house worktrees stand, over the 6 cap/);
+  assert.match(checkDisk(reading({ built: 7 })).reasons.join('\n'), /7 lane worktrees stand, over the 6 cap/);
   assert.equal(checkDisk(reading({ built: 6 })).ok, true);
   assert.equal(checkDisk(reading({ built: 0 })).built.length, 0);
 });
 
 test('seven trees elsewhere plus one house tree pass, and list the elsewhere ones as not the house\'s', () => {
   const elsewhere = Array.from({ length: 7 }, (_, i) => `/home/u/.worktrees/e${i}`);
-  const text = ['worktree /main', 'HEAD a', 'detached', '', ...elsewhere.flatMap(p => [`worktree ${p}`, 'HEAD b', 'detached', '']), 'worktree /home/u/.lares-scratch/x/wt', 'HEAD c', 'detached', ''].join('\n');
+  const text = ['worktree /main', 'HEAD a', 'detached', '', ...elsewhere.flatMap(p => [`worktree ${p}`, 'HEAD b', 'detached', '']), 'worktree /home/u/.lares-scratch/x/wt', 'HEAD c', 'branch refs/heads/lane/x', ''].join('\n');
   const r = checkDisk(reading({ porcelain: text }));
   assert.equal(r.ok, true);
   assert.equal(r.built.length, 1);
@@ -107,4 +107,12 @@ test('parseWorktrees drops the first record (the main checkout) and separates pr
   const p = parseWorktrees(porcelain(2, 1));
   assert.deepEqual(p.built, ['/home/u/.lares-scratch/wt/0', '/home/u/.lares-scratch/wt/1']);
   assert.deepEqual(p.prunable, ['/gone/0']);
+});
+
+test('lane branches count wherever located, including the main record and Codex trees', () => {
+  const paths = ['/main', '/home/u/.claude/worktrees/a', '/other/b', '/home/u/.codex/worktrees/c/r'];
+  const text = paths.flatMap((p, i) => [`worktree ${p}`, 'HEAD a', `branch refs/heads/${i === 2 ? 'feature/green-jello-dinosaur-5--x' : 'lane/x' + i}`, '']).join('\n');
+  const r = checkDisk(reading({ porcelain: text, env: { LARES_DISK_MAX_WORKTREES: '3' } }));
+  assert.deepEqual(r.built, paths);
+  assert.equal(r.ok, false);
 });
