@@ -15,14 +15,19 @@
  * module imports the core and Node's own modules, nothing of custody, the vessel or the house root. The child's stderr passes
  * through untouched, as it does with no seat between.
  *
+ * A CHILD'S DEATH STAYS BOUNDED. A child the seat stops, or one whose stdout ended, gets the polite signal and then, after
+ * `killMs` on this binding's timer, the hard kill (`child-kill-escalated` in the log), so a child that ignores its stop never
+ * holds the seat without a surface.
+ *
  * The seat ends when the client closes its stream (or this process reads a stop signal), and never on a child's death.
  */
 import { spawn, type ChildProcess } from "node:child_process";
 import { StringDecoder } from "node:string_decoder";
 import { iris, type IrisEvent, type IrisFrame } from "@lararium/mesh/iris";
 
-export interface AhoPacing { readonly firstMs: number; readonly capMs: number }
-export const AHO_PACING: AhoPacing = { firstMs: 250, capMs: 15_000 };
+/** `killMs`: how long a child the seat stopped may take to die before the hard kill (the watchdog's wait). */
+export interface AhoPacing { readonly firstMs: number; readonly capMs: number; readonly killMs?: number }
+export const AHO_PACING: AhoPacing = { firstMs: 250, capMs: 15_000, killMs: 5_000 };
 
 export interface AhoHostOptions {
   /** The surface's command and arguments, spawned as written (no shell). */
@@ -72,13 +77,25 @@ export function ahoHost(opts: AhoHostOptions): AhoHost {
     if (stream && (stream as { writable?: boolean }).writable !== false) stream.write(`${JSON.stringify(frame)}\n`);
   };
 
+  /**
+   * THE WATCHDOG BOUNDS A CHILD'S DEATH. A child the seat stops gets the polite signal, and one that still lives after
+   * `killMs` gets the hard kill, so its `close` always arrives and the core always hears the death that lets a fresh child
+   * stand. The wait rides this binding's own timer; the core reads none.
+   */
+  function stop(c: ChildProcess): void {
+    const lives = (): boolean => c.exitCode === null && c.signalCode === null;
+    if (!lives()) return;
+    c.kill("SIGTERM");
+    const dog = setTimeout(() => { if (lives()) { note("child-kill-escalated"); c.kill("SIGKILL"); } }, pacing.killMs ?? AHO_PACING.killMs);
+    c.once("exit", () => clearTimeout(dog));
+  }
+
   function release(): void {
     const c = child;
     child = null;
     if (!c) return;
-    c.kill("SIGTERM");
     c.stdin?.destroy(); c.stdout?.destroy();
-    c.unref();
+    stop(c);
   }
 
   function raise(): void {
@@ -97,6 +114,8 @@ export function ahoHost(opts: AhoHostOptions): AhoHost {
     // `close` follows the child's last byte, so every frame it wrote reaches the core before its death does.
     c.once("close", fell);
     c.stdin!.on("error", () => { /* a dying child's pipe: its `close` reports the death */ });
+    // A child whose stdout ended can answer nothing more: the seat stops it, and the watchdog bounds how long it lingers.
+    c.stdout!.once("end", () => { if (!down) stop(c); });
     lines(c.stdout!, (frame, parsed) => {
       if (down || child !== c) return;
       if (!parsed) { note("frame-unparsed"); return; }
