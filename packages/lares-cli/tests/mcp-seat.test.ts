@@ -321,3 +321,73 @@ describe("a leaked git env never re-aims the seat's clone", () => {
     expect(mainCloneOf(REPO)).toBe(honest);
   });
 });
+
+describe("container-root reads the lares service by name", () => {
+  /** A clone whose compose file reads as `text`, beside the scratch operator's surface env. */
+  const cloneWith = (text: string): string => {
+    const clone = fakeClone();
+    writeFileSync(join(clone, "docker-compose.surface.yml"), text);
+    delete process.env["LAR_ROOT"];
+    surfaceEnv();
+    return clone;
+  };
+
+  it("container-root-reads-the-lares-service-by-name: an anchor and a sibling service name other roots ABOVE the lares service; the child reads the lares service's own", () => {
+    const clone = cloneWith([
+      "name: lares-surface",
+      "x-other: &other",
+      "  environment:",
+      "    LAR_ROOT: /elsewhere",
+      "services:",
+      "  # the sidecar stands first and names its own root",
+      "  sidecar:",
+      "    environment:",
+      "      LAR_ROOT: /sidecar",
+      "  lares:",
+      "    image: lares-surface:local",
+      "    environment:",
+      "      LAR_PUBLIC_URL: http://localhost:4321",
+      "      LAR_ROOT: \"/house\"   # the vessel's root",
+      "  pulama:",
+      "    environment:",
+      "      LAR_ROOT: /pulama-root",
+      "",
+    ].join("\n"));
+    expect(resolveLaresSurface(clone)?.env).toEqual({ LAR_ROOT: "/house" });
+  });
+
+  it("container-root-follows-the-roots-merge: the lares service merges `<<: *roots`, and an anchor elsewhere names a decoy root first", () => {
+    const merged = [
+      "x-decoy:",
+      "  environment:",
+      "    LAR_ROOT: /decoy",
+      "x-vessel: &vessel",
+      "  image: lares-surface:local",
+      "  environment: &roots",
+      "    LAR_ROOT: /merged",
+      "    LAR_BAGS: /workspace/bags",
+      "services:",
+      "  herm:",
+      "    environment:",
+      "      LAR_ROOT: /herm",
+      "  lares:",
+      "    <<: *vessel",
+      "    environment:",
+      "      <<: *roots",
+      "      LAR_PEERS: ${LAR_PEERS:-}",
+      "",
+    ].join("\n");
+    expect(resolveLaresSurface(cloneWith(merged))?.env).toEqual({ LAR_ROOT: "/merged" });
+    // A key the service names itself beats the merged one, as YAML's merge reads.
+    const own = merged.replace("      LAR_PEERS: ${LAR_PEERS:-}", "      LAR_ROOT: /own");
+    expect(resolveLaresSurface(cloneWith(own))?.env).toEqual({ LAR_ROOT: "/own" });
+  });
+
+  it("container-root-service-absent-is-null-and-cause-names-the-service: no lares service (or one naming no LAR_ROOT) resolves no child, and the cause names the service", () => {
+    const absent = cloneWith(["services:", "  pulama:", "    environment:", "      LAR_ROOT: /lar", ""].join("\n"));
+    expect(resolveLaresSurface(absent)).toBeNull();
+    expect(seatAbsentCause()).toMatch(/`lares` service/);
+    const rootless = cloneWith(["x-roots: &roots", "  LAR_ROOT: /lar", "services:", "  lares:", "    environment:", "      LAR_PEERS: \"\"", ""].join("\n"));
+    expect(resolveLaresSurface(rootless)).toBeNull();
+  });
+});
