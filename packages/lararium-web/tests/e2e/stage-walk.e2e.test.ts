@@ -129,6 +129,10 @@ async function authorInPage(page: Page, title: string, body: string): Promise<vo
   expect(await fillIn(page, ".tc-tiddler-edit-frame input.tc-titlebar[data-lar-rid]", title)).toBe(true);
   expect(await fillIn(page, ".tc-tiddler-edit-frame textarea[data-lar-rid]", body)).toBe(true);
   expect(await clickIn(page, '.tc-tiddler-edit-frame [class*="Buttons%2Fsave"][data-lar-rid]'), "no save button in the edit frame").toBe(true);
+  // The save rides the worker: wait on the view frame itself and the edit frame's leaving, never on the body text, which the
+  // edit frame's own field already serialises before the save lands.
+  expect(await waitSel(page, `.tc-tiddler-view-frame[data-tiddler-title="${title}"]`), `the saved view frame of ${title} never painted\n${tail()}`).toBe(true);
+  expect(await waitSel(page, ".tc-tiddler-edit-frame", false), `the edit frame never closed after the save\n${tail()}`).toBe(true);
 }
 
 /** Re-open an existing tiddler's editor in the page, replace its body, save; answer once the new body paints. */
@@ -140,6 +144,8 @@ async function reviseInPage(page: Page, title: string, body: string): Promise<vo
   expect(await fillIn(page, ".tc-tiddler-edit-frame textarea[data-lar-rid]", body)).toBe(true);
   const typed = await page.evaluate(() => (document.getElementById("projection")?.shadowRoot?.querySelector(".lar-projection")?.querySelector(".tc-tiddler-edit-frame textarea") as HTMLTextAreaElement | null)?.value ?? "(no textarea)");
   expect(await clickIn(page, '.tc-tiddler-edit-frame [class*="Buttons%2Fsave"][data-lar-rid]'), "no save button in the edit frame").toBe(true);
+  // As in authoring: the edit frame's leaving marks the save landed; only then does the body read count.
+  await waitSel(page, ".tc-tiddler-edit-frame", false);
   const painted = await waitPane(page, body);
   if (!painted) {
     expect(painted, [
