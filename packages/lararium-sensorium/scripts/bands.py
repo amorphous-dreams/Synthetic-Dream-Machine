@@ -981,7 +981,6 @@ def forecast_ews(matrix: np.ndarray, window: int = 50, n_surr: int = 200,
     # (ramp-biased) AC1 that reads significant is untrustworthy under it, so it vetoes the fire.
     strong_ramp = bool(var_sig and ramp_ratio >= _NOISE_RAMP_RATIO)
     noise_inflation = bool(strong_ramp or (var_sig and not ac1_sig))  # ramp, or var-up-AC1-flat
-    surrogate_sig = ac1_sig or var_sig                # kept for back-compat (any null beaten)
     multi_band = n_rising >= min_bands
 
     # THE FIRE CONDITION — AC1-significant (CSD-specific) AND multi-band agreement, AND NO
@@ -1008,7 +1007,6 @@ def forecast_ews(matrix: np.ndarray, window: int = 50, n_surr: int = 200,
         "noise_inflation": noise_inflation,
         "variance_ramp_ratio": ramp_ratio,
         "strong_variance_ramp": strong_ramp,
-        "surrogate_significant": surrogate_sig,
         "multi_band_agreement": multi_band,
         "bands_rising": n_rising, "min_bands": min_bands,
         "band_taus": band_taus,

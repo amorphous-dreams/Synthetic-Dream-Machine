@@ -419,6 +419,19 @@ def test_forecast_graceful_and_engine():
     assert fc["r_available"] == (shutil.which("Rscript") is not None)
 
 
+def test_forecast_answers_its_named_keys_alone():
+    """The forecast answers the keys its readers take and no others: every tooth names itself
+    (AC1, variance, the ramp veto, the bands), and no blended flag rides beside them."""
+    x, T = _csd_approach_then_commit()
+    fc = bs.forecast_ews(x[:T], window=50, n_surr=50, seed=1)
+    assert set(fc) == {
+        "fired", "state", "n", "window", "ar1_tau", "ar1_p", "var_tau", "var_p",
+        "ac1_significant", "var_significant", "noise_inflation", "variance_ramp_ratio",
+        "strong_variance_ramp", "multi_band_agreement", "bands_rising", "min_bands",
+        "band_taus", "alpha", "n_surr", "engine", "r_available", "note",
+    }
+
+
 def test_cli_forecast_stdin():
     """`forecast --signal -` runs the EWS leg over an NDJSON signal → one JSON verdict."""
     x, T = _csd_approach_then_commit()
