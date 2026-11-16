@@ -12,7 +12,7 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { seatedCustody, unseatCustody, readCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
 import { pendingFoundingFile, loadPendingFoundingSeed, sweepFoundingSeeds, faceAtomGroupFile, foundingAskDigest, type FoundingAtomAsk } from "../src/face-atom-store.js";
-import { askRowPath, faceRowNames, groupRowPath } from "./face-paths.js";
+import { askRecordPath, faceRecordNames, groupRecordPath } from "./face-paths.js";
 import { ensureFaceCustodyOfAsk } from "../src/face-route.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
@@ -61,7 +61,7 @@ describe("the founding seed sweep", () => {
       try { await expect(foundFace({ storageDir: larDataDir(), genesisDir })).rejects.toThrow("move seam crash"); }
       finally { fault.mockRestore(); }
       expect(crashed, "the fault struck the ask removal after the group write").toBe(true);
-      const names = () => faceRowNames().filter((name) => name === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(name)).sort();
+      const names = () => faceRecordNames().filter((name) => name === pendingFoundingFile(ask) || /^face-atom-g[0-9a-f]{64}\.bin$/.test(name)).sort();
       expect(names(), "the interrupted move exposes both sealed rows").toHaveLength(2);
       const [groupFile] = names().filter((name) => name.startsWith("face-atom-g"));
       expect(await readCustodyRow("identity", groupFile!)).toEqual(await loadPendingFoundingSeed(ask));
@@ -74,10 +74,10 @@ describe("the founding seed sweep", () => {
       await writeCustodyRow("identity", pendingFoundingFile(ask), (await readCustodyRow("identity", groupFile!))!);
       await sweepFoundingSeeds();
       expect(names(), "one group row keeps the seed").toEqual([groupFile]);
-      const bytes = readFileSync(groupRowPath(face.personaGroupId, groupFile!));
+      const bytes = readFileSync(groupRecordPath(face.personaGroupId, groupFile!));
       await sweepFoundingSeeds();
       expect(names()).toEqual([groupFile]);
-      expect(readFileSync(groupRowPath(face.personaGroupId, groupFile!))).toEqual(bytes);
+      expect(readFileSync(groupRecordPath(face.personaGroupId, groupFile!))).toEqual(bytes);
       const boot = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
       expect(boot, "node boot reaches the founding sweep through the sovereign gate's door").toMatch(/sweepUnderTheGate\(\s*sovereignOpen\s*,\s*sweepFoundingSeeds\s*\)/);
       expect(boot, "the gate's door runs the sweep it is handed, when the gate stands open").toMatch(/if \(sovereignOpen\) await sweep\(\)/);

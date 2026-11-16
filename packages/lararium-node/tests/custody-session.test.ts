@@ -19,7 +19,7 @@ import { dirname, join } from "node:path";
 import { CensusRefusal, OccupiedStoreRefusal, S_SEAL_MAGIC, DEVICE_DELEGATION_DOMAIN, floorRestKey, encodeIndexEntry, mintOutboxKey, readIndexEntry, readsAsOutboxSeal, restDigest, sealOutboxParcel, writeSealedCarrier } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { appendFaceEntry } from "../src/face-index.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { custodyRootPath, custodyDerive, openCustodyRootCarrier, custodyRootFromBytes } from "../src/custody-root.js";
 import {
   bindCustodySlot, custodyStatus, CustodyFoundingRefused, foundCustody, rotateCustody, unbindCustodySlot, unlockCustody,
@@ -248,7 +248,7 @@ describe("custodyStatus", () => {
   test("opens nothing: names the slots and pin kinds, reads the sealed root `sealed` and an unconverted row `bare`", async () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
     await appendFaceEntry(io, homes.identity, { ordinal: 0, ask: "ab".repeat(32) });
-    const anchors = handleRowPathIn(homes.identity, "anchors-h0.json");
+    const anchors = handleRecordPathIn(homes.identity, "anchors-h0.json");
     mkdirSync(join(anchors, ".."), { recursive: true });
     writeFileSync(anchors, '{"a":1}', { mode: 0o600 });
     const before = hashes(root);
@@ -266,7 +266,7 @@ describe("custodyStatus", () => {
     await foundCustody({ io, homes, slots: [TEST_SLOT] });
     writeFileSync(join(homes.identity, ".vessel-key.json"), "{}", { mode: 0o600 });
     await appendFaceEntry(io, homes.identity, { ordinal: 0, ask: "ab".repeat(32) });
-    const anchors = handleRowPathIn(homes.identity, "anchors-h0.json");
+    const anchors = handleRecordPathIn(homes.identity, "anchors-h0.json");
     mkdirSync(join(anchors, ".."), { recursive: true });
     writeFileSync(anchors, '{"a":1}', { mode: 0o600 });
     writeFileSync(join(homes.identity, "side-key.json"), "{}", { mode: 0o600 });

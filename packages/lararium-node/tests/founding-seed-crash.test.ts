@@ -51,7 +51,7 @@ import { runFoundTheFace } from "../src/commands/init.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { hearthAid } from "../src/hearth-aid.js";
 import { faceAtomGroupFile, loadFaceAtomOfGroup, loadPendingFoundingSeed, pendingFoundingFile, type FoundingAtomAsk } from "../src/face-atom-store.js";
-import { askRowPath, faceRowNames, groupRowPath } from "./face-paths.js";
+import { askRecordPath, faceRecordNames, groupRecordPath } from "./face-paths.js";
 import { VESSEL_FACE_TAG_ASK_FILE, VESSEL_FACE_TAG_FILE, vesselFaceTagFile } from "../src/vessel-face-tag-store.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
@@ -61,7 +61,7 @@ const foundFace = direct(runFoundTheFace);
 const roots: string[] = [];
 const genesisSource = join(import.meta.dirname, "..", "..", "..", "genesis");
 const liveRows = (ask: FoundingAtomAsk, group: string) => {
-  const files = new Set(faceRowNames());
+  const files = new Set(faceRecordNames());
   return Number(files.has(pendingFoundingFile(ask))) + Number(files.has(faceAtomGroupFile(group)));
 };
 
@@ -95,9 +95,9 @@ describe("the founding seed moves in one act", () => {
     await withLarRoot(root, async () => {
       fault.throwAfterGroup = true;
       await expect(foundFace({ storageDir: larDataDir(), genesisDir })).rejects.toThrow("planted after the group row");
-      const groupRows = faceRowNames().filter((f) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(f));
+      const groupRows = faceRecordNames().filter((f) => /^face-atom-g[0-9a-f]{64}\.bin$/.test(f));
       expect(groupRows).toHaveLength(1);
-      const askRow = faceRowNames().filter((f) => f === pendingFoundingFile(ask));
+      const askRow = faceRecordNames().filter((f) => f === pendingFoundingFile(ask));
       const stoppedSeed = await loadFaceAtomOfGroup(fault.group);
       expect(stoppedSeed).toHaveLength(32);
       expect(await loadPendingFoundingSeed(ask)).toBeNull();
@@ -118,14 +118,14 @@ describe("the founding seed moves in one act", () => {
       const stopped = [...fault.tags];
       expect(stopped.length, "the stopped founding presented a tag").toBeGreaterThan(0);
       expect(new Set(stopped).size).toBe(1);
-      expect(faceRowNames().filter((f) => VESSEL_FACE_TAG_ASK_FILE.test(f)), "the stopped founding left its tag under the ask").toHaveLength(1);
-      expect(faceRowNames().filter((f) => VESSEL_FACE_TAG_FILE.test(f)), "and none on a group row yet").toEqual([]);
+      expect(faceRecordNames().filter((f) => VESSEL_FACE_TAG_ASK_FILE.test(f)), "the stopped founding left its tag under the ask").toHaveLength(1);
+      expect(faceRecordNames().filter((f) => VESSEL_FACE_TAG_FILE.test(f)), "and none on a group row yet").toEqual([]);
       fault.tags = [];
       const resumed = await foundFace({ storageDir: larDataDir(), genesisDir });
       expect(fault.tags.length, "the resumed founding presented a tag").toBeGreaterThan(0);
       expect(new Set(fault.tags), "the resumed founding presents the stopped one's tag").toEqual(new Set(stopped));
-      expect(faceRowNames().filter((f) => VESSEL_FACE_TAG_FILE.test(f)), "one group row holds the tag").toEqual([vesselFaceTagFile(resumed.personaGroupId)]);
-      expect(faceRowNames().filter((f) => VESSEL_FACE_TAG_ASK_FILE.test(f)), "no ask row outlives the settle").toEqual([]);
+      expect(faceRecordNames().filter((f) => VESSEL_FACE_TAG_FILE.test(f)), "one group row holds the tag").toEqual([vesselFaceTagFile(resumed.personaGroupId)]);
+      expect(faceRecordNames().filter((f) => VESSEL_FACE_TAG_ASK_FILE.test(f)), "no ask row outlives the settle").toEqual([]);
     });
   }, 180_000);
 
@@ -134,7 +134,7 @@ describe("the founding seed moves in one act", () => {
     await withLarRoot(root, async () => {
       const face = await foundFace({ storageDir: larDataDir(), genesisDir });
       expect(liveRows(ask, face.personaGroupId)).toBe(1);
-      expect(faceRowNames()).toContain(faceAtomGroupFile(face.personaGroupId));
+      expect(faceRecordNames()).toContain(faceAtomGroupFile(face.personaGroupId));
     });
   }, 180_000);
 });

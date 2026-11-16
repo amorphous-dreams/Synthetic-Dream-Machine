@@ -1,5 +1,5 @@
 /**
- * custody-row-remove — the custody seat's removal door: a holder removes only a row its own key opens.
+ * custody-record-remove — the custody seat's removal door: a holder removes only a row its own key opens.
  *
  *   X1  a row the seat's key opens leaves, with any stray sidecar beside it, and the door answers that a row stood;
  *       nothing at the path answers that none stood.                control: a sibling row stays, byte for byte
@@ -16,7 +16,7 @@ import { SEALING_SUFFIX } from "@lararium/mesh";
 import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown } from "../src/custody-holder.js";
 import { readCustodyRow, removeColdCustodyRow, removeCustodyRow, writeCustodyRow } from "../src/custody-seat.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { faceFilePathSync } from "../src/face-index.js";
 
 const ROW = `hosting-h0/${"a".repeat(32)}/spent-${"b".repeat(64)}-n-${"c".repeat(32)}`;
@@ -89,7 +89,7 @@ describe("the custody seat's removal door", () => {
     const c = await custody("remove-x4");
     const COLD = "recovery-device-share-h0.bin";
     await c.holder.writeRow("identity", COLD, text("a cold share"));
-    const cold = handleRowPathIn(c.homes.identity, COLD);
+    const cold = handleRecordPathIn(c.homes.identity, COLD);
     const standing = readFileSync(cold);
     const seen: string[] = [];
     expect(await removeColdCustodyRow("identity", COLD, (plaintext) => { seen.push(new TextDecoder().decode(plaintext)); return false; })).toBe(false);

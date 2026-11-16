@@ -35,7 +35,7 @@ import { seatCustody } from "../src/custody-seat.js";
 import { GateMemoryRecordRefused, gateMemoryRecordFile, gateMemoryRecords } from "../src/gate-memory-records.js";
 import { carrierTable, sSealedCarriers } from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { handleRowPathIn, faceRowNames } from "./face-paths.js";
+import { handleRecordPathIn, faceRecordNames } from "./face-paths.js";
 import { readFaceIndexSync, findFace } from "../src/face-index.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
 
@@ -51,7 +51,7 @@ afterEach(async () => { for (const c of drops.splice(0).reverse()) await c.drop(
 
 const NAME = "ab".repeat(32);
 const text = (s: string): Uint8Array => new TextEncoder().encode(s);
-const rowPath = (c: SeatedScratchCustody, name: string, face = 0): string => handleRowPathIn(c.homes.identity, gateMemoryRecordFile(face, name));
+const rowPath = (c: SeatedScratchCustody, name: string, face = 0): string => handleRecordPathIn(c.homes.identity, gateMemoryRecordFile(face, name));
 
 /** A gate world over the real door, a presenter whose sibling stands withdrawn, and the events that say so. */
 async function learned(label: string) {
@@ -109,7 +109,7 @@ describe("a gate's memory behind the custody seat", () => {
     const { w, honest, gone } = await learned("m2");
     await dial(w, honest);
     const name = faceProofSubjectRef(honest.scope);
-    expect(faceRowNames()).toContain(gateMemoryRecordFile(0, name));
+    expect(faceRecordNames()).toContain(gateMemoryRecordFile(0, name));
     const resting = readFileSync(rowPath(c, name));
     expect(readFckCarrier(resting)).toBe("sealed");
     const faceKey: string = honest.scope.faceKey;
@@ -151,7 +151,7 @@ describe("a gate's memory behind the custody seat", () => {
     // Seal the SAME carrier name under ANOTHER face key, in a vessel of its own, and lay those bytes over the row.
     const other = await seatScratchCustody("gm-m4-alien");
     await gateMemoryRecords(0).write(NAME, text("[\"alien\"]"));
-    const alien = readFileSync(handleRowPathIn(other.homes.identity, gateMemoryRecordFile(0, NAME)));
+    const alien = readFileSync(handleRecordPathIn(other.homes.identity, gateMemoryRecordFile(0, NAME)));
     await other.drop();
     expect(readFckCarrier(alien)).toBe("sealed");
     expect(alien.equals(mine)).toBe(false);                                                 // the probe moved the encoded bytes …
@@ -182,7 +182,7 @@ describe("a gate's memory behind the custody seat", () => {
     await expect(rows.write(NAME, "[1]" as never)).rejects.toBeInstanceOf(GateMemoryRecordRefused);
     await expect(rows.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);                    // CONTROL: a sound name reaches the seat
     await expect(rows.write(NAME, text("[1]"))).rejects.toBeInstanceOf(CustodyLocked);
-    expect(faceRowNames()).not.toContain(gateMemoryRecordFile(0, NAME));                   // a refused write leaves no directory behind
+    expect(faceRecordNames()).not.toContain(gateMemoryRecordFile(0, NAME));                   // a refused write leaves no directory behind
   });
 
   test("M6 — the carrier table names the face row and its face census lists it once it stands", async () => {
@@ -196,7 +196,7 @@ describe("a gate's memory behind the custody seat", () => {
     expect(listed()).toEqual([]);
     await gateMemoryRecords(0).write(NAME, text("[1]"));
     expect(listed()).toEqual([]);
-    expect(faceRowNames()).toContain(gateMemoryRecordFile(0, NAME));
+    expect(faceRecordNames()).toContain(gateMemoryRecordFile(0, NAME));
   });
 
   test("M7 — an older copy of a row, restored by hand, makes the gate forget (the law names it; no fence stands)", async () => {

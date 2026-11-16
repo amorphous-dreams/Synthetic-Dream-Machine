@@ -34,7 +34,7 @@ import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown, makeCustodyHol
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { carrierCensus, carrierTable } from "../src/vault-carriers.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -65,7 +65,7 @@ async function bookOf(...indexes: number[]): Promise<{ book: HandleBook; nyms: s
 
 let c: SeatedScratchCustody;
 const FILE = handleBookFile(0);
-const at = (file: string): string => HANDLE_BOOK_FILE.test(file) ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
+const at = (file: string): string => HANDLE_BOOK_FILE.test(file) ? handleRecordPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 beforeEach(async () => { c = await seatScratchCustody("circles"); });
 afterEach(async () => { await c.drop(); });
 

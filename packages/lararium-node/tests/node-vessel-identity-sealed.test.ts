@@ -52,7 +52,7 @@ import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
 import { CustodyLocked, CustodyRowUnavailable, WardNeedsFreshUnlock, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody, withWardKeyCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, fixtureWard, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -72,7 +72,7 @@ let priorHome: string | undefined;
 let priorXdg: string | undefined;
 let priorGlobal: string | undefined;
 let configHome: string;
-const at = (file: string): string => /^\.persona-(?:group-root|roster|petnames|declarations|public-handles)-h\d+\.json$/.test(file) ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
+const at = (file: string): string => /^\.persona-(?:group-root|roster|petnames|declarations|public-handles)-h\d+\.json$/.test(file) ? handleRecordPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 const read = (file: string): Buffer => readFileSync(at(file));
 const sealed = (file: string): void => expect(at(file) === join(c.homes.identity, file) ? readSCarrier(read(file)) : readFckCarrier(read(file))).toBe("sealed");
 const rosterFile = (i: number): string => `.persona-roster-h${i}.json`;

@@ -16,7 +16,7 @@ import { withLarRoot } from "../../../tests/harness/with-lar-root.js";
 import { foundDirect } from "./found-route.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity, loadVesselIdentity } from "../src/node-vessel-identity.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
-import { faceRowNames } from "./face-paths.js";
+import { faceRecordNames } from "./face-paths.js";
 
 vi.setConfig({ testTimeout: 240_000 });
 const roots: string[] = [];
@@ -43,7 +43,7 @@ async function underEmail<T>(r: string, email: string, work: (flip: (next: strin
   finally { if (prior === undefined) delete process.env["GIT_CONFIG_GLOBAL"]; else process.env["GIT_CONFIG_GLOBAL"] = prior; }
 }
 const placeFiles = (): string[] => readdirSync(larIdentityDir()).filter((f) => f.startsWith(".vessel-")).sort();
-const rootRows = (): string[] => faceRowNames().filter((f) => f.startsWith(".persona-group-root"));
+const rootRows = (): string[] => faceRecordNames().filter((f) => f.startsWith(".persona-group-root"));
 
 describe("custody names read no login", () => {
   test("RED: a flipped git email loads the persona root that stands, and mints no second root", async () => {

@@ -12,7 +12,7 @@ import { faceAtomGroupFile, loadFaceAtomOfGroup } from "../src/face-atom-store.j
 import { loadLeafIdentity } from "../src/leaf-identity.js";
 import { vesselPlaceSignerDoor, loadVesselVerifyingKey } from "../src/node-vessel-identity.js";
 import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
-import { groupRowPath } from "./face-paths.js";
+import { groupRecordPath } from "./face-paths.js";
 import { larIdentityDir, larDataDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
 import { foundDirect, seatSeedCharter } from "./found-route.js";
@@ -65,7 +65,7 @@ describe("the atom boots the face", () => {
   });
 
   test("the atom row is face-key sealed and a locked custody seat opens none", async () => {
-    const row = groupRowPath(group, faceAtomGroupFile(group));
+    const row = groupRecordPath(group, faceAtomGroupFile(group));
     expect(readFckCarrier(readFileSync(row))).toBe("sealed");
     const holder = seatedCustody()!;
     await holder.lock();
@@ -75,7 +75,7 @@ describe("the atom boots the face", () => {
   });
 
   test("a worn face with no atom refuses by name; the row present opens", async () => {
-    const row = groupRowPath(group, faceAtomGroupFile(group));
+    const row = groupRecordPath(group, faceAtomGroupFile(group));
     expect(await loadLeafIdentity({ handleIndex: 0, personaGroupId: group })).toMatchObject({ arm: "face" });
     unlinkSync(row);
     await expect(loadLeafIdentity({ handleIndex: 0, personaGroupId: group })).rejects.toThrow("this face holds no atom; re-found or re-admit it");

@@ -23,7 +23,7 @@ import {
 import { ScratchCustodyIo, scratchHomes } from "./custody-io-fixture.js";
 import { seatScratchCustody } from "./custody-seat-fixture.js";
 import { openOutboxKey, outboxKeyFile } from "../src/outbox-key.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { readFckCarrier } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 
@@ -342,7 +342,7 @@ describe("the S key rotation reads its carriers from the table", { timeout: 30_0
     const v = await seatScratchCustody("carrier-outbox");
     try {
       const outboxKey = await openOutboxKey(0);
-      const keyPath = handleRowPathIn(v.homes.identity, outboxKeyFile(0));
+      const keyPath = handleRecordPathIn(v.homes.identity, outboxKeyFile(0));
       const keyBefore = readFileSync(keyPath);
       expect(readFckCarrier(keyBefore)).toBe("sealed");
       const parcel = sealOutboxParcel(outboxKey, "reader-one", text("a parcel"));

@@ -40,7 +40,7 @@ import { writeCustodyRow } from "../src/custody-seat.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { listWalkRecords, nodeWalkStore, walkRowFile, WalksElsewhere } from "../src/node-walk-store.js";
 import { runSealedAct, type SealedActContext } from "../src/sealed-acts.js";
-import { handleRowPath, faceRowNames } from "./face-paths.js";
+import { handleRecordPath, faceRecordNames } from "./face-paths.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { findFace, readFaceIndexSync } from "../src/face-index.js";
@@ -54,7 +54,7 @@ const RECORD: WalkRecord = {
   nexusAid: AID, relay: RELAY, invite: CARRIED_INVITE,
   carried: [{ cid: "blake3:" + "ab".repeat(32), ref: "cd".repeat(32), key: "9f".repeat(32) }],
 };
-const rowPath = (gate = GATE): string => handleRowPath(walkRowFile(0, gate));
+const rowPath = (gate = GATE): string => handleRecordPath(walkRowFile(0, gate));
 
 const drops: Array<() => Promise<void>> = [];
 afterEach(async () => { for (const drop of drops.splice(0).reverse()) await drop(); });
@@ -77,7 +77,7 @@ describe("a walk record at rest", () => {
     const file = readFileSync(rowPath());
     expect(readFckCarrier(file)).toBe("sealed");
     for (const secret of [RELAY, CARRIED_INVITE, "5a".repeat(32), "9f".repeat(32), GATE]) expect(file.includes(Buffer.from(secret)), secret).toBe(false);
-    expect(faceRowNames().filter((n) => n.startsWith("walk-")).every((n) => /^walk-h0-[0-9a-f]{32}\.json$/.test(n))).toBe(true);
+    expect(faceRecordNames().filter((n) => n.startsWith("walk-")).every((n) => /^walk-h0-[0-9a-f]{32}\.json$/.test(n))).toBe(true);
     expect(await store().read(GATE)).toEqual(RECORD);
     expect(await listWalkRecords()).toEqual([{ face: 0, gatePubKey: GATE, record: RECORD }]);
   });
@@ -173,7 +173,7 @@ describe("a walk record at rest", () => {
     expect(nodeWalkStore.length).toBe(1);
     expect(listWalkRecords.length).toBe(0);
     expect(await listWalkRecords()).toEqual([]); // no face row, walking nowhere
-    expect(faceRowNames().some((n) => n.startsWith("walk-"))).toBe(false);
+    expect(faceRecordNames().some((n) => n.startsWith("walk-"))).toBe(false);
     await put(GATE, RECORD);
     expect(readFckCarrier(readFileSync(rowPath()))).toBe("sealed");
     expect(rowPath().startsWith(join(c.homes.identity, "faces"))).toBe(true);

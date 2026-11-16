@@ -32,7 +32,7 @@ import { faceCarrierFor } from "../src/face-custody.js";
 import { faceTreePath } from "../src/face-index.js";
 import { carrierTable } from "../src/vault-carriers.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 
 vi.setConfig({ testTimeout: 120_000 });
 
@@ -44,7 +44,7 @@ const edge: DeviceDelegationTiddler = {
 const bytesOf = (marker: string): Uint8Array => new TextEncoder().encode(`${marker}:${"x".repeat(64)}`);
 
 let c: SeatedScratchCustody;
-const at = (file: string): string => file.startsWith("anchors-h") ? handleRowPathIn(c.homes.identity, file) : join(c.homes.identity, file);
+const at = (file: string): string => file.startsWith("anchors-h") ? handleRecordPathIn(c.homes.identity, file) : join(c.homes.identity, file);
 beforeEach(async () => { c = await seatScratchCustody("anchors"); });
 afterEach(async () => { await c.drop(); });
 
@@ -66,7 +66,7 @@ describe("the identity home's sealed family", () => {
     expect(await loadIdentityAnchors(2)).toEqual(withMount);
     expect(await listAnchoredPersonas()).toEqual([0, 2]);
     // no shared roster names the faces: each anchors row rests in its own face, sealed under that face's key
-    expect(readFckCarrier(readFileSync(handleRowPathIn(c.homes.identity, "anchors-h2.json")))).toBe("sealed");
+    expect(readFckCarrier(readFileSync(handleRecordPathIn(c.homes.identity, "anchors-h2.json")))).toBe("sealed");
     expect(existsSync(at("anchor-roster.json"))).toBe(false);
   });
 
@@ -93,7 +93,7 @@ describe("the identity home's sealed family", () => {
     await persistIdentityAnchors(anchors);
     await ensureFaceCustodyOfGroup(anchors.personaGroupId);
     await persistVeilArchive(bytesOf("veil"), anchors.personaGroupId);
-    const before = ["anchors-h0.json", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)));
+    const before = ["anchors-h0.json", veilArchiveFile(anchors.personaGroupId)].map((f) => readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRecordPathIn(c.homes.identity, f) : at(f)));
     await c.holder.lock();
     await expect(loadIdentityAnchors()).rejects.toThrow(CustodyLocked);
     await expect(listAnchoredPersonas()).rejects.toThrow(CustodyLocked);
@@ -102,7 +102,7 @@ describe("the identity home's sealed family", () => {
     await expect(persistVeilArchive(bytesOf("floor"), anchors.personaGroupId)).rejects.toThrow(CustodyLocked);
     expect(existsSync(at("anchors-h1.json"))).toBe(false);
     ["anchors-h0.json", veilArchiveFile(anchors.personaGroupId)].forEach((f, i) => {
-      expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRowPathIn(c.homes.identity, f) : at(f)).equals(before[i]!), f).toBe(true);
+      expect(readFileSync(f.startsWith("veil-archive") ? veilArchivePath(anchors.personaGroupId) : f.startsWith("anchors-") ? handleRecordPathIn(c.homes.identity, f) : at(f)).equals(before[i]!), f).toBe(true);
     });
     // no seat at all reads the same floor: every seat cleared, the suites' when-needed seat among them
     seatCustody(null);

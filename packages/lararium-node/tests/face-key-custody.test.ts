@@ -32,7 +32,7 @@ import { rotateCustody } from "../src/custody-session.js";
 import { carrierTable } from "../src/vault-carriers.js";
 import { faceTreePath, findFace, readFaceIndexSync } from "../src/face-index.js";
 import { faceCarrierFor } from "../src/face-custody.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -52,7 +52,7 @@ const vesselFaceKey = publicOf(VESSEL_SECRET);
 const IMAGE = new TextEncoder().encode("synthetic image the library hands the door");
 
 let c: SeatedScratchCustody;
-const at = (file: string): string => handleRowPathIn(c.homes.identity, file);
+const at = (file: string): string => handleRecordPathIn(c.homes.identity, file);
 beforeEach(async () => { c = await seatScratchCustody("face-key"); });
 afterEach(async () => { await c.drop(); });
 

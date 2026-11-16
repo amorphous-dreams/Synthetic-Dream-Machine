@@ -8,7 +8,7 @@ import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
 import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRowUnknown } from "../src/custody-holder.js";
 import { sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 
 // Every unlock runs the slot's own key derivation, priced to cost a guesser; the suite waits it out.
 vi.setConfig({ testTimeout: 180_000 });
@@ -106,15 +106,15 @@ describe("CustodyHolder", () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     const file = "anchors-h0.json";
     await h.writeRow("identity", file, new TextEncoder().encode('{"whole":true}'));
-    writeFileSync(handleRowPathIn(homes.identity, file), '{"bare":true}');
+    writeFileSync(handleRecordPathIn(homes.identity, file), '{"bare":true}');
     expect(await h.readRow("identity", file)).toEqual({ reading: "unavailable", why: "bare" });
     await h.writeRow("identity", "recovery-contact-set-h1.json", new TextEncoder().encode('{"whole":true}'));
     expect(await h.readRow("identity", "anchors-h1.json")).toEqual({ reading: "absent" });
     // A sealed row cut short: it bears the seal and no longer opens. It reads unavailable by the reader's own
     // name for it, never `opens` and never `absent`.
     await h.writeRow("identity", "anchors-h2.json", new TextEncoder().encode('{"whole":true}'));
-    const whole = readFileSync(handleRowPathIn(homes.identity, "anchors-h2.json"));
-    writeFileSync(handleRowPathIn(homes.identity, "anchors-h2.json"), whole.subarray(0, whole.length - 5));
+    const whole = readFileSync(handleRecordPathIn(homes.identity, "anchors-h2.json"));
+    writeFileSync(handleRecordPathIn(homes.identity, "anchors-h2.json"), whole.subarray(0, whole.length - 5));
     const cut = await h.readRow("identity", "anchors-h2.json");
     expect(cut.reading).toBe("unavailable");
     expect(["torn", "key-fails", "unopenable"]).toContain((cut as { why: string }).why);
@@ -240,9 +240,9 @@ describe("CustodyHolder.removeColdRow — an act removes the cold row it committ
   test("C1 a cold row leaves, and a second removal answers that none stood", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
-    expect(existsSync(handleRowPathIn(homes.identity, COLD))).toBe(true);
+    expect(existsSync(handleRecordPathIn(homes.identity, COLD))).toBe(true);
     expect(await h.removeColdRow("identity", COLD)).toBe(true);
-    expect(existsSync(handleRowPathIn(homes.identity, COLD))).toBe(false);
+    expect(existsSync(handleRecordPathIn(homes.identity, COLD))).toBe(false);
     expect(await h.removeColdRow("identity", COLD)).toBe(false);
   });
 
@@ -259,7 +259,7 @@ describe("CustodyHolder.removeColdRow — an act removes the cold row it committ
     await h.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"synthetic"}'));
     await h.lock();
     await expect(h.removeColdRow("identity", COLD)).rejects.toBeInstanceOf(CustodyLocked);
-    expect(existsSync(handleRowPathIn(homes.identity, COLD))).toBe(true);
+    expect(existsSync(handleRecordPathIn(homes.identity, COLD))).toBe(true);
   });
 
   test("C4 a cold row another vessel's key sealed stays, and the removal refuses by name", async () => {
@@ -268,8 +268,8 @@ describe("CustodyHolder.removeColdRow — an act removes the cold row it committ
     const other = stage("c4-other");
     const o = await found(other); await o.unlock([pass(RIGHT)]);
     await o.writeRow("identity", COLD, new TextEncoder().encode('{"pending":"of another vessel"}'));
-    const ownPath = handleRowPathIn(homes.identity, COLD);
-    writeFileSync(ownPath, readFileSync(handleRowPathIn(other.homes.identity, COLD)));
+    const ownPath = handleRecordPathIn(homes.identity, COLD);
+    writeFileSync(ownPath, readFileSync(handleRecordPathIn(other.homes.identity, COLD)));
     const before = readFileSync(ownPath);
     await expect(h.removeColdRow("identity", COLD)).rejects.toThrow(/custody row identity\/recovery-device-share-h0\.bin reads/);
     expect(readFileSync(ownPath).equals(before)).toBe(true);

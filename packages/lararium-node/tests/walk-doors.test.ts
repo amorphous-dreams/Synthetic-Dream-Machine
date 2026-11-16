@@ -24,7 +24,7 @@ import {
 } from "@lararium/mesh";
 import { generateOrLoadVesselIdentity, generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { FaceNotNamed } from "../src/face-selector.js";
-import { handleRowPath, faceRowNames } from "./face-paths.js";
+import { handleRecordPath, faceRecordNames } from "./face-paths.js";
 import { walkRowFile } from "../src/node-walk-store.js";
 import { dirname } from "node:path";
 import { nexusLeafFor, faceNexusLeaf } from "../src/nexus-leaf.js";
@@ -46,7 +46,7 @@ async function invite(gate = GATE, relay: string | null = RELAY): Promise<string
   epoch ??= await mintHostingAct({ leafSeed: HEARTH, nexusAid: AID, prev: null, cap: 3 });
   return encodeInvite({ nexusAid: AID, gatePubKey: gate, token: mintHostToken(epoch), ...(relay ? { relay } : {}) });
 }
-const walkDirOf = (): string => dirname(handleRowPath(walkRowFile(0, GATE)));
+const walkDirOf = (): string => dirname(handleRecordPath(walkRowFile(0, GATE)));
 
 describe("lares walk — take, as the named face, at one hearth", () => {
   it("RED: a take naming no face on a vessel of two takes no invite and writes nothing; CONTROL: named, the take keeps it as that face", async () => {
@@ -54,7 +54,7 @@ describe("lares walk — take, as the named face, at one hearth", () => {
     await generateOrLoadPersonaGroupRoot(0);
     await generateOrLoadPersonaGroupRoot(1);
     await expect(runWalkTake({ carried: await invite() })).rejects.toBeInstanceOf(FaceNotNamed);
-    expect(faceRowNames().some((n) => n.startsWith("walk-"))).toBe(false);
+    expect(faceRecordNames().some((n) => n.startsWith("walk-"))).toBe(false);
     const taken = await runWalkTake({ carried: await invite(), face: 0 });
     expect(taken).toMatchObject({ gatePubKey: GATE, nexusAid: AID, relay: RELAY, leaf: (await nexusLeafFor(0, AID))!.verifyingKey });
     expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);
@@ -94,7 +94,7 @@ describe("lares walk — take, as the named face, at one hearth", () => {
     await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
     await generateOrLoadPersonaGroupRoot(0);
     await expect(runWalkTake({ carried: await invite(), dialGate: OTHER_GATE })).rejects.toThrow(/dial stands to the hearth/);
-    expect(faceRowNames().some((n) => n.startsWith("walk-"))).toBe(false);
+    expect(faceRecordNames().some((n) => n.startsWith("walk-"))).toBe(false);
     await runWalkTake({ carried: await invite() });
     await expect(runWalkTake({ carried: await invite(OTHER_GATE) })).rejects.toBeInstanceOf(WalkRefusal);
     expect((await listWalkRecords()).map((w) => w.gatePubKey)).toEqual([GATE]);

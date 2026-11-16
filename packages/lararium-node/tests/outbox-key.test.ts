@@ -15,10 +15,10 @@ import { CustodyLocked, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { custodyStatus } from "../src/custody-session.js";
 import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 
 let c: SeatedScratchCustody;
-const path = () => handleRowPathIn(c.homes.identity, outboxKeyFile(0));
+const path = () => handleRecordPathIn(c.homes.identity, outboxKeyFile(0));
 beforeEach(async () => { c = await seatScratchCustody("outbox-key"); });
 afterEach(async () => { await c.drop(); });
 

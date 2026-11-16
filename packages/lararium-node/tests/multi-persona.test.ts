@@ -12,7 +12,7 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { faceRowNames, handleRowPath } from "./face-paths.js";
+import { faceRecordNames, handleRecordPath } from "./face-paths.js";
 import { afterEach, beforeEach, describe, test, expect } from "vitest";
 import { mkdtempSync, rmSync, readdirSync, existsSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -94,7 +94,7 @@ describe("multi-persona-per-vessel (#63)", () => {
     expect(founding.created).toBe(true);
 
     const idDir = larIdentityDir();
-    const rootFiles = faceRowNames().filter((f) => /^\.persona-group-root/.test(f));
+    const rootFiles = faceRecordNames().filter((f) => /^\.persona-group-root/.test(f));
     expect(rootFiles.length, "exactly one root file at founding").toBe(1);
     expect(rootFiles[0], "uniform keying — the founding persona carries the -h0 suffix").toMatch(/-h0\.json$/);
 
@@ -208,7 +208,7 @@ describe("multi-persona-per-vessel (#63)", () => {
 
     expect(await loadIdentityAnchors()).toEqual(a0);       // the founding-persona read round-trips
     expect(await loadIdentityAnchors(1)).toEqual(a1);
-    expect(existsSync(handleRowPath("anchors-h0.json"))).toBe(true);   // uniform founding spelling
+    expect(existsSync(handleRecordPath("anchors-h0.json"))).toBe(true);   // uniform founding spelling
     expect(await listAnchoredPersonas()).toEqual([0, 1]);   // the explicit roster record
   });
 

@@ -35,7 +35,7 @@ import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { bundleRows, carrierCensus, carrierTable } from "../src/vault-carriers.js";
-import { faceRowNames, handleRowPathIn } from "./face-paths.js";
+import { faceRecordNames, handleRecordPathIn } from "./face-paths.js";
 import { seatScratchCustody, FIXTURE_PASSPHRASE, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 120_000 });
@@ -53,8 +53,8 @@ const KEY = publicOf(SECRET);
 const IMAGE = new TextEncoder().encode("synthetic image a chair signs");
 
 let c: SeatedScratchCustody;
-const at = (file: string): string => handleRowPathIn(c.homes.identity, file);
-const seatFiles = (): string[] => faceRowNames().filter((f) => SEAT_KEY_FILE.test(f)).sort();
+const at = (file: string): string => handleRecordPathIn(c.homes.identity, file);
+const seatFiles = (): string[] => faceRecordNames().filter((f) => SEAT_KEY_FILE.test(f)).sort();
 beforeEach(async () => { c = await seatScratchCustody("seat-key"); });
 afterEach(async () => { await c.drop(); });
 

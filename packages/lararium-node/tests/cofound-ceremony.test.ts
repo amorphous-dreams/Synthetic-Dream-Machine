@@ -34,7 +34,7 @@ import { larSealHome } from "../src/vessel-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { heldCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { fixtureKey } from "./fixture-keys.js";
-import { handleRowPathIn } from "./face-paths.js";
+import { handleRecordPathIn } from "./face-paths.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 
@@ -101,7 +101,7 @@ describe("two vaults found one Nexus through the custody door", () => {
       expect(readFileSync(nexusCharterDocPath(larSealHome()), "utf8")).toBe(v.seedBytes);
       const cadence = v === A ? inception.offer.cadence.key : bCadence;
       for (const file of [cofoundRecordFile(0, fingerprint), cadenceKeyFile(0, cadence)]) {
-        expect(readFckCarrier(readFileSync(handleRowPathIn(v.c.homes.identity, file)))).toBe("sealed");
+        expect(readFckCarrier(readFileSync(handleRecordPathIn(v.c.homes.identity, file)))).toBe("sealed");
       }
     }
     // Each vault holds its own seat and hearth key, and none of the other's.

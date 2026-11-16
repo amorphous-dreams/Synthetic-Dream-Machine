@@ -54,7 +54,7 @@ import { removeCustodyRow, seatedCustody, unseatCustody, writeCustodyRow } from 
 import { cutFaceBundle } from "../src/face-bundle-cut.js";
 import { RESTORE_REFUSALS, RestoreRefused, restoreFaceBundle } from "../src/face-bundle-restore.js";
 import { FACE_PROOF_KEY_FILE, storeFaceProofKey } from "../src/face-key-custody.js";
-import { faceRowNames } from "./face-paths.js";
+import { faceRecordNames } from "./face-paths.js";
 import { recoveryContactOffer, recoveryContactSetFile, readRecoveryContactSet, runRecoveryContactEnrolment } from "../src/recovery-contact-enrolment.js";
 import { ConfirmRefused, FaceProvisional, chairLogView, confirmProvisional, readProvisionalMark, refuseWhileProvisional } from "../src/face-provisional.js";
 import { readNexusDoc } from "../src/nexus-doc.js";
@@ -239,7 +239,7 @@ function homeTree(): string {
   walk(larDataDir());
   return h.digest("hex");
 }
-const pendingStands = (): boolean => faceRowNames().some((n) => RESTORE_PENDING_FILE.test(n));
+const pendingStands = (): boolean => faceRecordNames().some((n) => RESTORE_PENDING_FILE.test(n));
 
 describe("a face returns from its bundle onto a fresh vessel", () => {
   test("R1 + R2 — the restored face stands under the same prefix at a NEW seat; a second restore refuses", async () => {
@@ -282,7 +282,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     expect(await (await makeNodePersonaDeclarationStore()).get(1)).toEqual({ handle: "the gardener-handle" });
     const friend = (await loadNodeHandleBook(1)).snapshotFor(a.rootKey).records;
     expect(friend.map((r) => r.petname)).toEqual(["Ana"]);
-    expect(faceRowNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
+    expect(faceRecordNames().filter((n) => FACE_PROOF_KEY_FILE.test(n))).toHaveLength(1);
     expect(pendingStands(), "the pending row leaves once the face stands lit").toBe(false);
 
     // R2: a second restore over it refuses, and moves nothing.

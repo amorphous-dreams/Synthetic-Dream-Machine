@@ -21,10 +21,10 @@ import { readFckCarrier } from "@lararium/mesh";
 import { generateOrLoadPersonaGroupRoot } from "../src/node-vessel-identity.js";
 import { loadRecoveryDeviceShare, deviceShareFile } from "../src/recovery-share-store.js";
 import { armRecoveryAtFounding } from "../src/commands/init.js";
-import { handleRowPath } from "./face-paths.js";
+import { handleRecordPath } from "./face-paths.js";
 import { fixtureWard } from "./custody-seat-fixture.js";
 
-const deviceSharePath = (index: number): string => handleRowPath(deviceShareFile(index));
+const deviceSharePath = (index: number): string => handleRecordPath(deviceShareFile(index));
 
 const saved: Record<string, string | undefined> = {};
 function setEnv(k: string, v: string | undefined): void {

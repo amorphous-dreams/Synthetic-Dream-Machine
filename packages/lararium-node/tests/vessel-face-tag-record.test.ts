@@ -1,5 +1,5 @@
 /**
- * vessel-face-tag-row — a vessel's per-face tag secret rests as a random D row in that face's own custody, never as a
+ * vessel-face-tag-record — a vessel's per-face tag secret rests as a random D row in that face's own custody, never as a
  * child of any seed: a stolen place seed computes no face's tag, so it links none of the vessel's faces.
  *
  * Reds (each read on the lane head that derived the tag secret from the place seed):
@@ -28,7 +28,7 @@ import { personaGroupDigest } from "../src/persona-group-file.js";
 import { carrierTable } from "../src/vault-carriers.js";
 import { larDataDir, larIdentityDir } from "../src/vessel-paths.js";
 import { direct } from "./direct-store.js";
-import { faceRowNames, groupRowPath } from "./face-paths.js";
+import { faceRecordNames, groupRecordPath } from "./face-paths.js";
 import { foundDirect, sealTestCustody, seatSeedCharter } from "./found-route.js";
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 
@@ -102,7 +102,7 @@ describe("the vessel tag secret rests per face", () => {
       // T3: the secret rests in the face's own row, a random 32 bytes.
       const row = await readCustodyRow("identity", tagRowOf(GROUP_A));
       expect(row?.length).toBe(32);
-      expect(existsSync(groupRowPath(GROUP_A, tagRowOf(GROUP_A)))).toBe(true);
+      expect(existsSync(groupRecordPath(GROUP_A, tagRowOf(GROUP_A)))).toBe(true);
       expect((await vesselFaceTagFields(row!, GROUP_A, first.atomKey, first.wardKey, NO_POP)).vesselTag).toBe(first.vesselTag);
       row!.fill(0);
       expect(await runFleetJoinAbandon()).toBe(true);
@@ -131,8 +131,8 @@ describe("the vessel tag secret rests per face", () => {
       await seatSeedCharter();
       const founded = await direct(runFoundTheFace)({ storageDir: larDataDir(), genesisDir });
       const group = founded.personaGroupId;
-      expect(existsSync(groupRowPath(group, tagRowOf(group)))).toBe(true);
-      expect(faceRowNames().filter((name) => name.startsWith("vessel-face-tag-ask-"))).toEqual([]);
+      expect(existsSync(groupRecordPath(group, tagRowOf(group)))).toBe(true);
+      expect(faceRecordNames().filter((name) => name.startsWith("vessel-face-tag-ask-"))).toEqual([]);
       const secret = await readCustodyRow("identity", tagRowOf(group));
       expect(secret?.length).toBe(32);
       const atomKey = "00".repeat(32);

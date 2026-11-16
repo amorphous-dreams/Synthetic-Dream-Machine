@@ -8,7 +8,7 @@ import { seatedCustody, unseatCustody } from "../src/custody-seat.js";
 import { faceAtomGroupFile, keepFaceAtom, loadFaceAtomOfGroup } from "../src/face-atom-store.js";
 import { larIdentityDir } from "../src/vessel-paths.js";
 import { ensureFaceCustodyOfGroup } from "../src/face-route.js";
-import { groupRowPath } from "./face-paths.js";
+import { groupRecordPath } from "./face-paths.js";
 import { sealTestCustody } from "./found-route.js";
 
 const root = mkdtempSync(join(tmpdir(), "lar-face-atom-keep-"));
@@ -30,7 +30,7 @@ describe("the node keeps an atom row once", () => {
       try {
         await ensureFaceCustodyOfGroup("group-test");
         expect(await keepFaceAtom("group-test", seedX)).toBe("minted");
-        const row = groupRowPath("group-test", faceAtomGroupFile("group-test"));
+        const row = groupRecordPath("group-test", faceAtomGroupFile("group-test"));
         const first = readFileSync(row);
         expect(await keepFaceAtom("group-test", Uint8Array.from(seedX))).toBe("kept");
         expect(readFileSync(row)).toEqual(first);

@@ -21,7 +21,7 @@ import { removeCustodyRow } from "../src/custody-seat.js";
 import {
   generateOrLoadPersonaGroupRoot, landPersonaRoot, listPersonaRosterLines, loadPersonaGroupRootSeed, orphanPersonaRootKey,
 } from "../src/node-vessel-identity.js";
-import { faceRowNames, handleRowPath } from "./face-paths.js";
+import { faceRecordNames, handleRecordPath } from "./face-paths.js";
 import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -31,7 +31,7 @@ const pairOf = async (fill: number) => {
   return { signingKey: hex(seed), verifyingKey: hex(await ed.getPublicKeyAsync(seed)) };
 };
 const bytesOf = (): Record<string, string> =>
-  Object.fromEntries(faceRowNames().filter((n) => /persona-(group-root|roster)/.test(n)).map((n) => [n, readFileSync(handleRowPath(n)).toString("hex")]));
+  Object.fromEntries(faceRecordNames().filter((n) => /persona-(group-root|roster)/.test(n)).map((n) => [n, readFileSync(handleRecordPath(n)).toString("hex")]));
 const readingOf = async (p: Promise<unknown>): Promise<string> => {
   const e = await p.then(() => null, (err: unknown) => err);
   return e === null ? "LANDED" : e instanceof CustodyRowUnavailable ? e.reading : `threw: ${(e as Error).message.slice(0, 60)}`;
