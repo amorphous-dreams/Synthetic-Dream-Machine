@@ -14,12 +14,10 @@ import { fold } from "./fold.mjs";
 import { heldBytes } from "./held-text.mjs";
 import { parseMemeText } from "../../lararium-tw5/dist/meme-ast/parse.js";
 import { defaultWidgetRegistry, resolveWidgetTree } from "../../lararium-tw5/dist/meme-ast/widget-tree.js";
-import { loadContext, cutText } from "../../../tools/grammar-cut.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const grammar = path.join(root, "tree-sitter-memetic_wikitext.wasm");
 const runtime = path.join(root, "node_modules/web-tree-sitter/web-tree-sitter.wasm");
-const repo = path.resolve(root, "../..");
 const names = ["authored-01-unreached-constructs.mem", "authored-02-comment.mem"];
 
 /** Shared reduction: authored ahu slots and loulou targets, in preorder. A block loulou sigil is the childless
@@ -68,27 +66,17 @@ test("widget-tree-parity: reviewed source and the fixture-derived specimens agre
   assert.ok(existsSync(grammar) && existsSync(runtime), `tree-sitter artifact absent: ${grammar} or ${runtime}`);
     const artifact = await loadArtifact();
     const fixtures = names.map((name) => new TextDecoder().decode(heldBytes(readFileSync(path.join(root, "fixtures/specimens", name)))));
-    // The in-VM reader takes the canonical `#/slot` spelling alone; the host fold also reads the legacy `#slot`
-    // spelling and the spaced close. The specimens hold some of each, so the corpus canonicalizes the legacy
-    // spelling for BOTH sides, and the two divergences stand pinned below as they are.
-    const canon = (text) => text.replace(/(<<~\s*ahu\s+)#(?!\/)/g, "$1#/");
-    // The specimens stay FROZEN for the tree-sitter corpus and speak the grammar of their day; the live in-VM
-    // reader speaks the kupono grammar alone (ticked named values). The parity compares the two parsers over
-    // input the live grammar speaks, so each specimen passes through the house's own cut (tools/grammar-cut)
-    // in memory first; a specimen holding an old-form ahu opener must move.
-    const ctx = await loadContext({ repo });
+    // The in-VM reader speaks the kupono grammar alone (ticked named values), so every specimen the corpus reads speaks
+    // it too: an old-form ahu or loulou opener refuses here, before either parser reads it. The frozen positional and
+    // legacy spellings stand pinned below as the known divergences.
     const kupono = (text) => {
-      // handReviewed: the specimens cite bare URIs (`<<~ loulou lar:///…>>`) the parser misreads BEFORE the cut;
-      // the AFTER oracle still binds every value the cut writes.
-      const cut = cutText(text, ctx, { rel: "parity-specimen", handReviewed: true }).text;
-      if (/<<~\s*ahu\s+#/.test(text)) assert.notEqual(cut, text, "the cut moves a frozen specimen's old-form opener");
-      assert.doesNotMatch(cut, /<<~\s*(?:ahu\s+#|loulou\s+[^\s>u])/, "no old-form ahu or loulou opener survives the cut");
-      return cut;
+      assert.doesNotMatch(text, /<<~\s*(?:ahu\s+#|loulou\s+[^\s>u])/, "a corpus specimen carries no old-form ahu or loulou opener");
+      return text;
     };
     const spaced = fixtures[0].slice(fixtures[0].indexOf("<<~ ahu #open-and-close"), fixtures[0].indexOf("\\procedure"));
     const corpus = [
       "! Start\n\nSee [[Alpha]] and [[Beta]].", // widget-tree.test.ts reviewed source
-      ...fixtures.slice(1).map((f) => kupono(canon(f))),
+      ...fixtures.slice(1).map(kupono),
       '<<~ ahu slot=`#/control`>>\n<<<quote\nbody\n<<<\n```fence\nbody\n```\n| A | B |\n<$button>Go</$button>\n<<~/ahu>>',
     ];
     for (const [index, source] of corpus.entries()) {
