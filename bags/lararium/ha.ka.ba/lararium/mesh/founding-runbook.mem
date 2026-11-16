@@ -345,6 +345,8 @@ A re-founding clears `$LARES_HOUSE/hearth` alone; the face's memory crosses as c
 ''Do'': in this order.
 
 ```sh
+tools/lares-container.sh wiki list                                      # the wikis the house lists; the daemon stands aside
+tools/lares-container.sh vault unlock --face 0 && tools/lares-container.sh wiki hold <slug>   # each listed wiki, wearing each face that wrote there, in turn
 tools/lares-container.sh export /lar/config/carry/bundle-one    # the host reads it at $LARES_HOUSE/config/carry/bundle-one
 tools/lares-container.sh lei kui --rite keep --branch backup --returns 2   # the ward asks this one act's passphrase
 lares rite keep --workspace backup                               # on the host: cut into the clone's house/, commit, push, land
@@ -357,6 +359,8 @@ tools/lares-container.sh vessel seed --apply --lift-kahua <N>    # the kahua ite
 tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
 tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 ```
+
+''Wake each wiki in turn before the export.'' The source vessel holds two rotatable wiki pins, so a house of three shared wikis leaves one cold by the export, and a wiki that fell cold after its wake reads as a named omission: `cold-wikis` (and `override-bases-unread` over a woken wiki's working bag). Wearing each face that wrote there, `lares wiki hold <slug>` wakes each wiki `lares wiki list` names, the daemon aside, one after another; a woken wiki projected its pages, so its omissions read as named and lossless for records, while a cold wiki's working rows over canon travel without their override bases.
 
 ''The house keeps itself before the down.'' A workspace named `backup` binds a clone of the operator's own private repo (`LARES_WORKSPACES=backup=<clone dir>` in the surface env, so every `up` binds it at `/lar/workspaces/backup`), and a committed `.gitattributes` holding `house/** -text` stands in the clone (`<into>/** -text` where `--into` names another place; `house` carries the default). The keep lei grants the rite for that workspace: strung by hand as above, or by a yes at `vault unlock`, which offers it under the passphrase the unlock already read wherever `LARES_KEEP_WORKSPACE` (or the one `LARES_WORKSPACES` pair) names the workspace and no keep lei with a return left stands. `lares rite keep` runs on the host: it guards the clone (a branch with a remote, the `-text` guard, nothing changed outside `house/`), has the vessel cut the same cleartext bundle `export` cuts into `house/` and spend one return, scans for secret-shaped strings, commits `keep <bundle id>`, rebases, pushes, and lands the tessera at the bundle id the pushed manifest names; `lares rite receipts` then reads that tessera par. `tools/lares-container.sh down` makes the host call `lares rite keep --if-due` while the vessel stands (`LARES_HOST_CLI` names the host's door), and a keep that refuses never blocks the down; the wake prints the keep line, naming the lei's returns or the cure for a keep that cut and never landed. A push that fails lands nothing and names its cure: mend the remote and keep again. `lares rite keep --if-due` keeps only where the house moved since the bundle the remote already holds, so an unmoved house spends nothing and asks no remote. The new house may import from a fresh clone of that repo in place of the bundle: `git clone <repo> "$LARES_HOUSE/config/carry/keep-clone"`, then `tools/lares-container.sh import /lar/config/carry/keep-clone/house --apply`, and parity reads par either way.
 
@@ -540,6 +544,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Ba_OpIdWZg_Ly93ATYmlOd_3i-2M8W1lMKwgkuJCT0`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;ShM-p3bhUBE-wP_9ssxlRFiOVIPIMdDSMjx0S5D5c68`>>
 
 <<^ code=`&#x0004;` to=`?`>>
