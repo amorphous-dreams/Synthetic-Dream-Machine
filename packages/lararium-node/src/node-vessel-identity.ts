@@ -92,7 +92,7 @@ import {
 /**
  * The identity dir — the ONE resolver, `<root>/hearth/identity` (`larIdentityDir`), in the hearth
  * beside the `<root>/hearth/vessel` store; the place key + face anchors are separate from vessel
- * documents and unreachable by store operations. An empty home re-derives a fresh device key — no migration arm, no legacy spelling.
+ * documents and unreachable by store operations. An empty home re-derives a fresh device key.
  *
  * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT` alone (`larIdentityDir`), never
  * off a caller-supplied path. A `dataDir` parameter it ignored would be the footgun measured live

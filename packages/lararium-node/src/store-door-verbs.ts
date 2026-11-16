@@ -248,7 +248,7 @@ export const PROMOTE_HAND_CODES: ReadonlyMap<string, string> = new Map([
   ["kapae-raise", "kapae-needs-hand"], ["kapae-lower", "kapae-needs-hand"],
 ]);
 
-/** The swarm rows only a hand runs (the house cap, a lane share, a go); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
+/** The swarm rows only a hand runs (the house cap, a lane share, a lei); `swarm-show` stays open to a seat. Advisory like the promote codes: the ward binds them. */
 export const SWARM_HAND_CODES: ReadonlyMap<string, string> = new Map(Object.entries(SWARM_VERB_HAND_CODES));
 
 /** The floor's accept moves the vessel's floor: a person's act alone (w26-floor-lane#/the-vessel-pin); a seat reads the status. */

@@ -3,7 +3,7 @@
  *
  * The pin is the public half of the sovereign gate bundle the hearth derives from its sealed custody root for one
  * Nexus on the sovereign sync route (`/ws`): `deriveGateBundle(sovereignGateRoot(custodyGateDoor()), nexus, route)`.
- * It never reads the vessel's own identity key (the old HEX64 pin did), so the key a joinee pins is the key the
+ * It never reads the vessel's own identity key, so the key a joinee pins is the key the
  * hearth's gate answers under and no other. The bundle's secrets are dropped the moment the pin is read.
  *
  * `door` is a seam for a caller that holds another door (a test's, or a vessel whose seat is already open); the

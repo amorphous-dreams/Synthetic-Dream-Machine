@@ -18,7 +18,7 @@ import { answerClosedDoor } from "./bulb-routes.js";
 
 export interface HttpFace {
   readonly name: string;
-  /** Stable ownership declarations used to reject duplicate registration. */
+  /** Stable ownership declarations; the dispatcher rejects a duplicate registration by them. */
   readonly routeKeys: readonly string[];
   /** Claim before any asynchronous authorization or byte work begins. */
   readonly owns: (req: IncomingMessage) => boolean;

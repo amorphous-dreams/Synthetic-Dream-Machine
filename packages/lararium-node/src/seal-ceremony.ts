@@ -750,8 +750,8 @@ export async function sealCrossing(): Promise<{ readonly transitionCid: string; 
     return { plaintext: utf8.encode(JSON.stringify([...kept, record])), value: false };
   });
   await dropPendingCrossing(record.transitionCid);
-  // THE OUTGOING KEYS OWE NOTHING MORE. Their marks rest in the kept record, so each one the charter no longer
-  // seats retires here. A retirement that refuses leaves the record kept and the rows standing (`retired: null`).
+  // THE OUTGOING KEYS OWE NOTHING MORE. Their marks rest in the kept record, so each one the charter leaves
+  // unseated retires here. A retirement that refuses leaves the record kept and the rows standing (`retired: null`).
   let retired: number | null = null;
   try { retired = (await retireSeats(pending.oldKeys)).retired.length; } catch { retired = null; }
   return { transitionCid: record.transitionCid, independentWitnesses: verdict.independentWitnesses, resumed, retired };

@@ -31,7 +31,7 @@
  * and before the answer replays as `retry` and earns the identical grant. The counts an operator reads derive
  * from the rows standing, by name; the store keeps no counter beside them.
  *
- * A ROLL keeps exactly two epochs live: the new act becomes current, the old current becomes previous, and the
+ * A ROLL keeps exactly two epochs live: the new act becomes current, the outgoing current becomes previous, and the
  * spend rows of any epoch outside those two leave. The state row commits the roll; a roll that stops before its
  * sweep leaves dead rows that the next roll sweeps, and so does a redemption that read an epoch as live and
  * sealed its spend after a roll retired it: such a row burns nothing live and leaves with the next sweep. Rolling twice kills every grant and token of the epoch
@@ -143,7 +143,7 @@ export class HostingStateMoved extends Error {
 
 /**
  * ROLL: sign the hearth's next hosting act in N (rolling from its current one, or its first), make it current,
- * keep the old current as previous, and remove the spend rows of every other epoch. Returns the new act — the
+ * keep the outgoing current as previous, and remove the spend rows of every other epoch. Returns the new act — the
  * caller lands it on this hearth's hosting doc in N. `cap` names a new allowance cap; absent, the standing one
  * holds. The state row reads, decides and writes under one custody holder, so two rolls never fork a state: the
  * act chains from the state this roll read, and a state another roll moved meanwhile refuses this one.

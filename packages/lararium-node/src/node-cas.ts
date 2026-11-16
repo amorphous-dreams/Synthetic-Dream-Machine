@@ -66,7 +66,7 @@ export function casDirFromIslandStorageDir(islandStorageDir: string): string {
  * flush of the directory. No write opens an entry's own name.
  *
  * A FILE ALTERED AT REST GETS REPLACED, AND ONLY BY BYTES THAT PROVE THEMSELVES. Where a file already stands
- * under the address and no longer recomputes to it, bytes that do recompute to it take its place by an atomic
+ * under the address and fails to recompute to it, bytes that do recompute to it take its place by an atomic
  * write, so a holder that fetched a block again keeps it. Bytes that fail the address replace nothing.
  */
 export function writeCasEntriesFs(

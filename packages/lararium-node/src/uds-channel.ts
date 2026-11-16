@@ -410,7 +410,7 @@ export class FactLedger {
         else this.torn.add(title.slice(RECEIPT_FACT_URI_PREFIX.length));
       }
       facts.sort((a, b) => a.seq - b.seq);
-      // SETTLE AT SEED. A `committed` fact of an EARLIER boot can no longer complete: its worker's
+      // SETTLE AT SEED. A `committed` fact of an EARLIER boot cannot complete: its worker's
       // invocation lived in that process's scratch. An outcome that landed unobserved promotes the
       // fact to that terminal; none reads `interrupted`. A fact of THIS boot stays `committed`.
       let settledAny = false;

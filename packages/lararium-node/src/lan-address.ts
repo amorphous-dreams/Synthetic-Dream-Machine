@@ -231,7 +231,7 @@ export function originCompositionForFace(face: ReachFace, declaration: ExplicitO
  * The Web origin a lararium's reach-face advertises, from an explicit composition declaration.
  *
  * Only a lararium carries a Web origin, so this reads the lararium composition. `webPort` stays in the
- * signature and is never used to infer an origin; an omitted declaration refuses.
+ * signature and never infers an origin; an omitted declaration refuses.
  */
 export function webOriginForFace(face: ReachFace, webPort: number, declaration?: ExplicitOriginComposition): string {
   if (!declaration) {

@@ -215,7 +215,7 @@ export interface LarDiskProjectorOptions {
    * the count. `key` names the set (the bag and its sorted members); a set that changed reads as a new one.
    */
   readonly onPendingRemoval?: (info: { bagId: string; key: string; count: number; uris: readonly string[]; reason: string }) => void;
-  /** Fired once when a surfaced pending-removal set stands no longer: it emptied, or its membership moved. */
+  /** Fired once when a surfaced pending-removal set stops standing: it emptied, or its membership moved. */
   readonly onPendingRemovalResolved?: (info: { bagId: string; key: string }) => void;
   /**
    * A HAND'S DELETE IN THE WIKI, for the `remove` answer: delete the carrier root where the wiki shore
@@ -448,7 +448,7 @@ export class LarDiskProjector {
   /**
    * Where each carrier LAST sited, per mirror (`bagId\nuri` → extension-less mirror-relative base).
    * The stock filesystem adaptor keeps the same memory as `$tw.boot.files`: a delete runs after
-   * the tiddler has gone, so the path a `$:/config/FileSystemPaths` rule named can no longer be
+   * the tiddler has gone, so the path a `$:/config/FileSystemPaths` rule named cannot be
    * recomputed — the last siting answers, and a title never flushed this session falls back to
    * the address siting rule. A rule that moves a carrier unlinks its previous files (`cleanupTiddlerFiles`).
    */
@@ -718,8 +718,8 @@ export class LarDiskProjector {
    * Level-triggered reconcile of ONE carrier root against the settled VM state
    * (the projector's authoritative view, per VM-Primacy). Live (a `$origin-bag`
    * naming a mirror) → flush that owner (render + write + cross-mirror cleanup).
-   * Gone from the resolved view → unlink from every mirror whose bag no longer
-   * holds it (a true delete; a bag still holding the carrier keeps its file). A
+   * Gone from the resolved view → unlink from every mirror whose bag does not
+   * hold it (a true delete; a bag still holding the carrier keeps its file). A
    * MOVE shows its new owner here because this read observes settled VM state.
    * Idempotent: a later nudge re-reconciles, so a transient "gone" self-heals
    * when the destination lands — the unlink can never be the final word for a
@@ -967,8 +967,8 @@ export class LarDiskProjector {
       this._leavePendingExcept(rootUri, keep);
       await this._scheduleUnlinkByTitle(rootUri, undefined, keep);
     } else if (winner === undefined) {
-      // A carrier that stopped projecting, or left for an unmirrored bag, leaves every standoff it stood in where it no
-      // longer projects: the alert names a conflict this projector no longer weighs.
+      // A carrier that stopped projecting, or left for an unmirrored bag, leaves every standoff it stood in where it
+      // does not project: the alert would name a conflict this projector does not weigh.
       this._leaveStandoffsExcept(rootUri, keep);
       this._leavePendingExcept(rootUri, keep);
     } else {
@@ -2149,7 +2149,7 @@ export class LarDiskProjector {
   /**
    * Unlink stale files from OTHER mirrors once this flush settled its own mirror, whether it wrote bytes
    * or found them already standing, but ONLY where the carrier has genuinely LEFT that bag (a true MOVE,
-   * e.g. promotion wiki-bag → lares-bag, cleaning the old scratch file). The seed's leaf-bag road LOADs onto
+   * e.g. promotion wiki-bag → lares-bag, cleaning the scratch file it left). The seed's leaf-bag road LOADs onto
    * a working layer and MOVEs it into canon, whose mirror already holds the bytes: that flush writes nothing
    * and still clears the working mirror's copy here.
    */

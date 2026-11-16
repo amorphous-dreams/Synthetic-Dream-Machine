@@ -211,7 +211,7 @@ export interface GateSessionRegistry {
   readonly table: GateSessionTable;
   /** The sessions opened and not yet closed, in the order they opened. */
   live(): readonly SeatedGateSession[];
-  /** Close every live session `which` names (a refold whose standing no longer holds); answers how many it closed. */
+  /** Close every live session `which` names (a refold that reads its standing lapsed); answers how many it closed. */
   drop(which: (session: GateSession) => boolean): number;
   /** Close every live session. */
   close(): void;
@@ -351,7 +351,7 @@ export function faceGateServer<Outcome extends GateOutcome | IntentRelayOutcome 
   if (!Number.isSafeInteger(heartbeatMs) || heartbeatMs < 1 || heartbeatMs > GATE_DEADLINE_MAX_BASE_MS) throw new RangeError("face-gate-server: the heartbeat names a whole number of milliseconds");
   // Each stood gate holds the sockets it seated, so standing it down cuts them (T19, test-recut-road).
   const gates = new Map<string, { readonly gate: StandableGate; readonly knock: string; readonly seated: Set<WebSocket> }>();
-  // Paths this server once stood: a knock on one after the close is claimed and destroyed by name.
+  // Every path this server has stood: a knock on one after the close is claimed and destroyed by name.
   const once = new Set<string>();
   const sockets = new Set<WebSocket>();
   // THE HEARTBEAT: each socket answered a ping since the last beat, or the beat cuts it. The timer stands while a

@@ -77,7 +77,7 @@ export interface FlowReadGate {
 /**
  * The floor gate source: one floor gate per Nexus on `floorRoute(FLOW_SOCKET_ROUTE)`, each seating through `sessions`.
  * A source whose Nexus set moves (a carry taken or dropped on a running vessel) names it on `onMoved`: the face then
- * asks it again, stands each gate on a path it did not stand, and stands down each path the source no longer names.
+ * asks it again, stands each gate on a path it did not stand, and stands down each path the source leaves out.
  */
 export interface FlowGateSource {
   (sessions: GateSessionTable): Promise<readonly FlowReadGate[]> | readonly FlowReadGate[];
@@ -188,7 +188,7 @@ export async function mountFlowReadFace(args: FlowGateArgs & {
   const stood = new Map<string, { readonly down: () => void }>();
   const standDownAll = (): void => { for (const held of stood.values()) held.down(); stood.clear(); };
   let disposed = false;
-  /** Stand each gate on a path not yet stood; with `prune`, stand down each path the source no longer names. */
+  /** Stand each gate on a path not yet stood; with `prune`, stand down each path the source leaves out. */
   const sweep = async (prune: boolean): Promise<void> => {
     const entries = await args.gates(registry.table);
     if (disposed) return;

@@ -394,7 +394,7 @@ export interface NodeVesselOptions extends LarariumVesselOptions {
   storageDir: string;
   wss:        WebSocketServer;
   catalogUrl?: string | null;
-  /** Directory holding the BAKED GENESIS SEED (island + cas). The bootstrap no longer lives here. */
+  /** Directory holding the BAKED GENESIS SEED (island + cas). */
   genesisDir?: string;
   /** The corpus root this vessel boots from (the caller's `--root`). Disk projections follow the house root instead:
    *  `<LAR_ROOT>/projections`, beside canon write-back to the canon source. */
@@ -1604,7 +1604,7 @@ async function prepareNodeBootOn(
   // The gradient ratchets on INTENT: a vessel CLIMBS it by an act and never DESCENDS it by a failure.
   //
   // ⚠ CONNECTING MOVES THE BOARD. Climbing from ① to ② re-keys every per-Nexus board: books announced on the
-  // private board do not travel and peers dialling the old address read silence. FOUR of the seven boards move
+  // private board do not travel and peers dialling the private-board address read silence. FOUR of the seven boards move
   // at boot and THREE are refused:
   //   · the persona-KEL board the BINDING GATE walks CARRIES at the gate's own seam below
   //     (`carryPersonaKelUpTheGradient`) — that gate REFUSES a boot whose pinned identifier reaches no head,
@@ -1726,7 +1726,7 @@ async function prepareNodeBootOn(
     const ident = peerIdentifierMap.get(peerId);
     return ident !== undefined && holder.carriers().has(ident.slice(-64).toLowerCase());
   };
-  // A REFOLD THAT DEMOTES CLOSES. When a refold reads a contracted socket's admit no longer held, or reads every
+  // A REFOLD THAT DEMOTES CLOSES. When a refold reads a contracted socket's admit unheld, or reads every
   // carried Nexus PRIVATE under a stranger's socket, that socket would be silence at the gate today — so it is
   // dropped the way the gate drops a refused one: no frame, no reason.
   const dropNoLongerHeld = (): void => {
@@ -1953,7 +1953,7 @@ async function prepareNodeBootOn(
   };
   // A REFOLD THAT SETS A DEVICE ASIDE, OR REVOKES AN ADMIT, CLOSES. A same-operator session stands only while its gate
   // would seat it same-operator today: its device still binds and stands, and its admit still reads held at its Nexus
-  // (`sameOperatorStands`). One that no longer does is dropped silently, as the gate drops a refused socket. Sweeps run
+  // (`sameOperatorStands`). One that fails it is dropped silently, as the gate drops a refused socket. Sweeps run
   // one at a time; a sweep asked while one runs runs once more after it.
   let sameOperatorSweep: Promise<void> = Promise.resolve();
   sweepSameOperator = (): void => {
@@ -1984,7 +1984,7 @@ async function prepareNodeBootOn(
     onMoved: (follower: () => void) => { floorFollowers.add(follower); return () => { floorFollowers.delete(follower); }; },
   });
   // THE SYNC SEAT: one sovereign gate per Nexus on the sync route, under the custody root, each on its own knock; the
-  // sweep owner stands the gate of every Nexus newly read and stands down the gate of one no longer read.
+  // sweep owner stands the gate of every Nexus newly read and stands down the gate of each Nexus the read leaves out.
   // THE STOOD KNOCK, SAID. Each sync gate says the path it stands on, once, as it stands: the knock a device handed
   // this hearth's pin derives, so an operator (and a witness) reads where the gate answers. At the floor the
   // composition says once that it stands none (stable-founding-road: a hearth rests at its floor until a person
@@ -2005,7 +2005,7 @@ async function prepareNodeBootOn(
   let registerRelayPlanes: (() => Promise<void>) | null = null;
   /** After each sweep turn: the same-operator sweep, then (armed and sovereign) the intent relay beside the sync gates. */
   const afterGateSweep = async (): Promise<void> => {
-    // The book just read again: a binding it no longer holds ends the same-operator session that stood on it.
+    // The book just read again: a binding it drops ends the same-operator session that stood on it.
     sweepSameOperator?.();
     if (!gatesArmed || !sovereign) return;
     // THE INTENT RELAY stands beside the sync gates: one route per operator-enabled face, off until a person enables it.
@@ -2601,7 +2601,7 @@ async function prepareNodeBootOn(
 
     // Genesis island (required) + the social-plane bootstrap it carries.
     loadGenesis: async () => {
-      // Slice 2: the oracle island is a LIVE CRDT under a DETERMINISTIC doc id — reload
+      // The oracle island is a LIVE CRDT under a DETERMINISTIC doc id — reload
       // it when persisted (operator writes intact), else MATERIALIZE it fresh from
       // the plain-data seed (seed.json). No Automerge-binary boot seed,
       // no merge-into-stale. The catalog registry's oracle pointer (written by assembleVessel)
@@ -4522,7 +4522,7 @@ async function prepareNodeBootOn(
     // pinBudget more) registers in the ONE collector as a PINNED `wiki` grain —
     // exempt from collection. Everything else activates on reference through the cap.
     // mountPrimaryWiki already mounted + spec-retained it, so onHydrate → ensureWiki
-    // sees it live and no-ops (idempotent). Rotation = unpin the old, pin the new.
+    // sees it live and no-ops (idempotent). Rotation unpins the outgoing wiki and pins the incoming one.
     void pushPromoteSnapshot?.().catch(console.warn);
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", down: stopPromoteWatch });

@@ -258,7 +258,7 @@ function writeJoint(bagsDir: string, block: string, payload: unknown, seed: Nexu
   const body = readBody(bagsDir) ?? renderNexusDoc(seed);
   // The swap moves the span the check covers (the payload's byte length rarely matches the fence it
   // replaces), so the check must move with it — `stampCarrier` re-stamps over the CURRENT span, never
-  // a blind carry of the old check forward.
+  // a blind carry of the replaced span's check.
   return writeBody(bagsDir, stampCarrier(swapFence(body, block, payload)));
 }
 

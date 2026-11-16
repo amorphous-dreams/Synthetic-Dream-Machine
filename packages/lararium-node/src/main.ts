@@ -191,12 +191,11 @@ function publishStanding(storageDir: string, standing: string, faceLit: boolean)
 }
 
 /**
- * M15: name every PENDING social plane — one the probe (or its clean-tail recovery) answered with NO
- * verdict at all, mounted read-only blank with no bytes moved. Before this, the fix that gave `pending`
- * its own status (H2) carried the data all the way into `MountManifest`, but nothing ever printed it: a
- * `degraded` plane logs its own line live (`quarantineDoc`, open-node-vessel.ts), while a `pending` one
- * sat silent — a boot log reader had no way to tell "this plane is fine, just unresolved" from "nothing
- * noticed it at all". Remounting stays out of path: a restart or `lares vessel doctor` re-probes.
+ * Name every PENDING social plane — one the probe (or its clean-tail recovery) answered with NO
+ * verdict at all, mounted read-only blank with no bytes moved. `MountManifest` carries the `pending`
+ * status; this prints it. A `degraded` plane logs its own line live (`quarantineDoc`, open-node-vessel.ts),
+ * and a `pending` one logs here, so a boot log reader tells "this plane is fine, just unresolved" from
+ * "nothing noticed it at all". Remounting stays out of path: a restart or `lares vessel doctor` re-probes.
  */
 function logPendingPlanes(prefix: string, manifest: MountManifest): void {
   for (const e of manifest.entries) {

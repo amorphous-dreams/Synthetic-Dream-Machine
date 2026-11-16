@@ -541,7 +541,7 @@ export function makeRealmPlane(opts: {
         stood.set(realm, await standPlane(realm, "cabal"));
       }
     }
-    // EACH CARRIED CHARTER stands its realm under its own Nexus; one this vessel no longer carries leaves with its
+    // EACH CARRIED CHARTER stands its realm under its own Nexus; one this vessel stops carrying leaves with its
     // pins. A carried plane that fails to stand stands again at the next refresh.
     const carriedAids = new Set((opts.carried?.() ?? []).map((doc) => nexusAidOf(doc)).filter((aid): aid is string => aid !== null && aid !== charterRealm));
     for (const [realm, s] of [...stood.entries()]) {
