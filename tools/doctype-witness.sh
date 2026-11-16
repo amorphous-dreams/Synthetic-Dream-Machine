@@ -43,16 +43,16 @@ if REPO="$scratch" node tools/doctype.mjs >/dev/null 2>&1; then
   echo "[doctype-witness] a declaration hidden in a comment passed the gate — it declares to nobody"; exit 1
 fi
 
-# PROVOCATION: a straggler still on the retired DOCTYPE spelling. The carrier finder reads only the
-# ticked form, so the straggler stops declaring and every corpus law that walks the carrier list skips
-# it — a silent zero. The tracked-tree scan must name it.
+# PROVOCATION: a straggler declaring this grammar in another spelling (here, the spec value left off).
+# The carrier finder reads only the one declaration, so the straggler stops declaring and every corpus
+# law that walks the carrier list skips it — a silent zero. The tracked-tree scan must name it.
 git -C "$scratch" rm -qf notes.md
-printf '<<!DOCTYPE "memetic-wikitext+tiddlywiki" "lar:///ha.ka.ba/lares/api/pono/memetic-wikitext">>\n\n# a straggler\n' > "$scratch/straggler.mem"
+printf '<<!DOCTYPE type=`memetic-wikitext+tiddlywiki`>>\n\n# a straggler\n' > "$scratch/straggler.mem"
 git -C "$scratch" add -A
 if out="$(REPO="$scratch" node tools/doctype.mjs 2>&1)"; then
-  echo "[doctype-witness] a straggler on the retired DOCTYPE passed the gate — it left the corpus unseen"; exit 1
+  echo "[doctype-witness] a straggler on another DOCTYPE spelling passed the gate — it left the corpus unseen"; exit 1
 fi
 if ! grep -q "straggler.mem" <<<"$out"; then
   echo "[doctype-witness] the gate failed the straggler without naming it"; exit 1
 fi
-echo "[doctype-witness] a hidden declaration and a retired-DOCTYPE straggler each fail by name, and the control passes"
+echo "[doctype-witness] a hidden declaration and a straggler on another spelling each fail by name, and the control passes"
