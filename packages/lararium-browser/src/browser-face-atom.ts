@@ -18,7 +18,7 @@ import {
   requireFaceAtomSeed,
   standFaceAtomSeed,
   type FaceAtomKey,
-  type FaceAtomRows,
+  type FaceAtomRecords,
   constantTimeBytesEqual,
   vesselFaceTagFields,
   wardKeyPopImage,
@@ -36,13 +36,13 @@ export const faceAtomRecord = (personaGroup: string): string => {
 };
 
 /** This browser's row store for one face atom custody contract. */
-export function browserFaceAtomRows(idbName: string): FaceAtomRows {
+export function browserFaceAtomRecords(idbName: string): FaceAtomRecords {
   return {
     async read(personaGroup) {
       const held = await readKeystoreRecord(idbName, faceAtomRecord(personaGroup));
       return held as Uint8Array | undefined;
     },
-    withRow(personaGroup, step) {
+    withRecord(personaGroup, step) {
       const row = faceAtomRecord(personaGroup);
       return withCustodyRecords(idbName, async (rows) => step(
         await rows.read(row) as Uint8Array | undefined,
@@ -54,7 +54,7 @@ export function browserFaceAtomRows(idbName: string): FaceAtomRows {
 
 /** The face's atom as it rests, or `undefined` when none was ever minted. */
 export async function readBrowserFaceAtom(idbName: string, personaGroup: string): Promise<FaceAtomKey | undefined> {
-  return readFaceAtom(browserFaceAtomRows(idbName), personaGroup);
+  return readFaceAtom(browserFaceAtomRecords(idbName), personaGroup);
 }
 
 /** The face's atom: the one at rest, or a fresh one sealed there in the same custody act when none stands. */
@@ -65,17 +65,17 @@ export async function browserFaceAtom(idbName: string, personaGroup: string): Pr
 
 /** The atom seed a face rests, or a refusal by name: a boot never mints over a face whose edge names another key. */
 export async function requireBrowserFaceAtomSeed(idbName: string, personaGroup: string): Promise<Uint8Array> {
-  return requireFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup);
+  return requireFaceAtomSeed(browserFaceAtomRecords(idbName), personaGroup);
 }
 
 /** The atom seed for a face being joined or founded: the one at rest, or a fresh one sealed there. The caller zeroes the copy. */
 export async function standBrowserFaceAtomSeed(idbName: string, personaGroup: string): Promise<Uint8Array> {
-  return standFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup);
+  return standFaceAtomSeed(browserFaceAtomRecords(idbName), personaGroup);
 }
 
 /** Keep the seed a founding minted under the group it founded; a row already standing must hold the same seed. */
 export async function keepBrowserFaceAtomSeed(idbName: string, personaGroup: string, seed: Uint8Array): Promise<void> {
-  await keepFaceAtomSeed(browserFaceAtomRows(idbName), personaGroup, seed);
+  await keepFaceAtomSeed(browserFaceAtomRecords(idbName), personaGroup, seed);
 }
 
 /** The custody row that keeps one face's address secret: the face's catalog document derives its address from it. */

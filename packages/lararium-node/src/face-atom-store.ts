@@ -1,6 +1,6 @@
 /** Each face's atom rests in an identity row named by its PersonaGroup digest. */
 import { createHash } from "node:crypto";
-import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRows, type StoredLarRecord } from "@lararium/mesh";
+import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRecords, type StoredLarRecord } from "@lararium/mesh";
 import { openCheckpoint } from "@lararium/keyhive";
 import { readCustodyRow, removeCustodyRow, updateCustodyRow, moveCustodyRow, withCustodyRows } from "./custody-seat.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
@@ -82,9 +82,9 @@ export async function loadPendingFoundingSeed(ask: FoundingAtomAsk): Promise<Uin
 }
 
 /** Adapt the custody seat's synchronous decision to the mesh row's asynchronous step. */
-export const nodeFaceAtomRows: FaceAtomRows = {
+export const nodeFaceAtomRecords: FaceAtomRecords = {
   async read(group) { return (await readCustodyRow("identity", faceAtomGroupFile(group))) ?? undefined; },
-  async withRow<T>(group: string, step: (standing: Uint8Array | undefined, write: (seed: Uint8Array) => Promise<void>) => Promise<T>): Promise<T> {
+  async withRecord<T>(group: string, step: (standing: Uint8Array | undefined, write: (seed: Uint8Array) => Promise<void>) => Promise<T>): Promise<T> {
     let result: Promise<T> | undefined;
     let deciding = false;
     await updateCustodyRow("identity", faceAtomGroupFile(group), (standing) => {
@@ -104,19 +104,19 @@ export const nodeFaceAtomRows: FaceAtomRows = {
 
 /** Read a group's held seed; the caller zeroes its copy. */
 export async function loadFaceAtomOfGroup(group: string): Promise<Uint8Array | null> {
-  const seed = await nodeFaceAtomRows.read(group);
+  const seed = await nodeFaceAtomRecords.read(group);
   if (seed && seed.length !== 32) throw new Error(`the atom row for ${group} holds no 32-byte seed`);
   return seed ?? null;
 }
 
 /** Keep one group's founding seed, refusing any different seed. */
 export function keepFaceAtom(group: string, seed: Uint8Array): Promise<"minted" | "kept"> {
-  return keepFaceAtomSeed(nodeFaceAtomRows, group, seed);
+  return keepFaceAtomSeed(nodeFaceAtomRecords, group, seed);
 }
 
 /** Mint or read one group's seed; the caller zeroes its copy. */
 export function standFaceAtom(group: string): Promise<Uint8Array> {
-  return standFaceAtomSeed(nodeFaceAtomRows, group);
+  return standFaceAtomSeed(nodeFaceAtomRecords, group);
 }
 
 /** Read a compartment's group from its anchors, then read that group's atom. */
@@ -189,7 +189,7 @@ export async function loadFaceAtomKey(face?: number): Promise<string> {
   const index = await resolveFace(face);
   const anchors = await loadIdentityAnchors(index);
   if (!anchors) throw new Error("this face holds no atom; re-found or re-admit it");
-  const atom = await readFaceAtom(nodeFaceAtomRows, anchors.personaGroupId);
+  const atom = await readFaceAtom(nodeFaceAtomRecords, anchors.personaGroupId);
   if (!atom) throw new Error("this face holds no atom; re-found or re-admit it");
   return atom.key;
 }

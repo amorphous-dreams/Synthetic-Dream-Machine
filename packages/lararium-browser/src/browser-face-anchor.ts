@@ -1,5 +1,5 @@
 /** The browser's sealed, PersonaGroup-named face anchor custody row. */
-import { keepFaceAnchor, loadFaceAnchor, requireFaceAnchor, type FaceAnchor, type FaceAnchorRows } from "@lararium/mesh";
+import { keepFaceAnchor, loadFaceAnchor, requireFaceAnchor, type FaceAnchor, type FaceAnchorRecords } from "@lararium/mesh";
 import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 
 export function faceAnchorRecord(personaGroup: string): string {
@@ -7,7 +7,7 @@ export function faceAnchorRecord(personaGroup: string): string {
   return `face-anchor/${personaGroup}`;
 }
 
-export function browserFaceAnchorRows(idbName: string): FaceAnchorRows {
+export function browserFaceAnchorRecords(idbName: string): FaceAnchorRecords {
   return {
     async read(personaGroup) {
       return await readKeystoreRecord(idbName, faceAnchorRecord(personaGroup)) as Uint8Array | undefined;
@@ -22,11 +22,11 @@ export function browserFaceAnchorRows(idbName: string): FaceAnchorRows {
 }
 
 export const loadBrowserFaceAnchor = (idbName: string, personaGroup: string): Promise<FaceAnchor | null> =>
-  loadFaceAnchor(browserFaceAnchorRows(idbName), personaGroup);
+  loadFaceAnchor(browserFaceAnchorRecords(idbName), personaGroup);
 
 export const requireBrowserFaceAnchor = (idbName: string, personaGroup: string): Promise<FaceAnchor> =>
-  requireFaceAnchor(browserFaceAnchorRows(idbName), personaGroup);
+  requireFaceAnchor(browserFaceAnchorRecords(idbName), personaGroup);
 
 /** Founding, admission and recovery keep the anchor under the group that owns it. */
 export const keepBrowserFaceAnchor = (idbName: string, anchor: FaceAnchor): Promise<void> =>
-  keepFaceAnchor(browserFaceAnchorRows(idbName), anchor);
+  keepFaceAnchor(browserFaceAnchorRecords(idbName), anchor);
