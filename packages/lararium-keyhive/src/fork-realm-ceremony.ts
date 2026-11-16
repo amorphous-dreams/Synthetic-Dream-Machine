@@ -6,7 +6,7 @@
  * Exclude-by-omission: no hand ever adds the captors to the fresh sentinel, so they
  * hold no key to the fork — cleaner + stronger than convergent-removal (which evicts from
  * a realm you keep; a fork names a realm you leave). The survivors must already stand KNOWN
- * agents to `provider` (they dwelt in the old realm, so their contact cards already stand
+ * agents to `provider` (they dwelt in the captured realm, so their contact cards already stand
  * in-scope — mirrors openDwelling's precondition).
  *
  * Meme: lar:///ha.ka.ba/lares/api/pono/cabal-realm
@@ -18,9 +18,9 @@ import { foundCabalRealm, openDwelling } from "./cabal-realm-ceremony.js";
 import type { KeyhiveProvider } from "./keyhive-provider.js";
 
 export interface ForkCabalRealmOpts {
-  /** The fork's lar: bearing — defaults to the old genesis + a /fork path segment. */
+  /** The fork's lar: bearing — defaults to the captured realm's genesis + a /fork path segment. */
   readonly newUri?: string;
-  /** The fork's substrate URL — defaults to the old substrate + "-fork". */
+  /** The fork's substrate URL — defaults to the captured realm's substrate + "-fork". */
   readonly substrateUrl?: string;
 }
 

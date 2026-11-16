@@ -28,7 +28,7 @@ import type { CabalRealm } from "@lararium/mesh";
 
 /**
  * A fork of a captured realm — a fresh realm-identity carrying the legitimate maintainers,
- * the captors structurally absent, linked to the old realm for continuity.
+ * the captors structurally absent, linked to the captured realm for continuity.
  */
 export interface RealmFork {
   /** CONTINUITY — the captured realm this forked FROM (legitimacy re-anchors via it). */
@@ -42,7 +42,7 @@ export interface RealmFork {
 }
 
 /**
- * Compute the survivor set a fork carries — the old roster MINUS the captors. The captors
+ * Compute the survivor set a fork carries — the captured realm's roster MINUS the captors. The captors
  * drop out by omission (no hand ever adds them to the fresh realm), never by removal.
  */
 export function forkSurvivors(oldDwellers: readonly string[], excludeHexes: readonly string[]): string[] {

@@ -3,7 +3,7 @@
  * the signer SWAPPED. A citizen's device drowns; the recovery quorum reconstructs the PersonaGroup root
  * (mesh: reconstructFromQuorum → ReadmissionSecret), and THAT signs a fresh vessel's edge through the
  * UNCHANGED runDeviceAdmitEdge. The Handle + earned standing carry forward, the fresh device is admitted,
- * the OLD key retires (revokeSentinelMember, caller-side). No new interface — isomorphism by composition;
+ * the drowned device's key retires (revokeSentinelMember, caller-side). No new interface — isomorphism by composition;
  * the only difference from a founding admit is WHO holds the pen, and that it can only be a quorum.
  *
  * The type does the guarding: `runReadmitEdge` accepts ONLY a `ReadmissionSecret` (branded by

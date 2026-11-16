@@ -503,7 +503,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /** The opaque name a bag's tracked chunks rest under: a digest of the bag URL and its document, so the URL
-   *  never reaches the rest. A reminted bag takes a fresh shelf, and the old one gets dropped. */
+   *  never reaches the rest. A reminted bag takes a fresh shelf, and the shelf under its prior document gets dropped. */
   private async chunkShelf(bagUrl: string, docIdHex: string): Promise<string> {
     return hexEncode(await webDigest("SHA-256", new TextEncoder().encode(`${bagUrl}\n${docIdHex}`)));
   }
@@ -1033,7 +1033,7 @@ export class KeyhiveProvider implements CapabilityProvider {
   }
 
   /** Run `leave` when this provider disposes: whatever stands over its identity (a content-key holder, a
-   *  subscription) leaves with it, so nothing keeps asking an identity that no longer stands. */
+   *  subscription) leaves with it, so nothing keeps asking a disposed identity. */
   whenDisposed(leave: () => void): void { this.leaving.push(leave); }
 
   async dispose(): Promise<void> {
