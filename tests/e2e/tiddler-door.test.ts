@@ -59,7 +59,7 @@ interface Entry { command: string; args: string[]; env: Record<string, string> }
 
 const say = (label: string, value: unknown): void => { console.log(`[walk] ${label}: ${typeof value === "string" ? value : JSON.stringify(value)}`); };
 
-/** Speak MCP over stdio to one spawned seat: initialize, then each call in turn; resolves the results. */
+/** Speak MCP over stdio to one spawned seat as a harness does: initialize, list the tools, then each call in turn; resolves the results. */
 async function speak(entry: Entry, calls: Array<{ name: string; arguments: Record<string, unknown> }>): Promise<{ results: unknown[]; stderr: string }> {
   const env: NodeJS.ProcessEnv = { ...process.env };
   delete env["LAR_ROOT"];
@@ -85,6 +85,9 @@ async function speak(entry: Entry, calls: Array<{ name: string; arguments: Recor
   const init = await request("initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "tiddler-door-walk", version: "0" } });
   if (init !== null) {
     child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
+    // A harness lists the tools before it calls one, as this walk does: the aho (`lares mcp aho`) holds that list until its
+    // child stands, and answers a call that reaches it sooner `hearth-sleeps` at once (iris: nothing waits in the seat).
+    await request("tools/list", {});
     for (const c of calls) {
       const r = await request(c.name === "tools/list" ? "tools/list" : "tools/call", c.name === "tools/list" ? {} : c);
       results.push(r?.["error"] ?? r?.["result"] ?? null);

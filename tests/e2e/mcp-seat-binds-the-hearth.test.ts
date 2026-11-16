@@ -8,8 +8,8 @@
  * meme, and the CLI's `lares meme get --recipe default` reads the same bytes back from the staged hearth.
  *
  * CONTROLS: before the put the CLI answers `not-found`; and the same seat spawned WITHOUT the entry's
- * `LAR_ROOT` reaches no daemon at all (it binds the default vessel, which no one stood), the exact gap the
- * row names.
+ * `LAR_ROOT` reaches no daemon at all: the aho resolves no child, and the call answers `hearth-sleeps` from
+ * the seat, the exact gap the entry closes.
  */
 
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
@@ -45,7 +45,7 @@ function harnessEnv(extra: Record<string, string>): NodeJS.ProcessEnv {
   return { ...env, ...extra };
 }
 
-/** Speak MCP over stdio to one spawned seat: initialize, then each call in turn; resolves the results. */
+/** Speak MCP over stdio to one spawned seat as a harness does: initialize, list the tools, then each call in turn; resolves the results. */
 async function speak(entry: Entry, env: NodeJS.ProcessEnv, calls: Array<{ name: string; arguments: Record<string, unknown> }>):
   Promise<{ results: unknown[]; stderr: string; code: number | null }> {
   const child = spawn(entry.command, entry.args, { env, stdio: ["pipe", "pipe", "pipe"] });
@@ -73,6 +73,9 @@ async function speak(entry: Entry, env: NodeJS.ProcessEnv, calls: Array<{ name: 
   });
   if (init !== null) {
     child.stdin.write(`${JSON.stringify({ jsonrpc: "2.0", method: "notifications/initialized" })}\n`);
+    // A harness lists the tools before it calls one, as this walk does: the aho (`lares mcp aho`) holds that list until its
+    // child stands, and answers a call that reaches it sooner `hearth-sleeps` at once (iris: nothing waits in the seat).
+    await request("tools/list", {});
     for (const c of calls) {
       const r = await request("tools/call", c);
       results.push(r?.["error"] ?? r?.["result"] ?? null);
@@ -187,8 +190,11 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     const said = await speak(entry, harnessEnv({ ...entry.env, LAR_ROOT: "" }), [
       { name: "meme_get", arguments: { uri: URI, recipe: "default" } },
     ]);
-    expect(said.code).not.toBe(0);
-    // No house root named: the seat's resolvers refuse by name rather than guess a home (`HouseRootUnnamed`).
-    expect(said.stderr).toMatch(/LAR_ROOT names no house root|no lares daemon/);
+    // No house root named: the aho resolves its child at each spawn and the resolver names none rather than guess a home,
+    // so no child ever stands (`child-unresolved`, never `child-up`) and the call answers `hearth-sleeps`: it never left
+    // the seat. The seat itself answers on (a7562300d: a resolver that names no child reads as a failed spawn).
+    expect(said.stderr).toMatch(/aho: child-unresolved/);
+    expect(said.stderr).not.toMatch(/aho: child-up/);
+    expect(JSON.stringify(said.results[0])).toContain("hearth-sleeps");
   }, 60_000);
 });
