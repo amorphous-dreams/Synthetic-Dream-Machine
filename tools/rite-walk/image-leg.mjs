@@ -1,10 +1,16 @@
 // rite-walk/image-leg — the rite's IMAGE LEG: the product image, the pūlama, the aho and the kūkulu on a real container.
 //
 // The three-face walk (`steps.mjs`) runs the checkout's built dist and leaves its `image` step unreached. This leg
-// walks what that step names: it builds the image through the host shim, founds a scratch hearth under the staged
-// test custody, stands the pūlama and lights it, raises the vessel beside it, holds an MCP seat through the aho across
-// the vessel's fall, and walks the kūkulu. Each step writes one row: pass, fail or unreached, the quoted answer, and
-// the measures it took.
+// walks what that step names, in the order a real house allows:
+//   1. the image builds through the host shim; a scratch hearth founds under the staged test custody;
+//   2. the vessel stands HOLDING ITS OWN CUSTODY and opens on a terminal; the aho holds an MCP seat across the vessel's
+//      stop, restart and kill; the hand strings the kūkulu lei there (a ward act needs a vessel its own route opened);
+//   3. the pūlama stands and lights; the kūkulu raises a vessel beside it; `up`, the unlock and `down` read beside it.
+// A first `up` beside a lit pūlama seats the vessel's holder over the socket, and the pūlama serves a kūkulu alone
+// (a vouched lei): a vessel that wears none keeps the floor, and no terminal opens it. So the lei strings before the
+// pūlama stands. Each step writes one row: pass, fail or unreached, the quoted answer, and the measures it took.
+// Every terminal act (`up`, `vault unlock`, `lei kui`, `pulama light`, `down`) rides a pseudo-terminal (`script`) and
+// types the published test route; the staged custody alone makes that route open anything.
 //
 // THE SCOPE, held four ways before any act and on every Docker call:
 //   the guard     `assertImageScope` refuses a compose project, a port, an image tag or a house the operator's own
@@ -348,7 +354,13 @@ export function imageHands(scope, state) {
       writeFileSync(join(scope.bin, "docker"), dockerWrapperText({ real, project: scope.project, image: scope.image, log: scope.dockerLog }));
       chmodSync(join(scope.bin, "docker"), 0o755);
       writeFileSync(scope.compose, composeCopy(readFileSync(join(CHECKOUT, SURFACE_COMPOSE), "utf8"), { project: scope.project, context: CHECKOUT }));
-      if (!existsSync(scope.workspace)) execFileSync("git", ["-C", CHECKOUT, "worktree", "add", "--detach", scope.workspace, "HEAD"], { stdio: "pipe" });
+      // THE WORKSPACE IS A CLONE, never a worktree: a worktree's `.git` is a file naming a host path no container
+      // reaches, and the vessel asks git in `/workspace` for the head's tree. A local clone carries its own objects.
+      if (!existsSync(scope.workspace)) {
+        const head = execFileSync("git", ["-C", CHECKOUT, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
+        execFileSync("git", ["clone", "--quiet", "--local", "--no-checkout", CHECKOUT, scope.workspace], { stdio: "pipe" });
+        execFileSync("git", ["-C", scope.workspace, "checkout", "--quiet", "--detach", head], { stdio: "pipe" });
+      }
     },
     /** Stand the house with a pūlama (`LARES_PULAMA=1` in the surface env and this walk's own) or without one. */
     pulamaMode(on) {
@@ -391,9 +403,6 @@ export function imageHands(scope, state) {
       const down = await compose(["--profile", "pulama", "--profile", "offline", "down", "--remove-orphans", "--timeout", "20"], { timeout: 180_000 });
       const left = await compose(["--profile", "pulama", "--profile", "offline", "ps", "-a", "-q"]);
       const log = hands.dockerLog();
-      if (existsSync(join(scope.workspace, ".git"))) {
-        try { execFileSync("git", ["-C", CHECKOUT, "worktree", "remove", "--force", scope.workspace], { stdio: "pipe" }); } catch { /* the rm below clears it */ }
-      }
       rmSync(scope.base, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
       return { downCode: down.code, containers: left.stdout.trim(), baseStands: existsSync(scope.base), log };
     },
@@ -632,40 +641,32 @@ const ahoInFlight = async (h) => {
   const killAt = performance.now();
   const killed = await h.compose(["kill", "lares"]);
   const landed = await flying;
+  const answeredMs = Math.round(performance.now() - killAt);
   const alive = seat.alive();
   const start = await h.shim(["up"], { timeout: 420_000 });
   const back = await untilReads(seat, h);
-  const measures = { heldMs: Math.round(killAt - from), answeredMsAfterKill: Math.round(performance.now() - killAt), killCode: killed.code, answer: landed.text.slice(0, 120), ahoAlive: alive, upCode: start.code, readsAgainMs: back.ms, interim: back.seen };
+  const measures = { heldMs: Math.round(killAt - from), answeredMsAfterKill: answeredMs, killCode: killed.code, answer: landed.text.slice(0, 120), ahoAlive: alive, upCode: start.code, readsAgainMs: back.ms, interim: back.seen };
   const ok = landed.error && landed.text.startsWith("outcome-unknown") && alive && start.code === 0 && back.ok;
   return { ok, answer: `a call held in a paused vessel for ${measures.heldMs} ms, then the vessel killed → ${landed.text.slice(0, 60)}; the aho lives: ${alive}; after up the seat reads again`, measures };
 };
 
 /** The checkout's branch, or the head where it stands detached. */
 const branchOf = () => { try { return execFileSync("git", ["-C", CHECKOUT, "symbolic-ref", "--short", "HEAD"], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim(); } catch { return "HEAD"; } };
-const doorAbsent = (text) => /unknown (command|verb|sub-?verb)|no such (command|verb)|name a sub-verb|not a lares command/i.test(text);
-
-/**
- * One CLI act inside the standing vessel under the staged ward route: the marker and the route's one file ride into the
- * container by `docker cp`, and the act's own process loads the route. The product shim carries neither.
- */
-async function stagedCli(h, args, opts) {
-  const id = await h.cid("lares");
-  const door = join(h.scope.base, "door", "tools");
-  mkdirSync(door, { recursive: true });
-  writeFileSync(join(door, "test-ward-route.mjs"), readFileSync(join(CHECKOUT, "tools", "test-ward-route.mjs")));
-  await h.docker(["cp", join(h.scope.house, ".lar-test-scratch"), `${id}:/lar/.lar-test-scratch`]);
-  await h.docker(["cp", door, `${id}:/app/`]);
-  return await h.compose(["exec", "-T", "-e", `NODE_OPTIONS=${TEST_ROUTE}`, "lares", "node", CLI_IN_IMAGE, ...args], opts);
-}
+const doorAbsent = (text) => /unknown (command|verb|sub-?verb|flag)|no such (command|verb)|name a sub-verb|not a lares command/i.test(text);
+/** A ward act on a terminal: the one prompt a ward asks, answered under the published test route. */
+const WARD_SAYS = [{ prompt: "passphrase for this one act: ", answer: TEST_PASSPHRASE }];
 
 const leiKui = async (h) => {
   const branch = branchOf();
   const line = ["lei", "kui", "--rite", "kukulu", "--branch", branch, "--returns", "2", "--json"];
+  // With no terminal the ward refuses by name; on one, the hand types the face's route for this act alone.
   const plain = await h.shim(line, { timeout: 120_000 });
-  const r = plain.code === 0 ? plain : await stagedCli(h, line, { timeout: 120_000 });
-  const answer = json(r.stdout.trim());
-  h.vars.lei = answer?.data?.lei ?? answer?.data ?? null;
-  return { ok: r.code === 0 && answer?.ok === true, answer: r.code === 0 ? quote(r.stdout) : refusal(r), measures: { branch, exit: r.code, withNoTerminal: refusal(plain) } };
+  const r = await h.pty(h.shimLine(line), { says: WARD_SAYS, route: TEST_PASSPHRASE, timeout: 120_000 });
+  const answer = lastJson(r.stdout.replace(/\r/g, ""));
+  const show = await h.shim(["lei", "show", "--rite", "kukulu", "--branch", branch, "--json"]);
+  const standing = json(show.stdout.trim())?.data?.lei ?? null;
+  return { ok: r.code === 0 && answer?.ok === true && standing?.standing === true, answer: `exit ${r.code}; the ward asked on the terminal: ${r.typed}; ${JSON.stringify(answer?.data ?? null)} · the line reads ${JSON.stringify(standing)}`,
+    measures: { branch, exit: r.code, wardPrompted: r.typed, withNoTerminal: quote(refusal(plain)).slice(0, 200), standing } };
 };
 
 const riteReceipt = async (h) => {
@@ -725,7 +726,7 @@ export const IMAGE_STEPS = Object.freeze([
   { id: "aho-stop", command: "docker compose stop lares · a call · lares-container.sh up", via: "seat-stdio", needs: ["aho-handshake"], expect: "hearth-sleeps at once; the seat reads again with no initialize", run: ahoStop },
   { id: "aho-restart", command: "docker compose restart lares", via: "seat-stdio", needs: ["aho-handshake"], expect: "the child falls and a fresh one stands under the same seat", run: ahoRestart },
   { id: "aho-in-flight", command: "docker compose pause lares · a call · docker compose kill lares", via: "seat-stdio", needs: ["aho-handshake"], expect: "outcome-unknown", run: ahoInFlight },
-  { id: "lei-kui", command: "lares lei kui --rite kukulu --branch <branch> --returns 2", via: SC, needs: ["up"], expect: "the lei strings", run: leiKui },
+  { id: "lei-kui", command: "lares lei kui --rite kukulu --branch <branch> --returns 2", via: "pty", needs: ["up"], expect: "the lei strings", run: leiKui },
   { id: "rite-receipt", command: "lares rite receipt --tree <head tree> --checks … --verdict pass --definitions …", needs: ["up"], expect: "the receipt rests", run: riteReceipt },
   // The pūlama stands beside the vessel (LARES_PULAMA=1 from here on).
   { id: "pulama-up", command: "lares-container.sh pulama up", needs: ["found"], expect: "standing unlit", run: pulamaUp },
