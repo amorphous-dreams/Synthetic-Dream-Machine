@@ -2,6 +2,7 @@
 // No vessel stands here: the walk itself runs once at each merge (`node tools/rite-walk.mjs --out <dir>`).
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -312,6 +313,12 @@ test("image-walk-keeps-the-outcome-law: a blocked step reads unreached, a throw 
   assert.match(imageLeg.imageReceiptFaults([{ ...row(rows, "d"), cause: undefined }, ...rows.filter((r) => r.step !== "d")], steps).join("\n"), /d: unreached and names no cause/);
 });
 
+test("rite-receipt-names-the-definitions-hash: the receipt step hands the door the walker's sha256, never its path", () => {
+  const args = imageLeg.receiptArgs("a".repeat(40));
+  const defs = args[args.indexOf("--definitions") + 1];
+  assert.match(defs, /^[0-9a-f]{64}$/);
+  assert.equal(defs, createHash("sha256").update(readFileSync(new URL("./rite-walk/image-leg.mjs", import.meta.url))).digest("hex"));
+});
 test("image-leg-table-ends-in-teardown, and the line refuses before any act where it names no scope", () => {
   const ids = imageLeg.IMAGE_STEPS.map((s) => s.id);
   assert.equal(ids.at(-1), "teardown");

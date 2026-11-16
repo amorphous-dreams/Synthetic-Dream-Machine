@@ -669,9 +669,13 @@ const leiKui = async (h) => {
     measures: { branch, exit: r.code, wardPrompted: r.typed, withNoTerminal: quote(refusal(plain)).slice(0, 200), standing } };
 };
 
+/** The receipt the walk rests for a tree: its checks ran under this walker, so the definitions name the walker's sha256. */
+export const receiptArgs = (tree) => ["rite", "receipt", "--tree", tree, "--checks", "rite-walk-image", "--verdict", "pass",
+  "--definitions", sha256(readFileSync(join(CHECKOUT, "tools/rite-walk/image-leg.mjs"))), "--json"];
+
 const riteReceipt = async (h) => {
   const tree = execFileSync("git", ["-C", CHECKOUT, "rev-parse", "HEAD^{tree}"], { encoding: "utf8" }).trim();
-  const r = await h.shim(["rite", "receipt", "--tree", tree, "--checks", "rite-walk-image", "--verdict", "pass", "--definitions", "tools/rite-walk/image-leg.mjs", "--json"], { timeout: 120_000 });
+  const r = await h.shim(receiptArgs(tree), { timeout: 120_000 });
   const text = h.said(r);
   if (r.code !== 0 && doorAbsent(text)) return { unreached: "door-absent", answer: refusal(r) };
   return { ok: r.code === 0, answer: r.code === 0 ? quote(r.stdout) : refusal(r), measures: { tree, exit: r.code } };
