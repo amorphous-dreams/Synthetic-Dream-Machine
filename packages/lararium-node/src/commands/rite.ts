@@ -1,7 +1,7 @@
 /**
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
- * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree from git (`gitTreeOf`), returns the
+ * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree out of the checkout's object store (`gitTreeOf`, no git binary), returns the
  * rite's lei at that head (the evidence, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
  * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in.
@@ -17,13 +17,13 @@
  * With no standing daemon wiki every row refuses by name before a face loads.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import { execFile } from "node:child_process";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   SwarmRefused, beginRite, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
   type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
+import { treeOfHead } from "../git-tree-reader.js";
 
 export type RiteAction = "begin" | "land" | "receipts" | "receipt";
 
@@ -31,24 +31,13 @@ export type RiteAction = "begin" | "land" | "receipts" | "receipt";
 export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
 
 /**
- * THE VESSEL DERIVES THE HEAD'S TREE FROM GIT ITSELF. A return rests on the receipt standing for the head's tree, so the tree
- * never comes from the caller: the vessel asks git for `<head>^{tree}` in the first checkout that answers. A head that reads
- * as no object name never reaches git, and a place with no checkout, or a head git holds no commit for, refuses
- * `rite-tree-unreadable`: the rite begins nothing rather than rest on a tree nobody derived.
+ * THE VESSEL DERIVES THE HEAD'S TREE ITSELF. A return rests on the receipt standing for the head's tree, so the tree never
+ * comes from the caller. The vessel's image carries no git binary, so the vessel reads the checkout's object store directly
+ * (`../git-tree-reader.ts`): the commit the head names, held to its own hash, and the tree that commit names. A head that
+ * reads as no object name, a place with no checkout, or a head no store holds refuses `rite-tree-unreadable`: the rite begins
+ * nothing rather than rest on a tree nobody derived.
  */
-export async function gitTreeOf(head: string, checkouts: readonly string[] = RITE_CHECKOUTS): Promise<string> {
-  if (/^[0-9a-f]{40}$|^[0-9a-f]{64}$/.test(head)) {
-    for (const dir of checkouts) {
-      const env = { ...process.env };
-      for (const k of ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"]) delete env[k];
-      const tree = await new Promise<string>((resolve) => {
-        execFile("git", ["-C", dir, "rev-parse", "--verify", "--quiet", `${head}^{tree}`], { encoding: "utf8", env }, (err, stdout) => resolve(err ? "" : stdout.trim()));
-      });
-      if (/^[0-9a-f]{40}$|^[0-9a-f]{64}$/.test(tree)) return tree;
-    }
-  }
-  throw new SwarmRefused("rite-tree-unreadable", `git names no tree for the head ${head.slice(0, 64)} in any checkout this vessel reaches`);
-}
+export const gitTreeOf = (head: string, checkouts: readonly string[] = RITE_CHECKOUTS): Promise<string> => treeOfHead(head, checkouts);
 
 export async function runRiteVerb(opts: {
   repo: Repo; catalogUrl?: string; face?: number; action: RiteAction;
