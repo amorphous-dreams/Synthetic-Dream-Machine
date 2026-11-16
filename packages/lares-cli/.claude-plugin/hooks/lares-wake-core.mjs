@@ -8,7 +8,8 @@
  *
  * Four more reads stand behind ports, each optional: `git` names the checkout's head and branch; `lei` reads the lei a session
  * wears at that branch, one read per rite, through the lei door; `halves` reads the tessera receipts the rite writes
- * (`rite-begun`, `rite-landed`). A runner that answers none of them leaves the wake as it stood.
+ * (`rite-begun`, `rite-landed`); `keep` reads the keep lei at the workspace the house config names (`keepWorkspace`), and a red
+ * keep tessera in conferre's reading names its cure. A runner that answers none of them leaves the wake as it stood.
  *
  * ONE BUDGET. The harness bounds a hook (`hooks/hooks.json`, 15 seconds), and past that bound it discards the hook's
  * whole answer. So the three reads start together and share one budget that closes inside the harness's bound: a read
@@ -81,6 +82,8 @@ export const gitArgv = () => ["rev-parse", "HEAD", "--abbrev-ref", "HEAD"];
 export const leiArgv = (rite, branch, head) => ["lei", "show", "--rite", rite, "--branch", branch, "--head", head, "--json"];
 /** The shim's argv for the tessera receipts the rite writes. */
 export const halvesArgv = () => ["rite", "receipts", "--json"];
+/** The shim's argv for the keep line at one workspace: a keep lei names its workspace as its branch, and no head. */
+export const keepArgv = (workspace) => ["lei", "show", "--rite", "keep", "--branch", workspace, "--json"];
 /** The shim's argv for the vessel observation. */
 export const observeArgv = () => ["vessel", "stand", "--observe", "--json"];
 /** The shim's argv for one page of the memory index, read in the worn face's daemon wiki. */
@@ -219,6 +222,49 @@ export function leiLines(checkout, results) {
   return lines;
 }
 
+/** One name's value as the shim reads it: the environment first, else the env file's last plain KEY=VALUE line. */
+function envValue(name, env, text) {
+  const set = String(env?.[name] ?? "").trim();
+  if (set) return set;
+  let last = "";
+  for (const line of String(text ?? "").split("\n")) { const m = new RegExp(`^\\s*${name}=(.*)$`).exec(line); if (m) last = m[1].trim(); }
+  return last;
+}
+const WORKSPACE_NAME = /^[a-z0-9._-]+$/;
+
+/**
+ * The keep workspace the house config names, as the CLI reads it (`packages/lares-cli/src/keep-config.ts`, the same rule):
+ * LARES_KEEP_WORKSPACE, else the one pair LARES_WORKSPACES binds; several pairs and no name read none.
+ */
+export function keepWorkspaceOf(env, envFileText) {
+  const ok = (n) => (WORKSPACE_NAME.test(n) && n !== "." && n !== ".." ? n : null);
+  const set = envValue("LARES_KEEP_WORKSPACE", env, envFileText);
+  if (set !== "") return ok(set);
+  const pairs = envValue("LARES_WORKSPACES", env, envFileText).split(";").map((p) => p.trim()).filter((p) => p.indexOf("=") > 0);
+  return pairs.length === 1 ? ok(pairs[0].slice(0, pairs[0].indexOf("=")).trim()) : null;
+}
+
+/** The keep line: the keep lei standing at the configured workspace, or none with how one strings; a locked vessel says nothing here. */
+export function keepLines(workspace, result) {
+  if (result === BUDGET) return `Lares keep unread: ${CLOSED}`;
+  const answer = parseAnswer(result?.stdout);
+  if (answer === null) return `Lares keep unread: ${readFault(result, "read") ?? "the answer did not parse"}`;
+  if (refusesLocked(answer)) return null;
+  if (answer.ok === false) return `Lares keep unread: ${answer.error?.code ?? "refused"}`;
+  const lei = answer.data?.lei ?? {};
+  if (lei.standing === true) return `Lares keep: a keep lei stands for workspace "${workspace}" with ${Number(lei.returnsLeft ?? 0)} returns left; \`lares rite keep --workspace ${workspace}\` spends one`;
+  if (Array.isArray(lei.forks) && lei.forks.length > 0) return `Lares keep: the keep line for workspace "${workspace}" stands forked at ${lei.forks.map((c) => String(c).slice(0, 12)).join(" | ")}; settle it with lares lei show --rite keep --branch ${workspace}`;
+  return `Lares keep: no keep lei stands for workspace "${workspace}" (${lei.refusal ?? "absent"}); \`lares vault unlock\` offers one, or by hand: lares lei kui --rite keep --branch ${workspace} --returns <n>`;
+}
+
+/** The cure for one red keep tessera in conferre's reading. */
+function keepRedLine(t) {
+  const at = `tessera ${String(t.tessera).slice(0, 12)} (workspace "${t.branch ?? "?"}", bundle ${String(t.head ?? "?").slice(0, 16)})`;
+  return t.red === "landed-absent"
+    ? `Lares keep red: ${at} reads landed-absent: cut and never landed; cure: lares rite keep --workspace ${t.branch ?? "<workspace>"} (it pushes what waits and lands it)`
+    : `Lares keep red: ${at} reads ${t.red ?? "red"}; read it with lares rite receipts --json before any keep lands it`;
+}
+
 /**
  * The tessera halves with no match, from the receipts the rite writes. A record reads `{ act: "rite-begun" | "rite-landed", rite, tessera }`
  * and the `tessera` id pairs a begun with its landed.
@@ -250,7 +296,8 @@ export function halvesLines(result) {
   const par = new Set((Array.isArray(records) ? records : []).filter((r) => r?.act === "rite-begun").map((r) => String(r.tessera))).size - red.filter((h) => h.half === "begun").length;
   if (red.length === 0) return `Lares tessera conferre: ${par} par, every half has its match`;
   const word = (h) => (h.half === "begun" ? "guest half begun, no host half landed" : "host half landed, no guest half begun");
-  return `Lares tessera conferre: ${par} par, ${red.length} red (no match): ${red.map((h) => `${h.rite} ${h.tessera.slice(0, 12)} ${word(h)}`).join("; ")}`;
+  const keepRed = (Array.isArray(answer.data?.conferre?.red) ? answer.data.conferre.red : []).filter((t) => t?.rite === "keep").map(keepRedLine);
+  return [`Lares tessera conferre: ${par} par, ${red.length} red (no match): ${red.map((h) => `${h.rite} ${h.tessera.slice(0, 12)} ${word(h)}`).join("; ")}`, ...keepRed].join("\n");
 }
 
 /** The line that keeps the rows in play by address across a context turn. */
@@ -273,17 +320,18 @@ function underBudget(budgetMs) {
  * play. The three reads start together. A vessel that answers anything but up stops the index read, and the wake says
  * once that it skipped it.
  */
-export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "" }) {
+export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "", keepWorkspace = null }) {
   const reads = { observe: run("observe", observeArgv()), index: run("index", indexArgv()), homes: run("homes", homesArgv()) };
   // The optional reads: a runner that answers none leaves their lines out.
   const optional = (name, argv) => run(name, argv) ?? null;
   const gitRead = optional("git", gitArgv());
   const halvesRead = optional("halves", halvesArgv());
+  const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
   const budget = underBudget(budgetMs);
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, halvesRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
   const index = seen.up ? await budget.settle(reads.index) : null;
   const leiAnswers = {};
   const checkout = gitRead && seen.up ? checkoutOf(await budget.settle(gitRead)) : null;
@@ -292,6 +340,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "" }) {
     for (const [rite, read] of started) leiAnswers[rite] = await budget.settle(read);
   }
   const halves = halvesRead && seen.up ? await budget.settle(halvesRead) : null;
+  const keep = keepRead && seen.up ? await budget.settle(keepRead) : null;
   const homes = await homesRead;
   budget.close();
   const homesLine = homes === BUDGET
@@ -304,6 +353,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "" }) {
     seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)",
   ];
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
+  if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
   if (halves !== null) { const line = halvesLines(halves); if (line) lines.push(line); }
   if (source === "compact") lines.push(rowsInPlayLine());
   return lines.join("\n");

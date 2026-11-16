@@ -22,8 +22,11 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
   const shim = join(tools, "lares-container.sh");
   // The harness bounds a hook at 15 seconds (`hooks/hooks.json`); a run that outlasts it fails here as it would there.
   const spawnHook = (name, input = "") => {
-    const env = { ...process.env };
+    // A scratch HOME: the hook reads the keep workspace from ~/.lares/lares-surface.env, never the operator's own here.
+    const env = { ...process.env, HOME: root };
     delete env.NODE_TEST_CONTEXT;
+    delete env.LARES_KEEP_WORKSPACE;
+    delete env.LARES_WORKSPACES;
     const r = spawnSync(process.execPath, [join(hooks, name)], { env, input, stdio: ["pipe", "pipe", "pipe"], encoding: "utf8", timeout: 15000 });
     assert.equal(r.status, 0, r.error?.message ?? r.stderr);
     return r.stdout;

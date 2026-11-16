@@ -198,3 +198,48 @@ test("wake-names-unmatched-half: a begun half without its landed, and a landed w
   assert.match(paired, /Lares tessera conferre: 1 par, every half has its match/);
   assert.deepEqual(unmatchedHalves(undefined), []);
 });
+
+// The keep rite: the wake reads the keep line at the workspace the house config names, and names a red keep tessera with its cure.
+const { keepArgv, keepWorkspaceOf } = core;
+const BUNDLE = "f".repeat(64);
+const TESSERA = "9".repeat(64);
+
+test("wake-names-the-keep-line: the wake reads the keep lei at the configured keep workspace and names it", async () => {
+  const calls = [];
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
+  const run = (name, argv) => { calls.push([name, argv]); return ({ ...base, keep: lei({ lei: { standing: true, reach: "wide", returnsLeft: 11, after: CID } }) })[name]; };
+  const context = await wake({ run, keepWorkspace: "backup" });
+  assert.match(context, /Lares keep: a keep lei stands for workspace "backup" with 11 returns left; `lares rite keep --workspace backup` spends one/);
+  assert.deepEqual(calls.find(([n]) => n === "keep")[1], keepArgv("backup"));
+  assert.deepEqual(keepArgv("backup"), ["lei", "show", "--rite", "keep", "--branch", "backup", "--json"]);
+  const none = await wake({ run: runner({ ...base, keep: lei({ lei: { standing: false, refusal: "absent", after: null } }) }), keepWorkspace: "backup" });
+  assert.match(none, /Lares keep: no keep lei stands for workspace "backup" \(absent\); `lares vault unlock` offers one, or by hand: lares lei kui --rite keep --branch backup --returns <n>/);
+  const broken = await wake({ run: runner({ ...base, keep: answered("", 127) }), keepWorkspace: "backup" });
+  assert.match(broken, /Lares keep unread: the read exited 127 with no answer/);
+  // CONTROL: a house config that names no keep workspace reads no keep line.
+  const calls2 = {};
+  const plain = await wake({ run: runner({ ...base, keep: lei({ lei: { standing: true } }) }, calls2), keepWorkspace: null });
+  assert.doesNotMatch(plain, /Lares keep/);
+  assert.equal(calls2.keep, undefined);
+  // The keep workspace reads as the CLI reads it: LARES_KEEP_WORKSPACE, else the one LARES_WORKSPACES pair.
+  assert.equal(keepWorkspaceOf({ LARES_KEEP_WORKSPACE: "backup" }, null), "backup");
+  assert.equal(keepWorkspaceOf({}, "LARES_WORKSPACES=backup=/srv/b\n"), "backup");
+  assert.equal(keepWorkspaceOf({ LARES_WORKSPACES: "a=/x;b=/y" }, null), null);
+  assert.equal(keepWorkspaceOf({}, null), null);
+});
+
+test("wake-names-a-red-keep-tessera-and-its-cure: a keep cut and never landed names its workspace, its bundle and the rite that lands it", async () => {
+  const receipts = [{ act: "rite-begun", rite: "keep", tessera: TESSERA }];
+  const conferre = { par: [], red: [{ tessera: TESSERA, rite: "keep", red: "landed-absent", branch: "backup", head: BUNDLE }] };
+  const context = await wake({ run: runner({
+    observe: answered(UP), homes: answered("h"), index: answered(page([])), halves: answered(JSON.stringify({ ok: true, data: { receipts, conferre } })),
+  }) });
+  assert.match(context, /Lares tessera conferre: 0 par, 1 red/);
+  assert.match(context, new RegExp(`Lares keep red: tessera ${"9".repeat(12)} \\(workspace "backup", bundle ${"f".repeat(16)}\\) reads landed-absent: cut and never landed; cure: lares rite keep --workspace backup \\(it pushes what waits and lands it\\)`));
+  // CONTROL: a red half of another rite names no keep cure.
+  const other = await wake({ run: runner({
+    observe: answered(UP), homes: answered("h"), index: answered(page([])),
+    halves: answered(JSON.stringify({ ok: true, data: { receipts: [{ act: "rite-begun", rite: "kukulu", tessera: "t-two" }], conferre: { par: [], red: [{ tessera: "t-two", rite: "kukulu", red: "landed-absent", branch: "main", head: SHA }] } } })),
+  }) });
+  assert.doesNotMatch(other, /Lares keep red/);
+});
