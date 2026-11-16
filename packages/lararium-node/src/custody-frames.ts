@@ -48,7 +48,7 @@ import type { Credential, HeldSaves, SlotSpec } from "@lararium/mesh";
 import { parkFaceRoute } from "./face-route.js";
 import { mountedFaceOrdinal, setMountedFace, sovereignStands } from "./node-vessel-identity.js";
 import { listFaceOrdinals, listFaceCustodyIds } from "./identity-anchors.js";
-import { CustodyLocked, CustodyRowUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, type CustodyHolder, type HolderUnlock } from "./custody-holder.js";
 import { BackupRefused, type FaceBundleCut } from "./face-bundle-cut.js";
 import { SESSION_ACTS, SealedActRefused, isSealedActName } from "./sealed-acts.js";
 
@@ -148,7 +148,7 @@ const ACT_FRAME_KEYS: ReadonlySet<string> = new Set(["op", "act", "args"]);
 function actFault(e: unknown): { readonly reason: string; readonly extra: { home?: string; file?: string; reading?: string } } {
   if (e instanceof SealedActRefused) return { reason: e.reason, extra: {} };
   if (e instanceof CustodyLocked) return { reason: "custody-locked", extra: {} };
-  if (e instanceof CustodyRowUnavailable) return { reason: "row-unavailable", extra: { home: e.home, file: e.file, reading: e.reading } };
+  if (e instanceof CustodyRecordUnavailable) return { reason: "row-unavailable", extra: { home: e.home, file: e.file, reading: e.reading } };
   return { reason: "act-failed", extra: {} };
 }
 

@@ -21,7 +21,7 @@
  * ── THE ROW READS WHOLE OR REFUSES ──────────────────────────────────────────────────────────────
  * Nothing at the row's path reads as a book that recognises nobody: a vessel learns it from its own acts, and a
  * lost row costs only this vessel's own memory, which the same cards teach again. A row that stands and does not
- * open (torn, bare, another key's) refuses `CustodyRowUnavailable`, and so does one that opens to another shape.
+ * open (torn, bare, another key's) refuses `CustodyRecordUnavailable`, and so does one that opens to another shape.
  * No reader folds a refusal to empty, so no recognition writes over a row it could not read. The book saves as a
  * whole snapshot the caller built: its acts verify cards and may call a standing vessel in between, and no
  * custody hold spans those.
@@ -31,7 +31,7 @@
 
 import { mkdirSync } from "node:fs";
 import { HandleBook, HANDLE_BOOK_SNAPSHOT_ERA, type HandleBookSnapshot } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -42,12 +42,12 @@ export const handleBookFile = (face: number): string => `.handle-book-h${face}.j
 const utf8 = new TextEncoder();
 function parseJson(bytes: Uint8Array, file: string): unknown {
   try { return JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); }
-  catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+  catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
 }
 
 /** The snapshot a row's plaintext carries: this era, a record list, and every record shaped as a record. Any other shape refuses. */
 function parseSnapshot(bytes: Uint8Array, file: string): HandleBookSnapshot {
-  const bad = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+  const bad = (): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
   const snapshot = parseJson(bytes, file) as Partial<HandleBookSnapshot> | null;
   if (!snapshot || typeof snapshot !== "object" || snapshot.era !== HANDLE_BOOK_SNAPSHOT_ERA || !Array.isArray(snapshot.records)) throw bad();
   for (const raw of snapshot.records as unknown[]) {

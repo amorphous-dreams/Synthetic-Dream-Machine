@@ -97,10 +97,10 @@ export class FaceCustodyAbsent extends Error {
   constructor(file: string) { super(`custody row identity/${file} names a face this node holds no custody for; found or admit the face first`); }
 }
 /** A cold row that stands and does not open: the act never runs over anything but the row's own plaintext. */
-export class CustodyRowUnavailable extends Error {
-  override readonly name = "CustodyRowUnavailable";
+export class CustodyRecordUnavailable extends Error {
+  override readonly name = "CustodyRecordUnavailable";
   constructor(readonly home: CustodyHome, readonly file: string, readonly reading: string) {
-    super(`custody row ${home}/${file} reads ${reading}`);
+    super(`custody record ${home}/${file} reads ${reading}`);
   }
 }
 export class CustodyRecordUnknown extends Error {
@@ -206,13 +206,13 @@ export interface CustodyHolder {
   withRecords<T>(act: (rows: { read(home: CustodyHome, file: string): Promise<Uint8Array | null>; remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean> }) => Promise<T>): Promise<T>;
   /**
    * Remove one hot row as ONE custody holder; answers whether a row stood. The holder removes only a row its own
-   * key opens: a row that stands and does not open refuses `CustodyRowUnavailable` and stays.
+   * key opens: a row that stands and does not open refuses `CustodyRecordUnavailable` and stays.
    */
   removeRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean>;
   /**
    * Remove one COLD row as ONE custody holder; answers whether a row stood. As `removeRecord` does for a hot row,
    * the holder removes only a row its own key opens: a row that stands and does not open refuses
-   * `CustodyRowUnavailable` and stays. An act removes a cold row once what the row committed stands done. `when`,
+   * `CustodyRecordUnavailable` and stays. An act removes a cold row once what the row committed stands done. `when`,
    * where given, reads the standing plaintext under the same hold: a row it declines stays, and the removal
    * answers false. The plaintext zero-fills once `when` returns.
    */
@@ -494,12 +494,12 @@ export function makeCustodyHolder(a: {
     return {
       async open(file, act) {
         const opened = await openWardCarrier({ io: a.io, key: live(), carrier: wardCarrierOf(fcid, file) });
-        if (opened.reading !== "opens") throw new CustodyRowUnavailable("identity", file, opened.reading);
+        if (opened.reading !== "opens") throw new CustodyRecordUnavailable("identity", file, opened.reading);
         try { return await act(opened.plaintext); } finally { opened.plaintext.fill(0); }
       },
       async update(file, decide) {
         return updateWardCarrier({ io: a.io, key: live(), treePath, carrier: wardCarrierOf(fcid, file), decide: (standing) => {
-          if (standing.reading !== "opens" && standing.reading !== "absent") throw new CustodyRowUnavailable("identity", file, standing.reading);
+          if (standing.reading !== "opens" && standing.reading !== "absent") throw new CustodyRecordUnavailable("identity", file, standing.reading);
           try {
             const next = decide(standing.reading === "opens" ? standing.plaintext : null);
             return next.plaintext !== null && standing.reading === "opens" && next.plaintext.buffer === standing.plaintext.buffer
@@ -593,9 +593,9 @@ export function makeCustodyHolder(a: {
         const carrier = wardCarrierOf(fcid, file);
         const bytes = await a.io.read(carrier.path);
         if (readWardCarrier(bytes) === "sealed") continue;
-        if (readFckCarrier(bytes) !== "sealed") throw new CustodyRowUnavailable("identity", file, `reads ${readFckCarrier(bytes)}, neither warded nor face-sealed`);
+        if (readFckCarrier(bytes) !== "sealed") throw new CustodyRecordUnavailable("identity", file, `reads ${readFckCarrier(bytes)}, neither warded nor face-sealed`);
         const faceSealed = await openFaceCarrier({ io: a.io, key: fck, carrier });
-        if (faceSealed.reading !== "opens") throw new CustodyRowUnavailable("identity", file, faceSealed.reading);
+        if (faceSealed.reading !== "opens") throw new CustodyRecordUnavailable("identity", file, faceSealed.reading);
         try {
           // The FCK-framed bytes stand where a warded row belongs: the ward's writer would refuse them, so the move seals to a sidecar,
           // reads it back under the ward, and only then renames over them (the writer's own law, held here for the one frame it crosses).
@@ -606,7 +606,7 @@ export function makeCustodyHolder(a: {
             const back = openUnderWard(ward, carrier, await a.io.read(side));
             if (back.reading !== "opens" || !back.plaintext.every((b, i) => b === faceSealed.plaintext[i]) || back.plaintext.length !== faceSealed.plaintext.length) {
               await a.io.remove(side);
-              throw new CustodyRowUnavailable("identity", file, "the ward seal did not read back; the face-sealed row stands as it was");
+              throw new CustodyRecordUnavailable("identity", file, "the ward seal did not read back; the face-sealed row stands as it was");
             }
             back.plaintext.fill(0);
             await a.io.rename(side, carrier.path);
@@ -761,7 +761,7 @@ export function makeCustodyHolder(a: {
     return removeFaceCarrier({ io: a.io, key: keyOf(t), treePath: t.treePath, carrier: t.carrier, ...(when ? { when } : {}) });
   };
   const refusedAs = (home: CustodyHome, file: string, err: unknown): never => {
-    if (err instanceof CustodyRefusal) throw new CustodyRowUnavailable(home, file, err.reading);
+    if (err instanceof CustodyRefusal) throw new CustodyRecordUnavailable(home, file, err.reading);
     throw err;
   };
 
@@ -850,7 +850,7 @@ export function makeCustodyHolder(a: {
           const reading = t.kind === "treeKey"
             ? asReading(await openSealedCarrier({ io, treeKey: needTreeKey(), carrier: { name: t.name, path: t.path, keyClass: t.row.keyClass } }))
             : asReading(await openFaceCarrier({ io, key: keyOf(t), carrier: t.carrier }));
-          if (reading.reading !== "opens" && reading.reading !== "absent") throw new CustodyRowUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
+          if (reading.reading !== "opens" && reading.reading !== "absent") throw new CustodyRecordUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
           return reading;
         };
         const standingSource = await open(from, source);
@@ -881,7 +881,7 @@ export function makeCustodyHolder(a: {
               : asReading(await openFaceCarrier({ io, key: keyOf(t), carrier: t.carrier }));
             if (reading.reading === "opens") return reading.plaintext;
             if (reading.reading === "absent") return null;
-            throw new CustodyRowUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
+            throw new CustodyRecordUnavailable(home, file, reading.reading === "unavailable" ? reading.why : reading.reading);
           },
           async remove(home, file, when) {
             const t = await locate(home, file, false);
@@ -936,7 +936,7 @@ export function makeCustodyHolder(a: {
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(async () => {
         const opened = await readLocated(t);
-        if (opened.reading !== "opens") throw new CustodyRowUnavailable(home, file, opened.reading === "unavailable" ? opened.why : opened.reading);
+        if (opened.reading !== "opens") throw new CustodyRecordUnavailable(home, file, opened.reading === "unavailable" ? opened.why : opened.reading);
         try { return await act(opened.plaintext); } finally { opened.plaintext.fill(0); }
       });
     },
@@ -1012,10 +1012,10 @@ export function makeCustodyHolder(a: {
       if (!seat) throw new FaceLocked(found.fcid);
       const opened = await openFaceCarrier({ io: a.io, key: seat.fck, carrier: wardKeyCarrier(found.fcid) });
       if (opened.reading === "absent") return null;
-      if (opened.reading !== "opens") throw new CustodyRowUnavailable("identity", "face-ward-key.bin", opened.reading);
+      if (opened.reading !== "opens") throw new CustodyRecordUnavailable("identity", "face-ward-key.bin", opened.reading);
       try {
         const key = new TextDecoder().decode(opened.plaintext);
-        if (!isWardKey(key)) throw new CustodyRowUnavailable("identity", "face-ward-key.bin", "malformed");
+        if (!isWardKey(key)) throw new CustodyRecordUnavailable("identity", "face-ward-key.bin", "malformed");
         return key;
       } finally { opened.plaintext.fill(0); }
     },

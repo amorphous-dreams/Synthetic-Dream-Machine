@@ -62,7 +62,7 @@ import {
   verifyCiphertextCid, lapseRatio, foldRhythm, carryRecordKey, grantVerifiesAt, base64UrlEncode, base64UrlDecode,
   RECLAIM_RATIO, HOSTING_CARRY_SESSION_KIND, HOSTING_CARRIED_SESSION_KIND, HOSTING_FETCH_SESSION_KIND, HOSTING_FETCHED_SESSION_KIND,
 } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, writeCustodyRecord } from "./custody-seat.js";
 import { readHostingState, liveEpochs } from "./hosting-store.js";
 import { hostingDirPath, hostingFaceOf, hostingRecordDir } from "./hosting-face.js";
@@ -128,8 +128,8 @@ async function homeOf(nexusAid: string, create: boolean): Promise<Home | null> {
 }
 /** The directory path of one guest-side subtree of the carriage, inside the hosting face's own directory. */
 const carryPath = (home: Home, ...rest: string[]): string => join(hostingDirPath(home.face, home.nexusAid)!, "carry", ...rest);
-const unlistable = (row: string, err: unknown): CustodyRowUnavailable =>
-  new CustodyRowUnavailable("identity", row, `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
+const unlistable = (row: string, err: unknown): CustodyRecordUnavailable =>
+  new CustodyRecordUnavailable("identity", row, `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
 
 /** The names under one directory of the carriage; no directory holds none, and any other fault refuses by name. */
 function namesUnder(dir: string, row: string): string[] {
@@ -161,7 +161,7 @@ async function standingBlobs(home: Home, key: string): Promise<StandingBlob[]> {
 const bytesOf = (blobs: readonly StandingBlob[]): number => blobs.reduce((sum, b) => sum + b.bytes, 0);
 
 function parseRhythm(bytes: Uint8Array, file: string): CarryRhythm {
-  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+  const malformed = (): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
   let raw: unknown;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)); } catch { throw malformed(); }
   if (raw === null || typeof raw !== "object" || Array.isArray(raw)) throw malformed();
@@ -296,7 +296,7 @@ async function depositInTurn(opts: {
     // stands and does not open refuses by name, where an answer of `held` would promise bytes nobody can fetch.
     const standing = await readCustodyRecord("identity", twin.file);
     if (standing !== null && standing.length === size && standing.every((byte, i) => byte === opts.ciphertext[i])) return "held";
-    throw new CustodyRowUnavailable("identity", twin.file, "holds other bytes than its address names");
+    throw new CustodyRecordUnavailable("identity", twin.file, "holds other bytes than its address names");
   }
   if (bytesOf(held) + size > limits.perGuestBytes) return "quota";
   if (await totalCarried(home) + size > limits.totalBytes

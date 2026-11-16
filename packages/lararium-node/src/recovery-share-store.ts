@@ -23,7 +23,7 @@
 
 import { join } from "node:path";
 import type { RecoveryShare, CustodianTag, RecoveryShareStore } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -48,7 +48,7 @@ const CUSTODIANS: ReadonlySet<string> = new Set(["device", "recorded-code", "esc
 
 /** Read a share off a row's plaintext; any other shape refuses `malformed`. */
 function parseShare(bytes: Uint8Array, file: string): RecoveryShare {
-  const malformed = (): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+  const malformed = (): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
   let j: Partial<StoredShare>;
   try { j = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as Partial<StoredShare>; } catch { throw malformed(); }
   if (!j || typeof j !== "object" || !Number.isSafeInteger(j.x) || !Array.isArray(j.ys) || j.ys.length === 0

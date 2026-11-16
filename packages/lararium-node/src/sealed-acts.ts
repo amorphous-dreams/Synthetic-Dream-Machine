@@ -744,7 +744,7 @@ function readArgs(name: string, shape: Shape, raw: unknown): Record<string, unkn
 
 /**
  * Run one act of the table. An unknown name refuses `unknown-act`; arguments that miss the row's shape refuse
- * `bad-args`; both refuse before any row opens. A custody refusal (`CustodyLocked`, `CustodyRowUnavailable`) passes
+ * `bad-args`; both refuse before any row opens. A custody refusal (`CustodyLocked`, `CustodyRecordUnavailable`) passes
  * through under its own name.
  */
 export async function runSealedAct(name: unknown, rawArgs: unknown, ctx: SealedActContext): Promise<Answer> {

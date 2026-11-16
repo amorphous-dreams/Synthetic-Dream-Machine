@@ -28,7 +28,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import {
-  CustodyLocked, CustodyRowUnavailable,
+  CustodyLocked, CustodyRecordUnavailable,
   type CustodyHolder, type FaceRef, type FaceUnlock, type HolderUnlock, type RecordReading, type RecordUpdate,
 } from "./custody-holder.js";
 import { PulamaRefused, copyReading, readingOf, unpackRefusal, type PulamaChannel, type PulamaFrame } from "./pulama-wire.js";
@@ -196,7 +196,7 @@ export function makePulamaHolder(a: {
       const standing = await reading("record.standing", { home, file, cold });
       if (standing.reading === "absent") return false;
       if (standing.reading === "locked") throw new CustodyLocked();
-      if (standing.reading === "unavailable") throw new CustodyRowUnavailable(home, file, standing.why);
+      if (standing.reading === "unavailable") throw new CustodyRecordUnavailable(home, file, standing.why);
       const expect = Uint8Array.from(standing.plaintext);
       try {
         if (!when(standing.plaintext)) return false;

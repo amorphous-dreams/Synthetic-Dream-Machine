@@ -22,7 +22,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import {
-  CustodyLocked, CustodyRowUnavailable, CustodyRecordUnknown, FaceCustodyAbsent, FaceLocked, WardAbsent, WardNeedsFreshUnlock,
+  CustodyLocked, CustodyRecordUnavailable, CustodyRecordUnknown, FaceCustodyAbsent, FaceLocked, WardAbsent, WardNeedsFreshUnlock,
   type RecordReading,
 } from "./custody-holder.js";
 import type { CustodyHome } from "./vault-carriers.js";
@@ -108,7 +108,7 @@ export function unpackRefusal(raw: unknown): Error {
       case "FaceLocked": return new FaceLocked(p.fcid ?? "");
       case "CustodyLocked": return new CustodyLocked();
       case "FaceCustodyAbsent": return new FaceCustodyAbsent(p.file ?? "");
-      case "CustodyRowUnavailable": return new CustodyRowUnavailable((p.home ?? "identity") as CustodyHome, p.file ?? "", p.reading ?? "");
+      case "CustodyRecordUnavailable": return new CustodyRecordUnavailable((p.home ?? "identity") as CustodyHome, p.file ?? "", p.reading ?? "");
       case "CustodyRecordUnknown": return new CustodyRecordUnknown((p.home ?? "identity") as CustodyHome, p.file ?? "");
       case "WardNeedsFreshUnlock": return new WardNeedsFreshUnlock("");
       case "WardAbsent": return new WardAbsent(p.fcid ?? "");

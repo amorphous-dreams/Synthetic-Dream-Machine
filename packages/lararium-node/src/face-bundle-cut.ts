@@ -160,7 +160,7 @@ export interface FaceBundleCut {
 
 /**
  * Cut face `face`'s bundle body and seal it under `bundleKey`. The caller owns the key and zero-fills it.
- * Refuses `BackupRefused` by name; a custody refusal (`CustodyLocked`, `CustodyRowUnavailable`) passes through.
+ * Refuses `BackupRefused` by name; a custody refusal (`CustodyLocked`, `CustodyRecordUnavailable`) passes through.
  */
 export async function cutFaceBundle(args: { readonly face: number; readonly bundleKey: Uint8Array; readonly door: BackupDoor | null; readonly ward?: WardCredential }): Promise<FaceBundleCut> {
   const { face, door } = args;

@@ -62,7 +62,7 @@ import {
 import { faceStands, runFoundTheFace } from "./commands/init.js";
 import type { BackupDoor } from "./face-bundle-cut.js";
 import { IslandVerbRefused } from "./island-verb-ask.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openColdCustodyRecord, removeColdCustodyRecord, updateColdCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { recoveryContactKeysOfOtherFaces, recoveryContactSetFile, readRecoveryContactSet, type RecoveryContactSetRecord } from "./recovery-contact-enrolment.js";
 import { couldConfirm, markProvisional } from "./face-provisional.js";
@@ -210,9 +210,9 @@ async function readPending(): Promise<Pending | null> {
   return await openColdCustodyRecord("identity", file, (bytes) => {
     let raw: { target?: unknown; body?: unknown };
     try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(bytes)) as typeof raw; }
-    catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+    catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
     const body = raw.body === undefined ? null : readFaceBundleBody(canonicalJsonBytes(raw.body));
-    if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null || restorePendingFile(raw.target as number) !== file) throw new CustodyRowUnavailable("identity", file, "malformed");
+    if (!Number.isSafeInteger(raw.target) || (raw.target as number) < 0 || body === null || restorePendingFile(raw.target as number) !== file) throw new CustodyRecordUnavailable("identity", file, "malformed");
     return { target: raw.target as number, body };
   });
 }

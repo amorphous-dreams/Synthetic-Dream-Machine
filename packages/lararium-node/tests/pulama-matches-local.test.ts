@@ -5,7 +5,7 @@
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, PERSONA_SCOPE_INFO } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, CustodyRecordUnknown, FaceLocked, type CustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, CustodyRecordUnknown, FaceLocked, type CustodyHolder } from "../src/custody-holder.js";
 import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { faceProofKeyFile } from "../src/face-key-custody.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
@@ -112,7 +112,7 @@ describe("RED remote-holder-matches-local: the vessel's side of a pūlama answer
     await f.local.writeRecord("identity", HOT, bytes(1));
     await f.local.updateRecord("identity", HOT, () => ({ plaintext: bytes(0xff), value: null }));
     // A row that stands and does not open names what stands, across the channel, as the same class.
-    const torn = remote.updateRecord("identity", HOT, (r) => { if (r.reading === "unavailable") throw new CustodyRowUnavailable("identity", HOT, r.why); return { plaintext: null, value: r.reading }; });
+    const torn = remote.updateRecord("identity", HOT, (r) => { if (r.reading === "unavailable") throw new CustodyRecordUnavailable("identity", HOT, r.why); return { plaintext: null, value: r.reading }; });
     await expect(torn).resolves.toBe("opens");
     await f.server.lock();
     expect(remote.isUnlocked()).toBe(false);

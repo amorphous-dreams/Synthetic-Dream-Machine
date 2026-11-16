@@ -33,7 +33,7 @@ import {
   faceKeyGrantImage, foldWithdrawals, hex, issueCertificate, mintVesselFaceKey, readFaceKeyGrant, requestCertificate,
   type FaceScope,
 } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, storeVesselFaceKey } from "./face-key-custody.js";
 import { FaceProvisional, refuseWhileProvisional } from "./face-provisional.js";
 import { updateCustodyRecord } from "./custody-seat.js";
@@ -178,7 +178,7 @@ export async function ensureFounderCertificate(
     await mergeAtScope({ personaGroup, rootKey: root.verifyingKey, scope, certificate, grant });
     return { state: "issued" };
   } catch (error) {
-    if (error instanceof CustodyRowUnavailable && (error.reading === "absent" || error.reading === "names-another-key")) {
+    if (error instanceof CustodyRecordUnavailable && (error.reading === "absent" || error.reading === "names-another-key")) {
       throw new FounderCertificateRefused("face-key-absent", `this vessel's custody holds no usable face key at ${scope.nexus} (${error.reading}).`, error);
     }
     throw error;
@@ -199,9 +199,9 @@ async function mergeAtScope(args: { readonly personaGroup: string; readonly root
     let held: Record<string, unknown> = { certificates: [], grants: [] };
     if (standing !== null) {
       try { held = JSON.parse(new TextDecoder().decode(standing)) as Record<string, unknown>; }
-      catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
       if (held["rootKey"] !== args.rootKey) throw new FounderCertificateRefused("record-other", "this face's record stands under another root key.");
-      if (!Array.isArray(held["certificates"]) || !Array.isArray(held["grants"])) throw new CustodyRowUnavailable("identity", file, "malformed");
+      if (!Array.isArray(held["certificates"]) || !Array.isArray(held["grants"])) throw new CustodyRecordUnavailable("identity", file, "malformed");
     }
     const certificates = held["certificates"] as unknown[], grants = held["grants"] as unknown[];
     const standingHere = certificates.find((c) => atScope(c, args.scope)) as { vesselFaceKey?: unknown } | undefined;

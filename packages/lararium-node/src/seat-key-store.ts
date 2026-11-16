@@ -43,7 +43,7 @@
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
 import { faceFileNames } from "./face-index.js";
 import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openColdCustodyRecord, openedCustody, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -126,9 +126,9 @@ export async function seatKeysOfFace(handleIndex: number): Promise<string[]> {
   for (const held of listSeatKeys()) {
     if (held.handleIndex !== handleIndex) continue;
     keys.push(await openColdCustodyRecord("identity", held.file, (secret) => {
-      if (secret.length !== 32) throw new CustodyRowUnavailable("identity", held.file, "malformed");
+      if (secret.length !== 32) throw new CustodyRecordUnavailable("identity", held.file, "malformed");
       const key = publicOf(secret);
-      if (seatKeyName(key) !== held.name) throw new CustodyRowUnavailable("identity", held.file, "names-another-key");
+      if (seatKeyName(key) !== held.name) throw new CustodyRecordUnavailable("identity", held.file, "names-another-key");
       return key;
     }));
   }
@@ -157,7 +157,7 @@ export async function storeSeatKey(handleIndex: number, secret: Uint8Array): Pro
       // The writer seals this store's own copy, which zero-fills below once the write has settled: no second
       // image of the secret outlives the store.
       if (bytes === null) return { plaintext: own, value: undefined };
-      if (!bytesEqual(bytes, own)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+      if (!bytesEqual(bytes, own)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
       return { plaintext: null, value: undefined };
     });
     return verifyingKey;
@@ -180,18 +180,18 @@ export async function signAsSeat(verifyingKey: string, image: Uint8Array): Promi
   if (held === null) {
     // The seat still answers first: a locked vessel refuses `CustodyLocked` before it says what it holds.
     await openedCustody();
-    throw new CustodyRowUnavailable("identity", `seat-key-h*-${seatKeyName(key)}.bin`, "absent");
+    throw new CustodyRecordUnavailable("identity", `seat-key-h*-${seatKeyName(key)}.bin`, "absent");
   }
   return openColdCustodyRecord("identity", held.file, (secret) => {
-    if (secret.length !== 32) throw new CustodyRowUnavailable("identity", held.file, "malformed");
-    if (publicOf(secret) !== key) throw new CustodyRowUnavailable("identity", held.file, "names-another-key");
+    if (secret.length !== 32) throw new CustodyRecordUnavailable("identity", held.file, "malformed");
+    if (publicOf(secret) !== key) throw new CustodyRecordUnavailable("identity", held.file, "names-another-key");
     return new Uint8Array(sign(null, Buffer.from(image), keyOf(secret)));
   });
 }
 
 /**
  * Retire one seat key: its row leaves, and this answers whether one stood. The holder removes only a row its own
- * vessel key opens, so a row that stands and does not open refuses `CustodyRowUnavailable` and stays.
+ * vessel key opens, so a row that stands and does not open refuses `CustodyRecordUnavailable` and stays.
  */
 export async function retireSeatKey(verifyingKey: string): Promise<boolean> {
   const held = heldSeatKey(verifyingKey);
@@ -204,6 +204,6 @@ export async function retireSeatKey(verifyingKey: string): Promise<boolean> {
     row.reading = secret.length !== 32 ? "malformed" : publicOf(secret) !== key ? "names-another-key" : null;
     return row.reading === null;
   });
-  if (row.reading !== null) throw new CustodyRowUnavailable("identity", held.file, row.reading);
+  if (row.reading !== null) throw new CustodyRecordUnavailable("identity", held.file, row.reading);
   return left;
 }

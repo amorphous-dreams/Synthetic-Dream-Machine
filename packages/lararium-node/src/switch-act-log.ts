@@ -30,7 +30,7 @@ import { SwitchActsSetAsideFull, type SwitchIntent, type SwitchOutcome } from "@
 import { existsSync, mkdirSync, renameSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { readCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 export const SWITCH_ACTS_FILE = "switch-acts.json";
@@ -112,7 +112,7 @@ const writeAct = (record: SwitchActRecord, fresh?: SwitchActReset) =>
 /** Whether the row opens now: a writer before this one may have set it aside and started a fresh ring. */
 async function rowOpens(): Promise<boolean> {
   try { await readCustodyRecord("identity", SWITCH_ACTS_FILE); return true; }
-  catch (error) { if (error instanceof CustodyRowUnavailable) return false; throw error; }
+  catch (error) { if (error instanceof CustodyRecordUnavailable) return false; throw error; }
 }
 
 /** One write at a time on this row in this process: a set-aside never moves a ring a writer before it just started. */
@@ -125,7 +125,7 @@ export const nodeSwitchActLog: SwitchActLog = {
     const run = turn.then(async () => {
       try { await writeAct(record); }
       catch (error) {
-        if (!(error instanceof CustodyRowUnavailable)) throw error;
+        if (!(error instanceof CustodyRecordUnavailable)) throw error;
         // RE-READ BEFORE ANY RENAME: the row moves aside only while it still does not open.
         if (await rowOpens()) { await writeAct(record); return; }
         const name = setAsideRecord();

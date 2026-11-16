@@ -21,7 +21,7 @@
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { vesselFaceTagFields, type VesselFaceTagDoor } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import type { FaceRef } from "./custody-holder.js";
 import { faceStandingCustody, faceWardKeyCustody, moveCustodyRecord, readCustodyRecord, updateCustodyRecord, withWardKeyCustody } from "./custody-seat.js";
 import type { WardCredential } from "./ward-credential.js";
@@ -46,7 +46,7 @@ function standSecret(file: string): Promise<Uint8Array> {
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   return updateCustodyRecord("identity", file, (standing) => {
     if (standing !== null) {
-      if (standing.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
+      if (standing.length !== 32) throw new CustodyRecordUnavailable("identity", file, "malformed");
       return { plaintext: null, value: Uint8Array.from(standing) };
     }
     const fresh = new Uint8Array(randomBytes(32));
@@ -87,7 +87,7 @@ export function foundingVesselFaceTagDoor(askDigest: string, ward?: WardCredenti
     const groupStands = await faceStandingCustody({ group: personaGroupDigest(group) }) !== null;
     const read = async (file: string): Promise<Uint8Array | null> => {
       const bytes = await readCustodyRecord("identity", file);
-      if (bytes !== null && bytes.length !== 32) { bytes.fill(0); throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      if (bytes !== null && bytes.length !== 32) { bytes.fill(0); throw new CustodyRecordUnavailable("identity", file, "malformed"); }
       return bytes;
     };
     const face: FaceRef = askStands ? { ask: askDigest } : { group: personaGroupDigest(group) };

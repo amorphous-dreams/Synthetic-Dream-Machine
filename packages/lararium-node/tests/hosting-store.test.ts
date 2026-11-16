@@ -26,7 +26,7 @@ import { describe, test, expect, afterEach } from "vitest";
 import { copyFileSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { hostingActCid, claimDigest, lineageOf, mintHostingAct, readFckCarrier, redeemClaim } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, FaceLocked } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, FaceLocked } from "../src/custody-holder.js";
 import { seatedCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {
   rollHosting, readHostingState, liveEpochs, spendToken, spendMintMarker, redeemedCount, mintedCount,
@@ -201,10 +201,10 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     const aDir = hostingDirPath(0, AID)!;
     for (const [f, bytes] of foreign) expect(readFileSync(join(aDir, f)).equals(bytes), f).toBe(false);
     for (const f of foreign.keys()) copyFileSync(join(bDir, f), join(aDir, f));     // B's rows, at A's paths
-    expect(await refusal(readHostingState(AID))).toBeInstanceOf(CustodyRowUnavailable);
-    expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyRowUnavailable);
+    expect(await refusal(readHostingState(AID))).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyRecordUnavailable);
     const spend = await refusal(spendToken({ nexusAid: AID, epochCid: e, n, claimDigest: "02".repeat(32) }));
-    expect(spend).toBeInstanceOf(CustodyRowUnavailable);                            // a burn nobody can read never reads as unspent
+    expect(spend).toBeInstanceOf(CustodyRecordUnavailable);                            // a burn nobody can read never reads as unspent
     expect(spend).toMatchObject({ home: "identity" });
     for (const [f, bytes] of foreign) expect(readFileSync(join(aDir, f)).equals(bytes), f).toBe(true);
     as(b);
@@ -249,8 +249,8 @@ describe("the burn — once, sealed, refuse before destroy", () => {
     expect((await readHostingState(AID))!.current).toEqual(act);
     // Bare bytes (an earlier build's cleartext state) refuse too, and nothing rolls over them.
     writeFileSync(join(hostingDirPath(0, AID)!, "state.json"), JSON.stringify({ current: act, previous: null, depth: 1 }));
-    expect(await refusal(readHostingState(AID))).toBeInstanceOf(CustodyRowUnavailable);
-    expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyRowUnavailable);
+    expect(await refusal(readHostingState(AID))).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(await refusal(rollHosting({ nexusAid: AID, leafSeed: LEAF }))).toBeInstanceOf(CustodyRecordUnavailable);
   });
 
   test("S7 — the floor reads no hosting row", async () => {

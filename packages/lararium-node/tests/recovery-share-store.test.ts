@@ -18,7 +18,7 @@
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
 import { readFckCarrier, type RecoveryShare } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { seatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import {
   RecoveryShareStands, deviceShareFile, loadRecoveryDeviceShare, persistRecoveryDeviceShare,
@@ -64,10 +64,10 @@ describe("the device recovery share at rest", () => {
     expect(readFileSync(handleRecordPath(deviceShareFile(0))).equals(foreign)).toBe(false);      // the encodings differ: two keys, two rows
     copyFileSync(bPath, handleRecordPath(deviceShareFile(0)));
     const read = await refusal(loadRecoveryDeviceShare(0));
-    expect(read).toBeInstanceOf(CustodyRowUnavailable);
+    expect(read).toBeInstanceOf(CustodyRecordUnavailable);
     expect(read).toMatchObject({ home: "identity", file: deviceShareFile(0) });
     const write = await refusal(persistRecoveryDeviceShare(share(77), 0));
-    expect(write).toBeInstanceOf(CustodyRowUnavailable);
+    expect(write).toBeInstanceOf(CustodyRecordUnavailable);
     expect(readFileSync(handleRecordPath(deviceShareFile(0))).equals(foreign)).toBe(true);       // the standing bytes never moved
     // The vessel that sealed them still opens them: nothing here re-sealed or wrapped the row.
     const aRow = handleRecordPath(deviceShareFile(0));
@@ -91,8 +91,8 @@ describe("the device recovery share at rest", () => {
     expect(moved.equals(sealed)).toBe(false);
     for (const standing of [moved, Buffer.from(JSON.stringify({ x: 3, ys: [1, 2, 3], custodian: "device", recoveryEpoch: 1 }))]) {
       writeFileSync(handleRecordPath(deviceShareFile(0)), standing);
-      expect(await refusal(loadRecoveryDeviceShare(0))).toBeInstanceOf(CustodyRowUnavailable);
-      expect(await refusal(persistRecoveryDeviceShare(share(5), 0))).toBeInstanceOf(CustodyRowUnavailable);
+      expect(await refusal(loadRecoveryDeviceShare(0))).toBeInstanceOf(CustodyRecordUnavailable);
+      expect(await refusal(persistRecoveryDeviceShare(share(5), 0))).toBeInstanceOf(CustodyRecordUnavailable);
       expect(readFileSync(handleRecordPath(deviceShareFile(0))).equals(standing)).toBe(true);
     }
     writeFileSync(handleRecordPath(deviceShareFile(0)), sealed);                                   // control: the true row still opens

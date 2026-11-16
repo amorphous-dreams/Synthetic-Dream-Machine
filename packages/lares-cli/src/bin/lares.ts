@@ -26,7 +26,7 @@ import { fileURLToPath } from "node:url";
 import { realpathSync }  from "node:fs";
 import { stdout }         from "node:process";
 import { parseArgs, ArgsError, type ParsedArgs } from "../parse-args.js";
-import { CustodyLocked, CustodyRowUnavailable } from "@lararium/node";
+import { CustodyLocked, CustodyRecordUnavailable } from "@lararium/node";
 import { bridge, commandScope, shimHelpLines, HOUSE_ABSENT_EXIT } from "../host-bridge.js";
 import { seatOfflineCustody, OfflineCustodyRefused } from "../offline-custody.js";
 import { seatNewFaceRoute } from "../face-route-prompt.js";
@@ -399,7 +399,7 @@ export async function dispatch(rawArgv: readonly string[]): Promise<number> {
     return await cmd.handler(args);
   } catch (err) {
     // A sealed row that stayed shut names itself on one line: the key was not opened, or a row does not open.
-    if (err instanceof OfflineCustodyRefused || err instanceof CustodyLocked || err instanceof CustodyRowUnavailable) {
+    if (err instanceof OfflineCustodyRefused || err instanceof CustodyLocked || err instanceof CustodyRecordUnavailable) {
       console.error(`lares ${cmd.name}: ${err.message}`);
       return 1;
     }

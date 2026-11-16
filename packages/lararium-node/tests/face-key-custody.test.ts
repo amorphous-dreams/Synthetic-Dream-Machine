@@ -26,7 +26,7 @@ import { FACE_PROOF_CUSTODY_RECORDS } from "../../lararium-mesh/src/face-authori
 import {
   faceProofKeyFile, vesselFaceKeyFile, storeFaceProofKey, storeVesselFaceKey, nodeFaceKeyCustody, nodeVesselFaceKeyCustody,
 } from "../src/face-key-custody.js";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { carrierTable } from "../src/vault-carriers.js";
@@ -123,7 +123,7 @@ describe("the face proof's custody rows and signing doors", () => {
       expect(moved.equals(intact)).toBe(false);
       for (const [damaged, reading] of [[moved, /reads (key-fails|torn)/], [Buffer.from(FACE_SECRET), /reads bare/]] as const) {
         writeFileSync(at(file), damaged);
-        await expect(door(), file).rejects.toThrow(CustodyRowUnavailable);
+        await expect(door(), file).rejects.toThrow(CustodyRecordUnavailable);
         await expect(door(), file).rejects.toThrow(reading);
         expect(readFileSync(at(file)).equals(damaged)).toBe(true);
       }

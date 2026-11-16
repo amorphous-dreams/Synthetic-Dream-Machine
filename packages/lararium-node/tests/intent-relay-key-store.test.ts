@@ -26,7 +26,7 @@ describe("the intent-admission service's cold S row", () => {
       expect(heldIntentRelayKey()).toBe(true);
       expect(await intentRelayPublicKey()).toBe(first.key);
       expect(verifies(first.key, await signAsIntentRelay(image))).toBe(true);
-      await expect(signAsCadence(first.key, image)).rejects.toMatchObject({ name: "CustodyRowUnavailable" });
+      await expect(signAsCadence(first.key, image)).rejects.toMatchObject({ name: "CustodyRecordUnavailable" });
       await expect(mintIntentRelayKey()).rejects.toMatchObject({ reading: "names-another-key" });
       const sealed = readFileSync(join(seat.homes.identity, INTENT_RELAY_KEY_FILE));
       expect(readSCarrier(sealed)).toBe("sealed");

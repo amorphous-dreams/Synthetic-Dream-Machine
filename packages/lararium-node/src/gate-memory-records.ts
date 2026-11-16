@@ -14,7 +14,7 @@
  * ── ONLY AN UNLOCKED VESSEL'S SOVEREIGN GATE READS IT ───────────────────────────────────────────
  * Both doors ask the custody seat. A locked seat, or a home with no seat, refuses `CustodyLocked`; a row that
  * stands and does not open (torn, bare, another key's), or opens to anything but a list, refuses
- * `CustodyRowUnavailable` at the read and at the write, and its bytes never move: the gate that asked falls
+ * `CustodyRecordUnavailable` at the read and at the write, and its bytes never move: the gate that asked falls
  * silent, and a hand repairs or removes the row. Nothing at a row's path reads as a gate that learned nothing of
  * that face.
  *
@@ -47,7 +47,7 @@
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */
 import { GATE_MEMORY_RECORD_MAX_BYTES, canonicalJson, type GateMemoryRecords } from "@lararium/mesh";
-import { CustodyRowUnavailable, type CustodyHolder } from "./custody-holder.js";
+import { CustodyRecordUnavailable, type CustodyHolder } from "./custody-holder.js";
 import { readCustodyRecord, standingCustody, updateCustodyRecord } from "./custody-seat.js";
 
 /** A row's name: a proof-subject digest, 64 characters of bare lower-case hex. */
@@ -84,7 +84,7 @@ function makeRecords(gateFace: number): GateMemoryRecords {
       const bytes = await readCustodyRecord("identity", file);
       // A row that opens to no list refuses by name, exactly as one that does not open: the gate that asked
       // falls silent, where a row read as nothing would let it treat the face as never learned.
-      if (bytes !== null && eventsOf(bytes) === null) throw new CustodyRowUnavailable("identity", file, "malformed");
+      if (bytes !== null && eventsOf(bytes) === null) throw new CustodyRecordUnavailable("identity", file, "malformed");
       return bytes;
     },
     async write(name: string, bytes: Uint8Array): Promise<void> {
@@ -100,7 +100,7 @@ function makeRecords(gateFace: number): GateMemoryRecords {
       await updateCustodyRecord("identity", file, (standing) => {
         if (standing !== null) {
           const held = eventsOf(standing);
-          if (held === null) throw new CustodyRowUnavailable("identity", file, "malformed");
+          if (held === null) throw new CustodyRecordUnavailable("identity", file, "malformed");
           for (const event of held) {
             if (!arriving.has(event)) throw new GateMemoryRecordRefused("a gate's memory only accretes: this write lacks an event the row holds, so the row keeps its bytes");
           }

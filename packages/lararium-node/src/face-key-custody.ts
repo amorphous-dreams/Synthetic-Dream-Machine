@@ -37,7 +37,7 @@
 import { createPrivateKey, createPublicKey, randomBytes, sign } from "node:crypto";
 import { mkdirSync } from "node:fs";
 import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openColdCustodyRecord, readCustodyRecord, updateColdCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
@@ -99,8 +99,8 @@ export { publicOf as nexusKeyPublicOf };
 
 /** Sign `image` under the row's secret, once that secret answers the public key the caller named. */
 function signUnder(file: string, secret: Uint8Array, answersTo: string, image: Uint8Array): Uint8Array {
-  if (secret.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
-  if (publicOf(secret) !== answersTo.toLowerCase()) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (secret.length !== 32) throw new CustodyRecordUnavailable("identity", file, "malformed");
+  if (publicOf(secret) !== answersTo.toLowerCase()) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
   return new Uint8Array(sign(null, Buffer.from(image), keyOf(secret)));
 }
 
@@ -136,7 +136,7 @@ export async function readNexusKeys(handleIndex: number, nexus: string): Promise
     if (bytes === null) return { plaintext: null, value: [] };
     if (bytes.length === 32) return { plaintext: null, value: [Uint8Array.from(bytes)] };
     if (bytes.length === 64) return { plaintext: null, value: [Uint8Array.from(bytes.subarray(0, 32)), Uint8Array.from(bytes.subarray(32))] };
-    throw new CustodyRowUnavailable("identity", file, "malformed");
+    throw new CustodyRecordUnavailable("identity", file, "malformed");
   });
 }
 
@@ -149,7 +149,7 @@ export async function readNexusKey(handleIndex: number, nexus: string): Promise<
   return updateColdCustodyRecord("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: null, value: null };
     const standing = standingOf(bytes);
-    if (standing === null) throw new CustodyRowUnavailable("identity", file, "malformed");
+    if (standing === null) throw new CustodyRecordUnavailable("identity", file, "malformed");
     return { plaintext: null, value: Uint8Array.from(standing) };
   });
 }
@@ -162,7 +162,7 @@ export async function mintNexusKey(handleIndex: number, nexus: string): Promise<
   return updateColdCustodyRecord("identity", file, (bytes) => {
     if (bytes !== null) {
       const standing = standingOf(bytes);
-      if (standing === null) throw new CustodyRowUnavailable("identity", file, "malformed");
+      if (standing === null) throw new CustodyRecordUnavailable("identity", file, "malformed");
       return { plaintext: null, value: Uint8Array.from(standing) };
     }
     const fresh = new Uint8Array(randomBytes(32));
@@ -184,9 +184,9 @@ export interface NexusKeyReissue {
 export async function beginNexusKeyReissue(handleIndex: number, nexus: string): Promise<NexusKeyReissue> {
   const file = faceProofKeyFile(handleIndex, nexus);
   return updateColdCustodyRecord("identity", file, (bytes) => {
-    if (bytes === null) throw new CustodyRowUnavailable("identity", file, "absent");
+    if (bytes === null) throw new CustodyRecordUnavailable("identity", file, "absent");
     if (bytes.length === 64) return { plaintext: null, value: { from: Uint8Array.from(bytes.subarray(0, 32)), to: Uint8Array.from(bytes.subarray(32)) } };
-    if (bytes.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
+    if (bytes.length !== 32) throw new CustodyRecordUnavailable("identity", file, "malformed");
     const to = new Uint8Array(randomBytes(32));
     const both = new Uint8Array(64);
     both.set(bytes, 0); both.set(to, 32);
@@ -202,8 +202,8 @@ export async function finishNexusKeyReissue(handleIndex: number, nexus: string, 
   assertSecret(to);
   const file = faceProofKeyFile(handleIndex, nexus);
   await updateColdCustodyRecord("identity", file, (bytes) => {
-    if (bytes === null) throw new CustodyRowUnavailable("identity", file, "absent");
-    if (bytes.length !== 64 || !bytesEqual(bytes.subarray(32), to)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (bytes === null) throw new CustodyRecordUnavailable("identity", file, "absent");
+    if (bytes.length !== 64 || !bytesEqual(bytes.subarray(32), to)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return { plaintext: Uint8Array.from(to), value: undefined };
   });
 }
@@ -214,8 +214,8 @@ export async function abandonNexusKeyReissue(handleIndex: number, nexus: string,
   assertSecret(to);
   const file = faceProofKeyFile(handleIndex, nexus);
   await updateColdCustodyRecord("identity", file, (bytes) => {
-    if (bytes === null) throw new CustodyRowUnavailable("identity", file, "absent");
-    if (bytes.length !== 64 || !bytesEqual(bytes.subarray(32), to)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (bytes === null) throw new CustodyRecordUnavailable("identity", file, "absent");
+    if (bytes.length !== 64 || !bytesEqual(bytes.subarray(32), to)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return { plaintext: Uint8Array.from(bytes.subarray(0, 32)), value: undefined };
   });
 }
@@ -229,11 +229,11 @@ export async function abandonNexusKeyReissue(handleIndex: number, nexus: string,
 export async function storeFaceProofKey(scope: FaceKeyScope, secret: Uint8Array, handleIndex: number): Promise<void> {
   assertSecret(secret);
   const file = faceProofKeyFile(handleIndex, scope.nexus);
-  if (publicOf(secret) !== scope.faceKey.toLowerCase()) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (publicOf(secret) !== scope.faceKey.toLowerCase()) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateColdCustodyRecord("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -243,11 +243,11 @@ export async function storeVesselFaceKey(handleIndex: number, scope: FaceKeyScop
   assertSecret(secret);
   const file = vesselFaceKeyFile(handleIndex, scope);
   const held = heldVesselFaceKeyFile(scope);
-  if (held !== null && held !== file) throw new CustodyRowUnavailable("identity", held, "names-another-face");
+  if (held !== null && held !== file) throw new CustodyRecordUnavailable("identity", held, "names-another-face");
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRecord("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -260,7 +260,7 @@ export async function readVesselFaceKeyPublic(scope: FaceKeyScope): Promise<stri
   const secret = await readCustodyRecord("identity", file);
   if (secret === null) return null;
   try {
-    if (secret.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
+    if (secret.length !== 32) throw new CustodyRecordUnavailable("identity", file, "malformed");
     return publicOf(secret);
   } finally { secret.fill(0); }
 }
@@ -279,7 +279,7 @@ export async function listFaceProofKeys(handleIndex: number): Promise<Array<{ re
     if (!m || Number(m[1]) !== handleIndex) continue;
     out.push({ scope: m[2]!, secret: await openColdCustodyRecord("identity", file, (secret) => {
       if (secret.length === 64) throw new Error(`face-key-custody: a re-issue stands half done at ${file}; finish it before a bundle carries this face`);
-      if (secret.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
+      if (secret.length !== 32) throw new CustodyRecordUnavailable("identity", file, "malformed");
       return Uint8Array.from(secret);
     }) });
   }
@@ -308,7 +308,7 @@ export async function landFaceProofKey(scope: string, secret: Uint8Array, handle
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateColdCustodyRecord("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -321,18 +321,18 @@ export const nodeFaceKeyCustody = {
     if (candidates.length === 0) {
       // The seat still answers first: a locked vessel refuses `CustodyLocked` before it says what it holds.
       return updateColdCustodyRecord("identity", faceProofKeyFile(0, scope.nexus), () => {
-        throw new CustodyRowUnavailable("identity", `face-proof-key-h*-${nexusKeyRecordName(scope.nexus)}.bin`, "absent");
+        throw new CustodyRecordUnavailable("identity", `face-proof-key-h*-${nexusKeyRecordName(scope.nexus)}.bin`, "absent");
       });
     }
     for (const file of candidates) {
       const signed = await openColdCustodyRecord("identity", file, (bytes) => {
         const standing = standingOf(bytes);
-        if (standing === null) throw new CustodyRowUnavailable("identity", file, "malformed");
+        if (standing === null) throw new CustodyRecordUnavailable("identity", file, "malformed");
         return publicOf(standing) === scope.faceKey.toLowerCase() ? signUnder(file, Uint8Array.from(standing), scope.faceKey, image) : null;
       });
       if (signed !== null) return signed;
     }
-    throw new CustodyRowUnavailable("identity", candidates[0]!, "names-another-key");
+    throw new CustodyRecordUnavailable("identity", candidates[0]!, "names-another-key");
   },
 };
 
@@ -340,9 +340,9 @@ export const nodeFaceKeyCustody = {
 export const nodeVesselFaceKeyCustody = {
   async signAsVesselFace(scope: FaceKeyScope, vesselFaceKey: string, image: Uint8Array): Promise<Uint8Array> {
     const file = heldVesselFaceKeyFile(scope);
-    if (file === null) throw new CustodyRowUnavailable("identity", `vessel-face-key-${scopeName(scope)}`, "absent");
+    if (file === null) throw new CustodyRecordUnavailable("identity", `vessel-face-key-${scopeName(scope)}`, "absent");
     const secret = await readCustodyRecord("identity", file);
-    if (secret === null) throw new CustodyRowUnavailable("identity", file, "absent");
+    if (secret === null) throw new CustodyRecordUnavailable("identity", file, "absent");
     try { return signUnder(file, secret, vesselFaceKey, image); } finally { secret.fill(0); }
   },
 };

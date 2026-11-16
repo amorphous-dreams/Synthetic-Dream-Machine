@@ -9,7 +9,7 @@ import { faceFilePathSync, readFaceIndexSync } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { readIdentityAnchors, type AnchorStore, type IdentityAnchors } from "@lararium/mesh";
 import { identityHomeClosure } from "./identity-home-closure.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, unlockedFaceOrdinals, writeCustodyRecord } from "./custody-seat.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 
@@ -29,8 +29,8 @@ const utf8 = new TextEncoder();
 const text = (bytes: Uint8Array): string => new TextDecoder().decode(bytes);
 
 /** A row that opened and does not hold its own shape: named, never read as absent. */
-function malformed(file: string): CustodyRowUnavailable {
-  return new CustodyRowUnavailable("identity", file, "malformed");
+function malformed(file: string): CustodyRecordUnavailable {
+  return new CustodyRecordUnavailable("identity", file, "malformed");
 }
 
 /**

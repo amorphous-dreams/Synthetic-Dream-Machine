@@ -271,7 +271,7 @@ describe("CustodyHolder.removeColdRecord — an act removes the cold row it comm
     const ownPath = handleRecordPathIn(homes.identity, COLD);
     writeFileSync(ownPath, readFileSync(handleRecordPathIn(other.homes.identity, COLD)));
     const before = readFileSync(ownPath);
-    await expect(h.removeColdRecord("identity", COLD)).rejects.toThrow(/custody row identity\/recovery-device-share-h0\.bin reads/);
+    await expect(h.removeColdRecord("identity", COLD)).rejects.toThrow(/custody record identity\/recovery-device-share-h0\.bin reads/);
     expect(readFileSync(ownPath).equals(before)).toBe(true);
   });
 });

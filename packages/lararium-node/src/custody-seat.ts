@@ -21,7 +21,7 @@
  * ── A ROW READS WHOLE OR REFUSES ────────────────────────────────────────────────────────────────
  *   `readCustodyRecord`   the row's plaintext; `null` when nothing stands at its path, and for that reading alone.
  *                      Locked refuses `CustodyLocked`. A row that stands and does not open (torn, bare, an
- *                      earlier shape, another key's) refuses `CustodyRowUnavailable` naming what stands.
+ *                      earlier shape, another key's) refuses `CustodyRecordUnavailable` naming what stands.
  *   `writeCustodyRecord`  the one sealed writer, under the key the seat holds.
  *   `updateCustodyRecord` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
  *                      on its standing ones. The decision receives the row's plaintext (`null` when nothing stands)
@@ -37,7 +37,7 @@
  * Node-main only: a worker never imports this module.
  */
 import { FLOOR_REST_KEY_INFO, GATE_FLOOR_BUNDLE_INFO, WardRefused, custodyRootDoor, type CustodyRootDoor } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RecordUpdate, type WardSeat } from "./custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, FaceLocked, type CustodyHolder, type FaceRef, type RecordUpdate, type WardSeat } from "./custody-holder.js";
 import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-credential.js";
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
@@ -118,7 +118,7 @@ export async function readCustodyRecord(home: CustodyHome, file: string): Promis
   if (r.reading === "opens") return r.plaintext;
   if (r.reading === "absent") return null;
   if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
-  throw new CustodyRowUnavailable(home, file, r.why);
+  throw new CustodyRecordUnavailable(home, file, r.why);
 }
 
 /** Seal `plaintext` as one row, through the one sealed writer, under the key the seat holds. */
@@ -137,13 +137,13 @@ export async function updateCustodyRecord<T>(
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
     if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
-    throw new CustodyRowUnavailable(home, file, r.why);
+    throw new CustodyRecordUnavailable(home, file, r.why);
   });
 }
 
 /**
  * Remove one sealed row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
- * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays, so a removal never
+ * that stands and does not open under the seat's key refuses `CustodyRecordUnavailable` and stays, so a removal never
  * destroys bytes this vessel's key did not seal. `when`, where given, reads the standing plaintext under the same
  * hold: a row it declines stays, and the removal answers false.
  */
@@ -166,7 +166,7 @@ export async function withCustodyRecords<T>(act: (rows: {
 
 /**
  * Remove one COLD row, as one custody holder; answers whether a row stood. Locked refuses `CustodyLocked`; a row
- * that stands and does not open under the seat's key refuses `CustodyRowUnavailable` and stays. `when`, where
+ * that stands and does not open under the seat's key refuses `CustodyRecordUnavailable` and stays. `when`, where
  * given, reads the standing plaintext under the same hold: a row it declines stays, and the removal answers false.
  */
 export async function removeColdCustodyRecord(home: CustodyHome, file: string, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> {
@@ -175,7 +175,7 @@ export async function removeColdCustodyRecord(home: CustodyHome, file: string, w
 
 /**
  * Open one COLD row for one act. `act` receives the row's plaintext, which zero-fills when the act settles, so the
- * act copies out what it keeps. A row with nothing at its path refuses `CustodyRowUnavailable` reading `absent`,
+ * act copies out what it keeps. A row with nothing at its path refuses `CustodyRecordUnavailable` reading `absent`,
  * as every reading but a whole one does: a cold row holds a secret some act already counted on.
  */
 export async function openColdCustodyRecord<T>(
@@ -197,7 +197,7 @@ export async function updateColdCustodyRecord<T>(
     if (r.reading === "opens") return decide(r.plaintext);
     if (r.reading === "absent") return decide(null);
     if (r.reading === "locked") throw r.fcid ? new FaceLocked(r.fcid) : new CustodyLocked();
-    throw new CustodyRowUnavailable(home, file, r.why);
+    throw new CustodyRecordUnavailable(home, file, r.why);
   });
 }
 

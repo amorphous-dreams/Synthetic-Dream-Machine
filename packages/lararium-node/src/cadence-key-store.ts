@@ -26,7 +26,7 @@
 import { createPrivateKey, createPublicKey, randomFillSync, sign } from "node:crypto";
 import { faceFileNames } from "./face-index.js";
 import { cadenceNextDigest, sha256HexBytesSync, type CadenceHolder } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openColdCustodyRecord, openedCustody, removeColdCustodyRecord, updateColdCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -89,7 +89,7 @@ export async function mintCadenceKey(handleIndex: number): Promise<CadenceHolder
     const next = cadenceNextDigest(publicOf(secret.subarray(32)));
     const file = cadenceKeyFile(handleIndex, key);
     await updateColdCustodyRecord("identity", file, (bytes) => {
-      if (bytes !== null) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+      if (bytes !== null) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
       return { plaintext: secret, value: undefined };
     });
     return { key, next };
@@ -102,12 +102,12 @@ export async function signAsCadence(verifyingKey: string, image: Uint8Array): Pr
   const file = heldCadenceFile(key);
   if (file === null) {
     await openedCustody();
-    throw new CustodyRowUnavailable("identity", `cadence-key-${cadenceKeyName(key)}`, "absent");
+    throw new CustodyRecordUnavailable("identity", `cadence-key-${cadenceKeyName(key)}`, "absent");
   }
   return openColdCustodyRecord("identity", file, (secret) => {
-    if (secret.length !== RECORD_BYTES) throw new CustodyRowUnavailable("identity", file, "malformed");
+    if (secret.length !== RECORD_BYTES) throw new CustodyRecordUnavailable("identity", file, "malformed");
     const own = secret.subarray(0, 32);
-    if (publicOf(own) !== key) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (publicOf(own) !== key) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return Buffer.from(sign(null, Buffer.from(image), keyOf(own))).toString("hex");
   });
 }
@@ -125,6 +125,6 @@ export async function retireCadenceKey(verifyingKey: string): Promise<boolean> {
     reading = secret.length !== RECORD_BYTES ? "malformed" : publicOf(secret.subarray(0, 32)) !== key ? "names-another-key" : null;
     return reading === null;
   });
-  if (reading !== null) throw new CustodyRowUnavailable("identity", file, reading);
+  if (reading !== null) throw new CustodyRecordUnavailable("identity", file, reading);
   return left;
 }

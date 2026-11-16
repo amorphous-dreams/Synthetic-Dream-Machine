@@ -41,7 +41,7 @@ import {
   NEXUS_DOC_DOMAIN, charterInceptionBytes, charterInceptionImage, foundingRoster, genesisOfInception, hex, mintColdKey, rotateSealEpoch, sealLineageHead, sealRollBytes, verifySealLineage,
   type NexusCharterKahu, type SealEpoch,
 } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { seatCustody, unseatCustody, updateColdCustodyRecord } from "../src/custody-seat.js";
 import { foundCustody } from "../src/custody-session.js";
@@ -262,7 +262,7 @@ describe("the rite arms its heads behind the door", () => {
     copyFileSync(handleRecordPath(rows[0]!), handleRecordPath(`seat-key-h2-${"0".repeat(32)}.bin`));
     expect(await seatKeysOfFace(2).catch((e: unknown) => e)).toMatchObject({ reading: "key-fails" });
     await updateColdCustodyRecord("identity", seatKeyFile(one, 3), () => ({ plaintext: chairSeed(0, 0, "a8"), value: undefined }));
-    expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toBeInstanceOf(CustodyRowUnavailable);
+    expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toBeInstanceOf(CustodyRecordUnavailable);
     expect(await seatKeysOfFace(3).catch((e: unknown) => e)).toMatchObject({ reading: "names-another-key" });
   });
 

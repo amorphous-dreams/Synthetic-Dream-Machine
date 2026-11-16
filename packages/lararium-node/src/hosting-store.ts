@@ -50,7 +50,7 @@ import {
   sha256HexSync, isHostingAct, hostingActCid, hostingEpochOf, mintHostingAct,
   type HostingAct, type HostingEpoch,
 } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openedCustody, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { HostingFaceAbsent, hostingDirPath, hostingFaceOf, hostingRecordDir } from "./hosting-face.js";
 import { ownerOnlyDir } from "./fs-atomic.js";
@@ -69,7 +69,7 @@ export interface HostingState {
 
 const utf8 = new TextEncoder();
 const HEX64 = /^[0-9a-f]{64}$/;
-const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+const malformed = (file: string): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
 
 /** Stand one Nexus's hosting directory in face `face` at the owner-only mode. */
 export async function standHostingDir(face: number, nexusAid: string): Promise<string> {
@@ -131,7 +131,7 @@ async function spendNames(face: number, nexusAid: string): Promise<string[]> {
   try { return readdirSync(dir).filter((n) => SPEND_FILE.test(n)); }
   catch (err) {
     if ((err as NodeJS.ErrnoException).code === "ENOENT") return [];
-    throw new CustodyRowUnavailable("identity", hostingRecordDir(face, nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
+    throw new CustodyRecordUnavailable("identity", hostingRecordDir(face, nexusAid), `unlistable (${(err as NodeJS.ErrnoException).code ?? "unreadable"})`);
   }
 }
 
@@ -173,7 +173,7 @@ export async function rollHosting(opts: {
     if (live.has(SPEND_FILE.exec(name)![1]!)) continue;
     const row = `${hostingRecordDir(face, opts.nexusAid)}/${name}`;
     try { await removeCustodyRecord("identity", row); }
-    catch (err) { if (err instanceof CustodyRowUnavailable) unswept.push(row); else throw err; }
+    catch (err) { if (err instanceof CustodyRecordUnavailable) unswept.push(row); else throw err; }
   }
   return { act: minted.act, state, unswept };
 }

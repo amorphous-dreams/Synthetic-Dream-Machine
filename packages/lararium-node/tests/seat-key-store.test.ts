@@ -31,7 +31,7 @@ import { readFckCarrier } from "@lararium/mesh";
 import {
   SEAT_KEY_FILE, heldSeatKey, listSeatKeys, mintSeatKey, retireSeatKey, seatKeyFile, seatKeyName, signAsSeat, storeSeatKey,
 } from "../src/seat-key-store.js";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { bundleCarriers, carrierCensus, carrierTable } from "../src/vault-carriers.js";
@@ -105,7 +105,7 @@ describe("a seat's own key on the custody seat", () => {
   });
 
   test("S4 — a key no row holds refuses absent and signs nothing", async () => {
-    await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRowUnavailable);
+    await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRecordUnavailable);
     await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(/reads absent/);
     expect(seatFiles()).toEqual([]);
   });
@@ -135,10 +135,10 @@ describe("a seat's own key on the custody seat", () => {
     expect(moved.equals(intact)).toBe(false);
     for (const [damaged, reading] of [[moved, /reads (key-fails|torn)/], [Buffer.from(SECRET), /reads bare/]] as const) {
       writeFileSync(at(file), damaged);
-      await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRowUnavailable);
+      await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(CustodyRecordUnavailable);
       await expect(signAsSeat(KEY, IMAGE)).rejects.toThrow(reading);
       await expect(storeSeatKey(0, SECRET)).rejects.toThrow(reading);
-      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRowUnavailable);
+      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRecordUnavailable);
       expect(readFileSync(at(file)).equals(damaged)).toBe(true);
     }
     writeFileSync(at(file), intact);
@@ -207,7 +207,7 @@ describe("a seat's own key on the custody seat", () => {
     for (const [planted, reading] of [[secretOf(60), /reads names-another-key/], [new Uint8Array(31), /reads malformed/]] as const) {
       await c.holder.writeRecord("identity", file, planted);
       const standing = readFileSync(at(file));
-      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRowUnavailable);
+      await expect(retireSeatKey(KEY)).rejects.toThrow(CustodyRecordUnavailable);
       await expect(retireSeatKey(KEY)).rejects.toThrow(reading);
       expect(readFileSync(at(file)).equals(standing), "the planted row stays, byte for byte").toBe(true);
     }

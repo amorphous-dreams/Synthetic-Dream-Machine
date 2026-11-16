@@ -44,7 +44,7 @@ import {
 import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { primaryNexusAid, readCarriedCharters } from "./carried-set.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { openedCustody } from "./custody-seat.js";
 import { nexusCharterStands, readNexusDoc } from "./nexus-doc.js";
 import { heldNexusLeaves } from "./nexus-leaf.js";
@@ -543,7 +543,7 @@ export interface PendingCrossing {
   readonly witnesses:     readonly TransitionWitness[];
 }
 
-const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("seal", file, "malformed");
+const malformed = (file: string): CustodyRecordUnavailable => new CustodyRecordUnavailable("seal", file, "malformed");
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 const isKeys = (v: unknown): v is string[] => Array.isArray(v) && v.every((k) => typeof k === "string" && /^[0-9a-fA-F]{64}$/.test(k));
 const isThreshold = (v: unknown): v is number => typeof v === "number" && Number.isInteger(v) && v >= 1;

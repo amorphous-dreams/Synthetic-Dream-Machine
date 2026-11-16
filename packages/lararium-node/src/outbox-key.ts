@@ -32,7 +32,7 @@ export class OutboxKeyUnreadable extends Error {
 
 /**
  * The outbox key of the sending face `face`: the row's bytes where it stands, a fresh key sealed into it where it does not. Refuses
- * `CustodyLocked` on a locked vessel and `CustodyRowUnavailable` on a row the seat's key does not open, before any
+ * `CustodyLocked` on a locked vessel and `CustodyRecordUnavailable` on a row the seat's key does not open, before any
  * mint.
  */
 export function openOutboxKey(face: number): Promise<OutboxKey> {

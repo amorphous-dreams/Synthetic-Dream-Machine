@@ -532,7 +532,7 @@ describe("a face returns from its bundle onto a fresh vessel", () => {
     await foundVessel("torn");
     await seatedCustody()!.writeRecord("identity", ".persona-petnames-h1.json", new TextEncoder().encode("{ this row reads as no map"));
     before = homeTree();
-    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody row identity\/\.persona-petnames.*reads malformed/);
+    expect(await refusalOf(restoreFaceBundle({ sealedBody: a.sealedBody, bundleKey: a.bundleKey, as: 1, withRepo }))).toMatch(/^threw: custody record identity\/\.persona-petnames.*reads malformed/);
     expect(homeTree()).toBe(before);
     expect(pendingStands()).toBe(false);
 

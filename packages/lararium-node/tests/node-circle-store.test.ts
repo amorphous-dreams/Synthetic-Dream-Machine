@@ -30,7 +30,7 @@ import {
 import * as circleStoreModule from "../src/node-circle-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE, handleBookFile } from "../src/node-circle-store.js";
 import * as nodeBarrel from "../src/index.js";
-import { CustodyLocked, CustodyRowUnavailable, CustodyRecordUnknown, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, CustodyRecordUnknown, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { carrierCensus, carrierTable } from "../src/vault-carriers.js";
@@ -105,7 +105,7 @@ describe("the handle-book row", () => {
       ["bare", Buffer.from(JSON.stringify(book.snapshot())), /reads bare/],
     ] as const) {
       writeFileSync(at(FILE), bytes);
-      await expect(loadNodeHandleBook(0), label).rejects.toThrow(CustodyRowUnavailable);
+      await expect(loadNodeHandleBook(0), label).rejects.toThrow(CustodyRecordUnavailable);
       await expect(loadNodeHandleBook(0), label).rejects.toThrow(reads);
       await expect(saveNodeHandleBook(0, new HandleBook()), label).rejects.toThrow();
       expect(readFileSync(at(FILE)).equals(bytes), `${label}: the bytes at rest never moved`).toBe(true);

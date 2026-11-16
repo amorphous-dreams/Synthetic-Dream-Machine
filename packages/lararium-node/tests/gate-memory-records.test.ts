@@ -30,7 +30,7 @@ import { storedWithdrawals } from "../../lararium-mesh/src/gate-withdrawal-store
 import { dial, memoryOf, presenter, sibling, world } from "../../lararium-mesh/tests/face-gate-fixture.js";
 import { chain, history } from "../../lararium-mesh/tests/face-proof-fixture.js";
 import { FsCustodyIo } from "../src/custody-io.js";
-import { CustodyLocked, CustodyRowUnavailable, FaceLocked, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, FaceLocked, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { GateMemoryRecordRefused, gateMemoryRecordFile, gateMemoryRecords } from "../src/gate-memory-records.js";
 import { carrierTable, sSealedCarriers } from "../src/vault-carriers.js";
@@ -158,9 +158,9 @@ describe("a gate's memory behind the custody seat", () => {
     writeFileSync(rowPath(c, NAME), alien);
     // … and the decoded ones: the row no longer opens under this vessel's key.
     const read = await rows.read(NAME).catch((e: unknown) => e);
-    expect(read).toBeInstanceOf(CustodyRowUnavailable);
-    expect((read as CustodyRowUnavailable).reading).toBe("key-fails");
-    await expect(rows.write(NAME, text("[\"mine\",\"more\"]"))).rejects.toBeInstanceOf(CustodyRowUnavailable);
+    expect(read).toBeInstanceOf(CustodyRecordUnavailable);
+    expect((read as CustodyRecordUnavailable).reading).toBe("key-fails");
+    await expect(rows.write(NAME, text("[\"mine\",\"more\"]"))).rejects.toBeInstanceOf(CustodyRecordUnavailable);
     expect(readFileSync(rowPath(c, NAME)).equals(alien)).toBe(true);                         // the write landed nothing
     // CONTROL: the row's own bytes, laid back, read and take a write.
     writeFileSync(rowPath(c, NAME), mine);
@@ -237,13 +237,13 @@ describe("a gate's memory behind the custody seat", () => {
     await c.holder.writeRecord("identity", gateMemoryRecordFile(0, MAL), text("{}"));
     const malformed = readFileSync(rowPath(c, MAL));
     const refused = await rows.write(MAL, text("[1]")).catch((err: unknown) => err);
-    expect(refused).toBeInstanceOf(CustodyRowUnavailable);
-    expect((refused as CustodyRowUnavailable).reading).toBe("malformed");
+    expect(refused).toBeInstanceOf(CustodyRecordUnavailable);
+    expect((refused as CustodyRecordUnavailable).reading).toBe("malformed");
     expect(readFileSync(rowPath(c, MAL)).equals(malformed)).toBe(true);
     // The read refuses the same way, so a gate over that row falls silent and never reads the face as unlearned.
     const unread = await rows.read(MAL).catch((err: unknown) => err);
-    expect(unread).toBeInstanceOf(CustodyRowUnavailable);
-    expect((unread as CustodyRowUnavailable).reading).toBe("malformed");
+    expect(unread).toBeInstanceOf(CustodyRecordUnavailable);
+    expect((unread as CustodyRecordUnavailable).reading).toBe("malformed");
     await expect(storedWithdrawals(rows).read({ faceKey: "00".repeat(32), nexus: "nexus-a.synthetic" } as never)).resolves.toBeNull();   // CONTROL: a face with no row reads as nothing
     // A new holder over the same tree answers a new door: its store verifies every row again.
     await c.holder.lock();

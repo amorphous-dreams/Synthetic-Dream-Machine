@@ -26,7 +26,7 @@ import {
   persistIdentityAnchors, loadIdentityAnchors, listAnchoredPersonas,
   persistVeilArchive, loadVeilArchive, veilArchivePath, veilArchiveFile, type IdentityAnchors,
 } from "../src/identity-anchors.js";
-import { CustodyLocked, CustodyRowUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { faceCarrierFor } from "../src/face-custody.js";
 import { faceTreePath } from "../src/face-index.js";
@@ -72,7 +72,7 @@ describe("the identity home's sealed family", () => {
 
   test("A3 a row that opens and holds another shape refuses by name", async () => {
     await c.holder.writeRecord("identity", "anchors-h0.json", new TextEncoder().encode(JSON.stringify({ personaGroupId: "aa11" })));
-    await expect(loadIdentityAnchors()).rejects.toThrow(CustodyRowUnavailable);
+    await expect(loadIdentityAnchors()).rejects.toThrow(CustodyRecordUnavailable);
     await expect(loadIdentityAnchors()).rejects.toThrow(/anchors-h0\.json reads malformed/);
     await c.holder.writeRecord("identity", "anchors-h1.json", new TextEncoder().encode(JSON.stringify({ ...anchors, deviceEdge: "not-an-object" })));
     await expect(loadIdentityAnchors(1)).rejects.toThrow(/malformed/);

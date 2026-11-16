@@ -29,7 +29,7 @@ import { mkdirSync } from "node:fs";
 import { faceFileNames } from "./face-index.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { bytesEqual } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -69,7 +69,7 @@ export async function readFaceAddressSecret(personaGroup: string): Promise<Uint8
   const file = faceAddressSecretFile(personaGroup);
   const bytes = await readCustodyRecord("identity", file);
   if (bytes === null) return null;
-  if (bytes.length !== 32) { bytes.fill(0); throw new CustodyRowUnavailable("identity", file, "malformed"); }
+  if (bytes.length !== 32) { bytes.fill(0); throw new CustodyRecordUnavailable("identity", file, "malformed"); }
   return bytes;
 }
 
@@ -80,7 +80,7 @@ export async function mintFaceAddressSecret(personaGroup: string): Promise<Uint8
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   return updateCustodyRecord("identity", file, (bytes) => {
     if (bytes !== null) {
-      if (bytes.length !== 32) throw new CustodyRowUnavailable("identity", file, "malformed");
+      if (bytes.length !== 32) throw new CustodyRecordUnavailable("identity", file, "malformed");
       return { plaintext: null, value: Uint8Array.from(bytes) };
     }
     const fresh = new Uint8Array(randomBytes(32));
@@ -95,7 +95,7 @@ export async function landFaceAddressSecret(personaGroup: string, secret: Uint8A
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRecord("identity", file, (bytes) => {
     if (bytes === null) return { plaintext: Uint8Array.from(secret), value: undefined };
-    if (!bytesEqual(bytes, secret)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(bytes, secret)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -117,7 +117,7 @@ export async function keepPendingFleetJoin(personaGroup: string, pending: Pendin
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
   await updateCustodyRecord("identity", file, (standing) => {
     if (standing === null) return { plaintext: bytes, value: undefined };
-    if (!bytesEqual(standing, bytes)) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (!bytesEqual(standing, bytes)) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return { plaintext: null, value: undefined };
   });
 }
@@ -129,7 +129,7 @@ function readPendingBytes(bytes: Uint8Array, file: string): PendingFleetJoin {
     const r = v as Record<string, unknown>;
     if (typeof r["sealSecret"] !== "string" || !/^[0-9a-f]{64}$/.test(r["sealSecret"])) throw new Error("malformed");
     return { request: r["request"], offer: r["offer"], sealSecret: r["sealSecret"] };
-  } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+  } catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
 }
 
 /** The pending join this vessel keeps for one face, or null. */
@@ -228,12 +228,12 @@ export async function keepFaceJoinRecord(record: FaceJoinRecord): Promise<void> 
     if (standing !== null) {
       let root: unknown, kept: unknown, keptPin: unknown;
       try { ({ rootKey: root, issued: kept, hearthPin: keptPin } = JSON.parse(new TextDecoder().decode(standing)) as { rootKey?: unknown; issued?: unknown; hearthPin?: unknown }); } catch { root = undefined; }
-      if (root !== record.rootKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+      if (root !== record.rootKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
       if (record.issued === undefined) {
-        try { issued = readIssued(kept); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+        try { issued = readIssued(kept); } catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
       }
       if (record.hearthPin === undefined) {
-        try { hearthPin = readHearthPin(keptPin); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+        try { hearthPin = readHearthPin(keptPin); } catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
       }
       const bytes = recordBytes(record, issued, hearthPin);
       if (bytesEqual(standing, bytes)) return { plaintext: null, value: undefined };
@@ -267,11 +267,11 @@ export async function noteIssuedFaceKeys(args: {
     let hearthPin: string | undefined;
     if (standing !== null) {
       let r: Record<string, unknown>;
-      try { r = JSON.parse(new TextDecoder().decode(standing)) as Record<string, unknown>; } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
-      if (r["rootKey"] !== args.rootKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
-      if (!Array.isArray(r["certificates"]) || !Array.isArray(r["grants"])) throw new CustodyRowUnavailable("identity", file, "malformed");
+      try { r = JSON.parse(new TextDecoder().decode(standing)) as Record<string, unknown>; } catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
+      if (r["rootKey"] !== args.rootKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
+      if (!Array.isArray(r["certificates"]) || !Array.isArray(r["grants"])) throw new CustodyRecordUnavailable("identity", file, "malformed");
       base = { personaGroup: args.personaGroup, rootKey: args.rootKey, certificates: r["certificates"], grants: r["grants"] };
-      try { issued = readIssued(r["issued"]); hearthPin = readHearthPin(r["hearthPin"]); } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+      try { issued = readIssued(r["issued"]); hearthPin = readHearthPin(r["hearthPin"]); } catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
     }
     const replaced = (e: IssuedFaceKey): boolean => fresh.some((f) => f.nexus === e.nexus && f.faceKey === e.faceKey && f.vesselFaceKey === e.vesselFaceKey);
     const bytes = recordBytes(base, [...issued.filter((e) => !replaced(e)), ...fresh], hearthPin);
@@ -290,5 +290,5 @@ export async function readFaceJoinRecord(personaGroup: string): Promise<FaceJoin
     if (r["personaGroup"] !== personaGroup || typeof r["rootKey"] !== "string" || !Array.isArray(r["certificates"]) || !Array.isArray(r["grants"])) throw new Error("malformed");
     const hearthPin = readHearthPin(r["hearthPin"]);
     return { personaGroup, rootKey: r["rootKey"], certificates: r["certificates"], grants: r["grants"], issued: readIssued(r["issued"]), ...(hearthPin !== undefined ? { hearthPin } : {}) };
-  } catch { throw new CustodyRowUnavailable("identity", file, "malformed"); }
+  } catch { throw new CustodyRecordUnavailable("identity", file, "malformed"); }
 }

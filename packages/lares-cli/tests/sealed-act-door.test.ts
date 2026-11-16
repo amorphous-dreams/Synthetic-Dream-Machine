@@ -12,7 +12,7 @@
  *       nothing: an unlocked vessel "holds the key session", a locked one names `lares vault unlock`.
  *                                 control: with no vessel standing the same read opens by the test route
  *   D3  a vessel's refusal returns under the class the same act throws in process (`CustodyLocked`,
- *       `CustodyRowUnavailable`, `SealedActRefused`), and the frame a command sends holds `op`, `act` and `args`
+ *       `CustodyRecordUnavailable`, `SealedActRefused`), and the frame a command sends holds `op`, `act` and `args`
  *       alone.
  *   D4  another command holding the store for one act answers no custody door: the act runs in this process.
  *   D5  RED: a root split never rides a standing vessel: `persona new --split-root` beside one, unlocked or locked,
@@ -62,7 +62,7 @@ import type { Socket } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
-  CustodyLocked, CustodyRowUnavailable, FsCustodyIo, SEALED_ACT_NAMES, SealedActRefused, claimStore, custodyFrameHandler, foundCustody,
+  CustodyLocked, CustodyRecordUnavailable, FsCustodyIo, SEALED_ACT_NAMES, SealedActRefused, claimStore, custodyFrameHandler, foundCustody,
   larDataDir, larSealHome, loadIdentityAnchors, makeCustodyHolder, makeUdsSeat, persistIdentityAnchors, readNexusDoc, SESSION_ACTS, seatCustody, seatedCustody, serveUdsFront,
   vesselCustodyHomes, type CustodyHolder,
 } from "@lararium/node";
@@ -242,13 +242,13 @@ describe("a command beside a standing vessel", () => {
     await locked.down();
 
     const vessel = await standVessel({ unlocked: true, table: (act) => {
-      if (act === "persona.roots") throw new CustodyRowUnavailable("identity", ".persona-roster.json", "torn");
+      if (act === "persona.roots") throw new CustodyRecordUnavailable("identity", ".persona-roster.json", "torn");
       if (act === "face.resolve") throw new SealedActRefused("act-refused", "this vessel holds no persona root there");
       if (act === "persona.reissue") throw new Error("a plain fault");
       return { ran: act };
     } });
     const torn = await sealedActVia("persona.roots").catch((e: unknown) => e);
-    expect(torn).toBeInstanceOf(CustodyRowUnavailable);
+    expect(torn).toBeInstanceOf(CustodyRecordUnavailable);
     expect(torn).toMatchObject({ home: "identity", file: ".persona-roster.json", reading: "torn" });
     const refused = await sealedActVia("face.resolve", { face: 4 }).catch((e: unknown) => e);
     expect(refused).toBeInstanceOf(SealedActRefused);

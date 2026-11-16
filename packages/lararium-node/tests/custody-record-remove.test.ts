@@ -4,7 +4,7 @@
  *   X1  a row the seat's key opens leaves, with any stray sidecar beside it, and the door answers that a row stood;
  *       nothing at the path answers that none stood.                control: a sibling row stays, byte for byte
  *   X2  RED: A WRONG KEY REMOVES NOTHING. A row another vessel sealed, a torn row and bare bytes each refuse
- *       `CustodyRowUnavailable` naming what stands, and the bytes stay.
+ *       `CustodyRecordUnavailable` naming what stands, and the bytes stay.
  *   X3  RED: a locked seat refuses `CustodyLocked`; a file no carrier row names refuses `CustodyRecordUnknown`; a cold
  *       row refuses this door.
  *   X4  a COLD row's removal reads the row first, under the same hold: a row it declines stays byte for byte, and
@@ -13,7 +13,7 @@
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
 import { SEALING_SUFFIX } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, CustodyRecordUnknown } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, CustodyRecordUnknown } from "../src/custody-holder.js";
 import { readCustodyRecord, removeColdCustodyRecord, removeCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { handleRecordPathIn } from "./face-paths.js";
@@ -67,8 +67,8 @@ describe("the custody seat's removal door", () => {
     for (const [standing, reading] of [[foreign, "key-fails"], [torn, /key-fails|torn|unopenable/], [Buffer.from("n one two"), "bare"]] as const) {
       writeFileSync(at(a, ROW), standing);
       const refused = await refusal(removeCustodyRecord("identity", ROW));
-      expect(refused).toBeInstanceOf(CustodyRowUnavailable);
-      expect((refused as CustodyRowUnavailable).reading).toMatch(reading);
+      expect(refused).toBeInstanceOf(CustodyRecordUnavailable);
+      expect((refused as CustodyRecordUnavailable).reading).toMatch(reading);
       expect(readFileSync(at(a, ROW)).equals(standing)).toBe(true);
     }
     writeFileSync(at(a, ROW), own);                                                // CONTROL: its own row leaves

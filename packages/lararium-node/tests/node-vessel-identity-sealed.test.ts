@@ -49,7 +49,7 @@ import {
   loadVesselIdentity, loadVesselVerifyingKey, vesselPlaceSignerDoor, vesselFloorKeyDoor,
 } from "../src/node-vessel-identity.js";
 import { FaceNotNamed, resolveFace } from "../src/face-selector.js";
-import { CustodyLocked, CustodyRowUnavailable, WardNeedsFreshUnlock, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable, WardNeedsFreshUnlock, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody, withWardKeyCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { handleRecordPathIn } from "./face-paths.js";
@@ -151,7 +151,7 @@ describe("sealed vessel identity family", () => {
     const rootBytes = read(rootFile(0));
     rmSync(at(rootFile(0)));
     const roster = read(rosterFile(0));
-    await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(CustodyRowUnavailable);
+    await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(CustodyRecordUnavailable);
     await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(/reads absent/);
     await expect(generateOrLoadPersonaGroupRoot(0)).rejects.toThrow(/reads absent/);
     expect(existsSync(at(rootFile(0)))).toBe(false);
@@ -208,9 +208,9 @@ describe("sealed vessel identity family", () => {
       ] as const) {
         expect(Buffer.from(damaged).equals(intact), `${file} ${label} setup`).toBe(false);
         writeFileSync(at(file), damaged);
-        await expect(Promise.resolve().then(readDoor), `${file} ${label} read`).rejects.toThrow(CustodyRowUnavailable);
+        await expect(Promise.resolve().then(readDoor), `${file} ${label} read`).rejects.toThrow(CustodyRecordUnavailable);
         await expect(Promise.resolve().then(readDoor), `${file} ${label} read name`).rejects.toThrow(reading);
-        await expect(Promise.resolve().then(writeDoor), `${file} ${label} write`).rejects.toThrow(CustodyRowUnavailable);
+        await expect(Promise.resolve().then(writeDoor), `${file} ${label} write`).rejects.toThrow(CustodyRecordUnavailable);
         expect(read(file).equals(damaged), `${file} ${label} unchanged`).toBe(true);
         expect(existsSync(`${at(file)}.s-sealing`), `${file} ${label} leaves no sidecar`).toBe(false);
       }
@@ -238,7 +238,7 @@ describe("sealed vessel identity family", () => {
         const shaped = typeof shape === "string" ? bytes(shape) : enc(shape);
         if (file === rootFile(0)) await wardWrite(file, shaped); else await c.holder.writeRecord("identity", file, shaped);
         const standing = read(file);
-        await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(CustodyRowUnavailable);
+        await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(CustodyRecordUnavailable);
         await expect(Promise.resolve().then(readDoor), `${file} ${JSON.stringify(shape)}`).rejects.toThrow(new RegExp(`${file.replace(/[.]/g, "\\.")} reads malformed`));
         await expect(Promise.resolve().then(writeDoor), `${file} writer ${JSON.stringify(shape)}`).rejects.toThrow(new RegExp(`${file.replace(/[.]/g, "\\.")} reads malformed`));
         expect(read(file).equals(standing)).toBe(true);
@@ -365,7 +365,7 @@ describe("sealed vessel identity family", () => {
     expect(h0.equals(read(rootFile(0)))).toBe(true); expect(Buffer.from(seed0).equals(Buffer.from(seed1))).toBe(false);
     const damaged = Buffer.from(h0); damaged[damaged.length - 8] ^= 1; expect(damaged.equals(h0)).toBe(false); writeFileSync(at(rootFile(0)), damaged);
     expect(await loadPersonaGroupRootSeed(1)).toHaveLength(32); expect(await listPersonaRoots()).toEqual([0, 1]);
-    await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(CustodyRowUnavailable);
+    await expect(loadPersonaGroupRootSeed(0)).rejects.toThrow(CustodyRecordUnavailable);
   });
 
   test("V14 repeating a root mint writes no bytes", async () => {

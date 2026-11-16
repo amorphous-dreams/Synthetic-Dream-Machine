@@ -523,7 +523,7 @@ export type { CasSweepOptions, CasSweepResult } from "./node-cas.js";
 export { readGenesisCasManifest, genesisProtectSet, genesisCasDir, genesisSeedCid, genesisSeedFileBytes,
   readGenesisEngineCid, readGenesisGrammarCid, readGenesisPluginsCid,
   GENESIS_ENGINE_CID } from "./genesis-artifact.js";
-export { makeCustodyHolder, CustodyLocked, CustodyRecordUnknown, CustodyRowUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
+export { makeCustodyHolder, CustodyLocked, CustodyRecordUnknown, CustodyRecordUnavailable, CustodyAdoptRefused, UNLOCK_ATTEMPTS_PER_BOOT } from "./custody-holder.js";
 export { runSealedAct, isSealedActName, SealedActRefused, SEALED_ACTS, SESSION_ACTS, SEALED_ACT_NAMES, SIGN_IMAGE_LIMIT, TEXT_ARG_LIMIT, LABEL_ARG_LIMIT, SNAPSHOT_ARG_LIMIT, type SealedActName, type SealedActContext, type SealedActRefusalReason, type PersonaSelvesPlane, type PersonaSelfLine, type PersonaSelfNameKind } from "./sealed-acts.js";
 export { gateMemoryRecords, gateMemoryRecordFile, GateMemoryRecordRefused } from "./gate-memory-records.js";
 export { gateGrantFor, gateGrantRing } from "./gate-rings.js";

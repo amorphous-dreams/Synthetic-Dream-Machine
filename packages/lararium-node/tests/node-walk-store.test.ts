@@ -35,7 +35,7 @@ import {
   HOSTING_GRANT_SESSION_KIND, decodeInvite, encodeInvite, issueGrant, mintHostToken, mintHostingAct, popInvite, readFckCarrier, walkOver,
   type LarSessionMsg, type LeafIdentity, type WalkFault, type WalkRecord,
 } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { writeCustodyRecord } from "../src/custody-seat.js";
 import { generateOrLoadPersonaGroupRoot, generateOrLoadVesselIdentity } from "../src/node-vessel-identity.js";
 import { listWalkRecords, nodeWalkStore, walkRecordFile, WalksElsewhere } from "../src/node-walk-store.js";
@@ -94,10 +94,10 @@ describe("a walk record at rest", () => {
     expect(readFileSync(rowPath()).equals(foreign)).toBe(false);                   // two keys, two encodings
     copyFileSync(bPath, rowPath());
     const read = await refusal(store().read(GATE));
-    expect(read).toBeInstanceOf(CustodyRowUnavailable);
+    expect(read).toBeInstanceOf(CustodyRecordUnavailable);
     expect(read).toMatchObject({ home: "identity", file: walkRecordFile(0, GATE) });
-    expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRowUnavailable);
-    expect(await refusal(put(GATE, { nexusAid: AID }))).toBeInstanceOf(CustodyRowUnavailable);   // a wallet never lands over it
+    expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRecordUnavailable);
+    expect(await refusal(put(GATE, { nexusAid: AID }))).toBeInstanceOf(CustodyRecordUnavailable);   // a wallet never lands over it
     expect(readFileSync(rowPath()).equals(foreign)).toBe(true);
     const aRow = rowPath();
     as(b);
@@ -116,9 +116,9 @@ describe("a walk record at rest", () => {
     moved[moved.length - 1] = moved[moved.length - 1]! ^ 0x01;
     for (const standing of [moved, Buffer.from(JSON.stringify({ gatePubKey: GATE, record: RECORD }))]) {
       writeFileSync(rowPath(), standing);
-      expect(await refusal(store().read(GATE))).toBeInstanceOf(CustodyRowUnavailable);
-      expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRowUnavailable);
-      expect(await refusal(put(GATE, RECORD))).toBeInstanceOf(CustodyRowUnavailable);
+      expect(await refusal(store().read(GATE))).toBeInstanceOf(CustodyRecordUnavailable);
+      expect(await refusal(listWalkRecords())).toBeInstanceOf(CustodyRecordUnavailable);
+      expect(await refusal(put(GATE, RECORD))).toBeInstanceOf(CustodyRecordUnavailable);
       expect(readFileSync(rowPath()).equals(standing)).toBe(true);
     }
     writeFileSync(rowPath(), sealed);                                              // the true row again: the sealed writer replaces only what the key sealed
@@ -180,7 +180,7 @@ describe("a walk record at rest", () => {
     // A row that cannot open refuses the listing; it never reads as walking nowhere.
     writeFileSync(rowPath(), "bare row");
     const listed = await refusal(listWalkRecords());
-    expect(listed).toBeInstanceOf(CustodyRowUnavailable);
+    expect(listed).toBeInstanceOf(CustodyRecordUnavailable);
     expect(listed).toMatchObject({ home: "identity", file: walkRecordFile(0, GATE) });
   });
 

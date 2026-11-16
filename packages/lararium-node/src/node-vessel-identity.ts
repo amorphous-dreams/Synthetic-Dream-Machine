@@ -83,7 +83,7 @@ import {
 import { readBackStandsIn } from "./seal-ceremony.js";
 import { nodeAnchorStore } from "./identity-anchors.js";
 import { nodeRecoveryShareStore } from "./recovery-share-store.js";
-import { CustodyRowUnavailable } from "./custody-holder.js";
+import { CustodyRecordUnavailable } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import {
   openedCustody, exclusiveCustody, unlockedFaceOrdinals, standingCustody, readCustodyRecord, updateCustodyRecord, withWardKeyCustody,
@@ -594,7 +594,7 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 //   COLD (opened for one act, then dropped): each persona ROOT (`…-h<N>.json`).
 // At the floor every door here refuses `CustodyLocked`. A hot row with nothing at its path reads as holding
 // nothing (no root, no mounted face, no label), which states a fact about a vessel that never wrote it. A row that
-// stands and does not open (torn, bare, another key's) refuses `CustodyRowUnavailable`, and so does one that
+// stands and does not open (torn, bare, another key's) refuses `CustodyRecordUnavailable`, and so does one that
 // opens to another shape. No reader folds a refusal to empty, so no act writes over a row it could not read.
 //
 // ── THE ROSTER COMMITS A ROOT ────────────────────────────────────────────────────────────────────
@@ -612,7 +612,7 @@ export async function vesselFloorKeyDoor(): Promise<FloorKeyDoor> {
 const utf8 = new TextEncoder();
 const HEX64 = /^[0-9a-f]{64}$/;
 const isIndex = (n: unknown): n is number => Number.isSafeInteger(n) && (n as number) >= 0;
-const malformed = (file: string): CustodyRowUnavailable => new CustodyRowUnavailable("identity", file, "malformed");
+const malformed = (file: string): CustodyRecordUnavailable => new CustodyRecordUnavailable("identity", file, "malformed");
 const encodeRecord = (value: unknown): Uint8Array => utf8.encode(JSON.stringify(value, null, 2));
 
 /** The JSON a row's plaintext carries; bytes that hold no JSON refuse `malformed`. */
@@ -709,7 +709,7 @@ async function openCommittedRoot(line: PersonaRosterLine, ward: WardCredential |
   // THE ROOT RESTS UNDER THE WARD: one fresh unlock of the face's ward key opens it for this act, and the key zeroes after.
   return withWardKeyCustody({ ordinal: line.handleIndex }, ward, (seat) => seat.open(file, (bytes) => {
     const root = parseRootRow(bytes, file);
-    if (root.verifyingKey !== line.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+    if (root.verifyingKey !== line.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
     return root;
   }), `the face root at h${line.handleIndex}`);
 }
@@ -733,7 +733,7 @@ async function commitRoot(handleIndex: number, keypair: PersistedKeypair, ward: 
     const roster = parseRoster(bytes, rosterFile);
     const standing = roster.find((l) => l.handleIndex === handleIndex);
     if (standing) {
-      if (standing.verifyingKey !== kept.root.verifyingKey) throw new CustodyRowUnavailable("identity", rootFile, "names-another-key");
+      if (standing.verifyingKey !== kept.root.verifyingKey) throw new CustodyRecordUnavailable("identity", rootFile, "names-another-key");
       return { plaintext: null, value: undefined };
     }
     const next = [...roster, { handleIndex, verifyingKey: kept.root.verifyingKey }].sort((a, b) => a.handleIndex - b.handleIndex);
@@ -754,11 +754,11 @@ export async function landPersonaRoot(handleIndex: number, keypair: { readonly s
   // EVERY STANDING ROW READS BEFORE ANY WRITE: a roster line or an orphan root under another key refuses here, so
   // a refused landing adopts no orphan and records no line.
   const line = await readRosterLine(handleIndex) ?? undefined;
-  if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (line && line.verifyingKey !== keypair.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
   const orphan = line ? null : await orphanPersonaRootKey(handleIndex, ward);
-  if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (orphan !== null && orphan !== keypair.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
   const kept = await commitRoot(handleIndex, { signingKey: keypair.signingKey, verifyingKey: keypair.verifyingKey }, ward);
-  if (kept.root.verifyingKey !== keypair.verifyingKey) throw new CustodyRowUnavailable("identity", file, "names-another-key");
+  if (kept.root.verifyingKey !== keypair.verifyingKey) throw new CustodyRecordUnavailable("identity", file, "names-another-key");
 }
 
 /**
@@ -833,7 +833,7 @@ export async function makeNodeFsPersonaVault(ward?: WardCredential): Promise<Per
         async save(keypair) {
           const kept = await commitRoot(handleIndex, keypair, warded());
           if (kept.root.verifyingKey !== keypair.verifyingKey) {
-            throw new CustodyRowUnavailable("identity", personaGroupRootFileName(handleIndex), "names-another-key");
+            throw new CustodyRecordUnavailable("identity", personaGroupRootFileName(handleIndex), "names-another-key");
           }
         },
       };

@@ -16,7 +16,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import * as ed from "@noble/ed25519";
 import { hex } from "@lararium/mesh";
-import { CustodyRowUnavailable } from "../src/custody-holder.js";
+import { CustodyRecordUnavailable } from "../src/custody-holder.js";
 import { removeCustodyRecord } from "../src/custody-seat.js";
 import {
   generateOrLoadPersonaGroupRoot, landPersonaRoot, listPersonaRosterLines, loadPersonaGroupRootSeed, orphanPersonaRootKey,
@@ -34,7 +34,7 @@ const bytesOf = (): Record<string, string> =>
   Object.fromEntries(faceRecordNames().filter((n) => /persona-(group-root|roster)/.test(n)).map((n) => [n, readFileSync(handleRecordPath(n)).toString("hex")]));
 const readingOf = async (p: Promise<unknown>): Promise<string> => {
   const e = await p.then(() => null, (err: unknown) => err);
-  return e === null ? "LANDED" : e instanceof CustodyRowUnavailable ? e.reading : `threw: ${(e as Error).message.slice(0, 60)}`;
+  return e === null ? "LANDED" : e instanceof CustodyRecordUnavailable ? e.reading : `threw: ${(e as Error).message.slice(0, 60)}`;
 };
 
 let seat: SeatedScratchCustody;
