@@ -157,7 +157,7 @@ export async function moveCustodyRecord(home: CustodyHome, source: string, desti
 }
 
 /** Hold the founding custody claim across a row scan and every retirement it decides. */
-export async function withCustodyRecords<T>(act: (rows: {
+export async function withCustodyRecords<T>(act: (records: {
   read(home: CustodyHome, file: string): Promise<Uint8Array | null>;
   remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean>;
 }) => Promise<T>): Promise<T> {

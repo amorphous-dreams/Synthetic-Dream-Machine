@@ -308,9 +308,9 @@ describe("sealed vessel identity family", () => {
       expect(read(petFile(i)).includes(Buffer.from(`label-${i}`))).toBe(false);
       expect(read(publicFile(i)).includes(Buffer.from(`nym-${i}`))).toBe(false);
       for (const [file, field] of [[petFile(i), "names"], [declarationFile(i), "declarations"], [publicFile(i), "handles"]] as const) {
-        const row = await c.holder.readRecord("identity", file);
-        expect(row.reading, `${file} opens`).toBe("opens");
-        if (row.reading === "opens") expect(Object.keys(JSON.parse(new TextDecoder().decode(row.plaintext))[field]), `${file} carries only its face`).toEqual([String(i)]);
+        const record = await c.holder.readRecord("identity", file);
+        expect(record.reading, `${file} opens`).toBe("opens");
+        if (record.reading === "opens") expect(Object.keys(JSON.parse(new TextDecoder().decode(record.plaintext))[field]), `${file} carries only its face`).toEqual([String(i)]);
       }
     }
     expect(await pets.entries()).toEqual([[0, "label-0"], [1, "label-1"], [2, "label-2"]]);
@@ -345,8 +345,8 @@ describe("sealed vessel identity family", () => {
     for (const i of [3, 4, 5]) await pets.clear(i); // found each face with an empty map before the second holder writes
     const other = makeCustodyHolder({ io: c.io, homes: c.homes }); await other.adopt(c.treeKey);
     await other.unlockFaces([{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
-    const viaOther = (i: number) => other.updateRecord("identity", petFile(i), (row) => {
-      const names = row.reading === "opens" ? JSON.parse(new TextDecoder().decode(row.plaintext)).names as Record<string, string> : {};
+    const viaOther = (i: number) => other.updateRecord("identity", petFile(i), (record) => {
+      const names = record.reading === "opens" ? JSON.parse(new TextDecoder().decode(record.plaintext)).names as Record<string, string> : {};
       names[String(i)] = `p${i}`; return { plaintext: enc({ names }), value: undefined };
     });
     await Promise.all([viaOther(3), viaOther(4), viaOther(5)]);

@@ -73,8 +73,8 @@ describe("RED remote-holder-matches-local: the vessel's side of a pūlama answer
     const atom = faceAtomGroupFile(GROUP);
     await remote.writeRecord("identity", atom, bytes(7, 7));
     expect(await both((h) => h.readRecord("identity", atom))).toEqual({ value: { reading: "opens", plaintext: bytes(7, 7) } });
-    expect(await both((h) => h.withRecords(async (rows) => [await rows.read("identity", atom), await rows.read("identity", HOT), await rows.remove("identity", atom, (b) => b.length === 9)]))).toEqual({ value: [bytes(7, 7), null, false] });
-    expect(await remote.withRecords((rows) => rows.remove("identity", atom, (b) => b.length === 2))).toBe(true);
+    expect(await both((h) => h.withRecords(async (records) => [await records.read("identity", atom), await records.read("identity", HOT), await records.remove("identity", atom, (b) => b.length === 9)]))).toEqual({ value: [bytes(7, 7), null, false] });
+    expect(await remote.withRecords((records) => records.remove("identity", atom, (b) => b.length === 2))).toBe(true);
     expect(await f.local.readRecord("identity", atom)).toEqual({ reading: "absent" });
     // The exclusive claim runs the caller's act while the pūlama holds the custody claim, and releases it after.
     expect(await both((h) => h.exclusive(async () => "ran"))).toEqual({ value: "ran" });

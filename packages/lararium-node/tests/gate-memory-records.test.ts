@@ -125,28 +125,28 @@ describe("a gate's memory behind the custody seat", () => {
 
   test("M3 — a locked holder refuses by name and writes nothing", async () => {
     const c = await vessel("gm-m3");
-    const rows = gateMemoryRecords(0);
-    await rows.write(NAME, text("[1]"));
+    const records = gateMemoryRecords(0);
+    await records.write(NAME, text("[1]"));
     const before = readFileSync(rowPath(c, NAME));
     await c.holder.lock();
-    await expect(rows.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);
-    await expect(rows.write(NAME, text("[1,2]"))).rejects.toBeInstanceOf(CustodyLocked);
-    await expect(rows.write("cd".repeat(32), text("[1]"))).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(records.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(records.write(NAME, text("[1,2]"))).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(records.write("cd".repeat(32), text("[1]"))).rejects.toBeInstanceOf(CustodyLocked);
     expect(readFileSync(rowPath(c, NAME)).equals(before)).toBe(true);
     expect(existsSync(rowPath(c, "cd".repeat(32)))).toBe(false);
     // A home with no seat at all reads the same.
     seatCustody(null);
-    await expect(rows.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(records.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);
     seatCustody(c.holder);
     await c.holder.adopt(c.treeKey);
     await c.holder.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
-    expect(new TextDecoder().decode((await rows.read(NAME))!)).toBe("[1]");                 // CONTROL: unlocked, the row reads whole
+    expect(new TextDecoder().decode((await records.read(NAME))!)).toBe("[1]");                 // CONTROL: unlocked, the row reads whole
   });
 
   test("M4 — TAMPER: a row sealed under a second face key refuses at both doors and never moves", async () => {
     const c = await vessel("gm-m4");
-    const rows = gateMemoryRecords(0);
-    await rows.write(NAME, text("[\"mine\"]"));
+    const records = gateMemoryRecords(0);
+    await records.write(NAME, text("[\"mine\"]"));
     const mine = readFileSync(rowPath(c, NAME));
     // Seal the SAME carrier name under ANOTHER face key, in a vessel of its own, and lay those bytes over the row.
     const other = await seatScratchCustody("gm-m4-alien");
@@ -157,31 +157,31 @@ describe("a gate's memory behind the custody seat", () => {
     expect(alien.equals(mine)).toBe(false);                                                 // the probe moved the encoded bytes …
     writeFileSync(rowPath(c, NAME), alien);
     // … and the decoded ones: the row no longer opens under this vessel's key.
-    const read = await rows.read(NAME).catch((e: unknown) => e);
+    const read = await records.read(NAME).catch((e: unknown) => e);
     expect(read).toBeInstanceOf(CustodyRecordUnavailable);
     expect((read as CustodyRecordUnavailable).reading).toBe("key-fails");
-    await expect(rows.write(NAME, text("[\"mine\",\"more\"]"))).rejects.toBeInstanceOf(CustodyRecordUnavailable);
+    await expect(records.write(NAME, text("[\"mine\",\"more\"]"))).rejects.toBeInstanceOf(CustodyRecordUnavailable);
     expect(readFileSync(rowPath(c, NAME)).equals(alien)).toBe(true);                         // the write landed nothing
     // CONTROL: the row's own bytes, laid back, read and take a write.
     writeFileSync(rowPath(c, NAME), mine);
-    expect(new TextDecoder().decode((await rows.read(NAME))!)).toBe("[\"mine\"]");
-    await rows.write(NAME, text("[\"mine\",\"more\"]"));
-    expect(new TextDecoder().decode((await rows.read(NAME))!)).toBe("[\"mine\",\"more\"]");
+    expect(new TextDecoder().decode((await records.read(NAME))!)).toBe("[\"mine\"]");
+    await records.write(NAME, text("[\"mine\",\"more\"]"));
+    expect(new TextDecoder().decode((await records.read(NAME))!)).toBe("[\"mine\",\"more\"]");
   });
 
   test("M5 — a name outside the digest spelling, an empty row and a row past the bound refuse before the seat", async () => {
     const c = await vessel("gm-m5");
     await c.holder.lock();                                                                  // a refusal below never reaches the seat: locked, it would read CustodyLocked
-    const rows = gateMemoryRecords(0);
+    const records = gateMemoryRecords(0);
     for (const name of ["", "AB".repeat(32), "ab".repeat(31), "ab".repeat(33), `../${"ab".repeat(31)}`, `${"ab".repeat(31)}/x`, "ab".repeat(32) + ".bin"]) {
-      await expect(rows.read(name)).rejects.toBeInstanceOf(GateMemoryRecordRefused);
-      await expect(rows.write(name, text("[1]"))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+      await expect(records.read(name)).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+      await expect(records.write(name, text("[1]"))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
     }
-    await expect(rows.write(NAME, new Uint8Array(0))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
-    await expect(rows.write(NAME, new Uint8Array(GATE_MEMORY_RECORD_MAX_BYTES + 1))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
-    await expect(rows.write(NAME, "[1]" as never)).rejects.toBeInstanceOf(GateMemoryRecordRefused);
-    await expect(rows.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);                    // CONTROL: a sound name reaches the seat
-    await expect(rows.write(NAME, text("[1]"))).rejects.toBeInstanceOf(CustodyLocked);
+    await expect(records.write(NAME, new Uint8Array(0))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+    await expect(records.write(NAME, new Uint8Array(GATE_MEMORY_RECORD_MAX_BYTES + 1))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+    await expect(records.write(NAME, "[1]" as never)).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+    await expect(records.read(NAME)).rejects.toBeInstanceOf(CustodyLocked);                    // CONTROL: a sound name reaches the seat
+    await expect(records.write(NAME, text("[1]"))).rejects.toBeInstanceOf(CustodyLocked);
     expect(faceRecordNames()).not.toContain(gateMemoryRecordFile(0, NAME));                   // a refused write leaves no directory behind
   });
 
@@ -201,57 +201,57 @@ describe("a gate's memory behind the custody seat", () => {
 
   test("M7 — an older copy of a row, restored by hand, makes the gate forget (the law names it; no fence stands)", async () => {
     const c = await vessel("gm-m7");
-    const rows = gateMemoryRecords(0);
-    await rows.write(NAME, text("[\"first\"]"));
+    const records = gateMemoryRecords(0);
+    await records.write(NAME, text("[\"first\"]"));
     const older = join(c.root, "older-copy.bin");
     copyFileSync(rowPath(c, NAME), older);
-    await rows.write(NAME, text("[\"first\",\"second\"]"));
-    expect(new TextDecoder().decode((await rows.read(NAME))!)).toBe("[\"first\",\"second\"]");   // CONTROL: the later row read whole
+    await records.write(NAME, text("[\"first\",\"second\"]"));
+    expect(new TextDecoder().decode((await records.read(NAME))!)).toBe("[\"first\",\"second\"]");   // CONTROL: the later row read whole
     copyFileSync(older, rowPath(c, NAME));
-    expect(new TextDecoder().decode((await rows.read(NAME))!)).toBe("[\"first\"]");
+    expect(new TextDecoder().decode((await records.read(NAME))!)).toBe("[\"first\"]");
   });
 
   test("M8 — a write only accretes, and one holder answers one door", async () => {
     const c = await vessel("gm-m8");
-    const rows = gateMemoryRecords(0);
-    expect(gateMemoryRecords(0)).toBe(rows);                                                    // two gates, one writer queue
+    const records = gateMemoryRecords(0);
+    expect(gateMemoryRecords(0)).toBe(records);                                                    // two gates, one writer queue
     const e = (n: string) => ({ position: n, withdrawn: n.repeat(4) });
-    await rows.write(NAME, text(JSON.stringify([e("a"), e("b")])));
+    await records.write(NAME, text(JSON.stringify([e("a"), e("b")])));
     const before = readFileSync(rowPath(c, NAME));
     // A second writer joined against the row as it stood at [a]: its write lacks b.
-    await expect(rows.write(NAME, text(JSON.stringify([e("a"), e("c")])))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
-    await expect(rows.write(NAME, text(JSON.stringify([])))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+    await expect(records.write(NAME, text(JSON.stringify([e("a"), e("c")])))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+    await expect(records.write(NAME, text(JSON.stringify([])))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
     expect(readFileSync(rowPath(c, NAME)).equals(before)).toBe(true);
     // CONTROL: a write that holds every standing event lands, in any spelling of the rest.
-    await rows.write(NAME, text(JSON.stringify([e("a"), e("b"), e("c")])));
-    expect(JSON.parse(new TextDecoder().decode((await rows.read(NAME))!))).toEqual([e("a"), e("b"), e("c")]);
+    await records.write(NAME, text(JSON.stringify([e("a"), e("b"), e("c")])));
+    expect(JSON.parse(new TextDecoder().decode((await records.read(NAME))!))).toEqual([e("a"), e("b"), e("c")]);
     // Bytes that read as no list never land, and neither does a list in another spelling that drops an event.
-    for (const bad of ["{}", "7", "\"x\"", "not json"]) await expect(rows.write(NAME, text(bad))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
+    for (const bad of ["{}", "7", "\"x\"", "not json"]) await expect(records.write(NAME, text(bad))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
     // CONTROL: key order names no difference. A row spelled in another key order still counts as held.
     const OTHER = "cd".repeat(32);
-    await rows.write(OTHER, text('[{"withdrawn":"zzzz","position":"z"}]'));
-    await rows.write(OTHER, text(JSON.stringify([e("z"), e("y")])));
-    expect(JSON.parse(new TextDecoder().decode((await rows.read(OTHER))!))).toEqual([e("z"), e("y")]);
+    await records.write(OTHER, text('[{"withdrawn":"zzzz","position":"z"}]'));
+    await records.write(OTHER, text(JSON.stringify([e("z"), e("y")])));
+    expect(JSON.parse(new TextDecoder().decode((await records.read(OTHER))!))).toEqual([e("z"), e("y")]);
     // A standing row that opens to no list refuses by name and keeps its bytes.
     const MAL = "ef".repeat(32);
     await c.holder.writeRecord("identity", gateMemoryRecordFile(0, MAL), text("{}"));
     const malformed = readFileSync(rowPath(c, MAL));
-    const refused = await rows.write(MAL, text("[1]")).catch((err: unknown) => err);
+    const refused = await records.write(MAL, text("[1]")).catch((err: unknown) => err);
     expect(refused).toBeInstanceOf(CustodyRecordUnavailable);
     expect((refused as CustodyRecordUnavailable).reading).toBe("malformed");
     expect(readFileSync(rowPath(c, MAL)).equals(malformed)).toBe(true);
     // The read refuses the same way, so a gate over that row falls silent and never reads the face as unlearned.
-    const unread = await rows.read(MAL).catch((err: unknown) => err);
+    const unread = await records.read(MAL).catch((err: unknown) => err);
     expect(unread).toBeInstanceOf(CustodyRecordUnavailable);
     expect((unread as CustodyRecordUnavailable).reading).toBe("malformed");
-    await expect(storedWithdrawals(rows).read({ faceKey: "00".repeat(32), nexus: "nexus-a.synthetic" } as never)).resolves.toBeNull();   // CONTROL: a face with no row reads as nothing
+    await expect(storedWithdrawals(records).read({ faceKey: "00".repeat(32), nexus: "nexus-a.synthetic" } as never)).resolves.toBeNull();   // CONTROL: a face with no row reads as nothing
     // A new holder over the same tree answers a new door: its store verifies every row again.
     await c.holder.lock();
     const again = makeCustodyHolder({ io: new FsCustodyIo(c.homes), homes: c.homes });
     await again.adopt(c.treeKey);
     await again.unlockFace({ ordinal: 0 }, [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }]);
     seatCustody(again);
-    expect(gateMemoryRecords(0)).not.toBe(rows);
+    expect(gateMemoryRecords(0)).not.toBe(records);
     expect(gateMemoryRecords(0)).toBe(gateMemoryRecords(0));
     await again.lock();
     seatCustody(c.holder);
@@ -266,16 +266,16 @@ describe("a gate's memory behind the custody seat", () => {
     const fork = await history(c, [k1, k3]);                 // another writer's view: e1, then a different second event
     expect(fork[0]).toEqual(line[0]);
     expect(fork[1]).not.toEqual(line[1]);
-    const rows = gateMemoryRecords(0);
-    const store = storedWithdrawals(rows);
+    const records = gateMemoryRecords(0);
+    const store = storedWithdrawals(records);
     await store.keep(memoryOf(c.scope, [line[0]]));
     expect((await store.read(c.scope))!.frontier.position).toBe(1);
     // Another writer lands e2 on the row, past this store's verified view.
-    await rows.write(faceProofSubjectRef(c.scope), canonicalJsonBytes(line));
+    await records.write(faceProofSubjectRef(c.scope), canonicalJsonBytes(line));
     expect((await store.read(c.scope))!.frontier.position).toBe(1);                          // CONTROL: the view reads stale
     // This store joins the fork against its stale view and writes [e1, e2']: the door refuses, the row stays.
     await expect(store.keep(memoryOf(c.scope, fork))).rejects.toBeInstanceOf(GateMemoryRecordRefused);
-    expect(JSON.parse(new TextDecoder().decode((await rows.read(faceProofSubjectRef(c.scope)))!))).toEqual(line);
+    expect(JSON.parse(new TextDecoder().decode((await records.read(faceProofSubjectRef(c.scope)))!))).toEqual(line);
     // The refusal dropped the view: the next read verifies the row and answers what it holds.
     const after = (await store.read(c.scope))!;
     expect(after.frontier.position).toBe(2);

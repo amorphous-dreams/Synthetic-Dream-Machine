@@ -44,9 +44,9 @@ export function browserFaceAtomRecords(idbName: string): FaceAtomRecords {
     },
     withRecord(personaGroup, step) {
       const row = faceAtomRecord(personaGroup);
-      return withCustodyRecords(idbName, async (rows) => step(
-        await rows.read(row) as Uint8Array | undefined,
-        async (seed) => { await rows.write(row, Uint8Array.from(seed)); },
+      return withCustodyRecords(idbName, async (records) => step(
+        await records.read(row) as Uint8Array | undefined,
+        async (seed) => { await records.write(row, Uint8Array.from(seed)); },
       ));
     },
   };
@@ -91,12 +91,12 @@ export const faceAddressSecretRow = (personaGroup: string): string => {
  */
 export async function mintBrowserFaceAddressSecret(idbName: string, personaGroup: string): Promise<void> {
   const row = faceAddressSecretRow(personaGroup);
-  await withCustodyRecords(idbName, async (rows) => {
-    const held = await rows.read(row);
+  await withCustodyRecords(idbName, async (records) => {
+    const held = await records.read(row);
     if (held instanceof Uint8Array && held.length === 32) return;
     if (held !== undefined) throw new Error("[browser-face-atom] the face's address secret row reads malformed");
     const fresh = crypto.getRandomValues(new Uint8Array(32));
-    try { await rows.write(row, Uint8Array.from(fresh)); } finally { fresh.fill(0); }
+    try { await records.write(row, Uint8Array.from(fresh)); } finally { fresh.fill(0); }
   });
 }
 
@@ -151,12 +151,12 @@ export function browserVesselFaceTagDoor(idbName = "lares:vessel", ward: Browser
     // A FOUNDING'S TAG SECRET MINTS BEFORE ITS GROUP NAMES THE FACE'S TREE: the founding hands the unnamed face it stands, the
     // row seals under that face's own tree, and the name the ceremony then gives the tree reads the same row by its group.
     const row = vesselFaceTagRow(rowFace ?? group);
-    const secret = await withCustodyRecords(idbName, async (rows) => {
-      const held = await rows.read(row);
+    const secret = await withCustodyRecords(idbName, async (records) => {
+      const held = await records.read(row);
       if (held instanceof Uint8Array && held.length === 32) return Uint8Array.from(held);
       if (held !== undefined) throw new Error("[browser-face-atom] the face's tag secret row reads malformed");
       const fresh = crypto.getRandomValues(new Uint8Array(32));
-      await rows.write(row, Uint8Array.from(fresh));
+      await records.write(row, Uint8Array.from(fresh));
       return fresh;
     });
     try {

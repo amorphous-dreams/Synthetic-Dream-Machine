@@ -38,10 +38,10 @@ export const pendingFoundingFile = (ask: FoundingAtomAsk): string => `face-atom-
 
 /** Retire an ask only when a group row already holds its exact seed. */
 export async function sweepFoundingSeeds(): Promise<void> {
-  await withCustodyRecords(async (rows) => {
+  await withCustodyRecords(async (records) => {
     const groupsByAsk = new Map<string, Set<string>>();
-    for (const index of await listAnchoredPersonas(rows.read)) {
-      const anchors = await loadIdentityAnchors(index, rows.read);
+    for (const index of await listAnchoredPersonas(records.read)) {
+      const anchors = await loadIdentityAnchors(index, records.read);
       if (!anchors?.foundingAskDigest) continue;
       const groups = groupsByAsk.get(anchors.foundingAskDigest) ?? new Set<string>();
       groups.add(faceAtomGroupFile(anchors.personaGroupId));
@@ -51,7 +51,7 @@ export async function sweepFoundingSeeds(): Promise<void> {
     const held = new Map<string, Uint8Array>();
     // A face that rests unopened holds its rows shut: the sweep walks the faces standing open and leaves the rest alone.
     const readOpen = async (file: string): Promise<Uint8Array | null> => {
-      try { return await rows.read("identity", file); } catch (err) { if (err instanceof FaceLocked) return null; throw err; }
+      try { return await records.read("identity", file); } catch (err) { if (err instanceof FaceLocked) return null; throw err; }
     };
     for (const file of names.filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
       const seed = await readOpen(file);
@@ -68,7 +68,7 @@ export async function sweepFoundingSeeds(): Promise<void> {
         const groupSeed = held.get(group);
         return groupSeed?.length === seed.length && groupSeed.every((byte, i) => byte === seed[i]);
       })) continue;
-      await rows.remove("identity", file, (standing) =>
+      await records.remove("identity", file, (standing) =>
         standing.length === seed.length && standing.every((byte, i) => byte === seed[i]));
     }
   });

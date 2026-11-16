@@ -14,8 +14,8 @@ export function browserFaceAnchorRecords(idbName: string): FaceAnchorRecords {
     },
     async write(personaGroup, bytes) {
       const row = faceAnchorRecord(personaGroup);
-      await withCustodyRecords(idbName, async (rows) => {
-        await rows.write(row, Uint8Array.from(bytes));
+      await withCustodyRecords(idbName, async (records) => {
+        await records.write(row, Uint8Array.from(bytes));
       });
     },
   };

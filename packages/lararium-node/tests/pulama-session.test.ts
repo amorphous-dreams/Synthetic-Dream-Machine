@@ -64,7 +64,7 @@ describe("RED pulama-serves-no-key: no frame either side writes carries a key th
     await vessel.updateRecord("identity", HOT, () => ({ plaintext: Uint8Array.from([4]), value: null }));
     await vessel.writeRecord("identity", faceAtomGroupFile(GROUP_A), new Uint8Array(32).fill(8));
     await vessel.readRecord("identity", faceAtomGroupFile(GROUP_A));
-    await vessel.withRecords((rows) => rows.read("identity", HOT));
+    await vessel.withRecords((records) => records.read("identity", HOT));
     await vessel.exclusive(async () => undefined);
     await vessel.openColdRecord("identity", faceProofKeyFile(0, "nexus-x"), () => undefined);
     await vessel.unlockFaces([{ kind: "passphrase", passphrase: "a-passphrase-the-vessel-was-handed" }]);
@@ -266,7 +266,7 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     const outside = { name: "PulamaRefused", reading: "outside-the-lei" };
     await expect(vessel.readRecord("identity", faceAtomGroupFile(GROUP_B))).rejects.toMatchObject(outside);
     await expect(vessel.writeRecord("identity", faceAtomGroupFile(GROUP_B), Uint8Array.from([9]))).rejects.toMatchObject(outside);
-    await expect(vessel.withRecords((rows) => rows.read("identity", faceAtomGroupFile(GROUP_B)))).rejects.toMatchObject(outside);
+    await expect(vessel.withRecords((records) => records.read("identity", faceAtomGroupFile(GROUP_B)))).rejects.toMatchObject(outside);
     expect(await vessel.faceStanding({ fcid: b.fcid })).toBeNull();
     expect((await vessel.unlockFaces([])).map((f) => f.reading)).toEqual(["already-unlocked"]);
     expect(await fx.kept.readRecord("identity", faceAtomGroupFile(GROUP_B))).toEqual({ reading: "opens", plaintext: Uint8Array.from([2]) });

@@ -117,9 +117,9 @@ describe("lares circle — the follow verb over the circles doc (fleet-synced, t
   beforeEach(async () => { custody = await seatScratchCustody(); await generateOrLoadPersonaGroupRoot(0); });
   afterEach(async () => { await custody.drop(); });
   const openBook = async (): Promise<{ records: Array<{ nym: string; petname?: string }> }> => {
-    const row = await custody.holder.readRecord("identity", ".handle-book-h0.json");
-    if (row.reading !== "opens") throw new Error(`the handle-book reads ${row.reading}`);
-    return JSON.parse(new TextDecoder().decode(row.plaintext));
+    const record = await custody.holder.readRecord("identity", ".handle-book-h0.json");
+    if (record.reading !== "opens") throw new Error(`the handle-book reads ${record.reading}`);
+    return JSON.parse(new TextDecoder().decode(record.plaintext));
   };
 
   test("add with a card follows: membership → the circles doc (daemon verb), only the handle-book lands locally", async () => {

@@ -203,7 +203,7 @@ export interface CustodyHolder {
   /** Move one hot row's bytes under one holder claim; a matching destination completes a stopped move. */
   moveRecord(home: CustodyHome, source: string, destination: string, expected: Uint8Array): Promise<void>;
   /** Run a scan and its decisions under the same claim as a founding row move. */
-  withRecords<T>(act: (rows: { read(home: CustodyHome, file: string): Promise<Uint8Array | null>; remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean> }) => Promise<T>): Promise<T>;
+  withRecords<T>(act: (records: { read(home: CustodyHome, file: string): Promise<Uint8Array | null>; remove(home: CustodyHome, file: string, when?: (bytes: Uint8Array) => boolean): Promise<boolean> }) => Promise<T>): Promise<T>;
   /**
    * Remove one hot row as ONE custody holder; answers whether a row stood. The holder removes only a row its own
    * key opens: a row that stands and does not open refuses `CustodyRecordUnavailable` and stays.
