@@ -473,9 +473,9 @@ export { wsDialSocket } from "./ws-dial-socket.js";
 export type { WsFactory, WsFactoryOptions, WsLike } from "./ws-dial-socket.js";
 // The one Noise bound the node's gate server caps a frame at (`face-gate-server`); the handshake doors stay out.
 export { NOISE_MAX_MESSAGE_BYTES, MIN_MESSAGE1_BYTES, MIN_MESSAGE2_BYTES } from "./noise-ik.js";
-// THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-rows`).
-export { GATE_MEMORY_ROW_MAX_BYTES, storedWithdrawals, GateMemoryRowTorn } from "./gate-withdrawal-store.js";
-export type { GateMemoryRows } from "./gate-withdrawal-store.js";
+// THE GATE'S MEMORY DOOR, named here by the vessel that answers it over its custody seat (`gate-memory-records`).
+export { GATE_MEMORY_RECORD_MAX_BYTES, storedWithdrawals, GateMemoryRecordTorn } from "./gate-withdrawal-store.js";
+export type { GateMemoryRecords } from "./gate-withdrawal-store.js";
 export * from "./device-removal.js";
 export * from "./re-anchoring.js";
 export * from "./realm-steward-map.js";

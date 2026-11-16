@@ -1,9 +1,9 @@
 /**
- * gate-memory-rows — THE SEALED ROW DOOR a sovereign gate's withdrawal memory rests behind.
+ * gate-memory-records — THE SEALED ROW DOOR a sovereign gate's withdrawal memory rests behind.
  *
  * A gate that forgets a denial admits the withdrawn vessel again, so what a gate learned of a face's
  * withdrawals outlives a restart (`@lararium/mesh` `gate-withdrawal-store`). That store reads and writes bytes
- * through `GateMemoryRows`; this module answers that door over the vessel's custody seat.
+ * through `GateMemoryRecords`; this module answers that door over the vessel's custody seat.
  *
  * ── ONE ROW PER FACE KEY, SEALED UNDER THE VESSEL KEY ───────────────────────────────────────────
  * A row rests at `gate-memory/<name>.bin` in the storage home, where `name` reads as the face's proof-subject
@@ -23,12 +23,12 @@
  * over nothing or over a row that reads whole. A row's plaintext lists events, and nothing else lands: bytes that
  * read as no list refuse, and a standing row that opens to no list refuses `malformed` and keeps its bytes. The
  * arriving list must hold every event the row holds, each compared in its canonical spelling: a write that would
- * drop one refuses (`GateMemoryRowRefused`) and the row keeps its bytes, so a writer that joined against an older
+ * drop one refuses (`GateMemoryRecordRefused`) and the row keeps its bytes, so a writer that joined against an older
  * view never replaces what another writer learned since. The store hears the refusal, drops its view of the row
  * and verifies the row again.
  *
  * ── ONE DOOR PER HOLDER ─────────────────────────────────────────────────────────────────────────
- * `gateMemoryRows()` answers the SAME door for as long as one holder sits in this home's seat, so every gate of
+ * `gateMemoryRecords()` answers the SAME door for as long as one holder sits in this home's seat, so every gate of
  * one composition shares the store's one writer queue and its one verified view. A new holder (a restart, an
  * unlock that seats afresh) gets a new door, and with it a view that verifies every row again.
  *
@@ -46,27 +46,27 @@
  *
  * Canon: lar:///ha.ka.ba/lares/api/pono/face-proof#/the-withdrawal-proof
  */
-import { GATE_MEMORY_ROW_MAX_BYTES, canonicalJson, type GateMemoryRows } from "@lararium/mesh";
+import { GATE_MEMORY_RECORD_MAX_BYTES, canonicalJson, type GateMemoryRecords } from "@lararium/mesh";
 import { CustodyRowUnavailable, type CustodyHolder } from "./custody-holder.js";
 import { readCustodyRow, standingCustody, updateCustodyRow } from "./custody-seat.js";
 
 /** A row's name: a proof-subject digest, 64 characters of bare lower-case hex. */
-const ROW_NAME = /^[0-9a-f]{64}$/;
+const RECORD_NAME = /^[0-9a-f]{64}$/;
 
 /** A row this door refuses before the custody seat hears of it: a name outside the one spelling, or bytes past the bound. */
-export class GateMemoryRowRefused extends Error {
-  override readonly name = "GateMemoryRowRefused";
+export class GateMemoryRecordRefused extends Error {
+  override readonly name = "GateMemoryRecordRefused";
 }
 
 /**
  * The file of the row `name` in the memory of the gate of face `gateFace`: `gate-memory-h<N>-<name>.bin`, resting in that face's
  * own directory under its key. Refuses a name outside the one spelling.
  */
-export function gateMemoryRowFile(gateFace: number, name: string): string {
-  if (typeof name !== "string" || !ROW_NAME.test(name)) {
-    throw new GateMemoryRowRefused("a gate memory row answers to a proof-subject digest (64 characters of bare lower-case hex) and to no other name");
+export function gateMemoryRecordFile(gateFace: number, name: string): string {
+  if (typeof name !== "string" || !RECORD_NAME.test(name)) {
+    throw new GateMemoryRecordRefused("a gate memory row answers to a proof-subject digest (64 characters of bare lower-case hex) and to no other name");
   }
-  if (!Number.isSafeInteger(gateFace) || gateFace < 0) throw new GateMemoryRowRefused(`a gate memory row belongs to a gate's face (a handle index), not ${String(gateFace)}`);
+  if (!Number.isSafeInteger(gateFace) || gateFace < 0) throw new GateMemoryRecordRefused(`a gate memory row belongs to a gate's face (a handle index), not ${String(gateFace)}`);
   return `gate-memory-h${gateFace}-${name}.bin`;
 }
 /** The events a row's plaintext lists, each by its canonical spelling; `null` where the bytes read as no list. */
@@ -77,10 +77,10 @@ function eventsOf(bytes: Uint8Array): Set<string> | null {
   } catch { return null; }
 }
 
-function makeRows(gateFace: number): GateMemoryRows {
+function makeRecords(gateFace: number): GateMemoryRecords {
   return Object.freeze({
     async read(name: string): Promise<Uint8Array | null> {
-      const file = gateMemoryRowFile(gateFace, name);
+      const file = gateMemoryRecordFile(gateFace, name);
       const bytes = await readCustodyRow("identity", file);
       // A row that opens to no list refuses by name, exactly as one that does not open: the gate that asked
       // falls silent, where a row read as nothing would let it treat the face as never learned.
@@ -88,13 +88,13 @@ function makeRows(gateFace: number): GateMemoryRows {
       return bytes;
     },
     async write(name: string, bytes: Uint8Array): Promise<void> {
-      const file = gateMemoryRowFile(gateFace, name);
-      if (!(bytes instanceof Uint8Array) || bytes.length === 0 || bytes.length > GATE_MEMORY_ROW_MAX_BYTES) {
-        throw new GateMemoryRowRefused(`a gate memory row holds between 1 and ${GATE_MEMORY_ROW_MAX_BYTES} bytes`);
+      const file = gateMemoryRecordFile(gateFace, name);
+      if (!(bytes instanceof Uint8Array) || bytes.length === 0 || bytes.length > GATE_MEMORY_RECORD_MAX_BYTES) {
+        throw new GateMemoryRecordRefused(`a gate memory row holds between 1 and ${GATE_MEMORY_RECORD_MAX_BYTES} bytes`);
       }
       const next = Uint8Array.from(bytes);
       const arriving = eventsOf(next);
-      if (arriving === null) throw new GateMemoryRowRefused("a gate memory row lists events: these bytes read as no list");
+      if (arriving === null) throw new GateMemoryRecordRefused("a gate memory row lists events: these bytes read as no list");
       // The decision runs only over a row that reads whole or over nothing: every other reading refuses first,
       // and a locked seat refuses before the decision runs, so a refused write leaves no directory behind.
       await updateCustodyRow("identity", file, (standing) => {
@@ -102,7 +102,7 @@ function makeRows(gateFace: number): GateMemoryRows {
           const held = eventsOf(standing);
           if (held === null) throw new CustodyRowUnavailable("identity", file, "malformed");
           for (const event of held) {
-            if (!arriving.has(event)) throw new GateMemoryRowRefused("a gate's memory only accretes: this write lacks an event the row holds, so the row keeps its bytes");
+            if (!arriving.has(event)) throw new GateMemoryRecordRefused("a gate's memory only accretes: this write lacks an event the row holds, so the row keeps its bytes");
           }
         }
         return { plaintext: next, value: undefined };
@@ -111,19 +111,19 @@ function makeRows(gateFace: number): GateMemoryRows {
   });
 }
 
-const DOORS = new WeakMap<CustodyHolder, Map<number, GateMemoryRows>>();
+const DOORS = new WeakMap<CustodyHolder, Map<number, GateMemoryRecords>>();
 
 /**
  * The door for the memory of ONE face's gate, over the custody seat of the home the vessel's resolvers name. A gate reads and
  * writes only its own face's rows: another unlocked face's withdrawals read absent through this door. One door per
  * (seated holder, face); a home with no seat answers a door of its own that refuses every row `CustodyLocked`.
  */
-export function gateMemoryRows(gateFace: number): GateMemoryRows {
+export function gateMemoryRecords(gateFace: number): GateMemoryRecords {
   const holder = standingCustody();
-  if (holder === null) return makeRows(gateFace);
+  if (holder === null) return makeRecords(gateFace);
   let byFace = DOORS.get(holder);
   if (byFace === undefined) { byFace = new Map(); DOORS.set(holder, byFace); }
   let door = byFace.get(gateFace);
-  if (door === undefined) { door = makeRows(gateFace); byFace.set(gateFace, door); }
+  if (door === undefined) { door = makeRecords(gateFace); byFace.set(gateFace, door); }
   return door;
 }

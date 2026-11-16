@@ -201,7 +201,7 @@
     "tests/founding-seed-sweep.test.ts": 8,
     "tests/founding-sweep-race.test.ts": 3,
     "tests/gate-bundle-custody.test.ts": 42,
-    "tests/gate-memory-rows.test.ts": 31,
+    "tests/gate-memory-records.test.ts": 31,
     "tests/gate-rings.test.ts": 1,
     "tests/gate-root-door-minters.test.ts": 1,
     "tests/gate-shadow-ring.test.ts": 1,

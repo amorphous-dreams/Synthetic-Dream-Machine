@@ -15,7 +15,7 @@ import { describe, expect, test } from "vitest";
 import { canonicalJsonBytes } from "../src/crypto.js";
 import { WITHDRAWAL_HISTORY_BOUND, heldWithdrawals } from "../src/face-authority.js";
 import { faceProofSubjectRef, genesisFrontier, withdrawalHead, type FaceWithdrawal } from "../src/face-proof-subjects.js";
-import { GateMemoryRowTorn, memoryRows, storedWithdrawals } from "../src/gate-withdrawal-store.js";
+import { GateMemoryRecordTorn, memoryRecords, storedWithdrawals } from "../src/gate-withdrawal-store.js";
 import { dial, memoryOf, presenter, sibling, world } from "./face-gate-fixture.js";
 import { chain, history, pair, withdrawal } from "./face-proof-fixture.js";
 
@@ -23,7 +23,7 @@ const NEXUS = "nexus-a.synthetic";
 
 describe("a gate's memory rests in its own store", () => {
   test("RED: learn, restart, still deny", async () => {
-    const rows = memoryRows();
+    const rows = memoryRecords();
     const before = await world({ withdrawals: storedWithdrawals(rows) });
     const honest = await presenter(before, "restart");
     const gone = await sibling(honest, "restart gone");
@@ -36,7 +36,7 @@ describe("a gate's memory rests in its own store", () => {
     const again = await dial(after, gone);
     expect(again.gate).toEqual({ outcome: "answered", state: "withdrawn" });
     // CONTROL: a gate over empty rows learned nothing, and accepts the withdrawn vessel (the named leak).
-    const fresh = await world({ withdrawals: storedWithdrawals(memoryRows()) });
+    const fresh = await world({ withdrawals: storedWithdrawals(memoryRecords()) });
     expect((await dial(fresh, gone)).gate).toEqual({ outcome: "attached", class: "contracted" });
     // The row rests under the face's proof subject, a digest, and holds the signed events alone.
     expect(rows.names()).toEqual([faceProofSubjectRef(honest.scope)]);
@@ -44,7 +44,7 @@ describe("a gate's memory rests in its own store", () => {
   });
 
   test("RED: a gate over a torn row falls silent and writes nothing, where a fresh memory would admit the withdrawn vessel", async () => {
-    const rows = memoryRows();
+    const rows = memoryRecords();
     const before = await world({ withdrawals: storedWithdrawals(rows) });
     const honest = await presenter(before, "torn gate");
     const gone = await sibling(honest, "torn gate gone");
@@ -65,7 +65,7 @@ describe("a gate's memory rests in its own store", () => {
     expect(rows.writes).toBe(writes);
     expect(Buffer.from(rows.peek(name)!).equals(Buffer.from(torn))).toBe(true);
     // CONTROL: the leak this closes. A gate that reads the row as nothing learned admits the withdrawn vessel.
-    const forgetful = await world({ withdrawals: storedWithdrawals(memoryRows()) });
+    const forgetful = await world({ withdrawals: storedWithdrawals(memoryRecords()) });
     expect((await dial(forgetful, gone)).gate).toEqual({ outcome: "attached", class: "contracted" });
   });
 
@@ -75,16 +75,16 @@ describe("a gate's memory rests in its own store", () => {
     const [real] = await history(c, [(await chain("forged gone", NEXUS)).vessel.key]);
     const name = faceProofSubjectRef(c.scope);
     const read = async (row: unknown): Promise<unknown> => {
-      const rows = memoryRows();
+      const rows = memoryRecords();
       await rows.write(name, row instanceof Uint8Array ? row : canonicalJsonBytes(row));
       const torn: string[] = [];
       const store = storedWithdrawals(rows, { onTorn: (at) => torn.push(at) });
       const memory = await Promise.resolve(store.read(c.scope)).catch((e: unknown) => e);
-      if (!(memory instanceof GateMemoryRowTorn)) return memory === null ? "nothing" : (memory as { frontier: { position: number } }).frontier.position;
+      if (!(memory instanceof GateMemoryRecordTorn)) return memory === null ? "nothing" : (memory as { frontier: { position: number } }).frontier.position;
       // THE ROW STANDS UNTOUCHED: a keep of a sound memory reads the row first, refuses the same way and writes nothing.
       const standing = Uint8Array.from(rows.peek(name)!);
       const kept = await Promise.resolve(store.keep(memoryOf(c.scope, [real!]))).then(() => "kept", (e: unknown) => e);
-      expect(kept).toBeInstanceOf(GateMemoryRowTorn);
+      expect(kept).toBeInstanceOf(GateMemoryRecordTorn);
       expect(rows.writes).toBe(1);                                                         // the staging write alone
       expect(Buffer.from(rows.peek(name)!).equals(Buffer.from(standing))).toBe(true);
       expect(memory.row).toBe(name);
@@ -99,13 +99,13 @@ describe("a gate's memory rests in its own store", () => {
     expect(await read({ events: [real] })).toBe("refused:2");
     expect(await read(new Uint8Array([1, 2, 3]))).toBe("refused:2");
     expect(await read([{ ...real!, position: 2 }])).toBe("refused:2");                      // a decoded field moved: the signature no longer covers it
-    expect(await storedWithdrawals(memoryRows()).read(c.scope)).toBeNull();                // no row: nothing, and nothing torn
+    expect(await storedWithdrawals(memoryRecords()).read(c.scope)).toBeNull();                // no row: nothing, and nothing torn
   });
 
   test("RED: the store only accretes, across interleaved keeps and across a restart", async () => {
     const c = await chain("accrete-store", NEXUS);
     const events = await history(c, [(await chain("as one", NEXUS)).vessel.key, (await chain("as two", NEXUS)).vessel.key]);
-    const rows = memoryRows();
+    const rows = memoryRecords();
     const store = storedWithdrawals(rows);
     const whole = memoryOf(c.scope, events), older = memoryOf(c.scope, [events[0]]);
     await Promise.all([store.keep(whole), store.keep(older), store.keep(memoryOf(c.scope))]);      // three checks land at once
@@ -118,7 +118,7 @@ describe("a gate's memory rests in its own store", () => {
     // Two adapters over one set of rows, each keeping an event the other lacks, at once: neither denial gets lost.
     const d = await chain("accrete-two", NEXUS);
     const both = await history(d, [(await chain("at one", NEXUS)).vessel.key, (await chain("at two", NEXUS)).vessel.key]);
-    const shared = memoryRows();
+    const shared = memoryRecords();
     // A door that answers what the row held when it got asked, a moment later: two unguarded writers would each join against an empty row.
     const slow = { read: async (name: string) => { const bytes = await shared.read(name); await new Promise((r) => setTimeout(r, 5)); return bytes; }, write: (name: string, bytes: Uint8Array) => shared.write(name, bytes) };
     const one = storedWithdrawals(slow), two = storedWithdrawals(slow);
@@ -127,7 +127,7 @@ describe("a gate's memory rests in its own store", () => {
     // A memory spelled by hand over an EMPTY store, holding an event the face key never signed: nothing rests.
     const other = await chain("accrete-store other", NEXUS);
     const forged = await withdrawal(c.scope, 1, genesisFrontier(c.scope).head, other.vessel.key, other.face);
-    const empty = memoryRows();
+    const empty = memoryRecords();
     await storedWithdrawals(empty).keep({ scope: c.scope, line: [forged], loose: [], denied: [forged.withdrawn], frontier: { position: 1, head: withdrawalHead(forged) }, fork: null } as never);
     expect(empty.writes).toBe(0);
   });
@@ -135,7 +135,7 @@ describe("a gate's memory rests in its own store", () => {
   test("RED: a row rolled back to an older copy forgets, and the next honest keep teaches it again", async () => {
     const c = await chain("rollback", NEXUS);
     const events = await history(c, [(await chain("rb one", NEXUS)).vessel.key, (await chain("rb two", NEXUS)).vessel.key]);
-    const rows = memoryRows();
+    const rows = memoryRecords();
     await storedWithdrawals(rows).keep(memoryOf(c.scope, [events[0]]));
     const older = rows.peek(faceProofSubjectRef(c.scope))!;
     await storedWithdrawals(rows).keep(memoryOf(c.scope, events));
@@ -152,7 +152,7 @@ describe("a gate's memory rests in its own store", () => {
     const keys: string[] = [];
     for (let at = 0; at < WITHDRAWAL_HISTORY_BOUND; at++) keys.push((await pair(`bound ${at}`)).key);
     const full = await history(c, keys);
-    const rows = memoryRows();
+    const rows = memoryRecords();
     const store = storedWithdrawals(rows);
     await store.keep(memoryOf(c.scope, full));
     expect(heldWithdrawals((await store.read(c.scope))!).length).toBe(WITHDRAWAL_HISTORY_BOUND);
@@ -165,7 +165,7 @@ describe("a gate's memory rests in its own store", () => {
     expect(heldWithdrawals(kept).some((event) => event.signature === extra.signature)).toBe(false);
     // A row somebody wrote past the bound refuses by name.
     await rows.write(faceProofSubjectRef(c.scope), canonicalJsonBytes([...full, extra]));
-    await expect(Promise.resolve(storedWithdrawals(rows.reopen()).read(c.scope))).rejects.toBeInstanceOf(GateMemoryRowTorn);
+    await expect(Promise.resolve(storedWithdrawals(rows.reopen()).read(c.scope))).rejects.toBeInstanceOf(GateMemoryRecordTorn);
   }, 240_000);
 });
 

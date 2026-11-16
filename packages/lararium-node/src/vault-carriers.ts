@@ -467,10 +467,10 @@ function buildTable(): readonly CarrierRow[] {
     faceRowOf({ row: "walk", target: tgt(["D"]), inner: /^walk-h(0|[1-9]\d*)-([0-9a-f]{32})\.json$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
          writer: "node-walk-store", name: (m) => `walk-h${m[1]}-${m[2]}`, face: faceOf }),
     // A sovereign gate's withdrawal memory, one row per face key named by its proof-subject digest
-    // (`gate-memory-rows`). It belongs to its vessel: no face's bundle carries it.
+    // (`gate-memory-records`). It belongs to its vessel: no face's bundle carries it.
     // A gate's withdrawal memory rests in the face whose gate learned it: the file name's handle index only spells the face, the face's own directory is the location.
     faceRowOf({ row: "gate-memory", target: tgt(["D"]), inner: /^gate-memory-h(0|[1-9]\d*)-([0-9a-f]{64})\.bin$/, select: (m) => ({ ordinal: Number(m[1]) }), custody: "face-hot", keyClass: null,
-         writer: "gate-memory-rows", name: (m) => `gate-memory-h${m[1]}-${m[2]}`, face: faceOf }),
+         writer: "gate-memory-records", name: (m) => `gate-memory-h${m[1]}-${m[2]}`, face: faceOf }),
     // The growth rite's two rows (`seal-ceremony`): the first prepares a crossing, the second commits its record.
     row({ row: "transition-pending", target: tgt(["F"]), home: "seal", under: "", match: file("transition-pending.json"),
           custody: "floor-plain", keyClass: null, writer: "seal-ceremony",

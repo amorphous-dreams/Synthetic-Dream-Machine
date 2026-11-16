@@ -237,7 +237,7 @@ import { heldRootHoldings }                      from "./face-root-holdings.js";
 import { gateGrantRing }                         from "./gate-rings.js";
 import { readFaceJoinRecord, readFaceAddressSecret } from "./fleet-join-custody.js";
 import { openVesselSecretHome } from "./secret-home-store.js";
-import { gateMemoryRows }                        from "./gate-memory-rows.js";
+import { gateMemoryRecords }                        from "./gate-memory-records.js";
 import { custodyGateDoor }                       from "./custody-seat.js";
 import { intentRelayService, type IntentRelayService } from "./intent-relay.js";
 import { resolveIntentRelayFace } from "./intent-relay-face.js";
@@ -1943,7 +1943,7 @@ async function prepareNodeBootOn(
       },
     }),
     withdrawals: sovereign
-      ? storedWithdrawals(gateMemoryRows(gateFace), { onTorn: (name) => console.warn(`[lar-gate] a gate memory row reads torn (${name.slice(0, 12)}…); a hand repairs or removes it`) })
+      ? storedWithdrawals(gateMemoryRecords(gateFace), { onTorn: (name) => console.warn(`[lar-gate] a gate memory row reads torn (${name.slice(0, 12)}…); a hand repairs or removes it`) })
       : memoryBackedWithdrawals(),
     deadlines: timerGateDeadlines(),
     audience:  DAEMON_BAG_ID,
