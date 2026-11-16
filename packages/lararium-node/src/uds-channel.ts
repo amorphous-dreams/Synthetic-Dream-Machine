@@ -1421,7 +1421,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
           return;
         }
         if (sock.destroyed || sock.readableEnded) {
-          // H1, now DURABLE: this id is recorded ABANDONED (flushed) before this vessel lets go of
+          // H1, DURABLE: this id is recorded ABANDONED (flushed) before this vessel lets go of
           // the connection, so a LATER connection carrying the SAME request id (a read-back, a
           // retry) — even across a restart — meets the ledger's refusal instead of a bare "never
           // seen" that a second dispatch would then run unannounced.

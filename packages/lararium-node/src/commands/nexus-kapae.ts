@@ -2,7 +2,7 @@
  * runNexusKapae / runNexusKapaeList — the RAISE side of the Kapae immune antigen (#65): the founding kahu
  * WRITES a quorum-signed ban (`kapae`) or lift (`un_kapae`) onto the always-carried antigen BOARD, and reads
  * the currently-Kapae'd set back. The READER (`antigen-board`) + the ENFORCE shore (`antigen-ring`,
- * `carryContractShareDecision`) already stand; this is the writer they were missing.
+ * `carryContractShareDecision`) stand beside it; this is the writer they fold.
  *
  * Node-specific shores (only these belong here):
  *   - the store's one holder (`repo`): the standing vessel's own Repo, or the direct holder's (`ownedStore`)

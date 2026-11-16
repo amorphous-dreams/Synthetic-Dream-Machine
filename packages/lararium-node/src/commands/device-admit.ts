@@ -58,10 +58,9 @@ export type { DeviceAdmitPayload } from "@lararium/keyhive";
  *
  * ══ WHY IT IS NOT THE VESSEL KEY ═════════════════════════════════════════════════════════════════
  *
- * This read was spelled `personaKelBoardDocUrl(await loadVesselVerifyingKey())`, under a comment
- * reading "its gate key IS its Nexus key." `91ce09afb` ruled that EVERY per-Nexus board keys on the
- * NEXUS, so that sentence holds at exactly ONE point on the gradient — the `own` island — and
- * nowhere above it. A founder that CLIMBED to a charter reads the PRIVATE board beneath its charter
+ * EVERY per-Nexus board keys on the NEXUS (`91ce09afb`), so "its gate key IS its Nexus key" — a read
+ * at `personaKelBoardDocUrl(await loadVesselVerifyingKey())` — holds at exactly ONE point on the
+ * gradient — the `own` island — and nowhere above it. A founder that CLIMBED to a charter reads the PRIVATE board beneath its charter
  * island while its own boot reads the charter board.
  *
  * AND THE RESOLVED KEY ALONE DOES NOT SUFFICE — THE BOARD ITSELF MUST CARRY THE CHAIN TOO. Founding
@@ -71,7 +70,7 @@ export type { DeviceAdmitPayload } from "@lararium/keyhive";
  * calls the SAME `carryPersonaKelUpTheGradient` the boot calls, fed by `nodeNexusIslandsBelow` off
  * this identical resolution — never a second, hand-built ranking. A sound climbed founding therefore
  * admits cleanly with no daemon restart between the climb and this call. "persona-KEL chain … absent
- * from the local board" now names only an identifier no island in the gradient ever seated — a
+ * from the local board" names only an identifier no island in the gradient ever seated — a
  * genuinely torn founding — and never fires over a founding that stands sound.
  *
  * ══ THE FLEET FRAMING IS KEPT, DELIBERATELY ══════════════════════════════════════════════════════

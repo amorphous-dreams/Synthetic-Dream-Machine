@@ -2,7 +2,7 @@
  * runNexusContract / runNexusAcceptCarriage / runNexusMembersList — the RAISE side of the operator MEMBERS-registry
  * (the Kapae-antigen's ALLOW-twin). The founding kahu WRITE a quorum-signed `admit` / `revoke` onto the
  * always-carried members BOARD; the READER (`members-board`) + the consult (`nexus-membership`,
- * `carrierShareDecision`) fold it. This is the writer they were missing — the mirror of `runNexusKapae`.
+ * `carrierShareDecision`) fold it. This is the writer they fold — the mirror of `runNexusKapae`.
  *
  * TWO WAX-SEALS ride an ADMIT (membership-doctrine):
  *   · the OPERATOR's own "accepts carriage" contract-sig (the contract-in). Either the joining operator produced

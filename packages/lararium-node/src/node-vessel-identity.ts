@@ -95,14 +95,14 @@ import {
  * documents and unreachable by store operations. An empty home re-derives a fresh device key.
  *
  * TAKES NO `dataDir`: this resolver answers off `LAR_ROOT` alone (`larIdentityDir`), never
- * off a caller-supplied path. A `dataDir` parameter it ignored would be the footgun measured live
- * (`persona-ring-cross-operator-admit.test.ts`): a caller isolating a `dataDir` per simulated vessel,
+ * off a caller-supplied path. A `dataDir` parameter it ignored would be a footgun
+ * (`persona-ring-cross-operator-admit.test.ts` guards it): a caller isolating a `dataDir` per simulated vessel,
  * in-process, with no matching `LAR_ROOT` mutation, silently reads/writes the identity home of
- * whatever house the process names instead of its intended isolated one. Removing the parameter
- * (rather than honoring it) preserves the tested invariant "ONE resolver, no second spelling"
+ * whatever house the process names instead of its intended isolated one. Taking no parameter
+ * (rather than honoring one) preserves the tested invariant "ONE resolver, no second spelling"
  * (`vessel-identity-home.test.ts`) — honoring it would need a SECOND address-derivation scheme to
  * keep identity separate from a caller-supplied store path, which is exactly the thing this file's storage
- * law forbids. The ONE sanctioned in-process isolation pattern is now `tests/harness/with-lar-root.ts`.
+ * law forbids. The ONE sanctioned in-process isolation pattern is `tests/harness/with-lar-root.ts`.
  */
 function identityDir(): string {
   return larIdentityDir();

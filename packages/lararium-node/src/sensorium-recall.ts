@@ -256,8 +256,8 @@ export interface FormSearchConfig {
 
 /**
  * Build the injected `formSearch` leg. PLACEHOLDER SHIM (operator ruling 2026-10-31, Train Q, row Q6 —
- * the one ruled exception to the no-shims law): the harvester burn retired the bearing parser and the
- * move-skeleton derive this leg routed through (the bearing recall and the markers recall), so the leg
+ * the one ruled exception to the no-shims law): no bearing parser or move-skeleton derive stands for
+ * this leg to route through (the bearing recall and the markers recall), so the leg
  * keeps its export shape and answers `[]` for every query; {@link multiGraphRecall} then fuses
  * content-only. The sensorium arc returns the real form leg; that arc waits on the founded-Lararium
  * proof, and a road row tracks this shim until it retires.

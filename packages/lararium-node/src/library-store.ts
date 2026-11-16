@@ -13,7 +13,7 @@
  *
  * ── ACQUIRING MOVES, IT DOES NOT COPY (by default) ───────────────────────────────────────────────
  * The point of the act is to get a body OUT of a tracked tree. A copy leaves the original exactly where it
- * was doing the harm, so `acquire` MOVES and says so; `--keep` exists for a source the operator does not own.
+ * does the harm, so `acquire` MOVES and says so; `--keep` exists for a source the operator does not own.
  *
  * ── VERIFY READS BYTES, NEVER RECORDS ────────────────────────────────────────────────────────────
  * A verify that trusted a sidecar would certify its own bookkeeping. This re-digests the body and checks

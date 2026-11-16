@@ -3,10 +3,9 @@
  *
  * This command publishes a LOCAL OFFERING SOURCE — never genesis (H3, R2). `--source <dir>` names a
  * directory this operator already holds: `<dir>/offering.json` plus each blob's bytes beside it. The
- * genesis seed carries the boot set alone since the Streams retirement (`3d38cb691`); it was never a
- * registry of what an operator may offer, and reading `$:/plugins/*` blobs out of it folded to an
- * EMPTY gift the instant genesis stopped carrying any (an empty offering that still signed, verified,
- * and announced — H3's live finding).
+ * genesis seed carries the boot set alone and names no registry of what an operator may offer:
+ * reading `$:/plugins/*` blobs out of it folds to an EMPTY gift (an empty offering that still signs,
+ * verifies and announces).
  *
  * TWO SOURCE SHAPES (offerings-handoff.md "Who signs"):
  *   - A SIGNED GIFT (`offering.json` already carries `sig`/`offeror`/`pluginsCid`): a friend's offering,

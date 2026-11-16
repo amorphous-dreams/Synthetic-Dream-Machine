@@ -212,8 +212,8 @@ export function mountDiskProjection(
   // The Confluence's projecting leg read a STANDOFF — disk and records both moved past the
   // merge base, so the projector stood down and the divergence must reach the operator
   // (the ruling: conflict-surfacing in BOTH legs). ONE RAIL, NOT A SECOND: it rides the
-  // same ward-alert verb the disk ward rides — the rail `fileWardRefusal` was already
-  // generalized for (the M3 archive-floor write files here too) — and `wardKind` names the
+  // same ward-alert verb the disk ward rides — the rail `fileWardRefusal` generalizes
+  // (the archive-floor write files here too) — and `wardKind` names the
   // mechanism that actually stood down, so an operator is never sent to the disk ward for
   // a conflict. The wire `kind`/`cause` stay Rail A's transport names, per that ruling.
   onConflict: (info) => ctx.post(hostEvent(ctx.wikiUri, "confluence:conflict", { verb: "ward-alert", requestedBy: "projection-confluence", wardKind: "projection-conflict", bagId: info.bagId, uri: info.uri, reason: info.reason, standoff: info.standoff })),

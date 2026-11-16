@@ -157,9 +157,9 @@ export interface BagSighting {
 /**
  * Survey every bag under a directory — what stands there, and whether each sits where it says it belongs.
  *
- * `adrift` names the interesting row. A bag whose bytes sit somewhere its declaration does not point at is
- * exactly the condition that let a Nexus seal live in a repository: nothing was lying, nothing was checked,
- * and the mismatch had no surface. It has one now.
+ * `adrift` names the interesting row. A bag whose bytes sit somewhere its declaration does not point at
+ * lets a Nexus seal live in a repository with nothing lying and nothing checked; this row gives that
+ * mismatch its surface.
  */
 export function surveyBags(dir: string, roots: BagHomeRoots = bagHomeRoots()): BagSighting[] {
   if (!existsSync(dir)) return [];

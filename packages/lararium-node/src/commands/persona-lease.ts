@@ -6,8 +6,7 @@
  * signed it and the writer's key stands in the face's KEL lineage (`lease-advance`). The persona ROOT signs here: it is
  * the key the lineage seats, and it rests on this vessel's identity home, never in the running daemon. The verb reads
  * the signed slots on the daemon doc, signs effective + 1 into the root's own slot, and raises the sealed anchor's
- * frontier to the epoch it just verified. An unsigned or stranger-signed slot raised nothing before this verb and raises
- * nothing after it.
+ * frontier to the epoch it just verified. An unsigned or stranger-signed slot raises nothing.
  *
  * THE ROLL REFUSES WHILE IT WOULD STRAND A SEATED DEVICE (house ruling 2026-11-05, the operator may overrule it). A roll
  * re-issues no device edge, so every edge bound at the epoch it leaves reads stale at its holder's next boot, the rolling

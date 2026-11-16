@@ -331,10 +331,9 @@ async function runInitAct(opts: InitOptions): Promise<InitResult> {
       // THE ISLAND. An admit carries a SNAPSHOT of the founder's own RESOLVED NexusIdentity — `kind` +
       // `scope`, minted from the SAME `nexusIdentity` ruling the boot composes (device-admit.ts). A
       // `charter` kind re-enters as a genesis epoch (every charter holder derives the identical scope);
-      // any other kind — `own`/`anchor`, and an absent kind on an older payload — resolves through the
-      // anchor branch keyed on the founder's own gate key, UNCHANGED from before this carry existed. So a
-      // climbed founder's device now seats where the founder itself stands, and an un-climbed founder's
-      // device is byte-identical to today. Seeding one island and reading another HALTS the Binding Gate
+      // any other kind — `own`/`anchor`, and an absent kind — resolves through the anchor branch keyed
+      // on the founder's own gate key. So a climbed founder's device seats where the founder itself
+      // stands, and an un-climbed founder's device seats at the founder's own gate key. Seeding one island and reading another HALTS the Binding Gate
       // fail-closed at first boot, which reads as a broken vessel.
       nexusPubkey: admittedJoineeIsland({
         hearthGatePubKey:  payload.hearthGatePubKey,

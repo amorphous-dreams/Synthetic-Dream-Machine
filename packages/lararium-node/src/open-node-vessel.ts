@@ -1377,7 +1377,7 @@ async function prepareNodeBootOn(
     // relays daemon-island-minted docs (personal/draft bindings) to the wiki
     // island and its slot-resolve hangs at boot.
     //
-    // The node passes no identity slot; K23 retired it.
+    // The node passes no identity slot.
     //
     // ONE VERDICT, BOTH HOOKS. A bare `sharePolicy` fills automerge-repo's ANNOUNCE hook alone and leaves
     // ACCESS wide open, so a peer that REQUESTS a doc by id pulls it whatever the verdict said — and every
@@ -1622,9 +1622,8 @@ async function prepareNodeBootOn(
   // (`nexusIslandsBelow`, which re-runs this same resolver with each higher term withheld). A second copy
   // of this object would drift from the first the day a term is added, and the carry would then read a
   // gradient the boot does not stand on.
-  // AND THE ONE STATEMENT NOW LIVES IN ONE PLACE (`nexus-standing`), because the CLI verbs were the
-  // second copy this comment warned about — they did not restate the object, they SKIPPED it and read
-  // their per-Nexus boards at the vessel's own key, which is the resolved island at the `own` notch
+  // AND THE ONE STATEMENT LIVES IN ONE PLACE (`nexus-standing`): the CLI verbs compose it rather than
+  // read their per-Nexus boards at the vessel's own key, which is the resolved island at the `own` notch
   // and nowhere above it. The boot composes the same seam the admit and founding doors compose, so a
   // term added here reaches every reader at once.
   const nexusStandsAt: NexusIdentityAt = nodeNexusStandsAt({
@@ -2648,11 +2647,10 @@ async function prepareNodeBootOn(
       // Bootstrap URLs: the vessel's own social bootstrap answers for the place and every face. The
       // oracle answers for none of them.
       // BOTH parses are guarded, and a tear reads {} — the same answer every other reader of this file
-      // gives (the hearth-dial pin, the bulb, the init packer). The OUTER parse was caught and the inner
-      // one was not, so a bootstrap whose outer JSON is valid while its packed `text` is truncated, absent
-      // or not a string threw an uncaught SyntaxError/TypeError and killed the boot — while the pin reader
-      // three hundred lines earlier answered `null` on that exact file. Two readers of one file must not
-      // disagree about whether it is fatal.
+      // gives (the hearth-dial pin, the bulb, the init packer). A bootstrap whose outer JSON is valid while
+      // its packed `text` is truncated, absent or not a string reads as none here, as the pin reader three
+      // hundred lines earlier answers `null` on that exact file. Two readers of one file must not disagree
+      // about whether it is fatal.
       const bootstrapTiddlers: Record<string, { text?: string }> = readBootTiddlers(bootstrapPath) ?? {};   // torn reads as none
       faceBootTiddlers = bootstrapTiddlers;
       const daemonUrl = bootDaemonUrl(bootstrapTiddlers);
@@ -3755,7 +3753,7 @@ async function prepareNodeBootOn(
     // daemonVm is set just above — so every injected impl is ready at this compose point.
     const mempalaceImpl: MempalaceProvider = {
       // SOVEREIGN recall + worldline: both read through house code, never the guest mempalace client —
-      // the sovereign⊥guest separation is now complete on the `lares sense` surface.
+      // the sovereign⊥guest separation holds whole on the `lares sense` surface.
       withClient: (fn) => fn(sovereignRecallClient),
       turnsForHandleStubs: async (handle, opts) => {
         // Page the content plane, keep drawers stamped with this agent-lineage handle, order by the shared
@@ -4092,7 +4090,7 @@ async function prepareNodeBootOn(
   };
 
   // Thin main verb plane. Every daemon verb that touches the catalog / recipe /
-  // residency now lives in the worker (wireWorkerVerbs) — the daemon holds ACCESS to
+  // residency lives in the worker (wireWorkerVerbs) — the daemon holds ACCESS to
   // all bags there and writes-then-syncs, never reaching into a mounted wiki. Main
   // keeps only what is genuinely main-resident: sync-wiki (commands the pool's active
   // wiki island) and residency stats (a read of the main-resident manager).

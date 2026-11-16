@@ -46,9 +46,8 @@ export interface HearthDialPin {
   readonly gatePubKey: string;
   /** The full pin the admit carried, when it carried one; its `signingKey` is `gatePubKey`. */
   readonly gatePin?: GateBundlePin;
-  /** The founder's resolved island kind/scope at admit time, when the admit carried one. Absent on an
-   *  older payload — a reader without it falls back to anchor-by-gate-key, unchanged from before this
-   *  pin existed. */
+  /** The founder's resolved island kind/scope at admit time, when the admit carried one. Absent, a
+   *  reader anchors by gate key. */
   readonly islandKind?:  "own" | "anchor" | "charter" | "explicit";
   readonly islandScope?: string;
   /** The document the admit named for the dial to ask for, when it named one. */
