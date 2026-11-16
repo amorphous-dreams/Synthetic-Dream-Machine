@@ -69,8 +69,8 @@ bags like any other content, evaluated locally against a per-island trust root.
 # ''`peer-stance`'' — a signed assertion over a target principal: `block | limit | neutral | allow`.
    Two SEPARATE consequences (the separation-of-powers move):
 *** //filter// — I will not surface/accept this actor's content locally.
-*** //relay// — I will not relay this actor's CRDT ops to others (SSB semantics: "no longer
-     willing to be a peer that shares their posts"). This marks the ''Beelay-layer'' enforcement point.
+*** //relay// — I will not relay this actor's CRDT ops to others (SSB semantics: the blocker declines
+     to stand as a peer that shares their posts). This marks the ''Beelay-layer'' enforcement point.
 # ''`vouch`'' — a signed invitation/endorsement edge. Membership in a Cabal/Nexus comes by vouch;
    the vouch edge stays on record. Severing a vouch stops RE-LIFTING the invitee's standing in
    the voucher's subgraph. This edge carries the Sybil defense (see #sybil).
@@ -232,6 +232,6 @@ right — to decide whose presence the hearth refuses.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5eUPO4asxasZJPW0nybmLHxyhhBP__hdaH4jomLJFSc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;gOkPJxTr-bs4Ok7o_kcAbAX8HVi4ACZQvRIYuVBPGv4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

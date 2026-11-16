@@ -7,7 +7,7 @@
 cacheable       = true
 canonical-forms = ["inline"]
 namespace       = "&#x2299;"
-role            = "pranala law (kānāwai): the anchored-pointer sigil — NARROWED 2026-06-12 under the has-stack model; typed-edge anatomy moved to api/pono/wire; role/family attribute vocabulary retired-reserved"
+role            = "pranala law (kānāwai): the anchored-pointer sigil under the has-stack model; typed-edge anatomy stands at api/pono/wire; role/family attribute vocabulary reserved, never reused"
 tags            = ["api/pono/meme", "api/pono/has-stack", "lar:///ha.ka.ba/lararium/tw5/tiddlers/sigil-pranala"]
 title           = "lar:///ha.ka.ba/lares/api/pono/pranala"
 type            = "text/memetic-wikitext+tiddlywiki"
@@ -32,7 +32,7 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 ⏿ orient on the ladder: worn → tags · doing → wire entity · embedding → aka/kahea · pointing → loulou or anchored pranala.
 ◇ decide the lightest lawful form; reach for pranala only when the anchor name earns its place.
 ▶ author one pointer per sigil; bind the target explicitly.
-↺ verify no retired vocabulary rode in; fewer, lighter edges = the win condition.
+↺ verify no reserved vocabulary rode in; fewer, lighter edges = the win condition.
 
 <<~/ahu>>
 
@@ -74,6 +74,6 @@ The typed-edge law divides in three: ''composition'' rides the meta `tags` field
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8gpnnvp0m-ZaIBxw9rfmVVK0aKKlEQ9c7Oq77yJS39k`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;scImTtQoBRRaUdLp28EGD_kLW46XJk6J7GPUD9_uEro`>>
 
 <<^ code=`&#x0004;` to=`?`>>

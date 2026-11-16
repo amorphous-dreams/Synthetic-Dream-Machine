@@ -213,9 +213,9 @@ whose structure preserves the map, TS or py alike.
 cap-stack reads as a //liftable unit// — the very object the functor maps ([[has-stack|lar:///ha.ka.ba/lares/api/pono/has-stack]]) —
 and the ''whole'' stack lives in the worker and lifts as one body. Split a single cap onto the
 coordinator — a worldline READ pulled out while compose, compare, and teardown stay behind — and the
-stack stops lifting as one: you can no longer move the sovereign island whole. The split ''shatters''
+stack stops lifting as one: nothing moves the sovereign island whole. The split ''shatters''
 ''liftability'', the functor's object torn in two. So no cap carves
-off to the coordinator, not even a read; the stack stays whole or it stands as a stack no longer.
+off to the coordinator, not even a read; the stack stays whole or it stands as no stack at all.
 Sovereign-worker primacy reads, fully: not only "the worker runs the functor" but "the ''whole''
 cap-stack lives in the worker and lifts as one — no cap splits away."
 
@@ -334,6 +334,6 @@ This meme draws the one arrow through all of them — ''the house is a functor; 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;45n7sWatu25uVucoY33oGapErpS5m8gCKPWxYDlbzJU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;h1HcN-Rzxi4J94e2eLjxxWTpzvtX_49-YPBff4eiXfQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
