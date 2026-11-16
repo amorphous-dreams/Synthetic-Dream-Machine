@@ -1,8 +1,10 @@
 /**
- * `lares rite kukulu | begin | land | receipts` — the rite door.
+ * `lares rite kukulu | keep | begin | land | receipts` — the rite door.
  *
  *   kukulu     (kūkulu) on the HOST: raise the vessel again around its hearth. Begins the rite in the vessel, then calls the
  *              host shim to rebuild the image, take the vessel down and raise a new one, then lands the rite (`../rite-kukulu.ts`)
+ *   keep       IN THE VESSEL: lay the house's authored memory, cut as a cleartext carry bundle, into a bound workspace
+ *              (`--workspace <name> [--into <path>]`), spending a return of the keep lei strung for that workspace (`../rite-keep.ts`)
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
@@ -11,7 +13,8 @@
  *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the vessel signs `receipt/<tree>`.
  *              It notarises testimony: the vessel re-runs no check
  *
- * The lei carries the grant: the hand strung it (`lares lei kui --rite kukulu …`), and any seat holding the line may spend it.
+ * The lei carries the grant: the hand strung it (`lares lei kui --rite kukulu …`, `--rite keep --branch <workspace> …`), and any
+ * seat holding the line may spend it.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { execFile, spawn } from "node:child_process";
@@ -24,6 +27,8 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { riteKukulu, type RitePorts, type RiteRowAnswer } from "../rite-kukulu.js";
 import { storeFailure, storeVerb } from "../store-door.js";
+import { KeepRefused, riteKeep, type KeepPorts } from "../rite-keep.js";
+import { carryExport, carryRefusal, LIVE_CARRY_DOORS } from "./carry.js";
 
 export class RiteUsage extends Error {}
 
@@ -67,7 +72,50 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : "name a sub-verb: kukulu, begin, offer, land, receipts or receipt");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" ? "keep runs several rows and plans no single one" : "name a sub-verb: kukulu, keep, begin, offer, land, receipts or receipt");
+}
+
+/** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */
+export function keepPlan(args: ParsedArgs): { readonly workspace: string; readonly into?: string; readonly acceptOmissions: boolean; readonly face?: number } {
+  const word = (raw: string | undefined): string | undefined => (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined);
+  const workspace = word(args.options["workspace"]), into = word(args.options["into"]), faceWord = word(args.options["face"]);
+  if (workspace === undefined) throw new RiteUsage("keep names the workspace it lays the bundle into: --workspace <name> [--into <path>]");
+  if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
+  return { workspace, ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}) };
+}
+
+/** The keep's live ports: the vessel's rows through the store door, and the cut through the carry export. */
+const KEEP_PORTS: KeepPorts = {
+  row: async (verb, rowArgs) => {
+    try { return { ok: true, output: (await storeVerb(verb, rowArgs)).output }; }
+    catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
+  },
+  cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace })).manifest,
+};
+
+async function runKeep(args: ParsedArgs): Promise<number> {
+  let plan: ReturnType<typeof keepPlan>;
+  try { plan = keepPlan(args); }
+  catch (err) {
+    if (err instanceof RiteUsage) return refuseUsage(args, "rite", helpLines("rite"), err.message);
+    throw err;
+  }
+  try {
+    const out = await riteKeep(KEEP_PORTS, plan);
+    emit(args, { ok: true, data: out, human: () => {
+      if (!out.kept) { console.log(`keep: ${out.dest} already holds bundle ${out.bundleId.slice(0, 16)}; nothing spent and nothing moved`); return; }
+      console.log(`keep: bundle ${out.bundleId.slice(0, 16)} rests at ${out.dest} (faces: ${out.faces.join(", ") || "(none)"}), return ${out.n} of the keep lei spent`);
+      for (const o of out.omissions) console.log(`  left behind: ${o.kind}${o.count !== undefined ? ` (${o.count})` : ""} — ${o.detail}`);
+      console.log(`keep: the bundle rests unencrypted (private memory as plain files); the host half commits and pushes it, then lands the rite: lares rite land --tessera ${out.tessera} --head ${out.bundleId}`);
+    } });
+    return 0;
+  } catch (err) {
+    if (err instanceof KeepRefused) {
+      emit(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`lares rite keep: ${err.message}`) });
+      return exitFor(err.code);
+    }
+    return carryRefusal(args, "rite keep", err);
+  }
 }
 
 async function runRow(args: ParsedArgs, plan: RitePlan): Promise<number> {
@@ -148,6 +196,7 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
       : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: "the kūkulu rite did not complete; the lines above name where it stopped" }, human: () => console.log(JSON.stringify(out.data)) });
     return out.code;
   }
+  if (args.positional[0] === "keep") return runKeep(args);
   let plan: RitePlan;
   try { plan = ritePlan(args); }
   catch (err) {

@@ -1,7 +1,7 @@
 /**
  * `lares lei show | kui | unstring | restring` — the lei door on the CLI.
  *
- * A lei grants one rite (`push` · `kukulu`) at one branch under one reach. Each sub-verb plans one row of the store door and the
+ * A lei grants one rite (`push` · `kukulu` · `keep`) at one branch under one reach. Each sub-verb plans one row of the store door and the
  * args it carries (`leiPlan`); the row runs in the vessel, where the hand-only gate, the ward and the co-sign stand:
  *
  *   show       `swarm-show`          reads the board; with `--rite --branch [--head]` it also reads one rite's standing lei (`data.lei`)
@@ -48,7 +48,7 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
       Object.assign(out, { rite, branch, ...(head !== undefined ? { head } : {}) });
     }
   } else {
-    if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu");
+    if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu | keep");
     if (branch === undefined) throw new LeiUsage("name the lei's branch: --branch <name>");
     Object.assign(out, { rite, branch });
     if (act === "unstring") {

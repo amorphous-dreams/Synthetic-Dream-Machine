@@ -62,7 +62,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
   },
   lei: {
-    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu --branch <name> [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N]",
+    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu|keep --branch <name> [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--yes] [--face N]",
     synopsis:
       "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
       "The hand strings (kui), unstrings and restrings; any seat reads. Each return rests on a passing receipt for the head's tree.",
@@ -71,28 +71,35 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares lei show --rite push --branch feature/x --head <commit> --json   # ask after one head",
       "lares lei kui --rite push --branch feature/x --returns 3               # a wide lei of three returns",
       "lares lei kui --rite kukulu --branch main --reach head --head <commit> # a lei pinned to one head",
+      "lares lei kui --rite keep --branch house-backup --returns 6           # six keeps into the workspace house-backup",
       "lares lei unstring --rite push --branch feature/x --lei <cid>          # revoke it; a signed record, nothing deleted",
       "lares lei restring --rite push --branch feature/x --returns 2          # supersede the standing lei",
     ],
-    flags: ["--rite <r>   push or kukulu", "--branch <name>   the branch the lei binds", "--head <commit>   the head a show reads at, or a head lei pins",
+    flags: ["--rite <r>   push, kukulu or keep", "--branch <name>   the branch the lei binds (a keep lei: the workspace's name)", "--head <commit>   the head a show reads at, or a head lei pins",
       "--returns <n>   a wide lei's count of returns (more than twelve asks --yes)", "--reach wide|head   the lei's reach (wide where absent)", "--after <cid>   (kui) the lei this one follows; absent for the first",
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] | begin --rite <r> --branch <name> --head <commit> | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
+    usage: "usage: lares rite kukulu [--branch <name>] | keep --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
     synopsis:
       "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
       "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
+      "keep lays the house's authored memory, cut as a cleartext carry bundle a new house imports, into a workspace the operator " +
+      "bound: it spends a return of the keep lei strung for that workspace, and replaces the bundle an earlier keep left there. " +
       "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
     examples: [
       "lares lei kui --rite kukulu --branch main --returns 3   # the hand strings the lei first",
       "lares rite kukulu                                       # begin, rebuild, raise, land",
+      "lares lei kui --rite keep --branch house-backup --returns 6   # the hand strings a keep lei for one workspace",
+      "lares rite keep --workspace house-backup                # cut, verify, spend a return, rest the bundle at <workspace>/house",
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
       "lares rite receipt --tree <tree> --checks typecheck,mesh --verdict pass --definitions <hash>   # the battery's verdict, signed by the vessel",
     ],
     flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
+      "--workspace <name>   (keep) the bound workspace the bundle rests in", "--into <path>   (keep) the place inside it (house where absent)",
+      "--accept-omissions   (keep) name the bundle partial where the census reads unsettled",
       "--image <digest>   (offer) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--tree <t>   (receipt) the tree the battery read", "--checks <a,b>   (receipt) the checks its verdict covers",
       "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index"],

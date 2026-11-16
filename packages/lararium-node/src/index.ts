@@ -11,7 +11,7 @@ export {
   larMempalaceDir, larContentDir, scratchSensoriumDir, scratchSensoriumInstanceDir,
   // The named house root and its classes (one level each beneath LAR_ROOT).
   HouseRootUnnamed, larHouseRoot, larHearthHome, larSensoriumsHome, larCheckpointsHome, larStagingHome,
-  larLibraryRoot, larProjectionsHome, larConfigHome, larCacheHome, larRuntimeHome,
+  larLibraryRoot, larProjectionsHome, larWorkspacesHome, larConfigHome, larCacheHome, larRuntimeHome,
   assertOneSegment,
   memorySensoriumDir, memorySensoriumLenses, sensoriumLenses, sensoriumNames, sensoriumDir,
   // The `mesh` sensorium dir + its WHO/AUTHORITY/FLOW child dirs (the consolidated federation tree).
