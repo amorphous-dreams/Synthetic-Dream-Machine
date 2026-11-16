@@ -77,9 +77,9 @@ const seen = (): { pid: number; method: string | null; params: unknown }[] =>
   readFileSync(join(dir, "seen.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l));
 
 /** A seat over the fake child, its client streams in hand, opened through `initialize` and the first tool list. */
-async function opened() {
+async function opened(pacing: { firstMs: number; capMs: number; killMs?: number } = { firstMs: 5, capMs: 40 }) {
   const stdin = new PassThrough(), stdout = new PassThrough(), stderr = new PassThrough();
-  host = ahoHost({ argv: [process.execPath, CHILD, dir], stdin, stdout, stderr, pacing: { firstMs: 5, capMs: 40 } });
+  host = ahoHost({ argv: [process.execPath, CHILD, dir], stdin, stdout, stderr, pacing });
   const client = wire((line) => stdin.write(line), stdout), log = ear(stderr);
   const init = await client.ask({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT });
   client.send({ jsonrpc: "2.0", method: "notifications/initialized" });
@@ -182,6 +182,35 @@ describe("the aho's Node binding, over a fake child", () => {
     expect(s.log.text()).not.toContain(MARK);
     for (const line of s.log.text().trim().split("\n")) expect(line).toMatch(/^aho: [a-z-]+ generation=\d+ pending=\d+$/);
     expect(JSON.stringify(seen())).toContain(MARK);
+  });
+});
+
+describe("the binding bounds a child's death", () => {
+  it("seat-child-death-bounded: a child that ignores the polite stop gets the hard kill inside the watchdog's wait, and a fresh child stands", async () => {
+    writeFileSync(join(dir, "stubborn"), ""); writeFileSync(join(dir, "refuse"), "");
+    const stdin = new PassThrough(), stdout = new PassThrough(), stderr = new PassThrough();
+    host = ahoHost({ argv: [process.execPath, CHILD, dir], stdin, stdout, stderr, pacing: { firstMs: 5, capMs: 40, killMs: 60 } });
+    const client = wire((line) => stdin.write(line), stdout), log = ear(stderr);
+    client.send({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT });
+    // The stubborn child refuses the handshake; the seat stops it, and it ignores the stop.
+    await log.heard(/handshake-refused/);
+    const stubbornPid = pid();
+    rmSync(join(dir, "stubborn")); rmSync(join(dir, "refuse"));
+    await log.heard(/child-kill-escalated/);
+    await until(() => !alive(stubbornPid));
+    await log.heard(/child-standing/);
+    expect(pid()).not.toBe(stubbornPid);
+    expect(JSON.parse(textOf(await client.ask({ jsonrpc: "2.0", id: 2, method: "tools/call", params: { name: "echo", arguments: {} } })))).toMatchObject({ pid: pid() });
+  });
+
+  it("seat-child-death-bounded: at the client's close a stubborn child still dies, by the hard kill", async () => {
+    writeFileSync(join(dir, "stubborn"), "");
+    const s = await opened({ firstMs: 5, capMs: 40, killMs: 60 });
+    const stubbornPid = pid();
+    expect(alive(stubbornPid)).toBe(true);
+    s.stdin.end();
+    expect(await host!.done).toBe(0);
+    await until(() => !alive(stubbornPid));
   });
 });
 

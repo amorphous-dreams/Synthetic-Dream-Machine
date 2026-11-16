@@ -340,3 +340,35 @@ describe("seat-tells-locked-from-down", () => {
     expect(f.seat.state()).toBe("standing");
   });
 });
+
+describe("a call belongs to the child that took it", () => {
+  test("RED: a cancel for a call a dead child took reaches no replacement child, and a late answer under that child's id reaches no client; CONTROL: a cancel for a live call reaches its child", () => {
+    const f = fixture().open();
+    const taken = toChild(f.client({ jsonrpc: "2.0", id: 41, method: "tools/call", params: { name: "pour" } }))[0]!;
+    expect(toClient(f.down())).toHaveLength(1);
+    f.up();
+    // The client cancels the call it already read as outcome-unknown: the new child never hears of it.
+    expect(toChild(f.client({ jsonrpc: "2.0", method: "notifications/cancelled", params: { requestId: 41 } }))).toEqual([]);
+    // An answer under the dead child's id arrives late: the seat already answered that call, once.
+    expect(toClient(f.child({ jsonrpc: "2.0", id: taken["id"], result: { content: [{ type: "text", text: "late" }] } }))).toEqual([]);
+    expect(f.seen.client.filter((x) => x["id"] === 41)).toHaveLength(1);
+    // The same client id, asked again, rides a fresh child-side id that the dead child's never equals.
+    const again = toChild(f.client({ jsonrpc: "2.0", id: 41, method: "tools/call", params: { name: "pour" } }))[0]!;
+    expect(again["id"]).not.toBe(taken["id"]);
+    expect(toChild(f.client({ jsonrpc: "2.0", method: "notifications/cancelled", params: { requestId: 41 } }))).toEqual([{ jsonrpc: "2.0", method: "notifications/cancelled", params: { requestId: again["id"] } }]);
+    expect(toClient(f.child({ jsonrpc: "2.0", id: taken["id"], result: {} }))).toEqual([]);
+  });
+
+  test("RED: `hearth-sleeps` and `outcome-unknown` each ride a whole tools/call result, `isError: true`, under the caller's exact id, whatever its type", () => {
+    for (const id of [0, -7, 3.5, "", "0", "call-x", 9007199254740991]) {
+      const f = fixture().open();
+      f.client({ jsonrpc: "2.0", id, method: "tools/call", params: { name: "pour" } });
+      const unknown = toClient(f.down());
+      expect(unknown, String(id)).toEqual([{ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: OUTCOME_UNKNOWN }], isError: true } }]);
+      const asleep = toClient(f.client({ jsonrpc: "2.0", id, method: "tools/call", params: { name: "pour" } }));
+      expect(asleep, String(id)).toEqual([{ jsonrpc: "2.0", id, result: { content: [{ type: "text", text: HEARTH_SLEEPS }], isError: true } }]);
+      for (const frame of [...unknown, ...asleep]) expect("error" in frame).toBe(false);
+    }
+  });
+});
+
