@@ -509,7 +509,7 @@ const keepLeiOld = async (c) => {
  */
 const keepOld = async (c) => {
   const h = c.hands("old");
-  const r = await c.node([join(CHECKOUT, "packages", "lares-cli", "bin", "lares.mjs"), "rite", "keep", "--workspace", KEEP_WORKSPACE, "--json"], { env: h.env, timeout: 1_800_000 });
+  const r = await c.node([join(CHECKOUT, "packages", "lares-cli", "bin", "lares.mjs"), "rite", "keep", "--workspace", KEEP_WORKSPACE, "--json"], { env: { ...h.env, LARES_KEEP_SESSIONS: "0" }, timeout: 1_800_000 });
   const answer = json(r.stdout);
   if (answer === null && doorAbsent(said(r))) return { unreached: "door-absent", answer: `the source revision keeps nothing: ${refusal(r)}` };
   const d = answer?.data ?? {};

@@ -9,7 +9,9 @@
 //       outside `house/`; with the remote broken the rite commits, the push fails, the tessera stays `landed-absent` and the
 //       answer names the cure; the remote mended, the rite run again pushes what waits and lands the tessera at the bundle id
 //       the pushed manifest names, and conferre reads it par. A keep after that commits nothing and spends nothing, and
-//       `--if-due` (the call `down` makes) over the unmoved house keeps nothing and asks no remote.
+//       `--if-due` (the call `down` makes) over the unmoved house keeps nothing and asks no remote. THE DEVICE'S SESSIONS ride
+//       the same commit under `devices/<name>-<id8>/` (a scratch Claude home, sanitized); sessions that move over the unmoved
+//       house spend the lei's second return through the vessel's own `rite begin` over the standing bundle, push, and land par.
 //   H4  THE RESTORE DRILL: the exporting house goes down; a brand-new scratch house founds under the same pet-name, imports the
 //       bundle out of a FRESH CLONE of the remote, and `carry-parity` reads par against the census taken before the down. A
 //       clone with one byte flipped refuses first (`bundle-hash-mismatch`), and nothing of it lands.
@@ -47,7 +49,15 @@ async function standHouse(tag, name) {
   }
   cpSync(join(repo, "genesis"), join(root, "genesis"), { recursive: true });
   const port = await freePort();
-  const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true" };
+  // THE DEVICE'S SESSIONS the keep mirrors read a scratch Claude home under this root, never the runner's own.
+  const claudeHome = join(root, "claude-home");
+  mkdirSync(join(claudeHome, "projects", "-scratch-proj", "memory"), { recursive: true });
+  writeFileSync(join(claudeHome, "CLAUDE.md"), "# a scratch rule\n");
+  writeFileSync(join(claudeHome, "projects", "-scratch-proj", "memory", "MEMORY.md"), "# Memory Index\n");
+  writeFileSync(join(root, "claude.json"), '{"userID": "u-scratch", "numStartups": 1}\n');
+  writeFileSync(join(root, "machine-id"), `${tag}0123456789abcdef0123456789ab`.slice(0, 32) + "\n");
+  const env = { ...process.env, LAR_ROOT: root, LAR_PORT: String(port), LAR_SAME_ORIGIN: "true", CLAUDE_HOME: claudeHome, CLAUDE_JSON: join(root, "claude.json"), XDG_CONFIG_HOME: join(root, "xdg-config"), LARES_MACHINE_ID_FILE: join(root, "machine-id") };
+  delete env.LARES_KEEP_SESSIONS;
   const lares = (args) => spawnSync(process.execPath, [cli, ...args], { cwd: repo, encoding: "utf8", env });
   const found = lares(["vessel", "found", "--hearth", "--name", name, "--root", root, "--skip-build"]);
   assert.equal(found.status, 0, `found ${tag}: ${found.stdout}${found.stderr}`);
@@ -71,7 +81,7 @@ async function standHouse(tag, name) {
   const must = (args) => { const r = lares(args); assert.equal(r.status, 0, `${tag}: lares ${args.join(" ")}\n${r.stdout}\n${r.stderr}`); return r; };
   /** The last JSON line a `--json` call printed. */
   const answer = (r) => { try { return JSON.parse(r.stdout.trim().split("\n").pop()); } catch { assert.fail(`no JSON answer:\n${r.stdout}\n${r.stderr}`); } };
-  return { root, port, lares, must, answer, stop, log: () => log };
+  return { root, port, lares, must, answer, stop, claudeHome, log: () => log };
 }
 
 const memeText = (uri, body, meta = "") => {
@@ -171,6 +181,13 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     const cured = old.answer(old.must(["rite", "keep", "--workspace", "backup", "--json"])).data;
     assert.deepEqual({ kept: cured.kept, pushed: cured.pushed, par: cured.par, landed: cured.landed }, { kept: false, pushed: true, par: true, landed: [{ tessera: kept.tessera, par: true }] }, JSON.stringify(cured));
     assert.equal(JSON.parse(git(remote, "show", "main:house/manifest.json")).bundleId, kept.bundleId);
+    // ONE COMMIT carries the house and this device's sessions, and the account's identity never leaves the device.
+    const device = cured.sessions.device;
+    assert.match(device, /^devices\/[^/]+-[0-9a-f]{8}$/, JSON.stringify(cured.sessions));
+    const carried = git(remote, "show", "--name-only", "--format=", "main").split("\n");
+    for (const path of ["house/manifest.json", `${device}/DEVICE.json`, `${device}/config/CLAUDE.md`, `${device}/config/claude.json`, `${device}/projects/-scratch-proj/memory/MEMORY.md`]) assert.ok(carried.includes(path), `${path} rides the keep commit: ${carried.join(" ")}`);
+    assert.equal(git(remote, "rev-list", "--count", "main"), "2", "the guard commit and one keep commit");
+    assert.doesNotMatch(git(remote, "show", `main:${device}/config/claude.json`), /u-scratch/);
     const after = old.answer(old.must(["rite", "receipts", "--json"])).data.conferre;
     assert.deepEqual(after.red, []);
     assert.ok(after.par.some((t) => t.tessera === kept.tessera && t.rite === "keep"), JSON.stringify(after));
@@ -183,6 +200,21 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     const idle = old.answer(old.must(["rite", "keep", "--if-due", "--workspace", "backup", "--json"])).data;
     assert.deepEqual({ due: idle.due, committed: idle.committed, pushed: idle.pushed, landed: idle.landed }, { due: false, committed: false, pushed: false, landed: [] }, JSON.stringify(idle));
     assert.equal(line("keep").returnsLeft, 1, "an unmoved --if-due spends nothing");
+    // THE SESSIONS MOVE over the unmoved house: the vessel returns the lei over the standing bundle, and the push rides that return.
+    writeFileSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "kite.md"), "fly the kite low\n");
+    const moved = old.answer(old.must(["rite", "keep", "--if-due", "--workspace", "backup", "--json"])).data;
+    assert.deepEqual({ kept: moved.kept, due: moved.due, committed: moved.committed, pushed: moved.pushed, par: moved.par, spent: moved.sessions?.spent }, { kept: false, due: true, committed: true, pushed: true, par: true, spent: true }, JSON.stringify(moved));
+    assert.equal(line("keep").returnsLeft ?? 0, 0, "the sessions' push spent the second return");
+    assert.equal(line("keep").standing, false, "a lei with no return left stands no more");
+    assert.equal(git(remote, "show", `main:${device}/projects/-scratch-proj/memory/kite.md`), "fly the kite low");
+    assert.deepEqual(old.answer(old.must(["rite", "receipts", "--json"])).data.conferre.red, [], "the sessions' tessera landed");
+    // No return left: sessions that move again mirror, and nothing commits or pushes.
+    writeFileSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "pond.md"), "the pond at dusk\n");
+    const dry = keep();
+    assert.notEqual(dry.status, 0, dry.stdout);
+    assert.equal(old.answer(dry).error?.code, "swarm-lei-returns-spent", dry.stdout);
+    assert.equal(git(workspace, "rev-list", "--count", "HEAD"), git(remote, "rev-list", "--count", "main"), "nothing committed without a return");
+    rmSync(join(old.claudeHome, "projects", "-scratch-proj", "memory", "pond.md"));
 
     // ── the census before the down ──────────────────────────────────────────────────────────────────────────────
     const snapshot = join(scratch, "census-old.json");

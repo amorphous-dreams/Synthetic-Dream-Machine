@@ -17,7 +17,8 @@
  *                    names the vessel's bundle id (the host's directory and the vessel's stand as one), and the secret scan
  *                    finds nothing in the bundle
  *   5. the return    sessions that moved over a house that did not spend a return of their own: `rite begin` over the
- *                    standing bundle, IN THE VESSEL. A cut that kept already spent the one return this push rides
+ *                    standing bundle, IN THE VESSEL. A cut that kept already spent the one return this push rides, and so did
+ *                    a keep whose tessera conferre still reads `landed-absent` at this bundle
  *   6. git           `git add <into> devices/<name>-<id8>`, ONE commit `keep <bundleId>`, fetch, rebase onto the upstream,
  *                    ONE push
  *   7. rite-land     IN THE VESSEL: land each keep tessera owed at the bundle id read from the PUSHED manifest; conferre
@@ -204,6 +205,14 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     Object.assign(base, { bundleId, kept, ...(tessera !== null ? { tessera } : {}) });
     ports.say(kept ? `keep: the vessel cut bundle ${bundleId.slice(0, 16)} into ${into}/ and spent a return (tessera ${tessera})` : `keep: ${into}/ already holds bundle ${bundleId.slice(0, 16)}; the vessel spent nothing`);
 
+    /** The keep tesserae conferre reads begun and never landed at this workspace and bundle: each names a return already spent. */
+    const owedAt = async (): Promise<string[]> => {
+      const read = await ports.row("receipts", { ...face });
+      if (!read.ok) throw new HostRefused(read.code, read.message);
+      const red = ((read.output["conferre"] as { red?: { tessera: string; rite: string | null; red?: string; branch?: string; head?: string }[] } | undefined)?.red ?? []);
+      return red.filter((t) => t.rite === RITE_KEEP && t.red === "landed-absent" && t.branch === name && t.head === bundleId).map((t) => t.tessera);
+    };
+
     // ── 4. THE GUARD over what the cut left ───────────────────────────────────────────────────────────────────
     stage = "guard";
     let seen: unknown = null;
@@ -223,10 +232,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
         try { held = (JSON.parse(await git(["show", `${tracking}:${into}/${MANIFEST_FILE}`])) as { bundleId?: unknown }).bundleId; } catch { held = null; }
         if (held !== bundleId) due = true;
         else {
-          const read = await ports.row("receipts", { ...face });
-          if (!read.ok) throw new HostRefused(read.code, read.message);
-          const red = ((read.output["conferre"] as { red?: { rite: string | null; red?: string; branch?: string; head?: string }[] } | undefined)?.red ?? []);
-          due = red.some((t) => t.rite === RITE_KEEP && t.red === "landed-absent" && t.branch === name && t.head === bundleId);
+          due = (await owedAt()).length > 0;
         }
       }
       base["due"] = due;
@@ -237,14 +243,21 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     }
 
     // ── 5. THE RETURN the sessions ride where the cut spent none ──────────────────────────────────────────────
-    // An unmoved house spends nothing in the cut, and no push leaves without a spent return: the vessel reads the standing
-    // bundle itself, returns the keep lei at its id, and rests a tessera the landing below closes.
+    // An unmoved house spends nothing in the cut, and no push leaves without a spent return. A return a keep already spent at
+    // this bundle and never landed (a cut never pushed, a push that failed) carries the sessions too; with none owed, the
+    // vessel reads the standing bundle itself, returns the keep lei at its id, and rests a tessera the landing below closes.
     if (!kept && sessionsMoved) {
       stage = "sessions";
-      const begun = await ports.row("begin", { rite: RITE_KEEP, branch: name, head: bundleId, staging: into, ...face });
-      if (!begun.ok) throw new HostRefused(begun.code, `${KEEP_VESSEL_UNREACHED.has(begun.code) ? `${KEEP_VESSEL_DOWN} (${begun.message})` : begun.message}. The sessions rest mirrored in ${devRel!}/ with no return spent, so nothing commits or pushes; with a keep lei holding a return (\`lares lei show --rite ${RITE_KEEP} --branch ${name}\`), run the rite again`);
-      base["sessions"] = { device: devRel, moved: true, spent: true, tessera: String(begun.output["tessera"]) };
-      ports.say(`keep: the sessions moved over an unmoved house; a return spent for them (tessera ${String(begun.output["tessera"])})`);
+      const waits = await owedAt();
+      if (waits.length > 0) {
+        base["sessions"] = { device: devRel, moved: true, spent: false, rides: waits[0] };
+        ports.say(`keep: the sessions moved over an unmoved house; they ride the return tessera ${waits[0]!} spent and never landed`);
+      } else {
+        const begun = await ports.row("begin", { rite: RITE_KEEP, branch: name, head: bundleId, staging: into, ...face });
+        if (!begun.ok) throw new HostRefused(begun.code, `${KEEP_VESSEL_UNREACHED.has(begun.code) ? `${KEEP_VESSEL_DOWN} (${begun.message})` : begun.message}. The sessions rest mirrored in ${devRel!}/ with no return spent, so nothing commits or pushes; with a keep lei holding a return (\`lares lei show --rite ${RITE_KEEP} --branch ${name}\`), run the rite again`);
+        base["sessions"] = { device: devRel, moved: true, spent: true, tessera: String(begun.output["tessera"]) };
+        ports.say(`keep: the sessions moved over an unmoved house; a return spent for them (tessera ${String(begun.output["tessera"])})`);
+      }
     }
 
     // ── 6. GIT: one commit, rebase, one push ──────────────────────────────────────────────────────────────────
@@ -274,14 +287,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     let pushed: unknown = null;
     try { pushed = (JSON.parse(await git(["show", `${remoteHead}:${into}/${MANIFEST_FILE}`], "keep-pushed-unread")) as { bundleId?: unknown }).bundleId; } catch (e) { if (e instanceof HostRefused) throw e; }
     if (pushed !== bundleId) throw new HostRefused("keep-pushed-differs", `${remote}/${branch} holds bundle ${String(pushed)} at ${into}/, not the ${bundleId} this keep cut; no landing writes, since a landing writes once. Settle ${remote}/${branch}, then run the rite again`);
-    let owed: string[];
-    if (tessera !== null) owed = [tessera];
-    else {
-      const read = await ports.row("receipts", { ...face });
-      if (!read.ok) throw new HostRefused(read.code, read.message);
-      const red = ((read.output["conferre"] as { red?: { tessera: string; rite: string | null; red?: string; branch?: string; head?: string }[] } | undefined)?.red ?? []);
-      owed = red.filter((t) => t.rite === RITE_KEEP && t.red === "landed-absent" && t.branch === name && t.head === bundleId).map((t) => t.tessera);
-    }
+    const owed = tessera !== null ? [tessera] : await owedAt();
     const landed: { tessera: string; par: boolean }[] = [];
     for (const t of owed) {
       const l = await ports.row("land", { tessera: t, head: pushed, ...face });

@@ -76,8 +76,8 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): str
 }
 
 /** A scratch home's Claude Code state, and the sources that read it: the device's sessions as the keep mirrors them. */
-function fakeSessions(): { sources: SessionSources; claude: string; put: (rel: string, text: string, ageSec?: number) => void } {
-  const home = join(scratch, "home"), claude = join(home, ".claude");
+function fakeSessions(at: string): { sources: SessionSources; claude: string; put: (rel: string, text: string, ageSec?: number) => void } {
+  const home = join(at, "home"), claude = join(home, ".claude");
   const put = (rel: string, text: string, ageSec = 3600): void => {
     const abs = join(claude, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
@@ -94,13 +94,15 @@ function fakeSessions(): { sources: SessionSources; claude: string; put: (rel: s
 }
 
 /** The scratch remote, the workspace clone of it (guarded with `* -text` unless told not to), the device's sessions, and the vessel's rows. */
-function rig(over: { guard?: boolean } = {}) {
-  const remote = join(scratch, "remote.git"), ws = join(scratch, "workspace");
-  const sessions = fakeSessions();
+function rig(over: { guard?: boolean; at?: string } = {}) {
+  const at = over.at ?? scratch;
+  if (at !== scratch) mkdirSync(at, { recursive: true });
+  const remote = join(at, "remote.git"), ws = join(at, "workspace");
+  const sessions = fakeSessions(at);
   const device = `devices/${readOrMintDevice(sessions.sources).dir}`;
   mkdirSync(remote);
   must(remote, "init", "-q", "--bare");
-  must(scratch, "clone", "-q", remote, ws);
+  must(at, "clone", "-q", remote, ws);
   if (over.guard !== false) {
     writeFileSync(join(ws, ".gitattributes"), "* -text\n");
     must(ws, "add", ".gitattributes");
@@ -129,7 +131,7 @@ function rig(over: { guard?: boolean } = {}) {
       }
       if (verb === "keep-cut") {
         const target = join(ws, String(args["into"]));
-        const staging = join(scratch, `cut-${state.n}`);
+        const staging = join(at, `cut-${state.n}`);
         const id = writeBundle(staging, state.notes);
         rmSync(staging, { recursive: true, force: true });
         let standing: unknown = null;
@@ -391,8 +393,8 @@ describe("the keep rite, host half", () => {
     const out = await riteKeepHost(r.ports, { workspace: "backup" });
     const bundleId = String(out.data["bundleId"]);
     expect(out.data, JSON.stringify(out.data)).toMatchObject({ kept: false, committed: true, pushed: true, par: true, sessions: { moved: true, spent: true } });
-    expect(r.calls.map((c) => c.split(" ")[0])).toEqual(["keep-cut", "begin", "receipts", "land"]);
-    expect(r.calls[1]).toBe(`begin ${JSON.stringify({ rite: "keep", branch: "backup", head: bundleId, staging: "house" })}`);
+    expect(r.calls.map((c) => c.split(" ")[0])).toEqual(["keep-cut", "receipts", "begin", "receipts", "land"]);
+    expect(r.calls[2]).toBe(`begin ${JSON.stringify({ rite: "keep", branch: "backup", head: bundleId, staging: "house" })}`);
     expect(r.state.returns).toBe(10);
     expect(r.commits()).toBe(n + 1);
     expect(must(r.remote, "show", "--name-only", "--format=", "main").split("\n")).toEqual([`${r.device}/projects/-home-me-proj/memory/heron.md`]);
@@ -407,6 +409,22 @@ describe("the keep rite, host half", () => {
     expect(String(dry.data["message"])).toMatch(/no return spent/);
     expect(argv.filter((a) => ["add", "commit", "fetch", "rebase", "push"].includes(a))).toEqual([]);
     expect(r.commits()).toBe(n + 1);
+    // A RETURN ALREADY SPENT CARRIES THE SESSIONS: a keep that cut and never pushed left its tessera owed at this bundle, and
+    // the sessions that moved since ride that return; no second one spends.
+    {
+      const o = rig({ at: join(scratch, "second") });
+      o.state.returns = 1;
+      must(o.ws, "remote", "set-url", "origin", join(scratch, "nowhere.git"));
+      expect(await riteKeepHost(o.ports, { workspace: "backup" })).toMatchObject({ code: 1, data: { refusal: "keep-push-refused", committed: true } });
+      expect(o.state.returns).toBe(0);
+      must(o.ws, "remote", "set-url", "origin", o.remote);
+      o.sessions.put("projects/-home-me-proj/memory/kite.md", "fly the kite low\n");
+      o.calls.length = 0;
+      const rode = await riteKeepHost(o.ports, { workspace: "backup" });
+      expect(rode.data, JSON.stringify(rode.data)).toMatchObject({ kept: false, committed: true, pushed: true, par: true, sessions: { moved: true, spent: false } });
+      expect(o.calls.map((c) => c.split(" ")[0])).toEqual(["keep-cut", "receipts", "receipts", "land"]);
+      expect(must(o.remote, "show", `main:${o.device}/projects/-home-me-proj/memory/kite.md`)).toBe("fly the kite low");
+    }
     // `--if-due`: moved sessions read due; a lei strung again, the keep that waited commits and pushes.
     r.state.returns = 3;
     r.calls.length = 0;
