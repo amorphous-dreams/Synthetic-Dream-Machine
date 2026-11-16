@@ -155,9 +155,9 @@ export async function vesselDid(): Promise<string> {
 export async function personaRootDid(handleIndex = 0): Promise<string> {
   // A custody refusal (a locked vessel key, a roster that stands and does not open) keeps its own name: only a
   // roster that holds no line here reads as no root.
-  // The roster rests sealed, so the read rides the custody door (`sealed-rows`). It loads here, at the call:
+  // The roster rests sealed, so the read rides the custody door (`sealed-records`). It loads here, at the call:
   // this module stands under the store door, and the store door stands under that one.
-  const { personaRootKey } = await import("./sealed-rows.js");
+  const { personaRootKey } = await import("./sealed-records.js");
   const treeKey = await personaRootKey(handleIndex);
   if (!treeKey) {
     throw new Error(

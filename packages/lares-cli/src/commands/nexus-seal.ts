@@ -67,7 +67,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { stampCarrier } from "@lararium/memetic-frame";
 import { sealedAct } from "../sealed-act-door.js";
 import { actingFace, faceOption, FaceOptionMalformed } from "../face-option.js";
-import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-rows.js";
+import { sealHand, inceptHand, heldSeats, armGenesisSeats, armRollSeats, retireSeats, readBackStandsIn } from "../sealed-records.js";
 import { canPromptSecret, promptLine, promptSecret } from "../prompt-secret.js";
 import { CardReadBackRefused, readBack as printAndReadBack, type ColdCard } from "../cold-card-readback.js";
 

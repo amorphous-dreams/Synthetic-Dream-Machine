@@ -16,7 +16,7 @@ import type { ParsedArgs } from "../parse-args.js";
 import { CardReadBackRefused, readBack } from "../cold-card-readback.js";
 import { vesselStanding } from "../custody-door.js";
 import { promptSecret, canPromptSecret } from "../prompt-secret.js";
-import { readBackStandsIn } from "../sealed-rows.js";
+import { readBackStandsIn } from "../sealed-records.js";
 
 export async function cmdRotatePlace(args: ParsedArgs): Promise<number> {
   if (args.options["root"]) process.env["LAR_ROOT"] = args.options["root"];

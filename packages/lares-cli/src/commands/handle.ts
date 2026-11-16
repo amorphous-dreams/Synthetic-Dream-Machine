@@ -21,7 +21,7 @@
  */
 import { readFileSync } from "node:fs";
 import type { ParsedArgs } from "../parse-args.js";
-import { bookFace, loadHandleBook } from "../sealed-rows.js";
+import { bookFace, loadHandleBook } from "../sealed-records.js";
 import { actingFace } from "../face-option.js";
 import {
   verifyAttestation, normalizeHandleClaim, handleClaimFrom, handleClaimSubject, HANDLE_CLAIM_SURFACES,

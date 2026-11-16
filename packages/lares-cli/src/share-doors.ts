@@ -13,7 +13,7 @@ import { vesselDid } from "./env.js";
 import { runVerb } from "./verb-call.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { LocalWaitExpired, queryReceipt, type ReceiptAnswer } from "./local-connector.js";
-import { readPersonaRoots, sealedPetnameStore } from "./sealed-rows.js";
+import { readPersonaRoots, sealedPetnameStore } from "./sealed-records.js";
 import { makeFleetPetnameStore } from "./daemon-persona-store.js";
 
 /** The doors the share door reaches, injectable so a test drives it with no vessel. */

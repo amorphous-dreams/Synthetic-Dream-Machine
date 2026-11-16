@@ -10,7 +10,7 @@
  */
 import { COLD_KEY_CARD_DEFAULT_FIELDS, coldKeyCardLines, coldKeyCode, coldKeyConfirm, coldKeySeedFromCode } from "@lararium/mesh";
 import type { ParsedArgs } from "./parse-args.js";
-import { readBackStandsIn } from "./sealed-rows.js";
+import { readBackStandsIn } from "./sealed-records.js";
 import { canPromptSecret, promptSecret } from "./prompt-secret.js";
 
 /** One chair's cold next key, minted in this process. Its card prints once; its seed zero-fills once read back. */

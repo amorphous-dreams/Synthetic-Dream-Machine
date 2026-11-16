@@ -67,7 +67,7 @@ import { vesselDid, larBagsDir } from "../env.js";
 import { runVerb } from "../verb-call.js";
 import { newChangeId, newRequestId, taskContentId } from "@lararium/mesh";
 import { storeVerb, storeFailure } from "../store-door.js";
-import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
+import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "../sealed-records.js";
 import { writeFaceLabels, readFaceLabel, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { moveFaceToAshes } from "../ashes.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";

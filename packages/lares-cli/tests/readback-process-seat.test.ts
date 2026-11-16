@@ -3,7 +3,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { seatReadBackStandIn } from "@lararium/node";
 import { coldKeyCode } from "@lararium/mesh";
 import { sealedAct } from "../src/sealed-act-door.js";
-import { readBackStandsIn } from "../src/sealed-rows.js";
+import { readBackStandsIn } from "../src/sealed-records.js";
 import { CardReadBackRefused, readBack } from "../src/cold-card-readback.js";
 import * as prompt from "../src/prompt-secret.js";
 

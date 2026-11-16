@@ -43,7 +43,7 @@ import { storeVerb, storeFailure, standingRefusal } from "../store-door.js";
 import { sealedAct } from "../sealed-act-door.js";
 import { vesselStanding } from "../custody-door.js";
 import { larDataDir } from "../env.js";
-import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-rows.js";
+import { readPersonaRoots, type PersonaRoots, personaRootKey, sealedPetnameStore, sealedDeclarationStore } from "../sealed-records.js";
 import {
   makeFleetPetnameStore, makeFleetDeclarationStore, readFleetSelves, carryOwnName,
 } from "../daemon-persona-store.js";

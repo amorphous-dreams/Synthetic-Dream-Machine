@@ -42,8 +42,8 @@ const locking = vi.hoisted(() => ({ atPreflight: null as number | null, atEdge: 
 
 /** The retire step faults once the charter has moved: the closing head's keys stay held, and the roll still stands. */
 const retiring = vi.hoisted(() => ({ faultNext: false, calls: 0 }));
-vi.mock("../src/sealed-rows.js", async (importOriginal) => {
-  const real = await importOriginal<typeof import("../src/sealed-rows.js")>();
+vi.mock("../src/sealed-records.js", async (importOriginal) => {
+  const real = await importOriginal<typeof import("../src/sealed-records.js")>();
   return {
     ...real,
     retireSeats: async (...args: Parameters<typeof real.retireSeats>) => {

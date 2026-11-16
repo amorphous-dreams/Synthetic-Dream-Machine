@@ -74,7 +74,7 @@ import { OfflineCustodyRefused, seatOfflineCustody, TEST_ROUTE_PASSPHRASE, TEST_
 import { sealedActVia } from "../src/sealed-act-door.js";
 import { sendCustodyFrame } from "../src/custody-door.js";
 import { carryOwnName, clearOwnName, makeFleetDeclarationStore, makeFleetPetnameStore, readFleetSelves } from "../src/daemon-persona-store.js";
-import { loadHandleBook, saveHandleBook, sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-rows.js";
+import { loadHandleBook, saveHandleBook, sealedDeclarationStore, sealedPetnameStore } from "../src/sealed-records.js";
 
 vi.setConfig({ testTimeout: 180_000, hookTimeout: 180_000 });
 

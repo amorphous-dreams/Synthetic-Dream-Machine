@@ -1,5 +1,5 @@
 /**
- * sealed-rows — a command's readers and writers over the vessel's sealed rows, each one an act on the custody door.
+ * sealed-records — a command's readers and writers over the vessel's sealed records, each one an act on the custody door.
  *
  * A command never opens a sealed row by a node function of its own: it asks `sealedAct` (`sealed-act-door`), which
  * runs the act inside the standing vessel when one answers and in this process otherwise. This module spells the
