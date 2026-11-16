@@ -90,7 +90,9 @@ value_of() { # $1 = name
 }
 HOUSE=$(value_of LARES_HOUSE)
 case "$HOUSE" in /*) ;; *) die "LARES_HOUSE ($HOUSE) reads relative — name the host house root by an absolute path" ;; esac
-HOUSE_CLASSES="hearth sensoriums projections library config"
+# The pūlama's socket directory binds into the vessel in every mode, so the shim makes it as the operator whether or not
+# a pūlama stands; the engine never makes it owned by root.
+HOUSE_CLASSES="hearth sensoriums projections library config pulama/socket"
 # THE PŪLAMA (road L47e): with LARES_PULAMA=1 the house's custody holder stands in its own container beside the vessel,
 # lit once by the operator's own hand (`pulama light`), and outlives every vessel restart. Its socket and its private
 # state rest under LARES_HOUSE/pulama on the host, so they keep the operator's ownership; the socket directory mounts in
@@ -98,7 +100,7 @@ HOUSE_CLASSES="hearth sensoriums projections library config"
 PULAMA_MODE=""
 if [ "$(value_of LARES_PULAMA)" = 1 ]; then
   PULAMA_MODE=yes
-  HOUSE_CLASSES="$HOUSE_CLASSES pulama/socket pulama/state"
+  HOUSE_CLASSES="$HOUSE_CLASSES pulama/state"
   export LAR_PULAMA_SOCKET=/pulama/socket/pulama.sock
   # The kūkulu's offer (its lei and the standing vessel's vouch) rests in the config bind, which the rite writes on the host.
   export LAR_KUKULU_OFFER=/lar/config/kukulu-offer.json
@@ -112,7 +114,7 @@ for class in $HOUSE_CLASSES; do
   case "$env_real" in "$house_real/$class"|"$house_real/$class"/*) die "the env file $ENV_FILE sits inside LARES_HOUSE's $class bind — keep it outside every bind" ;; esac
 done
 
-# Make the five bound classes as the operator, so the engine never makes one owned by root.
+# Make every bound class as the operator, so the engine never makes one owned by root.
 ensure_house() {
   for class in $HOUSE_CLASSES; do
     mkdir -p -- "$HOUSE/$class" || die "cannot make $HOUSE/$class — make it as the operator, then run again"

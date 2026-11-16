@@ -44,13 +44,15 @@ function ValueOf([string]$name) {
 }
 $House = ValueOf 'LARES_HOUSE'
 if (-not [System.IO.Path]::IsPathRooted($House)) { Die "LARES_HOUSE ($House) reads relative — name the host house root by an absolute path" }
-$HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config')
+# The pūlama's socket directory binds into the vessel in every mode, so the shim makes it as the operator whether or not
+# a pūlama stands; the engine never makes it owned by root.
+$HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config', 'pulama/socket')
 # THE PŪLAMA (road L47e): with LARES_PULAMA=1 the house's custody holder stands in its own container beside the vessel,
 # lit once by the operator's own hand (`pulama light`), outliving every vessel restart. Its socket and private state rest
 # under LARES_HOUSE/pulama, so they keep the operator's ownership.
 $PulamaMode = (ValueOf 'LARES_PULAMA') -eq '1'
 if ($PulamaMode) {
-  $HouseClasses += @('pulama/socket', 'pulama/state')
+  $HouseClasses += @('pulama/state')
   [Environment]::SetEnvironmentVariable('LAR_PULAMA_SOCKET', '/pulama/socket/pulama.sock')
   # The kūkulu's offer (its lei and the standing vessel's vouch) rests in the config bind, which the rite writes on the host.
   [Environment]::SetEnvironmentVariable('LAR_KUKULU_OFFER', '/lar/config/kukulu-offer.json')

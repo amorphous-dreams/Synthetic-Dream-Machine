@@ -81,7 +81,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
     const made = {};
-    for (const c of ["hearth", "sensoriums", "projections", "library", "config"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
+    for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
     return { ...r, calls, dir, made, worn };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
@@ -664,14 +664,14 @@ for (const [name, shim] of shims) {
     assert.equal(beside.status, 0, beside.stderr);
   });
 
-  test(`${name}: up, found and the offline door make the house's five bound classes before a container stands`, async () => {
+  test(`${name}: up, found and the offline door make the house's bound classes before a container stands, the pūlama's socket directory among them in every mode (the vessel binds it whether or not a pūlama stands)`, async () => {
     for (const argv of [["up"], ["found"]]) {
       const r = await run(shim, argv, { env: MOUNTS });
       assert.equal(r.status, 0, r.stderr);
-      assert.deepEqual(r.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
+      assert.deepEqual(r.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true, "pulama/socket": true });
     }
     const offline = await run(shim, ["vessel", "read"], { env: MOUNTS });
-    assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true });
+    assert.deepEqual(offline.made, { hearth: true, sensoriums: true, projections: true, library: true, config: true, "pulama/socket": true });
   });
 
   // THE IMAGE BUILDS THROUGH THE SHIM: a bare `docker compose build` reads no env file and fails on LARES_HOUSE.
