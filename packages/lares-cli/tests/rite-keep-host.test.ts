@@ -17,16 +17,31 @@
  *        remote-tracking branch holds, with no keep tessera owed, stops after the cut: no fetch, no push, no landing, nothing
  *        spent; a moved house keeps as a plain keep does; `--if-due` with no workspace named reads the configured one.
  *
+ * THE DEVICE'S SESSIONS ride the same keep (`../src/keep-sessions.ts`), mirrored from a scratch home:
+ *
+ *   KH11 one commit carries `house/` and `devices/<name>-<id8>/`, and one push carries that commit;
+ *   KH12 the guard allows exactly `<into>` and this device's dir: another device's dir, changed, refuses before the vessel half
+ *        runs, and so does this device's dir where its DEVICE.json names another uuid;
+ *   KH13 a secret-shaped string in the mirror refuses the commit BEFORE the vessel half runs (no return spends), in a plain
+ *        file and inside a compressed transcript; a PLANTED fixture passes;
+ *   KH14 with the vessel down the keep names where the lei lives, exits non-zero, commits nothing and pushes nothing (the
+ *        mirror rests in the workspace for the keep that follows the `up`);
+ *   KH15 sessions that moved over an unmoved house spend a return of their own (`begin` over the standing bundle) before
+ *        anything commits; with no return left, nothing commits and nothing pushes; `--if-due` reads moved sessions as due;
+ *   KH16 `sessions: false` (`--no-sessions`, LARES_KEEP_SESSIONS=0) keeps the house alone.
+ *
  * Real git over scratch repos; the vessel's rows answer from a recorded fake.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { CARRY_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type CarryFile } from "../src/carry-manifest.js";
 import { riteKeepHost, secretShapes, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../src/rite-keep-host.js";
 import { KeepRefused } from "../src/rite-keep.js";
+import { readOrMintDevice, sessionSources, type SessionSources } from "../src/keep-sessions.js";
+import { keepSessionsOn } from "../src/keep-config.js";
 import { keepPlan } from "../src/commands/rite.js";
 import { parseArgs } from "../src/parse-args.js";
 
@@ -60,9 +75,29 @@ function writeBundle(dest: string, notes: Readonly<Record<string, string>>): str
   return bundleId;
 }
 
-/** The scratch remote, the workspace clone of it (guarded with `* -text` unless told not to), and the vessel's rows. */
+/** A scratch home's Claude Code state, and the sources that read it: the device's sessions as the keep mirrors them. */
+function fakeSessions(): { sources: SessionSources; claude: string; put: (rel: string, text: string, ageSec?: number) => void } {
+  const home = join(scratch, "home"), claude = join(home, ".claude");
+  const put = (rel: string, text: string, ageSec = 3600): void => {
+    const abs = join(claude, ...rel.split("/"));
+    mkdirSync(dirname(abs), { recursive: true });
+    writeFileSync(abs, text);
+    const at = Date.now() / 1000 - ageSec;
+    utimesSync(abs, at, at);
+  };
+  put("CLAUDE.md", "# the operator's rule\n");
+  put("projects/-home-me-proj/memory/MEMORY.md", "# Memory Index\n");
+  put("projects/-home-me-proj/aaaa.jsonl", '{"type":"user","text":"an idle transcript"}\n');
+  writeFileSync(join(home, ".claude.json"), '{"userID": "u-123", "numStartups": 1}\n');
+  writeFileSync(join(scratch, "machine-id"), "0123456789abcdef0123456789abcdef\n");
+  return { sources: { ...sessionSources({ HOME: home, LARES_MACHINE_ID_FILE: join(scratch, "machine-id") }), hostname: () => "hale" }, claude, put };
+}
+
+/** The scratch remote, the workspace clone of it (guarded with `* -text` unless told not to), the device's sessions, and the vessel's rows. */
 function rig(over: { guard?: boolean } = {}) {
   const remote = join(scratch, "remote.git"), ws = join(scratch, "workspace");
+  const sessions = fakeSessions();
+  const device = `devices/${readOrMintDevice(sessions.sources).dir}`;
   mkdirSync(remote);
   must(remote, "init", "-q", "--bare");
   must(scratch, "clone", "-q", remote, ws);
@@ -73,13 +108,25 @@ function rig(over: { guard?: boolean } = {}) {
     must(ws, "push", "-q", "origin", "HEAD:refs/heads/main");
   }
   const calls: string[] = [], said: string[] = [];
-  const state = { notes: { heron: "remember the heron\n" } as Record<string, string>, n: 0, tesserae: [] as { tessera: string; head: string; landed: string | null }[] };
+  const state = { notes: { heron: "remember the heron\n" } as Record<string, string>, n: 0, returns: 12, down: false, tesserae: [] as { tessera: string; head: string; landed: string | null }[] };
   const ports: KeepHostPorts = {
+    sessions: sessions.sources,
     workspaceDir: (name) => { expect(name).toBe("backup"); return ws; },
     git: async (dir, argv) => runGit(dir, argv),
     say: (line) => { said.push(line); },
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
+      if (state.down) return { ok: false, code: "rite-row-unreached", message: "the row answered no reading (exit 3)" };
+      if (verb === "begin") {
+        // The vessel reads the staged bundle itself and returns the keep lei at the id it derives.
+        const standing = JSON.parse(readFileSync(join(ws, String(args["staging"]), MANIFEST_FILE), "utf8")).bundleId as string;
+        if (args["rite"] !== "keep" || args["branch"] !== "backup" || standing !== args["head"]) return { ok: false, code: "rite-tree-differs", message: "the staged bundle derives another id" };
+        if (state.returns <= 0) return { ok: false, code: "swarm-lei-spent", message: "the keep lei holds no return" };
+        state.returns--;
+        const tessera = String(++state.n).repeat(64).slice(0, 64);
+        state.tesserae.push({ tessera, head: standing, landed: null });
+        return { ok: true, output: { tessera, rite: "keep", lei: "d".repeat(64), n: state.n } };
+      }
       if (verb === "keep-cut") {
         const target = join(ws, String(args["into"]));
         const staging = join(scratch, `cut-${state.n}`);
@@ -88,6 +135,8 @@ function rig(over: { guard?: boolean } = {}) {
         let standing: unknown = null;
         try { standing = JSON.parse(readFileSync(join(target, MANIFEST_FILE), "utf8")).bundleId; } catch { standing = null; }
         if (standing === id) return { ok: true, output: { kept: false, standing: true, bundleId: id } };
+        if (state.returns <= 0) return { ok: false, code: "swarm-lei-spent", message: "the keep lei holds no return" };
+        state.returns--;
         writeBundle(target, state.notes);
         const tessera = String(++state.n).repeat(64).slice(0, 64);
         state.tesserae.push({ tessera, head: id, landed: null });
@@ -105,7 +154,7 @@ function rig(over: { guard?: boolean } = {}) {
   };
   const commits = (): number => Number(must(ws, "rev-list", "--count", "HEAD"));
   const remoteManifest = (): string => JSON.parse(must(remote, "show", "main:house/manifest.json")).bundleId;
-  return { remote, ws, calls, said, state, ports, commits, remoteManifest };
+  return { remote, ws, calls, said, state, ports, commits, remoteManifest, sessions, device };
 }
 
 beforeEach(() => {
@@ -241,5 +290,149 @@ describe("the keep rite, host half", () => {
     const moved = await riteKeepHost(r.ports, { workspace: "backup" });
     expect(moved.data, JSON.stringify(moved.data)).toMatchObject({ kept: true, committed: true, pushed: true, par: true });
     expect(r.remoteManifest()).toBe(String(moved.data["bundleId"]));
+  });
+
+  test("KH11 RED: one commit carries house/ and devices/<name>-<id8>/, and one push carries it", async () => {
+    const r = rig();
+    const before = r.commits();
+    const pushes: string[] = [];
+    const watched: KeepHostPorts = { ...r.ports, git: async (dir, a) => { if (a[0] === "push") pushes.push(a.join(" ")); return runGit(dir, a); } };
+    const out = await riteKeepHost(watched, { workspace: "backup" });
+    expect(out.data, JSON.stringify(out.data)).toMatchObject({ kept: true, committed: true, pushed: true, par: true, sessions: { device: r.device, moved: true } });
+    expect(r.commits()).toBe(before + 1);
+    expect(pushes.length).toBe(1);
+    const carried = must(r.remote, "show", "--name-only", "--format=", "main").split("\n");
+    expect(carried).toContain("house/manifest.json");
+    expect(carried).toContain(`${r.device}/DEVICE.json`);
+    expect(carried).toContain(`${r.device}/config/CLAUDE.md`);
+    expect(carried).toContain(`${r.device}/config/claude.json`);
+    expect(carried).toContain(`${r.device}/projects/-home-me-proj/memory/MEMORY.md`);
+    expect(carried).toContain(`${r.device}/projects/-home-me-proj/sessions/aaaa.jsonl.zst`);
+    expect(carried.every((p) => p.startsWith("house/") || p.startsWith(`${r.device}/`)), carried.join(" ")).toBe(true);
+    expect(must(r.remote, "show", `main:${r.device}/config/claude.json`)).not.toContain("u-123");
+    expect(r.calls.map((c) => c.split(" ")[0])).toEqual(["keep-cut", "land"]);
+    expect(r.state.returns).toBe(11);
+    expect(must(r.ws, "status", "--porcelain")).toBe("");
+  });
+
+  test("KH12 RED: the guard allows exactly <into> and this device's dir; another device's dir, or this dir under another uuid, refuses before the vessel half runs", async () => {
+    const r = rig();
+    mkdirSync(join(r.ws, "devices", "another-00000000"), { recursive: true });
+    writeFileSync(join(r.ws, "devices", "another-00000000", "note"), "another device's file\n");
+    const out = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(out).toMatchObject({ code: 1, data: { refusal: "keep-tree-unclean", stopped: "guard", outside: ["devices/another-00000000/note"] } });
+    expect(String(out.data["message"])).toContain(`outside house/ and ${r.device}/`);
+    expect(r.calls).toEqual([]);
+    rmSync(join(r.ws, "devices", "another-00000000"), { recursive: true });
+    // This device's own dir, changed by a keep that never pushed, passes the guard; the same dir under another uuid refuses.
+    mkdirSync(join(r.ws, r.device), { recursive: true });
+    writeFileSync(join(r.ws, r.device, "DEVICE.json"), '{"uuid": "00000000-0000-5000-8000-000000000000", "name": "hale"}');
+    const foreign = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(foreign).toMatchObject({ code: 1, data: { refusal: "keep-device-foreign", stopped: "guard" } });
+    expect(r.calls).toEqual([]);
+    expect(r.state.returns).toBe(12);
+    rmSync(join(r.ws, r.device), { recursive: true });
+    expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
+  });
+
+  test("KH13 RED: a secret-shaped string in the mirror refuses the commit before any return spends, plain or inside a compressed transcript; CONTROL: a PLANTED fixture passes", async () => {
+    const r = rig();
+    const n = r.commits();
+    r.sessions.put("projects/-home-me-proj/memory/token.md", `the token ${"ghp_"}${"y".repeat(30)}\n`);
+    const plain = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(plain).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
+    expect(String(plain.data["message"])).toContain(`${r.device}/projects/-home-me-proj/memory/token.md (ghp_yyyy…)`);
+    expect(r.commits()).toBe(n);
+    rmSync(join(r.sessions.claude, "projects/-home-me-proj/memory/token.md"));
+    r.sessions.put("projects/-home-me-proj/bbbb.jsonl", `{"type":"user","text":"${"sk-ant-"}${"z".repeat(20)}"}\n`);
+    const packed = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(packed).toMatchObject({ code: 1, data: { refusal: "keep-secret-shaped", stopped: "guard" } });
+    expect(String(packed.data["message"])).toContain(`${r.device}/projects/-home-me-proj/sessions/bbbb.jsonl.zst (sk-ant-z…)`);
+    expect(r.commits()).toBe(n);
+    // The scan over the mirror runs ahead of the vessel half: a refused mirror spends no return.
+    expect(r.calls).toEqual([]);
+    expect(r.state.returns).toBe(12);
+    // CONTROL: the house's own planted fixtures pass, as they pass the script's scan.
+    r.sessions.put("projects/-home-me-proj/bbbb.jsonl", `{"type":"user","text":"${"ghp_"}PLANTED${"a".repeat(20)} and AKIAIOSFODNN7EXAMPLE"}\n`, 1800);
+    rmSync(join(r.ws, r.device, "projects/-home-me-proj/sessions/bbbb.jsonl.zst"));
+    const passed = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(passed.data, JSON.stringify(passed.data)).toMatchObject({ committed: true, pushed: true, par: true });
+  });
+
+  test("KH14 RED: with the vessel down the keep names where the lei lives, exits non-zero, and commits and pushes nothing", async () => {
+    const r = rig();
+    const n = r.commits();
+    const argv: string[] = [];
+    const watched: KeepHostPorts = { ...r.ports, git: async (dir, a) => { argv.push(a[0]!); return runGit(dir, a); } };
+    r.state.down = true;
+    for (const ifDue of [false, true]) {
+      const out = await riteKeepHost(watched, { workspace: "backup", ifDue });
+      expect(out).toMatchObject({ code: 1, data: { refusal: "rite-row-unreached", stopped: "keep" } });
+      expect(String(out.data["message"])).toContain("the keep lei lives in the vessel; up, then keep");
+    }
+    expect(argv.filter((a) => ["add", "commit", "fetch", "rebase", "push"].includes(a))).toEqual([]);
+    expect(r.commits()).toBe(n);
+    expect(must(r.ws, "diff", "--cached", "--name-only")).toBe("");
+    expect(must(r.remote, "rev-list", "--count", "main")).toBe(String(n));
+    // The vessel stands again: the keep that follows carries the house and the mirror that waited, in one commit.
+    r.state.down = false;
+    const up = await riteKeepHost(r.ports, { workspace: "backup" });
+    expect(up.data, JSON.stringify(up.data)).toMatchObject({ kept: true, committed: true, pushed: true, par: true });
+    expect(r.commits()).toBe(n + 1);
+  });
+
+  test("KH15 RED: moved sessions over an unmoved house spend a return of their own before anything commits; with none left, nothing commits or pushes", async () => {
+    const r = rig();
+    expect((await riteKeepHost(r.ports, { workspace: "backup" })).code).toBe(0);
+    expect(r.state.returns).toBe(11);
+    const n = r.commits();
+    r.calls.length = 0;
+    r.sessions.put("projects/-home-me-proj/memory/heron.md", "the heron came back\n");
+    const out = await riteKeepHost(r.ports, { workspace: "backup" });
+    const bundleId = String(out.data["bundleId"]);
+    expect(out.data, JSON.stringify(out.data)).toMatchObject({ kept: false, committed: true, pushed: true, par: true, sessions: { moved: true, spent: true } });
+    expect(r.calls.map((c) => c.split(" ")[0])).toEqual(["keep-cut", "begin", "receipts", "land"]);
+    expect(r.calls[1]).toBe(`begin ${JSON.stringify({ rite: "keep", branch: "backup", head: bundleId, staging: "house" })}`);
+    expect(r.state.returns).toBe(10);
+    expect(r.commits()).toBe(n + 1);
+    expect(must(r.remote, "show", "--name-only", "--format=", "main").split("\n")).toEqual([`${r.device}/projects/-home-me-proj/memory/heron.md`]);
+    expect(r.state.tesserae.every((t) => t.landed === bundleId)).toBe(true);
+    // No return left: the mirror rests in the workspace, and nothing commits or pushes.
+    r.state.returns = 0;
+    r.sessions.put("projects/-home-me-proj/memory/pond.md", "the pond at dusk\n");
+    const argv: string[] = [];
+    const watched: KeepHostPorts = { ...r.ports, git: async (dir, a) => { argv.push(a[0]!); return runGit(dir, a); } };
+    const dry = await riteKeepHost(watched, { workspace: "backup" });
+    expect(dry).toMatchObject({ code: 1, data: { refusal: "swarm-lei-spent", stopped: "sessions" } });
+    expect(String(dry.data["message"])).toMatch(/no return spent/);
+    expect(argv.filter((a) => ["add", "commit", "fetch", "rebase", "push"].includes(a))).toEqual([]);
+    expect(r.commits()).toBe(n + 1);
+    // `--if-due`: moved sessions read due; a lei strung again, the keep that waited commits and pushes.
+    r.state.returns = 3;
+    r.calls.length = 0;
+    const due = await riteKeepHost(r.ports, { workspace: "backup", ifDue: true });
+    expect(due.data, JSON.stringify(due.data)).toMatchObject({ kept: false, due: true, committed: true, pushed: true, par: true });
+    expect(r.state.returns).toBe(2);
+    // An unmoved house and unmoved sessions: `--if-due` spends nothing.
+    r.calls.length = 0;
+    const idle = await riteKeepHost(r.ports, { workspace: "backup", ifDue: true });
+    expect(idle).toMatchObject({ code: 0, data: { kept: false, due: false } });
+    expect(r.calls.map((c) => c.split(" ")[0])).toEqual(["keep-cut", "receipts"]);
+    expect(r.state.returns).toBe(2);
+  });
+
+  test("KH16: `sessions: false` keeps the house alone; the switch reads the line's flag first, then LARES_KEEP_SESSIONS, and stands on where neither speaks", async () => {
+    const r = rig();
+    const out = await riteKeepHost(r.ports, { workspace: "backup", sessions: false });
+    expect(out.data, JSON.stringify(out.data)).toMatchObject({ kept: true, committed: true, pushed: true, par: true });
+    expect(out.data["sessions"]).toBeUndefined();
+    expect(existsSync(join(r.ws, "devices"))).toBe(false);
+    expect((await riteKeepHost({ ...r.ports, sessions: null }, { workspace: "backup" })).data["sessions"]).toBeUndefined();
+    expect(keepSessionsOn(undefined, {}, null)).toBe(true);
+    expect(keepSessionsOn(undefined, { LARES_KEEP_SESSIONS: "0" }, null)).toBe(false);
+    expect(keepSessionsOn(undefined, {}, "LARES_KEEP_SESSIONS=off\n")).toBe(false);
+    expect(keepSessionsOn(undefined, { LARES_KEEP_SESSIONS: "1" }, "LARES_KEEP_SESSIONS=off\n")).toBe(true);
+    expect(keepSessionsOn(true, { LARES_KEEP_SESSIONS: "0" }, null)).toBe(true);
+    expect(keepSessionsOn(false, {}, null)).toBe(false);
   });
 });

@@ -7,27 +7,43 @@
  *
  *   1. the guard     the workspace stands as a repo at its top, on a branch with a remote; `<into>` reads `-text` (a
  *                    `.gitattributes` with `* -text` stands), so no line-ending rewrite moves a byte the manifest hashes;
- *                    and nothing outside `<into>` stands changed. A guard that refuses spends nothing.
- *   2. keep-cut      IN THE VESSEL: the vessel half (`rite-keep.ts`): the lei's return, the cut, the guest half
- *   3. the guard     again over what the cut left: only `<into>` changed, the manifest the host reads names the vessel's bundle
- *                    id (the host's directory and the vessel's stand as one), and the secret scan finds nothing
- *   4. git           `git add <into>`, commit `keep <bundleId>`, fetch, rebase onto the upstream, push
- *   5. rite-land     IN THE VESSEL: land each keep tessera owed at the bundle id read from the PUSHED manifest; conferre
+ *                    and nothing outside `<into>` and this device's `devices/<name>-<id8>/` stands changed. A guard that
+ *                    refuses spends nothing.
+ *   2. the sessions  ON THE HOST: this device's Claude Code sessions mirror into `devices/<name>-<id8>/`
+ *                    (`./keep-sessions.ts`), and the secret scan reads the mirror, a compressed transcript by its own bytes.
+ *                    A dir another device owns, or a secret-shaped string, refuses here, before any return spends
+ *   3. keep-cut      IN THE VESSEL: the vessel half (`rite-keep.ts`): the lei's return, the cut, the guest half
+ *   4. the guard     again over what the cut left: only `<into>` and the device's dir changed, the manifest the host reads
+ *                    names the vessel's bundle id (the host's directory and the vessel's stand as one), and the secret scan
+ *                    finds nothing in the bundle
+ *   5. the return    sessions that moved over a house that did not spend a return of their own: `rite begin` over the
+ *                    standing bundle, IN THE VESSEL. A cut that kept already spent the one return this push rides
+ *   6. git           `git add <into> devices/<name>-<id8>`, ONE commit `keep <bundleId>`, fetch, rebase onto the upstream,
+ *                    ONE push
+ *   7. rite-land     IN THE VESSEL: land each keep tessera owed at the bundle id read from the PUSHED manifest; conferre
  *                    reads it par
+ *
+ * NO PUSH WITHOUT A SPENT RETURN. The keep lei lives in the vessel's store, so with the vessel down the vessel half answers
+ * nothing: the rite names that (`the keep lei lives in the vessel; up, then keep`), exits non-zero, and commits and pushes
+ * nothing; the mirror rests in the workspace for the keep that follows the `up`. `sessions: false` (`--no-sessions`, or
+ * LARES_KEEP_SESSIONS=0 in the house config, `./keep-config.ts`) keeps the house alone.
  *
  * A PUSH THAT FAILS leaves the tessera red (`landed-absent`) and names the cure: mend the remote and run the rite again. A
  * second run finds the bundle standing, pushes the commit that waits, and lands every keep tessera conferre reads open at
  * that bundle id. An unchanged keep commits nothing, pushes nothing and lands nothing.
  *
- * `--if-due` (the call `down` makes): a house that has not moved since the bundle its remote-tracking branch already holds, with
- * no keep tessera owed at that bundle, stops after the cut: no fetch, no push, no landing, nothing spent (`due: false`). A
- * moved house, or a bundle that still waits for its push or its landing, keeps as a plain keep does (`due: true`).
+ * `--if-due` (the call `down` makes, and the session-end hook's): a house that has not moved since the bundle its
+ * remote-tracking branch already holds, with no keep tessera owed at that bundle and no session file moved, stops after the
+ * cut: no fetch, no push, no landing, nothing spent (`due: false`). A moved house, moved sessions, or a bundle that still waits
+ * for its push or its landing, keeps as a plain keep does (`due: true`).
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./carry-manifest.js";
+import { configuredKeepSessions } from "./keep-config.js";
+import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
 import { KEEP_INTO, KeepRefused, RITE_KEEP } from "./rite-keep.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
@@ -44,14 +60,23 @@ export interface GitAnswer { readonly code: number; readonly stdout: string; rea
 export interface KeepHostPorts {
   /** The workspace's directory as THIS machine reads it; throws a refusal by name where none stands. */
   workspaceDir(name: string): string;
-  /** One vessel row: the vessel half (`keep-cut`), conferre's read (`receipts`), or a landing (`land`). */
-  row(verb: "keep-cut" | "receipts" | "land", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
+  /** One vessel row: the vessel half (`keep-cut`), a return over the standing bundle (`begin`), conferre's read (`receipts`), or a landing (`land`). */
+  row(verb: "keep-cut" | "begin" | "receipts" | "land", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
+  /**
+   * Where this device's Claude Code sessions stand (`./keep-sessions.ts`); null keeps none. Left unseated, the house config
+   * decides (`configuredKeepSessions`) and the sources read this process's own environment.
+   */
+  readonly sessions?: SessionSources | null;
   /** git in `dir`; never throws. */
   git(dir: string, argv: readonly string[]): Promise<GitAnswer>;
   say(line: string): void;
 }
 
-export interface KeepHostOptions { readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number; readonly ifDue?: boolean }
+export interface KeepHostOptions {
+  readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number; readonly ifDue?: boolean;
+  /** `--sessions` / `--no-sessions`: whether the device's sessions ride this keep; unnamed, the ports and the house config decide. */
+  readonly sessions?: boolean;
+}
 export interface KeepHostOutcome { readonly code: number; readonly data: Record<string, unknown> }
 
 /** A refusal the host half raises by name; the message carries the cure. */
@@ -88,6 +113,13 @@ export function workspaceFromPairs(name: string, configured: string): string {
   throw new KeepRefused("keep-workspace-unnamed-on-host", `LARES_WORKSPACES names no directory for the workspace "${name}" on this host; name it there (\`${name}=<dir>\`, in the environment or ~/.lares/lares-surface.env), so the host half and the vessel read one clone`);
 }
 
+/**
+ * The row codes that read as no vessel answering at all: the row reached nothing (`rite-row-unreached`), or reached a store
+ * with no standing daemon. The keep lei rests in that vessel's store, so none of these spends a return.
+ */
+export const KEEP_VESSEL_UNREACHED: ReadonlySet<string> = new Set(["rite-row-unreached", "swarm-no-daemon", "daemon-unreachable", "vessel-silent", "store-door-timeout"]);
+export const KEEP_VESSEL_DOWN = "the keep lei lives in the vessel; up, then keep";
+
 /** The secret-shaped strings one text holds, the allowed fixtures dropped. */
 export function secretShapes(text: string): string[] {
   return [...text.matchAll(KEEP_SECRET_PATTERN)].map((m) => m[0]).filter((m) => !KEEP_SECRET_ALLOW.some((a) => m.includes(a)));
@@ -101,7 +133,15 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
   try {
     const unsafe = unsafeRelPath(into);
     if (unsafe !== null || into.split("/").some((s) => s.startsWith("."))) throw new HostRefused("keep-into-unsafe", `--into ${JSON.stringify(into)} names ${unsafe ?? "a dotted segment"}; it names a plain relative place inside the workspace`);
+    if (under(into, DEVICES_DIR) || under(DEVICES_DIR, into)) throw new HostRefused("keep-into-unsafe", `--into ${JSON.stringify(into)} crosses ${DEVICES_DIR}/, where each device's sessions rest; name another place`);
     const dir = ports.workspaceDir(name);
+    // THE DEVICE'S SESSIONS: on unless the line, the ports or the house config say otherwise. The identity reads (or mints)
+    // before the guard, so the guard knows the one device dir it allows.
+    const sessionsOn = opts.sessions ?? (ports.sessions !== undefined ? ports.sessions !== null : configuredKeepSessions());
+    const sources = sessionsOn ? (ports.sessions ?? sessionSources()) : null;
+    const device = sources === null ? null : readOrMintDevice(sources);
+    const devRel = device === null ? null : `${DEVICES_DIR}/${device.dir}`;
+    const kept2 = devRel === null ? `${into}/` : `${into}/ and ${devRel}/`;
     const git = async (argv: readonly string[], refusal?: string): Promise<string> => {
       const r = await ports.git(dir, argv);
       if (r.code !== 0 && refusal !== undefined) throw new HostRefused(refusal, `git ${argv.join(" ")} answered ${r.code}: ${r.stderr.trim() || r.stdout.trim()}`);
@@ -121,40 +161,62 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     const outside = async (): Promise<string[]> => {
       const st = await ports.git(dir, ["status", "--porcelain=v1", "-z", "--untracked-files=all"]);
       if (st.code !== 0) throw new HostRefused("keep-status-unread", `git status answered ${st.code}: ${st.stderr.trim() || st.stdout.trim()}`);
-      return changedPaths(st.stdout).filter((p) => !under(p, into));
+      return changedPaths(st.stdout).filter((p) => !under(p, into) && !(devRel !== null && under(p, devRel)));
     };
     const before = await outside();
-    if (before.length > 0) throw new HostRefused("keep-tree-unclean", `the workspace "${name}" holds changes outside ${into}/ (${before.slice(0, 5).join(", ")}${before.length > 5 ? ", …" : ""}); commit or clear them first, since a keep commits ${into}/ alone`, { outside: before });
+    if (before.length > 0) throw new HostRefused("keep-tree-unclean", `the workspace "${name}" holds changes outside ${kept2} (${before.slice(0, 5).join(", ")}${before.length > 5 ? ", …" : ""}); commit or clear them first, since a keep commits ${kept2} alone`, { outside: before });
+    /** The secret-shaped strings among the files git reads as new or changed under one place, each by its path. */
+    const scan = async (place: string, textOf: (rel: string) => string | null): Promise<string[]> => {
+      const found: string[] = [];
+      for (const rel of (await git(["ls-files", "-mo", "--exclude-standard", "-z", "--", place], "keep-status-unread")).split("\0").filter((p) => p !== "")) {
+        const text = textOf(rel);
+        const shapes = text === null ? [] : secretShapes(text);
+        if (shapes.length > 0) found.push(`${rel} (${shapes[0]!.slice(0, 8)}…)`);
+      }
+      return found;
+    };
 
-    // ── 2. THE VESSEL HALF ────────────────────────────────────────────────────────────────────────────────────
+    // ── 2. THE SESSIONS, on the host, before anything spends ──────────────────────────────────────────────────
+    let sessionsMoved = false;
+    if (sources !== null && device !== null && devRel !== null) {
+      const mirrored = mirrorSessions(sources, dir, device);
+      for (const f of mirrored.unpacked) ports.say(`keep: the transcript ${f} did not compress; it waits for the next keep`);
+      // A compressed transcript reads by the bytes it unpacks to; a file that left, or a nested repo's own dir, reads as none.
+      const hits = await scan(devRel, (rel) => {
+        const abs = join(dir, rel);
+        try { if (!statSync(abs).isFile()) return null; } catch { return null; }
+        return (rel.endsWith(".zst") ? sources.unzstd(abs) : readFileSync(abs)).toString("latin1");
+      });
+      if (hits.length > 0) throw new HostRefused("keep-secret-shaped", `the device's sessions hold secret-shaped strings: ${hits.slice(0, 8).join(", ")}${hits.length > 8 ? `, … (${hits.length} files)` : ""}; nothing commits and no return spent. Inspect them and clear each at its source under ${sources.claudeHome} (the mirror follows), or keep the house alone with --no-sessions`, { secrets: hits });
+      const st = await ports.git(dir, ["status", "--porcelain=v1", "-z", "--untracked-files=all", "--", devRel]);
+      if (st.code !== 0) throw new HostRefused("keep-status-unread", `git status answered ${st.code}: ${st.stderr.trim() || st.stdout.trim()}`);
+      sessionsMoved = st.stdout !== "";
+      base["sessions"] = { device: devRel, moved: sessionsMoved };
+    }
+
+    // ── 3. THE VESSEL HALF ────────────────────────────────────────────────────────────────────────────────────
     stage = "keep";
     const cut = await ports.row("keep-cut", { workspace: name, into, ...(opts.acceptOmissions === true ? { "accept-omissions": true } : {}), ...face });
-    if (!cut.ok) throw new HostRefused(cut.code, cut.message);
+    if (!cut.ok) throw new HostRefused(cut.code, KEEP_VESSEL_UNREACHED.has(cut.code) ? `${KEEP_VESSEL_DOWN} (${cut.message}). No return spent, and nothing commits or pushes${sessionsMoved ? `; the sessions rest mirrored in ${devRel!}/ for the keep that follows` : ""}` : cut.message);
     const kept = cut.output["kept"] === true;
     const bundleId = String(cut.output["bundleId"]);
     const tessera = kept ? String(cut.output["tessera"]) : null;
     Object.assign(base, { bundleId, kept, ...(tessera !== null ? { tessera } : {}) });
     ports.say(kept ? `keep: the vessel cut bundle ${bundleId.slice(0, 16)} into ${into}/ and spent a return (tessera ${tessera})` : `keep: ${into}/ already holds bundle ${bundleId.slice(0, 16)}; the vessel spent nothing`);
 
-    // ── 3. THE GUARD over what the cut left ───────────────────────────────────────────────────────────────────
+    // ── 4. THE GUARD over what the cut left ───────────────────────────────────────────────────────────────────
     stage = "guard";
     let seen: unknown = null;
     try { seen = (JSON.parse(readFileSync(join(dir, ...into.split("/"), MANIFEST_FILE), "utf8")) as { bundleId?: unknown }).bundleId; } catch { seen = null; }
     if (seen !== bundleId) throw new HostRefused("keep-workspace-differs", `the vessel cut bundle ${bundleId} and ${join(dir, into)} holds ${seen === null ? "no bundle" : String(seen)}; the host's workspace "${name}" and the vessel's stand as two directories`);
     const after = await outside();
-    if (after.length > 0) throw new HostRefused("keep-tree-unclean", `the keep left changes outside ${into}/ (${after.slice(0, 5).join(", ")}); nothing commits`, { outside: after });
-    const hits: string[] = [];
-    for (const rel of (await git(["ls-files", "-mo", "--exclude-standard", "-z", "--", into], "keep-status-unread")).split("\0").filter((p) => p !== "")) {
-      let text: string;
-      try { text = readFileSync(join(dir, rel), "utf8"); } catch { continue; }
-      const found = secretShapes(text);
-      if (found.length > 0) hits.push(`${rel} (${found[0]!.slice(0, 8)}…)`);
-    }
+    if (after.length > 0) throw new HostRefused("keep-tree-unclean", `the keep left changes outside ${kept2} (${after.slice(0, 5).join(", ")}); nothing commits`, { outside: after });
+    const hits = await scan(into, (rel) => { try { return readFileSync(join(dir, rel), "utf8"); } catch { return null; } });
     if (hits.length > 0) throw new HostRefused("keep-secret-shaped", `the bundle holds secret-shaped strings: ${hits.join(", ")}; nothing commits. Inspect them, clear the record from the house, and keep again`, { secrets: hits });
 
     // ── IF DUE: an unmoved house whose bundle the remote-tracking branch holds, with nothing owed, stops here ──────
     if (opts.ifDue === true) {
-      let due = kept;
+      let due = kept || sessionsMoved;
       if (!due) {
         const tracking = `refs/remotes/${remote}/${branch}`;
         let held: unknown = null;
@@ -169,14 +231,25 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       }
       base["due"] = due;
       if (!due) {
-        ports.say(`keep: the house has not moved since bundle ${bundleId.slice(0, 16)}, which ${remote}/${branch} already holds; nothing spent, committed or pushed`);
+        ports.say(`keep: the house has not moved since bundle ${bundleId.slice(0, 16)}, which ${remote}/${branch} already holds${devRel !== null ? `, and no session file moved under ${devRel}/` : ""}; nothing spent, committed or pushed`);
         return { code: 0, data: { ...base, committed: false, pushed: false, landed: [], par: true } };
       }
     }
 
-    // ── 4. GIT: commit, rebase, push ──────────────────────────────────────────────────────────────────────────
+    // ── 5. THE RETURN the sessions ride where the cut spent none ──────────────────────────────────────────────
+    // An unmoved house spends nothing in the cut, and no push leaves without a spent return: the vessel reads the standing
+    // bundle itself, returns the keep lei at its id, and rests a tessera the landing below closes.
+    if (!kept && sessionsMoved) {
+      stage = "sessions";
+      const begun = await ports.row("begin", { rite: RITE_KEEP, branch: name, head: bundleId, staging: into, ...face });
+      if (!begun.ok) throw new HostRefused(begun.code, `${KEEP_VESSEL_UNREACHED.has(begun.code) ? `${KEEP_VESSEL_DOWN} (${begun.message})` : begun.message}. The sessions rest mirrored in ${devRel!}/ with no return spent, so nothing commits or pushes; with a keep lei holding a return (\`lares lei show --rite ${RITE_KEEP} --branch ${name}\`), run the rite again`);
+      base["sessions"] = { device: devRel, moved: true, spent: true, tessera: String(begun.output["tessera"]) };
+      ports.say(`keep: the sessions moved over an unmoved house; a return spent for them (tessera ${String(begun.output["tessera"])})`);
+    }
+
+    // ── 6. GIT: one commit, rebase, one push ──────────────────────────────────────────────────────────────────
     stage = "commit";
-    await git(["add", "-A", "--", into], "keep-commit-refused");
+    await git(["add", "-A", "--", into, ...(devRel !== null ? [devRel] : [])], "keep-commit-refused");
     const staged = (await ports.git(dir, ["diff", "--cached", "--quiet"])).code !== 0;
     if (staged) await git(["commit", "-q", "-m", `keep ${bundleId}`], "keep-commit-refused");
     base["committed"] = staged;
@@ -195,7 +268,7 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     if (ahead) await git(["push", "-q", remote, `HEAD:refs/heads/${branch}`], "keep-push-refused");
     base["pushed"] = ahead;
 
-    // ── 5. LAND at the bundle id the pushed tree holds ────────────────────────────────────────────────────────
+    // ── 7. LAND at the bundle id the pushed tree holds ────────────────────────────────────────────────────────
     stage = "land";
     const remoteHead = (await git(["ls-remote", remote, `refs/heads/${branch}`], "keep-push-refused")).split(/\s+/)[0] ?? "";
     let pushed: unknown = null;
@@ -220,12 +293,13 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       : `keep: ${staged ? "committed, " : ""}${ahead ? `pushed to ${remote}/${branch}, ` : ""}${landed.length} tessera${landed.length === 1 ? "" : "e"} landed${par ? "; conferre reads par" : "; conferre reads red"}`);
     return { code: par ? 0 : 1, data: { ...base, landed, par } };
   } catch (err) {
-    if (!(err instanceof HostRefused) && !(err instanceof KeepRefused)) throw err;
+    if (!(err instanceof HostRefused) && !(err instanceof KeepRefused) && !(err instanceof SessionsRefused)) throw err;
     const extra = err instanceof HostRefused ? err.extra : {};
     const t = base["tessera"] as string | undefined, id = base["bundleId"] as string | undefined;
     const cure = stage === "push" || stage === "land"
       ? ` The bundle rests in the workspace and ${t !== undefined ? `tessera ${t} reads red (landed-absent)` : "any tessera it owes reads red"}: mend the remote and run \`lares rite keep --workspace ${name}${opts.into !== undefined ? ` --into ${into}` : ""}\` again (it pushes what waits and lands it)${t !== undefined && id !== undefined ? `, or by hand: git push, then \`lares rite land --tessera ${t} --head ${id}\`` : ""}.`
-      : stage === "guard" && t !== undefined ? ` The return stays spent and tessera ${t} reads red until a keep lands it.` : "";
+      : stage === "guard" && t !== undefined ? ` The return stays spent and tessera ${t} reads red until a keep lands it.`
+      : stage === "commit" && (base["sessions"] as { tessera?: string } | undefined)?.tessera !== undefined ? ` The return the sessions spent stays spent, and tessera ${(base["sessions"] as { tessera: string }).tessera} reads red until a keep lands it.` : "";
     const message = `${err.message}${cure}`;
     ports.say(`keep: ${message}`);
     return { code: 1, data: { ...base, ...extra, stopped: stage, refusal: err.code, message } };

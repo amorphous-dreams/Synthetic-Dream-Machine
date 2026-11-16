@@ -5,6 +5,9 @@
  * with no name set, the one pair LARES_WORKSPACES binds names it. Several pairs and no name read none, and so does a name
  * outside the workspace grammar: nothing guesses which clone holds the operator's repo.
  *
+ * `LARES_KEEP_SESSIONS` (the same two places) switches the device's Claude Code sessions off a keep: `0`, `off`, `false` or `no`
+ * keeps the house alone, and so does the line's `--no-sessions`. Unset, a keep carries the sessions (`./keep-sessions.ts`).
+ *
  * The wake hook reads the same rule in plain JavaScript (`.claude-plugin/hooks/lares-wake-core.mjs#keepWorkspaceOf`); a change
  * here changes there.
  *
@@ -32,4 +35,21 @@ export function configuredKeepWorkspace(env: Readonly<Record<string, string | un
   let text: string | null = null;
   try { text = file === null ? null : readFileSync(file, "utf8"); } catch { text = null; }
   return keepWorkspaceName(env, text);
+}
+
+export const KEEP_SESSIONS_ENV = "LARES_KEEP_SESSIONS";
+const OFF: ReadonlySet<string> = new Set(["0", "off", "false", "no"]);
+
+/** Whether a keep carries the device's sessions: the line's flag first, then LARES_KEEP_SESSIONS, and on where neither speaks. */
+export function keepSessionsOn(flag: boolean | undefined, env: Readonly<Record<string, string | undefined>>, envFileText: string | null): boolean {
+  return flag ?? !OFF.has(envValue(KEEP_SESSIONS_ENV, env, envFileText).toLowerCase());
+}
+
+/** The sessions switch this process's config names: its environment, then the operator's surface env file. */
+export function configuredKeepSessions(flag?: boolean, env: Readonly<Record<string, string | undefined>> = process.env): boolean {
+  if (flag !== undefined) return flag;
+  const file = surfaceEnvPath(env);
+  let text: string | null = null;
+  try { text = file === null ? null : readFileSync(file, "utf8"); } catch { text = null; }
+  return keepSessionsOn(undefined, env, text);
 }
