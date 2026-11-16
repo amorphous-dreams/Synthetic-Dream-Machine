@@ -160,7 +160,7 @@ export function readSwarmBoard(records: readonly unknown[], face: SwarmBoardFace
     else { const line = laneLines.get(act.body.lane) ?? { acts: [] }; line.acts.push(entry); laneLines.set(act.body.lane, line); }
   }
   // A REFUSED CAP TIP BRAKES THE LINE: the cap reads the tightest cap the line ever held, never an older looser one (it fails toward
-  // the brake, as a lower and a go do). A line with no standing cap reads none, so a refused cap alone opens nothing.
+  // the brake, as a lower and a lei do). A line with no standing cap reads none, so a refused cap alone opens nothing.
   const capRead = capLine.acts.length > 0 ? foldLine(capLine, [...wardRefusedCaps.values()].sort((a, b) => a.cid.localeCompare(b.cid))) : null;
   const cap = capRead === null ? null : capRead.value;
   const lanes = new Map([...laneLines].map(([lane, line]) => [lane, foldLine(line)] as const));

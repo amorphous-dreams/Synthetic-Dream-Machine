@@ -112,7 +112,7 @@ export function judgeCosign(input: {
 }
 
 /**
- * What a READER of a ward act's effect asks (a board's kāpae lower, the house cap, a go): does this act stand beside its co-sign?
+ * What a READER of a ward act's effect asks (a board's kāpae lower, the house cap, a lei): does this act stand beside its co-sign?
  * The gate holds the door; the witness holds every reader, so an act signed outside the door (the root opened through the ward
  * route, never through the gate) reads as nothing on a face of two devices. `accepts` answers false where the act refuses;
  * `refusal` names why (`ward-act-uncosigned`, or `ward-issuer-aside` / `ward-issuer-unknown` where the act's co-sign stands

@@ -12,9 +12,8 @@
  * state, EIP-712's domainSeparator. The constant is protocol identity, never a magic number.
  *
  * ── WHY A TABLE, AND NOT JUST THE STRINGS ───────────────────────────────────────────────────────
- * Scattered, they cannot be checked. Thirty-two of them once sat across twenty-five files in TWO
- * spellings — `lar-<name>/v<N>` for signing, `"lares <name> v<N>"` for HMAC keys — and nothing could say
- * they differed. A typo in a domain tag does not fail loudly: it silently mints a SECOND protocol whose
+ * Scattered, they cannot be checked: tags spread across many files drift into more than one spelling
+ * — one for signing, another for HMAC keys — and nothing can say they differ. A typo in a domain tag does not fail loudly: it silently mints a SECOND protocol whose
  * signatures verify against nothing. Multiformats sets the sharpest prior art, and its whole value rides
  * on THE TABLE AS THE ARTIFACT rather than on the prefixes.
  *
@@ -248,7 +247,7 @@ export const PROMOTE_ACT_DOMAIN = mint("promote-act");
 /** A daemon or kahua promotion's ward signature: the face root over (wiki, digest, seq), made under a fresh ward unlock
  *  (seat-harness#/the-ward). Its own name, so no promote act, kahua act or swarm act verifies as one. */
 export const PROMOTE_WARD_DOMAIN = mint("promote-ward");
-/** One signed swarm control: the house cap, a lane share, a go, a go's spend, a lane's state, a roster row or a check receipt.
+/** One signed swarm control: the house cap, a lane share, a lei, its return, narrowing or unstringing, a rite's begin or land, a lane's state, a roster row or a check receipt.
  *  Its own name, so no swarm record verifies as a promote or kahua act and none of those as a swarm control. */
 export const SWARM_ACT_DOMAIN = mint("swarm-act");
 /** A kūkulu vouch (apart from the cabal vouch edge below): the standing vessel's signature over the candidate image it walked before a kūkulu (the-worn-house#/the-pulama).
