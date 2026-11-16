@@ -208,6 +208,36 @@ services:
       # Node's route ownership. Only a Lararium (a vessel with a lit face) mounts them — see `herm` below.
       LAR_PRONAOS_WEB_ROOT: /app/packages/lararium-web/dist
       LAR_PRONAOS_ARTIFACT_RECORD: /app/pronaos-build/pronaos-artifact.json
+      # THE PŪLAMA (road L47e). Set by the host shim when LARES_PULAMA=1, empty otherwise: empty, the vessel holds custody
+      # itself; set, it keeps no key and asks the standing pūlama for row operations over the socket below.
+      LAR_PULAMA_SOCKET: ${LAR_PULAMA_SOCKET:-}
+      LAR_KUKULU_OFFER: ${LAR_KUKULU_OFFER:-}
+    volumes:
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/hearth
+        target: /lar/hearth
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/sensoriums
+        target: /lar/sensoriums
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/projections
+        target: /lar/projections
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/library
+        target: /lar/library
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/config
+        target: /lar/config
+      - type: bind
+        source: ${LARES_WORKSPACE:?set LARES_WORKSPACE to the corpus directory on the host}
+        target: /workspace
+      # The pūlama's socket directory: mounted in the vessel and the pūlama alone. `bind.create_host_path` makes it on a
+      # house that never enabled the pūlama, where it stands empty and the vessel never dials it.
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/pulama/socket
+        target: /pulama/socket
+        bind:
+          create_host_path: true
     command: ["--root", "/lar", "--genesis", "/app/genesis"]
     init: true
     restart: unless-stopped
@@ -220,6 +250,44 @@ services:
       timeout: 5s
       retries: 5
       start_period: 120s
+
+  # THE PŪLAMA (road L47e; lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama): the house's custody holder in
+  # its own container. It opens custody from the hearth, answers vessels over a socket mounted in it and the vessel alone,
+  # and never sends a key across. The operator lights it once by hand (`tools/lares-container.sh pulama light`, a real
+  # terminal); a restart of the pūlama comes up unlit. It keeps no network and no writable root; its private state rests
+  # in LARES_HOUSE/pulama/state, which no vessel mounts. Profiled: it stands only when the shim's LARES_PULAMA=1 asks.
+  pulama:
+    image: ${LARES_IMAGE:-lares-surface:local}
+    profiles: [pulama]
+    user: "${LARES_UID:-1000}:${LARES_GID:-1000}"
+    entrypoint: ["node", "packages/lararium-node/dist/src/pulama-main.js"]
+    command: ["serve"]
+    environment:
+      LAR_ROOT: /lar
+      LAR_PULAMA_SOCKET: /pulama/socket/pulama.sock
+      LAR_PULAMA_HAND: /lar/run/pulama-hand.sock
+      LAR_PULAMA_STATE: /pulama/state
+    volumes:
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/hearth
+        target: /lar/hearth
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/pulama/socket
+        target: /pulama/socket
+      - type: bind
+        source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/pulama/state
+        target: /pulama/state
+    tmpfs:
+      - /tmp:mode=1777
+      - /lar/run:mode=1777
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    init: true
+    stdin_open: true
+    restart: unless-stopped
+    stop_grace_period: 10s
 
   # The offline CLI door owns the store for one act and refuses by name while a vessel stands.
   offline:

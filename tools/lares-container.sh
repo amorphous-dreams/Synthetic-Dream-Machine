@@ -91,6 +91,17 @@ value_of() { # $1 = name
 HOUSE=$(value_of LARES_HOUSE)
 case "$HOUSE" in /*) ;; *) die "LARES_HOUSE ($HOUSE) reads relative — name the host house root by an absolute path" ;; esac
 HOUSE_CLASSES="hearth sensoriums projections library config"
+# THE PŪLAMA (road L47e): with LARES_PULAMA=1 the house's custody holder stands in its own container beside the vessel,
+# lit once by the operator's own hand (`pulama light`), and outlives every vessel restart. Its socket and its private
+# state rest under LARES_HOUSE/pulama on the host, so they keep the operator's ownership; the socket directory mounts in
+# the pūlama and the vessel alone, the state directory in the pūlama alone. Unset, the vessel holds custody itself.
+PULAMA_MODE=""
+if [ "$(value_of LARES_PULAMA)" = 1 ]; then
+  PULAMA_MODE=yes
+  HOUSE_CLASSES="$HOUSE_CLASSES pulama/socket pulama/state"
+  export LAR_PULAMA_SOCKET=/pulama/socket/pulama.sock
+fi
+PULAMA_MAIN="packages/lararium-node/dist/src/pulama-main.js"
 # THE ENV FILE RESTS OUTSIDE EVERY BIND: inside one, the container would read (and a reset could clear) the file that
 # names its own mounts.
 env_real=$(realpath -m -- "$ENV_FILE")
@@ -432,6 +443,21 @@ up_with_workspaces() {
   return "$ws_rc"
 }
 
+# The pūlama stands before any vessel: up with --no-recreate leaves a lit one lit. Then the host reports the image digest
+# the vessel will raise, since a vessel never vouches for its own face.
+stand_pulama() {
+  [ -n "$PULAMA_MODE" ] || return 0
+  compose --profile pulama up -d --no-recreate pulama || die "the pūlama did not stand; nothing raised"
+  image=$(value_of LARES_IMAGE); [ -n "$image" ] || image=lares-surface:local
+  digest=$(docker image inspect --format '{{.Id}}' "$image") || die "cannot read the vessel image's digest ($image); nothing raised"
+  compose --profile pulama exec -T pulama node "$PULAMA_MAIN" image "$digest" || die "the pūlama refused the image digest $digest; nothing raised"
+}
+pulama_running() {
+  [ -n "$PULAMA_MODE" ] || return 1
+  p_id=$(compose --profile pulama ps -q --status running pulama) || return 1
+  [ -n "$p_id" ]
+}
+
 case "$verb" in
   up)
     ensure_house
@@ -471,6 +497,7 @@ case "$verb" in
       for pair in $configured; do IFS=$old_ifs; [ -z "$pair" ] || workspace_bind "$pair"; IFS=';'; done
       IFS=$old_ifs
     fi
+    stand_pulama
     if [ -n "$files" ]; then
       override=$(mktemp)
       printf 'services:\n  lares:\n    volumes:%s\n' "$files" > "$override"
@@ -496,7 +523,23 @@ case "$verb" in
     elif [ -n "$down_id" ]; then
       census_before_stop
     fi
-    compose down --remove-orphans "$@" ;;
+    if pulama_running; then
+      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops and leaves.
+      compose stop lares && compose rm -f lares
+    else
+      compose down --remove-orphans "$@"
+    fi ;;
+  pulama)
+    [ -n "$PULAMA_MODE" ] || die "pulama needs LARES_PULAMA=1 in the environment or $ENV_FILE"
+    case "${1:-}" in
+      up) ensure_house; compose --profile pulama up -d --no-recreate pulama ;;
+      down) compose --profile pulama stop pulama ;;
+      light|lock|status|tessera)
+        # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.
+        # shellcheck disable=SC2046
+        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" "$1" ;;
+      *) die "pulama takes up, down, light, lock, status or tessera" ;;
+    esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"
     if running_vessel; then die "reset refuses while the lares vessel stands; run tools/lares-container.sh down first"; fi
@@ -557,7 +600,7 @@ case "$verb" in
         else
           # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints
           # the standing. Option-bearing forms go to the CLI, which owns their validation and execution.
-          if ! running_vessel; then ensure_house; compose up -d --wait lares; warn_image_revision; unlock_or_name
+          if ! running_vessel; then ensure_house; stand_pulama; compose up -d --wait lares; warn_image_revision; unlock_or_name
           elif ! observe_standing || ! verdict_known; then die "the standing vessel answered no verdict"
           elif verdict_restand; then lift_vessel
           else printf '%s\n' "$observe_output"; fi

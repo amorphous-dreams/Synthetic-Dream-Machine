@@ -45,6 +45,15 @@ function ValueOf([string]$name) {
 $House = ValueOf 'LARES_HOUSE'
 if (-not [System.IO.Path]::IsPathRooted($House)) { Die "LARES_HOUSE ($House) reads relative — name the host house root by an absolute path" }
 $HouseClasses = @('hearth', 'sensoriums', 'projections', 'library', 'config')
+# THE PŪLAMA (road L47e): with LARES_PULAMA=1 the house's custody holder stands in its own container beside the vessel,
+# lit once by the operator's own hand (`pulama light`), outliving every vessel restart. Its socket and private state rest
+# under LARES_HOUSE/pulama, so they keep the operator's ownership.
+$PulamaMode = (ValueOf 'LARES_PULAMA') -eq '1'
+if ($PulamaMode) {
+  $HouseClasses += @('pulama/socket', 'pulama/state')
+  [Environment]::SetEnvironmentVariable('LAR_PULAMA_SOCKET', '/pulama/socket/pulama.sock')
+}
+$PulamaMain = 'packages/lararium-node/dist/src/pulama-main.js'
 # THE ENV FILE RESTS OUTSIDE EVERY BIND.
 $envFull = [System.IO.Path]::GetFullPath($EnvFile)
 foreach ($class in $HouseClasses) {
@@ -391,6 +400,25 @@ function WorkspaceBind([string]$pair) {
   return "      - type: bind`n        source: '$yamlDir'`n        target: /lar/workspaces/$name"
 }
 
+# The pūlama stands before any vessel (--no-recreate leaves a lit one lit), then the host reports the image digest the
+# vessel will raise: a vessel never vouches for its own face.
+function StandPulama {
+  if (-not $PulamaMode) { return }
+  & docker compose @Base --profile pulama up -d --no-recreate pulama
+  if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand; nothing raised' }
+  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+  $digest = (& docker image inspect --format '{{.Id}}' $image) -join ''
+  if ($LASTEXITCODE -ne 0) { Die "cannot read the vessel image's digest ($image); nothing raised" }
+  & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $digest
+  if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image digest $digest; nothing raised" }
+}
+function PulamaRunning {
+  if (-not $PulamaMode) { return $false }
+  $id = & docker compose @Base --profile pulama ps -q --status running pulama
+  if ($LASTEXITCODE -ne 0) { return $false }
+  return -not [string]::IsNullOrWhiteSpace(($id -join ''))
+}
+
 switch ($verb) {
   'up' {
     EnsureHouse
@@ -418,6 +446,7 @@ switch ($verb) {
       $i += 2
     }
     foreach ($pair in ((ValueOf 'LARES_WORKSPACES') -split ';')) { if ($pair) { $binds += WorkspaceBind $pair } }
+    StandPulama
     if ($binds.Count -gt 0) {
       $override = [IO.Path]::GetTempFileName()
       try {
@@ -441,7 +470,20 @@ switch ($verb) {
       [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
       OfferAcceptLoss
     } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { CensusBeforeStop }
-    Compose (@('down', '--remove-orphans') + $rest)
+    if (PulamaRunning) {
+      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops and leaves.
+      Compose @('stop', 'lares'); Compose @('rm', '-f', 'lares')
+    } else { Compose (@('down', '--remove-orphans') + $rest) }
+  }
+  'pulama' {
+    if (-not $PulamaMode) { Die "pulama needs LARES_PULAMA=1 in the environment or $EnvFile" }
+    $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
+    switch ($sub) {
+      'up' { EnsureHouse; Compose @('--profile', 'pulama', 'up', '-d', '--no-recreate', 'pulama') }
+      'down' { Compose @('--profile', 'pulama', 'stop', 'pulama') }
+      { $_ -in @('light', 'lock', 'status', 'tessera') } { Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
+      default { Die 'pulama takes up, down, light, lock, status or tessera' }
+    }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
   'build' {
@@ -463,7 +505,7 @@ switch ($verb) {
     $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
     if ($sub -eq 'stand' -and -not $observing -and $rest.Count -eq 1) {
       # The no-argument acting stand belongs to the host: it stands, restarts on a `restand` verdict, or prints the standing.
-      if (-not (HasRunningVessel)) { EnsureHouse; Compose @('up', '-d', '--wait', 'lares'); WarnImageRevision; UnlockOrName }
+      if (-not (HasRunningVessel)) { EnsureHouse; StandPulama; Compose @('up', '-d', '--wait', 'lares'); WarnImageRevision; UnlockOrName }
       else {
         $answer = ObserveStanding
         if ($script:ObserveFailed -or (VerdictAct $answer) -eq '') { Die 'the standing vessel answered no verdict' }
