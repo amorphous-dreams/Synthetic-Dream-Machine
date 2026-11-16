@@ -412,6 +412,21 @@ describe("the carry verbs", () => {
     expect(readFileSync(join(root, "projections/wikis/field-notes/recovery/half.tid"), "utf8")).toBe(tid("half", "a draft"));
   });
 
+  test("carry-keeps-a-free-titled-record — a record whose title owns no lar: address carries under the title its own file states", async () => {
+    put(`projections/wikis/daemon-${F1}/plain note.tid`, tid("plain note", "a free note"));
+    // CONTROL: a file whose own title names a lar: address its siting does not derive stays skipped, never re-addressed.
+    put(`projections/wikis/daemon-${F1}/stray.tid`, tid("lar:///ha.ka.ba/notes/elsewhere", "misplaced"));
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
+    expect(manifest.rows.find((r) => r.path === "faces/f0/working/plain note.tid")?.title).toBe("plain note");
+    expect(manifest.rows.find((r) => r.path === "faces/f0/working/stray.tid")?.title).toBeNull();
+    const after = refound();
+    const result = await carryImport(out, { apply: true, doors: after.doors() });
+    expect(after.records.get("plain note")).toBe(tid("plain note", "a free note"));
+    expect(after.records.get(MEMORY)).toBe(tid(MEMORY, "remember the heron"));
+    expect(result.skipped.map((s) => s.slice(s.lastIndexOf("/") + 1))).toEqual(["stray.tid"]);
+    expect(after.records.has("lar:///ha.ka.ba/notes/elsewhere")).toBe(false);
+  });
+
   test("C12 — the manifest lists the library's collections by index digest; no original enters the bundle", async () => {
     put("library/books/index.mem", "the books index\n");
     put("library/books/abc123/moby-dick.txt", "Call me Ishmael.");

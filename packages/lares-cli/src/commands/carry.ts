@@ -47,11 +47,11 @@
  */
 import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, readdirSync, realpathSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import { randomBytes } from "node:crypto";
-import { basename, dirname, join, relative, resolve, sep } from "node:path";
+import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
 import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf, parseShareFile, serializeShareFile, type ShareRow } from "@lararium/mesh";
 import {
-  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, SyncedTree, TEMP_LAYER_DIR,
+  larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, PERSONAL_PROJECTION_DIR, daemonBagsDir,
   listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier,
 } from "@lararium/node";
@@ -123,6 +123,22 @@ export const FACE_LAYER_WAITS = /\bface-unresolved\b|\bdocument-unavailable\b/;
  *  never blocks the faces that stand open (THE LIT SET: one seed lays every open face, each in its own layer). */
 export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "seed" | "import"): string {
   return `${face.petname ?? `h${face.handleIndex}`} stays shut: \`lares vault unlock --face ${face.handleIndex}\`, then ${verb} again`;
+}
+
+/**
+ * THE NAME A CARRIED FILE TRAVELS UNDER: the `lar:` address its mirror path sites (`mirrorDirFileToUri`), else, for a FOREIGN
+ * title (one that owns no uri-path, which the projector sites at TiddlyWiki's flattened default: `plain note.tid`), the title
+ * its own native form states (`projectedFileTitle`: a `.tid` field block, a `.json` record, a content file's `.meta`). A
+ * self-title inside the `lar:` family never stands in for a siting that derives none, so a misplaced carrier stays skipped by
+ * name and never re-addresses itself; a kāpae shadow and a `.meta` sidecar name no record of their own.
+ */
+export function carriedFileTitle(mirrorDir: string, file: string): string | null {
+  const uri = mirrorDirFileToUri(mirrorDir, file);
+  if (uri !== null) return uri;
+  const ext = extname(file);
+  if (ext === "" || ext === ".meta" || ext === KAPAE_EXT) return null;
+  const title = projectedFileTitle(file, ext, existsSync(`${file}.meta`));
+  return typeof title === "string" && title !== "" && !title.startsWith("lar:") ? title : null;
 }
 
 /** A view-state carrier of a `personal` layer (a `$:/` title: the story list, a fold state): it never travels and never adopts. */
@@ -478,7 +494,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
           const read = readKapaeShadow(readFileSync(abs, "utf8"));
           return { face: pet, bag: wikiSlotUri("daemon", "working"), layer: "kapae", title: "title" in read ? read.title : null, rowKey: null };
         }
-        return withBase({ face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, faceBases);
+        return withBase({ face: pet, bag: wikiSlotUri("daemon", "working"), layer: "working", title: carriedFileTitle(wikisDir, abs), rowKey: null }, faceBases);
       }, [TEMP_LAYER_DIR, "recovery"]);
       addTree(join(src, "recovery"), `faces/${fk}/drafts`, () => ({ face: pet, bag: wikiSlotUri("daemon", "draft"), layer: "draft", title: null, rowKey: null }));
       if (consented.has("daemon")) {
@@ -500,7 +516,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       });
     }
     const wikiBases = await baseFor(wikiSlotUri(name, "working"));
-    addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
+    addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
   // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside its canon source: the same one row set, from that folder.
   const canonWikis = doors.canonWikis?.() ?? null;
@@ -508,7 +524,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     for (const name of folders(canonWikis)) {
       if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name)) continue;
       const wikiBases = await baseFor(wikiSlotUri(name, "working"));
-      addTree(join(canonWikis, name), `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: mirrorDirFileToUri(canonWikis, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
+      addTree(join(canonWikis, name), `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(canonWikis, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
     }
   }
   // EACH FACE'S PERSONAL LAYER OF A WIKI (`personal/<F>/<slug>`): a face-private document, so it travels for its one face. A
@@ -524,7 +540,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
         if (isStray(rel)) { strays++; continue; }
         if (isViewState(rel)) continue;
         const abs = join(own, slug, ...rel.split("/"));
-        plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: f.petname!, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: mirrorDirFileToUri(own, abs), rowKey: null } });
+        plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: f.petname!, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: carriedFileTitle(own, abs), rowKey: null } });
       }
     }
   }
@@ -534,7 +550,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       const face = faceFolderOf(name);
       if (face === null) continue;
       const fk = keyOf.get(face.handleIndex)!;
-      addTree(src, `faces/${fk}/canon`, (_rel, abs) => ({ face: face.petname!, bag: daemonFaceCanonBag(face.relation!), layer: "daemon-canon", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
+      addTree(src, `faces/${fk}/canon`, (_rel, abs) => ({ face: face.petname!, bag: daemonFaceCanonBag(face.relation!), layer: "daemon-canon", title: carriedFileTitle(bagsDir, abs), rowKey: null }));
       continue;
     }
     if (isKahuaFaceFolder(name)) {
@@ -549,7 +565,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       continue;
     }
     if (isPrivateProjectionSlug(name)) continue;
-    addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: mirrorDirFileToUri(bagsDir, abs), rowKey: null }));
+    addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: carriedFileTitle(bagsDir, abs), rowKey: null }));
   }
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
   const cold = doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : [];
@@ -862,7 +878,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
   const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
     if (files.length === 0) return;
-    const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => mirrorDirFileToUri(uriDir, file));
+    const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => carriedFileTitle(uriDir, file));
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
@@ -881,7 +897,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const held = new Map<string, boolean>();
     for (const f of files) {
       const from = join(bundle.root, ...f.split("/"));
-      const uri = mirrorDirFileToUri(uriDir, from.endsWith(".meta") ? from.slice(0, -5) : from);
+      const uri = carriedFileTitle(uriDir, from.endsWith(".meta") ? from.slice(0, -5) : from);
       if (!uri || !wanted.has(uri)) continue;
       const to = join(mirrorDir, relative(sourceDir, from));
       const bytes = readFileSync(from);
