@@ -159,18 +159,28 @@ export function treeDigest(root) {
 
 // ── the terminal answers ────────────────────────────────────────────────────────────────────────────────────────────
 
-/** A new face's route, as `custody-prompt.ts` asks it on a terminal (the probe pins the words it met). */
+/**
+ * A new face's route, in the words the old image asked on a terminal (measured 2026-11-16, the probe to `persona-1`):
+ * "Face h1 takes a route of its own, apart from this vessel's. …", then the menu, the passphrase and its confirm. No ward
+ * prompt and no "same typed route" question follow on a standing vessel.
+ */
 export const PERSONA_SAYS = Object.freeze([
-  { prompt: "(p): ", answer: "p" },
+  { prompt: "bind [p]assphrase, [s]heet (paper pin), [b]oth (p): ", answer: "p" },
   { prompt: "new passphrase: ", answer: TEST_PASSPHRASE },
   { prompt: "new passphrase (confirm): ", answer: TEST_PASSPHRASE },
 ]);
 /** Every answer list the leg types. `down` types none: a `down` that asks for accept-loss fails the step. */
 export const CARRY_SAYS = Object.freeze({ unlock: UNLOCK_SAYS, ward: WARD_SAYS, persona: PERSONA_SAYS, import: Object.freeze([...WARD_SAYS, ...WARD_SAYS, ...WARD_SAYS]), down: Object.freeze([]) });
 
-/** The prompt lines a terminal showed, the route redacted: what the probe records. */
+/** The prompts a terminal showed, the route redacted: each span that ends in a prompt mark (`(p): `, `[y/N]: `, `passphrase: `, `(confirm): `, `?`). */
+const PROMPT_END = /(\(p\)|\[y\/N\]|\[y\/n\]|passphrase|\(confirm\)|digest)(:)(?=\s|$)|\?(?=\s*$)/;
 export function promptsOf(transcript) {
-  return String(transcript).replace(/\r/g, "\n").split("\n").map((l) => l.trim()).filter((l) => /(: |\?|\]:)$/.test(`${l} `.replace(/\s+$/, " ")) || /[:?]$/.test(l)).filter(Boolean).slice(0, 40);
+  const out = [];
+  for (const line of String(transcript).replace(/\r/g, "\n").split("\n")) {
+    const m = PROMPT_END.exec(line);
+    if (m) out.push(line.slice(0, m.index + m[0].length).trim());
+  }
+  return out.slice(0, 40);
 }
 
 // ── the acts ────────────────────────────────────────────────────────────────────────────────────────────────────────
