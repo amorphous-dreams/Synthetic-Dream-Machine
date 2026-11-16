@@ -142,7 +142,7 @@ Every ACTION writes an ''indelible effect record'' tiddler in each affected bag,
 | Archival verb | Triggers from | What gets recorded |
 |---|---|---|
 | ''accession'' | `ADD` / `COPY` (dest) / live-source `MOVE` (dest) | tiddler entered this bag at time T, by actor A, source bag B, reason R |
-| ''deaccession'' | `CLEAR` / `DROP` / `MOVE` (dest and source for a tombstone source; source for a live source) | tiddler removed from this bag with disposition (transferred / retired / destroyed / deleted-by-move-from / shadowed-by-move-from) |
+| ''deaccession'' | `CLEAR` / `DROP` / `MOVE` (dest and source for a tombstone source; source for a live source) | tiddler removed from this bag with disposition (transferred / bag-retired / destroyed / deleted-by-move-from / shadowed-by-move-from) |
 | ''transfer'' | live-source `MOVE` (cross-reference) | paired accession+deaccession sharing one transfer-id; tombstone-source `MOVE` records two deaccessions and no accession |
 | ''withdrawal'' | per-Item removal | a single replica withdrawn while Work persists in the union catalog (recipe still resolves elsewhere) |
 | ''loan'' | time-bounded ADD with TTL | temporary read residency; auto-reverts at expiry |
@@ -300,6 +300,6 @@ rhymes with this model's thermal residency yet stays distinct (retrieval grain, 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;uIDHk6uESc3EbI_Q0Ul_tvt-eHepAF0TsuGTV2vMcyU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qzmD5qwP_lMlSY57g0zOpI7SJYO_hCTERE3INXuAbGs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -35,7 +35,7 @@ Every wiki island — `lares`-as-wiki, any content wiki, and ''`@daemon` itself'
 
 !! The Life-Support Asymmetry
 
-The field went to full uniformity and came back (kubeadm self-hosting deprecated and removed — a self-hosted control plane could not survive a reboot; bootkube retired; Talos's public reversal). The stable attractor, adopted here as law:
+The field went to full uniformity and came back (kubeadm self-hosting deprecated and removed — a self-hosted control plane could not survive a reboot; bootkube archived; Talos's public reversal). The stable attractor, adopted here as law:
 
 ''Isomorphism of form, interface, and grants; asymmetry of life support.''
 
@@ -92,6 +92,6 @@ re-entry: the kue key; or the migration's step 4 boundary, where the residue get
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;J_QwgkJTCq8oO5ZnEjs-9SS7akxCJAHMkupx9M33r4c`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;rgwnEeL7pEnBzkqB95atNQDS3fmeIumjncyWjzgy5sY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
