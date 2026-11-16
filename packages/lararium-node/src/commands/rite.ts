@@ -1,7 +1,7 @@
 /**
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
- * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree out of the checkout's object store (`gitTreeOf`, no git binary), returns the
+ * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` reads its bundle id, `riteTreeOf`), returns the
  * rite's lei at that head (the testimony, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
  * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in; `offer` gathers what a
@@ -22,7 +22,7 @@
 import type { Repo } from "@automerge/automerge-repo";
 import {
   SwarmRefused, beginRite, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
-  type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
+  type SwarmLeiRite, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
@@ -42,6 +42,19 @@ export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
  * nothing rather than rest on a tree nobody derived.
  */
 export const gitTreeOf = (head: string, checkouts: readonly string[] = RITE_CHECKOUTS): Promise<string> => treeOfHead(head, checkouts);
+
+/**
+ * THE TREE A RITE'S RETURN RESTS ON. A rite over the checkout (`push`, `kukulu`) reads its tree off the head through git. A
+ * `keep` runs over no checkout: its head names a carry bundle by its id (the sha-256 over the bundle's sorted file list), and
+ * a content name already names its tree, so the id stands as both. A keep head that spells no bundle id refuses
+ * `rite-tree-unreadable`. The receipt a keep returns under rests at that id, handed in by the seat that cut the bundle and read
+ * every byte back (`rite-receipt`): this vessel signs what it heard, as it does for every receipt.
+ */
+export async function riteTreeOf(rite: SwarmLeiRite, head: string, gitTree: (head: string) => Promise<string> = gitTreeOf): Promise<string> {
+  if (rite !== "keep") return gitTree(head);
+  if (!/^[0-9a-f]{64}$/.test(head)) throw new SwarmRefused("rite-tree-unreadable", `a keep's head names a carry bundle by its id (64 hex), and ${JSON.stringify(head.slice(0, 80))} spells none`);
+  return head;
+}
 
 export async function runRiteVerb(opts: {
   repo: Repo; catalogUrl?: string; face?: number; action: RiteAction;
@@ -85,7 +98,7 @@ export async function runRiteVerb(opts: {
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");
   // The caller names the head; this vessel derives the tree, so a return never rests on a tree its spender chose.
-  const tree = await (opts.treeOf ?? gitTreeOf)(str("head"));
+  const tree = await riteTreeOf(rite, str("head"), opts.treeOf ?? gitTreeOf);
   let ward;
   try { ward = cosignPortWitness(await nodeWardCosignPortOf(opts.repo, loaded)); }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", e.message); throw e; }
