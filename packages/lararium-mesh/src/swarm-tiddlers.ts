@@ -17,7 +17,7 @@
  *   roster/<seat>              a seat's spend reading, signed by the VESSEL as witness, never by the measured lead
  *                              A lei's REACH: a `wide` lei (the default) names no head and carries `returns`, the count of spends
  *                              the hand wrote into it; a `head` lei pins one head and spends once. Every spend names the head's
- *                              tree and needs a passing receipt standing for it (`swarm-lei-evidence-absent`).
+ *                              tree and needs a passing receipt standing for it (`swarm-lei-testimony-absent`).
  *   lei-returned/<lei cid>/<n>      one spend of a lei, the vessel's witness: `n` counts from 1 to the lei's returns, each row claimed
  *                              atomically; any row under `lei-returned/<lei cid>/` counts against the lei, signed or not
  *   lei-narrowed/<lei cid>       a wide lei met a red receipt: the vessel's witness; any row here ends the lei's wide reach
@@ -136,7 +136,7 @@ export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}r
 export const swarmRecordFields = (text: string): Record<string, string> => ({ text });
 
 /**
- * A lei's reach, and what each reach binds. `wide` (the default): the lei names no head; it names its evidence instead, and
+ * A lei's reach, and what each reach binds. `wide` (the default): the lei names no head; it names its testimony instead, and
  * `returns` holds the count of spends the hand wrote into it. `head`: the lei pins one head and spends once.
  */
 export type SwarmLeiReach = "wide" | "head";
@@ -293,7 +293,7 @@ export async function readLeiChain(wiki: SwarmWikiPort, line: SwarmLeiLine, trus
  * branch (`readLeiChain`). A HEAD lei stands for the head it names alone (`head-mismatch`) and for one return (`returned`). A WIDE lei
  * stands for any head while returns stay (`returns-spent` once the rows under its return prefix reach its count) and until a
  * narrowing rests for it (`narrowed`). A lei the hand unstrung stands for nothing (`unstrung`). A newer lei on the chain replaces the tip, so a fresh lei restrings a returned or narrowed
- * line. Two tips read as a fork (`forked`) and neither stands until a fresh lei names one. Evidence belongs to the spend
+ * line. Two tips read as a fork (`forked`) and neither stands until a fresh lei names one. Testimony belongs to the spend
  * (`returnLei`): this read names the lei, never the receipt.
  * On a face of two devices a lei the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
@@ -320,12 +320,12 @@ export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly
 /**
  * Spend a lei of the named rite at one head. The spend names the lei by its cid, which binds the rite and the reach.
  *
- * THE EVIDENCE: the spender names the head's `tree`, and a passing `receipt/<tree>` the vessel signed must stand for it, else the
- * spend refuses `swarm-lei-evidence-absent` and claims nothing. This core reads no repository, so THE SPENDER DERIVES THE TREE
+ * THE TESTIMONY: the spender names the head's `tree`, and a passing `receipt/<tree>` the vessel signed must stand for it, else the
+ * spend refuses `swarm-lei-testimony-absent` and claims nothing. This core reads no repository, so THE SPENDER DERIVES THE TREE
  * (the vessel reads it off the head) and the spend record carries head and tree together under the vessel's signature: the
  * vessel testifies the pairing, and a reader holds the record to it.
  *
- * A RED NARROWS: a receipt standing `fail` for the tree refuses `swarm-lei-evidence-red`. For a wide lei the vessel first rests a
+ * A RED NARROWS: a receipt standing `fail` for the tree refuses `swarm-lei-testimony-red`. For a wide lei the vessel first rests a
  * signed narrowing at `lei-narrowed/<lei cid>`, and from then the lei spends nothing (`swarm-lei-narrowed`): the line reads
  * head-only until a fresh lei follows it (a head lei pins one head; a wide lei restrings the reach). A head lei already reads
  * narrow, so its red writes nothing.
@@ -339,7 +339,7 @@ export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
   const lei = await readLei(wiki, at, trust, group, ward);
   if (!lei.ok) throw new SwarmRefused(`swarm-lei-${lei.refusal}`, `the ${at.rite} lei for "${at.branch}" at ${at.head} does not stand (${lei.refusal})`);
   if (!trust.vessel(spender.key.toLowerCase())) throw new SwarmRefused("swarm-return-role", "the vessel alone spends a lei");
-  const absent = (): never => { throw new SwarmRefused("swarm-lei-evidence-absent", `no passing receipt stands for the tree of ${at.head}; a spend names the head's tree and rests on its receipt`); };
+  const absent = (): never => { throw new SwarmRefused("swarm-lei-testimony-absent", `no passing receipt stands for the tree of ${at.head}; a spend names the head's tree and rests on its receipt`); };
   if (!str(at.tree)) absent();
   const receiptTitle = swarmReceiptTitle(at.tree);
   const receipt = verifySwarmRecord(await wiki.read(receiptTitle), receiptTitle, trust, group);
@@ -350,7 +350,7 @@ export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
       // The first red rests; a second one finds the lei narrowed already.
       await wiki.writeNew(swarmLeiNarrowedTitle(lei.cid), JSON.stringify(narrowed));
     }
-    throw new SwarmRefused("swarm-lei-evidence-red", `the receipt for the tree of ${at.head} reads fail${lei.reach === "wide" ? "; the lei narrows to head-only until a fresh lei follows it" : ""}`);
+    throw new SwarmRefused("swarm-lei-testimony-red", `the receipt for the tree of ${at.head} reads fail${lei.reach === "wide" ? "; the lei narrows to head-only until a fresh lei follows it" : ""}`);
   }
   const returns = lei.reach === "wide" ? (lei.act.body as Extract<SwarmLeiBody, { reach: "wide" }>).returns : 1;
   for (let n = 1; n <= returns; n++) {

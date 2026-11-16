@@ -38,7 +38,7 @@ async function fixture() {
 }
 
 describe("rite-refuses-without-lei", () => {
-  test("RED: with no kukulu lei standing a rite begins nothing: no return, no half; a push lei at the same branch grants no kukulu; CONTROL: a kukulu lei with its evidence begins the rite", async () => {
+  test("RED: with no kukulu lei standing a rite begins nothing: no return, no half; a push lei at the same branch grants no kukulu; CONTROL: a kukulu lei with its testimony begins the rite", async () => {
     const f = await fixture();
     await f.receipt();
     await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-absent" });
@@ -54,7 +54,7 @@ describe("rite-refuses-without-lei", () => {
   test("RED: a lei with no passing receipt for the head's tree, a lei pinned to another head, and a spender that holds no vessel role each begin nothing; CONTROL: no half rests after any of them", async () => {
     const f = await fixture();
     await f.kui("kukulu", { reach: "head", head: HEAD });
-    await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await f.receipt();
     await expect(f.begin(HEAD2)).rejects.toMatchObject({ code: "swarm-lei-head-mismatch" });
     await expect(f.begin(HEAD, f.outsider)).rejects.toMatchObject({ code: "swarm-return-role" });

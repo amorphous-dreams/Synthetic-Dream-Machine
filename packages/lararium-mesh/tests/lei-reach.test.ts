@@ -49,16 +49,16 @@ async function fixture() {
   return { hand, vessel, outsider, trust, wiki, wide, pinned, receipt, spend, read, spendRows, rest };
 }
 
-describe("lei-wide-needs-evidence", () => {
+describe("lei-wide-needs-testimony", () => {
   test("RED: a wide lei spends nothing with no receipt standing for the head's tree, one for another tree, or one the vessel never signed; CONTROL: a passing receipt lets it spend, at any head", async () => {
     const f = await fixture();
     const cid = await f.wide(3);
-    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await f.receipt(TREE2, "pass");
-    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await f.receipt(TREE, "pass", f.outsider);
-    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
-    // A spend that lacked its evidence claimed no return and narrowed nothing.
+    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
+    // A spend that lacked its testimony claimed no return and narrowed nothing.
     expect(f.spendRows(cid)).toEqual([]);
     expect(f.wiki.rows.has(swarmLeiNarrowedTitle(cid))).toBe(false);
     await f.receipt(TREE, "pass");
@@ -103,7 +103,7 @@ describe("lei-red-narrows-to-head", () => {
     await f.receipt(TREE, "pass");
     await expect(f.spend(HEAD, TREE)).resolves.toMatchObject({ n: 1 });
     await f.receipt(TREE2, "fail");
-    await expect(f.spend(HEAD2, TREE2)).rejects.toMatchObject({ code: "swarm-lei-evidence-red" });
+    await expect(f.spend(HEAD2, TREE2)).rejects.toMatchObject({ code: "swarm-lei-testimony-red" });
     const narrowed = await readSwarmRecord(f.wiki, swarmLeiNarrowedTitle(cid), f.trust, GROUP);
     expect(narrowed).toMatchObject({ ok: true, act: { signer: f.vessel.key, body: { act: "lei-narrowed", lei: cid, head: HEAD2, tree: TREE2 } } });
     // The red claimed no return.
@@ -118,7 +118,7 @@ describe("lei-red-narrows-to-head", () => {
     const f = await fixture();
     const cid = await f.wide(5);
     await f.receipt(TREE, "fail");
-    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-red" });
+    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-red" });
     const pin = await f.pinned(HEAD2, { after: cid });
     await f.receipt(TREE2, "pass");
     await expect(f.spend(HEAD, TREE2)).rejects.toMatchObject({ code: "swarm-lei-head-mismatch" });
@@ -139,7 +139,7 @@ describe("lei-red-narrows-to-head", () => {
     const g = await fixture();
     const pin = await g.pinned(HEAD);
     await g.receipt(TREE, "fail");
-    await expect(g.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-red" });
+    await expect(g.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-red" });
     expect(g.wiki.rows.has(swarmLeiNarrowedTitle(pin))).toBe(false);
     await g.receipt(TREE, "pass");
     await expect(g.spend(HEAD, TREE)).resolves.toEqual({ lei: pin, reach: "head", n: 1 });
@@ -150,7 +150,7 @@ describe("lei-count-runs-out", () => {
   test("RED: a wide lei of two returns spends twice and refuses the third `swarm-lei-returns-spent`; CONTROL: each spend rests at its own counted row, and a refused spend claims none", async () => {
     const f = await fixture();
     const cid = await f.wide(2);
-    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await f.receipt(TREE, "pass");
     expect(await f.read(HEAD)).toMatchObject({ ok: true, cid, reach: "wide", returnsLeft: 2 });
     await expect(f.spend(HEAD, TREE)).resolves.toMatchObject({ n: 1 });
@@ -177,10 +177,10 @@ describe("lei-count-runs-out", () => {
 });
 
 describe("a head lei stays the narrow form", () => {
-  test("CONTROL: a head lei spends once at its head with evidence; RED: with none it refuses `swarm-lei-evidence-absent`, at another head `swarm-lei-head-mismatch`, and a second time `swarm-lei-returned`", async () => {
+  test("CONTROL: a head lei spends once at its head with testimony; RED: with none it refuses `swarm-lei-testimony-absent`, at another head `swarm-lei-head-mismatch`, and a second time `swarm-lei-returned`", async () => {
     const f = await fixture();
     const cid = await f.pinned(HEAD);
-    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(f.spend(HEAD, TREE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await f.receipt(TREE, "pass"); await f.receipt(TREE2, "pass");
     await expect(f.spend(HEAD2, TREE2)).rejects.toMatchObject({ code: "swarm-lei-head-mismatch" });
     expect(await f.read(HEAD)).toMatchObject({ ok: true, cid, reach: "head", returnsLeft: 1 });
@@ -192,7 +192,7 @@ describe("a head lei stays the narrow form", () => {
   test("RED: a spend that names no tree refuses before it reads a receipt", async () => {
     const f = await fixture();
     await f.wide(2);
-    await expect(returnLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD } as never, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(returnLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD } as never, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
   });
 });
 

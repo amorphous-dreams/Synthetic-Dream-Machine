@@ -24,7 +24,7 @@
  *   `kukulu-image-mismatch`     the vouch walked another image than the one the host raises
  *   the lei family's own readings (`KukuluRitePort.begin`): `swarm-lei-absent` (no lei of this face's hand stands for the
  *   vouch's branch), `swarm-lei-head-mismatch` (a lei that pins a head pins another than the vouch's), `swarm-lei-returned` ·
- *   `swarm-lei-returns-spent`, `swarm-lei-unstrung`, `swarm-lei-narrowed`, `swarm-lei-forked`, `swarm-lei-evidence-red` (the
+ *   `swarm-lei-returns-spent`, `swarm-lei-unstrung`, `swarm-lei-narrowed`, `swarm-lei-forked`, `swarm-lei-testimony-red` (the
  *   vouch's walk did not pass; a wide lei narrows), `rite-begun-stands`
  *
  * ── THE RETURN CLAIMS BEFORE ANYTHING SERVES ────────────────────────────────────────────────────
@@ -66,7 +66,7 @@ export interface KukuluRiteAt {
 export interface KukuluRitePort {
   /**
    * Begin the rite over what the vessel offered: the offered lei rows land where they verify as the hand's, the vouch stands
-   * as the return's evidence (`vouch`: its digest; `verdict`: its walk's), the lei returns once, and the guest half rests.
+   * as the return's testimony (`vouch`: its digest; `verdict`: its walk's), the lei returns once, and the guest half rests.
    * Answers the tessera, or the family's own refusal reading.
    */
   begin(offer: { readonly lei?: unknown; readonly unstrung?: unknown }, at: KukuluRiteAt & { readonly vouch: string; readonly verdict: "pass" | "fail" }):

@@ -62,7 +62,7 @@ describe("kukulu-returns-with-a-passing-receipt", () => {
   test("RED: a kukulu rite that found no receipt begins nothing, and the same rite begins once the door rests a passing one; CONTROL: the lei's return and the guest half both rest", async () => {
     const f = await fixture();
     const cid = await f.kui({ reach: "wide", returns: 2 });
-    await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-evidence-absent" });
+    await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-testimony-absent" });
     await f.receipt("pass");
     const begun = await f.begin();
     expect(begun).toMatchObject({ lei: cid, n: 1, rite: "kukulu" });
@@ -71,11 +71,11 @@ describe("kukulu-returns-with-a-passing-receipt", () => {
 });
 
 describe("kukulu-refuses-a-failing-receipt", () => {
-  test("RED: a kukulu rite over a failing receipt refuses `swarm-lei-evidence-red`, rests no half, and narrows the wide lei; CONTROL: a passing receipt rested after leaves that lei narrowed, and a fresh lei begins the rite", async () => {
+  test("RED: a kukulu rite over a failing receipt refuses `swarm-lei-testimony-red`, rests no half, and narrows the wide lei; CONTROL: a passing receipt rested after leaves that lei narrowed, and a fresh lei begins the rite", async () => {
     const f = await fixture();
     const cid = await f.kui({ reach: "wide", returns: 2 });
     await f.receipt("fail");
-    await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-evidence-red" });
+    await expect(f.begin()).rejects.toMatchObject({ code: "swarm-lei-testimony-red" });
     expect(f.halves()).toEqual([]);
     expect(f.rows.has(swarmLeiNarrowedTitle(cid))).toBe(true);
     await f.receipt("pass");

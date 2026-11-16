@@ -158,7 +158,7 @@ describe("RED pulama-refuses-an-unvouched-kukulu", () => {
   test("a red walk refuses and narrows a wide lei; CONTROL: a fresh lei restrings the line and a passing vouch then serves", async () => {
     const s = await stand();
     const lei = await s.string({ reach: "wide", returns: 3 });
-    expect(await s.hello({ lei, vouch: await s.vouch({ verdict: "fail" }) })).toBe("swarm-lei-evidence-red");
+    expect(await s.hello({ lei, vouch: await s.vouch({ verdict: "fail" }) })).toBe("swarm-lei-testimony-red");
     expect(await s.returns(lei)).toBe(0);
     expect(await s.records.read(swarmLeiNarrowedTitle(swarmActCid(lei)))).not.toBeNull();
     // The narrowed lei spends nothing, even beside a passing vouch.
@@ -180,7 +180,7 @@ describe("each hello returns under its own vouch's verdict", () => {
       const [first, second] = await Promise.all(order.map((verdict) => s.hello({ lei, vouch: vouches[verdict] })));
       const read = { [order[0]]: first, [order[1]]: second } as Record<"fail" | "pass", string>;
       // The red hello meets its own red receipt, or, where the passing one went first, a lei already returned: never a session.
-      expect(read.fail, order.join(" then ")).toBe(order[0] === "fail" ? "swarm-lei-evidence-red" : "swarm-lei-returned");
+      expect(read.fail, order.join(" then ")).toBe(order[0] === "fail" ? "swarm-lei-testimony-red" : "swarm-lei-returned");
       expect(read.pass, order.join(" then ")).toBe("opens");
       expect(await s.returns(lei)).toBe(1);
     }

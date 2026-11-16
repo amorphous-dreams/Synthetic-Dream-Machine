@@ -146,12 +146,12 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     const s = await stand();
     await expect(s.offer()).rejects.toMatchObject({ code: "swarm-lei-absent" });
     await s.string({ reach: "wide", returns: 2 });
-    await expect(s.offer()).rejects.toMatchObject({ code: "rite-offer-evidence-absent" });
+    await expect(s.offer()).rejects.toMatchObject({ code: "rite-offer-testimony-absent" });
     await s.receipt("fail");
     await expect(s.offer("lares-surface:local")).rejects.toMatchObject({ code: "rite-offer-malformed" });
     expect(existsSync(s.path)).toBe(false);
     expect((await s.offer()).verdict).toBe("fail");
-    expect(await s.hello(readKukuluOffer(s.path))).toBe("swarm-lei-evidence-red");
+    expect(await s.hello(readKukuluOffer(s.path))).toBe("swarm-lei-testimony-red");
     expect(consumeKukuluOffer(s.path)).toBe(true);
     expect(consumeKukuluOffer(s.path)).toBe(false);
     expect(consumeKukuluOffer(undefined)).toBe(false);

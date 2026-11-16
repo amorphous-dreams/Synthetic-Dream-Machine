@@ -12,7 +12,7 @@
  *   5. shim up      a new vessel stands
  *   6. rite-land    IN THE NEW VESSEL: rest the host half (`rite-landed`), naming the begun half and the head it stands at
  *
- * THE RITE BEGINS BEFORE THE VESSEL GOES DOWN. A begin the vessel refuses (no lei, no evidence, no return left) runs no shim
+ * THE RITE BEGINS BEFORE THE VESSEL GOES DOWN. A begin the vessel refuses (no lei, no testimony, no return left) runs no shim
  * verb at all. The return comes first by design, so a build that fails leaves the lei's return spent and the begun half
  * waiting: conferre reads it red at the next wake, and the vessel still stands.
  *

@@ -45,7 +45,7 @@ const IMAGE_DIGEST = /^[a-z0-9]+:[0-9a-f]{32,128}$/;
 
 /**
  * Gather the offer for one line and rest it at `path`. Refuses by name, writing nothing: `rite-offer-malformed` (an image
- * that reads as no digest), `swarm-lei-absent` (no kukulu lei rests on the line), `rite-offer-evidence-absent` (no receipt
+ * that reads as no digest), `swarm-lei-absent` (no kukulu lei rests on the line), `rite-offer-testimony-absent` (no receipt
  * stands for the head's tree, so the vouch would carry no verdict).
  */
 export async function writeKukuluOffer(a: {
@@ -68,7 +68,7 @@ export async function writeKukuluOffer(a: {
   }
   const receiptTitle = swarmReceiptTitle(a.tree);
   const receipt = verifySwarmRecord(await a.wiki.read(receiptTitle), receiptTitle, a.trust, a.group);
-  if (!receipt.ok || receipt.act.body.act !== "receipt") throw new SwarmRefused("rite-offer-evidence-absent", `no receipt stands for the tree of ${a.head}; a vouch carries the verdict of the walk it rests on`);
+  if (!receipt.ok || receipt.act.body.act !== "receipt") throw new SwarmRefused("rite-offer-testimony-absent", `no receipt stands for the tree of ${a.head}; a vouch carries the verdict of the walk it rests on`);
   const verdict = receipt.act.body.verdict;
   const vouch = await signKukuluVouch({ group: a.group, branch: a.branch, head: a.head, tree: a.tree, image: a.image, verdict, receipt: receipt.cid }, await vouchSignerOf(a.holder));
   const offer: KukuluOffer = { lei: chain.cosigned.map((row) => row.act), unstrung, vouch };

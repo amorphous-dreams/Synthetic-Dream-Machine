@@ -20,10 +20,10 @@
  * row lands only where the family's own reader verifies it as the hand's record at its own title; a row that verifies as
  * nothing lands nowhere, and the read then finds no lei.
  *
- * ── THE VOUCH STANDS AS THE EVIDENCE ────────────────────────────────────────────────────────────
+ * ── THE VOUCH STANDS AS THE TESTIMONY ───────────────────────────────────────────────────────────
  * A return rests on a receipt for the head's tree. The pūlama verified the vouch, so it rests the receipt itself, as the
  * witness: the vouch's digest as its definitions and the walk's verdict as its own. A red walk therefore reads as the family
- * reads any red: the return refuses `swarm-lei-evidence-red`, and a wide lei narrows. The receipt sits at one title per tree,
+ * reads any red: the return refuses `swarm-lei-testimony-red`, and a wide lei narrows. The receipt sits at one title per tree,
  * so rites begin one at a time here: a hello rests its own vouch's verdict and returns under it before another writes.
  *
  * A `kukulu` lei waits on no co-sign (`leiRiteCosigns`), so the ward witness the family's reader takes decides nothing here.

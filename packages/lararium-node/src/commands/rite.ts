@@ -2,7 +2,7 @@
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
  * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree out of the checkout's object store (`gitTreeOf`, no git binary), returns the
- * rite's lei at that head (the evidence, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
+ * rite's lei at that head (the testimony, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
  * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in; `offer` gathers what a
  * kūkulu carries to the pūlama (the line's lei and this vessel's vouch over the image the host built) and rests it in the
