@@ -1530,7 +1530,7 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
             continue;
           }
           if (decision.kind === "conflict") {
-            // Surface, never overwrite: leave the record untouched and HOLD the old base so
+            // Surface, never overwrite: leave the record untouched and HOLD the standing base so
             // the conflict re-surfaces next scan (never a silent last-write-wins on this member).
             anyConflict = true;
             memberResults.push({ title, decision: "conflict", reason: decision.reason });

@@ -363,7 +363,7 @@ export interface DaemonVmCore {
   sendControlEvent: (ev: LarMsg_ControlEvent) => void;
   /**
    * Ask the daemon's camera to paint itself whole under a fresh mount epoch: a surface switched to it, or
-   * attached late. Acts made under the old epoch answer `stale-target`.
+   * attached late. Acts made under any earlier epoch answer `stale-target`.
    */
   resend: (cameraId: string) => void;
   /**

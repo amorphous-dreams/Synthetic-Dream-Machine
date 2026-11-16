@@ -1522,8 +1522,8 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
     // not hold (`handed`) is the one exception, and its value stands in for the wiki's.
     const state = this.handed.has(title) ? this.handed.get(title)! : this.tw5.$tw.wiki.getTiddler(title) ?? null;
     // A state equal to what the last wave landed, with nothing sent since, owes the store nothing: the hand
-    // returned to the landed value inside its window. A title the store never saw and the wiki no longer
-    // holds raises no tombstone. A state identical to the value already sent owes nothing either.
+    // returned to the landed value inside its window. A title the store never saw and the wiki does not
+    // hold raises no tombstone. A state identical to the value already sent owes nothing either.
     const landed = this.ledger.landedOf(title);
     // The ledger answers only once the seed wave has rebuilt it (a resident shore), and never for a title
     // this shore wrote whose wave has not landed: there the state leaves and the store decides.
@@ -1797,7 +1797,7 @@ export class IslandAdaptor implements MemeProjection, ParallelDraftsReader {
 
   /**
    * Write a saved tiddler to the store as its meme FAMILY: the root, the slot children its body
-   * splits into (Path H auto-split), and the tombstones of the children it no longer declares.
+   * splits into (Path H auto-split), and the tombstones of the children it leaves undeclared.
    *
    * ONE CHANGE. Root and children route to the ONE bag the cascade names, so they share one doc, and
    * the family lands through `writeFamily` as a single atomic change — no peer ever sees a root

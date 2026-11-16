@@ -73,7 +73,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
       throw new Error(`bag has no catalog row: ${bagUrl}`);
     }
 
-    // Open the old doc; enumerate every tiddler, tombstones included.
+    // Open the doc under compaction; enumerate every tiddler, tombstones included.
     const oldHandle = await opts.repo.find<LarDoc>(oldDocUrl as AutomergeUrl);
     await oldHandle.whenReady();
     const oldDoc   = oldHandle.doc();
@@ -120,7 +120,7 @@ export function makeCompactBagReactor(opts: EpochHandlerOptions): VerbReactor {
 
     // Reboot-pending: one bag → many wikis. Scan the catalog registry's recipes for those whose
     // bag-stack includes this bag, and alert each (main skips unmounted ones). The
-    // oracle now points at the new doc, but a live island has the OLD doc mounted.
+    // oracle points at the compacted doc, while a live island holds the doc it compacted mounted.
     const alertedWikis = await alertWikisUsingBag(opts, bagUrl, "bag-compact");
 
     return {

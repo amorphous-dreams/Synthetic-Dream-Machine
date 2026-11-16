@@ -8,9 +8,8 @@
  * match their check. **None of them looks outward.** An edge that resolves to nothing is invisible to
  * all three at once.
  *
- * Measured: retiring one carrier and moving two left 66 references naming addresses that no longer
- * answered, across 28 carriers — found by hand, after the commit. Folding 37 carriers up one level
- * touched 197 references and broke none, because that scan ran BEFORE the move. This is that scan,
+ * A move that runs this scan BEFORE it lands breaks no reference; a move without it leaves references
+ * naming addresses that answer nothing, found only by hand after the commit. This is that scan,
  * made an instrument instead of a habit.
  *
  * ── FIVE SPELLINGS, ONE RELATION ────────────────────────────────────────────────────────────────

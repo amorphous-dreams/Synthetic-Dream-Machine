@@ -114,7 +114,7 @@ function attrsFromGroups(
 function attrOf(tail: string, name: string): string | null {
   // ── THE SPEC WRITES `=`; THE ENGINE READS WHAT THE PARSER READS ──────────────────────────────
   // The memetic-wikitext SPEC locks a CALL to `=` — the separator that also unlocks an indirect
-  // value. The ENGINE keeps back-compat, because TiddlyWiki's own `parseMacroParameterAsAttribute`
+  // value. The ENGINE reads wider, because TiddlyWiki's own `parseMacroParameterAsAttribute`
   // takes `=` or `:` and the parser is canonical here: a reader narrower than it would refuse a
   // sigil the wiki renders.
   //
@@ -364,7 +364,7 @@ export function buildMemeAst(
 
   while (stack.length > 0) {
     const frame = stack.pop()!;
-    // RECOVER: an unclosed frame at EOF — force-close it, but mark recovered + record (never the old
+    // RECOVER: an unclosed frame at EOF — force-close it, but mark recovered + record (never a
     // silent "confidently-incorrect tree"). The sigil MAY self-declare its posture via `recoverAs`:
     // "water" (inert, standing 2) vs the default "repaired" (recovered, standing 9). The structure never breaks.
     const declared = grammar?.sigils.find((s) => s.name === frame.sigilName)?.recoverAs;

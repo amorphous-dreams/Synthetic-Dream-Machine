@@ -93,7 +93,7 @@ function slotTextKeys(rootUri: string, text: string, blocks: readonly AhuBlock[]
 /**
  * NESTED-SLOT-OUTSIDE-PARENT — canon: a nested open carries its WHOLE path from the carrier root, so
  * it must stand a STRICT DESCENDANT of its enclosing open's path. Three shapes fault here, each a
- * tolerance the no-back-compat law forbids a reader from silently resolving:
+ * tolerance a strict reader never silently resolves:
  *   - a RELATIVE form (`#/fern` inside `#/ridge`, meant as `#/ridge/fern`) — unnormalized authoring;
  *   - an address EQUAL to its parent (`#/a` inside `#/a`) — a collision with the parent's own address;
  *   - a DIFFERENT BRANCH entirely (neither equal nor a descendant).

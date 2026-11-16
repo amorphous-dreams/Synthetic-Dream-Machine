@@ -463,7 +463,7 @@ export class VerbDispatcher {
         // The effect index still names a prior requestId, but that attempt's own outcome
         // is GONE (evicted by the CAS sweep's retention window) — the dedup shortcut has
         // nothing to copy from, and a fresh-run fallthrough would silently re-perform an
-        // effect whose prior record a caller can no longer check. Conclude THIS attempt
+        // effect whose prior record a caller cannot check. Conclude THIS attempt
         // as refused; never run the handler.
         console.log(`[verb-dispatcher] effect "${effectKey}" indexes prior request "${priorRequestId}" whose outcome is evicted — refusing (retention-gap), handler not run`);
         await writeOutcome(this.opts.control, {

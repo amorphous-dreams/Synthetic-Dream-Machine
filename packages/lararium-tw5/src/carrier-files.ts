@@ -33,7 +33,7 @@
 import { fencedSpans, maskedExec, type MaskSpan, META_OPEN_RE } from "@lararium/memetic-frame";
 /**
  * The media type comes from the ONE place that spells it. A hand-spelled constant drifts the moment
- * the real one moves, and a `type` that no longer matches simply stops projecting — no throw, no
+ * the real one moves, and a `type` that drifts from it simply stops projecting — no throw, no
  * diagnostic.
  */
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";

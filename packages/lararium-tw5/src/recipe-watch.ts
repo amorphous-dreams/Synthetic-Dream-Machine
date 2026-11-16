@@ -159,7 +159,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
     }
 
     // The change just applied live — the reboot-pending notice (if the daemon's
-    // alert verb raced ahead of this reconcile) no longer holds.
+    // alert verb raced ahead of this reconcile) stands void.
     if (applied && ctx.composite.hasWritableBag(tempBag)) {
       await ctx.composite.tombstoneInBag(tempBag, REBOOT_ALERT_TITLE, origin());
     }

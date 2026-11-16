@@ -13,7 +13,7 @@ module-type: library
  *   1. the meme's current FAMILY in the sink: the root and its component slots, by the one family law
  *      (`@lararium/mesh/family`). A `uri/path` title stands as its own meme and never joins it,
  *   2. the Confluence gate (`decideIngest`) over the family's present render vs the new text,
- *   3. land every fresh record, tombstone every family member the new text no longer declares.
+ *   3. land every fresh record, tombstone every family member the new text leaves undeclared.
  *
  * A `MemeSink` is the only thing a skin supplies: four verbs over whatever holds tiddlers — a live
  * `$tw.wiki` (`wikiMemeSink`), a bag store behind BagAccess, a Map in a test. The split itself runs
@@ -217,7 +217,7 @@ export interface PlaceMemeReceipt {
   readonly reason?: string;
   /** Titles landed (ingest only). */
   readonly landed: readonly string[];
-  /** Group members removed because the new text no longer declares them (ingest only). */
+  /** Group members removed because the new text leaves them undeclared (ingest only). */
   readonly tombstoned: readonly string[];
   /** Hash of the canonical render the records now carry — the next writer's base. */
   readonly canonicalHash?: string;
@@ -534,7 +534,7 @@ export async function placeMeme(input: PlaceMemeInput, sink: MemeSink): Promise<
     if (!title) throw new Error(`placeMeme: ${uri} produced a record without a title`);
     lands.push(title);
   }
-  // THE CONSEQUENCE NAMES THE STALE SLOTS: the family members the new text no longer declares, by the one
+  // THE CONSEQUENCE NAMES THE STALE SLOTS: the family members the new text leaves undeclared, by the one
   // family law. A title the address merely prefixes (`uri/path`, an edge-less `uri#…`) stays where it stands.
   const stale = tombstonesOf(consequence(view, { kind: "put", title: uri, lands }));
   const landed: string[] = [];

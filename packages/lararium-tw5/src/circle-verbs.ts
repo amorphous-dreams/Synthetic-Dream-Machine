@@ -69,7 +69,7 @@ export interface CircleVerbOptions {
   readonly tw5?: TW5Engine;
   /**
    * THIS vessel's own replica id — minted dots are keyed `<replica>.<n>`, so two devices never collide on
-   * the same dot even when neither has seen the other's write. REQUIRED (alpha line, no back-compat): the
+   * the same dot even when neither has seen the other's write. REQUIRED: the
    * caller injects its own device key (the same identity `cold-boot-ceremony` derives its `did` from — see
    * `operator-daemon-behavior.ts`, which derives it off `daemonAuth.vesselVerifyingKey`) so the fleet's dots
    * stay disjoint by construction. A single-device caller may still pass any stable string of its own.

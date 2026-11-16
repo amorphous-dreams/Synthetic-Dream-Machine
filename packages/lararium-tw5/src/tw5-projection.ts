@@ -954,7 +954,7 @@ export function mountProjection(ctx: IslandContext): () => void {
     ...(ctx.receipt ? { receipt: ctx.receipt } : {}),
     post: (msg) => postLar(ctx, msg),
     mark: () => gate.mark(),
-    // A new epoch: every act the page made under the old one now answers stale-target, the old answers leave
+    // A new epoch: every act the page made under the prior one answers stale-target, its answers leave
     // with it, and the next frame carries every key whole. The sensed revisions stay: the page still holds them.
     resend: (manifest) => {
       scope.mountEpoch = mintEpoch(); scope.answers.clear(); whole = true;
@@ -1039,7 +1039,7 @@ export function mountProjection(ctx: IslandContext): () => void {
           scope.controlTiddlers.set(control, ridMap.get(rid)?.attributes["data-tiddler"]);
         }
       }
-      // A node the frame no longer paints never receives an event again: the page relays by the ids the
+      // A node the frame stops painting never receives an event again: the page relays by the ids the
       // frame carries, and a detached node answers `stale-target` whatever it holds. Its map entries leave
       // with the frame, so the maps hold the painted nodes and the roots, never every node ever bound.
       for (const renderId of scope.renderIds) {
