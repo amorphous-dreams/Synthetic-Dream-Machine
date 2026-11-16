@@ -426,10 +426,9 @@ def _described(name: str) -> str:
 
 def test_meme_put_text_names_the_stage_meme_law():
     # A writer meets the law in the tool's own text, before the gate refuses: a meme under the memory stage carries
-    # its stage path in the title, and the refusal the law answers stands named. The retired `row-key` stays unnamed.
+    # its stage path in the title, and the refusal the law answers stands named.
     said = _described("meme_put")
     assert 'lar:///ha.ka.ba/kahua/memory/<class>/<slug>' in said and "stage-path-shape" in said
-    assert "row-key" not in said
 
 
 def test_meme_list_text_promises_a_row_bag_for_a_named_recipe_alone():

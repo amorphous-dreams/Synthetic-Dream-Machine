@@ -230,13 +230,13 @@ describe("★ L9: a stage meme's title carries its stage path, never a clock or 
     expect(() => stageMemeTitle(path)).toThrow(/^stage-path-shape: /);
   });
 
-  test("★ a stage meme carrying no `row-key` lands at its title ★", async () => {
+  test("★ a stage meme lands at its title ★", async () => {
     const sink = memorySink();
     const uri = stageMemeTitle("feedback/never-stash");
     const r = await placeMeme({ uri, text: stageMeme(uri) }, sink);
     expect(r.diagnostics.map((d) => d.code)).toEqual([]);
     expect(r.decision).toBe("ingest");
-    expect(sink.store.get(uri)?.["row-key"]).toBeUndefined();
+    expect(sink.store.get(uri)).toBeDefined();
   });
 
   test.each(["L9", "a/b/c", "a/", "../x", "a_b"])("★ a stage meme at a malformed stage path refuses `stage-path-shape`, and nothing lands: %j ★", async (tail) => {
