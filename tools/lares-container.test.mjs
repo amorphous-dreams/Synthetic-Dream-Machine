@@ -818,6 +818,13 @@ test(`${name}: CONTROL with no pūlama, a stand on a terminal still attaches the
   const unlock = r.calls.split("\n").find((l) => / vault unlock --all/.test(l));
   assert.ok(unlock && !/ -T /.test(unlock), `the unlock should attach:\n${r.calls}`);
 });
+test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama's own verb, as light does`, { skip }, async () => {
+  const admit = await run(shim, ["pulama", "admit"], { envFile: PULAMA_ENV });
+  assert.equal(admit.status, 0, admit.stderr);
+  assert.match(admit.calls, /--profile pulama exec (-T )?pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js admit/);
+  const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
+  assert.match(bad.stderr, /pulama takes up, down, light, admit, lock, status or tessera/);
+});
 test(`${name}: image-digest-names-the-raised-image: the rite reads, as the last stdout line, the digest up reports to the pūlama`, { skip }, async () => {
   const r = await run(shim, ["image-digest"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
   assert.equal(r.status, 0, r.stderr);

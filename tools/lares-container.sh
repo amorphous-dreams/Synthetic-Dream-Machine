@@ -189,7 +189,7 @@ unlock_or_name() {
     # pūlama), so it runs detached from this terminal: an image that prompts anyway reads no keystroke.
     # shellcheck disable=SC2046
     waited_exec $(pass_env) -T lares node "$CLI" vault unlock --all --face "$wear" </dev/null && return 0
-    printf '%s\n' 'lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.sh pulama status`, light it with `lares-container.sh pulama light` and run `lares-container.sh vault unlock` (it asks nothing), or raise a served vessel with `lares rite kukulu`' >&2
+    printf '%s\n' 'lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.sh pulama status`, light it with `lares-container.sh pulama light`, admit the image that stands with `lares-container.sh pulama admit`, or raise a served vessel with `lares rite kukulu`' >&2
     return 0
   fi
   if [ -n "$HAVE_TTY" ]; then
@@ -548,11 +548,11 @@ case "$verb" in
     case "${1:-}" in
       up) ensure_house; compose --profile pulama up -d --no-recreate pulama ;;
       down) compose --profile pulama stop pulama ;;
-      light|lock|status|tessera)
-        # light reads the operator's route on a real terminal inside the pūlama, never through a pipe.
+      light|admit|lock|status|tessera)
+        # light and admit read the operator's route on a real terminal inside the pūlama, never through a pipe.
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" "$1" ;;
-      *) die "pulama takes up, down, light, lock, status or tessera" ;;
+      *) die "pulama takes up, down, light, admit, lock, status or tessera" ;;
     esac ;;
   reset)
     [ "$#" -eq 0 ] || die "reset takes no arguments"

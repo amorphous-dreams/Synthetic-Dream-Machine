@@ -265,7 +265,7 @@ function UnlockOrName {
   $wear = LastWornFace
   if ($PulamaMode) {
     if ((DetachedUnlock @('--all', '--face', "$wear")) -ne 0) {
-      [Console]::Error.WriteLine('lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.ps1 pulama status`, light it with `lares-container.ps1 pulama light` and run `lares-container.ps1 vault unlock` (it asks nothing), or raise a served vessel with `lares rite kukulu`')
+      [Console]::Error.WriteLine('lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.ps1 pulama status`, light it with `lares-container.ps1 pulama light`, admit the image that stands with `lares-container.ps1 pulama admit`, or raise a served vessel with `lares rite kukulu`')
     }
     return
   }
@@ -500,8 +500,8 @@ switch ($verb) {
     switch ($sub) {
       'up' { EnsureHouse; Compose @('--profile', 'pulama', 'up', '-d', '--no-recreate', 'pulama') }
       'down' { Compose @('--profile', 'pulama', 'stop', 'pulama') }
-      { $_ -in @('light', 'lock', 'status', 'tessera') } { Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
-      default { Die 'pulama takes up, down, light, lock, status or tessera' }
+      { $_ -in @('light', 'admit', 'lock', 'status', 'tessera') } { Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
+      default { Die 'pulama takes up, down, light, admit, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
