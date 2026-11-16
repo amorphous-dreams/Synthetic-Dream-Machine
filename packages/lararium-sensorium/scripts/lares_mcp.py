@@ -124,9 +124,8 @@ WIKI_VERBS = ("wiki",)
 # the fixture names that allowance as `local_seat`. THE CONTAINER LAW: exactly one of `recipe`/`bag` names
 # where the meme lands; neither, or both, refuses as `no-container` before the wire. `recipe: "default"`
 # names the host's ANCHOR (@daemon's own wiki; never "the active wiki"); `recipe: <slug>` = an edit AS that wiki (its top bag); `bag: <slug>` = a
-# residency placement (fails loud if the island cannot write it). Slugs ride BARE (`sdm`, `lares`); the
-# `@` spelling stands retired. All three ride `lares_uds.call` to the @daemon — never a store (the
-# single-writer law).
+# residency placement (fails loud if the island cannot write it). Slugs ride BARE (`sdm`, `lares`), carried
+# as written. All three ride `lares_uds.call` to the @daemon — never a store (the single-writer law).
 MEME_VERBS = ("meme_put", "meme_get", "meme_list", "meme_delete", "meme_project")
 
 # THE TIDDLER DOOR (wiki-surface-scout #/a-lean, lane 1) — the MCP skin of the daemon's `tiddler-*` and `wiki-*` verbs:
@@ -1009,8 +1008,8 @@ def build_mcp(coordinator: LaresCoordinator):
         """THE CONTAINER LAW, validated CLIENT-SIDE before anything rides the wire: a content verb names
         its container. Exactly one of `recipe`/`bag` stands; neither, or both, refuses as `no-container`
         (the code the CLI and the daemon door answer). No default wiki exists: the daemon's own wiki
-        answers to its explicit name, `recipe="default"`. A slug rides bare (the `@` spelling stands
-        retired: refused, never stripped)."""
+        answers to its explicit name, `recipe="default"`. A slug rides as written; the daemon's door
+        answers for its shape."""
         if recipe is not None and bag is not None:
             raise SeatArgumentRefused(f"{verb}: no-container — name one of `recipe`/`bag`, never both "
                              f"(got recipe={recipe!r}, bag={bag!r})")
@@ -1019,9 +1018,8 @@ def build_mcp(coordinator: LaresCoordinator):
                              "wiki, e.g. \"lares\"; the daemon's own wiki answers to \"default\") or `bag` "
                              "(that one bag). No default wiki exists.")
         for key, slug in (("recipe", recipe), ("bag", bag)):
-            if slug is not None and (not slug or slug.startswith("@")):
-                raise SeatArgumentRefused(f"{verb}: `{key}` takes a bare slug (`sdm`, `lares`), got {slug!r} — "
-                                 "the `@` spelling stands retired")
+            if slug is not None and not slug:
+                raise SeatArgumentRefused(f"{verb}: `{key}` names no slug — pass one (`sdm`, `lares`)")
         return {"recipe": recipe} if recipe is not None else {"bag": bag}
 
     def _meme_wire(verb: str, args: dict):

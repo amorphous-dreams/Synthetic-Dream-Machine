@@ -206,14 +206,15 @@ def test_meme_put_refuses_recipe_and_bag_together(daemon):
     assert daemon.lines == []                                       # nothing reached the wire
 
 
-def test_meme_tools_refuse_the_retired_at_form(daemon):
-    # slugs ride BARE (`sdm`, `lares`); the `@` spelling stands retired — refused, never stripped.
+def test_meme_tools_carry_a_slug_as_written(daemon):
+    # The seat reshapes no slug: whatever names the container rides to the daemon byte for byte, and the
+    # daemon's own door answers for it. An empty slug names nothing and refuses before the wire.
     daemon.output = _PUT_OUTPUT
-    with pytest.raises(ValueError, match="bare"):
-        _put(uri=_URI, text="x", recipe="@sdm")
-    with pytest.raises(ValueError, match="bare"):
-        _get(uri=_URI, bag="@lares")
-    assert daemon.lines == []
+    _put(uri=_URI, text="x", recipe="@sdm")
+    assert daemon.wire()["args"]["recipe"] == "@sdm"
+    with pytest.raises(ValueError, match="names no slug"):
+        _get(uri=_URI, bag="")
+    assert len(daemon.lines) == 1
 
 
 def test_meme_get_default_named_and_bag(daemon):
