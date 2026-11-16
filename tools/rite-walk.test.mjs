@@ -418,6 +418,12 @@ test("carry-scope-holds-the-rehearsal: the base stands under ~/.lares-scratch/re
 });
 
 test("carry-standoff-reads-a-named-set: the import's stand-offs judge against the plan's set, never against a bare exit code", () => {
+  {
+    // The kāpae edge shadows a canon meme family: the door call names the family act, the kapae mode and the daemon wiki.
+    const { kapaeArgs } = present(carryLeg);
+    const argv = kapaeArgs({ title: "lar:///ha.ka.ba/lares/docs/art-sigils", recipe: "default" });
+    for (const f of ["--family", "--recipe", "default", "--mode", "kapae"]) assert.ok(argv.includes(f), `the kapae call carries ${f}`);
+  }
   const { judgeImport } = present(carryLeg);
   const moved = CANON.moved.uri;
   const tallies = (stoodOff = [], refused = []) => ({ memes: { landed: 3, already: 0, planned: 0, waiting: 0, stoodOff, refused } });

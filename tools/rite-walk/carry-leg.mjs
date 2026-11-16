@@ -116,6 +116,12 @@ const uriOf = (entry) => String(entry).split(" (")[0];
  * Judge the import answers (one per worn face, in order) against the plan. A stand-off reads by name: each expected uri
  * must stand off, nothing else may, nothing may refuse, and nothing may still wait once every face imported.
  */
+/** The kāpae edge's door call: a canon title names a meme family, so the delete names the family act and the kapae mode;
+ *  the tiddler door refuses a root or slot delete without `--family` (`tiddler-delete-in-a-family`). */
+export function kapaeArgs(e) {
+  return ["tiddler", "delete", e.title, "--recipe", e.recipe, "--family", "--mode", "kapae", "--no-json"];
+}
+
 export function judgeImport(answers, { expectedStandoff = [] } = {}) {
   const faults = [], stood = new Set(), refused = [];
   const landed = {};
@@ -377,7 +383,7 @@ const seedContent = async (c) => {
     tally[face] = { rows, put: put.put, bad: put.bad };
     if (put.code !== 0 || put.bad !== 0 || put.put !== rows) return { ok: false, answer: `face ${face}: ${put.put}/${rows} put, ${put.bad} refused · ${put.refusals.join(" · ")}`, measures: { tally } };
     if (face === 0) {
-      for (const e of edge("kapae")) notes.push(await must(h, ["tiddler", "delete", e.title, "--recipe", e.recipe, "--no-json"], `kapae ${e.title}`));
+      for (const e of edge("kapae")) notes.push(await must(h, kapaeArgs(e), `kapae ${e.title}`));
     }
     if (face === 1) {
       for (const e of [...edge("kahua-lift"), ...edge("kahua-staged")]) {
