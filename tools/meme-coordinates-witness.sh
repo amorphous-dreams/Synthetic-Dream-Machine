@@ -3,8 +3,8 @@
 #
 # ONE coordinate mirrors something the meme itself already carries:
 #   `uri-path`  — the address in the carrier's own head sigil.
-# `file-path` RETIRED (Train Q, operator ruling 2026-11-01): residency rides the envelope (the bag), and
-# a meme travels to hosts that keep no files. A carrier still declaring it reads as drift here.
+# Residency rides the envelope (the bag), never a meta coordinate; the normalizer keeps `file-path` out of
+# every carrier, so this walk reads the one coordinate a carrier may hold.
 #
 # Nothing stamps the coordinate. The deserializer derives a record's TITLE from the head sigil (a `title` written
 # in the TOML is explicitly ignored) and the disk projector sites by that address, so `uri-path` consults
@@ -32,7 +32,6 @@ def heads(paths):
 drift = []
 _carriers = sorted(pathlib.Path("bags").rglob("*.mem"))
 _heads = heads(_carriers)
-declared_file_path = 0
 read_uri_path = 0
 for f in _carriers:
     # THE WHOLE CARRIER, NEVER A BYTE PREFIX. This read `[:4000]`, and a meta block is not obliged to
@@ -42,11 +41,6 @@ for f in _carriers:
     # the direction that reports clean: a field it cannot see is a field it never disagrees with. A
     # carrier growing a longer head would have retired itself from this check by getting longer.
     head = f.read_text(errors="replace")
-
-    m = re.search(r'(?m)^file-path\s*=\s*"(.*?)"', head)
-    if m:
-        declared_file_path += 1
-        drift.append((str(f), "file-path", m.group(1), "retired: residency rides the envelope"))
 
     # `uri-path` answers to the HEAD SIGIL, never to the tree: a root resource may deliberately carry a
     # rootless address (`lar:///AGENTS`), and the field must follow the address rather than the folder.
@@ -78,9 +72,8 @@ if _floor:
     sys.exit(1)
 
 if not drift:
-    print(f"[meme-coordinates] {len(_carriers)} carriers · {declared_file_path} declare the retired file-path · "
-          f"{read_uri_path} declare uri-path")
-    print("[meme-coordinates] no carrier names the file it rests in, and every uri-path names its own address")
+    print(f"[meme-coordinates] {len(_carriers)} carriers · {read_uri_path} declare uri-path")
+    print("[meme-coordinates] every uri-path names its own address")
     sys.exit(0)
 
 print(f"[meme-coordinates] {len(drift)} coordinate(s) name something other than what they mirror:")
