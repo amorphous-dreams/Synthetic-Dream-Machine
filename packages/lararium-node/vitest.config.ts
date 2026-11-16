@@ -120,6 +120,8 @@ export const heavy = [
   "tests/dial-presentation-joinee.test.ts",
   // A raw HTTP listener that answers the upgrade as a gate stand-in, so the node dial socket meets real frames.
   "tests/node-dial-socket.test.ts",
+  // A real unix-socket listener: the pūlama's session ends with its connection and releases the custody claim it held.
+  "tests/pulama-session-drops-with-socket.test.ts",
   // The herm's relay port on a real HTTP listener: persona-KEL drops over HTTP, silence for every upgrade.
   "tests/herm-relay-port.test.ts",
   // Full `openNodeVessel` boots (nested daemon and wiki islands) with no dial: a founded sovereign node lights its face cell,
