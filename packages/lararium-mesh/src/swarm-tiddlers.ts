@@ -21,6 +21,8 @@
  *   lei-returned/<lei cid>/<n>      one spend of a lei, the vessel's witness: `n` counts from 1 to the lei's returns, each row claimed
  *                              atomically; any row under `lei-returned/<lei cid>/` counts against the lei, signed or not
  *   lei-narrowed/<lei cid>       a wide lei met a red receipt: the vessel's witness; any row here ends the lei's wide reach
+ *   lei-unstrung/<lei cid>     the hand unstrung a lei that still held returns: signed by the face's hand; any row here ends
+ *                              the lei, and the lei's own row rests on
  *   receipt/<tree>             a check seat's verdict over a tree, signed by the VESSEL
  *   house-cap · lane/<lane>/share
  *                              ride the face-private board (`swarm-board.ts`) so a fleet folds one cap; their titles belong to this family
@@ -116,6 +118,7 @@ export const swarmLeiReturnedTitle = (leiCid: string, n: number): string => {
   return `${swarmLeiReturnedPrefix(leiCid)}${n}`;
 };
 export const swarmLeiNarrowedTitle = (leiCid: string): string => `${SWARM_URI_PREFIX}lei-narrowed/${segment(leiCid)}`;
+export const swarmLeiUnstrungTitle = (leiCid: string): string => `${SWARM_URI_PREFIX}lei-unstrung/${segment(leiCid)}`;
 export const swarmRosterTitle = (seat: string): string => `${SWARM_URI_PREFIX}roster/${segment(seat)}`;
 export const swarmReceiptTitle = (tree: string): string => `${SWARM_URI_PREFIX}receipt/${segment(tree)}`;
 
@@ -138,7 +141,9 @@ export interface SwarmLeiNarrowedBody { readonly act: "lei-narrowed"; readonly g
 export interface SwarmLaneStateBody { readonly act: "lane-state"; readonly group: string; readonly lane: string; readonly seat: string; readonly state: Readonly<Record<string, string | number | boolean | null>> }
 export interface SwarmRosterBody { readonly act: "roster"; readonly group: string; readonly seat: string; readonly model: string; readonly mode: string; readonly reading: number; readonly ceiling: number; readonly outcome: string }
 export interface SwarmReceiptBody { readonly act: "receipt"; readonly group: string; readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }
-export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiNarrowedBody | SwarmLaneStateBody | SwarmRosterBody | SwarmReceiptBody;
+/** The hand unstrung a lei: the lei, and the rite and branch whose line it rests on. */
+export interface SwarmLeiUnstrungBody { readonly act: "lei-unstrung"; readonly group: string; readonly rite: SwarmLeiRite; readonly branch: string; readonly lei: string }
+export type SwarmBodyParts = SwarmLeiBody | SwarmLeiReturnedBody | SwarmLeiNarrowedBody | SwarmLeiUnstrungBody | SwarmLaneStateBody | SwarmRosterBody | SwarmReceiptBody;
 export type SwarmBody = SwarmBodyParts & { readonly kind: typeof SWARM_ACT_DOMAIN };
 export interface SignedSwarmAct { readonly body: SwarmBody; readonly signer: string; readonly sig: string }
 export type SwarmReadRefusal = "absent" | "shape" | "domain" | "group" | "signature" | "title" | "role";
@@ -157,6 +162,7 @@ function shape(b: Record<string, unknown>): boolean {
       && (b["reach"] === "wide" ? positive(b["returns"]) && !("head" in b) : b["reach"] === "head" ? str(b["head"]) && !("returns" in b) : false);
     case "lei-returned": return str(b["branch"]) && str(b["head"]) && str(b["tree"]) && hex(b["lei"], 64) && positive(b["n"]);
     case "lei-narrowed": return hex(b["lei"], 64) && str(b["head"]) && str(b["tree"]);
+    case "lei-unstrung": return hex(b["lei"], 64) && isSwarmLeiRite(b["rite"]) && str(b["branch"]);
     case "lane-state": return str(b["lane"]) && str(b["seat"]) && object(b["state"]) && Object.values(b["state"]).every((v) => v === null || ["string", "number", "boolean"].includes(typeof v));
     case "roster": return str(b["seat"]) && str(b["model"]) && str(b["mode"]) && count(b["reading"]) && count(b["ceiling"]) && str(b["outcome"]);
     case "receipt": return str(b["tree"]) && Array.isArray(b["checks"]) && b["checks"].every(str) && (b["verdict"] === "pass" || b["verdict"] === "fail") && hex(b["definitions"], 64);
@@ -171,6 +177,7 @@ function titleOf(b: SwarmBody): string | null {
       case "lei": return swarmLeiTitle(b.rite, b.branch);
       case "lei-returned": return swarmLeiReturnedTitle(b.lei, b.n);
       case "lei-narrowed": return swarmLeiNarrowedTitle(b.lei);
+      case "lei-unstrung": return swarmLeiUnstrungTitle(b.lei);
       case "lane-state": return swarmLaneStateTitle(b.lane);
       case "roster": return swarmRosterTitle(b.seat);
       case "receipt": return swarmReceiptTitle(b.tree);
@@ -188,7 +195,7 @@ export async function signSwarmAct(parts: SwarmBodyParts, signer: SwarmSignerPor
 
 const allowed = (b: SwarmBody, key: string, trust: SwarmTrust): boolean => {
   switch (b.act) {
-    case "lei": return trust.hand(key);
+    case "lei": case "lei-unstrung": return trust.hand(key);
     case "lane-state": return trust.lead(b.seat, b.lane, key);
     case "lei-returned": case "lei-narrowed": case "roster": case "receipt": return trust.vessel(key);
   }
@@ -266,13 +273,13 @@ export async function readLeiChain(wiki: SwarmWikiPort, line: SwarmLeiLine, trus
  * The lei of one rite standing for one branch at one head: the one lei that ends that rite's longest co-signed `after` chain at the
  * branch (`readLeiChain`). A HEAD lei stands for the head it names alone (`head-mismatch`) and for one return (`returned`). A WIDE lei
  * stands for any head while returns stay (`returns-spent` once the rows under its return prefix reach its count) and until a
- * narrowing rests for it (`narrowed`). A newer lei on the chain replaces the tip, so a fresh lei restrings a returned or narrowed
+ * narrowing rests for it (`narrowed`). A lei the hand unstrung stands for nothing (`unstrung`). A newer lei on the chain replaces the tip, so a fresh lei restrings a returned or narrowed
  * line. Two tips read as a fork (`forked`) and neither stands until a fresh lei names one. Evidence belongs to the spend
  * (`returnLei`): this read names the lei, never the receipt.
  * On a face of two devices a lei the root signed outside the door stands on no chain (`ward-act-uncosigned` where nothing else rests).
  */
 export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly head: string }, trust: SwarmTrust, group: string, ward: WardActWitness):
-  Promise<{ ok: true; act: SignedSwarmAct; cid: string; reach: SwarmLeiReach; returnsLeft: number } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "returned" | "returns-spent" | "narrowed" | "forked" }> {
+  Promise<{ ok: true; act: SignedSwarmAct; cid: string; reach: SwarmLeiReach; returnsLeft: number } | { ok: false; refusal: SwarmReadRefusal | "head-mismatch" | WardActRefusal | "unstrung" | "returned" | "returns-spent" | "narrowed" | "forked" }> {
   const chain = await readLeiChain(wiki, at, trust, group, ward);
   if (chain.tips.length > 1) return { ok: false, refusal: "forked" };
   const tip = chain.tips[0];
@@ -280,6 +287,8 @@ export async function readLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readonly
   const body = tip.body;
   if (body.reach === "head" && body.head !== at.head) return { ok: false, refusal: "head-mismatch" };
   // Any row at the narrowing title narrows the lei, signed or not: a forged narrowing fails closed.
+  // Any row at the unstrung title ends the lei, signed or not: a forged unstringing fails closed.
+  if ((await wiki.read(swarmLeiUnstrungTitle(tip.cid))) !== null) return { ok: false, refusal: "unstrung" };
   if (body.reach === "wide" && (await wiki.read(swarmLeiNarrowedTitle(tip.cid))) !== null) return { ok: false, refusal: "narrowed" };
   // Every row under the spend prefix counts, signed or not: a forged spend fails closed.
   const returns = body.reach === "wide" ? body.returns : 1;

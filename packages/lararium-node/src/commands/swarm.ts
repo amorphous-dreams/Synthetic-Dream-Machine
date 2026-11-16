@@ -51,6 +51,13 @@ export async function runSwarmVerb(opts: {
   const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") && str("head") ? { rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), head: str("head") } : {}) }
     : opts.action === "cap-set" ? { action: "cap-set", value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
+    // An unstring names its lei by cid; the hand signs the record and no co-sign waits.
+    : opts.action === "lei-unstring" ? { action: "lei-unstring", rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), lei: str("lei") }
+    // A restring names the newer lei's terms; the door fills `after` from the line's tip.
+    : opts.action === "lei-restring" ? { action: "lei-restring", rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"),
+        ...(opts.args["reach"] !== undefined ? { reach: opts.args["reach"] as SwarmLeiReach } : {}),
+        ...(opts.args["returns"] !== undefined ? { returns: opts.args["returns"] as number } : {}),
+        ...(opts.args["head"] !== undefined ? { head: opts.args["head"] as string } : {}) }
     // `rite` names the lei's one power (push or kukulu); the door refuses a lei that names none. `after` names the lei this one
     // follows on its rite's line at the branch (`show` reads it), null for the first there; an absent one refuses.
     // The reach: absent reads wide (the lei names its `returns` and no head); `reach: "head"` pins the `head` it names. The door

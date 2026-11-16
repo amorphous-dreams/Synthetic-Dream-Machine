@@ -10,7 +10,7 @@ import {
   storeDoorReactors, type StoreDoorDeps,
 } from "../src/store-door-verbs.js";
 
-const ROWS = ["swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui"] as const;
+const ROWS = ["swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring"] as const;
 
 test("RED: every swarm row is a store-door verb that acts as a face; CONTROL: the kahua operator rows stay as they stood", () => {
   for (const row of ROWS) {
@@ -21,7 +21,7 @@ test("RED: every swarm row is a store-door verb that acts as a face; CONTROL: th
 });
 
 test("RED: the hand-only swarm rows carry `swarm-needs-hand`; CONTROL: swarm-show is not hand-only", () => {
-  expect(Object.fromEntries(SWARM_HAND_CODES)).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-kui": "swarm-needs-hand" });
+  expect(Object.fromEntries(SWARM_HAND_CODES)).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-kui": "swarm-needs-hand", "swarm-lei-unstring": "swarm-needs-hand", "swarm-lei-restring": "swarm-needs-hand" });
   expect(SWARM_HAND_CODES.has("swarm-show")).toBe(false);
 });
 

@@ -131,7 +131,7 @@ export function dropWardTickets(): void { tickets.clear(); }
  * act that changes who belongs to the face or what it trusts, and the daemon realm's bound acts (seat-harness#/the-ward).
  */
 const WARD_VERBS: ReadonlySet<string> = new Set([
-  "kapae-lower", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui",
+  "kapae-lower", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
   "kahua-lift", "kahua-withdraw", "kahua-carry", "intent-root",
   "handle-publish", "handle-burn", "handle-rotate", "handle-attest",
   "persona-lease", "nexus-publish", "fleet-join-answer",
@@ -153,7 +153,7 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
  * two devices with no answer, nobody types a passphrase only to read `ward-awaiting-cosign`. An answer runs first too: only an
  * approve of a ward act opens the co-signing device's ward, so an answer to any other ask asks no route.
  */
-const GATED_WARD_VERBS: ReadonlySet<string> = new Set(["kapae-lower", "swarm-cap-set", "swarm-lei-kui", "intent-answer"]);
+const GATED_WARD_VERBS: ReadonlySet<string> = new Set(["kapae-lower", "swarm-cap-set", "swarm-lei-kui", "swarm-lei-restring", "intent-answer"]);
 export function storeVerbGatesFirst(verb: string): boolean { return GATED_WARD_VERBS.has(verb); }
 
 // ── the seated gatherer: a person at this process's terminal ─────────────────────────────────────────────────────────────

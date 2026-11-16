@@ -199,8 +199,8 @@ describe("hand, grant and the standing daemon", () => {
     await expect(swarmCommand({ action: "cap-set", value: 1 }, (await stand()).deps)).resolves.toMatchObject({ cap: 1 });
   });
 
-  test("RED: the hand codes name the three mutating verbs and leave show open; CONTROL: every code reads swarm-needs-hand", () => {
-    expect(SWARM_VERB_HAND_CODES).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-kui": "swarm-needs-hand" });
+  test("RED: the hand codes name the five mutating verbs and leave show open; CONTROL: every code reads swarm-needs-hand", () => {
+    expect(SWARM_VERB_HAND_CODES).toEqual({ "swarm-cap-set": "swarm-needs-hand", "swarm-share-set": "swarm-needs-hand", "swarm-lei-kui": "swarm-needs-hand", "swarm-lei-unstring": "swarm-needs-hand", "swarm-lei-restring": "swarm-needs-hand" });
     expect(Object.hasOwn(SWARM_VERB_HAND_CODES, "swarm-show")).toBe(false);
   });
 });
