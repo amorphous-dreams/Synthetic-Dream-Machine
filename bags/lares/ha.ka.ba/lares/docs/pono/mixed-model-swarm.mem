@@ -121,6 +121,7 @@ The measures behind each placement stand at <<~ loulou uri=`lar:///ha.ka.ba/lare
 * ''Two tiers.'' The FAST tier runs on the box with no lock: `pnpm build`, each red's proof against its parent, `tools/typecheck-witness.sh`, `node tools/evergreen-boundary.mjs`, `bash tools/witness-all.sh --fast` and each touched package's related tests (operator ruling, 2026-11-01: //"Approve the fast-tier lever"//), with no e2e. The LONG tier runs in the cloud on the lane's push and again on the train: every whole package suite, every e2e set, the slow witnesses, the docker witnesses and held-out.
 * ''CI carries the rest'': the whole e2e sets and every other suite, and reads the witness fleet again as the verdict.
 * ''One heavy battery at a time on the box.'' The fast tier's unit suites and static checks run without `tools/battery.sh`; the lock holds for the train and any heavy local run. The lead runs a heavy battery through `tools/battery.sh`, whose lock reads `LARES_BATTERY_LOCK`, else the passwd home's `.lares-scratch/.battery.lock` (never `$HOME`, since a lead runs under a scratch `HOME`); it refuses (exit 64) where the lock cannot open, never runs unlocked, and passes the command's exit code through.
+* ''The heavy battery runs as named legs'': `node tools/battery-legs.mjs [--legs a,b,c]` re-enters itself through `tools/battery.sh`, runs the chosen legs (`--list` names them: build, the mesh, node, browser and cli suites, the shims, typecheck, and the bcc, evergreen, parity, vparity, domains and genesis witnesses) in table order under a scratch `LAR_ROOT` with `LAR_BAGS` unset, prints `== <leg>`, `rc=` and the leg's tallies, runs every chosen leg past a red one and exits 1 naming each red leg.
 * ''A red that clears with no edit names shared state'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> #/red-first).
 <<~/ahu>>
 
@@ -300,6 +301,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;JCO2-_nfuwdpabiVj2YFx0WbNN7OGpn2qNnycalxL-I`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;pExvN2-2fZBTW8vN2HslnCUAiQt1BKCca9NmGvIWjFA`>>
 
 <<^ code=`&#x0004;` to=`?`>>
