@@ -100,7 +100,7 @@ if [ "$(value_of LARES_PULAMA)" = 1 ]; then
   PULAMA_MODE=yes
   HOUSE_CLASSES="$HOUSE_CLASSES pulama/socket pulama/state"
   export LAR_PULAMA_SOCKET=/pulama/socket/pulama.sock
-  # The kūkulu's offer (its lei and the old vessel's vouch) rests in the config bind, which the rite writes on the host.
+  # The kūkulu's offer (its lei and the standing vessel's vouch) rests in the config bind, which the rite writes on the host.
   export LAR_KUKULU_OFFER=/lar/config/kukulu-offer.json
 fi
 PULAMA_MAIN="packages/lararium-node/dist/src/pulama-main.js"
