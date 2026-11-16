@@ -143,6 +143,74 @@ describe("harness-seat-records-the-lares-verb-alone", () => {
   });
 });
 
+describe("aho-child-honours-the-shim-overrides", () => {
+  let prior: Record<string, string | undefined>;
+  beforeEach(() => { prior = { file: process.env["LARES_COMPOSE_FILE"], project: process.env["COMPOSE_PROJECT_NAME"] }; });
+  afterEach(() => {
+    for (const [name, value] of [["LARES_COMPOSE_FILE", prior["file"]], ["COMPOSE_PROJECT_NAME", prior["project"]]] as const) {
+      if (value === undefined) delete process.env[name]; else process.env[name] = value;
+    }
+  });
+  /** Another house's compose file: its own project name and its own root inside the container. */
+  const scopedCompose = (): string => {
+    const file = join(dir, "scoped", "compose.yml");
+    mkdirSync(join(dir, "scoped"), { recursive: true });
+    writeFileSync(file, readFileSync(join(REPO, "docker-compose.surface.yml"), "utf8").replace(/^name: .*$/m, "name: scoped-house").replace(/^(\s+LAR_ROOT:\s*)\S+\s*$/m, "$1/scoped"));
+    return file;
+  };
+
+  it("RED: with LARES_COMPOSE_FILE and COMPOSE_PROJECT_NAME set, the child execs through that file and carries that project, as the shim does, and never names the main clone's file; CONTROL: with neither set it names the clone's file and no project", () => {
+    const clone = fakeClone();
+    delete process.env["LAR_ROOT"];
+    const envFile = surfaceEnv();
+    delete process.env["LARES_COMPOSE_FILE"]; delete process.env["COMPOSE_PROJECT_NAME"];
+    const plain = resolveLaresSurface(clone)!;
+    expect(plain.args).toContain(join(clone, "docker-compose.surface.yml"));
+    expect(plain.env).toEqual({ LAR_ROOT: "/lar" });
+
+    const file = scopedCompose();
+    process.env["LARES_COMPOSE_FILE"] = file;
+    process.env["COMPOSE_PROJECT_NAME"] = "rehearsal-7";
+    const scoped = resolveLaresSurface(clone)!;
+    expect(scoped.args).toEqual(["compose", "--env-file", envFile, "-f", file, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", `/app/${SEAT}`]);
+    expect(scoped.args).not.toContain(join(clone, "docker-compose.surface.yml"));
+    // The root comes off the file the child execs through, and the project rides the child's env, where compose reads it.
+    expect(scoped.env).toEqual({ LAR_ROOT: "/scoped", COMPOSE_PROJECT_NAME: "rehearsal-7" });
+    // The file's own `name:` decides the project where the environment names none: the child passes no `-p` of its own.
+    delete process.env["COMPOSE_PROJECT_NAME"];
+    const named = resolveLaresSurface(clone)!;
+    expect(named.env).toEqual({ LAR_ROOT: "/scoped" });
+    expect(named.args).not.toContain("-p");
+  });
+
+  it("RED: the entry a harness records carries the two overrides the resolving shell named, the file made absolute, so a bare `lares mcp aho` under that harness reaches the same house; CONTROL: with neither set the entry carries none", () => {
+    const clone = fakeClone();
+    delete process.env["LAR_ROOT"];
+    surfaceEnv();
+    delete process.env["LARES_COMPOSE_FILE"]; delete process.env["COMPOSE_PROJECT_NAME"];
+    expect(resolveLaresMcp(clone)).toEqual({ command: "lares", args: ["mcp", "aho"], env: {} });
+    const file = scopedCompose();
+    const priorCwd = process.cwd();
+    process.chdir(join(dir, "scoped"));
+    try {
+      process.env["LARES_COMPOSE_FILE"] = "compose.yml";
+      process.env["COMPOSE_PROJECT_NAME"] = "rehearsal-7";
+      expect(resolveLaresMcp(clone)).toEqual({ command: "lares", args: ["mcp", "aho"], env: { LARES_COMPOSE_FILE: file, COMPOSE_PROJECT_NAME: "rehearsal-7" } });
+      expect(resolveLaresSurface(clone)!.args).toContain(file);
+    } finally { process.chdir(priorCwd); }
+  });
+
+  it("RED: an override that names no file resolves no seat, and the cause names that file, never the clone's", () => {
+    const clone = fakeClone();
+    delete process.env["LAR_ROOT"];
+    surfaceEnv();
+    process.env["LARES_COMPOSE_FILE"] = join(dir, "absent.yml");
+    expect(resolveLaresSurface(clone)).toBeNull();
+    expect(resolveLaresMcp(clone)).toBeNull();
+    expect(seatAbsentCause()).toContain(join(dir, "absent.yml"));
+  });
+});
+
 describe("a stored seat that lacks the root reads as drift", () => {
   const MCP = { command: "/usr/bin/python3", args: ["/clone/lares_mcp.py"], env: { PYTHONPATH: "/clone/mp", LAR_ROOT: "/hearth" } };
   const observe = (home: string) => {
