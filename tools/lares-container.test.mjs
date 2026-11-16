@@ -800,6 +800,17 @@ test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's 
   assert.match(r.calls, /rm -f lares/);
   assert.doesNotMatch(r.calls, / down /);
 });
+test(`${name}: image-digest-names-the-raised-image: the rite reads, as the last stdout line, the digest up reports to the pūlama`, { skip }, async () => {
+  const r = await run(shim, ["image-digest"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.equal(r.stdout.trim().split("\n").at(-1).trim(), "sha256:abc123");
+  assert.match(r.calls, /image inspect --format \{\{\.Id\}\} lares-surface:local/);
+  const named = await run(shim, ["image-digest"], { envFile: PULAMA_ENV + "LARES_IMAGE=lares-rehearsal:local\n", env: { FAKE_IMAGE_ID: "sha256:beef" } });
+  assert.equal(named.status, 0, named.stderr);
+  assert.match(named.calls, /image inspect --format \{\{\.Id\}\} lares-rehearsal:local/);
+  const extra = await run(shim, ["image-digest", "x"], { envFile: PULAMA_ENV });
+  assert.equal(extra.status, 2);
+});
 test(`${name}: pulama light reaches the pūlama's hand verb, and pulama down stops it`, { skip }, async () => {
   const light = await run(shim, ["pulama", "light"], { envFile: PULAMA_ENV });
   assert.equal(light.status, 0, light.stderr);

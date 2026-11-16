@@ -392,7 +392,7 @@ run_waited() { # $1 = exec|run; the rest = the compose argv
 waited_exec() { run_waited exec exec -e LARES_EXEC_TAG "$@"; }
 waited_run() { run_waited run --profile offline run --rm --name "$RUN_NAME" "$@"; }
 
-[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)"
+[ "$#" -gt 0 ] || die "usage: lares-container.sh up|down|reset|found|logs|build|image-digest|pulama|vessel stand|<lares verb…> (build rebuilds the vessel image, every package, from the committed checkout)"
 verb=$1; shift
 
 # A WORKSPACE (cabal-realm#/the-workbench): an operator-configured directory a private wiki's workbench mirror rests in,
@@ -447,11 +447,15 @@ up_with_workspaces() {
 
 # The pūlama stands before any vessel: up with --no-recreate leaves a lit one lit. Then the host reports the image digest
 # the vessel will raise, since a vessel never vouches for its own face.
+# The digest of the image a vessel stands from: what up reports to the pūlama and what the kūkulu rite's offer names.
+image_digest() {
+  image=$(value_of LARES_IMAGE); [ -n "$image" ] || image=lares-surface:local
+  digest=$(docker image inspect --format '{{.Id}}' "$image") || die "cannot read the vessel image's digest ($image); nothing raised"
+}
 stand_pulama() {
   [ -n "$PULAMA_MODE" ] || return 0
   compose --profile pulama up -d --no-recreate pulama || die "the pūlama did not stand; nothing raised"
-  image=$(value_of LARES_IMAGE); [ -n "$image" ] || image=lares-surface:local
-  digest=$(docker image inspect --format '{{.Id}}' "$image") || die "cannot read the vessel image's digest ($image); nothing raised"
+  image_digest
   compose --profile pulama exec -T pulama node "$PULAMA_MAIN" image "$digest" || die "the pūlama refused the image digest $digest; nothing raised"
 }
 pulama_running() {
@@ -579,6 +583,10 @@ case "$verb" in
     [ -z "$failed" ] || exit 1
     printf '%s\n' 'lares-container: hearth cleared; sensoriums, projections, library and config stand; the hearth can be founded again.' ;;
   logs)  compose logs "$@" lares ;;
+  image-digest)
+    [ "$#" -eq 0 ] || die "image-digest takes no arguments"
+    image_digest
+    printf '%s\n' "$digest" ;;
   build)
     # THE IMAGE BUILDS THROUGH THE SHIM: compose reads the env file (LARES_HOUSE, LARES_WORKSPACE interpolate), and the
     # revision label names the commit the checkout stands at. A label must name a real commit, so a dirty checkout

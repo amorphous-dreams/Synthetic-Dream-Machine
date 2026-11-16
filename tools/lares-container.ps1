@@ -404,13 +404,18 @@ function WorkspaceBind([string]$pair) {
 
 # The pūlama stands before any vessel (--no-recreate leaves a lit one lit), then the host reports the image digest the
 # vessel will raise: a vessel never vouches for its own face.
+# The digest of the image a vessel stands from: what up reports to the pūlama and what the kūkulu rite's offer names.
+function ImageDigest {
+  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
+  $d = (& docker image inspect --format '{{.Id}}' $image) -join ''
+  if ($LASTEXITCODE -ne 0) { Die "cannot read the vessel image's digest ($image); nothing raised" }
+  return $d
+}
 function StandPulama {
   if (-not $PulamaMode) { return }
   & docker compose @Base --profile pulama up -d --no-recreate pulama
   if ($LASTEXITCODE -ne 0) { Die 'the pūlama did not stand; nothing raised' }
-  $image = ValueOf 'LARES_IMAGE'; if (-not $image) { $image = 'lares-surface:local' }
-  $digest = (& docker image inspect --format '{{.Id}}' $image) -join ''
-  if ($LASTEXITCODE -ne 0) { Die "cannot read the vessel image's digest ($image); nothing raised" }
+  $digest = ImageDigest
   & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $digest
   if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image digest $digest; nothing raised" }
 }
@@ -488,6 +493,10 @@ switch ($verb) {
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
+  'image-digest' {
+    if ($rest.Count -gt 0) { Die 'image-digest takes no arguments' }
+    Write-Output (ImageDigest)
+  }
   'build' {
     # THE IMAGE BUILDS THROUGH THE SHIM: compose reads the env file, and the revision label names the commit the
     # checkout stands at. A dirty checkout refuses (commit first), and so does a shim outside any checkout.
