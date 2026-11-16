@@ -6,8 +6,17 @@
  * what the pūlama itself holds and what the host reports, begins the rite in the pūlama's own records (the lei's return,
  * then the guest half of its tessera), and only then answers a session's scope.
  *
- * ── WHAT THE GATE READS, IN ORDER; EACH MISS REFUSES BY NAME ────────────────────────────────────
- *   `kukulu-unvouched`          the offer carries no vouch
+ * ── A VESSEL WITH NO OFFER ENTERS BY ITS IMAGE ──────────────────────────────────────────────────
+ * A hello that carries neither lei nor vouch reads the admitted set (`pulama-admit`): where the image the host reports
+ * stands admitted, the pūlama serves the face that admission names again, spends no lei and rests one re-service row. A
+ * restart with no rebuild therefore wakes standing. Any other image refuses `pulama-image-unadmitted`, and the refusal
+ * names the two acts that admit one: the hand's `pulama admit`, and the rite (`lares rite kukulu`).
+ *
+ * AN IMAGE STANDS ADMITTED ONCE ITS KŪKULU LANDS PAR. The scope's `land` rests the host half; where the pair reads par, the
+ * image the vouch walked joins the admitted set under the rite's own tessera. A kūkulu that never composed admits nothing.
+ *
+ * ── WHAT THE GATE READS OF AN OFFER, IN ORDER; EACH MISS REFUSES BY NAME ────────────────────────
+ *   `kukulu-unvouched`          the offer carries a lei and no vouch
  *   `kukulu-vouch-<reading>`    the vouch reads no vouch, or another key than the custody root's vouch child signed it
  *   `kukulu-face-absent` · `kukulu-face-locked`   the vouch's group names no face standing open at this pūlama
  *   `kukulu-hand-absent`        the pūlama's own custody names no hand's key for that face, so no lei reads
@@ -38,6 +47,7 @@
 import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyKukuluVouch } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import { personaGroupDigest } from "./persona-group-file.js";
+import type { PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaGate, PulamaScope } from "./pulama-server.js";
 
 /** A signing seat: a verifying key (64 lower hex) and its signature over bytes. */
@@ -107,13 +117,31 @@ export function kukuluGate(a: {
   /** THE HOST'S REPORT of the image it raises, or null where it reported none. */
   readonly image: () => string | null | Promise<string | null>;
   readonly coldReads?: readonly string[];
+  /** The admitted set (`pulama-admit`). Absent, no image stands admitted and every hello needs its offer. */
+  readonly admissions?: PulamaAdmissions;
 }): PulamaGate {
   const { holder } = a;
   const refuse = (reading: string, why?: string) => ({ ok: false as const, reading, ...(why ? { why } : {}) });
   return {
     async admit(offer) {
       const o = (typeof offer === "object" && offer !== null ? offer : {}) as { lei?: unknown; unstrung?: unknown; vouch?: unknown };
-      if (o.vouch === undefined || o.vouch === null) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
+      if (o.vouch === undefined || o.vouch === null) {
+        const wearsLei = Array.isArray(o.lei) ? o.lei.length > 0 : o.lei !== undefined && o.lei !== null;
+        if (wearsLei) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
+        // NO OFFER: the vessel enters by the image the host reports, where that image stands admitted.
+        const reported = await a.image();
+        const witness = await pulamaSignerOf(holder);
+        const admission = reported !== null && a.admissions ? await a.admissions.admitted(reported, witness) : null;
+        if (reported === null || !a.admissions || admission === null) {
+          return refuse("pulama-image-unadmitted", "this vessel carries no offer, and the image the host reports stands unadmitted: admit it by hand at the pūlama (`pulama admit`), or raise the vessel by the rite (`lares rite kukulu`)");
+        }
+        const worn = await holder.faceStanding({ fcid: admission.fcid });
+        if (worn === null) return refuse("kukulu-face-absent");
+        if (!worn.unlocked) return refuse("kukulu-face-locked", "the face this image stands admitted for rests unopened at this pūlama");
+        // THE RE-SERVICE ROW RESTS FIRST: no lei spends, and the count of such wakes reads off the records.
+        await a.admissions.reserved(reported, { fcid: worn.fcid, ordinal: worn.ordinal }, witness);
+        return { ok: true, scope: { face: { fcid: worn.fcid, ordinal: worn.ordinal }, coldReads: a.coldReads ?? KUKULU_COLD_READS } };
+      }
       const vouched = verifyKukuluVouch(o.vouch, await vouchKeyOf(holder));
       if (!vouched.ok) return refuse(`kukulu-vouch-${vouched.refusal}`);
       const { body } = vouched.vouch;
@@ -131,7 +159,12 @@ export function kukuluGate(a: {
       if (!begun.ok) return refuse(begun.refusal);
       const scope: PulamaScope = {
         face: { fcid: face.fcid, ordinal: face.ordinal }, coldReads: a.coldReads ?? KUKULU_COLD_READS,
-        land: () => a.rite.land(begun.tessera, at),
+        land: async () => {
+          const landed = await a.rite.land(begun.tessera, at);
+          // PAR ADMITS: the kūkulu composed and its halves match, so the image its vouch walked serves again without a lei.
+          if (landed.par && a.admissions) await a.admissions.admitByRite(body.image, { fcid: face.fcid, ordinal: face.ordinal }, begun.tessera, at.by);
+          return landed;
+        },
       };
       return { ok: true, scope };
     },

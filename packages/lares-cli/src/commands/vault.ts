@@ -236,6 +236,7 @@ function unlockLine(a: CustodyDoorAnswer): string {
 /** What each reading a pūlama waits on asks of the operator. */
 function pulamaWaitsLine(waits: string): string {
   const next = waits === "pulama-locked" ? "the pūlama rests unlit; light it by hand (`lares-container.sh pulama light`), then run this again"
+    : waits === "pulama-image-unadmitted" ? "this vessel's image stands unadmitted and it carries no offer; admit the image by hand at the pūlama (`lares-container.sh pulama admit`), or raise the vessel by the rite (`lares rite kukulu`)"
     : waits === "pulama-unreachable" ? "no pūlama answers its socket; raise it (`lares-container.sh pulama up`) and light it"
     : waits.startsWith("kukulu-") || waits.startsWith("swarm-lei-") || waits.startsWith("rite-") ? "a rebuilt vessel enters by the rite: string a kukulu lei and run `lares rite kukulu`, which carries the lei and its vouch to the pūlama"
     : "read the pūlama's own log for that reading";

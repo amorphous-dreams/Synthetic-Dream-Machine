@@ -10,6 +10,9 @@
  *                        image. Unset, or a file that does not read, offers nothing, and the pūlama refuses `kukulu-unvouched`.
  *
  * ── THE VESSEL DIALS ONCE AT BOOT, AND AGAIN ONLY WHEN ASKED ────────────────────────────────────
+ * A vessel that names no offer still dials: the pūlama serves it where the image the host reports stands admitted (a kūkulu
+ * that landed par, or the hand's `pulama admit`), and refuses `pulama-image-unadmitted` otherwise.
+ *
  * After the floor composition stands, the vessel dials the pūlama. A session mounts the face its lei names and composes
  * with the sovereign rows; a refusal names itself once and the vessel keeps the floor. No timer redials: `lares vault
  * unlock` asks the custody door, which runs this same dial. That unlock gathers no credential and sends none: the door
@@ -96,7 +99,11 @@ export function pulamaStandBy(a: {
   // refuses leaves the guest half alone, which conferre reads red; the vessel keeps standing.
   let landed = "";
   try { landed = (await a.holder.landRite()).par ? "; the tessera reads par" : "; the tessera's halves differ"; }
-  catch (err) { landed = `; the host half did not land (${(err as { reading?: string }).reading ?? (err instanceof Error ? err.message : String(err))})`; }
+  catch (err) {
+    const reading = (err as { reading?: string }).reading;
+    // A session the pūlama served on the admitted image began under no rite, so no tessera waits on a host half.
+    landed = reading === "rite-not-begun" ? "; served again on its admitted image, no lei spent" : `; the host half did not land (${reading ?? (err instanceof Error ? err.message : String(err))})`;
+  }
   a.onLog(`standing by the pūlama${wears !== null ? `; face h${wears} worn` : ""} (${stood.standing})${landed}`);
   return { session: true, waits: null };
   };

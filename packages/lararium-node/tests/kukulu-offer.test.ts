@@ -110,7 +110,7 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     // ONE KŪKULU, ONE OFFER: the file left with the session, so a plain restart afterwards wears nothing.
     expect(existsSync(s.path)).toBe(false);
     expect(readKukuluOffer(s.path)).toEqual({});
-    expect(await s.hello(readKukuluOffer(s.path))).toBe("kukulu-unvouched");
+    expect(await s.hello(readKukuluOffer(s.path))).toBe("pulama-image-unadmitted");
     // CONTROL: the lei still holds returns; a fresh rite writes a fresh offer, and that one serves.
     await s.offer();
     expect(await s.hello(readKukuluOffer(s.path))).toBe("opens");

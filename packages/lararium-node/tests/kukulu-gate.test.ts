@@ -125,7 +125,7 @@ describe("RED pulama-refuses-an-unvouched-kukulu", () => {
     const s = await stand();
     const lei = await s.string({ reach: "wide", returns: 3 });
     const v = await s.vouch();
-    expect(await s.hello({})).toBe("kukulu-unvouched");
+    expect(await s.hello({})).toBe("pulama-image-unadmitted");
     expect(await s.hello({ lei })).toBe("kukulu-unvouched");
     expect(await s.hello({ lei, vouch: { ...v, body: { ...v.body, image: "sha256:" + "cd".repeat(32) } } })).toBe("kukulu-vouch-signature");
     expect(await s.hello({ lei, vouch: "not-a-vouch" })).toBe("kukulu-vouch-shape");
