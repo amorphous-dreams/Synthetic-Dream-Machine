@@ -8,7 +8,7 @@ import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_ROWS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
 
-const ROWS = ["rite-begin", "rite-land", "rite-receipts"] as const;
+const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-receipt"] as const;
 
 test("RED: every rite row is a store-door verb that acts as a face; CONTROL: a seat may run each, and none asks a ward route", () => {
   for (const row of ROWS) {
@@ -25,7 +25,9 @@ test("RED: with no standing daemon wiki every rite row refuses by name and loads
   const deps: StoreDoorDeps = { storageDir: "/tmp/unused", sealHome: "/tmp/unused-seal", repo: {} as StoreDoorDeps["repo"] };
   const rows = storeDoorReactors(deps);
   const worn = { worn: { ordinal: 0 } } as never;
-  for (const [row, args] of [["rite-begin", { rite: "kukulu", branch: "main", head: "a".repeat(40) }], ["rite-land", { tessera: "c".repeat(64), head: "a".repeat(40) }], ["rite-receipts", {}]] as const) {
+  for (const [row, args] of [["rite-begin", { rite: "kukulu", branch: "main", head: "a".repeat(40) }], ["rite-land", { tessera: "c".repeat(64), head: "a".repeat(40) }], ["rite-receipts", {}],
+    // receipt-door-signs-the-tree: the receipt's writer rides the same door, open to a seat, with no ward.
+    ["rite-receipt", { tree: "b".repeat(40), checks: ["typecheck"], verdict: "pass", definitions: "d".repeat(64) }]] as const) {
     const out = await rows[row](args, worn);
     expect(out["refused"], row).toContain("no standing daemon: a rite's records need the founded wiki");
     expect(out["refusal"], row).toBe(`${row}-refused`);

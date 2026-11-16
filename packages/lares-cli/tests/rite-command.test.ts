@@ -92,10 +92,14 @@ describe("lares rite plans one store row per vessel sub-verb", () => {
     expect(plan("begin", "--rite", "kukulu", "--branch", "main", "--head", HEAD)).toEqual({ verb: "rite-begin", args: { rite: "kukulu", branch: "main", head: HEAD } });
     expect(plan("land", "--tessera", TESSERA, "--head", HEAD, "--face", "1")).toEqual({ verb: "rite-land", args: { tessera: TESSERA, head: HEAD, face: 1 } });
     expect(plan("receipts")).toEqual({ verb: "rite-receipts", args: {} });
+    // receipt-door-signs-the-tree: the host battery hands the vessel its verdict over a tree.
+    expect(plan("receipt", "--tree", "b".repeat(40), "--checks", "typecheck, mesh,cli", "--verdict", "pass", "--definitions", "d".repeat(64)))
+      .toEqual({ verb: "rite-receipt", args: { tree: "b".repeat(40), checks: ["typecheck", "mesh", "cli"], verdict: "pass", definitions: "d".repeat(64) } });
   });
 
   it("RED: an unknown sub-verb and a line that lacks a name refuse by usage; `kukulu` plans no single row", () => {
-    for (const line of [[], ["restart"], ["begin", "--rite", "kukulu", "--branch", "main"], ["begin", "--branch", "main", "--head", HEAD], ["land", "--head", HEAD], ["land", "--tessera", TESSERA], ["kukulu"]]) {
+    for (const line of [[], ["restart"], ["begin", "--rite", "kukulu", "--branch", "main"], ["begin", "--branch", "main", "--head", HEAD], ["land", "--head", HEAD], ["land", "--tessera", TESSERA], ["kukulu"],
+      ["receipt", "--tree", "t", "--checks", "a", "--verdict", "pass"], ["receipt", "--tree", "t", "--checks", " , ", "--verdict", "pass", "--definitions", "d"], ["receipt", "--checks", "a", "--verdict", "pass", "--definitions", "d"]]) {
       expect(() => plan(...line), line.join(" ")).toThrow(RiteUsage);
     }
   });
@@ -110,6 +114,6 @@ describe("the rite runs on the host, and its rows in the vessel", () => {
   it("RED: `rite kukulu` (and its spelling `kūkulu`) stays on this machine, where the shim stands; CONTROL: begin, land and receipts forward into the vessel", () => {
     expect(route(["rite", "kukulu"])).toBe("local");
     expect(route(["rite", "kūkulu", "--branch", "main"])).toBe("local");
-    for (const sub of ["begin", "land", "receipts"]) expect(route(["rite", sub, "--json"]), sub).toBe("forward");
+    for (const sub of ["begin", "land", "receipts", "receipt"]) expect(route(["rite", sub, "--json"]), sub).toBe("forward");
   });
 });
