@@ -3,14 +3,16 @@
  *
  * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree from git (`gitTreeOf`), returns the
  * rite's lei at that head (the evidence, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
- * host half once a vessel stands again; `receipts` lists every half and runs conferre over them.
+ * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
+ * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in.
  *
  * THE LEI CARRIES THE GRANT. No row here reads hand-only: the hand strung the lei under the ward, and any seat holding the
  * line may spend it.
  *
  * THE VESSEL SIGNS AS THIS DEVICE'S ATOM IN THE FACE. A return, a narrowing and each tessera half rest as the vessel's
  * witness, and a swarm record stays device-local, so the trust names this device's own atom as the vessel and no other key. A
- * receipt over a tree verifies under the same key; no row here writes one.
+ * receipt over a tree rests and verifies under the same key. It notarises the host's testimony: the vessel re-runs no check,
+ * and any seat may hand a verdict in, so a receipt vouches for what this vessel heard, never for the tree.
  *
  * With no standing daemon wiki every row refuses by name before a face loads.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
@@ -18,12 +20,12 @@
 import { execFile } from "node:child_process";
 import type { Repo } from "@automerge/automerge-repo";
 import {
-  SwarmRefused, beginRite, conferre, cosignPortWitness, isSwarmLeiRite, landRite, riteReceipts,
+  SwarmRefused, beginRite, conferre, cosignPortWitness, isSwarmLeiRite, landRite, restReceipt, riteReceipts,
   type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 
-export type RiteAction = "begin" | "land" | "receipts";
+export type RiteAction = "begin" | "land" | "receipts" | "receipt";
 
 /** Where the vessel looks for the checkout a rite's head belongs to: its own working directory, then the house's workspace mount. */
 export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
@@ -64,6 +66,10 @@ export async function runRiteVerb(opts: {
   const vessel: SwarmSignerPort = { key: signer.key, sign: (bytes) => signer.sign(bytes) };
   const trust: SwarmTrust = { hand: (key) => face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
   if (opts.action === "receipts") return { receipts: await riteReceipts(opts.wiki, trust, group), conferre: await conferre(opts.wiki, trust, group) };
+  if (opts.action === "receipt") {
+    // THE RECEIPT NOTARISES THE HOST'S TESTIMONY: the battery ran on the host, and this vessel signs the verdict it heard.
+    return { ...await restReceipt(opts.wiki, { tree: str("tree"), checks: opts.args["checks"] as readonly string[], verdict: opts.args["verdict"] as "pass" | "fail", definitions: str("definitions") }, trust, group, vessel) };
+  }
   if (opts.action === "land") {
     if (!/^[0-9a-f]{64}$/.test(str("tessera")) || !str("head")) throw new SwarmRefused("rite-malformed", "a landing names its tessera and the head the vessel stands at");
     return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head") }, trust, group, vessel) };

@@ -6,6 +6,8 @@
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
+ *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the vessel signs `receipt/<tree>`.
+ *              It notarises testimony: the vessel re-runs no check
  *
  * The lei carries the grant: the hand strung it (`lares lei kui --rite kukulu …`), and any seat holding the line may spend it.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
@@ -23,7 +25,7 @@ import { storeFailure, storeVerb } from "../store-door.js";
 
 export class RiteUsage extends Error {}
 
-export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts";
+export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-receipt";
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
@@ -44,12 +46,21 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit>");
     return { verb: "rite-begin", args: { rite, branch, head, ...face } };
   }
+  if (act === "receipt") {
+    // `--tree` reads as a bare flag across this CLI (the parser's boolean list), so the tree itself rides the next word:
+    // `receipt --tree <t>` and `receipt <t>` name it alike.
+    const tree = args.flags["tree"] === false ? undefined : word(args.positional[1]);
+    const verdict = word(args.options["verdict"]), definitions = word(args.options["definitions"]);
+    const checks = (word(args.options["checks"]) ?? "").split(",").map((c) => c.trim()).filter((c) => c !== "");
+    if (tree === undefined || verdict === undefined || definitions === undefined || checks.length === 0) throw new RiteUsage("receipt names its tree, its checks, its verdict and its definitions: --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash>");
+    return { verb: "rite-receipt", args: { tree, checks, verdict, definitions, ...face } };
+  }
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : "name a sub-verb: kukulu, begin, land or receipts");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : "name a sub-verb: kukulu, begin, land, receipts or receipt");
 }
 
 async function runRow(args: ParsedArgs, plan: RitePlan): Promise<number> {
