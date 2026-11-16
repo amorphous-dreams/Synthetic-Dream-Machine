@@ -87,7 +87,7 @@ describe("rite-landed-names-begun", () => {
     const host = await readSwarmRecord(f.wiki, swarmTesseraTitle(begun.tessera, "host"), f.trust, GROUP);
     expect(host).toMatchObject({ ok: true, cid: landed.landed, act: { signer: f.vessel.key, body: { act: "rite-landed", rite: "kukulu", tessera: begun.tessera, begun: begun.begun, head: HEAD } } });
     await expect(f.land(begun.tessera)).rejects.toMatchObject({ code: "rite-already-landed" });
-    expect(await conferre(f.wiki, f.trust, GROUP)).toEqual({ par: [{ tessera: begun.tessera, rite: "kukulu", begun: begun.begun, landed: landed.landed, par: true }], red: [] });
+    expect(await conferre(f.wiki, f.trust, GROUP)).toEqual({ par: [{ tessera: begun.tessera, rite: "kukulu", begun: begun.begun, landed: landed.landed, branch: BRANCH, head: HEAD, par: true }], red: [] });
   });
 });
 
@@ -101,15 +101,29 @@ describe("wake-reads-unmatched-half-red", () => {
     const drifted = await f.land(other.tessera, HEAD2);
     expect(drifted.par).toBe(false);
     const read = await conferre(f.wiki, f.trust, GROUP);
-    expect(read.par).toEqual([{ tessera: matched.tessera, rite: "kukulu", begun: matched.begun, landed: landed.landed, par: true }]);
+    expect(read.par).toEqual([{ tessera: matched.tessera, rite: "kukulu", begun: matched.begun, landed: landed.landed, branch: BRANCH, head: HEAD, par: true }]);
     expect([...read.red].sort((a, b) => String(a.red).localeCompare(String(b.red)))).toEqual([
-      { tessera: other.tessera, rite: "kukulu", begun: other.begun, landed: drifted.landed, par: false, red: "head-differs" },
-      { tessera: open.tessera, rite: "kukulu", begun: open.begun, landed: null, par: false, red: "landed-absent" },
+      { tessera: other.tessera, rite: "kukulu", begun: other.begun, landed: drifted.landed, branch: BRANCH, head: HEAD, par: false, red: "head-differs" },
+      { tessera: open.tessera, rite: "kukulu", begun: open.begun, landed: null, branch: BRANCH, head: HEAD, par: false, red: "landed-absent" },
     ]);
     const receipts = await riteReceipts(f.wiki, f.trust, GROUP);
     expect(receipts).toHaveLength(5);
     expect(receipts.filter((r) => r.act === "rite-begun").map((r) => r.tessera).sort()).toEqual([matched.tessera, other.tessera, open.tessera].sort());
     expect(receipts.filter((r) => r.act === "rite-landed").every((r) => r.rite === "kukulu")).toBe(true);
+  });
+
+  test("RED: an open begun half reads red naming the branch and head it began at, so the seat that owes its landing finds it; CONTROL: a lone host half with no guest names neither", async () => {
+    const f = await fixture();
+    await f.receipt();
+    await f.kui("kukulu", { reach: "wide", returns: 2 });
+    const open = await f.begin(HEAD2);
+    const lone = "7".repeat(64);
+    await putSwarmAct(f.wiki, swarmTesseraTitle(lone, "host"), await signSwarmAct({ act: "rite-landed", group: GROUP, rite: "kukulu", tessera: lone, begun: "8".repeat(64), head: HEAD }, f.vessel));
+    const read = await conferre(f.wiki, f.trust, GROUP);
+    expect(read.red.find((r) => r.tessera === open.tessera)).toMatchObject({ red: "landed-absent", branch: BRANCH, head: HEAD2 });
+    const alone = read.red.find((r) => r.tessera === lone);
+    expect(alone?.red).toBe("begun-absent");
+    expect("head" in (alone ?? {}) || "branch" in (alone ?? {})).toBe(false);
   });
 
   test("RED: a host half no vessel signed, one that names another begun half, and one with no guest half each read red by name; none reads par", async () => {

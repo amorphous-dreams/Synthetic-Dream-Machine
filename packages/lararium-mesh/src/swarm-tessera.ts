@@ -33,9 +33,13 @@ import type { WardActWitness } from "./ward-cosign.js";
 export const tesseraOf = (ret: { readonly lei: string; readonly n: number }): string => sha256HexBytesSync(canonicalJsonBytes({ lei: ret.lei, n: ret.n }));
 
 export type TesseraRed = "landed-absent" | "head-differs" | "rite-differs" | "landed-names-another" | "begun-absent" | "begun-refused" | "landed-refused";
-/** One tessera as conferre reads it: each half by its record's cid (null where none verifies), and `par` for a match. */
+/**
+ * One tessera as conferre reads it: each half by its record's cid (null where none verifies), and `par` for a match. Where the
+ * begun half verifies, the reading names the branch and head that half began at, so a seat that owes a landing finds its own.
+ */
 export interface TesseraReading {
   readonly tessera: string; readonly rite: SwarmLeiRite | null; readonly begun: string | null; readonly landed: string | null;
+  readonly branch?: string; readonly head?: string;
   readonly par: boolean; readonly red?: TesseraRed;
 }
 
@@ -101,8 +105,9 @@ export async function conferre(wiki: SwarmWikiPort, trust: SwarmTrust, group: st
       : host.body.rite !== guest.body.rite ? "rite-differs"
       : host.body.head !== guest.body.head ? "head-differs"
       : null;
-    if (why === null) par.push({ tessera, rite, begun, landed, par: true });
-    else red.push({ tessera, rite, begun, landed, par: false, red: why });
+    const at = guest.state === "ok" ? { branch: guest.body.branch, head: guest.body.head } : {};
+    if (why === null) par.push({ tessera, rite, begun, landed, ...at, par: true });
+    else red.push({ tessera, rite, begun, landed, ...at, par: false, red: why });
   }
   return { par, red };
 }
