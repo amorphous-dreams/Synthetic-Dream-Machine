@@ -41,7 +41,7 @@ import { cpSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync, statS
 import { homedir } from "node:os";
 import { dirname, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
-import { seedFiles, seedPlan, pickCanon, PETNAMES, SHARED_WIKIS, STAGE_PREFIX } from "./carry-seed.mjs";
+import { seedFiles, seedPlan, pickCanon, PETNAMES, STAGE_PREFIX } from "./carry-seed.mjs";
 import {
   TEST_PASSPHRASE, UNLOCK_SAYS, WARD_SAYS, assertImageScope, build, found, imageHands, imageReceiptFaults, lastJson,
   pulamaLight, pulamaUp, refusal, stageCustody, surfaceEnvText, tail, unlockedOf, upOwn, upPulama, walkImage,
@@ -420,14 +420,26 @@ const seedContent = async (c) => {
   return { ok: true, answer: `rows put per face ${JSON.stringify(tally)}; non-NFC row exit ${oddPut.code}; ${notes.length} edge act(s)`, measures: { tally, edges: notes, nonNfc: c.vars.nonNfc, expectedStandoff: plan.expectedStandoff, unseeded: ["a temp-layer record (no verb grounded; consent alone rides)", "a draft recovery file"] } };
 };
 
-/** Readers first, the writer last: every shared wiki held under each face, so none rests cold at the export. */
+/** The wikis hold-old wakes: every slug the house's catalog lists but the daemon (which never takes a pin), sorted; an
+ *  unreadable list answers null, never a guessed set. */
+export function wikisToWake(answer) {
+  const wikis = answer?.data?.wikis;
+  if (!Array.isArray(wikis)) return null;
+  return [...new Set(wikis.map((w) => String(w?.slug ?? "")).filter((slug) => slug && slug !== "daemon"))].sort();
+}
+
+/** Readers first, the writer last: every wiki the house lists woken under each face in turn (the ruled rite: a wake projects
+ *  that wiki's pages before the pin budget lets it fall cold), the slugs the steward woke read into the export's judge. */
 const holdOld = async (c) => {
   const h = c.hands("old");
   const said_ = [];
+  const listed = await h.shim(["wiki", "list", "--json"]);
+  const slugs = wikisToWake(json(listed.stdout));
+  if (slugs === null) return { ok: false, answer: `wiki list read no catalog: ${refusal(listed)}` };
   for (const face of [2, 1, 0]) {
     const w = await wear(c, "old", face);
     if (!w.ok) return { ok: false, answer: `face ${face} never stood worn: ${tail(w.transcript)}` };
-    for (const slug of SHARED_WIKIS) {
+    for (const slug of slugs) {
       const r = await h.shim(["wiki", "hold", slug, "--no-json"]);
       said_.push(`${face}/${slug}: ${r.code === 0 ? "held" : refusal(r)}`);
       if (face === 0 && r.code === 0) c.vars.woken = [...new Set([...(c.vars.woken ?? []), slug])];

@@ -440,6 +440,14 @@ test("carry-standoff-reads-a-named-set: the import's stand-offs judge against th
     const strayBag = judgeExport(ok0, { data: { omissions: [bases("lar:///ha.ka.ba/wikis/works/working")] } }, { woken: ["lares"] });
     assert.equal(strayBag.ok, false, "an override-bases omission over an unwoken wiki's bag reads red");
   }
+  {
+    // hold-old wakes EVERY wiki the house lists (the ruled rite: each wiki in turn), the canon wikis beside the seeded ones;
+    // the daemon never takes a pin, and an unreadable list wakes nothing rather than a guessed set.
+    const { wikisToWake } = present(carryLeg);
+    const listed = { ok: true, data: { wikis: [{ slug: "notes" }, { slug: "lararium" }, { slug: "lares" }, { slug: "daemon" }, { slug: "cold-shelf" }] } };
+    assert.deepEqual(wikisToWake(listed), ["cold-shelf", "lararium", "lares", "notes"]);
+    assert.equal(wikisToWake(null), null);
+  }
   const { judgeImport } = present(carryLeg);
   const moved = CANON.moved.uri;
   const tallies = (stoodOff = [], refused = []) => ({ memes: { landed: 3, already: 0, planned: 0, waiting: 0, stoodOff, refused } });
