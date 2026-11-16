@@ -12,7 +12,7 @@
  * What no chain can prove about itself is the INDEPENDENCE of the hands — a 2-of-3 worn by one human
  * verifies exactly like a 2-of-3 held by three. The field's answer runs through human witness records
  * (the audited key ceremony: an observer, a script, a report); this record carries that answer in a
- * checkable form: the OLD set signs the handoff, the NEW set countersigns the receipt (the TUF
+ * checkable form: the outgoing set signs the handoff, the incoming set countersigns the receipt (the TUF
  * cross-sign, both quorums over one byte-image), and WITNESSES attest the rite — where an independent
  * witness is, by definition here, a key belonging to NEITHER set. Witness marks attest, they never
  * authorize: authority rides the two quorums alone.
