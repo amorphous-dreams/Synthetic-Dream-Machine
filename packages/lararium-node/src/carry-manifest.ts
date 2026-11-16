@@ -23,6 +23,9 @@
  *   daemon/canon/<interior>        the daemon wiki's canon (`bags/daemon`), its authored records alone
  *   wikis/<slug>/working/<interior> another wiki's working carriers
  *
+ * A KEEP leaves out what another holder already keeps: a workbench whose mirror rests inside the checkout (git holds it) travels
+ * in no keep's files, and the manifest names it under `elsewhere` so the restore knows where it rests.
+ *
  * Isomorphic by intent: every class names a capability (a vessel that holds a disk store, a session that wears a face),
  * never a host, so a browser vessel's OPFS projection reads into the same tree.
  *
@@ -67,6 +70,12 @@ export interface CarryRow {
 /** A bundle face: its path key and the pet-name it carries. */
 export interface CarryFace { readonly key: string; readonly petname: string }
 
+/**
+ * One document a keep left to another holder, named by where it rests: a sourced wiki's workbench inside the checkout, which git
+ * holds (`holder: "checkout"`, `path` relative to the checkout, never a host path). The bundle carries none of its files.
+ */
+export interface CarryElsewhere { readonly slug: string; readonly layer: "wiki-working"; readonly bag: string; readonly holder: "checkout"; readonly path: string }
+
 /** What the bundle leaves behind, named: an export never drops a thing silently. */
 export interface CarryOmission { readonly kind: string; readonly detail: string; readonly items?: readonly string[]; readonly count?: number }
 
@@ -83,6 +92,8 @@ export interface CarryManifest {
   readonly omissions: readonly CarryOmission[];
   /** The acquired library's collections and each index carrier's sha-256. The originals survive in place and never travel. */
   readonly library?: ReadonlyArray<{ readonly collection: string; readonly indexSha256: string | null }>;
+  /** What a KEEP left to another holder, by where it rests (absent on a plain export). */
+  readonly elsewhere?: readonly CarryElsewhere[];
 }
 
 /** One face's re-declare row: the strings the operator chose, replayed as fresh acts under the new keys. */
@@ -251,6 +262,10 @@ export function verifyBundle(root: string): VerifiedBundle {
     throw new CarryBundleRefused("bundle-redeclare-shape: the re-declare list's wikis name something no wiki slug spells");
   }
 
+  if (raw.elsewhere !== undefined && (!Array.isArray(raw.elsewhere) || (raw.elsewhere as unknown[]).some((e) => !isObj(e) || !isStr(e.slug) || e.layer !== "wiki-working"
+    || !isStr(e.bag) || e.holder !== "checkout" || !isStr(e.path) || unsafeRelPath(e.path) !== null || (files as CarryFile[]).some((f) => f.path.startsWith(`wikis/${String(e.slug)}/working/`))))) {
+    throw new CarryBundleRefused("bundle-elsewhere-shape: the manifest's elsewhere names a holder, a place or a slug no keep spells, or a workbench the bundle still carries");
+  }
   const fileSha = new Map((files as CarryFile[]).map((f) => [f.path, f.sha256] as const));
   const heads = new Map<string, CarryKahuaHead[]>();
   for (const key of faceKeys.keys()) {

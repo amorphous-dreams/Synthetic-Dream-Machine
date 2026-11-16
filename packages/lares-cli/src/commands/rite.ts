@@ -105,7 +105,7 @@ const KEEP_PORTS: KeepPorts = {
     try { return { ok: true, output: (await storeVerb(verb, rowArgs)).output }; }
     catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
   },
-  cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
+  cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace, houseOnly: true, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
   // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
   wikis: {
     read: async () => {

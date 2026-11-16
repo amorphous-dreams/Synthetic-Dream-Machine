@@ -78,6 +78,9 @@ import {
 } from "../carry-manifest.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 
+/** One document a keep left to another holder (`CarryManifest.elsewhere`). */
+type CarryElsewhere = NonNullable<CarryManifest["elsewhere"]>[number];
+
 
 /** One face this vessel wears, as the doors read it. */
 export interface CarryVesselFace {
@@ -398,7 +401,10 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   readonly workspace?: string;
   /** The cold wikis the keep rite held before this cut (`../rite-keep.ts`, the wake): each projected its pages first, so the
    *  cut names none of them cold. A bare export names none. */
-  readonly woken?: readonly string[] }): Promise<CarryExportResult> {
+  readonly woken?: readonly string[];
+  /** THE KEEP CUTS HOUSE-ONLY CONTENT (the keep rite alone): a workbench whose mirror rests inside the checkout, which git holds,
+   *  stays out of the files and lands under the manifest's `elsewhere`. A bare export carries every workbench, as before. */
+  readonly houseOnly?: boolean }): Promise<CarryExportResult> {
   const { doors, acceptOmissions } = opts;
   const target = resolve(dest);
   const house = larHouseRoot();
@@ -534,11 +540,18 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     const wikiBases = await baseFor(wikiSlotUri(name, "working"));
     addTree(src, `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(wikisDir, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
   }
-  // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside its canon source: the same one row set, from that folder.
+  // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside its canon source: the same one row set, from that folder. A KEEP reads
+  // where the folder rests: inside the checkout git holds it, so the keep names it under `elsewhere` and carries none of it.
   const canonWikis = doors.canonWikis?.() ?? null;
+  const elsewhere: CarryElsewhere[] = [];
   if (canonWikis !== null && resolve(canonWikis) !== resolve(wikisDir)) {
     for (const name of folders(canonWikis)) {
       if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name)) continue;
+      const bench = join(canonWikis, name);
+      if (opts.houseOnly === true && inside(repoRoot, bench)) {
+        elsewhere.push({ slug: name, layer: "wiki-working", bag: wikiSlotUri(name, "working"), holder: "checkout", path: relative(realish(repoRoot), realish(bench)).split(sep).join("/") });
+        continue;
+      }
       const wikiBases = await baseFor(wikiSlotUri(name, "working"));
       addTree(join(canonWikis, name), `wikis/${name}/working`, (_rel, abs) => withBase({ face: null, bag: wikiSlotUri(name, "working"), layer: "wiki-working", title: carriedFileTitle(canonWikis, abs), rowKey: null }, wikiBases), ["recovery", TEMP_LAYER_DIR]);
     }
@@ -638,7 +651,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     };
     put(REDECLARE_FILE, `${JSON.stringify(redeclare, null, 2)}\n`);
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
-    const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing() };
+    const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
     verifyBundle(staging);      // every byte read back against the manifest before the bundle takes its name
     renameSync(staging, target);
