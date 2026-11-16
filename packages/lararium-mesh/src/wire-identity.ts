@@ -27,6 +27,16 @@
  *     store id under the local pair's scope, so the sync state one face rested with a peer never opens another face's
  *     exchange with it. A leg holds no alias for a peer its seat does not name, and says nothing to that peer.
  *   · DOCUMENTS STAY ONE SET. The scope moves the identity alone; every document chunk passes untouched.
+ *   · A CHANGE NAMES ITS FACE'S ACTOR, FOR ONE DOCUMENT, IN ONE COMPOSITION (`actor`, `writeAs`). Automerge stamps every
+ *     change with an actor id, and every holder of a document decodes it. The engine mints one actor for each document it
+ *     loads, so two faces that write one document through one Repo would write under one actor. A write through
+ *     `writeAs` lands under the actor its face derives: a keyed digest, under the face scope's own secret, of a salt
+ *     this composition minted and the document's id, sixteen bytes that name no face, vessel or document. The document
+ *     rides the digest so one face's actor joins no two of its documents (a face-wide actor would join a face across
+ *     its Nexuses). The composition's salt rides it so NO ACTOR OUTLIVES ITS COMPOSITION: a store that lost a write a
+ *     peer already holds (a crash ahead of the flush, a restore from a bundle) would hand a stable actor's sequence out
+ *     twice, and the engine refuses that merge for good. Two devices of one face hold two stores, so two secrets and two
+ *     salts. The floor derives under its own scope's secret, apart from every face.
  *
  * A scope's name in the store derives from the PersonaGroup by a one-way digest, so the store's own key names hold no
  * group id. The store itself rests vessel-private (it joins a human's faces as every vessel-private record does).
@@ -35,9 +45,18 @@
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat
  */
+import * as A from "@automerge/automerge";
 import type { Chunk, PeerId, PeerMetadata, StorageAdapterInterface, StorageKey } from "@automerge/automerge-repo";
+import { hmac } from "@noble/hashes/hmac.js";
+import { sha256 } from "@noble/hashes/sha2.js";
 import { sha256HexSync } from "./crypto.js";
-import { WIRE_ALIAS_DOMAIN, WIRE_SCOPE_DOMAIN } from "./domains.js";
+import { WIRE_ACTOR_DOMAIN, WIRE_ALIAS_DOMAIN, WIRE_SCOPE_DOMAIN } from "./domains.js";
+
+/** What `writeAs` reads of a document handle: its id, and the engine's own door for replacing its snapshot. */
+export interface ActorWritable<T> {
+  readonly documentId: string;
+  update(callback: (doc: A.Doc<T>) => A.Doc<T>): void;
+}
 
 /** The face a composition wears (its PersonaGroup), or null at the veil floor; a boot that settles its face late hands a promise. */
 export type WornFace = string | null | Promise<string | null>;
@@ -81,6 +100,16 @@ export interface WireIdentity {
    * (`alias`), so its composer settles it before the session's first word reaches the adapter.
    */
   leg<T extends object>(adapter: T, seat: WireLegSeat, onRefusal?: (refusal: WireLegRefusal, peerId: string) => void): T;
+  /** The change actor `face` (null: the veil floor) writes `documentId` under in this composition: sixteen bytes of hex,
+   *  settled once, and every later reading answers it. Another composition derives another. */
+  actor(face: string | null, documentId: string): Promise<string>;
+  /**
+   * WRITE ONE CHANGE AS A FACE: `change` lands on the handle's document under the actor `face` derives for it, and the
+   * document then stands again under the actor it held, so a write that names no face never rides a face's actor.
+   */
+  writeAs<T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void): Promise<void>;
+  /** Whether this composition derived `actor`: a change under it reads as this replica's own, never a peer's. */
+  ownsActor(actor: string): boolean;
 }
 
 /** The engine's own key for a store's id, and the key segment under which it rests a peer's sync state. */
@@ -314,8 +343,39 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
     return adapter;
   };
 
+  // THE COMPOSITION'S ACTOR SALT: random, held in memory alone. No actor outlives the composition that derived it.
+  const actorSalt = hexOf(globalThis.crypto.getRandomValues(new Uint8Array(32)));
+  const actors = new Map<string, Promise<string>>();
+  const owned = new Set<string>();
+  const actor = (face: string | null, documentId: string): Promise<string> => {
+    const scope = wireScopeOf(face);
+    const name = `${scope}\n${documentId}`;
+    let reading = actors.get(name);
+    if (reading === undefined) {
+      reading = (async () => {
+        // The face scope's own secret keys the digest (the secret a pair's alias derives from, under another domain).
+        const secret = await rested(`${STORE_ID}-${scope}.veil`, () => hexOf(globalThis.crypto.getRandomValues(new Uint8Array(32))));
+        const derived = hexOf(hmac(sha256, secret, new TextEncoder().encode(`${WIRE_ACTOR_DOMAIN}\n${actorSalt}\n${documentId}`)).slice(0, 16));
+        owned.add(derived);
+        return derived;
+      })().catch((e: unknown) => { actors.delete(name); throw e; });
+      actors.set(name, reading);
+    }
+    return reading;
+  };
+  const writeAs = async <T>(handle: ActorWritable<T>, face: string | null, change: (doc: T) => void): Promise<void> => {
+    const as = await actor(face, handle.documentId);
+    handle.update((doc) => {
+      const held = A.getActorId(doc);
+      const written = A.change(A.clone(doc, { actor: as }), change as A.ChangeFn<T>);
+      // The document stands again under the actor it held: the engine's own, which no face's write rides.
+      return held === as ? written : A.clone(written, { actor: held });
+    });
+  };
+
   return {
-    storage, peerId, alias, leg,
+    storage, peerId, alias, leg, actor, writeAs,
+    ownsActor: (name) => owned.has(name),
     storeId: async () => new TextDecoder().decode(await storage.load([STORE_ID])),
   };
 }

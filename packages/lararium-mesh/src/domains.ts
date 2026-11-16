@@ -270,6 +270,9 @@ export const WIRE_SCOPE_DOMAIN = mint("wire-scope");
 /** The digest under which a face scope's own secret and a Nexus derive what one (face, Nexus) presents at the wire
  *  (`wire-identity`): the pair's store id and its local scope. Its own name, so no alias reads as a scope's name. */
 export const WIRE_ALIAS_DOMAIN = mint("wire-alias");
+/** The keyed digest under which a face scope's own secret derives the CHANGE ACTOR a face writes one document under in one
+ *  composition (`wire-identity`, `actor`). Its own name, so no actor reads as an alias or a scope's name. */
+export const WIRE_ACTOR_DOMAIN = mint("wire-actor");
 /** The steward's RETIRE of one canon offer after its promotion, keyed to the offer's CID. Its own name, so no offer verifies as one. */
 export const CANON_OFFER_RETIRE_DOMAIN = mint("canon-offer-retire");
 /** The COMMITMENT a sealed face anchor keeps to its persona root: the root's DID hashes under this name, so
