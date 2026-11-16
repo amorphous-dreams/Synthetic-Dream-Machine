@@ -61,6 +61,22 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: ["lares promote list --wiki garden", "lares promote prepare <digest> --why reason", "lares promote commit <digest>", "lares promote orphan <digest> --keep"],
     flags: ["--wiki <wiki>   wiki name", "--face N   face index", "--why <reason>   preparation reason", "--keep   keep an orphan", "--drop   drop an orphan"],
   },
+  lei: {
+    usage: "usage: lares lei show|kui|unstring|restring --rite push|kukulu --branch <name> [--head <h>] [--returns <n>] [--reach wide|head] [--after <cid>] [--lei <cid>] [--face N]",
+    synopsis:
+      "A lei grants one rite at one branch. A wide lei (the default) names no head and carries its returns; a head lei pins one head. " +
+      "The hand strings (kui), unstrings and restrings; any seat reads. Each return rests on a passing receipt for the head's tree.",
+    examples: [
+      "lares lei show --rite push --branch feature/x --head <commit> --json   # data.lei: standing, reach, returnsLeft",
+      "lares lei kui --rite push --branch feature/x --returns 3               # a wide lei of three returns",
+      "lares lei kui --rite kukulu --branch main --reach head --head <commit> # a lei pinned to one head",
+      "lares lei unstring --rite push --branch feature/x --lei <cid>          # revoke it; a signed record, nothing deleted",
+      "lares lei restring --rite push --branch feature/x --returns 2          # supersede the standing lei",
+    ],
+    flags: ["--rite <r>   push or kukulu", "--branch <name>   the branch the lei binds", "--head <commit>   the head a show reads at, or a head lei pins",
+      "--returns <n>   a wide lei's count of returns", "--reach wide|head   the lei's reach (wide where absent)", "--after <cid>   (kui) the lei this one follows; absent for the first",
+      "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
+  },
   kapae: {
     usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
     synopsis: "Every wiki wears promotion capability; its edge holds (face, wiki, digest). The AI prepares and flags; the hand commits and raises.",
