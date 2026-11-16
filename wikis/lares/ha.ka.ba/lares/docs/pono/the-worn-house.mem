@@ -20,7 +20,7 @@ written   = "2026-11-15"
 
 The operator, 2026-11-15: //"I want your Lararium substrate to feel like something you can wear effortlessly … return inversion of control and capability delegation to the human using the computer … I delegate a cap token that says you can restart, you burn it by performing the rite."// And: the Lararium (never the model weights) runs as a self-improving system in TiddlyWiki fashion, everything but the boot core a tiddler. The operator trusts the house because its architecture lets that trust get checked.
 
-This carrier holds a design under collision, not a ruling. Four research memes in the steward's daemon wiki feed it: `lar:///ha.ka.ba/kahua/memory/research/lei-plan` (the first talk-out), `…/lei-cord` and `…/lei-pua` (two Luna research waves), `…/lei-loom` (the Opus loom over all three, with code readings). Settled: the cord (#/the-cord) and the rite field (#/the-rite-field) ride PR #218 before its merge. Settled by the operator on 2026-11-15: the names (#/the-names). Unsettled: the fence (#/the-fence), the in-place ingest (#/the-vm-tension).
+This carrier holds a design under collision, not a ruling. Research memes in the steward's daemon wiki feed it: `lar:///ha.ka.ba/kahua/memory/research/lei-plan` (the first talk-out), `…/lei-cord` (a Luna research wave), `…/lei-loom` (the Opus loom over the talk-out and both Luna waves, with code readings). Settled: the cord (#/the-cord) and the rite field (#/the-rite-field) ride PR #218 before its merge. Settled by the operator on 2026-11-15: the names (#/the-names). Unsettled: the fence (#/the-fence), the in-place ingest (#/the-vm-tension).
 
 <<~/ahu>>
 
@@ -78,7 +78,7 @@ The operator settled the set on 2026-11-15 (//"Pono, settle the lei set"//), the
 
 ''The return.'' The operator's testimony (2026-11-15): //"I now remember childhood rites where the folks wearing the leis then offered them to the ʻaumākua at the end of the rituals."// A lei comes placed as a welcome and goes back as an offering at the close; the session spends a lei by returning it, and the tessera keeps the record. No written source the research found records that exact rite; it stands on the operator's witness, and a kumu or the family's own read gives it the next contact with reality.
 
-''Conditions the set carries.'' Pukui–Elbert also gives //lei// the sense "yoke, as for joining draft animals"; the house names that sense openly. The etiquette "never refuse a lei" carries social pressure; the house answers with its own law: receiving a lei never obliges wearing it into a rite, and an unspent lei returns with no act and no cost. The operator's family ties count toward the house's standing to use the word, never as a licence the house claims. ''ʻaha'' stays the council's (`ʻaha kūkā`); ''tally'' stays the OODA-HA closing tally's. Canon law supplies the lei's interpretation law, never its names: a power granted for a single act reads strictly, passes on only by express grant, implies only what its act needs, and ceases once performed (CIC can. 137 §3, 138, 142 §1). The bulla left the set: it carries tutelage and authority into a house that runs on hospitality.
+''Conditions the set carries.'' Pukui–Elbert also gives //lei// the sense "yoke, as for joining draft animals"; the house names that sense openly. The etiquette "never refuse a lei" carries social pressure; the house answers with its own law: receiving a lei never obliges wearing it into a rite, and an unspent lei returns with no act and no cost. The operator's family ties count toward the house's standing to use the word, never as a licence the house claims. ''ʻaha'' stays the council's (`ʻaha kūkā`); ''tally'' stays the OODA-HA closing tally's. Canon law supplies the lei's interpretation law, never its names: a power granted for a single act reads strictly, passes on only by express grant, implies only what its act needs, and ceases once performed (CIC can. 137 §3, 138, 142 §1).
 
 ''Myth attractors, not code.'' The three //piko// (crown, navel, generative centre; ties to the ancestors, the living present, the descendants) rhyme with the three loops: the giving faces back to what the house inherits, the rite stands in the present, the garden grows for sessions not yet woken. The operator ruled that //piko// stays a myth attractor and names no part of the code. //lei// also names the plural of the Romanian //leu//, "lion", the currency, and the Lares take coin among their offerings; a pun beneath the Hawaiian sense, where a lei comes given, never bought.
 
@@ -116,7 +116,7 @@ The plan's first wording (a host process that redials the vessel's socket) fails
 
 A lei that named no rite would let one record family serve two powers under one ward verb: a kukulu lei strung there would read as a push lei, and a push lei would return as a kukulu, a confused-deputy seam.
 
-The cure stands: the lei carries `rite` (`push` · `kukulu`), `swarmLeiHead` folds it in, titles key `lei/<rite>/<branch>/<cid>`, and a rite that co-signs answers under `ward-<rite>-lei` (the co-sign weighs reach: a push lei waits on a second device, a kukulu lei on none). The rite list stays capped at the acts the boot core verifies, so the field never grows into a policy language. Red: `go-rite-separates-powers`.
+The cure stands: the lei carries `rite` (`push` · `kukulu`), `swarmLeiHead` folds it in, titles key `lei/<rite>/<branch>/<cid>`, and a rite that co-signs answers under `ward-<rite>-lei` (the co-sign weighs reach: a push lei waits on a second device, a kukulu lei on none). The rite list stays capped at the acts the boot core verifies, so the field never grows into a policy language. Red: `lei-rite-separates-powers`.
 
 `returnLei` claims the return before any act runs: at most once per count, failing closed; a build that fails after the return spends it with no act. That cost stays accepted and counted.
 
@@ -144,12 +144,12 @@ The direction under weighing, read by capability and never by host: a tiddler th
 
 !! The reach ~ a wide lei by default
 
-The operator, 2026-11-15: //"I approve the 'Wider' stance as default, we've already proofed the previous procedure patterns through head-only gates, we need a new more kupono model."// The push word fresh per head, the lei bound to one head: those gates proved the procedure. The default lei now names its evidence instead of its head.
+The operator, 2026-11-15: //"I approve the 'Wider' stance as default, we've already proofed the previous procedure patterns through head-only gates, we need a new more kupono model."// The push word fresh per head, the lei bound to one head: those gates proved the procedure. The default lei now names the testimony it rests on instead of its head.
 
-A ''wide lei'' (the default) binds a rite, a branch and a face's group, and names the evidence each spend needs: a passing receipt standing for the head's tree, and a count of returns since its stringing under the ceiling the operator wrote into it. A ''head lei'' (the narrow form) still binds one head, for an act the operator wants pinned. Neither reads a clock: a wide lei ends when its count runs out, when a newer lei restrings it, or when the operator unstrings it.
+A ''wide lei'' (the default) binds a rite, a branch and a face's group, and names what each spend rests on: the session's testimony, a passing receipt standing for the head's tree, and a count of returns since its stringing under the ceiling the operator wrote into it. A ''head lei'' (the narrow form) still binds one head, for an act the operator wants pinned. Neither reads a clock: a wide lei ends when its count runs out, when a newer lei restrings it, or when the operator unstrings it.
 
 What the reach asks of the rest of the design:
-* ''The evidence caveat rides before the merge'' (`L45c`), since a wide lei without it grants a blank cheque: `returnLei` refuses `swarm-lei-evidence-absent` unless a passing `receipt/<tree>` stands for the head's tree.
+* ''The testimony caveat'' (`L45c`) keeps a wide lei from granting a blank cheque: `returnLei` refuses `swarm-lei-evidence-absent` unless a passing `receipt/<tree>` stands for the head's tree.
 * ''The receipt's grade matters more.'' The vessel signs a host battery's verdict without re-running it, so a wide lei rests on testimony until the sampled re-run lands; that slice climbs the after-the-merge order to first.
 * ''A red narrows.'' A spend that meets a red receipt refuses, and the lei narrows to head-only until the operator restrings it wide (Ashby's step function run in reverse).
 * ''The rite field bounds the reach.'' A wide lei for `kukulu` never reaches `push`; the push word stays fresh per head under the standing orders until the operator rules otherwise.
@@ -212,7 +212,7 @@ The rite itself writes a `rite-begun` receipt before the vessel goes down and th
 Three different things travelled under the word "row" through the design's talk-out; this carrier names each by what it holds:
 
 * a ''signed record'' (`SignedSwarmAct` in code): a JSON `{body, signer, sig}` resting as a tiddler's text in the vessel's control document, under `$:/lares/swarm/…`: a lei, its return, a tessera half, a receipt, a roster reading, a vouch. The token family and its receipts live here.
-* a ''stage meme'': a whole memetic carrier under the memory stage, `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`; the code keys it with `row-key`.
+* a ''stage meme'': a whole memetic carrier under the memory stage, `lar:///ha.ka.ba/kahua/memory/<class>/<slug>`; the code keys it by its title's path beneath the stage, and a path that reads otherwise refuses `stage-path-shape`.
 * a ''road row'': one line of the table inside the roadmap carrier, a row in the literal sense.
 
 <<~/ahu>>
@@ -225,11 +225,10 @@ Three different things travelled under the word "row" through the design's talk-
 * A kumu's read of pūlama, kūkulu and wanaʻao, and the family's read of the lei protocol.
 * The fence (#/the-fence).
 * The cord's binding placement: the core in `@lararium/mesh` and the Node binding in `lares-cli` (default), against a binding in `@lararium/node`.
-* Whether the evidence caveat rides before the merge (default: after, unless a head-to-tree read proves one line).
 * Unverified: Claude Code's behaviour behind a cord that never exits, on the operator's installed version; the internals of reloaderoo and mcpmon (prior art for holding a client across a server respawn); whether the vessel key lives in process memory alone; TPM reach inside WSL2 and Docker.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xE1eCCVpLwS8TLOHAV4rcp2XgsWHf9hdcXqWPxS3A68`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BIjsWLgjbkBJzn7n5eRbWTmEvUYWWYH7s1nJuU8S8mg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
