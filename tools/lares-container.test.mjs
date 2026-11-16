@@ -28,7 +28,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
-    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n` +
+    await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n[ -z "\${LAR_KUKULU_OFFER:-}" ] || printf 'LAR_KUKULU_OFFER=%s\\n' "$LAR_KUKULU_OFFER" >> "$CALL_LOG"\n` +
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit 0;; esac\n` +
@@ -788,7 +788,12 @@ test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and
   assert.equal(r.status, 0, r.stderr);
   assert.doesNotMatch(r.calls, /pulama/);
 });
-test(`${name}: down-leaves-pulama-standing: with a pūlama running, down stops and removes the vessel alone`, { skip }, async () => {
+test(`${name}: kukulu-offer-path: pulama mode hands the vessel the offer file's path inside the config bind`, { skip }, async () => {
+    const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+    assert.equal(r.status, 0, r.stderr);
+    assert.match(r.calls, /LAR_KUKULU_OFFER=\/lar\/config\/kukulu-offer\.json/);
+  });
+  test(`${name}: down-leaves-pulama-standing: with a pūlama running, down stops and removes the vessel alone`, { skip }, async () => {
   const r = await run(shim, ["down"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.calls, /stop lares/);
