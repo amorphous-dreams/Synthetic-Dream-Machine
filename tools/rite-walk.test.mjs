@@ -550,3 +550,13 @@ test("carry-parity-contract: an import that never applied reads a fault; compare
   const ids = CARRY_STEPS.map((s) => s.id);
   for (const id of ["pulama-up", "pulama-light", "up-by-pulama"]) assert.ok(ids.indexOf(id) > ids.indexOf("parity") && ids.indexOf(id) < ids.indexOf("teardown"), `${id} lights the carried house after parity`);
 });
+
+test("carry-persona-prompts-pinned: the new-face prompts the probe met at 983c70580 pin the leg's answers and its prompt reading", () => {
+  const { PERSONA_SAYS, promptsOf } = present(carryLeg);
+  // Measured 2026-11-16 on the old image (probe to persona-1), the route redacted.
+  const met = "Face h1 takes a route of its own, apart from this vessel's. Lose it and this face's sealed state opens for no one.\r\nA founding seals the vessel's custody from birth and binds a HUMAN ROUTE to it. Lose every route and the sealed state opens for no one; keep the passphrase or the paper safe.\r\nbind [p]assphrase, [s]heet (paper pin), [b]oth (p): p\r\nnew passphrase: \r\nnew passphrase (confirm): \r\npersona h1 minted";
+  assert.deepEqual(PERSONA_SAYS.map((s) => s.prompt), ["bind [p]assphrase, [s]heet (paper pin), [b]oth (p): ", "new passphrase: ", "new passphrase (confirm): "]);
+  assert.deepEqual(promptsOf(met), ["bind [p]assphrase, [s]heet (paper pin), [b]oth (p):", "new passphrase:", "new passphrase (confirm):"]);
+  let at = 0;
+  for (const s of PERSONA_SAYS) { const i = met.indexOf(s.prompt, at); assert.ok(i >= 0, `the leg types after ${JSON.stringify(s.prompt)}`); at = i + s.prompt.length; }
+});
