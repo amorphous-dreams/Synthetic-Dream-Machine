@@ -362,6 +362,29 @@ export async function returnLei(wiki: SwarmWikiPort, at: SwarmLeiLine & { readon
     : new SwarmRefused("swarm-lei-returned", "this lei was already returned");
 }
 
+/**
+ * Rest a receipt over a tree: the vessel signs the verdict the host's battery handed it and rests it at `receipt/<tree>`, where
+ * a later receipt for the same tree replaces it.
+ *
+ * THE RECEIPT NOTARISES TESTIMONY. The vessel re-runs nothing: it vouches that it heard this verdict, for this tree, over these
+ * checks and these definitions, never that the tree passes. Every return rests on a receipt, so a return rests on that
+ * testimony until the vessel samples a check itself.
+ */
+export async function restReceipt(wiki: SwarmWikiPort, receipt: { readonly tree: string; readonly checks: readonly string[]; readonly verdict: "pass" | "fail"; readonly definitions: string }, trust: SwarmTrust, group: string, vessel: SwarmSignerPort):
+  Promise<{ tree: string; verdict: "pass" | "fail"; checks: readonly string[]; receipt: string }> {
+  const malformed = (detail: string): never => { throw new SwarmRefused("swarm-receipt-malformed", detail); };
+  if (!str(receipt.tree)) malformed("a receipt names its tree");
+  if (receipt.verdict !== "pass" && receipt.verdict !== "fail") malformed("a receipt's verdict reads pass or fail");
+  if (!Array.isArray(receipt.checks) || receipt.checks.length === 0 || !receipt.checks.every(str)) malformed("a receipt names the checks its verdict covers, at least one");
+  if (!hex(receipt.definitions, 64)) malformed("a receipt names the hash of the definitions its checks ran under");
+  let title: string;
+  try { title = swarmReceiptTitle(receipt.tree); } catch { return malformed("a receipt's tree rides one title segment"); }
+  if (!trust.vessel(vessel.key.toLowerCase())) throw new SwarmRefused("swarm-receipt-role", "the vessel alone signs a receipt");
+  const act = await signSwarmAct({ act: "receipt", group, tree: receipt.tree, checks: [...receipt.checks], verdict: receipt.verdict, definitions: receipt.definitions }, vessel);
+  await wiki.write(title, JSON.stringify(act));
+  return { tree: receipt.tree, verdict: receipt.verdict, checks: [...receipt.checks], receipt: swarmActCid(act) };
+}
+
 /** The sum law, share side: shares never sum past the house cap. `null` stands where the law holds. */
 export function swarmShareRefusal(cap: number | null, shares: ReadonlyMap<string, number>, lane: string, share: unknown): "swarm-cap-unset" | "swarm-share-malformed" | "swarm-share-over-cap" | null {
   if (!count(share)) return "swarm-share-malformed";
