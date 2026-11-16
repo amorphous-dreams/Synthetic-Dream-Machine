@@ -4,6 +4,40 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### The pūlama keeps the hearth lit: the kūkulu's offer, admission by image, a carry proof, and the no-back-compat sweeps
+
+**Breaking**
+- **Lei refusals name testimony.** `swarm-lei-evidence-absent` and `swarm-lei-evidence-red` read `swarm-lei-testimony-absent` and `swarm-lei-testimony-red`; the kūkulu's offer refusal reads `rite-offer-testimony-absent`. A harness that matches the old codes moves with them; no alias answers to the old names.
+- **The push broker speaks the lei.** The controller strings its push grant with `tools/lei-kui.mjs` at `<root>/lei/<lane>/push`, and the relay spends it through `pushWithLei`. Its refusals read "no push lei from the controller" and "lei lane/branch/destination/head mismatch". The controller's grant tool reads `tools/push-lei.mjs` and refuses `push-lei refused: …`.
+- **The MCP seat carries a container slug as written.** The seat no longer refuses an `@`-prefixed slug; the daemon's door answers for its shape. An empty slug still refuses before the wire.
+- **A stage meme needs no `row-key`.** A stage meme lands at its title, and no reader demands the field.
+- **Burned tools.** `tools/grammar-cut.mjs` (the one-time kupono cut, with its witness, test and plane map) and `tools/s-vocabulary.mjs` (a retired-name list no script or check read) leave the tree.
+- **`forecast_ews` answers its named keys alone.** The blended `surrogate_significant` flag no reader used leaves the forecast. `collect_turn_vectors` takes its turn set as a required argument and no longer scans the whole store.
+- **A renamed canon meme.** The browser's detached worker-authority pool meme takes the title `detached-worker-authority-pool`, with its `uri-path` and every inbound link.
+- **A `file-path` meta line stays refused**, and the coordinates witness no longer denies the key itself: the normalizer and deserializer own its absence.
+
+**Fixed**
+- **A paged wiki filter walks to the end.** The tiddler door's reader view keeps the daemon VM's volatile plane (`lar:///lararium.local.vm/…`, which holds the verb trail) at home beside the temp and state namespaces. A filter's own invocation no longer moves the digest its cursor carries, so paging past forty records no longer refuses `filter-cursor-stale` against itself. A get or put on a trail title refuses `tiddler-withheld`; a foreign write between pages still refuses `filter-cursor-stale`.
+- **`down` keeps a running pūlama lit.** Both host shims read whether a pūlama runs from its container, whatever `LARES_PULAMA` now says, and stop the vessel alone. A `ps` that fails for the pūlama stops nothing.
+- **The aho's child honours the shim's two overrides.** `LARES_COMPOSE_FILE` names the compose file in place of the main clone's, and `COMPOSE_PROJECT_NAME` names the project, so a scoped composition's seat reaches its own vessel.
+- **The image leg's receipt step rests a passing receipt.** It hands the receipt door the walker's own sha256 as `--definitions`, where it handed a path the door refuses (`swarm-receipt-malformed`), so a walk finds its tree's evidence.
+- **Two faces in one composition write under two change actors.** Before, a holder of one shared document joined them. The composition's wire identity derives a change actor per (face, document) from a keyed digest under the face scope's own secret, and offers one write door (`WireIdentity.actor`, `writeAs`, `ownsActor`). Two faces writing one document in one composition still share it by design, and canon names that case.
+
+**Added**
+- **The pūlama, lit once by hand.** Under a pūlama the house keeps the hearth lit across vessel restarts. The vessel dials the pūlama again at each start; an unlock at a vessel standing beside one gathers no route and asks nothing (`lares vault unlock` reads that before any prompt), and both shims run the stand's unlock and a vault unlock detached.
+- **The kūkulu served by the pūlama** (road `L47f`). The gate runs over the swarm's own lei family: it lands an offered lei in the pūlama's records, rests the vouch as the receipt for its tree, begins the rite with the return and the guest half of a tessera, and lands it once the vessel says it composed. Rites begin one at a time at the hello, so each hello rests its own verdict before the next writes a receipt for the same tree.
+- **The offer rides the rite.** Between the build and the lowering the standing vessel answers `rite-offer`, gathers the line's kūkulu lei from its own control records, signs a vouch over the image digest the host named, and rests both as `kukulu-offer.json` in the house's config home. Both shims export `LAR_KUKULU_OFFER=/lar/config/kukulu-offer.json` beside `LAR_PULAMA_SOCKET` and carry `image-digest`, the digest of the image a vessel stands from (`LARES_IMAGE`, else `lares-surface:local`), as the last stdout line.
+- **Admission binds to the image digest** (road `L47g`). `pulama admit [face]` reads the route on a real terminal inside the pūlama and rests the image the host reports as admitted under a tessera. A kūkulu that lands par rests its image as admitted. A vessel that dials with no offer while the host reports an admitted image gets served again, spending no lei. An unadmitted image refuses `pulama-image-unadmitted` and names `pulama admit` and `lares rite kukulu`. Both shims forward `pulama admit` to the pūlama's hand door with a terminal.
+- **The rite walker's image leg** (`tools/rite-walk.mjs --image-leg`). It builds the product image through the host shim, founds a scratch hearth, stands and lights the pūlama, raises the vessel beside it, holds an MCP seat through the aho across a stop, a restart and a kill, and walks the kūkulu. One receipt row per step carries its measures.
+- **The carry proof** (`tools/carry-parity.mjs`). It reads two houses through their own read doors (persona, kahua, wiki, meme, filter) and answers `par`, or names each missing, changed and extra row by class and key. Exit 0 reads par, 1 red, 2 a door that would not read. Face relations, actors, CRDT heads, the Nexus AID, the floor pin and the image stand on a named may-differ list. `compare` takes an import's stood-off URIs as a named set and rests them in the receipt, and the two-house walk censuses the exporting house before the rite stops it.
+
+**Changed**
+- **Canon and code state present law.** Comments across the mesh, node, tw5 and cli packages, the lares and lararium canon, the skill peeks and the plugin's bundled modules describe what each seam does and holds, with no account of an earlier shape. The evergreen boundary's narration ceiling reads 0 and its canon-history ceiling reads 0 on the span, with named exceptions for the alpha-line ruling and the `bag-retired` disposition. The memetic-wikitext plugin rebuilt three times from the joined comments, and `genesis/unbaked.json` re-declares its sha each time.
+- **Canon names records by what they hold.** The road, the worn house, the lares design memes and the api, mesh, node and tw5 canon say custody records, sealed records, stage memes, ledger and catalog entries, share entries and road items where they once said rows. Table rows, quoted speech and code names stay.
+- **Canon names the lei.** The seat harness, the road and the DreamNet architecture name the signed push token a push lei, its chain refusals `swarm-lei-forked` and `ward-act-uncosigned`, and a lei's basis the session's testimony.
+- **Retired-shape pins burn.** Six retired-test hits and the `row-key` and `file-path` pins leave the tests, which now assert the landing, the refusal or the key set they guard.
+- **The road reads the merge.** The order reads 2026-11-16: the dogfood hearth stands re-founded and worn, and the top bands read at the merge (the no-back-compat sweeps with the carry-parity witness, the lit house, the operator's carry rite). `L43`, `L45`, `L47` and `L48` read what stands.
+
 ### The worn house: a seat that keeps breathing, the lei, and the rite that raises the vessel again
 
 **Added**
