@@ -126,13 +126,13 @@ These questions do not block charter adoption. They require measurement before r
 
 !! Edges
 
-<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/detached-worker-authority-pool`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/deletion-map`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lar-vessel`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jd8GS5V06H9OWm_f47ygN5Y2EUxax18WmY0srqXmQX8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BHG1XR0S4wR6Upu5h6wx6k0B4wwdtF295SGIaD6Z9lM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

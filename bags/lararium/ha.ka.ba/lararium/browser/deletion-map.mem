@@ -116,11 +116,11 @@ These patterns stay out of the package and out of worker-side authority.
 !! Edges
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/pono-charter`>>
-<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint`>>
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/browser/detached-worker-authority-pool`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/tw5/tw5-browser-surface`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8Okgdwr5Kr7J0EVtTjyY9P2KSGSj2vXIkHxzEC6J3cY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vGdZfulDlrU0WvOKkxQfqhLiNU3xo8gJiaaFUu5Hepc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

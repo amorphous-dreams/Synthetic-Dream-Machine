@@ -1,18 +1,18 @@
 <<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
 
-<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint`>>
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lararium/browser/detached-worker-authority-pool`>>
 <<^ code=`&#x0002;`>>
 
 ```toml meta
 cacheable = true
 l-space   = "lararium"
-role      = "Next-thread sprint handoff for lararium-browser detached worker-authority pool alpha reboot"
-title     = "lar:///ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint"
+role      = "Architecture and alpha definition of done for the lararium-browser detached worker-authority pool"
+title     = "lar:///ha.ka.ba/lararium/browser/detached-worker-authority-pool"
 type      = "text/memetic-wikitext+tiddlywiki"
-uri-path  = "ha.ka.ba/lararium/browser/full-detached-worker-authority-pool-sprint"
+uri-path  = "ha.ka.ba/lararium/browser/detached-worker-authority-pool"
 ```
 
-! lararium-browser: Full Detached island-Authority Pool Sprint
+! lararium-browser: Full Detached island-Authority Pool
 
 Chosen architecture: ''full detached worker-authority pool''.
 
@@ -120,6 +120,6 @@ Do not guess. Measure and document.
 * Monaco worker integration: https://github.com/microsoft/monaco-editor/blob/main/docs/integrate-esm.md
 * VS Code Webview API: https://code.visualstudio.com/api/extension-guides/webview
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vAdMrZjhPnNPbaS1ejJfJ3JmBBR2wpk-nDU4qj-DDnw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;CdFiHAKL3KWdQ0BF9r9co2ayNc1IO-zYET35QbXF9oQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>
