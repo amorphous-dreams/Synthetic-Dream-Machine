@@ -7,7 +7,7 @@
 //   P2  TWO REAL HOUSES: found a scratch house, write memory into its steward's daemon wiki and share a wiki, `lares export`,
 //       found a brand-new scratch house under the same pet-names, `lares import --apply`, and the witness reads par over the
 //       real read doors. Then on the new house delete one meme, change another and drop one share: the witness reads red,
-//       exits non-zero, and names all three.
+//       exits non-zero, and names all three (beside the kāpae shadow the delete itself raises, and nothing else).
 //
 // Each house stands under its own marked scratch LAR_ROOT through the test custody doors; no LAR_BAGS, no docker.
 import "./test-ward-env.mjs";   // the CLI processes this test spawns take the harness's explicit routes
@@ -99,6 +99,25 @@ test("P1 a new-base reading takes the new house's own founding rows out of extra
   assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`), ["extra default lar:///ha.ka.ba/x/stray"]);
 });
 
+test("P1 the compare verb reads census files: par exits 0, red exits 1 and prints one line per difference", () => {
+  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-census-"));
+  try {
+    const a = join(dir, "census-old.json"), b = join(dir, "census-new.json"), out = join(dir, "receipt.json");
+    writeFileSync(a, JSON.stringify(reading()));
+    writeFileSync(b, JSON.stringify(reading()));
+    const par = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b], { encoding: "utf8" });
+    assert.equal(par.status, 0, par.stderr);
+    assert.match(par.stdout, /^carry-parity: par — 1 face\(s\): 2 memes/);
+    writeFileSync(b, JSON.stringify(reading({ house: { shares: {} } })));
+    const red = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b, "--out", out], { encoding: "utf8" });
+    assert.equal(red.status, 1, red.stderr);
+    assert.match(red.stdout, /carry-parity: red — 1 difference\(s\)\n  house · shares: missing wiki notes/);
+    assert.equal(JSON.parse(readFileSync(out, "utf8")).verdict, "red");
+    const refused = spawnSync(process.execPath, [tool, "compare", "--old", dir, "--new", b], { encoding: "utf8" });
+    assert.equal(refused.status, 2, "compare refuses a path that names no census file");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 // ── P2: two real houses ───────────────────────────────────────────────────────────────────────────────────────
 
 const freePort = () => new Promise((resolve) => {
@@ -129,9 +148,14 @@ async function standHouse(tag, name) {
       else if (child.exitCode !== null) { clearInterval(poll); reject(new Error(`${tag} daemon exited ${child.exitCode} before live:\n${log.slice(-3000)}`)); }
     }, 200);
   });
-  const unlock = async () => {
+  const unlock = async ({ again = false } = {}) => {
+    // A face born after the stand opens in custody at once but composes no provider until the vessel composes again:
+    // lock, then unlock every face wearing h0 (`lares vault lock` · `lares vault unlock --all --face 0`).
+    if (again) await unlockTestCustody(root, "lock");
     const a = await unlockTestCustody(root, "unlock", 0);
-    assert.ok(a?.held === true || a?.reading === "opens", `${tag} unlock: ${JSON.stringify(a)}`);
+    // A second unlock after a `persona new` answers `already-unlocked` and opens the new face beside the first.
+    assert.ok(a?.held === true || a?.reading === "opens" || a?.reading === "already-unlocked", `${tag} unlock: ${JSON.stringify(a)}`);
+    assert.ok((a?.faceReadings ?? []).every((f) => f.reading === "opened"), `${tag} every face opens: ${JSON.stringify(a)}`);
   };
   await unlock();
   const stop = () => new Promise((resolve) => {
@@ -151,11 +175,18 @@ const memeText = (uri, body, meta = "") => {
 const HERON = "lar:///ha.ka.ba/kahua/memory/state/heron";
 const POND = "lar:///ha.ka.ba/kahua/memory/reference/pond";
 const KITE = "lar:///ha.ka.ba/kahua/memory/feedback/kite";
+const PLAIN = "lar:///ha.ka.ba/notes/plain-record";
+const PAGE = "lar:///ha.ka.ba/notes/shared-page";
 
-/** Run the instrument over two standing houses. */
-const witness = (old, fresh) => spawnSync(process.execPath, [tool, "--old", old.root, "--old-port", String(old.port), "--new", fresh.root, "--new-port", String(fresh.port), "--json"], {
-  cwd: repo, encoding: "utf8", env: process.env,
-});
+/** Run the instrument over two standing houses; answers its exit and its receipt. */
+const witness = (old, fresh) => {
+  const r = spawnSync(process.execPath, [tool, "--old", old.root, "--old-port", String(old.port), "--new", fresh.root, "--new-port", String(fresh.port), "--json"], {
+    cwd: repo, encoding: "utf8", env: process.env, maxBuffer: 256 * 1024 * 1024,
+  });
+  let answer = null;
+  try { answer = JSON.parse(r.stdout); } catch { assert.fail(`the witness answered no receipt (exit ${r.status}):\n${r.stdout.slice(0, 2000)}\n${r.stderr.slice(-3000)}`); }
+  return { status: r.status, answer, stdout: r.stdout };
+};
 
 test("P2 two real houses: export, import, par; then a deleted meme, a changed meme and a dropped share each read red by name", { timeout: 900_000 }, async () => {
   const scratch = mkdtempSync(join(tmpdir(), "lares-carry-parity-files-"));
@@ -165,15 +196,23 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     const old = await standHouse("old", "steward");
     houses.push(old);
     old.must(["persona", "new", "1", "--name", "engineer"]);
-    await old.unlock();
+    old.must(["wiki", "init", "notes", "--json"]);
+    old.must(["wiki", "share", "notes", "--read", "engineer"]);
+    await old.unlock({ again: true });
+    // The rite holds each workbench before the export (a cold wiki reads `document-unavailable`), and the wiki carries a page,
+    // so its workbench travels and the import re-stands it (an empty wiki carries its share row alone).
+    old.must(["wiki", "hold", "notes"]);
+    const page = join(scratch, "page.mem");
+    writeFileSync(page, memeText(PAGE, "a page on the shared wiki", ""));
+    old.must(["meme", "put", PAGE, "--recipe", "notes", "--file", page, "--json"]);
     for (const [uri, body, meta] of [[HERON, "remember the heron", `tags = "stage/index"\ndescription = "the heron"\n`], [POND, "the pond at dusk", ""], [KITE, "fly the kite low", ""]]) {
       const file = join(scratch, `${uri.split("/").pop()}.mem`);
       writeFileSync(file, memeText(uri, body, meta));
       old.must(["meme", "put", uri, "--recipe", "default", "--file", file, "--json"]);
     }
-    old.must(["tiddler", "put", "plain note", "--recipe", "default", "--text", "a plain record", "--json"]);
-    old.must(["wiki", "init", "notes", "--json"]);
-    old.must(["wiki", "share", "notes", "--read", "engineer"]);
+    // A plain record (no uri-path) under a stable name. A free title ("plain note") derives no address from its mirror file and
+    // the import skips it by name, so it never carries (a gap the receipt names as `plain missing`).
+    old.must(["tiddler", "put", PLAIN, "--recipe", "default", "--text", "a plain record", "--json"]);
     const bundle = join(scratch, "bundle");
     old.must(["export", bundle, "--json"]);
 
@@ -181,14 +220,16 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     const fresh = await standHouse("new", "steward");
     houses.push(fresh);
     fresh.must(["persona", "new", "1", "--name", "engineer"]);
-    await fresh.unlock();
+    await fresh.unlock({ again: true });
     const imported = fresh.lares(["import", bundle, "--apply", "--json"]);
     assert.equal(imported.status, 0, `import: ${imported.stdout}\n${imported.stderr}`);
+    fresh.must(["wiki", "hold", "notes"]);
 
     // ── PAR over the real read doors ────────────────────────────────────────────────────────────────────────────
     const par = witness(old, fresh);
-    const parAnswer = JSON.parse(par.stdout);
-    assert.equal(parAnswer.verdict, "par", `${par.stdout}\n${par.stderr}`);
+    const parAnswer = par.answer;
+    assert.equal(parAnswer.verdict, "par", `${JSON.stringify(parAnswer.differences, null, 1)}\nimport: ${imported.stdout.slice(0, 4000)}`);
+    assert.ok(parAnswer.counts.plain >= 1, `the reading saw the plain record: ${JSON.stringify(parAnswer.counts)}`);
     assert.equal(par.status, 0);
     assert.ok(parAnswer.counts.memes >= 3, `the reading saw the carried memes: ${JSON.stringify(parAnswer.counts)}`);
     assert.ok(parAnswer.counts.shares >= 1, `the reading saw the share: ${JSON.stringify(parAnswer.counts)}`);
@@ -207,14 +248,16 @@ test("P2 two real houses: export, import, par; then a deleted meme, a changed me
     writeFileSync(shareFile, mesh.serializeShareFile(rows.filter((r) => r.slug !== "notes")));
 
     const red = witness(old, fresh);
-    const redAnswer = JSON.parse(red.stdout);
+    const redAnswer = red.answer;
     assert.equal(redAnswer.verdict, "red", red.stdout);
     assert.notEqual(red.status, 0);
     const said = redAnswer.differences.map((d) => `${d.class} ${d.kind} ${d.key}`);
     assert.ok(said.includes(`memes missing default ${POND}`), said.join("\n"));
     assert.ok(said.includes(`memes changed default ${KITE}`), said.join("\n"));
     assert.ok(said.includes("shares missing wiki notes"), said.join("\n"));
-    assert.equal(said.length, 3, `exactly the three planted faults read red:\n${said.join("\n")}`);
+    // The delete raises a kāpae over the meme in the steward's working layer, and its shadow reads as the delete's own mark.
+    assert.ok(said.includes(`kapae extra wikis/daemon-steward ${POND}`), said.join("\n"));
+    assert.equal(said.length, 4, `the three planted faults and the delete's kāpae read red, and nothing else:\n${said.join("\n")}`);
   } finally {
     for (const h of houses) await h.stop();
     for (const h of houses) rmSync(h.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
