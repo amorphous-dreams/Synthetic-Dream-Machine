@@ -7,7 +7,8 @@
  *
  * One walled `codex exec`, after a preflight. The brief is `<seat-dir>/brief.md`; the hand-back lands in `final.md`
  * (`-o`), the log in `run.log`, each attempt in `attempts.log`. The canon seat law or the lead law rides
- * the brief once, appended here. Hand-back: wait on `until [ -f <seat-dir>/final.md ]`.
+ * the brief in place, replacing an earlier law. The seat sees only brief.md from a broker copy of the seat
+ * directory, so the brief carries its inputs. The done-<uuid> marker signals completion and arrives last.
  *
  *   build    workspace-write in the worktree, network off, both tmp excludes, `-C <worktree> --add-dir <seat-dir>`
  *   lead     workspace-write in a scratch worktree, network off, no git dir; seat and lane root dirs added (git acts go through the broker)
@@ -258,13 +259,14 @@ export function canaryVerdict(lines) {
 
 /** The canary brief: force many small read-only tool calls and a fixed completion line. */
 export function canaryBrief() {
+  const repo = join(dirname(fileURLToPath(import.meta.url)), "..");
   return `# Compaction canary
 
 Read-only seat. Do exactly this sequence and nothing else:
 
-1. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.mjs in 40-line slices with \`sed -n\`.
-2. Read /home/joshu/.lares-scratch/seat-harness/wt/tools/launch-codex.test.mjs in 40-line slices with \`sed -n\`.
-3. Read /home/joshu/.lares-scratch/seat-harness/wt/bags/lares/ha.ka.ba/lares/docs/pono/seat-harness.mem in 40-line slices with \`sed -n\`.
+1. Read ${repo}/tools/launch-codex.mjs in 40-line slices with \`sed -n\`.
+2. Read ${repo}/tools/launch-codex.test.mjs in 40-line slices with \`sed -n\`.
+3. Read ${repo}/bags/lares/ha.ka.ba/lares/docs/pono/mixed-model-swarm.mem in 40-line slices with \`sed -n\`.
 4. Keep one tool call per slice.
 5. Make about 100 slices total (target 100).
 6. No summary until all slices are done.
@@ -326,7 +328,7 @@ export function leadLaw() {
 
 /** Replace sections under the selected law heading, preserving the exact law once. */
 export function appendSeatLaw(brief, law, title = "SEAT LAW") {
-  const escaped = title.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escaped = "(?:SEAT LAW|LEAD LAW)";
   const heading = new RegExp(`^## ${escaped}(?: \\(|$)[^\\n]*\\n?`, "gm");
   if (brief.includes(law) && (brief.match(heading) ?? []).length === 1) return brief;
   const section = new RegExp(`^## ${escaped}(?: \\(|$)[^\\n]*\\n[\\s\\S]*?(?=^## (?!${escaped}(?: \\(|$))|(?![\\s\\S]))`, "gm");
@@ -638,7 +640,7 @@ export function run(argv, { readers, spawn = nodeSpawn, log = console.log, err =
       const supervisor = spawn(process.execPath, [fileURLToPath(import.meta.url), "--supervise", "--held-fd", "3", "--lane-fd", "4", "--done-name", doneName, "--bsd-path", bsdPath, "--contain", "bwrap", "--ceiling", String(ceiling), "--mode", o.mode, "--marker", marker, "--home", readers.realHome, ...(o.blindTicks ? ["--blind-ticks", String(o.blindTicks)] : []), "--", ...args], { cwd: bsd.at(), env, detached: true, stdio: ["ignore", "ignore", "ignore", bsd.fd, held.fd] });
       supervisor.unref?.();
       launched = true;
-      log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; wait on: until [ -f ${join(seatDir, doneName)} ] || ! kill -0 ${supervisor.pid} (the completion marker, written last, carries the verdict; the hand-back is final.md beside it)`);
+      log(`SEAT-LAUNCHED ${seatDir} (${o.model} ${o.effort} ${o.mode}) pid ${supervisor.pid}; completion marker: ${join(seatDir, doneName)} (written last, carries the verdict; hand-back: final.md)`);
       return 0;
     } finally {
       held?.close(); bsd?.close(); laneHeld?.close();
