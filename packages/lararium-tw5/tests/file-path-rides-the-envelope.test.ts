@@ -1,7 +1,6 @@
 /**
- * The `file-path` meta field retires (Train Q, operator ruling 2026-11-01). Residency rides the
- * envelope (the bag), and a title names content, never residency, so no carrier's meta names the
- * file it rests in: the root denies the field as every child already does.
+ * Residency rides the envelope (the bag), and a title names content, never residency, so no
+ * carrier's meta names the file it rests in: the root denies `file-path` as every child does.
  *
  * RED: a root meta holding `file-path` reads non-canonical under normalize, and the deserializer's
  * re-emit drops it from a root record. CONTROL: a carrier without the field reads canonical, and
@@ -23,7 +22,7 @@ const carrier = (filePath: boolean): string =>
   'title     = "lar:///x"\n' +
   "```\n\nbody\n\n<<^ code=`&#x0003;`>>\n";
 
-describe("the file-path meta field retires on a root", () => {
+describe("a root meta names no file-path", () => {
   test("RED: a root meta holding file-path reads non-canonical, and normalize drops the line", () => {
     const r = normalizeMemeSource(carrier(true));
     expect(r.changed).toBe(true);

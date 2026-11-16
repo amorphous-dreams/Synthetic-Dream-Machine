@@ -801,7 +801,7 @@ const META_DENY: ReadonlySet<string> = new Set([
   // The host's two, and the record stratum they arrive with. TiddlyWiki restricts no field name;
   // MultiWikiServer overwrites `title` and `revision` on every read.
   "text", "modified", "revision",
-  // Residency rides the envelope (Train Q): the bag holds where a carrier rests and the title names
+  // Residency rides the envelope: the bag holds where a carrier rests and the title names
   // content, so `file-path` never re-emits, on a root or a child.
   "file-path",
   // The skinny handle's pointer internals (content-handle): a recomposed carrier carries its body
