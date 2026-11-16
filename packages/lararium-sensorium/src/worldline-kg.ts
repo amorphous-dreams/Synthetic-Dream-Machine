@@ -84,11 +84,10 @@ function resolve(opts: WorldlineKgOptions): Resolved {
   const script = opts.script ?? resolveKgIo();
   if (!existsSync(script)) throw new KgUnavailable(`kg_io.py missing at ${script}`);
   // The KG lands SOVEREIGN — `<memory>/knowledge_graph.sqlite3`, beside the fork-DAG's own
-  // `worldline/worldline.sqlite3` — never `resolvePalacePath()`, which put it INSIDE the guest
-  // (`~/.mempalace/palace/knowledge_graph.sqlite3`). Two consequences of the old home, both bad:
-  // the spirit-lineage observer WROTE the comparator on every harvest (the RUN must never touch it),
-  // and a pave of the guest would have taken the whole worldline KG down with it — 525 entities,
-  // 532 triples, sitting in the belly of the store we wipe to get a clean baseline.
+  // `worldline/worldline.sqlite3` — never `resolvePalacePath()`, which resolves INSIDE the guest
+  // (`~/.mempalace/palace/knowledge_graph.sqlite3`). A KG in the guest costs twice: the spirit-lineage
+  // observer would write the comparator on every harvest (the RUN never touches it), and a pave of the
+  // guest — the store wiped for a clean baseline — would take the whole worldline KG down with it.
   //
   // NOTE (a held question, not settled here): TWO worldline stores stand — this KG (which
   // `lares worldline` reads) and `worldline.sqlite3` (which capture writes). Both sit sovereign, so a

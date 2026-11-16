@@ -31,8 +31,8 @@ export function mineLaneKey(palacePath: string): string {
 }
 
 /**
- * Run `run` in the palace's single-writer lane: it starts only after every previously-queued
- * mine for the SAME palace settled (FIFO; a prior failure never blocks the queue — each
+ * Run `run` in the palace's single-writer lane: it starts only after every mine queued
+ * ahead of it for the SAME palace settled (FIFO; a prior failure never blocks the queue — each
  * caller still sees its OWN result/rejection). Distinct palaces run independently.
  */
 export function withMineLane<T>(palacePath: string, run: () => Promise<T>): Promise<T> {
