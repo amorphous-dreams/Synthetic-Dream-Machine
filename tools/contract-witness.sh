@@ -136,8 +136,8 @@ if node "$LARES" help >/dev/null 2>&1; then ok; else bad "build first: pnpm buil
 # tracked genesis tree, so an isolated root must carry it before a founding can stand. Its own error names
 # this step verbatim — the harness performs it rather than making a reader discover it.
 # SEED FROM DISK, NEVER FROM THE INDEX. `git ls-files` names what the index tracks, and a genesis rebake
-# writes new content-addressed blobs while the old ones stay listed until someone commits the change. A
-# seed built from that list fails on files the disk no longer holds — and worse, when it succeeds it
+# writes new content-addressed blobs while the index keeps listing the replaced ones until a commit. A
+# seed built from that list fails on files absent from disk — and worse, when it succeeds it
 # founds from a genesis no vessel would ever read, because a vessel reads the disk.
 seed_genesis() {
   ( cd "$REPO_ROOT" && find genesis -type f -print0 | xargs -0 -I{} cp --parents "{}" "$1/" ) 2>/dev/null
@@ -537,7 +537,7 @@ step "★ (1) B's presented admit reads HELD at A ★"
 if [ -s "$PRESENTED" ] && [ "$(s6_a verdict "$PRESENTED" 2>&1)" = "held" ]; then ok
 else bad "$(s6_a verdict "$PRESENTED" 2>&1 | tail -1)"; fi
 
-# THE SOCKET IS THE SEALED FACE GATE. The old leaf proof over a socket's nonce and the old auth frame's guard are gone;
+# THE SOCKET IS THE SEALED FACE GATE. No leaf proof over a socket's nonce and no auth-frame guard stands at the socket;
 # the presentation a gate reads is the admit riding INSIDE the sealed exchange (`dialFaceGate` -> `makeFaceGate`), read
 # against the root the gate's vessel holds. The rig runs in B's environment (B's own leaf is the face key) over A's
 # held root, which A copies out as public bytes.

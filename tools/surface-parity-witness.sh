@@ -25,10 +25,10 @@ import pathlib, re, subprocess, sys
 MCP = pathlib.Path("packages/lararium-sensorium/scripts/lares_mcp.py")
 CLI = pathlib.Path("packages/lares-cli/dist/src/bin/lares.js")
 
-# A VANISHED SUBJECT IS A RED, NEVER A CLEAN RUN. This read `nothing to compare` and exited 0, so the
-# day the MCP surface moved or was renamed, the one witness that welds an agent's reach to an operator's
-# would have reported the cleanest run it has ever produced — over a comparison it never made. The CLI
-# half of this same file already keeps the law (`or not doors` → exit 1); the MCP half enforces it too.
+# A VANISHED SUBJECT IS A RED, NEVER A CLEAN RUN. A missing MCP surface reading `nothing to compare`
+# with exit 0 would report the cleanest run this witness ever produced, over a comparison it never
+# made, and the one witness that welds an agent's reach to an operator's would go dark. Both halves
+# keep the law: the CLI half (`or not doors` → exit 1) and the MCP half here.
 if not MCP.exists():
     print(f"[surface-parity] NO MCP SURFACE AT {MCP} — parity is unmeasurable, not clean.")
     print( "      An agent's reach and an operator's reach go uncompared until this file answers.")
