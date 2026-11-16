@@ -2,7 +2,7 @@
  * pulama-server — THE PŪLAMA: the keeper that holds a vessel's custody through the vessel's rebuild.
  *
  * The pūlama owns the one custody holder (`custody-holder`) over the hearth's homes. The operator lights it by their own
- * hand; each rebuilt vessel (a kūkulu) then dials it and asks row operations and derivations (`pulama-wire`). The keys
+ * hand; each rebuilt vessel (a kūkulu) then dials it and asks record operations and derivations (`pulama-wire`). The keys
  * stay in the holder's closure: no frame this server writes carries the vessel key, the serving key, the custody root, a
  * face's custody key or a ward key.
  *
@@ -84,7 +84,7 @@ function classify(home: CustodyHome, file: string): RecordClass {
 
 const HOMES: ReadonlySet<string> = new Set(["identity", "storage", "seal"]);
 
-interface Claim { rows: Parameters<Parameters<CustodyHolder["withRecords"]>[0]>[0] | null; readonly end: () => void; done: Promise<unknown> }
+interface Claim { records: Parameters<Parameters<CustodyHolder["withRecords"]>[0]>[0] | null; readonly end: () => void; done: Promise<unknown> }
 interface Session { readonly channel: PulamaChannel; readonly scope: PulamaScope; readonly claims: Map<number, Claim>; open: boolean }
 
 export function servePulama(a: {
@@ -136,7 +136,7 @@ export function servePulama(a: {
     }
   };
 
-  const rowOf = (args: Record<string, unknown>, key = "file"): { home: CustodyHome; file: string } => {
+  const recordOf = (args: Record<string, unknown>, key = "file"): { home: CustodyHome; file: string } => {
     const home = args["home"], file = args[key];
     if (typeof home !== "string" || !HOMES.has(home) || typeof file !== "string" || file.length === 0) throw new PulamaRefused("pulama-frame-malformed", "an operation names a home and a file");
     return { home: home as CustodyHome, file };
@@ -158,29 +158,29 @@ export function servePulama(a: {
   const inScope = (s: Session, found: { readonly fcid: string } | null): boolean => found === null || s.scope.face === null || found.fcid === s.scope.face.fcid;
 
   /** A row's standing reading through the holder's update door, which reads under the holder's own claim and writes nothing. */
-  const standingRow = (home: CustodyHome, file: string, cold: boolean): Promise<RecordReading> =>
+  const standingRecord = (home: CustodyHome, file: string, cold: boolean): Promise<RecordReading> =>
     cold ? holder.updateColdRecord(home, file, (r) => ({ plaintext: null, value: copyReading(r) }))
       : holder.updateRecord(home, file, (r) => ({ plaintext: null, value: copyReading(r) }));
 
   const run = async (s: Session, op: string, args: Record<string, unknown>): Promise<unknown> => {
     switch (op) {
-      case "row.read": { const { home, file } = rowOf(args); await guard(s, home, file, "hot"); return holder.readRecord(home, file); }
-      case "row.write": { const { home, file } = rowOf(args); await guard(s, home, file, "cold-write"); return holder.writeRecord(home, file, bytesOf(args["plaintext"])); }
-      case "row.standing": {
-        const { home, file } = rowOf(args), cold = args["cold"] === true;
+      case "record.read": { const { home, file } = recordOf(args); await guard(s, home, file, "hot"); return holder.readRecord(home, file); }
+      case "record.write": { const { home, file } = recordOf(args); await guard(s, home, file, "cold-write"); return holder.writeRecord(home, file, bytesOf(args["plaintext"])); }
+      case "record.standing": {
+        const { home, file } = recordOf(args), cold = args["cold"] === true;
         await guard(s, home, file, cold ? "cold-read" : "hot");
-        return standingRow(home, file, cold);
+        return standingRecord(home, file, cold);
       }
-      case "row.swap": {
-        const { home, file } = rowOf(args), cold = args["cold"] === true;
+      case "record.swap": {
+        const { home, file } = recordOf(args), cold = args["cold"] === true;
         await guard(s, home, file, cold ? "cold-write" : "hot");
         const expect = readingOf(args["expect"]), plaintext = bytesOf(args["plaintext"]);
         if (expect === null) throw new PulamaRefused("pulama-frame-malformed", "a swap names the reading it decided over");
         const decide = (r: RecordReading) => sameReading(r, expect) ? { plaintext, value: true } : { plaintext: null, value: false };
         return cold ? holder.updateColdRecord(home, file, decide) : holder.updateRecord(home, file, decide);
       }
-      case "row.remove": {
-        const { home, file } = rowOf(args), cold = args["cold"] === true;
+      case "record.remove": {
+        const { home, file } = recordOf(args), cold = args["cold"] === true;
         await guard(s, home, file, cold ? "cold-write" : "hot");
         if (args["expect"] === undefined) return cold ? holder.removeColdRecord(home, file) : holder.removeRecord(home, file);
         const expect = bytesOf(args["expect"]);
@@ -189,33 +189,33 @@ export function servePulama(a: {
         const removed = cold ? await holder.removeColdRecord(home, file, when) : await holder.removeRecord(home, file, when);
         return { removed, stood };
       }
-      case "row.cold-open": {
-        const { home, file } = rowOf(args);
+      case "record.cold-open": {
+        const { home, file } = recordOf(args);
         await guard(s, home, file, "cold-read");
         return holder.openColdRecord(home, file, (plaintext) => Uint8Array.from(plaintext));
       }
-      case "row.move": {
-        const { home, file: source } = rowOf(args, "source"), { file: destination } = rowOf(args, "destination");
+      case "record.move": {
+        const { home, file: source } = recordOf(args, "source"), { file: destination } = recordOf(args, "destination");
         await guard(s, home, source, "cold-write");
         await guard(s, home, destination, "cold-write");
         return holder.moveRecord(home, source, destination, bytesOf(args["expected"]));
       }
       case "claim.begin": {
         const kind = args["kind"], id = nextClaim++;
-        if (kind !== "rows" && kind !== "exclusive") throw new PulamaRefused("pulama-frame-malformed", "a claim names its kind");
+        if (kind !== "records" && kind !== "exclusive") throw new PulamaRefused("pulama-frame-malformed", "a claim names its kind");
         return new Promise((entered, refused) => {
           let release!: () => void;
           const until = new Promise<void>((resolve) => { release = resolve; });
           // The claim's record stands before the holder runs anything, so an act the holder ran at once finds it whole.
-          const claim: Claim = { rows: null, end: release, done: Promise.resolve() };
-          const hold = async (rows: Claim["rows"]): Promise<void> => {
+          const claim: Claim = { records: null, end: release, done: Promise.resolve() };
+          const hold = async (records: Claim["records"]): Promise<void> => {
             if (!s.open) return;
-            claim.rows = rows;
+            claim.records = records;
             s.claims.set(id, claim);
             entered({ claim: id });
             await until;
           };
-          claim.done = (kind === "rows" ? holder.withRecords((rows) => hold(rows)) : holder.exclusive(() => hold(null)))
+          claim.done = (kind === "records" ? holder.withRecords((records) => hold(records)) : holder.exclusive(() => hold(null)))
             .catch((err: unknown) => { refused(err); });
         });
       }
@@ -227,14 +227,14 @@ export function servePulama(a: {
         await claim.done;
         return true;
       }
-      case "rows.read": case "rows.remove": {
+      case "records.read": case "records.remove": {
         const claim = s.claims.get(args["claim"] as number);
-        if (!claim || claim.rows === null) throw new PulamaRefused("pulama-claim-absent", "no rows claim stands under that name");
-        const { home, file } = rowOf(args);
+        if (!claim || claim.records === null) throw new PulamaRefused("pulama-claim-absent", "no records claim stands under that name");
+        const { home, file } = recordOf(args);
         await guard(s, home, file, "hot");
         // The claim may have ended while the scope read: a row touched after it would move outside any claim.
         if (s.claims.get(args["claim"] as number) !== claim) throw new PulamaRefused("pulama-claim-absent", "that claim ended before this row was reached");
-        return op === "rows.read" ? claim.rows.read(home, file) : claim.rows.remove(home, file);
+        return op === "records.read" ? claim.records.read(home, file) : claim.records.remove(home, file);
       }
       case "face.standing": { const found = await holder.faceStanding(faceOf(args["face"])); return inScope(s, found) ? found : null; }
       case "face.ward-key": {

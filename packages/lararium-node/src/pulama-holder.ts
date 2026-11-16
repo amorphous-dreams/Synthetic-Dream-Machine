@@ -3,7 +3,7 @@
  *
  * A vessel that finds a pūlama seats this holder where the in-process one would sit (`custody-seat`), so every sealed-row
  * caller reads and writes as before. Each operation crosses the channel (`pulama-wire`); the pūlama opens and seals under
- * the keys it holds and answers plaintext rows and derived children. This side holds a session, a copy of the holder's
+ * the keys it holds and answers plaintext records and derived children. This side holds a session, a copy of the holder's
  * standing, and the children the session derives. It holds no vessel key, no custody root, no face key and no ward key.
  *
  * ── THE SESSION STANDS IN FOR THE KEY ───────────────────────────────────────────────────────────
@@ -169,7 +169,7 @@ export function makePulamaHolder(a: {
   /** Read, decide here, write there only where the row still stands as decided over. */
   const update = async <T>(home: CustodyHome, file: string, cold: boolean, decide: (standing: RecordReading) => RecordUpdate<T>): Promise<T> => {
     for (;;) {
-      const standing = await reading("row.standing", { home, file, cold });
+      const standing = await reading("record.standing", { home, file, cold });
       // The swap compares against what the pūlama read, held apart: a decision that writes into the bytes it was handed never moves it.
       const expect = copyReading(standing);
       const spent = (): void => {
@@ -185,22 +185,22 @@ export function makePulamaHolder(a: {
       } catch (err) { spent(); throw err; }
       if (write === null) { spent(); return next.value; }
       try {
-        if (await call("row.swap", { home, file, cold, expect, plaintext: write }) === true) return next.value;
+        if (await call("record.swap", { home, file, cold, expect, plaintext: write }) === true) return next.value;
       } finally { if (cold) write.fill(0); spent(); }
     }
   };
 
   const remove = async (home: CustodyHome, file: string, cold: boolean, when?: (plaintext: Uint8Array) => boolean): Promise<boolean> => {
-    if (!when) return await call("row.remove", { home, file, cold }) === true;
+    if (!when) return await call("record.remove", { home, file, cold }) === true;
     for (;;) {
-      const standing = await reading("row.standing", { home, file, cold });
+      const standing = await reading("record.standing", { home, file, cold });
       if (standing.reading === "absent") return false;
       if (standing.reading === "locked") throw new CustodyLocked();
       if (standing.reading === "unavailable") throw new CustodyRowUnavailable(home, file, standing.why);
       const expect = Uint8Array.from(standing.plaintext);
       try {
         if (!when(standing.plaintext)) return false;
-        const out = await call("row.remove", { home, file, cold, expect }) as { removed?: unknown; stood?: unknown };
+        const out = await call("record.remove", { home, file, cold, expect }) as { removed?: unknown; stood?: unknown };
         if (out.removed === true) return true;
         if (out.stood === false) return false;
       } finally { if (cold) { standing.plaintext.fill(0); expect.fill(0); } }
@@ -208,7 +208,7 @@ export function makePulamaHolder(a: {
   };
 
   /** Hold the pūlama's custody claim across `act`; the claim releases when the act settles or the channel drops. */
-  const claimed = async <T>(kind: "rows" | "exclusive", act: (claim: number) => Promise<T>): Promise<T> => {
+  const claimed = async <T>(kind: "records" | "exclusive", act: (claim: number) => Promise<T>): Promise<T> => {
     const claim = (await call("claim.begin", { kind }) as { claim: number }).claim;
     try { return await act(claim); }
     finally { await call("claim.end", { claim }).catch(() => undefined); }
@@ -241,27 +241,27 @@ export function makePulamaHolder(a: {
     openedSlot: () => session?.standing.slot ?? null,
     async readRecord(home, file) {
       if (session === null) return { reading: "locked" };
-      return reading("row.read", { home, file });
+      return reading("record.read", { home, file });
     },
-    async writeRecord(home, file, plaintext) { await call("row.write", { home, file, plaintext }); },
+    async writeRecord(home, file, plaintext) { await call("record.write", { home, file, plaintext }); },
     updateRecord: (home, file, decide) => update(home, file, false, decide),
-    async moveRecord(home, source, destination, expected) { await call("row.move", { home, source, destination, expected }); },
+    async moveRecord(home, source, destination, expected) { await call("record.move", { home, source, destination, expected }); },
     withRecords(act) {
-      return claimed("rows", (claim) => act({
-        async read(home, file) { return await call("rows.read", { claim, home, file }) as Uint8Array | null; },
+      return claimed("records", (claim) => act({
+        async read(home, file) { return await call("records.read", { claim, home, file }) as Uint8Array | null; },
         async remove(home, file, when) {
           if (when) {
-            const bytes = await call("rows.read", { claim, home, file }) as Uint8Array | null;
+            const bytes = await call("records.read", { claim, home, file }) as Uint8Array | null;
             if (bytes === null || !when(bytes)) return false;
           }
-          return await call("rows.remove", { claim, home, file }) === true;
+          return await call("records.remove", { claim, home, file }) === true;
         },
       }));
     },
     removeRecord: (home, file, when) => remove(home, file, false, when),
     removeColdRecord: (home, file, when) => remove(home, file, true, when),
     async openColdRecord(home, file, act) {
-      const plaintext = await call("row.cold-open", { home, file }) as Uint8Array;
+      const plaintext = await call("record.cold-open", { home, file }) as Uint8Array;
       try { return await act(plaintext); } finally { plaintext.fill(0); }
     },
     updateColdRecord: (home, file, decide) => update(home, file, true, decide),

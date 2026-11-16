@@ -1,8 +1,8 @@
 /**
  * pulama-wire — THE CODEC between a vessel and the pūlama that holds its custody.
  *
- * One frame per line, JSON, the custody door's own style. A vessel asks row operations and derivations; the pūlama
- * answers plaintext rows and derived children. NO FRAME CARRIES A KEY: the vessel key, the serving key, the custody
+ * One frame per line, JSON, the custody door's own style. A vessel asks record operations and derivations; the pūlama
+ * answers plaintext records and derived children. NO FRAME CARRIES A KEY: the vessel key, the serving key, the custody
  * root, a face's custody key and a ward key rest in the pūlama's holder and never enter a frame, and no frame carries
  * a credential either (a passphrase rides nothing).
  *
