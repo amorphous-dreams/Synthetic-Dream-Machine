@@ -89,14 +89,16 @@ export function ritePlan(args: ParsedArgs): RitePlan {
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */
-export function keepPlan(args: ParsedArgs): { readonly workspace?: string; readonly into?: string; readonly acceptOmissions: boolean; readonly face?: number; readonly ifDue?: true } {
+export function keepPlan(args: ParsedArgs): { readonly workspace?: string; readonly into?: string; readonly acceptOmissions: boolean; readonly face?: number; readonly ifDue?: true; readonly sessions?: boolean } {
   const word = (raw: string | undefined): string | undefined => (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined);
   const workspace = word(args.options["workspace"]), into = word(args.options["into"]), faceWord = word(args.options["face"]);
   // `--if-due` (keep alone) may leave the workspace to the house config (`../keep-config.ts`); every other line names it.
   const ifDue = args.positional[0] === "keep" && args.flags["if-due"] === true;
   if (workspace === undefined && !ifDue) throw new RiteUsage("keep names the workspace it lays the bundle into: --workspace <name> [--into <path>] (or `keep --if-due`, which reads LARES_KEEP_WORKSPACE)");
   if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
-  return { ...(workspace !== undefined ? { workspace } : {}), ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}), ...(ifDue ? { ifDue: true as const } : {}) };
+  // `--sessions` / `--no-sessions` (keep alone); with neither, the host half reads LARES_KEEP_SESSIONS and keeps them.
+  const sessions = args.positional[0] === "keep" && typeof args.flags["sessions"] === "boolean" ? args.flags["sessions"] : undefined;
+  return { ...(workspace !== undefined ? { workspace } : {}), ...(into !== undefined ? { into } : {}), acceptOmissions: args.flags["accept-omissions"] === true, ...(faceWord !== undefined ? { face: Number(faceWord) } : {}), ...(ifDue ? { ifDue: true as const } : {}), ...(sessions !== undefined ? { sessions } : {}) };
 }
 
 /** The keep's live ports: the vessel's rows through the store door, and the cut through the carry export. */

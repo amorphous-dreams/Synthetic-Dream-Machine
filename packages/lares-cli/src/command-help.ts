@@ -80,7 +80,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] | keep --workspace <name> [--into <path>] [--accept-omissions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
+    usage: "usage: lares rite kukulu [--branch <name>] | keep --workspace <name> [--into <path>] [--accept-omissions] [--sessions|--no-sessions] | keep --if-due [--workspace <name>] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> [--staging <path>] | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
     synopsis:
       "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
       "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
@@ -89,6 +89,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
       "bundle replaces the one an earlier keep left), commits `keep <bundleId>`, rebases, pushes, and lands the tessera at the bundle " +
       "id the pushed tree holds. A push that fails names the cure: mend the remote and run keep again. " +
+      "keep also carries this device's Claude Code sessions under devices/<name>-<id8>/ in the same commit and push; " +
+      "--no-sessions (or LARES_KEEP_SESSIONS=0) keeps the house alone. " +
       "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
     examples: [
       "lares lei kui --rite kukulu --branch main --returns 3   # the hand strings the lei first",

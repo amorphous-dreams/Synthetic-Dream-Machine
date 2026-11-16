@@ -282,6 +282,8 @@ describe("the keep rite, host half", () => {
     // The line: `--if-due` alone names no workspace (the CLI reads the configured one); a plain keep still needs one.
     expect(keepPlan(parseArgs(["rite", "keep", "--if-due"]))).toEqual({ acceptOmissions: false, ifDue: true });
     expect(keepPlan(parseArgs(["rite", "keep", "--if-due", "--workspace", "backup"]))).toEqual({ workspace: "backup", acceptOmissions: false, ifDue: true });
+    expect(keepPlan(parseArgs(["rite", "keep", "--workspace", "backup", "--no-sessions"]))).toEqual({ workspace: "backup", acceptOmissions: false, sessions: false });
+    expect(keepPlan(parseArgs(["rite", "keep", "--workspace", "backup", "--sessions"]))).toEqual({ workspace: "backup", acceptOmissions: false, sessions: true });
     expect(() => keepPlan(parseArgs(["rite", "keep"]))).toThrow();
   });
 
