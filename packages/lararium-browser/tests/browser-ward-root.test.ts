@@ -16,7 +16,7 @@
 import { describe, expect, test } from "vitest";
 import { bindSlot, decodeSlotTree, encodeSlotTree, nobleKdf, verifyEd25519, type Credential, type DeviceDelegationTiddler } from "@lararium/mesh";
 import {
-  lockBrowserCustody, readKeystoreRow, sealBrowserKeystore, unlockBrowserCustody, withCustodyRows, writeKeystoreRow,
+  lockBrowserCustody, readKeystoreRecord, sealBrowserKeystore, unlockBrowserCustody, withCustodyRecords, writeKeystoreRecord,
 } from "../src/browser-custody.js";
 import { generateOrLoadBrowserPersonaRoot, idbGet, idbPut, listBrowserPersonaRoots, openVesselIdb, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { bindFirstFaceSlot } from "../src/browser-face-custody.js";
@@ -84,18 +84,18 @@ describe("r1 · unlocked custody never reaches the face root", () => {
   test("RED: with custody unlocked, the ordinary row doors refuse the root `ward-needs-fresh-unlock` and change no byte; CONTROL: the device seed and the roster still open", async () => {
     const { idbName } = await wardedVessel("r1");
     const before = await keystoreKeys(idbName);
-    expect(readingOf(await settle(readKeystoreRow(idbName, "persona-root-h0")))).toBe("ward-needs-fresh-unlock");
-    expect(readingOf(await settle(writeKeystoreRow(idbName, "persona-root-h0", { verifyingKey: "a".repeat(64), signingKey: "b".repeat(64) })))).toBe("ward-needs-fresh-unlock");
-    expect(readingOf(await settle(withCustodyRows(idbName, (rows) => rows.delete("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
-    expect(readingOf(await settle(withCustodyRows(idbName, (rows) => rows.read("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(readKeystoreRecord(idbName, "persona-root-h0")))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(writeKeystoreRecord(idbName, "persona-root-h0", { verifyingKey: "a".repeat(64), signingKey: "b".repeat(64) })))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(withCustodyRecords(idbName, (rows) => rows.delete("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
+    expect(readingOf(await settle(withCustodyRecords(idbName, (rows) => rows.read("persona-root-h0"))))).toBe("ward-needs-fresh-unlock");
     expect(await keystoreKeys(idbName)).toEqual(before);
     // CONTROL: the rows that are not the root write, open and leave under the same unlock.
     const nexusKey = globalThis.crypto.getRandomValues(new Uint8Array(32));
     await bindFirstFaceSlot(idbName, FACE, CUSTODY);
-    await writeKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`, nexusKey);
-    expect(await readKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`)).toEqual(nexusKey);
-    await withCustodyRows(idbName, (rows) => rows.delete(`nexus-key/${FACE}/nexus-a`));
-    expect(await readKeystoreRow(idbName, `nexus-key/${FACE}/nexus-a`)).toBeUndefined();
+    await writeKeystoreRecord(idbName, `nexus-key/${FACE}/nexus-a`, nexusKey);
+    expect(await readKeystoreRecord(idbName, `nexus-key/${FACE}/nexus-a`)).toEqual(nexusKey);
+    await withCustodyRecords(idbName, (rows) => rows.delete(`nexus-key/${FACE}/nexus-a`));
+    expect(await readKeystoreRecord(idbName, `nexus-key/${FACE}/nexus-a`)).toBeUndefined();
     expect(await listBrowserPersonaRoots(idbName)).toEqual([0]);
   }, SLOW);
 });

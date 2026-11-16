@@ -13,10 +13,10 @@
  */
 import proofWorkerUrl from "../workers/custody-proof.worker.ts?worker&url";
 import type { ProofAnswer, ProofAsk } from "../ceremony-protocol.js";
-import { custodyRowsOf, GATE_KEYSTORE, GateRefused, type GateEnv } from "./critical-gate.js";
+import { custodyRecordsOf, GATE_KEYSTORE, GateRefused, type GateEnv } from "./critical-gate.js";
 
 /** One store's keystore row names, or null where the database holds no keystore. The open mints and upgrades nothing. */
-function keystoreRows(name: string): Promise<readonly string[] | null> {
+function keystoreRecords(name: string): Promise<readonly string[] | null> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(name);
     let minted = false;
@@ -51,7 +51,7 @@ export async function ambientCustodyCensus(names?: readonly string[]): Promise<r
   if (!names && typeof indexedDB.databases !== "function") throw new GateRefused("gate-census-absent", "this engine names no list of this site's databases, so the gate cannot read what custody stands here; clear this site's data in the browser's own settings");
   const stores = names ?? (await indexedDB.databases()).map((db) => db.name).filter((name): name is string => typeof name === "string");
   const out: { store: string; trees: number; sealed: number }[] = [];
-  for (const store of [...stores].sort()) { const rows = await keystoreRows(store); if (rows) out.push({ store, ...custodyRowsOf(rows) }); }
+  for (const store of [...stores].sort()) { const records = await keystoreRecords(store); if (records) out.push({ store, ...custodyRecordsOf(records) }); }
   return out;
 }
 

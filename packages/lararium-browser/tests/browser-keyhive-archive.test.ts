@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 import { KeyhiveProvider, InMemoryEventStore, ArchiveIdentityMismatch } from "@lararium/keyhive";
 import { BootHalted } from "./wire-vessel-rig.js";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, fixtureWardDialog, foundedGroupOf } from "./browser-custody-fixture.js";
-import { refuseSharedTreeFaceRows } from "../src/browser-custody.js";
+import { refuseSharedTreeFaceRecords } from "../src/browser-custody.js";
 import { placeSeed } from "./browser-place-seed.fixture.js";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbGet, idbKeys, idbPut } from "../src/browser-vessel-identity.js";
@@ -59,7 +59,7 @@ describe("the browser keeps only a face Archive", () => {
     const another = await openVesselIdb(bare);
     try { await idbPut(another, "keystore", `veil-archive-g${group}`, { torn: true }); } finally { another.close(); }
     // A face's row beside the place tree names the shared tree's earlier shape: it refuses by name and reads nowhere.
-    await expect(refuseSharedTreeFaceRows(bare)).rejects.toMatchObject({ reading: "face-row-shared" });
+    await expect(refuseSharedTreeFaceRecords(bare)).rejects.toMatchObject({ reading: "face-row-shared" });
     await expect(loadBrowserVeilArchive(bare, group)).rejects.toMatchObject({ reading: "no-custody-slot" });
   });
 });

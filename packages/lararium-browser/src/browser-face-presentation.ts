@@ -29,10 +29,10 @@ import {
   sessionBinding, SessionTable,
   type FacePresentation, type FaceScope, type GateBundlePin, type SessionBinding,
 } from "@lararium/mesh";
-import { browserVesselFaceKeyCustody, dialRow, faceKeyRow, type KeptFleetJoinDial } from "./browser-fleet-join.js";
+import { browserVesselFaceKeyCustody, dialRecord, faceKeyRecord, type KeptFleetJoinDial } from "./browser-fleet-join.js";
 import { FaceCustodyRefused } from "./browser-face-custody.js";
 import { FLEET_JOIN_STORE, idbGet, openVesselIdb } from "./browser-vessel-identity.js";
-import { BrowserCustodyRefused, readKeystoreRow } from "./browser-custody.js";
+import { BrowserCustodyRefused, readKeystoreRecord } from "./browser-custody.js";
 
 /** Why no face presentation stands, by name. */
 export interface BrowserFacePresentationRefusal { readonly refusal: string; readonly detail?: string }
@@ -68,7 +68,7 @@ export async function composeBrowserFacePresentation(args: {
   let dial: KeptFleetJoinDial | undefined;
   try {
     record = await idbGet<KeptFaceRecord>(db, FLEET_JOIN_STORE, `record:${group}`);
-    dial = await idbGet<KeptFleetJoinDial>(db, FLEET_JOIN_STORE, dialRow(group));
+    dial = await idbGet<KeptFleetJoinDial>(db, FLEET_JOIN_STORE, dialRecord(group));
   } finally { db.close(); }
   if (record === undefined) return { refusal: "join-absent", detail: "no fleet join of this face landed in this browser" };
   if (dial === undefined) return { refusal: "dial-absent", detail: "the join landed before its dial was kept; land a fresh fleet-join answer" };
@@ -100,7 +100,7 @@ export async function composeBrowserFacePresentation(args: {
 
   // THIS BROWSER'S OWN KEY for the scope, named from its custody row and never from the certificate.
   let secret: unknown;
-  try { secret = await readKeystoreRow(args.idbName, faceKeyRow(group, scope)); }
+  try { secret = await readKeystoreRecord(args.idbName, faceKeyRecord(group, scope)); }
   catch (error) {
     if (error instanceof BrowserCustodyRefused && error.reading === "sealed-locked") return { refusal: "custody-locked" };
     if (error instanceof FaceCustodyRefused && error.reading === "face-locked") return { refusal: "custody-locked" };

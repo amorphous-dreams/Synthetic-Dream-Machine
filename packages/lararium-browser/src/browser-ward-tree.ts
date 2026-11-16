@@ -26,7 +26,7 @@ import {
   bindWardSlot, commitWardTree, decodeSlotTree, encodeSlotTree, mintWardKey, nobleKdf, openWardKey, readWardCarrier,
   writeWardCarrier, WardRefused, type Credential, type SlotTree, type WardKey,
 } from "@lararium/mesh";
-import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRows } from "./browser-custody.js";
+import { browserKeystoreCustodyIo, BrowserCustodyRefused, readBrowserCustody, withCustodyRecords } from "./browser-custody.js";
 import { openWardedRoot, wardCredentialOf, wardPinOf, wardRootCarrier, wardRootRowsOf, wardRootTreeOf, type WardRoute } from "./ward-core.js";
 import { faceOfVessel, openVesselIdb } from "./browser-vessel-identity.js";
 import { faceTreeIdLive, faceTreeIdOf } from "./browser-face-custody.js";
@@ -37,7 +37,7 @@ export async function wornFaceTreeOf(idbName: string): Promise<string | null> {
   return worn ? faceTreeIdOf(idbName, worn) : null;
 }
 
-export const PERSONA_ROSTER_ROW = "persona-root-roster";
+export const PERSONA_ROSTER_RECORD = "persona-root-roster";
 
 /**
  * THE FOUNDING SWEEPS A WARD NO FACE CAN EVER ANSWER: a ward filed under a face tree that stands in no index entry and no seat on
@@ -54,9 +54,9 @@ export async function sweepOrphanBrowserWards(idbName: string): Promise<string[]
     if (!(await faceTreeIdLive(idbName, tree))) orphaned.push(tree);
   }
   if (orphaned.length === 0) return [];
-  await withCustodyRows(idbName, async (rows) => {
+  await withCustodyRecords(idbName, async (rows) => {
     const roster = await readBrowserPersonaRoster(rows.read);
-    if (roster.some((l) => orphaned.includes(l.tree))) await rows.write(PERSONA_ROSTER_ROW, { roots: roster.filter((l) => !orphaned.includes(l.tree)) });
+    if (roster.some((l) => orphaned.includes(l.tree))) await rows.write(PERSONA_ROSTER_RECORD, { roots: roster.filter((l) => !orphaned.includes(l.tree)) });
     for (const r of await io.list()) { const tree = wardRootTreeOf(r); if (tree !== null && orphaned.includes(tree)) await io.remove(r); }
   });
   return orphaned;
@@ -130,7 +130,7 @@ export async function openBrowserWardedRoot(idbName: string, faceTree: string, r
 
 /** The roster's lines, ordered by face tree; [] where none stands. Reads under the keystore's unlock and names no seed. */
 export async function readBrowserPersonaRoster(read: (row: string) => Promise<unknown>): Promise<PersonaRosterLine[]> {
-  const raw = await read(PERSONA_ROSTER_ROW) as { roots?: readonly PersonaRosterLine[] } | undefined;
+  const raw = await read(PERSONA_ROSTER_RECORD) as { roots?: readonly PersonaRosterLine[] } | undefined;
   return [...(raw?.roots ?? [])].sort((a, b) => (a.tree < b.tree ? -1 : a.tree > b.tree ? 1 : 0));
 }
 
@@ -170,7 +170,7 @@ export async function mintBrowserWardedRoot(idbName: string, faceTree: string, r
   const credential = wardCredentialOf(route);
   const pin = pinOf(credential);
   const at = wardRootRowsOf(faceTree);
-  return withCustodyRows(idbName, async (rows) => {
+  return withCustodyRecords(idbName, async (rows) => {
     const roster = await readBrowserPersonaRoster(rows.read);
     const line = roster.find((l) => l.tree === faceTree);
     const io = browserKeystoreCustodyIo(idbName);
@@ -199,7 +199,7 @@ export async function mintBrowserWardedRoot(idbName: string, faceTree: string, r
       }
       if (line && line.verifyingKey !== kept.verifyingKey) throw new WardRefused("ward-root-names-another-key", "the roster names another root for this face");
       await io.write(at.key, new TextEncoder().encode(kept.verifyingKey));
-      if (!line) await rows.write(PERSONA_ROSTER_ROW, { roots: [...roster, { tree: faceTree, verifyingKey: kept.verifyingKey }] });
+      if (!line) await rows.write(PERSONA_ROSTER_RECORD, { roots: [...roster, { tree: faceTree, verifyingKey: kept.verifyingKey }] });
       return kept;
     } finally { key.fill(0); }
   });

@@ -23,10 +23,10 @@
 import { describe, expect, test } from "vitest";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { openVesselIdb, idbGet, idbKeys, idbPut } from "../src/browser-vessel-identity.js";
-import { readKeystoreRow, sealBrowserKeystore } from "../src/browser-custody.js";
+import { readKeystoreRecord, sealBrowserKeystore } from "../src/browser-custody.js";
 import { bindFirstFaceSlot, faceKeyOpens, lockFaceCustody, unlockFaceCustody } from "../src/browser-face-custody.js";
 import { readBrowserFaceAtom } from "../src/browser-face-atom.js";
-import { readFaceRow, writeFaceRow } from "../src/browser-face-custody.js";
+import { readFaceRecord, writeFaceRecord } from "../src/browser-face-custody.js";
 import { standVesselHouse, type LitVessel } from "../src/vessel-sessions.js";
 import { BootHalted } from "./wire-vessel-rig.js";
 
@@ -109,8 +109,8 @@ describe("a face row never rests under the place tree", () => {
     const refused = await openBrowserVessel({ idbName, foundFace: true, askCustody: async () => ROUTE } as unknown as BrowserVesselOptions).catch((e: unknown) => e);
     expect(String(refused)).toMatch(/face-row-shared/);
     expect((refused as { reading?: unknown }).reading).toBe("face-row-shared");
-    await expect(readKeystoreRow(idbName, "nexus-key/h0/aid")).rejects.toMatchObject({ reading: "face-names-a-handle" });
-    await expect(readKeystoreRow(idbName, "persona-root-h0")).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
+    await expect(readKeystoreRecord(idbName, "nexus-key/h0/aid")).rejects.toMatchObject({ reading: "face-names-a-handle" });
+    await expect(readKeystoreRecord(idbName, "persona-root-h0")).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
   }, SLOW);
 });
 
@@ -120,7 +120,7 @@ describe("the face switch rests its records under the face it moves to", () => {
     const a = `pg-a-${crypto.randomUUID()}`, b = `pg-b-${crypto.randomUUID()}`;
     await bindFirstFaceSlot(idbName, a, ROUTE);
     await bindFirstFaceSlot(idbName, b, OTHER);
-    await writeFaceRow(idbName, b, "recipe/1", new TextEncoder().encode("B's recipe"));
+    await writeFaceRecord(idbName, b, "recipe/1", new TextEncoder().encode("B's recipe"));
     lockFaceCustody(idbName, a); lockFaceCustody(idbName, b);
     const house = await standVesselHouse({ idbName, light: (): Promise<LitVessel> => Promise.resolve({ close: async () => undefined }) });
     try {
@@ -129,10 +129,10 @@ describe("the face switch rests its records under the face it moves to", () => {
       const seen: string[] = [];
       await house.switchFace(s.sessionId, b, {
         ask: async () => OTHER,
-        intent: async () => { const at = await readFaceRow(idbName, b, `face-switch/${s.sessionId}`); seen.push(at === null ? "absent" : String(JSON.parse(new TextDecoder().decode(at)).phase)); },
+        intent: async () => { const at = await readFaceRecord(idbName, b, `face-switch/${s.sessionId}`); seen.push(at === null ? "absent" : String(JSON.parse(new TextDecoder().decode(at)).phase)); },
       });
       expect(seen, "the intent rests before the fence runs").toEqual(["intent"]);
-      const rested = await readFaceRow(idbName, b, `face-switch/${s.sessionId}`);
+      const rested = await readFaceRecord(idbName, b, `face-switch/${s.sessionId}`);
       expect(rested, "the outcome rests under the target face").not.toBeNull();
       expect(JSON.parse(new TextDecoder().decode(rested!))).toEqual({ phase: "outcome", sessionId: s.sessionId, from: await digest(a), to: await digest(b), generation: 1 });
     } finally { await house.release(); }

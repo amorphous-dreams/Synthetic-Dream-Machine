@@ -19,7 +19,7 @@
 import { browserKeystoreCustodyIo, BrowserWardRefused } from "./browser-custody.js";
 import { chargeWardAttempt, landBrowserWardRows, readBrowserWardKey, readBrowserWardRows, wornFaceTreeOf } from "./browser-ward-tree.js";
 import {
-  wardCredentialOf, wardSignRowsOf, type WardActAnswer, type WardActRequest, type WardKeyActRequest, type WardKeyMintAnswer, type WardKeyMintRequest, type WardRoute,
+  wardCredentialOf, wardSignRecordsOf, type WardActAnswer, type WardActRequest, type WardKeyActRequest, type WardKeyMintAnswer, type WardKeyMintRequest, type WardRoute,
 } from "./ward-core.js";
 import { WardRefused } from "@lararium/mesh";
 
@@ -71,7 +71,7 @@ const refusedBy = (e: unknown): never => {
 };
 
 /** A face's ward key rows, a malformed face name refusing in this page's own class (`ward-key-unnamed`). */
-const signRowsOf = (group: string): ReturnType<typeof wardSignRowsOf> => { try { return wardSignRowsOf(group); } catch (e) { return refusedBy(e); } };
+const signRecordsOf = (group: string): ReturnType<typeof wardSignRecordsOf> => { try { return wardSignRecordsOf(group); } catch (e) { return refusedBy(e); } };
 
 /**
  * The custody tree of the face this session wears, where a ward act looks for its root: `ward-absent` where the session wears no
@@ -94,7 +94,7 @@ export async function browserWardSign(idbName: string, handleIndex: number, rout
 
 /** The PUBLIC half of face `group`'s ward key on this browser, off plain bytes beside its ward (no seed opens), or null where none stands. */
 export async function browserWardKeyOf(idbName: string, group: string): Promise<string | null> {
-  const bytes = await browserKeystoreCustodyIo(idbName).read(signRowsOf(group).key);
+  const bytes = await browserKeystoreCustodyIo(idbName).read(signRecordsOf(group).key);
   if (bytes === null) return null;
   const key = new TextDecoder().decode(bytes);
   if (!/^[0-9a-f]{64}$/.test(key)) throw new BrowserWardRefused("ward-key-unreadable", "the face's ward key row reads malformed");
@@ -107,7 +107,7 @@ export async function browserWardKeyOf(idbName: string, group: string): Promise<
  */
 export async function browserWardKeySign(idbName: string, group: string, route: WardRoute, bytes: Uint8Array, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly signature: string }> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
-  const rows = signRowsOf(group), io = browserKeystoreCustodyIo(idbName);
+  const rows = signRecordsOf(group), io = browserKeystoreCustodyIo(idbName);
   const [tree, sealedSeed] = await Promise.all([io.read(rows.tree), io.read(rows.seed)]);
   if (tree === null || sealedSeed === null) throw new BrowserWardRefused("ward-absent", `face ${group} holds no ward key in this browser`);
   const request: WardKeyActRequest = { act: "ward-key-sign", group, tree, sealedSeed, route, bytes };
@@ -121,7 +121,7 @@ export async function browserWardKeySign(idbName: string, group: string, route: 
  */
 export async function browserWardKeyMint(idbName: string, group: string, deviceKey: string, route: WardRoute, spawn: WardWorkerSpawn = defaultSpawn): Promise<{ readonly key: string; readonly pop: string } | null> {
   try { wardCredentialOf(route); } catch (e) { refusedBy(e); }
-  const rows = signRowsOf(group);
+  const rows = signRecordsOf(group);
   const request: WardKeyMintRequest = { act: "ward-key-mint", group, deviceKey, route };
   const minted = await chargeWardAttempt(idbName, () => browserWardActOnce<WardKeyMintAnswer>(request, spawn)).catch(refusedBy);
   if ("refused" in minted) throw new BrowserWardRefused(minted.refused);

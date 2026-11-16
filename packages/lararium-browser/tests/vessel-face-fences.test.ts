@@ -15,7 +15,7 @@
  */
 import { afterEach, describe, expect, test } from "vitest";
 import { browserKeystoreCustodyIo } from "../src/browser-custody.js";
-import { bindFirstFaceSlot, clearFaceCustody, faceCustodyHeld, lockFaceCustody, unlockFaceCustody, writeFaceRow } from "../src/browser-face-custody.js";
+import { bindFirstFaceSlot, clearFaceCustody, faceCustodyHeld, lockFaceCustody, unlockFaceCustody, writeFaceRecord } from "../src/browser-face-custody.js";
 import { standVesselHouse, type LitVessel, type VesselHouse } from "../src/vessel-sessions.js";
 
 const SLOW = 300_000;
@@ -64,7 +64,7 @@ describe("a clear authenticates the face it names", () => {
     const a = face("a"), b = face("b");
     await bindFirstFaceSlot(idbName, a, PASS);
     await bindFirstFaceSlot(idbName, b, PASS);
-    await writeFaceRow(idbName, b, "recipe/1", new TextEncoder().encode("B's recipe"));
+    await writeFaceRecord(idbName, b, "recipe/1", new TextEncoder().encode("B's recipe"));
     lockFaceCustody(idbName, a); lockFaceCustody(idbName, b);
     const io = browserKeystoreCustodyIo(idbName);
     const index = JSON.parse(new TextDecoder().decode((await io.read("face-index"))!)) as { entries: { group: string; fcid: string }[] };

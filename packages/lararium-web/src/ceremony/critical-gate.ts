@@ -49,15 +49,15 @@ export function gateDemandOf(standing: GateStanding): GateDemand {
 
 /** The keystore rows the gate reads custody off, as `@lararium/browser` writes them (`tests/vessel-host-reset-gate.test.ts` welds them). */
 export const GATE_KEYSTORE = "keystore";
-export const GATE_PLACE_TREE_ROW = "custody-slots";
+export const GATE_PLACE_TREE_RECORD = "custody-slots";
 export const GATE_FACE_TREE_PREFIX = "face-slots/";
 export const GATE_SEALED_PREFIXES: readonly string[] = ["sealed/", "face-sealed/", "ward/"];
 
 /** One store's keystore row names, read: how many slot trees stand and how many sealed rows. */
-export function custodyRowsOf(rows: readonly string[]): { readonly trees: number; readonly sealed: number } {
+export function custodyRecordsOf(records: readonly string[]): { readonly trees: number; readonly sealed: number } {
   return {
-    trees: rows.filter((row) => row === GATE_PLACE_TREE_ROW || row.startsWith(GATE_FACE_TREE_PREFIX)).length,
-    sealed: rows.filter((row) => GATE_SEALED_PREFIXES.some((prefix) => row.startsWith(prefix))).length,
+    trees: records.filter((record) => record === GATE_PLACE_TREE_RECORD || record.startsWith(GATE_FACE_TREE_PREFIX)).length,
+    sealed: records.filter((record) => GATE_SEALED_PREFIXES.some((prefix) => record.startsWith(prefix))).length,
   };
 }
 

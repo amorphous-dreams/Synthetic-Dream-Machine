@@ -19,14 +19,14 @@
  */
 import { expect, test } from "vitest";
 import {
-  BrowserCustodyRefused, CUSTODY_TREE_ROW, lockBrowserCustody, readBrowserCustody, readKeystoreRow, sealBrowserKeystore, SEALED_ROW_PREFIX,
+  BrowserCustodyRefused, CUSTODY_TREE_RECORD, lockBrowserCustody, readBrowserCustody, readKeystoreRecord, sealBrowserKeystore, SEALED_RECORD_PREFIX,
 } from "../src/browser-custody.js";
 import { bindFirstFaceSlot, FACE_SEALED_PREFIX, FACE_TREE_PREFIX, lockFaceCustody } from "../src/browser-face-custody.js";
 import {
-  custodyStandingOf, PROOF_FACE_TREE_PREFIX, PROOF_KEYSTORE, PROOF_PLACE_TREE_ROW, PROOF_SEALED_PREFIXES, proveCustodyRoute, readCustodyStanding, readCustodyTrees,
+  custodyStandingOf, PROOF_FACE_TREE_PREFIX, PROOF_KEYSTORE, PROOF_PLACE_TREE_RECORD, PROOF_SEALED_PREFIXES, proveCustodyRoute, readCustodyStanding, readCustodyTrees,
 } from "../src/browser-custody-proof.js";
 import { openVesselIdb } from "../src/browser-vessel-identity.js";
-import { WARD_ROW_PREFIX } from "../src/ward-core.js";
+import { WARD_RECORD_PREFIX } from "../src/ward-core.js";
 
 const RIGHT = { kind: "passphrase", passphrase: "the holder's own passphrase" } as const;
 const WRONG = { kind: "passphrase", passphrase: "somebody else's guess" } as const;
@@ -75,7 +75,7 @@ test("CP1 RED the four states: bare, sealed and unlocked, sealed and locked, a j
   lockBrowserCustody(place);
   expect(await readBrowserCustody(place)).toMatchObject({ reading: "sealed", unlocked: false });
   // CONTROL: the lock stood. A reader of the sealed store refuses by name.
-  const refused = await readKeystoreRow(place, "vessel-key").catch((e: unknown) => e);
+  const refused = await readKeystoreRecord(place, "vessel-key").catch((e: unknown) => e);
   expect(refused).toBeInstanceOf(BrowserCustodyRefused);
   expect((refused as BrowserCustodyRefused).reading).toBe("sealed-locked");
   const locked = { right: await proveCustodyRoute(place, [RIGHT]), wrong: await proveCustodyRoute(place, [WRONG]) };
@@ -99,7 +99,7 @@ test("CP2 RED the proof writes nothing and unlocks nothing: the keystore reads b
   lockBrowserCustody(idbName);
   lockFaceCustody(idbName, "persona-group-a");
   const before = await census(idbName);
-  expect(Object.keys(before)).toContain(CUSTODY_TREE_ROW);
+  expect(Object.keys(before)).toContain(CUSTODY_TREE_RECORD);
   expect(await proveCustodyRoute(idbName, [WRONG])).toEqual({ reading: "no-slot-opens", trees: 2 });
   expect(await census(idbName), "a wrong try wrote nothing").toEqual(before);
   // Either tree's own route proves a holder: the place's, and the face's.
@@ -111,7 +111,7 @@ test("CP2 RED the proof writes nothing and unlocks nothing: the keystore reads b
 
 test("CP3 torn custody: a sealed row with no tree reads torn; an undecodable tree stands unreadable and proves unverifiable; CONTROL: it read held and readable first", { timeout: 120_000 }, async () => {
   const torn = fresh();
-  await put(torn, `${SEALED_ROW_PREFIX}vessel-key`, new Uint8Array([1, 2, 3]));
+  await put(torn, `${SEALED_RECORD_PREFIX}vessel-key`, new Uint8Array([1, 2, 3]));
   expect(await readCustodyStanding(torn)).toEqual({ reading: "torn", rows: 1 });
   expect(await readCustodyTrees(torn)).toEqual({ trees: 0, readable: 0 });
 
@@ -120,20 +120,20 @@ test("CP3 torn custody: a sealed row with no tree reads torn; an undecodable tre
   // CONTROL: before the fault, the tree reads and the route opens.
   expect(await readCustodyTrees(idbName)).toEqual({ trees: 1, readable: 1 });
   expect((await proveCustodyRoute(idbName, [RIGHT])).reading).toBe("opens");
-  await put(idbName, CUSTODY_TREE_ROW, new TextEncoder().encode("{ not a slot tree"));
+  await put(idbName, CUSTODY_TREE_RECORD, new TextEncoder().encode("{ not a slot tree"));
   expect(await readCustodyStanding(idbName), "the row still stands").toEqual({ reading: "held", trees: 1 });
   expect(await readCustodyTrees(idbName)).toEqual({ trees: 1, readable: 0 });
   expect(await proveCustodyRoute(idbName, [RIGHT])).toEqual({ reading: "unverifiable", trees: 0 });
 });
 
 test("CP4 the weld: the proof's row names equal the custody modules' own", () => {
-  expect(PROOF_PLACE_TREE_ROW).toBe(CUSTODY_TREE_ROW);
+  expect(PROOF_PLACE_TREE_RECORD).toBe(CUSTODY_TREE_RECORD);
   expect(PROOF_FACE_TREE_PREFIX).toBe(FACE_TREE_PREFIX);
-  expect([...PROOF_SEALED_PREFIXES].sort()).toEqual([SEALED_ROW_PREFIX, FACE_SEALED_PREFIX, WARD_ROW_PREFIX].sort());
+  expect([...PROOF_SEALED_PREFIXES].sort()).toEqual([SEALED_RECORD_PREFIX, FACE_SEALED_PREFIX, WARD_RECORD_PREFIX].sort());
   expect(PROOF_KEYSTORE).toBe("keystore");
   expect(custodyStandingOf(["catalog-url", "face-index"])).toEqual({ reading: "bare" });
   expect(custodyStandingOf(["catalog-url", `${FACE_TREE_PREFIX}00ff`, `${FACE_SEALED_PREFIX}00ff/anchor`])).toEqual({ reading: "held", trees: 1 });
-  expect(custodyStandingOf([`${WARD_ROW_PREFIX}root/00ff/tree`])).toEqual({ reading: "torn", rows: 1 });
+  expect(custodyStandingOf([`${WARD_RECORD_PREFIX}root/00ff/tree`])).toEqual({ reading: "torn", rows: 1 });
 });
 
 test("CP5 a database with no keystore reads bare, and the read creates no store in it", async () => {

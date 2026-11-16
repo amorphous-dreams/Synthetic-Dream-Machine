@@ -33,7 +33,7 @@
 import { expect, test, vi } from "vitest";
 import type { ResetSignal } from "../src/ceremony-protocol.js";
 import {
-  custodyRowsOf, gateDemandOf, GateRefused, gateWords, passCriticalGate, readGateStanding, spendGatePass, typedConfirms,
+  custodyRecordsOf, gateDemandOf, GateRefused, gateWords, passCriticalGate, readGateStanding, spendGatePass, typedConfirms,
   type GateEnv, type GatePass, type GateProof,
 } from "../src/ceremony/critical-gate.js";
 import { burnPlace, RESET_PHRASE, RESET_PROCEDURE, resetAskKey, type ResetEnv } from "../src/ceremony/reset-core.js";
@@ -159,7 +159,7 @@ test("G4 unverifiable custody takes the typed phrase under its own name and asks
     expect(words.ask.includes(RESET_PHRASE), demand).toBe(demand !== "passphrase");
   }
   expect(gateWords("typed-phrase-unopened", RESET_PROCEDURE).ask).toContain("burns unopened");
-  expect(custodyRowsOf(["catalog-url", "custody-slots", "sealed/vessel-key", "face-slots/00ff", "face-sealed/00ff/anchor", "ward/root/00ff/tree"])).toEqual({ trees: 2, sealed: 3 });
+  expect(custodyRecordsOf(["catalog-url", "custody-slots", "sealed/vessel-key", "face-slots/00ff", "face-sealed/00ff/anchor", "ward/root/00ff/tree"])).toEqual({ trees: 2, sealed: 3 });
 });
 
 test("G5 the demand reads afresh: custody that changed while the form stood refuses gate-demand-moved and passes nothing", async () => {

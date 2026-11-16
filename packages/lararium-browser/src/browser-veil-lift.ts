@@ -7,14 +7,14 @@
  * a replay keeps the record it holds.
  */
 import { signVeilLift, verifyVeilLift, type VeilLiftRecord } from "@lararium/mesh";
-import { readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { readKeystoreRecord, writeKeystoreRecord } from "./browser-custody.js";
 
 /** The face row a PersonaGroup's veil-lift link rests in. */
 export const veilLiftRow = (face: string): string => `veil-lift/${face}`;
 
 /** The link this browser holds for `face`, verified; null where none rests or the bytes read as no link. */
 export async function readBrowserVeilLift(idbName: string, face: string): Promise<VeilLiftRecord | null> {
-  const held = await readKeystoreRow(idbName, veilLiftRow(face));
+  const held = await readKeystoreRecord(idbName, veilLiftRow(face));
   if (!(held instanceof Uint8Array)) return null;
   let raw: unknown = null;
   try { raw = JSON.parse(new TextDecoder("utf-8", { fatal: true }).decode(held)); } catch { return null; }
@@ -30,6 +30,6 @@ export async function keepBrowserVeilLift(idbName: string, face: string, veil: s
   const standing = await readBrowserVeilLift(idbName, face);
   const record = await signVeilLift({ atomSeed, veil, face });
   if (standing !== null && standing.veil === record.veil && standing.atom === record.atom) return standing;
-  await writeKeystoreRow(idbName, veilLiftRow(face), new TextEncoder().encode(JSON.stringify(record)));
+  await writeKeystoreRecord(idbName, veilLiftRow(face), new TextEncoder().encode(JSON.stringify(record)));
   return record;
 }

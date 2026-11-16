@@ -19,7 +19,7 @@
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-keyhive-archive
  */
-import { readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { readKeystoreRecord, writeKeystoreRecord } from "./browser-custody.js";
 
 /** The row that keeps one PersonaGroup's creator-veil Archive. */
 export function browserVeilArchiveRow(personaGroup: string): string {
@@ -36,7 +36,7 @@ export class BrowserArchiveRowUnreadable extends Error {
 }
 
 async function readRow(idbName: string, row: string): Promise<Uint8Array | undefined> {
-  const held = await readKeystoreRow(idbName, row);
+  const held = await readKeystoreRecord(idbName, row);
   if (held === undefined) return undefined;
   if (!(held instanceof Uint8Array) || held.byteLength === 0) throw new BrowserArchiveRowUnreadable(row);
   return held;
@@ -49,7 +49,7 @@ async function writeRow(idbName: string, row: string, bytes: Uint8Array): Promis
   // THE WRITE RETURNS WHEN ITS TRANSACTION COMPLETES, never at the request's success: a later write in another
   // transaction (the bootstrap that commits a founding) may then never land ahead of this row. The door copies the
   // caller's buffer, which may belong to a wasm heap that moves under it.
-  await writeKeystoreRow(idbName, row, bytes);
+  await writeKeystoreRecord(idbName, row, bytes);
 }
 
 /** A PersonaGroup's creator-veil Archive as it rests, or `undefined` when none ever stood. */

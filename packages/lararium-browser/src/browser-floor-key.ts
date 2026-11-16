@@ -15,10 +15,10 @@
  */
 import type { Repo } from "@automerge/automerge-repo";
 import { HELD_REST_KEY_LEN, floorRestKey, seedFloorDoor, standFloorKeyOn, VESSEL_LOCKED } from "@lararium/mesh";
-import { BrowserCustodyRefused, withCustodyRows } from "./browser-custody.js";
+import { BrowserCustodyRefused, withCustodyRecords } from "./browser-custody.js";
 
 /** The place row the floor's rest seed rests in. */
-export const FLOOR_REST_ROW = "floor-rest";
+export const FLOOR_REST_RECORD = "floor-rest";
 
 /** The floor key's standing on a browser: it stands, or the keystore stays shut. */
 export type BrowserFloorKey = "stands" | typeof VESSEL_LOCKED;
@@ -31,12 +31,12 @@ export type BrowserFloorKey = "stands" | typeof VESSEL_LOCKED;
 export async function standBrowserFloorKey(idbName: string, repo: Repo): Promise<BrowserFloorKey> {
   let seed: Uint8Array;
   try {
-    seed = await withCustodyRows(idbName, async (rows) => {
-      const standing = await rows.read(FLOOR_REST_ROW);
+    seed = await withCustodyRecords(idbName, async (rows) => {
+      const standing = await rows.read(FLOOR_REST_RECORD);
       if (standing instanceof Uint8Array && standing.length === HELD_REST_KEY_LEN) return Uint8Array.from(standing);
       if (standing !== undefined) throw new Error("[browser-floor-key] the floor-rest row reads malformed");
       const minted = globalThis.crypto.getRandomValues(new Uint8Array(HELD_REST_KEY_LEN));
-      await rows.write(FLOOR_REST_ROW, minted);
+      await rows.write(FLOOR_REST_RECORD, minted);
       return minted;
     });
   } catch (e) {

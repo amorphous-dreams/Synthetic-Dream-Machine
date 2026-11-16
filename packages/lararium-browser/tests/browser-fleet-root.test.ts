@@ -16,8 +16,8 @@ import { admittedJoineeIsland, heldDocOf, personaActRecordsOfGroup, readFleetJoi
 import type { Repo } from "@automerge/automerge-repo";
 import { openBrowserVessel, type BrowserVesselOptions } from "../src/open-browser-vessel.js";
 import { generateOrLoadBrowserVesselIdentity } from "../src/browser-vessel-identity.js";
-import { faceAtomRow, readBrowserFaceAddressSecret } from "../src/browser-face-atom.js";
-import { withCustodyRows } from "../src/browser-custody.js";
+import { faceAtomRecord, readBrowserFaceAddressSecret } from "../src/browser-face-atom.js";
+import { withCustodyRecords } from "../src/browser-custody.js";
 import { browserFleetJoinLand, browserFleetJoinRequest, browserFleetJoinSettle } from "../src/browser-fleet-join.js";
 import { browserFleetJoinOffer, browserFleetRootDoor, browserRootFaces, type BrowserRootFace, type BrowserSeatFace } from "../src/browser-fleet-root.js";
 import { seatWardWorkerSpawn } from "../src/testing.js";
@@ -141,7 +141,7 @@ describe("a leaf fleet: a browser that founded a face offers and answers, with n
     // R7: THE TAG LAW. The same vessel comes back under another atom (its tag secret unmoved): the face seats one vessel once.
     await browserFleetJoinSettle(leaf, group);
     // The atom row moved by hand, past the custody contract that refuses to move it: a vessel that re-minted its atom.
-    await withCustodyRows(leaf, async (rows) => { await rows.write(faceAtomRow(group), crypto.getRandomValues(new Uint8Array(32))); });
+    await withCustodyRecords(leaf, async (rows) => { await rows.write(faceAtomRecord(group), crypto.getRandomValues(new Uint8Array(32))); });
     const second = await browserFleetJoinRequest({ offer: JSON.parse(JSON.stringify(await browserFleetJoinOffer({ face: founder.root, idbName: founder.idbName }))), idbName: leaf, ward: JOINEE_WARD });
     expect(second.atomKey).not.toBe(request.atomKey);
     expect(second.vesselTag).toBe(request.vesselTag);

@@ -26,7 +26,7 @@ import { decodeSlotTree, nobleKdf, openTreeKey, type Credential, type KdfPort } 
 /** The keystore's object store, the place tree's row and each custody prefix, as the two custody modules write them
  *  (`browser-custody.ts`, `browser-face-custody.ts`; `tests/browser-custody-proof.test.ts` welds them). */
 export const PROOF_KEYSTORE = "keystore";
-export const PROOF_PLACE_TREE_ROW = "custody-slots";
+export const PROOF_PLACE_TREE_RECORD = "custody-slots";
 export const PROOF_FACE_TREE_PREFIX = "face-slots/";
 export const PROOF_SEALED_PREFIXES: readonly string[] = ["sealed/", "face-sealed/", "ward/"];
 
@@ -41,7 +41,7 @@ export type CustodyStanding =
 
 /** The standing a list of keystore row names reads as. Pure: the ceremony document reads the same names off its own census. */
 export function custodyStandingOf(rows: readonly string[]): CustodyStanding {
-  const trees = rows.filter((row) => row === PROOF_PLACE_TREE_ROW || row.startsWith(PROOF_FACE_TREE_PREFIX)).length;
+  const trees = rows.filter((row) => row === PROOF_PLACE_TREE_RECORD || row.startsWith(PROOF_FACE_TREE_PREFIX)).length;
   if (trees > 0) return { reading: "held", trees };
   const sealed = rows.filter((row) => PROOF_SEALED_PREFIXES.some((prefix) => row.startsWith(prefix))).length;
   return sealed > 0 ? { reading: "torn", rows: sealed } : { reading: "bare" };
@@ -81,9 +81,9 @@ export async function readCustodyStanding(idbName: string): Promise<CustodyStand
 /** The custody trees one store holds, read and decoded but never opened: how many stand, and how many of those read. */
 async function treesOf(idbName: string): Promise<Uint8Array[]> {
   return await withKeystore(idbName, async (store) => {
-    const names = (await asked(store.getAllKeys())).map(String).filter((row) => row === PROOF_PLACE_TREE_ROW || row.startsWith(PROOF_FACE_TREE_PREFIX)).sort();
+    const names = (await asked(store.getAllKeys())).map(String).filter((row) => row === PROOF_PLACE_TREE_RECORD || row.startsWith(PROOF_FACE_TREE_PREFIX)).sort();
     // The place tree leads: the first passphrase a browser binds stands there.
-    names.sort((a, b) => Number(b === PROOF_PLACE_TREE_ROW) - Number(a === PROOF_PLACE_TREE_ROW));
+    names.sort((a, b) => Number(b === PROOF_PLACE_TREE_RECORD) - Number(a === PROOF_PLACE_TREE_RECORD));
     const bytes: Uint8Array[] = [];
     for (const name of names) { const row: unknown = await asked(store.get(name)); bytes.push(row instanceof Uint8Array ? new Uint8Array(row) : new Uint8Array(0)); }
     return bytes;

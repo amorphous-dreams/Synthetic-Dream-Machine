@@ -14,14 +14,14 @@ import {
   decodeSecretHomeAddress, encodeSecretHomeAddress, enrollSecretHome, mintSecretHomeAddress, mintVesselDocumentId, openSecretHome,
   SecretHomeUnavailable, type SecretHome,
 } from "@lararium/mesh";
-import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 
 /** The keystore row the browser's secret home's address rests in. */
-export const SECRET_HOME_ROW = "secret-home";
+export const SECRET_HOME_RECORD = "secret-home";
 
 /** Open the home this browser's keystore names; a browser that names none refuses by name, never mints. */
 export async function openBrowserSecretHome(idbName: string, repo: Repo): Promise<SecretHome> {
-  const held = await readKeystoreRow(idbName, SECRET_HOME_ROW);
+  const held = await readKeystoreRecord(idbName, SECRET_HOME_RECORD);
   const address = held instanceof Uint8Array ? decodeSecretHomeAddress(held) : null;
   if (address === null) throw new SecretHomeUnavailable("this browser's keystore names no secret home");
   return openSecretHome(repo, address);
@@ -30,7 +30,7 @@ export async function openBrowserSecretHome(idbName: string, repo: Repo): Promis
 /** Stand the browser's secret home: open the one its keystore names, or enroll a fresh one and keep its address after
  *  the document rests sealed. */
 export async function standBrowserSecretHome(idbName: string, repo: Repo): Promise<SecretHome & { readonly controlUrl: string | null }> {
-  const held = await readKeystoreRow(idbName, SECRET_HOME_ROW);
+  const held = await readKeystoreRecord(idbName, SECRET_HOME_RECORD);
   if (held !== undefined) {
     const address = held instanceof Uint8Array ? decodeSecretHomeAddress(held) : null;
     if (address === null) throw new SecretHomeUnavailable("the keystore's secret-home row reads malformed");
@@ -40,10 +40,10 @@ export async function standBrowserSecretHome(idbName: string, repo: Repo): Promi
   const address = { ...mintSecretHomeAddress(), controlId: mintVesselDocumentId() };
   const home = await enrollSecretHome(repo, address);
   await repo.flush([home.handle.documentId, ...(home.control ? [home.control.documentId] : [])]);
-  await withCustodyRows(idbName, async (rows) => {
-    const standing = await rows.read(SECRET_HOME_ROW);
+  await withCustodyRecords(idbName, async (rows) => {
+    const standing = await rows.read(SECRET_HOME_RECORD);
     if (standing !== undefined) throw new SecretHomeUnavailable("another secret home's address landed first");
-    await rows.write(SECRET_HOME_ROW, encodeSecretHomeAddress(address));
+    await rows.write(SECRET_HOME_RECORD, encodeSecretHomeAddress(address));
   });
   return { ...home, controlUrl: `automerge:${address.controlId}` };
 }

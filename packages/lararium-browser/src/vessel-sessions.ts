@@ -63,7 +63,7 @@ import { standBrowserCustody, type CustodyAnswer, type CustodyAsk } from "./brow
 import { ambientLocks, type LockHost } from "./vessel-lock.js";
 import {
   FaceCustodyRefused, bindFirstFaceSlot, checkFaceName, clearFaceCustody, faceCustodyHeld, faceCustodyKeysHeld, heldFaceKeys,
-  lockFaceCustody, overwriteEveryFaceCustody, readFaceCustody, readFaceRow, unlockFaceCustody, writeFaceRow, type FaceCustodyClear,
+  lockFaceCustody, overwriteEveryFaceCustody, readFaceCustody, readFaceRecord, unlockFaceCustody, writeFaceRecord, type FaceCustodyClear,
 } from "./browser-face-custody.js";
 import type { ConfirmDoor } from "./browser-custody.js";
 
@@ -594,7 +594,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       if (switching.has(sessionId)) throw new VesselSessionRefused("session-switching");
       if (s.face === null) throw new VesselSessionRefused("session-faceless");
       const face = s.face;
-      const bytes = await act(sessionId, readFaceRow(opts.idbName, face, row).catch((e: unknown) => { throw named(e); }), true);
+      const bytes = await act(sessionId, readFaceRecord(opts.idbName, face, row).catch((e: unknown) => { throw named(e); }), true);
       if (bytes === null) throw new VesselSessionRefused("body-absent", row);
       return bytes;
     },
@@ -685,7 +685,7 @@ export async function standVesselHouse<V extends LitVessel>(opts: VesselHouseOpt
       const from = s.face;
       const record = async (phase: "intent" | "outcome"): Promise<void> => {
         const body = { phase, sessionId, from: from === null ? null : await digestOf(from), to: await digestOf(to), generation: s.generation };
-        await writeFaceRow(opts.idbName, to, `face-switch/${sessionId}`, new TextEncoder().encode(JSON.stringify(body)));
+        await writeFaceRecord(opts.idbName, to, `face-switch/${sessionId}`, new TextEncoder().encode(JSON.stringify(body)));
       };
       try {
         // 2. THE INTENT, rested under the target face before the fence.

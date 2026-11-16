@@ -26,7 +26,7 @@ import { attachSharedHolder, holderWorkerHandle, type SharedWorkerHost } from ".
 import { vesselLockName } from "../src/vessel-lock.js";
 import { faceFixture } from "./holder-session-fixture.js";
 import { generateOrLoadBrowserVesselIdentity, openVesselIdb } from "../src/browser-vessel-identity.js";
-import { CUSTODY_TREE_ROW, browserKeystoreCustodyIo, readBrowserCustody, sealBrowserKeystore } from "../src/browser-custody.js";
+import { CUSTODY_TREE_RECORD, browserKeystoreCustodyIo, readBrowserCustody, sealBrowserKeystore } from "../src/browser-custody.js";
 
 const SLOW = 60_000;
 const hex = (b: Uint8Array): string => Array.from(b, (x) => x.toString(16).padStart(2, "0")).join("");
@@ -105,7 +105,7 @@ async function everythingTheOriginKeeps(idbName: string): Promise<string[]> {
 describe("no key rests where another tab or the shared holder can read it", () => {
   test("TC2 an unlock leaves no byte of the opened key in any store the origin keeps — KNOWN POSITIVE first: a planted key reads found", async () => {
     const idbName = await sealedVessel("no-key-at-rest");
-    const tree = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW));
+    const tree = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_RECORD));
     if (tree.reading !== "readable") throw new Error("the sealed vessel's tree does not read");
     const opened = await openTreeKey(tree.tree, [PASS], nobleKdf);
     if (opened.reading !== "opens") throw new Error("the test route does not open the tree");
@@ -145,7 +145,7 @@ function carries(payload: unknown, key: Uint8Array): boolean {
 describe("nothing a tab posts to the shared holder carries the key", () => {
   test("TC2b the holder channel carries no byte of the opened key across a seal, an unlock and a session of verbs — KNOWN POSITIVE first", async () => {
     const idbName = await sealedVessel("holder-channel");
-    const tree = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_ROW));
+    const tree = decodeSlotTree(await browserKeystoreCustodyIo(idbName).read(CUSTODY_TREE_RECORD));
     if (tree.reading !== "readable") throw new Error("the sealed vessel's tree does not read");
     const opened = await openTreeKey(tree.tree, [PASS], nobleKdf);
     if (opened.reading !== "opens") throw new Error("the test route does not open the tree");

@@ -42,7 +42,7 @@ import {
 import type { SeedWrapRecord } from "./seed-wrap-prf.js";
 
 import { assertCanMint } from "./secure-context-gate.js";
-import { BrowserCustodyRefused, BrowserWardRefused, browserKeystoreCustodyIo, readBrowserCustody, readKeystoreRow, writeKeystoreRow } from "./browser-custody.js";
+import { BrowserCustodyRefused, BrowserWardRefused, browserKeystoreCustodyIo, readBrowserCustody, readKeystoreRecord, writeKeystoreRecord } from "./browser-custody.js";
 import { checkFaceName, faceCustodyHeld, faceTreeStands, FaceCustodyRefused, readFaceCustody } from "./browser-face-custody.js";
 import {
   browserWardStands, mintBrowserWardedRoot, openBrowserWardedRoot, readBrowserPersonaRoster, wornFaceTreeOf, type PersonaRosterLine,
@@ -298,12 +298,12 @@ function idbPersonaRootSlot(idbName: string, handleIndex: number, ward: WardRout
 function idbKeypairStore(idbName: string): KeypairStore {
   return {
     async load() {
-      const existing = await readKeystoreRow(idbName, KEY_RECORD) as PersistedBrowserKey | undefined;
+      const existing = await readKeystoreRecord(idbName, KEY_RECORD) as PersistedBrowserKey | undefined;
       return existing ? { verifyingKey: existing.verifyingKey, signingKey: existing.signingKey } : undefined;
     },
     async save(kp) {
       const record: PersistedBrowserKey = { verifyingKey: kp.verifyingKey, signingKey: kp.signingKey };
-      await writeKeystoreRow(idbName, KEY_RECORD, record);
+      await writeKeystoreRecord(idbName, KEY_RECORD, record);
     },
   };
 }
@@ -446,7 +446,7 @@ async function loadBrowserSigningSeed(idbName = "lares:vessel"): Promise<Uint8Ar
 async function wornRosterLine(idbName: string): Promise<PersonaRosterLine | undefined> {
   const tree = await wornFaceTreeOf(idbName);
   if (tree === null) return undefined;
-  return (await readBrowserPersonaRoster((row) => readKeystoreRow(idbName, row))).find((l) => l.tree === tree);
+  return (await readBrowserPersonaRoster((row) => readKeystoreRecord(idbName, row))).find((l) => l.tree === tree);
 }
 
 /**
@@ -455,7 +455,7 @@ async function wornRosterLine(idbName: string): Promise<PersonaRosterLine | unde
  */
 async function readPersonaRoster(idbName: string): Promise<number[]> {
   if (faceOfVessel(idbName) !== null) return (await wornRosterLine(idbName)) ? [0] : [];
-  return (await readBrowserPersonaRoster((row) => readKeystoreRow(idbName, row))).length > 0 ? [0] : [];
+  return (await readBrowserPersonaRoster((row) => readKeystoreRecord(idbName, row))).length > 0 ? [0] : [];
 }
 
 /**

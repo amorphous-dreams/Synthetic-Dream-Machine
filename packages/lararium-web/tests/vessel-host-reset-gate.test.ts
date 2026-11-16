@@ -26,10 +26,10 @@
  */
 import { expect, test, vi } from "vitest";
 import { bindFirstFaceSlot, lockBrowserCustody, lockFaceCustody, openVesselIdb, readBrowserCustody, sealBrowserKeystore } from "@lararium/browser";
-import { PROOF_FACE_TREE_PREFIX, PROOF_KEYSTORE, PROOF_PLACE_TREE_ROW, PROOF_SEALED_PREFIXES } from "@lararium/browser/custody-proof";
+import { PROOF_FACE_TREE_PREFIX, PROOF_KEYSTORE, PROOF_PLACE_TREE_RECORD, PROOF_SEALED_PREFIXES } from "@lararium/browser/custody-proof";
 import type { ResetSignal } from "../src/ceremony-protocol.js";
 import {
-  GATE_FACE_TREE_PREFIX, GATE_KEYSTORE, GATE_PLACE_TREE_ROW, GATE_SEALED_PREFIXES, gateDemandOf, GateRefused, passCriticalGate, readGateStanding, type GateEnv,
+  GATE_FACE_TREE_PREFIX, GATE_KEYSTORE, GATE_PLACE_TREE_RECORD, GATE_SEALED_PREFIXES, gateDemandOf, GateRefused, passCriticalGate, readGateStanding, type GateEnv,
 } from "../src/ceremony/critical-gate.js";
 import { ambientGateEnv, spawnProofWorker } from "../src/ceremony/gate-ambient.js";
 import { ambientResetEnv, burnPlace, recordResetAsk, RESET_PHRASE, RESET_PROCEDURE, resetAskKey, type ResetEnv } from "../src/ceremony/reset-core.js";
@@ -169,7 +169,7 @@ test("H5 unverifiable: a slot tree that does not read takes the typed phrase und
   expect((await readGateStanding(gate.env)).standing, "CONTROL").toBe("held");
   const db = await openVesselIdb(idbName);
   const tx = db.transaction("keystore", "readwrite");
-  tx.objectStore("keystore").put(new TextEncoder().encode("{ not a slot tree"), GATE_PLACE_TREE_ROW);
+  tx.objectStore("keystore").put(new TextEncoder().encode("{ not a slot tree"), GATE_PLACE_TREE_RECORD);
   await new Promise<void>((resolve, reject) => { tx.oncomplete = () => resolve(); tx.onerror = () => reject(tx.error); });
   db.close();
   const read = await readGateStanding(gate.env);
@@ -204,7 +204,7 @@ test("H6 no verifier, no pass: custody that reads and a proof that cannot stand 
 
 test("H7 the weld: the gate's keystore names equal the proof module's", () => {
   expect(GATE_KEYSTORE).toBe(PROOF_KEYSTORE);
-  expect(GATE_PLACE_TREE_ROW).toBe(PROOF_PLACE_TREE_ROW);
+  expect(GATE_PLACE_TREE_RECORD).toBe(PROOF_PLACE_TREE_RECORD);
   expect(GATE_FACE_TREE_PREFIX).toBe(PROOF_FACE_TREE_PREFIX);
   expect([...GATE_SEALED_PREFIXES]).toEqual([...PROOF_SEALED_PREFIXES]);
 });

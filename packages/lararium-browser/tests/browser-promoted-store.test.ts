@@ -8,8 +8,8 @@
 import { describe, expect, test } from "vitest";
 import { EMPTY_KAPAE_LOCAL, EMPTY_LEDGER, ledgerCommit, promoteDigest, promoteEdgeKey } from "@lararium/mesh";
 import { bindSyntheticBrowserCustodySlot } from "./browser-custody-fixture.js";
-import { readKeystoreRow } from "../src/browser-custody.js";
-import { browserPromoteCas, browserPromoteStores, kapaeRow, promotedRow } from "../src/browser-promoted-store.js";
+import { readKeystoreRecord } from "../src/browser-custody.js";
+import { browserPromoteCas, browserPromoteStores, kapaeRecord, promotedRecord } from "../src/browser-promoted-store.js";
 
 const W1 = "lar:///ha.ka.ba/wikis/field-notes";
 const RITE = { title: "rites/a", text: "exports.startup = function(){}", fields: { "module-type": "startup" } };
@@ -27,10 +27,10 @@ describe("the browser's trust record at rest", () => {
     expect(await a.ledger.read()).toEqual(ledgerWith());
     expect((await a.local.read()).shadowed).toEqual([promoteEdgeKey(W1, promoteDigest(RITE))]);
     expect(await b.ledger.read()).toEqual(EMPTY_LEDGER);
-    expect(promotedRow("group-a")).toBe("promoted/group-a");
-    expect(kapaeRow("group-a")).toBe("kapae/group-a");
-    expect(await readKeystoreRow(idbName, promotedRow("group-a"))).toBeInstanceOf(Uint8Array);
-    expect(await readKeystoreRow(idbName, promotedRow("group-b"))).toBeUndefined();
+    expect(promotedRecord("group-a")).toBe("promoted/group-a");
+    expect(kapaeRecord("group-a")).toBe("kapae/group-a");
+    expect(await readKeystoreRecord(idbName, promotedRecord("group-a"))).toBeInstanceOf(Uint8Array);
+    expect(await readKeystoreRecord(idbName, promotedRecord("group-b"))).toBeUndefined();
   });
 
   test("RED: two commits of different wikis at once through the store's update both land", async () => {

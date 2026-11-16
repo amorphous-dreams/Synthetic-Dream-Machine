@@ -17,7 +17,7 @@ import { bindFirstFaceSlot, faceTreeIdOf } from "../src/browser-face-custody.js"
 import { afterEach, expect, test } from "vitest";
 import { seatWardWorkerSpawn } from "../src/testing.js";
 import { ed25519SignerFromSeed, signingSeedFromHex, verifyEd25519, wardAnswerImage, wardKeyPopHolds, wardKeyPopImage, wardPublicKeyOf } from "@lararium/mesh";
-import { browserKeystoreCustodyIo, isCustodyRow, readKeystoreRow, sealBrowserKeystore, withCustodyRows } from "../src/browser-custody.js";
+import { browserKeystoreCustodyIo, isCustodyRecord, readKeystoreRecord, sealBrowserKeystore, withCustodyRecords } from "../src/browser-custody.js";
 import { browserVesselFaceTagDoor } from "../src/browser-face-atom.js";
 import { generateOrLoadBrowserPersonaRoot, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { runWardAct } from "../src/ward-core.js";
@@ -48,10 +48,10 @@ async function stand() {
 /** Every signing seed the page's own unlocked custody doors hand it, read row by row: what a page-thread script holds with no ward act. */
 async function pageHeldSeeds(idbName: string): Promise<Uint8Array[]> {
   // The place rows, and the face's own rows its unlocked tree opens (its tag secret rests there).
-  const names = [...(await browserKeystoreCustodyIo(idbName).list()).map((k) => k.replace(/^sealed\//, "")).filter((k) => isCustodyRow(k)), `vessel-face-tag/${G}`];
+  const names = [...(await browserKeystoreCustodyIo(idbName).list()).map((k) => k.replace(/^sealed\//, "")).filter((k) => isCustodyRecord(k)), `vessel-face-tag/${G}`];
   const seeds: Uint8Array[] = [];
   for (const name of new Set(names)) {
-    const held = await readKeystoreRow(idbName, name).catch(() => undefined);
+    const held = await readKeystoreRecord(idbName, name).catch(() => undefined);
     const text = held instanceof Uint8Array ? (() => { try { return new TextDecoder("utf-8", { fatal: true }).decode(held); } catch { return ""; } })() : "";
     const hex = /"signingKey":"([0-9a-f]{64})"/.exec(text)?.[1];
     if (hex) seeds.push(signingSeedFromHex(hex));
@@ -66,9 +66,9 @@ afterEach(() => { IDBObjectStore.prototype.get = realGet; });
 test("RED: an unlocked page reads the face's ward seed through the custody doors and signs a valid approve and pop with no ward act; CONTROL: the row name refuses `ward-needs-fresh-unlock` at every door, and the admitted ward key stands", async () => {
   const s = await stand();
   expect(s.fields.wardKey).toMatch(/^[0-9a-f]{64}$/);
-  expect(await codeOf(readKeystoreRow(s.idbName, `ward-sign/${G}`))).toBe("ward-needs-fresh-unlock");
-  expect(await codeOf(withCustodyRows(s.idbName, (rows) => rows.read(`ward-sign/${G}`)))).toBe("ward-needs-fresh-unlock");
-  expect(await codeOf(withCustodyRows(s.idbName, (rows) => rows.write(`ward-sign/${G}`, new Uint8Array(1))))).toBe("ward-needs-fresh-unlock");
+  expect(await codeOf(readKeystoreRecord(s.idbName, `ward-sign/${G}`))).toBe("ward-needs-fresh-unlock");
+  expect(await codeOf(withCustodyRecords(s.idbName, (rows) => rows.read(`ward-sign/${G}`)))).toBe("ward-needs-fresh-unlock");
+  expect(await codeOf(withCustodyRecords(s.idbName, (rows) => rows.write(`ward-sign/${G}`, new Uint8Array(1))))).toBe("ward-needs-fresh-unlock");
   // the census: no seed any ordinary door hands the page signs what the face's ward key verifies
   const answerImage = wardAnswerImage({ group: G, ask: "a".repeat(64), detail: "d".repeat(64), verdict: "approve", executor: s.me.key, frontier: F });
   const popImage = wardKeyPopImage(G, s.me.key, s.fields.wardKey);

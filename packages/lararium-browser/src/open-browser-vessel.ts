@@ -142,7 +142,7 @@ import type { WikiRecipe }                   from "@lararium/mesh";
 
 import { waitHandle } from "@lararium/mesh";
 import { holdVesselLock, ambientLocks, type LockHost } from "./vessel-lock.js";
-import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRows } from "./browser-custody.js";
+import { BrowserCustodyRefused, CLEAR_CUSTODY_CLEARS, readBrowserCustody, onBrowserCustodyLock, lockBrowserCustody, refuseSharedTreeFaceRecords } from "./browser-custody.js";
 import { nameFace, faceTreeStands } from "./browser-face-custody.js";
 import { clearCustodyVerb, standFounderFace, type CustodyAsk, type CustodyAnswer } from "./browser-boot-custody.js";
 import { sweepOrphanBrowserWards } from "./browser-ward-tree.js";
@@ -690,7 +690,7 @@ async function bootUnderLock(opts: BrowserVesselOptions, held: BootHold): Promis
   // down (each tab unlocks for itself, operator ruling 2026-10-18; `standBrowserCustody` asks before this boot).
   const custodyAtBoot = await readBrowserCustody(idbName);
   // A FACE ROW NEVER RESTS UNDER THE PLACE TREE: a face's row there, or a row spelled by handle index, refuses by name.
-  await refuseSharedTreeFaceRows(idbName);
+  await refuseSharedTreeFaceRecords(idbName);
   if (custodyAtBoot.reading === "sealed" && !custodyAtBoot.unlocked) throw new BrowserCustodyRefused("sealed-locked", idbName, "vessel-key");
 
   // ── Repo — IndexedDB-backed (substrate) ────────────────────────────────────

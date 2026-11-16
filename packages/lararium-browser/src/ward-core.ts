@@ -27,9 +27,9 @@ import {
 } from "@lararium/mesh";
 
 /** The keystore rows a face's ward holds: its tree, and its root under it. Every name starts `ward/`. */
-export const WARD_ROW_PREFIX = "ward/";
+export const WARD_RECORD_PREFIX = "ward/";
 /** Every root ward's rows start here; the next segment names the face's custody tree. */
-export const WARD_ROOT_PREFIX = `${WARD_ROW_PREFIX}root/`;
+export const WARD_ROOT_PREFIX = `${WARD_RECORD_PREFIX}root/`;
 const FACE_TREE_ID = /^[0-9a-f]{32}$/;
 /**
  * A face root's rows, FILED BY THE FACE'S OWN CUSTODY TREE (its fcid): the ward tree, the root under it, and the root's PUBLIC key
@@ -48,14 +48,14 @@ export function wardRootTreeOf(row: string): string | null {
 }
 
 /** A face's ward key rows: its own ward tree, its seed under that ward, and its PUBLIC half beside it (plain bytes, opening nothing). */
-export function wardSignRowsOf(group: string): { readonly tree: string; readonly seed: string; readonly key: string } {
+export function wardSignRecordsOf(group: string): { readonly tree: string; readonly seed: string; readonly key: string } {
   if (group.length === 0 || group.includes("/")) throw new WardRefused("ward-key-unnamed", "a ward key names its PersonaGroup");
-  return { tree: `${WARD_ROW_PREFIX}sign/${group}/slots`, seed: `${WARD_ROW_PREFIX}sign/${group}/seed`, key: `${WARD_ROW_PREFIX}sign/${group}/public-key` };
+  return { tree: `${WARD_RECORD_PREFIX}sign/${group}/slots`, seed: `${WARD_RECORD_PREFIX}sign/${group}/seed`, key: `${WARD_RECORD_PREFIX}sign/${group}/public-key` };
 }
 
 /** The carrier the ward key seed's AEAD binds: bytes moved to another face's row, or to a root's row, open nowhere. */
 export function wardSignCarrier(group: string): FaceCarrier {
-  const path = wardSignRowsOf(group).seed;
+  const path = wardSignRecordsOf(group).seed;
   return { name: `browser-ward/sign/${group}/seed`, path, kind: "ward-sign", ref: group, owner: group, store: WARD_STORE };
 }
 

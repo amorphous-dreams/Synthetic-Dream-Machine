@@ -20,7 +20,7 @@ import { describe, expect, test } from "vitest";
 import { nobleKdf } from "@lararium/mesh";
 import { bindSyntheticBrowserCustodySlot, bindSyntheticFace, FIXTURE_WARD } from "./browser-custody-fixture.js";
 import * as faceCustody from "../src/browser-face-custody.js";
-import { CLEAR_FACE_QUESTION, clearFaceCustody, faceTreeIdOf, nameFace, writeFaceRow } from "../src/browser-face-custody.js";
+import { CLEAR_FACE_QUESTION, clearFaceCustody, faceTreeIdOf, nameFace, writeFaceRecord } from "../src/browser-face-custody.js";
 import { browserKeystoreCustodyIo, sealBrowserKeystore } from "../src/browser-custody.js";
 import { browserPersonaRootHeld, generateOrLoadBrowserPersonaRoot, listBrowserPersonaRoots, wearFaceOfVessel } from "../src/browser-vessel-identity.js";
 import { browserWardSigner, type WardWorkerSpawn } from "../src/browser-ward.js";
@@ -116,8 +116,8 @@ describe("a root rests under its own face's tree", () => {
     for (const door of ["mintFaceRoot", "readFaceRoot", "faceWardRows"]) expect(mod[door], door).toBeUndefined();
     const idbName = fresh("wo3");
     await bindSyntheticBrowserCustodySlot(idbName, "group-rows");
-    expect(readingOf(await settle(writeFaceRow(idbName, "group-rows", "persona-root", new Uint8Array([1]))))).toBe("row-name-refused");
-    expect(await settle(writeFaceRow(idbName, "group-rows", "atom", new Uint8Array([1]))), "CONTROL").toBeNull();
+    expect(readingOf(await settle(writeFaceRecord(idbName, "group-rows", "persona-root", new Uint8Array([1]))))).toBe("row-name-refused");
+    expect(await settle(writeFaceRecord(idbName, "group-rows", "atom", new Uint8Array([1]))), "CONTROL").toBeNull();
   }, SLOW);
 
   test("WO4 RED a clear torn partway through its ward rows leaves the rest under the face's tree, and the rerun clears them — CONTROL: the tear landed", async () => {

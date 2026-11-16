@@ -47,7 +47,7 @@ async function recordOf(idbName: string): Promise<Record_ | undefined> {
     return await new Promise((resolve, reject) => { const q = idb.transaction("bootstrap").objectStore("bootstrap").getAll(); q.onsuccess = () => resolve((q.result as Record_[])[0]); q.onerror = () => reject(q.error); });
   } finally { idb.close(); }
 }
-async function keystoreRows(idbName: string): Promise<string[]> {
+async function keystoreRecords(idbName: string): Promise<string[]> {
   const idb = await openVesselIdb(idbName);
   try { return (await idbKeys(idb, "keystore")).map(String).sort(); } finally { idb.close(); }
 }
@@ -76,11 +76,11 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     expect(await readBrowserVesselFaces(idbName)).toEqual([]);
     // THE PRE-BIND WINDOW, OPEN: the vessel's key and its floor's rest seed rest clear, no slot stands, no place KEL arms.
     expect((await readBrowserCustody(idbName)).reading).toBe("clear");
-    expect(await keystoreRows(idbName)).toEqual(expect.arrayContaining(["floor-rest", "vessel-key"]));
+    expect(await keystoreRecords(idbName)).toEqual(expect.arrayContaining(["floor-rest", "vessel-key"]));
     // RED (the 2026-11-09 ruling, whole on the browser): a veil boot mints NO secret home and NO control document.
-    expect(await keystoreRows(idbName), "no secret-home row at the floor").not.toContain("secret-home");
+    expect(await keystoreRecords(idbName), "no secret-home row at the floor").not.toContain("secret-home");
     expect(controlHomeUrlOf((await daemonDocOf(idbName, floor!.daemonUrl))), "the floor's daemon document names no control document").toBeNull();
-    expect((await keystoreRows(idbName)).some((row) => row.startsWith("sealed/"))).toBe(false);
+    expect((await keystoreRecords(idbName)).some((row) => row.startsWith("sealed/"))).toBe(false);
     expect(await loadBrowserPlaceKel(idbName)).toBeNull();
     // A SECOND BOOT READS THE SAME FLOOR (it founds nothing twice).
     await boot({ idbName });
@@ -88,11 +88,11 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
 
     // VF2: the founding act asks for a face, and its first bind closes the window.
     await bindSyntheticBrowserCustodySlot(idbName);
-    expect((await keystoreRows(idbName))).toContain("sealed/floor-rest");
-    expect(await keystoreRows(idbName)).not.toContain("sealed/secret-home");
+    expect((await keystoreRecords(idbName))).toContain("sealed/floor-rest");
+    expect(await keystoreRecords(idbName)).not.toContain("sealed/secret-home");
     await boot({ idbName, foundFace: true, askWardRoute: fixtureWardDialog });
     // THE FACE MINTS BOTH: its secret home's address lands under the seal, and the daemon document names its control document.
-    expect(await keystoreRows(idbName)).toContain("sealed/secret-home");
+    expect(await keystoreRecords(idbName)).toContain("sealed/secret-home");
     expect(controlHomeUrlOf((await daemonDocOf(idbName, floor!.daemonUrl)))).toMatch(/^automerge:/);
     const faced = await recordOf(idbName);
     expect(faced?.personaGroupId).toMatch(/^(0x)?[0-9a-f]+$/);
@@ -110,7 +110,7 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     await boot({ idbName, foundFace: true, askWardRoute: fixtureWardDialog });
     const one = await recordOf(idbName);
     const first = one!.personaGroupId!;
-    const wardsOf = async () => (await keystoreRows(idbName)).filter((r) => r.startsWith("ward/root/"));
+    const wardsOf = async () => (await keystoreRecords(idbName)).filter((r) => r.startsWith("ward/root/"));
     const firstWard = await wardsOf();
     expect(firstWard.length, "CONTROL: the first face's root rests under one ward").toBe(3);
     // A FACE FOUNDED AGAIN COLLIDES WITH NOTHING: the same ask over the record it already founded reads that record back.
@@ -245,7 +245,7 @@ describe("the browser's veil floor stands first, and a face lands over it", () =
     expect(JSON.stringify(a)).not.toContain(second.personaGroupId);
     expect(JSON.stringify(b)).not.toContain(first.personaGroupId);
     // EACH RESTS UNDER ITS OWN FACE'S TREE ALONE: no clear row, no row under the place tree, none in the boot record.
-    const rows = await keystoreRows(idbName);
+    const rows = await keystoreRecords(idbName);
     expect(rows.filter((row) => row.includes("veil-lift") && !row.startsWith("face-sealed/"))).toEqual([]);
     expect(rows.filter((row) => row.startsWith("face-sealed/") && row.endsWith("/veil-lift"))).toHaveLength(2);
     expect(JSON.stringify(await recordOf(idbName))).not.toContain(a.signature);

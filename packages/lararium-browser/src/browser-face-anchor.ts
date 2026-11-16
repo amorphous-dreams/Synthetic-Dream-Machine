@@ -1,8 +1,8 @@
 /** The browser's sealed, PersonaGroup-named face anchor custody row. */
 import { keepFaceAnchor, loadFaceAnchor, requireFaceAnchor, type FaceAnchor, type FaceAnchorRows } from "@lararium/mesh";
-import { readKeystoreRow, withCustodyRows } from "./browser-custody.js";
+import { readKeystoreRecord, withCustodyRecords } from "./browser-custody.js";
 
-export function faceAnchorRow(personaGroup: string): string {
+export function faceAnchorRecord(personaGroup: string): string {
   if (!personaGroup) throw new Error("[browser-face-anchor] an anchor names its PersonaGroup");
   return `face-anchor/${personaGroup}`;
 }
@@ -10,11 +10,11 @@ export function faceAnchorRow(personaGroup: string): string {
 export function browserFaceAnchorRows(idbName: string): FaceAnchorRows {
   return {
     async read(personaGroup) {
-      return await readKeystoreRow(idbName, faceAnchorRow(personaGroup)) as Uint8Array | undefined;
+      return await readKeystoreRecord(idbName, faceAnchorRecord(personaGroup)) as Uint8Array | undefined;
     },
     async write(personaGroup, bytes) {
-      const row = faceAnchorRow(personaGroup);
-      await withCustodyRows(idbName, async (rows) => {
+      const row = faceAnchorRecord(personaGroup);
+      await withCustodyRecords(idbName, async (rows) => {
         await rows.write(row, Uint8Array.from(bytes));
       });
     },

@@ -10,7 +10,7 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  * `lockBrowserCustody` drops the key from this page's memory. A census reads every keystore row (key -> bytes or JSON) so a
  * refusal can prove it wrote nothing. The place sample rows are `walk/main` and `walk/a`, each holding a walk record.
  *
- *   BC1  THE ROW LAW: `isCustodyRow` names the device seed and the walk rows; face rows and handle rows answer false;
+ *   BC1  THE ROW LAW: `isCustodyRecord` names the device seed and the walk rows; face rows and handle rows answer false;
  *        `sealedCarrierOf` names the keystore carrier and its `sealed/` path for a place row and throws for any other.
  *   BC2  THE SEAL: one slot binds, every place row moves to `sealed/<row>` under the house magic and its clear row
  *        leaves; `catalog-url` and every other row stand as they stood; the page stays unlocked. The status reads
@@ -69,7 +69,7 @@ import { placeSeed } from "./browser-place-seed.fixture.js";
  *   BC29 every face-secret family refuses `no-custody-slot` with no face tree, rests under its face's own tree once it
  *        binds and never under `sealed/`; the `walk` family seals under the place tree and refuses `sealed-locked` locked.
  *   BC30 one custody act reads, decides and writes two walk rows; a thrown decision leaves its second row unwritten.
- *   BC31 handle spellings refuse `face-names-a-handle` at the row door; `refuseSharedTreeFaceRows` refuses `face-row-shared`
+ *   BC31 handle spellings refuse `face-names-a-handle` at the row door; `refuseSharedTreeFaceRecords` refuses `face-row-shared`
  *        on a raw planted `veil-archive-g<G>` row.
  *
  * Meme: lar:///ha.ka.ba/lararium/browser/browser-custody
@@ -93,10 +93,10 @@ import {
 } from "../src/browser-vessel-identity.js";
 import { vesselLockName } from "../src/vessel-lock.js";
 import {
-  BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, CUSTODY_TREE_ROW, refuseSharedTreeFaceRows, SEALED_ROW_PREFIX,
-  bindBrowserCustodySlot, browserKeystoreCustodyIo, clearBrowserCustody, isCustodyRow, lockBrowserCustody,
-  readBrowserCustody, readKeystoreRow, sealBrowserKeystore, sealedCarrierOf, unbindBrowserCustodySlot, unlockBrowserCustody,
-  withCustodyRows, writeKeystoreRow,
+  BrowserCustodyRefused, CLEAR_CUSTODY_QUESTION, CUSTODY_TREE_RECORD, refuseSharedTreeFaceRecords, SEALED_RECORD_PREFIX,
+  bindBrowserCustodySlot, browserKeystoreCustodyIo, clearBrowserCustody, isCustodyRecord, lockBrowserCustody,
+  readBrowserCustody, readKeystoreRecord, sealBrowserKeystore, sealedCarrierOf, unbindBrowserCustodySlot, unlockBrowserCustody,
+  withCustodyRecords, writeKeystoreRecord,
   type BrowserCustodyRefusalReading, type ConfirmDoor,
 } from "../src/browser-custody.js";
 
@@ -107,8 +107,8 @@ const WRONG = { kind: "passphrase", passphrase: "wrong" } as const;
 const FIXTURE_PASS = { kind: "passphrase", passphrase: "browser fixture custody slot" } as const;
 /** A valid walk record: the minimal shape the mesh's `isWalkRecord` holds. */
 const walkRecord = (): { nexusAid: string } => ({ nexusAid: `nexus-${hex(randomBytes(8))}` });
-const loadMainWalk = (idbName: string) => readKeystoreRow(idbName, "walk/main");
-const saveMainWalk = (idbName: string, record: unknown) => writeKeystoreRow(idbName, "walk/main", record);
+const loadMainWalk = (idbName: string) => readKeystoreRecord(idbName, "walk/main");
+const saveMainWalk = (idbName: string, record: unknown) => writeKeystoreRecord(idbName, "walk/main", record);
 const requireMainWalk = async (idbName: string) => {
   const held = await loadMainWalk(idbName);
   if (!held) throw new Error("main walk absent");
@@ -227,22 +227,22 @@ describe("browser custody seals the place tree's device seed and walk records", 
     const idbName = `custody-veil-window-${crypto.randomUUID()}`;
     const address = randomBytes(32);
     // An unbound veil keeps its floor's seed in the open window (the-veil-ladder#/the-base-model, in-house ruling 6).
-    await writeKeystoreRow(idbName, "floor-rest", address);
-    expect(await readKeystoreRow(idbName, "floor-rest")).toEqual(address);
+    await writeKeystoreRecord(idbName, "floor-rest", address);
+    expect(await readKeystoreRecord(idbName, "floor-rest")).toEqual(address);
     expect(await rowOf(idbName, "floor-rest"), "it rests clear, and the page says so").toBeDefined();
     // RED before the cure: the secret home's address stood clear here. It mints with a face, under the seal (operator ruling 2026-11-09).
-    await expectRefused(writeKeystoreRow(idbName, "secret-home", randomBytes(72)), "no-custody-slot");
+    await expectRefused(writeKeystoreRecord(idbName, "secret-home", randomBytes(72)), "no-custody-slot");
     expect(await rowOf(idbName, "secret-home")).toBeUndefined();
     // CONTROL: every other place row still waits for the slot.
-    await expectRefused(writeKeystoreRow(idbName, "walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }), "no-custody-slot");
+    await expectRefused(writeKeystoreRecord(idbName, "walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }), "no-custody-slot");
     // THE FIRST BIND CLOSES THE WINDOW: the row moves under the seal and its clear copy leaves.
     const sealed = await sealBrowserKeystore(idbName, PASS);
     expect(sealed.sealed).toContain("floor-rest");
     expect(await rowOf(idbName, "floor-rest")).toBeUndefined();
     expect(startsWithMagic(await rowOf(idbName, "sealed/floor-rest"))).toBe(true);
-    expect(await readKeystoreRow(idbName, "floor-rest")).toEqual(address);
+    expect(await readKeystoreRecord(idbName, "floor-rest")).toEqual(address);
     lockBrowserCustody(idbName);
-    await expectRefused(readKeystoreRow(idbName, "floor-rest"), "sealed-locked", "floor-rest");
+    await expectRefused(readKeystoreRecord(idbName, "floor-rest"), "sealed-locked", "floor-rest");
   }, SLOW);
 
   test("BC29 every face-secret family refuses without its face tree, then rests under that tree and never under sealed/", async () => {
@@ -256,7 +256,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     ];
     const walk: [string, unknown] = ["walk/" + "cd".repeat(32), { nexusAid: "nexus.synthetic" }];
     const noSlot = async (row: string, value: unknown) => {
-      const e = await settleOf(writeKeystoreRow(idbName, row, value));
+      const e = await settleOf(writeKeystoreRecord(idbName, row, value));
       expect(e, row).toBeInstanceOf(FaceCustodyRefused);
       expect((e as FaceCustodyRefused).reading, row).toBe("no-custody-slot");
     };
@@ -265,39 +265,39 @@ describe("browser custody seals the place tree's device seed and walk records", 
       expect(await rowOf(idbName, row)).toBeUndefined();
     }
     // The place family refuses by its own name before the place tree binds.
-    await expectRefused(writeKeystoreRow(idbName, walk[0], walk[1]), "no-custody-slot", walk[0]);
+    await expectRefused(writeKeystoreRecord(idbName, walk[0], walk[1]), "no-custody-slot", walk[0]);
     expect(await rowOf(idbName, walk[0])).toBeUndefined();
     // CONTROL: a device seed row still stands clear before the slot binds.
     const seed = { verifyingKey: "ab".repeat(32), signingKey: "cd".repeat(32) };
-    await writeKeystoreRow(idbName, "vessel-key", seed);
-    expect(await readKeystoreRow(idbName, "vessel-key")).toEqual(seed);
+    await writeKeystoreRecord(idbName, "vessel-key", seed);
+    expect(await readKeystoreRecord(idbName, "vessel-key")).toEqual(seed);
     await sealBrowserKeystore(idbName, PASS);
     // The place tree stands; the face rows still refuse until their own tree binds.
     for (const [row, value] of faceRows) await noSlot(row, value);
     await bindSyntheticFace(idbName, "group");
     for (const [row, value] of faceRows) {
-      await writeKeystoreRow(idbName, row, value);
-      expect(await readKeystoreRow(idbName, row)).toEqual(value);
+      await writeKeystoreRecord(idbName, row, value);
+      expect(await readKeystoreRecord(idbName, row)).toEqual(value);
       expect(await rowOf(idbName, row)).toBeUndefined();
       expect(await rowOf(idbName, `sealed/${row}`), `${row} never rests under the place tree`).toBeUndefined();
     }
-    expect(Object.keys(await census(idbName)).filter((k) => k.startsWith(SEALED_ROW_PREFIX)), "only the seed rests sealed").toEqual(["sealed/vessel-key"]);
+    expect(Object.keys(await census(idbName)).filter((k) => k.startsWith(SEALED_RECORD_PREFIX)), "only the seed rests sealed").toEqual(["sealed/vessel-key"]);
     // The walk family seals under the place tree.
-    await writeKeystoreRow(idbName, walk[0], walk[1]);
-    expect(await readKeystoreRow(idbName, walk[0])).toEqual(walk[1]);
+    await writeKeystoreRecord(idbName, walk[0], walk[1]);
+    expect(await readKeystoreRecord(idbName, walk[0])).toEqual(walk[1]);
     expect(await rowOf(idbName, walk[0])).toBeUndefined();
     expect(startsWithMagic(await rowOf(idbName, `sealed/${walk[0]}`))).toBe(true);
     lockBrowserCustody(idbName);
-    await expectRefused(readKeystoreRow(idbName, walk[0]), "sealed-locked", walk[0]);
+    await expectRefused(readKeystoreRecord(idbName, walk[0]), "sealed-locked", walk[0]);
     lockFaceCustody(idbName, "group");
     for (const [row] of faceRows) {
-      const e = await settleOf(readKeystoreRow(idbName, row));
+      const e = await settleOf(readKeystoreRecord(idbName, row));
       expect(e, row).toBeInstanceOf(FaceCustodyRefused);
       expect((e as FaceCustodyRefused).reading, row).toBe("face-locked");
     }
     expect((await unlockBrowserCustody(idbName, [PASS])).reading).toBe("opens");
     expect((await unlockFaceCustody(idbName, "group", [FIXTURE_PASS])).reading).toBe("opens");
-    for (const [row, value] of [...faceRows, walk]) expect(await readKeystoreRow(idbName, row)).toEqual(value);
+    for (const [row, value] of [...faceRows, walk]) expect(await readKeystoreRecord(idbName, row)).toEqual(value);
   }, SLOW);
 
   test("BC30 one custody act reads, decides and writes two rows; a thrown decision leaves its second row unwritten", async () => {
@@ -308,38 +308,38 @@ describe("browser custody seals the place tree's device seed and walk records", 
     const c = "walk/three";
     const d = "walk/four";
     const first = walkRecord();
-    await withCustodyRows(idbName, async (rows) => {
+    await withCustodyRecords(idbName, async (rows) => {
       expect(await rows.read(a)).toBeUndefined();
       await rows.write(a, first);
       expect(await rows.read(b)).toBeUndefined();
       await rows.write(b, walkRecord());
     });
-    expect(await readKeystoreRow(idbName, a)).toEqual(first);
-    expect(await readKeystoreRow(idbName, b)).toMatchObject({ nexusAid: expect.any(String) });
+    expect(await readKeystoreRecord(idbName, a)).toEqual(first);
+    expect(await readKeystoreRecord(idbName, b)).toMatchObject({ nexusAid: expect.any(String) });
     // CONTROL: the first write in a body reaches its carrier before a later decision throws.
-    await expect(withCustodyRows(idbName, async (rows) => {
+    await expect(withCustodyRecords(idbName, async (rows) => {
       await rows.write(c, walkRecord());
       if (await rows.read(c)) throw new Error("decision refused");
       await rows.write(d, walkRecord());
     })).rejects.toThrow("decision refused");
-    expect(await readKeystoreRow(idbName, c)).toMatchObject({ nexusAid: expect.any(String) });
-    expect(await readKeystoreRow(idbName, d)).toBeUndefined();
+    expect(await readKeystoreRecord(idbName, c)).toMatchObject({ nexusAid: expect.any(String) });
+    expect(await readKeystoreRecord(idbName, d)).toBeUndefined();
   }, SLOW);
 
   test("BC1 the row law: the place rows have sealed carriers; face rows, handle rows and ward rows have none", () => {
-    for (const row of ["vessel-key", "persona-root-roster", "walk/main", "walk/a", "walk/" + "ab".repeat(32)]) expect(isCustodyRow(row), row).toBe(true);
+    for (const row of ["vessel-key", "persona-root-roster", "walk/main", "walk/a", "walk/" + "ab".repeat(32)]) expect(isCustodyRecord(row), row).toBe(true);
     for (const row of [
       "veil-archive-ggroup-main", "face-atom/group", "face-anchor/group", "face-address-secret/group", "vessel-face-tag/group", "fleet-join-pending/group", "promoted/group",
       "kapae/group", "face-root/group", "vessel-face-key/group|nexus|key", "nexus-key/group/aid",
       "persona-root-h0", "nexus-key/h0/aid", "vessel-face-key/nexus|key", "keyhive-archive", "ward/h0/persona-root", `ward/root/${"f".repeat(32)}/persona-root`,
       "catalog-url", "veil-archive-h0", "veil-archive-g", "persona-root-hx", "sealed/vessel-key", "custody-slots", "vessel-key2", "walk/", "walk", "",
-    ]) expect(isCustodyRow(row), row).toBe(false);
+    ]) expect(isCustodyRecord(row), row).toBe(false);
     // A face root rests under its ward: the custody carrier law names it by its refusal, never as a sealed carrier.
     for (const row of ["persona-root-h0", "persona-root-h12", "face-root/group", `ward/root/${"f".repeat(32)}/slots`, `ward/root/${"f".repeat(32)}/persona-root`]) {
       expect(() => sealedCarrierOf(row), row).toThrow(/ward-needs-fresh-unlock/);
     }
     expect(sealedCarrierOf("walk/main")).toEqual({ name: "browser-keystore/walk/main", path: "sealed/walk/main" });
-    expect(sealedCarrierOf("vessel-key").path).toBe(`${SEALED_ROW_PREFIX}vessel-key`);
+    expect(sealedCarrierOf("vessel-key").path).toBe(`${SEALED_RECORD_PREFIX}vessel-key`);
     expect(() => sealedCarrierOf("veil-archive-ggroup-main")).toThrow();
     expect(() => sealedCarrierOf("persona-root-h0")).toThrow();
   });
@@ -348,19 +348,19 @@ describe("browser custody seals the place tree's device seed and walk records", 
     const idbName = `custody-handles-${crypto.randomUUID()}`;
     await sealBrowserKeystore(idbName, PASS);
     for (const row of ["nexus-key/h0/aid", "vessel-face-key/nexus|key", "keyhive-archive"]) {
-      await expectRefused(readKeystoreRow(idbName, row), "face-names-a-handle", row);
-      await expectRefused(writeKeystoreRow(idbName, row, randomBytes(32)), "face-names-a-handle", row);
+      await expectRefused(readKeystoreRecord(idbName, row), "face-names-a-handle", row);
+      await expectRefused(writeKeystoreRecord(idbName, row, randomBytes(32)), "face-names-a-handle", row);
     }
     // A root's handle spelling names its ward: every door refuses it there first, by the ward's own name.
     for (const row of ["persona-root-h0", "persona-root-h3"]) {
-      await expect(readKeystoreRow(idbName, row), row).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
-      await expect(writeKeystoreRow(idbName, row, randomBytes(32)), row).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
+      await expect(readKeystoreRecord(idbName, row), row).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
+      await expect(writeKeystoreRecord(idbName, row, randomBytes(32)), row).rejects.toMatchObject({ reading: "ward-needs-fresh-unlock" });
     }
     // CONTROL: a clean keystore passes the shared-tree check.
-    await refuseSharedTreeFaceRows(idbName);
+    await refuseSharedTreeFaceRecords(idbName);
     await plant(idbName, "veil-archive-ggroup-main", randomBytes(16));
     const before = await census(idbName);
-    await expectRefused(refuseSharedTreeFaceRows(idbName), "face-row-shared", "veil-archive-ggroup-main");
+    await expectRefused(refuseSharedTreeFaceRecords(idbName), "face-row-shared", "veil-archive-ggroup-main");
     expect(await census(idbName), "the refusal wrote nothing").toEqual(before);
   }, SLOW);
 
@@ -381,7 +381,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
       expect(after[row], `the clear ${row} row left`).toBeUndefined();
       expect(startsWithMagic(await rowOf(v.idbName, `sealed/${row}`)), `sealed/${row} bears the house magic`).toBe(true);
     }
-    const tree = await rowOf(v.idbName, CUSTODY_TREE_ROW);
+    const tree = await rowOf(v.idbName, CUSTODY_TREE_RECORD);
     expect(tree).toBeInstanceOf(Uint8Array);
     const reading = decodeSlotTree(tree as Uint8Array);
     expect(reading.reading).toBe("readable");
@@ -389,7 +389,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     expect(after["catalog-url"]).toBe(before["catalog-url"]);
     expect(after["other-row"]).toBe(before["other-row"]);
     expect(Object.keys(after).sort()).toEqual(
-      ["catalog-url", CUSTODY_TREE_ROW, "other-row", ...CUSTODY_ROWS.map((r) => `sealed/${r}`)].sort(),
+      ["catalog-url", CUSTODY_TREE_RECORD, "other-row", ...CUSTODY_ROWS.map((r) => `sealed/${r}`)].sort(),
     );
 
     // The page stays unlocked: the readers answer the bytes they held.
@@ -409,7 +409,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     expect(await readBrowserCustody(idbName)).toEqual({ reading: "clear" });
     const { slot, sealed } = await sealBrowserKeystore(idbName, PASS);
     expect(sealed).toEqual([]);
-    expect(Object.keys(await census(idbName))).toEqual([CUSTODY_TREE_ROW]);
+    expect(Object.keys(await census(idbName))).toEqual([CUSTODY_TREE_RECORD]);
     expect(await readBrowserCustody(idbName)).toEqual({ reading: "sealed", unlocked: true, slots: [{ id: slot, t: 1, kinds: ["passphrase"] }] });
 
     // The slot stood before the mint, so the mint lands sealed.
@@ -428,19 +428,19 @@ describe("browser custody seals the place tree's device seed and walk records", 
     await sealBrowserKeystore(v.idbName, PASS);
     // CONTROL: unlocked, the same readers read.
     expect(hex(await placeSeed(v.idbName))).toBe(hex(v.seed));
-    expect(await readKeystoreRow(v.idbName, "walk/a")).toEqual(v.side);
+    expect(await readKeystoreRecord(v.idbName, "walk/a")).toEqual(v.side);
 
     lockBrowserCustody(v.idbName);
     const before = await census(v.idbName);
     await expectRefused(placeSeed(v.idbName), "sealed-locked");
     await expectRefused(loadMainWalk(v.idbName), "sealed-locked");
-    await expectRefused(readKeystoreRow(v.idbName, "walk/a"), "sealed-locked");
+    await expectRefused(readKeystoreRecord(v.idbName, "walk/a"), "sealed-locked");
     await expectRefused(requireMainWalk(v.idbName), "sealed-locked");
     await expectRefused(generateOrLoadBrowserVesselIdentity(v.idbName), "sealed-locked");
     expect(await census(v.idbName), "no reader minted or wrote").toEqual(before);
 
     await expectRefused(saveMainWalk(v.idbName, walkRecord()), "sealed-locked");
-    await expectRefused(writeKeystoreRow(v.idbName, "walk/a", walkRecord()), "sealed-locked");
+    await expectRefused(writeKeystoreRecord(v.idbName, "walk/a", walkRecord()), "sealed-locked");
     const after = await census(v.idbName);
     expect(after["sealed/walk/main"]).toBe(before["sealed/walk/main"]);
     expect(after["sealed/walk/a"]).toBe(before["sealed/walk/a"]);
@@ -507,8 +507,8 @@ describe("browser custody seals the place tree's device seed and walk records", 
     if (cleared.reading === "cleared") expect([...cleared.cleared].sort()).toEqual([...CUSTODY_ROWS]);
 
     const after = await census(v.idbName);
-    expect(after[CUSTODY_TREE_ROW], "the slot tree left").toBeUndefined();
-    expect(Object.keys(after).filter((k) => k.startsWith(SEALED_ROW_PREFIX)), "no sealed row stands").toEqual([]);
+    expect(after[CUSTODY_TREE_RECORD], "the slot tree left").toBeUndefined();
+    expect(Object.keys(after).filter((k) => k.startsWith(SEALED_RECORD_PREFIX)), "no sealed row stands").toEqual([]);
     expect(await rowOf(v.idbName, "vessel-key")).toEqual(v.key);
     expect(await rowOf(v.idbName, "walk/main")).toEqual(v.main);
     expect(await rowOf(v.idbName, "walk/a")).toEqual(v.side);
@@ -605,8 +605,8 @@ describe("browser custody seals the place tree's device seed and walk records", 
     const treeKey = mintTreeKey();
     const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "port" }] }, nobleKdf);
     const carrier = sealedCarrierOf("walk/main");
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
-    expect(await rowOf(idbName, CUSTODY_TREE_ROW)).toBeInstanceOf(Uint8Array);
+    await commitSlotTree({ io, path: CUSTODY_TREE_RECORD, expected: null, treeKey, tree, carriers: [carrier] });
+    expect(await rowOf(idbName, CUSTODY_TREE_RECORD)).toBeInstanceOf(Uint8Array);
 
     const flipping: CustodyIo = {
       read: (p) => io.read(p), rename: (a, b) => io.rename(a, b), remove: (p) => io.remove(p),
@@ -620,14 +620,14 @@ describe("browser custody seals the place tree's device seed and walk records", 
     };
     const record = walkRecord();
     const plaintext = new TextEncoder().encode(JSON.stringify(record));
-    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext }))
+    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext }))
       .rejects.toThrow(/did not read back/);
     expect(await io.read(carrier.path), "nothing landed at the carrier").toBeNull();
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
     expect(await rowOf(idbName, "walk/main"), "no clear row either").toBeUndefined();
 
     // CONTROL: the same write through the honest port lands, at the keystore row the carrier names, and opens.
-    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext });
+    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext });
     expect(startsWithMagic(await rowOf(idbName, carrier.path))).toBe(true);
     const opened = await openSealedCarrier({ io, treeKey, carrier });
     expect(opened.reading).toBe("opens");
@@ -643,7 +643,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     const idbName = await foundHalted();
     const seed = await placeSeed(idbName);
     const group = await foundedGroupOf(idbName);
-    const archive = (await readKeystoreRow(idbName, `veil-archive-g${group}`)) as Uint8Array;
+    const archive = (await readKeystoreRecord(idbName, `veil-archive-g${group}`)) as Uint8Array;
     expect(archive.byteLength).toBeGreaterThan(0);
 
     const standing = await readBrowserCustody(idbName);
@@ -664,7 +664,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
 
     expect(await unlockBrowserCustody(idbName, [FIXTURE_PASS])).toMatchObject({ reading: "opens", slot });
     expect(hex(await placeSeed(idbName))).toBe(hex(seed));
-    expect(await readKeystoreRow(idbName, `veil-archive-g${group}`)).toEqual(archive);
+    expect(await readKeystoreRecord(idbName, `veil-archive-g${group}`)).toEqual(archive);
 
     // The same boot, unlocked, opens its bytes; a founding that halted before its bootstrap, run again over a FRESH founder face,
     // founds a second face under a ward of its own: the halted face's ward stands byte-equal beside it, and neither row names the
@@ -789,7 +789,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     // tree-unreadable: garbage bytes at the tree row.
     const garbage = `custody-garbage-${crypto.randomUUID()}`;
     expect(await readBrowserCustody(garbage)).toEqual({ reading: "clear" });   // CONTROL
-    await plant(garbage, CUSTODY_TREE_ROW, Uint8Array.of(0xde, 0xad, 0xbe, 0xef));
+    await plant(garbage, CUSTODY_TREE_RECORD, Uint8Array.of(0xde, 0xad, 0xbe, 0xef));
     const garbageBefore = await census(garbage);
     await expectRefused(loadMainWalk(garbage), "tree-unreadable");
     await expectRefused(placeSeed(garbage), "tree-unreadable");
@@ -805,7 +805,7 @@ describe("browser custody seals the place tree's device seed and walk records", 
     const unopenedBefore = await census(v.idbName);
     await expectRefused(loadMainWalk(v.idbName), "row-unopened", "walk/main");
     expect(await census(v.idbName)).toEqual(unopenedBefore);
-    expect(await readKeystoreRow(v.idbName, "walk/a"), "the other rows still open").toEqual(v.side);
+    expect(await readKeystoreRecord(v.idbName, "walk/a"), "the other rows still open").toEqual(v.side);
   }, SLOW);
 
   test("BC16 a paper route: two of three sheets open the slot; one sheet or a passphrase does not", async () => {
@@ -895,8 +895,8 @@ describe("browser custody seals the place tree's device seed and walk records", 
       let settledEarly = 0;
       const track = (read: Promise<unknown>) => { read.then(() => { settledEarly++; }, () => { settledEarly++; }); return read; };
       for (let i = 0; i < 25; i++) {
-        reads.push(track(readKeystoreRow(v.idbName, "vessel-key")));
-        reads.push(track(readKeystoreRow(v.idbName, "walk/main")));
+        reads.push(track(readKeystoreRecord(v.idbName, "vessel-key")));
+        reads.push(track(readKeystoreRecord(v.idbName, "walk/main")));
         if (i % 5 === 4) await new Promise<void>((resolve) => setTimeout(resolve, 0));
       }
       await new Promise<void>((resolve) => setTimeout(resolve, 50));
@@ -923,9 +923,9 @@ describe("browser custody seals the place tree's device seed and walk records", 
     const treeKey = mintTreeKey();
     const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "replace" }] }, nobleKdf);
     const carrier = sealedCarrierOf("walk/main");
-    await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
+    await commitSlotTree({ io, path: CUSTODY_TREE_RECORD, expected: null, treeKey, tree, carriers: [carrier] });
     const a = walkRecord();
-    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: new TextEncoder().encode(JSON.stringify(a)) });
+    await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext: new TextEncoder().encode(JSON.stringify(a)) });
     const before = (await io.read(carrier.path))!;
 
     const flipping: CustodyIo = {
@@ -939,12 +939,12 @@ describe("browser custody seals the place tree's device seed and walk records", 
       },
     };
     const b = walkRecord();
-    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: new TextEncoder().encode(JSON.stringify(b)) }))
+    await expect(writeSealedCarrier({ io: flipping, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext: new TextEncoder().encode(JSON.stringify(b)) }))
       .rejects.toThrow(/did not read back/);
     expect(hex((await io.read(carrier.path))!), "the standing seal keeps its exact bytes").toBe(hex(before));
     expect(await io.read(`${carrier.path}${SEALING_SUFFIX}`), "the torn sidecar left").toBeNull();
     expect(await unlockBrowserCustody(idbName, [{ kind: "passphrase", passphrase: "replace" }])).toMatchObject({ reading: "opens" });
-    expect(await readKeystoreRow(idbName, "walk/main")).toEqual(a);
+    expect(await readKeystoreRecord(idbName, "walk/main")).toEqual(a);
   }, SLOW);
 
   test("BC21 the clear asks its question with the act lock free", async () => {
@@ -1109,8 +1109,8 @@ describe("the ward's two edge refusals (row 7, S2b custody read)", () => {
       const treeKey = mintTreeKey();
       const tree = await bindSlot(null, treeKey, { t: 1, pins: [{ kind: "passphrase", passphrase: "roster" }] }, nobleKdf);
       const carrier = sealedCarrierOf("persona-root-roster");
-      await commitSlotTree({ io, path: CUSTODY_TREE_ROW, expected: null, treeKey, tree, carriers: [carrier] });
-      await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_ROW, carrier, plaintext: new TextEncoder().encode(JSON.stringify(plain)) });
+      await commitSlotTree({ io, path: CUSTODY_TREE_RECORD, expected: null, treeKey, tree, carriers: [carrier] });
+      await writeSealedCarrier({ io, treeKey, treePath: CUSTODY_TREE_RECORD, carrier, plaintext: new TextEncoder().encode(JSON.stringify(plain)) });
       expect(await unlockBrowserCustody(idbName, [{ kind: "passphrase", passphrase: "roster" }])).toMatchObject({ reading: "opens" });
       return listBrowserPersonaRoots(idbName).then((roots) => roots, (e: unknown) => e as Error);
     };
