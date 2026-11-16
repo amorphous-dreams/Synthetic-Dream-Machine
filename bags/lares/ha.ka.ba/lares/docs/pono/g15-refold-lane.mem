@@ -27,7 +27,7 @@ The operator ruled (2026-10-26) to close as much open work as possible before th
 
 !! The chain as a module
 
-`packages/lararium-node/src/after-roll-chain.ts` holds the after-roll refold. `openNodeVessel` hands it the holders as stages (`createAfterRoll`) and wraps the answer in `afterRoll`, which first notes the hosting doc a roll names. Every `store-door-verbs` row that lands a board or a practice joint, and each socket reconnect, awaits `afterRoll`'s `Promise<boolean>`.
+`packages/lararium-node/src/after-roll-chain.ts` holds the after-roll refold. `openNodeVessel` hands it the holders as stages (`createAfterRoll`) and wraps the answer in `afterRoll`, which first notes the hosting doc a roll names. Every `store-door-verbs` entry that lands a board or a practice joint, and each socket reconnect, awaits `afterRoll`'s `Promise<boolean>`.
 
 * ''The order of a pass.'' Land the owed hosting acts; refold antigen then membership (one `try`); refresh the realm plane (its own `try`); refold the edge shadows (its own `try`); re-verdict, unguarded; re-present (its own `try`). A fault in a stage logs and never skips the stages after it. The answer reads `true` when the re-presentation ran without throwing and `false` when it threw. A throw out of the owed hosting acts rejects the rolls that pass answers; the queue serves the next.
 * ''The tests run the module.'' `after-roll-chain.test.ts` runs the order, the split and the truthful return as the control; `after-roll-awaited.test.ts` runs the module and reads only the vessel's wiring (the import, `onRolled: afterRoll`, the awaiting `onReconnect`).
@@ -64,6 +64,6 @@ The lane's re-bake carries the plugin bundle `genesis/unbaked.json` declared, th
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;GhJdMdLSxy6vpj6NCs9tKpAd5qcfv2jrQ0IJA5Ov-yU`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KodC2n_gOiNVYbpxzm30gQWYiHyeclhjvh3p0O6njCc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

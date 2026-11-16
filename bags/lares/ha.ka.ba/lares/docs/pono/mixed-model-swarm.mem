@@ -95,7 +95,7 @@ The crew lines that bind a running lane stand at <<~ loulou uri=`lar:///ha.ka.ba
 # ''A span fault stops the queue once.'' A red the span carries goes at once to ONE cure lane. Queued lanes push, rerun and re-merge nothing until the cure lands; then each merges once and pushes once. A failed job reruns ONCE as a flake candidate; a second red on the same test names a fault.
 # ''A feature waits on its dependency unbuilt, or stacks.'' A feature that needs another lane's land starts after that land, or stacks on that lane's branch and lands in the same batch. It never builds ahead and rests while the span moves.
 # ''Done means the story walks.'' The hand-back names the story and the one walk that proves it: the one e2e file, or a live stand where a vessel class carries it. A capability no walk proves stands "specified", never built (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>> #/wiring-an-unreached-module).
-# ''The record rides with the capability'': each feature PR hands the controller its changelog bullet and road-row text; the lane edits neither file.
+# ''The record rides with the capability'': each feature PR hands the controller its changelog bullet and road-item text; the lane edits neither file.
 <<~/ahu>>
 
 <<~ ahu slot=`#/the-tiers`>>
@@ -173,7 +173,7 @@ A premium request counts per prompt, never per tool call.
 * ''A lane worktree'' counts toward five at most (`node tools/provision-worktree.mjs <dir>` builds it whole in one run: submodules against the main checkout's objects, the frozen install, the grammar wasm, the TW5 vendor blob, every package build and the stamp); the train holds the sixth. Worktrees and scratch roots live under `~/.lares-scratch/<lane>/`, never `/tmp`; a provision reads `df` first and stops under 60G free on C:. A lane may hold a second worktree, each with one writer, when two features on its path build in parallel. Free slots fill from the road's order without asking.
 * ''One tool lands a batch'': `tools/land-train.mjs` carries the train, the chained land, the direct land of a lane that already holds the span head, the disk floor (`LARES_DISK_MIN_C_GB`), the worktree cap, the span-push gate and the cancel of the landed lanes' runs; `--plan` prints the commits it would write and pushes nothing. A verdict reads three states: green, red, and UNREADABLE (GitHub unreachable or a 5xx), which waits, exits 10 and never reads as red or green; `tools/ci-verdict.mjs --wait` carries that wait, and its `job-minutes` line gives the CI currency below. Every tool that reads CI keeps one pace: `land-train`, `ci-verdict`, `e2e-shards` and `burst-bisect` read GitHub no closer than three minutes apart (`POLL_FLOOR_S`, 180 s, in `tools/ci-verdict.mjs`; operator law, 2026-11-05, after the API quota ran out), and the two find loops read at most three times; the pace decides only when a tool reads again, never a verdict.
 * ''The controller lands in batches'' (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> #/state). A batch forms once two or more features read green; a lone green feature drains as a batch of one when no other lane has a feature nearing green, and a span-fault cure or shared ground other lanes build on lands at once. One train reads every green lane merged over the span as it stands: the shared packages' suites, `tools/witness-all.sh`, evergreen and the tallies (a suite log with no "Test Files" line reads red; a dirty tree reads red); each lane's CI carried the e2e. The land writes one commit per lane, chained, each with the train's merge tree, so the span's last tree equals the train's tree. The span pushes only while no run flies on it, and the land cancels the CI runs its lane-branch pushes start. A lane on an older base lands when the span moved only by lands since (subjects carrying ` — merge PR #N`).
-* ''Road commits'' (road rows, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
+* ''Road commits'' (road items, o-takiage moves, changelog bullets, `#/state`) ride behind a batch, never between queued lands.
 * ''After each land'' the build cache caps at 15GB (`docker builder prune -f --max-used-space 15GB`); no image or system prune without the operator's word.
 * ''Job-minutes make the CI currency'': every CI change reports total job-minutes beside the critical path, and the fewest, fullest cells win while the critical path stays at or under the slowest e2e shard.
 
@@ -188,10 +188,10 @@ A lane closes with an o-takiage pass before its pull request opens, and the cont
 # ''Burn only what a later carrier or module plainly superseded'': an old message kind, a dead dial, a scaffold test, a stale comment. Unwired work no landed lane superseded stays; doubt goes on an ask list.
 # ''Move, then link.'' Where a new carrier gathers knowledge scattered across others, the scattered lines move into it with their attribution, each old site keeps one line that links the new home, and nothing states one law twice.
 # ''Canon follows the code in the same burst.'' A census over every carrier names each burned symbol, file, flag and variable; each live line re-trues to what stands, citing file and symbol, never a line number.
-# ''Testimony stays.'' A testimony carrier, a dated scout and a dated crossing row keep their words; the house re-trues their frame, never their body.
+# ''Testimony stays.'' A testimony carrier, a dated scout and a dated crossing entry keep their words; the house re-trues their frame, never their body.
 # ''A witness that catches burned names burns itself'' once it reads green over the tree.
 # ''Roadmaps move what stands finished'' onto their own o-takiage shelf, verbatim, and keep only what stays owed on the road.
-# ''Owed items travel first.'' A road row that names nothing still owed moves to `#/o-takiage`; an item owed for another row moves to that row before the move.
+# ''Owed items travel first.'' A road item that names nothing still owed moves to `#/o-takiage`; an item owed for another item moves to that item before the move.
 # ''Scratch returns too.'' A lane worktree leaves after a census proves every file it holds landed, by a plain `git worktree remove`; one that refuses plain removal waits for the operator's hand. The land script force-removes the train worktree it made, once it has proven the final tree equals the pushed span tree.
 
 <<~/ahu>>
@@ -275,12 +275,12 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 # ''A Claude seat.'' The seat spec stays lineage-blind (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness`>>), but only its Codex and Copilot renderings stand. A Claude rendering runs a summoned spirit headless with a pinned model and effort, the seat law appended, and the walls; it reads the run's own usage report, stops the spirit at a ceiling, and keeps every step fresh (the spirit reads its lane state, does one step, writes state and its hand-back, and ends). Built after standing. Its evidence (2026-11-05): one spirit resumed five times ran ≈953k tokens; fresh spirits per step that evening ran 80k to 170k each.
 # ''Summons.'' A custom tasked spirit gets a named, reviewed definition (model, effort, tools, the seed, its mask), and a summons invokes it by name, so its shape gets reviewed once instead of re-typed into every brief.
-# ''One budget across lineages.'' Row 7's house cap and lane shares, signed by the hand in the live wiki, govern Claude, Codex and Copilot alike. Each seat reads its share through its capability, and the vessel signs the roster's spend rows.
+# ''One budget across lineages.'' Item 7's house cap and lane shares, signed by the hand in the live wiki, govern Claude, Codex and Copilot alike. Each seat reads its share through its capability, and the vessel signs the roster's spend entries.
 # ''A fresh-per-step controller.'' The controller seat hands off through <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/controller-handoff`>> instead of living one long session, which grows in cost with the square of its length.
 # ''A Copilot ceiling.'' Copilot spend reads from its log, but no ceiling stops a running Copilot seat; the seat needs one.
 # ''The spend table.'' The launcher reads its limits from a ruled table in `seat-harness#/the-spend-guard`, keyed to the pool window. It was built on a parked lane (`feature/green-jello-dinosaur-5--spend-burn`) and lands after standing.
 
-''The discipline until then.'' Long, lane-parallel work uses a fresh tasked spirit per lane step, never long resumes, which re-send the whole transcript each time. At most three Claude spirits run in parallel, and the lane steps go to Codex seats first (#/the-tiers, the spend balance). Each spirit's token total is recorded in its lane's canon row. Short ad-hoc scouts stay outside the seat. The operator watches the Claude meter, which the house can't read in-session.
+''The discipline until then.'' Long, lane-parallel work uses a fresh tasked spirit per lane step, never long resumes, which re-send the whole transcript each time. At most three Claude spirits run in parallel, and the lane steps go to Codex seats first (#/the-tiers, the spend balance). Each spirit's token total is recorded in its lane's road item. Short ad-hoc scouts stay outside the seat. The operator watches the Claude meter, which the house can't read in-session.
 
 <<~/ahu>>
 
@@ -298,6 +298,6 @@ Ruled by the operator, 2026-11-05: "Does it apply to all tasked spirits... all l
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;yW-kSTBMMo4-_nuGugwb_kN6XveukoC0pGg7Qf-gF88`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;edfQL8mAft8BHETiWL_E9bkAvCq2HbcC468A4-ETLI0`>>
 
 <<^ code=`&#x0004;` to=`?`>>

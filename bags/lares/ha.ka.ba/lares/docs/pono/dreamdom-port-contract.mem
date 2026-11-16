@@ -9,7 +9,7 @@ hydrate           = true
 l-space           = "stable"
 namespace         = "&#x2299;"
 pattern-integrity = true
-role              = "dreamdom-port-contract — the normative contract of the record port (D2): the port log and its cursor, the chunked snapshot, cursor reset, the atomic write boundary with txId and causedBy, tombstone retention, clockless presence, and the invoke gate; each answer names its red and its control; the owed rows beside it"
+role              = "dreamdom-port-contract — the normative contract of the record port (D2): the port log and its cursor, the chunked snapshot, cursor reset, the atomic write boundary with txId and causedBy, tombstone retention, clockless presence, and the invoke gate; each answer names its red and its control; the owed items beside it"
 tags              = ["api/pono/meme"]
 title             = "lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract"
 type              = "text/memetic-wikitext+tiddlywiki"
@@ -168,7 +168,7 @@ The proven-face verifier of #/invoke gates the port's invoke. Kahu reach admissi
 
 !! Beside the port ~ what stands built, and what stays owed
 
-The D2 close lane built the road a page takes to the port and closed the rows that stood owed beside it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d2-port-lane`>>). What stands:
+The D2 close lane built the road a page takes to the port and closed the items that stood owed beside it (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/d2-port-lane`>>). What stands:
 
 * ''Composer wiring and the port lease.'' The vessel's pool keeps the port lease (`port-lease.ts`): the binding that opens a `portId` owns it, another binding's open, close, ack, ask, write or presence under it refuses `port-owned`, and a reply with no lease drops by name (`no-port-lease`). The pool sends the island `port:lease{portId, grant}` ahead of each open, write and ask (a page can never send one: `port-kind-refused`) and `port:gone{portId}` when the transport ends; the island's `hasPortLease` lends `faceOf(portId)`, `mayEdit`, `bagGrant`, `actorOf`, `verbCap`, `casTierOf`, `kahuReach` and `authority` from the grant and calls `transportGone(portId)` on `port:gone`. An open with no lease resets `lagged` and holds nothing. The browser shared holder wraps the same door. The default vessel policy grants a read-only port; the actor manifest and its grants belong to D4.
 * ''The page transport.'' `ports.place(surface, binding, msg)` and `ports.close(binding)` on each vessel result, and `makePortTransport` on the page, carry one binding's port messages through the lease; a live island proves one write lands once and echoes once under `causedBy`.
@@ -187,7 +187,7 @@ What stays owed, each by name:
 * ''Control traffic.'' Presence and ack carry no per-port rate bound; the holder's lease and transport own that budget.
 * ''The wire field bound.'' A plugin record above the 1 MiB wire field fails the reader whole with the snapshot message that carries it; the boot handoff chunks blobs, the snapshot does not chunk a record.
 * ''The follower tab's handoff.'' `port:boot` over the BroadcastChannel to a follower tab passes with the seam (`glass-topology`); the real handoff over the bus with real boot chunks stays unproven.
-* ''`port:widen` stands in the contract unsent.'' No mirror widens in place since full stands first; the island's row stays until a projection asks it or the contract drops it.
+* ''`port:widen` stands in the contract unsent.'' No mirror widens in place since full stands first; the island's entry stays until a projection asks it or the contract drops it.
 * ''D4's actor gate covers the `lar:act` path.'' Camera clicks reach TW5 widget listeners through `tw5-projection` and bypass `wiki-behavior`; the port's gate covers `port:ask{invoke}` alone.
 
 <<~/ahu>>
@@ -202,6 +202,6 @@ What stays owed, each by name:
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ZaRbr4cR2seVSz7ZypL8da6Cn2dJ9AKjYQrFr7GQ84U`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;QonMRkcrAlaeBn2CacTMHhAUL_n-3d8dWWMGxlh4moM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

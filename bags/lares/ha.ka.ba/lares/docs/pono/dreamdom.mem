@@ -97,10 +97,10 @@ Evidence: `docs/pono/third-ways-scout` §2.3 and §4.2.
 
 !! The superset of surfaces ~ two-way capability per member
 
-Each row names a (root template, document sink) over the one engine. ''Capability'': //full// = every roster row of TiddlyWiki's interactions runs or refuses by name under the contract (#/the-crossings); //partial// = a declared subset; //output-only// = frames or renders with no act leg yet; //none// = no camera. "Today" reads the tree as surveyed 2026-10-16; "under the contract" reads the design.
+Each row names a (root template, document sink) over the one engine. ''Capability'': //full// = every roster entry of TiddlyWiki's interactions runs or refuses by name under the contract (#/the-crossings); //partial// = a declared subset; //output-only// = frames or renders with no act leg yet; //none// = no camera. "Today" reads the tree as surveyed 2026-10-16; "under the contract" reads the design.
 
 |! DreamDOM surface |! Root → sink |! Width |! Two-way today |! Two-way under the contract |! What crosses up |! Transport |! Refuses by name |
-| Browser on the Node vessel's box, in-page engine (the first surface) | `$:/core/ui/RootTemplate` → `window.document` | full · skinny · story | the mirror stands at full in the browser vessel, booted from the island's whole handoff over the port; the node's page door stands owed | ''full'': stock TW5 runs beside the control | nothing per act; `write{txId}` per save; `ask{load·filter}` at skinny; presence; `lar:service` for host doors | MessageChannel to the tab's worker; the vessel worker for the store (row `B1`) | `tm-http-request` (gated), saves and syncer, verbs the glass may not run on a skinny replica |
+| Browser on the Node vessel's box, in-page engine (the first surface) | `$:/core/ui/RootTemplate` → `window.document` | full · skinny · story | the mirror stands at full in the browser vessel, booted from the island's whole handoff over the port; the node's page door stands owed | ''full'': stock TW5 runs beside the control | nothing per act; `write{txId}` per save; `ask{load·filter}` at skinny; presence; `lar:service` for host doors | MessageChannel to the tab's worker; the vessel worker for the store (item `B1`) | `tm-http-request` (gated), saves and syncer, verbs the glass may not run on a skinny replica |
 | Browser DOM sink (this carrier's original member, hardened) | RootTemplate → shadow-root morph sink | none | ''partial'': links, buttons, text input, confirm, first-level popups, Esc and modifier chords | ''full by contract'', with named refusals | `act` (click, declared keys, toggle, choice, drop, import-offer, order, confirm), `sense` (field, scroll), `service-result` | `lar:control-event` / `lar:frame` over the surface channel | rich selection ops past the carried pair, pointer capture, `$eventcatcher`, generic drag, print and fullscreen and open-external unless the manifest carries them |
 | Any other browser or WebView shell (Tauri, WKWebView, Android) | the same two | the same | as above | as above; storage named evictable | as above | the same | plus clipboard and download where the shell withholds them |
 | Node-served browser, SSR face | RootTemplate or a static template → `$tw.fakeDocument` → HTML | none | ''output-only'' | ''partial'': links as real `href` routes; forms as `write` or `act` posts over the holder; no live sense | `act` by navigation and form post; `write` | HTTP and WS to the vessel; the page attaches a surface for live mode | everything live until a surface attaches; hash routing |
@@ -340,7 +340,7 @@ A node whose `data-lar-on` lacks the event type never relays, and the browser de
 
 `lar:service{requestId, kind: clipboard · download · route · open-surface · print · fullscreen · open-external · http-request, args, userActivation: true}` travels engine → surface; the surface answers `service-result`. A surface's manifest at `session:surface-open` lists the kinds it carries; a kind outside the list answers `page-action-unavailable` at once and the engine raises `$:/temp/lares/alert/refused/<kind>`. Of the fifty-odd `tm-*` kinds the core dispatches, the navigator's, the fieldmangler's, `tm-confirm`, `tm-edit-text-operation` and `tm-verse-event` run in the engine wherever it sits; the twenty that bind only under `platforms: ["browser"]` split in half: pure wiki logic the island registers itself in a startup module (`tm-rename-tiddler`, `tm-relink-tiddler`, `tm-home`, `tm-modal`, `tm-show-switcher`, `tm-notify`, `tm-scroll` and `tm-focus-selector` as hints) and host services each surface names or refuses. `tm-http-request` opens a gated door under a person's act (#/open-rulings), never an ambient fetch.
 
-''The door law, as the island keeps it'' (`packages/lararium-tw5/src/modules/lar-root-services.ts`, the startup module `lar-root-services`): a surface names its doors on `lar:resend{manifest}`, and absent one it carries clipboard, download and route; one act opens one door, under a person's activation the page checks; the answer crosses on the document leg, so it never clears a control's words; an unknown `requestId` answers `unknown-request`; `tm-scroll` and `tm-focus-selector` travel as frame hints (`data-lar-scroll-to`, `data-lar-focus`, each with `data-lar-hint`) in the root layer of `lar:surface`, where modals (`tm-modal`, `tm-show-switcher`) and notifications (`tm-notify`) paint too; `tm-http-request` crosses as the `http-request` door under the same law (`dreamdom-roadmap` row `D15` builds it).
+''The door law, as the island keeps it'' (`packages/lararium-tw5/src/modules/lar-root-services.ts`, the startup module `lar-root-services`): a surface names its doors on `lar:resend{manifest}`, and absent one it carries clipboard, download and route; one act opens one door, under a person's activation the page checks; the answer crosses on the document leg, so it never clears a control's words; an unknown `requestId` answers `unknown-request`; `tm-scroll` and `tm-focus-selector` travel as frame hints (`data-lar-scroll-to`, `data-lar-focus`, each with `data-lar-hint`) in the root layer of `lar:surface`, where modals (`tm-modal`, `tm-show-switcher`) and notifications (`tm-notify`) paint too; `tm-http-request` crosses as the `http-request` door under the same law (`dreamdom-roadmap` item `D15` builds it).
 
 Evidence: `docs/pono/two-way-interaction-scout` §2, §3 and §6; `docs/pono/tw5-vm-gaps-scout` §5.3.
 
@@ -443,7 +443,7 @@ TiddlyWiki does not merely tolerate a fake document; it ''DETECTS'' one and degr
 
 <<~ ahu slot=`#/conformance`>>
 
-!! Conformance ~ three families, one frozen world, every surface a published row
+!! Conformance ~ three families, one frozen world, every surface a published conformance record
 
 ''The language carries portability; its suite carries the language'' (`evaluators-one-or-many`, Q1 closed 2026-10-16): one pinned JS TW5 reference evaluator for the full wikitext and filter dialects, running wherever an engine can run; an evaluator-neutral conformance suite built now with that engine as oracle (run the reference over a frozen world, record, review once by eye, freeze, diff from then on); the parse tree normative, each camera's serialisation second with declared tolerance and mandatory degradation cases; a certified core-subset evaluator permitted only when a host earns it, publishing its skip list by name; Mudlet receives results, never the language. One evaluator removes language drift and leaves host drift (`Intl`, `localeCompare`, Unicode regular expressions and `Date` differ between V8 and Hermes), so the suite runs per host from day one.
 
@@ -468,7 +468,7 @@ TiddlyWiki does not merely tolerate a fake document; it ''DETECTS'' one and degr
 # `switch/resend-and-epoch`: switching surfaces paints the new mount's first snapshot; an act with the old epoch answers `stale-target` and touches nothing.
 # `actor/wake-on-act-and-recipe-refusal`: an act on a sleeping actor parks, the actor wakes, the act answers; an act into a recipe wiki refuses `actor-not-spawned`.
 
-Each script runs at width full (stock TW5 as the oracle, in Playwright), at width none over the DOM sink, and over the blocks sink (headless); Mudlet and MCP rows run the subset their manifest carries and publish refusals for the rest. ''Two-way parity for a DreamDOM member then reads as'': the same expected writes and messages at every width where the script runs, and a named refusal wherever it does not.
+Each script runs at width full (stock TW5 as the oracle, in Playwright), at width none over the DOM sink, and over the blocks sink (headless); Mudlet and MCP conformance records run the subset their manifest carries and publish refusals for the rest. ''Two-way parity for a DreamDOM member then reads as'': the same expected writes and messages at every width where the script runs, and a named refusal wherever it does not.
 
 ''Every suite run pins a TW5 commit'' (today `ea94ca8`, a 5.5.0-prerelease fork); lag fails a port, not wrong code. Who re-pours the goldens when the commit moves stands as an open ruling.
 
@@ -562,7 +562,7 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 * ''Faults go to the alert rail''; TW5's `window.onerror` claim stays uninstalled.
 * ''Modals and notifications paint in the surface's root layer'' (#/the-crossings): `lar-root-services` owns the mirror's doors, since the stock root widget would bypass the Web3-only `http-request` door.
 * ''The browser vessel's opened key lives in its own worker'', never in page memory; the per-tab ask stands, and the shared holder carries no unlock. The unlock ceremony paints where the surface cannot reach (the boundary sits where the person types the secret). The operator approved its shape (2026-11-05: //"Approve"//): a clean ceremony document takes the secret and sends its bytes down a service-worker-brokered port to the vessel worker (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift`>>).
-* ''The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>). No clear row stands under the full mirror, and the device key rests non-extractable.
+* ''The full mirror runs people's plugins only after sealed-store steps 2 and 3 land for the browser store'' (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>). No clear record stands under the full mirror, and the device key rests non-extractable.
 
 !!! Ruled, 2026-11-11 and 2026-11-12 (the full mirror, the third runtime and the address)
 * ''The worker VM stands as the third runtime'' (operator, 2026-11-11: //"hold the VMs are 'a third thing, never seen before'"//). Neither a browser page nor a Node process: a TW5 that holds every tiddler of its wiki, TW5's kernel and `$:/core` among them, beside the CRDT store that holds the truth. Every camera reads that engine; none replaces it.
@@ -630,6 +630,6 @@ The DreamDOM's founding story: every later DreamDOM ruling answers to these seve
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;Vf_ORSq7Nm8WDvuOUXRBCAU5Ab1bSHeUsXxHOYvkFxw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;EuO9Xv54v70Cvg5JWo3BkbsNOZLbJp3uoiZrBUR_k5w`>>
 
 <<^ code=`&#x0004;` to=`?`>>
