@@ -66,6 +66,7 @@ export const EXCEPTIONS = [
   { rule: "clock", file: "tools/wait-receipt.test.mjs", match: "Date.now() - t0 < 900", reason: "The silence-bound test measures only its own completion time." },
   { rule: "clock", file: "tools/wait-receipt.test.mjs", match: "const took = Date.now() - t0", reason: "The forged-claim test measures only its own completion time against the cap." },
   { rule: "retired-test", file: "packages/lararium-memetic-frame/tests/verdict.test.ts", match: "const retired: Record<string, string> = {", reason: "The frame verdict suite feeds malformed heads that a reader meets as foreign bytes; the record names input bytes." },
+  { rule: "canon-history", file: "bags/lararium/ha.ka.ba/lararium/api/action-handler.mem", match: "retired", count: 5, reason: "DROP leaves a bag retired: the bag-retired disposition at <bag>/ledger/residency/retired (effect-record.ts RETIRED_EVENT_ID) names a present state the code reads, never history." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Build new, then retire.", reason: "This law line names the reserved retired term it governs." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "Evergreen, with no old shapes", reason: "This law line names the history words it bans." },
   { rule: "canon-history", file: "bags/lares/ha.ka.ba/lares/api/pono/working-procedures.mem", match: "lives for one commit", reason: "This law line states the one-commit refusal it permits." },
