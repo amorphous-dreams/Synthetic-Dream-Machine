@@ -39,7 +39,7 @@ beforeEach(() => {
 afterEach(() => { vi.restoreAllMocks(); delete process.env["LAR_ROOT"]; rmSync(root, { recursive: true, force: true }); });
 
 describe("vessel found — the store's shape is read before any route is asked", () => {
-  it("★ an earlier-shape store refuses OccupiedStoreRefusal by name, asks for NO route, prints no stack, writes nothing ★", async () => {
+  it("★ a store holding a face row with no slot tree refuses OccupiedStoreRefusal by name, asks for NO route, prints no stack, writes nothing ★", async () => {
     const homes = vesselCustodyHomes();
     mkdirSync(homes.identity, { recursive: true });
     const face = join(homes.identity, "faces", "ab".repeat(16));

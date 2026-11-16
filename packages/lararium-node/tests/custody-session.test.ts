@@ -361,7 +361,7 @@ describe("custodyStatus", () => {
 
 describe("runInit seals custody from birth", () => {
   const GENESIS = join(import.meta.dirname, "..", "..", "..", "genesis");
-  test("RED: no route refuses before the first byte — CONTROL: a route leaves s-slots.bin and a sealed custody root; MUTATION: the old shape refuses", async () => {
+  test("RED: no route refuses before the first byte — CONTROL: a route leaves s-slots.bin and a sealed custody root; a face row standing with no tree refuses", async () => {
     if (!existsSync(join(GENESIS, "seed.json"))) throw new Error("no built genesis — run `pnpm --filter @lararium/node build:genesis`");
     const r = mkdtempSync(join(tmpdir(), "lar-found-seals-"));
     try {
@@ -405,7 +405,7 @@ describe("runInit seals custody from birth", () => {
         runInit({ repo, storageDir: storage, genesisDir: genesis, force: true, custody: { slots: [] } })));
       expect(readFileSync(join(idHome, "s-slots.bin")).equals(treeBefore)).toBe(true);
 
-      // MUTATION: a founding over cleartext identity output with no tree (the old shape) refuses and moves no byte.
+      // A founding over cleartext identity output with no slot tree refuses and moves no byte.
       const old = mkdtempSync(join(tmpdir(), "lar-found-old-"));
       try {
         const oStorage = join(old, "hearth", "vessel");

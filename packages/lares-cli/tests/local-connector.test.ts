@@ -68,7 +68,7 @@ describe("socketHolderPids — names a listener the rendezvous hard link only PO
       let out = "";
       try { out = execFileSync("lsof", ["-t", rendezvousPath], { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }); }
       catch { out = ""; }                          // a non-zero exit (nothing found) is lsof's own normal "no match"
-      expect(out.trim()).toBe("");                  // the OLD shape this door retired: names NOTHING
+      expect(out.trim()).toBe("");                  // a path-keyed lsof names NOTHING for a linked listener
     } finally {
       holder.kill("SIGKILL");
       rmSync(dir, { recursive: true, force: true });
