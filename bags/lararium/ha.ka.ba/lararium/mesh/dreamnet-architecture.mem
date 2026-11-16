@@ -289,7 +289,7 @@ Users keep full caps over their own wikis. The daemon wiki and the kahua stage c
 
 Bound acts:
 * promote-commit and kāpae-lower in the daemon and kahua wikis;
-* the swarm's house cap, lane shares and push go;
+* the swarm's house cap, lane shares and push lei;
 * every act that changes who belongs to a face, or what it trusts: admit, fleet-join, recovery contact, publication, the founder certificate;
 * the kahua lift.
 
@@ -301,7 +301,7 @@ kāpae-raise only adds a brake, so it fails safe and needs no hand.
 
 ''Motion stays local; a decision that crosses devices takes a hand.'' The working top serves as the free local floor the AI writes on. A kahua lift crosses devices, because the stage syncs to every device the face wears, so it rides the ward: one passphrase per verified batch. Memory steers the spirit, since the Lares read the kahua at cold boot, so memory carries weight the way code does.
 
-''The co-sign binds by reach.'' An act whose effect leaves the device (kāpae-lower, the house cap, the push go) also needs a second device of the same face to answer through the face intent plane. A one-device fleet needs the fresh unlock alone. An offline second device refuses and never falls back. Distinctness reads by the face's own atoms. An answer counts only when its signer stands in that face's device set and differs from the asker.
+''The co-sign binds by reach.'' An act whose effect leaves the device (kāpae-lower, the house cap, the push lei) also needs a second device of the same face to answer through the face intent plane. A one-device fleet needs the fresh unlock alone. An offline second device refuses and never falls back. Distinctness reads by the face's own atoms. An answer counts only when its signer stands in that face's device set and differs from the asker.
 
 ''A vessel never publishes one key across faces'', since that would link a person's faces. Instead, each admission carries a per-face blinded vessel tag, so a vessel admitted twice into one face refuses, while its tags in different faces stay unlinkable.
 
@@ -725,6 +725,6 @@ The carriage-client fetch row stays OWED (measured 2026-10-22). The vessel-side 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;XQy8zLHkIcIe03o9wAzTauEruSWTCwdWhCg5oPvXPUk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AgYdplJcBiTy0ddGjZj1FQOn2tS5YgNNOf-2rnqY2So`>>
 
 <<^ code=`&#x0004;` to=`?`>>
