@@ -97,12 +97,13 @@ describe("★ every other ETX spelling tears before a digest runs ★", () => {
 describe("★ the retired trailer refuses by name ★", () => {
   const trailer = (): string => { const t = bareCarrier(); return t.replace(ETX, ETX + bareDigest(t)); };
 
-  test("a check standing after the ETX >> tears as retired-trailer, naming the cure", () => {
+  test("a check standing after the ETX >> tears as retired-trailer, naming what the carrier holds", () => {
     const v = verdict(trailer());
     expect(v.kind).toBe("torn");
     if (v.kind !== "torn") return;
     const f = v.faults.find((x) => x.kind === "retired-trailer");
-    expect(f?.message).toMatch(/grammar-cut/);
+    expect(f?.message).toMatch(/holds its check as ``bcc=`…` `` inside the ETX mark/);
+    expect(f?.message).not.toMatch(/tools\//);
   });
 
   test("a check one space after the >> tears as retired-trailer too — never a second check beside a minted slot", () => {

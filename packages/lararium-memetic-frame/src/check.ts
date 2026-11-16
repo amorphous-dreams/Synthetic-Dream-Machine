@@ -188,12 +188,12 @@ export function etxFaults(text: string, etx: MarkHit, closing: boolean): FrameFa
       message: `\`${sigil}\` reads outside the frame grammar — ETX reads \`\`<<^ code=\`${ETX_CODE}\`>>\`\` or carries one final \`\`bcc=\`ni:///…\`\`\` run; nothing repairs it`,
     });
   }
-  // RETIRED-TRAILER — this named refusal lives one commit on the alpha line, then the pyre burns it
-  // and the bytes read as what they are: foreign content between ETX and EOT.
+  // RETIRED-TRAILER — the closing mark carries the one check; a check standing after its `>>` reads as
+  // foreign content between ETX and EOT, and the frame names it rather than guessing it into the slot.
   if (closing && TRAILER_RE.test(text.slice(etx.end))) {
     faults.push({
       kind: "retired-trailer",
-      message: "a block check stands after the ETX `>>` — the trailer form retired; the check rides ``bcc=`…` `` inside the ETX mark (re-cut with `node tools/grammar-cut.mjs`)",
+      message: "a block check stands after the ETX `>>`; a carrier holds its check as ``bcc=`…` `` inside the ETX mark, and nothing stands between ETX and EOT",
     });
   }
   return faults;
