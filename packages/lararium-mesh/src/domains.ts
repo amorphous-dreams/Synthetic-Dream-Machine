@@ -251,6 +251,13 @@ export const PROMOTE_WARD_DOMAIN = mint("promote-ward");
 /** One signed swarm control: the house cap, a lane share, a go, a go's spend, a lane's state, a roster row or a check receipt.
  *  Its own name, so no swarm record verifies as a promote or kahua act and none of those as a swarm control. */
 export const SWARM_ACT_DOMAIN = mint("swarm-act");
+/** A kūkulu vouch (apart from the cabal vouch edge below): the standing vessel's signature over the candidate image it walked before a kūkulu (the-worn-house#/the-pulama).
+ *  The name serves twice: the custody root's CHILD the vouch key derives from, and the `kind` its signed body carries, so no
+ *  swarm control verifies as a vouch and a vouch signs only under a key the custody root yields. */
+export const KUKULU_VOUCH_DOMAIN = mint("kukulu-vouch");
+/** The pūlama's tessera half (a kūkulu it served, a lei's return it claimed): the custody root's CHILD the pūlama signs under,
+ *  and the `kind` that record carries. Apart from the vouch's key, so a vessel that vouches never signs as the pūlama. */
+export const PULAMA_TESSERA_DOMAIN = mint("pulama-tessera");
 /** A face's OFFER of records toward a house-canon bag: the offered fields, each record's carrier digest and fork base, signed by
  *  the offering face's key for that Nexus (`CANON_OFFER_KEY_DOMAIN`). Its own name, so no plugin offering, promote act or release verifies as one. */
 export const CANON_OFFER_DOMAIN = mint("canon-offer");

@@ -94,6 +94,7 @@ export * from "./swarm-go-rite.js";
 export * from "./swarm-tiddlers.js";
 export * from "./swarm-board.js";
 export * from "./swarm-door.js";
+export * from "./kukulu-vouch.js";
 export * from "./face-relation.js";
 export * from "./promote-door.js";
 export * from "./promote-command.js";
