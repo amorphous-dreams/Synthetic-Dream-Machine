@@ -29,7 +29,7 @@ export type SwarmRequest =
   /** `supersede`: the hand starts an unavailable or braked line again, citing its dangling heads; on a line that folds clear it refuses. */
   | { readonly action: "cap-set"; readonly value: unknown; readonly supersede?: boolean }
   | { readonly action: "share-set"; readonly lane: string; readonly value: unknown; readonly supersede?: boolean }
-  /** `rite`: the one power the lei carries (`push` · `restart`); the door refuses a lei that names none. `after`: the cid of the lei
+  /** `rite`: the one power the lei carries (`push` · `kukulu`); the door refuses a lei that names none. `after`: the cid of the lei
    *  this one follows at its rite's line for the branch (`show` names it), null for the first there. One issue names one lei, so a
    *  fresh lei for one head asks afresh, and a replay of an approved lei names the same intent and refuses spent. */
   | { readonly action: "lei-kui"; readonly rite: SwarmLeiRite; readonly branch: string; readonly after: string | null;
@@ -84,7 +84,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   const reading = async () => readSwarmBoard(await deps.board.records(), { ...deps.face, ward: await witness() });
   if (req.action === "show") {
     const r = await reading();
-    if (req.branch !== undefined && req.head !== undefined && !isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push or restart): show reads one rite's lei");
+    if (req.branch !== undefined && req.head !== undefined && !isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push or kukulu): show reads one rite's lei");
     const at = req.branch !== undefined && req.head !== undefined ? { rite: req.rite as SwarmLeiRite, branch: req.branch, head: req.head } : undefined;
     const lei = at ? await readLei(wiki, at, deps.trust, deps.group, await witness()) : undefined;
     // `after` names only a standing lei: the one tip of the branch's longest co-signed chain; a fork names its tips instead.
@@ -104,7 +104,7 @@ export async function swarmCommand(req: SwarmRequest, deps: SwarmDoorDeps): Prom
   if (deps.who.kind !== "hand") throw new SwarmRefused("swarm-needs-hand", "a hand must decide");
   if (!deps.face.grant(deps.signer.key.toLowerCase())) throw new SwarmRefused("swarm-signer-not-grant", "the signer holds no grant of this face");
   if (req.action === "lei-kui") {
-    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push or restart)");
+    if (!isSwarmLeiRite(req.rite)) throw new SwarmRefused("swarm-lei-malformed", "a lei names its rite (push or kukulu)");
     if (typeof req.branch !== "string" || req.branch.length === 0) throw new SwarmRefused("swarm-lei-malformed", "a lei names a branch");
     // THE REACH: wide stands as the default, and each reach holds its own terms whole.
     const reach = req.reach ?? "wide";

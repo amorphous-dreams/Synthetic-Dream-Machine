@@ -38,7 +38,7 @@ test("WITNESS: each co-signed ward act's door runs the gate: the kāpae lower, t
   // a go asks the gate under its own rite's verb (`ward-<rite>-lei`), never a fixed one
   expect(swarm).toMatch(/const verb = wardLeiVerb\(rite\), leiHead = swarmLeiHead\(\{ rite, branch, after, \.\.\.terms \}\);/);
   expect(swarm).toMatch(/gated\(deps, \{ verb, wiki: "daemon", head: leiHead \}/);
-  expect(swarm).not.toMatch(/"ward-(push|restart)-lei"/);
+  expect(swarm).not.toMatch(/"ward-(push|kukulu)-lei"/);
   expect(swarm).not.toMatch(/ward-lane-share/);
   // each vessel composition hands its door the port
   expect(code(src("../../lararium-node/src/commands/promote.ts"))).toMatch(/cosign: \(\) => nodeWardCosignPortOf\(/);

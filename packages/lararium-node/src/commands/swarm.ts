@@ -51,7 +51,7 @@ export async function runSwarmVerb(opts: {
   const request: SwarmRequest = opts.action === "show" ? { action: "show", ...(str("branch") && str("head") ? { rite: opts.args["rite"] as SwarmLeiRite, branch: str("branch"), head: str("head") } : {}) }
     : opts.action === "cap-set" ? { action: "cap-set", value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
     : opts.action === "share-set" ? { action: "share-set", lane: str("lane"), value: opts.args["value"], ...(opts.args["supersede"] === true ? { supersede: true } : {}) }
-    // `rite` names the lei's one power (push or restart); the door refuses a lei that names none. `after` names the lei this one
+    // `rite` names the lei's one power (push or kukulu); the door refuses a lei that names none. `after` names the lei this one
     // follows on its rite's line at the branch (`show` reads it), null for the first there; an absent one refuses.
     // The reach: absent reads wide (the lei names its `returns` and no head); `reach: "head"` pins the `head` it names. The door
     // refuses a lei that mixes the two, so a head handed in beside the wide default never passes as a pin.

@@ -1,8 +1,8 @@
 /**
- * lei-rite — one power per lei (road L45b): a lei names its rite (`push` · `restart`), and the rite rides its head, its title
+ * lei-rite — one power per lei (road L45b): a lei names its rite (`push` · `kukulu`), and the rite rides its head, its title
  * and the ward verb its co-sign answers under.
  *
- * A lei that named no rite would let one record family serve two powers: a push lei would spend as a restart. Every red pairs
+ * A lei that named no rite would let one record family serve two powers: a push lei would spend as a kukulu. Every red pairs
  * with a CONTROL. Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { describe, expect, test } from "vitest";
@@ -34,7 +34,7 @@ async function fixture() {
   const trust = { hand: (k: string) => k === hand.key, vessel: (k: string) => k === vessel.key, lead: () => false };
   const wiki = wikiPort();
   /** A hand-signed lei of one rite, at its own row; hands back the record and its cid. */
-  const issue = async (rite: "push" | "restart") => {
+  const issue = async (rite: "push" | "kukulu") => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite, reach: "head", branch: BRANCH, head: HEAD, after: null }, hand);
     await putSwarmAct(wiki, swarmLeiRowTitle(rite, BRANCH, swarmActCid(lei)), lei);
     return { lei, cid: swarmActCid(lei) };
@@ -45,62 +45,62 @@ async function fixture() {
 }
 
 describe("lei-rite-separates-powers", () => {
-  test("RED: a push lei never satisfies a restart read, at the same branch and head; CONTROL: the push read finds it", async () => {
+  test("RED: a push lei never satisfies a kukulu read, at the same branch and head; CONTROL: the push read finds it", async () => {
     const f = await fixture();
     await f.issue("push");
-    expect(await readLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "absent" });
+    expect(await readLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "absent" });
     expect(await readLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toMatchObject({ ok: true });
   });
 
-  test("RED: the ward verbs differ, and each lei's read asks its own: a witness that co-signed the push lei alone leaves the restart lei standing on no chain", async () => {
+  test("RED: the ward verbs differ, and each lei's read asks its own: a witness that co-signed the push lei alone leaves the kukulu lei standing on no chain", async () => {
     const f = await fixture();
-    await f.issue("push"); await f.issue("restart");
+    await f.issue("push"); await f.issue("kukulu");
     expect(wardLeiVerb("push")).toBe("ward-push-lei");
-    expect(wardLeiVerb("restart")).toBe("ward-restart-lei");
+    expect(wardLeiVerb("kukulu")).toBe("ward-kukulu-lei");
     const asked: WardCosignAct[] = [];
     const pushOnly = { accepts: (act: WardCosignAct) => { asked.push(act); return act.verb === "ward-push-lei"; } };
     expect(await readLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD }, f.trust, GROUP, pushOnly)).toMatchObject({ ok: true });
-    expect(await readLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD }, f.trust, GROUP, pushOnly)).toEqual({ ok: false, refusal: "ward-act-uncosigned" });
-    expect(asked.map((a) => a.verb)).toEqual(["ward-push-lei", "ward-restart-lei"]);
+    expect(await readLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD }, f.trust, GROUP, pushOnly)).toEqual({ ok: false, refusal: "ward-act-uncosigned" });
+    expect(asked.map((a) => a.verb)).toEqual(["ward-push-lei", "ward-kukulu-lei"]);
     // The head a co-sign names folds the rite in, so an answer to one never reads as an answer to the other.
     expect(asked[0]!.head).not.toBe(asked[1]!.head);
-    expect(swarmLeiHead({ rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null })).not.toBe(swarmLeiHead({ rite: "restart", reach: "head", branch: BRANCH, head: HEAD, after: null }));
+    expect(swarmLeiHead({ rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null })).not.toBe(swarmLeiHead({ rite: "kukulu", reach: "head", branch: BRANCH, head: HEAD, after: null }));
   });
 
-  test("RED: a push lei's bytes moved to the restart title read as misplaced; CONTROL: at its own title the lei reads", async () => {
+  test("RED: a push lei's bytes moved to the kukulu title read as misplaced; CONTROL: at its own title the lei reads", async () => {
     const f = await fixture();
     const { lei, cid } = await f.issue("push");
     expect(swarmLeiTitle("push", BRANCH)).toBe("$:/lares/swarm/lei/push/feature%2Fx");
-    expect(swarmLeiTitle("restart", BRANCH)).toBe("$:/lares/swarm/lei/restart/feature%2Fx");
-    const moved = swarmLeiRowTitle("restart", BRANCH, cid);
+    expect(swarmLeiTitle("kukulu", BRANCH)).toBe("$:/lares/swarm/lei/kukulu/feature%2Fx");
+    const moved = swarmLeiRowTitle("kukulu", BRANCH, cid);
     f.wiki.rows.set(moved, JSON.stringify(lei));
     expect(await readSwarmRecord(f.wiki, moved, f.trust, GROUP)).toEqual({ ok: false, refusal: "title" });
-    expect(await readLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "title" });
+    expect(await readLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "title" });
     expect(await readSwarmRecord(f.wiki, swarmLeiRowTitle("push", BRANCH, cid), f.trust, GROUP)).toMatchObject({ ok: true });
   });
 
-  test("RED: a push lei never spends as a restart, and spending it leaves the restart lei of the same head unspent; CONTROL: each spends once under its own rite", async () => {
+  test("RED: a push lei never spends as a kukulu, and spending it leaves the kukulu lei of the same head unspent; CONTROL: each spends once under its own rite", async () => {
     const f = await fixture();
     const push = await f.issue("push");
-    await expect(returnLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-absent" });
-    const restart = await f.issue("restart");
-    expect(restart.cid).not.toBe(push.cid);
+    await expect(returnLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-absent" });
+    const kukulu = await f.issue("kukulu");
+    expect(kukulu.cid).not.toBe(push.cid);
     await expect(returnLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: push.cid, reach: "head", n: 1 });
     expect(await readLei(f.wiki, { rite: "push", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toEqual({ ok: false, refusal: "returned" });
-    expect(await readLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toMatchObject({ ok: true, cid: restart.cid });
-    await expect(returnLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: restart.cid, reach: "head", n: 1 });
-    await expect(returnLei(f.wiki, { rite: "restart", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returned" });
+    expect(await readLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE)).toMatchObject({ ok: true, cid: kukulu.cid });
+    await expect(returnLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).resolves.toEqual({ lei: kukulu.cid, reach: "head", n: 1 });
+    await expect(returnLei(f.wiki, { rite: "kukulu", branch: BRANCH, head: HEAD, tree: TREE }, f.trust, GROUP, f.vessel, ONE_DEVICE)).rejects.toMatchObject({ code: "swarm-lei-returned" });
   });
 
   test("RED: the rite list holds two names, and a lei of any other rite forms no record, no title and no ward verb; CONTROL: both rites register as co-signed ward verbs", async () => {
     const f = await fixture();
-    expect([...SWARM_LEI_RITES]).toEqual(["push", "restart"]);
+    expect([...SWARM_LEI_RITES]).toEqual(["push", "kukulu"]);
     for (const rite of ["merge", "", "PUSH", "push/x", undefined]) {
       await expect(signSwarmAct({ act: "lei", group: GROUP, rite, reach: "head", branch: BRANCH, head: HEAD, after: null } as unknown as SwarmBodyParts, f.hand), String(rite)).rejects.toMatchObject({ code: "swarm-shape" });
       expect(() => swarmLeiTitle(rite as never, BRANCH), String(rite)).toThrow(SwarmRefused);
       await expect(readLei(f.wiki, { rite: rite as never, branch: BRANCH, head: HEAD }, f.trust, GROUP, ONE_DEVICE), String(rite)).rejects.toMatchObject({ code: "swarm-name-malformed" });
     }
-    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei", "ward-restart-lei"]);
+    expect(WARD_COSIGN_VERBS).toEqual(["ward-kapae-lower", "ward-house-cap", "ward-push-lei", "ward-kukulu-lei"]);
     for (const rite of SWARM_LEI_RITES) expect(faceIntentVerbs().classOfVerb(wardLeiVerb(rite))).toEqual({ class: "single-effect", cosign: true });
   });
 });
@@ -124,17 +124,17 @@ describe("the door issues a lei under its rite", () => {
       await expect(swarmCommand({ action: "lei-kui", rite, branch: BRANCH, head: HEAD, after: null } as never, s.deps), String(rite)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
     }
     expect([...s.wiki.rows.keys()]).toEqual([]);
-    expect(await swarmCommand({ action: "lei-kui", rite: "restart", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).toEqual({ rite: "restart", branch: BRANCH, reach: "head", head: HEAD });
-    expect([...s.wiki.rows.keys()].every((t) => t.startsWith(`${swarmLeiTitle("restart", BRANCH)}/`))).toBe(true);
+    expect(await swarmCommand({ action: "lei-kui", rite: "kukulu", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).toEqual({ rite: "kukulu", branch: BRANCH, reach: "head", head: HEAD });
+    expect([...s.wiki.rows.keys()].every((t) => t.startsWith(`${swarmLeiTitle("kukulu", BRANCH)}/`))).toBe(true);
   });
 
-  test("RED: a restart lei the door issued shows standing for restart and absent for push, and each rite keeps its own chain; CONTROL: a push lei issued beside it starts at null", async () => {
+  test("RED: a kukulu lei the door issued shows standing for kukulu and absent for push, and each rite keeps its own chain; CONTROL: a push lei issued beside it starts at null", async () => {
     const s = await stand();
-    await swarmCommand({ action: "lei-kui", rite: "restart", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps);
-    expect(await swarmCommand({ action: "show", rite: "restart", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true } });
+    await swarmCommand({ action: "lei-kui", rite: "kukulu", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps);
+    expect(await swarmCommand({ action: "show", rite: "kukulu", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true } });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: false, refusal: "absent", after: null } });
     await expect(swarmCommand({ action: "show", branch: BRANCH, head: HEAD } as never, s.deps)).rejects.toMatchObject({ code: "swarm-lei-malformed" });
-    // The push chain holds no lei, so its first names no predecessor: the restart lei never counts as the one it follows.
+    // The push chain holds no lei, so its first names no predecessor: the kukulu lei never counts as the one it follows.
     await expect(swarmCommand({ action: "lei-kui", rite: "push", reach: "head", branch: BRANCH, head: HEAD, after: null }, s.deps)).resolves.toEqual({ rite: "push", branch: BRANCH, reach: "head", head: HEAD });
     expect(await swarmCommand({ action: "show", rite: "push", branch: BRANCH, head: HEAD }, s.deps)).toMatchObject({ lei: { standing: true } });
   });

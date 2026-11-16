@@ -33,7 +33,7 @@ async function fixture() {
   const wiki = wikiPort();
   const rest = async (parts: Record<string, unknown>): Promise<string> => {
     const lei = await signSwarmAct({ act: "lei", group: GROUP, rite: "push", branch: BRANCH, after: null, ...parts } as unknown as SwarmBodyParts, hand);
-    await putSwarmAct(wiki, swarmLeiRowTitle((parts["rite"] as "push" | "restart" | undefined) ?? "push", BRANCH, swarmActCid(lei)), lei);
+    await putSwarmAct(wiki, swarmLeiRowTitle((parts["rite"] as "push" | "kukulu" | undefined) ?? "push", BRANCH, swarmActCid(lei)), lei);
     return swarmActCid(lei);
   };
   /** A hand-signed wide lei at its own row; hands back its cid. */
@@ -43,8 +43,8 @@ async function fixture() {
   /** A receipt over a tree, standing at its title (a later one replaces it). */
   const receipt = async (tree: string, verdict: "pass" | "fail", signer = vessel) =>
     putSwarmAct(wiki, swarmReceiptTitle(tree), await signSwarmAct({ act: "receipt", group: GROUP, tree, checks: ["typecheck"], verdict, definitions: "d".repeat(64) }, signer));
-  const spend = (head: string, tree: string, rite: "push" | "restart" = "push", spender = vessel) => returnLei(wiki, { rite, branch: BRANCH, head, tree }, trust, GROUP, spender, ONE_DEVICE);
-  const read = (head: string, rite: "push" | "restart" = "push") => readLei(wiki, { rite, branch: BRANCH, head }, trust, GROUP, ONE_DEVICE);
+  const spend = (head: string, tree: string, rite: "push" | "kukulu" = "push", spender = vessel) => returnLei(wiki, { rite, branch: BRANCH, head, tree }, trust, GROUP, spender, ONE_DEVICE);
+  const read = (head: string, rite: "push" | "kukulu" = "push") => readLei(wiki, { rite, branch: BRANCH, head }, trust, GROUP, ONE_DEVICE);
   const spendRows = (cid: string) => [...wiki.rows.keys()].filter((t) => t.startsWith(`${swarmLeiReturnedTitle(cid, 1).slice(0, -1)}`));
   return { hand, vessel, outsider, trust, wiki, wide, pinned, receipt, spend, read, spendRows, rest };
 }
@@ -81,18 +81,18 @@ describe("lei-wide-needs-evidence", () => {
     expect("head" in w.body).toBe(false);
     const heads = [
       swarmLeiHead({ rite: "push", branch: BRANCH, reach: "wide", returns: 2, after: null }), swarmLeiHead({ rite: "push", branch: BRANCH, reach: "wide", returns: 3, after: null }),
-      swarmLeiHead({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, after: null }), swarmLeiHead({ rite: "restart", branch: BRANCH, reach: "wide", returns: 2, after: null }),
+      swarmLeiHead({ rite: "push", branch: BRANCH, reach: "head", head: HEAD, after: null }), swarmLeiHead({ rite: "kukulu", branch: BRANCH, reach: "wide", returns: 2, after: null }),
     ];
     expect(new Set(heads).size).toBe(4);
   });
 
-  test("RED: a wide restart lei never reaches a push: the push read and the push spend find no lei; CONTROL: it spends as a restart", async () => {
+  test("RED: a wide kukulu lei never reaches a push: the push read and the push spend find no lei; CONTROL: it spends as a kukulu", async () => {
     const f = await fixture();
-    const cid = await f.wide(2, { rite: "restart" });
+    const cid = await f.wide(2, { rite: "kukulu" });
     await f.receipt(TREE, "pass");
     expect(await f.read(HEAD, "push")).toEqual({ ok: false, refusal: "absent" });
     await expect(f.spend(HEAD, TREE, "push")).rejects.toMatchObject({ code: "swarm-lei-absent" });
-    await expect(f.spend(HEAD, TREE, "restart")).resolves.toEqual({ lei: cid, reach: "wide", n: 1 });
+    await expect(f.spend(HEAD, TREE, "kukulu")).resolves.toEqual({ lei: cid, reach: "wide", n: 1 });
   });
 });
 
