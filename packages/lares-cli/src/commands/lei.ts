@@ -27,8 +27,8 @@ const ACTS: Readonly<Record<string, LeiVerb>> = { show: "swarm-show", kui: "swar
 
 /** One sub-verb's store row and args, or a `LeiUsage` naming what the line lacks. The vessel's door judges the values. */
 export function leiPlan(args: ParsedArgs): LeiPlan {
-  const act = args.positional[0];
-  const verb = act === undefined ? undefined : ACTS[act];
+  const sub = args.positional[0];
+  const verb = sub === undefined ? undefined : ACTS[sub];
   if (verb === undefined) throw new LeiUsage("name a sub-verb: show, kui, unstring or restring");
   // Each flag reads by its own literal name, so the accepts law walks them.
   const word = (raw: string | undefined): string | undefined => (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined);
@@ -41,7 +41,7 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
   const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
   const head = word(args.options["head"]);
   const face = count("face", word(args.options["face"]), 0);
-  if (act === "show") {
+  if (sub === "show") {
     // The board reads with no line named; one rite's line reads by rite and branch, and a head rides along to ask after one head.
     if ([rite, branch, head].some((x) => x !== undefined)) {
       if (rite === undefined || branch === undefined) throw new LeiUsage("show reads one rite's line by --rite and --branch together (--head asks after one head)");
@@ -51,18 +51,18 @@ export function leiPlan(args: ParsedArgs): LeiPlan {
     if (rite === undefined) throw new LeiUsage("name the lei's rite: --rite push | kukulu | keep");
     if (branch === undefined) throw new LeiUsage("name the lei's branch: --branch <name>");
     Object.assign(out, { rite, branch });
-    if (act === "unstring") {
+    if (sub === "unstring") {
       const lei = word(args.options["lei"]);
       if (lei === undefined) throw new LeiUsage("name the lei to unstring by its cid: --lei <cid>");
       out["lei"] = lei;
-    } else {
+    } else if (sub === "kui" || sub === "restring") {
       const reach = word(args.options["reach"]);
       const returns = count("returns", word(args.options["returns"]), 1);
       if (reach !== undefined) out["reach"] = reach;
       if (returns !== undefined) out["returns"] = returns;
       if (head !== undefined) out["head"] = head;
       const after = word(args.options["after"]);
-      if (act === "restring") { if (after !== undefined) throw new LeiUsage("a restring follows the line's tip; it names no --after"); }
+      if (sub === "restring") { if (after !== undefined) throw new LeiUsage("a restring follows the line's tip; it names no --after"); }
       else out["after"] = after ?? null;
       // A count above twelve strings only with the hand's explicit confirm (`--yes`).
       if (args.flags["yes"] === true) out["confirm"] = true;

@@ -275,8 +275,9 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
       : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: "the kūkulu rite did not complete; the lines above name where it stopped" }, human: () => console.log(JSON.stringify(out.data)) });
     return out.code;
   }
-  if (args.positional[0] === "keep") return runKeepHost(args);
-  if (args.positional[0] === "keep-cut") return runKeepCut(args);
+  const sub = args.positional[0];
+  if (sub === "keep") return runKeepHost(args);
+  if (sub === "keep-cut") return runKeepCut(args);
   let plan: RitePlan;
   try { plan = ritePlan(args); }
   catch (err) {
