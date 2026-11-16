@@ -23,7 +23,8 @@
  * ── THE VOUCH STANDS AS THE EVIDENCE ────────────────────────────────────────────────────────────
  * A return rests on a receipt for the head's tree. The pūlama verified the vouch, so it rests the receipt itself, as the
  * witness: the vouch's digest as its definitions and the walk's verdict as its own. A red walk therefore reads as the family
- * reads any red: the return refuses `swarm-lei-evidence-red`, and a wide lei narrows.
+ * reads any red: the return refuses `swarm-lei-evidence-red`, and a wide lei narrows. The receipt sits at one title per tree,
+ * so rites begin one at a time here: a hello rests its own vouch's verdict and returns under it before another writes.
  *
  * A `kukulu` lei waits on no co-sign (`leiRiteCosigns`), so the ward witness the family's reader takes decides nothing here.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
@@ -60,20 +61,24 @@ async function landOffered(records: SwarmWikiPort, raw: unknown, trust: SwarmTru
 
 /** The kūkulu rite's port over the pūlama's record store. */
 export function kukuluRiteOver(records: SwarmWikiPort): KukuluRitePort {
+  // ONE RITE BEGINS AT A TIME. The receipt a return rests on sits at one title per tree, so two hellos for one tree must
+  // never interleave: each rests ITS vouch's verdict and returns under it before the next one writes.
+  let turn: Promise<unknown> = Promise.resolve();
+  const inTurn = <T>(act: () => Promise<T>): Promise<T> => { const run = turn.then(act, act); turn = run.catch(() => undefined); return run; };
   return {
-    async begin(offer, at) {
+    begin: (offer, at) => inTurn(async () => {
       const trust = trustOf(at);
       for (const raw of [...rowsOf(offer.lei), ...rowsOf(offer.unstrung)]) await landOffered(records, raw, trust, at);
       try {
         const receipt = await signSwarmAct({ act: "receipt", group: at.group, tree: at.tree, checks: [KUKULU_VOUCH_CHECK], verdict: at.verdict, definitions: at.vouch }, at.by);
         await records.write(swarmReceiptTitle(at.tree), JSON.stringify(receipt));
         const begun = await beginRite(records, { rite: "kukulu", branch: at.branch, head: at.head, tree: at.tree }, trust, at.group, at.by, NO_COSIGN);
-        return { ok: true, tessera: begun.tessera, lei: begun.lei, n: begun.n };
+        return { ok: true as const, tessera: begun.tessera, lei: begun.lei, n: begun.n };
       } catch (err) {
-        if (err instanceof SwarmRefused) return { ok: false, refusal: err.code };
+        if (err instanceof SwarmRefused) return { ok: false as const, refusal: err.code };
         throw err;
       }
-    },
+    }),
     async land(tessera, at) {
       const landed = await landRite(records, { tessera, head: at.head }, trustOf(at), at.group, at.by);
       return { par: landed.par };

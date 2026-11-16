@@ -169,6 +169,24 @@ describe("RED pulama-refuses-an-unvouched-kukulu", () => {
   });
 });
 
+describe("each hello returns under its own vouch's verdict", () => {
+  test("RED: a red vouch and a passing vouch for one tree, offered at once, never trade verdicts: the red one opens no session in either order", async () => {
+    const s = await stand();
+    let after: string | null = null;
+    for (const order of [["fail", "pass"], ["pass", "fail"]] as const) {
+      const lei: SignedSwarmAct = await s.string({ reach: "head", head: HEAD }, { after });
+      after = swarmActCid(lei);
+      const vouches = { fail: await s.vouch({ verdict: "fail" }), pass: await s.vouch() };
+      const [first, second] = await Promise.all(order.map((verdict) => s.hello({ lei, vouch: vouches[verdict] })));
+      const read = { [order[0]]: first, [order[1]]: second } as Record<"fail" | "pass", string>;
+      // The red hello meets its own red receipt, or, where the passing one went first, a lei already returned: never a session.
+      expect(read.fail, order.join(" then ")).toBe(order[0] === "fail" ? "swarm-lei-evidence-red" : "swarm-lei-returned");
+      expect(read.pass, order.join(" then ")).toBe("opens");
+      expect(await s.returns(lei)).toBe(1);
+    }
+  });
+});
+
 describe("RED pulama-refuses-a-returned-lei", () => {
   test("a head lei returned once serves no second kūkulu; an unstrung lei serves none; CONTROL: the lei served the first", async () => {
     const s = await stand();
