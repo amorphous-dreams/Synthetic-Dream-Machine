@@ -395,7 +395,10 @@ export interface CarryExportResult { readonly dest: string; readonly manifest: C
 export async function carryExport(dest: string, opts: { readonly acceptOmissions: boolean; readonly doors: CarryDoors;
   /** A BOUND WORKSPACE the calling act names (the keep rite, which spends a lei for it): a dest inside this one directory rests
    *  there though it stands under the house root. A bare export names none, so a workspace takes no bundle without that act. */
-  readonly workspace?: string }): Promise<CarryExportResult> {
+  readonly workspace?: string;
+  /** The cold wikis the keep rite held before this cut (`../rite-keep.ts`, the wake): each projected its pages first, so the
+   *  cut names none of them cold. A bare export names none. */
+  readonly woken?: readonly string[] }): Promise<CarryExportResult> {
   const { doors, acceptOmissions } = opts;
   const target = resolve(dest);
   const house = larHouseRoot();
@@ -581,7 +584,8 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     addTree(src, `bags/${name}`, (_rel, abs) => ({ face: null, bag: wikiBagUri(name), layer: "bag", title: carriedFileTitle(bagsDir, abs), rowKey: null }));
   }
   // A COLD WIKI'S PUTS RIDE NO MIRROR (cabal-realm#/the-workbench, OWED): the copy reads disk, so it names what disk cannot show.
-  const cold = doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : [];
+  const woken = new Set(opts.woken ?? []);
+  const cold = (doors.coldWikis ? await doors.coldWikis().catch(() => [] as readonly string[]) : []).filter((slug) => !woken.has(slug));
   if (cold.length > 0) omissions.push({ kind: "cold-wikis", detail: `${[...cold].sort().join(", ")} stand${cold.length === 1 ? "s" : ""} cold (no island mounts ${cold.length === 1 ? "it" : "them"} now): a page a face put into a cold wiki since its last wake rests in its layer and projected nowhere, so no such page travels. Wearing each face that wrote there, wake the wiki (\`lares wiki hold <slug>\`), then export again`, items: [...cold].sort(), count: cold.length });
   // A WIKI THAT HOLDS NO PAGE carries by its catalog row alone; a sourced wiki rides git with its canon, and the daemon wiki is each face's own.
   let userWikis: string[] = [];

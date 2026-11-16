@@ -12,13 +12,16 @@
  *
  *   1. the dest     the workspace's name, its binding and the place inside it, each judged before anything reads
  *   2. swarm-show   IN THE VESSEL: the keep line for this workspace; a line with no standing lei refuses here, before any cut
- *   3. the cut      a bundle written beside the dest and read back whole (`verifyBundle`); its id names this keep's head
- *   4. the standing a dest that already holds this very bundle ends the rite: nothing spends and nothing moves
- *   5. rite-receipt IN THE VESSEL: the verify handed in as the receipt the return rests on (`receipt/<bundle id>`)
- *   6. rite-begin   IN THE VESSEL: name the staged bundle by its place inside the workspace; the vessel reads it back itself,
+ *   3. the wake     each wiki the house lists that no island runs (the daemon aside) holds in turn, so the pages a face put
+ *                   into a cold wiki project before the cut reads disk; the cut hears which woke, and once it stands the pins
+ *                   the walk added release and the pins that stood before hold again, in their own order
+ *   4. the cut      a bundle written beside the dest and read back whole (`verifyBundle`); its id names this keep's head
+ *   5. the standing a dest that already holds this very bundle ends the rite: nothing spends and nothing moves
+ *   6. rite-receipt IN THE VESSEL: the verify handed in as the receipt the return rests on (`receipt/<bundle id>`)
+ *   7. rite-begin   IN THE VESSEL: name the staged bundle by its place inside the workspace; the vessel reads it back itself,
  *                   derives the bundle id, refuses a head the tree never derived, returns the keep lei at that head and rests
  *                   the guest half of a tessera (`rite-begun`)
- *   7. the move     the cut takes the dest's name; the bundle it replaces leaves whole
+ *   8. the move     the cut takes the dest's name; the bundle it replaces leaves whole
  *
  * THE RETURN COMES BEFORE THE MOVE, as every rite's does: a begin the vessel refuses leaves the workspace as it stood. A keep
  * that dies after its return leaves the begun half alone, and conferre reads it red until the host half lands it.
@@ -49,11 +52,24 @@ export class KeepRefused extends Error {
   constructor(readonly code: string, message: string) { super(`${code}: ${message}`); }
 }
 
+/**
+ * The vessel's wiki switcher, as the wake reads it: what the catalog lists, which wikis run now, and the rotatable pins (oldest
+ * first). `hold` answers whether the wiki ends held and live; a pin past the budget releases the least recently held.
+ */
+export interface KeepWikiPorts {
+  read(): Promise<{ readonly listed: readonly string[]; readonly active: readonly string[]; readonly held: readonly string[] }>;
+  hold(slug: string): Promise<boolean>;
+  release(slug: string): Promise<void>;
+}
+
 export interface KeepPorts {
   /** One store row, answered by the vessel that stands. */
   row(verb: "swarm-show" | "rite-receipt" | "rite-begin", args: Record<string, unknown>): Promise<RiteVerbAnswer>;
-  /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`carryExport`). */
-  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean }): Promise<CarryManifest>;
+  /** Cut a bundle at `dest`, a fresh path inside `workspace`, and answer its manifest (`carryExport`). `woken` names the cold
+   *  wikis the wake held before the cut: each projected its pages, so the cut names none of them cold. */
+  cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<CarryManifest>;
+  /** The wiki switcher the wake walks. Absent: no wiki wakes, and the cut names every cold one. */
+  readonly wikis?: KeepWikiPorts;
 }
 
 export interface KeepOptions { readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number }
@@ -76,6 +92,39 @@ export function keepWorkspaceDir(name: string): string {
   if (within(dir, hearth)) throw new KeepRefused("keep-workspace-refused", `the workspace "${name}" resolves inside the hearth (${dir})`);
   if (within(dir, checkout)) throw new KeepRefused("keep-workspace-refused", `the workspace "${name}" resolves inside the checkout (${dir}); a bundle holds private memory and never rests in a tracked tree`);
   return dir;
+}
+
+/** The daemon wiki always stands and never takes a rotatable pin. */
+const DAEMON_WIKI = "daemon";
+
+/**
+ * THE WAKE: hold each listed wiki no island runs, in slug order, and answer the slugs that woke with the hand that gives the pins
+ * back. A hold that never lands leaves its wiki cold, and the cut names it so; a switcher that will not read wakes nothing.
+ */
+async function wakeColdWikis(wikis: KeepWikiPorts | undefined): Promise<{ readonly woken: readonly string[]; readonly giveBack: () => Promise<void> }> {
+  const none = { woken: [] as string[], giveBack: async () => {} };
+  if (wikis === undefined) return none;
+  let stood: Awaited<ReturnType<KeepWikiPorts["read"]>>;
+  try { stood = await wikis.read(); } catch { return none; }
+  const before = [...stood.held], live = new Set(stood.active);
+  const cold = [...new Set(stood.listed)].filter((slug) => slug !== DAEMON_WIKI && !live.has(slug)).sort();
+  const woken: string[] = [];
+  for (const slug of cold) {
+    let held = false;
+    try { held = await wikis.hold(slug); } catch { held = false; }
+    if (held) woken.push(slug);
+  }
+  const giveBack = async (): Promise<void> => {
+    try {
+      const now = (await wikis.read()).held;
+      for (const slug of now) if (!before.includes(slug)) await wikis.release(slug);
+      const kept = now.filter((slug) => before.includes(slug));
+      if (kept.length !== before.length || kept.some((slug, i) => slug !== before[i])) for (const slug of before) await wikis.hold(slug);
+    } catch (e) {
+      throw new KeepRefused("keep-pins-unreturned", `the wake could not hand the wiki pins back (${e instanceof Error ? e.message : String(e)}); the pins that stood before the keep: ${before.join(", ") || "(none)"}. Hold each again by hand (\`lares wiki hold <slug>\`) and keep again`);
+    }
+  };
+  return { woken, giveBack };
 }
 
 /** The bundle id a standing directory holds whole, or null where it holds none that verifies. */
@@ -112,7 +161,12 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
   const tag = randomBytes(6).toString("hex");
   const staging = join(parent, `.${basename(target)}.keep-${tag}`);
   try {
-    await ports.cut(staging, { workspace: wsDir, acceptOmissions: opts.acceptOmissions === true });
+    // THE WAKE BEFORE THE CUT, AND THE PINS BACK BEFORE ANYTHING SPENDS: the cut reads disk, and a cold wiki's pages reach disk
+    // only at a wake.
+    const wake = await wakeColdWikis(ports.wikis);
+    try { await ports.cut(staging, { workspace: wsDir, acceptOmissions: opts.acceptOmissions === true, woken: wake.woken }); }
+    catch (e) { await wake.giveBack().catch(() => {}); throw e; }   // the cut's own refusal names the cause
+    await wake.giveBack();
     // The keep's own reading of what it cut: every byte against the manifest, and the id over the file list.
     const manifest = verifyBundle(staging).manifest;
     const bundleId = manifest.bundleId;

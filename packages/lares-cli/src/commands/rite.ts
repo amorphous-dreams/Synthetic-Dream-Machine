@@ -9,7 +9,8 @@
  *              the bundle its remote-tracking branch holds (or a keep still waits for its push or landing), and with no
  *              `--workspace` reads the configured keep workspace (`../keep-config.ts`): the one call `down` makes
  *   keep-cut   IN THE VESSEL: the keep's vessel half: lay the house's authored memory, cut as a cleartext carry bundle, into the
- *              bound workspace, spending a return of the keep lei strung for that workspace (`../rite-keep.ts`)
+ *              bound workspace, spending a return of the keep lei strung for that workspace (`../rite-keep.ts`); it holds each
+ *              cold wiki the house lists in turn before the cut, then hands the pins back
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
@@ -37,6 +38,9 @@ import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } 
 import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { carryExport, carryRefusal, LIVE_CARRY_DOORS } from "./carry.js";
+import { runVerb } from "../verb-call.js";
+import { summaryOutput } from "../verb-result.js";
+import { vesselDid } from "../env.js";
 
 export class RiteUsage extends Error {}
 
@@ -101,7 +105,29 @@ const KEEP_PORTS: KeepPorts = {
     try { return { ok: true, output: (await storeVerb(verb, rowArgs)).output }; }
     catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
   },
-  cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace })).manifest,
+  cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace, ...(opts.woken !== undefined ? { woken: opts.woken } : {}) })).manifest,
+  // THE WIKI SWITCHER the wake walks: the catalog (`list-wikis`), the live state (`wiki-active`), and the rotatable pin.
+  wikis: {
+    read: async () => {
+      const did = await vesselDid();
+      const listed = await runVerb("list-wikis", {}, did), active = await runVerb("wiki-active", {}, did);
+      if (listed.status === "error" || active.status === "error") throw new Error(listed.errorMessage ?? active.errorMessage ?? "the wiki switcher would not read");
+      const strings = (x: unknown): string[] => (Array.isArray(x) ? x.map(String) : []);
+      const live = (summaryOutput(active) ?? {}) as { active?: unknown; held?: unknown };
+      return {
+        listed: (((summaryOutput(listed) ?? {}) as { wikis?: Array<{ slug?: unknown }> }).wikis ?? []).map((w) => String(w.slug)),
+        active: strings(live.active), held: strings(live.held),
+      };
+    },
+    hold: async (slug) => {
+      const r = await runVerb("wiki-hold", { slug }, await vesselDid(), { timeoutMs: 30_000 });
+      return r.status !== "error" && (summaryOutput(r) as { held?: unknown } | null)?.held === true;
+    },
+    release: async (slug) => {
+      const r = await runVerb("wiki-release", { slug }, await vesselDid());
+      if (r.status === "error") throw new Error(r.errorMessage ?? `wiki-release ${slug} refused`);
+    },
+  },
 };
 
 /** The vessel half alone (`rite keep-cut`): the cut, the return and the guest half, with no git. */
