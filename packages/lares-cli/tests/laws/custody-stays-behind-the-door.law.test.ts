@@ -239,7 +239,7 @@ describe("L12 · custody writes stay behind the sealed door", () => {
     expect(SEALED_ROWS.filter((r) => rowName(r) === null).map((r) => r.row)).toEqual([]);
     expect(HOLDER_WRITES.length).toBeGreaterThanOrEqual(3);
     expect(SEAT_DOORS.length).toBeGreaterThanOrEqual(HOLDER_WRITES.length);
-    for (const door of SEAT_DOORS) expect(door).toMatch(/CustodyRow$/);
+    for (const door of SEAT_DOORS) expect(door).toMatch(/CustodyRecord$/);
     expect(SEALED_WRITER_DOORS.length).toBeGreaterThanOrEqual(3);
     expect(WRITER_MODULES.length).toBeGreaterThan(8);
     expect([...WRITER_FUNCTIONS].filter(([, fns]) => fns.length === 0).map(([path]) => relative(NODE_SRC, path))).toEqual([]);
