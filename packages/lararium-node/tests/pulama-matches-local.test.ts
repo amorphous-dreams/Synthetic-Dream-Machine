@@ -5,7 +5,7 @@
  */
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, PERSONA_SCOPE_INFO } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown, FaceLocked, type CustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, CustodyRecordUnknown, FaceLocked, type CustodyHolder } from "../src/custody-holder.js";
 import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { faceProofKeyFile } from "../src/face-key-custody.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
@@ -64,8 +64,8 @@ describe("RED remote-holder-matches-local: the vessel's side of a pūlama answer
     expect(await remote.removeRecord("identity", HOT, (p) => p.length === 5)).toBe(true);
     expect(await both((h) => h.readRecord("identity", HOT))).toEqual({ value: { reading: "absent" } });
     // A row no carrier names, and a cold row at a hot door, refuse by the holder's own name on both sides.
-    expect((await both((h) => h.readRecord("identity", "no-such-row.bin")) as { refused: string }).refused).toBe(new CustodyRowUnknown("identity", "x").name);
-    expect((await both((h) => h.readRecord("identity", "intent-relay-key.bin")) as { refused: string }).refused).toBe("CustodyRowUnknown");
+    expect((await both((h) => h.readRecord("identity", "no-such-row.bin")) as { refused: string }).refused).toBe(new CustodyRecordUnknown("identity", "x").name);
+    expect((await both((h) => h.readRecord("identity", "intent-relay-key.bin")) as { refused: string }).refused).toBe("CustodyRecordUnknown");
   });
 
   test("face rows, a row move and the rows claim answer alike", async () => {

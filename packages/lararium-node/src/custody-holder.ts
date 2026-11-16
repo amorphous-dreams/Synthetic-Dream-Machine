@@ -103,10 +103,10 @@ export class CustodyRowUnavailable extends Error {
     super(`custody row ${home}/${file} reads ${reading}`);
   }
 }
-export class CustodyRowUnknown extends Error {
-  override readonly name = "CustodyRowUnknown";
+export class CustodyRecordUnknown extends Error {
+  override readonly name = "CustodyRecordUnknown";
   constructor(home: CustodyHome, file: string, detail = "no hot or cold carrier row matches") {
-    super(`custody row ${home}/${file}: ${detail}`);
+    super(`custody record ${home}/${file}: ${detail}`);
   }
 }
 
@@ -462,7 +462,7 @@ export function makeCustodyHolder(a: {
   /** The warded row a file names inside one face's directory, as a carrier; anything but a warded row refuses. */
   const wardCarrierOf = (fcid: string, file: string): FaceCarrier => {
     const row = carrierTable().find((r) => r.custody === "ward-cold" && r.faceRecord !== undefined && r.faceRecord.inner.test(file));
-    if (!row) throw new CustodyRowUnknown("identity", file, "no warded row matches");
+    if (!row) throw new CustodyRecordUnknown("identity", file, "no warded row matches");
     return faceCarrierFor(a.homes, fcid, file, row);
   };
   /** The ward tree standing for a face, or the reading that refuses: absent names the rewrap. */
@@ -693,15 +693,15 @@ export function makeCustodyHolder(a: {
       return r.match.test(file);
     });
     if (sRow) {
-      if (sRow.custody === "cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRecord");
+      if (sRow.custody === "cold" && !coldAllowed) throw new CustodyRecordUnknown(home, file, "cold rows require openColdRecord");
       return { kind: "treeKey", row: sRow, path: `${a.homes[home]}/${file}`, name: `${home}/${file}` };
     }
     const faceRow = home === "identity" ? carrierTable().find((r) => r.faceRecord !== undefined && r.faceRecord.select !== null && r.faceRecord.inner.test(file)) : undefined;
     // A warded row never answers a door of unlocked custody: it opens only inside a fresh ward act (`withWardKey`).
     const warded = home === "identity" ? carrierTable().find((r) => r.custody === "ward-cold" && r.faceRecord !== undefined && r.faceRecord.inner.test(file)) : undefined;
     if (warded) throw new WardNeedsFreshUnlock(`identity/${file}`);
-    if (!faceRow || faceRow.faceRecord!.select(faceRow.faceRecord!.inner.exec(file)!) === null) throw new CustodyRowUnknown(home, file);
-    if (faceRow.custody === "face-cold" && !coldAllowed) throw new CustodyRowUnknown(home, file, "cold rows require openColdRecord");
+    if (!faceRow || faceRow.faceRecord!.select(faceRow.faceRecord!.inner.exec(file)!) === null) throw new CustodyRecordUnknown(home, file);
+    if (faceRow.custody === "face-cold" && !coldAllowed) throw new CustodyRecordUnknown(home, file, "cold rows require openColdRecord");
     const selector = faceRow.faceRecord!.select(faceRow.faceRecord!.inner.exec(file)!) as Exclude<FaceSelector, null>;
     let found = findFace(await readFaceIndex(a.io, a.homes.identity), selector);
     if (!found && forWrite && faceAutoFounder) {
@@ -904,7 +904,7 @@ export function makeCustodyHolder(a: {
     async removeColdRecord(home, file, when) {
       let t: Located;
       try { t = await locate(home, file, true); } catch (err) { if (err instanceof FaceCustodyAbsent) return false; throw err; }
-      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "removeColdRecord requires a cold row");
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRecordUnknown(home, file, "removeColdRecord requires a cold row");
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(async () => { try { return await removeLocated(t, when); } catch (err) { return refusedAs(home, file, err); } });
     },
@@ -916,7 +916,7 @@ export function makeCustodyHolder(a: {
         if (probe.plaintext === null) return probe.value;
         t = await locate(home, file, true, true);
       }
-      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "updateColdRecord requires a cold row");
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRecordUnknown(home, file, "updateColdRecord requires a cold row");
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(() => updateLocated(t, (standing) => {
         try {
@@ -932,7 +932,7 @@ export function makeCustodyHolder(a: {
     },
     async openColdRecord(home, file, act) {
       const t = await locate(home, file, true);
-      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRowUnknown(home, file, "openColdRecord requires a cold row");
+      if (t.row.custody !== "cold" && t.row.custody !== "face-cold") throw new CustodyRecordUnknown(home, file, "openColdRecord requires a cold row");
       if (t.kind === "treeKey") needTreeKey(); else keyOf(t);
       return operation(async () => {
         const opened = await readLocated(t);

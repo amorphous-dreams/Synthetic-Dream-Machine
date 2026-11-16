@@ -30,7 +30,7 @@ import {
 import * as circleStoreModule from "../src/node-circle-store.js";
 import { loadNodeHandleBook, saveNodeHandleBook, HANDLE_BOOK_FILE, handleBookFile } from "../src/node-circle-store.js";
 import * as nodeBarrel from "../src/index.js";
-import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown, makeCustodyHolder } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, CustodyRecordUnknown, makeCustodyHolder } from "../src/custody-holder.js";
 import { seatCustody } from "../src/custody-seat.js";
 import { rotateCustody } from "../src/custody-session.js";
 import { carrierCensus, carrierTable } from "../src/vault-carriers.js";
@@ -187,7 +187,7 @@ describe("the follow graph holds one home", () => {
     expect("CIRCLES_FILE" in nodeBarrel).toBe(false);
     writeFileSync(at(FOLLOW), "{}");
     expect(carrierCensus(c.homes).some((e) => e.file === FOLLOW)).toBe(false);
-    await expect(c.holder.readRecord("identity", FOLLOW)).rejects.toBeInstanceOf(CustodyRowUnknown);
-    await expect(c.holder.writeRecord("identity", FOLLOW, enc({}))).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(c.holder.readRecord("identity", FOLLOW)).rejects.toBeInstanceOf(CustodyRecordUnknown);
+    await expect(c.holder.writeRecord("identity", FOLLOW, enc({}))).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 });

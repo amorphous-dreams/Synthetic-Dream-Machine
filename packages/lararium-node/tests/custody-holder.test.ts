@@ -6,7 +6,7 @@ import { join } from "node:path";
 import { TreeKeyRefusal, type Credential } from "@lararium/mesh";
 import { FsCustodyIo } from "../src/custody-io.js";
 import { foundCustody } from "../src/custody-session.js";
-import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRowUnknown } from "../src/custody-holder.js";
+import { makeCustodyHolder, seatFaceAutoFounder, CustodyLocked, CustodyRecordUnknown } from "../src/custody-holder.js";
 import { sSlotsPath, type CustodyHomes } from "../src/vault-carriers.js";
 import { handleRecordPathIn } from "./face-paths.js";
 
@@ -142,13 +142,13 @@ describe("CustodyHolder", () => {
     let handed!: Uint8Array;
     await h.openColdRecord("identity", file, (bytes) => { handed = bytes; expect(bytes).toEqual(plain); });
     expect(handed.every((n) => n === 0)).toBe(true);
-    await expect(h.readRecord("identity", file)).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(h.readRecord("identity", file)).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 
   test("H8 unknown addresses refuse on reads and writes", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
-    await expect(h.readRecord("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRowUnknown);
-    await expect(h.writeRecord("identity", "not-a-row.bin", new Uint8Array())).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(h.readRecord("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRecordUnknown);
+    await expect(h.writeRecord("identity", "not-a-row.bin", new Uint8Array())).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 
   test("H9 holder diagnostics and readings do not contain the credential", async () => {
@@ -249,9 +249,9 @@ describe("CustodyHolder.removeColdRecord — an act removes the cold row it comm
   test("C2 a hot row refuses the cold removal and stays; an unknown address refuses", async () => {
     const h = await found(); await h.unlock([pass(RIGHT)]);
     await h.writeRecord("identity", HOT, new TextEncoder().encode('{"roots":[]}'));
-    await expect(h.removeColdRecord("identity", HOT)).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(h.removeColdRecord("identity", HOT)).rejects.toBeInstanceOf(CustodyRecordUnknown);
     expect(existsSync(join(homes.identity, HOT))).toBe(true);
-    await expect(h.removeColdRecord("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRowUnknown);
+    await expect(h.removeColdRecord("identity", "not-a-row.bin")).rejects.toBeInstanceOf(CustodyRecordUnknown);
   });
 
   test("C3 a locked holder removes nothing", async () => {

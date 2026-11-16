@@ -5,7 +5,7 @@
  *       nothing at the path answers that none stood.                control: a sibling row stays, byte for byte
  *   X2  RED: A WRONG KEY REMOVES NOTHING. A row another vessel sealed, a torn row and bare bytes each refuse
  *       `CustodyRowUnavailable` naming what stands, and the bytes stay.
- *   X3  RED: a locked seat refuses `CustodyLocked`; a file no carrier row names refuses `CustodyRowUnknown`; a cold
+ *   X3  RED: a locked seat refuses `CustodyLocked`; a file no carrier row names refuses `CustodyRecordUnknown`; a cold
  *       row refuses this door.
  *   X4  a COLD row's removal reads the row first, under the same hold: a row it declines stays byte for byte, and
  *       the one it accepts leaves.                                   control: with no reading asked, the row leaves
@@ -13,7 +13,7 @@
 import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { afterEach, describe, expect, test } from "vitest";
 import { SEALING_SUFFIX } from "@lararium/mesh";
-import { CustodyLocked, CustodyRowUnavailable, CustodyRowUnknown } from "../src/custody-holder.js";
+import { CustodyLocked, CustodyRowUnavailable, CustodyRecordUnknown } from "../src/custody-holder.js";
 import { readCustodyRecord, removeColdCustodyRecord, removeCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
 import { seatHostingCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
 import { handleRecordPathIn } from "./face-paths.js";
@@ -78,8 +78,8 @@ describe("the custody seat's removal door", () => {
   test("X3 — a locked seat, a file no row names, and a cold row each refuse this door", async () => {
     const c = await custody("remove-x3");
     await writeCustodyRecord("identity", ROW, text("n one two"));
-    expect(await refusal(removeCustodyRecord("identity", "hosting-h0/not-a-row"))).toBeInstanceOf(CustodyRowUnknown);
-    expect(await refusal(removeCustodyRecord("identity", "recovery-device-share-h0.bin"))).toBeInstanceOf(CustodyRowUnknown);
+    expect(await refusal(removeCustodyRecord("identity", "hosting-h0/not-a-row"))).toBeInstanceOf(CustodyRecordUnknown);
+    expect(await refusal(removeCustodyRecord("identity", "recovery-device-share-h0.bin"))).toBeInstanceOf(CustodyRecordUnknown);
     await c.holder.lock();
     expect(await refusal(removeCustodyRecord("identity", ROW))).toBeInstanceOf(CustodyLocked);
     expect(existsSync(at(c, ROW))).toBe(true);
