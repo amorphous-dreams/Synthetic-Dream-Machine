@@ -10,7 +10,8 @@
  * and kahua travels through `bags/kahua-<F>`.
  *
  * EXPORT (a vessel that holds a disk store and wears its faces, standing):
- *   1. refuses a dest inside the house root or the workspace, or one that already stands;
+ *   1. refuses a dest inside the house root or the workspace, or one that already stands (the config home takes one, and so
+ *      does a bound workspace for the keep rite that names it, `../rite-keep.ts`);
  *   2. reads the census (`lares vessel census`): an unsettled carrier, a held save or an unanswered line refuses by name,
  *      unless `--accept-omissions` names the export partial, and then each lands in the manifest's omissions;
  *   3. maps each face folder (`daemon-<F>`, `kahua-<F>`) to the face that wears it, keyed by PET-NAME; a face that holds
@@ -391,14 +392,17 @@ export interface CarryExportResult { readonly dest: string; readonly manifest: C
  * Write a bundle at `dest`. Throws {@link CarryRefused} naming what stays unsettled, unclaimed or unkeyed; with
  * `acceptOmissions` an unsettled census and an unclaimed folder land in the manifest's omissions instead.
  */
-export async function carryExport(dest: string, opts: { readonly acceptOmissions: boolean; readonly doors: CarryDoors }): Promise<CarryExportResult> {
+export async function carryExport(dest: string, opts: { readonly acceptOmissions: boolean; readonly doors: CarryDoors;
+  /** A BOUND WORKSPACE the calling act names (the keep rite, which spends a lei for it): a dest inside this one directory rests
+   *  there though it stands under the house root. A bare export names none, so a workspace takes no bundle without that act. */
+  readonly workspace?: string }): Promise<CarryExportResult> {
   const { doors, acceptOmissions } = opts;
   const target = resolve(dest);
   const house = larHouseRoot();
   // THE CONFIG HOME TAKES A BUNDLE: a reset clears the hearth alone and keeps config, and the container binds config to the host
   // (`/lar/config` ← `$LARES_HOUSE/config`), so a bundle exported through the shim rests where the host reads it and the
   // re-founding never reaches (the vault backup's own precedent). Every other house class refuses.
-  if (inside(house, target) && !inside(larConfigHome(), target)) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house, or under its config home ${resolve(larConfigHome())}, which a reset keeps`);
+  if (inside(house, target) && !inside(larConfigHome(), target) && !(opts.workspace !== undefined && inside(opts.workspace, target))) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house, or under its config home ${resolve(larConfigHome())}, which a reset keeps`);
   if (inside(repoRoot, target)) throw new CarryRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
   if (existsSync(target)) throw new CarryRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
   const omissions: CarryOmission[] = [];

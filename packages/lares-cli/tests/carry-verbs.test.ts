@@ -524,6 +524,24 @@ describe("the carry verbs", () => {
     expect([...after.records.keys()]).toContain(MEMORY);
   });
 
+  test("C18 — a bound workspace takes a bundle only for the act that names it (the keep rite): a bare export there still refuses, and the named workspace opens no other house class", async () => {
+    const v = oldVessel();
+    const workspace = join(root, "workspaces", "backup");
+    mkdirSync(workspace, { recursive: true });
+    const dest = join(workspace, "house");
+    await expect(carryExport(dest, { acceptOmissions: false, doors: v.doors() })).rejects.toThrow(/carry-dest-inside-house/);
+    expect(existsSync(dest)).toBe(false);
+    await expect(carryExport(join(root, "projections", "carry"), { acceptOmissions: false, doors: v.doors(), workspace })).rejects.toThrow(/carry-dest-inside-house/);
+    await expect(carryExport(join(root, "workspaces", "other", "house"), { acceptOmissions: false, doors: v.doors(), workspace })).rejects.toThrow(/carry-dest-inside-house/);
+    const { manifest } = await carryExport(dest, { acceptOmissions: false, doors: v.doors(), workspace });
+    expect(JSON.parse(readFileSync(join(dest, MANIFEST_FILE), "utf8")).bundleId).toBe(manifest.bundleId);
+    expect(readdirSync(workspace)).toEqual(["house"]);          // the staging dir left nothing beside the bundle
+    // CONTROL: the bundle a workspace holds imports as any other.
+    const after = refound();
+    await carryImport(dest, { apply: true, doors: after.doors() });
+    expect([...after.records.keys()]).toContain(MEMORY);
+  });
+
   test("C9 — the refusal classes carry their codes", () => {
     expect(new CarryRefused("carry-x", "why").message).toBe("carry-x: why");
   });
