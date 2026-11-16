@@ -466,10 +466,11 @@ stand_pulama() {
   image_digest
   compose --profile pulama exec -T pulama node "$PULAMA_MAIN" image "$digest" || die "the pūlama refused the image digest $digest; nothing raised"
 }
-pulama_running() {
-  [ -n "$PULAMA_MODE" ] || return 1
-  p_id=$(compose --profile pulama ps -q --status running pulama) || return 1
-  [ -n "$p_id" ]
+# Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
+# unknown where the ps fails.
+pulama_state() {
+  p_id=$(compose --profile pulama ps -q --status running pulama) || { printf unknown; return 0; }
+  if [ -n "$p_id" ]; then printf running; else printf absent; fi
 }
 
 case "$verb" in
@@ -528,6 +529,9 @@ case "$verb" in
     warn_image_revision
     unlock_or_name ;;
   down)
+    # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
+    pulama=$(pulama_state)
+    [ "$pulama" != unknown ] || die "down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand"
     # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
     # acceptance guards the stop.
     if ! down_id=$(compose ps -q --status running lares); then
@@ -537,9 +541,9 @@ case "$verb" in
     elif [ -n "$down_id" ]; then
       census_before_stop
     fi
-    if pulama_running; then
-      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops and leaves.
-      compose stop lares && compose rm -f lares
+    if [ "$pulama" = running ]; then
+      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
+      compose stop "$@" lares && compose rm -f lares
     else
       compose down --remove-orphans "$@"
     fi ;;

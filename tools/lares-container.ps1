@@ -431,11 +431,13 @@ function StandPulama {
   & docker compose @Base --profile pulama exec -T pulama node $PulamaMain image $digest
   if ($LASTEXITCODE -ne 0) { Die "the pūlama refused the image digest $digest; nothing raised" }
 }
-function PulamaRunning {
-  if (-not $PulamaMode) { return $false }
+# Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
+# unknown where the ps fails.
+function PulamaState {
   $id = & docker compose @Base --profile pulama ps -q --status running pulama
-  if ($LASTEXITCODE -ne 0) { return $false }
-  return -not [string]::IsNullOrWhiteSpace(($id -join ''))
+  if ($LASTEXITCODE -ne 0) { return 'unknown' }
+  if ([string]::IsNullOrWhiteSpace(($id -join ''))) { return 'absent' }
+  return 'running'
 }
 
 switch ($verb) {
@@ -481,6 +483,9 @@ switch ($verb) {
     UnlockOrName
   }
   'down'  {
+    # A pūlama that reads unknown stops nothing: a full down would take a lit pūlama with it.
+    $pulama = PulamaState
+    if ($pulama -eq 'unknown') { Die 'down refuses: docker compose ps failed for the pūlama, so whether the pūlama stands reads unknown; the vessel and the pūlama stand' }
     # A ps that fails reads as UNKNOWN: whether a vessel stands, and what it holds, goes uncounted, so the same typed
     # acceptance guards the stop.
     $ids = & docker compose @Base ps -q --status running lares
@@ -489,9 +494,9 @@ switch ($verb) {
       [Console]::Error.WriteLine('lares-container: down cannot confirm the vessel census; it remains standing. Check tools/lares-container.sh logs, then retry down.')
       OfferAcceptLoss
     } elseif (-not [string]::IsNullOrWhiteSpace(($ids -join ''))) { CensusBeforeStop }
-    if (PulamaRunning) {
-      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops and leaves.
-      Compose @('stop', 'lares'); Compose @('rm', '-f', 'lares')
+    if ($pulama -eq 'running') {
+      # The pūlama keeps the hearth lit through the rebuild: the vessel alone stops (with down's options) and leaves.
+      Compose (@('stop') + $rest + @('lares')); Compose @('rm', '-f', 'lares')
     } else { Compose (@('down', '--remove-orphans') + $rest) }
   }
   'pulama' {

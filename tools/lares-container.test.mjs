@@ -31,7 +31,7 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     await writeFile(join(dir, "docker"), `#!/bin/sh\nprintf '%s\\n' "$*" >> "$CALL_LOG"\n[ -z "\${LAR_KUKULU_OFFER:-}" ] || printf 'LAR_KUKULU_OFFER=%s\\n' "$LAR_KUKULU_OFFER" >> "$CALL_LOG"\n` +
       `for a in "$@"; do case "$a" in -f) :;; *override*|/tmp/*) [ -f "$a" ] && cat "$a" >> "$CALL_LOG";; esac; done\n` +
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
-      `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit 0;; esac\n` +
+      `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
@@ -835,6 +835,23 @@ test(`${name}: image-digest-names-the-raised-image: the rite reads, as the last 
   assert.match(named.calls, /image inspect --format \{\{\.Id\}\} lares-rehearsal:local/);
   const extra = await run(shim, ["image-digest", "x"], { envFile: PULAMA_ENV });
   assert.equal(extra.status, 2);
+});
+test(`${name}: down-reads-the-pulama-whatever-the-flag: a running pūlama keeps the hearth lit through down, even where LARES_PULAMA no longer reads 1`, { skip }, async () => {
+  const r = await run(shim, ["down"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n", env: { FAKE_PULAMA_ID: "p1" } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /stop lares/);
+  assert.doesNotMatch(r.calls, / down /);
+});
+test(`${name}: down-refuses-a-pulama-unknown: a failed ps for the pūlama stops nothing`, { skip }, async () => {
+  const r = await run(shim, ["down"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_PS_RC: "1" } });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /whether the pūlama stands reads unknown/);
+  assert.doesNotMatch(r.calls, / down |stop lares/);
+});
+test(`${name}: down-carries-its-options-beside-a-pulama: the vessel's stop takes down's options`, { skip }, async () => {
+  const r = await run(shim, ["down", "--timeout", "5"], { envFile: PULAMA_ENV, env: { FAKE_PULAMA_ID: "p1" } });
+  assert.equal(r.status, 0, r.stderr);
+  assert.match(r.calls, /stop --timeout 5 lares/);
 });
 test(`${name}: pulama light reaches the pūlama's hand verb, and pulama down stops it`, { skip }, async () => {
   const light = await run(shim, ["pulama", "light"], { envFile: PULAMA_ENV });
