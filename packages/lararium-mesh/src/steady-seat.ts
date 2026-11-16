@@ -47,7 +47,10 @@ export type SeatEvent =
 /** The whole vocabulary a log speaks. */
 export type SeatLogEvent =
   | "start" | "child-up" | "child-standing" | "child-down" | "client-closed" | "frame-refused" | "answer-unowned"
-  | "call-while-asleep" | "call-outcome-unknown" | "tools-changed" | "handshake-refused";
+  | "call-while-asleep" | "call-outcome-unknown" | "tools-changed" | "handshake-refused" | "vessel-locked" | "vessel-opened";
+
+/** Where the seat stands: no child (`sleeps`), a child that takes calls (`standing`), or a child whose surface answers `vessel-locked` (`locked`). */
+export type SeatState = "sleeps" | "standing" | "locked";
 
 export type SeatEffect =
   | { readonly type: "to-client"; readonly frame: SeatFrame }
@@ -57,13 +60,17 @@ export type SeatEffect =
   | { readonly type: "kill" }
   /** The child completed its handshake and takes calls. */
   | { readonly type: "standing" }
+  /** The seat's state moved; a session reads `locked` as the sign to call the operator, `sleeps` as a sleep that mends itself. */
+  | { readonly type: "state"; readonly state: SeatState }
   | { readonly type: "exit" }
   /** `generation` counts the children that came up; `pending` counts the client's requests in flight. */
   | { readonly type: "log"; readonly event: SeatLogEvent; readonly generation: number; readonly pending: number };
 
-export interface SteadySeat { step(event: SeatEvent): SeatEffect[] }
+export interface SteadySeat { step(event: SeatEvent): SeatEffect[]; state(): SeatState }
 
 export const HEARTH_SLEEPS = "hearth-sleeps: the vessel rests and this call never left the seat; re-try once it wakes";
+/** The name a surface leads a tool answer with while the vessel stays locked: `vessel-locked: run lares vault unlock`. */
+export const VESSEL_LOCKED = "vessel-locked";
 export const OUTCOME_UNKNOWN = "outcome-unknown: re-read before re-trying";
 
 const LIST_CHANGED = "notifications/tools/list_changed";
@@ -79,6 +86,13 @@ const object = (x: unknown): x is SeatFrame => typeof x === "object" && x !== nu
 const isId = (x: unknown): x is Id => typeof x === "string" || (typeof x === "number" && Number.isFinite(x));
 const key = (id: Id): string => `${typeof id}:${String(id)}`;
 const toolError = (id: Id, text: string): SeatFrame => ({ jsonrpc: "2.0", id, result: { content: [{ type: "text", text }], isError: true } });
+/** Whether a child's answer to a call reads as the locked vessel's tool error. */
+const lockedAnswer = (frame: SeatFrame): boolean => {
+  const result = frame["result"];
+  if (!object(result) || result["isError"] !== true || !Array.isArray(result["content"])) return false;
+  const first: unknown = result["content"][0];
+  return object(first) && typeof first["text"] === "string" && first["text"].startsWith(VESSEL_LOCKED);
+};
 const rpcError = (id: Id, message: string): SeatFrame => ({ jsonrpc: "2.0", id, error: { code: SEAT_ERROR, message } });
 
 /** A tool list's hash, blind to the order the child lists in. */
@@ -90,6 +104,7 @@ export function steadySeat(): SteadySeat {
   let closed = false, generation = 0, nextId = 0;
   let child: "none" | "up" | "standing" = "none";
   let handshaking = false;
+  let state: SeatState = "sleeps";
   /** Whether any spawn has fallen: before the first fall, the first child may still stand. */
   let fell = false;
   /** The client's own `initialize` params, replayed to every child. */
@@ -107,6 +122,12 @@ export function steadySeat(): SteadySeat {
   let out: SeatEffect[] = [];
   const pending = (): number => [...owners.values()].filter((o) => o.kind === "client").length;
   const log = (event: SeatLogEvent): void => { out.push({ type: "log", event, generation, pending: pending() }); };
+  const move = (next: SeatState): void => {
+    if (state === next) return;
+    state = next;
+    out.push({ type: "state", state });
+    if (next === "locked") log("vessel-locked");
+  };
   const client = (frame: SeatFrame): void => { out.push({ type: "to-client", frame }); };
   const send = (frame: SeatFrame): void => { out.push({ type: "to-child", frame }); };
   const ask = (owner: Owner, method: string, params?: unknown): number => {
@@ -136,7 +157,7 @@ export function steadySeat(): SteadySeat {
   const listed = (list: readonly unknown[]): void => {
     const prior = tools, hash = toolListHash(list);
     tools = { list, hash };
-    if (child === "up") { child = "standing"; handshaking = false; log("child-standing"); out.push({ type: "standing" }); }
+    if (child === "up") { child = "standing"; handshaking = false; log("child-standing"); out.push({ type: "standing" }); move("standing"); }
     for (const id of listWaiters.splice(0)) answerList(id);
     if (prior !== null && prior.hash !== hash) {
       log("tools-changed");
@@ -218,6 +239,10 @@ export function steadySeat(): SteadySeat {
     owners.delete(id as number);
     if (owner.kind === "client") {
       clientIds.delete(key(owner.id));
+      if (owner.method === "tools/call" && child === "standing") {
+        if (lockedAnswer(frame)) move("locked");
+        else if (state === "locked") { move("standing"); log("vessel-opened"); }
+      }
       client({ ...frame, id: owner.id });
       return;
     }
@@ -244,6 +269,7 @@ export function steadySeat(): SteadySeat {
     }
     owners.clear(); clientIds.clear(); childAsks.clear(); askIds.clear();
     child = "none"; handshaking = false; fell = true;
+    move("sleeps");
     for (const waiter of initWaiters.splice(0)) client({ jsonrpc: "2.0", id: waiter, result: initAnswer() });
     for (const waiter of listWaiters.splice(0)) answerList(waiter);
     log("child-down");
@@ -251,6 +277,7 @@ export function steadySeat(): SteadySeat {
   }
 
   return {
+    state: () => state,
     step(event) {
       out = [];
       switch (event.type) {

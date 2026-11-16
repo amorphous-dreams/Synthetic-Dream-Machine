@@ -5,7 +5,7 @@
  * intents out. No process spawns and no clock ticks. A scripted child answers the frames the seat hands it.
  */
 import { describe, expect, test } from "vitest";
-import { HEARTH_SLEEPS, OUTCOME_UNKNOWN, steadySeat, type SeatEffect, type SeatEvent, type SeatFrame } from "../src/steady-seat.js";
+import { HEARTH_SLEEPS, OUTCOME_UNKNOWN, VESSEL_LOCKED, steadySeat, type SeatEffect, type SeatEvent, type SeatFrame } from "../src/steady-seat.js";
 
 const INIT_PARAMS = { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "fixture-client", version: "1" } };
 const tool = (name: string) => ({ name, description: `the ${name} door`, inputSchema: { type: "object" } });
@@ -36,7 +36,7 @@ function fixture(firstTools: readonly string[] = ["status", "recall"]) {
     return out;
   };
   const api = {
-    seen, step,
+    seat, seen, step,
     client: (frame: SeatFrame) => step({ type: "client-frame", frame }),
     child: (frame: SeatFrame) => step({ type: "child-frame", frame }),
     up: (next?: readonly string[]) => { if (next) tools = next; up = true; return step({ type: "child-up" }); },
@@ -293,5 +293,50 @@ describe("the seat keeps the two id spaces apart", () => {
     const stale = toClient(f.child({ jsonrpc: "2.0", id: 4, method: "roots/list" }))[0]!;
     f.down(); f.up();
     expect(toChild(f.client({ jsonrpc: "2.0", id: stale["id"], result: { roots: [] } }))).toEqual([]);
+  });
+});
+
+describe("seat-tells-locked-from-down", () => {
+  const call = (f: ReturnType<typeof fixture>, id: number) => toChild(f.client({ jsonrpc: "2.0", id, method: "tools/call", params: { name: "status", arguments: {} } }))[0]!;
+  const answer = (f: ReturnType<typeof fixture>, rides: SeatFrame, text: string, isError = true) =>
+    f.child({ jsonrpc: "2.0", id: rides["id"], result: { content: [{ type: "text", text }], isError } });
+  const states = (effects: readonly SeatEffect[]) => effects.flatMap((e) => (e.type === "state" ? [e.state] : []));
+
+  test("RED: a child that stands answers a call `vessel-locked`, and the seat's state reads `locked`, apart from `sleeps`", () => {
+    const f = fixture();
+    f.step({ type: "start" });
+    expect(f.seat.state()).toBe("sleeps");
+    f.up();
+    f.client({ jsonrpc: "2.0", id: 1, method: "initialize", params: INIT_PARAMS });
+    expect(f.seat.state()).toBe("standing");
+    const out = answer(f, call(f, 2), "vessel-locked: run lares vault unlock");
+    expect(states(out)).toEqual(["locked"]);
+    expect(f.seat.state()).toBe("locked");
+    // The client still reads the surface's own answer, untouched.
+    expect(errorText(toClient(out)[0])).toBe("vessel-locked: run lares vault unlock");
+    // A second locked answer changes nothing.
+    expect(states(answer(f, call(f, 3), `${VESSEL_LOCKED}: again`))).toEqual([]);
+  });
+
+  test("RED: the child's fall reads `sleeps`, never `locked`; CONTROL: an ordinary answer after an unlock reads `standing` again", () => {
+    const f = fixture().open();
+    answer(f, call(f, 2), `${VESSEL_LOCKED}: run lares vault unlock`);
+    expect(f.seat.state()).toBe("locked");
+    expect(states(f.down())).toEqual(["sleeps"]);
+    // A call with no child answers `hearth-sleeps`, the down reading.
+    expect(errorText(toClient(f.client({ jsonrpc: "2.0", id: 9, method: "tools/call", params: { name: "status" } }))[0])).toBe(HEARTH_SLEEPS);
+    f.up();
+    expect(f.seat.state()).toBe("standing");
+    answer(f, call(f, 10), `${VESSEL_LOCKED}: run lares vault unlock`);
+    expect(f.seat.state()).toBe("locked");
+    const open = toClient(answer(f, call(f, 11), "ok", false));
+    expect(open).toHaveLength(1);
+    expect(f.seat.state()).toBe("standing");
+  });
+
+  test("CONTROL: another tool error leaves the state `standing`", () => {
+    const f = fixture().open();
+    answer(f, call(f, 2), "no such page");
+    expect(f.seat.state()).toBe("standing");
   });
 });
