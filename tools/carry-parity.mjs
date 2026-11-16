@@ -60,9 +60,8 @@ export const RECEIPT_SCHEMA = "lar-carry-parity/1";
  * root's hash), and outside the records each house mints for itself: bag plumbing under `lar:///ha.ka.ba/bags/` (descriptors,
  * persona bindings, oracle blobs, genesis cids), keyhive bag-docs, the vessel's current-wiki config, the working layer's
  * residency ledger (an import's own landing writes rows there), and the verb trail
- * `lar:///lararium.local.vm/verbs/<request>`. That last one decides more than parity: every filter call writes its own
- * request record into the wiki it reads, so a paged walk over a list that holds it answers another list on every page and
- * refuses `filter-cursor-stale` forever (measured: 31 titles, one of them new on each call).
+ * `lar:///lararium.local.vm/verbs/<request>`, the volatile VM plane each house mints per call; the filter door keeps that
+ * plane home, and the prefix here keeps the census naming the same set whichever door answers.
  */
 export const PLAIN_FILTER = "[!is[system]!has[uri-path]!prefix[lar:///ha.ka.ba/bags/]!prefix[lar:///lararium.local.vm/]!prefix[lar:///ha.ka.ba/keyhive/]!prefix[lar:///ha.ka.ba/lararium/config/]!prefix[lar:///ha.ka.ba/wikis/daemon/working/ledger/]!regexp[#/]sort[]]";
 const RELATION = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/g;
