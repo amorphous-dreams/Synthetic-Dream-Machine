@@ -235,7 +235,7 @@ export async function runInstallSeat({ worktree, worktreeHeld, gitDir, installer
     if (typeof cacheDir !== 'string' || !path.isAbsolute(cacheDir)) return { ok: false, output: 'install seat refused: the metadata cache dir must be an absolute path' };
     mkdirSync(path.join(iso, 'home'), { recursive: true }); // broker-owned
     mkdirSync(path.join(iso, 'tmp'), { recursive: true }); // broker-owned
-    // A protected path reads as an empty read-only directory: the controller's go, key and receipts stay unreadable and unwritable.
+    // A protected path reads as an empty read-only directory: the controller's lei, key and receipts stay unreadable and unwritable.
     const emptyDir = path.join(iso, 'empty'); mkdirSync(emptyDir, { recursive: true }); // broker-owned
     const empty = hold(emptyDir);
     const fds = [];

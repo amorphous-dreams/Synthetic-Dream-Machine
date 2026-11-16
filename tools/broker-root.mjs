@@ -12,8 +12,8 @@ import { lstatSync, mkdirSync, mkdtempSync, readdirSync, realpathSync } from "no
 import path from "node:path";
 
 export const BROKER_SUBPATH = ".local/state/lares-broker";
-/** The four directories under the root: seat dirs, the controller's pushes, the relay's state. */
-export const BROKER_PARTS = ["seats", "go", "iso"];
+/** The directories under the root: seat dirs, the controller's push lei, the relay's state. */
+export const BROKER_PARTS = ["seats", "lei", "iso"];
 export const DEFAULT_MAX_GB = 10;
 
 /** The broker root path: the controller's env, else the fixed default under the real home. */
@@ -68,8 +68,8 @@ export function laneId(laneRoot) {
   return `${base}-${createHash("sha256").update(real).digest("hex").slice(0, 16)}`;
 }
 
-/** `<root>/go/<lane>/push-go` and `<root>/iso/<lane>`: the broker's own authority and state, nowhere a lead can write. */
-export const goPathFor = (root, laneRoot) => path.join(root, "go", laneId(laneRoot), "push-go");
+/** `<root>/lei/<lane>/push` and `<root>/iso/<lane>`: the broker's own authority and state, nowhere a lead can write. */
+export const leiPathFor = (root, laneRoot) => path.join(root, "lei", laneId(laneRoot), "push");
 export const isoPathFor = (root, laneRoot) => path.join(root, "iso", laneId(laneRoot));
 
 /** Makes the missing components (0700), the four parts, and re-verifies the whole path. */

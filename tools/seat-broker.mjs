@@ -357,29 +357,29 @@ export async function commitWithReceipt(ctx, { paths, message: messageText, expe
   return { ok: true, output: '', head: newHead, tree };
 }
 
-export async function pushWithGo(ctx) {
-  let go;
+export async function pushWithLei(ctx) {
+  let lei;
   try {
-    go = await readFile(ctx.goFile, 'utf8'); // broker-owned
+    lei = await readFile(ctx.leiFile, 'utf8'); // broker-owned
   } catch (error) {
-    if (error?.code === 'ENOENT') return { ok: false, output: 'no push-go from the controller' };
+    if (error?.code === 'ENOENT') return { ok: false, output: 'no push lei from the controller' };
     return fail(error instanceof Error ? error.message : String(error));
   }
 
-  try { await unlink(ctx.goFile); } catch {} // broker-owned
+  try { await unlink(ctx.leiFile); } catch {} // broker-owned
 
-  const lines = go.replace(/\r/g, '').split('\n');
+  const lines = lei.replace(/\r/g, '').split('\n');
   if (lines[lines.length - 1] === '') lines.pop();
-  if (lines.length !== 4) return fail('go file requires lane id, branch, head and destination');
-  const [goLane, branch, head, destination] = lines;
-  if (goLane !== ctx.laneId) return fail('go lane mismatch: this go names another lane');
-  if (branch !== ctx.branch) return fail('go branch mismatch');
-  if (destination !== ctx.remoteUrl) return fail('go destination mismatch: the go names another remote than the one the controller configured');
+  if (lines.length !== 4) return fail('the lei requires lane id, branch, head and destination');
+  const [leiLane, branch, head, destination] = lines;
+  if (leiLane !== ctx.laneId) return fail('lei lane mismatch: this lei names another lane');
+  if (branch !== ctx.branch) return fail('lei branch mismatch');
+  if (destination !== ctx.remoteUrl) return fail('lei destination mismatch: the lei names another remote than the one the controller configured');
 
   const now = git(ctx, ['rev-parse', `refs/heads/${ctx.branch}`]);
   if (!now.ok) return fail(now.output);
   const current = now.stdout.trim();
-  if (head !== current) return fail('go head mismatch');
+  if (head !== current) return fail('lei head mismatch');
 
   // The push runs from a throwaway repo of the broker's own: the lane's .git/config (pushurl, insteadOf, helpers) is never read.
   if (typeof ctx.remoteUrl !== 'string' || !/^(ssh:\/\/|https:\/\/|git@[\w.-]+:|\/)/.test(ctx.remoteUrl)) return fail('push needs a remote url from the controller (ssh, https or an absolute path)');

@@ -320,7 +320,7 @@ export function leadLaw() {
 * No local e2e loops (unit first; e2e in CI via tools/e2e-shards.mjs or a raw ci/* branch).
 * Seats start only through the broker's launch door; a Sol seat only through the controller.
 * A stop that needs more than this wall names itself in out.md and stops.
-* Report to the controller (final.md) for any push beyond the lane's go, and never push without its go.
+* Report to the controller (final.md) for any push beyond the lane's lei, and never push without its lei.
 `;
 }
 
