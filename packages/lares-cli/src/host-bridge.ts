@@ -32,6 +32,9 @@ import { existsSync, readFileSync, realpathSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs, ArgsError, BOOLEAN_FLAGS, type ParsedArgs } from "./parse-args.js";
+import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "./surface-env.js";
+
+export { envValue, IN_CONTAINER_ENV, surfaceEnvPath };
 
 /** No house root here, and no container house stands to answer (sysexits EX_CONFIG). */
 export const HOUSE_ABSENT_EXIT = 78;
@@ -46,8 +49,6 @@ export const PATH_OUTSIDE_EXIT = 64;
 /** The names the shim hands into the vessel by `-e NAME`: display and debug alone, never a credential. */
 export const FORWARDED_ENV: readonly string[] = ["NO_COLOR", "TERM", "COLORTERM", "LARES_DEBUG"];
 
-/** The image's own marker: set in the Dockerfile, so a vessel never forwards to itself. */
-export const IN_CONTAINER_ENV = "LARES_IN_CONTAINER";
 
 /**
  * THE SHIM'S OWN VERBS, each with the row `lares <verb> --help` reads: no CLI command answers them, and the shim does
@@ -107,11 +108,6 @@ export interface RouteInput {
 export interface RouteError { readonly code: number; readonly lines: readonly string[] }
 export type Route = "local" | "forward" | { readonly error: RouteError };
 
-/** The operator's container env file, or null while HOME names no home. */
-export function surfaceEnvPath(env: Readonly<Record<string, string | undefined>>): string | null {
-  const home = env["HOME"]?.trim();
-  return home ? join(home, ".lares", "lares-surface.env") : null;
-}
 
 /** True when the argv asks for help or the version, in any spelling the CLI reads before `--`. */
 function asksHelp(argv: readonly string[]): boolean {
@@ -159,8 +155,9 @@ export function decideRoute(input: RouteInput): Route {
     if (!input.commands.includes(name)) return "local";
     if (HOST_COMMANDS.has(name)) return "local";
     if (name === "meme" && memeLocal(args)) return "local";
-    // kūkulu calls the shim, so it runs where the shim stands; its rows forward into the vessel.
-    if (name === "rite" && (args.positional[0] === "kukulu" || args.positional[0] === "kūkulu")) return "local";
+    // kūkulu calls the shim, so it runs where the shim stands; its rows forward into the vessel. keep's host half runs git in
+    // the operator's workspace clone the same way, and reaches its vessel half (`rite keep-cut`) as a row.
+    if (name === "rite" && (args.positional[0] === "kukulu" || args.positional[0] === "kūkulu" || args.positional[0] === "keep")) return "local";
   }
 
   const envFile = surfaceEnvPath(env);
@@ -244,17 +241,6 @@ const HOUSE_CLASSES = ["hearth", "sensoriums", "projections", "library", "config
  */
 const CONTAINER_ROOTS = ["/lar", "/workspace"] as const;
 
-/** The value one name carries: the environment first, else the env file's last plain KEY=VALUE line (as the shim reads). */
-function envValue(name: string, env: Readonly<Record<string, string | undefined>>, envFileText: string | null): string {
-  const set = env[name]?.trim();
-  if (set) return set;
-  let last = "";
-  for (const line of (envFileText ?? "").split("\n")) {
-    const m = new RegExp(`^\\s*${name}=(.*)$`).exec(line);
-    if (m) last = m[1]!.trim();
-  }
-  return last;
-}
 
 /** The mounts the surface compose file binds: `$LARES_HOUSE/<class>` at `/lar/<class>`, `$LARES_WORKSPACE` at `/workspace`. */
 export function mountsOf(env: Readonly<Record<string, string | undefined>>, envFileText: string | null, real: (p: string) => string): Mount[] {

@@ -24,7 +24,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./carry-manifest.js";
-import { KEEP_INTO, RITE_KEEP } from "./rite-keep.js";
+import { KEEP_INTO, KeepRefused, RITE_KEEP } from "./rite-keep.js";
 import type { RiteRowAnswer } from "./rite-kukulu.js";
 
 /**
@@ -67,6 +67,21 @@ function changedPaths(porcelainZ: string): string[] {
     if (xy.includes("R") || xy.includes("C")) out.push(parts[++i] ?? "");
   }
   return out;
+}
+
+/**
+ * The directory one workspace name binds to in a LARES_WORKSPACES value (`;`-separated `<name>=<dir>` pairs, as the shim reads
+ * them), or a refusal by name: the host half finds the very directory the shim binds at `/lar/workspaces/<name>`.
+ */
+export function workspaceFromPairs(name: string, configured: string): string {
+  for (const pair of configured.split(";")) {
+    const at = pair.indexOf("=");
+    if (at > 0 && pair.slice(0, at).trim() === name) {
+      const dir = pair.slice(at + 1).trim();
+      if (dir.startsWith("/")) return dir;
+    }
+  }
+  throw new KeepRefused("keep-workspace-unnamed-on-host", `LARES_WORKSPACES names no directory for the workspace "${name}" on this host; name it there (\`${name}=<dir>\`, in the environment or ~/.lares/lares-surface.env), so the host half and the vessel read one clone`);
 }
 
 /** The secret-shaped strings one text holds, the allowed fixtures dropped. */
@@ -174,13 +189,14 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
       : `keep: ${staged ? "committed, " : ""}${ahead ? `pushed to ${remote}/${branch}, ` : ""}${landed.length} tessera${landed.length === 1 ? "" : "e"} landed${par ? "; conferre reads par" : "; conferre reads red"}`);
     return { code: par ? 0 : 1, data: { ...base, landed, par } };
   } catch (err) {
-    if (!(err instanceof HostRefused)) throw err;
+    if (!(err instanceof HostRefused) && !(err instanceof KeepRefused)) throw err;
+    const extra = err instanceof HostRefused ? err.extra : {};
     const t = base["tessera"] as string | undefined, id = base["bundleId"] as string | undefined;
     const cure = stage === "push" || stage === "land"
       ? ` The bundle rests in the workspace and ${t !== undefined ? `tessera ${t} reads red (landed-absent)` : "any tessera it owes reads red"}: mend the remote and run \`lares rite keep --workspace ${name}${opts.into !== undefined ? ` --into ${into}` : ""}\` again (it pushes what waits and lands it)${t !== undefined && id !== undefined ? `, or by hand: git push, then \`lares rite land --tessera ${t} --head ${id}\`` : ""}.`
       : stage === "guard" && t !== undefined ? ` The return stays spent and tessera ${t} reads red until a keep lands it.` : "";
     const message = `${err.message}${cure}`;
     ports.say(`keep: ${message}`);
-    return { code: 1, data: { ...base, ...err.extra, stopped: stage, refusal: err.code, message } };
+    return { code: 1, data: { ...base, ...extra, stopped: stage, refusal: err.code, message } };
   }
 }

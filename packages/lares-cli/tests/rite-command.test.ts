@@ -116,6 +116,11 @@ describe("the rite runs on the host, and its rows in the vessel", () => {
     expect(route(["rite", "kūkulu", "--branch", "main"])).toBe("local");
     for (const sub of ["begin", "land", "receipts", "receipt", "offer"]) expect(route(["rite", sub, "--json"]), sub).toBe("forward");
   });
+
+  it("RED: `rite keep` (the keep's host half: git in the operator's workspace clone) stays on this machine; CONTROL: its vessel half `rite keep-cut` forwards", () => {
+    expect(route(["rite", "keep", "--workspace", "backup"])).toBe("local");
+    expect(route(["rite", "keep-cut", "--workspace", "backup", "--json"])).toBe("forward");
+  });
 });
 
 describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {

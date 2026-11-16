@@ -3,8 +3,11 @@
  *
  *   kukulu     (kūkulu) on the HOST: raise the vessel again around its hearth. Begins the rite in the vessel, then calls the
  *              host shim to rebuild the image, take the vessel down and raise a new one, then lands the rite (`../rite-kukulu.ts`)
- *   keep       IN THE VESSEL: lay the house's authored memory, cut as a cleartext carry bundle, into a bound workspace
- *              (`--workspace <name> [--into <path>]`), spending a return of the keep lei strung for that workspace (`../rite-keep.ts`)
+ *   keep       on the HOST: keep the house in the operator's repo. Guards the bound workspace, runs `keep-cut` in the vessel,
+ *              then commits `<into>`, rebases, pushes, and lands the tessera at the bundle id the pushed tree holds
+ *              (`--workspace <name> [--into <path>]`, `../rite-keep-host.ts`)
+ *   keep-cut   IN THE VESSEL: the keep's vessel half: lay the house's authored memory, cut as a cleartext carry bundle, into the
+ *              bound workspace, spending a return of the keep lei strung for that workspace (`../rite-keep.ts`)
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
@@ -18,7 +21,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/seat-harness
  */
 import { execFile, spawn } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -27,7 +30,9 @@ import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
 import { riteKukulu, type RitePorts, type RiteRowAnswer } from "../rite-kukulu.js";
 import { storeFailure, storeVerb } from "../store-door.js";
-import { KeepRefused, riteKeep, type KeepPorts } from "../rite-keep.js";
+import { KeepRefused, keepWorkspaceDir, riteKeep, type KeepPorts } from "../rite-keep.js";
+import { riteKeepHost, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../rite-keep-host.js";
+import { envValue, IN_CONTAINER_ENV, surfaceEnvPath } from "../surface-env.js";
 import { carryExport, carryRefusal, LIVE_CARRY_DOORS } from "./carry.js";
 
 export class RiteUsage extends Error {}
@@ -72,7 +77,7 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" ? "keep runs several rows and plans no single one" : "name a sub-verb: kukulu, keep, begin, offer, land, receipts or receipt");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : act === "keep" || act === "keep-cut" ? `${act} runs several rows and plans no single one` : "name a sub-verb: kukulu, keep, keep-cut, begin, offer, land, receipts or receipt");
 }
 
 /** What a `rite keep` line names, or a `RiteUsage` naming what it lacks. */
@@ -93,7 +98,8 @@ const KEEP_PORTS: KeepPorts = {
   cut: async (dest, opts) => (await carryExport(dest, { acceptOmissions: opts.acceptOmissions, doors: LIVE_CARRY_DOORS, workspace: opts.workspace })).manifest,
 };
 
-async function runKeep(args: ParsedArgs): Promise<number> {
+/** The vessel half alone (`rite keep-cut`): the cut, the return and the guest half, with no git. */
+async function runKeepCut(args: ParsedArgs): Promise<number> {
   let plan: ReturnType<typeof keepPlan>;
   try { plan = keepPlan(args); }
   catch (err) {
@@ -111,10 +117,10 @@ async function runKeep(args: ParsedArgs): Promise<number> {
     return 0;
   } catch (err) {
     if (err instanceof KeepRefused) {
-      emit(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`lares rite keep: ${err.message}`) });
+      emit(args, { ok: false, error: { code: err.code, message: err.message }, human: () => console.error(`lares rite keep-cut: ${err.message}`) });
       return exitFor(err.code);
     }
-    return carryRefusal(args, "rite keep", err);
+    return carryRefusal(args, "rite keep-cut", err);
   }
 }
 
@@ -140,6 +146,23 @@ const git = (argv: readonly string[]): Promise<string> => new Promise((resolve, 
   execFile("git", ["-C", CHECKOUT, ...argv], { encoding: "utf8", env }, (err, stdout) => (err ? reject(new Error(`git ${argv.join(" ")}: ${err.message}`)) : resolve(stdout.trim())));
 });
 
+/** One line of this CLI again, answered as a row: the bridge forwards it into the vessel where a container house stands. */
+const cliRow = (line: readonly string[]): Promise<RiteRowAnswer> => new Promise<RiteRowAnswer>((resolve) => {
+  const child = spawn(process.execPath, [BIN, ...line, "--json"], { stdio: ["inherit", "pipe", "inherit"] });
+  let text = "";
+  child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
+  child.once("error", (err) => resolve({ ok: false, code: "rite-row-unreached", message: err.message }));
+  child.once("close", (code) => {
+    let answer: { ok?: boolean; data?: Record<string, unknown>; error?: { code?: string; message?: string } } | null = null;
+    try { answer = JSON.parse(text.trim().split("\n").at(-1) ?? ""); } catch { answer = null; }
+    if (answer?.ok === true && answer.data) resolve({ ok: true, output: answer.data });
+    else resolve({ ok: false, code: answer?.error?.code ?? "rite-row-unreached", message: answer?.error?.message ?? `the row answered no reading (exit ${code ?? "none"})` });
+  });
+});
+
+/** Row args as flags: `true` rides as a bare flag, every other value as the next word. */
+const flagsOf = (rowArgs: Record<string, unknown>): string[] => Object.entries(rowArgs).flatMap(([k, v]) => (v === true ? [`--${k}`] : [`--${k}`, String(v)]));
+
 /** One shim verb on this terminal; the answer carries its exit code (a spawn that never ran reads as a failure). */
 const runShim = (shim: string, verb: string): Promise<number> => new Promise((resolve) => {
   const child = spawn(shim, [verb], { stdio: "inherit" });
@@ -160,22 +183,60 @@ function hostPorts(runShim: (verb: string) => Promise<number>, face: string | un
   return {
     image,
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
-    row: (verb, rowArgs) => new Promise<RiteRowAnswer>((resolve) => {
-      const line = ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...Object.entries(rowArgs).flatMap(([k, v]) => [`--${k}`, String(v)]), ...(face === undefined ? [] : ["--face", face]), "--json"];
-      const child = spawn(process.execPath, [BIN, ...line], { stdio: ["inherit", "pipe", "inherit"] });
-      let text = "";
-      child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
-      child.once("error", (err) => resolve({ ok: false, code: "rite-row-unreached", message: err.message }));
-      child.once("close", (code) => {
-        let answer: { ok?: boolean; data?: Record<string, unknown>; error?: { code?: string; message?: string } } | null = null;
-        try { answer = JSON.parse(text.trim().split("\n").at(-1) ?? ""); } catch { answer = null; }
-        if (answer?.ok === true && answer.data) resolve({ ok: true, output: answer.data });
-        else resolve({ ok: false, code: answer?.error?.code ?? "rite-row-unreached", message: answer?.error?.message ?? `the row answered no reading (exit ${code ?? "none"})` });
-      });
-    }),
+    row: (verb, rowArgs) => cliRow(["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs), ...(face === undefined ? [] : ["--face", face])]),
     shim: (verb) => runShim(verb),
     say,
   };
+}
+
+/** git in one directory, clear of any hook's own git env; never throws. */
+const gitIn = (dir: string, argv: readonly string[]): Promise<GitAnswer> => new Promise((resolve) => {
+  const env = { ...process.env };
+  for (const k of ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"]) delete env[k];
+  execFile("git", ["-C", dir, ...argv], { encoding: "utf8", env, maxBuffer: 256 * 1024 * 1024 }, (err, stdout, stderr) => {
+    const code = err === null ? 0 : typeof (err as { code?: unknown }).code === "number" ? (err as { code: number }).code : 1;
+    resolve({ code, stdout, stderr });
+  });
+});
+
+/**
+ * The workspace's directory as the host reads it: under a named house root, the one the vessel half reads too
+ * (`<root>/workspaces/<name>`); beside the container house, the pair LARES_WORKSPACES names (the environment, else the
+ * operator's surface env file), the same pairs the shim binds at `/lar/workspaces/<name>`.
+ */
+function hostWorkspaceDir(name: string): string {
+  if ((process.env["LAR_ROOT"] ?? "").trim() !== "") return keepWorkspaceDir(name);
+  const envFile = surfaceEnvPath(process.env);
+  let text: string | null = null;
+  try { text = envFile === null ? null : readFileSync(envFile, "utf8"); } catch { text = null; }
+  return workspaceFromPairs(name, envValue("LARES_WORKSPACES", process.env, text));
+}
+
+/** The whole keep rite on the host (`rite keep`): the guard, the vessel half as a row, then git, then the landing. */
+async function runKeepHost(args: ParsedArgs): Promise<number> {
+  let plan: ReturnType<typeof keepPlan>;
+  try { plan = keepPlan(args); }
+  catch (err) {
+    if (err instanceof RiteUsage) return refuseUsage(args, "rite", helpLines("rite"), err.message);
+    throw err;
+  }
+  if ((process.env[IN_CONTAINER_ENV] ?? "").trim() !== "") {
+    const message = "keep-host-half-in-vessel: the keep's host half commits and pushes the workspace with the host's git; run `lares rite keep` on the host, where the bridge reaches the vessel half (`lares rite keep-cut`) as a row";
+    emit(args, { ok: false, error: { code: "keep-host-half-in-vessel", message }, human: () => console.error(`lares rite: ${message}`) });
+    return 2;
+  }
+  const ports: KeepHostPorts = {
+    workspaceDir: hostWorkspaceDir,
+    row: (verb, rowArgs) => cliRow(["rite", verb, ...flagsOf(rowArgs)]),
+    git: gitIn,
+    say: (line) => console.error(line),
+  };
+  const out = await riteKeepHost(ports, plan);
+  const refusal = String(out.data["refusal"] ?? "keep-stopped");
+  emit(args, out.code === 0
+    ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
+    : { ok: false, data: out.data, error: { code: refusal, message: String(out.data["message"] ?? "the keep rite did not complete") }, human: () => console.log(JSON.stringify(out.data)) });
+  return out.code === 0 ? 0 : exitFor(refusal);
 }
 
 export async function cmdRite(args: ParsedArgs): Promise<number> {
@@ -196,7 +257,8 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
       : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: "the kūkulu rite did not complete; the lines above name where it stopped" }, human: () => console.log(JSON.stringify(out.data)) });
     return out.code;
   }
-  if (args.positional[0] === "keep") return runKeep(args);
+  if (args.positional[0] === "keep") return runKeepHost(args);
+  if (args.positional[0] === "keep-cut") return runKeepCut(args);
   let plan: RitePlan;
   try { plan = ritePlan(args); }
   catch (err) {

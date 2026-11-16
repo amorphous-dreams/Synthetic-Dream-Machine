@@ -9,7 +9,8 @@
  *   KH4  the full walk: commit `keep <id>`, push, land at the id read from the pushed manifest; par;
  *   KH5  CONTROL: an unchanged second keep commits nothing, pushes nothing and lands nothing;
  *   KH6  a bundle holding a secret-shaped string refuses and commits nothing; a PLANTED fixture passes;
- *   KH7  an upstream another clone moved rebases under the keep commit, and the push lands on top of it.
+ *   KH7  an upstream another clone moved rebases under the keep commit, and the push lands on top of it;
+ *   KH8  beside the container house, the host finds the workspace in LARES_WORKSPACES, the pairs the shim binds.
  *
  * Real git over scratch repos; the vessel's rows answer from a recorded fake.
  */
@@ -19,7 +20,8 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { CARRY_SCHEMA, MANIFEST_FILE, bundleIdOf, sha256Hex, zeroCounts, type CarryFile } from "../src/carry-manifest.js";
-import { riteKeepHost, secretShapes, type GitAnswer, type KeepHostPorts } from "../src/rite-keep-host.js";
+import { riteKeepHost, secretShapes, workspaceFromPairs, type GitAnswer, type KeepHostPorts } from "../src/rite-keep-host.js";
+import { KeepRefused } from "../src/rite-keep.js";
 
 let scratch: string, gitConfig: string;
 
@@ -190,5 +192,13 @@ describe("the keep rite, host half", () => {
     expect(out).toMatchObject({ code: 0, data: { pushed: true, par: true } });
     expect(must(r.remote, "log", "--format=%s", "main").split("\n")).toEqual([`keep ${String(out.data["bundleId"])}`, "elsewhere", "guard"]);
     expect(existsSync(join(r.ws, "README"))).toBe(true);
+  });
+
+  test("KH8 RED: beside the container house the host reads the workspace's directory from LARES_WORKSPACES; a name it never pairs, or a relative dir, refuses by name", () => {
+    expect(workspaceFromPairs("backup", "notes=/srv/notes; backup=/srv/house-backup ;")).toBe("/srv/house-backup");
+    for (const configured of ["", "notes=/srv/notes", "backup=relative/dir"]) {
+      expect(() => workspaceFromPairs("backup", configured), configured).toThrow(KeepRefused);
+    }
+    try { workspaceFromPairs("backup", ""); } catch (e) { expect((e as KeepRefused).code).toBe("keep-workspace-unnamed-on-host"); }
   });
 });

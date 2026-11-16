@@ -80,26 +80,30 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] | keep --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
+    usage: "usage: lares rite kukulu [--branch <name>] | keep --workspace <name> [--into <path>] [--accept-omissions] | keep-cut --workspace <name> [--into <path>] [--accept-omissions] | begin --rite <r> --branch <name> --head <commit> | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
     synopsis:
       "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
       "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
       "keep lays the house's authored memory, cut as a cleartext carry bundle a new house imports, into a workspace the operator " +
-      "bound: it spends a return of the keep lei strung for that workspace, and replaces the bundle an earlier keep left there. " +
+      "bound, and keeps it in the operator's repo: on the host it guards the workspace clone (only <into> changes; a committed `* -text` " +
+      ".gitattributes; no secret-shaped string), runs keep-cut in the vessel (a return of the keep lei strung for that workspace; the " +
+      "bundle replaces the one an earlier keep left), commits `keep <bundleId>`, rebases, pushes, and lands the tessera at the bundle " +
+      "id the pushed tree holds. A push that fails names the cure: mend the remote and run keep again. " +
       "conferre matches the halves at each wake: a match reads par, a half with no match reads red.",
     examples: [
       "lares lei kui --rite kukulu --branch main --returns 3   # the hand strings the lei first",
       "lares rite kukulu                                       # begin, rebuild, raise, land",
       "lares lei kui --rite keep --branch house-backup --returns 6   # the hand strings a keep lei for one workspace",
-      "lares rite keep --workspace house-backup                # cut, verify, spend a return, rest the bundle at <workspace>/house",
+      "lares rite keep --workspace house-backup                # guard, cut into <workspace>/house, commit, push, land: par",
+      "lares rite keep-cut --workspace house-backup            # the vessel half alone: cut, verify, spend a return, rest the bundle",
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
       "lares rite receipt --tree <tree> --checks typecheck,mesh --verdict pass --definitions <hash>   # the battery's verdict, signed by the vessel",
     ],
     flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
-      "--workspace <name>   (keep) the bound workspace the bundle rests in", "--into <path>   (keep) the place inside it (house where absent)",
-      "--accept-omissions   (keep) name the bundle partial where the census reads unsettled",
+      "--workspace <name>   (keep, keep-cut) the bound workspace the bundle rests in", "--into <path>   (keep, keep-cut) the place inside it (house where absent)",
+      "--accept-omissions   (keep, keep-cut) name the bundle partial where the census reads unsettled",
       "--image <digest>   (offer) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--tree <t>   (receipt) the tree the battery read", "--checks <a,b>   (receipt) the checks its verdict covers",
       "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index"],

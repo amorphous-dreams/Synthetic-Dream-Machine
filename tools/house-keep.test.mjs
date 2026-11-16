@@ -2,11 +2,13 @@
 //
 //   H1  a standing scratch house holds memory in its steward's daemon wiki, and a clone of a scratch git repo stands bound as
 //       its workspace `backup`. With no keep lei the rite refuses by the lei's own name and the workspace holds nothing new.
-//   H2  the hand strings a keep lei of two returns for that workspace; the rite cuts a cleartext bundle into
-//       `<workspace>/house`, one return spends, and the wake's conferre reads the tessera red (`landed-absent`): cut, never
-//       pushed. A second keep over unchanged memory spends nothing.
-//   H3  the host half, by hand here (git runs on the host): commit the workspace, push it to the scratch remote, and land the
-//       rite at the bundle id the pushed tree holds; conferre reads the tessera par.
+//   H2  the hand strings a keep lei of two returns for that workspace; the vessel half (`rite keep-cut`) cuts a cleartext
+//       bundle into `<workspace>/house`, one return spends, and the wake's conferre reads the tessera red (`landed-absent`):
+//       cut, never pushed. A second cut over unchanged memory spends nothing.
+//   H3  the host half (`rite keep`, git on the host): a workspace with no `* -text` guard refuses, and so does one with a change
+//       outside `house/`; with the remote broken the rite commits, the push fails, the tessera stays `landed-absent` and the
+//       answer names the cure; the remote mended, the rite run again pushes what waits and lands the tessera at the bundle id
+//       the pushed manifest names, and conferre reads it par. A keep after that commits nothing and spends nothing.
 //   H4  THE RESTORE DRILL: the exporting house goes down; a brand-new scratch house founds under the same pet-name, imports the
 //       bundle out of a FRESH CLONE of the remote, and `carry-parity` reads par against the census taken before the down. A
 //       clone with one byte flipped refuses first (`bundle-hash-mismatch`), and nothing of it lands.
@@ -92,6 +94,12 @@ const git = (dir, ...args) => {
 test("the keep rite lays a bundle into a bound workspace under a lei, and a brand-new house imports it out of a fresh clone to par", { timeout: 900_000 }, async () => {
   const scratch = mkdtempSync(join(tmpdir(), "lares-house-keep-files-"));
   const houses = [];
+  // The host half's git (in the CLI the test spawns) commits under a scratch identity, never the operator's own config.
+  const gitConfig = join(scratch, "gitconfig");
+  writeFileSync(gitConfig, "[user]\n\tname = Keeper\n\temail = keeper@example.invalid\n[init]\n\tdefaultBranch = main\n[commit]\n\tgpgsign = false\n");
+  const priorGit = { global: process.env.GIT_CONFIG_GLOBAL, system: process.env.GIT_CONFIG_SYSTEM };
+  process.env.GIT_CONFIG_GLOBAL = gitConfig;
+  process.env.GIT_CONFIG_SYSTEM = "/dev/null";
   try {
     const old = await standHouse("old", "steward");
     houses.push(old);
@@ -112,7 +120,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     const held = () => readdirSync(workspace).sort();
 
     // ── H1: no lei, no keep ─────────────────────────────────────────────────────────────────────────────────────
-    const bare = old.lares(["rite", "keep", "--workspace", "backup", "--json"]);
+    const bare = old.lares(["rite", "keep-cut", "--workspace", "backup", "--json"]);
     assert.notEqual(bare.status, 0, bare.stdout);
     assert.equal(old.answer(bare).error?.code, "swarm-lei-absent", bare.stdout);
     assert.deepEqual(held(), [".git"], "a refused keep leaves the workspace as it stood");
@@ -123,7 +131,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.equal(strung.status, 0, `lei kui: ${strung.stdout}${strung.stderr}`);
     assert.deepEqual({ standing: line("keep").standing, returnsLeft: line("keep").returnsLeft }, { standing: true, returnsLeft: 2 });
     assert.equal(line("push").standing, false, "the keep lei stands for no push");
-    const kept = old.answer(old.must(["rite", "keep", "--workspace", "backup", "--json"])).data;
+    const kept = old.answer(old.must(["rite", "keep-cut", "--workspace", "backup", "--json"])).data;
     assert.equal(kept.kept, true, JSON.stringify(kept));
     assert.equal(kept.dest, join(workspace, "house"));
     assert.deepEqual(kept.faces, ["steward"]);
@@ -136,20 +144,40 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     const red = old.answer(old.must(["rite", "receipts", "--json"])).data.conferre;
     assert.deepEqual(red.red.map((t) => `${t.rite} ${t.tessera} ${t.red}`), [`keep ${kept.tessera} landed-absent`], "cut and not yet pushed reads red by name");
     // Unchanged memory: the standing bundle answers, and nothing spends.
-    const again = old.answer(old.must(["rite", "keep", "--workspace", "backup", "--json"])).data;
+    const again = old.answer(old.must(["rite", "keep-cut", "--workspace", "backup", "--json"])).data;
     assert.deepEqual({ kept: again.kept, standing: again.standing, bundleId: again.bundleId }, { kept: false, standing: true, bundleId: kept.bundleId });
     assert.equal(line("keep").returnsLeft, 1, "an unchanged keep spends nothing");
 
-    // ── H3: the host half by hand: commit, push, land ───────────────────────────────────────────────────────────
-    git(workspace, "add", "-A");
-    git(workspace, "commit", "-q", "-m", `keep ${kept.bundleId}`);
-    git(workspace, "push", "-q", "origin", "HEAD:main");
-    const pushed = JSON.parse(git(remote, "show", "main:house/manifest.json")).bundleId;
-    const landed = old.answer(old.must(["rite", "land", "--tessera", kept.tessera, "--head", pushed, "--json"])).data;
-    assert.equal(landed.par, true, JSON.stringify(landed));
+    // ── H3: the host half: guard, commit, push, land ────────────────────────────────────────────────────────────
+    const keep = () => old.lares(["rite", "keep", "--workspace", "backup", "--json"]);
+    const refusalOf = (r) => { assert.notEqual(r.status, 0, r.stdout); return old.answer(r).error?.code; };
+    const redNow = () => old.answer(old.must(["rite", "receipts", "--json"])).data.conferre.red.map((t) => `${t.rite} ${t.tessera} ${t.red}`);
+    assert.equal(refusalOf(keep()), "keep-text-guard-absent", "a workspace whose bundle could take a line-ending rewrite refuses");
+    writeFileSync(join(workspace, ".gitattributes"), "* -text\n");
+    git(workspace, "add", ".gitattributes");
+    git(workspace, "commit", "-q", "-m", "guard");
+    assert.equal(git(workspace, "symbolic-ref", "--short", "HEAD"), "main");
+    writeFileSync(join(workspace, "stray.txt"), "the operator's own note\n");
+    assert.equal(refusalOf(keep()), "keep-tree-unclean", "a change outside house/ refuses");
+    rmSync(join(workspace, "stray.txt"));
+    git(workspace, "remote", "set-url", "origin", join(scratch, "nowhere.git"));
+    const broken = keep();
+    assert.equal(refusalOf(broken), "keep-push-refused");
+    assert.match(old.answer(broken).error.message, /lares rite keep --workspace backup/, "the failed push names the cure");
+    assert.equal(git(workspace, "log", "-1", "--format=%s"), `keep ${kept.bundleId}`, "the commit waits in the workspace");
+    assert.deepEqual(redNow(), [`keep ${kept.tessera} landed-absent`], "a failed push lands nothing");
+    git(workspace, "remote", "set-url", "origin", remote);
+    const cured = old.answer(old.must(["rite", "keep", "--workspace", "backup", "--json"])).data;
+    assert.deepEqual({ kept: cured.kept, pushed: cured.pushed, par: cured.par, landed: cured.landed }, { kept: false, pushed: true, par: true, landed: [{ tessera: kept.tessera, par: true }] }, JSON.stringify(cured));
+    assert.equal(JSON.parse(git(remote, "show", "main:house/manifest.json")).bundleId, kept.bundleId);
     const after = old.answer(old.must(["rite", "receipts", "--json"])).data.conferre;
     assert.deepEqual(after.red, []);
     assert.ok(after.par.some((t) => t.tessera === kept.tessera && t.rite === "keep"), JSON.stringify(after));
+    const commits = git(workspace, "rev-list", "--count", "HEAD");
+    const still = old.answer(old.must(["rite", "keep", "--workspace", "backup", "--json"])).data;
+    assert.deepEqual({ committed: still.committed, pushed: still.pushed, landed: still.landed }, { committed: false, pushed: false, landed: [] });
+    assert.equal(git(workspace, "rev-list", "--count", "HEAD"), commits, "an unchanged keep commits nothing");
+    assert.equal(line("keep").returnsLeft, 1, "and spends nothing");
 
     // ── the census before the down ──────────────────────────────────────────────────────────────────────────────
     const snapshot = join(scratch, "census-old.json");
@@ -185,6 +213,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.ok(receipt.counts.memes >= 3, `the reading saw the carried memes: ${JSON.stringify(receipt.counts)}`);
     assert.ok(receipt.counts.plain >= 1, `the reading saw the free-titled record: ${JSON.stringify(receipt.counts)}`);
   } finally {
+    for (const [k, v] of [["GIT_CONFIG_GLOBAL", priorGit.global], ["GIT_CONFIG_SYSTEM", priorGit.system]]) { if (v === undefined) delete process.env[k]; else process.env[k] = v; }
     for (const h of houses) await h.stop();
     for (const h of houses) rmSync(h.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
     rmSync(scratch, { recursive: true, force: true });
