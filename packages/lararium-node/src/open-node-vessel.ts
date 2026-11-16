@@ -4154,6 +4154,8 @@ async function prepareNodeBootOn(
       wornFace: () => litFace,
       // A face's local canon `bags/daemon-<F>`, named by the control document: a kahua lift reads its staged row there.
       faceCanon: faceCanonThroughControl(repo, readControlDoc),
+      // A face founded on this standing composition lights beside the worn one at its birth.
+      ...(sovereign ? { lightFace: (handleIndex: number) => lightFace(handleIndex) } : {}),
       // A feed asks the island's `realm-feed` as the face, from this thread, over the host channel.
       askIsland: (verb, args, requestedBy, requestId) => {
         if (!daemonVm) throw new Error("the daemon island does not stand yet");

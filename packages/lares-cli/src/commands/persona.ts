@@ -405,7 +405,7 @@ async function personaNew(args: ParsedArgs): Promise<number> {
   const faceRouteRef = !(index === 0 && faceStands()) && standing.reading === "vessel" ? await handFaceRouteToVessel(`h${index}`, "persona-new", { handleIndex: index }) : undefined;
   // THE EARLY READING GOES STALE ACROSS THE PROMPT above: the door probes AGAIN, so an unlock or lock started in another
   // shell meanwhile refuses by name instead of parking.
-  const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult;
+  const founded = (await storeVerb("persona-new", { handleIndex: index, ...(faceRouteRef ? { faceRouteRef } : {}) })).output as unknown as FoundFaceResult & { readonly lit?: boolean; readonly lightRefused?: string };
 
   // THE SPLIT RUNS IN THIS PROCESS ALONE (the guard above refused it beside a standing vessel): its shares
   // print to the person at this terminal and ride no door. THE PERSON HOLDS BOTH OFF-DEVICE SHARES BEFORE THE
@@ -450,9 +450,12 @@ async function personaNew(args: ParsedArgs): Promise<number> {
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(index) : null,
       rootSplit: !splitRoot ? "none" : recovery?.minted ? "armed" : "standing", fleet: fleetRead.reached && fleetRead.rest === "sealed",
+      ...(founded.lit !== undefined ? { lit: founded.lit } : {}), ...(founded.lightRefused !== undefined ? { lightRefused: founded.lightRefused } : {}),
     },
     human: () => {
       console.log(`persona h${index} ${root.created ? "minted" : "loaded"} — "${name}"`);
+      // A face born on a standing vessel lights at its birth; one that would not stays dark in this composition until it composes again.
+      if (founded.lightRefused !== undefined) console.log(`  stands founded and stays dark in the standing composition (${founded.lightRefused}): its stage reads once the vessel composes again (\`lares vault lock\`, then \`lares vault unlock --all\`)`);
       console.log(`  verifying key: ${root.verifyingKey}`);
       if (!splitRoot) {
         console.log("  root split: none (opt in with --split-root)");

@@ -184,6 +184,12 @@ export interface StoreDoorDeps {
    * `kahua-lift-unstaged`.
    */
   readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
+  /**
+   * Light a face beside the worn one in the standing composition (the lit set): its provider stands, so its stage reads and
+   * a wave may name it. A face `persona-new` founds on a standing vessel lights at its birth, its custody already open.
+   * Absent on a direct act and at the floor, where no composition stands to light it in.
+   */
+  readonly lightFace?: (handleIndex: number) => Promise<void>;
 }
 
 /**
@@ -750,8 +756,19 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "persona-lease": (args) => answer("persona-lease", async () => ({
       ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })),
     })),
+    // A FACE BORN ON A STANDING VESSEL LIGHTS AT ITS BIRTH: its founding opens its custody, and the composition lights it beside
+    // the worn face, so its stage reads and a carry reads it with no second unlock. The worn face itself needs no light. The
+    // founding stands whatever the light answers: a light that refuses rides the answer by name (`lightRefused`), never as a
+    // founding that failed, so the face still takes its pet-name.
     "persona-new": (args) => answer("persona-new", async () => {
-      return withFaceRoute(str(args["faceRouteRef"]), "persona-new", faceRouteBindDigest("persona-new", args), async () => ({ ...(await runFoundTheFace({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })) }));
+      const handleIndex = int(args["handleIndex"]);
+      const founded = await withFaceRoute(str(args["faceRouteRef"]), "persona-new", faceRouteBindDigest("persona-new", args), async () => ({ ...(await runFoundTheFace({ repo, ...opt("handleIndex", handleIndex), ...opt("ward", wardOf(args)) })) }));
+      const worn = deps.wornFace?.() ?? null;
+      const born = handleIndex ?? 0;
+      if (deps.lightFace === undefined || worn === null || born === worn) return founded;
+      try { await deps.lightFace(born); }
+      catch (e) { return { ...founded, lit: false, lightRefused: e instanceof Error ? e.message : String(e) }; }
+      return { ...founded, lit: true };
     }),
     // M12′/L11: the SAME board resolves BOTH the head op-key and that head's KEL seq, off ONE materialize
     // (`makeLocalPersonaKelHeadAndSeqResolver`), so head and seq never straddle a sync landing between two

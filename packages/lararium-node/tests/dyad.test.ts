@@ -10,6 +10,8 @@
  *   D5 each protocol guard accepts its own dyad message and refuses the opposite direction.
  *   D6 the node folds its worn fleet and stands the floor's dyad door before daemon boot.
  *   D7 the browser tab keeps sibling sync current while the daemon island resolves its own board reader.
+ *   D8 the ring's door reads a fleet its standing fold never read by folding again: a face founded after the fold reads its own
+ *      edge. control: a fleet the fold holds answers off that fold, with no second fold.
  */
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
@@ -18,6 +20,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { isIslandToVesselMsg, isVesselToIslandMsg, type CapabilityRecord, type EdgeStanding } from "@lararium/mesh";
 import { vesselDyadAsker } from "../src/sovereign-island-model.js";
 import { answerDyad, nodeWorkerHandle } from "../src/worker-handle.js";
+import { ringDyadDoor, type EdgeShadowFold } from "../src/edge-shadow-ring.js";
 
 const standings: EdgeStanding[] = ["clear", "aside", "owing", "returned", "unknown"];
 
@@ -159,6 +162,29 @@ describe("the dyad capability", () => {
     expect(src).toContain(floorDown);
     expect(src).toContain(daemonDown);
     expect(src.indexOf(floorDown)).toBeLessThan(src.indexOf(daemonDown));
+  });
+
+  test("D8 — the ring's door folds again for a fleet its standing fold never read, so a face founded after the fold reads its own edge", async () => {
+    const W = "a".repeat(64), L = "b".repeat(64);
+    const foldOf = (roots: readonly string[]): EdgeShadowFold => ({ fleets: roots.map((fleetRoot) => ({ fleetRoot }) as unknown as EdgeShadowFold["fleets"][number]), realms: [] });
+    let roots = [W];
+    let last: EdgeShadowFold | null = null;
+    let folds = 0;
+    const ring = {
+      fold: () => last,
+      refold: async () => { folds++; last = foldOf(roots); return last; },
+      deviceStanding: (fleetRoot: string) => (last?.fleets.some((f) => f.fleetRoot === fleetRoot) ? "clear" as const : "aside" as const),
+    };
+    const door = ringDyadDoor(ring);
+    expect(await door(W, "d")).toBe("clear");
+    expect(folds).toBe(1);
+    // CONTROL: a fleet the standing fold holds answers off it, with no second fold.
+    expect(await door(W, "d")).toBe("clear");
+    expect(folds).toBe(1);
+    // A face founded after the fold: its fleet root joins the roots the ring folds, and the fold standing never read it.
+    roots = [W, L];
+    expect(await door(L, "d")).toBe("clear");
+    expect(folds).toBe(2);
   });
 
   test("D7 — the leaf reads its fleet board for sibling sync while the daemon island reads its own board for dyad standing (a source weld)", () => {

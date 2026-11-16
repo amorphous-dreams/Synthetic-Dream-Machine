@@ -224,6 +224,25 @@ const witness = (snapshot, fresh, importAnswer) => {
   return { status: r.status, answer, stdout: r.stdout };
 };
 
+test("a-face-born-after-the-stand-exports: a face `persona new` founds on a standing vessel composes at its birth, so its stage reads and the export carries it", { timeout: 600_000 }, async () => {
+  const scratch = mkdtempSync(join(tmpdir(), "lares-carry-parity-late-"));
+  let house = null;
+  try {
+    house = await standHouse("late", "steward");
+    house.must(["persona", "new", "1", "--name", "engineer"]);
+    await house.unlock();
+    const stage = house.lares(["kahua", "list", "--face", "1"]);
+    assert.equal(stage.status, 0, `the late face's stage reads: ${stage.stdout}${stage.stderr}`);
+    const exported = JSON.parse(house.must(["export", join(scratch, "bundle"), "--json"]).stdout.trim().split("\n").pop());
+    assert.deepEqual(exported.data.faces, ["steward", "engineer"]);
+    assert.ok(!exported.data.omissions.some((o) => o.kind === "face-unread"), JSON.stringify(exported.data.omissions));
+  } finally {
+    await house?.stop();
+    if (house) rmSync(house.root, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
+    rmSync(scratch, { recursive: true, force: true });
+  }
+});
+
 test("P2 two real houses: export, import, par; then a deleted meme, a changed meme and a dropped share each read red by name", { timeout: 900_000 }, async () => {
   const scratch = mkdtempSync(join(tmpdir(), "lares-carry-parity-files-"));
   const houses = [];
