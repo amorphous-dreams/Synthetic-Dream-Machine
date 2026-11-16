@@ -33,22 +33,19 @@ export const isKukulu = (word: string | undefined): boolean => word === "kukulu"
 export function ritePlan(args: ParsedArgs): RitePlan {
   const act = args.positional[0];
   // Each flag reads by its own literal name, so the accepts law walks them.
-  const word = (name: string, raw: string | undefined, bare: boolean | undefined): string | undefined => {
-    if (bare !== undefined) throw new RiteUsage(`--${name} takes a value`);
-    return typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined;
-  };
-  const faceWord = word("face", args.options["face"], args.flags["face"]);
+  const word = (raw: string | undefined): string | undefined => (typeof raw === "string" && raw.trim() !== "" ? raw.trim() : undefined);
+  const faceWord = word(args.options["face"]);
   if (faceWord !== undefined && !/^(?:0|[1-9][0-9]*)$/.test(faceWord)) throw new RiteUsage("--face takes a whole persona index from 0");
   const face = faceWord === undefined ? {} : { face: Number(faceWord) };
-  const head = word("head", args.options["head"], args.flags["head"]);
+  const head = word(args.options["head"]);
   if (act === "receipts") return { verb: "rite-receipts", args: { ...face } };
   if (act === "begin") {
-    const rite = word("rite", args.options["rite"], args.flags["rite"]), branch = word("branch", args.options["branch"], args.flags["branch"]);
+    const rite = word(args.options["rite"]), branch = word(args.options["branch"]);
     if (rite === undefined || branch === undefined || head === undefined) throw new RiteUsage("begin names its rite, its branch and its head: --rite kukulu --branch <name> --head <commit>");
     return { verb: "rite-begin", args: { rite, branch, head, ...face } };
   }
   if (act === "land") {
-    const tessera = word("tessera", args.options["tessera"], args.flags["tessera"]);
+    const tessera = word(args.options["tessera"]);
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...face } };
   }
