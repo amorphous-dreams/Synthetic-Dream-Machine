@@ -25,7 +25,7 @@ test("RED: with no standing daemon wiki every rite row refuses by name and loads
   const deps: StoreDoorDeps = { storageDir: "/tmp/unused", sealHome: "/tmp/unused-seal", repo: {} as StoreDoorDeps["repo"] };
   const rows = storeDoorReactors(deps);
   const worn = { worn: { ordinal: 0 } } as never;
-  for (const [row, args] of [["rite-begin", { rite: "kukulu", branch: "main", head: "a".repeat(40), tree: "b".repeat(40) }], ["rite-land", { tessera: "c".repeat(64), head: "a".repeat(40) }], ["rite-receipts", {}]] as const) {
+  for (const [row, args] of [["rite-begin", { rite: "kukulu", branch: "main", head: "a".repeat(40) }], ["rite-land", { tessera: "c".repeat(64), head: "a".repeat(40) }], ["rite-receipts", {}]] as const) {
     const out = await rows[row](args, worn);
     expect(out["refused"], row).toContain("no standing daemon: a rite's records need the founded wiki");
     expect(out["refusal"], row).toBe(`${row}-refused`);
