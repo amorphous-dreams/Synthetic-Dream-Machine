@@ -44,6 +44,8 @@ export interface LaresMcpCommand {
 export const SURFACE_ENV = "lares-surface.env";
 /** The surface deployment's compose file, at the clone's root. */
 export const SURFACE_COMPOSE = "docker-compose.surface.yml";
+/** The compose service the aho's child execs into; its environment names the root the child forwards. */
+export const LARES_SERVICE = "lares";
 /** The seat inside the product image: the image's working root (`WORKDIR /app`) plus the repo-relative path. */
 export const IMAGE_SEAT = "/app/packages/lararium-sensorium/scripts/lares_mcp.py";
 
@@ -79,8 +81,8 @@ export function seatAbsentCause(): string {
   if (hearthSurfaceEnv() !== null) {
     const named = composeOverride();
     return named === null
-      ? `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent or names no LAR_ROOT`
-      : `the hearth stands in the surface container (${SURFACE_ENV}), and the compose file LARES_COMPOSE_FILE names (${named}) stands absent or names no LAR_ROOT`;
+      ? `the hearth stands in the surface container (${SURFACE_ENV}), and the clone's ${SURFACE_COMPOSE} stands absent, or its \`${LARES_SERVICE}\` service names no LAR_ROOT`
+      : `the hearth stands in the surface container (${SURFACE_ENV}), and the compose file LARES_COMPOSE_FILE names (${named}) stands absent, or its \`${LARES_SERVICE}\` service names no LAR_ROOT`;
   }
   if (namedRoot() === null) return new HouseRootUnnamed().message;
   const relative = relativeHearth();
@@ -112,12 +114,71 @@ function shimOverrides(): Record<string, string> {
   return { ...(file === null ? {} : { LARES_COMPOSE_FILE: file }), ...(project === null ? {} : { COMPOSE_PROJECT_NAME: project }) };
 }
 
-/** The vessel's root inside the surface container, as the compose file's environment names it. */
+/** One compose line read for its shape: indent, then the text with a trailing ` # comment` cut. Blank and comment lines drop. */
+type ComposeLine = { indent: number; text: string };
+function composeLines(text: string): ComposeLine[] {
+  const out: ComposeLine[] = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const body = raw.replace(/\s+#.*$/, "");
+    const text = body.trim();
+    if (text === "" || text.startsWith("#")) continue;
+    out.push({ indent: body.length - body.trimStart().length, text });
+  }
+  return out;
+}
+/** The lines nested under the line at `at`: every following line indented deeper, up to the first that is not. */
+function childrenOf(lines: ComposeLine[], at: number): Array<{ line: ComposeLine; index: number }> {
+  const out: Array<{ line: ComposeLine; index: number }> = [];
+  for (let i = at + 1; i < lines.length && lines[i]!.indent > lines[at]!.indent; i += 1) out.push({ line: lines[i]!, index: i });
+  return out;
+}
+/** The direct children of the line at `at` (the shallowest indent beneath it). */
+function directChildren(lines: ComposeLine[], at: number): Array<{ line: ComposeLine; index: number }> {
+  const kids = childrenOf(lines, at);
+  const depth = Math.min(...kids.map((k) => k.line.indent));
+  return kids.filter((k) => k.line.indent === depth);
+}
+const keyOf = (text: string): { key: string; value: string } | null => {
+  const m = /^([^\s:'"][^:]*?|"[^"]*"|'[^']*'):(?:\s+(.*))?$/.exec(text);
+  return m === null ? null : { key: m[1]!.replace(/^(["'])(.*)\1$/, "$2"), value: (m[2] ?? "").trim() };
+};
+const unquote = (value: string): string => value.replace(/^(["'])(.*)\1$/, "$2");
+
+/** LAR_ROOT in the mapping under the line at `at`: its own key first, else each `<<:` merge's anchor in the order named. */
+function rootInMapping(lines: ComposeLine[], at: number, depth = 0): string | null {
+  if (depth > 8) return null;
+  const merges: string[] = [];
+  for (const { line } of directChildren(lines, at)) {
+    const listed = /^-\s*LAR_ROOT=(.*)$/.exec(line.text);
+    if (listed !== null) return unquote(listed[1]!.trim());
+    const kv = keyOf(line.text);
+    if (kv === null) continue;
+    if (kv.key === "LAR_ROOT") return kv.value === "" ? null : unquote(kv.value);
+    if (kv.key === "<<") merges.push(...kv.value.replace(/^\[|\]$/g, "").split(",").map((a) => a.trim()).filter((a) => a.startsWith("*")).map((a) => a.slice(1)));
+  }
+  for (const anchor of merges) {
+    const at2 = lines.findIndex((l) => keyOf(l.text)?.value === `&${anchor}`);
+    const found = at2 === -1 ? null : rootInMapping(lines, at2, depth + 1);
+    if (found !== null) return found;
+  }
+  return null;
+}
+
+/**
+ * The vessel's root inside the surface container: the `lares` service's own `environment` names it (the service the child
+ * execs into), its `<<: *anchor` merges followed. Read by indent, by name, never as the first `LAR_ROOT:` in the file, so an
+ * anchor or a sibling service standing above it never moves the root the child forwards. Null while the service or the key
+ * stands absent.
+ */
 function containerRoot(compose: string): string | null {
   if (!existsSync(compose)) return null;
-  // Every vessel service takes the one `&roots` block, so the first `LAR_ROOT:` names the root they share.
-  const value = /^\s+LAR_ROOT:\s*(\S+)\s*$/m.exec(readFileSync(compose, "utf8"))?.[1];
-  return value === undefined ? null : value.replace(/^(["'])(.*)\1$/, "$2");
+  const lines = composeLines(readFileSync(compose, "utf8"));
+  const services = lines.findIndex((l) => l.indent === 0 && keyOf(l.text)?.key === "services");
+  if (services === -1) return null;
+  const service = directChildren(lines, services).find((c) => keyOf(c.line.text)?.key === LARES_SERVICE);
+  if (service === undefined) return null;
+  const env = directChildren(lines, service.index).find((c) => keyOf(c.line.text)?.key === "environment");
+  return env === undefined ? null : rootInMapping(lines, env.index);
 }
 
 /** The verb a harness config records: the bare `lares` on PATH and its `mcp aho` door, with nothing beneath it. */
@@ -173,7 +234,7 @@ export function resolveLaresSurface(clone: string): LaresMcpCommand | null {
     const project = projectOverride();
     return {
       command: "docker",
-      args: ["compose", "--env-file", surfaceEnv, "-f", compose, "exec", "-T", "-e", "LAR_ROOT", "lares", "python3", IMAGE_SEAT],
+      args: ["compose", "--env-file", surfaceEnv, "-f", compose, "exec", "-T", "-e", "LAR_ROOT", LARES_SERVICE, "python3", IMAGE_SEAT],
       env: { LAR_ROOT: root, ...(project === null ? {} : { COMPOSE_PROJECT_NAME: project }) },
     };
   }
