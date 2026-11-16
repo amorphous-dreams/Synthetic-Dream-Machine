@@ -7,7 +7,7 @@
  * so a test drives it with no container and no child process.
  *
  * Four more reads stand behind ports, each optional: `git` names the checkout's head and branch; `lei` reads the lei a session
- * wears at that branch, one read per rite, through the swarm door; `halves` reads the tessera receipts the rite writes
+ * wears at that branch, one read per rite, through the lei door; `halves` reads the tessera receipts the rite writes
  * (`rite-begun`, `rite-landed`). A runner that answers none of them leaves the wake as it stood.
  *
  * ONE BUDGET. The harness bounds a hook (`hooks/hooks.json`, 15 seconds), and past that bound it discards the hook's
@@ -77,8 +77,8 @@ const bytes = (text) => Buffer.byteLength(text, "utf8");
 /** The rites a lei carries, and the shim's argv for the checkout's head then branch. */
 export const LEI_RITES = ["push", "kukulu"];
 export const gitArgv = () => ["rev-parse", "HEAD", "--abbrev-ref", "HEAD"];
-/** The shim's argv for one rite's lei at a branch and head: the swarm door's `show`. */
-export const leiArgv = (rite, branch, head) => ["swarm", "show", "--rite", rite, "--branch", branch, "--head", head, "--json"];
+/** The shim's argv for one rite's lei at a branch and head: the lei door's `show`. */
+export const leiArgv = (rite, branch, head) => ["lei", "show", "--rite", rite, "--branch", branch, "--head", head, "--json"];
 /** The shim's argv for the tessera receipts the rite writes. */
 export const halvesArgv = () => ["rite", "receipts", "--json"];
 /** The shim's argv for the vessel observation. */
@@ -206,7 +206,7 @@ export function leiLines(checkout, results) {
     if (refusesLocked(answer)) return [LOCKED_LINE];
     if (answer.ok === false) { faults.push(`${rite}: ${answer.error?.code ?? "refused"}`); continue; }
     // The lane renames the door's `go` to `lei`; the reader takes either.
-    const lei = answer.data?.lei ?? answer.data?.go;
+    const lei = answer.data?.lei;
     if (lei?.standing === true) worn.push(lei.after ? `${rite} (follows ${String(lei.after).slice(0, 12)})` : `${rite} (the branch's first)`);
     else if (Array.isArray(lei?.forks) && lei.forks.length > 0) forked.push(`${rite} forked at ${lei.forks.map((c) => String(c).slice(0, 12)).join(" | ")}`);
     else bare.push(rite);

@@ -155,9 +155,9 @@ test("wake-names-the-lei: the wake names the lei a session wears at its branch, 
   assert.deepEqual(calls.find(([n]) => n === "git")[1], gitArgv());
 });
 
-test("wake-names-the-lei: the door's present `go` key reads as a lei, a fork names its tips, and no lei reads as none worn", async () => {
+test("wake-names-the-lei: a standing lei reads as worn, a fork names its tips, and no lei reads as none worn", async () => {
   const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])), git: gitHead() };
-  const old = await wake({ run: runner({ ...base, lei: lei({ go: { standing: true, after: null } }) }) });
+  const old = await wake({ run: runner({ ...base, lei: lei({ lei: { standing: true, after: null } }) }) });
   assert.match(old, /wears push \(the branch's first\), kukulu \(the branch's first\) at/);
   const forked = await wake({ run: runner({ ...base, lei: lei({ lei: { standing: false, refusal: "forked", after: null, forks: [CID, "b".repeat(64)] } }) }) });
   assert.match(forked, new RegExp(`push forked at ${"a".repeat(12)} \\| ${"b".repeat(12)}`));
