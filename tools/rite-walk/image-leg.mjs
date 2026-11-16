@@ -83,7 +83,9 @@ export function assertImageScope({ base, project, port, image, realHome = homedi
 export function surfaceEnvText(scope, { uid, gid, pulama = false }) {
   return [
     `LARES_HOUSE=${scope.house}`, `LARES_WORKSPACE=${scope.workspace}`, `LARES_PORT=${scope.port}`, "LARES_BIND=127.0.0.1",
-    `LARES_IMAGE=${scope.image}`, ...(pulama ? ["LARES_PULAMA=1"] : []), `LARES_UID=${uid}`, `LARES_GID=${gid}`, `COMPOSE_PROJECT_NAME=${scope.project}`, "",
+    `LARES_IMAGE=${scope.image}`, ...(pulama ? ["LARES_PULAMA=1"] : []), `LARES_UID=${uid}`, `LARES_GID=${gid}`, `COMPOSE_PROJECT_NAME=${scope.project}`,
+    // A scope that binds workspaces (the carry leg's keep) names them where the shim and the host CLI both read them.
+    ...(scope.workspaces ? [`LARES_WORKSPACES=${scope.workspaces}`] : []), "",
   ].join("\n");
 }
 

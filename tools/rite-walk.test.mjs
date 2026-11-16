@@ -468,7 +468,7 @@ function recordingCarry(scope, { answer = () => ({ code: 0, stdout: "{}", stderr
       scope, vars, say: () => {},
       hands: (phase) => hands[phase],
       git: async (args) => { calls.push({ phase: "host", kind: "git", args: args.map(String), says: [] }); return { code: 0, stdout: answer("git", args).stdout ?? "", stderr: "" }; },
-      node: async (args) => { calls.push({ phase: "host", kind: "node", args: args.map(String), says: [] }); return { code: 0, stdout: "{}", stderr: "" }; },
+      node: async (args) => { calls.push({ phase: "host", kind: "node", args: args.map(String), says: [] }); const a = answer("node", args); return { code: a.code ?? 0, stdout: a.stdout ?? "{}", stderr: a.stderr ?? "" }; },
     },
   };
 }
@@ -560,3 +560,71 @@ test("carry-persona-prompts-pinned: the new-face prompts the probe met at 983c70
   let at = 0;
   for (const s of PERSONA_SAYS) { const i = met.indexOf(s.prompt, at); assert.ok(i >= 0, `the leg types after ${JSON.stringify(s.prompt)}`); at = i + s.prompt.length; }
 });
+
+// ── the carry leg keeps the source house ────────────────────────────────────────────────────────────────────────────
+
+test("carry-keeps-the-source-house: the keep stands between the export and the down, and the new phase may import from a fresh clone of the keep's remote", () => {
+  const { CARRY_STEPS, KEEP_WORKSPACE, assertCarryScope, phaseScope, parseCarryArgs } = present(carryLeg);
+  const ids = CARRY_STEPS.map((s) => s.id);
+  for (const id of ["keep-lei-old", "keep-old", "keep-clone-new"]) assert.ok(ids.includes(id), `the table walks ${id}`);
+  assert.ok(ids.indexOf("export") < ids.indexOf("keep-lei-old") && ids.indexOf("keep-lei-old") < ids.indexOf("keep-old") && ids.indexOf("keep-old") < ids.indexOf("down-old"), "export, then the keep lei, then the keep, then down");
+  assert.ok(ids.indexOf("keep-clone-new") < ids.indexOf("found-new"), "the clone stands before the new house founds from it");
+  const cmd = (id) => CARRY_STEPS.find((s) => s.id === id).command;
+  assert.match(cmd("keep-lei-old"), new RegExp(`lares lei kui --rite keep --branch ${KEEP_WORKSPACE} --returns 2`));
+  assert.match(cmd("keep-old"), new RegExp(`lares rite keep --workspace ${KEEP_WORKSPACE}`));
+  assert.ok(!CARRY_STEPS.find((s) => s.id === "down-old").needs.includes("keep-old"), "a source revision with no keep rite still walks its down");
+  const scope = assertCarryScope(carryOpts());
+  assert.equal(phaseScope(scope, "old").workspaces, `${KEEP_WORKSPACE}=${scope.keepWs}`, "the old house binds the keep workspace at its up");
+  assert.equal(phaseScope(scope, "new").workspaces, undefined);
+  assert.match(imageLeg.surfaceEnvText(phaseScope(scope, "old"), { uid: 1, gid: 1 }), new RegExp(`^LARES_WORKSPACES=${KEEP_WORKSPACE}=`, "m"));
+  assert.doesNotMatch(imageLeg.surfaceEnvText(phaseScope(scope, "new"), { uid: 1, gid: 1 }), /LARES_WORKSPACES/);
+  assert.equal(parseCarryArgs(["--carry-leg", "--import-from", "keep"])["import-from"], "keep");
+  refuses(() => parseCarryArgs(["--carry-leg", "--import-from", "elsewhere"]), /--import-from/);
+});
+
+test("carry-keep-reads-par: the lei strings under the ward, the keep pushes to the scratch remote and conferre reads its tessera par; a red tessera fails; a source with no keep rite reads unreached", async () => {
+  const { CARRY_STEPS, KEEP_WORKSPACE, assertCarryScope } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  const T = "7".repeat(64), B = "b".repeat(64);
+  const step = (id) => CARRY_STEPS.find((s) => s.id === id);
+  const keepAnswer = (par) => JSON.stringify({ ok: par, data: { rite: "keep", workspace: KEEP_WORKSPACE, kept: true, tessera: T, bundleId: B, pushed: true, landed: [{ tessera: T, par }], par } });
+  const answers = (par) => (kind, args) => {
+    const line = [args].flat().join(" ");
+    if (kind === "pty" && /lei kui --rite keep/.test(line)) return { code: 0, stdout: JSON.stringify({ ok: true, data: { rite: "keep", branch: KEEP_WORKSPACE, returns: 2 } }) };
+    if (kind === "shim" && /lei show --rite keep/.test(line)) return { code: 0, stdout: JSON.stringify({ ok: true, data: { lei: { standing: true, returnsLeft: 2 } } }) };
+    if (kind === "node" && /rite keep --workspace/.test(line)) return { code: par ? 0 : 1, stdout: keepAnswer(par) };
+    if (kind === "shim" && /rite receipts/.test(line)) return { code: 0, stdout: JSON.stringify({ ok: true, data: { conferre: par ? { par: [{ tessera: T, rite: "keep", par: true }], red: [] } : { par: [], red: [{ tessera: T, rite: "keep", red: "landed-absent" }] } } }) };
+    return { code: 0, stdout: "{}", stderr: "" };
+  };
+  const good = recordingCarry(scope, { answer: answers(true), vars: { oldRev: OLD_REV, pin: PIN } });
+  const lei = await step("keep-lei-old").run(good.c);
+  assert.equal(lei.ok, true, lei.answer);
+  const kui = good.calls.find((k) => k.kind === "pty" && k.args.join(" ").includes("lei kui --rite keep"));
+  assert.ok(kui.says.length > 0 && kui.says.every((s) => s.answer !== "accept-loss"), "the ward's prompt gets the published route");
+  const kept = await step("keep-old").run(good.c);
+  assert.equal(kept.ok, true, kept.answer);
+  assert.equal(good.c.vars.keep.tessera, T);
+  assert.equal(good.c.vars.keep.bundleId, B);
+  const keepCall = good.calls.find((k) => k.kind === "node" && k.args.includes("keep"));
+  assert.ok(keepCall.args.includes("--workspace") && keepCall.args.includes(KEEP_WORKSPACE), keepCall.args.join(" "));
+  const red = recordingCarry(scope, { answer: answers(false), vars: { oldRev: OLD_REV, pin: PIN } });
+  assert.equal((await step("keep-old").run(red.c)).ok, false, "a keep whose tessera reads red fails");
+  const old = recordingCarry(scope, { answer: (kind) => (kind === "pty" || kind === "shim" ? { code: 2, stdout: "", stderr: "lares lei: name a sub-verb: show, kui, unstring or restring" } : { code: 0, stdout: "{}" }), vars: { oldRev: OLD_REV, pin: PIN } });
+  assert.equal((await step("keep-lei-old").run(old.c)).unreached, "door-absent", "a source revision that strings no keep lei reads unreached by name");
+});
+
+test("carry-import-from-keep: under --import-from keep the import reads the fresh clone of the keep's remote, never the copied bundle", async () => {
+  const { CARRY_STEPS, assertCarryScope, KEEP_CLONE_IN } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  // The steward stands worn (the status reads unlocked, wearing face 0), so the preview reaches its import.
+  const { c, calls } = recordingCarry(scope, { answer: () => ({ code: 0, stdout: JSON.stringify({ unlocked: true, wears: 0 }), stderr: "" }), vars: { oldRev: OLD_REV, pin: PIN, importFrom: "keep", keep: { bundleId: "b".repeat(64) } } });
+  try { await CARRY_STEPS.find((s) => s.id === "import-preview").run(c); } catch { /* the fake tree never stands */ }
+  const imports = calls.filter((k) => k.args.join(" ").includes(" import ") || k.args[0] === "import");
+  assert.ok(imports.length > 0, "the preview runs an import");
+  for (const k of imports) assert.ok(k.args.join(" ").includes(KEEP_CLONE_IN), k.args.join(" "));
+  const clone = recordingCarry(scope, { vars: { oldRev: OLD_REV, pin: PIN, keep: { bundleId: "b".repeat(64) } } });
+  try { await CARRY_STEPS.find((s) => s.id === "keep-clone-new").run(clone.c); } catch { /* the fake clone never stands */ }
+  const cloned = clone.calls.find((k) => k.kind === "git" && k.args.includes("clone"));
+  assert.ok(cloned && cloned.args.includes(scope.keepRemote), "the clone reads the keep's scratch remote");
+});
+

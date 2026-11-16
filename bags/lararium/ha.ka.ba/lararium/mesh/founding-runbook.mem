@@ -346,6 +346,8 @@ A re-founding clears `$LARES_HOUSE/hearth` alone; the face's memory crosses as c
 
 ```sh
 tools/lares-container.sh export /lar/config/carry/bundle-one    # the host reads it at $LARES_HOUSE/config/carry/bundle-one
+tools/lares-container.sh lei kui --rite keep --branch backup --returns 2   # the ward asks this one act's passphrase
+lares rite keep --workspace backup                               # on the host: cut into the clone's house/, commit, push, land
 tools/lares-container.sh down                                    # a locked hearth's census says: vault unlock, then down
 tools/lares-container.sh reset                                   # type re-found; projections stay
 tools/lares-container.sh found --hearth --name 'operator-one' --chair 'first-chair'
@@ -355,6 +357,8 @@ tools/lares-container.sh vessel seed --apply --lift-kahua <N>    # the kahua ite
 tools/lares-container.sh import /lar/config/carry/bundle-one    # a preview: writes nothing
 tools/lares-container.sh import /lar/config/carry/bundle-one --apply
 ```
+
+''The house keeps itself before the down.'' A workspace named `backup` binds a clone of the operator's own private repo (`LARES_WORKSPACES=backup=<clone dir>` in the surface env, so every `up` binds it at `/lar/workspaces/backup`), and a committed `.gitattributes` holding `* -text` stands at its top. The keep lei grants the rite for that workspace: strung by hand as above, or by a yes at `vault unlock`, which offers it under the passphrase the unlock already read wherever `LARES_KEEP_WORKSPACE` (or the one `LARES_WORKSPACES` pair) names the workspace and no keep lei with a return left stands. `lares rite keep` runs on the host: it guards the clone (a branch with a remote, the `-text` guard, nothing changed outside `house/`), has the vessel cut the same cleartext bundle `export` cuts into `house/` and spend one return, scans for secret-shaped strings, commits `keep <bundle id>`, rebases, pushes, and lands the tessera at the bundle id the pushed manifest names; `lares rite receipts` then reads that tessera par. A push that fails lands nothing and names its cure: mend the remote and keep again. `lares rite keep --if-due` keeps only where the house moved since the bundle the remote already holds, so an unmoved house spends nothing and asks no remote. The new house may import from a fresh clone of that repo in place of the bundle: `git clone <repo> "$LARES_HOUSE/config/carry/keep-clone"`, then `tools/lares-container.sh import /lar/config/carry/keep-clone/house --apply`, and parity reads par either way.
 
 ''The bundle rests unencrypted.'' Export copies a face's private memory as plain files and says so on its closing line. It refuses a destination inside the workspace or inside the house root, save the house's config home: a reset keeps `config/`, and the container binds `/lar/config` to `$LARES_HOUSE/config`, so the bundle rests where the host reads it (the vault backup's own precedent). Keep it on a disk only the operator holds, and remove it once the import reads back.
 
@@ -536,6 +540,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ynXkiB10GW242UsRN-Xt2L9FR0-LVkjI2sNaX9AKb80`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9J5lFXpC1U8JlIH9no-CnQWAzTNTgmikLjuAi6N0yBA`>>
 
 <<^ code=`&#x0004;` to=`?`>>

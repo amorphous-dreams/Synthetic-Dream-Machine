@@ -19,12 +19,19 @@
 // import answer to the parity witness (`--imports`), which excuses those uris by name. The pūlama stands only at the end,
 // on the carried house (carry → light): the image leg's pūlama phase, once parity reads par.
 //
+// THE KEEP (the house keeps itself): between the export and the down the source house strings a keep lei under the ward and runs
+// `lares rite keep` into a workspace bound at its `up` (`keep`, a clone of a scratch bare remote standing in for the operator's
+// repo), and conferre reads the keep's tessera par. The new phase clones that remote fresh (`keep-clone-new`); under
+// `--import-from keep` the import reads that clone instead of the copied bundle, and parity reads par either way. A source
+// revision that carries no keep rite reads the keep `unreached: door-absent` and walks its down regardless.
+//
 // CUSTODY: the staged test custody and the published test route, as the image leg rides them. `found` runs offline under
 // `test-ward-route.mjs`; every terminal act (`up`, `vault unlock`, `persona new`, a ward act) types the published route on
 // a pseudo-terminal. Each such pass reads `pass (pty)` or `pass (staged-custody)`, never bare.
 //
 // Usage: node tools/rite-walk.mjs --carry-leg --base <~/.lares-scratch/rehearsal/…> --project <name> --port <n>
 //          --image <tag> --from-rev <full sha> --out <dir> [--pin <sha>] [--count <n>] [--from <step>] [--to <step>] [--keep]
+//          [--import-from bundle|keep]
 //   rc 0  no step failed · rc 1  a step failed · rc 2  the walk refused before any act
 import { spawn } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -44,6 +51,13 @@ const PARITY = join(CHECKOUT, "tools", "carry-parity.mjs");
 const STATE = "carry-walk-state.json";
 const IN_CLI = "node packages/lares-cli/bin/lares.mjs";
 const BUNDLE = "/lar/config/carry/pre-merge";
+/** The workspace the source house keeps into, bound at its `up`, and where the new phase clones the keep's remote. */
+export const KEEP_WORKSPACE = "keep";
+export const KEEP_CLONE_IN = "/lar/config/carry/keep-clone/house";
+/** Where the import reads: the copied bundle, or the fresh clone of the keep's remote (`--import-from keep`). */
+const importSource = (c) => (c.vars.importFrom === "keep" ? KEEP_CLONE_IN : BUNDLE);
+/** That source's host path in the new house, where its re-declare list and manifest rest. */
+const importHost = (c) => (c.vars.importFrom === "keep" ? join(c.scope.houseNew, "config", "carry", "keep-clone", "house") : join(c.scope.houseNew, "config", "carry", "pre-merge"));
 const CHECK = "/lar/config/carry/bundle-check";
 const SUBMODULES = Object.freeze(["TiddlyWiki5", "mempalace"]);
 /** The one omission a clean export may name: parallel drafts are the face's own, and travel as drafts. */
@@ -70,13 +84,15 @@ export function assertCarryScope(opts = {}) {
     houseOld: at("house-old"), houseNew: at("house-new"), workspaceOld: at("workspace-old"), workspaceNew: at("workspace-new"),
     oldSrc: at("old-src"), newSrc: at("new-src"), composeOld: at("compose-old.yml"), composeNew: at("compose-new.yml"),
     census: at("census"), seedSrc: at("house-old/config/seed-src"),
+    keepRemote: at("keep-remote.git"), keepWs: at("keep-ws"), keepClone: at("house-new/config/carry/keep-clone"),
   });
 }
 
 /** One phase's image scope: the shared base, home, wrapper and env file, over that phase's house, workspace and compose copy. */
 export function phaseScope(scope, phase) {
   const old = phase === "old";
-  return Object.freeze({ ...scope, house: old ? scope.houseOld : scope.houseNew, workspace: old ? scope.workspaceOld : scope.workspaceNew, compose: old ? scope.composeOld : scope.composeNew });
+  return Object.freeze({ ...scope, house: old ? scope.houseOld : scope.houseNew, workspace: old ? scope.workspaceOld : scope.workspaceNew, compose: old ? scope.composeOld : scope.composeNew,
+    ...(old ? { workspaces: `${KEEP_WORKSPACE}=${scope.keepWs}` } : {}) });
 }
 
 /**
@@ -229,9 +245,28 @@ const srcStep = (phase) => async (c) => {
   if (at.dirty !== "") return { ok: false, answer: `the clone's tracked tree reads dirty: ${lineOf(at.dirty)}` };
   const h = c.hands(phase);
   h.stage();
+  const ground = phase === "old" ? await layKeepGround(c) : null;
   const proof = await h.proveScope();
-  return { ok: true, answer: `${at.src} at ${rev}, clean; ${at.filled.join(", ")} · ${proof}`, measures: { rev, filled: at.filled } };
+  return { ok: true, answer: `${at.src} at ${rev}, clean; ${at.filled.join(", ")}${ground ? ` · ${ground}` : ""} · ${proof}`, measures: { rev, filled: at.filled } };
 };
+
+/**
+ * The keep's ground, before the old house's `up` binds it: a scratch bare remote standing in for the operator's repo, holding one
+ * commit of `* -text`, and the workspace clone of it (a local identity, so the host half commits under no operator's name).
+ */
+async function layKeepGround(c) {
+  const { keepRemote, keepWs } = c.scope;
+  if (existsSync(keepWs)) return `the keep workspace stands at ${relative(c.scope.base, keepWs)}`;
+  await hostGit(c, ["init", "--quiet", "--bare", "--initial-branch=main", keepRemote]);
+  await hostGit(c, ["clone", "--quiet", keepRemote, keepWs]);
+  for (const [k, v] of [["user.name", "Keeper"], ["user.email", "keeper@example.invalid"], ["commit.gpgsign", "false"]]) await hostGit(c, ["-C", keepWs, "config", k, v]);
+  await hostGit(c, ["-C", keepWs, "symbolic-ref", "HEAD", "refs/heads/main"]);
+  writeFileSync(join(keepWs, ".gitattributes"), "* -text\n");
+  await hostGit(c, ["-C", keepWs, "add", ".gitattributes"]);
+  await hostGit(c, ["-C", keepWs, "commit", "--quiet", "-m", "guard"]);
+  await hostGit(c, ["-C", keepWs, "push", "--quiet", "origin", "HEAD:refs/heads/main"]);
+  return `the keep workspace ${KEEP_WORKSPACE} clones ${relative(c.scope.base, keepRemote)}`;
+}
 
 const buildStep = (phase) => async (c) => {
   const h = c.hands(phase);
@@ -421,6 +456,53 @@ const downOld = async (c) => {
   return { ok: r.code === 0 && vessel === "", answer: `exit ${r.code}; vessel container: ${vessel ? "stands" : "gone"} · ${tail(transcript)}` };
 };
 
+/** The door a revision lacks names itself: an old source carries no keep rite, and the keep then reads unreached. */
+const doorAbsent = (text) => /unknown (command|verb|sub-?verb|flag)|no such (command|verb)|name a sub-verb|not a lares command|rite-needs|plans no single/i.test(text);
+
+/** `lei kui --rite keep` on a terminal: the ward asks its one prompt and gets the published route; the line then reads standing. */
+const keepLeiOld = async (c) => {
+  const h = c.hands("old");
+  const line = ["lei", "kui", "--rite", "keep", "--branch", KEEP_WORKSPACE, "--returns", "2", "--json"];
+  const r = await h.pty(h.shimLine(line), { says: CARRY_SAYS.ward, route: TEST_PASSPHRASE, timeout: 120_000 });
+  const answer = json(r.stdout);
+  if (r.code !== 0 && answer?.ok !== true && doorAbsent(said(r))) return { unreached: "door-absent", answer: `the source revision strings no keep lei: ${refusal(r)}` };
+  const show = await h.shim(["lei", "show", "--rite", "keep", "--branch", KEEP_WORKSPACE, "--json"]);
+  const standing = json(show.stdout)?.data?.lei ?? null;
+  return { ok: r.code === 0 && answer?.ok === true && standing?.standing === true, answer: `exit ${r.code}; ${JSON.stringify(answer?.data ?? null)} · the line reads ${JSON.stringify(standing)}`, measures: { exit: r.code, standing } };
+};
+
+/**
+ * `lares rite keep` on the host (the walker's own CLI, through the bridge into the old vessel): guard, cut, commit, push to the
+ * scratch remote, land; conferre then reads the keep's tessera par.
+ */
+const keepOld = async (c) => {
+  const h = c.hands("old");
+  const r = await c.node([join(CHECKOUT, "packages", "lares-cli", "bin", "lares.mjs"), "rite", "keep", "--workspace", KEEP_WORKSPACE, "--json"], { env: h.env, timeout: 1_800_000 });
+  const answer = json(r.stdout);
+  if (answer === null && doorAbsent(said(r))) return { unreached: "door-absent", answer: `the source revision keeps nothing: ${refusal(r)}` };
+  const d = answer?.data ?? {};
+  c.vars.keep = { tessera: d.tessera ?? null, bundleId: d.bundleId ?? null, pushed: d.pushed ?? null, par: d.par ?? null };
+  const receipts = await h.shim(["rite", "receipts", "--json"], { timeout: 120_000 });
+  const conferre = json(receipts.stdout)?.data?.conferre ?? {};
+  const par = (conferre.par ?? []).some((t) => t.rite === "keep" && t.tessera === d.tessera);
+  const red = (conferre.red ?? []).filter((t) => t.rite === "keep").map((t) => `${String(t.tessera).slice(0, 12)} ${t.red}`);
+  return { ok: r.code === 0 && d.par === true && par && red.length === 0,
+    answer: `exit ${r.code}; bundle ${String(d.bundleId).slice(0, 16)} · pushed ${d.pushed} · tessera ${String(d.tessera).slice(0, 12)} ${par ? "par" : "not par"}${red.length ? ` · red: ${red.join(", ")}` : ""}${r.code !== 0 ? ` · ${lineOf(String(d.message ?? said(r)))}` : ""}`,
+    measures: c.vars.keep };
+};
+
+/** The new phase clones the keep's remote fresh into its config home, and the clone holds the very bundle the keep pushed. */
+const keepCloneNew = async (c) => {
+  const { keepRemote, keepClone } = c.scope;
+  rmSync(keepClone, { recursive: true, force: true });
+  mkdirSync(dirname(keepClone), { recursive: true });
+  await hostGit(c, ["clone", "--quiet", "--branch", "main", keepRemote, keepClone]);
+  let held = null;
+  try { held = JSON.parse(readFileSync(join(keepClone, "house", "manifest.json"), "utf8")).bundleId ?? null; } catch { held = null; }
+  const want = c.vars.keep?.bundleId ?? null;
+  return { ok: held !== null && held === want, answer: `the clone holds bundle ${String(held).slice(0, 16)}; the keep pushed ${String(want).slice(0, 16)}; the export cut ${String(c.vars.bundle?.id ?? null).slice(0, 16)}`, measures: { held, kept: want, exported: c.vars.bundle?.id ?? null } };
+};
+
 const copyBundle = async (c) => {
   const pairs = [["config/carry/pre-merge", true], ["sensoriums", false], ["library", false]];
   const measures = {};
@@ -438,7 +520,7 @@ const copyBundle = async (c) => {
 
 /** The bundle's re-declare list, by handle index: the pet-names the new house re-states, read, never retyped. */
 function redeclared(c) {
-  const p = join(c.scope.houseNew, "config", "carry", "pre-merge", "re-declare.json");
+  const p = join(importHost(c), "re-declare.json");
   const faces = JSON.parse(readFileSync(p, "utf8")).faces ?? [];
   return [...faces].sort((a, b) => a.handleIndex - b.handleIndex).map((f) => f.petname);
 }
@@ -465,7 +547,7 @@ const importPreview = async (c) => {
   const h = c.hands("new");
   const w = await wear(c, "new", 0);
   if (!w.ok) return { ok: false, answer: `the steward never stood worn: ${tail(w.transcript)}` };
-  const r = await h.shim(["import", BUNDLE, "--json"], { timeout: 900_000 });
+  const r = await h.shim(["import", importSource(c), "--json"], { timeout: 900_000 });
   const answer = json(r.stdout);
   const map = answer?.data?.faceMap ?? {};
   const missing = PETNAMES.filter((p) => !(p in map));
@@ -478,7 +560,7 @@ const importApply = async (c) => {
   for (const face of [0, 1, 2]) {
     const w = await wear(c, "new", face);
     if (!w.ok) return { ok: false, answer: `face ${face} never stood worn: ${tail(w.transcript)}` };
-    const r = await h.pty(h.shimLine(["import", BUNDLE, "--apply", "--json"]), { says: CARRY_SAYS.import, route: TEST_PASSPHRASE, timeout: 1_800_000 });
+    const r = await h.pty(h.shimLine(["import", importSource(c), "--apply", "--json"]), { says: CARRY_SAYS.import, route: TEST_PASSPHRASE, timeout: 1_800_000 });
     const answer = json(r.stdout);
     answers.push({ code: r.code, json: answer });
     mkdirSync(c.scope.census, { recursive: true });
@@ -497,7 +579,7 @@ const reimport = async (c) => {
   for (const face of [0, 1, 2]) {
     const w = await wear(c, "new", face);
     if (!w.ok) return { ok: false, answer: `face ${face} never stood worn: ${tail(w.transcript)}` };
-    const r = await h.pty(h.shimLine(["import", BUNDLE, "--apply", "--json"]), { says: CARRY_SAYS.import, route: TEST_PASSPHRASE, timeout: 1_800_000 });
+    const r = await h.pty(h.shimLine(["import", importSource(c), "--apply", "--json"]), { says: CARRY_SAYS.import, route: TEST_PASSPHRASE, timeout: 1_800_000 });
     const answer = json(r.stdout);
     const landed = Object.entries(answer?.data?.tallies ?? {}).filter(([, t]) => (t.landed ?? 0) > 0).map(([k, t]) => `${k} ${t.landed}`);
     const seed = await h.shim(["vessel", "seed", "--apply", "--yes", "--no-json"], { timeout: 600_000 });
@@ -562,7 +644,7 @@ const instrumentCollisions = async (c) => {
 
 const tamperedBundle = async (c) => {
   const h = c.hands("new");
-  const from = join(c.scope.houseNew, "config", "carry", "pre-merge"), to = join(c.scope.houseNew, "config", "carry", "bundle-check");
+  const from = importHost(c), to = join(c.scope.houseNew, "config", "carry", "bundle-check");
   rmSync(to, { recursive: true, force: true });
   cpSync(from, to, { recursive: true });
   const manifest = JSON.parse(readFileSync(join(to, "manifest.json"), "utf8"));
@@ -625,11 +707,14 @@ export const CARRY_STEPS = Object.freeze([
   { id: "hold-old", command: "lares wiki hold <slug> per face, readers first", via: PTY, needs: ["seed-content-old"], expect: "no shared wiki rests cold", run: holdOld },
   { id: "census-old", command: "carry-parity.mjs census --root house-old --lares old-src/tools/lares-container.sh (per worn face)", via: PTY, needs: ["hold-old"], expect: "three readings of the old house", run: censusStep("old", "old") },
   { id: "export", command: `lares export ${BUNDLE} --json`, via: PTY, needs: ["census-old"], expect: "the bundle reads back; no omission but parallel-drafts", run: exportStep },
+  { id: "keep-lei-old", command: `lares lei kui --rite keep --branch ${KEEP_WORKSPACE} --returns 2`, via: PTY, needs: ["export"], expect: "the keep lei strings under the ward", run: keepLeiOld },
+  { id: "keep-old", command: `lares rite keep --workspace ${KEEP_WORKSPACE} (on the host, into a clone of a scratch bare remote) · lares rite receipts`, via: PTY, needs: ["keep-lei-old"], expect: "pushed, landed; conferre reads the keep's tessera par", run: keepOld },
   { id: "down-old", command: "old-src/tools/lares-container.sh down (no accept-loss)", via: PTY, needs: ["census-old", "export"], expect: "the vessel leaves; the census asks for no loss", run: downOld },
   // The new house.
   { id: "src-new", command: "git clone --local --no-checkout · checkout --detach <pin> · submodule update --init TiddlyWiki5 mempalace", needs: ["down-old"], expect: "a clean clone at the pinned head", run: srcStep("new") },
   { id: "build-new", command: "new-src/tools/lares-container.sh build", needs: ["src-new"], expect: "the image stamped at the pinned head", run: buildStep("new") },
   { id: "copy-bundle", command: "cp -a house-old/{config/carry/pre-merge,sensoriums,library} house-new/", needs: ["export"], expect: "both trees digest equal", run: copyBundle },
+  { id: "keep-clone-new", command: `git clone <keep remote> house-new/config/carry/keep-clone (import reads ${KEEP_CLONE_IN} under --import-from keep)`, needs: ["keep-old"], expect: "the clone holds the bundle the keep pushed", run: keepCloneNew },
   { id: "stage-custody-new", command: "test-scratch-marker.mjs /lar && seed-test-custody.mjs /lar (new image)", via: SC, needs: ["build-new"], expect: "the marker and the custody tree stand", run: onPhase("new", stageCustody) },
   { id: "found-new", command: "lares found --hearth --name <re-declare face 0> --chair 'dreamnet-kahu-0' (new image)", via: SC, needs: ["stage-custody-new", "copy-bundle"], expect: "the hearth stands", run: foundNew },
   { id: "config-restate", command: "house-new/config/config.json ← projection.temp, projection.tempExpiryDays (by hand)", needs: ["found-new"], expect: "the consent re-stated", run: configRestate },
@@ -693,11 +778,12 @@ export function parseCarryArgs(argv) {
     const a = argv[i];
     if (a === "--carry-leg") continue;
     if (a === "--keep") opts.keep = true;
-    else if (["--base", "--project", "--port", "--image", "--out", "--from", "--to", "--from-rev", "--pin", "--count"].includes(a)) {
+    else if (["--base", "--project", "--port", "--image", "--out", "--from", "--to", "--from-rev", "--pin", "--count", "--import-from"].includes(a)) {
       if (argv[i + 1] === undefined) throw new RiteWalkRefusal(`${a} names nothing`);
       opts[a.slice(2)] = argv[++i];
     } else throw new RiteWalkRefusal(`unknown argument ${a}`);
   }
+  if (opts["import-from"] !== undefined && !["bundle", "keep"].includes(opts["import-from"])) throw new RiteWalkRefusal(`--import-from ${opts["import-from"]} names neither bundle nor keep`);
   return opts;
 }
 
@@ -734,6 +820,7 @@ export async function carryWalk(opts, say = console.log) {
   if (state.vars.paritySha && state.vars.paritySha !== paritySha) throw new RiteWalkRefusal(`the parity witness moved since the kept walk began (${state.vars.paritySha} → ${paritySha})`);
   state.vars.paritySha = paritySha;
   if (opts.count !== undefined) state.vars.count = Number(opts.count);
+  if (opts["import-from"] !== undefined) state.vars.importFrom = opts["import-from"];
   mkdirSync(scope.base, { recursive: true });
   const c = carryContext(scope, state, say);
   for (const phase of ["old", "new"]) if (existsSync(join(phase === "old" ? scope.oldSrc : scope.newSrc, ".git"))) { c.hands(phase).stage(); say(await c.hands(phase).proveScope()); }
