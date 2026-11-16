@@ -333,3 +333,204 @@ test("image-leg-table-ends-in-teardown, and the line refuses before any act wher
   assert.equal(theirs.status, 2, theirs.stderr);
   assert.ok(!existsSync("/tmp/rite-image-never"), "a refused line lays no ground");
 });
+
+// ── the carry leg ───────────────────────────────────────────────────────────────────────────────────────────────────
+
+const carrySeed = await import("./rite-walk/carry-seed.mjs").catch((e) => ({ missing: e }));
+const carryLeg = await import("./rite-walk/carry-leg.mjs").catch((e) => ({ missing: e }));
+const present = (mod) => { if (mod.missing) throw mod.missing; return mod; };
+const OLD_REV = "983c70580223cc3b10fe151670fe6916f6d60a84";
+const PIN = "10a450e887ff72bac2ed54c8e2b10ca126e322b6";
+const CANON = {
+  still: { uri: "lar:///ha.ka.ba/lares/docs/still-canon", text: "<<^ code=`&#x0001;`>>\n\nstill canon\n\n<<^ code=`&#x0003;`>>\n" },
+  moved: { uri: "lar:///ha.ka.ba/lares/docs/moved-canon", text: "<<^ code=`&#x0001;`>>\n\nmoved canon\n\n<<^ code=`&#x0003;`>>\n" },
+  kapae: { uri: "lar:///ha.ka.ba/lares/docs/shadowed-canon" },
+};
+/** A scratch home holding the one rehearsal prefix the carry scope allows. */
+function carryHome() {
+  const home = scratch();
+  return { home, base: join(home, ".lares-scratch", "rehearsal", "carry") };
+}
+const carryOpts = (over = {}) => {
+  const { home, base } = carryHome();
+  return { base, project: "lares-rehearsal", port: "4399", image: "lares-rehearsal:local", "from-rev": OLD_REV, realHome: home, checkout: ROOT, ...over };
+};
+
+test("carry-seed-keys-every-stage-row: each stage meme carries `row-key` equal to its title path, and the plan replays byte-equal", () => {
+  const { seedPlan, rowKeyOf, STAGE_PREFIX, INDEX_ROWS } = present(carrySeed);
+  const plan = seedPlan({ count: 40, canon: CANON });
+  assert.equal(JSON.stringify(plan), JSON.stringify(seedPlan({ count: 40, canon: CANON })), "the generator is deterministic");
+  const rows = Object.values(plan.faces).flat();
+  const staged = rows.filter((r) => r.uri.startsWith(STAGE_PREFIX));
+  assert.ok(staged.length >= 40 + 6 + 15 + 10, `${staged.length} stage rows`);
+  for (const r of staged) {
+    const key = r.uri.slice(STAGE_PREFIX.length);
+    assert.equal(rowKeyOf(r.text), key, `${r.uri} carries its title path as its row key`);
+    assert.match(key, /^[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*$/);
+  }
+  const ids = rows.map((r) => `${r.face} ${r.recipe} ${r.uri}`);
+  assert.equal(new Set(ids).size, ids.length, "no row stands twice");
+  assert.equal(INDEX_ROWS.length, 6);
+  for (const ix of INDEX_ROWS) {
+    const r = plan.faces[0].find((x) => x.uri === `${STAGE_PREFIX}${ix.key}`);
+    assert.ok(r, `index row ${ix.key}`);
+    assert.match(r.text, /"stage\/index"/);
+  }
+  const kinds = new Set(rows.map((r) => r.kind));
+  for (const k of ["index", "stage", "margin", "page", "working-still", "working-moved", "non-nfc"]) assert.ok(kinds.has(k), `a ${k} row`);
+  const edges = new Set(plan.edges.map((e) => e.kind));
+  for (const k of ["wiki-init", "wiki-share", "bag-share", "kahua-lift", "kahua-staged", "kapae", "temp-consent", "library", "sensorium"]) assert.ok(edges.has(k), `a ${k} edge`);
+  assert.ok(rows.some((r) => Buffer.byteLength(r.text) >= 480 * 1024), "one body probes the size edge");
+  assert.ok(rows.filter((r) => /slot=`#\/note-/.test(r.text)).length >= 12, "twelve rows carry ahu slots");
+  assert.ok(rows.filter((r) => /ʻ/.test(r.text)).length >= 5, "five rows carry non-ASCII");
+  assert.ok(rows.some((r) => r.kind === "non-nfc" && r.text !== r.text.normalize("NFC")), "one row stands outside NFC");
+  assert.deepEqual(plan.expectedStandoff, [CANON.moved.uri], "the working copy over moved canon is the one stand-off the import owes");
+});
+
+test("carry-seed-sweep: the sweep strips the one `row-key` line and leaves every other byte", () => {
+  const { stageMemeText, sweepRowKey, rowKeyOf } = present(carrySeed);
+  const text = stageMemeText("project/house-laws", "the laws", { tags: ["stage/semantic", "stage/index"], description: "house laws" });
+  const swept = sweepRowKey(text);
+  assert.equal(swept.key, "project/house-laws");
+  assert.equal(rowKeyOf(swept.text), null);
+  assert.equal(swept.text, text.replace('row-key = "project/house-laws"\n', ""));
+  assert.throws(() => sweepRowKey(swept.text), /carries no row-key/);
+  const flipped = present(carryLeg).tamperOne(Buffer.from("abc"));
+  assert.notDeepEqual(flipped, Buffer.from("abc"));
+  assert.equal(flipped.length, 3);
+});
+
+test("carry-scope-holds-the-rehearsal: the base stands under ~/.lares-scratch/rehearsal/, the image scope holds, the old revision names a full sha", () => {
+  const { assertCarryScope } = present(carryLeg);
+  const opts = carryOpts();
+  const scope = assertCarryScope(opts);
+  for (const p of [scope.houseOld, scope.houseNew, scope.oldSrc, scope.newSrc, scope.workspaceOld, scope.workspaceNew, scope.composeOld, scope.composeNew, scope.census])
+    assert.ok(p.startsWith(`${scope.base}/`), `${p} stands beneath the base`);
+  assert.notEqual(scope.houseOld, scope.houseNew);
+  refuses(() => assertCarryScope({ ...opts, base: join(opts.realHome, ".lares-scratch", "elsewhere") }), /\.lares-scratch\/rehearsal/);
+  refuses(() => assertCarryScope({ ...opts, port: "4321" }), /operator's own surface port/);
+  refuses(() => assertCarryScope({ ...opts, image: "lares-surface:local" }), /operator's own image/);
+  refuses(() => assertCarryScope({ ...opts, "from-rev": undefined }), /--from-rev/);
+  refuses(() => assertCarryScope({ ...opts, "from-rev": "983c70580" }), /full sha/);
+});
+
+test("carry-standoff-reads-a-named-set: the import's stand-offs judge against the plan's set, never against a bare exit code", () => {
+  const { judgeImport } = present(carryLeg);
+  const moved = CANON.moved.uri;
+  const tallies = (stoodOff = [], refused = []) => ({ memes: { landed: 3, already: 0, planned: 0, waiting: 0, stoodOff, refused } });
+  const ok = judgeImport([{ code: 1, json: { ok: false, error: { code: "conflict" }, data: { tallies: tallies([`${moved} (canon moved)`]), waiting: [] } } }], { expectedStandoff: [moved] });
+  assert.equal(ok.ok, true, ok.faults.join("; "));
+  const missed = judgeImport([{ code: 0, json: { ok: true, data: { tallies: tallies(), waiting: [] } } }], { expectedStandoff: [moved] });
+  assert.equal(missed.ok, false);
+  assert.match(missed.faults.join("; "), /expected stand-off .*moved-canon.* never stood off/);
+  const extra = judgeImport([{ code: 1, json: { data: { tallies: tallies([`${moved} (x)`, "lar:///ha.ka.ba/other (y)"]), waiting: [] } } }], { expectedStandoff: [moved] });
+  assert.match(extra.faults.join("; "), /unexpected stand-off lar:\/\/\/ha\.ka\.ba\/other/);
+  const refused = judgeImport([{ code: 1, json: { data: { tallies: tallies([`${moved} (x)`], ["lar:///r (no)"]), waiting: [] } } }], { expectedStandoff: [moved] });
+  assert.match(refused.faults.join("; "), /refused/);
+  const waiting = judgeImport([{ code: 1, json: { data: { tallies: tallies([`${moved} (x)`]), waiting: [{ face: "f2" }] } } }], { expectedStandoff: [moved] });
+  assert.match(waiting.faults.join("; "), /waiting/);
+  const unread = judgeImport([{ code: 2, json: null }], { expectedStandoff: [] });
+  assert.match(unread.faults.join("; "), /answered no JSON/);
+});
+
+test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
+  const { CARRY_STEPS, CARRY_SAYS } = present(carryLeg);
+  const ids = CARRY_STEPS.map((s) => s.id);
+  assert.equal(ids.at(-1), "teardown");
+  assert.equal(new Set(ids).size, ids.length);
+  for (const step of CARRY_STEPS) for (const need of step.needs ?? []) assert.ok(ids.indexOf(need) >= 0 && ids.indexOf(need) < ids.indexOf(step.id), `${step.id} needs ${need}, which stands later or nowhere`);
+  assert.ok(!ids.some((id) => /reset/.test(id)), "the leg walks no reset");
+  assert.ok(ids.indexOf("census-old") < ids.indexOf("down-old"), "the old census comes before down");
+  assert.ok(ids.indexOf("export") < ids.indexOf("down-old"));
+  const down = CARRY_STEPS.find((s) => s.id === "down-old");
+  assert.ok(down.needs.includes("census-old") && down.needs.includes("export"), "down waits on the census and the export");
+  for (const [name, says] of Object.entries(CARRY_SAYS)) for (const s of says) assert.notEqual(s.answer, "accept-loss", `${name} types accept-loss`);
+  assert.deepEqual(ids.slice(0, ids.indexOf("persona-1") + 1), ["src-old", "build-old", "stage-custody-old", "found-old", "up-old", "seed-canon-old", "persona-1"], "a probe to persona-1 walks the old phase alone");
+});
+
+/** Hands that answer every call with `answer(kind, args)` and record each one. */
+function recordingCarry(scope, { answer = () => ({ code: 0, stdout: "{}", stderr: "" }), vars = {} } = {}) {
+  const calls = [];
+  const hand = (phase) => {
+    const rec = (kind) => async (args, opts = {}) => { calls.push({ phase, kind, args: [args].flat().map(String), says: opts.says ?? [] }); return { ms: 1, typed: true, ...answer(kind, args, opts) }; };
+    return {
+      scope, vars, env: {}, checkout: phase === "old" ? scope.oldSrc : scope.newSrc,
+      shim: rec("shim"), compose: rec("compose"), docker: rec("docker"),
+      pty: rec("pty"), shimLine: (args) => `shim ${args.join(" ")}`, said: (r) => `${r.stdout}\n${r.stderr}`,
+      cid: async () => "", head: () => (phase === "old" ? vars.oldRev : vars.pin), stage() {}, async proveScope() { return "ok"; },
+      dockerLog: () => [], async teardown() { return { downCode: 0, containers: "", baseStands: false, log: [] }; }, async close() {},
+    };
+  };
+  const hands = { old: hand("old"), new: hand("new") };
+  return {
+    calls,
+    c: {
+      scope, vars, say: () => {},
+      hands: (phase) => hands[phase],
+      git: async (args) => { calls.push({ phase: "host", kind: "git", args: args.map(String), says: [] }); return { code: 0, stdout: answer("git", args).stdout ?? "", stderr: "" }; },
+      node: async (args) => { calls.push({ phase: "host", kind: "node", args: args.map(String), says: [] }); return { code: 0, stdout: "{}", stderr: "" }; },
+    },
+  };
+}
+
+test("carry-hands-never-type-accept-loss-nor-reset: every step run against recording hands asks for neither, nor --accept-omissions", async () => {
+  const { CARRY_STEPS, assertCarryScope } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  mkdirSync(scope.base, { recursive: true });
+  const { c, calls } = recordingCarry(scope, { vars: { oldRev: OLD_REV, pin: PIN, expectedStandoff: [] } });
+  for (const step of CARRY_STEPS) { try { await step.run(c); } catch { /* a fake answer may break a step; its calls stand recorded */ } }
+  const flat = calls.map((k) => [...k.args, ...k.says.map((s) => s.answer)].join(" "));
+  assert.ok(calls.length > 0);
+  for (const line of flat) {
+    assert.doesNotMatch(line, /\baccept-loss\b/, line);
+    assert.doesNotMatch(line, /--accept-omissions/, line);
+    assert.doesNotMatch(line, /(^|\s)reset(\s|$)/, line);
+  }
+  rmSync(scope.base, { recursive: true, force: true });
+});
+
+test("carry-down-refuses-a-loss: a `down` that asks for accept-loss reads fail and types nothing", async () => {
+  const { CARRY_STEPS, assertCarryScope } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  const { c, calls } = recordingCarry(scope, { answer: (kind) => (kind === "pty" ? { code: 124, stdout: "the census reads 3 unsettled\nType accept-loss to stop anyway: ", typed: true } : { code: 0, stdout: "", stderr: "" }) });
+  const result = await CARRY_STEPS.find((s) => s.id === "down-old").run(c);
+  assert.equal(result.ok, false);
+  assert.match(result.answer, /accept-loss/);
+  const down = calls.find((k) => k.kind === "pty");
+  assert.deepEqual(down.says, [], "the down types no answer at all");
+});
+
+test("carry-pinned-sha-holds: the new phase clones the pinned sha, never the head that moved, and a resume refuses another pin", async () => {
+  const { CARRY_STEPS, assertCarryScope, carryState } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  const MOVED = "f".repeat(40);
+  const { c, calls } = recordingCarry(scope, { vars: { oldRev: OLD_REV, pin: PIN }, answer: (kind, args) => (kind === "git" && args.includes("rev-parse") ? { stdout: `${MOVED}\n` } : { code: 0, stdout: "", stderr: "" }) });
+  try { await CARRY_STEPS.find((s) => s.id === "src-new").run(c); } catch { /* the fake tree never stands */ }
+  const checkout = calls.find((k) => k.kind === "git" && k.args.includes("checkout"));
+  assert.ok(checkout, "src-new checks a revision out");
+  assert.ok(checkout.args.includes(PIN), `checks out ${checkout.args.join(" ")}`);
+  assert.ok(!calls.some((k) => k.args.includes(MOVED)), "the moved head never enters a clone");
+  const kept = { vars: { pin: PIN, oldRev: OLD_REV }, rows: [], legs: [] };
+  assert.equal(carryState({ kept, pin: undefined, head: MOVED, oldRev: OLD_REV }).vars.pin, PIN, "a resume keeps the pin it started under");
+  refuses(() => carryState({ kept, pin: MOVED, head: MOVED, oldRev: OLD_REV }), /pinned/);
+  assert.equal(carryState({ kept: null, pin: undefined, head: MOVED, oldRev: OLD_REV }).vars.pin, MOVED, "a fresh walk pins the head it starts at");
+});
+
+test("carry-leg-line-refuses-before-any-act: no scope, the operator's project, or no old revision each read rc 2 and lay no ground", () => {
+  const bare = spawnSync(process.execPath, [WALKER, "--carry-leg", "--out", "/tmp/never"], { encoding: "utf8" });
+  assert.equal(bare.status, 2, bare.stderr);
+  assert.match(bare.stderr, /--base names nothing/);
+  const theirs = spawnSync(process.execPath, [WALKER, "--carry-leg", "--base", "/tmp/rite-carry-never/base", "--project", "lares-surface", "--port", "4399", "--image", "lares-rehearsal:local", "--from-rev", OLD_REV, "--out", "/tmp/never"], { encoding: "utf8" });
+  assert.equal(theirs.status, 2, theirs.stderr);
+  assert.ok(!existsSync("/tmp/rite-carry-never"), "a refused line lays no ground");
+  refuses(() => present(carryLeg).parseCarryArgs(["--carry-leg", "--prune"]), /unknown argument/);
+});
+
+test("image-hands-take-a-checkout: the hands a phase runs with name the clone they stand on, and the image leg's helpers export", () => {
+  const scope = imageLeg.assertImageScope(SCOPE);
+  const h = imageLeg.imageHands(scope, { vars: {} }, { checkout: "/abs/old-src" });
+  assert.equal(h.checkout, "/abs/old-src");
+  assert.match(h.shimLine(["up"]), /^\/abs\/old-src\/tools\/lares-container\.sh up$/);
+  assert.equal(imageLeg.imageHands(scope, { vars: {} }).checkout, ROOT);
+  for (const name of ["build", "stageCustody", "found", "upOwn", "lastJson", "unlockedOf", "UNLOCK_SAYS", "WARD_SAYS", "TEST_PASSPHRASE", "tail", "refusal"]) assert.ok(imageLeg[name] !== undefined, `image-leg exports ${name}`);
+});
