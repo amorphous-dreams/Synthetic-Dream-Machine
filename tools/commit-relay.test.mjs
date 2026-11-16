@@ -586,14 +586,14 @@ test('P1 no caller names the lei or the state path: --lei-file is an unknown opt
 
 test('the controller tool lei-kui strings the push lei under the broker root, refuses a root under scratch, and the relay spends what it wrote', () => {
   const x = setup();
-  const tool = fileURLToPath(new URL('./lei-kui.mjs', import.meta.url));
+  const tool = fileURLToPath(new URL('./push-lei.mjs', import.meta.url));
   const head = x.git('rev-parse', 'HEAD');
   const w = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head, '--remote-url', x.remote], { encoding: 'utf8', env: x.relayEnv });
   assert.equal(w.status, 0, w.stderr);
   assert.equal(readFileSync(x.leiFile, 'utf8'), x.leiText('relay-test', head));
   assert.match(w.stdout, /^push lei strung for relay-test at [0-9a-f]{40}$/m);
   const bad = spawnSync(process.execPath, [tool, '--lane-root', x.lane, '--branch', 'relay-test', '--head', head, '--remote-url', x.remote], { encoding: 'utf8', env: { ...x.relayEnv, LARES_BROKER_ROOT: path.join(scratchOf(x.home), 'other', 'b') } });
-  assert.notEqual(bad.status, 0); assert.match(bad.stderr, /lei-kui refused/);
+  assert.notEqual(bad.status, 0); assert.match(bad.stderr, /push-lei refused/);
   x.request('1', { kind: 'push' }); x.run();
   assert.equal(x.response('1').ok, true, JSON.stringify(x.response('1')));
   assert.equal(existsSync(x.leiFile), false, 'the lei spends on the attempt');

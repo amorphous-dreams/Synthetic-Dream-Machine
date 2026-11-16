@@ -2,7 +2,7 @@
 /**
  * lei-kui — the controller strings ONE push lei for a lane (seat-harness#/the-broker).
  *
- *   node tools/lei-kui.mjs --lane-root <dir> --branch <branch> --head <sha> --remote-url <url>
+ *   node tools/push-lei.mjs --lane-root <dir> --branch <branch> --head <sha> --remote-url <url>
  *
  * Writes `<broker-root>/lei/<lane>/push` (four lines: the lane id, the branch, the head and the push destination) under the one fixed broker root, after the
  * root verifies. No path is named by the caller. The relay reads the lei, binds it to the branch AND the head, and spends it.
@@ -30,4 +30,4 @@ try {
   writeFileSync(tmp, `${laneId(lane)}\n${opts.branch}\n${opts.head}\n${opts["remote-url"]}\n`, { mode: 0o600, flag: "wx" }); // broker-owned
   renameSync(tmp, path.join(dir, "push")); // broker-owned
   console.log(`push lei strung for ${opts.branch} at ${opts.head}`);
-} catch (error) { console.error(`lei-kui refused: ${error.message}`); process.exit(2); }
+} catch (error) { console.error(`push-lei refused: ${error.message}`); process.exit(2); }
