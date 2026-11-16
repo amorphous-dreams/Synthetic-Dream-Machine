@@ -211,7 +211,7 @@ export const STORE_DOOR_VERBS = [
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-receipt",
+  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -233,7 +233,7 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
-  "rite-begin", "rite-land", "rite-receipts", "rite-receipt",
+  "rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer",
 ]);
 
 /**
@@ -389,6 +389,7 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "rite-land": (args) => answer("rite-land", () => riteRow("land", args)),
     "rite-receipts": (args) => answer("rite-receipts", () => riteRow("receipts", args)),
     "rite-receipt": (args) => answer("rite-receipt", () => riteRow("receipt", args)),
+    "rite-offer": (args) => answer("rite-offer", () => riteRow("offer", args)),
     "swarm-show": (args) => answer("swarm-show", () => swarmRow("show", args)),
     "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmRow("cap-set", args)),
     "swarm-share-set": (args) => answer("swarm-share-set", () => swarmRow("share-set", args)),

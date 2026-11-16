@@ -79,7 +79,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--lei <cid>   (unstring) the lei to revoke", "--face N   face index"],
   },
   rite: {
-    usage: "usage: lares rite kukulu [--branch <name>] | begin --rite <r> --branch <name> --head <commit> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
+    usage: "usage: lares rite kukulu [--branch <name>] | begin --rite <r> --branch <name> --head <commit> | offer --branch <name> --head <commit> --image <digest> | land --tessera <id> --head <commit> | receipts | receipt --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash> [--face N]",
     synopsis:
       "A rite spends a lei. kūkulu raises the vessel again around its hearth: the rite begins in the vessel (the lei's return and " +
       "the guest half of a tessera) before the host shim rebuilds the image and raises a new vessel, which rests the host half. " +
@@ -87,11 +87,13 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares lei kui --rite kukulu --branch main --returns 3   # the hand strings the lei first",
       "lares rite kukulu                                       # begin, rebuild, raise, land",
+      "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
       "lares rite land --tessera <id> --head <commit>          # land a rite whose vessel came back locked",
       "lares rite receipts --json                              # data.receipts, data.conferre",
       "lares rite receipt --tree <tree> --checks typecheck,mesh --verdict pass --definitions <hash>   # the battery's verdict, signed by the vessel",
     ],
-    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, land) the head",
+    flags: ["--branch <name>   the line the kukulu lei binds (the checkout's branch where absent)", "--rite <r>   (begin) the rite", "--head <commit>   (begin, offer, land) the head",
+      "--image <digest>   (offer) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--tree <t>   (receipt) the tree the battery read", "--checks <a,b>   (receipt) the checks its verdict covers",
       "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index"],
   },

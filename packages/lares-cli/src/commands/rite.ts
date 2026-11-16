@@ -6,6 +6,8 @@
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
+ *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather the line's lei, sign the vouch over
+ *              the image the host built, and rest the offer the next vessel carries to the pūlama
  *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the vessel signs `receipt/<tree>`.
  *              It notarises testimony: the vessel re-runs no check
  *
@@ -25,7 +27,7 @@ import { storeFailure, storeVerb } from "../store-door.js";
 
 export class RiteUsage extends Error {}
 
-export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-receipt";
+export type RiteVerb = "rite-begin" | "rite-land" | "rite-receipts" | "rite-receipt" | "rite-offer";
 export interface RitePlan { readonly verb: RiteVerb; readonly args: Record<string, unknown> }
 
 /** The host sub-verb's two spellings. */
@@ -55,12 +57,17 @@ export function ritePlan(args: ParsedArgs): RitePlan {
     if (tree === undefined || verdict === undefined || definitions === undefined || checks.length === 0) throw new RiteUsage("receipt names its tree, its checks, its verdict and its definitions: --tree <t> --checks <a,b> --verdict pass|fail --definitions <hash>");
     return { verb: "rite-receipt", args: { tree, checks, verdict, definitions, ...face } };
   }
+  if (act === "offer") {
+    const branch = word(args.options["branch"]), image = word(args.options["image"]);
+    if (branch === undefined || head === undefined || image === undefined) throw new RiteUsage("offer names its branch, its head and the image the host built: --branch <name> --head <commit> --image <digest>");
+    return { verb: "rite-offer", args: { branch, head, image, ...face } };
+  }
   if (act === "land") {
     const tessera = word(args.options["tessera"]);
     if (tessera === undefined || head === undefined) throw new RiteUsage("land names its tessera and the head the vessel stands at: --tessera <id> --head <commit>");
     return { verb: "rite-land", args: { tessera, head, ...face } };
   }
-  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : "name a sub-verb: kukulu, begin, land, receipts or receipt");
+  throw new RiteUsage(isKukulu(act) ? "kukulu runs on the host and plans no single row" : "name a sub-verb: kukulu, begin, offer, land, receipts or receipt");
 }
 
 async function runRow(args: ParsedArgs, plan: RitePlan): Promise<number> {
@@ -92,12 +99,21 @@ const runShim = (shim: string, verb: string): Promise<number> => new Promise((re
   child.once("close", (code) => resolve(code ?? 1));
 });
 
+/** One shim verb whose answer the rite reads: its last line of stdout, or null where the shim names none. */
+const readShim = (shim: string, verb: string): Promise<string | null> => new Promise((resolve) => {
+  execFile(shim, [verb], { encoding: "utf8" }, (err, stdout) => resolve(err ? null : stdout.trim().split("\n").at(-1)?.trim() || null));
+});
+
+/** The shim verb that names the digest of the image the build left (the same digest the shim reports to a pūlama at `up`). */
+export const SHIM_IMAGE_VERB = "image-digest";
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
-function hostPorts(runShim: (verb: string) => Promise<number>, face: string | undefined, say: (line: string) => void): RitePorts {
+function hostPorts(runShim: (verb: string) => Promise<number>, face: string | undefined, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
+    image,
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     row: (verb, rowArgs) => new Promise<RiteRowAnswer>((resolve) => {
-      const line = ["rite", verb === "rite-begin" ? "begin" : "land", ...Object.entries(rowArgs).flatMap(([k, v]) => [`--${k}`, String(v)]), ...(face === undefined ? [] : ["--face", face]), "--json"];
+      const line = ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...Object.entries(rowArgs).flatMap(([k, v]) => [`--${k}`, String(v)]), ...(face === undefined ? [] : ["--face", face]), "--json"];
       const child = spawn(process.execPath, [BIN, ...line], { stdio: ["inherit", "pipe", "inherit"] });
       let text = "";
       child.stdout.setEncoding("utf8").on("data", (chunk: string) => { text += chunk; });
@@ -126,7 +142,7 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
     }
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
     const face = typeof args.options["face"] === "string" ? args.options["face"] : undefined;
-    const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), face, (line) => console.error(line)), branch === undefined ? {} : { branch });
+    const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), face, (line) => console.error(line), async () => { const d = await readShim(shim, SHIM_IMAGE_VERB); return d !== null && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(d) ? d : null; }), branch === undefined ? {} : { branch });
     emit(args, out.code === 0
       ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
       : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: "the kūkulu rite did not complete; the lines above name where it stopped" }, human: () => console.log(JSON.stringify(out.data)) });

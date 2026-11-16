@@ -8,7 +8,7 @@ import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_ROWS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
 
-const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-receipt"] as const;
+const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer"] as const;
 
 test("RED: every rite row is a store-door verb that acts as a face; CONTROL: a seat may run each, and none asks a ward route", () => {
   for (const row of ROWS) {

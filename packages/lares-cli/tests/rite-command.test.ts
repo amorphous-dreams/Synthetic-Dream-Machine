@@ -114,6 +114,50 @@ describe("the rite runs on the host, and its rows in the vessel", () => {
   it("RED: `rite kukulu` (and its spelling `kūkulu`) stays on this machine, where the shim stands; CONTROL: begin, land and receipts forward into the vessel", () => {
     expect(route(["rite", "kukulu"])).toBe("local");
     expect(route(["rite", "kūkulu", "--branch", "main"])).toBe("local");
-    for (const sub of ["begin", "land", "receipts", "receipt"]) expect(route(["rite", sub, "--json"]), sub).toBe("forward");
+    for (const sub of ["begin", "land", "receipts", "receipt", "offer"]) expect(route(["rite", sub, "--json"]), sub).toBe("forward");
+  });
+});
+
+describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
+  const IMAGE = "sha256:" + "ab".repeat(32);
+
+  it("RED: where the host names the image it built, the standing vessel writes the offer AFTER the build and BEFORE the lowering; CONTROL: with no image port the order stands as before", async () => {
+    const f = fakes();
+    f.ports.image = async () => { f.calls.push("image"); return IMAGE; };
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls).toEqual([
+      "checkout",
+      `rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD })}`,
+      "shim build", "image",
+      `rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE })}`,
+      "shim down", "shim up",
+      `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD })}`,
+    ]);
+    expect(out.code).toBe(0);
+    expect(f.said.join("\n")).toMatch(/the offer rests for the next vessel/);
+    const bare = fakes();
+    await riteKukulu(bare.ports, {});
+    expect(bare.calls.some((c) => c.startsWith("rite-offer") || c === "image")).toBe(false);
+  });
+
+  it("RED: a standing vessel that writes no offer stays standing: no lowering, no raise, and the answer names the offer; a host that names no digest goes on and says so", async () => {
+    const f = fakes();
+    f.ports.image = async () => IMAGE;
+    const row = f.ports.row;
+    f.ports.row = async (verb, args) => verb === "rite-offer" ? { ok: false, code: "swarm-lei-absent", message: "no kukulu lei rests" } : row(verb, args);
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls.filter((c) => c.startsWith("shim"))).toEqual(["shim build"]);
+    expect(out).toMatchObject({ code: 1, data: { begun: true, landed: false, stopped: "offer", refusal: "swarm-lei-absent" } });
+    const none = fakes();
+    none.ports.image = async () => null;
+    const went = await riteKukulu(none.ports, {});
+    expect(went.code).toBe(0);
+    expect(none.calls.filter((c) => c.startsWith("shim"))).toEqual(["shim build", "shim down", "shim up"]);
+    expect(none.said.join("\n")).toMatch(/no offer rests for a pūlama/);
+  });
+
+  it("the offer sub-verb plans its store row", () => {
+    expect(plan("offer", "--branch", "main", "--head", HEAD, "--image", IMAGE)).toEqual({ verb: "rite-offer", args: { branch: "main", head: HEAD, image: IMAGE } });
+    expect(() => plan("offer", "--branch", "main", "--head", HEAD)).toThrow(RiteUsage);
   });
 });

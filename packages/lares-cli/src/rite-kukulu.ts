@@ -6,6 +6,8 @@
  *   1. checkout     the checkout's head and branch
  *   2. rite-begin   IN THE VESSEL: derive the head's tree, return the kukulu lei, rest the guest half (`rite-begun`)
  *   3. shim build   rebuild the vessel's image from the committed checkout
+ *   3a. rite-offer  IN THE VESSEL, where the host names the image it built (`image`): gather the line's lei, sign the vouch
+ *                   over that image, and rest the offer the new vessel carries to the pūlama (`kukulu-offer.json`)
  *   4. shim down    the standing vessel goes down
  *   5. shim up      a new vessel stands
  *   6. rite-land    IN THE NEW VESSEL: rest the host half (`rite-landed`), naming the begun half and the head it stands at
@@ -30,7 +32,9 @@ export interface RitePorts {
   /** The checkout's head and the branch it rides. */
   checkout(): Promise<{ readonly head: string; readonly branch: string }>;
   /** One store row, answered by the vessel that stands (or the offline door where none does). */
-  row(verb: "rite-begin" | "rite-land", args: Record<string, unknown>): Promise<RiteRowAnswer>;
+  row(verb: "rite-begin" | "rite-land" | "rite-offer", args: Record<string, unknown>): Promise<RiteRowAnswer>;
+  /** The digest of the image the build left, as the HOST reads it; null where the host names none. Absent, the rite writes no offer. */
+  image?(): Promise<string | null>;
   /** One verb of the host shim; the answer carries its exit code. */
   shim(verb: "build" | "down" | "up"): Promise<number>;
   say(line: string): void;
@@ -52,10 +56,25 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
   const landCall = `lares rite land --tessera ${tessera} --head ${head}`;
   for (const verb of ["build", "down", "up"] as const) {
     const code = await ports.shim(verb);
-    if (code === 0) continue;
-    const where = verb === "build" ? "the vessel still stands as it stood" : verb === "down" ? "the vessel may still stand" : "the vessel stands down";
-    ports.say(`kūkulu: the shim's ${verb} answered ${code}; ${where}; the lei's return stays spent, and the begun half reads red at the next wake until a vessel at ${head} lands it (${landCall}).`);
-    return { code: 1, data: { ...base, tessera, begun: true, landed: false, stopped: verb } };
+    if (code !== 0) {
+      const where = verb === "build" ? "the vessel still stands as it stood" : verb === "down" ? "the vessel may still stand" : "the vessel stands down";
+      ports.say(`kūkulu: the shim's ${verb} answered ${code}; ${where}; the lei's return stays spent, and the begun half reads red at the next wake until a vessel at ${head} lands it (${landCall}).`);
+      return { code: 1, data: { ...base, tessera, begun: true, landed: false, stopped: verb } };
+    }
+    if (verb !== "build" || !ports.image) continue;
+    // BETWEEN THE BUILD AND THE LOWERING, the standing vessel writes what the next one carries to the pūlama. The host names
+    // the image. A vessel that cannot write the offer stays standing: the vessel raised after it would wear nothing.
+    const image = await ports.image();
+    if (image === null) {
+      ports.say("kūkulu: the host names no digest for the image it built, so no offer rests for a pūlama; the rite goes on, and a vessel standing by a pūlama will wake at the floor.");
+      continue;
+    }
+    const offered = await ports.row("rite-offer", { branch, head, image });
+    if (!offered.ok) {
+      ports.say(`kūkulu: the standing vessel wrote no offer (${offered.message}); it still stands, the lei's return stays spent, and the begun half reads red until a vessel at ${head} lands it (${landCall}).`);
+      return { code: 1, data: { ...base, tessera, begun: true, landed: false, stopped: "offer", refusal: offered.code } };
+    }
+    ports.say(`kūkulu: the offer rests for the next vessel (${String(offered.output["lei"] ?? "?")} lei, a vouch over ${image})`);
   }
   const landed = await ports.row("rite-land", { tessera, head });
   if (landed.ok) {

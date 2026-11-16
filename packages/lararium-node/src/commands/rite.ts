@@ -4,7 +4,9 @@
  * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree out of the checkout's object store (`gitTreeOf`, no git binary), returns the
  * rite's lei at that head (the evidence, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
- * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in.
+ * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in; `offer` gathers what a
+ * kūkulu carries to the pūlama (the line's lei and this vessel's vouch over the image the host built) and rests it in the
+ * house's config home for the next vessel (`kukulu-offer`).
  *
  * THE LEI CARRIES THE GRANT. No row here reads hand-only: the hand strung the lei under the ward, and any seat holding the
  * line may spend it.
@@ -24,8 +26,10 @@ import {
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
+import { openedCustody } from "../custody-seat.js";
+import { kukuluOfferPath, writeKukuluOffer } from "../kukulu-offer.js";
 
-export type RiteAction = "begin" | "land" | "receipts" | "receipt";
+export type RiteAction = "begin" | "land" | "receipts" | "receipt" | "offer";
 
 /** Where the vessel looks for the checkout a rite's head belongs to: its own working directory, then the house's workspace mount. */
 export const RITE_CHECKOUTS: readonly string[] = [process.cwd(), "/workspace"];
@@ -44,6 +48,8 @@ export async function runRiteVerb(opts: {
   args: Readonly<Record<string, unknown>>; wiki?: SwarmWikiPort;
   /** The head's tree, as this vessel derives it; `gitTreeOf` where the caller seats none. */
   treeOf?: (head: string) => Promise<string>;
+  /** Where an `offer` rests; the house's config home where the caller seats none. */
+  offerPath?: string;
 }): Promise<Record<string, unknown>> {
   if (!opts.wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: a rite's records need the founded wiki");
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
@@ -62,6 +68,19 @@ export async function runRiteVerb(opts: {
   if (opts.action === "land") {
     if (!/^[0-9a-f]{64}$/.test(str("tessera")) || !str("head")) throw new SwarmRefused("rite-malformed", "a landing names its tessera and the head the vessel stands at");
     return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head") }, trust, group, vessel) };
+  }
+  if (opts.action === "offer") {
+    // THE OFFER A KŪKULU CARRIES TO THE PŪLAMA: this vessel, still standing, gathers the line's lei and signs the vouch over
+    // the image the host named, then rests both where the next vessel reads them (`kukulu-offer`).
+    if (!str("branch") || !str("head") || !str("image")) throw new SwarmRefused("rite-offer-malformed", "an offer names its branch, its head and the image the host built");
+    const offerTree = await (opts.treeOf ?? gitTreeOf)(str("head"));
+    let offerWard;
+    try { offerWard = cosignPortWitness(await nodeWardCosignPortOf(opts.repo, loaded)); }
+    catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", e.message); throw e; }
+    return { ...await writeKukuluOffer({
+      wiki: opts.wiki, trust, group, ward: offerWard, branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
+      holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
+    }) };
   }
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");
