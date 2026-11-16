@@ -108,6 +108,42 @@ describe("RED pulama-serves-no-key: no frame either side writes carries a key th
   });
 });
 
+describe("RED pulama-record-ops: both ends of the wire name a custody record's ops `record.*` and the claim `records`", () => {
+  test("the vessel's doors send record ops alone and the pūlama answers them; the retired row ops answer as no operation", async () => {
+    fx = await standPulama("pulama-record-ops", () => openGate({ face: null, coldReads: ["face-proof-key"] }));
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    await fx.kept.updateColdRecord("identity", faceProofKeyFile(0, "nexus-x"), () => ({ plaintext: new Uint8Array(32).fill(6), value: null }));
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    await vessel.writeRecord("identity", HOT, Uint8Array.from([1, 2, 3]));
+    await vessel.readRecord("identity", HOT);
+    await vessel.updateRecord("identity", HOT, () => ({ plaintext: Uint8Array.from([4]), value: null }));
+    await vessel.withRecords(async (records) => { await records.read("identity", HOT); await records.remove("identity", HOT); });
+    await vessel.writeRecord("identity", HOT, Uint8Array.from([5]));
+    await vessel.removeRecord("identity", HOT, () => true);
+    await vessel.openColdRecord("identity", faceProofKeyFile(0, "nexus-x"), () => undefined);
+    const sent = fx.lines.fromVessel.map((l) => JSON.parse(l) as { t?: string; op?: string; a?: { kind?: string } }).filter((f) => f.t === "req");
+    const ops = new Set(sent.map((f) => f.op));
+    for (const op of ["record.write", "record.read", "record.standing", "record.swap", "record.remove", "records.read", "records.remove", "record.cold-open"]) expect(ops.has(op), op).toBe(true);
+    expect([...ops].filter((op) => op !== undefined && /^rows?\./.test(op))).toEqual([]);
+    expect(sent.filter((f) => f.op === "claim.begin").map((f) => f.a?.kind)).toContain("records");
+    // The pūlama's side: a record op answers, and the retired row op reads as an operation the session never carries.
+    const channel = fx.channel()!;
+    let id = 7000;
+    expect((await ask(channel, ++id, "record.read", { home: "identity", file: HOT }))["ok"]).toBe(true);
+    const moved = await ask(channel, ++id, "record.move", { home: "identity", source: HOT, destination: HOT, expected: Uint8Array.from([9]) });
+    expect((moved["err"] as { reading?: string } | undefined)?.reading).not.toBe("needs-the-human");
+    for (const op of ["row.read", "row.write", "row.standing", "row.swap", "row.move", "row.remove", "row.cold-open", "rows.read", "rows.remove"]) {
+      const res = await ask(channel, ++id, op, { home: "identity", file: HOT });
+      expect(res["ok"], op).toBe(false);
+      expect(res["err"], op).toMatchObject({ name: "PulamaRefused", reading: "needs-the-human" });
+    }
+    const rowsClaim = await ask(channel, ++id, "claim.begin", { kind: "rows" });
+    expect(rowsClaim["ok"]).toBe(false);
+    expect(rowsClaim["err"]).toMatchObject({ name: "PulamaRefused", reading: "pulama-frame-malformed" });
+  });
+});
+
 describe("a session stands only on a live channel, and a decision writes only over the row it read", () => {
   test("RED: a channel that leaves while the gate reads gets no session; a vessel that leaves mid-dial seats none", async () => {
     let pass!: () => void;
@@ -207,7 +243,7 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
       expect(res["err"], op).toMatchObject(human);
     }
     // CONTROL: the session still serves, and the pūlama stays lit.
-    expect((await ask(channel, ++id, "row.read", { home: "identity", file: HOT }))["ok"]).toBe(true);
+    expect((await ask(channel, ++id, "record.read", { home: "identity", file: HOT }))["ok"]).toBe(true);
     expect(fx.kept.isUnlocked()).toBe(true);
     // A vessel's lock leaves its session and never dims the pūlama.
     await vessel.lock();
