@@ -35,11 +35,12 @@ export async function gatherWard(verb: string): Promise<WardCredential> {
 /**
  * The `wardRef` a store verb names when it is a ward act, or nothing when it is not. The ref is bound to this verb and these
  * arguments, so only this act spends it. A standing vessel parks the route over its custody door; with none standing, the route
- * parks in this process, where the direct row takes it.
+ * parks in this process, where the direct row takes it. A caller that already gathered the person's route in this same act (the
+ * unlock that strings a keep lei, `./keep-at-unlock.ts`) hands it in as `route`, and nothing asks again.
  */
-export async function wardTicketFor(verb: string, args: Readonly<Record<string, unknown>>, daemonUp: boolean): Promise<Record<string, unknown>> {
+export async function wardTicketFor(verb: string, args: Readonly<Record<string, unknown>>, daemonUp: boolean, handed?: readonly Credential[]): Promise<Record<string, unknown>> {
   if (!storeVerbNeedsWard(verb, args)) return {};
-  const route = await gatherWardRoute(`lares ${verb}`);
+  const route = handed !== undefined ? [...handed] : await gatherWardRoute(`lares ${verb}`);
   if (!daemonUp) return { wardRef: parkWardTicket(wardCredential(route), { verb, args }) };
   const { sendCustodyFrame } = await import("./custody-door.js");
   const answer = await sendCustodyFrame({ op: "ward", credentials: route, verb, argsDigest: wardBindDigest({ verb, args }) });

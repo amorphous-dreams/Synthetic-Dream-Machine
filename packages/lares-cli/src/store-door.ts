@@ -12,7 +12,7 @@
  */
 
 import { wardTicketFor } from "./ward-door.js";
-import { ControlHomeUnavailable, VESSEL_LOCKED } from "@lararium/mesh";
+import { ControlHomeUnavailable, VESSEL_LOCKED, type Credential } from "@lararium/mesh";
 import { storeDoorDirect, storeRowFace, storeVerbGatesFirst, StoreHeld, STORE_DOOR_FACE_ROWS, type StoreDoorVerb } from "@lararium/node";
 import { openLocalSession, SessionRefused } from "./session-connector.js";
 import { sealedAct } from "./sealed-act-door.js";
@@ -292,6 +292,8 @@ export async function storeVerb(
   Refusal: new (message: string) => Error = StoreDoorRefusal,
   /** The custody reading a caller already took this command: the door probes ONCE per command. */
   standing?: VesselStanding,
+  /** The route this same act already gathered, handed to a ward act so nothing asks again (`./keep-at-unlock.ts`). */
+  wardRoute?: readonly Credential[],
 ): Promise<{ readonly output: Record<string, unknown>; readonly via: StoreDoorVia }> {
   const daemonUp = await udsAlive();
   // A LOCKED, COMPOSING OR SILENT VESSEL REFUSES BY NAME BEFORE THE DOOR PARKS, for the rows that act as a face or found one: the key
@@ -316,11 +318,11 @@ export async function storeVerb(
   // panel-owned row, the kāpae lower, answers through the panel's handler, whose refusal rides the session's error).
   const needsRoute = (text: unknown): boolean => typeof text === "string" && /^ward-needs-fresh-unlock\b/.test(text);
   let r: Awaited<ReturnType<typeof run>> | null = null;
-  if (!gatesFirst) r = await run(await wardTicketFor(verb, sent, daemonUp));
+  if (!gatesFirst) r = await run(await wardTicketFor(verb, sent, daemonUp, wardRoute));
   else {
     try { r = await run({}); }
     catch (e) { if (!(e instanceof RoutedVerbRefused) || !needsRoute(e.message)) throw e; }
-    if (r === null || needsRoute(r.output["refused"])) r = await run(await wardTicketFor(verb, sent, daemonUp));
+    if (r === null || needsRoute(r.output["refused"])) r = await run(await wardTicketFor(verb, sent, daemonUp, wardRoute));
   }
   if (typeof r.output["refused"] === "string") {
     const refusal = new Refusal(r.output["refused"]);

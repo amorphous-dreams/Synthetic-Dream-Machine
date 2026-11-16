@@ -768,6 +768,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares vault status                     # the slot tree, one reading of each standing file, and any private file outside the carrier table",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
+      "                                       # where LARES_KEEP_WORKSPACE (or the one LARES_WORKSPACES pair) names a keep workspace and no keep lei stands, it asks once to string one under the same passphrase",
       "lares vault lock [--face N]            # the standing vessel drops its key and stands at the floor; --face N drops that face alone",
       "lares vault bind [--face N] [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back); --face N binds into that face's own tree",
       "lares vault unbind <slot-id> [--face N]   # unlock, remove a slot; the rotation offer prints; --face N leaves the node tree alone",

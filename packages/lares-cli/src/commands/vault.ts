@@ -19,7 +19,7 @@ import {
 import { openTreeKey, decodeSlotTree, type Credential, type SlotSpec } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
 import { larIdentityDir, larDataDir, larSealHome } from "../env.js";
-import { gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
+import { askYesNo, gatherBundleRoute, gatherCards, gatherCredentials, gatherNewSlot, gatherStayingSlot } from "../custody-prompt.js";
 import { backupLines, cutBundleToFile } from "../vault-backup.js";
 import { importLines, restoreFromBundle, restoreFromCards, restoreLines } from "../vault-restore.js";
 import { sealedActVia } from "../sealed-act-door.js";
@@ -31,6 +31,10 @@ import { emit, exitFor, refuseUsage, wantsJson } from "../render.js";
 import { helpLines } from "../command-help.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
+import { offerKeepLei, type KeepOfferPorts } from "../keep-at-unlock.js";
+import { configuredKeepWorkspace } from "../keep-config.js";
+import { canPromptSecret } from "../prompt-secret.js";
+import { storeFailure, storeVerb } from "../store-door.js";
 
 function usage(args: ParsedArgs, typed?: string): number {
   return refuseUsage(args, "vault", helpLines("vault"), typed ? `unknown sub-verb "${typed}"` : undefined);
@@ -265,6 +269,19 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   return 1;
 }
 
+/** The keep offer's live ports: this terminal (never under `--json`), and the store door, the ward taking the unlock's route. */
+function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
+  return {
+    canAsk: () => !wantsJson(args) && canPromptSecret(),
+    ask: (question) => askYesNo(question),
+    row: async (verb, rowArgs, route) => {
+      try { return { ok: true, output: (await storeVerb(verb, rowArgs, undefined, undefined, route)).output }; }
+      catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
+    },
+    say: (line) => console.log(line),
+  };
+}
+
 const CUSTODY_PROBE_UNREAD = "the vessel stands and its custody door read no answer; a pūlama keeps this house, so no route is asked here: run `lares vault status`, then unlock again";
 
 async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
@@ -302,6 +319,8 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
         if (landed !== null && Number(landed["granted"] ?? 0) > 0) console.log(`shares: ${Number(landed["granted"])} grant(s) landed for the faces now open`);
         if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
       } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
+      // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route.
+      await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds, ...(face !== undefined ? { face } : {}) });
     }
     return ok ? 0 : 1;
   }
