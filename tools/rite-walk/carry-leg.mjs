@@ -14,8 +14,10 @@
 //
 // WHAT THE LEG NEVER DOES: call the shim's `reset` (no step names it), type `accept-loss` (a `down` that asks for it reads
 // fail: a drop is exactly what the rehearsal must catch), export with `--accept-omissions` (an omission other than
-// `parallel-drafts` reads fail), stand a pūlama, or read a stand-off as a bare exit code: the import exits 1 for rows over
-// canon that moved between the revisions, and the leg judges its stand-offs against the plan's named set (`judgeImport`).
+// `parallel-drafts` reads fail), or read a stand-off as a bare exit code: the import exits 1 for rows over canon that moved
+// between the revisions, and the leg judges its stand-offs against the plan's named set (`judgeImport`) and hands each
+// import answer to the parity witness (`--imports`), which excuses those uris by name. The pūlama stands only at the end,
+// on the carried house (carry → light): the image leg's pūlama phase, once parity reads par.
 //
 // CUSTODY: the staged test custody and the published test route, as the image leg rides them. `found` runs offline under
 // `test-ward-route.mjs`; every terminal act (`up`, `vault unlock`, `persona new`, a ward act) types the published route on
@@ -33,7 +35,7 @@ import { fileURLToPath } from "node:url";
 import { seedFiles, seedPlan, pickCanon, PETNAMES, SHARED_WIKIS, STAGE_PREFIX } from "./carry-seed.mjs";
 import {
   TEST_PASSPHRASE, UNLOCK_SAYS, WARD_SAYS, assertImageScope, build, found, imageHands, imageReceiptFaults, lastJson,
-  refusal, stageCustody, surfaceEnvText, tail, unlockedOf, upOwn, walkImage,
+  pulamaLight, pulamaUp, refusal, stageCustody, surfaceEnvText, tail, unlockedOf, upOwn, upPulama, walkImage,
 } from "./image-leg.mjs";
 import { RiteWalkRefusal, lineOf, quote, sha256, verdict } from "./steps.mjs";
 
@@ -103,6 +105,7 @@ export function judgeImport(answers, { expectedStandoff = [] } = {}) {
   const landed = {};
   answers.forEach((a, i) => {
     if (!a?.json) { faults.push(`face answer ${i} answered no JSON (exit ${a?.code})`); return; }
+    if (a.json.data?.applied !== true) faults.push(`face answer ${i} never applied (applied: ${JSON.stringify(a.json.data?.applied)})`);
     for (const [cls, t] of Object.entries(a.json.data?.tallies ?? {})) {
       landed[cls] = (landed[cls] ?? 0) + (t.landed ?? 0);
       for (const s of t.stoodOff ?? []) stood.add(uriOf(s));
@@ -123,6 +126,12 @@ export function judgeExport(r, answer) {
   const kinds = (answer.data.omissions ?? []).map((o) => o.kind);
   const bad = kinds.filter((k) => !ALLOWED_OMISSIONS.includes(k));
   return { ok: bad.length === 0, faults: bad.map((k) => `omission ${k}`), kinds };
+}
+
+/** The parity witness's compare line (the contract on the span): census readings per side, the base, each import answer, each named stand-off. */
+export function compareArgs({ old = [], fresh = [], base = [], imports = [], standOff = [], out }) {
+  const each = (flag, xs) => xs.flatMap((x) => [flag, x]);
+  return ["compare", ...each("--old", old), ...each("--new", fresh), ...each("--base", base), ...each("--imports", imports), ...each("--stand-off", standOff), "--json", ...(out ? ["--out", out] : [])];
 }
 
 /** Flip one byte in the middle of a buffer: the tampered-bundle probe. */
@@ -460,7 +469,12 @@ const importApply = async (c) => {
     const w = await wear(c, "new", face);
     if (!w.ok) return { ok: false, answer: `face ${face} never stood worn: ${tail(w.transcript)}` };
     const r = await h.pty(h.shimLine(["import", BUNDLE, "--apply", "--json"]), { says: CARRY_SAYS.import, route: TEST_PASSPHRASE, timeout: 1_800_000 });
-    answers.push({ code: r.code, json: json(r.stdout) });
+    const answer = json(r.stdout);
+    answers.push({ code: r.code, json: answer });
+    mkdirSync(c.scope.census, { recursive: true });
+    const file = join(c.scope.census, `import-${face}.json`);
+    writeFileSync(file, `${JSON.stringify(answer, null, 2)}\n`);
+    (c.vars.imports ??= [])[face] = file;
   }
   const j = judgeImport(answers, { expectedStandoff: c.vars.expectedStandoff ?? [] });
   c.vars.importTallies = answers.map((a) => a.json?.data?.tallies ?? null);
@@ -485,7 +499,7 @@ const reimport = async (c) => {
 
 const compare = async (c, out) => {
   const pick = (label) => (c.vars[`census-${label}`] ?? []);
-  const args = [PARITY, "compare", "--old", ...pick("old"), "--new", ...pick("new"), ...(pick("new-base").length ? ["--base", ...pick("new-base")] : []), "--json", "--out", out];
+  const args = [PARITY, ...compareArgs({ old: pick("old"), fresh: pick("new"), base: pick("new-base"), imports: (c.vars.imports ?? []).filter(Boolean), standOff: c.vars.expectedStandoff ?? [], out })];
   const r = await c.node(args, { env: c.hands("new").env, timeout: 600_000 });
   return { code: r.code, answer: json(r.stdout) };
 };
@@ -622,6 +636,10 @@ export const CARRY_STEPS = Object.freeze([
   { id: "instrument-collisions", command: "drop one row, change one row · compare (red) · restore · compare (par)", via: PTY, needs: ["parity"], expect: "red naming both, then par", run: instrumentCollisions },
   { id: "tampered-bundle", command: `flip one byte in a copy · lares import ${CHECK} --apply`, needs: ["import-apply"], expect: "bundle-hash-mismatch; nothing lands", run: tamperedBundle },
   { id: "row-key-sweep", command: "per stage row: meme get · strip row-key · meme put; a keyless row put", via: PTY, needs: ["parity"], expect: "no row carries row-key; a keyless row lands", run: rowKeySweep },
+  // Carry → light: the carried house stands its pūlama, lights it, and the vessel seats its holder over the socket.
+  { id: "pulama-up", command: "new-src/tools/lares-container.sh pulama up", needs: ["parity"], expect: "standing unlit", run: onPhase("new", pulamaUp) },
+  { id: "pulama-light", command: "new-src/tools/lares-container.sh pulama light", via: PTY, needs: ["pulama-up"], expect: "lit: true", run: onPhase("new", pulamaLight) },
+  { id: "up-by-pulama", command: "new-src/tools/lares-container.sh up", via: PTY, needs: ["pulama-light"], expect: "the carried vessel seats its holder over the pūlama's socket", run: onPhase("new", upPulama) },
   { id: "teardown", command: "docker compose down --remove-orphans · rm the base", expect: "no container of the project stands; the base is gone", run: teardown },
 ]);
 
@@ -651,7 +669,7 @@ export function carryContext(scope, state, say = () => {}) {
     hands(phase) {
       const ps = phaseScope(scope, phase);
       made[phase] ??= imageHands(ps, state, { checkout: phase === "old" ? scope.oldSrc : scope.newSrc });
-      if (current !== phase && existsSync(dirname(scope.envFile))) { writeFileSync(scope.envFile, surfaceEnvText(ps, { uid, gid })); current = phase; }
+      if (current !== phase && existsSync(dirname(scope.envFile))) { writeFileSync(scope.envFile, surfaceEnvText(ps, { uid, gid, pulama: state.vars.pulama === true })); current = phase; }
       return made[phase];
     },
     git: (args, opts) => hostRun("git", args, { env: gitEnv, ...opts }),

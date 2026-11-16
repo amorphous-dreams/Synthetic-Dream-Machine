@@ -418,7 +418,7 @@ test("carry-standoff-reads-a-named-set: the import's stand-offs judge against th
   const { judgeImport } = present(carryLeg);
   const moved = CANON.moved.uri;
   const tallies = (stoodOff = [], refused = []) => ({ memes: { landed: 3, already: 0, planned: 0, waiting: 0, stoodOff, refused } });
-  const ok = judgeImport([{ code: 1, json: { ok: false, error: { code: "conflict" }, data: { tallies: tallies([`${moved} (canon moved)`]), waiting: [] } } }], { expectedStandoff: [moved] });
+  const ok = judgeImport([{ code: 1, json: { ok: false, error: { code: "conflict" }, data: { applied: true, tallies: tallies([`${moved} (canon moved)`]), waiting: [] } } }], { expectedStandoff: [moved] });
   assert.equal(ok.ok, true, ok.faults.join("; "));
   const missed = judgeImport([{ code: 0, json: { ok: true, data: { tallies: tallies(), waiting: [] } } }], { expectedStandoff: [moved] });
   assert.equal(missed.ok, false);

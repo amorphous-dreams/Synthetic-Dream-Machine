@@ -452,7 +452,7 @@ export const found = async (h) => {
   return { ok: r.code === 0 && text.includes("the hearth stands"), answer: r.code === 0 ? lineOf(text, "the hearth stands") : refusal(r), measures: { seconds: Math.round(r.ms / 1000) } };
 };
 
-const pulamaUp = async (h) => {
+export const pulamaUp = async (h) => {
   h.pulamaMode(true);
   const r = await h.shim(["pulama", "up"], { timeout: 180_000 });
   if (r.code !== 0) return { ok: false, answer: refusal(r) };
@@ -489,7 +489,7 @@ const pulamaMeasure = async (h) => {
   return { ok, answer: `read-only root ${readOnly} (${rootProbe}); runs as ${inUid}:${inGid}, network ${network}; vessel socket ${vesselSock} inside, host owner ${st?.uid}:${st?.gid} mode ${measures.hostSocket?.mode}; path ${measures.socketPathBytes.inContainer} bytes inside, ${measures.socketPathBytes.onHost} on the host, of ${measures.socketPathBytes.max}`, measures };
 };
 
-const pulamaStatus = (wantLit) => async (h) => {
+export const pulamaStatus = (wantLit) => async (h) => {
   const r = await h.shim(["pulama", "status"]);
   const status = lastJson(r.stdout);
   if (r.code !== 0 || status === null) return { ok: false, answer: refusal(r) };
@@ -497,7 +497,7 @@ const pulamaStatus = (wantLit) => async (h) => {
   return { ok: status.lit === wantLit, answer: JSON.stringify(status), measures: { status } };
 };
 
-const pulamaLight = async (h) => {
+export const pulamaLight = async (h) => {
   const r = await h.pty(h.shimLine(["pulama", "light"]), { says: [{ prompt: "route: ", answer: TEST_PASSPHRASE }], route: TEST_PASSPHRASE, timeout: 120_000 });
   const after = await h.shim(["pulama", "status"]);
   const status = lastJson(after.stdout);
@@ -523,7 +523,7 @@ export const upOwn = async (h) => {
 };
 
 /** The first `up` beside a lit pūlama: the vessel seats its holder over the socket and offers what it wears. */
-const upPulama = async (h) => {
+export const upPulama = async (h) => {
   const before = await h.cid("lares");
   const r = await upOnTerminal(h);
   const after = await h.cid("lares");
