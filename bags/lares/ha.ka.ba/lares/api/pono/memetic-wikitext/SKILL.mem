@@ -69,7 +69,7 @@ Do not:
 * let `loulou` silently behave like transclusion
 * treat `?` as decoration
 * bury kapu posture in implication when explicit qualification belongs on the page
-* add legacy rename notes when present context already binds the live sugar term
+* add rename notes when present context already binds the live sugar term
 
 <<~/ahu>>
 
@@ -217,6 +217,6 @@ If parser or render-pipeline law still lacks its own stable carrier, leave the b
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;D9kO2PnTgYrXhKGE5quaDwRlH2VaeZSwVz_Qn4thOZs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OsV9FxnFnKLxa_QOP3nozs_emIJQSpD547u2PJF0Xrs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

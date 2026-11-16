@@ -93,7 +93,7 @@ A cure MUST ship its planted red, quoted. The node MUST NOT claim a cure it has 
 
 Every coat below was worn by a live instrument in this tree.
 
-* ''A retired spelling.'' The probe binds a form the corpus stopped writing — a colon where a call binds with `=`, a decorator with empty parentheses where one now carries an argument. Greppable: run the literal against the corpus and read the count. Zero names it.
+* ''A dead spelling.'' The probe binds a form the corpus never writes — a colon where a call binds with `=`, a decorator with empty parentheses where one now carries an argument. Greppable: run the literal against the corpus and read the count. Zero names it.
 * ''An absent subject read as a clean one.'' A missing file, a moved surface, an unbuilt shore — reported as //nothing to compare// and exited 0.
 * ''A window narrower than the carrier.'' A byte prefix, a `slice(0, N)`, a flat read where the tree nests. The instrument goes blind in the direction that reports clean.
 * ''A scan that cannot reach where its subject must appear.'' A self-clearing weld scanning one package while the caller it waits for can only land in another certifies an absence it never looked for.
@@ -131,6 +131,6 @@ Each cure below planted its red, quoted it, and reverted it.
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;8jcseKSPxdVOgGsoqiyrwx5gjvwD8cP90ZRFcyv8KRM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MpJGHWYmVFTT7rnVAXa4LwcX_U9x8du_ZsRC06a99F4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

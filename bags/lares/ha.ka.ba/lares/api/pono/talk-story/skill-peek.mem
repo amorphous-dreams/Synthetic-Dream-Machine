@@ -6,7 +6,7 @@
 ```toml meta
 cacheable = true
 l-space   = "stable"
-role      = "verbatim peek of the retired ~/.claude/skills/talk-story files (SKILL.md, talk-story.md) — kept as typed text/markdown slots so the skill can be rebuilt from the memegraph; the live law and practice stand at talk-story.mem and talk-story/SKILL.mem"
+role      = "verbatim peek of the talk-story skill files (SKILL.md, talk-story.md) — kept as typed text/markdown slots so the skill can be rebuilt from the memegraph; the live law and practice stand at talk-story.mem and talk-story/SKILL.mem"
 title     = "lar:///ha.ka.ba/lares/api/pono/talk-story/skill-peek"
 type      = "text/memetic-wikitext+tiddlywiki"
 uri-path  = "ha.ka.ba/lares/api/pono/talk-story/skill-peek"
@@ -14,7 +14,7 @@ uri-path  = "ha.ka.ba/lares/api/pono/talk-story/skill-peek"
 
 ! talk-story — skill peek
 
-The retired skill files, word for word, each a typed `text/markdown` slot. Their old frame spellings sit inside fences and frame nothing. Rebuild the skill from these and from <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL`>>.
+The skill files, word for word, each a typed `text/markdown` slot. The frame spellings inside the fences frame nothing. Rebuild the skill from these and from <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/talk-story/SKILL`>>.
 
 <<~ ahu slot=`#/skill`>>
 
@@ -291,6 +291,6 @@ Beneath the triad two grounds rhyme: **kapwa** (Filipino — the other met as sh
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;VtVJszf2BU5MsXr_Siv8C0LWrrBwVMX22G8OVtDtIbI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;NRQdi13lkPTMoE2w2STNndWWD73pPRZ9PtozeeI0Phs`>>
 
 <<^ code=`&#x0004;` to=`?`>>
