@@ -85,6 +85,7 @@ function withWard(verb: string, row: Row): Row {
 }
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
+import { runRiteVerb, type RiteAction } from "./commands/rite.js";
 import { PromoteRefused, KapaeRefused, SwarmRefused, SWARM_VERB_HAND_CODES, type PromoteCommandRequest, type SwarmWikiPort } from "@lararium/mesh";
 import { faceRouteBindDigest, FaceRouteRefused, withFaceRoute } from "./face-route.js";
 import type { DocHandle, Repo } from "@automerge/automerge-repo";
@@ -210,6 +211,7 @@ export const STORE_DOOR_VERBS = [
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
+  "rite-begin", "rite-land", "rite-receipts",
 ] as const;
 export type StoreDoorVerb = (typeof STORE_DOOR_VERBS)[number];
 
@@ -231,6 +233,7 @@ export const STORE_DOOR_FACE_ROWS: ReadonlySet<StoreDoorVerb> = new Set<StoreDoo
   "kahua-mint", "kahua-propose", "kahua-stage", "kahua-lift", "kahua-withdraw", "kahua-carry", "kahua-read",
   "promote-prepare", "promote-commit", "promote-drop", "promote-orphan", "promote-list", "kapae-raise", "kapae-lower", "kapae-flag",
   "swarm-show", "swarm-cap-set", "swarm-share-set", "swarm-lei-kui", "swarm-lei-unstring", "swarm-lei-restring",
+  "rite-begin", "rite-land", "rite-receipts",
 ]);
 
 /**
@@ -379,7 +382,12 @@ function storeDoorRowsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     runPromoteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, casDir: deps.casDir ?? casDirForStorage(storageDir), ...opt("restartWiki", deps.restartWiki), ...opt("ward", wardOf(args)) });
   const swarmRow = (action: "show" | "cap-set" | "share-set" | "lei-kui" | "lei-unstring" | "lei-restring", args: Readonly<Record<string, unknown>>) =>
     runSwarmVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki), ...opt("ward", wardOf(args)) });
+  const riteRow = (action: RiteAction, args: Readonly<Record<string, unknown>>) =>
+    runRiteVerb({ repo, ...opt("catalogUrl", deps.catalogUrl), ...opt("face", int(args["face"])), action, args, ...opt("wiki", deps.swarmWiki) });
   return {
+    "rite-begin": (args) => answer("rite-begin", () => riteRow("begin", args)),
+    "rite-land": (args) => answer("rite-land", () => riteRow("land", args)),
+    "rite-receipts": (args) => answer("rite-receipts", () => riteRow("receipts", args)),
     "swarm-show": (args) => answer("swarm-show", () => swarmRow("show", args)),
     "swarm-cap-set": (args) => answer("swarm-cap-set", () => swarmRow("cap-set", args)),
     "swarm-share-set": (args) => answer("swarm-share-set", () => swarmRow("share-set", args)),
