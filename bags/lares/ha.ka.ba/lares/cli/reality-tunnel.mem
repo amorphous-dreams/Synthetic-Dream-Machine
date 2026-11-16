@@ -185,6 +185,17 @@ timeout = 10
 what = "every instruction file a Claude session loads lands in the load log `verify` reads"
 
 [[home]]
+id = "claude.keep-hook"
+host = "claude"
+kind = "claude-hook"
+file = ".claude/settings.json"
+event = "SessionEnd"
+script = "packages/lares-cli/.claude-plugin/hooks/lares-keep-hook.mjs"
+runner = "node"
+timeout = 10
+what = "a Claude session's end runs `lares rite keep --if-due`: the house and this device's sessions keep under a keep lei"
+
+[[home]]
 id = "claude.mcp-seat"
 host = "claude"
 kind = "claude-mcp"
@@ -329,6 +340,6 @@ what = "Copilot's house hook file names no house hook script beyond the ones thi
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;x9Ip6N-NT0KI69fedlvufXn2CO1VA9WtKwRp9eZ41U8`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2Rt_qGXywjXMWhkyghEjOEwHwJPrzYwLDXJld6r0pjs`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -12,6 +12,8 @@ On every `SessionStart`, `hooks/lares-wake-hook.mjs` starts three reads together
 
 Before a compaction, `hooks/lares-compact-hook.mjs` (`PreCompact`) prints the same index and the rows in play (the open ledger, the standing orders) by `lar:` address; Claude Code appends that text to the compaction's instructions. The wake fires again on the session start that follows a compaction and prints both into the new context. What either hook says lives in `hooks/lares-wake-core.mjs`.
 
+At a session's end, `hooks/lares-keep-hook.mjs` (`SessionEnd`) starts `lares rite keep --if-due` and leaves at once: the keep carries the house and this device's Claude Code sessions into the operator's repo under a keep lei, each push spending one return. Its lines land in `$XDG_STATE_HOME/lares/keep-hook.log` (the last run alone); a keep with no workspace named, or with nothing moved, keeps nothing.
+
 The static `CLAUDE.md` @-import carries the canonical seed (always-true); this plugin grounds it in live state (true-right-now). A degraded wake never blocks the session — it exits 0 with each read's own cause in the frame, inside one 12-second budget under the harness's 15.
 
 **Install:** `/plugin marketplace add <this repo>` → `/plugin install lares-wake`, or run `lares home tend`, which seats both hooks in `~/.claude/settings.json` from the main clone.

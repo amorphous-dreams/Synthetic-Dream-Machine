@@ -251,6 +251,24 @@ describe("the home radius", () => {
     expect(hooks["SessionStart"]).toEqual([{ hooks: [at("lares-wake-hook.mjs")] }]);
   });
 
+  it("a tend seats the keep hook on SessionEnd, so each session's end runs `lares rite keep --if-due` (cross-and-keep, K11)", async () => {
+    const root = clone();
+    const h = homes();
+    const l = ledger();
+    // The operator's own SessionEnd command stands beside the house's, untouched.
+    const mine = { hooks: [{ type: "command", command: "echo mine" }] };
+    mkdirSync(join(h.native, ".claude"), { recursive: true });
+    writeFileSync(join(h.native, ".claude/settings.json"), `${JSON.stringify({ hooks: { SessionEnd: [mine] } }, null, 2)}\n`);
+    await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l);
+    const hooks = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8")).hooks as Record<string, Array<{ hooks: unknown[] }>>;
+    expect(hooks["SessionEnd"]).toEqual([mine, { hooks: [{ type: "command", command: "node", args: [`${root}/packages/lares-cli/.claude-plugin/hooks/lares-keep-hook.mjs`], timeout: 10 }] }]);
+    expect((await tend(homeItems({ repo: root, homes: h, mcp: MCP, claudeCli: false }), l)).wrote).toEqual([]);
+    // The row stands in the carrier, and the script it names stands in the house's hooks folder and runs the due keep.
+    const row = declared(REPO).home.find((s) => s.id === "claude.keep-hook");
+    expect(row).toMatchObject({ host: "claude", kind: "claude-hook", file: ".claude/settings.json", event: "SessionEnd", runner: "node" });
+    expect(readFileSync(join(REPO, String(row!["script"])), "utf8")).toContain('"rite", "keep", "--if-due"');
+  });
+
   // ── THE HOUSE OWNS ITS HOOKS FOLDER: a hook file names no script there that no row declares for it ──────────────
   const HOOKS = "packages/lares-cli/.claude-plugin/hooks";
   const STRAY = "lares-stray-hook.sh";
@@ -302,7 +320,8 @@ describe("the home radius", () => {
     const settings = JSON.parse(readFileSync(join(h.native, ".claude/settings.json"), "utf8"));
     for (const gone of [STRAY, "lares-wake-hook.sh", "lares-unlisted-hook.sh"]) expect(JSON.stringify(settings), gone).not.toContain(gone);
     expect(settings.hooks.Stop).toEqual([{ hooks: [{ type: "command", command: "my-own-stop" }] }]);
-    expect(settings.hooks.SessionEnd).toBeUndefined();
+    // The stray leaves SessionEnd, and the house's own keep hook stands there alone.
+    expect(settings.hooks.SessionEnd).toEqual([{ hooks: [{ type: "command", command: "node", args: [`${root}/${HOOKS}/lares-keep-hook.mjs`], timeout: 10 }] }]);
     // CONTROL: a command of another hand that names no script under the house's folder never moves, its matcher with it.
     expect(settings.hooks.Notification).toEqual([{ matcher: "idle", hooks: [{ type: "command", command: "bash /opt/mine/hooks/lares-notes.sh" }] }]);
     expect(settings.model).toBe("m");
