@@ -5,7 +5,8 @@
  * request line, and every session it opens rides the `seat` hand. The vessel reads that MARK, never the absence of a session.
  * EACH SESSION WEARS ONE FACE INSIDE THE LENT SET (the faces the holder names open: under a pūlama, the set it lends this
  * vessel): a call so marked (or a `seat` session) may name any lent face, and one naming a face outside the set refuses
- * `face-not-lent`, naming the set (`wearInside`, `@lararium/mesh/lent-faces`). Where no set reads, the worn face alone passes
+ * `face-not-lent`, naming the set (`wearInside`, `@lararium/mesh/lent-faces`), and a set that reads empty or doubled refuses
+ * by its own reading. Where custody names no set (it rests shut, or the door holds no reader), the worn face alone passes
  * and another refuses `face-hand-refused`. A call that names none acts as the worn face, as `face.resolve` answers it. The
  * operator's own hand (the CLI's seed, import, share and vault doors) carries no seat kind and may name any open face.
  *
@@ -44,13 +45,15 @@ export function faceRefOrdinal(faceRef: unknown): number | null {
 
 /**
  * The refusal an AI seat's call meets, or null. A seat (by its kind, or by the `seat` hand) naming a face outside the lent set
- * refuses `face-not-lent`, naming the set; with no set (null or empty), naming a face other than the worn one refuses
+ * refuses `face-not-lent`, naming the set; a set that reads empty or doubled refuses by its own reading (`lent-faces-empty`,
+ * `lent-faces-duplicate`). Where custody names no set (`lent` null), naming a face other than the worn one refuses
  * `face-hand-refused`. A call naming no face passes (it acts as the worn face), and so does the operator's hand.
  */
 export function seatFaceRefusal(input: { readonly seat: SeatKind | null; readonly named: number | null; readonly worn: number | null; readonly lent?: readonly number[] | null }): string | null {
   if (input.seat === null || input.named === null) return null;
-  const lent = input.lent ? lentFacesOf(input.lent) : null;
-  if (lent?.ok) {
+  if (input.lent !== null && input.lent !== undefined) {
+    const lent = lentFacesOf(input.lent);
+    if (!lent.ok) return lent.message;
     const wear = wearInside(lent.faces, input.named, input.worn);
     return wear.ok ? null : wear.message;
   }
@@ -58,7 +61,7 @@ export function seatFaceRefusal(input: { readonly seat: SeatKind | null; readonl
   return `face-hand-refused: the AI seat acts as the worn face${input.worn !== null ? ` (h${input.worn})` : ""} alone, and this call names h${input.named}; only the operator's own hand (\`lares vessel seed\`, \`lares vessel import\`, \`lares bag share\`) names another face`;
 }
 
-/** The class a seat refusal names (`face-not-lent`, `face-hand-refused`): the text before its first colon. */
+/** The class a seat refusal names (`face-not-lent`, `lent-faces-empty`, `face-hand-refused`): the text before its first colon. */
 export function seatRefusalClass(refusal: string): string {
   const at = refusal.indexOf(":");
   return at < 0 ? refusal : refusal.slice(0, at);
