@@ -75,20 +75,20 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
       assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/project\/house-laws — The seven house laws\./);
       assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/open-ledger — What stands open\./);
       assert.match(context, /Lares homes: home reading/);
-      assert.match(context, /Lares rows in play \(start here\): 2 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/handoff — Start here\.\n/);
+      assert.match(context, /Lares working memories on the stage \(start here\): 2 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/handoff — Start here\.\n/);
     });
     await t.test("a wake after a compaction leads with the rows in play too", () => {
       writeFileSync(shim, standingShim, { mode: 0o755 });
       const context = run(JSON.stringify({ hook_event_name: "SessionStart", source: "compact" }));
       assert.match(context, /Lares memory index: 2 rows\n/);
-      assert.ok(context.indexOf("Lares rows in play") < context.indexOf("Lares memory index"));
+      assert.ok(context.indexOf("Lares working memories on the stage") < context.indexOf("Lares memory index"));
     });
     await t.test("the compaction hook hands the summary the index and the rows in play as plain text", () => {
       writeFileSync(shim, standingShim, { mode: 0o755 });
       const text = spawnHook("lares-compact-hook.mjs", JSON.stringify({ hook_event_name: "PreCompact", trigger: "auto" }));
       assert.match(text, /^Lares compaction carry: keep every `lar:` address below verbatim in the summary/);
       assert.match(text, /Lares memory index: 2 rows\n/);
-      assert.match(text, /Lares rows in play \(start here\): 2 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/handoff/);
+      assert.match(text, /Lares working memories on the stage \(start here\): 2 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/handoff/);
       // A PreCompact hook's stdout rides as compact instructions, never as a JSON envelope.
       assert.throws(() => JSON.parse(text));
     });

@@ -135,10 +135,10 @@ test("wake-leads-with-rows-in-play: every wake prints the state rows before the 
       state: answered(statePage(STATE)),
     }, calls) });
     const lines = context.split("\n");
-    const head = lines.findIndex((l) => l.startsWith("Lares rows in play"));
+    const head = lines.findIndex((l) => l.startsWith("Lares working memories on the stage"));
     assert.ok(head > 0, `${source}: the rows in play stand in the wake`);
     assert.ok(head < lines.findIndex((l) => l.startsWith("Lares memory index")), `${source}: the rows in play come before the index`);
-    assert.match(lines[head], /^Lares rows in play \(start here\): 4 rows/);
+    assert.match(lines[head], /^Lares working memories on the stage \(start here\): 4 rows/);
     assert.equal(lines[head + 1], "lar:///ha.ka.ba/kahua/memory/state/handoff — Start here: the handoff from the last controller.");
     // The rest keep the door's own order.
     assert.equal(lines[head + 2], "lar:///ha.ka.ba/kahua/memory/state/porch-2026-11-16 — The porch: what the last sitting left on the step.");
@@ -151,7 +151,7 @@ test("wake-leads-with-rows-in-play: every wake prints the state rows before the 
   }
   // CONTROL: no handoff row leaves the door's order as it stands.
   const bare = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), state: answered(statePage(STATE.filter((r) => !r.title.endsWith("/handoff")))) }) });
-  assert.match(bare, /Lares rows in play \(start here\): 3 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/porch-2026-11-16/);
+  assert.match(bare, /Lares working memories on the stage \(start here\): 3 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/porch-2026-11-16/);
 });
 
 test("wake-leads-with-rows-in-play: the block stays short, and a fault or an empty prefix names itself", async () => {
@@ -161,12 +161,12 @@ test("wake-leads-with-rows-in-play: the block stays short, and a fault or an emp
   const shown = long.split("\n").filter((l) => l.startsWith("lar:///ha.ka.ba/kahua/memory/state/"));
   assert.ok(shown.length > 0 && shown.length <= STATE_ROWS, `${shown.length} rows shown`);
   for (const line of shown) assert.ok(Buffer.byteLength(line) <= 400, `a row line holds ${Buffer.byteLength(line)} bytes`);
-  assert.match(long, /Lares rows in play \(start here\): 20 rows \(\d+ shown\)/);
+  assert.match(long, /Lares working memories on the stage \(start here\): 20 rows \(\d+ shown\)/);
   assert.match(long, /(read further|read the whole view): wiki_filter\(filter="\[prefix\[lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/\]!regexp\[#\]\]"/);
   const none = await wake({ run: runner({ ...base, state: answered(statePage([])) }) });
-  assert.match(none, /Lares rows in play: no row stands under lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/ in the worn face's daemon wiki/);
+  assert.match(none, /Lares working memories on the stage: no row stands under lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/ in the worn face's daemon wiki/);
   const broken = await wake({ run: runner({ ...base, state: answered("", 127) }) });
-  assert.match(broken, /Lares rows in play unread: the read exited 127 with no answer; the view: wiki_filter\(filter="\[prefix/);
+  assert.match(broken, /Lares working memories on the stage unread: the read exited 127 with no answer; the view: wiki_filter\(filter="\[prefix/);
   // CONTROL: a vessel that answers down reads no state rows and says the memory skip once.
   const killed = [];
   const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })), index: hung(killed, "index"), state: hung(killed, "state") }) });
@@ -177,7 +177,7 @@ test("wake-leads-with-rows-in-play: the block stays short, and a fault or an emp
 test("the compaction carry hands the summary the rows in play and the index", async () => {
   const text = await compactCarry({ run: runner({ index: answered(page([row("project/house-laws", "The seven house laws.")])), state: answered(statePage(STATE)) }) });
   assert.match(text, /^Lares compaction carry: keep every `lar:` address below verbatim in the summary/);
-  assert.ok(text.indexOf("Lares rows in play") < text.indexOf("Lares memory index: 1 rows\n"));
+  assert.ok(text.indexOf("Lares working memories on the stage") < text.indexOf("Lares memory index: 1 rows\n"));
   assert.match(text, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/project\/house-laws — The seven house laws\./);
   for (const r of STATE) assert.ok(text.includes(r.title), r.title);
   // A fault names its cause and the other read rides on.
@@ -186,7 +186,7 @@ test("the compaction carry hands the summary the rows in play and the index", as
   assert.ok(faulted.includes("lar:///ha.ka.ba/kahua/memory/state/handoff"));
   const slow = await compactCarry({ budgetMs: 30, run: runner({ index: hung([], "index"), state: hung([], "state") }) });
   assert.match(slow, /memory index unread: no answer inside the wake's budget/);
-  assert.match(slow, /Lares rows in play unread: no answer inside the wake's budget/);
+  assert.match(slow, /Lares working memories on the stage unread: no answer inside the wake's budget/);
 });
 
 // Road `L48`: the wake shows the lei and the unmatched tessera halves; each read stands behind a port, answered here by fixtures.

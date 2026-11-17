@@ -224,9 +224,9 @@ export function renderIndex(answer, cap = INDEX_BYTES) {
 /** The rows-in-play block: the handoff row first where one stands, the rest in the door's own order. */
 export function renderState(answer, cap = STATE_BYTES) {
   return renderRows(answer, {
-    head: "Lares rows in play (start here)", filter: STATE_FILTER, cap, lineCap: STATE_LINE_BYTES,
+    head: "Lares working memories on the stage (start here)", filter: STATE_FILTER, cap, lineCap: STATE_LINE_BYTES,
     rows: (rows) => [...rows.filter((r) => r?.title === STATE_HANDOFF), ...rows.filter((r) => r?.title !== STATE_HANDOFF)],
-    empty: (view) => `Lares rows in play: no row stands under ${STATE_PREFIX} in the worn face's daemon wiki; the view: ${view})`,
+    empty: (view) => `Lares working memories on the stage: no row stands under ${STATE_PREFIX} in the worn face's daemon wiki; the view: ${view})`,
   });
 }
 
@@ -248,7 +248,7 @@ function filterAnswer(result) {
 /** The rows-in-play read's lines: the block where the door answered a page, else `Lares rows in play unread: <cause>` with the view. */
 export function stateLines(result) {
   const { fault, answer } = filterAnswer(result);
-  return fault ? `Lares rows in play unread: ${fault}; the view: ${viewOf(STATE_FILTER)})` : renderState(answer);
+  return fault ? `Lares working memories on the stage unread: ${fault}; the view: ${viewOf(STATE_FILTER)})` : renderState(answer);
 }
 
 /** The index read's lines: the block where the door answered a page, else `memory index unread: <cause>`. */
