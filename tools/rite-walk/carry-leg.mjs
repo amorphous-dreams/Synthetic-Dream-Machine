@@ -705,14 +705,14 @@ const keepOld = async (c) => {
   const answer = json(r.stdout);
   if (answer === null && doorAbsent(said(r))) return { unreached: "door-absent", answer: `the source revision keeps nothing: ${refusal(r)}` };
   const d = answer?.data ?? {};
-  c.vars.keep = { tessera: d.tessera ?? null, bundleId: d.bundleId ?? null, pushed: d.pushed ?? null, par: d.par ?? null };
+  c.vars.keepRite = { tessera: d.tessera ?? null, bundleId: d.bundleId ?? null, pushed: d.pushed ?? null, par: d.par ?? null };
   const receipts = await h.shim(["rite", "receipts", ...KEEP_FACE, "--json"], { timeout: 120_000 });
   const conferre = json(receipts.stdout)?.data?.conferre ?? {};
   const par = (conferre.par ?? []).some((t) => t.rite === "keep" && t.tessera === d.tessera);
   const red = (conferre.red ?? []).filter((t) => t.rite === "keep").map((t) => `${String(t.tessera).slice(0, 12)} ${t.red}`);
   return { ok: r.code === 0 && d.par === true && par && red.length === 0,
     answer: `exit ${r.code}; bundle ${String(d.bundleId).slice(0, 16)} · pushed ${d.pushed} · tessera ${String(d.tessera).slice(0, 12)} ${par ? "par" : "not par"}${red.length ? ` · red: ${red.join(", ")}` : ""}${r.code !== 0 ? ` · ${lineOf(String(d.message ?? said(r)))}` : ""}`,
-    measures: c.vars.keep };
+    measures: c.vars.keepRite };
 };
 
 /** The new phase clones the keep's remote fresh into its config home, and the clone holds the very bundle the keep pushed. */
@@ -723,7 +723,7 @@ const keepCloneNew = async (c) => {
   await hostGit(c, ["clone", "--quiet", "--branch", "main", keepRemote, keepClone]);
   let held = null;
   try { held = JSON.parse(readFileSync(join(keepClone, "house", "manifest.json"), "utf8")).bundleId ?? null; } catch { held = null; }
-  const want = c.vars.keep?.bundleId ?? null;
+  const want = c.vars.keepRite?.bundleId ?? null;
   return { ok: held !== null && held === want, answer: `the clone holds bundle ${String(held).slice(0, 16)}; the keep pushed ${String(want).slice(0, 16)}; the export cut ${String(c.vars.bundle?.id ?? null).slice(0, 16)}`, measures: { held, kept: want, exported: c.vars.bundle?.id ?? null } };
 };
 
