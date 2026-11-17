@@ -884,17 +884,15 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
   //   5. flush MAIN again to land anything that synced during teardown.
   //
   // THE FORCE NEVER CUTS A MAIN FLUSH ON ITS OWN. The budget's REPORT arms before step 2, so a
-  // hung main-flush itself gets named too (H3/M4 — a prior shape armed the notice only AFTER
-  // main-flush, so a main flush that never returns pinned the process silently forever with no
-  // notice ever printed). What a force never does on its own timer is cut a step — only the
+  // hung main-flush itself gets named too: a notice armed after it would leave a main flush that
+  // never returns pinning the process silently. What a force never does on its own timer is cut a step — only the
   // OPERATOR'S OWN SECOND SIGNAL does that (below), as an event, never a clock.
   //
   // THE "EVERY RECEIPT LANDED" CLAIM MUST BE TRUE. The island pool and the daemon VM BOTH still
   // terminate their own worker past their own handshake timeout ("teardown handshake failed —
   // … terminating anyway") — that claim is THEIRS to make honestly, not main.ts's to overwrite:
-  // `disposeAll()`/`daemon.shutdown()` now report which acked and which got cut, and the final
-  // line names both rather than asserting every receipt landed when CI's own log showed a
-  // handshake timeout landing moments before that exact claim (H3).
+  // `disposeAll()`/`daemon.shutdown()` report which acked and which got cut, and the final
+  // line names both rather than asserting every receipt landed.
   //
   // THE BUDGET'S BOUND, MEASURED. A stand that just LOADed a corpus keeps its wiki island busy with the load's
   // after-waves for tens of seconds; that island cannot read its teardown before the waves drain, and answers

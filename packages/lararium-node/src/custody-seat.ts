@@ -20,8 +20,8 @@
  *
  * ── A ROW READS WHOLE OR REFUSES ────────────────────────────────────────────────────────────────
  *   `readCustodyRecord`   the row's plaintext; `null` when nothing stands at its path, and for that reading alone.
- *                      Locked refuses `CustodyLocked`. A row that stands and does not open (torn, bare, an
- *                      earlier shape, another key's) refuses `CustodyRecordUnavailable` naming what stands.
+ *                      Locked refuses `CustodyLocked`. A row that stands and does not open (torn, bare,
+ *                      malformed, another key's) refuses `CustodyRecordUnavailable` naming what stands.
  *   `writeCustodyRecord`  the one sealed writer, under the key the seat holds.
  *   `updateCustodyRecord` a read, a decision and a write under ONE custody holder, for a row whose next bytes depend
  *                      on its standing ones. The decision receives the row's plaintext (`null` when nothing stands)
