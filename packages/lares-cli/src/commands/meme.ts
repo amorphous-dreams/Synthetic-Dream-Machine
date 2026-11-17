@@ -135,8 +135,18 @@ type Sub = typeof SUBS[number];
 
 function usage(): void { for (const line of helpLines("meme")) console.error(line); }
 
+/**
+ * THE STORE DOOR'S ONE-SHOT CARRIES NO FACE: a store verb reads and writes the daemon mount's seat, so a line naming `--face`
+ * refuses `face-not-routed` rather than stand the mount in for the face it names.
+ */
+function refuseFace(args: ParsedArgs, line: string): void {
+  if (args.options["face"] === undefined) return;
+  throw new UsageError(`face-not-routed: \`lares ${line}\` rides the store door's one-shot, which carries no face; it reads and writes the vessel's daemon mount, never the face --face names, so drop \`--face\``);
+}
+
 /** The verb and its args for a sub-verb — the argument law, with no daemon in reach. */
 export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemePlan {
+  refuseFace(args, `meme ${sub}`);
   const uri = args.positional[1];
   if (!uri) throw new UsageError(`a uri is required (e.g. \`lares meme ${sub} lar:///ha.ka.ba/... --recipe <slug>\`)`);
   const out: Record<string, string> = { uri, ...containerArgs(args, `meme ${sub}`, sub === "put" || sub === "delete" ? "write" : "read") };
@@ -156,6 +166,7 @@ export function memePlan(sub: "put" | "get" | "delete", args: ParsedArgs): MemeP
 
 /** The listing addresses the SEAT, never one meme: the container alone, `tree` on request. */
 export function listPlan(args: ParsedArgs): { readonly verb: "meme-list"; readonly args: Record<string, string | boolean> } {
+  refuseFace(args, "meme list");
   const out: Record<string, string | boolean> = { ...containerArgs(args, "meme list") };
   if (args.flags["tree"]) out["tree"] = true;
   return { verb: "meme-list", args: out };
@@ -225,7 +236,8 @@ export async function cmdMeme(args: ParsedArgs): Promise<number> {
     }
     if (err instanceof UsageError) {
       const msg = err.message;
-      emit(args, { ok: false, error: { code: "usage", message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
+      const code = msg.startsWith("face-not-routed:") ? "face-not-routed" : "usage";
+      emit(args, { ok: false, error: { code, message: msg }, human: () => console.error(`lares meme ${sub}: ${msg}`) });
       return exitFor("usage");
     }
     // M3: a LOCAL WAIT ENDING (LocalWaitExpired, including the vessel's own folded-in
