@@ -265,6 +265,10 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     expect(await vessel.readRecord("identity", faceAtomGroupFile(GROUP_A))).toEqual({ reading: "opens", plaintext: Uint8Array.from([1]) });
     const outside = { name: "PulamaRefused", reading: "outside-the-lei" };
     await expect(vessel.readRecord("identity", faceAtomGroupFile(GROUP_B))).rejects.toMatchObject(outside);
+    // The refusal names the lei's face, the row, its selector and the face that selector reaches, so a vessel's log reads which row asked.
+    await expect(vessel.readRecord("identity", faceAtomGroupFile(GROUP_B))).rejects.toMatchObject({
+      message: `outside-the-lei: the lei names face h0; this face-atom row selects {"group":"${personaGroupDigest(GROUP_B)}"}, face h1`,
+    });
     await expect(vessel.writeRecord("identity", faceAtomGroupFile(GROUP_B), Uint8Array.from([9]))).rejects.toMatchObject(outside);
     await expect(vessel.withRecords((records) => records.read("identity", faceAtomGroupFile(GROUP_B)))).rejects.toMatchObject(outside);
     expect(await vessel.faceStanding({ fcid: b.fcid })).toBeNull();
