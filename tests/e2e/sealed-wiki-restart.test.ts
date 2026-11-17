@@ -27,13 +27,18 @@
  * The suite runs only in a STAGED target: it founds two vessels and never touches a live hearth.
  */
 import { describe, test, expect, beforeAll, afterAll } from "vitest";
-import { cpSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { bootDocUrl, openStaged, openStagedJoinee, vesselStorageDir, type LarInstance, type StagedJoinee } from "../harness/instance.js";
 import { mintStagedNexusKey } from "../harness/vessel-key.js";
+
+// The Automerge core the repo package itself loads, for the scan's reading of a compacted rest.
+type Am = { init(): unknown; from(o: object): unknown; change(d: unknown, f: (x: Record<string, unknown>) => void): unknown; save(d: unknown): Uint8Array; loadIncremental(d: unknown, b: Uint8Array): unknown; toJS(d: unknown): unknown };
+const A = createRequire(createRequire(import.meta.url).resolve("@automerge/automerge-repo"))("@automerge/automerge") as Am;
 
 const staged = process.env["LAR_TARGET"] !== "live";
 const SEALED_MARK = `sealed-heron-${process.pid}-${Date.now()}`;
@@ -106,6 +111,20 @@ beforeAll(async () => {
 }, 600_000);
 
 afterAll(async () => { await B2?.stopDaemonOnly(); await pair?.stop(); });
+
+test("CONTROL — the scan reads a clear marker in a compacted rest, where the snapshot deflates its columns", () => {
+  // A store compacts a document's chunks into one snapshot whenever its incremental bytes outgrow it, and a snapshot
+  // deflates every column past 256 bytes: the marker's bytes leave the file while the rest still holds it clear.
+  const store = mkdtempSync(join(tmpdir(), "compacted-rest-"));
+  let doc = A.from({ tiddlers: {} });
+  for (let i = 0; i < 64; i++) doc = A.change(doc, (d) => { (d["tiddlers"] as Record<string, unknown>)[`t${i}`] = { text: `filler ${"x".repeat(64)} ${i}` }; });
+  doc = A.change(doc, (d) => { (d["tiddlers"] as Record<string, unknown>)["m"] = { text: CLEAR_MARK }; });
+  const snapshot = A.save(doc);
+  expect(Buffer.from(snapshot).includes(Buffer.from(CLEAR_MARK)), "the plant deflates the marker").toBe(false);
+  mkdirSync(join(store, "ab", "cdef", "snapshot"), { recursive: true });
+  writeFileSync(join(store, "ab", "cdef", "snapshot", "h1"), snapshot);
+  expect(filesHolding(store, CLEAR_MARK)).toEqual(["ab/cdef/snapshot/h1"]);
+});
 
 describe.runIf(staged)("a sealed wiki write survives a stand-down at once and a restart", () => {
   test("R1-R3 — the positive control reads a clear marker at rest; the sealed marker rests as no clear byte after a stand-down at once", async () => {
