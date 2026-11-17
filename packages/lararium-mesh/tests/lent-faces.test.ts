@@ -84,7 +84,8 @@ describe("wearInside: the face a session wears inside the lent set", () => {
     if (!r.ok) {
       expect(r.refusal).toBe("face-not-lent");
       expect(r.message).toContain("h1");
-      expect(r.message).toContain("h0, h2");
+      // The set reads as what this vessel serves: a vessel with no pūlama serves a set too.
+      expect(r.message).toBe("face-not-lent: this call names h1, and this vessel serves h0, h2 alone");
     }
   });
 
@@ -103,7 +104,7 @@ describe("wearInside: the face a session wears inside the lent set", () => {
       expect(r.ok).toBe(false);
       if (!r.ok) {
         expect(r.refusal).toBe("face-not-named");
-        expect(r.message).toContain("h0, h2");
+        expect(r.message).toBe("face-not-named: this vessel serves h0, h2; name the face this session wears (`--face N`)");
       }
     }
   });
