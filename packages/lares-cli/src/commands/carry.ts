@@ -51,7 +51,7 @@ import { appendFileSync, copyFileSync, existsSync, lstatSync, mkdirSync, readFil
 import { randomBytes } from "node:crypto";
 import { basename, dirname, extname, join, relative, resolve, sep } from "node:path";
 import { repoRoot } from "@lararium/mesh/node";
-import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf, parseShareFile, serializeShareFile, type ShareEntry } from "@lararium/mesh";
+import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLabel, declarePersonaHandle, renameOwnPersona, ownPersonaPetname, standForKahuSeat, carrierFormOf, parseShareFile, serializeShareFile, SHARE_CONFIG_FILE, type ShareEntry } from "@lararium/mesh";
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, PERSONAL_PROJECTION_DIR, daemonBagsDir,
@@ -76,7 +76,7 @@ import {
   type CarryFace, type CarryFile, type CarryKahuaHead, type CarryManifest, type CarryOmission, type CarryRedeclare,
   type CarryRedeclareFace, type CarryRow, type CarryShareEntry, type VerifiedBundle,
 } from "../carry-manifest.js";
-import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
+import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
 
 /** One document a keep left to another holder (`CarryManifest.elsewhere`). */
 type CarryElsewhere = NonNullable<CarryManifest["elsewhere"]>[number];
@@ -213,6 +213,12 @@ export interface CarryDoors {
   readonly benchSeat?: (slug: string) => Promise<{ readonly writeSlot: "working" | "personal" | null; readonly bound: boolean }>;
   /** The vessel-private share rows (`config/share.tid`), read and written whole. Absent: no rows travel and none land. */
   readonly shareRows?: { read(): readonly ShareEntry[]; write(rows: readonly ShareEntry[]): void };
+  /**
+   * Write one share row into the standing vessel's control document (`share-set`), its owner by pet-name beside it. The vessel
+   * reconciles `config/share.tid` only at its boot and the landing (`share-apply`) reads the control document, so a row written
+   * to the file alone owes no grant until the next boot, when the owner's half may stand shut. Absent: the file alone.
+   */
+  readonly shareSet?: (row: ShareEntry) => Promise<void>;
   /** Land the shares again (`share-apply`); null where no vessel answers. */
   readonly landShares?: () => Promise<Record<string, unknown> | null>;
   readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
@@ -331,6 +337,7 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
     write: (rows) => LIVE_SHARE_DOORS.file.write(serializeShareFile(rows)),
   },
   landShares: async () => landShares(LIVE_SHARE_DOORS, await LIVE_SHARE_DOORS.faces()),
+  shareSet: async (row) => { await LIVE_SHARE_DOORS.verb("share-set", shareSetArgs(row)); },
   overrideBases: async (workingBag) => {
     const out: Record<string, string> = {};
     let after: string | null = null;
@@ -902,6 +909,14 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const carriedShares = (redeclare.shares ?? []).filter((r) => !standingShares.some((x) => x.slug === r.slug));
   const allShares: ShareEntry[] = [...standingShares, ...carriedShares.map((r): ShareEntry => ({ ...r }))];
   if (apply && carriedShares.length > 0 && doors.shareRows) doors.shareRows.write(allShares);
+  // THE CARRIED ROWS REACH THE CONTROL DOCUMENT NOW, beside the file: this wear's landing reads them, so the owner's own wear
+  // owes each grant and carries each reader's catalog row to that reader's next wear, before its margin mounts the wiki.
+  if (apply && doors.shareSet !== undefined) {
+    for (const r of carriedShares) {
+      try { await doors.shareSet(r); }
+      catch (e) { warnings.push(`carry-share-unset: the share row of ${r.slug} rests in config/${SHARE_CONFIG_FILE} alone (${e instanceof Error ? e.message : String(e)}); the vessel's next boot reconciles it, and \`lares ${r.kind} share ${r.slug}\` lands it at its owner's wear`); }
+    }
+  }
   const wornPet = litFaceOf(faces)?.petname ?? null;
   const gates = new Map<string, { why: "writer" | "owner"; owner?: string } | null>();
   /** Why the worn face may not land this wiki's workbench (or mint the wiki) now, or null where it may. */
