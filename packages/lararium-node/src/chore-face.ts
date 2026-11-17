@@ -1,0 +1,64 @@
+/**
+ * chore-face — NO SILENT STEWARD (keeper-and-hands#/the-direction). The daemon island mounts one face, the daemon mount, so
+ * every chore it runs (a meme write, a projection, a promote, a sweep, a reconcile, a kahua stage: anything it writes or signs)
+ * spends the mount's authority, whichever lent face asked. Until a face island stands per lent face, each chore door builds a
+ * `ChoreAsk` and reads `actingFaceOf` (`@lararium/mesh/chore-ask`) with the mount as the one face carried: asked under the
+ * mount the chore runs and its answer carries the `ChoreReceiptMark` naming that face (`chore`); asked under another lent face
+ * it refuses `chore-face-not-mounted`, naming both, and never runs as the mount.
+ *
+ * THE GATE DENIES BY DEFAULT. Every verb reads as a chore except the ones `CHORE_FREE_VERBS` names with their reasons: the
+ * reads, which keep their path, and the rows of the place, which act as the place and never as a face. A new verb stands a
+ * chore until it joins the list with its reason. The face rows ride `session:act` as the session's own face, outside this gate.
+ *
+ * Meme: lar:///ha.ka.ba/kahua/memory/project/place-and-face-islands
+ */
+import { actingFaceOf, choreReceiptMark, type ChoreAsk, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import { lentFacesOf } from "@lararium/mesh/lent-faces";
+import type { Hand } from "@lararium/mesh/session-contract";
+import { STORE_DOOR_FACE_VERBS, STORE_DOOR_VERBS } from "./store-door-verbs.js";
+
+const READ = "reads and writes nothing under any face's authority";
+const PLACE = "a row of the place: acts as the place, never as a face";
+
+/** The verbs a session of a face other than the mount still places, each with its reason; every other verb reads as a chore. */
+export const CHORE_FREE_VERBS: Readonly<Record<string, string>> = Object.freeze({
+  // The daemon island's reads (its content fence still judges each presenter).
+  "where": READ, "resolve": READ, "unbound-docs": READ, "fresher-canon": READ,
+  "meme-get": READ, "meme-list": READ, "meme-project": "renders a meme root to text and answers it; writes nothing",
+  "wiki-filter": READ, "tiddler-get": READ, "wiki-render": READ, "wiki-status": READ, "circle-list": READ,
+  "list-wikis": READ, "share-list": READ, "workbench-seat": READ, "intent-view": READ, "sealed-reading": READ, "events": READ,
+  "realm-clock": READ,
+  "realm-feed": "rolls the presenter's own leaf slot, its writer bound to the presenter; spends no mounted face's material",
+  // The main thread's reads.
+  "recall": READ, "status": READ, "rejim": READ, "worldline": READ, "worldline-compare": READ, "worldline-trajectory": READ,
+  "analyze": READ, "ki": READ, "li": READ, "jing": READ, "couple-r": READ, "forecast": READ, "mismatch": READ, "flow": READ,
+  "roster": READ, "inspect": READ, "residency": READ, "wiki-active": READ, "echo": READ,
+  ...Object.fromEntries(STORE_DOOR_VERBS.filter((verb) => !STORE_DOOR_FACE_VERBS.has(verb)).map((verb) => [verb, PLACE])),
+});
+
+/** True for a verb that writes or signs under the daemon mount's authority. */
+export function isChore(verb: string): boolean {
+  return !Object.hasOwn(CHORE_FREE_VERBS, verb);
+}
+
+/** A chore's verdict at a door: it acts for the face its mark names, or it refuses by class with the message naming the faces. */
+export type ChoreAtDoor = { readonly ok: true; readonly mark: ChoreReceiptMark } | { readonly ok: false; readonly refusal: string; readonly message: string };
+
+/**
+ * The verdict a door reads for one verb, or null where no chore gate stands: a verb free of the gate, or a vessel that
+ * mounts no face (the floor, or a door handed no mount reader). The ask designates `face` (a session's face, the face a
+ * one-shot names, or with none named the mount, as `face.resolve` answers a seat); `actingFaceOf` judges it against the lend
+ * and the one face this process carries before the islands split, the daemon mount. Where no lent set reads, the lend
+ * narrows nothing and the carry alone judges.
+ */
+export function choreAtDoor(input: {
+  readonly verb: string; readonly face: number; readonly mount: number | null; readonly lent: readonly number[] | null;
+  readonly hand: Hand; readonly session: string | null; readonly generation: number | null;
+}): ChoreAtDoor | null {
+  if (input.mount === null || !isChore(input.verb)) return null;
+  const read = lentFacesOf(input.lent && input.lent.length > 0 ? input.lent : [...new Set([input.mount, input.face])]);
+  if (!read.ok) return { ok: false, refusal: read.refusal, message: read.message };
+  const ask: ChoreAsk = { chore: input.verb, face: input.face, asker: { hand: input.hand, session: input.session, generation: input.generation } };
+  const acting = actingFaceOf(ask, read.faces, [input.mount]);
+  return acting.ok ? { ok: true, mark: choreReceiptMark(ask, acting.face) } : acting;
+}

@@ -3,7 +3,8 @@
  * a chore the daemon runs (a meme write, a projection, a promote, a sweep: anything it writes or signs) spends the mount's
  * authority. A session wearing another lent face that asks one refuses `chore-face-not-mounted`, naming both faces, and
  * nothing places; the AI seat naming another lent face on the maintenance frame refuses the same way. A chore asked under
- * the mount places and its answer names the acting face. Reads keep their path, and a place row acts as the place.
+ * the mount places and its answer carries the receipt mark (`ChoreReceiptMark`: the acting face, the asker's hand, its session).
+ * Reads keep their path, and a place row acts as the place.
  */
 import { controlStoreOf } from "@lararium/mesh";
 import { afterEach, expect, test } from "vitest";
@@ -12,8 +13,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createConnection, type Socket } from "node:net";
 import { Repo } from "@automerge/automerge-repo";
-import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, concludeVerb, wikiSlotUri, type LarDoc, type SessionFace } from "@lararium/mesh";
-import { makeUdsSeat, serveUdsFront, type UdsSessionDoor } from "../src/uds-channel.js";
+import { AutomergeDocStore, CompositeStore, DAEMON_BAG_ID, emptyLarDoc, concludeVerb, wikiSlotUri, type LarDoc } from "@lararium/mesh";
+import type { SessionFace } from "@lararium/mesh/session-contract";
+import { makeUdsSeat, serveUdsFront, type UdsSessionDoor, type UdsSessionSigner } from "../src/uds-channel.js";
 import { claimStore } from "../src/owned-store.js";
 
 const face = (name: string): SessionFace => ({
@@ -58,7 +60,7 @@ async function stand() {
   const claim = await claimStore(dir, { holder: "vessel" });
   const door: UdsSessionDoor = { anchorNow: async () => ({ kind: "nexus", aid: "nexus-one.synthetic" }), open: async ({ faceRef }) => ({ ok: true, supply: {
     face: face(faceRef), ordinal: Number(faceRef.slice(1)), profile: "seat", presenter: `verified-${faceRef}`,
-    anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } }) } }) };
+    anchor: { kind: "nexus", aid: "nexus-one.synthetic" }, mint: async () => ({ ok: true, signer: { drop() {} } as unknown as UdsSessionSigner }) } }) };
   const placed: Array<{ verb: string; requestId: string; ordinal?: number }> = [];
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
@@ -119,18 +121,19 @@ test("RED RT1: the AI seat naming lent h1 on the maintenance frame for a meme wr
   expect(v.placed).toEqual([]);
 });
 
-test("CONTROL: the same meme write from a session wearing h0 places, and its answer names the acting face h0", async () => {
+test("CONTROL: the same meme write from a session wearing h0 places, and its answer carries the mark naming h0 as acting", async () => {
   const v = await stand();
   const env = await v.open("h0");
   const reply = await v.peer.ask({ op: "session:call", ...env, requestId: "put-h0", verb: "meme-put", args: MEME });
-  expect(reply).toMatchObject({ kind: "session:result", requestId: "put-h0", status: "done", actingFace: "h0" });
+  expect(reply).toMatchObject({ kind: "session:result", requestId: "put-h0", status: "done", chore: { acting: 0, asker: "cli", session: env.sessionId } });
   expect(v.placed.map((p) => [p.verb, p.ordinal])).toEqual([["meme-put", 0]]);
 });
 
-test("CONTROL: the AI seat's meme write naming no face, or naming the mount, places and names h0 as the acting face", async () => {
+test("CONTROL: the AI seat's meme write naming no face, or naming the mount, places and its mark names h0 as acting", async () => {
   const v = await stand();
-  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", actingFace: "h0" });
-  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 0 }, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", actingFace: "h0" });
+  const mark = { acting: 0, asker: "seat", session: null };
+  expect(await v.oneShot({ verb: "meme-put", args: MEME, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", chore: mark });
+  expect(await v.oneShot({ verb: "meme-put", args: { ...MEME, face: 0 }, requestedBy: "0xseat", seat: "ai" })).toMatchObject({ status: "done", chore: mark });
   expect(v.placed.map((p) => p.verb)).toEqual(["meme-put", "meme-put"]);
 });
 
@@ -140,7 +143,7 @@ test("CONTROL: reads keep their path from the h1 session (a meme read, a recall)
   for (const verb of ["meme-get", "recall", "floor-status"]) {
     const reply = await v.peer.ask({ op: "session:call", ...env, requestId: `read-${verb}`, verb, args: {} });
     expect(reply, verb).toMatchObject({ kind: "session:result", status: "done" });
-    expect(reply["actingFace"], verb).toBeUndefined();
+    expect(reply["chore"], verb).toBeUndefined();
   }
   expect(v.placed.map((p) => p.verb)).toEqual(["meme-get", "recall", "floor-status"]);
 });

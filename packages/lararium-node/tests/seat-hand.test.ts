@@ -41,7 +41,8 @@ describe("the AI seat acts inside the lent set", () => {
 
   test("SH4 — the channel reads the mark at both doors, and main hands it the worn face", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "uds-channel.ts"), "utf8");
-    expect(src).toMatch(/seatFaceRefusal\(\{ seat: seatKindOf\(parsed\), named: namedFaceOf\(inv\.args\), worn: opts\.wornOrdinal\?\.\(\) \?\? null, lent: await lentOf\(\) \}\)/);
+    expect(src).toMatch(/const seat = seatKindOf\(parsed\);\n\s+const named = namedFaceOf\(inv\.args\);/);
+    expect(src).toMatch(/seatFaceRefusal\(\{ seat, named, worn: opts\.wornOrdinal\?\.\(\) \?\? null, lent \}\)/);
     expect(src).toMatch(/seatFaceRefusal\(\{ seat: frame\["hand"\] === "seat" \? "ai" : seatKindOf\(frame\), named: faceRefOrdinal\(frame\["faceRef"\]\)/);
     expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/wornOrdinal:\s+\(\) => result\.wornOrdinal\(\)/);
   });
@@ -67,7 +68,10 @@ describe("the AI seat acts inside the lent set", () => {
   test("SH6 — both doors read the lent set, and main hands it the faces the holder names open", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "uds-channel.ts"), "utf8");
     expect(src).toMatch(/readonly lentOrdinals\?: \(\) => Promise<readonly number\[\]>/);
-    expect(src.match(/seatFaceRefusal\(\{[^\n]*lent: await lentOf\(\) \}\)/g)).toHaveLength(2);
+    // The session door reads the set at the opening; the one-shot reads it once, and its chore check rides the same read.
+    expect(src.match(/seatFaceRefusal\(\{[^\n]*lent: await lentOf\(\) \}\)/g)).toHaveLength(1);
+    expect(src).toMatch(/const lent = [^\n]*\? await lentOf\(\) : null;/);
+    expect(src).toMatch(/choreAtDoor\(\{ verb: inv\.verb, face: named \?\? mount!, mount, lent,/);
     expect(src).toMatch(/sessionRefuse\(sock, seatRefusalClass\(seatRefused\), requestId\)/);
     expect(src).toMatch(/fail\(seatRefused, seatRefusalClass\(seatRefused\)\)/);
     expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/lentOrdinals:\s+\(\) => unlockedFaceOrdinals\(\)/);

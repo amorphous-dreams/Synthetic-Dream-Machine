@@ -39,6 +39,8 @@
  */
 
 import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
+import { choreAtDoor, isChore } from "./chore-face.js";
+import type { ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
 import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
@@ -990,8 +992,10 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     if (!opts.lentOrdinals) return null;
     try { return await opts.lentOrdinals(); } catch { return null; }
   };
-  const sessionRefuse = (sock: Socket, refusal: string, requestId?: string): void =>
-    sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal });
+  const sessionRefuse = (sock: Socket, refusal: string, requestId?: string, message?: string): void =>
+    sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal, ...(message !== undefined && { message }) });
+  /** The daemon mount's ordinal, or null where no mount reads (no reader, or the floor): the chore gate then stands aside. */
+  const mountOf = (): number | null => opts.wornOrdinal?.() ?? null;
   const sessionState = (sock: Socket) => {
     let state = sessionSockets.get(sock);
     if (!state) {
@@ -1116,6 +1120,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
     // A FACE ROW'S ANSWER RIDES THE SOCKET ALONE (`session:act`), as does a realm verb's that names a face's key: a call's
     // outcome body rests in the vessel's control document beside the session's face, so neither rides one.
     if (opts.sessionVerbs?.has(frame["verb"]) || opts.socketVerbs?.has(frame["verb"])) return sessionRefuse(sock, "answers-on-the-socket", requestId);
+    // NO SILENT STEWARD (`chore-face`): the daemon runs a chore on its mount's authority, so the session's face meets
+    // `actingFaceOf` before any signer books or anything places; one wearing another lent face refuses by name, naming both.
+    const mount = mountOf();
+    const chore = choreAtDoor({ verb: frame["verb"], face: state.supply.ordinal, mount, lent: mount !== null && isChore(frame["verb"]) ? await lentOf() : null,
+      hand: state.hand ?? "cli", session: checked.session.sessionId, generation: checked.session.generation });
+    if (chore !== null && !chore.ok) return sessionRefuse(sock, chore.refusal, requestId, chore.message);
     const args = frame["args"] as Record<string, unknown>;
     const face = checked.session.face.proofSubject;
     // THE SIGN DOOR'S BOOKING: the daemon island signs a sealed record through the session that placed this call, for
@@ -1130,7 +1140,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         requestedBy: state.supply!.presenter, face: checked.session.face.proofSubject, ordinal: state.supply!.ordinal,
         ...(typeof frame["effectKey"] === "string" && { effectKey: faceScopedId(face, frame["effectKey"]) }),
         ...(typeof frame["timeoutMs"] === "number" && { timeoutMs: frame["timeoutMs"] }) }, sock, requestId,
-        () => { sock.off("close", closed); resolve(); });
+        () => { sock.off("close", closed); resolve(); }, chore?.ok ? chore.mark : undefined);
     }).finally(release);
   };
   /**
@@ -1302,11 +1312,15 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const settleOne = (sock: Socket): void => {
     if (inFlight.delete(sock) && idle()) drained?.();
   };
-  const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void): void => {
+  const handle = (parsed: unknown, sock: Socket, sessionRequestId?: string, onSessionReply?: () => void, mark?: ChoreReceiptMark): void => {
+    // The receipt mark of a dispatched chore (`ChoreReceiptMark`: the acting face, the asker's hand, its session), carried on
+    // its answer as `chore`; unset for a read or a refusal. A session's door hands it in; a one-shot's deferred tick reads it.
+    let choreMark: ChoreReceiptMark | undefined = mark;
     const respond = (answer: Record<string, unknown>): void => {
       void (async () => {
-        const payload = sessionRequestId === undefined ? answer : {
-          kind: "session:result", ...answer, requestId: sessionRequestId,
+        const named = choreMark !== undefined ? { ...answer, chore: choreMark } : answer;
+        const payload = sessionRequestId === undefined ? named : {
+          kind: "session:result", ...named, requestId: sessionRequestId,
           ...((answer["status"] === "done" || answer["status"] === "error") && controlHomeRefusal(controlHandle) === null ? { durable: await settleDurably() } : {}),
         };
         try {
@@ -1404,9 +1418,22 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // THE AI SEAT ACTS INSIDE THE LENT SET, read off the seat kind its request line carries (`seat-hand`): a marked call
         // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
         // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
-        const seatAsks = seatKindOf(parsed) !== null && namedFaceOf(inv.args) !== null;
-        const seatRefused = !seatAsks ? null : seatFaceRefusal({ seat: seatKindOf(parsed), named: namedFaceOf(inv.args), worn: opts.wornOrdinal?.() ?? null, lent: await lentOf() });
+        const seat = seatKindOf(parsed);
+        const named = namedFaceOf(inv.args);
+        const mount = mountOf();
+        // NO SILENT STEWARD (`chore-face`): a one-shot chore designates its face (the face it names, or with none named the
+        // mount, as `face.resolve` answers a seat) and meets `actingFaceOf` on the lent set the seat wall reads, one read for
+        // both. The seat naming a lent face other than the mount refuses `chore-face-not-mounted`, naming both. The operator's own
+        // hand naming another open face (a seed, an import) keeps its path and carries no mark.
+        const oneShotChore = sessionRequestId === undefined && mount !== null && isChore(inv.verb) && (seat !== null || named === null || named === mount);
+        const lent = (seat !== null && named !== null) || oneShotChore ? await lentOf() : null;
+        const seatRefused = seat === null || named === null ? null : seatFaceRefusal({ seat, named, worn: opts.wornOrdinal?.() ?? null, lent });
         if (seatRefused !== null) return fail(seatRefused, seatRefusalClass(seatRefused));
+        if (oneShotChore) {
+          const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });
+          if (chore !== null && !chore.ok) return fail(chore.message, chore.refusal);
+          if (chore?.ok) choreMark = chore.mark;
+        }
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.
         const inputDigest = await inputDigestOf(inv);
