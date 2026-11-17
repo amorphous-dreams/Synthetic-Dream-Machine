@@ -93,7 +93,7 @@ export function pulamaHandDoor(a: {
         const { tessera } = await a.admissions.admitByHand(image, faces, await pulamaSignerOf(holder));
         const ordinals = faces.map((face) => face.ordinal).sort((x, y) => x - y);
         log(`admitted by hand: the reported image now serves ${ordinals.map((n) => `h${n}`).join(", ")}`);
-        return { op: "admit", reading: "admitted", admitted: image, tessera, ...status(), faces: ordinals };
+        return { op: "admit", reading: "admitted", admitted: image, tessera, ...status(), lent: ordinals };
       }
       case "lock": await server.lock(); return { op: "lock", ...status() };
       case "status": return { op: "status", ...status() };

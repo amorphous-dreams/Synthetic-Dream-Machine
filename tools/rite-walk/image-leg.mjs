@@ -559,8 +559,8 @@ export const upPulama = async (h) => {
 
 /** The admission's answer: the route typed, and the pūlama reads `admitted`; any other reading fails by its name. */
 export function judgePulamaAdmit(r, answer) {
-  const ok = r?.code === 0 && r?.typed === true && answer?.reading === "admitted" && Array.isArray(answer?.faces) && answer.faces.length > 0;
-  return { ok, answer: `exit ${r?.code}; route typed: ${r?.typed === true}; reading ${answer?.reading ?? "(none)"}${answer?.admitted ? ` · admitted ${answer.admitted} for faces ${answer.faces?.map(n => `h${n}`).join(", ")}` : ""}` };
+  const ok = r?.code === 0 && r?.typed === true && answer?.reading === "admitted" && Array.isArray(answer?.lent) && answer.lent.length > 0;
+  return { ok, answer: `exit ${r?.code}; route typed: ${r?.typed === true}; reading ${answer?.reading ?? "(none)"}${answer?.admitted ? ` · admitted ${answer.admitted} for faces ${answer.lent?.map(n => `h${n}`).join(", ")}` : ""}` };
 }
 
 /** The admission names the selected faces; an empty selection admits every lit face. */
