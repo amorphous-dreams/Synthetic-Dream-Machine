@@ -448,6 +448,21 @@ describe("the carry verbs", () => {
     expect(after.mints).toEqual([]);
   });
 
+  test("carry-mints-no-wiki-another-face-stood — a wiki whose workbench another face's realm binds mints nothing under a face that holds no writer's seat: it waits by name, and the share landing alone hands that face what its rows grant", async () => {
+    const before = oldVessel();
+    await carryExport(out, { acceptOmissions: false, doors: { ...before.doors(), shareRows: { read: () => [], write: () => {} }, userWikis: async () => ["quiet", "unshared"] } });
+    const after = refound();
+    after.held = new Set(["garden"]);
+    const wikiMints: string[] = [];
+    // `quiet` stands bound under the owner face's realm (it imported first); this face holds no seat there, so it writes `personal`.
+    const doors = { ...after.doors(), mintWiki: async (slug: string) => { wikiMints.push(slug); after.held.add(slug); }, shareRows: { read: () => [], write: () => {} },
+      benchSeat: async (slug: string) => ({ bound: slug === "quiet", writeSlot: "personal" as const }) };
+    const result = await carryImport(out, { apply: true, doors });
+    expect(result.minted).toEqual(["lar:///ha.ka.ba/bags/unshared"]);
+    expect(wikiMints).toEqual(["unshared"]);
+    expect(result.benchWaiting).toContainEqual({ slug: "quiet", why: "writer" });
+  });
+
   test("C12 — the manifest lists the library's collections by index digest; no original enters the bundle", async () => {
     put("library/books/index.mem", "the books index\n");
     put("library/books/abc123/moby-dick.txt", "Call me Ishmael.");
