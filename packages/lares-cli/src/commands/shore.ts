@@ -218,7 +218,7 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
         if (kahua.length > 0) {
           console.log(`${kahua.length} kahua item(s) wait for a hand: a seed previewed them and nothing lifted on --yes alone`);
           for (const k of kahua) console.log(`  h${k.handleIndex}${k.petname ? ` ("${k.petname}")` : ""}  ${k.title}  sha256:${k.digest.slice(0, 16)}  ${k.state === "differs" ? "differs from the standing head" : "new"}`);
-          // A lift rides its own face's wear: the count names what the WORN face's items come to, face by face.
+          // A lift rides its own face's wear: the count names what the daemon MOUNT's items come to, face by face.
           for (const handleIndex of [...new Set(kahua.map((k) => k.handleIndex))].sort((a, b) => a - b)) {
             const n = kahua.filter((k) => k.handleIndex === handleIndex).length;
             console.log(`  lift h${handleIndex}'s under its own grant, wearing it (\`lares vault unlock --face ${handleIndex}\`): \`lares shore lift-kahua --count ${n}\``);

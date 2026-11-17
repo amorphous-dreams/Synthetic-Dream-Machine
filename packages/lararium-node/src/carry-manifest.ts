@@ -2,7 +2,7 @@
  * carry-manifest — the bundle a re-founding carries across: its shape, its hashes, and the one reader that proves a
  * bundle whole before any byte of it moves.
  *
- * `lares export` writes a bundle; `lares import` reads one. A bundle carries AUTHORED memory alone (the worn faces'
+ * `lares export` writes a bundle; `lares import` reads one. A bundle carries AUTHORED memory alone (the daemon mounts'
  * daemon-wiki working carriers and their kāpae shadows, their kahua stage, draft recovery files, consented temp
  * carriers, house-minted bags) and the RE-DECLARE list (each face's pet-name, declared Handle and chair label as plain
  * strings). It carries no key, no signature, no CRDT history and no face relation: a re-founding mints new keys, and the

@@ -13,7 +13,7 @@
  *   tiddler-delete { recipe, title, base?, family?, mode? }               → { recipe, title, decision: removed|absent|conflict|refused, mode, tombstoned, retracted, hash?, refusal?, why?, consequence? }
  *   wiki-status    { recipe }                                             → { recipe, working, layers: [{ bag, mounted, read, write, working?, why? }] }
  *
- * THIS PHASE ANSWERS THE ANCHOR ALONE: `recipe: "default"`, the worn face's daemon wiki, through the daemon island's live
+ * THIS PHASE ANSWERS THE ANCHOR ALONE: `recipe: "default"`, the daemon mount's daemon wiki, through the daemon island's live
  * `$tw.wiki`. The container law of the meme door holds (exactly one of `recipe` / `bag`, else `no-container`); a named
  * wiki or a bag refuses `wiki-not-anchored`, since reaching a named wiki's own engine rides the port relay (phase 2).
  *

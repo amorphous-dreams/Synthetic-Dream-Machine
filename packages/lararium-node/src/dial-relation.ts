@@ -10,8 +10,8 @@
  *
  * So the relation reads off the dial's PIN and the SEALED record of the act that wrote it (controller revision ruling,
  * 2026-10-31; road #/rulings 2026-10-19: "a face's custody rows seal under its own key", "a face's secrets never rest
- * clear"). `fleet join land` seals the landed pin's digest in the worn face's join record, under that face's own key:
- *   · a pin whose digest the WORN face's sealed landing record names → that face's own hearth: a face view of the worn face
+ * clear"). `fleet join land` seals the landed pin's digest in the daemon mount's join record, under that face's own key:
+ *   · a pin whose digest the daemon MOUNT's sealed landing record names → that face's own hearth: a face view of the daemon mount
  *     (the same seat an inbound same-face session takes);
  *   · a kept admit bundle's pin → the CONTRACTED class and its standing at the pin's Nexus, and no private plane;
  *   · any other pin → the weakest relation: no class, no view, the wire shelf and the realm's return lane alone (fail
@@ -36,10 +36,10 @@ function nexusOfPin(pinNexus: string | null): string | null {
   return text.length > 0 ? text : null;
 }
 
-/** The relation a dial's pin proves: the worn face's sealed landing record, where the pin came from, the pin's digest. */
+/** The relation a dial's pin proves: the daemon mount's sealed landing record, where the pin came from, the pin's digest. */
 export function dialRelationOf(input: {
   readonly source:    "bootstrap" | "kept" | null;
-  /** The digest the WORN face's sealed join record names (`FaceJoinRecord.hearthPin`), or null where none stands. */
+  /** The digest the daemon MOUNT's sealed join record names (`FaceJoinRecord.hearthPin`), or null where none stands. */
   readonly landedPin: string | null;
   /** The dialed pin's digest (`admitGatePinDigest`), or null where the dial holds no pin. */
   readonly pinDigest: string | null;

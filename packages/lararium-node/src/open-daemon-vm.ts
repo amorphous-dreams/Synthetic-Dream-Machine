@@ -108,7 +108,7 @@ export interface DaemonVmOptions {
 
 /**
  * THE FACE'S FOLDER STANCE. `faceRelation` (F) reads from the face's VERIFIED founding record alone, and the vessel names the
- * worn face (`faceGroup`) only after that proof. So: no persona plane -> `no-face`; a plane with no proof yet (a locked key, a
+ * daemon mount (`faceGroup`) only after that proof. So: no persona plane -> `no-face`; a plane with no proof yet (a locked key, a
  * joinee still syncing) -> `unproven`, mirroring no private layer until the unlocked composition proves it; a proven face
  * -> `worn`. A proven face carrying no F refuses by name: the founding act pins F, and no path derives it.
  */
@@ -202,10 +202,10 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's working top under `<projections>/wikis/daemon-<F>/`,
+    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the daemon mount's working top under `<projections>/wikis/daemon-<F>/`,
     // its daemon canon under `<projections>/bags/daemon-<F>/`, its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads
     // back to its canon source where one stands; the control document and the daemon document hold none. The verified founding relation names the folders that face projects on
-    // every device; no worn face projects no private kahua layer.
+    // every device; no daemon mount projects no private kahua layer.
     ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
     // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
     // face's `meme get|list --bag <house canon>` answers the released canon from its next composition on. A control document

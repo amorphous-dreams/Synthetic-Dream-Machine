@@ -123,7 +123,7 @@ export async function runEdgeSeatFacts(opts: { readonly repo: Repo; readonly fle
  *
  * THE WORN FACE DECIDES, NEVER THE ROSTER (roads `T34`, `T35`): `worn` names the root the vessel's device edge pins and
  * its own atom key, a joinee's as a founder's. Only a vessel that wears no face (`worn: null`) answers `read: false`,
- * and the island judges that. A worn face whose root or atom stands unread refuses by name, so the sign door refuses
+ * and the island judges that. A daemon mount whose root or atom stands unread refuses by name, so the sign door refuses
  * and nothing seals on a head an owed removal should have moved; it never answers a silent zero.
  */
 export async function fleetRaisesOf(opts: {

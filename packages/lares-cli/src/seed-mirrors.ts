@@ -202,7 +202,7 @@ export interface MirrorSeedResult {
   readonly waiting: ReadonlyArray<{ readonly handleIndex: number; readonly petname: string | null; readonly relations: readonly string[]; readonly why?: "unresolved" | "unworn"; readonly folders?: readonly string[] }>;
   /**
    * THE WORKBENCH FOLDERS THAT WAIT: each wiki whose one folder (or whose canon folder) holds a carrier new or moved while the
-   * worn face may not lay it: `writer` (the daemon mount holds no writer's seat there: a seated writer's wear lays it) or `owner`
+   * daemon mount may not lay it: `writer` (the daemon mount holds no writer's seat there: a seated writer's wear lays it) or `owner`
    * (a share row names another face as the wiki's owner, and no face stood the wiki on this founding yet). Nothing of the
    * folder landed anywhere.
    */
@@ -564,7 +564,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
       // writer's seat there) stands in the house already: nothing of either mints under this face, whose catalog names such a
       // wiki only where a share row carried it (the landing hands over the wiki's recipe row by reference).
       if ((await gateOf(slug)) !== null) continue;
-      // A shared wiki with no folder mints under a worn face alone: the floor founds no realm for it.
+      // A shared wiki with no folder mints under the daemon mount alone: the floor founds no realm for it.
       if (!houseBags.includes(slug) && !houseWikis.includes(slug) && litRelation === null) continue;
       mintedSlugs.add(slug);
       minted.push(wikiBagUri(slug));

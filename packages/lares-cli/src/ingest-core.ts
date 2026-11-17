@@ -815,7 +815,7 @@ export interface SubmitIngestOpts {
    */
   readonly unattended?: boolean;
   /** THE FACE-NAMED WAVE (the lit set): the handle index of the open face whose own layer takes this wave. The island lands it
-   *  only where its device table names that face as the target document's owner; it never falls back to the worn face. */
+   *  only where its device table names that face as the target document's owner; it never falls back to the daemon mount. */
   readonly face?: number;
 }
 

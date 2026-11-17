@@ -161,7 +161,7 @@ export function kahuaFaceFolder(faceRelation: string): string {
 export function isKahuaFaceFolder(name: string): boolean {
   return name.startsWith("kahua-") && KAHUA_FACE_RELATION.test(name.slice(6));
 }
-/** Name the daemon wiki's working folder from the same F: the daemon wiki binds to the worn face, so its folder
+/** Name the daemon wiki's working folder from the same F: the daemon wiki binds to the daemon mount, so its folder
  *  carries the face relation, validated as the kahua folder's is. */
 export function daemonFaceFolder(faceRelation: string): string {
   if (!KAHUA_FACE_RELATION.test(faceRelation)) throw new Error(`daemon face folder: invalid relation ${JSON.stringify(faceRelation)}`);
@@ -172,7 +172,7 @@ export function isDaemonFaceFolder(name: string): boolean {
 }
 
 /**
- * The daemon wiki's disk mirror: its working layer, bound to the worn face, writes files to
+ * The daemon wiki's disk mirror: its working layer, bound to the daemon mount, writes files to
  * `<projections>/wikis/daemon-<F>/`. The daemon document carries no canon role.
  *
  * The working top projects to `<projections>/wikis/daemon-<F>`, the face's daemon canon `bags/daemon-<F>` to
@@ -233,7 +233,7 @@ export function personalFaceRoot(projectionRoot: string, faceRelation: string): 
 export type DaemonDiskMirror = BagMirrorConfig & { readonly scope: string };
 
 /**
- * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the worn face's working top
+ * THE DAEMON VM'S DISK MIRRORS, the one list its island receives: the daemon mount's working top
  * (`<projections>/wikis/daemon-<F>`), its daemon canon (`<projections>/bags/daemon-<F>`, where the face's catalog names one),
  * its kahua stage (`<projections>/bags/kahua-<F>`, items sited by title), and the public crossroads bag, split by origin back
  * to its canon source where one stands. The daemon document and the control document have no mirror.

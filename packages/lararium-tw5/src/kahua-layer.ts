@@ -28,7 +28,7 @@ export async function librarySlotUrl(
 
 /** The store the kahua layer stands on: the verify-on-read stage fold, re-folding when the stage doc or the face moves. */
 export function kahuaLayerStore(handle: DocHandle<LarDoc>, face: () => KahuaStageFace | null, faceChanges?: (fn: () => void) => () => void): LarTiddlerStore {
-  // The stage serves what the fold verifies under the worn face, never the doc's titles: a plain tiddler a synced
+  // The stage serves what the fold verifies under the daemon mount, never the doc's titles: a plain tiddler a synced
   // member writes into the stage doc reads as nothing here.
   return kahuaStageStore({ handle, bagId: KAHUA_BAG, face, ...(faceChanges ? { faceChanges } : {}) });
 }

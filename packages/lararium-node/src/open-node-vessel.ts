@@ -889,11 +889,11 @@ async function prepareNodeBootOn(
   // session to the Repo's adapter as one socket (`gate-sync-server`), so no frame reaches the Repo before the
   // gate's verdict left.
   // THE SEALED REST (sealed-store#/owed, R1 · R2): the document store's own rest for a sealed bag, under this Repo. The
-  // worn face's wiki bags rest sealed under each bag's content key through the holder in the daemon island (the door
+  // daemon mount's wiki bags rest sealed under each bag's content key through the holder in the daemon island (the door
   // carries a body and a sealed value, never a key); cleartext rests only in the disk projection and the live wiki in
-  // memory. A bag maps sealed while the worn face stands proved (the face cell, below), and with no face lit every
+  // memory. A bag maps sealed while the daemon mount stands proved (the face cell, below), and with no face lit every
   // face-half row of the catalog maps sealed under no face. A session reads (face, anchor), whatever the anchor: a
-  // dialed Nexus's session signs, and with no dial the worn face's place session does, so a sovereign node's saves seal
+  // dialed Nexus's session signs, and with no dial the daemon mount's place session does, so a sovereign node's saves seal
   // and rest at its own place. Every change books the session whose call stands as
   // it lands (`SessionSignBook`'s hold), each save signs under the session that booked it, a save no session booked
   // waits `save-unbooked` in memory until the next session's call books it, and a session's signer drops only after the Repo and the rest flush (`beforeSignerDrops`).
@@ -919,7 +919,7 @@ async function prepareNodeBootOn(
     releaseFloor: (documentId) => { releaseBesideSecretHome(repo, documentId); },
   });
   // THE LIT SET (stable-founding-road #/rulings: each face hive isolated; a shut face waits by name): every face open on this
-  // vessel now, by PersonaGroup. The worn face's entry answers its subject live (the dial's Nexus subject or its place
+  // vessel now, by PersonaGroup. The daemon mount's entry answers its subject live (the dial's Nexus subject or its place
   // subject, `sealedCells.face`); a sibling face lit beside it (`lightFace`, the boot's joined faces) answers its own place
   // subject. Each device document files under its OWNER within the set, never under another member's key; `vault lock
   // --face N` removes N, and its waiting saves stay in memory, never written to disk.
@@ -943,13 +943,13 @@ async function prepareNodeBootOn(
       ? [faceCatalogDocId]
       : [...deviceDocs.docsOf(bagId, litDevices()), sealedCells.mounted(bagId), ...(slotDocsNamed.get(bagId) ?? []), documentIdOfUrl(tiddlerText(ownEntry(sealedCells.catalog()?.tiddlers, bagId)))],
   });
-  // The session that stands for the worn face now: a call's, else a seated one (the dial's own, V6).
+  // The session that stands for the daemon mount now: a call's, else a seated one (the dial's own, V6).
   const standingSaveSession = (): NodeSaveSession | null => {
     const face = sealedCells.face();
     const standing = sealedCells.book?.standing()[0] ?? sealedCells.book?.seated().find((s) => s.subject === face);
     return standing ? saveSessionOf(standing) : null;
   };
-  // THE SESSION OF A FACE (the lit set): the worn face's standing session for its own bags; a sibling's seated session for a
+  // THE SESSION OF A FACE (the lit set): the daemon mount's standing session for its own bags; a sibling's seated session for a
   // bag that sibling owns. A face no seated session wears answers none, and its save waits: never another face's session.
   const sessionOfFace = (subject: string | null): NodeSaveSession | null => {
     if (subject === null) return null;
@@ -1073,7 +1073,7 @@ async function prepareNodeBootOn(
   let adapterConnected!: () => void;
   let adapterFailed!: (reason: unknown) => void;
   const adapterReady = new Promise<void>((resolve, reject) => { adapterConnected = resolve; adapterFailed = reject; });
-  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): the Repo holds the worn face's own store id and
+  // THE VEIL AT THE WIRE (residency-follows-the-contract#/faces-sit-flat): the Repo holds the daemon mount's own store id and
   // a peer id minted for this composition alone, and each wire leg presents the alias of the (face, Nexus) it serves
   // (`wire-legs`): a session on the sync gate reads the pair it faces, the client dial the pair it presents. A face
   // switch recomposes, so no peer reads one identifier under two faces of this vessel, lit together or worn in turn.
@@ -1518,7 +1518,7 @@ async function prepareNodeBootOn(
   // R2's booking, by the change's own writer (T4): a save of a sealed bag's document reads its change's actor off its
   // bytes; a change this replica made books the session whose call stands, and a peer's change books its peer writer
   // and rests as received under that session.
-  // P2-4: with no call in flight, a change books a session of the worn face that stands seated (open, its signer standing).
+  // P2-4: with no call in flight, a change books a session of the daemon mount that stands seated (open, its signer standing).
   sealedRest.watch(repo, standingSaveSessionFor);
   emit("repo-open");
 
@@ -2170,16 +2170,16 @@ async function prepareNodeBootOn(
   let nexusDial: NexusClientDial | null = null;
   /** The pin the face dial stands at, once its own presentation composed there; none means the place anchor. */
   const dialAnchor = dialAnchorCell();
-  // V6: THE VESSEL'S OWN SESSION. The dial's presentation opens a session of the worn face at the Nexus it dials; while it
+  // V6: THE VESSEL'S OWN SESSION. The dial's presentation opens a session of the daemon mount at the Nexus it dials; while it
   // stands, it sits seated in the lift's book, so a change written with no CLI call in flight books it and seals, and a
   // save waits `save-unbooked` only where no face stands unlocked. A dial that clears unseats it.
   const dialSeat = standingSessionSeat();
   // A SESSION READS (FACE, ANCHOR), AND THE ANCHOR READS A NEXUS OR THE PLACE (session-contract#/the-hands). A vessel that
-  // dials nothing still wears its face at its own place: its worn face's PLACE SESSION stands seated while no dial
+  // dials nothing still wears its face at its own place: its daemon mount's PLACE SESSION stands seated while no dial
   // session does, so a change written with no call in flight books it and its save seals and rests. Held in memory for a
   // later dial, it would not outlive a restart (stable-founding-road#/rulings, "A timer save signs under its session").
   let dialSession: BookedSession | null = null;
-  // The worn face's place session (and the atom at this vessel's place its chain names), while that face stands lit and
+  // The daemon mount's place session (and the atom at this vessel's place its chain names), while that face stands lit and
   // proved here; the stand-down drops it (place-session-cell).
   const reseatStanding = (): void => { dialSeat.stand(dialSession ?? placeCell.session()); sealedRest.store.mapMoved(); };
   const standDialSession = (presentation: unknown): void => {
@@ -2189,7 +2189,7 @@ async function prepareNodeBootOn(
     reseatStanding();
   };
   const placeReading = placeReadingWatch();
-  /** Mint the worn face's place session: its atom signs the session's certificate at this vessel's place, read afresh
+  /** Mint the daemon mount's place session: its atom signs the session's certificate at this vessel's place, read afresh
    *  from custody at the mint and overwritten after. */
   const mintPlaceSession: Parameters<typeof placeSessionCell>[0] = async (worn) => {
     const place = await placeReading();
@@ -2218,7 +2218,7 @@ async function prepareNodeBootOn(
   const placeCell = placeSessionCell(mintPlaceSession, reseatStanding);
   // THE LIT SET'S SESSIONS: each sibling face lit beside the worn one stands its OWN place session (its atom signs its
   // certificate at this vessel's place), seated in the same book, so a save of a document that sibling owns books its own
-  // session and seals under its own key (`sessionOfFace`), never the worn face's. A sibling that leaves the set stands down.
+  // session and seals under its own key (`sessionOfFace`), never the daemon mount's. A sibling that leaves the set stands down.
   const siblingSessions = new Map<string, { readonly cell: ReturnType<typeof placeSessionCell>; readonly seat: ReturnType<typeof standingSessionSeat> }>();
   const standSiblingSession = (worn: PlaceWorn): void => {
     if (siblingSessions.has(worn.group)) return;
@@ -2242,7 +2242,7 @@ async function prepareNodeBootOn(
     held.seat.book(null);
   };
   const standPlaceSession = (worn: PlaceWorn | null): Promise<void> => placeCell.stand(worn);
-  /** The vessel's own chain at every anchor its worn face meets: the dial's Nexus while one stands, its place beside. */
+  /** The vessel's own chain at every anchor its daemon mount meets: the dial's Nexus while one stands, its place beside. */
   const ownChain = (): SessionOwnChain | null => {
     const nexus = dialAnchor.chain();
     const placeScope = placeCell.scope();
@@ -2257,14 +2257,14 @@ async function prepareNodeBootOn(
   // A vessel that wears a face folds that face's fleet off its device edge's root and its own atom; a piece still unread
   // refuses the fold by name (road `T35`). Only a faceless vessel reads unread.
   // THE FACE CELL READS THE FACE THIS VESSEL PROVED, at the anchor its sessions meet it (`uds-session-door`): the dial's
-  // chain names the Nexus subject while a dial stands composed; with none, the worn face proved and lit stands at the
+  // chain names the Nexus subject while a dial stands composed; with none, the daemon mount proved and lit stands at the
   // vessel's own place, under its atom's place subject. A floor, a locked face or a face whose proof refused lights none.
   let placeFace: string | null = null;
   sealedCells.face = () => { const c = dialAnchor.chain(); return c ? faceProofSubjectRef(c.scope as never) : placeFace; };
-  // ONE FACE, TWO ANCHORS: the worn face proved at this vessel's place names its bags by the place subject until a dial
+  // ONE FACE, TWO ANCHORS: the daemon mount proved at this vessel's place names its bags by the place subject until a dial
   // composes, then by the dial's Nexus subject. A save its place session booked before the dial seals after it, and a
   // value either anchor sealed opens at the other, across a restart whose dial stands again first (meme-realm-bag ⑮b).
-  // The port answers for the worn face alone (mesh `wornAtOf`): a bag of another face never passes through the worn subject.
+  // The port answers for the daemon mount alone (mesh `wornAtOf`): a bag of another face never passes through the worn subject.
   sealedCells.wornAt = wornAtOf(() => sealedCells.face(), () => {
     const c = dialAnchor.chain();
     return [placeFace, c !== null ? faceProofSubjectRef(c.scope as never) : null];
@@ -2793,7 +2793,7 @@ async function prepareNodeBootOn(
   // Daemon VM — sovereign daemon island + the operator's authn/z home. `slot` ABSENT (herm) →
   // registerBags omits the user-wiki bags (the decouple); the daemon's OWN bag still mounts.
   const openDaemon = async ({ assembly, slot }: { assembly: VesselCoreAssembly; slot?: VesselWikiSlot }): Promise<VesselDaemonVm> => {
-    // R1: the worn face's wiki bags rest sealed, each document by the catalog's name for it.
+    // R1: the daemon mount's wiki bags rest sealed, each document by the catalog's name for it.
     sealedCells.catalog = () => assembly.catalogHandle.doc() as LarDoc | undefined;
     sealedCells.mounted = (bagId) => mountedDocumentId(assembly.composite.storeForBag(bagId));
     sealedRest.store.mapMoved();
@@ -3026,7 +3026,7 @@ async function prepareNodeBootOn(
             },
             board: { records: async () => promoteBoardRecords(handle.doc(), personaGroupId), land: async act => { handle.change(doc => writePromoteAct(doc, act)); await repo.flush(); } },
             projection: () => proof.projection,
-            // THE CO-SIGN GATE: a summoned lower reads the worn face's signed admission fold and its intent plane at the act and, where
+            // THE CO-SIGN GATE: a summoned lower reads the daemon mount's signed admission fold and its intent plane at the act and, where
             // the face holds two devices, waits on a second one's answer; a one-device face lowers even where its intents plane cannot
             // load, and a fold that cannot be read refuses by name (seat-harness#/the-swarm-slices).
             cosign: () => loadNodeWardCosignPort(repo, catalogHandle.url, { group: personaGroupId }),
@@ -3210,9 +3210,9 @@ async function prepareNodeBootOn(
         dialAnchor.composed(dialPin, dialPresentationNow);
         standDialSession(dialPresentationNow);
         // THE DIAL'S RELATION, read off this vessel's own records alone (road `P26`; controller fork ruling (b)): the pin's
-        // source and the act that wrote it. A pin `fleet join land` wrote for the worn face seats a face view of that face; a
+        // source and the act that wrote it. A pin `fleet join land` wrote for the daemon mount seats a face view of that face; a
         // kept admit bundle's pin seats the contracted class and its standing; any other pin seats nothing beyond the shelf.
-        // The worn face's SEALED landing record names the pin `fleet join land` wrote (controller revision ruling): a record
+        // The daemon mount's SEALED landing record names the pin `fleet join land` wrote (controller revision ruling): a record
         // that cannot open (a locked face, a floor composition) names none, and the dial reads weakest.
         let landedPin: string | null = null;
         if (custodyGroup !== null) {
@@ -3231,7 +3231,7 @@ async function prepareNodeBootOn(
           onLog: (line) => console.log(`[nexus-join] ${line}`),
           // THE RETURN ON SOCKET A — a return re-folds the boards a partition staled.
           onReconnect: async () => { await afterRoll(); },
-          // THE LEG'S SEAT: the dialed hearth reads the alias of the worn face at the Nexus this dial names.
+          // THE LEG'S SEAT: the dialed hearth reads the alias of the daemon mount at the Nexus this dial names.
           leg: (adapter) => seatDialLeg(wire, adapter, { face: custodyGroup, nexus: dialNexus }),
           // THE ARRIVAL'S SEAT, before the adapter joins: the dialed peer's relation stands on its arrival on THIS adapter, so a
           // replacement arrival of its id elsewhere drops it (and an impostor of a live inbound id on this adapter drops that).
@@ -3313,8 +3313,8 @@ async function prepareNodeBootOn(
     // THE FACE'S OWN CATALOG stands EXPECTED once the face proves and its boot dial stood: every face row this boot
     // registers waits in the view's memory until the island's holder stands and the sealed catalog opens (below).
     if (wornFaceProved && faceAddressSecret) expectFaceCatalog(faceAddressSecret);
-    // EACH FACE REGISTERS THROUGH ITS OWN VIEW (sealed-store#/owed, U1): the worn face through the vessel's catalog view;
-    // a face lit beside it (a relay face, `lightFace`) through its own F with its own D, never the worn face's.
+    // EACH FACE REGISTERS THROUGH ITS OWN VIEW (sealed-store#/owed, U1): the daemon mount through the vessel's catalog view;
+    // a face lit beside it (a relay face, `lightFace`) through its own F with its own D, never the daemon mount's.
     const wornView = catalogViewOf(assembly.catalogHandle);
     const faceViews = faceViewBook(wornView?.floorHandle ?? assembly.catalogHandle, personaGroupId && wornFaceProved ? { group: personaGroupId, view: assembly.catalogHandle } : null);
     catalogForViews = () => faceViews.everyEntry();
@@ -3382,7 +3382,7 @@ async function prepareNodeBootOn(
       }
     }
     for (const plane of bootstrap.personaPlanes) {
-      // Each proven face's plane row lands in that face's own catalog, never the worn face's.
+      // Each proven face's plane row lands in that face's own catalog, never the daemon mount's.
       const registerInCatalog = registerInCatalogOf(plane.personaGroupId);
       if (provenPlanes.get(plane.personaGroupId) === plane.url) registerInCatalog(personaBagIdFor(plane.personaGroupId), plane.url, true);
     }
@@ -3440,7 +3440,7 @@ async function prepareNodeBootOn(
     // THE DAEMON WIKI'S CANON FOLLOWS THE WORN FACE (`daemonFaceCanonBag`): `bags/daemon-<F>`, the document the control
     // document names, minted at the face's first lit stand. A face that stands unlit or unproven, and the floor, read no canon.
     const wornRelation = wornFaceProved && wornFaceProjection && personaGroupId ? (await import("@lararium/mesh")).faceRelationOf(wornFaceProjection) : null;
-    // R1: the bags the sealed rest seals, the worn face's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
+    // R1: the bags the sealed rest seals, the daemon mount's own wiki bags, the daemon wiki's slots and canon (U1's D half), only
     // while that face stands lit and proved; the face's hive registers each (`wornFaceWikiBags`). The canon stands only where
     // its bag stands registered (`standingDaemonCanonBag`), and the map names it before the canon's document moves a byte.
     const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
@@ -3585,7 +3585,7 @@ async function prepareNodeBootOn(
       // A face rides lit only through its atom: at the floor the atom's row rests under the vessel key, so the floor
       // carries none of the four pins and boots faceless, never as a face whose edge names a key it cannot hold.
       ...(faceLit && personaGroupId ? { personaGroupId } : {}),
-      // THE LIT SET: the worn face's handle index and relation, so a face-named wave finds it by the ordinal a person names.
+      // THE LIT SET: the daemon mount's handle index and relation, so a face-named wave finds it by the ordinal a person names.
       ...(faceLit && personaGroupId ? { handleIndex: mountedFace } : {}),
       ...(faceLit && wornRelation ? { faceRelation: wornRelation } : {}),
       ...(faceLit && standingAnchor ? { faceAnchor: standingAnchor } : {}),
@@ -3661,7 +3661,7 @@ async function prepareNodeBootOn(
           ...((faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected) ? { faceCatalogUrl: (faceCatalogUrlOf(catalogHandle) ?? faceCatalogExpected)! } : {}),
           // The face's kahua stage, from the verified pin alone: the daemon recipe stacks this device's own top over it.
           ...(wornKahua ? { kahuaUrl: wornKahua.url } : {}),
-          // The worn face's daemon canon (`bags/daemon-<F>`), the document its catalog names; none at the floor.
+          // The daemon mount's daemon canon (`bags/daemon-<F>`), the document its catalog names; none at the floor.
           ...(daemonCanon ? { canonUrl: daemonCanon.url } : {}),
         },
         // ONE READING WITH THE CONTROL DOCUMENT: the daemon VM reads the floor key again once its control document stood.
@@ -4466,7 +4466,7 @@ async function prepareNodeBootOn(
       // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/wikis/<slug>`, and a sourced slug's beside
       // its canon source (`<source>/../wikis/<slug>`, the repo workspace: git tracks it). No face relation enters that path.
       { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },
-      // A wiki's personal slot carries the worn face's private margin: it projects per face, `personal/<F>/<slug>`.
+      // A wiki's personal slot carries the daemon mount's private margin: it projects per face, `personal/<F>/<slug>`.
       { bagId: "personal",       mirrorRoot: join(projectionRoot, PERSONAL_PROJECTION_DIR), scope: "personal", wikiSlot: "personal", faceFolder: () => wornDeviceRelation },
       // Recovery remains an explicit, recipe-designated grant with its own directory. A draft holds one face's unsaved hand, so it
       // rests under the projections root for every slug and never beside a canon source: nothing face-private lands in a checkout.

@@ -761,7 +761,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...(await runPersonaLease({ repo, ...opt("handleIndex", int(args["handleIndex"])), ...opt("ward", wardOf(args)) })),
     })),
     // A FACE BORN ON A STANDING VESSEL LIGHTS AT ITS BIRTH: its founding opens its custody, and the composition lights it beside
-    // the worn face, so its stage reads and a carry reads it with no second unlock. The worn face itself needs no light. The
+    // the daemon mount, so its stage reads and a carry reads it with no second unlock. The daemon mount itself needs no light. The
     // founding stands whatever the light answers: a light that refuses rides the answer by name (`lightRefused`), never as a
     // founding that failed, so the face still takes its pet-name.
     "persona-new": (args) => answer("persona-new", async () => {
@@ -799,7 +799,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
  * `session:act`, and the vessel's main thread hands it that face (its ordinal, beside the presenter the session door
  * verified; `DaemonVmCore.runAsFace`), which the row reads from `worn` alone. Its answer returns on that session's socket. A row naming another face (by `face` or `handleIndex`) refuses `face-row-other-face`;
  * a face row that rode no session (a surface act, host code, a synced summons) refuses `face-row-rides-a-session`.
- * Every row naming none acts as the worn face, so no row falls back to the one face open or to face 0.
+ * Every row naming none acts as the daemon mount, so no row falls back to the one face open or to face 0.
  */
 export function storeDoorReactors(deps: StoreDoorDeps): Record<StoreDoorVerb, VerbReactor> {
   const rows = storeDoorVerbs(deps);

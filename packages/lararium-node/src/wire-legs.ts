@@ -9,7 +9,7 @@
  *
  *   · A GATE SESSION FACES ONE LOCAL FACE AT ITS NEXUS (`gateLegAt`). A same-operator session proved a PersonaGroup of
  *     this vessel (a device of that face, lit here or worn): it faces THAT face. Every other session (a contracted
- *     peer, a guest, a place's seat) faces the hearth as the composition wears it: the worn face, or the floor. The
+ *     peer, a guest, a place's seat) faces the hearth as the composition wears it: the daemon mount, or the floor. The
  *     Nexus reads off the session's own scope, or off the standing a place's seat holds.
  *   · THE ALIAS SETTLES BEFORE THE SESSION'S FIRST WORD (`gateSessionSettles`). The gate sync server holds an opened
  *     session until its pair's alias settled, so the adapter's answer to a join already leaves under it. A session
@@ -19,7 +19,7 @@
  *     (`ListeningWSServerAdapter.arriving`), and every later word reads the socket the adapter filed for the peer.
  *
  * WHAT THIS LEAVES SHOWN, by name: one gate stands for each Nexus, never for each face, so two faces of this vessel
- * that stand in ONE Nexus answer a contracted peer there as one hearth, under the worn face's alias; and the vessel's
+ * that stand in ONE Nexus answer a contracted peer there as one hearth, under the daemon mount's alias; and the vessel's
  * one store, address and actors still serve every face (road rows `C11`, `C12`, `C13`).
  *
  * Canon: lar:///ha.ka.ba/lares/docs/pono/residency-follows-the-contract#/faces-sit-flat

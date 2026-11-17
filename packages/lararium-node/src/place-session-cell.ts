@@ -1,5 +1,5 @@
 /**
- * place-session-cell — the worn face's PLACE SESSION, held for one node composition.
+ * place-session-cell — the daemon mount's PLACE SESSION, held for one node composition.
  *
  * A session reads (face, anchor), and the anchor reads a Nexus or the place (session-contract#/the-hands). A vessel that
  * dials nothing still wears its face at its own place: while that face stands lit and proved, its place session stands
@@ -16,7 +16,7 @@
  */
 import type { BookedSession, OwnPlace } from "@lararium/mesh";
 
-/** The worn face a place session stands for: its PersonaGroup and its atom. */
+/** The daemon mount a place session stands for: its PersonaGroup and its atom. */
 export interface PlaceWorn { readonly group: string; readonly atomKey: string }
 
 /** One minted place session: the session the book seats, the place its chain names, and its table's close. */
@@ -26,11 +26,11 @@ export interface PlaceSessionMinted {
   readonly close: () => void;
 }
 
-/** Mint the worn face's place session, or name why none stands. */
+/** Mint the daemon mount's place session, or name why none stands. */
 export type PlaceSessionMint = (worn: PlaceWorn) => Promise<PlaceSessionMinted | { readonly refusal: string }>;
 
 export interface PlaceSessionCell {
-  /** Stand the worn face's place session (null: the face left, or stands unproved). A re-stand of the same face keeps it. */
+  /** Stand the daemon mount's place session (null: the face left, or stands unproved). A re-stand of the same face keeps it. */
   stand(worn: PlaceWorn | null): Promise<void>;
   /** The stand-down: drop the session, close its table, and seat nothing more. */
   standDown(): void;

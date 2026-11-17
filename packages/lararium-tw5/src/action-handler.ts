@@ -210,7 +210,7 @@ export const LOAD_YIELD_QUANTUM = 25;
 /**
  * THE FACE-NAMED WAVE'S TARGET (the lit set). The island resolves the named face's own document for `bag` (its daemon working
  * slot by its address secret, its daemon canon by the control document), and reads which face the vessel's device table
- * names as that document's OWNER within the lit set. `face: null` asks after the worn face's own target. A target that
+ * names as that document's OWNER within the lit set. `face: null` asks after the daemon mount's own target. A target that
  * resolves to no document answers `null`.
  */
 export type FaceTargetResolver = (face: number | null, bag: string) => Promise<{ readonly store: LarTiddlerStore; readonly owner: number | null; readonly worn: number | null } | null>;
@@ -224,7 +224,7 @@ export interface ActionHandlerOptions {
   readonly composite: CompositeStore;
   /**
    * THE LIT SET'S FACE RESOLVER (the face-named INGEST). Absent: no face-named wave lands (it refuses `face-unresolved`,
-   * never falling back to the worn face), and an unnamed wave runs as before.
+   * never falling back to the daemon mount), and an unnamed wave runs as before.
    */
   readonly faceTarget?: FaceTargetResolver;
   /** Concrete mirror grants from the vessel manifest. An empty list closes disk INGEST. */
@@ -533,7 +533,7 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
 
     if (action.verb === "INGEST") assertDiskWavePlacement(action, opts.diskMirrors);
     // THE FACE-NAMED WAVE (the lit set): it lands only in the named face's own document, and only where the device table
-    // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the worn face owns it.
+    // names THAT face as its owner; an unnamed wave over a face-owned layer lands only where the daemon mount owns it.
     let faceStore: LarTiddlerStore | null = null;
     if (action.verb === "INGEST") faceStore = await faceWaveTarget(action, opts.faceTarget, ctx.worn);
     if (action.verb === "LOAD" && (action.toBag === CONTROL_HOME_ID || action.toBag === SECRET_HOME_ID)) {
@@ -715,8 +715,8 @@ function residencyFromContext(
 
 /**
  * The face-named wave's gate. A named face resolves through the island's face resolver alone: no resolver, no document, or
- * a document whose owner names another face refuses by name, and nothing falls back to the worn face. An unnamed wave over
- * a face-owned layer lands only where the worn face owns the document it resolves to. Answers the named face's store, or
+ * a document whose owner names another face refuses by name, and nothing falls back to the daemon mount. An unnamed wave over
+ * a face-owned layer lands only where the daemon mount owns the document it resolves to. Answers the named face's store, or
  * null where the wave rides the ordinary access.
  */
 async function faceWaveTarget(action: IngestAction, resolve: FaceTargetResolver | undefined, hand?: SessionWorn): Promise<LarTiddlerStore | null> {

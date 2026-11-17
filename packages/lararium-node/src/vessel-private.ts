@@ -8,14 +8,14 @@
  * of these documents changes nothing.
  *
  * OWNERSHIP DECIDES FIRST (the train's Sol read, controller ruling): each id carries its owning face, the PersonaGroup
- * whose plane it holds, or `vessel` for the daemon document and the catalog (the vessel wears one face, so `vessel` reads
- * as the worn face). A classed document crosses only to a peer proven as its owner. No catalog pointer, alias or bridge
- * widens that: the worn face's bridge admits whatever a catalog row names, so it never decides a vessel-private id alone.
+ * whose plane it holds, or `vessel` for the daemon document and the catalog (the vessel mounts one face, so `vessel` reads
+ * as the daemon mount). A classed document crosses only to a peer proven as its owner. No catalog pointer, alias or bridge
+ * widens that: the daemon mount's bridge admits whatever a catalog row names, so it never decides a vessel-private id alone.
  *
  * WHO READS ONE: a peer proven as its owner whose relation also opens it (`vesselPrivateRelationOpens`), measured from the
  * lanes that serve these documents today:
  *   · a SAME-OPERATOR session (inbound gate or same-face dial) through the scoped view of the face it proved: that face's
- *     planes and the daemon document, and for the worn face the catalog across the bridge (`face-fleet-view`);
+ *     planes and the daemon document, and for the daemon mount the catalog across the bridge (`face-fleet-view`);
  *   · a SIBLING through the sibling gate: the face's own planes, never the daemon document;
  *   · a FACE-JOIN GRANT holder through the PersonaGroup ring: the face's own planes, never anything else.
  * No realm lane, registration, contract, carriage or shelf opens one. The vessel's own in-process islands stand inside the
@@ -53,12 +53,12 @@ export function readBootTiddlers(bootstrapPath: string): Record<string, { text?:
 /** The owner the daemon document and the catalog carry: the vessel itself, read as the face it wears. */
 export const VESSEL_OWNER = "vessel";
 
-/** The owner a document only THIS DEVICE keeps carries: its edge ledger (road `T33`). No relation opens it, the worn face's
+/** The owner a document only THIS DEVICE keeps carries: its edge ledger (road `T33`). No relation opens it, the daemon mount's
  *  own session and siblings included: no other device ever reads or writes this device's roll marks. */
 export const DEVICE_OWNER = "device";
 
 /**
- * Class the edge ledger of every face whose atom key this vessel holds (road `T33`): the worn face, each joined face, each
+ * Class the edge ledger of every face whose atom key this vessel holds (road `T33`): the daemon mount, each joined face, each
  * face lit later. Each ledger's id derives from its atom key (`edgeLedgerDocUrl`), which the fleet board shows in the
  * clear, so no other relation decides it: each classes under `device`. An absent key classes nothing.
  */
@@ -171,7 +171,7 @@ export async function vesselPrivateRelationOpens(r: VesselPrivateRelation): Prom
   if (r.owner === DEVICE_OWNER) return false;
   const owner = r.owner === VESSEL_OWNER ? r.wornFace : r.owner;
   if (!owner) return false;
-  // A sibling and a face-join grant holder each stand for the worn face alone.
+  // A sibling and a face-join grant holder each stand for the daemon mount alone.
   if (r.sibling) return sameFace(owner, r.wornFace) && (await r.siblingGate?.mayFederate(doc, peer)) === true;
   if (r.sameOperator && sameFace(owner, r.peerFace) && (await r.sessionFace?.mayFederate(doc, peer)) === true) return true;
   return sameFace(owner, r.wornFace) && (await r.faceGrant?.admitsPeer(doc, peer)) === true;
