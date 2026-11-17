@@ -300,3 +300,35 @@ test("wake-names-a-red-keep-tessera-and-its-cure: a keep cut and never landed na
   }) });
   assert.doesNotMatch(other, /Lares keep red/);
 });
+
+// The memory library (mempalace): an optional organ the vessel door still reads (vessel-door, lararium-memory); the wake
+// names it for what it is, apart from the house memory, and names a check the CLI no longer makes.
+const { observation, libraryLine } = core;
+const standWith = (mempalace) => JSON.stringify({ ok: false, data: { node: { up: true }, mempalace } });
+const OLD_IMAGE = { ok: false, standing: "incomplete", checks: [
+  { name: "submodule", ok: true, detail: "/app/mempalace" },
+  { name: "holder-deps", ok: true, detail: "importable" },
+  { name: "recall-plugin", ok: false, detail: "mempalace .claude-plugin absent" },
+] };
+
+test("wake-names-the-memory-library: a red library reading names itself apart from the house memory", async () => {
+  const context = await wake({ run: runner({ observe: answered(standWith(OLD_IMAGE)), homes: answered("h"), index: answered(page([])) }) });
+  const line = context.split("\n").find((l) => l.startsWith("Lares memory library"));
+  assert.ok(line, "the wake names the library on a line of its own");
+  assert.match(line, /mempalace, the optional upstream library `lares mempalace install` keeps; the house memory reads from the daemon wiki below, never from it/);
+  assert.match(line, /reads incomplete: recall-plugin \(mempalace \.claude-plugin absent\)/);
+  assert.match(line, /recall-plugin names a check this checkout's CLI no longer makes \(57de8002a\): the vessel runs an older image, and the check clears when it runs a newer one/);
+  assert.match(line, /the frame's ok:false follows this reading/);
+  // The library line follows the frame and comes before the memory.
+  const lines = context.split("\n");
+  assert.equal(lines.indexOf(line), 1);
+  // A failing check the CLI still makes reads without the dropped-check note.
+  const live = libraryLine({ data: { mempalace: { ok: false, standing: "incomplete", checks: [{ name: "holder-deps", ok: false, detail: "holder deps absent" }] } } });
+  assert.match(live, /reads incomplete: holder-deps \(holder deps absent\)$/);
+  assert.doesNotMatch(live, /no longer makes/);
+  // CONTROL: a library that stands, an absent one, or a frame without the field print no line.
+  for (const mempalace of [{ ok: true, standing: "present", checks: [] }, { ok: true, standing: "absent", checks: [] }, undefined]) {
+    assert.equal(libraryLine({ data: { mempalace } }), null);
+  }
+  assert.equal(observation({ stdout: UP, code: 0, signal: null }).library ?? null, null);
+});

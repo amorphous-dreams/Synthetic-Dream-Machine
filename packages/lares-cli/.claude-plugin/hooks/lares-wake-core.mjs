@@ -132,6 +132,31 @@ function readFault(result, noun) {
   return null;
 }
 
+/**
+ * Checks the vessel door once made and this checkout's CLI no longer makes, each beside the commit that dropped it: an
+ * older vessel image still reports them. `recall-plugin` read the retired memory palace's Claude plugin (road `L48`).
+ */
+const CHECKS_DROPPED = { "recall-plugin": "57de8002a" };
+
+/**
+ * The memory library's line, or null where it stands or stays absent. The library (mempalace) stands as an optional
+ * organ the vessel door reads (vessel-door#what-a-stand's-ok-answers; lararium-memory): an upstream comparator, never the
+ * house memory, which the daemon wiki holds. A red reading names its failing checks, and a check the CLI dropped says so.
+ */
+export function libraryLine(frame) {
+  const library = frame?.data?.mempalace;
+  if (!library || typeof library !== "object" || library.ok !== false) return null;
+  const failing = (Array.isArray(library.checks) ? library.checks : []).filter((c) => c?.ok === false);
+  const named = failing.map((c) => `${c.name}${c.detail ? ` (${String(c.detail).replace(/\s+/g, " ").trim()})` : ""}`).join("; ");
+  const dropped = failing.filter((c) => CHECKS_DROPPED[c.name]).map((c) =>
+    `${c.name} names a check this checkout's CLI no longer makes (${CHECKS_DROPPED[c.name]}): the vessel runs an older image, and the check clears when it runs a newer one`);
+  const frameOk = frame?.ok === false ? ["the frame's ok:false follows this reading"] : [];
+  return [
+    `Lares memory library (mempalace, the optional upstream library \`lares mempalace install\` keeps; the house memory reads from the daemon wiki below, never from it) reads ${library.standing ?? "red"}${named ? `: ${named}` : ""}`,
+    ...dropped, ...frameOk,
+  ].join(" · ");
+}
+
 /** The observation's line, and whether the vessel itself answered up. Each cause reads by its own name: only the vessel's own answer says "down". */
 export function observation(result) {
   const unobserved = (why) => `vessel unobserved: ${why}; read it with tools/lares-container.sh vessel stand --observe --json, or ${CURE}`;
@@ -141,7 +166,7 @@ export function observation(result) {
   const frame = parseAnswer(result.stdout);
   if (frame === null) return { up: false, line: unobserved(`the shim's answer did not parse (exit ${result.code ?? result.signal})`) };
   const up = frame?.data?.node?.up === true;
-  return { up, line: up ? JSON.stringify(frame) : `vessel down (the observation answered node.up ${JSON.stringify(frame?.data?.node?.up ?? null)}); ${CURE}` };
+  return { up, library: up ? libraryLine(frame) : null, line: up ? JSON.stringify(frame) : `vessel down (the observation answered node.up ${JSON.stringify(frame?.data?.node?.up ?? null)}); ${CURE}` };
 }
 
 /** A row's line, its description cut where the line would outrun `lineCap` bytes; its address stays whole. */
@@ -400,6 +425,7 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "
   const lines = [
     "Lares live wake (SessionStart) — what is true right now " +
       "(the canonical frame is already loaded from CLAUDE.md): " + seen.line,
+    ...(seen.library ? [seen.library] : []),
     `Lares homes: ${homesLine}`,
   ];
   if (state !== null) lines.push(stateLines(state));

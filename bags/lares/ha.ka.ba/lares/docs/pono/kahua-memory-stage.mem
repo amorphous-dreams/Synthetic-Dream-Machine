@@ -287,6 +287,8 @@ Memory stage memes REST in the face-bound daemon wiki's working layer (`wikis/da
 
 ''The rows in play lead.'' Before the index, every wake (startup, resume, clear, compact) reads the state rows by their address prefix through the same door (`[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]`, at most 8 rows; a slot title `…#/entry` stays out) and prints `Lares rows in play (start here): <N> rows`: the `state/handoff` row first where one stands, the rest by title (the stage memes carry no `modified` field, so the door holds nothing to sort them newest first by), each line cut at 320 bytes and the block at 2048, then the call that reads further. The hook names no row by address; a state row joins by its title alone. A fault prints `Lares rows in play unread: <cause>` beside the view that reads them.
 
+''The library stays apart.'' The vessel's frame still carries the `mempalace` reading, the optional upstream library the vessel door reads (<<~ loulou uri=`lar:///ha.ka.ba/lares/cli/vessel-door`>>). Where it reads red, the wake prints `Lares memory library` beneath the frame: the library named as the comparator it holds, never the house memory this stage keeps, its failing checks, and a check the CLI no longer makes (`recall-plugin`) named as an older image's report.
+
 ''One budget.'' The harness bounds the hook at 15 seconds and discards its whole answer past that bound, so the three reads share one budget of 12 seconds inside it: a read still open then stops and reports itself (`vessel observation timed out`, `memory index unread: no answer inside the wake's budget`), and the wake carries what the others answered. The budget decides nothing about the house.
 
 ''The compaction leg'' (`L35`). `lares-compact-hook.mjs` rides `PreCompact`: Claude Code appends that hook's stdout to the compaction's own instructions, so it prints plain text, `Lares compaction carry: keep every lar: address below verbatim in the summary …`, the rows-in-play block, and the same index block. The session that follows a compaction starts with source `compact`, the wake fires again there (its registration names no matcher), and it prints the rows in play and the index into the new context, as every wake does. Both registrations ride the reality tunnel (`claude.wake-hook`, `claude.compact-hook`; <<~ loulou uri=`lar:///ha.ka.ba/lares/cli/reality-tunnel`>>) and the plugin's `hooks/hooks.json`; `lares home tend` writes them into the operator's `~/.claude/settings.json`, at the operator's hand.
@@ -370,6 +372,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;bHS3Ctm84FFibI68Z8ItfZD1s4bhB-mMetxy7a0bVjA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C7gvXnxd_HQmpwUnc3HVXFKv7Wr3dVioiI8hO5wsYZY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
