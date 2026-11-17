@@ -212,6 +212,11 @@ services:
       # itself; set, it keeps no key and asks the standing pūlama for row operations over the socket below.
       LAR_PULAMA_SOCKET: ${LAR_PULAMA_SOCKET:-}
       LAR_KUKULU_OFFER: ${LAR_KUKULU_OFFER:-}
+      # THE KEEP WORKSPACE (packages/lares-cli/src/keep-config.ts). `vault unlock` runs in here and offers the keep lei where
+      # the config names a keep workspace; the vessel holds no surface env file (HOME=/lar/cache), so the names the keep rule
+      # reads ride in from the shim's environment or its --env-file, as LARES_HOUSE does. A change takes hold at the next `up`.
+      LARES_KEEP_WORKSPACE: ${LARES_KEEP_WORKSPACE:-}
+      LARES_WORKSPACES: ${LARES_WORKSPACES:-}
     volumes:
       - type: bind
         source: ${LARES_HOUSE:?set LARES_HOUSE to the host house root (absolute)}/hearth
