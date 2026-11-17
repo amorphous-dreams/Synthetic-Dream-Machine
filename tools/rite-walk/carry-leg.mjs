@@ -17,8 +17,9 @@
 // `parallel-drafts` reads fail, save the source's `cold-wikis` and `override-bases-unread` over wikis the steward woke at
 // hold-old: the source holds two rotatable pins, so a house of more shared wikis than that always leaves one cold at the export,
 // and a woken wiki projected its pages first; `judgeExport` excuses those by name), or read a stand-off as a bare exit code: the leg judges the import's stand-offs against the plan's named set
-// (`judgeImport`, empty now: a working copy over canon that moved between the revisions lands, and the `fresher` step reads
-// the new house's warning for it, `judgeFresher`; an override base works as an instrument, never a gate) and hands each
+// (`judgeImport`: a working copy over canon that moved between the revisions lands, and the `fresher` step reads
+// the new house's warning for it, `judgeFresher`; a carried workbench row whose tracked carrier moved stands off by name,
+// `movedWorkbenchStandoffs`; an override base works as an instrument, never a gate) and hands each
 // import answer to the parity witness (`--imports`), which excuses any named uri by name. The pūlama stands only at the end,
 // on the carried house (carry → light): the image leg's pūlama phase, once parity reads par. The host reports the carried
 // image at `up`, and the pūlama serves no image it never admitted, so the operator's hand admits it (`pulama admit`, its route
@@ -126,6 +127,33 @@ const uriOf = (entry) => String(entry).split(" (")[0];
 export function kapaeArgs(e) {
   return ["tiddler", "delete", e.title, "--recipe", e.recipe, "--family", "--mode", "kapae", "--no-json"];
 }
+
+/**
+ * THE MOVED WORKBENCH (crossing scaffolding: it reads the source revision against the pin, and burns once the swap lands, with
+ * the source revision it reads). A wiki's workbench rests tracked in the checkout (`wikis/<wiki>/…`), so
+ * the new house's own seed lays its row at the pin; a carried working copy of that row, where the tracked carrier moved
+ * between `--from-rev` and the pin, meets a working row of another text at the import's three-way gate and stands off by name.
+ * Those uris owe a named stand-off: each wiki-working row the bundle carried whose carrier under its own wiki's tree moved.
+ * A working copy over moved BAG canon owes none (it lands, and the fresher read names it), and a moved carrier no copy rides
+ * over owes none. `moved` names the tracked paths `git diff --name-only <from-rev> <pin> -- bags wikis` lists.
+ */
+export function movedWorkbenchStandoffs({ moved = [], rows = [] }) {
+  const movedUris = new Set();
+  for (const path of moved) {
+    const m = /^wikis\/([^/]+)\/(.+)\.mem$/.exec(path);
+    if (m) movedUris.add(`${m[1]} lar:///${m[2]}`);
+  }
+  const owed = new Set();
+  for (const row of rows) {
+    if (row?.layer !== "wiki-working" || typeof row.title !== "string") continue;
+    const wiki = /^lar:\/\/\/ha\.ka\.ba\/wikis\/([^/]+)\/working$/.exec(String(row.bag ?? ""))?.[1];
+    if (wiki !== undefined && movedUris.has(`${wiki} ${row.title}`)) owed.add(row.title);
+  }
+  return [...owed].sort();
+}
+
+/** The stand-offs the import owes: the seed's named set, and the moved workbench rows the bundle carried. */
+export const expectedStandoffOf = (c) => [...new Set([...(c.vars.expectedStandoff ?? []), ...(c.vars.movedWorkbench ?? [])])];
 
 export function judgeImport(answers, { expectedStandoff = [], expectedRefused = [] } = {}) {
   const faults = [], stood = new Set(), refused = [];
@@ -739,6 +767,13 @@ const importPreview = async (c) => {
 
 const importApply = async (c) => {
   const h = c.hands("new");
+  // THE MOVED WORKBENCH, read before the import: the tracked carriers that differ between the revisions, and the rows the
+  // bundle carried (crossing scaffolding, `movedWorkbenchStandoffs`).
+  const moved = (await hostGit(c, ["-C", c.scope.oldSrc, "diff", "--name-only", c.vars.oldRev, c.vars.pin, "--", "bags", "wikis"])).split("\n").filter(Boolean);
+  let rows = [];
+  try { rows = JSON.parse(readFileSync(join(importHost(c), "manifest.json"), "utf8")).rows ?? []; }
+  catch { return { ok: false, answer: `the bundle's manifest would not read at ${join(importHost(c), "manifest.json")}` }; }
+  c.vars.movedWorkbench = movedWorkbenchStandoffs({ moved, rows });
   const answers = []; const unread = [];
   for (const face of [0, 1, 2]) {
     const w = await wear(c, "new", face);
@@ -758,9 +793,9 @@ const importApply = async (c) => {
     writeFileSync(file, `${JSON.stringify(answer, null, 2)}\n`);
     (c.vars.imports ??= [])[face] = file;
   }
-  const j = judgeImport(answers, { expectedStandoff: c.vars.expectedStandoff ?? [], expectedRefused: c.vars.expectedRefused ?? [] });
+  const j = judgeImport(answers, { expectedStandoff: expectedStandoffOf(c), expectedRefused: c.vars.expectedRefused ?? [] });
   c.vars.importTallies = answers.map((a) => a.json?.data?.tallies ?? null);
-  return { ok: j.ok, answer: j.ok ? `stood off exactly the named set ${JSON.stringify(j.stoodOff)}; landed ${JSON.stringify(j.landed)}` : [...j.faults, ...unread].join("; "), measures: { exits: answers.map((a) => a.code), stoodOff: j.stoodOff, refused: j.refused, landed: j.landed, unread } };
+  return { ok: j.ok, answer: j.ok ? `stood off exactly the named set ${JSON.stringify(j.stoodOff)}; landed ${JSON.stringify(j.landed)}` : [...j.faults, ...unread].join("; "), measures: { exits: answers.map((a) => a.code), stoodOff: j.stoodOff, movedWorkbench: c.vars.movedWorkbench, refused: j.refused, landed: j.landed, unread } };
 };
 
 /** THE FRESHER WARNING, read at the steward's wear after every face imported (`fresherPlanFor` decides what it owes): a copy
@@ -800,7 +835,7 @@ const reimport = async (c) => {
 
 const compare = async (c, out) => {
   const pick = (label) => (c.vars[`census-${label}`] ?? []);
-  const args = [PARITY, ...compareArgs({ old: pick("old"), fresh: pick("new"), base: pick("new-base"), imports: (c.vars.imports ?? []).filter(Boolean), standOff: [...(c.vars.expectedStandoff ?? []), ...(c.vars.expectedRefused ?? [])], manifest: join(importHost(c), "manifest.json"), out })];
+  const args = [PARITY, ...compareArgs({ old: pick("old"), fresh: pick("new"), base: pick("new-base"), imports: (c.vars.imports ?? []).filter(Boolean), standOff: [...expectedStandoffOf(c), ...(c.vars.expectedRefused ?? [])], manifest: join(importHost(c), "manifest.json"), out })];
   const r = await c.node(args, { env: c.hands("new").env, timeout: 600_000 });
   return { code: r.code, answer: json(r.stdout) };
 };
@@ -1044,7 +1079,7 @@ export function carryReceipt({ head, dirty, walker, scope, rows, legs, docker, v
     legs, tally: { ...tally, firstFail: rows.find((r) => r.outcome === "fail")?.step ?? null },
     outcomes: `sha256:${sha256(JSON.stringify(compared))}`,
     steps: rows, docker,
-    carry: { bundle: vars.bundle ?? null, expectedStandoff: vars.expectedStandoff ?? [], importTallies: vars.importTallies ?? null, parity: vars.parity ?? null, sweep: vars.sweep ?? null, nonNfc: vars.nonNfc ?? null },
+    carry: { bundle: vars.bundle ?? null, expectedStandoff: vars.expectedStandoff ?? [], movedWorkbench: vars.movedWorkbench ?? [], importTallies: vars.importTallies ?? null, parity: vars.parity ?? null, sweep: vars.sweep ?? null, nonNfc: vars.nonNfc ?? null },
   };
 }
 

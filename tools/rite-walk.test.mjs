@@ -1007,7 +1007,7 @@ test("carry-standoff-follows-the-moved-workbench: a wiki's working row the bundl
 });
 
 test("carry-import-excuses-the-moved-workbench: import-apply reads the moved carriers between the revisions and the bundle's working rows, excuses that stand-off by name, and parity passes it as --stand-off", async () => {
-  const { CARRY_STEPS, assertCarryScope, compareArgs } = present(carryLeg);
+  const { CARRY_STEPS, assertCarryScope, compareArgs, expectedStandoffOf } = present(carryLeg);
   const scope = assertCarryScope(carryOpts());
   const bundle = join(scope.houseNew, "config", "carry", "pre-merge");
   mkdirSync(bundle, { recursive: true });
@@ -1029,7 +1029,8 @@ test("carry-import-excuses-the-moved-workbench: import-apply reads the moved car
     const diff = calls.find((k) => k.kind === "git" && k.args.includes("diff"));
     assert.ok(diff, "the step diffs the canon trees between the revisions");
     for (const want of [OLD_REV, PIN, "bags", "wikis"]) assert.ok(diff.args.includes(want), `${want} in ${diff.args.join(" ")}`);
-    assert.ok(c.vars.expectedStandoff.includes(WORN), JSON.stringify(c.vars.expectedStandoff));
-    assert.ok(compareArgs({ standOff: c.vars.expectedStandoff }).join(" ").includes(`--stand-off ${WORN}`));
+    assert.deepEqual(c.vars.movedWorkbench, [WORN]);
+    assert.deepEqual(expectedStandoffOf(c), [WORN], "the seed's set and the moved workbench, once each");
+    assert.ok(compareArgs({ standOff: expectedStandoffOf(c) }).join(" ").includes(`--stand-off ${WORN}`));
   } finally { rmSync(scope.base, { recursive: true, force: true }); }
 });
