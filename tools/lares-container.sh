@@ -572,11 +572,13 @@ case "$verb" in
         # shellcheck disable=SC2046
         compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" "$1" ;;
       admit)
-        # admit reads the route the same way; a face ordinal names the face where several stand open.
-        [ "$#" -le 2 ] || die "pulama admit takes at most a face ordinal"
-        case "${2:-0}" in *[!0-9]*) die "pulama admit takes a face ordinal (a number)" ;; esac
+        # admit reads the route the same way; the face ordinals name the lent set (none names every lit face).
+        shift
+        for face in "$@"; do
+          case "$face" in ''|*[!0-9]*) die "pulama admit takes face ordinals (numbers)" ;; esac
+        done
         # shellcheck disable=SC2046
-        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" admit ${2:+"$2"} ;;
+        compose --profile pulama exec $(tty_flag) pulama node "$PULAMA_MAIN" admit "$@" ;;
       *) die "pulama takes up, down, light, admit, lock, status or tessera" ;;
     esac ;;
   reset)

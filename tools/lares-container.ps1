@@ -521,10 +521,9 @@ switch ($verb) {
       'down' { Compose @('--profile', 'pulama', 'stop', 'pulama') }
       { $_ -in @('light', 'lock', 'status', 'tessera') } { Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, $sub)) }
       'admit' {
-        # admit reads the route on a real terminal inside the pūlama; a face ordinal names the face where several stand open.
-        if ($rest.Count -gt 2) { Die 'pulama admit takes at most a face ordinal' }
+        # admit reads the route on a real terminal inside the pūlama; the face ordinals name the lent set (none names every lit face).
         $face = @($rest | Select-Object -Skip 1)
-        if ($face.Count -eq 1 -and $face[0] -notmatch '^[0-9]+$') { Die 'pulama admit takes a face ordinal (a number)' }
+        foreach ($f in $face) { if ($f -notmatch '^[0-9]+$') { Die 'pulama admit takes face ordinals (numbers)' } }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'admit') + $face)
       }
       default { Die 'pulama takes up, down, light, admit, lock, status or tessera' }
