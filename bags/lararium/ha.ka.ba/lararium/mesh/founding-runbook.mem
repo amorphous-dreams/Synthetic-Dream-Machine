@@ -493,7 +493,7 @@ lares vault unlock --face 2 && lares vessel seed --apply --yes            # the 
 
 ''What a seed lays, and at whose wear.'' A face's private documents (its daemon memory, its `personal` layer of a wiki, its kahua stage) lay at that face's OWN wear: each rests sealed under its own face's key, so a seed worn as another face names the wait (`<pet-name> stands open, and its own layer lays at its own face's wear`, `lifts at its own face's wear`) and exits 0. A wiki's workbench lays ONCE, for its document, at the wear of a face that holds a writer's seat there; a shared wiki mints again and lays at its OWNER's wear (the share share entry names the owner by pet-name, and the wiki mints from that entry even where no page of it reached a mirror), and the seed then lands the shares again, seating each named face by pet-name. Under any other face the folder waits by name and the seed exits 0. A seed says `shares:` only where a grant or a seat moved.
 
-''A kahua lift rides its own face's wear.'' `--lift-kahua <N>` names the count the WORN face's seed previewed, and lifts those alone; an item of another open face stays at the shore and the seed says whose wear lifts it. A lift, a stage, a withdraw or a carry named for a face the vessel does not wear refuses `kahua-face-unworn` at once, and the next wear answers.
+''A kahua lift rides its own face's wear.'' `--lift-kahua <N>` names the count the WORN face's seed previewed, and lifts those alone; an item of another open face stays at the shore and the seed says whose wear lifts it. A lift, a stage, a withdraw or a carry named for a lent face the vessel does not mount refuses `chore-face-not-mounted` at once, naming the face asked and the mount, and the face answers once the vessel mounts it.
 
 Read back per face: each face's memories through `/mcp`, its own margins of the shared wikis, and the promoted record in the steward's live canon (the canon source carried it, and the steward's seed laid it). Then `lares import ~/.lares/config/carry-2 --apply`, run wearing each face in turn, lands nothing and counts every record as `already` or, for another face's private records, `waiting`; and a final seed lands nothing and says nothing of shares.
 
@@ -558,6 +558,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;BYVfiwaX-1PeCix6uNARUu_Gm-VXbV59uRSj6cbw1Kw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SkwTskrh-DNuVFakOgBJOwyy9JD9FsluSLSnI-T6dfk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
