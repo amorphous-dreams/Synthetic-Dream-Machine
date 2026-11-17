@@ -489,12 +489,39 @@ test("carry-fresher-reads-the-warning: the copy over moved canon lands and the n
   assert.match(judgeFresher(read(["fresher: 2 …", `  ${moved}  a -> b`, `  ${still}  a -> c`]), fresh).faults.join("; "), /unexpected fresher .*still-canon/);
   assert.match(judgeFresher(read(["lares vessel fresher: cap-denied"], 2), fresh).faults.join("; "), /exited 2/);
   assert.equal(judgeFresher(read(["fresher: no working copy over lar:///ha.ka.ba/bags/lares shadows a fresher canon record"]), { titles: [], quiet: [still] }).ok, true, "a plan that owes no warning reads a quiet house green");
+  // THE SECOND CLASS: a copy that names no base and differs from canon reads `base unknown`, apart from the fresher class.
+  const none = "fresher: no working copy over lar:///ha.ka.ba/bags/lares shadows a fresher canon record";
+  const unknownHead = "fresher: 2 working copies over lar:///ha.ka.ba/bags/lares name no base and differ from canon (base unknown; review each, it may hide fresher canon):";
+  const doubt = { bag: "lares", titles: [], unknown: [moved, still], quiet: [] };
+  const u = judgeFresher(read([none, unknownHead, `  ${moved}  base unknown -> sha256:bbbb…`, `  ${still}  base unknown -> sha256:cccc…`]), doubt);
+  assert.equal(u.ok, true, u.faults.join("; "));
+  assert.deepEqual(u.listed, [], "a base-unknown line never reads as a fresher warning");
+  assert.deepEqual(u.unknown, [moved, still]);
+  assert.match(judgeFresher(read([none]), doubt).faults.join("; "), /expected base-unknown .*moved-canon.* never named/);
+  assert.match(judgeFresher(read([none, unknownHead, `  ${moved}  base unknown -> b`]), fresh).faults.join("; "), /expected fresher .*moved-canon.* never warned/, "a base-unknown line does not answer a fresher expectation");
+  assert.match(judgeFresher(read([head, `  ${moved}  a -> b`, unknownHead, `  ${still}  base unknown -> c`]), fresh).faults.join("; "), /unexpected base-unknown .*still-canon/, "a quiet title stays in neither class");
   // The read runs as its own step, after every face imported and before the re-import.
   const ids = CARRY_STEPS.map((s) => s.id);
   const step = CARRY_STEPS.find((s) => s.id === "fresher");
   assert.ok(step, "a fresher step stands");
   assert.ok(step.needs.includes("import-apply") && ids.indexOf("fresher") === ids.indexOf("import-apply") + 1, "the fresher read follows the three imports");
   assert.match(step.command, /lares vessel fresher --bag/);
+});
+
+test("carry-fresher-plan-reads-the-bundle: a working row that carries its override base owes the fresher warning; one that carries none owes the base-unknown class", () => {
+  const { fresherPlanFor } = present(carryLeg);
+  const moved = CANON.moved.uri, still = CANON.still.uri;
+  const want = { bag: "lares", titles: [moved], quiet: [still] };
+  const rowOf = (uri, base) => ({ path: `wikis/lares/working/${uri.slice("lar:///".length)}.mem`, layer: "wiki-working", ...(base ? { overrideBase: base } : {}) });
+  const based = fresherPlanFor(want, { rows: [rowOf(moved, `sha256:${"a".repeat(64)}`), rowOf(still, `sha256:${"b".repeat(64)}`)] });
+  assert.deepEqual(based, { bag: "lares", titles: [moved], unknown: [], quiet: [still], faults: [] }, "a house that stamped bases: moved warns, still stays quiet");
+  // As from 983c70580: the old meme door stamped no base. Each copy carries the rehearsal's paragraph, so each differs from
+  // the canon standing below it and the new house names both for review; neither can read quiet.
+  const bare = fresherPlanFor(want, { rows: [rowOf(moved), rowOf(still)] });
+  assert.deepEqual(bare, { bag: "lares", titles: [], unknown: [moved, still], quiet: [], faults: [] });
+  const missing = fresherPlanFor(want, { rows: [rowOf(still)] });
+  assert.match(missing.faults.join("; "), /carries no working row for .*moved-canon/);
+  assert.equal(fresherPlanFor(null, { rows: [] }), null);
 });
 
 test("carry-fresher-step-reads-at-the-steward: the step wears face 0 and reads `vessel fresher --bag <plan bag>`; a plan with no expectation reads nothing", async () => {
@@ -509,6 +536,11 @@ test("carry-fresher-step-reads-at-the-steward: the step wears face 0 and reads `
     return { code: 0, stdout: "{}", stderr: "" };
   };
   const step = CARRY_STEPS.find((s) => s.id === "fresher");
+  // The bundle the import read: the moved copy's row carries its base, the still copy's too.
+  const bundleDir = join(scope.houseNew, "config", "carry", "pre-merge");
+  mkdirSync(bundleDir, { recursive: true });
+  const rowOf = (uri) => ({ path: `wikis/lares/working/${uri.slice("lar:///".length)}.mem`, layer: "wiki-working", overrideBase: `sha256:${"a".repeat(64)}` });
+  writeFileSync(join(bundleDir, "manifest.json"), JSON.stringify({ rows: [rowOf(moved), rowOf(CANON.still.uri)] }));
   const { c, calls } = recordingCarry(scope, { answer, vars: { oldRev: OLD_REV, pin: PIN, expectedFresher: { bag: "lares", titles: [moved], quiet: [CANON.still.uri] } } });
   const r = await step.run(c);
   assert.equal(r.ok, true, r.answer);
