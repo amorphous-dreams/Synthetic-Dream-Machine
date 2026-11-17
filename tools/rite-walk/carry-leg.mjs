@@ -16,9 +16,10 @@
 // fail: a drop is exactly what the rehearsal must catch), export with `--accept-omissions` (an omission other than
 // `parallel-drafts` reads fail, save the source's `cold-wikis` and `override-bases-unread` over wikis the steward woke at
 // hold-old: the source holds two rotatable pins, so a house of three shared wikis always leaves one cold at the export,
-// and a woken wiki projected its pages first; `judgeExport` excuses those by name), or read a stand-off as a bare exit code: the import exits 1 for rows over canon that moved
-// between the revisions, and the leg judges its stand-offs against the plan's named set (`judgeImport`) and hands each
-// import answer to the parity witness (`--imports`), which excuses those uris by name. The pūlama stands only at the end,
+// and a woken wiki projected its pages first; `judgeExport` excuses those by name), or read a stand-off as a bare exit code: the leg judges the import's stand-offs against the plan's named set
+// (`judgeImport`, empty now: a working copy over canon that moved between the revisions lands, and the `fresher` step reads
+// the new house's warning for it, `judgeFresher`; an override base works as an instrument, never a gate) and hands each
+// import answer to the parity witness (`--imports`), which excuses any named uri by name. The pūlama stands only at the end,
 // on the carried house (carry → light): the image leg's pūlama phase, once parity reads par.
 //
 // THE KEEP (the house keeps itself): between the export and the down the source house strings a keep lei under the ward and runs
@@ -147,6 +148,20 @@ export function judgeImport(answers, { expectedStandoff = [], expectedRefused = 
   const waiting = answers.at(-1)?.json?.data?.waiting ?? [];
   if (waiting.length > 0) faults.push(`${waiting.length} row set(s) still waiting after every face imported: ${JSON.stringify(waiting).slice(0, 300)}`);
   return { ok: faults.length === 0, faults, stoodOff: [...stood], refused, excusedRefused: refused.filter(named), landed };
+}
+
+/**
+ * Judge the new house's fresher read (`lares vessel fresher --bag <slug>`, one `  <title>  <base> -> <canon>` line per copy)
+ * against the plan: each named title warns, each quiet title does not. A read that refused faults by its exit.
+ */
+export function judgeFresher(r, { titles = [], quiet = [] } = {}) {
+  const text = String(r?.text ?? "");
+  const listed = new Set(text.split("\n").map((l) => /^\s+(lar:\/\/\/\S+)\s/.exec(l)?.[1]).filter(Boolean));
+  const faults = [];
+  if (r?.code !== 0) faults.push(`the fresher read exited ${r?.code}: ${text.trim().slice(-200)}`);
+  for (const t of titles) if (!listed.has(t)) faults.push(`expected fresher ${t} never warned (its working copy landed without the base it forked from)`);
+  for (const t of quiet) if (listed.has(t)) faults.push(`unexpected fresher ${t} (canon held still under it)`);
+  return { ok: faults.length === 0, faults, listed: [...listed] };
 }
 
 /** Judge the export's answer: exit 0, and no omission but the allowed ones. A wiki the steward woke at hold-old projected
@@ -374,6 +389,7 @@ const seedContent = async (c) => {
   const canon = await canonFor(c);
   const plan = seedPlan({ count: c.vars.count ?? 300, canon, bodies: [canon.still.text, canon.moved.text] });
   c.vars.expectedStandoff = plan.expectedStandoff;
+  c.vars.expectedFresher = plan.expectedFresher ?? null;
   c.vars.expectedRefused = plan.faces[0].filter((r) => r.kind === "non-nfc").map((r) => r.uri);
   c.vars.stageUris = plan.faces[0].filter((r) => r.recipe === "default" && r.uri.startsWith(STAGE_PREFIX) && r.kind !== "non-nfc").map((r) => r.uri);
   rmSync(c.scope.seedSrc, { recursive: true, force: true });
@@ -618,6 +634,20 @@ const importApply = async (c) => {
   return { ok: j.ok, answer: j.ok ? `stood off exactly the named set ${JSON.stringify(j.stoodOff)}; landed ${JSON.stringify(j.landed)}` : [...j.faults, ...unread].join("; "), measures: { exits: answers.map((a) => a.code), stoodOff: j.stoodOff, refused: j.refused, landed: j.landed, unread } };
 };
 
+/** THE FRESHER WARNING, read at the steward's wear after every face imported: the copy over moved canon landed naming the
+ *  base it forked from, so the new house names it, and the copy over still canon stays quiet. A plan that names no
+ *  expectation reads nothing. */
+const fresherRead = async (c) => {
+  const want = c.vars.expectedFresher;
+  if (!want) return { ok: true, answer: "the plan names no fresher expectation; nothing read" };
+  const h = c.hands("new");
+  const w = await wear(c, "new", 0);
+  if (!w.ok) return { ok: false, answer: `the steward never stood worn for the fresher read: ${tail(w.transcript)}` };
+  const r = await h.shim(["vessel", "fresher", "--bag", want.bag]);
+  const j = judgeFresher({ code: r.code, text: said(r) }, want);
+  return { ok: j.ok, answer: j.ok ? `fresher ${JSON.stringify(j.listed)}; quiet ${JSON.stringify(want.quiet ?? [])}` : j.faults.join("; "), measures: { exit: r.code, fresher: j.listed } };
+};
+
 const reimport = async (c) => {
   const h = c.hands("new");
   const said_ = [];
@@ -771,6 +801,7 @@ export const CARRY_STEPS = Object.freeze([
   { id: "census-new-base", command: "carry-parity.mjs census --root house-new (per worn face, before the import)", via: PTY, needs: ["seed-canon-new"], expect: "the new house's own genesis rows read", run: censusStep("new", "new-base") },
   { id: "import-preview", command: `lares import ${BUNDLE} --json`, via: PTY, needs: ["census-new-base"], expect: "every pet-name maps to a face", run: importPreview },
   { id: "import-apply", command: `per face: lares import ${BUNDLE} --apply --json`, via: PTY, needs: ["import-preview"], expect: "stand-offs exactly the named set; nothing refused; nothing waiting", run: importApply },
+  { id: "fresher", command: "lares vault unlock --face 0 · lares vessel fresher --bag <plan bag>", via: PTY, needs: ["import-apply"], expect: "the copy over moved canon warns fresher; the copy over still canon stays quiet", run: fresherRead },
   { id: "reimport", command: `per face: lares import ${BUNDLE} --apply · lares vessel seed --apply --yes`, via: PTY, needs: ["import-apply"], expect: "lands 0", run: reimport },
   { id: "parity", command: "carry-parity.mjs census (new) · carry-parity.mjs compare --old … --new … --base … --json", via: PTY, needs: ["reimport", "census-old"], expect: "par", run: parity },
   { id: "instrument-collisions", command: "drop one row, change one row · compare (red) · restore · compare (par)", via: PTY, needs: ["parity"], expect: "red naming both, then par", run: instrumentCollisions },

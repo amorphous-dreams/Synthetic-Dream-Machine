@@ -8,8 +8,9 @@
 //
 // WHAT THE PLAN HOLDS, per face (the three-face rite's pet-names):
 //   steward   the six `stage/index` rows the handoff names, `count` stage rows across five classes, a working copy over a
-//             canon meme that held still between the revisions and one over a canon meme that moved (the one stand-off the
-//             import owes: `expectedStandoff`), and one row outside NFC;
+//             canon meme that held still between the revisions and one over a canon meme that moved (it lands, and the new
+//             house warns canon fresher than the copy: `expectedFresher`; a base works as an instrument, never a gate, so no
+//             row owes a stand-off), and one row outside NFC;
 //   engineer  stage rows, a personal margin of `lares`, a page in `notes`;
 //   referee   stage rows, a personal margin of `notes`;
 // and the acts that are no meme put (`edges`): the shared wikis and their seats, a house-minted bag shared by pet-name, a
@@ -164,7 +165,10 @@ export function seedPlan({ seed = "carry-rehearsal", count = 300, canon, bodies 
     { kind: "library", collection: "rehearsal-shelf", files: [{ name: "field-notes.txt", text: body(next, 4, borrowed) }] },
     { kind: "sensorium", files: [{ name: "rehearsal/2026-11-16.txt", text: body(next, 2, borrowed) }, { name: "rehearsal/2026-11-15.txt", text: body(next, 1, borrowed) }] },
   ];
-  return { seed, count, faces, edges, expectedStandoff: [canon.moved.uri] };
+  // THE COPY OVER MOVED CANON LANDS AND WARNS, never stands off (override-base.ts, wiki-layer-ontology): its override base
+  // names the canon record it forked from, so after the import the new house's fresher read names it, and the copy over the
+  // canon that held still stays quiet.
+  return { seed, count, faces, edges, expectedStandoff: [], expectedFresher: { bag: "lares", titles: [canon.moved.uri], quiet: [canon.still.uri] } };
 }
 
 /** The files the bulk put reads inside the container: one directory per face, each row a `.mem` beside its `.uri` and `.recipe`. */
