@@ -1,12 +1,13 @@
 /**
- * seat-hand — THE AI SEAT ACTS INSIDE THE LENT SET (the worn face alone where no set stands), read off the seat kind its
+ * seat-hand — THE AI SEAT ACTS INSIDE THE LENT SET (the worn face alone where custody names no set), read off the seat kind its
  * request line carries (never off the absence of a session). A designation, not a proof (F7: authority by designation on one machine, for the dogfood).
  *
  *   SH1 — a seat-kind request naming another face refuses `face-hand-refused`; naming the worn face or none passes
  *   SH2 — no seat kind (the CLI's seed, import, share and vault doors) may name any open face
  *   SH3 — a `seat` session opening another face's ref refuses; the worn face's opens; a non-ordinal ref names none
  *   SH4 — the channel wires the rule into both doors: the one-shot verb line and the session opening
- *   SH5 — inside the lent set a seat names any lent face; outside it refuses `face-not-lent` naming the set; no set keeps SH1
+ *   SH5 — inside the lent set a seat names any lent face; outside it refuses `face-not-lent` naming the set; a set that
+ *         reads empty or doubled refuses by its own reading; where custody names no set, SH1 rules
  *   SH6 — both doors read the lent set (`lentOrdinals`), and main hands it the faces the holder names open
  */
 import { readFileSync } from "node:fs";
@@ -47,7 +48,7 @@ describe("the AI seat acts inside the lent set", () => {
     expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/wornOrdinal:\s+\(\) => result\.wornOrdinal\(\)/);
   });
 
-  test("SH5 — inside the lent set a seat names any lent face; outside it refuses face-not-lent naming the set; no set keeps the worn rule", () => {
+  test("SH5 — inside the lent set a seat names any lent face; outside it refuses face-not-lent naming the set; an empty or doubled set refuses by its reading; no set, the worn face alone", () => {
     expect(seatFaceRefusal({ seat: "ai", named: 1, worn: 0, lent: [0, 1] })).toBeNull();
     expect(seatFaceRefusal({ seat: "ai", named: 0, worn: 0, lent: [0, 1] })).toBeNull();
     const outside = seatFaceRefusal({ seat: "ai", named: 2, worn: 0, lent: [0, 1] });
@@ -56,9 +57,12 @@ describe("the AI seat acts inside the lent set", () => {
     expect(seatRefusalClass(outside!)).toBe("face-not-lent");
     // The worn face outside the lent set refuses as well: the set rules where one stands.
     expect(seatFaceRefusal({ seat: "ai", named: 0, worn: 0, lent: [1] })).toMatch(/^face-not-lent:/);
-    // No set, or an empty one: the worn rule of SH1.
+    // A set that reads empty or doubled refuses by the set's own reading, never by the worn rule.
+    expect(seatFaceRefusal({ seat: "ai", named: 0, worn: 0, lent: [] })).toMatch(/^lent-faces-empty:/);
+    expect(seatFaceRefusal({ seat: "ai", named: 0, worn: 0, lent: [0, 0] })).toMatch(/^lent-faces-duplicate:/);
+    // Custody names no set (shut, or a door handed no reader): the worn face alone, SH1.
     expect(seatFaceRefusal({ seat: "ai", named: 1, worn: 0, lent: null })).toMatch(/^face-hand-refused:/);
-    expect(seatFaceRefusal({ seat: "ai", named: 1, worn: 0, lent: [] })).toMatch(/^face-hand-refused:/);
+    expect(seatFaceRefusal({ seat: "ai", named: 0, worn: 0, lent: null })).toBeNull();
     expect(seatRefusalClass(seatFaceRefusal({ seat: "ai", named: 1, worn: 0, lent: null })!)).toBe("face-hand-refused");
     // CONTROL: the operator's hand, and a seat naming no face, pass whatever the set.
     expect(seatFaceRefusal({ seat: null, named: 2, worn: 0, lent: [0, 1] })).toBeNull();
