@@ -9,12 +9,15 @@
  *   B2  the override-bases read lists each working copy's base by title, a page at a time; it writes nothing
  *   B3  CONTROL: a canon wave carrying an override base stamps nothing; a working carrier naming none lands as it did
  *   B4  a malformed override base refuses the whole action at the parse
+ *   B5  a carrier's family travels whole: a working carrier naming the bases of its fragment records (`familyBases`) lands
+ *       each record naming its own, so where canon moved a fragment alone (its root held still) the fresher read names
+ *       that fragment; a malformed family base refuses at the parse
  */
 import { describe, test, expect } from "vitest";
-import { AutomergeDocStore, CompositeStore, emptyLarDoc, overrideBaseOf, parseResidencyAction, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { AutomergeDocStore, CompositeStore, carrierHashOf, emptyLarDoc, overrideBaseOf, parseResidencyAction, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { Repo } from "./wiki-shore-rig.js";
-import { registerActionReactors, makeOverrideBasesReactor } from "../src/action-handler.js";
+import { registerActionReactors, makeOverrideBasesReactor, makeFresherCanonReactor } from "../src/action-handler.js";
 import { VerbTable } from "../src/verb-dispatcher.js";
 
 const CANON = "lar:///ha.ka.ba/bags/probe";
@@ -26,6 +29,13 @@ const carrier = (prose: string): string =>
   `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
   "```toml meta\nuri-path = \"t.carry.keeps/one\"\n```\n\n" +
   `! One\n\n${prose}\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
+
+/** A carrier with one ahu slot: its root record and a fragment record (`#/part`), each with its own carrier identity. */
+const PART = `${URI}#/part`;
+const slotted = (prose: string, part: string): string =>
+  `<<^ code=\`&#x0001;\` from=\`?\` to=\`${URI}\`>>\n<<^ code=\`&#x0002;\`>>\n\n` +
+  "```toml meta\nuri-path = \"t.carry.keeps/one\"\n```\n\n" +
+  `! One\n\n${prose}\n\n<<~ ahu slot=\`#/part\`>>\n\n!! Part\n\n${part}\n\n<<~/ahu>>\n\n<<^ code=\`&#x0003;\`>>\n\n<<^ code=\`&#x0004;\` to=\`?\`>>\n`;
 
 const allowCap = async (_a: CapabilityAccess, _b: string): Promise<CapabilityVerifyResult> => ({ ok: true });
 const ctxOf = (composite: CompositeStore, action: string, args: Record<string, unknown>): VerbContext => ({
@@ -48,7 +58,9 @@ async function rig() {
   };
   const bases = makeOverrideBasesReactor({ composite });
   const read = async (args: Record<string, unknown> = {}) => bases({ bag: WORKING, ...args }, ctxOf(composite, "override-bases", args)) as Promise<Record<string, unknown>>;
-  return { canon, working, composite, wave, read };
+  const fresher = makeFresherCanonReactor({ composite });
+  const ask = async (args: Record<string, unknown> = {}) => fresher({ bag: CANON, ...args }, ctxOf(composite, "fresher-canon", args)) as Promise<Record<string, unknown>>;
+  return { canon, working, composite, wave, read, ask };
 }
 
 describe("an import's working carrier restores the override base it carries", () => {
@@ -88,5 +100,32 @@ describe("an import's working carrier restores the override base it carries", ()
     expect(parseResidencyAction(inv(BASE) as never)).not.toBeNull();
     expect(parseResidencyAction(inv("not-a-hash") as never)).toBeNull();
     expect(parseResidencyAction(inv(42) as never)).toBeNull();
+  });
+
+  test("B5 — the family travels whole: each fragment lands naming its own base, and a fragment whose canon moved reads fresher", async () => {
+    // The source house forked the copy off canon THEN: read each record's carrier identity there.
+    const then = await rig();
+    await then.wave(CANON, slotted("the root holds still", "the part as canon said it then"));
+    const rootBase = carrierHashOf((await then.canon.get(URI))!.tiddler);
+    const partBase = carrierHashOf((await then.canon.get(PART))!.tiddler);
+    // The new house's canon moved the part alone; its root says what it said.
+    const r = await rig();
+    await r.wave(CANON, slotted("the root holds still", "the part as canon says it now"));
+    expect(carrierHashOf((await r.canon.get(URI))!.tiddler)).toBe(rootBase);
+    expect(carrierHashOf((await r.canon.get(PART))!.tiddler)).not.toBe(partBase);
+    const out = await r.wave(WORKING, slotted("the root holds still", "the part as a hand rewrote it"), { overrideBase: rootBase, familyBases: { [PART]: partBase } });
+    expect((out["carriers"] as Array<Record<string, unknown>>)[0]!["decision"]).toBe("ingest");
+    expect(overrideBaseOf(await r.working.get(URI))).toBe(rootBase);
+    expect(overrideBaseOf(await r.working.get(PART))).toBe(partBase);
+    const fresh = await r.ask();
+    expect(fresh["fresher"] as Array<{ title: string }>).toEqual([expect.objectContaining({ title: PART, base: partBase })]);
+    const doubt = await r.ask({ class: "base-unknown" });
+    expect(doubt["unknown"]).toEqual([]);
+    // A family base off the carrier's own family, or no sha256 hash, refuses the action at the parse.
+    const inv = (familyBases: unknown) => ({ action: "INGEST", requestId: "r", args: { "source-uri": "file:///x", "to-bag": WORKING, "change-id": "c", carriers: [{ uri: URI, text: "x", diskHash: carrierHash("x"), syncedHash: null, familyBases }] } });
+    expect(parseResidencyAction(inv({ [PART]: BASE }) as never)).not.toBeNull();
+    expect(parseResidencyAction(inv({ [PART]: "not-a-hash" }) as never)).toBeNull();
+    expect(parseResidencyAction(inv({ "lar:///t.other/two#/part": BASE }) as never)).toBeNull();
+    expect(parseResidencyAction(inv([BASE]) as never)).toBeNull();
   });
 });

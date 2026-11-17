@@ -18,6 +18,8 @@
  *   M5  ashes never read back into a layer, never travel in a bundle, never copy into a live mirror
  *   M6  an import's bag row and the seeded canon for one title meet at the gate: divergence stands off, never overwrites
  *   M7  the override base travels: the export's working row carries it, and an import that lands the copy restores it
+ *   M7b a carrier's family travels whole: the working row carries each fragment record's base beside the root's, and the
+ *       import hands them to the wave
  *   M8  a base forked before the reset survives a SEED-ONLY recovery (the face's bases sidecar), and canon still reads
  *       fresher than the copy
  *   M9  two faces: each face's working rows carry that face's own bases, never the face the daemon wears
@@ -500,6 +502,26 @@ describe("the seed lays every mirror back into its one layer", () => {
     const rowOf = (pet: string) => manifest.rows.find((r) => r.layer === "working" && r.face === pet && r.title === POND);
     expect(rowOf("one")?.overrideBase).toBe(B1);
     expect(rowOf("two")?.overrideBase).toBe(B3);
+  });
+
+  test("M7b — a carrier's family travels whole: the working row carries each fragment's base, and the import hands them to the wave", async () => {
+    const old = await oldVessel();
+    const B0 = `sha256:${"a".repeat(64)}`, BP = `sha256:${"b".repeat(64)}`, BX = `sha256:${"c".repeat(64)}`;
+    // The face's bases sidecar names the root, one fragment of its family, and another carrier's fragment.
+    writeFaceBases(F1, { [POND]: B0, [`${POND}#/part`]: BP, [`${HERON}#/part`]: BX }, join(root, "projections"));
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    const row = manifest.rows.find((r) => r.layer === "working" && r.title === POND);
+    expect(row?.overrideBase).toBe(B0);
+    expect(row?.familyBases).toEqual({ [`${POND}#/part`]: BP });
+    for (const rel of [`wikis/daemon-${F1}`, `bags/daemon-${F1}`, `bags/kahua-${F1}`]) rmSync(P(rel), { recursive: true });
+    const after = refound();
+    after.held.add("garden");
+    const doors = after.carryDoors();
+    const asked: Array<{ uri: string; overrideBase?: string; familyBases?: Readonly<Record<string, string>> }> = [];
+    await carryImport(out, { apply: true, doors: { ...doors, ingest: async (wave) => { asked.push(...wave.candidates); return doors.ingest(wave); } } });
+    const pond = asked.find((c) => c.uri === POND);
+    expect(pond?.overrideBase).toBe(B0);
+    expect(pond?.familyBases).toEqual({ [`${POND}#/part`]: BP });
   });
 
   test("M10 — a labelled former face whose folders hold a file the bundle never carried: the import leaves it, the seed adopts it, then ashes", async () => {
