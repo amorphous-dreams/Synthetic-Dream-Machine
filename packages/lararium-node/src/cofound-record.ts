@@ -21,7 +21,7 @@
  */
 import { faceFileNames } from "./face-index.js";
 import { canonicalJson, readCharterInceptionImage, readCofoundOffer, type CharterInceptionImage, type CofoundOffer } from "@lararium/mesh";
-import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
+import { openFaceFileNames, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** The row's file, for the carrier table: `cofound-<64 lower hex offer fingerprint>.json`. */
@@ -53,12 +53,14 @@ export function cofoundRecordFile(handleIndex: number, offerFingerprint: string)
   return `cofound-h${handleIndex}-${offerFingerprint}.json`;
 }
 
-/** The row standing for one offer, in the acting face that recorded it. Names alone; null where none. */
-function heldCofoundFile(offerFingerprint: string): string | null {
+/**
+ * The row standing for one offer, in the acting face that recorded it, among the faces this seat serves
+ * (`openFaceFileNames`): a face resting locked, or outside the lend, holds its rows shut, so its row reads as none. A
+ * locked seat refuses `CustodyLocked` here.
+ */
+async function heldCofoundFile(offerFingerprint: string): Promise<string | null> {
   if (typeof offerFingerprint !== "string" || !HEX64.test(offerFingerprint)) throw new RangeError("cofound-record: an offer fingerprint reads as 64 lower hex");
-  let names: string[];
-  try { names = faceFileNames(larIdentityDir()); } catch { return null; }
-  return names.find((n) => COFOUND_RECORD_FILE.exec(n)?.[2] === offerFingerprint) ?? null;
+  return (await openFaceFileNames()).find((n) => COFOUND_RECORD_FILE.exec(n)?.[2] === offerFingerprint) ?? null;
 }
 
 /** Read a row's bytes at its exact shape; null for anything else. */
@@ -82,7 +84,7 @@ const spell = (record: CofoundRecord): Uint8Array => utf8.encode(JSON.stringify(
 
 /** The row for one offer fingerprint, or null where none stands. A row that stands and reads otherwise refuses. */
 export async function readCofoundRecord(offerFingerprint: string): Promise<CofoundRecord | null> {
-  const file = heldCofoundFile(offerFingerprint);
+  const file = await heldCofoundFile(offerFingerprint);
   if (file === null) return null;
   const bytes = await readCustodyRecord("identity", file);
   if (bytes === null) return null;
@@ -95,9 +97,9 @@ export async function readCofoundRecord(offerFingerprint: string): Promise<Cofou
  * Read the row for one offer, decide, and seal the next one, under one custody holder. `decide` receives the row as
  * it stands (or null) and answers the next row (null writes nothing) beside its answer.
  */
-export function updateCofoundRecord<T>(handleIndex: number, offerFingerprint: string,
+export async function updateCofoundRecord<T>(handleIndex: number, offerFingerprint: string,
   decide: (standing: CofoundRecord | null) => { readonly next: CofoundRecord | null; readonly value: T }): Promise<T> {
-  const file = heldCofoundFile(offerFingerprint) ?? cofoundRecordFile(handleIndex, offerFingerprint);
+  const file = (await heldCofoundFile(offerFingerprint)) ?? cofoundRecordFile(handleIndex, offerFingerprint);
   return updateCustodyRecord("identity", file, (bytes) => {
     const standing = bytes === null ? null : parseCofoundRecord(bytes);
     if (bytes !== null && standing === null) throw new Error(`cofound-record: the row ${file} stands and reads otherwise; nothing lands over it`);
@@ -107,12 +109,15 @@ export function updateCofoundRecord<T>(handleIndex: number, offerFingerprint: st
 }
 
 /** Remove the row for one offer, only while it still names `seat`: a step that refused after recording takes its row back. */
-export function dropCofoundRecord(offerFingerprint: string, seat: string): Promise<boolean> {
-  const file = heldCofoundFile(offerFingerprint);
-  return file === null ? Promise.resolve(false) : removeCustodyRecord("identity", file, (bytes) => parseCofoundRecord(bytes)?.seat === seat);
+export async function dropCofoundRecord(offerFingerprint: string, seat: string): Promise<boolean> {
+  const file = await heldCofoundFile(offerFingerprint);
+  return file === null ? false : removeCustodyRecord("identity", file, (bytes) => parseCofoundRecord(bytes)?.seat === seat);
 }
 
-/** The offer fingerprints this vessel keeps a row for. Reads names alone. */
+/**
+ * The offer fingerprints this vessel keeps a row for, in every face. NAMES ALONE, over every face's directory (the lend's and
+ * the rest): it opens no row, and a reader that then reads one asks `readCofoundRecord`, which reads served faces alone.
+ */
 export function cofoundRecordFingerprints(): string[] {
   let names: string[];
   try { names = faceFileNames(larIdentityDir()); } catch { return []; }

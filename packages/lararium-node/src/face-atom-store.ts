@@ -7,8 +7,6 @@ import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js
 import { FaceLocked } from "./custody-holder.js";
 import { ensureFaceCustodyOfAsk } from "./face-route.js";
 import { personaGroupDigest } from "./persona-group-file.js";
-import { faceFileNames } from "./face-index.js";
-import { larIdentityDir } from "./vessel-paths.js";
 
 import { resolveFace } from "./face-selector.js";
 export const FACE_ATOM_GROUP_FILE = /^face-atom-g([0-9a-f]{64})\.bin$/;
@@ -170,7 +168,8 @@ export async function recoverFoundingSeedFromGroup(
     if (anchors) anchored.add(anchors.personaGroupId);
   }
   let matched: Uint8Array | null = null;
-  for (const file of faceFileNames(larIdentityDir()).filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
+  // The group rows of the faces this seat serves alone (`openFaceFileNames`): a face outside the lend holds its rows shut.
+  for (const file of (await openFaceFileNames()).filter((name) => FACE_ATOM_GROUP_FILE.test(name))) {
     const seed = await readCustodyRecord("identity", file);
     if (!seed || seed.length !== 32) throw new Error(`group atom ${file} holds no 32-byte seed`);
     for (const body of bodies) {

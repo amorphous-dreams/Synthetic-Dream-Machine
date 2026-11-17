@@ -38,7 +38,7 @@ import { createPrivateKey, createPublicKey, randomBytes, sign } from "node:crypt
 import { mkdirSync } from "node:fs";
 import { bytesEqual, sha256HexBytesSync } from "@lararium/mesh";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
-import { openColdCustodyRecord, readCustodyRecord, updateColdCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
+import { openColdCustodyRecord, openFaceFileNames, readCustodyRecord, updateColdCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { faceFileNames } from "./face-index.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
@@ -81,13 +81,20 @@ export function vesselFaceKeyFile(handleIndex: number, scope: FaceKeyScope): str
  * The row this vessel holds for `scope`, in whichever face holds it: the file name carries the handle index of the face whose
  * proof key the scope names (the owner binding rests in that face's own subtree), and a scan of names alone finds it. Null where none stands.
  */
-function heldVesselFaceKeyFile(scope: FaceKeyScope): string | null {
+function heldVesselFaceKeyFile(scope: FaceKeyScope, names: readonly string[] = faceFileNames(larIdentityDir())): string | null {
   const want = scopeName(scope);
-  for (const name of faceFileNames(larIdentityDir())) {
+  for (const name of names) {
     const m = VESSEL_FACE_KEY_FILE.exec(name);
     if (m && m[2] === want) return name;
   }
   return null;
+}
+/**
+ * The row a door opens for `scope`, among the faces this seat serves (`openFaceFileNames`): a face resting locked, or
+ * outside the lend, holds its rows shut, so its row reads as none. A locked seat refuses `CustodyLocked` here.
+ */
+async function servedVesselFaceKeyFile(scope: FaceKeyScope): Promise<string | null> {
+  return heldVesselFaceKeyFile(scope, await openFaceFileNames());
 }
 
 const keyOf = (secret: Uint8Array) => createPrivateKey({ key: Buffer.concat([PKCS8_ED25519, Buffer.from(secret)]), format: "der", type: "pkcs8" });
@@ -114,12 +121,10 @@ function standingOf(bytes: Uint8Array): Uint8Array | null {
   return bytes.length === 32 || bytes.length === 64 ? bytes.subarray(0, 32) : null;
 }
 
-/** Every face's per-Nexus row at `nexus` this vessel holds. Reads names alone. */
-function rowsAtNexus(nexus: string): string[] {
+/** Every served face's per-Nexus row at `nexus` (`openFaceFileNames`): a face outside the lend holds its rows shut. */
+async function rowsAtNexus(nexus: string): Promise<string[]> {
   const name = nexusKeyRecordName(nexus);
-  let names: string[];
-  try { names = faceFileNames(larIdentityDir()); } catch { return []; }
-  return names.filter((n) => FACE_PROOF_KEY_FILE.exec(n)?.[2] === name).sort();
+  return (await openFaceFileNames()).filter((n) => FACE_PROOF_KEY_FILE.exec(n)?.[2] === name).sort();
 }
 
 // ── The per-Nexus key: read, mint, re-issue ───────────────────────────────────────────────────────
@@ -242,6 +247,7 @@ export async function storeFaceProofKey(scope: FaceKeyScope, secret: Uint8Array,
 export async function storeVesselFaceKey(handleIndex: number, scope: FaceKeyScope, secret: Uint8Array): Promise<void> {
   assertSecret(secret);
   const file = vesselFaceKeyFile(handleIndex, scope);
+  // NAMES ALONE over every face: one scope's key rests under one face, whichever faces the lend serves.
   const held = heldVesselFaceKeyFile(scope);
   if (held !== null && held !== file) throw new CustodyRecordUnavailable("identity", held, "names-another-face");
   mkdirSync(larIdentityDir(), { recursive: true, mode: 0o700 });
@@ -255,7 +261,7 @@ export async function storeVesselFaceKey(handleIndex: number, scope: FaceKeyScop
 /** The public half of this vessel's face-scoped key for `scope`, or null where no row stands. The secret opens for
  *  this one read and leaves zero-filled; a session names its own key from here, never from a certificate. */
 export async function readVesselFaceKeyPublic(scope: FaceKeyScope): Promise<string | null> {
-  const file = heldVesselFaceKeyFile(scope);
+  const file = await servedVesselFaceKeyFile(scope);
   if (file === null) return null;
   const secret = await readCustodyRecord("identity", file);
   if (secret === null) return null;
@@ -271,8 +277,8 @@ export async function readVesselFaceKeyPublic(scope: FaceKeyScope): Promise<stri
  * them. A row whose re-issue stands half done refuses the read by name: a bundle carries one key per Nexus.
  */
 export async function listFaceProofKeys(handleIndex: number): Promise<Array<{ readonly scope: string; readonly secret: Uint8Array }>> {
-  let names: string[];
-  try { names = faceFileNames(larIdentityDir()); } catch { names = []; }
+  // The rows of the faces this seat serves alone: a face outside the lend holds its rows shut and lists none here.
+  const names = await openFaceFileNames();
   const out: Array<{ scope: string; secret: Uint8Array }> = [];
   for (const file of names.sort()) {
     const m = FACE_PROOF_KEY_FILE.exec(file);
@@ -290,6 +296,7 @@ export async function listFaceProofKeys(handleIndex: number): Promise<Array<{ re
 export async function faceProofKeyStanding(scope: string, secret: Uint8Array, handleIndex: number): Promise<"absent" | "same" | "conflict"> {
   assertSecret(secret);
   if (!/^[0-9a-f]{32}$/.test(scope)) throw new RangeError("face-key-custody: a scope's name reads as 32 lower hex");
+  // NAMES ALONE for the one face the restore names: the row it then opens belongs to that face, which the restore wears.
   let names: string[];
   try { names = faceFileNames(larIdentityDir()); } catch { names = []; }
   const file = `face-proof-key-h${handleIndex}-${scope}.bin`;
@@ -317,13 +324,9 @@ export async function landFaceProofKey(scope: string, secret: Uint8Array, handle
  *  answers the scope's face key opens for this one signature. */
 export const nodeFaceKeyCustody = {
   async signAsFace(scope: FaceKeyScope, image: Uint8Array): Promise<Uint8Array> {
-    const candidates = rowsAtNexus(scope.nexus);
-    if (candidates.length === 0) {
-      // The seat still answers first: a locked vessel refuses `CustodyLocked` before it says what it holds.
-      return updateColdCustodyRecord("identity", faceProofKeyFile(0, scope.nexus), () => {
-        throw new CustodyRecordUnavailable("identity", `face-proof-key-h*-${nexusKeyRecordName(scope.nexus)}.bin`, "absent");
-      });
-    }
+    const candidates = await rowsAtNexus(scope.nexus);
+    // The seat answered first (`openFaceFileNames` refuses `CustodyLocked` on a locked vessel before it says what it holds).
+    if (candidates.length === 0) throw new CustodyRecordUnavailable("identity", `face-proof-key-h*-${nexusKeyRecordName(scope.nexus)}.bin`, "absent");
     for (const file of candidates) {
       const signed = await openColdCustodyRecord("identity", file, (bytes) => {
         const standing = standingOf(bytes);
@@ -339,7 +342,7 @@ export const nodeFaceKeyCustody = {
 /** The custody seat's door for this vessel's face-scoped key (`VesselFaceKeyCustody`). */
 export const nodeVesselFaceKeyCustody = {
   async signAsVesselFace(scope: FaceKeyScope, vesselFaceKey: string, image: Uint8Array): Promise<Uint8Array> {
-    const file = heldVesselFaceKeyFile(scope);
+    const file = await servedVesselFaceKeyFile(scope);
     if (file === null) throw new CustodyRecordUnavailable("identity", `vessel-face-key-${scopeName(scope)}`, "absent");
     const secret = await readCustodyRecord("identity", file);
     if (secret === null) throw new CustodyRecordUnavailable("identity", file, "absent");

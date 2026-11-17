@@ -938,6 +938,8 @@ export async function listPersonaRosterLines(): Promise<readonly PersonaRosterLi
 export async function orphanPersonaRoots(): Promise<number[]> {
   const held = new Set((await readRoster()).map((l) => l.handleIndex));
   const spelled = /^\.persona-group-root-h(0|[1-9]\d*)\.json$/;
+  // NAMES ALONE over every face's directory, the lend's and the rest: an orphan root of a face outside the lend still names
+  // itself here, and the adoption that opens it acts as that face alone.
   let names: string[];
   try { names = faceFileNames(larIdentityDir()); } catch { return []; }
   const out: number[] = [];

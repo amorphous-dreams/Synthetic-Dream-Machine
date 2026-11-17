@@ -26,11 +26,10 @@
  */
 import { randomBytes } from "node:crypto";
 import { mkdirSync } from "node:fs";
-import { faceFileNames } from "./face-index.js";
 import { personaGroupDigest } from "./persona-group-file.js";
 import { bytesEqual } from "@lararium/mesh";
 import { CustodyRecordUnavailable } from "./custody-holder.js";
-import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
+import { openFaceFileNames, readCustodyRecord, removeCustodyRecord, updateCustodyRecord } from "./custody-seat.js";
 import { larIdentityDir } from "./vessel-paths.js";
 
 /** A face's address secret's file, for the carrier table: `face-address-secret-g<64 hex>.bin`. */
@@ -143,9 +142,8 @@ export async function readPendingFleetJoin(personaGroup: string): Promise<Pendin
 /** Every face with a join pending here: the PersonaGroup each kept offer names. */
 export async function listPendingFleetJoinGroups(): Promise<string[]> {
   const out: string[] = [];
-  let names: string[] = [];
-  try { names = faceFileNames(larIdentityDir()); } catch { return out; }
-  for (const file of names.filter((n) => FLEET_JOIN_PENDING_FILE.test(n)).sort()) {
+  // The faces this seat serves alone (`openFaceFileNames`): a face resting locked, or outside the lend, holds its rows shut.
+  for (const file of (await openFaceFileNames()).filter((n) => FLEET_JOIN_PENDING_FILE.test(n)).sort()) {
     const bytes = await readCustodyRecord("identity", file);
     if (bytes === null) continue;
     try {
