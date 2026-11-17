@@ -290,8 +290,9 @@ no label. A chair's key rests as a sealed seat record on the vessel whose face s
 apart from every persona root (`seat-key-store.ts`, <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-table`>>):
 `seal seat` mints it, prints the chair's NEXT key as a cold-key card the operator reads back before the charter
 moves, and commits one digest per chair (`nextKeyDigests`); `seal rotate` takes each card back on a terminal and
-adopts each revealed key as its chair's seat key; the quorum doors sign with the records (`held-quorum.ts`). An
-earlier charter shape (one `nextKeyCommit` per epoch) reads by name and licenses nothing. `seal cold rehearse`
+adopts each revealed key as its chair's seat key; the quorum doors sign with the records (`held-quorum.ts`). The
+charter reader reads an epoch's present fields alone: any other field passes unread, and an epoch missing a present
+field reads the charter torn, which licenses nothing. `seal cold rehearse`
 reads a card back against the head's digests, names the chair it would roll, and moves nothing; `--cold-key`
 stands in for its terminal only on a staged root whose custody proves the published test route. The Stable founding
 act stands in code (`found-hearth.ts`, `hearth-aid.ts`): one seat, its card, the PRIVATE seed charter, persona zero's
@@ -396,9 +397,9 @@ threshold again, which must hash to the genesis's key-set (`roll-genesis-unrevea
 roll carries them. Every roll then refuses a key any earlier epoch seated (`roll-reuses-a-seated-key`).
 
 ''Built'': the charter commits `nextKeyDigests[]` · `nextThreshold` per seat (`wax-stamp.ts`), a roll takes
-each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, and a
-charter carrying one `nextKeyCommit` per epoch reads by name and licenses nothing, and a roll that lists any
-digest an earlier epoch listed refuses (`roll-respends-a-digest`). The signed roll below stands in code.
+each card back on a terminal (`seal rotate`), `seal cold rehearse` reads a card back and moves nothing, a
+charter whose epoch misses a present field reads torn and licenses nothing (a field the reader does not read passes
+unread), and a roll that lists any digest an earlier epoch listed refuses (`roll-respends-a-digest`). The signed roll below stands in code.
 
 ''THE KEYS A ROLL REVEALS SIGN IT.'' At least threshold of the revealed keys — the keys whose
 digests the prior epoch committed, which carry that epoch's authority — sign the roll over the prior
@@ -698,6 +699,6 @@ keys, never a membership list — and needs no subsequent runtime authority tran
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;5mEy_lCIPZxr3Ht1sKJs9bpRZcLsBrxXNJs-O3uk7cY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7xm4n5uv4UvtseXyvdJOYAj08sxoTP7dfRceObhTCNY`>>
 
 <<^ code=`&#x0004;` to=`?`>>
