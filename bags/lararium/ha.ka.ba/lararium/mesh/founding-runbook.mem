@@ -587,10 +587,13 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/first-realm-arc`>> the joins beyond one vessel: fleet, realm, dwelling
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/sensorium-runbook`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/stable-founding-road#/cold-start`>> the roadmap carries the instruments and the cold-start steps
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama`>> the worn house carries the pūlama's light, the lend and the daemon mount
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>> the lit set names the lit, lent and worn faces
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-cut`>> custody states the cut a session's face reads
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-circle`>>
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;cOUGH3K5G6GRRPNkKGhGMIB0WP2ayiBHO847v9ez4eA`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;08l7YJXrJwCSiFwC3UGg-Ph-yAzUYbMtErjv8Akh8xg`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -345,6 +345,9 @@ Every refusal of a restore lands before the commit record, so before any record 
 <<~ ahu slot=`#/edges`>>
 
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>> the sealed store states the content keys, the memory section's import door and the same-face ruling
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>> the lit set names the lit, lent and worn faces a cut reads
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama`>> the worn house carries the pūlama, the lend and the daemon mount a cut runs under
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/carry-across-refound`>> the runbook carries the house across a re-founding and keeps it
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/ember`>> the ember states the serving tier SK seals, the serving tree and the raise
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-shape`>> the waking floor states the custody door and its frames
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/persona-policy#/distinct-recovery`>> persona policy rules that lineage and memory recover apart
@@ -353,6 +356,6 @@ Every refusal of a restore lands before the commit record, so before any record 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;l4RMQYc6nFNHDN8Ot51YpYqVRPl5GHAUTTMz9AH39es`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;p6Vg6vtwHh8hrv-XMiNEEylqd-dzIF0p4FMPVKZtsGU`>>
 
 <<^ code=`&#x0004;` to=`?`>>

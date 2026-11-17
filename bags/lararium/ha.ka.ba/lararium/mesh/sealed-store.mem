@@ -425,9 +425,11 @@ Faces do not know each other: no face's hive or catalog half names another face.
 <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract`>> the session contract scopes what a session hydrates
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/membership-doctrine`>> membership doctrine carries the walker's carriage
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody`>> custody states the backup bundle, its cut and its restore
+<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama`>> the worn house carries the light, the lend and the daemon mount with its limit
+<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/carry-across-refound`>> the runbook lights the faces, admits the lent set and carries the house across a re-founding
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;74CqFBYqV9-MoaFqULABw9r3NjVIBMOhDbKEmOfTxXI`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_TrJGzv4iPYKGDUhGNoZKnjvR5USlHQF1RQZwAn6u4E`>>
 
 <<^ code=`&#x0004;` to=`?`>>
