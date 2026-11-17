@@ -296,6 +296,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     container: ${{ matrix.container }}
+    env:
+      # The keep's session parity (KS5) needs rsync and zstd, which the Playwright image lacks and uid 1001 cannot install;
+      # the witness cell `rest` (a bare runner) installs them and runs KS5, and the cli-mesh cell names it so.
+      LARES_KS5_RUNS_IN: ${{ matrix.cell == 'cli-mesh' && 'witness-cell-rest' || '' }}
     strategy:
       # A red cell must never cancel its siblings: the gate needs every cell's answer to tell one red
       # from one that never got to answer.
@@ -538,6 +542,13 @@ jobs:
           sudo apt-get install --no-install-recommends -y bubblewrap
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
           bwrap --unshare-user --unshare-pid --ro-bind / / --proc /proc --dev /dev --tmpfs /tmp -- /usr/bin/true
+      # THE KEEP'S SESSION PARITY (KS5) runs here: it reads bin/sync's own mirror half against the keep's port, byte for byte, and
+      # needs rsync and zstd, which this bare runner installs (the cli-mesh cell's container cannot).
+      - name: Prove the keep's session mirror byte-equal to bin/sync's (KS5)
+        if: ${{ !cancelled() && steps.build.outcome == 'success' && matrix.cell == 'rest' }}
+        run: |
+          sudo apt-get install --no-install-recommends -y rsync zstd
+          cd packages/lares-cli && npx vitest run tests/keep-sessions.test.ts -t KS5
       - name: Run this cell
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: node tools/ci-cells.mjs run-witness "${{ matrix.cell }}" --out "$RUNNER_TEMP/cell"

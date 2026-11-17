@@ -261,7 +261,11 @@ describe("the keep's session mirror", () => {
     expect(tree(dest)).toEqual(t);
   });
 
-  test("KS5 RED · PARITY: the script's mirror half and the keep's mirror write byte-equal trees, on a first run and after the home moves", () => {
+  // KS5 needs bash, python3, rsync and zstd. CI's cli-mesh cell runs in the Playwright image as uid 1001, with no rsync and no apt,
+  // so it names the bare-runner cell that runs KS5 instead (LARES_KS5_RUNS_IN), and that cell installs the four and runs it.
+  // Anywhere else a missing tool fails loudly.
+  const ks5Elsewhere = process.env["LARES_KS5_RUNS_IN"];
+  (ks5Elsewhere ? test.skip : test)(`KS5 RED · PARITY: the script's mirror half and the keep's mirror write byte-equal trees, on a first run and after the home moves${ks5Elsewhere ? ` (runs in ${ks5Elsewhere})` : ""}`, () => {
     for (const tool of ["bash", "python3", "rsync", "zstd"]) expect(spawnSync(tool, ["--version"], { encoding: "utf8" }).status, `${tool} stands on this machine (bin/sync runs on all four)`).toBe(0);
     const { env, claude, home } = fakeHome();
     // The script reads the machine's own id and names; the keep's mirror reads the same sources here.
