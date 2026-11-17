@@ -269,6 +269,11 @@ export interface IngestCarrier {
    *  record it lands under this title, so a bundle's override keeps its base across a re-founding. Absent for every
    *  disk scan (a base never projects): the composite forks a fresh base where a copy lands over canon. */
   readonly overrideBase?: string;
+  /** THE FAMILY'S OTHER BASES: a carrier lands a family of records (its root and each fragment, `<uri>#/<slot>`), and each
+   *  fragment of a working copy forked its own base, so canon may move a fragment while its root holds still. By fragment
+   *  title, each the carrier identity of the canon record that fragment forked from; a working-layer wave stamps each on the
+   *  record it lands under that title. Every key names a fragment of THIS carrier (`<uri>#…`). */
+  readonly familyBases?: Readonly<Record<string, string>>;
 }
 
 /** One vanished carrier riding an INGEST wave — a path gone from disk where a base stands. A gesture
@@ -414,6 +419,13 @@ export function encodeResidencyArgs(action: ResidencyAction): ResidencyArgs {
 
 // ── Parser ─────────────────────────────────────────────────────────────────
 
+
+/** Whether a carrier's `familyBases` spells fragment bases of that carrier alone: a plain object, each key a fragment title
+ *  of the carrier (`<uri>#…`), each value a `sha256:` carrier identity. */
+function familyBasesOf(uri: string, v: unknown): boolean {
+  if (!v || typeof v !== "object" || Array.isArray(v)) return false;
+  return Object.entries(v as Record<string, unknown>).every(([title, base]) => title.startsWith(`${uri}#`) && typeof base === "string" && /^sha256:[0-9a-f]{64}$/.test(base));
+}
 /**
  * Parse a Verb into a ResidencyAction when the verb belongs to
  * ACTION_VERBS and all required args validate. Returns null otherwise.
@@ -469,7 +481,7 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
       for (const c of rawCarriers) {
         if (!c || typeof c !== "object") return null;
         const o = c as Record<string, unknown>;
-        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"]; const overrideBase = o["overrideBase"];
+        const uri = o["uri"]; const file = o["file"]; const text = o["text"]; const textCid = o["textCid"]; const diskHash = o["diskHash"]; const syncedHash = o["syncedHash"]; const syncedRecordsHash = o["syncedRecordsHash"]; const ext = o["ext"]; const meta = o["meta"]; const size = o["size"]; const skinny = o["skinny"]; const overrideBase = o["overrideBase"]; const familyBases = o["familyBases"];
         if (typeof uri !== "string" || !uri) return null;
         if (file !== undefined && typeof file !== "string") return null;
         // A verb NEVER inlines a body: a carrier rides EITHER an inline `text` OR a
@@ -486,7 +498,8 @@ export function parseResidencyAction(inv: Verb): ResidencyAction | null {
         if (size !== undefined && typeof size !== "number") return null;
         if (skinny !== undefined && typeof skinny !== "boolean") return null;
         if (overrideBase !== undefined && (typeof overrideBase !== "string" || !/^sha256:[0-9a-f]{64}$/.test(overrideBase))) return null;
-        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}), ...(typeof overrideBase === "string" ? { overrideBase } : {}) });
+        if (familyBases !== undefined && !familyBasesOf(uri, familyBases)) return null;
+        carriers.push({ uri, ...(typeof file === "string" && file ? { file } : {}), ...(hasText ? { text: text as string } : {}), ...(hasCid ? { textCid: textCid as string } : {}), diskHash, syncedHash: syncedHash as string | null, ...(typeof syncedRecordsHash === "string" ? { syncedRecordsHash } : {}), ...(typeof ext === "string" ? { ext } : {}), ...(typeof meta === "string" ? { meta } : {}), ...(typeof size === "number" ? { size } : {}), ...(skinny === true ? { skinny: true } : {}), ...(typeof overrideBase === "string" ? { overrideBase } : {}), ...(familyBases !== undefined ? { familyBases: { ...(familyBases as Record<string, string>) } } : {}) });
       }
     }
     const deletions: IngestDeletion[] = [];

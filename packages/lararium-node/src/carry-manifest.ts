@@ -65,6 +65,10 @@ export interface CarryRow {
    *  envelope at export (a base never projects to disk, so the bundle carries it beside the file). The import stamps it
    *  back, so canon's fresher-than-the-copy warning still reads after a round trip. Absent where the copy names none. */
   readonly overrideBase?: string;
+  /** A working row's family bases: each fragment record of the copy (`<title>#…`) forked its own base, so canon may move a
+   *  fragment while the root holds still; by fragment title, read off each record's meta envelope at export and stamped
+   *  back at import. Absent where no fragment names one. */
+  readonly familyBases?: Readonly<Record<string, string>>;
 }
 
 /** A bundle face: its path key and the pet-name it carries. */
@@ -280,6 +284,10 @@ export function verifyBundle(root: string): VerifiedBundle {
     if (!fileSha.has(row.path)) throw new CarryBundleRefused(`bundle-row-file: a row names ${row.path} and the manifest lists no such file`);
     if (row.overrideBase !== undefined && (!isStr(row.overrideBase) || !/^sha256:[0-9a-f]{64}$/.test(row.overrideBase) || (row.layer !== "working" && row.layer !== "wiki-working"))) {
       throw new CarryBundleRefused(`bundle-row-override-base: the row at ${row.path} names an override base no sha256 hash spells, or one off a working row`);
+    }
+    if (row.familyBases !== undefined && (!isObj(row.familyBases) || !isStr(row.title) || (row.layer !== "working" && row.layer !== "wiki-working")
+      || Object.entries(row.familyBases).some(([t, b]) => !t.startsWith(`${String(row.title)}#`) || !isStr(b) || !/^sha256:[0-9a-f]{64}$/.test(b)))) {
+      throw new CarryBundleRefused(`bundle-row-family-bases: the row at ${row.path} names family bases off its own carrier's family, no sha256 hash, or off a working row`);
     }
     if (row.layer === "kahua-head") {
       const key = [...faceKeys].find(([, p]) => p === row.face)?.[0];

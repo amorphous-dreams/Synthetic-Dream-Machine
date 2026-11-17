@@ -62,7 +62,7 @@ import {
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
 import { readCensus, censusLine, type CensusReading } from "./census.js";
-import { scanFiles, candidatesOf, settleIngest, openSyncedTree, type ScanRow } from "../ingest-core.js";
+import { scanFiles, candidatesOf, settleIngest, openSyncedTree, carriedBasesOf, type ScanRow } from "../ingest-core.js";
 import { discoverHoldings, canonIsDisk } from "../holdings.js";
 import { summaryOutput } from "../verb-result.js";
 import { vesselDid, larBagsDir } from "../env.js";
@@ -507,10 +507,10 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     basesOf.set(workingBag, read);
     return read;
   };
-  const withBase = (row: Omit<CarryRow, "sha256" | "path">, bases: Readonly<Record<string, string>>): Omit<CarryRow, "sha256" | "path"> => {
-    const base = row.title !== null ? bases[row.title] : undefined;
-    return base !== undefined ? { ...row, overrideBase: base } : row;
-  };
+  // A CARRIER'S FAMILY TRAVELS WHOLE: each fragment record of a working copy forked its own base, so the row carries the
+  // root's and every fragment's (`carriedBasesOf`), and canon that moves a fragment under a still root still reads fresher.
+  const withBase = (row: Omit<CarryRow, "sha256" | "path">, bases: Readonly<Record<string, string>>): Omit<CarryRow, "sha256" | "path"> =>
+    row.title !== null ? { ...row, ...carriedBasesOf(row.title, bases) } : row;
 
   // THE COPY PLAN: source abs path -> bundle rel path, with the row each file makes.
   const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
@@ -940,10 +940,14 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const minted: string[] = [];
   const skipped: string[] = [];
 
-  // THE OVERRIDE BASE TRAVELS: a working row names the carrier identity of the canon record its copy forked from, and its carrier carries it, so the
-  // island stamps it on the copy it lands and canon's fresher-than-the-copy warning still reads after the round trip.
-  const baseByFile = new Map<string, string>();
-  for (const row of manifest.rows) if (row.overrideBase !== undefined) baseByFile.set(join(bundle.root, ...row.path.split("/")), row.overrideBase);
+  // THE OVERRIDE BASE TRAVELS: a working row names the carrier identity of the canon record its copy forked from (and each
+  // fragment's, `familyBases`), and its carrier carries them, so the island stamps each on the record it lands and canon's
+  // fresher-than-the-copy warning still reads after the round trip.
+  const baseByFile = new Map<string, Pick<ScanRow, "overrideBase" | "familyBases">>();
+  for (const row of manifest.rows) {
+    if (row.overrideBase === undefined && row.familyBases === undefined) continue;
+    baseByFile.set(join(bundle.root, ...row.path.split("/")), { ...(row.overrideBase !== undefined ? { overrideBase: row.overrideBase } : {}), ...(row.familyBases !== undefined ? { familyBases: row.familyBases } : {}) });
+  }
 
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
   const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
@@ -953,7 +957,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const r of scan.refusedShadows ?? []) kapaeTally?.refused.push(`${r.file} (${r.refusal})`);
     const keyed = (r: ScanRow): string => `${keyPrefix}:${r.uri}:${r.diskHash}`;
     let candidates = candidatesOf(scan.rows).filter((r) => { if (journal.done.has(keyed(r))) { workTally.already++; return false; } return true; })
-      .map((r): ScanRow => { const base = baseByFile.get(r.file); return base !== undefined ? { ...r, overrideBase: base } : r; });
+      .map((r): ScanRow => { const bases = baseByFile.get(r.file); return bases !== undefined ? { ...r, ...bases } : r; });
     for (const r of scan.rows) if (r.status === "non-nfc") workTally.refused.push(`${r.uri} (non-NFC bytes)`);
     const shadowTally = kapaeTally ?? workTally;
     let kapae = (scan.shadows ?? []).filter((t) => { if (journal.done.has(`${keyPrefix}:kapae:${t}`)) { shadowTally.already++; return false; } return true; });

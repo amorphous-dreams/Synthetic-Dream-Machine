@@ -76,6 +76,21 @@ export interface ScanRow {
    *  read it off the record's meta envelope. The island stamps it on the record a working-layer wave lands, so a bundle's
    *  override keeps its base across a re-founding. Absent for every disk scan: a base never projects. */
   readonly overrideBase?: string;
+  /** The family's other bases, by fragment title (`<uri>#…`): each fragment record of a working copy forked its own, so
+   *  canon may move a fragment while the root holds still. The island stamps each on the fragment it lands. */
+  readonly familyBases?: Readonly<Record<string, string>>;
+}
+
+/**
+ * THE BASES ONE CARRIER CARRIES, out of a by-title map (an override-bases read, a face's bases sidecar): its root's
+ * (`overrideBase`) and each fragment's of its family (`familyBases`, every title `<uri>#…`). A carrier none names carries none.
+ */
+export function carriedBasesOf(uri: string, bases: Readonly<Record<string, string>>): { overrideBase?: string; familyBases?: Readonly<Record<string, string>> } {
+  const family = Object.entries(bases).filter(([title]) => title.startsWith(`${uri}#`));
+  return {
+    ...(bases[uri] !== undefined ? { overrideBase: bases[uri] } : {}),
+    ...(family.length > 0 ? { familyBases: Object.fromEntries(family) } : {}),
+  };
 }
 
 export interface ScanResult {
@@ -849,6 +864,7 @@ export async function submitIngest(opts: SubmitIngestOpts): Promise<SubmitResult
         ...(staged.skinny ? { skinny: true } : {}),
         ...(r.meta !== undefined ? { meta: r.meta } : {}),
         ...(r.overrideBase !== undefined ? { overrideBase: r.overrideBase } : {}),
+        ...(r.familyBases !== undefined ? { familyBases: r.familyBases } : {}),
       };
     }),
     ...(deletions.length > 0 ? { deletions: deletions.map((d) => ({ uri: d.uri, syncedHash: d.syncedHash })) } : {}),

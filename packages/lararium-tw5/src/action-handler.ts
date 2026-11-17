@@ -1762,13 +1762,18 @@ async function forkingOverrideBase(access: BagAccess, workingBag: string): Promi
 
 /**
  * THE OVERRIDE BASE A CARRY RESTORES. A wave into a wiki's working layer whose carriers name an `overrideBase` lands each
- * record of that title naming it on the meta envelope (a record that names its own base keeps it at the composite). Every
- * other wave, and every title no carrier names a base for, writes as it always has.
+ * record of that title naming it on the meta envelope (a record that names its own base keeps it at the composite). A
+ * carrier's family lands whole: each fragment record its carrier names a base for (`familyBases`) lands naming its own, so
+ * a fragment whose canon moved under a root that held still reads fresher. Every other wave, and every title no carrier
+ * names a base for, writes as it always has.
  */
 function stampingOverrideBases(access: BagAccess, action: IngestAction): BagAccess {
   if (!isWorkingLayerBag(action.toBag)) return access;
   const bases = new Map<string, string>();
-  for (const c of action.carriers) if (typeof c.overrideBase === "string") bases.set(c.uri, c.overrideBase);
+  for (const c of action.carriers) {
+    if (typeof c.overrideBase === "string") bases.set(c.uri, c.overrideBase);
+    for (const [title, base] of Object.entries(c.familyBases ?? {})) bases.set(title, base);
+  }
   if (bases.size === 0) return access;
   const stamp = (r: LarTiddlerRecord): LarTiddlerRecord => {
     const base = bases.get(String(r.tiddler.title));
