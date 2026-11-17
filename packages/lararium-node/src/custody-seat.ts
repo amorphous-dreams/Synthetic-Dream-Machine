@@ -43,6 +43,7 @@ import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
 import { listFaceFiles, readFaceIndexSync } from "./face-index.js";
+import { personaGroupDigest } from "./persona-group-file.js";
 
 /** Gathers a human route and unlocks the seated holder. Throws when it cannot (no terminal, no route that opens). */
 export type CustodyOpener = (holder: CustodyHolder) => Promise<void>;
@@ -274,6 +275,17 @@ export async function bindFaceAskCustody(fcid: string, askDigest: string): Promi
  * The handle indices of the faces standing UNLOCKED on this home's seated holder, ascending. A face's handle index is its ordinal in
  * the floor index; a locked face stays out, so a reader that lists faces lists the ones it can open.
  */
+/**
+ * Whether this vessel serves the face of `group` (its raw PersonaGroup id): under a pūlama, a face its lend names; on a vessel
+ * holding its own custody, any face its index names. A reader that walks faces off a list wider than the served set (the
+ * bootstrap's planes) asks this before it reads that face's rows, so no row outside the lend is ever asked.
+ */
+export async function servesFaceOfGroup(group: string): Promise<boolean> {
+  const holder = standingCustody();
+  if (holder === null || !holder.isUnlocked()) return false;
+  return (await holder.faceStanding({ group: personaGroupDigest(group) })) !== null;
+}
+
 export async function unlockedFaceOrdinals(): Promise<number[]> {
   const holder = await openedCustody();
   const open = new Set(holder.unlockedFaces());

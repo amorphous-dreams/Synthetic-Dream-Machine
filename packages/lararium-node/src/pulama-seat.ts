@@ -13,8 +13,10 @@
  * A vessel that names no offer still dials: the pūlama serves it where the image the host reports stands admitted (a kūkulu
  * that landed par, or the hand's `pulama admit`), and refuses `pulama-image-unadmitted` otherwise.
  *
- * After the floor composition stands, the vessel dials the pūlama. A session mounts the face its lei names and composes
- * with the sovereign rows; a refusal names itself once and the vessel keeps the floor. No timer redials: `lares vault
+ * After the floor composition stands, the vessel dials the pūlama. A session names the faces the pūlama lends this vessel,
+ * and the vessel composes with the sovereign rows over them: the composition names its own daemon mount among the faces
+ * served (`daemonMountOrdinal`) and lights the rest beside it, and no session sets a vessel-wide face. A refusal names itself
+ * once and the vessel keeps the floor. No timer redials: `lares vault
  * unlock` asks the custody door, which runs this same dial. That unlock gathers no credential and sends none: the door
  * names a pūlama in its `custody` reading, so the command asks nobody anything and answers what the pūlama waits on.
  *
@@ -59,8 +61,6 @@ export function pulamaStandBy(a: {
   readonly holder: PulamaHolder;
   /** Compose again: with the sovereign rows, or at the floor. */
   readonly recompose: (sovereign: boolean) => Promise<{ readonly standing: string; readonly refused?: string }>;
-  /** Mount the face the composition wears. */
-  readonly mount: (ordinal: number) => void;
   readonly onLog: (line: string) => void;
   /** Remove the offer this vessel just spent; answers whether a file went. Absent, the offer stays where it rests. */
   readonly consumeOffer?: () => boolean;
@@ -85,8 +85,6 @@ export function pulamaStandBy(a: {
     a.onLog(`the pūlama serves no session: ${typeof reading === "string" ? reading : err instanceof Error ? err.message : String(err)}; this vessel keeps the floor`);
     return { session: false, waits: a.holder.waits() ?? "pulama-unreachable" };
   }
-  const wears = a.holder.wears();
-  if (wears !== null) a.mount(wears);
   let stood: { readonly standing: string; readonly refused?: string };
   try { stood = await a.recompose(true); }
   catch (err) { stood = { standing: "unknown", refused: err instanceof Error ? err.message : String(err) }; }
@@ -109,7 +107,9 @@ export function pulamaStandBy(a: {
     // A session the pūlama served on the admitted image began under no rite, so no tessera waits on a host half.
     landed = reading === "rite-not-begun" ? "; served again on its admitted image, no lei spent" : `; the host half did not land (${reading ?? (err instanceof Error ? err.message : String(err))})`;
   }
-  a.onLog(`standing by the pūlama${wears !== null ? `; face h${wears} worn` : ""} (${stood.standing})${landed}`);
+  // THE LEND, NEVER A WORN FACE: the composition names its own daemon mount among the faces served, and sessions wear inside them.
+  const waiting = a.holder.waiting();
+  a.onLog(`standing by the pūlama; lends ${a.holder.lends().map((o) => `h${o}`).join(", ")}${waiting.length > 0 ? ` (${waiting.map((o) => `h${o}`).join(", ")} waiting dark)` : ""} (${stood.standing})${landed}`);
   return { session: true, waits: null };
   };
   return { dial, waits: () => (a.holder.isUnlocked() ? null : lastWaits) };

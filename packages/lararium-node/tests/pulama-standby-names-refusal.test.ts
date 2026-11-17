@@ -18,7 +18,8 @@ function fakeHolder(): PulamaHolder & { helloReading: string | null } {
     isUnlocked: () => open,
     unlock: async () => { open = true; return { reading: "opens", slot: "pulama" }; },
     lock: async () => { open = false; },
-    wears: () => 0,
+    lends: () => [0],
+    waiting: () => [],
     waits: () => (open ? null : h.helloReading),
     landRite: async () => { throw Object.assign(new Error("rite-not-begun"), { reading: "rite-not-begun" }); },
   };
@@ -30,7 +31,7 @@ describe("RED door-names-the-composition-refusal: the stand-by remembers its las
     const holder = fakeHolder();
     let refuse = true;
     const by = pulamaStandBy({
-      holder, mount: () => {}, onLog: () => {},
+      holder, onLog: () => {},
       recompose: async (sovereign) => (sovereign && refuse ? { standing: "herm", refused: "outside-the-lei: …" } : { standing: sovereign ? "hearth" : "herm" }),
     });
     expect(await by.dial()).toEqual({ session: false, waits: "composition-refused" });

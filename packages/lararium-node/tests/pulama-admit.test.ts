@@ -86,7 +86,7 @@ describe("RED pulama-reserves-an-admitted-image", () => {
     // A RESTART WITH NO REBUILD: the vessel carries no offer, the host reports the same image, and the pūlama serves it again.
     const again = s.fx.vessel({});
     expect((await again.unlock([])).reading).toBe("opens");
-    expect(again.wears()).toBe(0);
+    expect(again.lends()).toEqual([0]);
     await again.writeRecord("identity", HOT, Uint8Array.from([7]));
     expect(await again.readRecord("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([7]) });
     expect(await s.returns()).toBe(1);                     // no lei spent

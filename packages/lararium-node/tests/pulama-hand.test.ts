@@ -87,15 +87,15 @@ describe("a vessel finds its pūlama by one name and stands by it", () => {
     expect(readKukuluOffer(path)).toEqual({});
   });
 
-  test("a session mounts the lei's face and composes sovereign; its drop composes at the floor; a refused hello keeps the floor", async () => {
+  test("a session composes sovereign over its lend and sets no vessel-wide face; its drop composes at the floor; a refused hello keeps the floor", async () => {
     let admit = true;
     fx = await standPulama("pulama-stand-by", () => ({ admit: async () => admit ? { ok: true, scope: { faces: lend(0), coldReads: [] } } : { ok: false, reading: "kukulu-unvouched" } }));
     await fx.kept.foundFace({ group: personaGroupDigest("group-stand-by"), ordinal: 0, slots: fixtureSlots });
-    const composed: boolean[] = [], mounted: number[] = [], lines: string[] = [];
-    const deps = { recompose: async (sovereign: boolean) => { composed.push(sovereign); return { standing: sovereign ? "hearth" : "floor" }; }, mount: (o: number) => { mounted.push(o); }, onLog: (l: string) => { lines.push(l); } };
+    const composed: boolean[] = [], lines: string[] = [];
+    const deps = { recompose: async (sovereign: boolean) => { composed.push(sovereign); return { standing: sovereign ? "hearth" : "floor" }; }, onLog: (l: string) => { lines.push(l); } };
     const vessel = fx.vessel();
     expect(await standByPulama({ holder: vessel, ...deps })).toBe(true);
-    expect(mounted).toEqual([0]);
+    expect(lines.some((l) => l.includes("lends h0"))).toBe(true);
     expect(composed).toEqual([true]);
     await fx.server.lock();
     await vi.waitFor(() => expect(composed).toEqual([true, false]));
@@ -104,7 +104,7 @@ describe("a vessel finds its pūlama by one name and stands by it", () => {
     let release!: () => void;
     const held = new Promise<void>((resolve) => { release = resolve; });
     const slow: boolean[] = [];
-    const together = pulamaStandBy({ holder: fx.vessel(), mount: () => {}, onLog: () => {}, recompose: async (sovereign) => { slow.push(sovereign); await held; return { standing: "hearth" }; } });
+    const together = pulamaStandBy({ holder: fx.vessel(), onLog: () => {}, recompose: async (sovereign) => { slow.push(sovereign); await held; return { standing: "hearth" }; } });
     const one = together.dial(), two = together.dial();
     await vi.waitFor(() => expect(slow).toEqual([true]));
     let settled = false;
@@ -117,7 +117,7 @@ describe("a vessel finds its pūlama by one name and stands by it", () => {
     // A composition that throws leaves no session behind it, and the offer stays for the next dial.
     let consumed = 0;
     const thrown = fx.vessel();
-    const falls = pulamaStandBy({ holder: thrown, mount: () => {}, onLog: () => {}, consumeOffer: () => { consumed += 1; return true; }, recompose: async (sovereign) => { if (sovereign) throw new Error("the composition fell over"); return { standing: "floor" }; } });
+    const falls = pulamaStandBy({ holder: thrown, onLog: () => {}, consumeOffer: () => { consumed += 1; return true; }, recompose: async (sovereign) => { if (sovereign) throw new Error("the composition fell over"); return { standing: "floor" }; } });
     expect(await falls.dial()).toEqual({ session: false, waits: "composition-refused" });
     expect(thrown.isUnlocked()).toBe(false);
     expect(consumed).toBe(0);

@@ -77,7 +77,7 @@ import { FsCustodyIo } from "./custody-io.js";
 import { custodyTreeStands } from "./custody-session.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
 import { rendezvousDir, standingPath, markerIsOurs } from "@lararium/mesh/rendezvous-path";
-import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands, setMountedFace } from "./node-vessel-identity.js";
+import { loadVesselIdentity, vesselFloorKeyDoor, sovereignStands } from "./node-vessel-identity.js";
 import { KUKULU_OFFER_ENV, pulamaStandBy, vesselPulamaHolder } from "./pulama-seat.js";
 import { consumeKukuluOffer } from "./kukulu-offer.js";
 import { NoStoodNexus, stoodFloorPins } from "./hearth-sovereign-pin.js";
@@ -471,7 +471,7 @@ async function main(): Promise<void> {
   };
   // A KŪKULU STANDS BY ITS PŪLAMA: one dial path, run once at boot and again whenever the custody door hears `unlock`.
   const standBy = pulama === null ? null : pulamaStandBy({
-    holder: pulama, recompose: (sovereign) => recompose(sovereign), mount: setMountedFace, onLog: (line) => console.log(`[pulama] ${line}`),
+    holder: pulama, recompose: (sovereign) => recompose(sovereign), onLog: (line) => console.log(`[pulama] ${line}`),
     consumeOffer: () => consumeKukuluOffer(process.env[KUKULU_OFFER_ENV]),
   });
   custodyDoor = custodyFrameHandler({
@@ -498,7 +498,7 @@ async function main(): Promise<void> {
 
   composition = (await composeOrFloor(null)).stood;
   firstStood();
-  // The boot's one dial: the lei's face mounted, the sovereign composition over the session.
+  // The boot's one dial: the sovereign composition over the session, mounted on its own daemon mount among the faces lent.
   const byPulama = standBy !== null && (await standBy.dial()).session;
   // A vessel stands holding no vessel key, whatever it composed over: say so once, with the one verb that opens it.
   if (!byPulama && await custodyTreeStands(new FsCustodyIo(custodyHomes), custodyHomes)) {

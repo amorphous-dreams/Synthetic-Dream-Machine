@@ -104,7 +104,7 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     const vessel = s.fx.vessel(readKukuluOffer(s.path));
     const by = pulamaStandBy({
       holder: vessel, recompose: async (sovereign) => { composed.push(sovereign); return { standing: sovereign ? "hearth" : "floor" }; },
-      mount: () => {}, onLog: (l) => lines.push(l), consumeOffer: () => consumeKukuluOffer(s.path),
+      onLog: (l) => lines.push(l), consumeOffer: () => consumeKukuluOffer(s.path),
     });
     expect(await by.dial()).toEqual({ session: true, waits: null });
     expect(composed).toEqual([true]);
@@ -128,7 +128,7 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     expect((JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer).vouch[0]!.body.image).toBe("sha256:" + "cd".repeat(32));
     // The host raises another image than the newest offer names: the pūlama refuses, and the file stays.
     const vessel = s.fx.vessel(readKukuluOffer(s.path));
-    const by = pulamaStandBy({ holder: vessel, recompose: async () => ({ standing: "floor" }), mount: () => {}, onLog: () => {}, consumeOffer: () => consumeKukuluOffer(s.path) });
+    const by = pulamaStandBy({ holder: vessel, recompose: async () => ({ standing: "floor" }), onLog: () => {}, consumeOffer: () => consumeKukuluOffer(s.path) });
     expect(await by.dial()).toEqual({ session: false, waits: "kukulu-image-mismatch" });
     expect(existsSync(s.path)).toBe(true);
     // The host's report moves to the image the offer names: the SAME vessel dials again with the same file and stands.

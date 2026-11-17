@@ -59,8 +59,6 @@ export interface PulamaHolder extends CustodyHolder {
   lends(): readonly number[];
   /** The lent faces still dark at the pūlama, by ordinal; empty with no session. */
   waiting(): readonly number[];
-  /** The lowest lent ordinal (the steward's face 0 where lent): the face the composition mounts; null with no session. */
-  wears(): number | null;
   /** Tell the pūlama this vessel composed over its session: it rests the host half of the tessera the session began under. */
   landRite(): Promise<{ readonly par: boolean }>;
   /** What the pūlama answered this side's last hello, where it refused one and no session stood since; null otherwise. */
@@ -257,7 +255,6 @@ export function makePulamaHolder(a: {
     onClosed(listener) { closedListeners.add(listener); return () => { closedListeners.delete(listener); }; },
     lends: () => session?.scope.faces.map((f) => f.ordinal) ?? [],
     waiting: () => session?.standing.waiting ?? [],
-    wears: () => session?.scope.faces[0]?.ordinal ?? null,
     waits: () => (session === null ? refused : null),
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,

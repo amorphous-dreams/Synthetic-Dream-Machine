@@ -160,7 +160,7 @@ import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-stor
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
-import { standingCustody, custodyFloorKeyDoor } from "./custody-seat.js";
+import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor } from "./custody-seat.js";
 import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
@@ -3341,6 +3341,9 @@ async function prepareNodeBootOn(
     };
     async function proofOfOtherFace(plane: (typeof bootstrap.personaPlanes)[number]) {
       try {
+        // THE BOOTSTRAP NAMES EVERY FACE; THE VESSEL SERVES ITS LEND. A face outside what this vessel serves proves nothing here,
+        // and none of its rows is asked.
+        if (!await servesFaceOfGroup(plane.personaGroupId)) return null;
         const other = await loadFaceAnchorOfGroup(plane.personaGroupId);
         if (!other) return null;
         const board = await materializeSharedLarDoc(repo, personaKelBoardDocUrl(nexusPubkey), "board:persona-kel");

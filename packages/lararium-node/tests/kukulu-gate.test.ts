@@ -74,7 +74,7 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     const cid = swarmActCid(lei);
     const vessel = s.fx.vessel({ lei, vouch: v });
     expect((await vessel.unlock([])).reading).toBe("opens");
-    expect(vessel.wears()).toBe(0);
+    expect(vessel.lends()).toEqual([0]);
     await vessel.writeRecord("identity", HOT, Uint8Array.from([1]));
     expect(await vessel.readRecord("identity", HOT)).toEqual({ reading: "opens", plaintext: Uint8Array.from([1]) });
     expect(KUKULU_COLD_READS).toEqual(["face-proof-key", "intent-relay-key"]);

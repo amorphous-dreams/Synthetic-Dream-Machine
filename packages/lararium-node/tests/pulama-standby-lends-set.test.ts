@@ -82,9 +82,9 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     await sweepFoundingSeeds();
     expect(await listAnchoredPersonas()).toEqual([]);
     expect(await listWalkRecords()).toEqual([]);
-    expect(await servesFaceOfGroup(personaGroupDigest(GROUPS[0]))).toBe(true);
-    expect(await servesFaceOfGroup(personaGroupDigest(GROUPS[2]))).toBe(true);
-    expect(await servesFaceOfGroup(personaGroupDigest(GROUPS[1]))).toBe(false);
+    expect(await servesFaceOfGroup(GROUPS[0])).toBe(true);
+    expect(await servesFaceOfGroup(GROUPS[2])).toBe(true);
+    expect(await servesFaceOfGroup(GROUPS[1])).toBe(false);
     expect(outsideTheLend()).toEqual([]);
   });
 

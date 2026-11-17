@@ -773,18 +773,26 @@ export async function orphanPersonaRootKey(handleIndex: number, ward?: WardCrede
 }
 
 /**
- * THE MOUNTED FACE is the composition's own state, never a pointer at rest and never a default face. The unlock names which face
- * the sovereign composition MOUNTS (`lares vault unlock --face N`); nothing persists that choice across a restart. With no choice
- * recorded and exactly one face standing unlocked, that face is the one mounted. A command never reads this: it names its face
- * (`--face N`), or resolves the one face standing open (`face-selector`).
+ * THE DAEMON MOUNT is the composition's own state, never a pointer at rest and never a face a session wears. The unlock may name
+ * which face the sovereign composition MOUNTS (`lares vault unlock --face N`); nothing persists that choice across a restart, and
+ * no session sets it. With no face named, the composition mounts the steward's face 0 where it stands open, else the lowest face
+ * standing open (under a pūlama, the lowest face it lends that stands lit), and lights every other open face beside it. A
+ * command never reads this: it names its face (`--face N`), or resolves the one face standing open (`face-selector`).
  */
 let mountedFace: number | undefined;
 export function setMountedFace(handleIndex: number | undefined): void { mountedFace = handleIndex; }
 
+/** The face the composition mounts among the faces standing open (ascending): the face the unlock named where it stands open,
+ *  else the first open face (the steward's face 0 where it stands open); undefined where the named face or every face rests shut. */
+function daemonMountOf(open: readonly number[]): number | undefined {
+  if (mountedFace !== undefined) return open.includes(mountedFace) ? mountedFace : undefined;
+  return open[0];
+}
+
 /**
- * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND the mounted face unlocked. A pure query: it reads the
- * seated holder and the floor index and changes nothing, so a preflight reads the same answer the composition does. A place
- * the floor index names no face for needs S alone; a place with faces and no face mounted (none, or several and none chosen)
+ * WHETHER THE SOVEREIGN COMPOSITION MAY STAND: the node key (S) held AND a daemon mount standing open. A pure query: it reads
+ * the seated holder and the floor index and changes nothing, so a preflight reads the same answer the composition does. A
+ * place the floor index names no face for needs S alone; a place whose faces all rest shut, or whose named mount rests shut,
  * stands at the floor.
  */
 export function sovereignStands(): boolean {
@@ -795,22 +803,20 @@ export function sovereignStands(): boolean {
   if (named.length === 0) return true;
   const open = new Set(holder.unlockedFaces());
   const openOrdinals = named.filter((f) => open.has(f.fcid)).map((f) => f.ordinal);
-  const mounted = mountedFace ?? (openOrdinals.length === 1 ? openOrdinals[0] : undefined);
-  return mounted !== undefined && openOrdinals.includes(mounted);
+  return daemonMountOf(openOrdinals) !== undefined;
+}
+
+/** The face the composition mounts, as `sovereignStands` reads it; undefined where none stands open. */
+export async function daemonMountOrdinal(): Promise<number | undefined> {
+  return daemonMountOf(await unlockedFaceOrdinals());
 }
 
 /** The face the unlock named for the composition to mount, or undefined where it named none. */
 export function mountedFaceOrdinal(): number | undefined { return mountedFace; }
 
-/** The composition's mount reader: the face the unlock named, else the one face standing open. It keeps no pointer. */
+/** The composition's mount reader: the daemon mount (`daemonMountOf`) over the faces standing open. It keeps no pointer. */
 function nodeMountedFaceStore(): ActivePersonaStore {
-  return {
-    async load() {
-      if (mountedFace !== undefined) return mountedFace;
-      const open = await unlockedFaceOrdinals();
-      return open.length === 1 ? open[0] : undefined;   // no inference beyond the one face standing open
-    },
-  };
+  return { load: () => daemonMountOrdinal() };
 }
 
 /**

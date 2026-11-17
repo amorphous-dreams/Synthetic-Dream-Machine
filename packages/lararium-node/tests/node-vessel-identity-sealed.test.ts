@@ -290,14 +290,15 @@ describe("sealed vessel identity family", () => {
     expect(existsSync(at(".active-persona.json"))).toBe(false);
     setMountedFace(undefined);
     await generateOrLoadPersonaGroupRoot(4);
-    expect(await mounted()).toBeUndefined();
-    setMountedFace(4);
-    expect(await mounted()).toBe(4);
+    setMountedFace(5);
+    expect(await mounted()).toBe(5);
     expect(sovereignStands()).toBe(true);
     await expect(resolveFace()).rejects.toBeInstanceOf(FaceNotNamed);   // a command never reads the mount
+    // NO FACE NAMED: the composition names its own daemon mount, the lowest face standing open, and two open faces never
+    // trap it at the floor.
     setMountedFace(undefined);
-    expect(await mounted()).toBeUndefined();
-    expect(sovereignStands()).toBe(false);
+    expect(await mounted()).toBe(4);
+    expect(sovereignStands()).toBe(true);
   });
 
   test("V10 each face's three maps seal, sort, and clear", async () => {
