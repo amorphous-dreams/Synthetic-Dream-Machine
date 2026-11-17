@@ -54,7 +54,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = "usage: pulama-main.js serve | light | admit [face] | lock | status | image <digest> | tessera";
+export const PULAMA_VERB_USAGE = "usage: pulama-main.js serve | light | admit [face…] | lock | status | image <digest> | tessera";
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -62,7 +62,7 @@ export class PulamaVerbUsage extends Error { override readonly name = "PulamaVer
 /**
  * Run one hand verb: `ask` sends one frame to the hand door, `route` reads the operator's route. Answers the door's answer.
  */
-export async function runHandVerb(verb: string, arg: string | undefined, ports: {
+export async function runHandVerb(verb: string, arg: string | readonly string[] | undefined, ports: {
   readonly ask: (frame: Readonly<Record<string, unknown>>) => Promise<PulamaHandAnswer>;
   readonly route: (label: string, what: string) => Promise<string>;
 }): Promise<PulamaHandAnswer> {
@@ -71,15 +71,16 @@ export async function runHandVerb(verb: string, arg: string | undefined, ports: 
     return ports.ask({ op: "light", credentials: [{ kind: "passphrase", passphrase }] });
   }
   if (verb === "admit") {
-    if (arg !== undefined && !/^(0|[1-9]\d*)$/.test(arg)) throw new PulamaVerbUsage();
+    const args = arg === undefined ? [] : typeof arg === "string" ? [arg] : arg;
+    if (args.some((a) => !/^(0|[1-9]\d*)$/.test(a) || !Number.isSafeInteger(Number(a)))) throw new PulamaVerbUsage();
     // THE DOOR READS FIRST: an unlit pūlama or an unreported image refuses here, before anybody types a route.
     const standing = await ports.ask({ op: "status" });
     if (standing["lit"] !== true) return { op: "admit", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then admit" };
     if (typeof standing["image"] !== "string") return { op: "admit", reading: "image-unreported", detail: "the host reported no image digest to this pūlama, so no image stands to admit" };
     const passphrase = await ports.route(`pūlama route, to admit ${standing["image"]}: `, "an admission");
-    return ports.ask({ op: "admit", credentials: [{ kind: "passphrase", passphrase }], ...(arg !== undefined ? { face: Number(arg) } : {}) });
+    return ports.ask({ op: "admit", credentials: [{ kind: "passphrase", passphrase }], faces: args.map(Number) });
   }
   if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
-  if (verb === "image" && arg !== undefined) return ports.ask({ op: "image", digest: arg });
+  if (verb === "image" && typeof arg === "string") return ports.ask({ op: "image", digest: arg });
   throw new PulamaVerbUsage();
 }

@@ -125,10 +125,10 @@ function askHand(frame: Readonly<Record<string, unknown>>): Promise<PulamaHandAn
 }
 
 async function main(): Promise<void> {
-  const [verb = "serve", arg] = process.argv.slice(2);
+  const [verb = "serve", ...args] = process.argv.slice(2);
   if (verb === "serve") return serve();
   try {
-    console.log(JSON.stringify(await runHandVerb(verb, arg, { ask: askHand, route: (label, what) => readRoute(label, what) }), null, 2));
+    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what) }), null, 2));
   } catch (err) {
     if (!(err instanceof PulamaVerbUsage)) throw err;
     console.error(err.message);

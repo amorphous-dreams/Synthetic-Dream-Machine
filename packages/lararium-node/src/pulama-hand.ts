@@ -9,7 +9,7 @@
  *            door, and a vessel's restart never resets it: the count rides the pūlama's own life.
  *   admit    THE HAND ADMITS AN IMAGE. The operator's route PROVES against the lit holder (`CustodyHolder.proves`: it opens
  *            nothing and holds nothing new; a miss spends an unlock attempt as an unlock's miss does), and the image the
- *            host reports then rests admitted for one open face, under a tessera whose two halves this act alone rests
+ *            host reports then rests admitted for the named open faces, under a tessera whose two halves this act alone rests
  *            (`pulama-admit`). An unlit pūlama refuses `pulama-locked` and an unreported image `image-unreported`, each
  *            before the route reads. The route never leaves the pūlama.
  *   lock     every session drops and every key zero-fills.
@@ -22,6 +22,7 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { swarmTesseraPrefix, type Credential, type SwarmWikiPort } from "@lararium/mesh";
+import { lentFacesOf } from "@lararium/mesh/lent-faces";
 import type { CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
@@ -75,18 +76,24 @@ export function pulamaHandDoor(a: {
         if (image === null) return { op: "admit", reading: "image-unreported", ...status() };
         const credentials = credentialsOf(f["credentials"]);
         if (credentials === null) return { op: "admit", reading: "malformed" };
-        const named = f["face"];
-        if (named !== undefined && (!Number.isSafeInteger(named) || (named as number) < 0)) return { op: "admit", reading: "malformed" };
+        // THE FACES NAMED: whole ordinals, each once; none named admits every lit face. A lone `face` names no set.
+        const raw = f["faces"] ?? [];
+        if (f["face"] !== undefined || !Array.isArray(raw) || raw.some((n) => typeof n !== "number")) return { op: "admit", reading: "lent-faces-malformed" };
+        if (raw.length > 0) { const parsed = lentFacesOf(raw); if (!parsed.ok) return { op: "admit", reading: parsed.refusal }; }
+        const named = raw as number[];
         // THE ROUTE PROVES A PERSON STANDS HERE: it opens a slot of this vessel's tree to the key already held, and opens nothing new.
         const proof = await holder.proves(credentials);
         if (proof.reading !== "proves") { log(`admit: ${proof.reading}`); return { op: "admit", ...proof, ...status() }; }
         const open: Array<{ fcid: string; ordinal: number }> = [];
         for (const fcid of holder.unlockedFaces()) { const at = await holder.faceStanding({ fcid }); if (at !== null) open.push({ fcid: at.fcid, ordinal: at.ordinal }); }
-        const face = named !== undefined ? open.find((o) => o.ordinal === named) : open.length === 1 ? open[0] : undefined;
-        if (!face) return { op: "admit", reading: named !== undefined || open.length === 0 ? "face-locked" : "face-not-named", openFaces: open.map((o) => o.ordinal), ...status() };
-        const { tessera } = await a.admissions.admitByHand(image, face, await pulamaSignerOf(holder));
-        log(`admitted by hand: the reported image now serves face h${face.ordinal}`);
-        return { op: "admit", reading: "admitted", admitted: image, face: face.ordinal, tessera, ...status() };
+        const missing = named.find((n) => !open.some((o) => o.ordinal === n));
+        if (missing !== undefined) return { op: "admit", reading: "face-locked", face: missing, openFaces: open.map((o) => o.ordinal), ...status() };
+        const faces = named.length ? open.filter((o) => named.includes(o.ordinal)) : open;
+        if (!faces.length) return { op: "admit", reading: "face-locked", openFaces: [], ...status() };
+        const { tessera } = await a.admissions.admitByHand(image, faces, await pulamaSignerOf(holder));
+        const ordinals = faces.map((face) => face.ordinal).sort((x, y) => x - y);
+        log(`admitted by hand: the reported image now serves ${ordinals.map((n) => `h${n}`).join(", ")}`);
+        return { op: "admit", reading: "admitted", admitted: image, tessera, ...status(), faces: ordinals };
       }
       case "lock": await server.lock(); return { op: "lock", ...status() };
       case "status": return { op: "status", ...status() };

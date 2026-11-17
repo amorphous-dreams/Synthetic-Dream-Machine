@@ -13,7 +13,7 @@
  * re-service row, so the count of such wakes reads off the records. An unadmitted image with no offer stays at the floor.
  *
  * ── THE RECORDS, ALL UNDER THE PŪLAMA'S OWN KEY, IN ITS OWN STORE ───────────────────────────────
- *   admitted/<image>              ONE row per image: the face it serves, the act that admitted it (`rite` or `hand`) and the
+ *   admitted/<image>              ONE row per image: the faces it serves, the act that admitted it (`rite` or `hand`) and the
  *                                 tessera that act rests on. A later admission of the same image writes over the row.
  *   reserved/<image>/<n>          one row per re-service, counted from 1, claimed atomically
  *   admit/<tessera>/guest · host  the hand's own tessera: `admit-begun` rests before the admission, `admit-landed` after
@@ -22,11 +22,12 @@
  * A READ TRUSTS A ROW ONLY UNDER THE PŪLAMA'S KEY. The key derives from the custody root, so a row written into the state
  * directory by anything that never held that root reads as no admission: the file alone admits nothing.
  *
- * No route and no key rests in any row: each holds digests, a face's custody id and a signature.
+ * No route and no key rests in any row: each holds digests, faces' custody ids and a signature.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { randomUUID } from "node:crypto";
 import { PULAMA_TESSERA_DOMAIN, canonicalJsonBytes, sha256HexBytesSync, verifyEd25519, type SwarmWikiPort } from "@lararium/mesh";
+import { lentFacesOf, lentFacesWire } from "@lararium/mesh/lent-faces";
 import type { KukuluSigner } from "./kukulu-gate.js";
 
 const PREFIX = "$:/lares/pulama/";
@@ -41,10 +42,10 @@ export const pulamaAdmitTesseraTitle = (tessera: string, half: "guest" | "host")
 export interface AdmittedFace { readonly fcid: string; readonly ordinal: number }
 
 export type PulamaAdmitBody =
-  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-admitted"; readonly image: string; readonly fcid: string; readonly ordinal: number; readonly by: "rite" | "hand"; readonly tessera: string }
-  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-reserved"; readonly image: string; readonly fcid: string; readonly ordinal: number; readonly n: number }
-  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-begun"; readonly image: string; readonly fcid: string; readonly ordinal: number; readonly tessera: string }
-  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-landed"; readonly image: string; readonly tessera: string; readonly begun: string };
+  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-admitted"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string }
+  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "image-reserved"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly n: number }
+  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-begun"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string }
+  | { readonly kind: typeof PULAMA_TESSERA_DOMAIN; readonly act: "admit-landed"; readonly image: string; readonly faces: readonly AdmittedFace[]; readonly tessera: string; readonly begun: string };
 export interface SignedPulamaAdmit { readonly body: PulamaAdmitBody; readonly signer: string; readonly sig: string }
 
 const cidOf = (act: { readonly body: PulamaAdmitBody; readonly signer: string }): string => sha256HexBytesSync(canonicalJsonBytes({ body: act.body, signer: act.signer }));
@@ -68,15 +69,23 @@ function verified(text: string | null, pulamaKey: string): SignedPulamaAdmit | n
 /** What the kūkulu gate and the hand door ask of the admitted set. */
 export interface PulamaAdmissions {
   /** The face `image` stands admitted for, read under the pūlama's key; null where no admission of it verifies. */
-  admitted(image: string, by: KukuluSigner): Promise<(AdmittedFace & { readonly by: "rite" | "hand"; readonly tessera: string }) | null>;
+  admitted(image: string, by: KukuluSigner): Promise<{ readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string } | null>;
   /** Rest `image` as admitted by a rite that landed par (`tessera`: the rite's own). */
-  admitByRite(image: string, face: AdmittedFace, tessera: string, by: KukuluSigner): Promise<void>;
+  admitByRite(image: string, faces: readonly AdmittedFace[], tessera: string, by: KukuluSigner): Promise<void>;
   /** THE HAND'S ADMISSION: rest the begun half, the admission, then the landed half. Answers the tessera. */
-  admitByHand(image: string, face: AdmittedFace, by: KukuluSigner): Promise<{ readonly tessera: string }>;
+  admitByHand(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<{ readonly tessera: string }>;
   /** Rest one re-service row for `image`; answers its count. */
-  reserved(image: string, face: AdmittedFace, by: KukuluSigner): Promise<number>;
+  reserved(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<number>;
   /** Every admission that verifies, and each image's count of re-services. */
-  list(by: KukuluSigner): Promise<ReadonlyArray<{ readonly image: string; readonly fcid: string; readonly ordinal: number; readonly by: "rite" | "hand"; readonly tessera: string; readonly reserved: number }>>;
+  list(by: KukuluSigner): Promise<ReadonlyArray<{ readonly image: string; readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string; readonly reserved: number }>>;
+}
+
+function canonicalFaces(raw: unknown): readonly AdmittedFace[] {
+  const parsed = lentFacesOf(raw);
+  if (!parsed.ok) throw new Error(parsed.message);
+  const wire = lentFacesWire(parsed.faces);
+  if (wire.some(face => face.fcid === undefined)) throw new Error("lent-faces-malformed: admission faces need custody ids");
+  return wire as readonly AdmittedFace[];
 }
 
 /** The admitted set over the pūlama's record store. */
@@ -84,36 +93,39 @@ export function pulamaAdmissions(records: SwarmWikiPort): PulamaAdmissions {
   const admitted: PulamaAdmissions["admitted"] = async (image, by) => {
     const row = verified(await records.read(pulamaAdmittedTitle(image)), by.key);
     if (row === null || row.body.act !== "image-admitted" || row.body.image !== image) return null;
-    return { fcid: row.body.fcid, ordinal: row.body.ordinal, by: row.body.by, tessera: row.body.tessera };
+    try { return { faces: canonicalFaces(row.body.faces), by: row.body.by, tessera: row.body.tessera }; } catch { return null; }
   };
-  const rest = async (image: string, face: AdmittedFace, how: "rite" | "hand", tessera: string, by: KukuluSigner): Promise<void> => {
-    const act = await sign<"image-admitted">({ act: "image-admitted", image, fcid: face.fcid, ordinal: face.ordinal, by: how, tessera }, by);
+  const rest = async (image: string, faces: readonly AdmittedFace[], how: "rite" | "hand", tessera: string, by: KukuluSigner): Promise<void> => {
+    const act = await sign<"image-admitted">({ act: "image-admitted", image, faces: canonicalFaces(faces), by: how, tessera }, by);
     await records.write(pulamaAdmittedTitle(image), JSON.stringify(act));
   };
   return {
     admitted,
-    admitByRite: (image, face, tessera, by) => rest(image, face, "rite", tessera, by),
-    async admitByHand(image, face, by) {
-      const tessera = sha256HexBytesSync(canonicalJsonBytes({ image, fcid: face.fcid, nonce: randomUUID() }));
-      const begun = await sign<"admit-begun">({ act: "admit-begun", image, fcid: face.fcid, ordinal: face.ordinal, tessera }, by);
+    admitByRite: (image, faces, tessera, by) => rest(image, faces, "rite", tessera, by),
+    async admitByHand(image, faces, by) {
+      faces = canonicalFaces(faces);
+      const tessera = sha256HexBytesSync(canonicalJsonBytes({ image, faces, nonce: randomUUID() }));
+      const begun = await sign<"admit-begun">({ act: "admit-begun", image, faces, tessera }, by);
       await records.writeNew(pulamaAdmitTesseraTitle(tessera, "guest"), JSON.stringify(begun));
-      await rest(image, face, "hand", tessera, by);
-      const landed = await sign<"admit-landed">({ act: "admit-landed", image, tessera, begun: cidOf(begun) }, by);
+      await rest(image, faces, "hand", tessera, by);
+      const landed = await sign<"admit-landed">({ act: "admit-landed", image, faces, tessera, begun: cidOf(begun) }, by);
       await records.writeNew(pulamaAdmitTesseraTitle(tessera, "host"), JSON.stringify(landed));
       return { tessera };
     },
-    async reserved(image, face, by) {
+    async reserved(image, faces, by) {
+      faces = canonicalFaces(faces);
       for (let n = 1; ; n++) {
-        const act = await sign<"image-reserved">({ act: "image-reserved", image, fcid: face.fcid, ordinal: face.ordinal, n }, by);
+        const act = await sign<"image-reserved">({ act: "image-reserved", image, faces, n }, by);
         if (await records.writeNew(`${pulamaReservedPrefix(image)}${n}`, JSON.stringify(act))) return n;
       }
     },
     async list(by) {
-      const out: Array<{ image: string; fcid: string; ordinal: number; by: "rite" | "hand"; tessera: string; reserved: number }> = [];
+      const out: Array<{ image: string; faces: readonly AdmittedFace[]; by: "rite" | "hand"; tessera: string; reserved: number }> = [];
       for (const title of await records.list(pulamaAdmittedPrefix())) {
         const row = verified(await records.read(title), by.key);
         if (row === null || row.body.act !== "image-admitted" || pulamaAdmittedTitle(row.body.image) !== title) continue;
-        out.push({ image: row.body.image, fcid: row.body.fcid, ordinal: row.body.ordinal, by: row.body.by, tessera: row.body.tessera, reserved: (await records.list(pulamaReservedPrefix(row.body.image))).length });
+        const admission = await admitted(row.body.image, by);
+        if (admission !== null) out.push({ image: row.body.image, ...admission, reserved: (await records.list(pulamaReservedPrefix(row.body.image))).length });
       }
       return out;
     },

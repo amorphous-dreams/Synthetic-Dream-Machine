@@ -559,15 +559,14 @@ export const upPulama = async (h) => {
 
 /** The admission's answer: the route typed, and the pūlama reads `admitted`; any other reading fails by its name. */
 export function judgePulamaAdmit(r, answer) {
-  const ok = r?.code === 0 && r?.typed === true && answer?.reading === "admitted";
-  return { ok, answer: `exit ${r?.code}; route typed: ${r?.typed === true}; reading ${answer?.reading ?? "(none)"}${answer?.admitted ? ` · admitted ${answer.admitted} for face ${answer.face}` : ""}` };
+  const ok = r?.code === 0 && r?.typed === true && answer?.reading === "admitted" && Array.isArray(answer?.faces) && answer.faces.length > 0;
+  return { ok, answer: `exit ${r?.code}; route typed: ${r?.typed === true}; reading ${answer?.reading ?? "(none)"}${answer?.admitted ? ` · admitted ${answer.admitted} for faces ${answer.faces?.map(n => `h${n}`).join(", ")}` : ""}` };
 }
 
-/** The admission's shim line: it names the face (the steward, h0), since a pūlama holding several faces open answers
- *  `face-not-named` to an admit that names none. */
-export const pulamaAdmitArgs = (face = 0) => ["pulama", "admit", String(face)];
+/** The admission names the selected faces; an empty selection admits every lit face. */
+export const pulamaAdmitArgs = (faces = []) => ["pulama", "admit", ...faces.map(String)];
 
-/** THE OPERATOR'S HAND ADMITS THE IMAGE the host reported at `up`: `pulama admit 0` reads the route on a terminal (the
+/** THE OPERATOR'S HAND ADMITS THE IMAGE the host reported at `up`: `pulama admit` reads the route on a terminal (the
  *  published test route here) and proves it against the lit holder; it opens nothing. */
 export const pulamaAdmit = async (h) => {
   const r = await h.pty(h.shimLine(pulamaAdmitArgs()), { says: [{ prompt: "to admit ", answer: TEST_PASSPHRASE }], route: TEST_PASSPHRASE, timeout: 120_000 });
