@@ -119,7 +119,7 @@ export async function runRiteVerb(opts: {
     try { offerWard = cosignPortWitness(await nodeWardCosignPortOf(opts.repo, loaded)); }
     catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", e.message); throw e; }
     return { ...await writeKukuluOffer({
-      wiki: opts.wiki, trust, group, ward: offerWard, branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
+      wiki: opts.wiki, faces: [{ group, trust, ward: offerWard }], branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
       holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
     }) };
   }

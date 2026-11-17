@@ -43,6 +43,8 @@ export interface PulamaScope {
   /** The faces the pūlama lends this vessel: never empty, so no scope serves every face. A face named by custody id
    *  serves only while the face index names that id at its ordinal. */
   readonly faces: LentFaces;
+  /** The faces the gate read and left out of the lend, each with its reading (a face whose lei is missing waits by name). */
+  readonly unlent?: ReadonlyArray<{ readonly ordinal: number; readonly reading: string }>;
   /** The carrier rows (by row name) whose COLD plaintext the session may read; every other cold row refuses. */
   readonly coldReads: readonly string[];
   /** Rest the host half of the tessera this session began under, once the vessel composed; absent where the gate began no rite. */
@@ -326,8 +328,8 @@ export function servePulama(a: {
           const s: Session = { channel, scope: { ...admitted.scope, faces: lent.faces }, claims: new Map(), open: true };
           session = s;
           live.add(s);
-          withDerived((derived) => channel.send({ t: "session", scope: { faces: lentFacesWire(s.scope.faces) }, standing: standing(s), derived }));
-          log("session opened");
+          withDerived((derived) => channel.send({ t: "session", scope: { faces: lentFacesWire(s.scope.faces), ...(s.scope.unlent?.length ? { unlent: s.scope.unlent } : {}) }, standing: standing(s), derived }));
+          log(`session opened: lends ${renderLentFaces(s.scope.faces)}${s.scope.unlent?.length ? `; ${s.scope.unlent.map((u) => `h${u.ordinal} waits (${u.reading})`).join(", ")}` : ""}`);
         }, () => refuse("pulama-gate-faulted"));
       });
     },

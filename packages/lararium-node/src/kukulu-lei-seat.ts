@@ -26,6 +26,9 @@
  * reads any red: the return refuses `swarm-lei-testimony-red`, and a wide lei narrows. The receipt sits at one title per tree,
  * so rites begin one at a time here: a hello rests its own vouch's verdict and returns under it before another writes.
  *
+ * ONE LEI PER LENT FACE: the gate begins one rite per face it lends, each under that face's group and hand. Every face's lei
+ * rests on the branch's one line here, and a face that finds only other faces' rows there reads `swarm-lei-absent`.
+ *
  * A `kukulu` lei waits on no co-sign (`leiRiteCosigns`), so the ward witness the family's reader takes decides nothing here.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
@@ -75,7 +78,9 @@ export function kukuluRiteOver(records: SwarmWikiPort): KukuluRitePort {
         const begun = await beginRite(records, { rite: "kukulu", branch: at.branch, head: at.head, tree: at.tree }, trust, at.group, at.by, NO_COSIGN);
         return { ok: true as const, tessera: begun.tessera, lei: begun.lei, n: begun.n };
       } catch (err) {
-        if (err instanceof SwarmRefused) return { ok: false as const, refusal: err.code };
+        // ONE LINE, EVERY LENT FACE'S LEI: the pūlama's store rests each face's kukulu lei under the branch's one line, so a
+        // face whose hand strung none there reads the other faces' rows as another group's. That face has no lei here.
+        if (err instanceof SwarmRefused) return { ok: false as const, refusal: err.code === "swarm-lei-group" ? "swarm-lei-absent" : err.code };
         throw err;
       }
     }),
