@@ -38,7 +38,7 @@
  * See lar:///ha.ka.ba/lararium/api/lares-lararium-binding.
  */
 
-import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf } from "./seat-hand.js";
+import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
 import { type Socket } from "node:net";
 import { randomUUID } from "node:crypto";
 import { PARK_LIMIT } from "./owned-store.js";
@@ -66,8 +66,10 @@ import type { SessionSignBook } from "./session-sign-door.js";
 
 export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
-  /** THE WORN FACE's ordinal (the mounted face), or null at the floor: the AI seat acts as it alone (`seat-hand`). */
+  /** THE WORN FACE's ordinal (the mounted face), or null at the floor: an AI seat naming no face acts as it, and where no lent set reads, as it alone (`seat-hand`). */
   readonly wornOrdinal?: () => number | null;
+  /** THE LENT SET: the faces the holder names open (under a pūlama, the set it lends). An AI seat names a face inside it (`seat-hand`). */
+  readonly lentOrdinals?: () => Promise<readonly number[]>;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
   readonly switchActs?: SwitchActLog;
   /**
@@ -983,6 +985,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const sessionReply = (sock: Socket, answer: Record<string, unknown>): void => {
     try { sock.write(JSON.stringify(answer) + "\n"); } catch { /* gone */ }
   };
+  // The lent set, or null where none reads (no reader, or custody shut): the seat then falls to the worn rule.
+  const lentOf = async (): Promise<readonly number[] | null> => {
+    if (!opts.lentOrdinals) return null;
+    try { return await opts.lentOrdinals(); } catch { return null; }
+  };
   const sessionRefuse = (sock: Socket, refusal: string, requestId?: string): void =>
     sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal });
   const sessionState = (sock: Socket) => {
@@ -1037,9 +1044,11 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return sessionRefuse(sock, "malformed-message", requestId);
       }
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
-      // THE AI SEAT OPENS ONLY THE WORN FACE: a `seat` hand (or a frame marked `seat: "ai"`) naming another face refuses.
-      const seatRefused = seatFaceRefusal({ seat: frame["hand"] === "seat" ? "ai" : seatKindOf(frame), named: faceRefOrdinal(frame["faceRef"]), worn: opts.wornOrdinal?.() ?? null });
-      if (seatRefused !== null) return sessionRefuse(sock, "face-hand-refused", requestId);
+      // THE AI SEAT OPENS A FACE INSIDE THE LENT SET: a `seat` hand (or a frame marked `seat: "ai"`) naming a face outside it refuses.
+      // The set reads only where a seat names a face, so no other opening touches custody.
+      const seatAsks = (frame["hand"] === "seat" || seatKindOf(frame) !== null) && faceRefOrdinal(frame["faceRef"]) !== null;
+      const seatRefused = !seatAsks ? null : seatFaceRefusal({ seat: frame["hand"] === "seat" ? "ai" : seatKindOf(frame), named: faceRefOrdinal(frame["faceRef"]), worn: opts.wornOrdinal?.() ?? null, lent: await lentOf() });
+      if (seatRefused !== null) return sessionRefuse(sock, seatRefusalClass(seatRefused), requestId);
       const supplied = await opts.sessions.open({ faceRef: frame["faceRef"], hand: frame["hand"] as Hand })
         .catch((error: unknown) => {
           log(`session door failed: ${error instanceof Error ? error.message : String(error)}`);
@@ -1375,10 +1384,6 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       delete oneShot.ordinal;
       const inv: Invocation = sessionRequestId === undefined ? oneShot : parsed as Invocation;
       if (!inv.verb || !inv.requestedBy) return fail("verb + requestedBy required");
-      // THE AI SEAT ACTS AS THE WORN FACE ALONE, read off the seat kind its request line carries (`seat-hand`): a marked call
-      // naming another face refuses by name; the operator's hand (no seat kind) names any open face.
-      const seatRefused = seatFaceRefusal({ seat: seatKindOf(parsed), named: namedFaceOf(inv.args), worn: opts.wornOrdinal?.() ?? null });
-      if (seatRefused !== null) return fail(seatRefused, "face-hand-refused");
       // A ROW THAT ACTS AS A FACE RIDES THAT FACE'S SESSION: the maintenance frame carries no face, so it serves none.
       if (sessionRequestId === undefined && opts.sessionVerbs?.has(inv.verb)) {
         return fail(`"${inv.verb}" acts as a face, and rides a session of that face`, "face-row-rides-a-session");
@@ -1396,6 +1401,12 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // end seen here always means abandonment.
       arbitrating += 1;
       setImmediate(() => setImmediate(() => { void (async () => {
+        // THE AI SEAT ACTS INSIDE THE LENT SET, read off the seat kind its request line carries (`seat-hand`): a marked call
+        // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
+        // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
+        const seatAsks = seatKindOf(parsed) !== null && namedFaceOf(inv.args) !== null;
+        const seatRefused = !seatAsks ? null : seatFaceRefusal({ seat: seatKindOf(parsed), named: namedFaceOf(inv.args), worn: opts.wornOrdinal?.() ?? null, lent: await lentOf() });
+        if (seatRefused !== null) return fail(seatRefused, seatRefusalClass(seatRefused));
         // The worker's own digest formula (`verbInputDigest`, mesh) — async, so computed inside
         // this deferred tick rather than synchronously in the `data` handler above.
         const inputDigest = await inputDigestOf(inv);

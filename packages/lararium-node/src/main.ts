@@ -68,7 +68,7 @@ import { nodeSwitchActLog } from "./switch-act-log.js";
 import { STORE_DOOR_HAND_CODES, STORE_DOOR_HAND_ONLY_ACTS, REALM_KEY_VERBS, REALM_SESSION_ACTS, STORE_DOOR_FACE_VERBS, faceRowAnswer } from "./store-door-verbs.js";
 import { makeCustodyHolder } from "./custody-holder.js";
 import { testScratchNotice } from "./test-scratch-notice.js";
-import { seatCustody } from "./custody-seat.js";
+import { seatCustody, unlockedFaceOrdinals } from "./custody-seat.js";
 import { custodyFrameHandler, type CustodyDoor } from "./custody-frames.js";
 import { SESSION_ACTS, runSealedAct, type PersonaSelvesPlane, type SealedActContext } from "./sealed-acts.js";
 import { cutFaceBundle, type BackupDoor } from "./face-bundle-cut.js";
@@ -836,8 +836,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     claim:        floor.storeClaim,
     repo:         result.repo,
     sessions:     result.sessionDoor,
-    // THE AI SEAT ACTS AS THE WORN FACE ALONE (`seat-hand`): a call marked `seat: "ai"` naming another face refuses.
+    // THE AI SEAT ACTS INSIDE THE LENT SET (`seat-hand`): a call marked `seat: "ai"` naming a face outside it refuses.
     wornOrdinal:  () => result.wornOrdinal(),
+    lentOrdinals: () => unlockedFaceOrdinals(),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),
     switchActs:   nodeSwitchActLog,

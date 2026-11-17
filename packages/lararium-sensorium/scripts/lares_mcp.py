@@ -82,7 +82,7 @@ import worldline_io as wl
 import lares_uds as uds
 from house_root import HouseRefusal
 # THE MCP SEAT MARKS EVERY CALL AS THE AI SEAT (`"seat": "ai"` on each UDS request line and session opening): the vessel lets
-# it act as the worn face alone, and a call naming another face refuses `face-hand-refused`. A designation, not a proof (F7:
+# each session wear one face inside the lent set, and a call naming a face outside it refuses `face-not-lent`. A designation, not a proof (F7:
 # authority by designation on one machine, for the dogfood).
 uds.SEAT_KIND = "ai"
 from capture_session import capture_and_observe, worldline_path
@@ -1410,7 +1410,7 @@ def build_mcp(coordinator: LaresCoordinator):
         digest, the sha-256 of the raw body bytes (UTF-8, lowercase hex), which this tool computes from `text`. The
         ROW digest that `lares kahua stage` prints and `lift --digest` takes covers the body AND the row's carried
         fields, so it differs. Hand `text`, or the BODY digest; a proposal built from the ROW digest refuses at the
-        lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's. `face` may name only the worn face (absent: the worn face); the AI seat naming another refuses `face-hand-refused`.
+        lift with `proposal-digest`, as does one whose body differs by a byte from the staged row's. `face` may name any face inside the lent set (absent: the worn face); a face outside it refuses `face-not-lent`, a shut one `face-not-open`.
         Returns {id, cid}. Rides a `seat` session over the @daemon wire; no MCP tool lifts (`kahua_stage` writes
         the local row a lift names)."""
         if not isinstance(proposals, list) or not proposals:
@@ -1429,8 +1429,8 @@ def build_mcp(coordinator: LaresCoordinator):
         and any `kahua-` field never ride). A row already standing at `title` gives way to this one. Returns
         {title, digest, relation, staged}: `digest` names the ROW digest (sha-256 over the body and the carried fields),
         the one `lift --digest` takes, never the BODY digest a proposal carries (`kahua_propose`); `staged` reads
-        false where the row already stood at that digest and nothing moved. `face` may name only the worn face
-        (absent: the worn face); the AI seat naming another refuses `face-hand-refused`. A face with no local canon
+        false where the row already stood at that digest and nothing moved. `face` may name any face inside the lent
+        set (absent: the worn face); a face outside it refuses `face-not-lent`, a shut one `face-not-open`. A face with no local canon
         standing refuses `kahua-stage-no-canon`. Rides a `seat` session over the @daemon wire."""
         if not isinstance(title, str) or not title:
             raise SeatArgumentRefused("kahua_stage: name the row's `title`")

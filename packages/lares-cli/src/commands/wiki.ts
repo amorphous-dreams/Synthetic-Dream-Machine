@@ -53,6 +53,13 @@ async function call(
 }
 
 export async function cmdWikiList(args: ParsedArgs): Promise<number> {
+  // THE LIST RIDES THE MAINTENANCE FRAME, WHICH CARRIES NO FACE: a `--face` would read the mounted face's catalog under
+  // another face's name, so it refuses by name.
+  if (args.options["face"] !== undefined || args.flags["face"] !== undefined) {
+    const msg = "face-not-routed: `lares wiki list` rides the maintenance frame, which carries no face; it lists the wikis the vessel's daemon mount holds, so drop `--face`";
+    emit(args, { ok: false, error: { code: "face-not-routed", message: msg }, human: () => console.error(msg) });
+    return 2;
+  }
   const did    = await vesselDid();
   const r = await call("list-wikis", {}, did);
   if (r.status === "error") {
