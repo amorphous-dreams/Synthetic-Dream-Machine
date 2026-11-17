@@ -133,17 +133,25 @@ _HANDLER = r'(?:cmd[A-Za-z]|run[A-Z]|\{\s*(?:summary|composes|run|handler)\b)'
 # ghost door through that the substring test did.
 _SUBVAR  = r'(?:sub|subverb|subcmd|verb|op)'
 
+# THE SUB-DOOR VARIABLE ALSO DERIVES FROM THE MODULE ITSELF: whatever name the module binds from the first positional
+# word (`const act = args.positional[0]` in rite.ts, its `if (act === "receipts")` the dispatch) carries the sub-door
+# there, beside the conventional names above. A name bound from any other place stays an internal parameter, so
+# nexus.ts's `action === "admit"` still names no door.
+def _subvar(body: str) -> str:
+    bound = set(re.findall(r'\b(?:const|let)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(?:[A-Za-z_][A-Za-z0-9_]*\.)*positional\[0\]', body))
+    return _SUBVAR if not bound else rf'(?:{_SUBVAR[3:-1]}|\b(?:{"|".join(sorted(map(re.escape, bound)))})\b)'
+
 def dispatches(body: str, sub: str) -> bool:
     s = re.escape(sub)
     return bool(re.search(rf'case\s+["\'`]{s}["\'`]\s*:', body)
                 or re.search(rf'(?m)^\s*["\'`]?{s}["\'`]?\s*:\s*{_HANDLER}', body)
-                or re.search(rf'{_SUBVAR}\s*[=!]==?\s*["\'`]{s}["\'`]', body))
+                or re.search(rf'{_subvar(body)}\s*[=!]==?\s*["\'`]{s}["\'`]', body))
 
 def dispatch_keys(body: str) -> set:
     """Every sub-door a module answers — the same derivation the check above runs, read forward."""
     return ({m for m in re.findall(r'case\s+["\'`]([a-z][a-z0-9_-]*)["\'`]\s*:', body)}
             | {m for m in re.findall(rf'(?m)^\s*["\'`]?([a-z][a-z0-9_-]*)["\'`]?\s*:\s*{_HANDLER}', body)}
-            | {m for m in re.findall(rf'{_SUBVAR}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', body)})
+            | {m for m in re.findall(rf'{_subvar(body)}\s*[=!]==?\s*["\'`]([a-z][a-z0-9_-]*)["\'`]', body)})
 
 for c in cmds:
     parts = c.split()
