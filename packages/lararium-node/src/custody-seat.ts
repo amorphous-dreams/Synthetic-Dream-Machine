@@ -42,7 +42,7 @@ import { wardCredentialsOf, wardOrGather, type WardCredential } from "./ward-cre
 import { CustodyRootRefused } from "./custody-root.js";
 import type { CustodyHome } from "./vault-carriers.js";
 import { larIdentityDir } from "./vessel-paths.js";
-import { readFaceIndexSync } from "./face-index.js";
+import { listFaceFiles, readFaceIndexSync } from "./face-index.js";
 
 /** Gathers a human route and unlocks the seated holder. Throws when it cannot (no terminal, no route that opens). */
 export type CustodyOpener = (holder: CustodyHolder) => Promise<void>;
@@ -283,6 +283,16 @@ export async function unlockedFaceOrdinals(): Promise<number[]> {
   return out;
 }
 
+
+/**
+ * The face files on disk under the faces this home's seated holder names OPEN, sorted: a reader that walks face rows off the
+ * directory asks only rows this seat serves. A face resting locked stays out, and so does a face outside a pūlama session's lei.
+ */
+export async function openFaceFileNames(): Promise<string[]> {
+  const open = new Set((await openedCustody()).unlockedFaces());
+  const dir = larIdentityDir();
+  return [...new Set(listFaceFiles(dir, readFaceIndexSync(dir)).filter(([fcid]) => open.has(fcid)).map(([, name]) => name))].sort();
+}
 
 // ── the ward: one fresh unlock of a face's ward key per act (seat-harness#/the-ward) ─────────────────────────────────
 

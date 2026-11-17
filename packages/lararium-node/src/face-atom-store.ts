@@ -2,7 +2,7 @@
 import { createHash } from "node:crypto";
 import { keepFaceAtomSeed, mintFaceAtomSeed, readFaceAtom, standFaceAtomSeed, tiddlerText, type FaceAtomRecords, type StoredLarRecord } from "@lararium/mesh";
 import { openCheckpoint } from "@lararium/keyhive";
-import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, moveCustodyRecord, withCustodyRecords } from "./custody-seat.js";
+import { readCustodyRecord, removeCustodyRecord, updateCustodyRecord, moveCustodyRecord, withCustodyRecords, openFaceFileNames } from "./custody-seat.js";
 import { listAnchoredPersonas, loadIdentityAnchors } from "./identity-anchors.js";
 import { FaceLocked } from "./custody-holder.js";
 import { ensureFaceCustodyOfAsk } from "./face-route.js";
@@ -47,9 +47,10 @@ export async function sweepFoundingSeeds(): Promise<void> {
       groups.add(faceAtomGroupFile(anchors.personaGroupId));
       groupsByAsk.set(anchors.foundingAskDigest, groups);
     }
-    const names = faceFileNames(larIdentityDir());
+    // The sweep walks the faces this seat names open (a face resting locked, or outside a pūlama session's lei, holds its rows
+    // shut to it) and leaves the rest alone; a face that locks while the sweep reads holds its rows shut the same way.
+    const names = await openFaceFileNames();
     const held = new Map<string, Uint8Array>();
-    // A face that rests unopened holds its rows shut: the sweep walks the faces standing open and leaves the rest alone.
     const readOpen = async (file: string): Promise<Uint8Array | null> => {
       try { return await records.read("identity", file); } catch (err) { if (err instanceof FaceLocked) return null; throw err; }
     };
