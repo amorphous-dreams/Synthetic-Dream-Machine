@@ -183,11 +183,15 @@ export function judgeImport(answers, { expectedStandoff = [], expectedRefused = 
 /**
  * Judge the new house's fresher read (`lares vessel fresher --bag <slug>`) against the plan. It prints two classes: the
  * fresher class (`  <title>  <base> -> <canon>`, canon moved past the copy's base) and the base-unknown class
- * (`  <title>  base unknown -> <canon>`, a copy that names no base and differs from canon). Each `titles` entry must warn
- * fresher, each `unknown` entry must stand in the base-unknown class, and each `quiet` title in neither. A read that refused
- * faults by its exit.
+ * (`  <title>  base unknown -> <canon>`, a copy that names no base and differs from canon). A CARRIER LANDS A FAMILY (its
+ * root and each fragment, `<uri>#…`), each record with its own base, and canon may move a fragment while the root holds
+ * still, so each planned carrier answers by any record of its family. Each `titles` carrier must warn fresher, or, where
+ * its fragments travelled without their bases (`bare`), name a fragment for review; each `unknown` carrier must name a
+ * record for review; each `quiet` carrier warns by no record. A record that carried its base (the root of every planned
+ * carrier but an `unknown` one, and each fragment of a family that travelled whole) never reads for review. A read that
+ * refused faults by its exit.
  */
-export function judgeFresher(r, { titles = [], unknown = [], quiet = [] } = {}) {
+export function judgeFresher(r, { titles = [], unknown = [], quiet = [], bare = [] } = {}) {
   const text = String(r?.text ?? "");
   const fresher = new Set(), doubt = new Set();
   for (const l of text.split("\n")) {
@@ -195,14 +199,19 @@ export function judgeFresher(r, { titles = [], unknown = [], quiet = [] } = {}) 
     if (!m) continue;
     (/^base unknown\b/.test(m[2]) ? doubt : fresher).add(m[1]);
   }
+  const familyOf = (uri, set) => [...set].filter((t) => t === uri || t.startsWith(`${uri}#`));
+  const fragmentsOf = (uri, set) => familyOf(uri, set).filter((t) => t !== uri);
   const faults = [];
   if (r?.code !== 0) faults.push(`the fresher read exited ${r?.code}: ${text.trim().slice(-200)}`);
-  for (const t of titles) if (!fresher.has(t)) faults.push(`expected fresher ${t} never warned (its working copy landed without the base it forked from)`);
-  for (const t of unknown) if (!doubt.has(t)) faults.push(`expected base-unknown ${t} never named (a copy with no base that differs from canon must read for review)`);
-  for (const t of quiet) {
-    if (fresher.has(t)) faults.push(`unexpected fresher ${t} (canon held still under it)`);
-    if (doubt.has(t)) faults.push(`unexpected base-unknown ${t} (its copy carries a base, or equals canon)`);
+  for (const t of titles) {
+    if (familyOf(t, fresher).length > 0) continue;
+    if (bare.includes(t) && fragmentsOf(t, doubt).length > 0) continue;
+    faults.push(`expected fresher ${t} never warned (no record of its family read fresher${bare.includes(t) ? ", and no fragment whose base never travelled read for review" : ": its working copy landed without the bases it forked from"})`);
   }
+  for (const t of unknown) if (familyOf(t, doubt).length === 0) faults.push(`expected base-unknown ${t} never named (a copy with no base that differs from canon must read for review)`);
+  for (const t of quiet) for (const x of familyOf(t, fresher)) faults.push(`unexpected fresher ${x} (canon held still under it)`);
+  // A record that carried its base never reads for review.
+  for (const t of [...titles, ...quiet]) for (const x of (bare.includes(t) ? [t] : familyOf(t, doubt))) if (doubt.has(x)) faults.push(`unexpected base-unknown ${x} (its copy carries a base, or equals canon)`);
   return { ok: faults.length === 0, faults, listed: [...fresher], unknown: [...doubt] };
 }
 
@@ -211,17 +220,21 @@ export function judgeFresher(r, { titles = [], unknown = [], quiet = [] } = {}) 
  * written (the moved copy warns fresher, the still copy stays quiet). A row that carries none (a source house whose meme door
  * stamped no base, as at 983c70580) owes the base-unknown class: the true base cannot be recovered and no base gets forged
  * at landing, and each seeded copy carries the rehearsal's paragraph, so it differs from canon whether canon moved or not.
- * A planned title the bundle carries no working row for faults.
+ * A row that carries its root's base and no fragment's (`familyBases`; a source house that carried the root alone, as at
+ * 074ed7120) leaves its fragments bare (`bare`): a fragment canon moved reads for review rather than fresher. A planned
+ * title the bundle carries no working row for faults.
  */
 export function fresherPlanFor(expected, manifest) {
   if (!expected) return null;
   const rows = manifest?.rows ?? [];
   const rowOf = (uri) => rows.find((r) => (r.layer === "wiki-working" || r.layer === "working") && String(r.path ?? "").endsWith(`${expected.bag}/working/${uri.slice("lar:///".length)}.mem`));
-  const plan = { bag: expected.bag, titles: [], unknown: [], quiet: [], faults: [] };
+  const plan = { bag: expected.bag, titles: [], unknown: [], quiet: [], bare: [], faults: [] };
   for (const [uri, cls] of [...(expected.titles ?? []).map((u) => [u, "titles"]), ...(expected.quiet ?? []).map((u) => [u, "quiet"])]) {
     const row = rowOf(uri);
     if (!row) { plan.faults.push(`the bundle carries no working row for ${uri}`); continue; }
-    if (typeof row.overrideBase === "string") plan[cls].push(uri); else plan.unknown.push(uri);
+    if (typeof row.overrideBase !== "string") { plan.unknown.push(uri); continue; }
+    plan[cls].push(uri);
+    if (row.familyBases === undefined || Object.keys(row.familyBases).length === 0) plan.bare.push(uri);
   }
   return plan;
 }
@@ -814,7 +827,7 @@ const fresherRead = async (c) => {
   if (!w.ok) return { ok: false, answer: `the steward never stood worn for the fresher read: ${tail(w.transcript)}` };
   const r = await h.shim(["vessel", "fresher", "--bag", want.bag]);
   const j = judgeFresher({ code: r.code, text: said(r) }, want);
-  return { ok: j.ok, answer: j.ok ? `fresher ${JSON.stringify(j.listed)}; base unknown ${JSON.stringify(j.unknown)}; quiet ${JSON.stringify(want.quiet)}` : j.faults.join("; "), measures: { exit: r.code, fresher: j.listed, unknown: j.unknown, owed: { titles: want.titles, unknown: want.unknown, quiet: want.quiet } } };
+  return { ok: j.ok, answer: j.ok ? `fresher ${JSON.stringify(j.listed)}; base unknown ${JSON.stringify(j.unknown)}; quiet ${JSON.stringify(want.quiet)}; bare ${JSON.stringify(want.bare)}` : j.faults.join("; "), measures: { exit: r.code, fresher: j.listed, unknown: j.unknown, owed: { titles: want.titles, unknown: want.unknown, quiet: want.quiet, bare: want.bare } } };
 };
 
 const reimport = async (c) => {
