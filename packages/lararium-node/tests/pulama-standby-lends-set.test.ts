@@ -9,9 +9,14 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { seatCustody, servesFaceOfGroup, unseatCustody, unlockedFaceOrdinals } from "../src/custody-seat.js";
-import { faceAtomGroupFile, sweepFoundingSeeds } from "../src/face-atom-store.js";
+import { faceAtomGroupFile, recoverFoundingSeedFromGroup, sweepFoundingSeeds } from "../src/face-atom-store.js";
+import { cadenceKeyFile, heldCadenceKey, retireCadenceKey, signAsCadence } from "../src/cadence-key-store.js";
+import { cofoundRecordFile, cofoundRecordFingerprints, dropCofoundRecord, readCofoundRecord } from "../src/cofound-record.js";
+import { faceProofKeyFile, listFaceProofKeys, nodeFaceKeyCustody, nodeVesselFaceKeyCustody, readVesselFaceKeyPublic, vesselFaceKeyFile } from "../src/face-key-custody.js";
+import { fleetJoinPendingFile, listPendingFleetJoinGroups } from "../src/fleet-join-custody.js";
+import { heldSeatKey, retireSeatKey, seatKeyFile, seatKeysOfFace, signAsSeat } from "../src/seat-key-store.js";
 import { listAnchoredPersonas } from "../src/identity-anchors.js";
-import { daemonMountOrdinal, mountedFaceOrdinal, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
+import { daemonMountOrdinal, mountedFaceOrdinal, orphanPersonaRoots, setMountedFace, sovereignStands } from "../src/node-vessel-identity.js";
 import { listWalkRecords } from "../src/node-walk-store.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import type { PulamaHolder } from "../src/pulama-holder.js";
@@ -85,6 +90,38 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     expect(await servesFaceOfGroup(GROUPS[0])).toBe(true);
     expect(await servesFaceOfGroup(GROUPS[2])).toBe(true);
     expect(await servesFaceOfGroup(GROUPS[1])).toBe(false);
+    expect(outsideTheLend()).toEqual([]);
+  });
+
+  test("RED the face-file walkers outside the composition read rows of served faces alone: under {h0, h2}, h1's seat, cadence, cofound, face-key, pending-join and founding-seed rows read as none, and the pūlama refuses nothing; CONTROL: the names-only listers still name h1's rows", async () => {
+    await standThree([0, 2]);
+    await seated!.unlock([]);
+    const SEAT = "5".repeat(64), CADENCE = "6".repeat(64), OFFER = "7".repeat(64), NEXUS = "nexus-aid-one", FACE_KEY = "8".repeat(64);
+    const scope = { faceKey: FACE_KEY, nexus: NEXUS };
+    for (const file of [seatKeyFile(SEAT, 1), cadenceKeyFile(1, CADENCE), cofoundRecordFile(1, OFFER), faceProofKeyFile(1, NEXUS), vesselFaceKeyFile(1, scope), fleetJoinPendingFile(personaGroupDigest(GROUPS[1]))]) {
+      await fx!.kept.writeRecord("identity", file, randomBytes(32));
+    }
+    const image = new Uint8Array([1]);
+    await expect(signAsSeat(SEAT, image)).rejects.toMatchObject({ name: "CustodyRecordUnavailable" });
+    expect(await retireSeatKey(SEAT)).toBe(false);
+    expect(await seatKeysOfFace(1)).toEqual([]);
+    await expect(signAsCadence(CADENCE, image)).rejects.toMatchObject({ name: "CustodyRecordUnavailable" });
+    expect(await retireCadenceKey(CADENCE)).toBe(false);
+    expect(await readCofoundRecord(OFFER)).toBeNull();
+    expect(await dropCofoundRecord(OFFER, "9".repeat(64))).toBe(false);
+    expect(await readVesselFaceKeyPublic(scope)).toBeNull();
+    await expect(nodeVesselFaceKeyCustody.signAsVesselFace(scope, FACE_KEY, image)).rejects.toMatchObject({ name: "CustodyRecordUnavailable" });
+    await expect(nodeFaceKeyCustody.signAsFace(scope, image)).rejects.toMatchObject({ name: "CustodyRecordUnavailable" });
+    expect(await listFaceProofKeys(1)).toEqual([]);
+    expect(await listPendingFleetJoinGroups()).toEqual([]);
+    const ask = { hearthTrueName: "hearth", bindingMode: "self-stood" as const, personaKelPrefix: null, mount: false, handleIndex: 1 };
+    expect(await recoverFoundingSeedFromGroup(ask, { "lar:///ha.ka.ba/dreamnet/face-founding-checkpoint/one": { fields: { text: "sealed" } } })).toBeNull();
+    expect(outsideTheLend()).toEqual([]);
+    // CONTROL: the names-only listers name every face's row and open none.
+    expect(heldSeatKey(SEAT)?.handleIndex).toBe(1);
+    expect(heldCadenceKey(CADENCE)).toBe(true);
+    expect(cofoundRecordFingerprints()).toEqual([OFFER]);
+    expect(await orphanPersonaRoots()).toEqual([]);
     expect(outsideTheLend()).toEqual([]);
   });
 
