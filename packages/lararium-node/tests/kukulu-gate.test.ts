@@ -72,7 +72,7 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     const lei = await s.string({ reach: "wide", returns: 2 });
     const v = await s.vouch();
     const cid = swarmActCid(lei);
-    const vessel = s.fx.vessel({ lei, vouch: [v] });
+    const vessel = s.fx.vessel({ lei: [lei], vouch: [v] });
     expect((await vessel.unlock([])).reading).toBe("opens");
     expect(vessel.lends()).toEqual([0]);
     await vessel.writeRecord("identity", HOT, Uint8Array.from([1]));
@@ -103,9 +103,9 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
     await expect(vessel.landRite()).rejects.toMatchObject({ name: "SwarmRefused" });
 
     // THE COUNT: the wide lei holds two returns. A second kūkulu spends the last; a third finds none.
-    expect(await s.hello({ lei, vouch: [v] })).toBe("opens");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("opens");
     expect(await s.returns(lei)).toBe(2);
-    expect(await s.hello({ lei, vouch: [v] })).toBe("swarm-lei-returns-spent");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("swarm-lei-returns-spent");
     expect(await s.returns(lei)).toBe(2);
     expect(s.fx.server.sessions()).toBe(2);
   });
@@ -113,7 +113,7 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
   test("a head lei serves the head its vouch names, once; a session with no rite begun lands nothing", async () => {
     const s = await stand();
     const lei = await s.string({ reach: "head", head: HEAD });
-    expect(await s.hello({ lei, vouch: [await s.vouch()] })).toBe("opens");
+    expect(await s.hello({ lei: [lei], vouch: [await s.vouch()] })).toBe("opens");
     expect(await s.returns(lei)).toBe(1);
     // CONTROL: the lei pins its head. A vouch walked at another head never spends it.
     const other = await s.string({ reach: "head", head: "c".repeat(40) }, { after: swarmActCid(lei) });
@@ -123,51 +123,55 @@ describe("RED pulama-serves-a-strung-vouched-kukulu", () => {
 });
 
 describe("RED pulama-refuses-an-unvouched-kukulu", () => {
-  test("no vouch, a lone vouch outside an array, a forged vouch, a vouch another key signed, a lei a stranger strung and a lei for another branch each open no session and claim no return", async () => {
+  test("no vouch, a lone lei, unstrung row or vouch outside an array, a forged vouch, a vouch another key signed, a lei a stranger strung and a lei for another branch each open no session and claim no return", async () => {
     const s = await stand();
     const lei = await s.string({ reach: "wide", returns: 3 });
     const v = await s.vouch();
     expect(await s.hello({})).toBe("pulama-image-unadmitted");
-    expect(await s.hello({ lei })).toBe("kukulu-unvouched");
-    expect(await s.hello({ lei, vouch: [{ ...v, body: { ...v.body, image: "sha256:" + "cd".repeat(32) } }] })).toBe("kukulu-vouch-signature");
-    expect(await s.hello({ lei, vouch: "not-a-vouch" })).toBe("kukulu-vouch-shape");
+    expect(await s.hello({ lei: [lei] })).toBe("kukulu-unvouched");
+    // The offer's lei and unstrung rows ride arrays: a lone row outside one refuses by the offer's shape.
+    expect(await s.hello({ lei, vouch: [v] })).toBe("kukulu-lei-shape");
+    expect(await s.hello({ lei: null, vouch: [v] })).toBe("kukulu-lei-shape");
+    expect(await s.hello({ lei: [lei], unstrung: lei, vouch: [v] })).toBe("kukulu-unstrung-shape");
+    expect(await s.hello({ lei: [lei], vouch: [{ ...v, body: { ...v.body, image: "sha256:" + "cd".repeat(32) } }] })).toBe("kukulu-vouch-signature");
+    expect(await s.hello({ lei: [lei], vouch: "not-a-vouch" })).toBe("kukulu-vouch-shape");
     // A vouch rides an array, one per lent face: a lone vouch outside one refuses by the offer's shape.
-    expect(await s.hello({ lei, vouch: v })).toBe("kukulu-vouch-shape");
-    expect(await s.hello({ lei, vouch: ["not-a-vouch"] })).toBe("kukulu-vouch-shape");
+    expect(await s.hello({ lei: [lei], vouch: v })).toBe("kukulu-vouch-shape");
+    expect(await s.hello({ lei: [lei], vouch: ["not-a-vouch"] })).toBe("kukulu-vouch-shape");
     // A key the custody root never yielded signs a well-formed vouch: the pūlama derives the vouch key itself and refuses it.
     const seed = new Uint8Array(32).fill(7);
     const stranger: SwarmSignerPort = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
-    expect(await s.hello({ lei, vouch: [await signKukuluVouch(v.body, stranger)] })).toBe("kukulu-vouch-signer");
+    expect(await s.hello({ lei: [lei], vouch: [await signKukuluVouch(v.body, stranger)] })).toBe("kukulu-vouch-signer");
     // A vouched hello with no lei, a lei a stranger strung, a lei for another branch, a push lei: none reads as this face's kukulu lei.
     expect(await s.hello({ vouch: [v] })).toBe("swarm-lei-absent");
-    expect(await s.hello({ lei: await s.string({ reach: "wide", returns: 3 }, { signer: stranger }), vouch: [v] })).toBe("swarm-lei-absent");
-    expect(await s.hello({ lei: await s.string({ reach: "wide", returns: 3 }, { branch: "main" }), vouch: [v] })).toBe("swarm-lei-absent");
-    expect(await s.hello({ lei: await signSwarmAct({ act: "lei", group: GROUP, rite: "push", branch: BRANCH, after: null, reach: "wide", returns: 3 }, s.hand), vouch: [v] })).toBe("swarm-lei-absent");
-    expect(await s.hello({ lei: { body: "junk" }, vouch: [v] })).toBe("swarm-lei-absent");
+    expect(await s.hello({ lei: [await s.string({ reach: "wide", returns: 3 }, { signer: stranger })], vouch: [v] })).toBe("swarm-lei-absent");
+    expect(await s.hello({ lei: [await s.string({ reach: "wide", returns: 3 }, { branch: "main" })], vouch: [v] })).toBe("swarm-lei-absent");
+    expect(await s.hello({ lei: [await signSwarmAct({ act: "lei", group: GROUP, rite: "push", branch: BRANCH, after: null, reach: "wide", returns: 3 }, s.hand)], vouch: [v] })).toBe("swarm-lei-absent");
+    expect(await s.hello({ lei: [{ body: "junk" }], vouch: [v] })).toBe("swarm-lei-absent");
     // THE HOST REPORTS THE IMAGE: none reported, or another than the vouch walked, refuses before the lei reads.
     s.raise(null);
-    expect(await s.hello({ lei, vouch: [v] })).toBe("kukulu-image-unreported");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("kukulu-image-unreported");
     s.raise("sha256:" + "ee".repeat(32));
-    expect(await s.hello({ lei, vouch: [v] })).toBe("kukulu-image-mismatch");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("kukulu-image-mismatch");
     // A locked face and an unlit pūlama refuse too.
     s.raise(IMAGE);
     await s.fx.kept.lockFace(s.face.fcid);
-    expect(await s.hello({ lei, vouch: [v] })).toBe("kukulu-face-locked");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("kukulu-face-locked");
     expect(await s.returns(lei)).toBe(0);
     expect(await s.records.list(swarmTesseraPrefix())).toEqual([]);
     expect(s.fx.server.sessions()).toBe(0);
     await s.fx.server.lock();
-    expect(await s.hello({ lei, vouch: [v] })).toBe("pulama-locked");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("pulama-locked");
   });
 
   test("a red walk refuses and narrows a wide lei; CONTROL: a fresh lei restrings the line and a passing vouch then serves", async () => {
     const s = await stand();
     const lei = await s.string({ reach: "wide", returns: 3 });
-    expect(await s.hello({ lei, vouch: [await s.vouch({ verdict: "fail" })] })).toBe("swarm-lei-testimony-red");
+    expect(await s.hello({ lei: [lei], vouch: [await s.vouch({ verdict: "fail" })] })).toBe("swarm-lei-testimony-red");
     expect(await s.returns(lei)).toBe(0);
     expect(await s.records.read(swarmLeiNarrowedTitle(swarmActCid(lei)))).not.toBeNull();
     // The narrowed lei spends nothing, even beside a passing vouch.
-    expect(await s.hello({ lei, vouch: [await s.vouch()] })).toBe("swarm-lei-narrowed");
+    expect(await s.hello({ lei: [lei], vouch: [await s.vouch()] })).toBe("swarm-lei-narrowed");
     const fresh = await s.string({ reach: "wide", returns: 1 }, { after: swarmActCid(lei) });
     expect(await s.hello({ lei: [lei, fresh], vouch: [await s.vouch()] })).toBe("opens");
     expect(await s.returns(fresh)).toBe(1);
@@ -182,7 +186,7 @@ describe("each hello returns under its own vouch's verdict", () => {
       const lei: SignedSwarmAct = await s.string({ reach: "head", head: HEAD }, { after });
       after = swarmActCid(lei);
       const vouches = { fail: await s.vouch({ verdict: "fail" }), pass: await s.vouch() };
-      const [first, second] = await Promise.all(order.map((verdict) => s.hello({ lei, vouch: [vouches[verdict]] })));
+      const [first, second] = await Promise.all(order.map((verdict) => s.hello({ lei: [lei], vouch: [vouches[verdict]] })));
       const read = { [order[0]]: first, [order[1]]: second } as Record<"fail" | "pass", string>;
       // The red hello meets its own red receipt, or, where the passing one went first, a lei already returned: never a session.
       expect(read.fail, order.join(" then ")).toBe(order[0] === "fail" ? "swarm-lei-testimony-red" : "swarm-lei-returned");
@@ -197,9 +201,9 @@ describe("RED pulama-refuses-a-returned-lei", () => {
     const s = await stand();
     const lei = await s.string({ reach: "head", head: HEAD });
     const v = await s.vouch();
-    expect(await s.hello({ lei, vouch: [v] })).toBe("opens");
-    expect(await s.hello({ lei, vouch: [v] })).toBe("swarm-lei-returned");
-    expect(await s.hello({ lei, vouch: [await s.vouch({ tree: "d".repeat(40) })] })).toBe("swarm-lei-returned");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("opens");
+    expect(await s.hello({ lei: [lei], vouch: [v] })).toBe("swarm-lei-returned");
+    expect(await s.hello({ lei: [lei], vouch: [await s.vouch({ tree: "d".repeat(40) })] })).toBe("swarm-lei-returned");
     expect(await s.returns(lei)).toBe(1);
     expect(s.fx.server.sessions()).toBe(1);
     // A vessel that offers nothing still meets the return the pūlama's own records hold.
@@ -207,16 +211,16 @@ describe("RED pulama-refuses-a-returned-lei", () => {
 
     // THE HAND UNSTRINGS a lei that still holds returns: the offered unstringing lands, and the lei serves nothing after.
     const wide = await s.string({ reach: "wide", returns: 5 }, { after: swarmActCid(lei) });
-    expect(await s.hello({ lei: wide, vouch: [v] })).toBe("opens");
+    expect(await s.hello({ lei: [wide], vouch: [v] })).toBe("opens");
     const unstrung = await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(wide) }, s.hand);
-    expect(await s.hello({ lei: wide, unstrung, vouch: [v] })).toBe("swarm-lei-unstrung");
-    expect(await s.hello({ lei: wide, vouch: [v] })).toBe("swarm-lei-unstrung");
+    expect(await s.hello({ lei: [wide], unstrung: [unstrung], vouch: [v] })).toBe("swarm-lei-unstrung");
+    expect(await s.hello({ lei: [wide], vouch: [v] })).toBe("swarm-lei-unstrung");
     expect(await s.returns(wide)).toBe(1);
     // An unstringing a stranger signed lands nowhere: only the hand ends its own lei.
     const next = await s.string({ reach: "wide", returns: 2 }, { after: swarmActCid(wide) });
     const seed = new Uint8Array(32).fill(9);
     const forged = await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(next) }, { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) });
-    expect(await s.hello({ lei: next, unstrung: forged, vouch: [v] })).toBe("opens");
+    expect(await s.hello({ lei: [next], unstrung: [forged], vouch: [v] })).toBe("opens");
   });
 });
 
