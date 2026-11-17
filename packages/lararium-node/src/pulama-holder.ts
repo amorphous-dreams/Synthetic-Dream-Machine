@@ -25,8 +25,9 @@
  *
  * ── THE SESSION NAMES ITS LEND ──────────────────────────────────────────────────────────────────
  * The session frame carries the faces the pūlama lends this vessel (`scope.faces`); the standing names the lent faces that
- * stand lit as open and the lent faces still dark as waiting. A session frame that names no lent set comes from a pūlama
- * on an older build: it refuses `pulama-lend-unnamed` and no session stands, never read as a lend of every face.
+ * stand lit as open and the lent faces still dark as waiting. A session frame whose lent set reads empty, malformed or
+ * doubled refuses by the set's own reading (`lent-faces-empty`, `lent-faces-malformed`, `lent-faces-duplicate`) and no
+ * session stands: no set never reads as a lend of every face.
  *
  * `derive` answers synchronously from the children the session carried, under the domains the pūlama serves a session.
  * The holder names no host: `dial` hands it a channel.
@@ -166,7 +167,7 @@ export function makePulamaHolder(a: {
     const lent = lentFacesOf(((answered["scope"] ?? {}) as { faces?: unknown }).faces);
     if (!lent.ok) {
       channel.close();
-      throw new PulamaRefused("pulama-lend-unnamed", `the pūlama answered a session that names no lent set (${lent.message}): it runs an older build, so rebuild the pūlama beside this vessel`);
+      throw new PulamaRefused(lent.refusal, `the pūlama's session frame names no lent set this vessel reads (${lent.message})`);
     }
     const stood: Session = {
       channel, standing: standingOf(answered["standing"]), derived: derivedOf(answered["derived"]),
