@@ -115,7 +115,7 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
     expect(Object.values(fields).filter((v) => typeof v === "string" && /^\d+$/.test(v))).toEqual([]);
   });
 
-  test("charter shape distinguishes earlier, torn and whole epochs", () => {
+  test("charter shape reads absent, whole or torn; bytes the parser refuses read torn whatever field they carry", () => {
     const keys = [fixtureKey(0xc), fixtureKey(0xd)];
     const genesis = bookedGenesis(keys, 2, UNARMED);
     const doc: NexusDoc = {
@@ -123,21 +123,18 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
       sealLineage: [genesis], kahu: keys.map((verifyingKey, i) => ({ chairLabel: `Kahu ${i}`, verifyingKey })),
     };
     const whole = renderNexusDoc(doc);
-    const old = whole.replace('"nextKeyDigests": [],', '"nextKeyCommit": "legacy",');
-    writeFileSync(nexusCharterDocPath(bags), old, "utf8");
-    expect(nexusCharterShape(bags)).toBe("earlier-shape");
-    expect(readNexusDoc(bags)).toBeNull();
-    // A seal record that names one `prevEpochCid` where it names a set of predecessors: the earlier link shape.
-    const linked = whole.replace('"predecessors": []', '"prevEpochCid": null');
-    expect(linked).not.toBe(whole);
-    writeFileSync(nexusCharterDocPath(bags), linked, "utf8");
-    expect(nexusCharterShape(bags)).toBe("earlier-shape");
-    expect(readNexusDoc(bags)).toBeNull();
-    // A seat that carries `displayName` where a chair carries `chairLabel`: the earlier shape, by name.
-    writeFileSync(nexusCharterDocPath(bags), whole.replaceAll('"chairLabel"', '"displayName"'), "utf8");
-    expect(whole).toContain('"chairLabel"');
-    expect(nexusCharterShape(bags)).toBe("earlier-shape");
-    expect(readNexusDoc(bags)).toBeNull();
+    // A seal record or a seat whose fields the parser does not read refuses whole: a charter names its fields by its
+    // present shape alone, and any other bytes read torn.
+    for (const torn of [
+      whole.replace('"nextKeyDigests": [],', '"nextKeyCommit": "x",'),
+      whole.replace('"predecessors": []', '"prevEpochCid": null'),
+      whole.replaceAll('"chairLabel"', '"displayName"'),
+    ]) {
+      expect(torn).not.toBe(whole);
+      writeFileSync(nexusCharterDocPath(bags), torn, "utf8");
+      expect(nexusCharterShape(bags)).toBe("torn");
+      expect(readNexusDoc(bags)).toBeNull();
+    }
 
     writeFileSync(nexusCharterDocPath(bags), whole.replace('"nextKeyDigests": [],', '"nextKeyDigests": ["xyz"],'), "utf8");
     expect(nexusCharterShape(bags)).toBe("torn");
