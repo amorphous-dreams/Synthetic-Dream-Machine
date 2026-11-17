@@ -19,7 +19,7 @@ import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaRecords } from "../src/pulama-state.js";
 import { wardRootSigner } from "../src/ward-signer.js";
 import { fixtureWard } from "./custody-seat-fixture.js";
-import type { PulamaAdmissions } from "../src/pulama-admit.js";
+import { pulamaAdmissions, pulamaAdmittedTitle, type PulamaAdmissions, type SignedPulamaAdmit } from "../src/pulama-admit.js";
 import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { fixtureRoute, fixtureSlots, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
@@ -267,6 +267,32 @@ describe("RED the lend draws one kūkulu lei per lent face", () => {
     expect(s.sessionScope()).toMatchObject({ faces: [{ fcid: s.faces[0]!.fcid, ordinal: 0 }, { fcid: s.faces[2]!.fcid, ordinal: 2 }] });
     expect(await vessel.landRite()).toEqual({ par: true });
     expect((await s.records.list(swarmTesseraPrefix())).length).toBe(4);
+  });
+
+  test("RED a par kūkulu over two faces admits the image on every lent face's tessera pair, each face naming its own rite's tessera; CONTROL: the admitted set lends both faces again", async () => {
+    let records: SwarmWikiPort | null = null;
+    const admissions: PulamaAdmissions = {
+      admitted: (image, by) => pulamaAdmissions(records!).admitted(image, by), admitByRite: (image, rites, by) => pulamaAdmissions(records!).admitByRite(image, rites, by),
+      admitByHand: (image, faces, by) => pulamaAdmissions(records!).admitByHand(image, faces, by), reserved: (image, faces, by) => pulamaAdmissions(records!).reserved(image, faces, by),
+      list: (by) => pulamaAdmissions(records!).list(by),
+    };
+    const s = await standLend(admissions);
+    records = s.records;
+    const vessel = s.fx.vessel({ lei: [await s.string(0), await s.string(2)], vouch: [await s.vouch(0), await s.vouch(2)] });
+    expect((await vessel.unlock([])).reading).toBe("opens");
+    expect(await vessel.landRite()).toEqual({ par: true });
+    const halves = await s.records.list(swarmTesseraPrefix());
+    const tesserae = [...new Set(halves.map((t) => t.slice(swarmTesseraPrefix().length).split("/")[0]!))].sort();
+    expect(tesserae).toHaveLength(2);
+    const row = JSON.parse((await s.records.read(pulamaAdmittedTitle(IMAGE)))!) as SignedPulamaAdmit;
+    expect(row.body).toMatchObject({ act: "image-admitted", by: "rite", faces: [{ ordinal: 0 }, { ordinal: 2 }] });
+    const named = (row.body as { tesserae?: ReadonlyArray<{ ordinal: number; tessera: string }> }).tesserae ?? [];
+    expect(named.map((t) => t.ordinal)).toEqual([0, 2]);
+    expect(named.map((t) => t.tessera).sort()).toEqual(tesserae);
+    await vessel.lock();
+    const again = s.fx.vessel({});
+    expect((await again.unlock([])).reading).toBe("opens");
+    expect(again.lends()).toEqual([0, 2]);
   });
 
   test("a vouched face whose lei is missing waits by name and the lend stands for the rest; a lei one face's hand strung for another face lends nothing", async () => {
