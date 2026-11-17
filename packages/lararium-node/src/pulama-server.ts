@@ -137,7 +137,9 @@ export function servePulama(a: {
     }
     if (c.kind === "face" && s.scope.face !== null) {
       const found = await holder.faceStanding(c.selector as FaceRef);
-      if (found !== null && found.fcid !== s.scope.face.fcid) throw new PulamaRefused("outside-the-lei", "the lei names another face than this row's");
+      if (found !== null && found.fcid !== s.scope.face.fcid) {
+        throw new PulamaRefused("outside-the-lei", `the lei names face h${s.scope.face.ordinal}; this ${c.row} row selects ${JSON.stringify(c.selector)}, face h${found.ordinal}`);
+      }
     }
   };
 
