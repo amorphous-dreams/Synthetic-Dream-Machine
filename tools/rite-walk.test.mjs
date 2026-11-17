@@ -515,8 +515,8 @@ test("carry-fresher-plan-reads-the-bundle: a working row that carries its overri
   const rowOf = (uri, base) => ({ path: `wikis/lares/working/${uri.slice("lar:///".length)}.mem`, layer: "wiki-working", ...(base ? { overrideBase: base } : {}) });
   const based = fresherPlanFor(want, { rows: [rowOf(moved, `sha256:${"a".repeat(64)}`), rowOf(still, `sha256:${"b".repeat(64)}`)] });
   assert.deepEqual(based, { bag: "lares", titles: [moved], unknown: [], quiet: [still], faults: [] }, "a house that stamped bases: moved warns, still stays quiet");
-  // As from 983c70580: the old meme door stamped no base. Each copy carries the rehearsal's paragraph, so each differs from
-  // the canon standing below it and the new house names both for review; neither can read quiet.
+  // A bundle whose working rows carry no base: each copy carries the rehearsal's paragraph, so each differs from the
+  // canon standing below it and the new house names both for review; neither reads quiet.
   const bare = fresherPlanFor(want, { rows: [rowOf(moved), rowOf(still)] });
   assert.deepEqual(bare, { bag: "lares", titles: [], unknown: [moved, still], quiet: [], faults: [] });
   const missing = fresherPlanFor(want, { rows: [rowOf(still)] });
