@@ -732,6 +732,27 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(existsSync(P(`wikis/notes-${R1}`)), "no folder names a face").toBe(false);
   });
 
+  test("M18b — a wiki whose workbench another face's realm binds mints nothing under a face that holds no writer's seat there: its catalog names no such wiki, and the folder waits by name", async () => {
+    const [R0, R1, R2] = ["eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee0", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee1", "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee2"];
+    const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151";
+    rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true });
+    const pets = ["steward", "engineer", "referee"];
+    put("projections/wikis/cold-shelf/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "the steward's page in a wiki no share names for the referee"));
+    // THE REFEREE WORN: the steward stood cold-shelf (its realm binds the slug); the referee's catalog names no such wiki.
+    const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R2);
+    v.seats.set("cold-shelf", new Set([R0]));
+    const r = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(v.wikiMints, "the referee's seed mints no wiki of its own over the steward's").toEqual([]);
+    expect(r.minted).toEqual([]);
+    expect(r.benchWaiting).toEqual([{ slug: "cold-shelf", folder: P("wikis/cold-shelf"), why: "writer" }]);
+    expect(v.bench("cold-shelf").size + v.personalOf(R2, "cold-shelf").size).toBe(0);
+    // CONTROL: an unbound house wiki (no face stood it on this founding) still mints at the worn face's seed, which stands it.
+    rmSync(P("wikis/cold-shelf"), { recursive: true });
+    put("projections/wikis/lending-shelf/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "a page in a wiki no face stood yet"));
+    const fresh = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
+    expect(fresh.minted).toEqual(["lar:///ha.ka.ba/bags/lending-shelf"]);
+  });
+
   test("M19 — a sourced wiki's one folder, beside the canon source, lays at ANY seated writer's wear: no face alone writes back", async () => {
     const RFC = "lar:///ha.ka.ba/lares/ref/RFC-4151";
     rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true });
