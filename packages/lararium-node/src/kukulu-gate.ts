@@ -44,10 +44,9 @@
  * and conferre then reads the pair `par`. A kūkulu that never composed leaves the guest half alone, which reads red.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
-import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, verifyKukuluVouch } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, PULAMA_TESSERA_DOMAIN, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, lentFacesOf, lentFacesWire, verifyKukuluVouch, type LentFaces } from "@lararium/mesh";
 import type { CustodyHolder } from "./custody-holder.js";
 import { personaGroupDigest } from "./persona-group-file.js";
-import { lentFacesOf, lentFacesWire } from "@lararium/mesh/lent-faces";
 import type { AdmittedFace, PulamaAdmissions } from "./pulama-admit.js";
 import type { PulamaGate, PulamaScope } from "./pulama-server.js";
 
@@ -116,6 +115,13 @@ function oneFaceSet(face: AdmittedFace): readonly AdmittedFace[] {
   return lentFacesWire(parsed.faces) as readonly AdmittedFace[];
 }
 
+/** The lent set over faces the gate read off the pūlama's own custody; a set it built from standing faces always parses. */
+function lentOf(faces: ReadonlyArray<{ readonly fcid: string; readonly ordinal: number }>): LentFaces {
+  const lent = lentFacesOf(faces.map((f) => ({ fcid: f.fcid, ordinal: f.ordinal })));
+  if (!lent.ok) throw new Error(lent.message);
+  return lent.faces;
+}
+
 export function kukuluGate(a: {
   /** The pūlama's own holder: the gate reads the face's standing and two derived children off it. */
   readonly holder: CustodyHolder;
@@ -149,7 +155,7 @@ export function kukuluGate(a: {
         if (!worn.unlocked) return refuse("kukulu-face-locked", "the face this image stands admitted for rests unopened at this pūlama");
         // THE RE-SERVICE ROW RESTS FIRST: no lei spends, and the count of such wakes reads off the records.
         await a.admissions.reserved(reported, oneFaceSet({ fcid: worn.fcid, ordinal: worn.ordinal }), witness);
-        return { ok: true, scope: { face: { fcid: worn.fcid, ordinal: worn.ordinal }, coldReads: a.coldReads ?? KUKULU_COLD_READS } };
+        return { ok: true, scope: { faces: lentOf([worn]), coldReads: a.coldReads ?? KUKULU_COLD_READS } };
       }
       const vouched = verifyKukuluVouch(o.vouch, await vouchKeyOf(holder));
       if (!vouched.ok) return refuse(`kukulu-vouch-${vouched.refusal}`);
@@ -167,7 +173,7 @@ export function kukuluGate(a: {
       const begun = await a.rite.begin({ lei: o.lei, unstrung: o.unstrung }, { ...at, vouch: vouched.digest, verdict: body.verdict });
       if (!begun.ok) return refuse(begun.refusal);
       const scope: PulamaScope = {
-        face: { fcid: face.fcid, ordinal: face.ordinal }, coldReads: a.coldReads ?? KUKULU_COLD_READS,
+        faces: lentOf([face]), coldReads: a.coldReads ?? KUKULU_COLD_READS,
         land: async () => {
           const landed = await a.rite.land(begun.tessera, at);
           // PAR ADMITS: the kūkulu composed and its halves match, so the image its vouch walked serves again without a lei.

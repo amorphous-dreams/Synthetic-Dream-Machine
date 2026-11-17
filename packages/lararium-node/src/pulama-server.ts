@@ -13,8 +13,10 @@
  *
  * ── THE SESSION SERVES A WORKING VESSEL AND NOTHING A HUMAN ROUTE GUARDS ────────────────────────
  *   hot rows       read, write, update, move, remove, and the two claims (`withRecords`, `exclusive`)
- *   face rows      of the face the lei names; another face's rows refuse `outside-the-lei`, and the standing a session
- *                  carries names only that face open, so a vessel walking its open faces asks no row outside the lei
+ *   face rows      of the faces the pūlama lends this vessel (`LentFaces`, the lend); a face outside the set refuses
+ *                  `outside-the-lei`, naming the set. The standing a session carries names open only the lent faces that
+ *                  stand lit and names the lent faces still dark as waiting, so a vessel walking its open faces asks no
+ *                  row outside the lend. A lend always names its faces: a scope with no set refuses the hello by name.
  *   cold rows      refuse `needs-the-human`, but for a READ of a row the scope's `coldReads` names (the rows a boot to
  *                  composition reads unattended); a cold write, a cold removal and every other cold row refuse
  *   warded rows    refuse `needs-the-human`: a ward opens only fresh from a human route
@@ -30,6 +32,7 @@
  * runs the same lock.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
+import { isLent, lentFacesOf, lentFacesWire, renderLentFaces, servedOf, type LentFaces } from "@lararium/mesh";
 import type { CustodyHolder, FaceRef, RecordReading } from "./custody-holder.js";
 import { readFaceIndexSync } from "./face-index.js";
 import { PulamaRefused, copyReading, packRefusal, readingOf, sameBytes, sameReading, type PulamaChannel, type PulamaFrame } from "./pulama-wire.js";
@@ -37,8 +40,9 @@ import { carrierTable, type CustodyHome, type FaceSelector } from "./vault-carri
 
 /** What one session serves. */
 export interface PulamaScope {
-  /** The face the lei names, by custody id and ordinal; null serves no face's rows apart. */
-  readonly face: { readonly fcid: string; readonly ordinal: number } | null;
+  /** The faces the pūlama lends this vessel: never empty, so no scope serves every face. A face named by custody id
+   *  serves only while the face index names that id at its ordinal. */
+  readonly faces: LentFaces;
   /** The carrier rows (by row name) whose COLD plaintext the session may read; every other cold row refuses. */
   readonly coldReads: readonly string[];
   /** Rest the host half of the tessera this session began under, once the vessel composed; absent where the gate began no rite. */
@@ -100,11 +104,19 @@ export function servePulama(a: {
   const live = new Set<Session>();
   let nextClaim = 1;
 
-  /** The holder's standing as one session reads it: the faces it names open stay inside the session's lei. */
-  const standing = (s: { readonly scope: PulamaScope }) => ({
-    slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(),
-    faces: holder.unlockedFaces().filter((fcid) => s.scope.face === null || fcid === s.scope.face.fcid),
-  });
+  /** Whether the session's lend names this face: its ordinal in the set, and its custody id where the set names one. */
+  const lends = (s: { readonly scope: PulamaScope }, face: { readonly ordinal: number; readonly fcid: string }): boolean =>
+    isLent(s.scope.faces, face.ordinal) && s.scope.faces.every((f) => f.ordinal !== face.ordinal || f.fcid === undefined || f.fcid === face.fcid);
+  /** The holder's standing as one session reads it: the lent faces that stand lit (by custody id) serve, the lent faces
+   *  still dark wait (by ordinal), and a lit face outside the lend never shows. */
+  const standing = (s: { readonly scope: PulamaScope }) => {
+    const open = new Set(holder.unlockedFaces());
+    const index = readFaceIndexSync(holder.homes.identity).faces;
+    const fcidAt = (ordinal: number): string | null => { const f = index[ordinal]; return f !== undefined && "fcid" in f ? f.fcid : null; };
+    const lit = s.scope.faces.flatMap((f) => { const fcid = fcidAt(f.ordinal); return fcid !== null && open.has(fcid) && lends(s, { ordinal: f.ordinal, fcid }) ? [f.ordinal] : []; });
+    const { served, waiting } = servedOf(s.scope.faces, lit);
+    return { slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), faces: served.map((f) => fcidAt(f.ordinal)!), waiting: waiting.map((f) => f.ordinal) };
+  };
   /** The session's children, fresh; `send` encodes them before the copies zero-fill. */
   const withDerived = (send: (derived: Record<string, Uint8Array>) => void): void => {
     const derived: Record<string, Uint8Array> = {};
@@ -135,10 +147,10 @@ export function servePulama(a: {
         throw new PulamaRefused("needs-the-human", `a session ${use === "cold-write" ? "writes no cold row" : `reads no cold ${c.row} row`}`);
       }
     }
-    if (c.kind === "face" && s.scope.face !== null) {
+    if (c.kind === "face") {
       const found = await holder.faceStanding(c.selector as FaceRef);
-      if (found !== null && found.fcid !== s.scope.face.fcid) {
-        throw new PulamaRefused("outside-the-lei", `the lei names face h${s.scope.face.ordinal}; this ${c.row} row selects ${JSON.stringify(c.selector)}, face h${found.ordinal}`);
+      if (found !== null && !lends(s, found)) {
+        throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; this ${c.row} row selects ${JSON.stringify(c.selector)}, face h${found.ordinal}`);
       }
     }
   };
@@ -162,7 +174,7 @@ export function servePulama(a: {
     }
     throw new PulamaRefused("pulama-frame-malformed", "a face rides by its ordinal, its group, its custody id or its ask");
   };
-  const inScope = (s: Session, found: { readonly fcid: string } | null): boolean => found === null || s.scope.face === null || found.fcid === s.scope.face.fcid;
+  const inScope = (s: Session, found: { readonly ordinal: number; readonly fcid: string } | null): boolean => found === null || lends(s, found);
 
   /** A row's standing reading through the holder's update door, which reads under the holder's own claim and writes nothing. */
   const standingRecord = (home: CustodyHome, file: string, cold: boolean): Promise<RecordReading> =>
@@ -246,14 +258,15 @@ export function servePulama(a: {
       case "face.standing": { const found = await holder.faceStanding(faceOf(args["face"])); return inScope(s, found) ? found : null; }
       case "face.ward-key": {
         const face = faceOf(args["face"]);
-        if (!inScope(s, await holder.faceStanding(face))) throw new PulamaRefused("outside-the-lei", "the lei names another face");
+        const found = await holder.faceStanding(face);
+        if (!inScope(s, found)) throw new PulamaRefused("outside-the-lei", `the pūlama lends this vessel ${renderLentFaces(s.scope.faces)}; this ward key belongs to face h${found!.ordinal}`);
         return holder.wardPublicKey(face);
       }
       case "faces": {
         const open = new Set(holder.unlockedFaces());
         const out: Array<{ ordinal: number; fcid: string; unlocked: boolean }> = [];
         readFaceIndexSync(holder.homes.identity).faces.forEach((f, ordinal) => {
-          if ("fcid" in f && inScope(s, f)) out.push({ ordinal, fcid: f.fcid, unlocked: open.has(f.fcid) });
+          if ("fcid" in f && inScope(s, { ordinal, fcid: f.fcid })) out.push({ ordinal, fcid: f.fcid, unlocked: open.has(f.fcid) });
         });
         return out;
       }
@@ -304,13 +317,16 @@ export function servePulama(a: {
         if (!holder.isUnlocked()) { refuse("pulama-locked", "the pūlama rests unlit: the operator lights it by their own hand"); return; }
         a.gate.admit(f["offer"]).then((admitted) => {
           if (!admitted.ok) { refuse(admitted.reading, admitted.why); return; }
+          // NO SET NEVER MEANS EVERY FACE: a scope that names no lent set refuses by the set's own reading.
+          const lent = lentFacesOf((admitted.scope as { readonly faces?: unknown }).faces);
+          if (!lent.ok) { refuse(lent.refusal, lent.message.slice(`${lent.refusal}: `.length)); return; }
           if (!holder.isUnlocked()) { refuse("pulama-locked"); return; }
           // A CHANNEL THAT LEFT WHILE THE GATE READ gets no session: whatever the gate claimed stays claimed, and nothing serves.
           if (gone) { log("the channel left before its hello passed; no session stands"); return; }
-          const s: Session = { channel, scope: admitted.scope, claims: new Map(), open: true };
+          const s: Session = { channel, scope: { ...admitted.scope, faces: lent.faces }, claims: new Map(), open: true };
           session = s;
           live.add(s);
-          withDerived((derived) => channel.send({ t: "session", scope: { ordinal: s.scope.face?.ordinal ?? null }, standing: standing(s), derived }));
+          withDerived((derived) => channel.send({ t: "session", scope: { faces: lentFacesWire(s.scope.faces) }, standing: standing(s), derived }));
           log("session opened");
         }, () => refuse("pulama-gate-faulted"));
       });

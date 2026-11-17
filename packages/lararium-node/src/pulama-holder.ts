@@ -23,10 +23,16 @@
  * saw and its write, as one holder's claim gives the in-process holder. `withRecords` and `exclusive` hold the pūlama's
  * claim across the act and release it when the act settles or the channel drops.
  *
+ * ── THE SESSION NAMES ITS LEND ──────────────────────────────────────────────────────────────────
+ * The session frame carries the faces the pūlama lends this vessel (`scope.faces`); the standing names the lent faces that
+ * stand lit as open and the lent faces still dark as waiting. A session frame that names no lent set comes from a pūlama
+ * on an older build: it refuses `pulama-lend-unnamed` and no session stands, never read as a lend of every face.
+ *
  * `derive` answers synchronously from the children the session carried, under the domains the pūlama serves a session.
  * The holder names no host: `dial` hands it a channel.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
+import { lentFacesOf, type LentFaces } from "@lararium/mesh";
 import {
   CustodyLocked, CustodyRecordUnavailable,
   type CustodyHolder, type FaceRef, type FaceUnlock, type HolderUnlock, type RecordReading, type RecordUpdate,
@@ -35,15 +41,25 @@ import { PulamaRefused, copyReading, readingOf, unpackRefusal, type PulamaChanne
 import type { CustodyHome, CustodyHomes } from "./vault-carriers.js";
 
 /** The holder's standing as a session carries it. */
-export interface PulamaStanding { readonly slot: string | null; readonly attemptsLeft: number; readonly faces: readonly string[] }
+export interface PulamaStanding {
+  readonly slot: string | null; readonly attemptsLeft: number;
+  /** The lent faces that stand lit, by custody id. */
+  readonly faces: readonly string[];
+  /** The lent faces still dark at the pūlama, by ordinal. */
+  readonly waiting: readonly number[];
+}
 
-/** What a session serves: the face its lei names (null: no face bound). */
-export interface PulamaSessionScope { readonly ordinal: number | null }
+/** What a session serves: the faces the pūlama lends this vessel. */
+export interface PulamaSessionScope { readonly faces: LentFaces }
 
 export interface PulamaHolder extends CustodyHolder {
   /** Hear the session drop (the channel closed, the pūlama locked, this side left). Returns the unsubscribe. */
   onClosed(listener: () => void): () => void;
-  /** The face the standing session's lei names, by its ordinal; null with no session or no face bound. */
+  /** The ordinals the standing session's lend names, lit or waiting; empty with no session. */
+  lends(): readonly number[];
+  /** The lent faces still dark at the pūlama, by ordinal; empty with no session. */
+  waiting(): readonly number[];
+  /** The lowest lent ordinal (the steward's face 0 where lent): the face the composition mounts; null with no session. */
   wears(): number | null;
   /** Tell the pūlama this vessel composed over its session: it rests the host half of the tessera the session began under. */
   landRite(): Promise<{ readonly par: boolean }>;
@@ -63,11 +79,12 @@ const needsHuman = (what: string): Promise<never> =>
   Promise.reject(new PulamaRefused("needs-the-human", `${what} asks a human route, and a pūlama session carries none: ask it at the pūlama's own hand door`));
 
 const standingOf = (raw: unknown): PulamaStanding => {
-  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown };
+  const s = (raw ?? {}) as { slot?: unknown; attemptsLeft?: unknown; faces?: unknown; waiting?: unknown };
   return {
     slot: typeof s.slot === "string" ? s.slot : null,
     attemptsLeft: typeof s.attemptsLeft === "number" ? s.attemptsLeft : 0,
     faces: Array.isArray(s.faces) ? s.faces.filter((f): f is string => typeof f === "string") : [],
+    waiting: Array.isArray(s.waiting) ? s.waiting.filter((o): o is number => Number.isSafeInteger(o) && o >= 0) : [],
   };
 };
 const derivedOf = (raw: unknown): Record<string, Uint8Array> => {
@@ -148,10 +165,14 @@ export function makePulamaHolder(a: {
       channel.close();
       throw new CustodyLocked("this vessel left the pūlama while its dial ran, so no session stands");
     }
-    const scope = (answered["scope"] ?? {}) as { ordinal?: unknown };
+    const lent = lentFacesOf(((answered["scope"] ?? {}) as { faces?: unknown }).faces);
+    if (!lent.ok) {
+      channel.close();
+      throw new PulamaRefused("pulama-lend-unnamed", `the pūlama answered a session that names no lent set (${lent.message}): it runs an older build, so rebuild the pūlama beside this vessel`);
+    }
     const stood: Session = {
       channel, standing: standingOf(answered["standing"]), derived: derivedOf(answered["derived"]),
-      scope: { ordinal: typeof scope.ordinal === "number" ? scope.ordinal : null }, pending: new Map(),
+      scope: { faces: lent.faces }, pending: new Map(),
     };
     session = stood;
     refused = null;
@@ -234,7 +255,9 @@ export function makePulamaHolder(a: {
     isUnlocked: () => session !== null,
     onOpened(listener) { openedListeners.add(listener); return () => { openedListeners.delete(listener); }; },
     onClosed(listener) { closedListeners.add(listener); return () => { closedListeners.delete(listener); }; },
-    wears: () => session?.scope.ordinal ?? null,
+    lends: () => session?.scope.faces.map((f) => f.ordinal) ?? [],
+    waiting: () => session?.standing.waiting ?? [],
+    wears: () => session?.scope.faces[0]?.ordinal ?? null,
     waits: () => (session === null ? refused : null),
     async landRite() { return { par: (await call("rite.land") as { par?: unknown }).par === true }; },
     attemptsLeft: () => session?.standing.attemptsLeft ?? 0,
