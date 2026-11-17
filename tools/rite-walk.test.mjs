@@ -645,6 +645,28 @@ test("carry-light-seats-a-served-vessel: up-by-pulama reads a recreated vessel t
   assert.ok(CARRY_STEPS.find((s) => s.id === "unlock-by-pulama").needs.includes("pulama-admit"));
 });
 
+test("wear-each-lent-face: after the unlock by the pūlama, each lent face's own view answers through `--face N` (its stage under its own relation), the daemon mount names itself honestly, and no reading says the vessel wears a face", () => {
+  const { CARRY_STEPS, judgeWearEach } = present(carryLeg);
+  const R = (n) => `${n}${n}${n}${n}${n}${n}${n}${n}-1111-4111-8111-111111111111`;
+  const read = (face, over = {}) => ({ face, code: 0, answer: { items: [], relation: R(face), mount: 0, mounted: face === 0, ...over } });
+  const ok = judgeWearEach([read(0), read(1), read(2)]);
+  assert.equal(ok.ok, true, ok.answer);
+  assert.match(ok.answer, /h0, h1, h2/);
+  assert.match(ok.answer, /mount h0/);
+  // A per-call read that falls back to the mount's view reads the mount's relation for another face: red, named.
+  const fell = judgeWearEach([read(0), read(1, { relation: R(0) }), read(2)]);
+  assert.equal(fell.ok, false);
+  assert.match(fell.answer, /h1/);
+  assert.equal(judgeWearEach([read(0), read(1, { worn: false })]).ok, false, "a `worn` reading says the vessel wears a face");
+  assert.equal(judgeWearEach([read(0), read(1, { mounted: true })]).ok, false, "two faces never both stand as the mount");
+  assert.equal(judgeWearEach([read(0), { face: 1, code: 1, answer: null }]).ok, false, "a lent face that answers nothing reads red");
+  assert.equal(judgeWearEach([]).ok, false, "no lent face read reads red");
+  const ids = CARRY_STEPS.map((s) => s.id);
+  assert.ok(ids.indexOf("unlock-by-pulama") < ids.indexOf("wear-each-lent-face") && ids.indexOf("wear-each-lent-face") < ids.indexOf("teardown"));
+  const step = CARRY_STEPS.find((s) => s.id === "wear-each-lent-face");
+  assert.ok(step.needs.includes("unlock-by-pulama") && /kahua list --face N/.test(step.command));
+});
+
 test("image-light-seats-a-served-vessel: the image leg's operator admits the image the host reported at up (`pulama-admit`, its route typed) before its unlock-by-pulama reads the vessel served", () => {
   const { IMAGE_STEPS } = present(imageLeg);
   const ids = IMAGE_STEPS.map((s) => s.id);
