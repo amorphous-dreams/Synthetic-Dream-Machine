@@ -579,7 +579,7 @@ test("carry-fresher-reads-the-family: a carrier lands a family, so the warning a
   assert.deepEqual(rootOnly.bare, [moved, still], "a row that carries no fragment's base leaves its fragments bare");
   const walk21 = judgeFresher(read([none, unknownHead, `  ${moved}#/the-order  base unknown -> sha256:cccc…`, `  ${still}#/edges  base unknown -> sha256:dddd…`]), rootOnly);
   assert.equal(walk21.ok, true, walk21.faults.join("; "));
-  // A family that travelled whole owes the warning itself: a fragment reads fresher, a doubt line no longer answers.
+  // A family that travelled whole owes the warning itself: a fragment reads fresher, a doubt line answers nothing for it.
   const whole = fresherPlanFor(want, { rows: [rowOf(moved, { overrideBase: B("a"), familyBases: { [`${moved}#/the-order`]: B("c") } }), rowOf(still, { overrideBase: B("b"), familyBases: { [`${still}#/edges`]: B("d") } })] });
   assert.deepEqual(whole.bare, []);
   const fragmentWarns = judgeFresher(read([head, `  ${moved}#/the-order  sha256:cccc… -> sha256:eeee…`]), whole);
