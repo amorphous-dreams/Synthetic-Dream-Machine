@@ -20,7 +20,9 @@
 // (`judgeImport`, empty now: a working copy over canon that moved between the revisions lands, and the `fresher` step reads
 // the new house's warning for it, `judgeFresher`; an override base works as an instrument, never a gate) and hands each
 // import answer to the parity witness (`--imports`), which excuses any named uri by name. The pūlama stands only at the end,
-// on the carried house (carry → light): the image leg's pūlama phase, once parity reads par.
+// on the carried house (carry → light): the image leg's pūlama phase, once parity reads par. The host reports the carried
+// image at `up`, and the pūlama serves no image it never admitted, so the operator's hand admits it (`pulama admit`, its route
+// typed: the published test route here) and the unlock after it must read the vessel unlocked, served by the pūlama.
 //
 // THE KEEP (the house keeps itself): between the export and the down the source house strings a keep lei under the ward and runs
 // `lares rite keep` into a workspace bound at its `up` (`keep`, a clone of a scratch bare remote standing in for the operator's
@@ -45,7 +47,7 @@ import { fileURLToPath } from "node:url";
 import { seedFiles, seedPlan, pickCanon, PETNAMES, STAGE_PREFIX } from "./carry-seed.mjs";
 import {
   TEST_PASSPHRASE, UNLOCK_SAYS, WARD_SAYS, assertImageScope, build, found, imageHands, imageReceiptFaults, lastJson,
-  pulamaLight, pulamaUp, refusal, stageCustody, surfaceEnvText, tail, unlockedOf, upOwn, upPulama, walkImage,
+  pulamaAdmit, pulamaLight, pulamaUp, refusal, unlockUnderPulama, stageCustody, surfaceEnvText, tail, unlockedOf, upOwn, upPulama, walkImage,
 } from "./image-leg.mjs";
 import { RiteWalkRefusal, lineOf, quote, sha256, verdict } from "./steps.mjs";
 
@@ -899,7 +901,9 @@ export const CARRY_STEPS = Object.freeze([
   // Carry → light: the carried house stands its pūlama, lights it, and the vessel seats its holder over the socket.
   { id: "pulama-up", command: "new-src/tools/lares-container.sh pulama up", needs: ["parity"], expect: "standing unlit", run: onPhase("new", pulamaUp) },
   { id: "pulama-light", command: "new-src/tools/lares-container.sh pulama light", via: PTY, needs: ["pulama-up"], expect: "lit: true", run: onPhase("new", pulamaLight) },
-  { id: "up-by-pulama", command: "new-src/tools/lares-container.sh up", via: PTY, needs: ["pulama-light"], expect: "the carried vessel seats its holder over the pūlama's socket", run: onPhase("new", upPulama) },
+  { id: "up-by-pulama", command: "new-src/tools/lares-container.sh up", via: PTY, needs: ["pulama-light"], expect: "the carried vessel seats its holder over the pūlama's socket and names what the pūlama waits on", run: onPhase("new", upPulama) },
+  { id: "pulama-admit", command: "new-src/tools/lares-container.sh pulama admit (the operator's hand: its route typed, here the published test route)", via: PTY, needs: ["up-by-pulama"], expect: "the pūlama admits the image the host reported at up", run: onPhase("new", pulamaAdmit) },
+  { id: "unlock-by-pulama", command: "new-src/tools/lares-container.sh vault unlock --all --face 0", via: PTY, needs: ["pulama-admit"], expect: "the pūlama serves the carried vessel: it stands unlocked", run: onPhase("new", unlockUnderPulama) },
   { id: "teardown", command: "docker compose down --remove-orphans · rm the base (kept under --keep)", expect: "no container of the project stands; the base is gone, or stands under --keep", run: teardown },
 ]);
 

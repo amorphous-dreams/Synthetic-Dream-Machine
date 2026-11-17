@@ -524,6 +524,27 @@ export const upOwn = async (h) => {
   return { ok: r.code === 0 && unlocked === true, answer: `exit ${r.code}; the unlock ran attached: ${r.typed}; vault unlocked: ${unlocked} · ${tail(r.stdout)}`, measures: { seconds: Math.round(r.ms / 1000), unlocked } };
 };
 
+/** The reading the vessel's last `serves no session` line names (`…: <reading>; …` or `… (<reading>)`), or null where none stands. */
+export function pulamaWaits(lines) {
+  for (const line of [...lines].reverse()) {
+    const m = /serves no session(?::\s*|\s*\()([a-z0-9-]+)/.exec(line);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+/**
+ * The seat after `up`: exit 0 and the vessel's own `[pulama]` line (its holder dialed the socket); whether the up recreated
+ * the container rides the answer (a kūkulu before it may already stand a new one). Whether the pūlama SERVES it rides the answer by name: an image the host just reported stands unadmitted until the
+ * operator's hand admits it (`pulama admit`), or a kūkulu lands par.
+ */
+export function judgeUpPulama({ code, before, after, lines }) {
+  const recreated = after !== before && after !== "";
+  const waits = pulamaWaits(lines);
+  const said = waits === null ? "" : ` · the pūlama waits: ${waits}${waits === "pulama-image-unadmitted" ? " (the operator admits the image with `lares-container.sh pulama admit`, the route typed)" : ""}`;
+  return { ok: code === 0 && lines.length > 0, answer: `exit ${code}; a new vessel container: ${recreated}; ${lines.at(-1) ?? "its log carries no [pulama] line"}${said}`, waits };
+}
+
 /** The first `up` beside a lit pūlama: the vessel seats its holder over the socket and offers what it wears. */
 export const upPulama = async (h) => {
   const before = await h.cid("lares");
@@ -531,12 +552,27 @@ export const upPulama = async (h) => {
   const after = await h.cid("lares");
   const lines = pulamaLines(await vesselLog(h));
   const unlocked = await vaultUnlocked(h);
-  return { ok: r.code === 0 && lines.length > 0, answer: `exit ${r.code}; a new vessel container: ${after !== before}; ${lines.at(-1) ?? "its log carries no [pulama] line"}; vault unlocked: ${unlocked} · ${tail(r.stdout)}`,
-    measures: { seconds: Math.round(r.ms / 1000), recreated: after !== before, unlockPrompted: r.typed, unlocked, pulamaLines: lines.slice(-6) } };
+  const j = judgeUpPulama({ code: r.code, before, after, lines });
+  return { ok: j.ok, answer: `${j.answer}; vault unlocked: ${unlocked} · ${tail(r.stdout)}`,
+    measures: { seconds: Math.round(r.ms / 1000), recreated: after !== before, unlockPrompted: r.typed, unlocked, waits: j.waits, pulamaLines: lines.slice(-6) } };
+};
+
+/** The admission's answer: the route typed, and the pūlama reads `admitted`; any other reading fails by its name. */
+export function judgePulamaAdmit(r, answer) {
+  const ok = r?.code === 0 && r?.typed === true && answer?.reading === "admitted";
+  return { ok, answer: `exit ${r?.code}; route typed: ${r?.typed === true}; reading ${answer?.reading ?? "(none)"}${answer?.admitted ? ` · admitted ${answer.admitted} for face ${answer.face}` : ""}` };
+}
+
+/** THE OPERATOR'S HAND ADMITS THE IMAGE the host reported at `up`: `pulama admit` reads the route on a terminal (the published
+ *  test route here) and proves it against the lit holder; it opens nothing. */
+export const pulamaAdmit = async (h) => {
+  const r = await h.pty(h.shimLine(["pulama", "admit"]), { says: [{ prompt: "to admit ", answer: TEST_PASSPHRASE }], route: TEST_PASSPHRASE, timeout: 120_000 });
+  const j = judgePulamaAdmit(r, lastJson(r.stdout.replace(/\r/g, "")));
+  return { ...j, measures: { ms: r.ms } };
 };
 
 /** `vault unlock` at a vessel whose holder rests at the pūlama: the terminal's answer, quoted. */
-const unlockUnderPulama = async (h) => {
+export const unlockUnderPulama = async (h) => {
   if (await vaultUnlocked(h) === true) return { ok: true, answer: "the vessel already stands unlocked by the pūlama's session; no unlock ran" };
   const r = await unlockOnTerminal(h);
   const unlocked = await vaultUnlocked(h);
