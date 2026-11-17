@@ -612,6 +612,15 @@ test("carry-teardown-holds-a-kept-base: under --keep the teardown step takes the
   assert.notEqual(cleared.vars.baseKept, true);
 });
 
+test("carry-meme-text-rides-raw: the walker's meme reads ask the text alone (`--no-json`), since a get with no terminal on stdout answers the JSON envelope and a put of that envelope refuses (`1 line(s) stand between ETX and EOT`)", () => {
+  const { memeGetArgs, sweepScript } = present(carryLeg);
+  assert.deepEqual(memeGetArgs("lar:///ha.ka.ba/kahua/memory/ruling/2026-11-14"), ["meme", "get", "lar:///ha.ka.ba/kahua/memory/ruling/2026-11-14", "--recipe", "default", "--no-json"]);
+  const script = sweepScript("node packages/lares-cli/bin/lares.mjs");
+  assert.match(script, /meme get "\$u" --recipe default --no-json > \/tmp\/sweep\.mem/);
+  assert.match(script, /meme put "\$u" --recipe default --file \/tmp\/sweep\.mem --json/);
+  assert.match(script, /SWEPT \$n BAD \$bad/);
+});
+
 test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
   const { CARRY_STEPS, CARRY_SAYS } = present(carryLeg);
   const ids = CARRY_STEPS.map((s) => s.id);
