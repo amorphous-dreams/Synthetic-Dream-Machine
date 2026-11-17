@@ -31,16 +31,16 @@
  * does), then lay through the same gate. So a tear-out with no export recovers from disk alone.
  *
  * THE LIT SET. One seed lays every OPEN face's working and face-canon folders (its own, and every former face's it adopts), each
- * into that face's own layer: the worn face's through the ordinary wave, every other open face's through a wave naming that face
+ * into that face's own layer: the daemon mount's through the ordinary wave, every other open face's through a wave naming that face
  * (`MirrorWave.face`), which the island lands only where the vessel's device table names that face as the document's owner and
- * never on the worn face. A face that stands SHUT places nothing into any layer: the seed names it ("<pet-name> stays shut:
+ * never on the daemon mount. A face that stands SHUT places nothing into any layer: the seed names it ("<pet-name> stays shut:
  * `lares vault unlock --face N`, then seed again"), an expected state rather than a stand-off, and its former folders stay out of
  * ashes until its own seed lands them. No face's private memory ever lands in another face. Kahua lifts sign per face under that
  * face's own grant, so they ride every face.
  *
  * A WORKBENCH LAYS ONCE, FOR ITS DOCUMENT (cabal-realm#/the-workbench; operator, 2026-11-14: "most wikis should NOT seed
  * per-face because shared crdts"). A wiki's workbench stands as ONE document on a vessel with ONE folder, so the seed lays
- * that folder once, through the worn face's island, where the worn face holds a writer's seat in the workbench (`benchSeat`)
+ * that folder once, through the daemon mount's island, where the daemon mount holds a writer's seat in the workbench (`benchSeat`)
  * or stands the wiki first on this founding. Under a face that holds no writer's seat the folder waits by name for a seated
  * writer's wear, nothing of it lands in that face's `personal` layer, nor does the wiki mint into that face's catalog (a face
  * lists a wiki it stood or one a share row carried to it), and the seed exits 0. AFTER A RE-FOUNDING the share rows
@@ -69,7 +69,7 @@ import {
   daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
-import { LIVE_CARRY_DOORS, litFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
+import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
 import { scanFiles, candidatesOf, settleIngest, openSyncedTree } from "./ingest-core.js";
@@ -97,8 +97,8 @@ export interface MirrorWave {
   /** THE BASES A WORKING WAVE RESTORES (title -> the carrier identity of the canon record its copy forked from), read off each owning face's
    *  bases sidecar: the island stamps each on the copy it lands, so a fork keeps its base across a re-founding. */
   readonly bases?: Readonly<Record<string, string>>;
-  /** THE FACE-NAMED WAVE (the lit set): the open face, other than the worn one, whose own layer takes this wave. The island
-   *  lands it only where that face owns the document, never on the worn face. Absent: the worn face's layer. */
+  /** THE FACE-NAMED WAVE (the lit set): the open face, other than the mount, whose own layer takes this wave. The island
+   *  lands it only where that face owns the document, never on the daemon mount. Absent: the daemon mount's layer. */
   readonly face?: number;
 }
 
@@ -131,8 +131,8 @@ export interface MirrorDoors {
   /** The `wikis` dir beside the canon source, where a sourced wiki's one workbench folder rests; null: none stands. */
   readonly canonWikis?: () => string | null;
   /**
-   * The worn face's seat on a wiki's workbench (`workbench-seat`): its write layer there, and whether the vessel's ledger binds
-   * the slug at all on this founding. Absent (a rig with no roster): the worn face writes every workbench.
+   * The daemon mount's seat on a wiki's workbench (`workbench-seat`): its write layer there, and whether the vessel's ledger binds
+   * the slug at all on this founding. Absent (a rig with no roster): the daemon mount writes every workbench.
    */
   readonly benchSeat?: (slug: string) => Promise<{ readonly writeSlot: "working" | "personal" | null; readonly bound: boolean }>;
   /** The share rows the vessel-private file holds (`config/share.tid`); absent: none. */
@@ -202,7 +202,7 @@ export interface MirrorSeedResult {
   readonly waiting: ReadonlyArray<{ readonly handleIndex: number; readonly petname: string | null; readonly relations: readonly string[]; readonly why?: "unresolved" | "unworn"; readonly folders?: readonly string[] }>;
   /**
    * THE WORKBENCH FOLDERS THAT WAIT: each wiki whose one folder (or whose canon folder) holds a carrier new or moved while the
-   * worn face may not lay it: `writer` (the worn face holds no writer's seat there: a seated writer's wear lays it) or `owner`
+   * worn face may not lay it: `writer` (the daemon mount holds no writer's seat there: a seated writer's wear lays it) or `owner`
    * (a share row names another face as the wiki's owner, and no face stood the wiki on this founding yet). Nothing of the
    * folder landed anywhere.
    */
@@ -397,17 +397,17 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const placedRelations = relations.filter((r) => target.has(r));
 
   // ── THE LIT SET: every OPEN face's folders lay in one seed, each into that face's own layer. ──
-  // The worn face's ride the ordinary wave (the daemon's working layer holds its document); each other open face's ride a wave
-  // naming that face, which the island lands only where that face owns the document, never on the worn face. A SHUT face waits,
+  // The daemon mount's ride the ordinary wave (the daemon's working layer holds its document); each other open face's ride a wave
+  // naming that face, which the island lands only where that face owns the document, never on the daemon mount. A SHUT face waits,
   // named: nothing of its memory lands anywhere, its folders stay until its own seed lands them, and it never blocks the rest.
-  const litRelation = litFaceOf(faces)?.relation ?? null;
+  const litRelation = mountFaceOf(faces)?.relation ?? null;
   const faceArgOf = (relation: string): { face?: number } => {
     const face = [...target.values()].find((f) => f.relation === relation);
     return face === undefined || relation === litRelation ? {} : { face: face.handleIndex };
   };
   // An open face whose named wave the island resolves no layer for (`face-unresolved`) waits by name, as a shut face does.
   const unresolved = new Map<number, { handleIndex: number; petname: string | null; relations: string[]; why: "unresolved" }>();
-  // An open face that stands unworn waits for its own wear with its `personal` folders: a wiki's island stands over the worn face's personal document alone.
+  // An open face that stands unworn waits for its own wear with its `personal` folders: a wiki's island stands over the daemon mount's personal document alone.
   const unworn = new Map<number, { handleIndex: number; petname: string | null; relations: string[]; why: "unworn"; folders: string[] }>();
   const waitingNow = () => [...shutWaiting.values(), ...unresolved.values(), ...unworn.values()].sort((a, b) => a.handleIndex - b.handleIndex);
 
@@ -444,9 +444,9 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   }
   // A LIFT RIDES THE DAEMON MOUNT: a face's local canon rests sealed under its own key and its hand signs under its own
   // grant, so the vessel lifts for the face it mounts alone (`chore-face-not-mounted`). An item of another open face waits by name at the
-  // shore; the count a hand confirms names what this wear lifts. Where no door reads which face stands worn, every item lifts.
-  const wornIndex = faces.some((f) => f.mounted !== undefined) ? (litFaceOf(faces)?.handleIndex ?? null) : undefined;
-  const liftsHere = (p: KahuaPreviewItem): boolean => wornIndex === undefined || p.handleIndex === wornIndex;
+  // shore; the count a hand confirms names what this wear lifts. Where no door reads which face stands as the mount, every item lifts.
+  const mountIndex = faces.some((f) => f.mounted !== undefined) ? (mountFaceOf(faces)?.handleIndex ?? null) : undefined;
+  const liftsHere = (p: KahuaPreviewItem): boolean => mountIndex === undefined || p.handleIndex === mountIndex;
   const kahuaLiftable = kahuaPreview.filter(liftsHere);
   const kahuaElsewhere = kahuaPreview.filter((p) => !liftsHere(p));
   const liftKahua = opts.liftKahua ?? null;
@@ -490,7 +490,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     const byTarget = new Map<string, string[]>();
     for (const r of placedRelations) { const to = target.get(r)!.relation!; byTarget.set(to, [...(byTarget.get(to) ?? []), r]); }
     for (const [to, owners] of [...byTarget].sort(([a], [b]) => (a < b ? -1 : 1))) {
-      // Each open face lays into its own layer: the worn face's through the ordinary wave, every other through a wave naming it.
+      // Each open face lays into its own layer: the daemon mount's through the ordinary wave, every other through a wave naming it.
       const faceArg = faceArgOf(to);
       for (const kind of ["canon", "working"] as const) {
         const dir = kind === "canon" ? bagsDir : wikisDir;
@@ -533,18 +533,18 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     // HOUSE BAGS (canon) before WORKBENCHES (working): a slug this vessel does not hold mints first, through CREATE.
     // THE OWNER GATE: a share row names a shared wiki's owner by pet-name. Where no face stood the wiki on this founding yet,
     // it mints and lays at THAT face's wear alone, so a re-founding never hands a wiki to whichever face seeds first.
-    const wornFace = litFaceOf(faces);
+    const mountFace = mountFaceOf(faces);
     const shareRows = doors.shareRows?.() ?? [];
     const ownerOf = (slug: string): string | null => shareRows.find((r) => r.kind === "wiki" && r.slug === slug)?.owner ?? null;
     const seatOf = async (slug: string): Promise<{ writeSlot: "working" | "personal" | null; bound: boolean }> =>
       litRelation === null || doors.benchSeat === undefined ? { writeSlot: "working", bound: true } : doors.benchSeat(slug);
-    /** Why the worn face may not lay this wiki's folders now, or null where it may. */
+    /** Why the daemon mount may not lay this wiki's folders now, or null where it may. */
     const benchGate = async (slug: string): Promise<{ why: "writer" | "owner"; owner?: string } | null> => {
-      if (litRelation === null) return null;                          // no face worn: the veil floor's own working document takes it
+      if (litRelation === null) return null;                          // no face mounted: the veil floor's own working document takes it
       const seat = await seatOf(slug);
       if (seat.bound) return seat.writeSlot === "working" ? null : { why: "writer" };
       const owner = ownerOf(slug);
-      return owner !== null && wornFace?.petname !== owner ? { why: "owner", owner } : null;
+      return owner !== null && mountFace?.petname !== owner ? { why: "owner", owner } : null;
     };
     const waitBench = (slug: string, folder: string, gate: { why: "writer" | "owner"; owner?: string }): void => {
       if (!benchWaiting.some((w) => w.folder === folder)) benchWaiting.push({ slug, folder, why: gate.why, ...(gate.owner !== undefined ? { owner: gate.owner } : {}) });
@@ -579,7 +579,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
       await runWave({ source: join(bagsDir, slug), uriDir: bagsDir, toBag: wikiBagUri(slug), skipTop: [] }, `bag ${slug}`);
     }
     // ONE FOLDER FOR A WORKBENCH, LAID ONCE FOR ITS DOCUMENT: `<projections>/wikis/<slug>`, and a sourced wiki's beside its canon
-    // source. The worn face's island lays it where that face holds a writer's seat (or stands the wiki first); under any other
+    // source. The daemon mount's island lays it where that face holds a writer's seat (or stands the wiki first); under any other
     // face the folder waits by name where it holds a carrier new or moved against its base, and nothing of it lands.
     const skipBench = ["recovery", TEMP_LAYER_DIR];
     const benchFolders = [
@@ -605,12 +605,12 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
       unworn.set(face.handleIndex, w);
     };
     // EACH FACE'S PERSONAL MARGIN (cabal-realm#/the-workbench; operator ruling 2026-11-11 "Personal can absorb the new caps."):
-    // `<projections>/personal/<F>/<slug>` lays back into that face's own personal layer of the wiki, the worn face's through the
+    // `<projections>/personal/<F>/<slug>` lays back into that face's own personal layer of the wiki, the daemon mount's through the
     // ordinary wave and every other open face's through a wave naming it. It never lays into a shared workbench.
     // A former face's personal folder copies into the folder of the face that carries its pet-name where none stands there,
     // then that folder lays through the one gate: a face's margin comes back across a re-founding as its daemon memory does.
-    // IT LAYS AT ITS OWN FACE'S WEAR: a wiki's island stands over the worn face's personal document and the vessel grants the
-    // personal mirror to the worn face's folder alone, so an open face that stands unworn waits by name where its folder (or
+    // IT LAYS AT ITS OWN FACE'S WEAR: a wiki's island stands over the daemon mount's personal document and the vessel grants the
+    // personal mirror to the daemon mount's folder alone, so an open face that stands unworn waits by name where its folder (or
     // a former face's it adopts) holds a carrier new or moved against its base. A view-state carrier (a `$:/` title: the story
     // list, a fold state) never adopts: the face here keeps its own view.
     const viewState = (rel: string): boolean => (rel.split("/").pop() ?? "").startsWith("$__");
@@ -648,7 +648,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
         // A MARGIN OF A WIKI THAT STANDS UNMINTED WAITS FOR THE WIKI: a share row names its owner, and the wiki re-stands at
         // that owner's wear; until then this face's page of it lays nowhere, and the folder stays as it stands.
         const owner = ownerOf(slug);
-        if (owner !== null && wornFace?.petname !== owner && !doors.sourced(slug) && !mintedSlugs.has(slug) && !(held.has(slug) || (await doors.heldSlugs()).has(slug))) {
+        if (owner !== null && mountFace?.petname !== owner && !doors.sourced(slug) && !mintedSlugs.has(slug) && !(held.has(slug) || (await doors.heldSlugs()).has(slug))) {
           if (mirrorFiles(join(personalDir, slug)).filter((rel) => !viewState(rel)).length === 0) continue;
           waitBench(slug, join(personalDir, slug), { why: "owner", owner });
           for (const r of owners) markPartial(r, `its personal folder of ${slug} lays once the wiki re-stands at ${owner}'s wear`);

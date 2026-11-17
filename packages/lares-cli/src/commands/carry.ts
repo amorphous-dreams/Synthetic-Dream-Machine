@@ -40,7 +40,7 @@
  *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview; a wiki
  *      another face owns, or whose workbench another face's realm binds, mints nothing under a face that holds no writer's
  *      seat there (that face reads it only through what a share row grants).
- *   A WORKBENCH LANDS ONCE, where the worn face holds a writer's seat in it or stands the wiki first (its owner, where a share
+ *   A WORKBENCH LANDS ONCE, where the daemon mount holds a writer's seat in it or stands the wiki first (its owner, where a share
  *   row names one); under any other face its rows wait by name. Each face's `personal` rows land at that face's own wear. The
  *   share rows the bundle carries write into `config/share.tid` where none stands for the slug, and the shares land again.
  *   A journal under `<root>/config/carry-journal/<bundle-id>.<faces>.ndjson` (the bundle and the target faces' relations) records
@@ -111,7 +111,7 @@ export interface CarryVesselFace {
  * --face N`). No face's private memory ever lands in another face. Where the vessel named which face it wears, that face (or none);
  * where no door answered the reading (a direct holder), the one face carrying a relation, else none.
  */
-export function litFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | null {
+export function mountFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | null {
   const mounted = faces.filter((f) => f.mounted === true && f.relation !== null);
   if (mounted.length === 1) return mounted[0]!;
   if (faces.some((f) => f.mounted !== undefined)) return null;
@@ -181,8 +181,8 @@ export interface CarryDoors {
   readonly rename: (handleIndex: number, petname: string) => Promise<void>;
   readonly declareHandle: (handleIndex: number, handle: string) => Promise<void>;
   readonly standSeat: (handleIndex: number, chair: string | null) => Promise<void>;
-  /** `face`: THE FACE-NAMED WAVE, the open face (not the worn one) whose own layer takes it; the island lands it only where that
-   *  face owns the document (`face-unresolved`, `ingest-face-foreign` otherwise), never on the worn face. */
+  /** `face`: THE FACE-NAMED WAVE, the open face (not the mount) whose own layer takes it; the island lands it only where that
+   *  face owns the document (`face-unresolved`, `ingest-face-foreign` otherwise), never on the daemon mount. */
   readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[]; readonly inWiki?: boolean; readonly wiki?: string; readonly face?: number }) => Promise<CarryIngestAnswer>;
   /** The wiki slugs this vessel's catalog registers. */
   readonly heldSlugs: () => Promise<ReadonlySet<string>>;
@@ -211,7 +211,7 @@ export interface CarryDoors {
   readonly coldWikis?: () => Promise<readonly string[]>;
   /** Whether a slug's canon stands under the canon source. Absent: none does. */
   readonly sourced?: (slug: string) => boolean;
-  /** The worn face's seat on a wiki's workbench (`workbench-seat`). Absent (a rig with no roster): the worn face writes every workbench. */
+  /** The daemon mount's seat on a wiki's workbench (`workbench-seat`). Absent (a rig with no roster): the daemon mount writes every workbench. */
   readonly benchSeat?: (slug: string) => Promise<{ readonly writeSlot: "working" | "personal" | null; readonly bound: boolean }>;
   /** The vessel-private share rows (`config/share.tid`), read and written whole. Absent: no rows travel and none land. */
   readonly shareRows?: { read(): readonly ShareEntry[]; write(rows: readonly ShareEntry[]): void };
@@ -785,7 +785,7 @@ export interface CarryImportResult {
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
   readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking" | "personal", CarryTally>>;
-  /** Each workbench (or the canon of a wiki another face owns) whose rows wait: `writer` (the worn face holds no writer's seat
+  /** Each workbench (or the canon of a wiki another face owns) whose rows wait: `writer` (the daemon mount holds no writer's seat
    *  there) or `owner` (a share row names another face as the wiki's owner, and no face stood it here yet). Nothing of it landed. */
   readonly benchWaiting: ReadonlyArray<{ readonly slug: string; readonly why: "writer" | "owner"; readonly owner?: string }>;
   /** Each bundle face whose `personal` rows wait for that face's own wear; or, naming `wiki` and its `owner`, whose margin of a
@@ -874,7 +874,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const p = planned.find((x) => x.row.face === bf.key)!;
     const face = faces.find((f) => f.handleIndex === p.handleIndex)!;
     // A face that reads no relation while ANOTHER face stands worn waits its turn (the lit-face gate below), never refuses.
-    if (face.relation === null && litFaceOf(faces) === null) {
+    if (face.relation === null && mountFaceOf(faces) === null) {
       // A face reads no relation while its vessel stands down or locked: the cure reads "up, then unlock", before anything else.
       const shut = face.kahuaRefusalCode !== undefined && SHUT_VESSEL_CODES.has(face.kahuaRefusalCode);
       throw new CarryRefused("carry-face-unworn", shut
@@ -889,10 +889,10 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   if (apply) for (const p of planned) journal.mark(`redeclare:${p.row.face}`, `h${p.handleIndex}`);
 
   // THE LIT SET, as the seed reads it: every bundle face whose face here stands OPEN lands its working and face-canon rows (and
-  // its drafts and temp) in that face's own layer: the worn face's through the ordinary wave, each other open face's through a
-  // wave naming it (the island lands it only where that face owns the document, never on the worn face). A bundle face whose
+  // its drafts and temp) in that face's own layer: the daemon mount's through the ordinary wave, each other open face's through a
+  // wave naming it (the island lands it only where that face owns the document, never on the daemon mount). A bundle face whose
   // face here stands SHUT waits, named; nothing of its memory lands anywhere. Kahua heads lift each under its own face's grant.
-  const litRelation = litFaceOf(faces)?.relation ?? null;
+  const litRelation = mountFaceOf(faces)?.relation ?? null;
   const unworn = new Set(manifest.faces.filter((bf) => target.get(bf.key)!.relation === null).map((bf) => bf.key));
   const faceArgOf = (bf: { readonly key: string }): { face?: number } => {
     const face = target.get(bf.key)!;
@@ -919,17 +919,17 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       catch (e) { warnings.push(`carry-share-unset: the share row of ${r.slug} rests in config/${SHARE_CONFIG_FILE} alone (${e instanceof Error ? e.message : String(e)}); the vessel's next boot reconciles it, and \`lares ${r.kind} share ${r.slug}\` lands it at its owner's wear`); }
     }
   }
-  const wornPet = litFaceOf(faces)?.petname ?? null;
+  const mountPet = mountFaceOf(faces)?.petname ?? null;
   const gates = new Map<string, { why: "writer" | "owner"; owner?: string } | null>();
-  /** Why the worn face may not land this wiki's workbench (or mint the wiki) now, or null where it may. */
+  /** Why the daemon mount may not land this wiki's workbench (or mint the wiki) now, or null where it may. */
   const gateOf = async (slug: string): Promise<{ why: "writer" | "owner"; owner?: string } | null> => {
     if (gates.has(slug)) return gates.get(slug)!;
     let gate: { why: "writer" | "owner"; owner?: string } | null = null;
-    if (litFaceOf(faces) !== null && doors.benchSeat !== undefined) {
+    if (mountFaceOf(faces) !== null && doors.benchSeat !== undefined) {
       const seat = await doors.benchSeat(slug);
       const owner = allShares.find((r) => r.kind === "wiki" && r.slug === slug)?.owner ?? null;
       if (seat.bound) gate = seat.writeSlot === "working" ? null : { why: "writer" };
-      else gate = owner !== null && wornPet !== owner ? { why: "owner", owner } : null;
+      else gate = owner !== null && mountPet !== owner ? { why: "owner", owner } : null;
     }
     gates.set(slug, gate);
     return gate;
@@ -1151,7 +1151,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const files = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`bags/${slug}/`));
     await wave(join(bundle.root, "bags", slug), join(bundle.root, "bags"), join(projections, "bags", slug), wikiBagUri(slug), files, `bag:${slug}`, tallies.bag, null, null, freshSlugs.has(slug));
   }
-  // A WORKBENCH LANDS ONCE, FOR ITS DOCUMENT: through the worn face's island where that face holds a writer's seat (or stands the
+  // A WORKBENCH LANDS ONCE, FOR ITS DOCUMENT: through the daemon mount's island where that face holds a writer's seat (or stands the
   // wiki first), into its one folder (a sourced wiki's rests beside its canon source). Under any other face its rows wait by name.
   const canonWikis = doors.canonWikis?.() ?? null;
   for (const slug of wikiSlugs) {
@@ -1163,7 +1163,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), mirror, wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug, freshSlugs.has(slug));
   }
   let heldNow: ReadonlySet<string> | undefined;
-  // EACH FACE'S PERSONAL LAYER lands at that face's own wear: the vessel grants the personal mirror to the worn face's folder
+  // EACH FACE'S PERSONAL LAYER lands at that face's own wear: the vessel grants the personal mirror to the daemon mount's folder
   // alone, so an open face that stands unworn waits by name, and nothing of its margin lands under another face.
   for (const bf of manifest.faces) {
     const personalFiles = manifest.files.map((f) => f.path).filter((p) => p.startsWith(`faces/${bf.key}/personal/`));
