@@ -40,6 +40,7 @@ import { mintStagedNexusKey } from "../harness/vessel-key.js";
 type Am = { init(): unknown; from(o: object): unknown; change(d: unknown, f: (x: Record<string, unknown>) => void): unknown; save(d: unknown): Uint8Array; loadIncremental(d: unknown, b: Uint8Array): unknown; toJS(d: unknown): unknown };
 const A = createRequire(createRequire(import.meta.url).resolve("@automerge/automerge-repo"))("@automerge/automerge") as Am;
 
+const AUTOMERGE_MAGIC = Buffer.from([0x85, 0x6f, 0x4a, 0x83]);
 const staged = process.env["LAR_TARGET"] !== "live";
 const SEALED_MARK = `sealed-heron-${process.pid}-${Date.now()}`;
 const CLEAR_MARK = `clear-heron-${process.pid}-${Date.now()}`;
@@ -61,21 +62,43 @@ function memeFile(uri: string, text: string): string {
   writeFileSync(path, `<<!DOCTYPE type=\`memetic-wikitext+tiddlywiki\` spec=\`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext\`>>\n\n${text}\n`);
   return path;
 }
-/** Every file under `dir` that holds `needle`'s bytes, its path relative to `dir`. */
+/**
+ * Every file under `dir` that holds `needle`'s bytes, its path relative to `dir`: in its raw bytes, or in the document its
+ * rest decodes to. A store compacts a document's chunks into one snapshot, and a snapshot deflates every column past 256
+ * bytes, so a raw read misses a marker that rests clear there. So the chunks of each document directory (the parent of its
+ * `snapshot/` and `incremental/` folders) decode together, and each chunk of a document that decodes holding the needle
+ * reads as holding it. A sealed chunk carries no Automerge magic and decodes to nothing here.
+ */
 function filesHolding(dir: string, needle: string): string[] {
   const want = Buffer.from(needle);
-  const out: string[] = [];
+  const out = new Set<string>();
+  const docs = new Map<string, Array<{ rel: string; bytes: Buffer }>>();
   const walk = (d: string): void => {
     for (const name of readdirSync(d)) {
       const path = join(d, name);
       const st = statSync(path, { throwIfNoEntry: false });
       if (!st) continue;
-      if (st.isDirectory()) walk(path);
-      else if (st.isFile() && readFileSync(path).includes(want)) out.push(path.slice(dir.length + 1));
+      if (st.isDirectory()) { walk(path); continue; }
+      if (!st.isFile()) continue;
+      const bytes = readFileSync(path);
+      const rel = path.slice(dir.length + 1);
+      if (bytes.includes(want)) out.add(rel);
+      if (bytes.subarray(0, 4).equals(AUTOMERGE_MAGIC)) {
+        const docDir = join(d, "..");
+        docs.set(docDir, [...(docs.get(docDir) ?? []), { rel, bytes }]);
+      }
     }
   };
   walk(dir);
-  return out;
+  for (const chunks of docs.values()) {
+    let doc = A.init();
+    const loaded: string[] = [];
+    for (const c of chunks.sort((a, b) => (a.rel < b.rel ? 1 : -1))) {   // snapshot/ before incremental/
+      try { doc = A.loadIncremental(doc, new Uint8Array(c.bytes)); loaded.push(c.rel); } catch { /* not a chunk this core reads */ }
+    }
+    if (loaded.length > 0 && JSON.stringify(A.toJS(doc)).includes(needle)) for (const rel of loaded) out.add(rel);
+  }
+  return [...out].sort();
 }
 /**
  * The rows one document's rest decodes to, read by a fresh Repo over a copy of that document's shard alone (id[:2] /
