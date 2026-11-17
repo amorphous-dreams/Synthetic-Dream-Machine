@@ -430,26 +430,50 @@ describe("a face that stands open and unworn (the wedge: a walked hearth parked 
   const never = async (): Promise<never> => new Promise<never>(() => { /* a find no peer answers */ });
   const src = [{ title: "daemon/t", revision: "r1" }];
 
-  test("RED: stage, staged, lift, withdraw and carry for a face the vessel does not wear refuse `kahua-face-unworn` before any document opens, so no act waits on a canon that cannot open; CONTROL: the stage's reads still answer, and the worn face stages and lifts", async () => {
+  /** The chore check as the store door hands it: the face the row names, the daemon mount, the lent set, the asker. */
+  const chore = (face: number, mount: number | null, lent: readonly number[] | null = [0, 1]) =>
+    ({ face, mount: () => mount, lent: async () => lent, asker: { hand: "cli" as const, session: "cli:test", generation: null } });
+
+  test("RED: stage, staged, lift, withdraw and carry for a lent face the vessel does not mount refuse `chore-face-not-mounted`, naming the face asked and the mount, before any document opens; CONTROL: the stage's reads still answer", async () => {
     const f = await face();
     await kahuaDoor(f.ports()).mint();
     const lifted = await kahuaDoor(f.ports()).lift({ ...f.st("a", "alpha"), taint: [], sources: src });
     let opened = 0;
-    const unworn = kahuaDoor(f.ports({ worn: () => false, faceCanon: async () => { opened++; return never(); } }));
-    await expect(unworn.stage({ title: "b", text: "beta" })).rejects.toThrow(/^kahua-face-unworn: /);
-    await expect(unworn.stage({ title: "b", text: "beta" })).rejects.toBeInstanceOf(KahuaRefused);
-    await expect(unworn.staged("a")).rejects.toThrow(/^kahua-face-unworn: /);
-    await expect(unworn.lift({ title: "a", digest: "0".repeat(64), taint: [] })).rejects.toThrow(/^kahua-face-unworn: /);
-    await expect(unworn.withdraw(lifted.cid)).rejects.toThrow(/^kahua-face-unworn: /);
-    await expect(unworn.carry({ all: true })).rejects.toThrow(/^kahua-face-unworn: /);
+    const unmounted = kahuaDoor(f.ports({ chore: chore(1, 0), faceCanon: async () => { opened++; return never(); } }));
+    const named = /^chore-face-not-mounted: .*h1.*h0/;
+    await expect(unmounted.stage({ title: "b", text: "beta" })).rejects.toThrow(named);
+    await expect(unmounted.stage({ title: "b", text: "beta" })).rejects.toBeInstanceOf(KahuaRefused);
+    await expect(unmounted.staged("a")).rejects.toThrow(named);
+    await expect(unmounted.lift({ title: "a", digest: "0".repeat(64), taint: [] })).rejects.toThrow(named);
+    await expect(unmounted.withdraw(lifted.cid)).rejects.toThrow(named);
+    await expect(unmounted.carry({ all: true })).rejects.toThrow(named);
     expect(opened).toBe(0);
-    // CONTROL: the stage reads for an unworn face (a seed's preview reads every open face's heads).
-    expect((await unworn.list()).map((i) => i.title)).toEqual(["a"]);
-    expect((await unworn.get("a"))?.status).toBe("standing");
-    // CONTROL: the worn face stages and lifts as before; a door handed no wear reading (a direct act) keeps its own refusals.
-    const worn = kahuaDoor(f.ports({ worn: () => true }));
-    const staged = await worn.stage({ title: "c", text: "gamma" });
-    expect((await worn.lift({ title: "c", digest: staged.digest, taint: [], sources: src })).landed).toBe(true);
+    // CONTROL: the stage reads for an unmounted face (a seed's preview reads every open face's heads).
+    expect((await unmounted.list()).map((i) => i.title)).toEqual(["a"]);
+    expect((await unmounted.get("a"))?.status).toBe("standing");
+  });
+
+  test("RED: a face outside the lend refuses `face-not-lent`, naming the face and the lent set; CONTROL: with no lent set read, the mount and the face asked stand the lend and the carry alone judges", async () => {
+    const f = await face();
+    await kahuaDoor(f.ports()).mint();
+    await expect(kahuaDoor(f.ports({ chore: chore(2, 0, [0, 1]) })).stage({ title: "b", text: "beta" })).rejects.toThrow(/^face-not-lent: .*h2.*h0, h1/);
+    await expect(kahuaDoor(f.ports({ chore: chore(1, 0, null) })).stage({ title: "b", text: "beta" })).rejects.toThrow(/^chore-face-not-mounted: .*h1.*h0/);
+  });
+
+  test("RED: the mounted face's stage, lift and withdraw each carry the chore's receipt mark (the acting face, the asker's hand, its session); reads carry none; CONTROL: a door with no mount (the floor, a direct act) keeps its own refusals and marks nothing", async () => {
+    const f = await face();
+    await kahuaDoor(f.ports()).mint();
+    const mounted = kahuaDoor(f.ports({ chore: chore(0, 0) }));
+    const mark = { acting: 0, asker: "cli", session: "cli:test" };
+    const staged = await mounted.stage({ title: "c", text: "gamma" });
+    expect(staged.chore).toEqual(mark);
+    const lifted = await mounted.lift({ title: "c", digest: staged.digest, taint: [], sources: src });
+    expect(lifted).toMatchObject({ landed: true, chore: mark });
+    expect((await mounted.withdraw(lifted.cid)).chore).toEqual(mark);
+    expect(await mounted.staged("c")).not.toHaveProperty("chore");
+    const floor = kahuaDoor(f.ports({ chore: chore(1, null) }));
+    const free = await floor.stage({ title: "d", text: "delta" });
+    expect(free).not.toHaveProperty("chore");
   });
 });
 
