@@ -45,7 +45,7 @@ import { join } from "node:path";
 import { MANIFEST_FILE, unsafeRelPath } from "./carry-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
-import { KEEP_INTO, KeepRefused, RITE_KEEP } from "./rite-keep.js";
+import { KEEP_INTO, KeepRefused, RITE_KEEP, mountLine } from "./rite-keep.js";
 import type { RiteVerbAnswer } from "./rite-kukulu.js";
 
 /**
@@ -129,7 +129,9 @@ export function secretShapes(text: string): string[] {
 export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions): Promise<KeepHostOutcome> {
   const name = opts.workspace, into = opts.into ?? KEEP_INTO;
   const base: Record<string, unknown> = { rite: RITE_KEEP, workspace: name, into };
-  const face = opts.face === undefined ? {} : { face: opts.face };
+  // THE FACE: the one the line names rides the cut; naming none, the vessel half acts as the daemon mount and names it, and
+  // every row after the cut rides the face the cut acted as.
+  let face: { face?: number } = opts.face === undefined ? {} : { face: opts.face };
   let stage = "guard";
   try {
     const unsafe = unsafeRelPath(into);
@@ -199,6 +201,13 @@ export async function riteKeepHost(ports: KeepHostPorts, opts: KeepHostOptions):
     stage = "keep";
     const cut = await ports.row("keep-cut", { workspace: name, into, ...(opts.acceptOmissions === true ? { "accept-omissions": true } : {}), ...face });
     if (!cut.ok) throw new HostRefused(cut.code, KEEP_VESSEL_UNREACHED.has(cut.code) ? `${KEEP_VESSEL_DOWN} (${cut.message}). No return spent, and nothing commits or pushes${sessionsMoved ? `; the sessions rest mirrored in ${devRel!}/ for the keep that follows` : ""}` : cut.message);
+    const actedAs = cut.output["face"];
+    if (typeof actedAs === "number" && Number.isSafeInteger(actedAs)) {
+      face = { face: actedAs };
+      const by = cut.output["faceBy"] === "mount" ? "mount" : "named";
+      Object.assign(base, { face: actedAs, faceBy: by });
+      if (by === "mount") ports.say(`keep: ${mountLine(actedAs)}`);
+    } else if (opts.face !== undefined) Object.assign(base, { face: opts.face, faceBy: "named" });
     const kept = cut.output["kept"] === true;
     const bundleId = String(cut.output["bundleId"]);
     const tessera = kept ? String(cut.output["tessera"]) : null;

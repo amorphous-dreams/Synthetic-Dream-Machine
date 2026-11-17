@@ -70,14 +70,27 @@ export interface KeepPorts {
   cut(dest: string, opts: { readonly workspace: string; readonly acceptOmissions: boolean; readonly woken?: readonly string[] }): Promise<CarryManifest>;
   /** The wiki switcher the wake walks. Absent: no wiki wakes, and the cut names every cold one. */
   readonly wikis?: KeepWikiPorts;
+  /**
+   * The face the daemon mount runs under (`face.resolve` with `worn`), the face a keep naming none acts as; it throws, naming
+   * why, where the vessel stands no mount (the floor). Absent: a keep naming no face rides none, and the vessel resolves it.
+   */
+  mountFace?(): Promise<number>;
 }
+
+/** How the keep came by its face: the line named it, or it acts as the daemon mount. */
+export type KeepFaceBy = "named" | "mount";
+/** The line a keep's answer says about its face, where it acts as the mount. */
+export const mountLine = (face: number): string => `acting as h${face}, the daemon mount`;
 
 export interface KeepOptions { readonly workspace: string; readonly into?: string; readonly acceptOmissions?: boolean; readonly face?: number }
 
-export type KeepResult =
+/** The face a keep acted as, where it named one or the mount answered one. */
+export type KeepFace = { readonly face?: number; readonly faceBy?: KeepFaceBy };
+
+export type KeepResult = KeepFace & (
   | { readonly kept: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string; readonly tessera: string; readonly lei: string; readonly n: number;
       readonly faces: readonly string[]; readonly counts: CarryManifest["counts"]; readonly omissions: CarryManifest["omissions"] }
-  | { readonly kept: false; readonly standing: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string };
+  | { readonly kept: false; readonly standing: true; readonly workspace: string; readonly into: string; readonly dest: string; readonly bundleId: string });
 
 const within = (child: string, parent: string): boolean => child === parent || child.startsWith(parent.endsWith(sep) ? parent : parent + sep);
 const real = (p: string): string | null => { try { return realpathSync(p); } catch { return null; } };
@@ -145,14 +158,22 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     try { schema = lstatSync(target).isDirectory() ? (JSON.parse(readFileSync(join(target, MANIFEST_FILE), "utf8")) as { schema?: unknown }).schema : null; } catch { schema = null; }
     if (schema !== CARRY_SCHEMA) throw new KeepRefused("keep-dest-foreign", `${target} stands and holds no ${CARRY_SCHEMA} bundle; a keep replaces only the bundle an earlier keep left, so name another place with --into`);
   }
-  const face = opts.face === undefined ? {} : { face: opts.face };
+  // THE FACE THE KEEP ACTS AS: the one the line names, else the daemon mount, a named fact of the standing vessel; no mount
+  // (the floor) refuses by name before any row reads.
+  let acting: KeepFace = opts.face === undefined ? {} : { face: opts.face, faceBy: "named" };
+  if (opts.face === undefined && ports.mountFace !== undefined) {
+    try { acting = { face: await ports.mountFace(), faceBy: "mount" }; }
+    catch (e) { throw new KeepRefused("keep-face-unmounted", `the keep names no face and the vessel stands no daemon mount to act as (${e instanceof Error ? e.message : String(e)}); name the face the keep acts as (--face N)`); }
+  }
+  const face = acting.face === undefined ? {} : { face: acting.face };
+  const hintFace = acting.face === undefined ? "" : ` --face ${acting.face}`;
 
   // THE LINE FIRST: with no lei standing, no byte of memory leaves its mirror.
   const line = await ports.row("swarm-show", { rite: RITE_KEEP, branch: name, ...face });
   if (!line.ok) throw new KeepRefused(line.code, line.message);
   const lei = line.output["lei"] as { standing?: boolean; refusal?: string } | undefined;
   if (lei?.standing !== true) {
-    throw new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns <n>\``);
+    throw new KeepRefused(`swarm-lei-${lei?.refusal ?? "absent"}`, `no keep lei stands for the workspace "${name}" (${lei?.refusal ?? "absent"}); the hand strings one: \`lares lei kui --rite keep --branch ${name} --returns <n>${hintFace}\``);
   }
 
   const parent = dirname(target);
@@ -172,7 +193,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     const bundleId = manifest.bundleId;
     if (existsSync(target) && standingBundle(target) === bundleId) {
       rmSync(staging, { recursive: true, force: true });
-      return { kept: false, standing: true, workspace: name, into, dest: target, bundleId };
+      return { kept: false, standing: true, workspace: name, into, dest: target, bundleId, ...acting };
     }
     const receipt = await ports.row("rite-receipt", { tree: bundleId, checks: [KEEP_CHECK], verdict: "pass", definitions: sha256Hex(CARRY_SCHEMA), ...face });
     if (!receipt.ok) throw new KeepRefused(receipt.code, receipt.message);
@@ -189,7 +210,7 @@ export async function riteKeep(ports: KeepPorts, opts: KeepOptions): Promise<Kee
     return {
       kept: true, workspace: name, into, dest: target, bundleId,
       tessera: String(begun.output["tessera"]), lei: String(begun.output["lei"]), n: Number(begun.output["n"]),
-      faces: manifest.faces.map((f) => f.petname), counts: manifest.counts, omissions: manifest.omissions,
+      faces: manifest.faces.map((f) => f.petname), counts: manifest.counts, omissions: manifest.omissions, ...acting,
     };
   } catch (e) {
     rmSync(staging, { recursive: true, force: true });
