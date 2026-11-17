@@ -462,6 +462,15 @@ test("carry-standoff-reads-a-named-set: the import's stand-offs judge against th
   assert.match(refused.faults.join("; "), /refused/);
   const waiting = judgeImport([{ code: 1, json: { data: { tallies: tallies([`${moved} (x)`]), waiting: [{ face: "f2" }] } } }], { expectedStandoff: [moved] });
   assert.match(waiting.faults.join("; "), /waiting/);
+  // A refusal the plan seeded (the non-NFC record the source house holds) reads excused by its uri; another refusal stays red.
+  const nfc = "lar:///ha.ka.ba/kahua/memory/research/non-nfc";
+  const seeded = judgeImport([{ code: 4, json: { data: { applied: true, tallies: tallies([`${moved} (x)`], [`${nfc} (non-NFC bytes)`]), waiting: [] } } }], { expectedStandoff: [moved], expectedRefused: [nfc] });
+  assert.equal(seeded.ok, true, seeded.faults.join("; "));
+  assert.deepEqual(seeded.excusedRefused, [`memes: ${nfc} (non-NFC bytes)`]);
+  const both = judgeImport([{ code: 4, json: { data: { applied: true, tallies: tallies([`${moved} (x)`], [`${nfc} (non-NFC bytes)`, "lar:///r (no)"]), waiting: [] } } }], { expectedStandoff: [moved], expectedRefused: [nfc] });
+  assert.match(both.faults.join("; "), /1 row\(s\) refused: memes: lar:\/\/\/r/);
+  const never = judgeImport([{ code: 0, json: { data: { applied: true, tallies: tallies([`${moved} (x)`]), waiting: [] } } }], { expectedStandoff: [moved], expectedRefused: [nfc] });
+  assert.match(never.faults.join("; "), /expected refusal .*non-nfc never refused/);
   const unread = judgeImport([{ code: 2, json: null }], { expectedStandoff: [] });
   assert.match(unread.faults.join("; "), /answered no JSON/);
 });

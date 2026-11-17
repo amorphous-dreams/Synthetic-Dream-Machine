@@ -124,7 +124,7 @@ export function kapaeArgs(e) {
   return ["tiddler", "delete", e.title, "--recipe", e.recipe, "--family", "--mode", "kapae", "--no-json"];
 }
 
-export function judgeImport(answers, { expectedStandoff = [] } = {}) {
+export function judgeImport(answers, { expectedStandoff = [], expectedRefused = [] } = {}) {
   const faults = [], stood = new Set(), refused = [];
   const landed = {};
   answers.forEach((a, i) => {
@@ -138,10 +138,15 @@ export function judgeImport(answers, { expectedStandoff = [] } = {}) {
   });
   for (const uri of expectedStandoff) if (!stood.has(uri)) faults.push(`expected stand-off ${uri} never stood off`);
   for (const uri of stood) if (!expectedStandoff.includes(uri)) faults.push(`unexpected stand-off ${uri}`);
-  if (refused.length > 0) faults.push(`${refused.length} row(s) refused: ${refused.slice(0, 5).join("; ")}`);
+  // A refusal the plan seeded on purpose (a record the source house holds and the new house refuses by name) reads excused by
+  // its uri; any other refusal reads red. The receipt names each excused one.
+  const named = (r) => expectedRefused.some((uri) => r.includes(uri));
+  const unnamed = refused.filter((r) => !named(r));
+  for (const uri of expectedRefused) if (!refused.some((r) => r.includes(uri))) faults.push(`expected refusal ${uri} never refused`);
+  if (unnamed.length > 0) faults.push(`${unnamed.length} row(s) refused: ${unnamed.slice(0, 5).join("; ")}`);
   const waiting = answers.at(-1)?.json?.data?.waiting ?? [];
   if (waiting.length > 0) faults.push(`${waiting.length} row set(s) still waiting after every face imported: ${JSON.stringify(waiting).slice(0, 300)}`);
-  return { ok: faults.length === 0, faults, stoodOff: [...stood], refused, landed };
+  return { ok: faults.length === 0, faults, stoodOff: [...stood], refused, excusedRefused: refused.filter(named), landed };
 }
 
 /** Judge the export's answer: exit 0, and no omission but the allowed ones. A wiki the steward woke at hold-old projected
@@ -369,6 +374,7 @@ const seedContent = async (c) => {
   const canon = await canonFor(c);
   const plan = seedPlan({ count: c.vars.count ?? 300, canon, bodies: [canon.still.text, canon.moved.text] });
   c.vars.expectedStandoff = plan.expectedStandoff;
+  c.vars.expectedRefused = plan.faces[0].filter((r) => r.kind === "non-nfc").map((r) => r.uri);
   c.vars.stageUris = plan.faces[0].filter((r) => r.recipe === "default" && r.uri.startsWith(STAGE_PREFIX) && r.kind !== "non-nfc").map((r) => r.uri);
   rmSync(c.scope.seedSrc, { recursive: true, force: true });
   for (const f of seedFiles(plan)) { mkdirSync(dirname(join(c.scope.seedSrc, f.path)), { recursive: true }); writeFileSync(join(c.scope.seedSrc, f.path), f.text); }
@@ -596,13 +602,18 @@ const importApply = async (c) => {
     const answer = json(r.stdout);
     answers.push({ code: r.code, json: answer });
     // An apply that answered no JSON keeps its terminal: the prompts it asked, the transcript's tail and the exit name the cause.
-    if (answer === null) unread.push(`face ${face} exit ${r.code}, asked ${JSON.stringify(promptsOf(flat(r.stdout)))}: ${tail(r.stdout)}`);
+    if (answer === null) {
+      const lines = flat(r.stdout).split("\n");
+      const at = lines.findIndex((l) => /\b(?:[A-Z]\w*Error|Error)\b[:\s]/.test(l) || /\bRefused\b/.test(l));
+      const head = at >= 0 ? lines.slice(at, at + 4).join(" | ").slice(0, 600) : "(no error line)";
+      unread.push(`face ${face} exit ${r.code}, asked ${JSON.stringify(promptsOf(flat(r.stdout)))}: ${head} · ${tail(r.stdout)}`);
+    }
     mkdirSync(c.scope.census, { recursive: true });
     const file = join(c.scope.census, `import-${face}.json`);
     writeFileSync(file, `${JSON.stringify(answer, null, 2)}\n`);
     (c.vars.imports ??= [])[face] = file;
   }
-  const j = judgeImport(answers, { expectedStandoff: c.vars.expectedStandoff ?? [] });
+  const j = judgeImport(answers, { expectedStandoff: c.vars.expectedStandoff ?? [], expectedRefused: c.vars.expectedRefused ?? [] });
   c.vars.importTallies = answers.map((a) => a.json?.data?.tallies ?? null);
   return { ok: j.ok, answer: j.ok ? `stood off exactly the named set ${JSON.stringify(j.stoodOff)}; landed ${JSON.stringify(j.landed)}` : [...j.faults, ...unread].join("; "), measures: { exits: answers.map((a) => a.code), stoodOff: j.stoodOff, refused: j.refused, landed: j.landed, unread } };
 };
@@ -625,7 +636,7 @@ const reimport = async (c) => {
 
 const compare = async (c, out) => {
   const pick = (label) => (c.vars[`census-${label}`] ?? []);
-  const args = [PARITY, ...compareArgs({ old: pick("old"), fresh: pick("new"), base: pick("new-base"), imports: (c.vars.imports ?? []).filter(Boolean), standOff: c.vars.expectedStandoff ?? [], out })];
+  const args = [PARITY, ...compareArgs({ old: pick("old"), fresh: pick("new"), base: pick("new-base"), imports: (c.vars.imports ?? []).filter(Boolean), standOff: [...(c.vars.expectedStandoff ?? []), ...(c.vars.expectedRefused ?? [])], out })];
   const r = await c.node(args, { env: c.hands("new").env, timeout: 600_000 });
   return { code: r.code, answer: json(r.stdout) };
 };
