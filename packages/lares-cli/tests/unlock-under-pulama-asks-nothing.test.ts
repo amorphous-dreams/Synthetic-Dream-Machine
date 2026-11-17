@@ -109,6 +109,32 @@ describe("RED unlock-under-pulama-asks-nothing (the command)", () => {
     expect(answer().error?.code).toBe("daemon-unreachable");
   });
 
+  it("RED probe-waits-out-the-recomposition: the unlock frame reads no answer while the vessel recomposes; the probe waits out the gap (no socket, then `composing` with the session still standing) and names `composition-refused` once the dial settles", async () => {
+    const { PULAMA_PROBE } = await import("../src/commands/vault.js");
+    PULAMA_PROBE.waitMs = 1;
+    let probes = 0;
+    door = (frame) => {
+      if (frame["op"] !== "custody") return null;
+      probes += 1;
+      if (probes === 1) return custody({ session: false, waits: "pulama-image-unadmitted" });
+      // THE GAP: the composition tore down (no socket answers), then the floor stands while the dial still runs.
+      if (probes === 2) return null;
+      if (probes === 3) return { ...custody({ session: true, waits: null }), composing: true };
+      return { ...custody({ session: false, waits: "composition-refused" }), composing: false };
+    };
+    expect(await run("unlock")).toBe(1);
+    expect(prompts).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }, { op: "unlock" }, { op: "custody" }, { op: "custody" }, { op: "custody" }]);
+    expect(answer().error?.code).toBe("pulama-waits");
+    expect(answer().error?.message).toContain("composition-refused");
+    // CONTROL: a vessel that never answers again reads unreachable, within the probe's bound.
+    frames.length = 0; out.length = 0;
+    door = (frame) => (frame["op"] === "custody" && frames.length === 1 ? custody({ session: false, waits: "pulama-locked" }) : null);
+    expect(await run("unlock")).toBe(1);
+    expect(answer().error?.code).toBe("daemon-unreachable");
+    expect(frames.length).toBe(2 + PULAMA_PROBE.tries);
+  });
+
   it("a pūlama that serves the vessel answers standing, with no route asked", async () => {
     door = (frame) => frame["op"] === "custody" ? custody({ session: false, waits: "pulama-locked" })
       : { op: "unlock", reading: "opens", held: true, standing: "hearth", pulama: { session: true, waits: null } };
