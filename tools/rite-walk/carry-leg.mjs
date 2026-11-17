@@ -759,6 +759,13 @@ const parity = async (c) => {
   return { ok: r.code === 0 && r.answer?.verdict === "par", answer: `exit ${r.code}; verdict ${r.answer?.verdict ?? "(none)"}${r.answer?.verdict === "par" ? "" : ` · ${JSON.stringify(r.answer).slice(0, 400)}`}`, measures: { receipt: relative(c.scope.base, out) } };
 };
 
+/** A meme read for a re-put: the text alone. A `meme get` whose stdout is no terminal answers the JSON envelope, and a put
+ *  of that envelope refuses (`postamble-content`), so the read asks `--no-json`. */
+export const memeGetArgs = (uri) => ["meme", "get", uri, "--recipe", "default", "--no-json"];
+
+/** The sweep's one exec inside the vessel: read each stage row as text (`--no-json`), strip its `row-key` line, put it back. */
+export const sweepScript = (cli) => `n=0; bad=0; for u in $(cat /lar/config/sweep/uris); do n=$((n+1)); ${cli} meme get "$u" --recipe default --no-json > /tmp/sweep.mem 2>/dev/null && sed -i '/^row-key = "[^"]*"$/d' /tmp/sweep.mem && ${cli} meme put "$u" --recipe default --file /tmp/sweep.mem --json > /dev/null 2>&1 || { bad=$((bad+1)); echo "SWEEP-REFUSED $u"; }; done; echo "SWEPT $n BAD $bad"`;
+
 /** The instrument must read red where the new house moved: one row dropped, one row changed; then both restored, par again. */
 const instrumentCollisions = async (c) => {
   const h = c.hands("new");
@@ -768,7 +775,7 @@ const instrumentCollisions = async (c) => {
   if (!w.ok) return { ok: false, answer: `the steward never stood worn: ${tail(w.transcript)}` };
   const keep = {};
   for (const uri of [dropped, changed]) {
-    const got = await h.shim(["meme", "get", uri, "--recipe", "default"]);
+    const got = await h.shim(memeGetArgs(uri));
     if (got.code !== 0) return { ok: false, answer: `meme get ${uri}: ${refusal(got)}` };
     keep[uri] = got.stdout;
   }
@@ -821,7 +828,7 @@ const rowKeySweep = async (c) => {
   if (!w.ok) return { ok: false, answer: `the steward never stood worn: ${tail(w.transcript)}` };
   const keyed = async () => (json((await h.shim(["wiki", "filter", `[prefix[${STAGE_PREFIX}]has[row-key]]`, "--recipe", "default", "--all", "--json"], { timeout: 300_000 })).stdout)?.data?.rows ?? []).length;
   const before = await keyed();
-  const script = `n=0; bad=0; for u in $(cat /lar/config/sweep/uris); do n=$((n+1)); ${IN_CLI} meme get "$u" --recipe default > /tmp/sweep.mem 2>/dev/null && sed -i '/^row-key = "[^"]*"$/d' /tmp/sweep.mem && ${IN_CLI} meme put "$u" --recipe default --file /tmp/sweep.mem --json > /dev/null 2>&1 || { bad=$((bad+1)); echo "SWEEP-REFUSED $u"; }; done; echo "SWEPT $n BAD $bad"`;
+  const script = sweepScript(IN_CLI);
   mkdirSync(join(c.scope.houseNew, "config", "sweep"), { recursive: true });
   writeFileSync(join(c.scope.houseNew, "config", "sweep", "uris"), `${(c.vars.stageUris ?? []).join("\n")}\n`);
   const r = await h.compose(["exec", "-T", "lares", "sh", "-c", script], { timeout: 3_600_000 });
