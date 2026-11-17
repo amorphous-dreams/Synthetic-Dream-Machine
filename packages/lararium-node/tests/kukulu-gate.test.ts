@@ -138,6 +138,9 @@ describe("RED pulama-refuses-an-unvouched-kukulu", () => {
     // A vouch rides an array, one per lent face: a lone vouch outside one refuses by the offer's shape.
     expect(await s.hello({ lei: [lei], vouch: v })).toBe("kukulu-vouch-shape");
     expect(await s.hello({ lei: [lei], vouch: ["not-a-vouch"] })).toBe("kukulu-vouch-shape");
+    // A null vouch reads as no array, never as no offer.
+    expect(await s.hello({ lei: [lei], vouch: null })).toBe("kukulu-vouch-shape");
+    expect(await s.hello({ vouch: null })).toBe("kukulu-vouch-shape");
     // A key the custody root never yielded signs a well-formed vouch: the pūlama derives the vouch key itself and refuses it.
     const seed = new Uint8Array(32).fill(7);
     const stranger: SwarmSignerPort = { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) };
