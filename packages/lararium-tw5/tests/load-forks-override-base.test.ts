@@ -59,7 +59,9 @@ describe("a LOAD into a wiki's working layer forks the override base", () => {
     const forkedFrom = carrierHashOf((await r.canon.get(URI))!.tiddler);
     await r.load(WORKING, carrier("a hand's copy"));
     expect(overrideBaseOf(await r.working.get(URI)), "the LOAD forked a copy over canon that names no base").toBe(forkedFrom);
-    await r.ingestCanon(carrier("canon words now"));
+    // Canon moves under the copy (a promotion, a seed): its root record takes new words.
+    const then = (await r.canon.get(URI))!;
+    await r.canon.put({ tiddler: { ...then.tiddler, text: `${String(then.tiddler["text"] ?? "")}\n\ncanon moved` }, meta: {} }, { kind: "canon-hydrate", receipt: "t" });
     expect(carrierHashOf((await r.canon.get(URI))!.tiddler)).not.toBe(forkedFrom);
     await r.load(WORKING, carrier("a hand's copy, again"));
     expect(overrideBaseOf(await r.working.get(URI)), "a later LOAD re-forked the copy off the canon standing now").toBe(forkedFrom);

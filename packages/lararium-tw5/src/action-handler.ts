@@ -54,7 +54,7 @@ import {
   skinnyHandleTiddler, isOversizedBody, ridesAsPointer,
   crossingDirection, type CapTier,
   isEffectRecordUri, effectRecordUri, RETIRED_EVENT_ID, isRetirementMarker, storeIsRetired,
-  writesBag, VerbRefusal, workingLayerOfCanon, isWorkingLayerBag, overrideBaseOf, OVERRIDE_BASE_META,
+  writesBag, VerbRefusal, workingLayerOfCanon, canonOfWorkingLayer, isWorkingLayerBag, overrideBaseOf, carrierHashOf, OVERRIDE_BASE_META,
   CONTROL_HOME_ID, SECRET_HOME_ID,
   yieldToHost,
 } from "@lararium/mesh";
@@ -1164,12 +1164,15 @@ async function executeLoad(action: LoadAction, access: BagAccess, tw5?: Tw5Deser
   // takes the turn in between cannot be overwritten by a decision made before the yield. The executors
   // that DO decide before they write (INGEST's Confluence gate, MOVE's read-then-retract) take no yield.
   const o = origin(action);
+  // THE FORK REMEMBERS ITS BASE: LOAD writes the layer's own store, around `CompositeStore.put`, so a LOAD into a wiki's
+  // working layer names each copy's override base itself (`forkingOverrideBase`).
+  const fork = isWorkingLayerBag(action.toBag) ? await forkingOverrideBase(access, action.toBag) : null;
   let slice: LarTiddlerRecord[] = [];
   let landedSlices = 0;
   const landSlice = async (): Promise<void> => {
     if (slice.length === 0) return;
     if (landedSlices > 0) await yieldHostTask();
-    await writeFamilyIn(access, action.toBag, slice, o);
+    await writeFamilyIn(access, action.toBag, fork ? await Promise.all(slice.map(fork)) : slice, o);
     for (const record of slice) titles.push(record.tiddler.title);
     landedSlices++;
     slice = [];
@@ -1730,6 +1733,31 @@ async function overrideWatch(access: BagAccess, canonBag: string): Promise<{ rea
   const prior = await snapshotUnderOverrides(working, canon);
   if (prior.size === 0) return null;
   return { read: () => fresherAfterChange(canonBag, workingBag, working, canon, prior) };
+}
+
+/**
+ * THE FORK STAMP FOR A DOOR THAT WRITES A WORKING LAYER'S OWN STORE, by the composite's rule (`override-base.ts`,
+ * `CompositeStore._withOverrideBasesNow`): a record that names its own base, or a tombstone, passes untouched; a title the
+ * working layer holds live keeps the base it named; any other title names the carrier identity of the live record the wiki's
+ * canon bag holds (`canonOfWorkingLayer`, the bag the fresher read weighs it against). Where the working layer reads nothing
+ * here the base stays unknown and the record lands unstamped. An instrument, never a gate.
+ */
+async function forkingOverrideBase(access: BagAccess, workingBag: string): Promise<(record: LarTiddlerRecord) => Promise<LarTiddlerRecord>> {
+  const working = await access.read(workingBag).catch(() => null);
+  const canonBag = canonOfWorkingLayer(workingBag);
+  const canon = canonBag ? await access.read(canonBag).catch(() => null) : null;
+  return async (record) => {
+    if (!working || record.meta?.deleted === true || overrideBaseOf(record) !== null) return record;
+    const title = String(record.tiddler.title);
+    const held = await working.get(title);
+    let base: string | null = null;
+    if (held && held.meta?.deleted !== true) base = overrideBaseOf(held);
+    else if (canon) {
+      const lower = await canon.get(title);
+      if (lower && lower.meta?.deleted !== true) base = carrierHashOf(lower.tiddler);
+    }
+    return base === null ? record : { ...record, meta: { ...(record.meta ?? {}), [OVERRIDE_BASE_META]: base } };
+  };
 }
 
 /**
