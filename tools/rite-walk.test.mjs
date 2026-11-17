@@ -662,9 +662,9 @@ test("carry-parity-contract: an import that never applied reads a fault; compare
   const t = { memes: { landed: 1, already: 0, planned: 0, waiting: 0, stoodOff: [`${moved} (x)`], refused: [] } };
   assert.equal(judgeImport([{ code: 1, json: { data: { applied: true, tallies: t, waiting: [] } } }], { expectedStandoff: [moved] }).ok, true);
   assert.match(judgeImport([{ code: 1, json: { data: { applied: false, tallies: t, waiting: [] } } }], { expectedStandoff: [moved] }).faults.join("; "), /never applied/);
-  const args = compareArgs({ old: ["o0.json", "o1.json"], fresh: ["n0.json"], base: ["b0.json"], imports: ["i0.json", "i1.json"], standOff: [moved], out: "r.json" });
+  const args = compareArgs({ old: ["o0.json", "o1.json"], fresh: ["n0.json"], base: ["b0.json"], imports: ["i0.json", "i1.json"], standOff: [moved], manifest: "m.json", out: "r.json" });
   assert.deepEqual(args.slice(0, 1), ["compare"]);
-  for (const [flag, value] of [["--old", "o1.json"], ["--new", "n0.json"], ["--base", "b0.json"], ["--imports", "i1.json"], ["--stand-off", moved]]) {
+  for (const [flag, value] of [["--old", "o1.json"], ["--new", "n0.json"], ["--base", "b0.json"], ["--imports", "i1.json"], ["--stand-off", moved], ["--manifest", "m.json"]]) {
     assert.ok(args.some((a, i) => a === flag && args[i + 1] === value), `${flag} ${value}`);
   }
   assert.ok(args.includes("--json") && args[args.indexOf("--out") + 1] === "r.json");

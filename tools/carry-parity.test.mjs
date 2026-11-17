@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { compareCensus, MAY_DIFFER } from "./carry-parity.mjs";
+import { compareCensus, MAY_DIFFER, receiptLines } from "./carry-parity.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
 
@@ -100,6 +100,47 @@ test("P1 a new-base reading takes the new house's own founding rows out of extra
   const fresh = reading({ steward: { memes: { ...reading().face.steward.memes, [genesisRow]: "sha256:ff", "default lar:///ha.ka.ba/x/stray": "sha256:ee" } } });
   const r = compareCensus([reading()], [fresh], [base]);
   assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`), ["extra default lar:///ha.ka.ba/x/stray"]);
+});
+
+test("P1 a changed row whose new value equals the new-base reading reads as moved canon, named in the receipt and never red; a row the bundle carried stays red", () => {
+  const canon = "lares lar:///ha.ka.ba/lares/docs/heron-law", copy = "lares lar:///ha.ka.ba/lares/docs/pond-law", edit = "lares lar:///ha.ka.ba/lares/docs/kite-law";
+  const memes = (m) => ({ ...reading().face.steward.memes, ...m });
+  const old = reading({ steward: { memes: memes({ [canon]: "sha256:c1", [copy]: "sha256:w1", [edit]: "sha256:e1" }) } });
+  const base = reading({ steward: { memes: { [canon]: "sha256:c2", [copy]: "sha256:c2p", [edit]: "sha256:e2" }, index: {}, plain: {} }, house: { shares: {} } });
+  // canon moved under the image (new == new-base); the carried working copy landed as canon (a loss); the edit differs from both.
+  const fresh = reading({ steward: { memes: memes({ [canon]: "sha256:c2", [copy]: "sha256:c2p", [edit]: "sha256:e3" }) } });
+  const r = compareCensus([old], [fresh], [base], { carried: ["lar:///ha.ka.ba/lares/docs/pond-law"] });
+  assert.equal(r.verdict, "red");
+  assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`).sort(), [`changed ${copy}`, `changed ${edit}`]);
+  assert.deepEqual(r.moved.map((d) => `${d.scope} ${d.class} ${d.key} ${d.old} -> ${d.new}`), [`face:steward memes ${canon} sha256:c1 -> sha256:c2`]);
+  // Moved canon alone reads par, and the receipt's text names the moved count.
+  const only = compareCensus([old], [reading({ steward: { memes: memes({ [canon]: "sha256:c2", [copy]: "sha256:w1", [edit]: "sha256:e1" }) } })], [base]);
+  assert.equal(only.verdict, "par", JSON.stringify(only.differences));
+  assert.equal(only.moved.length, 1);
+  assert.ok(receiptLines(only).some((l) => /moved canon \(may differ\): face:steward · memes: changed lares lar:\/\/\/ha\.ka\.ba\/lares\/docs\/heron-law/.test(l)), receiptLines(only).join("\n"));
+  // Without a base nothing moves: the same row reads changed.
+  assert.equal(compareCensus([old], [fresh]).moved.length, 0);
+  // Moved canon never excuses a missing row.
+  const gone = reading({ steward: { memes: memes({ [copy]: "sha256:w1", [edit]: "sha256:e1" }) } });
+  assert.ok(compareCensus([old], [gone], [base]).differences.some((d) => d.kind === "missing" && d.key === canon));
+});
+
+test("P1 --manifest reads the carried uris from the bundle's manifest rows: a carried row equal to the new-base reading stays red", () => {
+  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-manifest-"));
+  try {
+    const key = "lares lar:///ha.ka.ba/lares/docs/pond-law";
+    const memes = (v) => ({ steward: { memes: { ...reading().face.steward.memes, [key]: v } } });
+    const a = join(dir, "old.json"), b = join(dir, "new.json"), base = join(dir, "base.json"), manifest = join(dir, "manifest.json");
+    writeFileSync(a, JSON.stringify(reading(memes("sha256:w1"))));
+    writeFileSync(b, JSON.stringify(reading(memes("sha256:c2"))));
+    writeFileSync(base, JSON.stringify(reading({ steward: { memes: { [key]: "sha256:c2" }, index: {}, plain: {} }, house: { shares: {} } })));
+    writeFileSync(manifest, JSON.stringify({ schema: "lar-carry/1", rows: [{ layer: "wiki-working", bag: "lar:///ha.ka.ba/wikis/lares/working", title: "lar:///ha.ka.ba/lares/docs/pond-law" }] }));
+    const moved = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b, "--base", base], { encoding: "utf8" });
+    assert.equal(moved.status, 0, moved.stdout + moved.stderr);
+    const carried = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b, "--base", base, "--manifest", manifest], { encoding: "utf8" });
+    assert.equal(carried.status, 1, carried.stdout + carried.stderr);
+    assert.match(carried.stdout, /changed lares lar:\/\/\/ha\.ka\.ba\/lares\/docs\/pond-law/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
 test("P1 the compare verb reads census files: par exits 0, red exits 1 and prints one line per difference", () => {
