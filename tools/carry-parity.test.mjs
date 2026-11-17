@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { compareCensus, MAY_DIFFER, receiptLines } from "./carry-parity.mjs";
+import { census, compareCensus, MAY_DIFFER, receiptLines } from "./carry-parity.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
 
@@ -88,10 +88,60 @@ test("P1 a missing, a changed and an extra row each read red under their class a
 
 test("P1 a face the exporting house wore and the new census never read reads red by name, never as par", () => {
   const fresh = reading();
-  fresh.face = {};
+  fresh.face = { engineer: fresh.face.steward };
   const r = compareCensus([reading()], [fresh]);
   assert.equal(r.verdict, "red");
   assert.ok(r.differences.some((d) => d.scope === "face:steward" && d.kind === "missing" && d.class === "face"), JSON.stringify(r.differences));
+});
+
+test("P1 RED: a census of nothing never reads par: a side that read no face, or no meme, refuses `census-empty` by side", () => {
+  const faceless = reading();
+  faceless.face = {};
+  const memeless = reading({ steward: { memes: {} } });
+  for (const [label, old, fresh, side, what] of [
+    ["both faceless", faceless, faceless, "old", "no face"],
+    ["old faceless", faceless, reading(), "old", "no face"],
+    ["new faceless", reading(), faceless, "new", "no face"],
+    ["both memeless", memeless, memeless, "old", "no meme"],
+    ["new memeless", reading(), memeless, "new", "no meme"],
+  ]) {
+    assert.throws(() => compareCensus([old], [fresh]), (e) => e.fault === "census-empty" && e.side === side && e.message.includes(what), label);
+  }
+  // The compare verb refuses the same way: exit 2, the fault named, no receipt.
+  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-empty-"));
+  try {
+    const a = join(dir, "old.json"), b = join(dir, "new.json");
+    writeFileSync(a, JSON.stringify(faceless));
+    writeFileSync(b, JSON.stringify(faceless));
+    const r = spawnSync(process.execPath, [tool, "compare", "--old", a, "--new", b], { encoding: "utf8" });
+    assert.equal(r.status, 2, r.stdout + r.stderr);
+    assert.match(r.stderr, /census-empty/);
+    assert.doesNotMatch(r.stdout, /par/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("P1 RED: the census reads a face the image under proof answers `worn` (the exporting image) or `mounted` (the new one)", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "lares-carry-parity-images-"));
+  try {
+    // A stand-in `lares` answering each read door the census walks, its face row in the given image's spelling.
+    const fake = join(dir, "lares.mjs");
+    writeFileSync(fake, [
+      "const [, , ...a] = process.argv; const s = a.join(' '); const out = (x) => console.log(JSON.stringify(x));",
+      "if (s.startsWith('persona list')) out({ ok: true, data: { personas: [{ petname: 'steward', handleIndex: 0 }] } });",
+      "else if (s.startsWith('kahua list')) out({ [process.env.FAKE_FACE_WORD]: true, relation: 'rel-1', items: [] });",
+      "else if (s.startsWith('wiki list')) out({ ok: true, data: { wikis: [] } });",
+      "else if (s.startsWith('meme list')) out({ ok: true, data: { roots: [{ uri: 'lar:///ha.ka.ba/kahua/memory/state/heron', canonicalHash: 'sha256:aa' }] } });",
+      "else if (s.startsWith('wiki filter')) out({ ok: true, data: { rows: [] } });",
+      "else { console.error('unread door: ' + s); process.exit(9); }",
+    ].join("\n"));
+    const root = join(dir, "root");
+    for (const word of ["worn", "mounted"]) {
+      process.env.FAKE_FACE_WORD = word;
+      const r = await census({ root, lares: `${process.execPath} ${fake}`, label: word });
+      assert.deepEqual(Object.keys(r.face), ["steward"], `${word}: ${JSON.stringify(r.faces)}`);
+      assert.deepEqual(Object.keys(r.face.steward.memes), ["default lar:///ha.ka.ba/kahua/memory/state/heron"], word);
+    }
+  } finally { delete process.env.FAKE_FACE_WORD; rmSync(dir, { recursive: true, force: true }); }
 });
 
 test("P1 a new-base reading takes the new house's own founding rows out of extra, and only those", () => {
