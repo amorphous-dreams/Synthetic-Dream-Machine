@@ -70,7 +70,7 @@ describe("RED pulama-reserves-an-admitted-image", () => {
     s.image.report(IMAGE);
     // Before any kūkulu: nothing stands admitted.
     expect(await s.hello({})).toBe("pulama-image-unadmitted");
-    const vessel = s.fx.vessel({ lei: s.lei, vouch: await s.vouch() });
+    const vessel = s.fx.vessel({ lei: s.lei, vouch: [await s.vouch()] });
     expect((await vessel.unlock([])).reading).toBe("opens");
     expect(await s.returns()).toBe(1);
     // CONTROL: served, yet not landed: the image stays unadmitted until the kūkulu composed and its halves read par.
@@ -109,7 +109,7 @@ describe("RED pulama-keeps-an-unadmitted-image-at-the-floor", () => {
   test("another image, no image report, a forged admission row and a locked face each keep an offerless vessel at the floor; the refusal names both cures", async () => {
     const s = await stand();
     s.image.report(IMAGE);
-    const vessel = s.fx.vessel({ lei: s.lei, vouch: await s.vouch() });
+    const vessel = s.fx.vessel({ lei: s.lei, vouch: [await s.vouch()] });
     await vessel.unlock([]);
     await vessel.landRite();
     expect(await s.hello({})).toBe("opens");
