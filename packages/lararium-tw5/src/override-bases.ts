@@ -88,3 +88,36 @@ export async function listFresherCanon(bag: string, workingBag: string, working:
   }
   return out.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
 }
+
+/** One working copy that names no base and differs from the canon record below it: canon may stand fresher, unknown. */
+export interface BaseUnknownCopy {
+  readonly bag: string;
+  readonly working: string;
+  readonly title: string;
+  /** Always null: the copy names no base, so nothing tells whether canon moved past what it forked from. */
+  readonly base: null;
+  /** The carrier identity of the canon record standing now. */
+  readonly canonHash: string;
+  /** The carrier identity of the working copy itself. */
+  readonly copyHash: string;
+}
+
+/**
+ * THE DOUBT A MISSING BASE LEAVES, NAMED. A copy forked through a door that stamped no base (an older house's meme door or
+ * LOAD), or carried from such a house, can never raise the fresher warning, and the true base cannot be recovered after
+ * the fact. So the instrument names each such copy whose bytes differ from the live canon record below it, for a person to
+ * review: it may hide fresher canon. A copy equal to canon, a copy that names a base (the fresher read weighs it), and a
+ * working-only title stay out. Reads alone; ordered by title.
+ */
+export async function listBaseUnknown(bag: string, workingBag: string, working: LarTiddlerStore, canon: LarTiddlerStore): Promise<BaseUnknownCopy[]> {
+  const out: BaseUnknownCopy[] = [];
+  for (const [title, copy] of await copiesIn(working)) {
+    if (overrideBaseOf(copy) !== null) continue;
+    const canonHash = carrierOf(await canon.get(title));
+    if (canonHash === null) continue;
+    const copyHash = carrierHashOf(copy.tiddler);
+    if (basesEqual(copyHash, canonHash)) continue;
+    out.push({ bag, working: workingBag, title, base: null, canonHash, copyHash });
+  }
+  return out.sort((a, b) => (a.title < b.title ? -1 : a.title > b.title ? 1 : 0));
+}

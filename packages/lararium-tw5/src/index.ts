@@ -119,7 +119,7 @@ export { getOriginBag } from "./residency-surface.js";
 export { registerActionReactors, makeActionReactorFor, isFaceOwnedLayer, makeTw5Deserializer, makeFresherCanonReactor, makeOverrideBasesReactor } from "./action-handler.js";
 export { CANON_OFFER_VERBS, registerCanonOfferVerbs, makeOfferMakeReactor, makeOfferListReactor, makeOfferShowReactor, makeOfferPromoteReactor, type CanonOfferVerbOptions } from "./canon-offer-verbs.js";
 export type { FaceTargetResolver } from "./action-handler.js";
-export { fresherThanBase, fresherAfterChange, listFresherCanon, type FresherCanon } from "./override-bases.js";
+export { fresherThanBase, fresherAfterChange, listFresherCanon, listBaseUnknown, type FresherCanon, type BaseUnknownCopy } from "./override-bases.js";
 export type { Tw5Deserializer } from "./action-handler.js";
 export { canonicalizeNativeCarrierText } from "./native-canonical.js";
 export type { NativeCanonicalCarrier } from "./native-canonical.js";

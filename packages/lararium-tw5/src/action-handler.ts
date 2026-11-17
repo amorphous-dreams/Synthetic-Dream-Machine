@@ -71,7 +71,7 @@ import { makeTw5FileInfo } from "./tw5-file-info.js";
 import { conflictWhy, decideIngest } from "./ingest-gate.js";
 import { familyViewOf, placeMeme } from "./place-meme.js";
 import { componentsBeneath, consequence, orphansUnder, rootAddressOf, type FamilyView } from "@lararium/mesh/family";
-import { snapshotUnderOverrides, fresherAfterChange, listFresherCanon, type FresherCanon } from "./override-bases.js";
+import { snapshotUnderOverrides, fresherAfterChange, listFresherCanon, listBaseUnknown, type FresherCanon } from "./override-bases.js";
 import type { MemeSink } from "./place-meme.js";
 import type { IngestOps } from "./ingest-gate.js";
 import { pairRenames } from "./delete-gate.js";
@@ -1837,8 +1837,9 @@ export const FRESHER_CANON_PAGE = 32;
 /**
  * THE FRESHER-CANON READ — every working copy of one wiki that shadows a canon record fresher than the one it forked from
  * (`override-bases.ts`), a page at a time (`after` the title the page before ended on, `next` the cursor behind). It
- * names a canon bag (`bag`, `lar:///ha.ka.ba/bags/<slug>`) and reaches the wiki's working layer by access. It reads
- * alone: a person who wants the fresher canon removes the copy with the ordinary verbs.
+ * names a canon bag (`bag`, `lar:///ha.ka.ba/bags/<slug>`) and reaches the wiki's working layer by access. With
+ * `class: "base-unknown"` it reads the second class instead (`listBaseUnknown`): copies that name no base and differ from
+ * canon, under `unknown`. It reads alone: a person who wants the fresher canon removes the copy with the ordinary verbs.
  */
 export function makeFresherCanonReactor(opts: ActionHandlerOptions): VerbReactor {
   return async (args, ctx) => {
@@ -1850,11 +1851,14 @@ export function makeFresherCanonReactor(opts: ActionHandlerOptions): VerbReactor
     const access = makeBagAccess(opts);
     const working = await access.read(workingBag).catch(() => null);
     const canon = await access.read(bag);
-    const rows = working && canon ? await listFresherCanon(bag, workingBag, working, canon) : [];
+    // THE SECOND CLASS (`class: "base-unknown"`): copies that name no base and differ from canon, for review.
+    const unknown = args["class"] === "base-unknown";
+    const rows: ReadonlyArray<{ readonly title: string }> = !working || !canon ? [] : unknown ? await listBaseUnknown(bag, workingBag, working, canon) : await listFresherCanon(bag, workingBag, working, canon);
     const after = typeof args["after"] === "string" ? args["after"] : null;
     const behind = after === null ? rows : rows.filter((r) => r.title > after);
     const taken = behind.slice(0, FRESHER_CANON_PAGE);
     const next = behind.length > taken.length ? taken[taken.length - 1]!.title : null;
+    if (unknown) return { ok: true, bag, working: workingBag, class: "base-unknown", unknown: taken.map((r) => ({ ...r })), count: rows.length, next };
     return { ok: true, bag, working: workingBag, fresher: taken.map((r) => ({ ...r })), count: rows.length, next };
   };
 }
