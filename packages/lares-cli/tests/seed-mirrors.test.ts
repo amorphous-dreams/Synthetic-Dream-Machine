@@ -1088,4 +1088,31 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(existsSync(restored), "a landed row's file stands in its mirror").toBe(true);
   });
 
+  test("W9 — RED: an import's margin of a wiki no face minted (its share row names another face as owner) waits by name at its own face's wear, and never mounts the unminted wiki; CONTROL: once the owner's wear minted the wiki, the margin lands at its own face's wear", async () => {
+    clearOld();
+    const PAGE = "lar:///ha.ka.ba/notes/margin";
+    put(`projections/personal/${G1}/notes/ha.ka.ba/notes/margin.tid`, tid(PAGE, "the engineer's margin of the steward's wiki"));
+    const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G1);
+    old.held.add("notes");
+    old.shareRows = [{ slug: "notes", kind: "wiki", read: "engineer", write: "", owner: "steward" }];
+    // The live export names each user wiki the vessel holds (`list-wikis`), so the bundle re-declares `notes` though no page of its workbench travels.
+    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), userWikis: async () => ["notes"] } });
+    expect(manifest.counts.personal).toBe(1);
+    rmSync(P(`personal/${G1}`), { recursive: true });
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R1);
+    const doors = (): CarryDoors => ({ ...v.carryDoors(), ingest: liveIngest(v) });
+    const first = await carryImport(out, { apply: true, doors: doors() });
+    expect(v.mints, "the steward's wiki mints at the steward's wear").toEqual([]);
+    expect(first.personalWaiting).toEqual([{ petname: "engineer", handleIndex: 1, wiki: "notes", owner: "steward" }]);
+    expect(first.tallies.personal).toMatchObject({ landed: 0, waiting: 1, refused: [] });
+    expect(existsSync(P(`personal/${R1}/notes`)), "a waiting margin restores nothing into the mirror").toBe(false);
+    v.wear(R0);
+    await carryImport(out, { apply: true, doors: doors() });
+    expect(v.wikiMints).toEqual(["notes"]);
+    v.wear(R1);
+    const third = await carryImport(out, { apply: true, doors: doors() });
+    expect(third.personalWaiting).toEqual([]);
+    expect(third.tallies.personal).toMatchObject({ landed: 1, waiting: 0 });
+    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));
+  });
 });

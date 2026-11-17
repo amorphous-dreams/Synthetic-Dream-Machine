@@ -779,8 +779,9 @@ export interface CarryImportResult {
   /** Each workbench (or the canon of a wiki another face owns) whose rows wait: `writer` (the worn face holds no writer's seat
    *  there) or `owner` (a share row names another face as the wiki's owner, and no face stood it here yet). Nothing of it landed. */
   readonly benchWaiting: ReadonlyArray<{ readonly slug: string; readonly why: "writer" | "owner"; readonly owner?: string }>;
-  /** Each bundle face whose `personal` rows wait for that face's own wear. */
-  readonly personalWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number }>;
+  /** Each bundle face whose `personal` rows wait for that face's own wear; or, naming `wiki` and its `owner`, whose margin of a
+   *  wiki no face stood here yet waits for that owner's wear to mint it. */
+  readonly personalWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number; readonly wiki?: string; readonly owner?: string }>;
   /** Each bundle face whose kahua heads wait for that face's own wear (a lift signs under its own grant), with how many. */
   readonly kahuaWaiting: ReadonlyArray<{ readonly petname: string; readonly handleIndex: number; readonly heads: number }>;
   /** Each bundle face whose daemon rows (working, face canon) the island opened no layer for under this wear: they land at its own. */
@@ -894,7 +895,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   // THE SHARE ROWS THE BUNDLE CARRIED (vessel-private; owner and seats by pet-name): a slug this vessel's file holds no row for
   // takes the bundle's row, and a row that stands here stays as it stands. They gate the mint below and land again at the close.
   const benchWaiting: Array<{ slug: string; why: "writer" | "owner"; owner?: string }> = [];
-  const personalWaiting: Array<{ petname: string; handleIndex: number }> = [];
+  const personalWaiting: Array<{ petname: string; handleIndex: number; wiki?: string; owner?: string }> = [];
   const kahuaWaiting: Array<{ petname: string; handleIndex: number; heads: number }> = [];
   const daemonWaiting: Array<{ petname: string; handleIndex: number }> = [];
   const standingShares = [...(doors.shareRows?.read() ?? [])];
@@ -1142,6 +1143,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const mirror = canonWikis !== null && doors.sourced?.(slug) === true ? join(canonWikis, slug) : join(projections, "wikis", slug);
     await wave(join(bundle.root, "wikis", slug, "working"), join(bundle.root, "wikis", slug), mirror, wikiSlotUri(slug, "working"), files, `wiki-working:${slug}`, tallies.wikiWorking, tallies.kapae, slug, freshSlugs.has(slug));
   }
+  let heldNow: ReadonlySet<string> | undefined;
   // EACH FACE'S PERSONAL LAYER lands at that face's own wear: the vessel grants the personal mirror to the worn face's folder
   // alone, so an open face that stands unworn waits by name, and nothing of its margin lands under another face.
   for (const bf of manifest.faces) {
@@ -1156,6 +1158,17 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const slugs = [...new Set(personalFiles.map((p) => p.split("/")[3]!))].sort();
     for (const slug of slugs) {
       const files = personalFiles.filter((p) => p.startsWith(`faces/${bf.key}/personal/${slug}/`));
+      // A MARGIN OF A WIKI NO FACE STOOD HERE WAITS FOR THE WIKI, as the seed's does: a share row names another face its owner,
+      // and the wiki mints at that owner's wear; until then this face's margin mounts no wiki and lands nowhere.
+      const stands = !unminted.has(slug) && (doors.sourced?.(slug) === true || (heldNow ??= await doors.heldSlugs()).has(slug)
+        || (freshSlugs.has(slug) && (!apply || journal.done.has(`mint:${slug}`))));
+      const gate = stands ? null : await gateOf(slug);
+      if (gate?.why === "owner") {
+        waitBench(slug, gate);
+        personalWaiting.push({ petname: bf.petname, handleIndex: face.handleIndex, wiki: slug, ...(gate.owner !== undefined ? { owner: gate.owner } : {}) });
+        tallies.personal.waiting += manifest.rows.filter((r) => r.layer === "personal" && r.face === bf.petname && r.bag === wikiSlotUri(slug, "personal")).length;
+        continue;
+      }
       await wave(join(bundle.root, "faces", bf.key, "personal", slug), join(bundle.root, "faces", bf.key, "personal"), join(projections, PERSONAL_PROJECTION_DIR, face.relation!, slug), wikiSlotUri(slug, "personal"), files, `personal:${bf.key}:${slug}`, tallies.personal, null, slug, false);
     }
   }
@@ -1204,6 +1217,8 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const left = Object.values(tallies).reduce((n, t) => n + t.stoodOff.length + t.refused.length, 0);
   for (const bf of manifest.faces) {
     for (const r of former.filter((x) => readFaceLabel(x, projections)?.petname === bf.petname)) {
+      const marginWait = personalWaiting.find((w) => w.petname === bf.petname && w.wiki !== undefined);
+      if (marginWait !== undefined) { ashesLeft.push({ relation: r, why: `its personal rows of ${marginWait.wiki} land once the wiki stands at ${marginWait.owner ?? "its owner"}'s wear, then import again` }); continue; }
       if (personalWaiting.some((w) => w.petname === bf.petname)) { ashesLeft.push({ relation: r, why: `its personal rows land at h${target.get(bf.key)!.handleIndex}'s own wear: \`lares vault unlock --face ${target.get(bf.key)!.handleIndex}\`, then import again` }); continue; }
       if (kahuaWaiting.some((w) => w.petname === bf.petname) || daemonWaiting.some((w) => w.petname === bf.petname)) { ashesLeft.push({ relation: r, why: `its daemon rows or kahua heads land at h${target.get(bf.key)!.handleIndex}'s own wear: \`lares vault unlock --face ${target.get(bf.key)!.handleIndex}\`, then import again` }); continue; }
       if (unworn.has(bf.key)) { ashesLeft.push({ relation: r, why: unlockItLine({ handleIndex: target.get(bf.key)!.handleIndex, petname: bf.petname }, "import") }); continue; }
