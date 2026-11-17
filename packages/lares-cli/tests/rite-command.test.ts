@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { parseArgs } from "../src/parse-args.js";
-import { RiteUsage, ritePlan } from "../src/commands/rite.js";
+import { RiteUsage, hostRowLine, ritePlan } from "../src/commands/rite.js";
 import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { decideRoute } from "../src/host-bridge.js";
 import { COMMAND_NAMES } from "../src/bin/lares.js";
@@ -160,6 +160,23 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
     expect(went.code).toBe(0);
     expect(none.calls.filter((c) => c.startsWith("shim"))).toEqual(["shim build", "shim down", "shim up"]);
     expect(none.said.join("\n")).toMatch(/no offer rests for a pūlama/);
+  });
+
+  it("RED: the offer row gathers every lent face's line, so the host names no face on it; CONTROL: the begin and the landing keep the face the rite names", () => {
+    expect(hostRowLine("rite-offer", { branch: "main", head: HEAD, image: IMAGE }, "1")).toEqual(["rite", "offer", "--branch", "main", "--head", HEAD, "--image", IMAGE]);
+    expect(hostRowLine("rite-begin", { rite: "kukulu", branch: "main", head: HEAD }, "1")).toEqual(["rite", "begin", "--rite", "kukulu", "--branch", "main", "--head", HEAD, "--face", "1"]);
+    expect(hostRowLine("rite-land", { tessera: TESSERA, head: HEAD }, undefined)).toEqual(["rite", "land", "--tessera", TESSERA, "--head", HEAD]);
+  });
+
+  it("RED: the host names each face the offer vouches for, and each face whose line carries no lei waits by name", async () => {
+    const f = fakes();
+    f.ports.image = async () => IMAGE;
+    const row = f.ports.row;
+    f.ports.row = async (verb, args) => verb === "rite-offer" ? { ok: true, output: { lei: 2, faces: ["h0", "h1", "h2"], waits: ["h2"] } } : row(verb, args);
+    await riteKukulu(f.ports, {});
+    const said = f.said.join("\n");
+    expect(said).toMatch(/2 lei, a vouch for each of h0, h1, h2/);
+    expect(said).toMatch(/h2 carries no lei on this line and waits/);
   });
 
   it("the offer sub-verb plans its store row", () => {

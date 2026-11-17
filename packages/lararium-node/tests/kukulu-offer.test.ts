@@ -144,6 +144,22 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     expect(await s.hello(readKukuluOffer(s.path))).toBe("swarm-lei-unstrung");
   });
 
+  test("RED every lent face's line rides the offer: one vouch per face, each over its own group; a face whose line carries no lei rides its vouch and waits by name", async () => {
+    const s = await stand();
+    await s.string({ reach: "wide", returns: 2 });
+    await s.receipt("pass");
+    const trust: SwarmTrust = { hand: () => false, vessel: () => false, lead: () => false };
+    const wrote = await writeKukuluOffer({
+      wiki: s.wiki, faces: [{ group: GROUP, trust: { hand: () => true, vessel: () => true, lead: () => false }, ward: NO_COSIGN, name: "h0" }, { group: "group-two", trust, ward: NO_COSIGN, name: "h1" }],
+      branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, holder: s.fx.local, path: s.path,
+    });
+    expect(wrote).toMatchObject({ lei: 1, faces: ["h0", "h1"], waits: ["h1"] });
+    const file = JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer;
+    expect(file.vouch.map((v) => v.body.group)).toEqual([GROUP, "group-two"]);
+    // CONTROL: one face with its lei waits for nothing.
+    expect((await s.offer()).waits).toEqual([]);
+  });
+
   test("an offer with no lei, no receipt or no image digest writes nothing; a red receipt rides the vouch and the pūlama refuses it", async () => {
     const s = await stand();
     await expect(s.offer()).rejects.toMatchObject({ code: "swarm-lei-absent" });
