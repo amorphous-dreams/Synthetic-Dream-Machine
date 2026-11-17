@@ -48,11 +48,6 @@ function coerceSealLineage(raw: unknown): SealEpoch[] | "torn" | undefined {
     const e = item as Record<string, unknown>;
     if (typeof e["epochCid"]      !== "string")    return "torn";
     if (typeof e["keySetHash"]    !== "string")    return "torn";
-    // The previous charter shape had one commitment for the whole successor set. Keep it
-    // distinguishable at the document boundary so callers can refuse it explicitly.
-    if (Object.prototype.hasOwnProperty.call(e, "nextKeyCommit")) return "torn";
-    // The earlier link shape named one `prevEpochCid`; a seal record names a set of predecessors.
-    if (Object.prototype.hasOwnProperty.call(e, "prevEpochCid")) return "torn";
     if (!Array.isArray(e["nextKeyDigests"]) || !(e["nextKeyDigests"] as unknown[]).every((d) => typeof d === "string" && /^[0-9a-f]{64}$/.test(d))) return "torn";
     if (!Number.isInteger(e["nextThreshold"]) || (e["nextThreshold"] as number) < 0) return "torn";
     const preds = e["predecessors"];
