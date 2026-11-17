@@ -8,11 +8,11 @@
  *   L3  CONTROL: a working-only title names no base; a LOAD into any other layer stamps nothing
  */
 import { describe, test, expect } from "vitest";
-import { AutomergeDocStore, CompositeStore, carrierHashOf, emptyLarDoc, overrideBaseOf, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
+import { AutomergeDocStore, CompositeStore, carrierHashOf, emptyLarDoc, overrideBaseOf, type CapabilityAccess, type CapabilityVerifyResult, type Verb } from "@lararium/mesh";
 import { carrierHash } from "@lararium/mesh/crypto";
 import { Repo } from "./wiki-shore-rig.js";
 import { registerActionReactors } from "../src/action-handler.js";
-import { VerbTable } from "../src/verb-dispatcher.js";
+import { VerbTable, type VerbContext } from "../src/verb-dispatcher.js";
 
 const CANON = "lar:///ha.ka.ba/bags/probe";
 const WORKING = "lar:///ha.ka.ba/wikis/probe/working";
