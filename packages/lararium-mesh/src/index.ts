@@ -180,6 +180,7 @@ export * from "./capture/capture-engine.js";
 export * from "./projection-nalu.js";
 export * from "./host-task.js";
 export * from "./iris.js";
+export * from "./lent-faces.js";
 export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";

@@ -148,6 +148,10 @@
       "import": "./dist/iris.js",
       "types": "./dist/iris.d.ts"
     },
+    "./lent-faces": {
+      "import": "./dist/lent-faces.js",
+      "types": "./dist/lent-faces.d.ts"
+    },
     "./host-task": {
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
