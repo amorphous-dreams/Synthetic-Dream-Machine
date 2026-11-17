@@ -351,7 +351,7 @@ A live vessel may continue with its local corpus while household HTTPS, browser 
 
 !! 11a · Carry memory across a re-founding
 
-The re-founding stands at a fresh root, `~/.lares-next`, beside the old house, and swaps into `~/.lares` by rename once it reads par; the face's memory crosses as content, by `lares export` and `lares import`, onto the new face that carries the same pet-name. The pūlama stands last, on the renamed root: it binds `$LARES_HOUSE/hearth` and `$LARES_HOUSE/pulama` by path and restarts unless stopped, so a pūlama lit at `~/.lares-next` would keep binding a path the rename empties.
+The re-founding stands at a fresh root, `~/.lares-next`, beside the old house, and swaps into `~/.lares` by rename once it reads par; the face's memory crosses as content, by `lares export` and `lares import`, onto the new face that carries the same pet-name. The pūlama stands after the swap, on the renamed root, with the first keep and `lares home tend` after it: it binds `$LARES_HOUSE/hearth` and `$LARES_HOUSE/pulama` by path and restarts unless stopped, so a pūlama lit at `~/.lares-next` would keep binding a path the rename empties.
 
 ''Do'': in this order, each line on the operator's real terminal; a line that ends `# each face` runs once per face, `N` taking 2, 1, 0 for the holds and 0, 1, 2 elsewhere, and `<pet-name>` the face `N`'s pet-name. The census files rest outside both house roots (`~/carry-census`), so the rename moves none of them.
 
@@ -389,8 +389,6 @@ mv ~/.lares ~/.lares-prior && mv ~/.lares-next ~/.lares && cp ~/.lares-prior/lar
 tools/lares-container.sh up                                      # the renamed house, the workspace bound at /lar/workspaces/house-backup
 tools/lares-container.sh vault unlock --face N && node tools/carry-parity.mjs census --root ~/.lares --label 'swap <pet-name>' --out ~/carry-census/swap-<pet-name>.json --lares tools/lares-container.sh   # each face
 node tools/carry-parity.mjs compare --old ~/carry-census/new-[!b]*.json --new ~/carry-census/swap-*.json --json --out ~/carry-census/swap.json   # par against the census before the swap
-lares rite keep --workspace house-backup --face 0               # on the host, as the steward whose line holds the lei: the first keep, pushed and landed
-lares rite receipts --face 0                                     # conferre reads the keep's tessera par
 # THE LIT HOUSE: ~/.lares/lares-surface.env gains LARES_PULAMA=1
 tools/lares-container.sh pulama up                               # standing unlit
 tools/lares-container.sh pulama light                            # the operator's own route lights every face
@@ -398,6 +396,8 @@ tools/lares-container.sh up                                      # the vessel se
 tools/lares-container.sh pulama admit                            # no face named: the standing image serves every lit face
 tools/lares-container.sh vault unlock --all --face 0             # gathers no route: the vessel stands unlocked, served by the pūlama
 tools/lares-container.sh kahua list --face N --json              # each face answers its own view
+lares rite keep --workspace house-backup --face 0               # on the host, as the steward whose line holds the lei: the first keep, pushed and landed
+lares rite receipts --face 0                                     # conferre reads the keep's tessera par
 lares home tend                                                  # seats the SessionEnd keep hook
 ```
 
@@ -594,6 +594,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;08l7YJXrJwCSiFwC3UGg-Ph-yAzUYbMtErjv8Akh8xg`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;IpHdXF67GPEuaGhUY_kDRrGKeAMkG6T2jUGDiC0Oboo`>>
 
 <<^ code=`&#x0004;` to=`?`>>
