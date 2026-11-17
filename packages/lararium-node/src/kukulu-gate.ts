@@ -27,6 +27,7 @@
  * composed admits nothing.
  *
  * ── WHAT THE GATE READS OF AN OFFER, IN ORDER; EACH MISS REFUSES BY NAME ────────────────────────
+ *   `kukulu-lei-shape`          the offer's lei reads as no array (`kukulu-unstrung-shape`: its unstrung rows)
  *   `kukulu-unvouched`          the offer carries a lei and no vouch
  *   `kukulu-vouch-shape`        the offer's vouch reads as no array, or as an empty one
  *   `kukulu-vouch-<reading>`    a vouch reads no vouch, or another key than the custody root's vouch child signed it
@@ -83,7 +84,7 @@ export interface KukuluRitePort {
    * as the return's testimony (`vouch`: its digest; `verdict`: its walk's), the lei returns once, and the guest half rests.
    * Answers the tessera, or the family's own refusal reading.
    */
-  begin(offer: { readonly lei?: unknown; readonly unstrung?: unknown }, at: KukuluRiteAt & { readonly vouch: string; readonly verdict: "pass" | "fail" }):
+  begin(offer: { readonly lei: readonly unknown[]; readonly unstrung: readonly unknown[] }, at: KukuluRiteAt & { readonly vouch: string; readonly verdict: "pass" | "fail" }):
     Promise<{ readonly ok: true; readonly tessera: string; readonly lei: string; readonly n: number } | { readonly ok: false; readonly refusal: string }>;
   /** Rest the host half of `tessera` at the head the rite began at; answers whether the pair reads par. */
   land(tessera: string, at: KukuluRiteAt): Promise<{ readonly par: boolean }>;
@@ -159,9 +160,12 @@ export function kukuluGate(a: {
   return {
     async admit(offer) {
       const o = (typeof offer === "object" && offer !== null ? offer : {}) as { lei?: unknown; unstrung?: unknown; vouch?: unknown };
+      // THE OFFER'S ROWS RIDE ARRAYS: the lei the hands strung and the unstrung rows, each absent or an array.
+      if (o.lei !== undefined && !Array.isArray(o.lei)) return refuse("kukulu-lei-shape", "a kūkulu's lei reads as an array of strung rows");
+      if (o.unstrung !== undefined && !Array.isArray(o.unstrung)) return refuse("kukulu-unstrung-shape", "a kūkulu's unstrung rows read as an array");
+      const lei: readonly unknown[] = o.lei ?? [], unstrung: readonly unknown[] = o.unstrung ?? [];
       if (o.vouch === undefined || o.vouch === null) {
-        const wearsLei = Array.isArray(o.lei) ? o.lei.length > 0 : o.lei !== undefined && o.lei !== null;
-        if (wearsLei) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
+        if (lei.length > 0) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
         // NO OFFER: the vessel enters by the image the host reports, where that image stands admitted.
         const reported = await a.image();
         const witness = await pulamaSignerOf(holder);
@@ -210,7 +214,7 @@ export function kukuluGate(a: {
         if (!handKey) { wait("kukulu-hand-absent"); continue; }
         const at: KukuluRiteAt = { group: body.group, branch: body.branch, head: body.head, tree: body.tree, hand: (key) => key.toLowerCase() === handKey, by };
         // THE RETURN CLAIMS FIRST: from here a fault burns the return and serves nothing.
-        const rite = await a.rite.begin({ lei: o.lei, unstrung: o.unstrung }, { ...at, vouch: digest, verdict: body.verdict });
+        const rite = await a.rite.begin({ lei, unstrung }, { ...at, vouch: digest, verdict: body.verdict });
         if (rite.ok) { begun.push({ face: { fcid: face.fcid, ordinal: face.ordinal }, at, tessera: rite.tessera }); continue; }
         // A face no lei of its own hand lends waits; any other reading of the family refuses the whole kūkulu.
         if (rite.refusal !== "swarm-lei-absent") return refuse(rite.refusal);

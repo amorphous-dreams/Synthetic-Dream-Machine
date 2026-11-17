@@ -42,7 +42,6 @@ import type { KukuluRiteAt, KukuluRitePort } from "./kukulu-gate.js";
 export const KUKULU_VOUCH_CHECK = "kukulu-vouch";
 
 const NO_COSIGN: WardActWitness = { accepts: () => true };
-const rowsOf = (offered: unknown): unknown[] => (Array.isArray(offered) ? offered.slice(0, 64) : offered === undefined || offered === null ? [] : [offered]);
 const trustOf = (at: KukuluRiteAt): SwarmTrust => {
   const pulama = at.by.key.toLowerCase();
   return { hand: (key) => at.hand(key), vessel: (key) => key.toLowerCase() === pulama, lead: () => false };
@@ -71,7 +70,7 @@ export function kukuluRiteOver(records: SwarmWikiPort): KukuluRitePort {
   return {
     begin: (offer, at) => inTurn(async () => {
       const trust = trustOf(at);
-      for (const raw of [...rowsOf(offer.lei), ...rowsOf(offer.unstrung)]) await landOffered(records, raw, trust, at);
+      for (const raw of [...offer.lei.slice(0, 64), ...offer.unstrung.slice(0, 64)]) await landOffered(records, raw, trust, at);
       try {
         const receipt = await signSwarmAct({ act: "receipt", group: at.group, tree: at.tree, checks: [KUKULU_VOUCH_CHECK], verdict: at.verdict, definitions: at.vouch }, at.by);
         await records.write(swarmReceiptTitle(at.tree), JSON.stringify(receipt));
