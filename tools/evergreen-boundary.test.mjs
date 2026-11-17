@@ -62,7 +62,7 @@ test("E1c old-shape: a parse, refusal or comment that names an older peer's buil
 test("E1d old-shape: a reading or comment that names an earlier shape reads; a prior revision of data does not", () => {
   for (const body of [
     'export type CharterShape = "absent" | "whole" | "torn" | "earlier-shape";',
-    '// THE EARLIER SHAPES, each by its own mark: one `nextKeyCommit` per epoch.',
+    '// THE EARLIER SHAPES, each by its own mark: one commitment per epoch.',
     '// The previous charter shape had one commitment for the whole successor set.',
     '// The earlier link shape named one `prevEpochCid`.',
     '// A row that stands and does not open (torn, bare, an earlier shape) refuses.',
