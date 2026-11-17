@@ -57,9 +57,6 @@ export function shimRunner(hookUrl) {
   return (name, argv) => (name === "homes" ? spawnRead(process.execPath, [laresBin, ...argv]) : name === "git" ? spawnRead("git", argv) : spawnRead(shim, argv));
 }
 
-/** The tag of the one cold-boot view (first-three-wave-map#/the-handoff-walk; road `L43`). */
-export const INDEX_TAG = "stage/index";
-export const INDEX_FILTER = `[tag[${INDEX_TAG}]]`;
 /** One page of the view: the filter door's own row ceiling, and the byte cap both the door and the render keep. */
 export const INDEX_ROWS = 32;
 export const INDEX_BYTES = 4096;
@@ -74,6 +71,12 @@ export const WAKE_BUDGET_MS = 12_000;
 export const STATE_PREFIX = "lar:///ha.ka.ba/kahua/memory/state/";
 export const STATE_FILTER = `[prefix[${STATE_PREFIX}]!regexp[#]]`;
 export const STATE_HANDOFF = `${STATE_PREFIX}handoff`;
+/**
+ * The tag of the one cold-boot view (first-three-wave-map#/the-handoff-walk; road `L43`). The index lists the rest: the
+ * state rows lead in their own block, so the view leaves their prefix out.
+ */
+export const INDEX_TAG = "stage/index";
+export const INDEX_FILTER = `[tag[${INDEX_TAG}]!prefix[${STATE_PREFIX}]]`;
 /** The rows in play stay short: a row ceiling, a byte cap on the block, and one on each row's line. */
 export const STATE_ROWS = 8;
 export const STATE_BYTES = 2048;

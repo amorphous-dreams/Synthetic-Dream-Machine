@@ -30,7 +30,7 @@ test("the wake carries the memory index beside the frame and the homes line", as
   assert.match(context, /read a row: meme_get\(uri=<title>, recipe="default"\)/);
   assert.doesNotMatch(context, /after=/);
   // The read rides the vessel's own door: the daemon wiki, the index tag, title and description, a row limit, a byte cap.
-  assert.deepEqual(calls.index, ["wiki", "filter", "[tag[stage/index]]", "--recipe", "default", "--fields", "title,description", "--limit", "32", "--max-bytes", String(INDEX_BYTES), "--json"]);
+  assert.deepEqual(calls.index, ["wiki", "filter", "[tag[stage/index]!prefix[lar:///ha.ka.ba/kahua/memory/state/]]", "--recipe", "default", "--fields", "title,description", "--limit", "32", "--max-bytes", String(INDEX_BYTES), "--json"]);
   assert.deepEqual(calls.index, indexArgv());
   assert.deepEqual(calls.observe, ["vessel", "stand", "--observe", "--json"]);
 });
@@ -41,7 +41,7 @@ test("a page with a cursor names the call that reads further", async () => {
     index: answered(page([row("a/one", "One."), row("a/two", "Two.")], { total: 6, next: "2.90a1a6dbea5e1f15" })),
   }) });
   assert.match(context, /Lares memory index: 6 rows \(2 shown\)\n/);
-  assert.match(context, /read further: wiki_filter\(filter="\[tag\[stage\/index\]\]", recipe="default", fields=\["title","description"\], after="2\.90a1a6dbea5e1f15"\)/);
+  assert.match(context, /read further: wiki_filter\(filter="\[tag\[stage\/index\]!prefix\[lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/\]\]", recipe="default", fields=\["title","description"\], after="2\.90a1a6dbea5e1f15"\)/);
 });
 
 test("the byte cap cuts the index and says so", () => {
@@ -106,6 +106,15 @@ test("one budget bounds all three reads, and each read left open reports itself"
     const timeout = hooks.hooks[event][0].hooks[0].timeout;
     assert.ok(WAKE_BUDGET_MS + 2000 <= timeout * 1000, `${event}: the budget ${WAKE_BUDGET_MS} ms closes two seconds inside the harness's ${timeout} s`);
   }
+});
+
+test("wake-index-lists-the-rest: the index leaves the state rows to their own block", () => {
+  const { INDEX_FILTER } = core;
+  assert.equal(INDEX_FILTER, `[tag[stage/index]!prefix[${STATE_PREFIX}]]`);
+  assert.equal(indexArgv()[2], INDEX_FILTER);
+  // The render keeps the door's order: the wake never re-sorts.
+  const block = renderIndex(JSON.parse(page([row("project/first", "F."), row("feedback/second", "S.")])));
+  assert.ok(block.indexOf("project/first") < block.indexOf("feedback/second"));
 });
 
 // The rows in play: the state rows, derived by their address prefix, read on every wake and printed before the index.
