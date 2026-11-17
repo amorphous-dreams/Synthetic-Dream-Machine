@@ -632,16 +632,26 @@ const downOld = async (c) => {
 /** The door a revision lacks names itself: an old source carries no keep rite, and the keep then reads unreached. */
 const doorAbsent = (text) => /unknown (command|verb|sub-?verb|flag)|no such (command|verb)|name a sub-verb|not a lares command|rite-needs|plans no single/i.test(text);
 
+/**
+ * The face the keep acts as: the steward. With several faces open the lei door and the keep's rows refuse a line that names
+ * none ("name the face the command acts as (--face N)"), so every keep line names it.
+ */
+export const KEEP_FACE = ["--face", "0"];
+
 /** `lei kui --rite keep` on a terminal: the ward asks its one prompt and gets the published route; the line then reads standing. */
 const keepLeiOld = async (c) => {
   const h = c.hands("old");
-  const line = ["lei", "kui", "--rite", "keep", "--branch", KEEP_WORKSPACE, "--returns", "2", "--json"];
+  const line = ["lei", "kui", "--rite", "keep", "--branch", KEEP_WORKSPACE, "--returns", "2", ...KEEP_FACE, "--json"];
   const r = await h.pty(h.shimLine(line), { says: CARRY_SAYS.ward, route: TEST_PASSPHRASE, timeout: 120_000 });
   const answer = json(r.stdout);
   if (r.code !== 0 && answer?.ok !== true && doorAbsent(said(r))) return { unreached: "door-absent", answer: `the source revision strings no keep lei: ${refusal(r)}` };
-  const show = await h.shim(["lei", "show", "--rite", "keep", "--branch", KEEP_WORKSPACE, "--json"]);
+  const show = await h.shim(["lei", "show", "--rite", "keep", "--branch", KEEP_WORKSPACE, ...KEEP_FACE, "--json"]);
   const standing = json(show.stdout)?.data?.lei ?? null;
-  return { ok: r.code === 0 && answer?.ok === true && standing?.standing === true, answer: `exit ${r.code}; ${JSON.stringify(answer?.data ?? null)} · the line reads ${JSON.stringify(standing)}`, measures: { exit: r.code, standing } };
+  const strung = r.code === 0 && answer?.ok === true;
+  // A refused kui reads with the refusal's own text (the JSON error's message, else the transcript's line), never `null`.
+  const why = strung ? JSON.stringify(answer?.data ?? null) : String(answer?.error?.message ?? refusal(r));
+  const showWhy = standing === null ? ` (${String(json(show.stdout)?.error?.message ?? refusal(show))})` : "";
+  return { ok: strung && standing?.standing === true, answer: `exit ${r.code}; ${why} · the line reads ${JSON.stringify(standing)}${showWhy}`, measures: { exit: r.code, standing } };
 };
 
 /**
@@ -650,12 +660,12 @@ const keepLeiOld = async (c) => {
  */
 const keepOld = async (c) => {
   const h = c.hands("old");
-  const r = await c.node([join(CHECKOUT, "packages", "lares-cli", "bin", "lares.mjs"), "rite", "keep", "--workspace", KEEP_WORKSPACE, "--json"], { env: { ...h.env, LARES_KEEP_SESSIONS: "0" }, timeout: 1_800_000 });
+  const r = await c.node([join(CHECKOUT, "packages", "lares-cli", "bin", "lares.mjs"), "rite", "keep", "--workspace", KEEP_WORKSPACE, ...KEEP_FACE, "--json"], { env: { ...h.env, LARES_KEEP_SESSIONS: "0" }, timeout: 1_800_000 });
   const answer = json(r.stdout);
   if (answer === null && doorAbsent(said(r))) return { unreached: "door-absent", answer: `the source revision keeps nothing: ${refusal(r)}` };
   const d = answer?.data ?? {};
   c.vars.keep = { tessera: d.tessera ?? null, bundleId: d.bundleId ?? null, pushed: d.pushed ?? null, par: d.par ?? null };
-  const receipts = await h.shim(["rite", "receipts", "--json"], { timeout: 120_000 });
+  const receipts = await h.shim(["rite", "receipts", ...KEEP_FACE, "--json"], { timeout: 120_000 });
   const conferre = json(receipts.stdout)?.data?.conferre ?? {};
   const par = (conferre.par ?? []).some((t) => t.rite === "keep" && t.tessera === d.tessera);
   const red = (conferre.red ?? []).filter((t) => t.rite === "keep").map((t) => `${String(t.tessera).slice(0, 12)} ${t.red}`);
@@ -924,8 +934,8 @@ export const CARRY_STEPS = Object.freeze([
   { id: "hold-old", command: "lares wiki hold <slug> per face, readers first", via: PTY, needs: ["seed-content-old"], expect: "every shared wiki wakes under the steward; the slugs woken read into the export's judge", run: holdOld },
   { id: "census-old", command: "carry-parity.mjs census --root house-old --lares old-src/tools/lares-container.sh (per worn face)", via: PTY, needs: ["hold-old"], expect: "three readings of the old house", run: censusStep("old", "old") },
   { id: "export", command: `lares export ${BUNDLE} --json`, via: PTY, needs: ["census-old"], expect: "the bundle reads back; no omission but parallel-drafts and the woken wikis' cold-wikis and override-bases, excused by name", run: exportStep },
-  { id: "keep-lei-old", command: `lares lei kui --rite keep --branch ${KEEP_WORKSPACE} --returns 2`, via: PTY, needs: ["export"], expect: "the keep lei strings under the ward", run: keepLeiOld },
-  { id: "keep-old", command: `lares rite keep --workspace ${KEEP_WORKSPACE} (on the host, into a clone of a scratch bare remote) · lares rite receipts`, via: PTY, needs: ["keep-lei-old"], expect: "pushed, landed; conferre reads the keep's tessera par", run: keepOld },
+  { id: "keep-lei-old", command: `lares lei kui --rite keep --branch ${KEEP_WORKSPACE} --returns 2 --face 0`, via: PTY, needs: ["export"], expect: "the keep lei strings under the ward", run: keepLeiOld },
+  { id: "keep-old", command: `lares rite keep --workspace ${KEEP_WORKSPACE} --face 0 (on the host, into a clone of a scratch bare remote) · lares rite receipts --face 0`, via: PTY, needs: ["keep-lei-old"], expect: "pushed, landed; conferre reads the keep's tessera par", run: keepOld },
   { id: "down-old", command: "old-src/tools/lares-container.sh down (no accept-loss)", via: PTY, needs: ["census-old", "export"], expect: "the vessel leaves; the census asks for no loss", run: downOld },
   // The new house.
   { id: "src-new", command: "git clone --local --no-checkout · checkout --detach <pin> · submodule update --init TiddlyWiki5 mempalace", needs: ["down-old"], expect: "a clean clone at the pinned head", run: srcStep("new") },
