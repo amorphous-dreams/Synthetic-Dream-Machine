@@ -26,6 +26,7 @@
  *
  * ── WHAT THE GATE READS OF AN OFFER, IN ORDER; EACH MISS REFUSES BY NAME ────────────────────────
  *   `kukulu-unvouched`          the offer carries a lei and no vouch
+ *   `kukulu-vouch-shape`        the offer's vouch reads as no array, or as an empty one
  *   `kukulu-vouch-<reading>`    a vouch reads no vouch, or another key than the custody root's vouch child signed it
  *   `kukulu-vouch-duplicate`    the offer vouches for one face twice
  *   `kukulu-image-unreported`   the host reported no image digest
@@ -177,10 +178,12 @@ export function kukuluGate(a: {
         await a.admissions.reserved(reported, admittedWire(lent), witness);
         return { ok: true, scope: { faces: lent, coldReads: a.coldReads ?? KUKULU_COLD_READS } };
       }
-      // ONE VOUCH PER LENT FACE: each names its own face's group, and the house's vouch key signed each one.
+      // ONE VOUCH PER LENT FACE: the offer's vouch rides an array; each names its own face's group, and the house's vouch
+      // key signed each one.
+      if (!Array.isArray(o.vouch)) return refuse("kukulu-vouch-shape", "a kūkulu's vouch reads as an array, one vouch per lent face");
       const vouchKey = await vouchKeyOf(holder);
       const vouches = [];
-      for (const raw of Array.isArray(o.vouch) ? o.vouch.slice(0, 64) : [o.vouch]) {
+      for (const raw of o.vouch.slice(0, 64)) {
         const vouched = verifyKukuluVouch(raw, vouchKey);
         if (!vouched.ok) return refuse(`kukulu-vouch-${vouched.refusal}`);
         vouches.push(vouched);
