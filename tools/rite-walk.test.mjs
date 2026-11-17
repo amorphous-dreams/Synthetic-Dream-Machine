@@ -645,6 +645,15 @@ test("carry-light-seats-a-served-vessel: up-by-pulama reads a recreated vessel t
   assert.ok(CARRY_STEPS.find((s) => s.id === "unlock-by-pulama").needs.includes("pulama-admit"));
 });
 
+test("image-light-seats-a-served-vessel: the image leg's operator admits the image the host reported at up (`pulama-admit`, its route typed) before its unlock-by-pulama reads the vessel served", () => {
+  const { IMAGE_STEPS } = present(imageLeg);
+  const ids = IMAGE_STEPS.map((s) => s.id);
+  for (const [a, b] of [["up-by-pulama", "pulama-admit"], ["pulama-admit", "unlock-by-pulama"], ["unlock-by-pulama", "teardown"]]) assert.ok(ids.indexOf(a) >= 0 && ids.indexOf(a) < ids.indexOf(b), `${a} before ${b}`);
+  const admit = IMAGE_STEPS.find((s) => s.id === "pulama-admit");
+  assert.ok(admit.needs.includes("up-by-pulama") && admit.via === "pty" && /operator/.test(admit.command), "the admission names the operator's route");
+  assert.ok(IMAGE_STEPS.find((s) => s.id === "unlock-by-pulama").needs.includes("pulama-admit"));
+});
+
 test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
   const { CARRY_STEPS, CARRY_SAYS } = present(carryLeg);
   const ids = CARRY_STEPS.map((s) => s.id);
