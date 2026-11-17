@@ -72,7 +72,7 @@ export interface KahuaCommandOptions {
   /** The face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it; absent on a direct act. */
   readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
   /**
-   * The daemon mount, the one face the standing vessel carries (`wornFace`); absent on a direct act. A row that writes a
+   * The daemon mount, the one face the standing vessel carries (`mountFace`); absent on a direct act. A row that writes a
    * face's canon or signs as it meets the chore check against it (`chore-face-not-mounted`, `face-not-lent`).
    */
   readonly mount?: () => number | null | undefined;

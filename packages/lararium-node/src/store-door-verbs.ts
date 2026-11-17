@@ -173,7 +173,7 @@ export interface StoreDoorDeps {
    * lit. A face's stage read (`kahua-read`) answers `mount` and `mounted` off it, so the seed and the import lay a face's private mirrors only into the one face whose
    * daemon working document the composition holds. Absent on a direct act, whose answers carry no `worn`.
    */
-  readonly wornFace?: () => number | null;
+  readonly mountFace?: () => number | null;
   /**
    * Raise the reboot-pending alert in every live wiki after a floor accept (`@lararium/mesh` `raiseFloorAlert`); answers the
    * wikis it reached. Absent on a direct act, which holds no live wiki: the accepted floor mounts at the next boot.
@@ -382,8 +382,8 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("proposals", args["proposals"]), ...opt("session", str(args["session"])),
       ...opt("history", args["history"] === true ? true : undefined),
       ...opt("cids", list(args["cids"])), ...opt("all", args["all"] === true ? true : undefined),
-      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon), ...opt("mount", deps.wornFace),
-      ...opt("lent", deps.wornFace ? async () => unlockedFaceOrdinals().catch(() => null) : undefined),
+      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon), ...opt("mount", deps.mountFace),
+      ...opt("lent", deps.mountFace ? async () => unlockedFaceOrdinals().catch(() => null) : undefined),
     });
   };
   const promoteVerb = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>
@@ -427,8 +427,8 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       // THE DAEMON MOUNT, named as such: the read answers the face it names, and beside it the one face the daemon island
       // mounts (`mount`) and whether this face stands as it (`mounted`); the daemon's working layer holds the mount's document.
       const face = int(args["face"]);
-      const mount = deps.wornFace?.() ?? null;
-      return deps.wornFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
+      const mount = deps.mountFace?.() ?? null;
+      return deps.mountFace && face !== undefined ? { ...read, mount, mounted: mount === face } : read;
     }),
     "intent-issue": (args) => answer("intent-issue", () => intent("issue", args)),
     "intent-show": (args) => answer("intent-show", () => intent(args["action"] === "delegations" ? "delegations" : "show", args)),
@@ -767,7 +767,7 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
     "persona-new": (args) => answer("persona-new", async () => {
       const handleIndex = int(args["handleIndex"]);
       const founded = await withFaceRoute(str(args["faceRouteRef"]), "persona-new", faceRouteBindDigest("persona-new", args), async () => ({ ...(await runFoundTheFace({ repo, ...opt("handleIndex", handleIndex), ...opt("ward", wardOf(args)) })) }));
-      const worn = deps.wornFace?.() ?? null;
+      const worn = deps.mountFace?.() ?? null;
       const born = handleIndex ?? 0;
       if (deps.lightFace === undefined || worn === null || born === worn) return founded;
       try { await deps.lightFace(born); }

@@ -113,7 +113,7 @@ function door(over: Partial<BackupDoor> & { mounted?: number | null } = {}): { d
   return {
     asked,
     door: {
-      wornFace: () => (over.mounted === undefined ? 0 : over.mounted),
+      mountFace: () => (over.mounted === undefined ? 0 : over.mounted),
       ownEdgeShadowed: over.ownEdgeShadowed ?? (async () => false),
       cutMemory: over.cutMemory === undefined
         ? async (to) => {

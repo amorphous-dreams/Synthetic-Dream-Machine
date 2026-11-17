@@ -69,7 +69,7 @@ import type { SessionSignBook } from "./session-sign-door.js";
 export interface UdsChannelOptions {
   readonly sessions?: UdsSessionDoor;
   /** THE WORN FACE's ordinal (the mounted face), or null at the floor: an AI seat naming no face acts as it, and where no lent set reads, as it alone (`seat-hand`). */
-  readonly wornOrdinal?: () => number | null;
+  readonly mountOrdinal?: () => number | null;
   /** THE LENT SET: the faces the holder names open (under a pūlama, the set it lends). An AI seat names a face inside it (`seat-hand`). */
   readonly lentOrdinals?: () => Promise<readonly number[]>;
   /** Where a session switch's acts rest: the vessel's sealed row (`nodeSwitchActLog`). No log, no switch. */
@@ -995,7 +995,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
   const sessionRefuse = (sock: Socket, refusal: string, requestId?: string, message?: string): void =>
     sessionReply(sock, { kind: "session:refused", ...(requestId !== undefined && { requestId }), refusal, ...(message !== undefined && { message }) });
   /** The daemon mount's ordinal, or null where no mount reads (no reader, or the floor): the chore gate then stands aside. */
-  const mountOf = (): number | null => opts.wornOrdinal?.() ?? null;
+  const mountOf = (): number | null => opts.mountOrdinal?.() ?? null;
   const sessionState = (sock: Socket) => {
     let state = sessionSockets.get(sock);
     if (!state) {
@@ -1051,7 +1051,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
       // THE AI SEAT OPENS A FACE INSIDE THE LENT SET: a `seat` hand (or a frame marked `seat: "ai"`) naming a face outside it refuses.
       // The set reads only where a seat names a face, so no other opening touches custody.
       const seatAsks = (frame["hand"] === "seat" || seatKindOf(frame) !== null) && faceRefOrdinal(frame["faceRef"]) !== null;
-      const seatRefused = !seatAsks ? null : seatFaceRefusal({ seat: frame["hand"] === "seat" ? "ai" : seatKindOf(frame), named: faceRefOrdinal(frame["faceRef"]), worn: opts.wornOrdinal?.() ?? null, lent: await lentOf() });
+      const seatRefused = !seatAsks ? null : seatFaceRefusal({ seat: frame["hand"] === "seat" ? "ai" : seatKindOf(frame), named: faceRefOrdinal(frame["faceRef"]), worn: opts.mountOrdinal?.() ?? null, lent: await lentOf() });
       if (seatRefused !== null) return sessionRefuse(sock, seatRefusalClass(seatRefused), requestId);
       const supplied = await opts.sessions.open({ faceRef: frame["faceRef"], hand: frame["hand"] as Hand })
         .catch((error: unknown) => {
@@ -1427,7 +1427,7 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // hand naming another open face (a seed, an import) keeps its path and carries no mark.
         const oneShotChore = sessionRequestId === undefined && mount !== null && isChore(inv.verb) && (seat !== null || named === null || named === mount);
         const lent = (seat !== null && named !== null) || oneShotChore ? await lentOf() : null;
-        const seatRefused = seat === null || named === null ? null : seatFaceRefusal({ seat, named, worn: opts.wornOrdinal?.() ?? null, lent });
+        const seatRefused = seat === null || named === null ? null : seatFaceRefusal({ seat, named, worn: opts.mountOrdinal?.() ?? null, lent });
         if (seatRefused !== null) return fail(seatRefused, seatRefusalClass(seatRefused));
         if (oneShotChore) {
           const chore = choreAtDoor({ verb: inv.verb, face: named ?? mount!, mount, lent, hand: seat !== null ? "seat" : "cli", session: null, generation: null });

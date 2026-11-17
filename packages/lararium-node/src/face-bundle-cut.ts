@@ -54,7 +54,7 @@ export class BackupRefused extends Error {
 /** What the standing composition lends a bundle's cut, and the import of a bundle's memory section. */
 export interface BackupDoor {
   /** The face this composition wears, by handle-index: the one its island counts keys for. Null where no face stands lit. */
-  readonly wornFace: () => number | null;
+  readonly mountFace: () => number | null;
   /** This vessel's own reading of its edge on the mounted face's fleet: true under its own shadow. */
   readonly ownEdgeShadowed: () => Promise<boolean>;
   /**
@@ -166,12 +166,12 @@ export async function cutFaceBundle(args: { readonly face: number; readonly bund
   const { face, door } = args;
   // THE SHADOW, READ ONCE, AT THE ENTRY, and judged before any row opens: a vessel under its own shadow performs
   // no key act, whatever face the cut names. A raise this vessel counts while the cut runs binds its next act.
-  const shadowed = door !== null && door.wornFace() !== null ? await door.ownEdgeShadowed() : false;
+  const shadowed = door !== null && door.mountFace() !== null ? await door.ownEdgeShadowed() : false;
   if (shadowed) throw new BackupRefused("own-edge-shadowed", "this vessel reads a shadow over its own edge: a cut hands keys beyond the holder, and a vessel under its own shadow performs no key act");
 
   const line = (await listPersonaRosterLines()).find((l) => l.handleIndex === face);
   if (!line) throw new BackupRefused("face-not-held", `this vessel holds no root at h${face}: a bundle carries a face's root, and only a vessel that holds it cuts one`);
-  const worn = door?.wornFace() ?? null;
+  const worn = door?.mountFace() ?? null;
   if (door === null || worn !== face) {
     throw new BackupRefused("face-not-worn", worn === null
       ? `this vessel's composition mounts no face, so no island counts keys for h${face}: mount it (\`lares vault unlock --face ${face}\`) on a standing vessel, and cut`

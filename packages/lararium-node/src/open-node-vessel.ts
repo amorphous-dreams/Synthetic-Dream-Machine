@@ -593,7 +593,7 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
   /** THE WORN FACE's ordinal (the mounted face, lit), or null at the floor: the AI seat acts as it alone (`seat-hand`). */
-  wornOrdinal: () => number | null;
+  mountOrdinal: () => number | null;
   ports: { place(surface: string, binding: string, msg: unknown): PortPlacement; close(binding: string): void };
   /** Started event bus — ingress rings registered; tick loop running at 20 Hz (node substrate). */
   eventBus:  LarEventBusImpl;
@@ -702,7 +702,7 @@ interface NodeBootPrep {
   cidDir: string;
   restartWiki: (wiki: string) => Promise<void>;
   promoteActs: PromoteActGate;
-  wornFace: () => { readonly face: number; readonly personaGroup: string } | null;
+  mountFace: () => { readonly face: number; readonly personaGroup: string } | null;
   repo:             Repo;
   /** The store's claim, taken before the Repo opened and held for the vessel's life. */
   storeClaim:       StoreClaim & { readonly holder: "vessel" };
@@ -776,7 +776,7 @@ interface NodeBootPrep {
   /** Forward-ref reads — set as the closures run (the same `let vmManager!` pattern, surfaced). */
   lightFace: (ordinal: number) => Promise<void>;
   dropFace: (ordinal: number) => Promise<void>;
-  wornOrdinal: () => number | null;
+  mountOrdinal: () => number | null;
   daemonVm:         () => DaemonVmCore;
   /** The host working layer's mount (slice 5b, red 3): the composition awaits it before it returns, so no caller mounts. */
   hostWorkingMounted: () => Promise<void>;
@@ -1813,7 +1813,7 @@ async function prepareNodeBootOn(
   // The lanes a floor serves stay shut whatever that board reads (`floor-fleet-lanes`).
   let wornFleetRoot: string | null = null;
   /** The face this composition mounts LIT (a sovereign composition presenting that face's signed edge), by handle-index; null where none stands. */
-  let litFace: number | null = null;
+  let mountFace: number | null = null;
   let activeAtom: FaceAtomKey | null = null;
   const builtRing = makeEdgeShadowRing({
     // The ring folds once before the mounted face loads. An empty key carries no face
@@ -1908,12 +1908,12 @@ async function prepareNodeBootOn(
   // own Nexus, the D4 shadow ring, the PersonaGroup grant ring, the one sorter over that Nexus's posture, and the
   // withdrawal memory a sovereign gate keeps across a restart.
   // THE WORN FACE the gates' rings read: the mount's own, or the founding face the bootstrap pins.
-  const wornGateFace = (): { readonly face: number; readonly personaGroup: string } | null => {
+  const mountGateFace = (): { readonly face: number; readonly personaGroup: string } | null => {
     // The sealed custody group, and only once the face proof passed: the bootstrap's group text decides nothing here.
     return wornFaceProven && custodyGroup ? { face: wornMount?.handleIndex ?? 0, personaGroup: custodyGroup } : null;
   };
   const wornFaceRecords = async () => {
-    const worn = wornGateFace();
+    const worn = mountGateFace();
     const record = worn ? await readFaceJoinRecord(worn.personaGroup) : null;
     return record ? [record] : [];
   };
@@ -1936,7 +1936,7 @@ async function prepareNodeBootOn(
       joinRecords: wornFaceRecords,
       // The root holder answers the grant its held root would sign for each scope the face stands at here.
       rootHoldings: async () => {
-        const worn = wornGateFace();
+        const worn = mountGateFace();
         return worn ? heldRootHoldings({ sealHome, faces: [worn] }) : [];
       },
     }),
@@ -2137,7 +2137,7 @@ async function prepareNodeBootOn(
       layStatement: async (url, statement, kel) => { layStatementOn(await materializeSharedLarDoc(repo, url, "board:carriage-contracts"), statement, kel); },
     } : {
       facePresentation: async (pin) => {
-        const composed = await composeDialPresentation({ sealHome, pin, personaGroup: wornGateFace()?.personaGroup ?? null, ...carriageSessions });
+        const composed = await composeDialPresentation({ sealHome, pin, personaGroup: mountGateFace()?.personaGroup ?? null, ...carriageSessions });
         return "presentation" in composed && composed.presentation ? composed.presentation : null;
       },
     }),
@@ -3410,7 +3410,7 @@ async function prepareNodeBootOn(
     // THE MOUNTED FACE'S OWN ROWS. Each face keeps its veil archive under its own PersonaGroup; the face this
     // composition mounts (the worn one, else the founding face) names which row the veil restores from and which
     // row the island's export lands in. The island receives only that face's atom and archive.
-    litFace = sovereign && deviceEdge ? mountedFace : null;
+    mountFace = sovereign && deviceEdge ? mountedFace : null;
     const veilArchiveBytes = sovereign && activeAtom && personaGroupId ? await sovereign.veilArchive(personaGroupId) : null;
     // THE OUTBOX KEY rides to the island the way the Archive does: opened here under the vessel key this thread holds,
     // and never at the floor, where the island's outbox holds shut (custody#/the-table, the outbox).
@@ -3562,7 +3562,7 @@ async function prepareNodeBootOn(
     // reads (the island refuses an unlit face's presenter, `no provider for face`, and never serves it as the mount).
     let lighting: Promise<void> = Promise.resolve();
     const lightServedFaces = (): Promise<void> => (lighting = lighting.then(async () => {
-      if (!siblingPorts || litFace === null) return;
+      if (!siblingPorts || mountFace === null) return;
       let served: number[];
       try { served = await unlockedFaceOrdinals(); } catch { return; }
       for (const ordinal of unlitServedFaces(served, mountedFace, new Set(siblingOrdinals.values()))) {
@@ -4179,7 +4179,7 @@ async function prepareNodeBootOn(
       // The operator's road reads the fleet this vessel wears, as the fold's settle does (road `T34`).
       wornFleet: () => wornFleetOf().worn,
       // The face this composition wears (lit and proved): a stage read answers `worn` off it.
-      wornFace: () => litFace,
+      mountFace: () => mountFace,
       // A face's local canon `bags/daemon-<F>`, named by the control document: a kahua lift reads its staged row there.
       faceCanon: faceCanonThroughControl(repo, readControlDoc),
       // A face founded on this standing composition lights beside the worn one at its birth.
@@ -4489,7 +4489,7 @@ async function prepareNodeBootOn(
       caps:        islandCaps,
       mainRepo:    repo,
       // D4 lends the actor grant; this vessel opens a read-only port until then.
-      portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: wornGateFace()?.personaGroup ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
+      portPolicy: opts.portPolicy ?? ((binding, islandKey) => ({ faceId: mountGateFace()?.personaGroup ?? islandKey, actor: binding, edits: false, bags: [], admin: false })),
       ...(opts.onPortMessage ? { onPortMessage: opts.onPortMessage } : {}),
       storageRoot: storageDir,
       cidDir:      cidDir,
@@ -4572,7 +4572,7 @@ async function prepareNodeBootOn(
     liftFace: sovereign ? (custodyGroup ?? "place") : null,
     liftCustodyWrite,
     cidDir,
-    repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, wornFace: wornGateFace,
+    repo, storeClaim, catalogHandle, placeSigner, nexusPubkey, floorGates, carriagePull, mountFace: mountGateFace,
     restartWiki: reloadWikiAfterVerb, promoteActs,
     vesselGateKey:   vesselIdentity.verifyingKey,
     daemonDocUrl:    () => bootstrap?.daemonUrl ?? "",
@@ -4614,7 +4614,7 @@ async function prepareNodeBootOn(
     heldSaves: () => sealedRest.store.held(),
     get floorKey() { return floorKeyGrant; },
     backupDoor: {
-      wornFace: () => litFace,
+      mountFace: () => mountFace,
       ownEdgeShadowed: async () => {
         if (!wornFleetRoot) return false;
         for (let tries = 0; tries < 3 && !shadowRing.fold(); tries++) {
@@ -4676,7 +4676,7 @@ async function prepareNodeBootOn(
     siblingChannel:   () => siblings?.status() ?? null,
     openDaemon, wireVerbs, afterDaemon,
     realmStanding:    async () => (realmPlane ? await realmPlane.standing() : new Map()),
-    lightFace: (ordinal) => lightFace(ordinal), dropFace, wornOrdinal: () => litFace,
+    lightFace: (ordinal) => lightFace(ordinal), dropFace, mountOrdinal: () => mountFace,
     daemonVm:         () => daemonVm,
     hostWorkingMounted: () => mountHostWorking(),
     restartDaemonIsland: (reason) => daemonHolder.restart(reason),
@@ -4801,7 +4801,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     daemon: p.daemonVm(),
     restartDaemonIsland: p.restartDaemonIsland,
     daemonIslandState: p.daemonIslandState,
-    lightFace: p.lightFace, dropFace: p.dropFace, wornOrdinal: p.wornOrdinal, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
+    lightFace: p.lightFace, dropFace: p.dropFace, mountOrdinal: p.mountOrdinal, restartWiki: p.restartWiki, promoteActs: p.promoteActs,
     wikiDocUrl:       result.wikiHandle?.url ?? null,
     catalogHandleUrl: p.catalogHandle.url,
     daemonDocUrl:     p.daemonDocUrl(),

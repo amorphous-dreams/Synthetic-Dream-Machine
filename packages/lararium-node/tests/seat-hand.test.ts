@@ -43,9 +43,9 @@ describe("the AI seat acts inside the lent set", () => {
   test("SH4 — the channel reads the mark at both doors, and main hands it the worn face", () => {
     const src = readFileSync(join(import.meta.dirname, "..", "src", "uds-channel.ts"), "utf8");
     expect(src).toMatch(/const seat = seatKindOf\(parsed\);\n\s+const named = namedFaceOf\(inv\.args\);/);
-    expect(src).toMatch(/seatFaceRefusal\(\{ seat, named, worn: opts\.wornOrdinal\?\.\(\) \?\? null, lent \}\)/);
+    expect(src).toMatch(/seatFaceRefusal\(\{ seat, named, worn: opts\.mountOrdinal\?\.\(\) \?\? null, lent \}\)/);
     expect(src).toMatch(/seatFaceRefusal\(\{ seat: frame\["hand"\] === "seat" \? "ai" : seatKindOf\(frame\), named: faceRefOrdinal\(frame\["faceRef"\]\)/);
-    expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/wornOrdinal:\s+\(\) => result\.wornOrdinal\(\)/);
+    expect(readFileSync(join(import.meta.dirname, "..", "src", "main.ts"), "utf8")).toMatch(/mountOrdinal:\s+\(\) => result\.mountOrdinal\(\)/);
   });
 
   test("SH5 — inside the lent set a seat names any lent face; outside it refuses face-not-lent naming the set; an empty or doubled set refuses by its reading; no set, the worn face alone", () => {

@@ -446,7 +446,7 @@ export async function importFaceBundleMemory(args: {
   try { body = openRestoreBody(args.sealedBody, args.bundleKey); }
   catch (err) { if (err instanceof RestoreRefused) throw new ImportRefused(err.reason, err.message); throw err; }
   const door = args.door;
-  const worn = door?.wornFace() ?? null;
+  const worn = door?.mountFace() ?? null;
   if (door === null || worn === null) {
     throw new ImportRefused("face-not-worn", "this vessel stands wearing no face: an import wraps each key for this vessel's own seat in the face's key group. Stand the vessel wearing the restored face, unlock it, then import.");
   }

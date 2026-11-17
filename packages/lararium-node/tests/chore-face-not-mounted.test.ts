@@ -65,7 +65,7 @@ async function stand() {
   const front = serveUdsFront({ claim });
   front.attach(makeUdsSeat({ controlHandle: daemonHandle, control: controlStoreOf(daemonHandle), claim, repo: { flush: (ids) => repo.flush(ids) }, sessions: door,
     switchActs: { write: async () => {} },
-    wornOrdinal: () => 0,
+    mountOrdinal: () => 0,
     lentOrdinals: async () => [0, 1],
     placeVerb: (o) => {
       placed.push(o);

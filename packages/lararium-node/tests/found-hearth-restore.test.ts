@@ -80,7 +80,7 @@ async function cutAndDestroy(label: string, name: string): Promise<Bundle> {
   const cut = await cutFaceBundle({
     face: 0, bundleKey,
     door: {
-      wornFace: () => 0, ownEdgeShadowed: async () => false,
+      mountFace: () => 0, ownEdgeShadowed: async () => false,
       cutMemory: async (to) => ({ section: Buffer.from(sealMemorySection([], to)).toString("base64"), holds: [] }),
       kel: (p) => withRepo((repo) => readLocalPersonaKelChain(repo, p)),
       memoryDoor: null, importMemory: null,

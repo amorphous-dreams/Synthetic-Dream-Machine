@@ -837,7 +837,7 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
     repo:         result.repo,
     sessions:     result.sessionDoor,
     // THE AI SEAT ACTS INSIDE THE LENT SET (`seat-hand`): a call marked `seat: "ai"` naming a face outside it refuses.
-    wornOrdinal:  () => result.wornOrdinal(),
+    mountOrdinal:  () => result.mountOrdinal(),
     lentOrdinals: () => unlockedFaceOrdinals(),
     signers:      result.sessionSigns,
     beforeSignerDrops: (signer) => result.sealedRestLock(signer),

@@ -157,7 +157,7 @@ async function cutHere(): Promise<{ sealedBody: Uint8Array; bundleKey: Uint8Arra
   const cut = await cutFaceBundle({
     face: 0, bundleKey,
     door: {
-      wornFace: () => 0, ownEdgeShadowed: async () => false,
+      mountFace: () => 0, ownEdgeShadowed: async () => false,
       cutMemory: async (to) => ({ section: Buffer.from(sealMemorySection([], to)).toString("base64"), holds: [] }),
       kel: (prefix) => withRepo((repo) => readLocalPersonaKelChain(repo, prefix)),
       memoryDoor: null, importMemory: null,
