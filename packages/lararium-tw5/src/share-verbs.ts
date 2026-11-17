@@ -2,7 +2,8 @@
  * share-verbs — the daemon's two share doors over the vessel's control document (the share config, `share-config.ts`).
  *
  *   share-set   writes (or removes) one row `$:/config/lares/share/<slug>`; its filters read as a title list of face pet-names,
- *               a wiki row may name a `workspace`, and the daemon wiki refuses `share-face-private`
+ *               a wiki row may name a `workspace`, the daemon wiki refuses `share-face-private`, and a row of the other
+ *               kind standing for the slug refuses `share-kind-standing` (unshare it first)
  *   share-list  answers every row the control document holds
  *
  * The control document rests under the vessel's key and no face reads it, so the rows name faces where no face hive does
@@ -13,7 +14,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  mutableLarRecord, parseShareFilter, shareEntryFields, shareEntryOf, shareEntryTitle, shareEntryWorkspace, ShareConfigRefusal, SHARE_CONFIG_PREFIX, VerbRefusal,
+  assertShareKindFree, mutableLarRecord, parseShareFilter, shareEntryFields, shareEntryOf, shareEntryTitle, shareEntryWorkspace, ShareConfigRefusal, SHARE_CONFIG_PREFIX, VerbRefusal,
   type CompositeStore, type ShareEntry,
 } from "@lararium/mesh";
 import type { VerbReactor } from "./verb-dispatcher.js";
@@ -52,8 +53,12 @@ export function makeShareSetReactor(opts: { readonly control: () => CompositeSto
     // THE ROW KEEPS ITS OWNER, by pet-name, as the file's row does: `ownerOf` reads it, so a reader whose half names the bag by
     // reference never reads as the owner and delegates the bag onward.
     const owner = typeof args["owner"] === "string" ? args["owner"].trim() : "";
+    const kind: ShareEntry["kind"] = args["kind"] === "wiki" ? "wiki" : "bag";
+    const held = await control.get(title);
+    const standing = held ? shareEntryOf(held.tiddler as Record<string, unknown>)?.kind : null;
+    try { assertShareKindFree(slug, kind, standing); } catch (e) { throw new VerbRefusal("share-kind-standing", e instanceof Error ? e.message : String(e)); }
     const row: ShareEntry = {
-      slug, kind: args["kind"] === "wiki" ? "wiki" : "bag", read, write,
+      slug, kind, read, write,
       ...(workspace ? { workspace } : {}),
       ...(owner ? { owner } : {}),
       ...(typeof args["note"] === "string" && args["note"].length > 0 ? { note: args["note"] } : {}),

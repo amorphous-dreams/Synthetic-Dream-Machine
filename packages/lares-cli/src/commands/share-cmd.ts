@@ -4,6 +4,10 @@
  *   lares bag share <bag> --read <names> [--write <names>] [--note <why>] [--face N]
  *   lares wiki share <wiki> --read <names> [--write <names>] [--note <why>] [--workspace <name>]
  *   lares bag share --list        every row, and the one resolver's answer per bag: who reads, who writes, who waits
+ *   lares bag share <bag> --remove · lares wiki share <wiki> --remove   unshare: the row leaves the file and the control document
+ *
+ * ONE ROW PER SLUG: a share of the other kind over a standing row refuses `share-kind-standing` and writes nothing; unshare
+ * that row first through its own kind's door (`--remove`).
  *
  * Names are face PET-NAMES as a title list (`a b [[c d]]`), `*` for every face, or empty; `hN` (and `--face N`, which adds
  * face N to the readers) resolve to that face's pet-name, so a row always names faces by pet-name. The row writes through
@@ -20,7 +24,7 @@
  * Meme: lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config
  */
 import {
-  parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareEntryBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
+  assertShareKindFree, parseShareFile, parseShareFilter, resolveShare, serializeShareFile, shareEntryBag, ShareConfigRefusal, SHARE_CONFIG_FILE,
   type ShareFace, type ShareEntry,
 } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
@@ -66,6 +70,18 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     }
     const slug = args.positional[0];
     if (!slug) { doors.err(`lares ${kind} share: name the ${kind} (\`lares ${kind} share <${kind}> --read <names> [--write <names>]\`), or --list`); return 2; }
+    const standing = rows.find((r) => r.slug === slug);
+    if (args.flags["remove"] === true) {
+      if (!standing) { doors.err(`lares ${kind} share: no row stands for ${slug}; nothing to unshare`); return 2; }
+      if (standing.kind !== kind) { doors.err(`lares ${kind} share: ${slug} stands shared as a ${standing.kind} row; unshare it through its door (\`lares ${standing.kind} share ${slug} --remove\`)`); return 2; }
+      const rest = rows.filter((r) => r.slug !== slug);
+      doors.file.write(serializeShareFile(rest));
+      doors.out(`share: ${kind} ${slug} unshared; its row leaves config/${SHARE_CONFIG_FILE}`);
+      const removed = await doors.verb("share-set", { slug, remove: true });
+      if (removed === null) doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning");
+      return 0;
+    }
+    try { assertShareKindFree(slug, kind, standing?.kind); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
     let read: string, write: string;
     try {
       const faceOpt = args.options["face"];

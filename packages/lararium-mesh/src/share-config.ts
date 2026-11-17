@@ -79,7 +79,7 @@ export interface ShareFace { readonly handleIndex: number; readonly petname: str
 /** A share row whose filter reads outside the title-list subset refuses by name, never a guess. */
 export class ShareConfigRefusal extends Error {
   override readonly name = "ShareConfigRefusal";
-  constructor(readonly reason: "share-filter-unsupported" | "share-slug-malformed" | "share-file-malformed" | "share-face-private" | "share-workspace-malformed", detail: string) { super(`${reason}: ${detail}`); }
+  constructor(readonly reason: "share-filter-unsupported" | "share-slug-malformed" | "share-file-malformed" | "share-face-private" | "share-workspace-malformed" | "share-kind-standing", detail: string) { super(`${reason}: ${detail}`); }
 }
 
 const SLUG = /^[a-z0-9][a-z0-9._-]*$/;
@@ -89,6 +89,16 @@ export function shareEntryTitle(slug: string): string {
   if (!SLUG.test(slug)) throw new ShareConfigRefusal("share-slug-malformed", `"${slug}" names no bag or wiki slug`);
   if (isFacePrivateSlug(slug)) throw new ShareConfigRefusal("share-face-private", `"${slug}" holds one face's memory (the daemon wiki), a named exception: it takes no share row`);
   return `${SHARE_CONFIG_PREFIX}${slug}`;
+}
+
+/**
+ * ONE ROW PER SLUG, ONE KIND PER ROW: a share of a kind other than the row standing for the slug would overwrite that row (a
+ * wiki row's owner and its private cabal among it), so it refuses `share-kind-standing` and names the unshare. The same kind
+ * replaces its row. `standing` reads the kind the row for the slug carries, or null where none stands.
+ */
+export function assertShareKindFree(slug: string, kind: ShareEntry["kind"], standing: ShareEntry["kind"] | null | undefined): void {
+  if (standing === null || standing === undefined || standing === kind) return;
+  throw new ShareConfigRefusal("share-kind-standing", `"${slug}" stands shared as a ${standing} row, and a ${kind} share would overwrite it (one row per slug): unshare it first (\`lares ${standing} share ${slug} --remove\`), then share the ${kind}`);
 }
 
 /** A row's workspace name, checked: empty or absent reads none; a name outside the grammar refuses `share-workspace-malformed`. */
