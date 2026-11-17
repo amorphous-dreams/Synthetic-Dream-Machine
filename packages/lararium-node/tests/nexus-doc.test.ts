@@ -135,6 +135,12 @@ describe("nexus-doc — disk round-trip, fail-closed", () => {
       expect(nexusCharterShape(bags)).toBe("torn");
       expect(readNexusDoc(bags)).toBeNull();
     }
+    // A field the epoch reader does not read passes unread whatever its name: no name stands as a refusal of its own.
+    for (const extra of ['"nextKeyCommit": "x",', '"prevEpochCid": null,', '"unreadField": "x",']) {
+      writeFileSync(nexusCharterDocPath(bags), whole.replace('"nextKeyDigests": [],', `${extra} "nextKeyDigests": [],`), "utf8");
+      expect(nexusCharterShape(bags), extra).toBe("whole");
+      expect(readNexusDoc(bags)?.sealLineage).toEqual(doc.sealLineage);
+    }
 
     writeFileSync(nexusCharterDocPath(bags), whole.replace('"nextKeyDigests": [],', '"nextKeyDigests": ["xyz"],'), "utf8");
     expect(nexusCharterShape(bags)).toBe("torn");
