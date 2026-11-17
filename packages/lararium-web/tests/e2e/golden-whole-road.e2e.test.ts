@@ -74,9 +74,22 @@ async function makeTiddler(title: string, text: string): Promise<void> {
   await wiki().evaluate((host) => (host.shadowRoot!.querySelector('button[title="Create a new tiddler"]') as HTMLElement).click());
   await wiki().locator("input.tc-titlebar").fill(title);
   await wiki().locator("textarea.tc-edit-texteditor-body").fill(text);
-  await wiki().locator('button[title="Confirm changes to this tiddler"]').click();
-  await page!.waitForFunction((t) => !!document.querySelector("#projection")?.shadowRoot
-    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]:not(.tc-tiddler-edit-frame)`), title, { timeout: WAIT })
+  // THE CONFIRM MAY MEET A RETIRED TARGET. The fills relay input acts, and the island may repaint the edit frame after
+  // its answers; a confirm relayed against a frame a newer one replaced answers `stale-target` and saves nothing (the
+  // page's words: "Review it and try again"), the same race W3 names. So while the edit frame's confirm still stands,
+  // the confirm is clicked again, each try bounded by a slice of WAIT; a confirm that landed takes the edit frame away,
+  // and no further click follows. The last slice's timeout carries what the page and the hearth said.
+  const confirm = wiki().locator('button[title="Confirm changes to this tiddler"]');
+  const confirmed = (t: string): boolean => !!document.querySelector("#projection")?.shadowRoot
+    ?.querySelector(`.tc-story-river .tc-tiddler-frame[data-tiddler-title="${t}"]:not(.tc-tiddler-edit-frame)`);
+  const TRIES = 4;
+  for (let n = 1; n < TRIES; n++) {
+    await confirm.click();
+    if (await page!.waitForFunction(confirmed, title, { timeout: WAIT / TRIES }).then(() => true, () => false)) return;
+    if (await confirm.count() === 0) break;
+  }
+  if (await confirm.count() > 0) await confirm.click();
+  await page!.waitForFunction(confirmed, title, { timeout: WAIT / TRIES })
     .catch(told(`the confirmed ${title} never stood out of its edit frame`));
 }
 
