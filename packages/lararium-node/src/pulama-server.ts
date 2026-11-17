@@ -13,7 +13,8 @@
  *
  * ── THE SESSION SERVES A WORKING VESSEL AND NOTHING A HUMAN ROUTE GUARDS ────────────────────────
  *   hot rows       read, write, update, move, remove, and the two claims (`withRecords`, `exclusive`)
- *   face rows      of the face the lei names; another face's rows refuse `outside-the-lei`
+ *   face rows      of the face the lei names; another face's rows refuse `outside-the-lei`, and the standing a session
+ *                  carries names only that face open, so a vessel walking its open faces asks no row outside the lei
  *   cold rows      refuse `needs-the-human`, but for a READ of a row the scope's `coldReads` names (the rows a boot to
  *                  composition reads unattended); a cold write, a cold removal and every other cold row refuse
  *   warded rows    refuse `needs-the-human`: a ward opens only fresh from a human route
@@ -99,7 +100,11 @@ export function servePulama(a: {
   const live = new Set<Session>();
   let nextClaim = 1;
 
-  const standing = () => ({ slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(), faces: holder.unlockedFaces() });
+  /** The holder's standing as one session reads it: the faces it names open stay inside the session's lei. */
+  const standing = (s: { readonly scope: PulamaScope }) => ({
+    slot: holder.openedSlot(), attemptsLeft: holder.attemptsLeft(),
+    faces: holder.unlockedFaces().filter((fcid) => s.scope.face === null || fcid === s.scope.face.fcid),
+  });
   /** The session's children, fresh; `send` encodes them before the copies zero-fill. */
   const withDerived = (send: (derived: Record<string, Uint8Array>) => void): void => {
     const derived: Record<string, Uint8Array> = {};
@@ -276,7 +281,7 @@ export function servePulama(a: {
     );
   };
 
-  holder.onOpened?.(() => { for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(), derived })); });
+  holder.onOpened?.(() => { for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived })); });
 
   return {
     accept(channel) {
@@ -303,7 +308,7 @@ export function servePulama(a: {
           const s: Session = { channel, scope: admitted.scope, claims: new Map(), open: true };
           session = s;
           live.add(s);
-          withDerived((derived) => channel.send({ t: "session", scope: { ordinal: s.scope.face?.ordinal ?? null }, standing: standing(), derived }));
+          withDerived((derived) => channel.send({ t: "session", scope: { ordinal: s.scope.face?.ordinal ?? null }, standing: standing(s), derived }));
           log("session opened");
         }, () => refuse("pulama-gate-faulted"));
       });
@@ -313,7 +318,7 @@ export function servePulama(a: {
       await holder.lock();
       log("locked: every key zero-filled");
     },
-    refresh() { for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(), derived })); },
+    refresh() { for (const s of live) withDerived((derived) => s.channel.send({ t: "ev", standing: standing(s), derived })); },
     sessions: () => live.size,
   };
 }
