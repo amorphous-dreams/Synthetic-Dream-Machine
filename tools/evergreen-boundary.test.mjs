@@ -37,6 +37,28 @@ test("E1b old-shape names and readings fail while current refusals read clean", 
   assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
   const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
 });
+test("E1c old-shape: a parse, refusal or comment that names an older peer's build reads; present readings of age do not", () => {
+  for (const body of [
+    'throw new PulamaRefused("pulama-lend-unnamed", `the pūlama answered a session that names no lent set: it runs an older build, so rebuild it`);',
+    '// A session frame that names no lent set comes from a pūlama on an older build: it refuses by name.',
+    '/** Absent on payloads from older vessels; treated as null. */',
+    '// Additive: an older daemon build that never sends it reads exactly as before.',
+    'const why = "a frame from an older pūlama names one face";',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    'throw new PulamaRefused(lent.refusal, `the session frame names no lent set this vessel reads (${lent.message})`);',
+    '/** Every status that counts as a run in flight; the newest five runs say nothing of an older one still running. */',
+    'console.warn("another tab holds an older version of this store open; the open waits until it closes.");',
+    '// a browser, a worker, an older Node',
+    '/** The pluggable search leg (defaults to the read-only holder client). */',
+    'throw new Error("stale build: dist was not built from the current source");',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
 test("E2 schema field is a version finding", () => {
   const body = "const record = { schemaVersion: 1 };";
   assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 1);
