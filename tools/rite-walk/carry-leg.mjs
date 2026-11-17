@@ -765,8 +765,9 @@ const parity = async (c) => {
  *  of that envelope refuses (`postamble-content`), so the read asks `--no-json`. */
 export const memeGetArgs = (uri) => ["meme", "get", uri, "--recipe", "default", "--no-json"];
 
-/** The sweep's one exec inside the vessel: read each stage row as text (`--no-json`), strip its `row-key` line, put it back. */
-export const sweepScript = (cli) => `n=0; bad=0; for u in $(cat /lar/config/sweep/uris); do n=$((n+1)); ${cli} meme get "$u" --recipe default --no-json > /tmp/sweep.mem 2>/dev/null && sed -i '/^row-key = "[^"]*"$/d' /tmp/sweep.mem && ${cli} meme put "$u" --recipe default --file /tmp/sweep.mem --json > /dev/null 2>&1 || { bad=$((bad+1)); echo "SWEEP-REFUSED $u"; }; done; echo "SWEPT $n BAD $bad"`;
+/** The sweep's one exec inside the vessel: read each stage row as text (`--no-json`), strip its `row-key` line, put it back.
+ *  A refused row prints with the refusal's own text (the get's stderr, or the put's answer), so the receipt names why. */
+export const sweepScript = (cli) => `n=0; bad=0; for u in $(cat /lar/config/sweep/uris); do n=$((n+1)); if ${cli} meme get "$u" --recipe default --no-json > /tmp/sweep.mem 2> /tmp/sweep.err && sed -i '/^row-key = "[^"]*"$/d' /tmp/sweep.mem && ${cli} meme put "$u" --recipe default --file /tmp/sweep.mem --json > /tmp/sweep.err 2>&1; then :; else bad=$((bad+1)); echo "SWEEP-REFUSED $u: $(tail -c 400 /tmp/sweep.err | tr '\\n' ' ')"; fi; done; echo "SWEPT $n BAD $bad"`;
 
 /** The instrument must read red where the new house moved: one row dropped, one row changed; then both restored, par again. */
 const instrumentCollisions = async (c) => {
@@ -794,8 +795,14 @@ const instrumentCollisions = async (c) => {
   c.vars["census-new"] = saved;
   const text = JSON.stringify(red.answer ?? {});
   const named = [dropped, changed].filter((u) => text.includes(u));
+  // THE CENSUS WEARS EVERY FACE IN TURN and leaves the last worn, so the restore wears the steward again: its puts land in the
+  // steward's layer, where the collision moved them.
+  const back = await wear(c, "new", 0);
+  if (!back.ok) return { ok: false, answer: `the steward never stood worn again for the restore: ${tail(back.transcript)}` };
   await put(dropped, keep[dropped], "dropped.mem");
   await put(changed, keep[changed], "restored.mem");
+  const before = await wear(c, "new", 0);
+  if (!before.ok) return { ok: false, answer: `the steward never stood worn before the restored census: ${tail(before.transcript)}` };
   const again = await censusStep("new", "restored")(c);
   if (!again.ok) return again;
   c.vars["census-new"] = c.vars["census-restored"];
@@ -839,8 +846,9 @@ const rowKeySweep = async (c) => {
   const fresh = `${STAGE_PREFIX}research/keyless-at-head`;
   writeFileSync(join(c.scope.houseNew, "config", "sweep", "keyless.mem"), (await import("./steps.mjs")).memeText(fresh, "a stage row with no row-key lands at the head"));
   const keyless = await h.shim(["meme", "put", fresh, "--recipe", "default", "--file", "/lar/config/sweep/keyless.mem", "--json"]);
-  c.vars.sweep = { before, after, swept: m ? Number(m[1]) : null, bad: m ? Number(m[2]) : null, keylessExit: keyless.code };
-  return { ok: m !== null && Number(m[2]) === 0 && after === 0 && keyless.code === 0, answer: `keyed rows ${before} → ${after}; swept ${c.vars.sweep.swept}, refused ${c.vars.sweep.bad}; a keyless row: exit ${keyless.code}`, measures: c.vars.sweep };
+  const refusedRows = said(r).split("\n").filter((l) => l.startsWith("SWEEP-REFUSED ")).map((l) => l.slice("SWEEP-REFUSED ".length).trim());
+  c.vars.sweep = { before, after, swept: m ? Number(m[1]) : null, bad: m ? Number(m[2]) : null, keylessExit: keyless.code, refused: refusedRows.slice(0, 20) };
+  return { ok: m !== null && Number(m[2]) === 0 && after === 0 && keyless.code === 0, answer: `keyed rows ${before} → ${after}; swept ${c.vars.sweep.swept}, refused ${c.vars.sweep.bad}; a keyless row: exit ${keyless.code}${refusedRows.length ? ` · refused: ${refusedRows.slice(0, 3).join(" · ")}` : ""}`, measures: c.vars.sweep };
 };
 
 /** The containers go down; the base clears, save under `--keep` (`vars.keep`), where it stands for a reader after the walk. */
