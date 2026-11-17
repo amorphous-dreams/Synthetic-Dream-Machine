@@ -160,8 +160,8 @@ import { loadFaceAnchorOfGroup, keepFaceAnchorOfGroup } from "./face-anchor-stor
 import { raiseAnchorFromSlots } from "./lease-observation.js";
 import { readFacePersonaRecords } from "./persona-act-store.js";
 import { CustodyLocked, WardNeedsFreshUnlock } from "./custody-holder.js";
-import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor } from "./custody-seat.js";
-import { joinedFaceAuth, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
+import { servesFaceOfGroup, standingCustody, custodyFloorKeyDoor, unlockedFaceOrdinals } from "./custody-seat.js";
+import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "./joined-face-auth.js";
 import { fleetLineageOf } from "./fleet-lineage.js";
 import { hearthGatePins, hearthNameOf, dialDeadlines, chooseHearthDial, fileHearthPins, type HearthDialChoice } from "./hearth-gate-pins.js";
 import { certifyFounderAt, composeDialPresentation } from "./dial-presentation.js";
@@ -926,6 +926,8 @@ async function prepareNodeBootOn(
   let wornDeviceGroup: string | null = null;
   let wornDeviceRelation: string | null = null;
   const siblingFaces = new Map<string, { readonly relation: string | null; readonly face: string | null }>();
+  /** Each lit sibling's handle index, by its group: the lit set the lend's light watch reads. */
+  const siblingOrdinals = new Map<string, number>();
   const litDevices = (): LitDeviceFaces => [
     ...(wornDeviceGroup !== null ? [{ group: wornDeviceGroup, relation: wornDeviceRelation, face: sealedCells.face() }] : []),
     ...[...siblingFaces].filter(([group]) => group !== wornDeviceGroup).map(([group, f]) => ({ group, relation: f.relation, face: f.face })),
@@ -3502,6 +3504,7 @@ async function prepareNodeBootOn(
       if (placeAid === null || entry.personaGroupId === wornDeviceGroup) return;
       const group = entry.personaGroupId, relation = entry.faceRelation ?? null;
       siblingFaces.set(group, { relation, face: placeProofSubjectRef({ atomKey: entry.atom.key, place: placeAid } as never) });
+      if (typeof entry.handleIndex === "number") siblingOrdinals.set(group, entry.handleIndex);
       // ITS OWN SESSION: the sibling's saves book and seal under its own key from here on.
       standSiblingSession({ group, atomKey: entry.atom.key });
       if (relation === null) return;
@@ -3525,12 +3528,22 @@ async function prepareNodeBootOn(
       const faces = siblingPorts ? await joinedFaceAuth(siblingPorts) : [];
       classDeviceLedgers(vesselPrivate, faces.map((face) => face.atom.key));
       const open = new Set(faces.map((f) => f.personaGroupId));
-      for (const group of [...siblingFaces.keys()]) if (!open.has(group)) { siblingFaces.delete(group); dropSiblingSession(group); siblingBasesKeepers.get(group)?.stop(); siblingBasesKeepers.delete(group); }
+      for (const group of [...siblingFaces.keys()]) if (!open.has(group)) { siblingFaces.delete(group); siblingOrdinals.delete(group); dropSiblingSession(group); siblingBasesKeepers.get(group)?.stop(); siblingBasesKeepers.delete(group); }
       for (const face of faces) litSibling(face);
       sealedRest.store.mapMoved();
       return faces;
     };
-    lightFace = async (ordinal) => {
+    // ONE LIGHT PER FACE AT A TIME: the unlock frame and the lend's light watch may both ask a face to light on one open, and
+    // the second ask waits on the first rather than light it twice.
+    const lightsInFlight = new Map<number, Promise<void>>();
+    lightFace = (ordinal) => {
+      const running = lightsInFlight.get(ordinal);
+      if (running) return running;
+      const light = lightFaceNow(ordinal).finally(() => lightsInFlight.delete(ordinal));
+      lightsInFlight.set(ordinal, light);
+      return light;
+    };
+    const lightFaceNow = async (ordinal: number): Promise<void> => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
       if (entry) {
@@ -3543,6 +3556,21 @@ async function prepareNodeBootOn(
       }
       await intentRelay?.refresh();
     };
+    // A FACE SERVED AFTER THE COMPOSITION STOOD lights on the custody's open: the pūlama lights a waiting face and its standing
+    // event widens the served set, and each served face neither mounted nor lit lights here, in turn, before a session on it
+    // reads (the island refuses an unlit face's presenter, `no provider for face`, and never serves it as the mount).
+    let lighting: Promise<void> = Promise.resolve();
+    const lightServedFaces = (): Promise<void> => (lighting = lighting.then(async () => {
+      if (!siblingPorts || litFace === null) return;
+      let served: number[];
+      try { served = await unlockedFaceOrdinals(); } catch { return; }
+      for (const ordinal of unlitServedFaces(served, mountedFace, new Set(siblingOrdinals.values()))) {
+        try { await lightFace(ordinal); }
+        catch (e) { console.warn(`[lit-set] the served face h${ordinal} did not light: ${e instanceof Error ? e.message : String(e)}`); }
+      }
+    }));
+    const stopLendOpened = standingCustody()?.onOpened?.(() => void lightServedFaces()) ?? null;
+    stood.push({ what: "the lend's light watch", down: () => { stopLendOpened?.(); } });
     // The register set the island's last open carried: the lift re-asks only the bags beyond it.
     let sentRegisterBags: readonly string[] = [];
     const daemonAuthNow = (joinedFaces: readonly JoinedFaceAuth[]) => ({

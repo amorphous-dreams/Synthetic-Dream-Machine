@@ -20,6 +20,16 @@ export interface JoinedFaceAuthPorts {
   readonly log: (line: string) => void;
 }
 
+/**
+ * The served faces the composition still owes a light: every face the lend serves that is neither the daemon mount nor lit
+ * beside it, in ordinal order. A face the pūlama lights after the composition stood joins the served set by the pūlama's
+ * standing event; until it lights, the daemon island refuses its presenter (`no provider for face`). No mount lights nothing.
+ */
+export function unlitServedFaces(served: readonly number[], mount: number | null, lit: ReadonlySet<number>): number[] {
+  if (mount === null) return [];
+  return [...new Set(served)].filter((o) => o !== mount && !lit.has(o)).sort((a, b) => a - b);
+}
+
 /** A torn sibling cannot take the mounted face's boot down. A sibling receives the vessel ground and the bags it OWNS while lit
  *  (`litFaceOwnBags`: the daemon wiki's device slots, its daemon canon by its relation, its catalog half), so its own memory seals
  *  under its own hive; its planes need their own face proof, and the mounted slot's user wiki bags and the house canon belong to
