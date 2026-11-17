@@ -25,4 +25,14 @@ describe("the share rows in the control document", () => {
     await set({ slug: "notes", remove: true }, ctx(control));
     expect((await list({}, ctx(control)))["rows"]).toEqual([]);
   });
+
+  test("a row set with its owner keeps the owner by pet-name, as the file's row does", async () => {
+    const control = new CompositeStore();
+    control.addLayer({ bagId: CONTROL_HOME_ID, store: new MemoryTiddlerStore(CONTROL_HOME_ID), writable: true, defaultWritable: true });
+    const set = makeShareSetReactor({ control: () => control }), list = makeShareListReactor({ control: () => control });
+    expect(await set({ slug: "notes", kind: "wiki", read: "referee", write: "engineer", owner: " steward " }, ctx(control))).toMatchObject({ row: { owner: "steward" } });
+    expect((await list({}, ctx(control)))["rows"]).toEqual([{ slug: "notes", kind: "wiki", read: "referee", write: "engineer", owner: "steward" }]);
+    await set({ slug: "notes", kind: "wiki", read: "referee", write: "engineer", owner: "" }, ctx(control));
+    expect((await list({}, ctx(control)))["rows"], "CONTROL: a blank owner sets none").toEqual([{ slug: "notes", kind: "wiki", read: "referee", write: "engineer" }]);
+  });
 });

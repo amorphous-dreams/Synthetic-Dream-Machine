@@ -8,21 +8,21 @@
  *   SH4 — a filter operator refuses by name and writes nothing
  */
 import { describe, expect, test } from "vitest";
-import { parseShareFile, type ShareFace } from "@lararium/mesh";
+import { parseShareFile, serializeShareFile, type ShareFace } from "@lararium/mesh";
 import { cmdShare, petnamesOf, shareListLines } from "../src/commands/share-cmd.js";
 import { readBackOnExpiry, type ShareDoors } from "../src/share-doors.js";
 import { LocalWaitExpired, type ReceiptAnswer } from "../src/local-connector.js";
 
 const FACES: ShareFace[] = [{ handleIndex: 0, petname: "joshua-fontany" }, { handleIndex: 1, petname: "joshua-fontany-engineer" }, { handleIndex: 2, petname: "the referee" }];
 
-function fake(opts: { vessel?: boolean; file?: string | null } = {}) {
+function fake(opts: { vessel?: boolean; file?: string | null; applied?: Record<string, unknown> } = {}) {
   let file: string | null = opts.file ?? null;
   const verbs: Array<{ name: string; args: Record<string, unknown> }> = [];
   const out: string[] = [], err: string[] = [];
   const doors: ShareDoors = {
     faces: async () => FACES,
     file: { read: () => file, write: (t) => { file = t; } },
-    verb: async (name, args) => { verbs.push({ name, args }); return opts.vessel === false ? null : (name === "share-apply" ? { granted: 1, pending: 1, waiting: [] } : { ok: true }); },
+    verb: async (name, args) => { verbs.push({ name, args }); return opts.vessel === false ? null : (name === "share-apply" ? opts.applied ?? { granted: 1, pending: 1, waiting: [] } : { ok: true }); },
     out: (l) => out.push(l), err: (l) => err.push(l),
   };
   return { doors, verbs, out, err, file: () => file };
@@ -63,6 +63,24 @@ describe("the share door", () => {
     expect(await cmdShare("bag", f.doors)(args(["notes"], { read: "[tag[x]]" }))).toBe(2);
     expect(f.file()).toBeNull();
     expect(() => petnamesOf("h9", FACES)).toThrow(/h9 names no face/);
+  });
+
+  test("SH5 — the row keeps its owner in the control document as in the file", async () => {
+    const prior = fake({ file: serializeShareFile([{ slug: "notes", kind: "wiki", read: "", write: "", owner: "joshua-fontany" }]) });
+    const seeded = parseShareFile(prior.file()!);
+    expect(seeded[0]?.owner, "the fixture's file names the owner").toBe("joshua-fontany");
+    expect(await cmdShare("wiki", prior.doors)(args(["notes"], { read: "h2" }))).toBe(0);
+    expect(prior.verbs[0]).toMatchObject({ name: "share-set", args: { slug: "notes", owner: "joshua-fontany" } });
+    expect(parseShareFile(prior.file()!)[0]?.owner).toBe("joshua-fontany");
+    const landed = fake({ applied: { granted: 1, carried: 1, pending: 0, waiting: [], workbenches: [{ slug: "garden", realmId: "realm-0123456789ab", members: 1, owner: 0 }] } });
+    expect(await cmdShare("wiki", landed.doors)(args(["garden"], { read: "h1" }))).toBe(0);
+    expect(parseShareFile(landed.file()!)[0]?.owner, "the landing's owner reaches the file").toBe("joshua-fontany");
+    expect(landed.verbs.map((v) => v.name), "the landing's owner reaches the control document").toEqual(["share-set", "share-apply", "share-set"]);
+    expect(landed.verbs[0]!.args["owner"], "no owner stood before the landing").toBeUndefined();
+    expect(landed.verbs[2]).toMatchObject({ name: "share-set", args: { slug: "garden", kind: "wiki", read: "joshua-fontany-engineer", owner: "joshua-fontany" } });
+    const plain = fake();
+    await cmdShare("bag", plain.doors)(args(["notes"], { read: "h1" }));
+    expect(plain.verbs.map((v) => v.name), "CONTROL: a landing that names no owner sets nothing again").toEqual(["share-set", "share-apply"]);
   });
 });
 

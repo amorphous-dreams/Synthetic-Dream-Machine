@@ -1115,4 +1115,60 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(third.tallies.personal).toMatchObject({ landed: 1, waiting: 0 });
     expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));
   });
+
+  test("W10 — RED: the share rows an import carries reach the standing vessel's control document, owner by pet-name, before the owner's wear lands the shares (the vessel reconciles config/share.tid only at its boot), so that landing carries the wiki's catalog row to the reader's half and the reader's margin lands at its own wear; CONTROL: a second import finds the rows in the file and sets none again", async () => {
+    clearOld();
+    const PAGE = "lar:///ha.ka.ba/notes/margin";
+    const ROW: ShareEntry = { slug: "notes", kind: "wiki", read: "engineer", write: "", owner: "steward" };
+    put(`projections/personal/${G1}/notes/ha.ka.ba/notes/margin.tid`, tid(PAGE, "the engineer's margin of the steward's wiki"));
+    const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G1);
+    old.held.add("notes");
+    old.shareRows = [{ ...ROW }];
+    await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), userWikis: async () => ["notes"] } });
+    rmSync(P(`personal/${G1}`), { recursive: true });
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
+    // The vessel's own law, as a walked hearth answers it: share-apply reads the CONTROL document (never the file), a face's
+    // catalog half names a wiki its own wear minted or a landing under its owner's wear carried to it (lifted at that face's
+    // next wear), and a margin's in-wiki mount reads the worn face's half alone, refusing `no-such-bag` where it names none.
+    const control: ShareEntry[] = [];
+    const halves = new Map<string, Set<string>>(), carried = new Map<string, Set<string>>();
+    const half = (rel: string, of = halves): Set<string> => of.get(rel) ?? of.set(rel, new Set()).get(rel)!;
+    const relOf = (pet: string | undefined): string | null => v.faces.find((f) => f.petname === pet)?.relation ?? null;
+    const atLanding: ShareEntry[][] = [];
+    let sets = 0;
+    const wear = (rel: string): void => { v.wear(rel); for (const slug of half(rel, carried)) half(rel).add(slug); carried.delete(rel); };
+    const doors = (): CarryDoors => {
+      const base = v.carryDoors();
+      return {
+        ...base,
+        mintWiki: async (slug) => { await base.mintWiki!(slug); half(v.worn).add(slug); },
+        ingest: async (wave) => wave.inWiki === true && wave.wiki !== undefined && v.held.has(wave.wiki) && !half(v.worn).has(wave.wiki)
+          ? { landed: [], unanswered: [], conflicts: [], kapaeRaised: [], ...foldWaveRefusal(`wiki-mount-refused: no-such-bag lar:///ha.ka.ba/bags/${wave.wiki}`, wave.candidates, wave.kapae) }
+          : liveIngest(v)(wave),
+        shareSet: async (row) => { sets++; control.splice(0, control.length, ...control.filter((r) => r.slug !== row.slug), { ...row }); },
+        landShares: async () => {
+          atLanding.push(control.map((r) => ({ ...r })));
+          let granted = 0;
+          for (const r of control) {
+            if (r.kind !== "wiki" || relOf(r.owner) !== v.worn || !half(v.worn).has(r.slug)) continue;
+            for (const pet of `${r.read} ${r.write}`.split(/\s+/).filter((x) => x && x !== r.owner)) {
+              const rel = relOf(pet);
+              if (rel !== null) { half(rel, carried).add(r.slug); granted++; }
+            }
+          }
+          return { granted, carried: granted, pending: 0, workbenches: [] };
+        },
+      };
+    };
+    const first = await carryImport(out, { apply: true, doors: doors() });
+    expect(v.wikiMints, "the steward's wiki mints at the steward's wear").toEqual(["notes"]);
+    expect(v.shareRows, "the row rests in the vessel-private file").toEqual([ROW]);
+    expect(atLanding[0], "the owner's landing read no row: the carried row rested in the file alone").toEqual([ROW]);
+    expect(first.warnings.filter((w) => w.startsWith("carry-share-unset"))).toEqual([]);
+    wear(R1);
+    const second = await carryImport(out, { apply: true, doors: doors() });
+    expect(sets, "CONTROL: a row the file already held sets again").toBe(1);
+    expect(second.tallies.personal, "the reader's margin mounts the wiki its half now names").toMatchObject({ landed: 1, waiting: 0, refused: [] });
+    expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));
+  });
 });
