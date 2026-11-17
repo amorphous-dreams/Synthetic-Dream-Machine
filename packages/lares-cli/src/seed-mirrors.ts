@@ -42,7 +42,8 @@
  * per-face because shared crdts"). A wiki's workbench stands as ONE document on a vessel with ONE folder, so the seed lays
  * that folder once, through the worn face's island, where the worn face holds a writer's seat in the workbench (`benchSeat`)
  * or stands the wiki first on this founding. Under a face that holds no writer's seat the folder waits by name for a seated
- * writer's wear, nothing of it lands in that face's `personal` layer, and the seed exits 0. AFTER A RE-FOUNDING the share rows
+ * writer's wear, nothing of it lands in that face's `personal` layer, nor does the wiki mint into that face's catalog (a face
+ * lists a wiki it stood or one a share row carried to it), and the seed exits 0. AFTER A RE-FOUNDING the share rows
  * (`config/share.tid`, vessel-private) name each shared wiki's owner by pet-name: the wiki mints again and its folders lay at
  * that owner's wear alone, and every other face waits by name; then the seed lands the shares again, seating each named face
  * by pet-name. A face's `personal` folder lays at that face's own wear.
@@ -559,8 +560,10 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
     const mintedSlugs = new Set<string>();
     for (const slug of mintable) {
       if (held.has(slug)) continue;
-      // A wiki another face owns mints at that face's wear: nothing of it mints or lays under this one.
-      if ((await gateOf(slug))?.why === "owner") continue;
+      // A wiki another face owns mints at that face's wear, and a wiki another face's realm already binds (this face holds no
+      // writer's seat there) stands in the house already: nothing of either mints under this face, whose catalog names such a
+      // wiki only where a share row carried it (the landing hands over the wiki's recipe row by reference).
+      if ((await gateOf(slug)) !== null) continue;
       // A shared wiki with no folder mints under a worn face alone: the floor founds no realm for it.
       if (!houseBags.includes(slug) && !houseWikis.includes(slug) && litRelation === null) continue;
       mintedSlugs.add(slug);
