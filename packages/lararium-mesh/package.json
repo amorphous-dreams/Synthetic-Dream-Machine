@@ -152,6 +152,10 @@
       "import": "./dist/lent-faces.js",
       "types": "./dist/lent-faces.d.ts"
     },
+    "./chore-ask": {
+      "import": "./dist/chore-ask.js",
+      "types": "./dist/chore-ask.d.ts"
+    },
     "./host-task": {
       "import": "./dist/host-task.js",
       "types": "./dist/host-task.d.ts"
