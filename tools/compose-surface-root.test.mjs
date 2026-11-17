@@ -114,3 +114,50 @@ test("CONTROL: a service whose own volume list drops a class reads red, though t
   const { refusals } = readComposeRoots(planted);
   assert.ok(refusals.some((r) => /library class/.test(r)), JSON.stringify(refusals));
 });
+
+/**
+ * The `environment:` map one top-level service lists itself (its own keys, never the anchor's merge), as name -> raw value.
+ * A text scan, as above: the service block runs from its two-space key to the next key at that indent.
+ */
+export function serviceEnvironment(text, service) {
+  const lines = text.split("\n");
+  const start = lines.findIndex((l) => l === `  ${service}:`);
+  if (start < 0) return null;
+  const out = {};
+  let inEnv = false, envIndent = -1;
+  for (let j = start + 1; j < lines.length; j++) {
+    const line = lines[j];
+    if (line.trim() === "" || line.trim().startsWith("#")) continue;
+    const indent = /^\s*/.exec(line)[0].length;
+    if (indent <= 2) break;
+    if (/^\s*environment:\s*$/.test(line)) { inEnv = true; envIndent = indent; continue; }
+    if (inEnv && indent <= envIndent) inEnv = false;
+    if (!inEnv) continue;
+    const m = /^\s*([A-Z_][A-Z0-9_]*):\s*(.*)$/.exec(line);
+    if (m) out[m[1]] = m[2].trim();
+  }
+  return out;
+}
+
+/** The names the CLI's keep rule reads (`keepWorkspaceName` in packages/lares-cli/src/keep-config.ts), from its source. */
+function keepRuleNames() {
+  const src = readFileSync(join(ROOT, "packages", "lares-cli", "src", "keep-config.ts"), "utf8");
+  const body = /export function keepWorkspaceName[\s\S]*?\n}\n/.exec(src)?.[0] ?? "";
+  const consts = Object.fromEntries([...src.matchAll(/export const ([A-Z_]+) = "([A-Z_]+)";/g)].map((m) => [m[1], m[2]]));
+  return [...body.matchAll(/envValue\(\s*("([A-Z_]+)"|([A-Z_]+))/g)].map((m) => m[2] ?? consts[m[3]]).filter(Boolean);
+}
+
+test("the keep lei offer reaches the vessel: the standing vessel carries every name the keep rule reads, interpolated from the shim's environment and its --env-file", () => {
+  // `vault unlock` runs inside the vessel (HOME=/lar/cache, no surface env file there) and offers the keep lei only where
+  // `configuredKeepWorkspace()` names a workspace; the shim's `-e` set crosses display names alone, so the compose carries them.
+  const names = keepRuleNames();
+  assert.deepEqual([...names].sort(), ["LARES_KEEP_WORKSPACE", "LARES_WORKSPACES"], "the keep rule reads the names this test expects");
+  const env = serviceEnvironment(readFileSync(COMPOSE, "utf8"), "lares");
+  assert.ok(env, "the compose names a lares service");
+  for (const name of names) assert.equal(env[name], `\${${name}:-}`, `the lares service carries ${name} from the operator's config`);
+});
+
+test("CONTROL: a lares service that carries no keep name reads red", () => {
+  const env = serviceEnvironment("services:\n  lares:\n    environment:\n      <<: *roots\n      LAR_PEERS: ${LAR_PEERS:-}\n  offline:\n    environment:\n      LARES_KEEP_WORKSPACE: ${LARES_KEEP_WORKSPACE:-}\n", "lares");
+  assert.deepEqual(env, { LAR_PEERS: "${LAR_PEERS:-}" });
+});
