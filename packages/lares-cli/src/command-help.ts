@@ -95,7 +95,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares lei kui --rite kukulu --branch main --returns 3   # the hand strings the lei first",
       "lares rite kukulu                                       # begin, rebuild, raise, land",
-      "lares lei kui --rite keep --branch house-backup --returns 6   # the hand strings a keep lei for one workspace",
+      "lares lei kui --rite keep --branch house-backup --returns 6 --face 0   # the hand strings a keep lei for one workspace, as one face",
       "lares rite keep --workspace house-backup                # guard, cut into <workspace>/house, commit, push, land: par",
       "lares rite keep-cut --workspace house-backup            # the vessel half alone: cut, verify, spend a return, rest the bundle",
       "lares rite offer --branch main --head <commit> --image <digest>   # the standing vessel rests what the next one carries to a pūlama",
@@ -110,7 +110,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--if-due             (keep) keep only where the house moved since the pushed bundle; reads LARES_KEEP_WORKSPACE with no --workspace",
       "--image <digest>   (offer) the digest of the image the host built",
       "--tessera <id>   (land) the tessera a begin answered", "--tree <t>   (receipt) the tree the battery read", "--checks <a,b>   (receipt) the checks its verdict covers",
-      "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index"],
+      "--verdict pass|fail   (receipt) the verdict", "--definitions <hash>   (receipt) the hash of the definitions the checks ran under", "--face N   face index (a keep naming none acts as the daemon mount and says so; the floor refuses by name)"],
   },
   kapae: {
     usage: "usage: lares kapae raise|lower|flag <digest> [--wiki wiki] [--face N]",
@@ -771,7 +771,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     examples: [
       "lares vault status                     # the slot tree, one reading of each standing file, and any private file outside the carrier table",
       "lares vault unlock                     # hand the standing vessel a TTY credential: it opens its key and composes with what the key opens",
-      "                                       # where LARES_KEEP_WORKSPACE (or the one LARES_WORKSPACES pair) names a keep workspace and no keep lei stands, it asks once to string one under the same passphrase",
+      "                                       # where LARES_KEEP_WORKSPACE (or the one LARES_WORKSPACES pair) names a keep workspace and no keep lei stands, it asks once to string one under the same passphrase, as the face --face names, else the daemon mount",
       "lares vault lock [--face N]            # the standing vessel drops its key and stands at the floor; --face N drops that face alone",
       "lares vault bind [--face N] [--passphrase|--paper]   # unlock, then bind a second human route (a paper pin reads back); --face N binds into that face's own tree",
       "lares vault unbind <slot-id> [--face N]   # unlock, remove a slot; the rotation offer prints; --face N leaves the node tree alone",

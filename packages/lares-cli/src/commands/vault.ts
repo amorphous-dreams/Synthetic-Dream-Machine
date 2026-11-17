@@ -313,6 +313,8 @@ function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
       catch (err) { const failure = storeFailure(err); return { ok: false, code: failure.code, message: failure.message }; }
     },
     say: (line) => console.log(line),
+    // AN UNLOCK NAMING NO FACE STRINGS THE KEEP LEI AS THE DAEMON MOUNT: the seat's reading of `face.resolve`.
+    mountFace: async () => (await sealedAct<{ face: number }>("face.resolve", { worn: true })).face,
   };
 }
 
