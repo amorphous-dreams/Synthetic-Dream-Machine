@@ -37,7 +37,9 @@
  *      digest reads landed, a title holding a body the bundle never carried stands off);
  *   6. lands draft and temp files back where none stands (a different file there stands off); re-pours the daemon canon
  *      into `bags/daemon-<F>`, each house-minted bag into its bag and each other wiki's working rows into its working layer
- *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview.
+ *      through the same gesture, minting first (CREATE) any slug this vessel does not hold, named in the preview; a wiki
+ *      another face owns, or whose workbench another face's realm binds, mints nothing under a face that holds no writer's
+ *      seat there (that face reads it only through what a share row grants).
  *   A WORKBENCH LANDS ONCE, where the worn face holds a writer's seat in it or stands the wiki first (its owner, where a share
  *   row names one); under any other face its rows wait by name. Each face's `personal` rows land at that face's own wear. The
  *   share rows the bundle carries write into `config/share.tid` where none stands for the slug, and the shares land again.
@@ -1129,10 +1131,12 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     const held = await doors.heldSlugs();
     for (const slug of [...new Set([...bagSlugs, ...wikiSlugs])].sort()) {
       if (held.has(slug)) continue;
-      // A wiki another face owns mints at that face's wear: nothing of it mints under this one.
       if (doors.sourced?.(slug) === true) continue;
+      // A wiki another face owns mints at that face's wear, and a wiki another face's realm already binds (this face holds no
+      // writer's seat there) stands in the house already: nothing of either mints under this face, which reads such a wiki only
+      // through what a share row grants it (the landing carries the wiki's recipe row by reference).
       const gate = await gateOf(slug);
-      if (gate?.why === "owner") { waitBench(slug, gate); unminted.add(slug); continue; }
+      if (gate !== null) { waitBench(slug, gate); unminted.add(slug); continue; }
       freshSlugs.add(slug);
       minted.push(wikiBagUri(slug));
       if (!apply || journal.done.has(`mint:${slug}`)) continue;
