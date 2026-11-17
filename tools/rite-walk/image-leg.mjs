@@ -403,13 +403,13 @@ export function imageHands(scope, state, { checkout = CHECKOUT } = {}) {
     async close() { if (aho !== null) await aho.close(); },
     /** Every Docker call the wrapper saw, in order. */
     dockerLog: () => (existsSync(scope.dockerLog) ? readFileSync(scope.dockerLog, "utf8").split("\n").filter(Boolean) : []),
-    /** Take down this project's containers and clear the base. Answers what it left. */
-    async teardown() {
+    /** Take down this project's containers and clear the base (`keepBase` leaves it standing). Answers what it left. */
+    async teardown({ keepBase = false } = {}) {
       await hands.close();
       const down = await compose(["--profile", "pulama", "--profile", "offline", "down", "--remove-orphans", "--timeout", "20"], { timeout: 180_000 });
       const left = await compose(["--profile", "pulama", "--profile", "offline", "ps", "-a", "-q"]);
       const log = hands.dockerLog();
-      rmSync(scope.base, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
+      if (!keepBase) rmSync(scope.base, { recursive: true, force: true, maxRetries: 8, retryDelay: 250 });
       return { downCode: down.code, containers: left.stdout.trim(), baseStands: existsSync(scope.base), log };
     },
   };

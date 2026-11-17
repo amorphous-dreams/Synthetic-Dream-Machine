@@ -834,12 +834,15 @@ const rowKeySweep = async (c) => {
   return { ok: m !== null && Number(m[2]) === 0 && after === 0 && keyless.code === 0, answer: `keyed rows ${before} → ${after}; swept ${c.vars.sweep.swept}, refused ${c.vars.sweep.bad}; a keyless row: exit ${keyless.code}`, measures: c.vars.sweep };
 };
 
+/** The containers go down; the base clears, save under `--keep` (`vars.keep`), where it stands for a reader after the walk. */
 const teardown = async (c) => {
   const phase = existsSync(c.scope.newSrc) ? "new" : "old";
-  const t = await c.hands(phase).teardown();
+  const keepBase = c.vars.keep === true;
+  const t = await c.hands(phase).teardown({ keepBase });
   c.vars.tornDown = true;
   c.vars.dockerLog = t.log;
-  return { ok: t.downCode === 0 && t.containers === "" && !t.baseStands, answer: `compose down exit ${t.downCode}; containers left: ${t.containers === "" ? "none" : t.containers}; the base stands: ${t.baseStands}; the image ${c.scope.image} stays` };
+  if (keepBase) c.vars.baseKept = true;
+  return { ok: t.downCode === 0 && t.containers === "" && t.baseStands === keepBase, answer: `compose down exit ${t.downCode}; containers left: ${t.containers === "" ? "none" : t.containers}; the base stands${keepBase ? " (kept)" : ""}: ${t.baseStands}; the image ${c.scope.image} stays` };
 };
 
 // ── the step table ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -890,7 +893,7 @@ export const CARRY_STEPS = Object.freeze([
   { id: "pulama-up", command: "new-src/tools/lares-container.sh pulama up", needs: ["parity"], expect: "standing unlit", run: onPhase("new", pulamaUp) },
   { id: "pulama-light", command: "new-src/tools/lares-container.sh pulama light", via: PTY, needs: ["pulama-up"], expect: "lit: true", run: onPhase("new", pulamaLight) },
   { id: "up-by-pulama", command: "new-src/tools/lares-container.sh up", via: PTY, needs: ["pulama-light"], expect: "the carried vessel seats its holder over the pūlama's socket", run: onPhase("new", upPulama) },
-  { id: "teardown", command: "docker compose down --remove-orphans · rm the base", expect: "no container of the project stands; the base is gone", run: teardown },
+  { id: "teardown", command: "docker compose down --remove-orphans · rm the base (kept under --keep)", expect: "no container of the project stands; the base is gone, or stands under --keep", run: teardown },
 ]);
 
 // ── the walk ────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -977,6 +980,7 @@ export async function carryWalk(opts, say = console.log) {
   if (opts.count !== undefined) state.vars.count = Number(opts.count);
   if (opts["import-from"] !== undefined) state.vars.importFrom = opts["import-from"];
   mkdirSync(scope.base, { recursive: true });
+  state.vars.keep = opts.keep === true;
   const c = carryContext(scope, state, say);
   for (const phase of ["old", "new"]) if (existsSync(join(phase === "old" ? scope.oldSrc : scope.newSrc, ".git"))) { c.hands(phase).stage(); say(await c.hands(phase).proveScope()); }
 
@@ -993,10 +997,8 @@ export async function carryWalk(opts, say = console.log) {
   state.rows = [...state.rows.filter((r) => !rows.some((n) => n.step === r.step)), ...rows];
   state.legs.push({ from: CARRY_STEPS[first].id, to: CARRY_STEPS[last].id });
   let docker = state.vars.dockerLog ?? c.hands("old").dockerLog();
-  if (!state.vars.tornDown) {
-    if (opts.keep) writeFileSync(statePath, JSON.stringify(state));
-    else { const t = await teardown(c); docker = state.vars.dockerLog; say(`the walk stopped before teardown and cleared its ground: ${t.answer}`); }
-  }
+  if (opts.keep) writeFileSync(statePath, JSON.stringify(state));
+  else if (!state.vars.tornDown) { const t = await teardown(c); docker = state.vars.dockerLog; say(`the walk stopped before teardown and cleared its ground: ${t.answer}`); }
   const order = new Map(CARRY_STEPS.map((s, i) => [s.id, i]));
   const all = CARRY_STEPS.map((s) => state.rows.find((r) => r.step === s.id) ?? { step: s.id, command: s.command, expect: s.expect ?? null, outcome: "unreached", cause: "outside-this-leg", answer: "", ms: 0 });
   all.sort((a, b) => order.get(a.step) - order.get(b.step));
@@ -1015,6 +1017,6 @@ export async function carryWalk(opts, say = console.log) {
   ];
   writeFileSync(join(opts.out, "carry-report.txt"), `${lines.join("\n")}\n`);
   say(lines.find((l) => /^pass \d/.test(l)));
-  say(`receipt: ${join(opts.out, "carry-report.json")}${opts.keep && !state.vars.tornDown ? ` · base kept: ${scope.base}` : ""}`);
+  say(`receipt: ${join(opts.out, "carry-report.json")}${opts.keep ? ` · base kept: ${scope.base}` : ""}`);
   return { code: report.tally.fail > 0 ? 1 : 0, report };
 }
