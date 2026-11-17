@@ -921,3 +921,71 @@ test("carry-import-from-keep: under --import-from keep the import reads the fres
   assert.ok(cloned && cloned.args.includes(scope.keepRemote), "the clone reads the keep's scratch remote");
 });
 
+
+test("carry-keep-names-the-steward: with several faces open the lei door and the keep refuse a line that names no face, so the keep lei, its read, the keep and its receipts each name the steward (`--face 0`)", async () => {
+  const { CARRY_STEPS, assertCarryScope } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  mkdirSync(scope.base, { recursive: true });
+  try {
+    const { c, calls } = recordingCarry(scope, { vars: { oldRev: OLD_REV, pin: PIN } });
+    await CARRY_STEPS.find((s) => s.id === "keep-lei-old").run(c);
+    try { await CARRY_STEPS.find((s) => s.id === "keep-old").run(c); } catch { /* the fake answers break the step after its calls */ }
+    const lines = calls.map((k) => k.args.join(" "));
+    const named = (re) => lines.filter((l) => re.test(l));
+    for (const re of [/\blei kui --rite keep\b/, /\blei show --rite keep\b/, /\brite keep --workspace\b/, /\brite receipts\b/]) {
+      const hits = named(re);
+      assert.ok(hits.length > 0, `no call matched ${re}: ${lines.join(" · ")}`);
+      for (const l of hits) assert.match(l, /--face 0\b/, l);
+    }
+  } finally { rmSync(scope.base, { recursive: true, force: true }); }
+});
+
+test("carry-keep-lei-quotes-its-refusal: a kui the vessel refuses reads with the refusal's own text, never `null`", async () => {
+  const { CARRY_STEPS, assertCarryScope } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  const refusalText = '{"ok":false,"error":{"code":"error","message":"this vessel stands faces h0, h1, h2 open: name the face the command acts as (--face N)"}}';
+  const { c } = recordingCarry(scope, { answer: (kind) => (kind === "pty" ? { code: 1, stdout: `passphrase for this one act: \r\n${refusalText}\r\n` } : { code: 1, stdout: refusalText, stderr: "" }) });
+  const r = await CARRY_STEPS.find((s) => s.id === "keep-lei-old").run(c);
+  assert.equal(r.ok, false);
+  assert.match(r.answer, /name the face the command acts as/, r.answer);
+  assert.doesNotMatch(r.answer, /exit 1; null/, r.answer);
+});
+
+/** A stand-in CLI for the sweep's scripts: `meme get` reads, and `meme put` writes, one file per URI under `$STORE`. */
+function sweepStore(texts) {
+  const dir = mkdtempSync(join(tmpdir(), "carry-sweep-"));
+  const store = join(dir, "store");
+  mkdirSync(store);
+  const cli = join(dir, "cli");
+  writeFileSync(cli, `#!/bin/sh\nf="${store}/$(printf %s "$3" | md5sum | cut -d' ' -f1)"\ncase "$2" in get) cat "$f" ;; put) cp "$6" "$f" ;; *) exit 9 ;; esac\n`, { mode: 0o755 });
+  const key = (u) => createHash("md5").update(u).digest("hex");
+  for (const [u, t] of Object.entries(texts)) writeFileSync(join(store, key(u)), t);
+  const uris = join(dir, "uris");
+  writeFileSync(uris, `${Object.keys(texts).join("\n")}\n`);
+  return { dir, cli, uris, tmp: join(dir, "tmp"), read: (u) => readFileSync(join(store, key(u)), "utf8") };
+}
+
+test("carry-sweep-strips-padded-keys: the sweep strips a `row-key` line however canon pads its key, and the keyed count reads padded and bare keys alike, so the sweep proves the strip", () => {
+  const { sweepScript, keyedScript } = present(carryLeg);
+  const meta = (key) => `\`\`\`toml meta\ncacheable   = false\n${key}\ntitle       = "t"\n\`\`\`\n\nbody\n`;
+  const texts = {
+    "lar:///ha.ka.ba/kahua/memory/project/padded": meta('row-key     = "project/padded"'),
+    "lar:///ha.ka.ba/kahua/memory/project/bare": meta('row-key = "project/bare"'),
+    "lar:///ha.ka.ba/kahua/memory/project/none": meta('l-space     = "adjacent"'),
+  };
+  const s = sweepStore(texts);
+  mkdirSync(s.tmp);
+  try {
+    const run = (script) => spawnSync("sh", ["-c", script], { encoding: "utf8" });
+    const before = run(keyedScript(s.cli, { uris: s.uris, tmp: s.tmp }));
+    assert.match(before.stdout, /KEYED 2 OF 3\b/, before.stdout + before.stderr);
+    const swept = run(sweepScript(s.cli, { uris: s.uris, tmp: s.tmp }));
+    assert.match(swept.stdout, /SWEPT 3 BAD 0/, swept.stdout + swept.stderr);
+    const after = run(keyedScript(s.cli, { uris: s.uris, tmp: s.tmp }));
+    assert.match(after.stdout, /KEYED 0 OF 3\b/, after.stdout + after.stderr);
+    for (const [u, t] of Object.entries(texts)) assert.equal(s.read(u), t.replace(/^row-key[ \t]*=[^\n]*\n/m, ""), u);
+    // The default paths stay the vessel's.
+    assert.match(sweepScript("lares"), /\/lar\/config\/sweep\/uris/);
+    assert.match(keyedScript("lares"), /\/lar\/config\/sweep\/uris/);
+  } finally { rmSync(s.dir, { recursive: true, force: true }); }
+});
