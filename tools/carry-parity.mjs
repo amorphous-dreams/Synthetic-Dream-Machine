@@ -38,11 +38,14 @@
 //   node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]
 //       one reading of the standing house's worn face, for a rite where the two houses never stand at once.
 //   node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...]
-//                               [--imports <import.json>]... [--stand-off <uri>]... [--json] [--out F]
+//                               [--imports <import.json>]... [--stand-off <uri>]... [--manifest <manifest.json>] [--json] [--out F]
 //       several readings per side merge by face pet-name (one census per worn face).
 // `--lares <cmd>` names the CLI to call (a host shim, e.g. `lares`); by default the built CLI under this checkout, with
 // LAR_ROOT (and LAR_PORT where named) set to the house read. `--base` is a census of the new house taken after its founding
-// and seed and before the import: its rows leave `extra`, so a red never hides behind the new house's own genesis.
+// and seed and before the import: its rows leave `extra`, so a red never hides behind the new house's own genesis, and a
+// `changed` row whose new value equals its reading reads `moved` (canon the image under proof moved; `moved` in the receipt,
+// named, never red). `--manifest <manifest.json>` names the bundle's manifest: a row it carried never reads as moved, so a
+// working copy that lands as plain canon stays red.
 // THE RITE'S ORDER: the exporting house goes down before the new one stands (one image tag, one port), so take its census
 // with `census --out` while it stands and hand that file to `--old` afterwards.
 // `--imports <file>` names each `lares import --apply --json` answer: every row it stood off (a working row forked over canon
@@ -106,7 +109,7 @@ export function mergeReadings(readings) {
 function compareMap(scope, cls, old, fresh, base, differences) {
   for (const [key, value] of Object.entries(old)) {
     if (!(key in fresh)) differences.push({ scope, class: cls, kind: "missing", key, old: value });
-    else if (fresh[key] !== value) differences.push({ scope, class: cls, kind: "changed", key, old: value, new: fresh[key] });
+    else if (fresh[key] !== value) differences.push({ scope, class: cls, kind: "changed", key, old: value, new: fresh[key], ...(base && key in base && base[key] === fresh[key] ? { baseEqual: true } : {}) });
   }
   for (const [key, value] of Object.entries(fresh)) {
     if (key in old) continue;
@@ -120,7 +123,7 @@ function compareMap(scope, cls, old, fresh, base, differences) {
  * Answers the receipt body: the verdict, every difference by scope, class, kind and key, the counts the `--old` side held,
  * and the may-differ list.
  */
-export function compareCensus(oldReadings, newReadings, baseReadings = [], { standOffs = [] } = {}) {
+export function compareCensus(oldReadings, newReadings, baseReadings = [], { standOffs = [], carried = [] } = {}) {
   const old = mergeReadings(oldReadings), fresh = mergeReadings(newReadings);
   const base = baseReadings.length > 0 ? mergeReadings(baseReadings) : null;
   const found = [];
@@ -140,7 +143,13 @@ export function compareCensus(oldReadings, newReadings, baseReadings = [], { sta
   const named = new Set(standOffs);
   const keyUri = (key) => key.slice(key.indexOf(" ") + 1);
   const stoodOff = found.filter((d) => d.kind !== "extra" && (d.class === "memes" || d.class === "plain") && named.has(keyUri(d.key)));
-  const red = found.filter((d) => !stoodOff.includes(d));
+  // CANON THE IMAGE MOVED IS A NAMED MAY-DIFFER: a changed row whose new value equals the new house's own founding reading
+  // holds the canon the image under proof ships, so it reads `moved`, never red. A row the bundle carried (a working copy,
+  // a margin, a page) stays red when it lands equal to that canon: the carry dropped what the house wrote over it.
+  const carriedUris = new Set(carried);
+  const moved = found.filter((d) => d.baseEqual === true && !stoodOff.includes(d) && !carriedUris.has(keyUri(d.key)));
+  for (const d of found) delete d.baseEqual;
+  const red = found.filter((d) => !stoodOff.includes(d) && !moved.includes(d));
   const counts = { faces: Object.keys(old.face).length };
   for (const c of FACE_CLASSES) counts[c] = Object.values(old.face).reduce((n, f) => n + Object.keys(f[c] ?? {}).length, 0);
   for (const c of HOUSE_CLASSES) counts[c] = Object.keys(old.house[c]).length;
@@ -148,13 +157,22 @@ export function compareCensus(oldReadings, newReadings, baseReadings = [], { sta
     schema: RECEIPT_SCHEMA,
     verdict: red.length === 0 ? "par" : "red",
     from: { labels: old.labels }, to: { labels: fresh.labels }, ...(base ? { base: { labels: base.labels } } : {}),
-    counts, differences: red, standOffs: stoodOff,
+    counts, differences: red, standOffs: stoodOff, moved,
     allowed: { old: old.allowed, new: fresh.allowed },
     mayDiffer: MAY_DIFFER,
   };
 }
 
-const standOffLines = (receipt) => (receipt.standOffs ?? []).map((d) => `  stood off by the import (may differ): ${d.scope} · ${d.class}: ${d.kind} ${d.key}`);
+const standOffLines = (receipt) => [
+  ...(receipt.standOffs ?? []).map((d) => `  stood off by the import (may differ): ${d.scope} · ${d.class}: ${d.kind} ${d.key}`),
+  ...(receipt.moved ?? []).map((d) => `  moved canon (may differ): ${d.scope} · ${d.class}: ${d.kind} ${d.key} (old ${d.old} · new ${d.new}, the new-base reading)`),
+];
+
+/** The uris a carry bundle carried, read from its `manifest.json` (each row's title): those rows never read as moved canon. */
+export function carriedUris(manifestText) {
+  const rows = JSON.parse(String(manifestText)).rows ?? [];
+  return [...new Set(rows.map((r) => r?.title).filter((t) => typeof t === "string" && t.length > 0))];
+}
 
 /**
  * The uris an import stood off, read from its `--json` answer (`data.tallies.<class>.stoodOff`, each `<uri> (<why>)`). The
@@ -353,7 +371,7 @@ function parse(argv) {
 const USAGE = [
   "usage: node tools/carry-parity.mjs --old <root|census.json> --new <root|census.json> [--old-port N] [--new-port N] [--base <census.json>] [--imports <import.json>]... [--stand-off <uri>]... [--json] [--out <receipt.json>] [--lares <cmd>]",
   "       node tools/carry-parity.mjs census --root <LAR_ROOT> [--port N] [--label L] [--out <census.json>] [--lares <cmd>]",
-  "       node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--imports <import.json>]... [--stand-off <uri>]... [--json] [--out <receipt.json>]",
+  "       node tools/carry-parity.mjs compare --old <census.json>... --new <census.json>... [--base <census.json>...] [--imports <import.json>]... [--stand-off <uri>]... [--manifest <manifest.json>] [--json] [--out <receipt.json>]",
 ];
 
 const isCensusFile = (p) => existsSync(p) && statSync(p).isFile();
@@ -386,7 +404,8 @@ export async function main(argv) {
     const fresh = await side(opts.new, opts["new-port"], opts.lares, "new");
     const base = opts.base.map(loadCensus);
     const standOffs = [...opts["stand-off"], ...opts.imports.flatMap((f) => stoodOffUris(readFileSync(f, "utf8")))];
-    const receipt = compareCensus(old, fresh, base, { standOffs });
+    const carried = opts.manifest ? carriedUris(readFileSync(opts.manifest, "utf8")) : [];
+    const receipt = compareCensus(old, fresh, base, { standOffs, carried });
     if (opts.out) writeFileSync(opts.out, `${JSON.stringify(receipt, null, 2)}\n`);
     if (opts.json) process.stdout.write(`${JSON.stringify(receipt)}\n`);
     else for (const line of receiptLines(receipt)) console.log(line);

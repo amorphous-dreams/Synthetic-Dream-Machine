@@ -111,7 +111,7 @@ test("P1 a changed row whose new value equals the new-base reading reads as move
   const fresh = reading({ steward: { memes: memes({ [canon]: "sha256:c2", [copy]: "sha256:c2p", [edit]: "sha256:e3" }) } });
   const r = compareCensus([old], [fresh], [base], { carried: ["lar:///ha.ka.ba/lares/docs/pond-law"] });
   assert.equal(r.verdict, "red");
-  assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`).sort(), [`changed ${copy}`, `changed ${edit}`]);
+  assert.deepEqual(r.differences.map((d) => `${d.kind} ${d.key}`).sort(), [`changed ${edit}`, `changed ${copy}`]);
   assert.deepEqual(r.moved.map((d) => `${d.scope} ${d.class} ${d.key} ${d.old} -> ${d.new}`), [`face:steward memes ${canon} sha256:c1 -> sha256:c2`]);
   // Moved canon alone reads par, and the receipt's text names the moved count.
   const only = compareCensus([old], [reading({ steward: { memes: memes({ [canon]: "sha256:c2", [copy]: "sha256:w1", [edit]: "sha256:e1" }) } })], [base]);

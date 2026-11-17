@@ -215,10 +215,11 @@ export function judgeExport(r, answer, { woken = [] } = {}) {
   return { ok: faults.length === 0, faults, kinds, excused };
 }
 
-/** The parity witness's compare line (the contract on the span): census readings per side, the base, each import answer, each named stand-off. */
-export function compareArgs({ old = [], fresh = [], base = [], imports = [], standOff = [], out }) {
+/** The parity witness's compare line (the contract on the span): census readings per side, the base, each import answer, each
+ *  named stand-off, and the bundle's manifest (a carried row never reads as moved canon). */
+export function compareArgs({ old = [], fresh = [], base = [], imports = [], standOff = [], manifest, out }) {
   const each = (flag, xs) => xs.flatMap((x) => [flag, x]);
-  return ["compare", ...each("--old", old), ...each("--new", fresh), ...each("--base", base), ...each("--imports", imports), ...each("--stand-off", standOff), "--json", ...(out ? ["--out", out] : [])];
+  return ["compare", ...each("--old", old), ...each("--new", fresh), ...each("--base", base), ...each("--imports", imports), ...each("--stand-off", standOff), ...(manifest ? ["--manifest", manifest] : []), "--json", ...(out ? ["--out", out] : [])];
 }
 
 /** Flip one byte in the middle of a buffer: the tampered-bundle probe. */
@@ -703,7 +704,7 @@ const reimport = async (c) => {
 
 const compare = async (c, out) => {
   const pick = (label) => (c.vars[`census-${label}`] ?? []);
-  const args = [PARITY, ...compareArgs({ old: pick("old"), fresh: pick("new"), base: pick("new-base"), imports: (c.vars.imports ?? []).filter(Boolean), standOff: [...(c.vars.expectedStandoff ?? []), ...(c.vars.expectedRefused ?? [])], out })];
+  const args = [PARITY, ...compareArgs({ old: pick("old"), fresh: pick("new"), base: pick("new-base"), imports: (c.vars.imports ?? []).filter(Boolean), standOff: [...(c.vars.expectedStandoff ?? []), ...(c.vars.expectedRefused ?? [])], manifest: join(importHost(c), "manifest.json"), out })];
   const r = await c.node(args, { env: c.hands("new").env, timeout: 600_000 });
   return { code: r.code, answer: json(r.stdout) };
 };
