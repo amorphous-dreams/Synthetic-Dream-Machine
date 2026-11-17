@@ -989,3 +989,47 @@ test("carry-sweep-strips-padded-keys: the sweep strips a `row-key` line however 
     assert.match(keyedScript("lares"), /\/lar\/config\/sweep\/uris/);
   } finally { rmSync(s.dir, { recursive: true, force: true }); }
 });
+
+const WORN = "lar:///ha.ka.ba/lares/docs/pono/the-worn-house";
+const BUNDLE_ROWS = [
+  { face: null, bag: "lar:///ha.ka.ba/wikis/lares/working", layer: "wiki-working", title: WORN, path: "wikis/lares/working/ha.ka.ba/lares/docs/pono/the-worn-house.mem" },
+  { face: "f0", bag: "lar:///ha.ka.ba/wikis/daemon-steward/working", layer: "working", title: "lar:///ha.ka.ba/lares/docs/moved-canon", path: "faces/f0/working/moved-canon.mem" },
+  { face: null, bag: "lar:///ha.ka.ba/wikis/lares/working", layer: "wiki-working", title: "lar:///ha.ka.ba/lares/docs/pono/held-still", path: "wikis/lares/working/ha.ka.ba/lares/docs/pono/held-still.mem" },
+];
+const MOVED_TRACKED = ["wikis/lares/ha.ka.ba/lares/docs/pono/the-worn-house.mem", "bags/lares/ha.ka.ba/lares/docs/moved-canon.mem", "wikis/lares/ha.ka.ba/lares/docs/pono/no-copy-here.mem", "bags/lararium/ha.ka.ba/lararium/mesh/kahu.mem"];
+
+test("carry-standoff-follows-the-moved-workbench: a wiki's working row the bundle carried, whose tracked carrier moved between --from-rev and the pin, owes a named stand-off; a working copy over moved bag canon lands (fresher), and a moved carrier with no copy over it owes none", () => {
+  const { movedWorkbenchStandoffs } = present(carryLeg);
+  assert.deepEqual(movedWorkbenchStandoffs({ moved: MOVED_TRACKED, rows: BUNDLE_ROWS }), [WORN]);
+  assert.deepEqual(movedWorkbenchStandoffs({ moved: [], rows: BUNDLE_ROWS }), []);
+  // The wiki the carrier sits under names the row's bag: the same path under another wiki owes nothing.
+  assert.deepEqual(movedWorkbenchStandoffs({ moved: ["wikis/notes/ha.ka.ba/lares/docs/pono/the-worn-house.mem"], rows: BUNDLE_ROWS }), []);
+});
+
+test("carry-import-excuses-the-moved-workbench: import-apply reads the moved carriers between the revisions and the bundle's working rows, excuses that stand-off by name, and parity passes it as --stand-off", async () => {
+  const { CARRY_STEPS, assertCarryScope, compareArgs } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  const bundle = join(scope.houseNew, "config", "carry", "pre-merge");
+  mkdirSync(bundle, { recursive: true });
+  writeFileSync(join(bundle, "manifest.json"), JSON.stringify({ rows: BUNDLE_ROWS }));
+  try {
+    const importJson = JSON.stringify({ ok: true, data: { applied: true, tallies: { wikiWorking: { landed: 5, stoodOff: [`${WORN} (three-way: both moved)`] } }, waiting: [] } });
+    const { c, calls } = recordingCarry(scope, {
+      vars: { oldRev: OLD_REV, pin: PIN, expectedStandoff: [], expectedRefused: [] },
+      answer: (kind, args) => {
+        const line = [args].flat().join(" ");
+        if (kind === "git" && /\bdiff\b/.test(line)) return { stdout: `${MOVED_TRACKED.join("\n")}\n` };
+        if (kind === "pty" && /\bimport\b/.test(line)) return { code: 0, stdout: importJson };
+        if (kind === "shim" && /vault status/.test(line)) return { code: 0, stdout: '{"unlocked":true}', stderr: "" };
+        return { code: 0, stdout: "", stderr: "" };
+      },
+    });
+    const r = await CARRY_STEPS.find((s) => s.id === "import-apply").run(c);
+    assert.equal(r.ok, true, r.answer);
+    const diff = calls.find((k) => k.kind === "git" && k.args.includes("diff"));
+    assert.ok(diff, "the step diffs the canon trees between the revisions");
+    for (const want of [OLD_REV, PIN, "bags", "wikis"]) assert.ok(diff.args.includes(want), `${want} in ${diff.args.join(" ")}`);
+    assert.ok(c.vars.expectedStandoff.includes(WORN), JSON.stringify(c.vars.expectedStandoff));
+    assert.ok(compareArgs({ standOff: c.vars.expectedStandoff }).join(" ").includes(`--stand-off ${WORN}`));
+  } finally { rmSync(scope.base, { recursive: true, force: true }); }
+});
