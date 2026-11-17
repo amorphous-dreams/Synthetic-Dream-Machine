@@ -24,9 +24,12 @@ vi.mock("../src/local-connector.js", async (real) => ({ ...(await real<typeof im
 import { parseArgs } from "../src/parse-args.js";
 
 let cmdVault: typeof import("../src/commands/vault.js").cmdVault;
+let PULAMA_PROBE: typeof import("../src/commands/vault.js").PULAMA_PROBE;
 beforeAll(async () => {
   vi.resetModules();
-  ({ cmdVault } = await import("../src/commands/vault.js"));
+  ({ cmdVault, PULAMA_PROBE } = await import("../src/commands/vault.js"));
+  // The probe's waits run at once here: a suite waits on no clock.
+  PULAMA_PROBE.waitMs = 0;
 });
 
 let out: string[];
@@ -110,8 +113,6 @@ describe("RED unlock-under-pulama-asks-nothing (the command)", () => {
   });
 
   it("RED probe-waits-out-the-recomposition: the unlock frame reads no answer while the vessel recomposes; the probe waits out the gap (no socket, then `composing` with the session still standing) and names `composition-refused` once the dial settles", async () => {
-    const { PULAMA_PROBE } = await import("../src/commands/vault.js");
-    PULAMA_PROBE.waitMs = 1;
     let probes = 0;
     door = (frame) => {
       if (frame["op"] !== "custody") return null;

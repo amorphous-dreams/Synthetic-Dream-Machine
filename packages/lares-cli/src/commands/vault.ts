@@ -254,16 +254,41 @@ function pulamaWaitsLine(waits: string): string {
  * command gathers no credential and sends none; the vessel asks its pūlama again and the answer names a session or what the
  * pūlama waits on.
  */
+/** How long the probe after an unanswered unlock waits out a recomposition: `tries` asks, `waitMs` apart. */
+export const PULAMA_PROBE = { tries: 120, waitMs: 500 };
+
+/**
+ * The custody reading once the vessel's dial settles. An unlock frame dies with the composition it tears down, so the probe
+ * after it may land inside the recomposition: no socket answers yet, or the door answers `composing` while the session still
+ * stands and names nothing it waits on. It asks again across that gap, bounded by `PULAMA_PROBE`; null where none settled.
+ */
+async function settledCustody(): Promise<Record<string, unknown> | null> {
+  for (let i = 0; i < PULAMA_PROBE.tries; i++) {
+    if (i > 0) await new Promise((settle) => setTimeout(settle, PULAMA_PROBE.waitMs));
+    const probe = await sendCustodyFrame({ op: "custody" });
+    if (probe?.["op"] !== "custody") continue;
+    const waits = (probe["pulama"] as { waits?: unknown } | undefined)?.waits;
+    if (typeof waits === "string" || probe["composing"] !== true) return probe;
+  }
+  return null;
+}
+
 async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   const a = await sendCustodyFrame({ op: "unlock" });
   if (a === null) {
     // THE DOOR MAY STILL NAME WHY: the vessel stands and its custody reading carries what the pūlama waits on (a composition it
-    // refused over the session reads `composition-refused`), so one more probe names that before the vessel reads unreachable.
-    const probe = await sendCustodyFrame({ op: "custody" });
+    // refused over the session reads `composition-refused`), so the probe names that before the vessel reads unreachable.
+    const probe = await settledCustody();
     const named = (probe?.["pulama"] as { waits?: unknown } | undefined)?.waits;
     if (probe?.["op"] === "custody" && typeof named === "string") {
       emit(args, { ok: false, error: { code: "pulama-waits", message: pulamaWaitsLine(named) }, data: probe, human: () => console.error(`lares vault unlock: ${pulamaWaitsLine(named)}`) });
       return 1;
+    }
+    // A DIAL THAT SETTLED WITH A SESSION STANDING: the unlock landed, and its answer rode the composition the dial tore down.
+    if (probe?.["op"] === "custody" && (probe["pulama"] as { session?: unknown } | undefined)?.session === true) {
+      const stood = typeof probe["standing"] === "string" ? probe["standing"] : "?";
+      emit(args, { ok: true, data: probe, human: () => console.log(`this vessel stands by its pūlama, which holds its custody open: it stands as ${stood}. No route was asked.`) });
+      return 0;
     }
     emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before it asked its pūlama" }, human: () => console.error("lares vault unlock: the vessel stopped answering before it asked its pūlama") });
     return 1;
