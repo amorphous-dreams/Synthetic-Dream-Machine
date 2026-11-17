@@ -11,7 +11,8 @@
  *   keep-cut   IN THE VESSEL: the keep's vessel half: lay the house's authored memory, cut as a cleartext carry bundle, into the
  *              bound workspace, spending a return of the keep lei strung for that workspace (`../rite-keep.ts`); it holds each
  *              cold wiki the house lists in turn before the cut, then hands the pins back
- *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
+ *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei (a kūkulu: each lent face's own),
+ *              rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
  *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
@@ -218,18 +219,18 @@ const readShim = (shim: string, verb: string): Promise<string | null> => new Pro
 export const SHIM_IMAGE_VERB = "image-digest";
 
 /**
- * One vessel row as the host's CLI line. The begin and the landing act as the face the rite names; the offer gathers every
- * lent face's line in the vessel, so it names none.
+ * One vessel row as the host's CLI line. The begin and the offer gather every lent face in the vessel, so they name none;
+ * each landing names the face its tessera began under in its own arguments.
  */
-export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", rowArgs: Record<string, unknown>, face: string | undefined): string[] =>
-  ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs), ...(face === undefined || verb === "rite-offer" ? [] : ["--face", face])];
+export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", rowArgs: Record<string, unknown>): string[] =>
+  ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs)];
 
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
-function hostPorts(runShim: (verb: string) => Promise<number>, face: string | undefined, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
+function hostPorts(runShim: (verb: string) => Promise<number>, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
     image,
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
-    row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs, face)),
+    row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     shim: (verb) => runShim(verb),
     say,
   };
@@ -303,8 +304,7 @@ export async function cmdRite(args: ParsedArgs): Promise<number> {
       return 2;
     }
     const branch = typeof args.options["branch"] === "string" && args.options["branch"].trim() !== "" ? args.options["branch"].trim() : undefined;
-    const face = typeof args.options["face"] === "string" ? args.options["face"] : undefined;
-    const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), face, (line) => console.error(line), async () => { const d = await readShim(shim, SHIM_IMAGE_VERB); return d !== null && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(d) ? d : null; }), branch === undefined ? {} : { branch });
+    const out = await riteKukulu(hostPorts((verb) => runShim(shim, verb), (line) => console.error(line), async () => { const d = await readShim(shim, SHIM_IMAGE_VERB); return d !== null && /^[a-z0-9]+:[0-9a-f]{32,128}$/.test(d) ? d : null; }), branch === undefined ? {} : { branch });
     emit(args, out.code === 0
       ? { ok: true, data: out.data, human: () => console.log(JSON.stringify(out.data)) }
       : { ok: false, data: out.data, error: { code: String(out.data["refusal"] ?? `rite-stopped-at-${String(out.data["stopped"] ?? "landing")}`), message: "the kūkulu rite did not complete; the lines above name where it stopped" }, human: () => console.log(JSON.stringify(out.data)) });

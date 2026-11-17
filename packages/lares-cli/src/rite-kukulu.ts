@@ -4,13 +4,15 @@
  * The rite runs on the host, behind four ports, in one order:
  *
  *   1. checkout     the checkout's head and branch
- *   2. rite-begin   IN THE VESSEL: derive the head's tree, return the kukulu lei, rest the guest half (`rite-begun`)
+ *   2. rite-begin   IN THE VESSEL: derive the head's tree, and for every lent face return that face's own kukulu lei and
+ *                   rest its guest half (`rite-begun`); a face whose lei is missing waits by name
  *   3. shim build   rebuild the vessel's image from the committed checkout
  *   3a. rite-offer  IN THE VESSEL, where the host names the image it built (`image`): gather every lent face's line, sign
  *                   one vouch per face over that image, and rest the offer the new vessel carries to the pūlama (`kukulu-offer.json`)
  *   4. shim down    the standing vessel goes down
  *   5. shim up      a new vessel stands
- *   6. rite-land    IN THE NEW VESSEL: rest the host half (`rite-landed`), naming the begun half and the head it stands at
+ *   6. rite-land    IN THE NEW VESSEL: rest each face's host half (`rite-landed`) under that face, naming its begun half and
+ *                   the head it stands at; the rite reads par only where every pair reads par
  *
  * THE RITE BEGINS BEFORE THE VESSEL GOES DOWN. A begin the vessel refuses (no lei, no testimony, no return left) runs no shim
  * verb at all. The return comes first by design, so a build that fails leaves the lei's return spent and the begun half
@@ -51,15 +53,21 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     ports.say(`kūkulu: the rite begins nothing: ${begun.message}`);
     return { code: 1, data: { ...base, begun: false, refusal: begun.code } };
   }
-  const tessera = String(begun.output["tessera"]);
-  ports.say(`kūkulu: begun; the lei returned and the guest half rests (tessera ${tessera})`);
-  const landCall = `lares rite land --tessera ${tessera} --head ${head}`;
+  // ONE RITE PER LENT FACE: each face's tessera lands under that face, and a face with no lei of its own waits by name.
+  const begunFaces = (Array.isArray(begun.output["faces"]) ? begun.output["faces"] as Array<Record<string, unknown>> : [])
+    .map((f) => ({ face: String(f["face"]), ordinal: Number(f["ordinal"]), tessera: String(f["tessera"]) }));
+  const waits = Array.isArray(begun.output["waits"]) ? (begun.output["waits"] as unknown[]).map(String) : [];
+  const tesserae = begunFaces.map((f) => ({ face: f.face, tessera: f.tessera }));
+  const spent = { tesserae, ...(waits.length > 0 ? { waits } : {}) };
+  ports.say(`kūkulu: begun; each lent face's lei returned and its guest half rests (${begunFaces.map((f) => `${f.face} tessera ${f.tessera}`).join(", ")})`);
+  for (const face of waits) ports.say(`kūkulu: ${face} carries no kukulu lei on this line and waits; the other faces' rite goes on`);
+  const landCall = begunFaces.map((f) => `lares rite land --tessera ${f.tessera} --head ${head} --face ${f.ordinal}`).join("; ");
   for (const verb of ["build", "down", "up"] as const) {
     const code = await ports.shim(verb);
     if (code !== 0) {
       const where = verb === "build" ? "the vessel still stands as it stood" : verb === "down" ? "the vessel may still stand" : "the vessel stands down";
       ports.say(`kūkulu: the shim's ${verb} answered ${code}; ${where}; the lei's return stays spent, and the begun half reads red at the next wake until a vessel at ${head} lands it (${landCall}).`);
-      return { code: 1, data: { ...base, tessera, begun: true, landed: false, stopped: verb } };
+      return { code: 1, data: { ...base, ...spent, begun: true, landed: false, stopped: verb } };
     }
     if (verb !== "build" || !ports.image) continue;
     // BETWEEN THE BUILD AND THE LOWERING, the standing vessel writes what the next one carries to the pūlama. The host names
@@ -72,23 +80,24 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
     const offered = await ports.row("rite-offer", { branch, head, image });
     if (!offered.ok) {
       ports.say(`kūkulu: the standing vessel wrote no offer (${offered.message}); it still stands, the lei's return stays spent, and the begun half reads red until a vessel at ${head} lands it (${landCall}).`);
-      return { code: 1, data: { ...base, tessera, begun: true, landed: false, stopped: "offer", refusal: offered.code } };
+      return { code: 1, data: { ...base, ...spent, begun: true, landed: false, stopped: "offer", refusal: offered.code } };
     }
     const names = (key: string): string[] => (Array.isArray(offered.output[key]) ? (offered.output[key] as unknown[]).map(String) : []);
     const faces = names("faces"), waits = names("waits");
     ports.say(`kūkulu: the offer rests for the next vessel (${String(offered.output["lei"] ?? "?")} lei, a vouch for each of ${faces.length > 0 ? faces.join(", ") : "the lent faces"} over ${image})`);
     for (const face of waits) ports.say(`kūkulu: ${face} carries no lei on this line and waits at the pūlama by name; the other faces' lend stands`);
   }
-  const landed = await ports.row("rite-land", { tessera, head });
-  if (landed.ok) {
-    const par = landed.output["par"] === true;
-    ports.say(par ? "kūkulu: landed; conferre reads the tessera par" : "kūkulu: landed at another head than the rite began at; conferre reads the tessera red");
-    return { code: par ? 0 : 1, data: { ...base, tessera, begun: true, landed: true, par } };
+  let par = true;
+  for (const f of begunFaces) {
+    const landed = await ports.row("rite-land", { tessera: f.tessera, head, face: f.ordinal });
+    if (landed.ok) { par = landed.output["par"] === true && par; continue; }
+    if (landed.code === "vessel-locked") {
+      ports.say(`kūkulu: the new vessel stands locked, so the host halves wait. Open it with \`lares vault unlock\`, then land the rite: ${landCall}`);
+      return { code: 0, data: { ...base, ...spent, begun: true, landed: false, awaits: "unlock" } };
+    }
+    ports.say(`kūkulu: the landing of ${f.face} refused: ${landed.message}`);
+    return { code: 1, data: { ...base, ...spent, begun: true, landed: false, refusal: landed.code } };
   }
-  if (landed.code === "vessel-locked") {
-    ports.say(`kūkulu: the new vessel stands locked, so the host half waits. Open it with \`lares vault unlock\`, then land the rite: ${landCall}`);
-    return { code: 0, data: { ...base, tessera, begun: true, landed: false, awaits: "unlock" } };
-  }
-  ports.say(`kūkulu: the landing refused: ${landed.message}`);
-  return { code: 1, data: { ...base, tessera, begun: true, landed: false, refusal: landed.code } };
+  ports.say(par ? "kūkulu: landed; conferre reads every face's tessera par" : "kūkulu: landed at another head than the rite began at; conferre reads a tessera red");
+  return { code: par ? 0 : 1, data: { ...base, ...spent, begun: true, landed: true, par } };
 }

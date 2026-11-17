@@ -1,7 +1,7 @@
 /**
  * rite — the store holder runs a rite's rows against the daemon wiki: `begin`, `land`, `receipts`.
  *
- * A rite that takes the vessel down keeps a tessera: `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
+ * A rite that takes the vessel down keeps a tessera (a kūkulu keeps one per lent face, `beginLentFaces`): `begin` derives the head's tree (out of the checkout's object store, `gitTreeOf`, no git binary; a `keep` derives its bundle id from the staged bundle itself, `riteTreeOf`), returns the
  * rite's lei at that head (the testimony, the count and the reach all judged in the mesh core) and rests the guest half BEFORE the caller takes the vessel down; `land` rests the
  * host half once a vessel stands again; `receipts` lists every half and runs conferre over them; `receipt` rests the
  * vessel-signed `receipt/<tree>` every return rests on, over the verdict the host's battery hands in; `offer` gathers what a
@@ -99,14 +99,46 @@ export async function lentOfferFaces(lent: readonly number[], face: (ordinal: nu
   return out;
 }
 
-/** One loaded face as the offer reads it: its group, the trust its hand and this device's atom verify under, its ward witness. */
-async function offerFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: number): Promise<KukuluOfferFace> {
+/** One begun face of a kūkulu: its name and ordinal beside what its rite's begin answered. */
+export interface BegunFace { readonly face: string; readonly ordinal: number; readonly tessera: string; readonly lei: string; readonly n: number; readonly begun: string }
+
+/**
+ * ONE LEI PER LENT FACE. A kūkulu lends the next vessel every face this one serves, so it begins one rite per lent ordinal, in
+ * the lend's order, each spending that face's own lei under that face's own hand (`begin`). A face whose lei is missing
+ * (`swarm-lei-absent`) waits by name, as at the offer and the pūlama; with every face waiting the begin refuses
+ * `swarm-lei-absent` naming them. Any other reading refuses the whole begin. No lent face refuses `lent-faces-empty`.
+ */
+export async function beginLentFaces(
+  lent: readonly number[],
+  begin: (ordinal: number) => Promise<{ readonly tessera: string; readonly lei: string; readonly n: number; readonly begun: string }>,
+): Promise<{ readonly rite: "kukulu"; readonly faces: readonly BegunFace[]; readonly waits: readonly string[] }> {
+  if (lent.length === 0) throw new SwarmRefused("lent-faces-empty", "a kūkulu begins over the lent faces, and this vessel serves no face");
+  const faces: BegunFace[] = [], waits: string[] = [];
+  for (const ordinal of lent) {
+    try {
+      const b = await begin(ordinal);
+      faces.push({ face: `h${ordinal}`, ordinal, tessera: b.tessera, lei: b.lei, n: b.n, begun: b.begun });
+    } catch (e) {
+      if (e instanceof SwarmRefused && e.code === "swarm-lei-absent") { waits.push(`h${ordinal}`); continue; }
+      throw e;
+    }
+  }
+  if (faces.length === 0) throw new SwarmRefused("swarm-lei-absent", `no kukulu lei of its own hand stands for any lent face (${waits.join(", ")}), so this kūkulu begins nothing`);
+  return { rite: "kukulu", faces, waits };
+}
+
+/** One lent face as a kūkulu row reads it: the offer's parts beside the device atom that signs its rite's halves. */
+type RiteFace = KukuluOfferFace & { readonly vessel: SwarmSignerPort };
+
+/** One loaded face: its group, the trust its hand and this device's atom verify under, its ward witness, and that atom. */
+async function riteFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: number): Promise<RiteFace> {
   let fold: FaceFold;
   try { fold = await loadFaceFold(repo, catalogUrl, { index: ordinal }); }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
   const vesselKey = fold.signer.key.toLowerCase();
   const trust: SwarmTrust = { hand: (key) => fold.face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
-  try { return { group: fold.group, trust, ward: cosignPortWitness(await nodeWardCosignPortOf(repo, fold)) }; }
+  const vessel: SwarmSignerPort = { key: fold.signer.key, sign: (bytes) => fold.signer.sign(bytes) };
+  try { return { group: fold.group, trust, vessel, ward: cosignPortWitness(await nodeWardCosignPortOf(repo, fold)) }; }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
 }
 
@@ -130,10 +162,22 @@ export async function runRiteVerb(opts: {
     // lent face itself, so no one face loads first.
     if (!str("branch") || !str("head") || !str("image")) throw new SwarmRefused("rite-offer-malformed", "an offer names its branch, its head and the image the host built");
     const offerTree = await (opts.treeOf ?? gitTreeOf)(str("head"));
-    const faces = await lentOfferFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), (ordinal) => offerFaceOf(opts.repo, opts.catalogUrl, ordinal));
+    const faces = await lentOfferFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), (ordinal) => riteFaceOf(opts.repo, opts.catalogUrl, ordinal));
     return { ...await writeKukuluOffer({
       wiki: opts.wiki, faces, branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
       holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
+    }) };
+  }
+  if (opts.action === "begin" && opts.args["rite"] === "kukulu") {
+    // A KŪKULU BEGINS FOR EVERY LENT FACE: one rite per face, each returning that face's own lei and resting its own guest half.
+    if (!str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");
+    const at = { rite: "kukulu" as const, branch: str("branch"), head: str("head"), tree: await (opts.treeOf ?? gitTreeOf)(str("head")) };
+    const wiki = opts.wiki;
+    return { ...await beginLentFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), async (ordinal) => {
+      let face: RiteFace;
+      try { face = await riteFaceOf(opts.repo, opts.catalogUrl, ordinal); }
+      catch (e) { if (e instanceof SwarmRefused) throw e; throw new SwarmRefused("face-log-unreadable", `the lent face h${ordinal} loads no log: ${e instanceof Error ? e.message : String(e)}`); }
+      return beginRite(wiki, at, face.trust, face.group, face.vessel, face.ward);
     }) };
   }
   let loaded: FaceFold;
