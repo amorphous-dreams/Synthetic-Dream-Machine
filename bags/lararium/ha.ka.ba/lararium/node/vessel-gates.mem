@@ -35,7 +35,7 @@ aside holds no same-operator seat, whatever it proves (house ruling "A device se
 * ''The grant ring'' answers the PersonaGroup grant this vessel holds for a face (`gate-rings`).
 * ''The sorter'' reads this Nexus's posture alone (`socket-sorter`), and the walker's arms ship SHUT.
 * ''The withdrawal memory'' outlives a restart where the composer hands the sealed store
-(`gate-memory-rows`); a floor gate keeps it in memory.
+(`gate-memory-records`); a floor gate keeps it in memory.
 
 <<~/ahu>>
 
@@ -62,6 +62,6 @@ vessel's own log through `onRefuse`; the wire never carries it.
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/socket-sorter`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/node/open-node-vessel`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;jys5I89S5Tf0lBMe51upzIs4P_O2wsShtXbhCEq1I0M`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qekmy5k67PI9d1_RjAPESNtGEdGJlvo7elMPu35RXoc`>>
 
 <<^ code=`&#x0004;` to=`?`>>

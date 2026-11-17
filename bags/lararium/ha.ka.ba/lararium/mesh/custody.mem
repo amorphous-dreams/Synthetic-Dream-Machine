@@ -310,7 +310,7 @@ Every refusal of a restore lands before the commit record, so before any record 
 !! What the code holds
 
 ''Built: a production path reaches each.''
-* ''The carrier table'', its census, the rotation's list, its bundle column and its law column (`packages/lararium-node/src/vault-carriers.ts`; `bundleRows` names every record a bundle carries, and the record's own type refuses a `floor` or `floor-plain` record that states no law).
+* ''The carrier table'', its census, the rotation's list, its bundle column and its law column (`packages/lararium-node/src/vault-carriers.ts`; `bundleCarriers` names every record a bundle carries, and the record's own type refuses a `floor` or `floor-plain` record that states no law).
 * ''The census of what stands outside the table'' (`vault-carriers.ts` `outsideTheTable`; `custody-session.ts` `custodyStatus`): one reading of each standing file, a fault mark on any `hot` or `cold` record that reads anything but sealed, and every private file no record names.
 * ''`lares vault status`'' (`packages/lares-cli/src/commands/vault.ts`): the slot tree, that one reading of each file with its law or its fault, and each file outside the table by name. The door answers seven verbs (`status` · `unlock` · `lock` · `bind` · `unbind` · `backup` · `restore`), and a credential rides a terminal alone.
 * ''The unbind that rotates'' (`custody-session.ts` `unbindCustodySlot`): one act, whose census passes before any byte moves.
@@ -353,6 +353,6 @@ Every refusal of a restore lands before the commit record, so before any record 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;ze4XdpBUSprp6HXA9WoCiEI5SoNEF6ncfaGFNtIwX58`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;kLaZldkGu8SOgKK4UVXhBzL_adc8DHLAngSXtvLy55w`>>
 
 <<^ code=`&#x0004;` to=`?`>>

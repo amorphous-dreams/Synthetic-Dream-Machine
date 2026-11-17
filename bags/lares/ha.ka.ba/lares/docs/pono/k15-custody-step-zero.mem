@@ -87,8 +87,8 @@ This table covers every `buildTable()` entry in `packages/lararium-node/src/vaul
 | `hosting-spent` `hosting-store.ts` | face-hot | ''D:'' per-face replay and spend authority beside its state, `hosting-h<N>/<aid digest>/spent-*`. |
 | `hosting-carry` `hosting-carry.ts` | face-hot | ''D:'' the hosting face's rhythm records and the guests' sealed ciphertext rest in that face, `hosting-h<N>/<aid digest>/carry/...`; the walker, a different face, owns the inner ciphertext's content key, and no guest key lands at the host. |
 | `walk` `node-walk-store.ts` | face-hot | ''D:'' the walking face owns its private walk record, `walk-h<N>-<gate digest>.json` in that face; a vessel still walks at one hearth (every face's names are read), and the daemon lists only the unlocked faces' walks. |
-| `gate-memory` `gate-memory-rows.ts` | face-hot | ''D:'' a gate's withdrawal memory rests in the face whose gate learned it, `gate-memory-h<N>-<subject digest>.bin`; each gate reads and writes only its own face's records, and another unlocked face's withdrawal reads absent through it. |
-| `transition-pending` `seal-ceremony.ts` | floor-plain | ''F:'' field audit: a crossing in progress holds public key-sets, signatures and witnesses and no secret, so it rests in the clear in the seal home (`plain-rows.ts`), readable with no key, written under the custody claim. |
+| `gate-memory` `gate-memory-records.ts` | face-hot | ''D:'' a gate's withdrawal memory rests in the face whose gate learned it, `gate-memory-h<N>-<subject digest>.bin`; each gate reads and writes only its own face's records, and another unlocked face's withdrawal reads absent through it. |
+| `transition-pending` `seal-ceremony.ts` | floor-plain | ''F:'' field audit: a crossing in progress holds public key-sets, signatures and witnesses and no secret, so it rests in the clear in the seal home (`plain-records.ts`), readable with no key, written under the custody claim. |
 | `transitions` `seal-ceremony.ts` | floor-plain | ''F:'' field audit: each sealed crossing record is a verified public record (key-sets, signatures, witnesses), so it rests in the clear beside the charter and verifies from the charter alone. |
 | `cofound` `cofound-record.ts` | face-hot | ''D:'' the acting face's record of a joint founding, `cofound-h<N>-<offer fingerprint>.json` in that face; the jointly signed image is public and rides the offer and join files. |
 | `outbox-key` `outbox-key.ts` | face-hot | ''D:'' one outbox key per sending face, `outbox-key-h<N>.bin` in that face. A flat `outbox-key.bin` reads as an earlier shape. The parcels partition by the sending face's key (a parcel sealed under another face's key never opens). |
@@ -278,6 +278,6 @@ Wave D audit of every child the sealed custody root derives and of the vessel's 
 <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/custody-per-face-2026`>>
 <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store`>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;iOOSgBsxQwFEtn3pU0bU1YLMbliTF65VE4k5W_DmYPc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;-Y6MxvhW4_VeYfmLLmMKJbvYfND0F1s7vyLFsJSLZ_g`>>
 
 <<^ code=`&#x0004;` to=`?`>>
