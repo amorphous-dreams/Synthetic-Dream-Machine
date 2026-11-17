@@ -9,6 +9,9 @@
  *   L2 — the target for a named sibling resolves that sibling's own device slot (minted under its group) and names it owner
  *   L3 — the worn face (or no face named) resolves the composite's own layer, owner the worn face
  *   L4 — a face outside the lit set resolves nothing; a canon bag resolves by the face's relation alone, never another's
+ *   L5 — a sibling's daemon slot names itself to the vessel as the SIBLING's (`slot-announcer`), so the host's working layer
+ *        never follows it; a sibling's daemon CANON resolves off the control document and posts no slot notice at all, so the
+ *        face-canon wave never reaches the host-working follow. CONTROL: the worn face's own resolver names its slot unmarked
  *
  * Written beside the cure (written, unrun here; CI runs it).
  */
@@ -18,6 +21,7 @@ import { CompositeStore, CONTROL_HOME_ID, AutomergeDocStore, daemonFaceCanonBag,
 import { MemoryTiddlerStore } from "@lararium/tw5";
 import { litFaceSlotDocs } from "../src/slot-doc-resolver.js";
 import { makeLitFaceTarget, type LitFace } from "../src/lit-face-target.js";
+import { slotAnnouncer } from "../src/slot-announcer.js";
 
 const WORKING = wikiSlotUri("daemon", "working");
 const R0 = "11111111-1111-4111-8111-111111111110", R1 = "11111111-1111-4111-8111-111111111111";
@@ -131,5 +135,40 @@ describe("every lit face resolves its own slots", () => {
     const own = await r.target(1, daemonFaceCanonBag(R1));
     expect(own!.owner).toBe(1);
     expect(await r.target(1, daemonFaceCanonBag(R0))).toBeNull();
+  });
+
+  test("L5 — a sibling's daemon slot names itself as the sibling's; a sibling's canon posts no slot notice; CONTROL: the worn face's names itself unmarked", async () => {
+    const { repo, control, slots } = stand();
+    const notices: Array<{ bagId: string; documentId: string; sibling?: true }> = [];
+    const door = { post: (msg: unknown) => { notices.push(msg as never); } };
+    const siblingNotices = slotAnnouncer(door, "sibling");
+    const wornNotices = slotAnnouncer(door, "worn");
+    const faceDoor = { mint: async () => {} } as never;
+    const sibSlots = litFaceSlotDocs({ repo, daemonStore: control, control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: siblingNotices.device });
+    const worn: LitFace = { handleIndex: 0, group: "group-h0", relation: R0 };
+    const sib: LitFace = { handleIndex: 1, group: "group-h1", relation: R1 };
+    const target = makeLitFaceTarget({
+      worn: () => worn, siblings: () => [sib], control: () => control,
+      wornStore: () => null,
+      siblingSlot: async (face, kind) => (await siblingNotices.announcing(sibSlots.of({ group: face.group, atomKey: "a1".repeat(32), faceDoor })).slotDoc("daemon", kind))?.url ?? null,
+      storeOf: async (url, bag) => new AutomergeDocStore(await repo.find<LarDoc>(url as never), bag),
+    });
+    // The face-canon wave: the sibling's canon reads its document off the control document, and names no slot.
+    const canon = repo.create<LarDoc>(emptyLarDoc());
+    await control.put(mutableLarRecord(`${CONTROL_HOME_ID}/daemon-canon/${R1}`, { text: canon.url }, "test"), { kind: "lares-verb", requestId: "t" });
+    expect((await target(1, daemonFaceCanonBag(R1)))!.owner, "the setup took: the sibling's canon resolves").toBe(1);
+    expect(notices, "a sibling's canon posts no slot notice").toEqual([]);
+    // The face-named working wave: every notice names the sibling's slot, marked.
+    const out = await target(1, WORKING);
+    expect(out!.owner).toBe(1);
+    expect(notices.length, "the sibling's slot named itself to the vessel").toBeGreaterThan(0);
+    for (const n of notices) expect(n, "each notice of a sibling's slot rides marked").toMatchObject({ bagId: WORKING, sibling: true });
+    // CONTROL: the worn face's own resolver names its slot unmarked.
+    notices.length = 0;
+    const own = await wornNotices.announcing(litFaceSlotDocs({ repo, daemonStore: control, control, catalog: null, deviceScoped: (slug) => slug === "daemon", announceDevice: wornNotices.device })
+      .of({ group: "group-h0", atomKey: "a0".repeat(32), faceDoor })).slotDoc("daemon", "working");
+    expect(notices.length).toBeGreaterThan(0);
+    for (const n of notices) { expect(n.bagId).toBe(WORKING); expect(n.sibling, "the worn face's slot rides unmarked").toBeUndefined(); }
+    expect(notices.some((n) => `automerge:${n.documentId}` === own!.url)).toBe(true);
   });
 });

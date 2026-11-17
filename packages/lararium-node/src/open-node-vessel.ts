@@ -177,6 +177,7 @@ import { makeSourceCapture, type SourceCapture } from "./capture/capture-source.
 import { VesselIslandPool, NODE_WIKI_ACTIVATION_CAP } from "./vessel-island-pool.js";
 import { wikiSwitchVerb } from "./wiki-switch-verb.js";
 import { runFlow } from "./flow-run.js";
+import { hostWorkingFollower } from "./host-working-follow.js";
 
 /** Node advertises a few rotatable wiki pins BESIDES the daemon bag (resource-rich vessel).
  *  The user's ONE-plus rotatable pin(s) ride this budget; the surface enforces it. */
@@ -977,14 +978,14 @@ async function prepareNodeBootOn(
     for (const named of slotDocsNamed.values()) for (const documentId of named) sealNowMapped(documentId);
     for (const documentId of deviceDocs.ids()) sealNowMapped(documentId);
   };
-  const onSlotNamed = (bagId: string, documentId: string, floor = false, lifted = false): void => {
+  const onSlotNamed = (bagId: string, documentId: string, floor = false, lifted = false, sibling = false): void => {
     // THE LIFT CARRIED A FLOOR WIKI'S CANON IN PLACE (the-veil-ladder#/the-base-model, Ruling 2): the document leaves the
     // vessel's class (the device table and the held homes release it) and files under the face's bag below, where
     // `sealNowMapped` re-files its seal from the vessel's key to the face's. A document the vessel never held releases nothing.
     if (lifted && deviceDocs.release(documentId) !== null) { sealedRest.store.mapMoved(); reverdictLater(); }
-    // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S: a main-side write to the daemon wiki lands on the document the island
-    // reads (the seat's lift moves it to the face's). The outcome ledger rests in the control document, never here.
-    if (bagId === DAEMON_WORKING_SLOT) followHostWorking(documentId);
+    // THE HOST'S WORKING LAYER FOLLOWS THE ISLAND'S (`host-working-follow`): a main-side write to the daemon wiki lands on
+    // the document the island reads (the seat's lift moves it to the face's).
+    followHostWorking(bagId, documentId, sibling);
     // A DAEMON DEVICE SLOT files by the group the control document names for it, never by the face lit as it announces: it
     // maps held (never clear, never under another face's key) until the control document names its owner.
     // A VEIL FLOOR'S WIKI SLOT (`floor`) files the same way: the vessel owns it, so it waits held until the control document
@@ -1001,12 +1002,7 @@ async function prepareNodeBootOn(
     sealedRest.store.mapMoved();
     sealNowMapped(documentId);
   };
-  const followHostWorking = (documentId: string): void => {
-    let follow: Promise<void>;
-    try { follow = daemonHolder.vm.followHostWorkingLayer(`automerge:${documentId}`); }
-    catch { return; }   // no daemon stands yet, or it restarts: its next mount resolves the island's document afresh
-    void follow.catch((e: unknown) => console.log(`[daemon] the host working layer stays where it stands: ${e instanceof Error ? e.message : String(e)}`));
-  };
+  const followHostWorking = hostWorkingFollower({ follow: (url) => daemonHolder.vm.followHostWorkingLayer(url) });
   // The map as it reads now, named in the log each time it moves: the face, and each sealed bag's document.
   let sealedMapNamed = "";
   // THE SECRET HOME (placement over patterns): the vessel's own secret document rests sealed under the held key its custody

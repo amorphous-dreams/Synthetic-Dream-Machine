@@ -163,8 +163,9 @@ import { persistArchiveFloor } from "./archive-floor-write.js";
 import { replicaHeads, hexToBytes as meshHexToBytes, faceAtomKeyFromSeed, nexusOfferSigner, holdsKahuReach, isHouseCanonBag, realmStandingDocUrl } from "@lararium/mesh";
 import { DaemonEventStore, absorbCapEvents } from "./daemon-event-store.js";
 import { readLeaseUnderFace, controlLayerOf, type LeaseFrontier } from "./lease-frontier.js";
-import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, documentIdOfUrl, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry, type WikiSlotKind } from "@lararium/mesh";
+import { readFace, answerDocStoreAsks, announceSlotDoc, announceLiftedDoc, floorSlotTitle, floorRegistryOf, FloorUnavailable, type FloorRegistry } from "@lararium/mesh";
 import { makeSlotDocResolver, litFaceSlotDocs, type SlotDocResolver, type LitFaceSlotDocs } from "./slot-doc-resolver.js";
+import { slotAnnouncer } from "./slot-announcer.js";
 import { makeLitFaceTarget, type LitFace } from "./lit-face-target.js";
 import { type FaceJoinSummons } from "./face-join.js";
 import { answerFleetSeatDuties, type FleetSeatFacts } from "./fleet-seat-duties.js";
@@ -411,36 +412,18 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
   let heedIntentDoor: (() => void) | null = null;
   // V3: every slot document the resolver answers reaches the vessel's bag map before any write lands in it
   // (`announceSlotDoc`): the face's derived working address and a draft binding stand under no catalog row.
-  const announced = (slug: string, kind: WikiSlotKind, url: string | null | undefined): void => {
-    const documentId = documentIdOfUrl(url);
-    if (docStoreDoor && documentId) announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId);
-  };
-  const announcing = (resolver: SlotDocResolver): SlotDocResolver => ({
-    ...resolver,
-    bindings: async (fingerprint, recipeTrace, slug) => {
-      const out = await resolver.bindings(fingerprint, recipeTrace, slug);
-      announced(slug, "working", out.workingUrl); announced(slug, "draft", out.draftUrl); announced(slug, "personal", out.personalUrl);
-      return out;
-    },
-    writeSlot: (slug) => resolver.writeSlot(slug),
-    // The call forwards as made: an absent option stays absent, never an explicit undefined.
-    slotDoc: async (...call) => {
-      const out = await resolver.slotDoc(...call);
-      announced(call[0], call[1], out?.url);
-      return out;
-    },
-    draft: async (slug) => {
-      const out = await resolver.draft(slug);
-      announced(slug, "draft", out.url);
-      return out;
-    },
-  });
+  // A sibling's resolver names its documents as the SIBLING's (`slot-announcer`): the vessel maps them, and the host's
+  // working layer follows the worn face's own slot alone.
+  const wornSlots = slotAnnouncer(docStoreDoor, "worn");
+  const siblingNotices = slotAnnouncer(docStoreDoor, "sibling");
+  const announced = wornSlots.announced;
+  const announcing = wornSlots.announcing;
   /** The lit set's slot resolvers: each sibling's daemon device slots under its own group, hive and door. */
   const siblingSlotsOf = (ctx: IslandContext): LitFaceSlotDocs => {
     if (siblingSlots) return siblingSlots;
     siblingSlots = litFaceSlotDocs({
       repo: ctx.repo, deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx),
-      ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
+      ...(docStoreDoor ? { announceDevice: siblingNotices.device } : {}),
       daemonStore: ctx.composite, catalog: null,
     });
     return siblingSlots;
@@ -466,7 +449,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           workbenchFounds: faceFounds(ctx, () => provider, entry.personaGroupId),
           faceDoor: makeFaceBagDoor({ face: provider as never, groupId: entry.personaGroupId }),
         });
-        const out = await announcing(resolver).slotDoc(DAEMON_WIKI_SLUG, kind);
+        const out = await siblingNotices.announcing(resolver).slotDoc(DAEMON_WIKI_SLUG, kind);
         return out?.url ?? null;
       },
       storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag),
@@ -529,7 +512,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       deviceScoped: (slug) => slug === DAEMON_WIKI_SLUG, control: controlOf(ctx), floor: floorOf(ctx),
       // The hearth's daemon working document, where the vessel granted one (a leaf at its own hearth, road row `L4f`).
       hearthWorking: () => ctx.hearthWorkingUrl ?? null,
-      ...(docStoreDoor ? { announceDevice: (kind: Exclude<WikiSlotKind, "temp">, documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(DAEMON_WIKI_SLUG, kind), documentId) } : {}),
+      ...(docStoreDoor ? { announceDevice: wornSlots.device } : {}),
       // THE VEIL FLOOR'S WIKI SLOT names itself to the vessel as the vessel's own, before its first byte (it seals under the floor's rest key).
       ...(docStoreDoor ? { announceFloor: (slug: string, kind: "working" | "draft" | "personal", documentId: string) => announceSlotDoc(docStoreDoor, wikiSlotUri(slug, kind), documentId, true) } : {}),
       ...(docStoreDoor ? { announceLifted: (slug: string, documentId: string) => announceLiftedDoc(docStoreDoor, wikiBagUri(slug), documentId) } : {}),

@@ -310,7 +310,7 @@ export function answerLiveDocAsks(port: Port, liveOf: (bagId: string) => Promise
  */
 export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array | null>, opts: {
   /** V3: the island's slot resolver named `documentId` as `bagId`'s document (`announceSlotDoc`). */
-  readonly onSlot?: (bagId: string, documentId: string, floor: boolean, lifted: boolean) => void;
+  readonly onSlot?: (bagId: string, documentId: string, floor: boolean, lifted: boolean, sibling: boolean) => void;
   /** The attached island's door stood (`docstore:answering`): what waited on it (a hydration, a held save) asks again. */
   readonly onReady?: () => void;
 } = {}): {
@@ -351,7 +351,9 @@ export function docStorePortCell(liveOf: (bagId: string) => Promise<Uint8Array |
 /** `floor`: the vessel itself owns the document (a veil floor's wiki slot); it files held and seals under the vessel's key. */
 /** `lifted`: a face lifted a document the vessel owned (a veil floor wiki's canon) with the same id; it leaves the vessel's
  *  class, files under the face's bag, and its seal re-files from the vessel's key to the face's. */
-export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string; readonly floor?: true; readonly lifted?: true }
+/** `sibling`: the document answers for a SIBLING face of the lit set (open, not worn), never the worn face's own slot; the
+ *  vessel maps it for its seal as any slot, and the host's own layers never follow it (a face's daemon layer stays its own). */
+export interface DocStoreMsg_Slot { readonly type: "docstore:slot"; readonly bagId: string; readonly documentId: string; readonly floor?: true; readonly lifted?: true; readonly sibling?: true }
 
 /**
  * THE SLOT RESOLVER NAMES EACH DOCUMENT IT ANSWERS (V3). A wiki's working and draft documents resolve in the daemon
@@ -363,17 +365,23 @@ export function announceSlotDoc(port: Pick<Port, "post">, bagId: string, documen
   try { port.post({ type: "docstore:slot", bagId, documentId, ...(floor ? { floor: true as const } : {}) } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
 }
 
+/** A SIBLING FACE'S SLOT NAMES ITSELF AS THE SIBLING'S: `documentId` stands as `bagId`'s document for a lit face the vessel
+ *  does not wear (the face-named wave's target), so the vessel maps it and the host's working layer stays on its own face's. */
+export function announceSiblingSlotDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
+  try { port.post({ type: "docstore:slot", bagId, documentId, sibling: true } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
+}
+
 /** THE LIFT NAMES A DOCUMENT IT CARRIED IN PLACE: `documentId` now stands as the face's `bagId`, released from the vessel's class. */
 export function announceLiftedDoc(port: Pick<Port, "post">, bagId: string, documentId: string): void {
   try { port.post({ type: "docstore:slot", bagId, documentId, lifted: true } satisfies DocStoreMsg_Slot); } catch { /* the vessel went away */ }
 }
 
 /** The vessel hears each slot notice. Returns the unsubscribe. */
-export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string, floor: boolean, lifted: boolean) => void): () => void {
+export function answerSlotNotices(port: Port, onSlot: (bagId: string, documentId: string, floor: boolean, lifted: boolean, sibling: boolean) => void): () => void {
   return port.listen((raw) => {
     const m = raw as Partial<DocStoreMsg_Slot> | null;
     if (!m || m.type !== "docstore:slot" || typeof m.bagId !== "string" || typeof m.documentId !== "string") return;
-    try { onSlot(m.bagId, m.documentId, m.floor === true, m.lifted === true); } catch { /* a listener's fault never reaches the island */ }
+    try { onSlot(m.bagId, m.documentId, m.floor === true, m.lifted === true, m.sibling === true); } catch { /* a listener's fault never reaches the island */ }
   });
 }
 
