@@ -125,6 +125,15 @@ describe("RED composition-readers-ask-only-the-lend: every face-scoped reader th
     expect(outsideTheLend()).toEqual([]);
   });
 
+  test("RED WELD: a face the pūlama lights after the composition stood (its lend widened by the pūlama's standing event) lights in the daemon island on the custody's open, so a session on it reads its own documents and never meets `no provider for face`", () => {
+    const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
+    const watch = source.indexOf("onOpened?.(() => void lightServedFaces(");
+    expect(watch).toBeGreaterThan(-1);
+    const light = source.slice(source.indexOf("const lightServedFaces"));
+    expect(light.indexOf("unlitServedFaces(")).toBeGreaterThan(-1);
+    expect(light.indexOf("unlitServedFaces(")).toBeLessThan(light.indexOf("lightFace("));
+  });
+
   test("WELD: the composition proves another face, and lists the faces it walks, only inside what the vessel serves", () => {
     const source = readFileSync(join(import.meta.dirname, "..", "src", "open-node-vessel.ts"), "utf8");
     const proof = source.slice(source.indexOf("async function proofOfOtherFace"));

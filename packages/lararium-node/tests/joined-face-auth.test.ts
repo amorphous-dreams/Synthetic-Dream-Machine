@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest";
 import { deriveRegisterBags, litFaceOwnBags, daemonFaceCanonBag, wikiSlotUri } from "@lararium/mesh";
-import { joinedFaceAuth, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
+import { joinedFaceAuth, unlitServedFaces, type JoinedFaceAuthPorts } from "../src/joined-face-auth.js";
 
 const edge = { deviceVerifyingKey: "ab" } as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchors"]>>>["deviceEdge"];
 const anchor = {} as NonNullable<Awaited<ReturnType<JoinedFaceAuthPorts["anchor"]>>>;
@@ -46,5 +46,13 @@ describe("joined face authentication", () => {
     const entries = await joinedFaceAuth({ ...ports, atomKey: () => "different" });
     expect(entries).toEqual([]);
     expect(logs.join(" ")).toContain("h1");
+  });
+});
+
+describe("a face the lend serves after the composition stood", () => {
+  test("RED: every served face neither mounted nor lit stands unlit, in ordinal order, so the composition lights it before a session on it reads; CONTROL: the mount and the lit faces need nothing, and no mount lights nothing", () => {
+    expect(unlitServedFaces([2, 0, 1], 0, new Set([2]))).toEqual([1]);
+    expect(unlitServedFaces([0, 2], 0, new Set([2]))).toEqual([]);
+    expect(unlitServedFaces([0, 1, 2], null, new Set())).toEqual([]);
   });
 });
