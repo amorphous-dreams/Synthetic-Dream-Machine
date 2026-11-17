@@ -1,10 +1,11 @@
 /**
  * chore-face — NO SILENT STEWARD (keeper-and-hands#/the-direction). The daemon island mounts one face, the daemon mount, so
  * every chore it runs (a meme write, a projection, a promote, a sweep, a reconcile, a kahua stage: anything it writes or signs)
- * spends the mount's authority, whichever lent face asked. Until a face island stands per lent face, each chore door builds a
+ * spends the mount's authority, whichever lent face asked. This process carries the mount alone, so each chore door builds a
  * `ChoreAsk` and reads `actingFaceOf` (`@lararium/mesh/chore-ask`) with the mount as the one face carried: asked under the
  * mount the chore runs and its answer carries the `ChoreReceiptMark` naming that face (`chore`); asked under another lent face
- * it refuses `chore-face-not-mounted`, naming both, and never runs as the mount.
+ * it refuses `chore-face-not-mounted`, naming both, and never runs as the mount. A face island per lent face rides the road
+ * as `C13` in the ONE FACE band (rank 34).
  *
  * THE GATE DENIES BY DEFAULT. Every verb reads as a chore except the ones `CHORE_FREE_VERBS` names with their reasons: the
  * reads, which keep their path, and the rows of the place, which act as the place and never as a face. A new verb stands a
@@ -48,8 +49,9 @@ export type ChoreAtDoor = { readonly ok: true; readonly mark: ChoreReceiptMark }
  * The verdict a door reads for one verb, or null where no chore gate stands: a verb free of the gate, or a vessel that
  * mounts no face (the floor, or a door handed no mount reader). The ask designates `face` (a session's face, the face a
  * one-shot names, or with none named the mount, as `face.resolve` answers a seat); `actingFaceOf` judges it against the lend
- * and the one face this process carries before the islands split, the daemon mount. Where no lent set reads, the lend
- * narrows nothing and the carry alone judges.
+ * and the one face this process carries, the daemon mount. Where custody names no set (`lent` null or empty: it rests shut,
+ * or the door holds no reader), the lend reads as the mount and the asked face, so it narrows nothing and the carry alone
+ * judges.
  */
 export function choreAtDoor(input: {
   readonly verb: string; readonly face: number; readonly mount: number | null; readonly lent: readonly number[] | null;
