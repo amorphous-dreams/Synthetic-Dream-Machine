@@ -99,10 +99,10 @@ export interface CarryVesselFace {
   /** The store door's name for that refusal (`storeFailure`): `vessel-locked`, `daemon-unreachable`, … */
   readonly kahuaRefusalCode?: string;
   /**
-   * Whether the standing composition WEARS this face (lit and proved): the daemon's working layer holds this face's document
-   * alone. Absent where the door answered no such reading (a direct holder).
+   * Whether this face stands as the composition's daemon mount (lit and proved): the daemon's working layer holds the mount's
+   * document alone. Absent where the door answered no such reading (a direct holder).
    */
-  readonly worn?: boolean;
+  readonly mounted?: boolean;
 }
 
 /**
@@ -112,9 +112,9 @@ export interface CarryVesselFace {
  * where no door answered the reading (a direct holder), the one face carrying a relation, else none.
  */
 export function litFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | null {
-  const worn = faces.filter((f) => f.worn === true && f.relation !== null);
-  if (worn.length === 1) return worn[0]!;
-  if (faces.some((f) => f.worn !== undefined)) return null;
+  const mounted = faces.filter((f) => f.mounted === true && f.relation !== null);
+  if (mounted.length === 1) return mounted[0]!;
+  if (faces.some((f) => f.mounted !== undefined)) return null;
   const related = faces.filter((f) => f.relation !== null);
   return related.length === 1 ? related[0]! : null;
 }
@@ -237,11 +237,11 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
   const out: CarryVesselFace[] = [];
   for (const { handleIndex } of (await readPersonaRoots()).roots) {
     const declaration = await declarations.get(handleIndex);
-    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, worn: boolean | undefined;
+    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, mounted: boolean | undefined;
     try {
       const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
       relation = typeof output["relation"] === "string" ? output["relation"] : null;
-      if (typeof output["worn"] === "boolean") worn = output["worn"];
+      if (typeof output["mounted"] === "boolean") mounted = output["mounted"];
       const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
       kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as CarryKahuaHead[] : []))
         .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
@@ -251,7 +251,7 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
       handle: declaration?.handle ?? null, seat: declaration?.seat === true,
       chair: declaration?.seat === true ? declaration.chair?.trim() || defaultChairLabel(handleIndex) : null,
       kahua, ...(kahuaRefusal !== undefined ? { kahuaRefusal } : {}), ...(kahuaRefusalCode !== undefined ? { kahuaRefusalCode } : {}),
-      ...(worn !== undefined ? { worn } : {}),
+      ...(mounted !== undefined ? { mounted } : {}),
     });
   }
   // THE FACE LABELS: each named face's relation and pet-name rest in plaintext outside the hearth, so a seed after a
@@ -1059,7 +1059,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     for (const h of heads) byTitle.set(h.title, [...(byTitle.get(h.title) ?? []), h]);
     // A LIFT RIDES THE DAEMON MOUNT (`chore-face-not-mounted`): where the vessel names the face it mounts, a head of any other
     // open face waits by name, and no lift reaches the vessel for it.
-    const liftsHere = !faces.some((f) => f.worn !== undefined) || face.relation === litRelation;
+    const liftsHere = !faces.some((f) => f.mounted !== undefined) || face.relation === litRelation;
     let waitingHeads = 0;
     for (const [title, bundleHeads] of byTitle) {
       const bundleDigests = new Set(bundleHeads.map((h) => sha256Hex(h.text)));

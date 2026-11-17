@@ -86,7 +86,8 @@ const readUnderMount = (face: number, mount: number) =>
     return ownedStore(storage, async (repo) => {
       const catalogUrl = readFileSync(join(storage, "catalog-url"), "utf8").trim();
       const reactors = storeDoorReactors({ storageDir: storage, sealHome: larSealHome(), repo, catalogUrl, wornFace: () => mount });
-      return reactors["kahua-read"]({ face }, {} as never) as Promise<Record<string, unknown>>;
+      // The CLI's `--face N` rides a session wearing face N: the face row reads as that face.
+      return reactors["kahua-read"]({ face }, { worn: { ordinal: face } } as never) as Promise<Record<string, unknown>>;
     });
   });
 const src = [{ title: "daemon/note", revision: "r1" }];

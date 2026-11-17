@@ -445,7 +445,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   // A LIFT RIDES THE DAEMON MOUNT: a face's local canon rests sealed under its own key and its hand signs under its own
   // grant, so the vessel lifts for the face it mounts alone (`chore-face-not-mounted`). An item of another open face waits by name at the
   // shore; the count a hand confirms names what this wear lifts. Where no door reads which face stands worn, every item lifts.
-  const wornIndex = faces.some((f) => f.worn !== undefined) ? (litFaceOf(faces)?.handleIndex ?? null) : undefined;
+  const wornIndex = faces.some((f) => f.mounted !== undefined) ? (litFaceOf(faces)?.handleIndex ?? null) : undefined;
   const liftsHere = (p: KahuaPreviewItem): boolean => wornIndex === undefined || p.handleIndex === wornIndex;
   const kahuaLiftable = kahuaPreview.filter(liftsHere);
   const kahuaElsewhere = kahuaPreview.filter((p) => !liftsHere(p));

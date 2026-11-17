@@ -285,21 +285,21 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
   const personas = read(lares, ["persona", "list", "--json"]).personas ?? [];
   const faces = [];
   const relations = {}, kahuaCids = {};
-  let worn = null;
+  let mounted = null;
   for (const p of personas) {
     const r = lares(["kahua", "list", "--face", String(p.handleIndex)]);
     let answer = null;
     try { answer = JSON.parse(r.stdout.trim().split("\n").pop() ?? ""); } catch { /* the face stands shut */ }
-    const face = { petname: p.petname, handleIndex: p.handleIndex, worn: answer?.worn === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
+    const face = { petname: p.petname, handleIndex: p.handleIndex, mounted: answer?.mounted === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
     faces.push(face);
     if (face.relation && face.petname) relations[face.petname] = face.relation;
-    if (face.worn) worn = { face, items: Array.isArray(answer.items) ? answer.items : [] };
+    if (face.mounted) mounted = { face, items: Array.isArray(answer.items) ? answer.items : [] };
   }
   const relationToPetname = Object.fromEntries(Object.entries(relations).map(([pet, rel]) => [rel, pet]));
   const reading = { schema: CENSUS_SCHEMA, label, faces, face: {}, house: {}, allowed: { relations, kahuaCids } };
   const wikis = read(lares, ["wiki", "list", "--json"]).wikis ?? [];
-  if (worn) {
-    const pet = worn.face.petname ?? `h${worn.face.handleIndex}`;
+  if (mounted) {
+    const pet = mounted.face.petname ?? `h${mounted.face.handleIndex}`;
     const classes = { memes: {}, unread: {}, index: {}, plain: {}, kahua: {}, kapae: {} };
     const unreadDetail = {};
     const slugs = wikis.map((w) => String(w.slug)).filter((s) => s !== "daemon").sort();
@@ -336,7 +336,7 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
     for (const row of readFilter(lares, ["wiki", "filter", "[tag[stage/index]sort[]]", "--recipe", "default", "--all", "--fields", "description", "--json"]).rows ?? []) {
       classes.index[row.title] = String(row.fields?.description ?? "");
     }
-    for (const item of worn.items) {
+    for (const item of mounted.items) {
       for (const head of Array.isArray(item.heads) ? item.heads : []) {
         classes.kahua[head.title] = `sha256:${sha256(String(head.text ?? ""))}`;
         kahuaCids[head.title] = head.cid;
