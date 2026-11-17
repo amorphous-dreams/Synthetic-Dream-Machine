@@ -90,6 +90,25 @@ describe("RED unlock-under-pulama-asks-nothing (the command)", () => {
     }
   });
 
+  it("unlock-names-the-refused-composition: the unlock frame reads no answer and a second probe names `composition-refused`; the answer names it and the vessel's log, not an unreachable vessel", async () => {
+    let probes = 0;
+    door = (frame) => frame["op"] === "custody"
+      ? custody(++probes === 1 ? { session: false, waits: "pulama-image-unadmitted" } : { session: false, waits: "composition-refused" })
+      : null;
+    expect(await run("unlock")).toBe(1);
+    expect(prompts).toBe(0);
+    expect(frames).toEqual([{ op: "custody" }, { op: "unlock" }, { op: "custody" }]);
+    const a = answer();
+    expect(a.error?.code).toBe("pulama-waits");
+    expect(a.error?.message).toContain("composition-refused");
+    expect(a.error?.message).toMatch(/the sovereign composition refused/);
+    // CONTROL: a probe that reads nothing either still names the vessel unreachable.
+    frames.length = 0; out.length = 0;
+    door = (frame) => (frame["op"] === "custody" && frames.length === 1 ? custody({ session: false, waits: "pulama-locked" }) : null);
+    expect(await run("unlock")).toBe(1);
+    expect(answer().error?.code).toBe("daemon-unreachable");
+  });
+
   it("a pūlama that serves the vessel answers standing, with no route asked", async () => {
     door = (frame) => frame["op"] === "custody" ? custody({ session: false, waits: "pulama-locked" })
       : { op: "unlock", reading: "opens", held: true, standing: "hearth", pulama: { session: true, waits: null } };
