@@ -391,6 +391,45 @@ test("carry-seed-keys-every-stage-row: each stage meme carries `row-key` equal t
   assert.deepEqual(plan.expectedFresher, { bag: "lares", titles: [CANON.moved.uri], quiet: [CANON.still.uri] }, "the copy over moved canon is the one fresher warning the new house owes; the still one stays quiet");
 });
 
+test("carry-seed-shares-stand-apart: no slug takes a share of two kinds, the shared bag stands minted and unshared as a wiki, and each share names faces by pet-name", () => {
+  const { seedPlan, PETNAMES } = present(carrySeed);
+  const plan = seedPlan({ count: 40, canon: CANON });
+  const shares = plan.edges.filter((e) => e.kind === "wiki-share" || e.kind === "bag-share").map((e) => ({ kind: e.kind === "wiki-share" ? "wiki" : "bag", slug: e.slug ?? e.bag, names: [...e.read, ...(e.write ?? [])] }));
+  const slugs = shares.map((s) => s.slug);
+  assert.equal(new Set(slugs).size, slugs.length, `one share row per slug (the share config keys by slug alone): ${slugs.join(", ")}`);
+  for (const b of shares.filter((s) => s.kind === "bag")) {
+    assert.ok(plan.edges.some((e) => e.kind === "wiki-init" && e.slug === b.slug), `the shared bag ${b.slug} stands minted (wiki init) before its share`);
+    assert.ok(Object.values(plan.faces).flat().some((r) => r.recipe === b.slug), `the shared bag ${b.slug} holds a page, so its readers have something to read`);
+  }
+  for (const s of shares) for (const n of s.names) assert.ok(PETNAMES.includes(n), `${s.kind} ${s.slug} names ${n}, a pet-name`);
+});
+
+test("carry-shares-read-back: the share doors take one pet-name per word, and the seed's rows read back by kind from `bag share --list`, a collided or waiting row faulting", () => {
+  const { shareArgs, judgeShares } = present(carryLeg);
+  const wiki = { kind: "wiki-share", slug: "cold-shelf", write: [], read: ["joshua-fontany-referee"] };
+  const bag = { kind: "bag-share", bag: "lending-shelf", read: ["joshua-fontany-engineer", "joshua-fontany-referee"] };
+  const notes = { kind: "wiki-share", slug: "notes", write: ["joshua-fontany-engineer"], read: ["joshua-fontany-referee"] };
+  assert.deepEqual(shareArgs(bag), ["bag", "share", "lending-shelf", "--read", "joshua-fontany-engineer joshua-fontany-referee", "--no-json"]);
+  assert.deepEqual(shareArgs(notes), ["wiki", "share", "notes", "--write", "joshua-fontany-engineer", "--read", "joshua-fontany-referee", "--no-json"]);
+  const edges = [wiki, bag, notes];
+  const good = [
+    "bag lending-shelf: read joshua-fontany-engineer (h1), joshua-fontany-referee (h2) · write (none named)",
+    "wiki cold-shelf: read joshua-fontany-referee (h2) · write (none named)",
+    "wiki notes: read joshua-fontany-engineer (h1), joshua-fontany-referee (h2) · write joshua-fontany-engineer (h1)",
+  ].join("\n");
+  assert.deepEqual(judgeShares({ code: 0, text: good }, edges), { ok: true, faults: [] });
+  // The collision walk 9b met: the bag row replaced the wiki row of one slug.
+  const collided = judgeShares({ code: 0, text: "bag cold-shelf: read (none named) · write (none named)\n  waits: \"joshua-fontany-engineer,joshua-fontany-referee\" names no face here; it lands when a face carries that pet-name" }, [wiki]);
+  assert.equal(collided.ok, false);
+  assert.match(collided.faults.join("; "), /wiki cold-shelf reads as bag cold-shelf/);
+  // A reader the row never resolved (a comma-joined name, a name no face carries) faults by name.
+  const waiting = judgeShares({ code: 0, text: "bag lending-shelf: read (none named) · write (none named)\n  waits: \"joshua-fontany-engineer,joshua-fontany-referee\" names no face here; it lands when a face carries that pet-name" }, [bag]);
+  assert.match(waiting.faults.join("; "), /bag lending-shelf never resolves joshua-fontany-engineer/);
+  assert.match(waiting.faults.join("; "), /bag lending-shelf waits on "joshua-fontany-engineer,joshua-fontany-referee"/);
+  assert.match(judgeShares({ code: 0, text: good }, [{ kind: "bag-share", bag: "absent", read: ["x"] }]).faults.join("; "), /bag absent stands in no row/);
+  assert.match(judgeShares({ code: 2, text: "boom" }, edges).faults.join("; "), /exited 2/);
+});
+
 test("carry-seed-sweep: the sweep strips the one `row-key` line and leaves every other byte", () => {
   const { stageMemeText, sweepRowKey, rowKeyOf } = present(carrySeed);
   const text = stageMemeText("project/house-laws", "the laws", { tags: ["stage/semantic", "stage/index"], description: "house laws" });
