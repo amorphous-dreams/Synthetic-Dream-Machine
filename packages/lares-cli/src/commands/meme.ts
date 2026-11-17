@@ -310,7 +310,8 @@ async function memeGet(args: ParsedArgs): Promise<number> {
     requestId: result.requestId,
     // `floor`: the bag's floor snapshot answered (this face holds no read on the live house canon document).
     data: { uri: plan.args["uri"], text: meme.text, canonicalHash: meme.canonicalHash, ...(fromFloor ? { floor: true } : {}) },
-    // The text alone reaches stdout, so `lares meme get <uri> --recipe <slug> > file` carries the meme; the base rides stderr.
+    // The text alone reaches stdout on a terminal, or under `--no-json`: a redirect leaves stdout no terminal, where the answer
+    // is JSON, so `lares meme get <uri> --recipe <slug> --no-json > file` carries the meme. The base rides stderr.
     human: () => { stdout.write(meme.text); console.error(`base: ${meme.canonicalHash}`); if (fromFloor) console.error(FLOOR_READ_NOTE); },
   });
   return 0;
