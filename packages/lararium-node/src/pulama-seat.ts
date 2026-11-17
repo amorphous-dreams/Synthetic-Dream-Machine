@@ -19,6 +19,9 @@
  * names a pūlama in its `custody` reading, so the command asks nobody anything and answers what the pūlama waits on.
  *
  * When the session drops (the pūlama locked, its process ended, the socket went), the vessel composes at the floor.
+ *
+ * The stand-by keeps why its last dial stood no session (`waits()`): a composition the vessel refused over a session reads
+ * `composition-refused` there, and the custody door names that reading before the pūlama's last hello reading.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { readFileSync } from "node:fs";
@@ -61,8 +64,10 @@ export function pulamaStandBy(a: {
   readonly onLog: (line: string) => void;
   /** Remove the offer this vessel just spent; answers whether a file went. Absent, the offer stays where it rests. */
   readonly consumeOffer?: () => boolean;
-}): { dial(): Promise<PulamaStandingBy> } {
+}): { dial(): Promise<PulamaStandingBy>; waits(): string | null } {
   let leaving = false;
+  /** Why the last dial stood no session (`composition-refused` among the pūlama's own readings); null while a session stands. */
+  let lastWaits: string | null = null;
   a.holder.onClosed(() => {
     if (leaving) return;
     a.onLog("the pūlama session dropped; composing at the floor");
@@ -70,7 +75,7 @@ export function pulamaStandBy(a: {
   });
   // ONE DIAL AT A TIME: a second caller waits on the dial in flight, so nobody reads a session the composition has yet to stand on.
   let inflight: Promise<PulamaStandingBy> | null = null;
-  const dial = (): Promise<PulamaStandingBy> => inflight ??= dialOnce().finally(() => { inflight = null; });
+  const dial = (): Promise<PulamaStandingBy> => inflight ??= dialOnce().then((by) => { lastWaits = by.waits; return by; }).finally(() => { inflight = null; });
   const dialOnce = async (): Promise<PulamaStandingBy> => {
   if (a.holder.isUnlocked()) return { session: true, waits: null };
   try {
@@ -107,7 +112,7 @@ export function pulamaStandBy(a: {
   a.onLog(`standing by the pūlama${wears !== null ? `; face h${wears} worn` : ""} (${stood.standing})${landed}`);
   return { session: true, waits: null };
   };
-  return { dial };
+  return { dial, waits: () => (a.holder.isUnlocked() ? null : lastWaits) };
 }
 
 /** Seat the stand-by and dial once; answers whether a session stood. */

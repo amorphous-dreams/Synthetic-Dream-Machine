@@ -476,7 +476,7 @@ async function main(): Promise<void> {
   });
   custodyDoor = custodyFrameHandler({
     holder, recompose, testScratch,
-    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.waits() }), dial: () => standBy.dial() } } : {}),
+    ...(pulama !== null && standBy !== null ? { pulama: { standing: () => ({ session: pulama.isUnlocked(), waits: pulama.isUnlocked() ? null : (standBy.waits() ?? pulama.waits()) }), dial: () => standBy.dial() } } : {}),
     lightFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.lightFace(ordinal); },
     dropFace: async (ordinal) => { if (!composition) throw new Error("composition unavailable"); await composition.dropFace(ordinal); },
     // A SEALED ROW'S ACT RUNS HERE, on the main thread, against the one seated holder: the act table decides
