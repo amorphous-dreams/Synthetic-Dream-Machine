@@ -15,6 +15,9 @@
  *   W4  an untouched copy (its text still equals its base) shadows too: it stands, and the warning names it
  *   W5  the fresher-canon read lists each copy whose canon moved past its base; it writes nothing
  *   W6  CONTROL: an INGEST that moves nothing under a copy raises no warning
+ *   W7  the read's second class (`class: "base-unknown"`): each working copy that names no base and whose bytes differ from
+ *       the canon record standing below it, for review (it may hide fresher canon); a copy equal to canon, a copy that names
+ *       a base, and a working-only title stay out of it; it writes nothing
  */
 import { describe, test, expect } from "vitest";
 import { AutomergeDocStore, CompositeStore, emptyLarDoc, overrideBaseOf, carrierHashOf, type CapabilityAccess, type CapabilityVerifyResult, type Verb, type VerbContext } from "@lararium/mesh";
@@ -150,5 +153,33 @@ describe("a seed's INGEST warns of fresher canon under a working copy, and write
     expect(out["fresherCanon"]).toBeUndefined();
     expect((await r.working.get(URI))?.tiddler["text"]).toBe("a hand's words");
     expect((await r.ask())["count"]).toBe(0);
+  });
+
+  test("W7 — the base-unknown class names each copy with no base whose bytes differ from canon, and nothing else", async () => {
+    const r = await rig();
+    await r.seed(carrier("the first words"));
+    const titles = await r.canonTitles();
+    const [differs, equal, based] = [titles[0]!, `${URI}-equal`, `${URI}-based`];
+    // Copies written straight into the working layer's own store (as an old house's meme door did): no base.
+    const c0 = (await r.canon.get(differs))!.tiddler;
+    await r.working.put({ tiddler: { ...c0, text: `${String(c0["text"] ?? "")} and a hand's line` }, meta: {} }, hand);
+    await r.canon.put({ tiddler: { title: equal, text: "canon and copy agree" }, meta: {} }, hand);
+    await r.working.put({ tiddler: { title: equal, text: "canon and copy agree" }, meta: {} }, hand);
+    // A copy that names its base, and a working-only title.
+    await r.canon.put({ tiddler: { title: based, text: "canon words" }, meta: {} }, hand);
+    await r.composite.put({ tiddler: { title: based, text: "a based copy" } }, hand);
+    await r.working.put({ tiddler: { title: "lar:///t.seed.weighs/working-only", text: "only a hand" }, meta: {} }, hand);
+    const before = await snapshot(r, [differs, based]);
+    const read = await r.ask({ class: "base-unknown" });
+    expect(read["ok"]).toBe(true);
+    expect(read["class"]).toBe("base-unknown");
+    const rows = read["unknown"] as Array<{ title: string; base: string | null; canonHash: string | null; copyHash: string }>;
+    expect(rows.map((x) => x.title), "the copy that differs from canon with no base reads for review; nothing else does").toEqual([differs]);
+    expect(rows[0]!.base).toBeNull();
+    expect(rows[0]!.canonHash).toBe(carrierHashOf((await r.canon.get(differs))!.tiddler));
+    expect(rows[0]!.copyHash).toBe(carrierHashOf((await r.working.get(differs))!.tiddler));
+    expect(read["count"]).toBe(1);
+    expect((await r.ask())["count"], "the fresher class still names none: no copy's canon moved past a base").toBe(0);
+    expect(await snapshot(r, [differs, based])).toEqual(before);
   });
 });
