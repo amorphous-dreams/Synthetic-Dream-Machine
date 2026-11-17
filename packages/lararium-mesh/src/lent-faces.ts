@@ -96,10 +96,10 @@ export function wearInside(set: LentFaces, named: number | null, worn: number | 
   if (named !== null) {
     const face = set.find(f => f.ordinal === named);
     return face !== undefined ? { ok: true, face }
-      : { ok: false, refusal: "face-not-lent", message: `face-not-lent: this call names h${named}, and the pūlama lends this vessel ${lentNames} alone` };
+      : { ok: false, refusal: "face-not-lent", message: `face-not-lent: this call names h${named}, and this vessel serves ${lentNames} alone` };
   }
   const wornFace = worn === null ? undefined : set.find(f => f.ordinal === worn);
   if (wornFace !== undefined) return { ok: true, face: wornFace };
   if (set.length === 1) return { ok: true, face: set[0]! };
-  return { ok: false, refusal: "face-not-named", message: `face-not-named: the pūlama lends this vessel ${lentNames}; name the face this session wears (\`--face N\`)` };
+  return { ok: false, refusal: "face-not-named", message: `face-not-named: this vessel serves ${lentNames}; name the face this session wears (\`--face N\`)` };
 }
