@@ -399,7 +399,7 @@ test("carry-seed-shares-stand-apart: no slug takes a share of two kinds, the sha
   assert.equal(new Set(slugs).size, slugs.length, `one share row per slug (the share config keys by slug alone): ${slugs.join(", ")}`);
   for (const b of shares.filter((s) => s.kind === "bag")) {
     assert.ok(plan.edges.some((e) => e.kind === "wiki-init" && e.slug === b.slug), `the shared bag ${b.slug} stands minted (wiki init) before its share`);
-    assert.ok(Object.values(plan.faces).flat().some((r) => r.recipe === b.slug), `the shared bag ${b.slug} holds a page, so its readers have something to read`);
+    assert.ok(Object.values(plan.faces).flat().some((r) => r.recipe === b.slug), `the shared bag ${b.slug} holds a page, so the carry moves a bag-shared wiki's working layer (its readers hold the bag alone, never that layer)`);
   }
   for (const s of shares) for (const n of s.names) assert.ok(PETNAMES.includes(n), `${s.kind} ${s.slug} names ${n}, a pet-name`);
 });
@@ -591,6 +591,25 @@ test("carry-fresher-step-reads-at-the-steward: the step wears face 0 and reads `
   const skipped = await step.run(none.c);
   assert.equal(skipped.ok, true);
   assert.equal(none.calls.length, 0, "a plan that names no fresher expectation reads nothing");
+});
+
+test("carry-teardown-holds-a-kept-base: under --keep the teardown step takes the containers down and leaves the base standing; without it the base clears", async () => {
+  const { CARRY_STEPS } = present(carryLeg);
+  const step = CARRY_STEPS.find((s) => s.id === "teardown");
+  const run = async (keep) => {
+    const asked = [];
+    const c = { scope: { newSrc: "/nonexistent-new-src", image: "img" }, vars: { keep }, hands: () => ({ teardown: async (o = {}) => { asked.push(o); return { downCode: 0, containers: "", baseStands: o.keepBase === true, log: [] }; } }) };
+    return { r: await step.run(c), asked, vars: c.vars };
+  };
+  const kept = await run(true);
+  assert.deepEqual(kept.asked, [{ keepBase: true }]);
+  assert.equal(kept.r.ok, true, kept.r.answer);
+  assert.match(kept.r.answer, /the base stands \(kept\)/);
+  assert.equal(kept.vars.baseKept, true);
+  const cleared = await run(false);
+  assert.deepEqual(cleared.asked, [{ keepBase: false }]);
+  assert.equal(cleared.r.ok, true, cleared.r.answer);
+  assert.notEqual(cleared.vars.baseKept, true);
 });
 
 test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
