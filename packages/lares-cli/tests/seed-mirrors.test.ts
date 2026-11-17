@@ -114,7 +114,7 @@ class FakeHouse {
     const base = given ?? prior?.base ?? (canon !== null && this.live(canon, title) ? carrierOf(this.live(canon, title)!.text) : undefined);
     this.layer(bag).set(title, { text, ...(base !== undefined ? { base } : {}) });
   }
-  facesNow(): CarryVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])], worn: f.relation !== null && f.relation === this.worn })); }
+  facesNow(): CarryVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])], mounted: f.relation !== null && f.relation === this.worn })); }
   /** Open faces this island resolves no layer for (the live node before the sibling resolver lands). */
   unresolved = new Set<number>();
   /** Each wave's face, as the seed named it (undefined: the worn face's own wave). */

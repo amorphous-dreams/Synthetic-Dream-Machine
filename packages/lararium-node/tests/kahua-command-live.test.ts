@@ -79,6 +79,16 @@ const standing = (verb: Parameters<typeof storeDoorDirect>[0], args: Record<stri
       return reactors[verb](args, { worn: { ordinal: 0 } } as never) as Promise<Record<string, unknown>>;
     });
   });
+/** A face's stage read on a standing vessel whose daemon mount stands at `mount`: the store door names the mount honestly. */
+const readUnderMount = (face: number, mount: number) =>
+  withLarRoot(ROOT, async () => {
+    await openTestCustody();
+    return ownedStore(storage, async (repo) => {
+      const catalogUrl = readFileSync(join(storage, "catalog-url"), "utf8").trim();
+      const reactors = storeDoorReactors({ storageDir: storage, sealHome: larSealHome(), repo, catalogUrl, wornFace: () => mount });
+      return reactors["kahua-read"]({ face }, {} as never) as Promise<Record<string, unknown>>;
+    });
+  });
 const src = [{ title: "daemon/note", revision: "r1" }];
 const STAGED = [{ title: "note", text: "x" }, { title: "seat", text: "x" }];
 const X = kahuaMemeDigest({ text: "x", fields: {} });
@@ -93,6 +103,16 @@ describe("lares kahua over a founded face", () => {
       return tiddlerText(catalog.tiddlers[KAHUA_BAG]);
     });
     expect(registered).toBe(first.url);
+  }, 240_000);
+
+  test("RED: a face's stage read under `--face N` reads that face's own stage and names the daemon mount as `mount`, with `mounted` true only for the mount's own face; it never says the vessel wears a face", async () => {
+    const own = await readUnderMount(0, 0);
+    expect(own).toMatchObject({ mount: 0, mounted: true });
+    expect(own).not.toHaveProperty("worn");
+    const other = await readUnderMount(0, 1);
+    expect(other).toMatchObject({ mount: 1, mounted: false });
+    expect(Array.isArray(other["items"])).toBe(true);
+    expect(other).not.toHaveProperty("worn");
   }, 240_000);
 
   test("RED: a direct lift opens no local canon and refuses unstaged; a standing vessel's lift of an unstaged row refuses; a face holding no cap refuses; CONTROL: held, the root lifts a staged row, lists and withdraws", async () => {

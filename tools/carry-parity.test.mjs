@@ -36,7 +36,7 @@ const tool = join(repo, "tools/carry-parity.mjs");
 const reading = (over = {}) => ({
   schema: "lar-carry-census/1",
   label: "fixture",
-  faces: [{ petname: "steward", handleIndex: 0, worn: true, relation: "11111111-1111-4111-8111-111111111111" }],
+  faces: [{ petname: "steward", handleIndex: 0, mounted: true, relation: "11111111-1111-4111-8111-111111111111" }],
   face: {
     steward: {
       memes: { "default lar:///ha.ka.ba/kahua/memory/state/heron": "sha256:aa", "default lar:///ha.ka.ba/kahua/memory/reference/pond": "sha256:bb" },
