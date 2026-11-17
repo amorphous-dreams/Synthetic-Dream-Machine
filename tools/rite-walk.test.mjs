@@ -553,14 +553,47 @@ test("carry-fresher-plan-reads-the-bundle: a working row that carries its overri
   const want = { bag: "lares", titles: [moved], quiet: [still] };
   const rowOf = (uri, base) => ({ path: `wikis/lares/working/${uri.slice("lar:///".length)}.mem`, layer: "wiki-working", ...(base ? { overrideBase: base } : {}) });
   const based = fresherPlanFor(want, { rows: [rowOf(moved, `sha256:${"a".repeat(64)}`), rowOf(still, `sha256:${"b".repeat(64)}`)] });
-  assert.deepEqual(based, { bag: "lares", titles: [moved], unknown: [], quiet: [still], faults: [] }, "a house that stamped bases: moved warns, still stays quiet");
+  assert.deepEqual(based, { bag: "lares", titles: [moved], unknown: [], quiet: [still], bare: [moved, still], faults: [] }, "a house that stamped bases: moved warns, still stays quiet");
   // A bundle whose working rows carry no base: each copy carries the rehearsal's paragraph, so each differs from the
   // canon standing below it and the new house names both for review; neither reads quiet.
   const bare = fresherPlanFor(want, { rows: [rowOf(moved), rowOf(still)] });
-  assert.deepEqual(bare, { bag: "lares", titles: [], unknown: [moved, still], quiet: [], faults: [] });
+  assert.deepEqual(bare, { bag: "lares", titles: [], unknown: [moved, still], quiet: [], bare: [], faults: [] });
   const missing = fresherPlanFor(want, { rows: [rowOf(still)] });
   assert.match(missing.faults.join("; "), /carries no working row for .*moved-canon/);
   assert.equal(fresherPlanFor(null, { rows: [] }), null);
+});
+
+test("carry-fresher-reads-the-family: a carrier lands a family, so the warning answers by any record of it; a fragment whose base never travelled answers by the review class", () => {
+  const { judgeFresher, fresherPlanFor } = present(carryLeg);
+  const moved = CANON.moved.uri, still = CANON.still.uri;
+  const read = (lines) => ({ code: 0, text: lines.join("\n") });
+  const none = "fresher: no working copy over lar:///ha.ka.ba/bags/lares shadows a fresher canon record";
+  const head = "fresher: 1 working copy over lar:///ha.ka.ba/bags/lares shadow a fresher canon record (base -> canon now):";
+  const unknownHead = "fresher: 1 working copy over lar:///ha.ka.ba/bags/lares names no base and differs from canon (base unknown; review each, it may hide fresher canon):";
+  const want = { bag: "lares", titles: [moved], quiet: [still] };
+  const B = (c) => `sha256:${c.repeat(64)}`;
+  const rowOf = (uri, extra = {}) => ({ path: `wikis/lares/working/${uri.slice("lar:///".length)}.mem`, layer: "wiki-working", title: uri, ...extra });
+  // WALK 21: a source house that stamped the root's base alone (074ed7120). Canon moved fragments under a root that held
+  // still: the root reads quiet, and each moved fragment, whose base never travelled, reads for review.
+  const rootOnly = fresherPlanFor(want, { rows: [rowOf(moved, { overrideBase: B("a") }), rowOf(still, { overrideBase: B("b") })] });
+  assert.deepEqual(rootOnly.bare, [moved, still], "a row that carries no fragment's base leaves its fragments bare");
+  const walk21 = judgeFresher(read([none, unknownHead, `  ${moved}#/the-order  base unknown -> sha256:cccc…`, `  ${still}#/edges  base unknown -> sha256:dddd…`]), rootOnly);
+  assert.equal(walk21.ok, true, walk21.faults.join("; "));
+  // A family that travelled whole owes the warning itself: a fragment reads fresher, a doubt line no longer answers.
+  const whole = fresherPlanFor(want, { rows: [rowOf(moved, { overrideBase: B("a"), familyBases: { [`${moved}#/the-order`]: B("c") } }), rowOf(still, { overrideBase: B("b"), familyBases: { [`${still}#/edges`]: B("d") } })] });
+  assert.deepEqual(whole.bare, []);
+  const fragmentWarns = judgeFresher(read([head, `  ${moved}#/the-order  sha256:cccc… -> sha256:eeee…`]), whole);
+  assert.equal(fragmentWarns.ok, true, fragmentWarns.faults.join("; "));
+  assert.match(judgeFresher(read([none, unknownHead, `  ${moved}#/the-order  base unknown -> c`]), whole).faults.join("; "), /expected fresher .*moved-canon.* never warned/);
+  assert.match(judgeFresher(read([none, unknownHead, `  ${still}#/edges  base unknown -> d`]), whole).faults.join("; "), /unexpected base-unknown .*still-canon#\/edges/, "a fragment that carried its base never reads for review");
+  // The still carrier stays quiet across its whole family; a title that merely shares a prefix stays outside it.
+  assert.match(judgeFresher(read([head, `  ${moved}#/the-order  a -> b`, `  ${still}#/edges  a -> c`]), whole).faults.join("; "), /unexpected fresher .*still-canon#\/edges/);
+  assert.match(judgeFresher(read([head, `  ${moved}-twin  a -> b`]), whole).faults.join("; "), /expected fresher .*moved-canon.* never warned/);
+  // A root that carried its base never reads for review, bare fragments or not.
+  assert.match(judgeFresher(read([none, unknownHead, `  ${moved}  base unknown -> c`]), rootOnly).faults.join("; "), /unexpected base-unknown .*moved-canon/);
+  // A row that carries no base at all owes the review class, answered by any record of the family.
+  const bare = fresherPlanFor(want, { rows: [rowOf(moved), rowOf(still)] });
+  assert.equal(judgeFresher(read([none, unknownHead, `  ${moved}#/the-order  base unknown -> c`, `  ${still}#/edges  base unknown -> d`]), bare).ok, true);
 });
 
 test("carry-fresher-step-reads-at-the-steward: the step wears face 0 and reads `vessel fresher --bag <plan bag>`; a plan with no expectation reads nothing", async () => {
