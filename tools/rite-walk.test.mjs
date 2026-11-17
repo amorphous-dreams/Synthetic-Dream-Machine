@@ -654,6 +654,12 @@ test("image-light-seats-a-served-vessel: the image leg's operator admits the ima
   assert.ok(IMAGE_STEPS.find((s) => s.id === "unlock-by-pulama").needs.includes("pulama-admit"));
 });
 
+test("pulama-admit-names-the-face: the admission names face 0, since a pūlama holding several faces open answers `face-not-named` to an admit that names none (pulama-hand.ts admit)", () => {
+  const { pulamaAdmitArgs } = present(imageLeg);
+  assert.deepEqual(pulamaAdmitArgs(), ["pulama", "admit", "0"]);
+  assert.deepEqual(pulamaAdmitArgs(2), ["pulama", "admit", "2"]);
+});
+
 test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
   const { CARRY_STEPS, CARRY_SAYS } = present(carryLeg);
   const ids = CARRY_STEPS.map((s) => s.id);
