@@ -138,7 +138,7 @@ describe("every lit face resolves its own slots", () => {
   });
 
   test("L5 — a sibling's daemon slot names itself as the sibling's; a sibling's canon posts no slot notice; CONTROL: the worn face's names itself unmarked", async () => {
-    const { repo, control, slots } = stand();
+    const { repo, control } = stand();
     const notices: Array<{ bagId: string; documentId: string; sibling?: true }> = [];
     const door = { post: (msg: unknown) => { notices.push(msg as never); } };
     const siblingNotices = slotAnnouncer(door, "sibling");
