@@ -211,6 +211,49 @@ export function shareArgs(e) {
  * names resolves (`<pet-name> (hN)`) on the read or write side it names, and no `waits:` line follows it. A row of the other
  * kind under the slug reads as the overwrite it is; a list that refused faults by its exit.
  */
+/**
+ * WEAR EACH LENT FACE: one face-scoped view per lent face through `--face N` (`kahua list --face N --json`, the face row a
+ * session wearing face N reads). Green only where every lent face answered, each under its own relation (no two alike: a read
+ * that fell back to the mount's view would repeat the mount's), exactly one face stands as the daemon mount (`mount` names the
+ * same face in every answer and `mounted` marks it alone), and no answer carries `worn`. `reads`: `{ face, code, answer }`.
+ */
+export function judgeWearEach(reads) {
+  if (reads.length === 0) return { ok: false, answer: "no lent face read: the lend named none, or none answered" };
+  const faults = [];
+  for (const r of reads) {
+    if (r.code !== 0 || r.answer === null || typeof r.answer !== "object") { faults.push(`h${r.face} answered nothing (exit ${r.code})`); continue; }
+    if (Object.hasOwn(r.answer, "worn")) faults.push(`h${r.face} answers \`worn\`, as if the vessel wore a face`);
+    if (typeof r.answer.relation !== "string" || r.answer.relation === "") faults.push(`h${r.face} names no relation of its own`);
+  }
+  const answered = reads.filter((r) => r.code === 0 && r.answer !== null && typeof r.answer === "object");
+  const byRelation = new Map();
+  for (const r of answered) if (typeof r.answer.relation === "string") byRelation.set(r.answer.relation, [...(byRelation.get(r.answer.relation) ?? []), r.face]);
+  for (const faces of byRelation.values()) if (faces.length > 1) faults.push(`${faces.map((f) => `h${f}`).join(" and ")} read one relation: a per-call read fell back to another face's view`);
+  const mounts = new Set(answered.map((r) => r.answer.mount));
+  const mounted = answered.filter((r) => r.answer.mounted === true).map((r) => r.face);
+  if (mounts.size !== 1) faults.push(`the answers name ${mounts.size} daemon mounts (${[...mounts].map(String).join(", ")})`);
+  else if (mounted.length !== 1 || mounted[0] !== [...mounts][0]) faults.push(`\`mounted\` marks ${mounted.map((f) => `h${f}`).join(", ") || "no face"}, and \`mount\` names h${String([...mounts][0])}`);
+  const faces = reads.map((r) => `h${r.face}`).join(", ");
+  return faults.length === 0
+    ? { ok: true, answer: `${faces} each answered its own view; mount h${String([...mounts][0])}` }
+    : { ok: false, answer: faults.join(" · ") };
+}
+
+/** Read one face-scoped view per lent face (`judgeWearEach`); a face outside the lend refuses `face-not-lent` and is named, never judged. */
+const wearEachLentFace = async (h) => {
+  const listed = lastJson((await h.shim(["persona", "list", "--json"])).stdout);
+  const ordinals = (listed?.personas ?? listed?.data?.personas ?? []).map((p) => p.handleIndex).filter((n) => Number.isSafeInteger(n));
+  const reads = [], outside = [];
+  for (const face of ordinals) {
+    const r = await h.shim(["kahua", "list", "--face", String(face), "--json"]);
+    const out = lastJson(r.stdout);
+    if (r.code !== 0 && /face-not-lent/.test(`${r.stdout}\n${r.stderr}`)) { outside.push(`h${face}`); continue; }
+    reads.push({ face, code: r.code, answer: out?.ok === false ? null : (out?.data ?? out ?? null) });
+  }
+  const judged = judgeWearEach(reads);
+  return { ...judged, answer: `${judged.answer}${outside.length > 0 ? ` · outside the lend: ${outside.join(", ")}` : ""}`, measures: { reads, outside } };
+};
+
 export function judgeShares(r, edges) {
   const text = String(r?.text ?? "");
   if (r?.code !== 0) return { ok: false, faults: [`the share list exited ${r?.code}: ${text.trim().slice(-200)}`] };
@@ -912,6 +955,7 @@ export const CARRY_STEPS = Object.freeze([
   { id: "up-by-pulama", command: "new-src/tools/lares-container.sh up", via: PTY, needs: ["pulama-light"], expect: "the carried vessel seats its holder over the pūlama's socket and names what the pūlama waits on", run: onPhase("new", upPulama) },
   { id: "pulama-admit", command: "new-src/tools/lares-container.sh pulama admit (the operator's hand: its route typed, here the published test route)", via: PTY, needs: ["up-by-pulama"], expect: "the pūlama admits the image the host reported at up", run: onPhase("new", pulamaAdmit) },
   { id: "unlock-by-pulama", command: "new-src/tools/lares-container.sh vault unlock --all --face 0", via: PTY, needs: ["pulama-admit"], expect: "the pūlama serves the carried vessel: it stands unlocked", run: onPhase("new", unlockUnderPulama) },
+  { id: "wear-each-lent-face", command: "new-src/tools/lares-container.sh kahua list --face N --json, once per lent face", needs: ["unlock-by-pulama"], expect: "each lent face answers its own view; the daemon mount names itself; nothing reads worn", run: onPhase("new", wearEachLentFace) },
   { id: "teardown", command: "docker compose down --remove-orphans · rm the base (kept under --keep)", expect: "no container of the project stands; the base is gone, or stands under --keep", run: teardown },
 ]);
 
