@@ -24,12 +24,16 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-sinks
  */
 
-import type { ChangeOrigin, CompositeStore, LarTiddlerRecord, LarTiddlerStore } from "@lararium/mesh";
+import { OVERRIDE_BASE_META, type ChangeOrigin, type CompositeStore, type LarTiddlerRecord, type LarTiddlerStore } from "@lararium/mesh";
 import type { TiddlerFields } from "./deserializer.js";
 import type { MemeSink } from "./place-meme.js";
 
-/** The `LarTiddlerStore` skin — one bag's own store; the put option names the residency. */
-export function storeMemeSink(store: LarTiddlerStore, bag: string, origin: ChangeOrigin): MemeSink {
+/**
+ * The `LarTiddlerStore` skin — one bag's own store; the put option names the residency. `baseOf`, handed for a put into a
+ * wiki's WORKING layer alone, names the override base each landed record carries on its `meta` envelope (`override-base.ts`),
+ * or null for none: the store skin reaches the layer around `CompositeStore.put`, so the fork stamp rides here.
+ */
+export function storeMemeSink(store: LarTiddlerStore, bag: string, origin: ChangeOrigin, baseOf?: (title: string) => Promise<string | null>): MemeSink {
   return {
     titles: () => store.listVisible(),
     read: async (title) => {
@@ -37,10 +41,12 @@ export function storeMemeSink(store: LarTiddlerStore, bag: string, origin: Chang
       if (!rec || rec.meta?.deleted) return undefined;
       return rec.tiddler as unknown as TiddlerFields;
     },
-    land: (fields) => {
+    land: async (fields) => {
+      const title = String(fields.title);
+      const base = baseOf ? await baseOf(title) : null;
       const record: LarTiddlerRecord = {
-        tiddler: { ...(fields as Record<string, unknown>), title: String(fields.title) },
-        meta: {},
+        tiddler: { ...(fields as Record<string, unknown>), title },
+        meta: base !== null ? { [OVERRIDE_BASE_META]: base } : {},
       };
       return store.put(record, origin, { bag });
     },

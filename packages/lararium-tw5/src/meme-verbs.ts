@@ -61,6 +61,7 @@
 import {
   AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
+  carrierHashOf, isWorkingLayerBag, overrideBaseOf,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
 } from "@lararium/mesh";
 import { componentsBeneath } from "@lararium/mesh/family";
@@ -241,6 +242,52 @@ async function storeOfBag(opts: MemeVerbOptions, slug: string, bag: string, mode
 }
 
 /**
+ * THE FORK REMEMBERS ITS BASE AT THE MEME DOOR, by the composite's own rule (`override-base.ts`,
+ * `CompositeStore._withOverrideBasesNow`). A put into a wiki's WORKING layer reaches the layer's own store and never
+ * `CompositeStore.put`, so the door names the base itself. A title the layer already holds live keeps the base it named (a
+ * store that replaces records whole would drop it). Any other title names the carrier identity of the first record the
+ * wiki's stack holds beneath the layer, live; a tombstone names none. Like the composite's fork, it asks no read cap: the
+ * base names a hash on the writer's own copy, and the fresher read that weighs it reads canon with none either. An
+ * instrument, never a gate: where a layer beneath stands unreached here (no mount, no reach, no floor), the walk stops and
+ * the copy lands unstamped, as the composite leaves a layer it cannot read now. The walk runs at landing, past the gates.
+ */
+function forkBaseOf(opts: MemeVerbOptions, slug: string, workingBag: string, working: LarTiddlerStore): (title: string) => Promise<string | null> {
+  let beneath: Promise<readonly string[]> | null = null;
+  const stackBeneath = (): Promise<readonly string[]> => (beneath ??= (async () => {
+    const rec = await opts.recipeOf?.(slug);
+    const stack: readonly string[] = rec ? expandRecipe(recipeFromRecord(rec, slug)) : [];
+    const at = stack.indexOf(workingBag);
+    return at < 0 ? [] : stack.slice(at + 1);
+  })());
+  const stores = new Map<string, Promise<LarTiddlerStore | null>>();
+  const storeOf = (bag: string): Promise<LarTiddlerStore | null> => {
+    let hit = stores.get(bag);
+    if (!hit) {
+      hit = storeOfBag(opts, slug, bag, "get").catch(() => null).then((s) => s ?? floorStoreOf(opts, bag));
+      stores.set(bag, hit);
+    }
+    return hit;
+  };
+  return async (title) => {
+    const held = await working.get(title);
+    if (held && held.meta?.deleted !== true) return overrideBaseOf(held);
+    for (const bag of await stackBeneath()) {
+      const store = await storeOf(bag);
+      if (!store) return null;
+      const lower = await store.get(title);
+      if (!lower) continue;
+      return lower.meta?.deleted === true ? null : carrierHashOf(lower.tiddler);
+    }
+    return null;
+  };
+}
+
+/** The sink for one bag's own store; a put into a wiki's working layer forks its override base (`forkBaseOf`). */
+function bagSink(opts: MemeVerbOptions, slug: string, bag: string, store: LarTiddlerStore, origin: ChangeOrigin, mode: "put" | "get"): MemeSink {
+  return storeMemeSink(store, bag, origin, mode === "put" && isWorkingLayerBag(bag) ? forkBaseOf(opts, slug, bag, store) : undefined);
+}
+
+/**
  * Resolve a named wiki's bag + store for a verb. PUT: the recipe record's designated bag, its own
  * store; where that bag names the wiki's working layer and the face holds no writer's seat in its workbench (`writeSlot`),
  * the put lands in the face's own `personal` layer of the wiki, so the save rests and the answer names the layer. GET: the whole cascade top-down, the first bag holding a record under the root, live or
@@ -334,7 +381,7 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
     if (slot) {
       const store = await storeOfBag(opts, slot[1]!, bag, mode);
       if (!store) throw new Error(`meme: bag "${bag}" holds no layer in this island and nothing reaches it by access`);
-      return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
+      return { bag, sink: bagSink(opts, slot[1]!, bag, store, origin, mode), anchor: false };
     }
     if (mode === "put") {
       // THE REALM FIRST, as the read walks it first. A bag the relation carries is ONE book: a steward's
@@ -351,7 +398,7 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
   }
   if (target.recipe && target.recipe !== "default") {
     const { bag, store } = await reachRecipeBag(opts, target.recipe, mode, target.uri);
-    return { bag, sink: storeMemeSink(store, bag, origin), anchor: false };
+    return { bag, sink: bagSink(opts, target.recipe, bag, store, origin, mode), anchor: false };
   }
   // The anchor: the daemon's own wiki, its cascade routing the records to the top bag.
   return { bag: anchorBagOf(opts), sink: wikiMemeSink(opts.tw5.$tw.wiki), anchor: true };
