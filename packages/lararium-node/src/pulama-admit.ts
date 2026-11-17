@@ -20,14 +20,16 @@
  *                                 it, naming the begun half by its cid. Both halves come from the one hand act.
  *
  * A READ TRUSTS A ROW ONLY UNDER THE PŪLAMA'S KEY. The key derives from the custody root, so a row written into the state
- * directory by anything that never held that root reads as no admission: the file alone admits nothing.
+ * directory by anything that never held that root reads as no admission: the file alone admits nothing. A row the key
+ * signed whose faces read no lent set answers the set's own reading (`lent-faces-empty`, `lent-faces-malformed`), and the
+ * gate refuses by it.
  *
  * No route and no key rests in any row: each holds digests, faces' custody ids and a signature.
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import { randomUUID } from "node:crypto";
 import { PULAMA_TESSERA_DOMAIN, canonicalJsonBytes, sha256HexBytesSync, verifyEd25519, type SwarmWikiPort } from "@lararium/mesh";
-import { lentFacesOf, lentFacesWire } from "@lararium/mesh/lent-faces";
+import { lentFacesOf, lentFacesWire, type LentFacesRefusal } from "@lararium/mesh/lent-faces";
 import type { KukuluSigner } from "./kukulu-gate.js";
 
 const PREFIX = "$:/lares/pulama/";
@@ -66,26 +68,38 @@ function verified(text: string | null, pulamaKey: string): SignedPulamaAdmit | n
   } catch { return null; }
 }
 
+/** One admission as its row names it. */
+export interface PulamaAdmission { readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string }
+/** A row the pūlama's key signed whose faces read no lent set: the set's own reading. */
+export interface PulamaAdmissionRefused { readonly refusal: LentFacesRefusal; readonly message: string }
+
 /** What the kūkulu gate and the hand door ask of the admitted set. */
 export interface PulamaAdmissions {
-  /** The face `image` stands admitted for, read under the pūlama's key; null where no admission of it verifies. */
-  admitted(image: string, by: KukuluSigner): Promise<{ readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string } | null>;
+  /** The faces `image` stands admitted for, read under the pūlama's key; the set's reading where the signed row names no
+   *  lent set; null where no row of it verifies. */
+  admitted(image: string, by: KukuluSigner): Promise<PulamaAdmission | PulamaAdmissionRefused | null>;
   /** Rest `image` as admitted by a rite that landed par (`tessera`: the rite's own). */
   admitByRite(image: string, faces: readonly AdmittedFace[], tessera: string, by: KukuluSigner): Promise<void>;
   /** THE HAND'S ADMISSION: rest the begun half, the admission, then the landed half. Answers the tessera. */
   admitByHand(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<{ readonly tessera: string }>;
   /** Rest one re-service row for `image`; answers its count. */
   reserved(image: string, faces: readonly AdmittedFace[], by: KukuluSigner): Promise<number>;
-  /** Every admission that verifies, and each image's count of re-services. */
+  /** Every admission that stands (verifies and names a lent set), and each image's count of re-services. */
   list(by: KukuluSigner): Promise<ReadonlyArray<{ readonly image: string; readonly faces: readonly AdmittedFace[]; readonly by: "rite" | "hand"; readonly tessera: string; readonly reserved: number }>>;
 }
 
-function canonicalFaces(raw: unknown): readonly AdmittedFace[] {
+/** An admission's faces in the lent set's canonical wire form, each with its custody id, or the set's own reading. */
+function admittedFacesOf(raw: unknown): { readonly ok: true; readonly faces: readonly AdmittedFace[] } | { readonly ok: false; readonly refusal: LentFacesRefusal; readonly message: string } {
   const parsed = lentFacesOf(raw);
-  if (!parsed.ok) throw new Error(parsed.message);
+  if (!parsed.ok) return parsed;
   const wire = lentFacesWire(parsed.faces);
-  if (wire.some(face => face.fcid === undefined)) throw new Error("lent-faces-malformed: admission faces need custody ids");
-  return wire as readonly AdmittedFace[];
+  if (wire.some(face => face.fcid === undefined)) return { ok: false, refusal: "lent-faces-malformed", message: "lent-faces-malformed: admission faces need custody ids" };
+  return { ok: true, faces: wire as readonly AdmittedFace[] };
+}
+function canonicalFaces(raw: unknown): readonly AdmittedFace[] {
+  const read = admittedFacesOf(raw);
+  if (!read.ok) throw new Error(read.message);
+  return read.faces;
 }
 
 /** The admitted set over the pūlama's record store. */
@@ -93,7 +107,8 @@ export function pulamaAdmissions(records: SwarmWikiPort): PulamaAdmissions {
   const admitted: PulamaAdmissions["admitted"] = async (image, by) => {
     const row = verified(await records.read(pulamaAdmittedTitle(image)), by.key);
     if (row === null || row.body.act !== "image-admitted" || row.body.image !== image) return null;
-    try { return { faces: canonicalFaces(row.body.faces), by: row.body.by, tessera: row.body.tessera }; } catch { return null; }
+    const faces = admittedFacesOf(row.body.faces);
+    return faces.ok ? { faces: faces.faces, by: row.body.by, tessera: row.body.tessera } : { refusal: faces.refusal, message: faces.message };
   };
   const rest = async (image: string, faces: readonly AdmittedFace[], how: "rite" | "hand", tessera: string, by: KukuluSigner): Promise<void> => {
     const act = await sign<"image-admitted">({ act: "image-admitted", image, faces: canonicalFaces(faces), by: how, tessera }, by);
@@ -125,7 +140,7 @@ export function pulamaAdmissions(records: SwarmWikiPort): PulamaAdmissions {
         const row = verified(await records.read(title), by.key);
         if (row === null || row.body.act !== "image-admitted" || pulamaAdmittedTitle(row.body.image) !== title) continue;
         const admission = await admitted(row.body.image, by);
-        if (admission !== null) out.push({ image: row.body.image, ...admission, reserved: (await records.list(pulamaReservedPrefix(row.body.image))).length });
+        if (admission !== null && !("refusal" in admission)) out.push({ image: row.body.image, ...admission, reserved: (await records.list(pulamaReservedPrefix(row.body.image))).length });
       }
       return out;
     },

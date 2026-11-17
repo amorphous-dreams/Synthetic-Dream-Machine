@@ -18,7 +18,8 @@
  * stands admitted, the pūlama lends the faces that admission names again (the lit ones serve, the dark ones wait; with none
  * lit it refuses `kukulu-face-locked`), spends no lei and rests one re-service row. A
  * restart with no rebuild therefore wakes standing. Any other image refuses `pulama-image-unadmitted`, and the refusal
- * names the two acts that admit one: the hand's `pulama admit`, and the rite (`lares rite kukulu`).
+ * names the two acts that admit one: the hand's `pulama admit`, and the rite (`lares rite kukulu`). An admission row whose
+ * faces read no lent set refuses by the set's own reading (`lent-faces-empty`, `lent-faces-malformed`).
  *
  * AN IMAGE STANDS ADMITTED ONCE ITS KŪKULU LANDS PAR. The scope's `land` rests the host half; where the pair reads par, the
  * image the vouch walked joins the admitted set under the rite's own tessera. A kūkulu that never composed admits nothing.
@@ -165,6 +166,7 @@ export function kukuluGate(a: {
         if (reported === null || !a.admissions || admission === null) {
           return refuse("pulama-image-unadmitted", "this vessel carries no offer, and the image the host reports stands unadmitted: admit it by hand at the pūlama (`pulama admit`), or raise the vessel by the rite (`lares rite kukulu`)");
         }
+        if ("refusal" in admission) return refuse(admission.refusal, admission.message.slice(`${admission.refusal}: `.length));
         const lent = await admittedFaces(admission.faces);
         if (lent === "absent") return refuse("kukulu-face-absent", "a face this image stands admitted for stands absent at this pūlama");
         // PARTIAL LIGHTING: the lent faces that stand lit serve and the dark ones wait; with none lit, nothing serves.
