@@ -72,8 +72,8 @@ import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
-import { scanFiles, candidatesOf, settleIngest, openSyncedTree } from "./ingest-core.js";
-import { summaryOutput } from "./verb-result.js";
+import { scanFiles, candidatesOf, settleIngest, openSyncedTree, submitIngest, type SubmitIngestOpts } from "./ingest-core.js";
+import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
 import { sha256Hex, type CarryKahuaHead } from "./carry-manifest.js";
@@ -770,12 +770,19 @@ export function mirrorsLeftWork(r: MirrorSeedResult): boolean {
 
 // ── the live doors ─────────────────────────────────────────────────────────────────────────────────────────────
 
+/** The two ports a live lay reaches the vessel by: the vessel's DID and the INGEST submit. A test lends its own. */
+export interface LayPorts {
+  readonly did: () => Promise<string>;
+  readonly submit: (o: SubmitIngestOpts) => Promise<SubmitResult>;
+}
+export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest };
+
 /**
  * Lay one folder through INGEST's three-way gate against the vessel's synced base: a carrier whose disk equals its base
  * takes no wave (the second seed lands nothing), a moved one lands, and one whose records moved too stands off. The wave
  * rides unattended, so a file that holds no base over records that say something else stands off rather than adopting.
  */
-export async function liveLay(wave: MirrorWave, apply: boolean): Promise<MirrorLaid> {
+export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts = LIVE_LAY_PORTS): Promise<MirrorLaid> {
   const tree = openSyncedTree();
   const abs = mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta")).map((r) => join(wave.source, ...r.split("/")));
   const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => mirrorDirFileToUri(wave.uriDir, f));
@@ -789,10 +796,10 @@ export async function liveLay(wave: MirrorWave, apply: boolean): Promise<MirrorL
   const read: MirrorLaid = { planned: candidates.map((c) => c.uri), kapae, landed: [], kapaeRaised: [], conflicts: [], refused, unanswered: [] };
   if (!apply || (candidates.length === 0 && kapae.length === 0)) return read;
   const settled = await settleIngest({
-    source: wave.source, toBag: wave.toBag, candidates, did: await vesselDid(), unattended: true,
+    source: wave.source, toBag: wave.toBag, candidates, did: await ports.did(), unattended: true,
     ...(wave.face !== undefined ? { face: wave.face } : {}),
     ...(wave.wiki !== undefined ? { inWiki: true, wiki: wave.wiki } : {}), ...(kapae.length > 0 ? { kapae } : {}),
-  }, tree);
+  }, tree, ports.submit);
   if (settled.first.status === "error") {
     const folded = foldWaveRefusal(settled.first.errorMessage ?? "INGEST refused", candidates, kapae);
     return { ...read, refused: [...refused, ...folded.refused, ...folded.kapaeRefused] };

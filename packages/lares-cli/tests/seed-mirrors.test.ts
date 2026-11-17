@@ -18,6 +18,8 @@
  *   M5  ashes never read back into a layer, never travel in a bundle, never copy into a live mirror
  *   M6  an import's bag row and the seeded canon for one title meet at the gate: divergence stands off, never overwrites
  *   M7  the override base travels: the export's working row carries it, and an import that lands the copy restores it
+ *   M8b the live lay restores a carrier's family whole: a seed-only recovery's wave hands each fragment's base from the
+ *       face's sidecar beside the root's
  *   M7b a carrier's family travels whole: the working row carries each fragment record's base beside the root's, and the
  *       import hands them to the wave
  *   M8  a base forked before the reset survives a SEED-ONLY recovery (the face's bases sidecar), and canon still reads
@@ -42,7 +44,7 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash, type ShareEntry } from "@lararium/mesh";
-import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
+import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
@@ -489,6 +491,18 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(after.layer(WORKING).get(POND)?.base).toBe(forkBase);
     expect(after.layer(WORKING).get(POND)?.base).not.toBe(carrierOf(NEWER));   // canon reads fresher than the copy above it
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
+  });
+
+  test("M8b — the live lay restores a carrier's family whole: the wave carries each fragment's base beside the root's", async () => {
+    const B0 = `sha256:${"a".repeat(64)}`, BP = `sha256:${"b".repeat(64)}`, BX = `sha256:${"c".repeat(64)}`;
+    const asked: Array<{ uri: string; overrideBase?: string; familyBases?: Readonly<Record<string, string>> }> = [];
+    const submit = async (o: { candidates: readonly { uri: string }[] }) => { asked.push(...o.candidates); return { status: "error" as const, requestId: "probe", errorMessage: "probe: the vessel stands nowhere" }; };
+    const wave: MirrorWave = { source: P(`wikis/daemon-${F1}`), uriDir: P("wikis"), toBag: WORKING, skipTop: ["recovery", "temp"], bases: { [POND]: B0, [`${POND}#/part`]: BP, [`${HERON}-twin#/part`]: BX } };
+    await liveLay(wave, true, { did: async () => "0xprobe", submit });
+    const pond = asked.find((c) => c.uri === POND);
+    expect(pond?.overrideBase).toBe(B0);
+    expect(pond?.familyBases).toEqual({ [`${POND}#/part`]: BP });
+    expect(asked.find((c) => c.uri === HERON)?.familyBases).toBeUndefined();
   });
 
   test("M9 — two faces: each face's working rows carry its own bases, never the face the daemon wears", async () => {
