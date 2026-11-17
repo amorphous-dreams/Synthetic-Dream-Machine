@@ -13,7 +13,8 @@
 //             row owes a stand-off), and one row outside NFC;
 //   engineer  stage rows, a personal margin of `lares`, a page in `notes`;
 //   referee   stage rows, a personal margin of `notes`;
-// and the acts that are no meme put (`edges`): the shared wikis and their seats, a house-minted bag shared by pet-name, a
+// and the acts that are no meme put (`edges`): the shared wikis and their seats, a house-minted bag shared by pet-name under a
+// slug of its own (the share config keeps one row per slug, so a wiki share and a bag share never name one slug), a
 // lifted and a staged-only kahua row, a kāpae shadow over canon, temp consent, a library collection, sensorium files.
 import { createHash } from "node:crypto";
 import { FACES, memeText } from "./steps.mjs";
@@ -150,14 +151,16 @@ export function seedPlan({ seed = "carry-rehearsal", count = 300, canon, bodies 
     row(2, "notes", uri, memeText(uri, `the referee's margin ${i} of the notes wiki`), "margin");
   }
   row(0, "cold-shelf", "lar:///ha.ka.ba/carry-rehearsal/cold/steward", memeText("lar:///ha.ka.ba/carry-rehearsal/cold/steward", "the steward wrote this page in a wiki left cold"), "page");
+  row(0, "lending-shelf", "lar:///ha.ka.ba/carry-rehearsal/lending/steward", memeText("lar:///ha.ka.ba/carry-rehearsal/lending/steward", "the steward wrote this page in a bag shared by pet-name"), "page");
 
   const edges = [
     { kind: "wiki-init", face: 0, slug: "notes" },
     { kind: "wiki-init", face: 0, slug: "cold-shelf" },
+    { kind: "wiki-init", face: 0, slug: "lending-shelf" },
     { kind: "wiki-share", face: 0, slug: "lares", write: [FACES.engineer], read: [FACES.referee] },
     { kind: "wiki-share", face: 0, slug: "notes", write: [FACES.engineer], read: [FACES.referee] },
     { kind: "wiki-share", face: 0, slug: "cold-shelf", write: [], read: [FACES.referee] },
-    { kind: "bag-share", face: 0, bag: "cold-shelf", read: [FACES.engineer, FACES.referee] },
+    { kind: "bag-share", face: 0, bag: "lending-shelf", read: [FACES.engineer, FACES.referee] },
     { kind: "kahua-lift", face: 1, title: "lar:///ha.ka.ba/kahua/law/carry-rehearsal-lifted", text: "the engineer staged and lifted this row" },
     { kind: "kahua-staged", face: 1, title: "lar:///ha.ka.ba/kahua/law/carry-rehearsal-staged", text: "the engineer staged this row and never lifted it" },
     { kind: "kapae", face: 0, recipe: "default", title: canon.kapae.uri },

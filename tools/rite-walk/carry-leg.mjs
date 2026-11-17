@@ -15,7 +15,7 @@
 // WHAT THE LEG NEVER DOES: call the shim's `reset` (no step names it), type `accept-loss` (a `down` that asks for it reads
 // fail: a drop is exactly what the rehearsal must catch), export with `--accept-omissions` (an omission other than
 // `parallel-drafts` reads fail, save the source's `cold-wikis` and `override-bases-unread` over wikis the steward woke at
-// hold-old: the source holds two rotatable pins, so a house of three shared wikis always leaves one cold at the export,
+// hold-old: the source holds two rotatable pins, so a house of more shared wikis than that always leaves one cold at the export,
 // and a woken wiki projected its pages first; `judgeExport` excuses those by name), or read a stand-off as a bare exit code: the leg judges the import's stand-offs against the plan's named set
 // (`judgeImport`, empty now: a working copy over canon that moved between the revisions lands, and the `fresher` step reads
 // the new house's warning for it, `judgeFresher`; an override base works as an instrument, never a gate) and hands each
@@ -194,6 +194,44 @@ export function fresherPlanFor(expected, manifest) {
     if (typeof row.overrideBase === "string") plan[cls].push(uri); else plan.unknown.push(uri);
   }
   return plan;
+}
+
+/** A share edge's door call: `wiki share` or `bag share`, the names one pet-name per word (the share filter reads a title
+ *  list, so a comma would join two names into one that no face carries). */
+export function shareArgs(e) {
+  const wiki = e.kind === "wiki-share";
+  const names = (xs) => xs.join(" ");
+  return [wiki ? "wiki" : "bag", "share", wiki ? e.slug : e.bag, ...(wiki && e.write.length ? ["--write", names(e.write)] : []), "--read", names(e.read), "--no-json"];
+}
+
+/**
+ * Judge `lares bag share --list` against the seed's share edges: each edge's row stands under its kind and slug, every face it
+ * names resolves (`<pet-name> (hN)`) on the read or write side it names, and no `waits:` line follows it. A row of the other
+ * kind under the slug reads as the overwrite it is; a list that refused faults by its exit.
+ */
+export function judgeShares(r, edges) {
+  const text = String(r?.text ?? "");
+  if (r?.code !== 0) return { ok: false, faults: [`the share list exited ${r?.code}: ${text.trim().slice(-200)}`] };
+  const rows = new Map();
+  let last = null;
+  for (const line of text.split("\n")) {
+    const m = /^(bag|wiki) (\S+): read (.*?) · write (.*?)(?: · .*)?$/.exec(line);
+    if (m) { last = { kind: m[1], slug: m[2], read: m[3], write: m[4], waits: [] }; rows.set(m[2], last); continue; }
+    const w = /^\s+waits: "([^"]*)"/.exec(line);
+    if (w && last) last.waits.push(w[1]);
+  }
+  const faults = [];
+  for (const e of edges) {
+    const kind = e.kind === "wiki-share" ? "wiki" : "bag", slug = e.slug ?? e.bag;
+    const row = rows.get(slug);
+    if (!row) { faults.push(`${kind} ${slug} stands in no row`); continue; }
+    if (row.kind !== kind) { faults.push(`${kind} ${slug} reads as ${row.kind} ${slug}: another share replaced its row`); continue; }
+    const resolves = (side, name) => side.split(", ").some((label) => label.startsWith(`${name} (h`));
+    for (const n of e.read ?? []) if (!resolves(row.read, n)) faults.push(`${kind} ${slug} never resolves ${n} as a reader`);
+    for (const n of e.write ?? []) if (!resolves(row.write, n)) faults.push(`${kind} ${slug} never resolves ${n} as a writer`);
+    for (const w of row.waits) faults.push(`${kind} ${slug} waits on "${w}", a name no face carries`);
+  }
+  return { ok: faults.length === 0, faults };
 }
 
 /** Judge the export's answer: exit 0, and no omission but the allowed ones. A wiki the steward woke at hold-old projected
@@ -440,8 +478,11 @@ const seedContent = async (c) => {
   let w = await wear(c, "old", 0);
   if (!w.ok) return { ok: false, answer: `the steward never stood worn: ${tail(w.transcript)}` };
   for (const e of edge("wiki-init")) notes.push(await must(h, ["wiki", "init", e.slug, "--no-json"], `wiki init ${e.slug}`));
-  for (const e of edge("wiki-share")) notes.push(await must(h, ["wiki", "share", e.slug, ...(e.write.length ? ["--write", e.write.join(",")] : []), "--read", e.read.join(","), "--no-json"], `wiki share ${e.slug}`));
-  for (const e of edge("bag-share")) notes.push(await must(h, ["bag", "share", e.bag, "--read", e.read.join(","), "--no-json"], `bag share ${e.bag}`));
+  for (const e of [...edge("wiki-share"), ...edge("bag-share")]) notes.push(await must(h, shareArgs(e), `${e.kind} ${e.slug ?? e.bag}`));
+  // Every seeded share row reads back by its kind, each named face resolved: a row another share replaced, or a name no face
+  // carries, faults here, before any row is put.
+  const shares = judgeShares(await h.shim(["bag", "share", "--list", "--no-json"]).then((r) => ({ code: r.code, text: said(r) })), [...edge("wiki-share"), ...edge("bag-share")]);
+  if (!shares.ok) return { ok: false, answer: `the share rows read back wrong: ${shares.faults.join("; ")}` };
   for (const e of edge("library")) for (const f of e.files) notes.push(await must(h, ["library", "acquire", `/lar/config/seed-src/library/${f.name}`, "--to", e.collection, "--keep", "--no-json"], `library acquire ${f.name}`));
   const tally = {};
   for (const face of [0, 1, 2]) {
