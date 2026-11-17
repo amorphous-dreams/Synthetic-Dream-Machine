@@ -49,9 +49,13 @@ export function makeShareSetReactor(opts: { readonly control: () => CompositeSto
       try { parseShareFilter(f); } catch (e) { throw new VerbRefusal("share-filter-unsupported", e instanceof Error ? e.message : String(e)); }
     }
     const workspace = typeof args["workspace"] === "string" ? args["workspace"].trim() : "";
+    // THE ROW KEEPS ITS OWNER, by pet-name, as the file's row does: `ownerOf` reads it, so a reader whose half names the bag by
+    // reference never reads as the owner and delegates the bag onward.
+    const owner = typeof args["owner"] === "string" ? args["owner"].trim() : "";
     const row: ShareEntry = {
       slug, kind: args["kind"] === "wiki" ? "wiki" : "bag", read, write,
       ...(workspace ? { workspace } : {}),
+      ...(owner ? { owner } : {}),
       ...(typeof args["note"] === "string" && args["note"].length > 0 ? { note: args["note"] } : {}),
     };
     try { shareEntryWorkspace(row); } catch (e) { throw new VerbRefusal("share-workspace-malformed", e instanceof Error ? e.message : String(e)); }
