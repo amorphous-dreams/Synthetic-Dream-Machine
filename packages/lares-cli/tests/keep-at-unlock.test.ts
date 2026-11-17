@@ -7,6 +7,8 @@
  *   U2  unlock-strings-no-keep-lei-without-a-workspace (CONTROL): a config that names no keep workspace reads no line, asks
  *       nothing and strings nothing; a lei that already stands, a no, a script (no terminal) and a pūlama unlock (no route)
  *       each string nothing.
+ *   U4  unlock-offers-as-the-mount: an unlock that names no face strings the keep lei as the daemon mount, names it, and its
+ *       by-hand hint names `--face N`; a named face asks no mount; with no mount (the floor) it strings nothing and names why.
  *   U3  the house config's keep workspace: `LARES_KEEP_WORKSPACE` names it (the environment first, else the operator's
  *       surface env file); with none named, the one pair LARES_WORKSPACES binds; several pairs and no name read none.
  *
@@ -20,7 +22,7 @@ import { wardTicketFor } from "../src/ward-door.js";
 
 const ROUTE: Credential[] = [{ kind: "passphrase", passphrase: "test-founding-passphrase" }];
 
-function rig(over: { lei?: Record<string, unknown>; yes?: boolean; terminal?: boolean } = {}) {
+function rig(over: { lei?: Record<string, unknown>; yes?: boolean; terminal?: boolean; mount?: number | Error } = {}) {
   const calls: string[] = [], said: string[] = [], asked: string[] = [], routes: (readonly Credential[])[] = [];
   const ports: KeepOfferPorts = {
     canAsk: () => over.terminal !== false,
@@ -32,6 +34,7 @@ function rig(over: { lei?: Record<string, unknown>; yes?: boolean; terminal?: bo
       return { ok: true, output: { cid: "c".repeat(64), rite: "keep", branch: args["branch"], returns: args["returns"] } };
     },
     say: (line) => { said.push(line); },
+    ...(over.mount === undefined ? {} : { mountFace: async () => { if (over.mount instanceof Error) throw over.mount; return over.mount as number; } }),
   };
   return { calls, said, asked, routes, ports };
 }
@@ -85,5 +88,29 @@ describe("the keep lei at unlock", () => {
     expect(keepWorkspaceName({ LARES_WORKSPACES: "notes=/srv/notes;backup=/srv/b", LARES_KEEP_WORKSPACE: "backup" }, null)).toBe("backup");
     expect(keepWorkspaceName({}, null)).toBeNull();
     expect(keepWorkspaceName({ LARES_KEEP_WORKSPACE: "Not A Name" }, null)).toBeNull();
+  });
+
+  test("U4 unlock-offers-as-the-mount: no face named, the offer reads and strings as the daemon mount and names it; a named face asks no mount; the floor strings nothing and says why", async () => {
+    const r = rig({ mount: 1 });
+    const out = await offerKeepLei(r.ports, { workspace: "backup", route: ROUTE });
+    expect(out).toMatchObject({ offered: true, strung: true, face: 1, faceBy: "mount" });
+    expect(r.calls).toEqual([
+      `swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 1 })}`,
+      `swarm-lei-kui ${JSON.stringify({ rite: "keep", branch: "backup", returns: KEEP_LEI_RETURNS, after: null, face: 1 })}`,
+    ]);
+    expect(r.asked[0]).toMatch(/acting as h1, the daemon mount/);
+    // The by-hand hint names the face.
+    const no = rig({ mount: 1, yes: false });
+    await offerKeepLei(no.ports, { workspace: "backup", route: ROUTE });
+    expect(no.said.join("\n")).toContain("lares lei kui --rite keep --branch backup --returns <n> --face 1");
+    // A named face asks no mount.
+    const named = rig({ mount: new Error("never asked") });
+    expect(await offerKeepLei(named.ports, { workspace: "backup", route: ROUTE, face: 2 })).toMatchObject({ strung: true, face: 2, faceBy: "named" });
+    expect(named.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 2 })}`);
+    // THE FLOOR: no mount stands; nothing reads, nothing strings, and the line says why.
+    const floor = rig({ mount: new Error("this vessel stands faces h0, h1 open and wears none of them") });
+    expect(await offerKeepLei(floor.ports, { workspace: "backup", route: ROUTE })).toMatchObject({ offered: false, strung: false, why: "no-face" });
+    expect(floor.calls).toEqual([]);
+    expect(floor.said.join("\n")).toMatch(/wears none of them.*--face N/);
   });
 });

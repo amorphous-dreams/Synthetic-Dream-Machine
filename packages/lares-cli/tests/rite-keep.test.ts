@@ -11,6 +11,9 @@
  *   K6  a name no workspace spells, an unbound workspace, one that resolves inside the hearth, an unsafe `--into`, and a
  *       standing directory that holds no bundle each refuse by name before the line reads;
  *   K7  the command line names its workspace, and reads `--into`, `--accept-omissions` and `--face` beside it.
+ *   K8  keep-acts-as-the-mount: a keep that names no face acts as the daemon mount (`mountFace`), names it on every row and in
+ *       its answer; a named `--face N` asks no mount and rides as named; a vessel at the floor (no mount) refuses by name before
+ *       any row, and the lei hint names the face the keep acts as.
  */
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
@@ -167,5 +170,32 @@ describe("the keep rite, vessel half", () => {
     expect(() => plan("--workspace", "backup", "--face", "x")).toThrow(RiteUsage);
     expect(plan("--workspace", "backup")).toEqual({ workspace: "backup", acceptOmissions: false });
     expect(plan("--workspace", "backup", "--into", "devices/one/house", "--accept-omissions", "--face", "1")).toEqual({ workspace: "backup", into: "devices/one/house", acceptOmissions: true, face: 1 });
+  });
+
+  test("K8 keep-acts-as-the-mount: no face named, the keep acts as the daemon mount on every row and names it; a named face asks no mount; the floor refuses by name", async () => {
+    const r = rig();
+    let asked = 0;
+    const mount = { ...r.ports, mountFace: async () => { asked++; return 0; } };
+    const out = await riteKeep(mount, { workspace: "backup" });
+    expect(out).toMatchObject({ kept: true, face: 0, faceBy: "mount" });
+    expect(asked).toBe(1);
+    expect(r.calls.filter((c) => !c.startsWith("cut")).every((c) => c.includes('"face":0'))).toBe(true);
+    expect(r.calls.filter((c) => !c.startsWith("cut"))).toHaveLength(3);
+    // A named face asks no mount and rides as named.
+    const named = rig();
+    let namedAsked = 0;
+    const two = await riteKeep({ ...named.ports, mountFace: async () => { namedAsked++; return 0; } }, { workspace: "backup", into: "elsewhere", face: 2 });
+    expect(two).toMatchObject({ face: 2, faceBy: "named" });
+    expect(namedAsked).toBe(0);
+    expect(named.calls[0]).toBe(`swarm-show ${JSON.stringify({ rite: "keep", branch: "backup", face: 2 })}`);
+    // THE FLOOR: no mount stands, so the keep refuses by name before any row reads.
+    const floor = rig();
+    const refused = riteKeep({ ...floor.ports, mountFace: async () => { throw new Error("this vessel stands faces h0, h1 open and wears none of them"); } }, { workspace: "backup" });
+    await expect(refused).rejects.toMatchObject({ code: "keep-face-unmounted" });
+    await expect(riteKeep({ ...floor.ports, mountFace: async () => { throw new Error("wears none"); } }, { workspace: "backup" })).rejects.toThrow(/wears none.*--face N/);
+    expect(floor.calls).toEqual([]);
+    // The lei hint names the face the keep acts as.
+    const none = rig({ lei: { standing: false, refusal: "absent", after: null } });
+    await expect(riteKeep({ ...none.ports, mountFace: async () => 1 }, { workspace: "backup" })).rejects.toThrow(/lares lei kui --rite keep --branch backup --returns <n> --face 1/);
   });
 });
