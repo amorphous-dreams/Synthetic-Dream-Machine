@@ -340,9 +340,12 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     await expect(fx.vessel().unlock([])).rejects.toMatchObject({ reading: "lent-faces-duplicate" });
   });
 
-  test("RED stale-pulama-names-its-build: a session frame from a pūlama on an older build (one ordinal, or none) refuses by name at the vessel, and no session stands", async () => {
-    fx = await standPulama("pulama-lend-stale", () => openGate({ faces: lend(0), coldReads: [] }));
-    for (const scope of [{ ordinal: 0 }, { ordinal: null }, undefined]) {
+  test("RED session-frame-names-its-set: a session frame whose scope names no lent set, or a malformed one, refuses at the vessel by the set's own reading, and no session stands", async () => {
+    fx = await standPulama("pulama-lend-frame", () => openGate({ faces: lend(0), coldReads: [] }));
+    for (const [scope, reading] of [
+      [{ ordinal: 0 }, "lent-faces-empty"], [{ faces: [] }, "lent-faces-empty"], [undefined, "lent-faces-empty"],
+      [{ faces: 0 }, "lent-faces-malformed"], [{ faces: ["h0"] }, "lent-faces-malformed"], [{ faces: [0, 0] }, "lent-faces-duplicate"],
+    ] as const) {
       const vessel = makePulamaHolder({
         homes: fx.seat.homes, offer: () => ({}),
         dial: async () => {
@@ -351,7 +354,7 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
           return pair.vessel;
         },
       });
-      await expect(vessel.unlock([])).rejects.toMatchObject({ name: "PulamaRefused", reading: "pulama-lend-unnamed" });
+      await expect(vessel.unlock([])).rejects.toMatchObject({ name: "PulamaRefused", reading });
       expect(vessel.isUnlocked()).toBe(false);
     }
   });
