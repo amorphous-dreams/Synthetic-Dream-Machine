@@ -124,6 +124,18 @@ export function litFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | 
  */
 export const FACE_LAYER_WAITS = /\bface-unresolved\b|\bdocument-unavailable\b/;
 
+/**
+ * A WHOLE-WAVE REFUSAL, FOLDED INTO ROWS: where INGEST refuses a wave whole (the island answers one error for the act), each
+ * candidate and each kapae shadow it carried reads refused under that one answer. The seed's lay door and the import's ingest
+ * door both fold through here, so a wave the island refuses whole reads alike at both: a face-named wave refused with a
+ * `FACE_LAYER_WAITS` answer waits by name, and any other refusal stands named row by row, never a bare throw.
+ */
+export function foldWaveRefusal(why: string, candidates: ReadonlyArray<{ readonly uri: string }>, kapae: readonly string[]): {
+  readonly refused: Array<{ uri: string; why: string }>; readonly kapaeRefused: Array<{ uri: string; why: string }>;
+} {
+  return { refused: candidates.map((c) => ({ uri: c.uri, why })), kapaeRefused: kapae.map((t) => ({ uri: t, why })) };
+}
+
 /** The words a SHUT face reads: unlock it, then seed (or import) again. A named expected state, never a stand-off, and it
  *  never blocks the faces that stand open (THE LIT SET: one seed lays every open face, each in its own layer). */
 export function unlockItLine(face: { readonly handleIndex: number; readonly petname: string | null }, verb: "seed" | "import"): string {
@@ -257,7 +269,9 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
     const settled = await settleIngest({ source: wave.source, toBag: wave.toBag, candidates: wave.candidates, did: await vesselDid(), unattended: true,
       ...(wave.inWiki === true ? { inWiki: true } : {}), ...(wave.wiki !== undefined ? { wiki: wave.wiki } : {}),
       ...(wave.kapae.length > 0 ? { kapae: wave.kapae } : {}), ...(wave.face !== undefined ? { face: wave.face } : {}) }, new SyncedTree(null));
-    if (settled.first.status === "error") throw new Error(settled.first.errorMessage ?? "INGEST refused");
+    if (settled.first.status === "error") {
+      return { landed: [], unanswered: [], conflicts: [], kapaeRaised: [], ...foldWaveRefusal(settled.first.errorMessage ?? "INGEST refused", wave.candidates, wave.kapae) };
+    }
     const kapae = (summaryOutput(settled.first) as { kapae?: { raised?: unknown; standing?: unknown; refused?: unknown } } | null)?.kapae;
     const list = (x: unknown): string[] => (Array.isArray(x) ? x.map(String) : []);
     return {
@@ -971,20 +985,32 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
       mkdirSync(dirname(to), { recursive: true });
       atomicWriteFileSync(to, bytes, undefined, { mode: 0o600 });
     }
-    const answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}), ...faceArg });
+    // A RESTORED FILE STAYS ONLY WHERE ITS RECORD LANDED: a file this wave restored for a row that waits, stood off, refused
+    // or went unanswered leaves the mirror again, since a file standing there reads `already` at the next import and its
+    // record never rides to INGEST.
+    const unrestore = (kept: ReadonlySet<string>): void => { for (const { uri, to } of pending) if (!differing.has(uri) && !kept.has(uri)) rmSync(to, { force: true }); };
+    let answer: CarryIngestAnswer;
+    try {
+      answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}), ...faceArg });
+    } catch (e) {
+      // A door that throws a whole-wave refusal reads as the folded one where it names a face's wait; any other throw climbs.
+      const why = e instanceof Error ? e.message : String(e);
+      if (faceArg.face === undefined || !FACE_LAYER_WAITS.test(why)) { unrestore(new Set()); throw e; }
+      answer = { landed: [], unanswered: [], conflicts: [], kapaeRaised: [], ...foldWaveRefusal(why, candidates, kapae) };
+    }
     // A WAVE NAMING A FACE THE ISLAND OPENS NO LAYER FOR waits by name, as the seed's does: nothing of it landed anywhere.
-    if (faceArg.face !== undefined && answer.landed.length === 0 && answer.refused.length > 0 && answer.refused.every((c) => FACE_LAYER_WAITS.test(c.why))) {
+    const refusedAll = [...answer.refused, ...answer.kapaeRefused];
+    if (faceArg.face !== undefined && answer.landed.length === 0 && answer.kapaeRaised.length === 0 && refusedAll.length > 0 && refusedAll.every((c) => FACE_LAYER_WAITS.test(c.why))) {
       workTally.planned -= candidates.length; shadowTally.planned -= kapae.length;
       workTally.waiting += candidates.length; shadowTally.waiting += kapae.length;
-      // The files this wave restored leave the mirror again: a file standing there would read `already` at the face's own
-      // wear, and its record would never ride to INGEST.
-      for (const { uri, to } of pending) if (!differing.has(uri)) rmSync(to, { force: true });
+      unrestore(new Set());
       const face = [...target.values()].find((f) => f.handleIndex === faceArg.face);
       const bf = manifest.faces.find((b) => target.get(b.key) === face);
       if (face !== undefined && bf !== undefined && !daemonWaiting.some((w) => w.handleIndex === face.handleIndex)) daemonWaiting.push({ petname: bf.petname, handleIndex: face.handleIndex });
       return;
     }
     const landed = new Set(answer.landed);
+    unrestore(new Set([...answer.landed, ...answer.kapaeRaised]));
     for (const r of candidates) if (landed.has(r.uri)) { workTally.landed++; journal.mark(keyed(r), "landed"); }
     for (const c of answer.conflicts) workTally.stoodOff.push(`${c.uri} (${c.why})`);
     for (const c of answer.refused) workTally.refused.push(`${c.uri} (${c.why})`);

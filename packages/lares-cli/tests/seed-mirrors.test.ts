@@ -41,7 +41,7 @@ import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash, type ShareEntry } from "@lararium/mesh";
 import { seedMirrors, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
-import { carryExport, carryImport, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
+import { carryExport, carryImport, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
 import type { CarryKahuaHead } from "../src/carry-manifest.js";
@@ -1044,4 +1044,48 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's page in a wiki it woke late"));
     expect(third.benchWaiting).toEqual([]);
   });
+
+  /** The island's whole-wave answers, as a live vessel gives them: a face-named wave for an open face the vessel does not wear
+   *  draws `document-unavailable` (a lit sibling's daemon layer opens at its own wear), or `refusal` where one is named, and an
+   *  in-wiki wave for a wiki the vessel holds no bag of draws `wiki-mount-refused: no-such-bag`. The live door FOLDS the answer
+   *  into one refused row per candidate (`foldWaveRefusal`); `shape: "throw"` stands a door that throws it instead. */
+  const liveIngest = (v: FakeHouse, refusal: string | null = null, shape: "fold" | "throw" = "fold"): CarryDoors["ingest"] => async (wave) => {
+    const whole = wave.face !== undefined && v.faces.find((f) => f.handleIndex === wave.face)?.relation !== v.worn
+      ? refusal ?? "[document-unavailable] lar:///ha.ka.ba/wikis/daemon/working (a lit face's own layer) unavailable: doc automerge:35dAufh4 was reported unavailable by every reachable peer; make the document reachable from a peer, then restart."
+      : wave.inWiki === true && wave.wiki !== undefined && !v.held.has(wave.wiki) ? `wiki-mount-refused: no-such-bag lar:///ha.ka.ba/bags/${wave.wiki}` : null;
+    if (whole === null) return v.carryDoors().ingest(wave);
+    if (shape === "throw") throw new Error(whole);
+    return { landed: [], unanswered: [], conflicts: [], kapaeRaised: [], ...foldWaveRefusal(whole, wave.candidates, wave.kapae) };
+  };
+
+  test("W8 — RED: an import's face-named wave the island refuses WHOLE with `document-unavailable` (a lit face's own layer), whether the live door folds it into rows or a door throws it, waits by name: nothing lands, no restored file stays in that face's mirror, and the face's own wear lands every row; CONTROL: a whole-wave throw that names no wait still rejects and strands no file", async () => {
+    clearOld();
+    put(`projections/wikis/daemon-${G1}/ha.ka.ba/notes/engineer-own.tid`, tid(NOTE, "the engineer's own memory"));
+    const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
+    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    rmSync(P(`wikis/daemon-${G1}`), { recursive: true });
+    const restored = P(`wikis/daemon-${R1}/ha.ka.ba/notes/engineer-own.tid`);
+    const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
+    await expect(carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v, "cap-denied: write on the layer required", "throw") } }),
+      "CONTROL: a whole-wave throw that names no wait still rejects").rejects.toThrow(/cap-denied/);
+    expect(existsSync(restored), "CONTROL: the thrown wave leaves no restored file behind").toBe(false);
+    const named = await carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v, "cap-denied: write on the layer required") } });
+    expect(named.tallies.working.refused, "CONTROL: the live door's folded refusal stands named row by row").toEqual([`${NOTE} (cap-denied: write on the layer required)`]);
+    expect(named.daemonWaiting).toEqual([]);
+    expect(existsSync(restored), "CONTROL: a refused row's restored file leaves the mirror").toBe(false);
+    for (const shape of ["fold", "throw"] as const) {
+      const first = await carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v, null, shape) } });
+      expect(first.daemonWaiting, shape).toEqual([{ petname: "engineer", handleIndex: 1 }]);
+      expect(first.tallies.working, shape).toMatchObject({ landed: 0, waiting: 1, refused: [], stoodOff: [] });
+      expect(v.workingOf(R1).size).toBe(0);
+      expect(existsSync(restored), `${shape}: a waiting wave's restored file leaves the mirror again`).toBe(false);
+    }
+    v.wear(R1);
+    const second = await carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v) } });
+    expect(second.daemonWaiting).toEqual([]);
+    expect(second.tallies.working).toMatchObject({ landed: 1, waiting: 0, refused: [] });
+    expect(v.workingOf(R1).get(NOTE)?.text).toBe(tid(NOTE, "the engineer's own memory"));
+    expect(existsSync(restored), "a landed row's file stands in its mirror").toBe(true);
+  });
+
 });

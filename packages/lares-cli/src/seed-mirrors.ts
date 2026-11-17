@@ -68,7 +68,7 @@ import {
   daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
-import { LIVE_CARRY_DOORS, litFaceOf, unlockItLine, FACE_LAYER_WAITS, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
+import { LIVE_CARRY_DOORS, litFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
 import { scanFiles, candidatesOf, settleIngest, openSyncedTree } from "./ingest-core.js";
@@ -791,8 +791,8 @@ export async function liveLay(wave: MirrorWave, apply: boolean): Promise<MirrorL
     ...(wave.wiki !== undefined ? { inWiki: true, wiki: wave.wiki } : {}), ...(kapae.length > 0 ? { kapae } : {}),
   }, tree);
   if (settled.first.status === "error") {
-    const why = settled.first.errorMessage ?? "INGEST refused";
-    return { ...read, refused: [...refused, ...candidates.map((c) => ({ uri: c.uri, why })), ...kapae.map((t) => ({ uri: t, why }))] };
+    const folded = foldWaveRefusal(settled.first.errorMessage ?? "INGEST refused", candidates, kapae);
+    return { ...read, refused: [...refused, ...folded.refused, ...folded.kapaeRefused] };
   }
   const k = (summaryOutput(settled.first) as { kapae?: { raised?: unknown; refused?: unknown } } | null)?.kapae;
   return {
