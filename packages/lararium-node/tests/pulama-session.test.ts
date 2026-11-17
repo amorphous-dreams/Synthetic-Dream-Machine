@@ -271,4 +271,33 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     expect((await vessel.unlockFaces([])).map((f) => f.reading)).toEqual(["already-unlocked"]);
     expect(await fx.kept.readRecord("identity", faceAtomGroupFile(GROUP_B))).toEqual({ reading: "opens", plaintext: Uint8Array.from([2]) });
   });
+
+  test("RED session-standing-names-the-lei-face: a session bound to one face names only that face open, at the session and at every refresh, though the pūlama holds more open", async () => {
+    let scoped: { fcid: string; ordinal: number } | null = null;
+    fx = await standPulama("pulama-lei-standing", () => ({ admit: async () => ({ ok: true, scope: { face: scoped, coldReads: [] } }) }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    const b = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    await fx.kept.writeRecord("identity", faceAtomGroupFile(GROUP_A), Uint8Array.from([1]));
+    // The pūlama holds both faces open; the lei names the first.
+    expect([...fx.kept.unlockedFaces()].sort()).toEqual([a.fcid, b.fcid].sort());
+    scoped = { fcid: a.fcid, ordinal: 0 };
+    const vessel = fx.vessel();
+    await vessel.unlock([]);
+    // A boot reader walks the faces the holder names open and reads each one's rows: every face it names serves.
+    expect(vessel.unlockedFaces()).toEqual([a.fcid]);
+    expect(await vessel.isFaceUnlocked({ fcid: b.fcid })).toBe(false);
+    for (const fcid of vessel.unlockedFaces()) {
+      const face = await vessel.faceStanding({ fcid });
+      expect(await vessel.readRecord("identity", `anchors-h${face!.ordinal}.json`)).toMatchObject({ reading: "absent" });
+    }
+    fx.server.refresh();
+    await new Promise((settle) => setTimeout(settle, 10));
+    expect(vessel.unlockedFaces()).toEqual([a.fcid]);
+    // CONTROL: a session the gate scoped to no face apart names every face the pūlama holds open.
+    await vessel.lock();
+    scoped = null;
+    const wide = fx.vessel();
+    await wide.unlock([]);
+    expect([...wide.unlockedFaces()].sort()).toEqual([a.fcid, b.fcid].sort());
+  });
 });
