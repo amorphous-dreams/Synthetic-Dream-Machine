@@ -168,7 +168,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     expect(t.input.raw).toEqual([true, false]);
     expect(t.said.join("")).not.toContain(FIXTURE_PASSPHRASE);
     expect(frames.map((f) => f["op"])).toEqual(["status", "admit"]);
-    expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, faces: [0], lit: true });
+    expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, lent: [0], faces: 1, lit: true });
     // THE ROUTE OPENED NOTHING: the holder stood lit before and holds the same faces after; no attempt spent.
     expect(s.fx.kept.unlockedFaces()).toEqual([s.face.fcid]);
     expect(answer["attemptsLeft"]).toBe(3);
@@ -220,10 +220,10 @@ describe("RED pulama-admit-lends-a-set", () => {
     const witness = await pulamaSignerOf(s.fx.kept);
     const lent = async () => (await s.admissions.admitted(IMAGE, witness))?.faces.map((f) => f.ordinal);
     // NONE NAMED: every lit face (h1 rests dark).
-    expect(await s.door({ op: "admit", credentials: fixtureRoute })).toMatchObject({ reading: "admitted", admitted: IMAGE, faces: [0, 2] });
+    expect(await s.door({ op: "admit", credentials: fixtureRoute })).toMatchObject({ reading: "admitted", admitted: IMAGE, lent: [0, 2] });
     expect(await lent()).toEqual([0, 2]);
     // NAMED: the set named, and a later admission writes over the row.
-    expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: [2] })).toMatchObject({ reading: "admitted", faces: [2] });
+    expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: [2] })).toMatchObject({ reading: "admitted", lent: [2] });
     expect(await lent()).toEqual([2]);
     // A NAMED DARK FACE refuses by name, and the row stays as it stood.
     expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: [0, 1] })).toMatchObject({ reading: "face-locked", face: 1, openFaces: [0, 2] });
@@ -233,7 +233,7 @@ describe("RED pulama-admit-lends-a-set", () => {
     expect(await s.door({ op: "admit", credentials: fixtureRoute, face: 0 })).toMatchObject({ reading: "lent-faces-malformed" });
     // THE VERB: several ordinals ride one line, sorted in the answer.
     const ports = { ask: (frame: Readonly<Record<string, unknown>>) => s.door(frame), route: async () => FIXTURE_PASSPHRASE };
-    expect(await runHandVerb("admit", ["2", "0"], ports)).toMatchObject({ reading: "admitted", faces: [0, 2] });
+    expect(await runHandVerb("admit", ["2", "0"], ports)).toMatchObject({ reading: "admitted", lent: [0, 2] });
     await expect(runHandVerb("admit", ["0", "h2"], ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
     expect(await lent()).toEqual([0, 2]);
   });
