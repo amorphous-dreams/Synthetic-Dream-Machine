@@ -243,6 +243,7 @@ function pulamaWaitsLine(waits: string): string {
   const next = waits === "pulama-locked" ? "the pūlama rests unlit; light it by hand (`lares-container.sh pulama light`), then run this again"
     : waits === "pulama-image-unadmitted" ? "this vessel's image stands unadmitted and it carries no offer; admit the image by hand at the pūlama (`lares-container.sh pulama admit`), or raise the vessel by the rite (`lares rite kukulu`)"
     : waits === "pulama-unreachable" ? "no pūlama answers its socket; raise it (`lares-container.sh pulama up`) and light it"
+    : waits === "composition-refused" ? "the pūlama served a session and the vessel refused to compose over it, so the session left; the vessel's log names the fault (`[lararium] the sovereign composition refused: …`), and a restart alone changes nothing"
     : waits.startsWith("kukulu-") || waits.startsWith("swarm-lei-") || waits.startsWith("rite-") ? "a rebuilt vessel enters by the rite: string a kukulu lei and run `lares rite kukulu`, which carries the lei and its vouch to the pūlama"
     : "read the pūlama's own log for that reading";
   return `this vessel's custody rests with a pūlama, and the pūlama serves it no session (${waits}). No route typed here opens it: ${next}.`;
@@ -256,6 +257,14 @@ function pulamaWaitsLine(waits: string): string {
 async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   const a = await sendCustodyFrame({ op: "unlock" });
   if (a === null) {
+    // THE DOOR MAY STILL NAME WHY: the vessel stands and its custody reading carries what the pūlama waits on (a composition it
+    // refused over the session reads `composition-refused`), so one more probe names that before the vessel reads unreachable.
+    const probe = await sendCustodyFrame({ op: "custody" });
+    const named = (probe?.["pulama"] as { waits?: unknown } | undefined)?.waits;
+    if (probe?.["op"] === "custody" && typeof named === "string") {
+      emit(args, { ok: false, error: { code: "pulama-waits", message: pulamaWaitsLine(named) }, data: probe, human: () => console.error(`lares vault unlock: ${pulamaWaitsLine(named)}`) });
+      return 1;
+    }
     emit(args, { ok: false, error: { code: "daemon-unreachable", message: "the vessel stopped answering before it asked its pūlama" }, human: () => console.error("lares vault unlock: the vessel stopped answering before it asked its pūlama") });
     return 1;
   }
