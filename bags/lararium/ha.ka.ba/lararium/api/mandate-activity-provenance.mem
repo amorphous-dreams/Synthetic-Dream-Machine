@@ -29,7 +29,7 @@ The mandate does not become the activity. An attended spirit's act reads as the 
 
 !! Worldline boundary
 
-A tasked spirit consists of an AI, its Mask and the vessel's seat. The seat belongs to the vessel. In attended work, the operator directs the spirit, whose act reads as the operator's own, with the Mask as authorship; under a standing grant, the spirit drafts without a person in the loop. The vessel's own key serves as the spirit's system identity at every boundary. A Mask pins to no key or identifier and records no identity. The derived lineage-path handle, attribution DAG and per-handle clock address and recall the spirit's work and record who drove whom; they grant no identity. The operator answers for the spirit's acts. No separate key, DID, fingerprint or signature belongs to a spirit.
+A tasked spirit consists of an AI, its Mask and the vessel seat. The seat belongs to the vessel: it carries the spirit's act and witnesses it, and the act presents the proof of the face the session wears. In attended work, the operator directs the spirit, whose act reads as the operator's own, with the Mask as authorship; under a standing grant, the spirit drafts without a person in the loop. The vessel seat stands as the spirit's system identity at every boundary, as witness, never as the face's authority. A Mask pins to no key or identifier and records no identity. The derived lineage-path handle, attribution DAG and per-handle clock address and recall the spirit's work and record who drove whom; they grant no identity. The operator answers for the spirit's acts. No separate key, DID, fingerprint or signature belongs to a spirit.
 
 The boundary record carries the parent mandate, activity, result, delegation relation and local appraisal. Re-delegation stays closed by default and must carry an explicit attenuating grant; a child never widens the parent's envelope.
 
@@ -82,6 +82,6 @@ The fiction failure modes serve as test names, not authority: False Archive test
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;RwaARe6Ny4-AhEJYiK-Gq5bZqKd9oB9j348bcPrLNfM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;vYY-UZP_sBZDQrKbh3LtMaEu86sYy-4TWxeAEZOanyM`>>
 
 <<^ code=`&#x0004;` to=`?`>>

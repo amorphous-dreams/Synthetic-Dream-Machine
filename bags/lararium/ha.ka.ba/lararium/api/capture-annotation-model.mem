@@ -239,8 +239,8 @@ t_returned }` → KG triples `(parent)—spawned→(child)`, `(child)—actedOnB
 (parent)`, `(output)—wasGeneratedBy→(task)`, each `[t_spawned,t_returned)`.
 
 ''Identity (operator ruling, pono/session-contract#/the-hands):'' an ephemeral spirit
-acts through the vessel's seat under its narrowing grant, presenting the vessel's key
-under the face it works for and wearing its Mask; the spirit holds no key or DID. Recall rides ''semantic
+sits in the vessel seat under its narrowing grant: the seat carries the act and witnesses it,
+the act presents the proof of the face the spirit works for, and the spirit wears its Mask; it holds no key or DID. Recall rides ''semantic
 search over the verbatim''
 (capabilities live in the content), so a `#has` tag is optional enrichment, never a
 deterministic gate. Persistent named actors keep proper-name wings.
@@ -349,6 +349,6 @@ this model annotates from ([[lar-telemetry|lar:///ha.ka.ba/lararium/api/lar-tele
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;nei1GB_E6JBWWYK9PUEoCf3mLgxnQro74R9-eayB-94`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Bc08o45TqaR9RwOa0Xhv-ymbISy5Lu-Z1wbgCqfEoYM`>>
 
 <<^ code=`&#x0004;` to=`?`>>
