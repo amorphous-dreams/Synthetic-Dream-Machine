@@ -331,4 +331,16 @@ describe("RED the admitted image lends its set (L4)", () => {
     await s.fx.kept.lockFace(s.faces[0]!.fcid);
     expect(await s.hello({})).toBe("kukulu-face-locked");
   });
+
+  test("an admission row whose faces read no lent set refuses the hello by the set's own reading and rests no re-service", async () => {
+    const reserved: unknown[] = [];
+    const admissions = {
+      admitted: async () => ({ refusal: "lent-faces-empty", message: "lent-faces-empty: a lend names at least one face" }),
+      reserved: async (_image: string, face: unknown) => { reserved.push(face); return reserved.length; },
+      admitByRite: async () => {}, admitByHand: async () => ({ tessera: "0".repeat(64) }), list: async () => [],
+    } as unknown as PulamaAdmissions;
+    const s = await standLend(admissions);
+    expect(await s.hello({})).toBe("lent-faces-empty");
+    expect(reserved).toHaveLength(0);
+  });
 });
