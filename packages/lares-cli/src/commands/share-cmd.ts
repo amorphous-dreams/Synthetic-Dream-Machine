@@ -24,7 +24,7 @@ import {
   type ShareFace, type ShareEntry,
 } from "@lararium/mesh";
 import type { ParsedArgs } from "../parse-args.js";
-import { LIVE_SHARE_DOORS, landShares, type ShareDoors } from "../share-doors.js";
+import { LIVE_SHARE_DOORS, landShares, shareSetArgs, type ShareDoors } from "../share-doors.js";
 
 /** Resolve `hN` tokens to face N's pet-name (bracketed where it holds a space); every other token stands as written. */
 export function petnamesOf(filter: string, faces: readonly ShareFace[]): string {
@@ -82,7 +82,7 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
     try { serializeShareFile(next); } catch (e) { doors.err(`lares ${kind} share: ${e instanceof Error ? e.message : String(e)}`); return 2; }
     doors.file.write(serializeShareFile(next));
     doors.out(`share: ${kind} ${slug} reads for ${read || "(none named)"}, writes for ${write || "(none named)"}; written to config/${SHARE_CONFIG_FILE}`);
-    const set = await doors.verb("share-set", { slug, kind, read, write, ...(workspace ? { workspace } : {}), ...(note ? { note } : {}) });
+    const set = await doors.verb("share-set", shareSetArgs(row));
     if (set === null) { doors.out("  no vessel stands: the next boot reconciles the file into the control document, the file winning"); return 0; }
     // THE OPERATOR'S HAND LANDS IT: each lit grantee takes the row by reference and a delegation from the owner's hive.
     const applied = await landShares(doors, faces);
@@ -103,7 +103,11 @@ export function cmdShare(kind: "bag" | "wiki", doors: ShareDoors = LIVE_SHARE_DO
         if (typeof w["slug"] === "string" && pet) landedOwners.set(w["slug"], pet);
       }
       const owned = next.map((r) => (r.kind === "wiki" && landedOwners.has(r.slug) && r.owner !== landedOwners.get(r.slug) ? { ...r, owner: landedOwners.get(r.slug)! } : r));
-      if (owned.some((r, i) => r !== next[i])) doors.file.write(serializeShareFile(owned));
+      if (owned.some((r, i) => r !== next[i])) {
+        doors.file.write(serializeShareFile(owned));
+        // ...AND IN THE CONTROL DOCUMENT, which share-apply reads: the file reaches it only at the vessel's next boot.
+        for (const r of owned.filter((r, i) => r !== next[i])) await doors.verb("share-set", shareSetArgs(r));
+      }
       for (const w of Array.isArray(applied["waiting"]) ? applied["waiting"] as string[] : []) doors.out(`  waits: "${w}" names no face here`);
       for (const slug of Array.isArray(applied["unowned"]) ? applied["unowned"] as string[] : []) doors.out(`  waits: "${slug}" stands in no catalog the worn face reads: wear the face that owns it (\`lares vault unlock --face N\`) and share again, or stand it first (\`lares wiki init ${slug}\`)`);
     }

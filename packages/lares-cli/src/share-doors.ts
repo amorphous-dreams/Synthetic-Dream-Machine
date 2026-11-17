@@ -8,7 +8,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { larConfigHome } from "@lararium/node";
-import { SHARE_CONFIG_FILE, type ShareFace } from "@lararium/mesh";
+import { SHARE_CONFIG_FILE, type ShareEntry, type ShareFace } from "@lararium/mesh";
 import { vesselDid } from "./env.js";
 import { runVerb } from "./verb-call.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
@@ -27,6 +27,14 @@ export interface ShareDoors {
 }
 
 const shareFilePath = (): string => join(larConfigHome(), SHARE_CONFIG_FILE);
+
+/** One row as `share-set` takes it: every field the file's row carries, its owner by pet-name among them. */
+export function shareSetArgs(row: ShareEntry): Record<string, unknown> {
+  return {
+    slug: row.slug, kind: row.kind, read: row.read, write: row.write,
+    ...(row.workspace ? { workspace: row.workspace } : {}), ...(row.owner ? { owner: row.owner } : {}), ...(row.note ? { note: row.note } : {}),
+  };
+}
 
 /** How long a share verb's read-back keeps asking the vessel for the landing's receipt once the local wait ends. */
 export const SHARE_READBACK_MS = 180_000;
