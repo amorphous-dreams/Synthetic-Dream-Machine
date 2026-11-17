@@ -77,6 +77,13 @@ describe("memePlan — the argument law, no daemon", () => {
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", recipe: "r" })).container).toEqual({ recipe: "r" });
     expect(projectPlan(memeArgs(["project", "lar:///t/x"], { to: "md", bag: "b" })).container).toEqual({ bag: "b" });
   });
+  test("RED: a store verb naming `--face` refuses `face-not-routed` rather than read or write the daemon mount's seat, and names the daemon mount it would stand in for; CONTROL: the same line with no `--face` plans", () => {
+    for (const sub of ["put", "get", "delete"] as const) {
+      expect(() => memePlan(sub, memeArgs([sub, "lar:///t/x"], { recipe: "default", face: "1" }))).toThrow(/^face-not-routed: .*daemon mount/);
+    }
+    expect(() => listPlan(memeArgs(["list"], { recipe: "default", face: "1" }))).toThrow(/^face-not-routed: .*daemon mount/);
+    expect(listPlan(memeArgs(["list"], { recipe: "default" })).args).toEqual({ recipe: "default" });
+  });
   test("★ --recipe AND --bag together refuse ★", () => {
     expect(() => memePlan("get", memeArgs(["get", "lar:///t/x"], { recipe: "sdm", bag: "sdm" }))).toThrow(/one of/);
   });
