@@ -160,7 +160,7 @@ describe("a seed's INGEST warns of fresher canon under a working copy, and write
     await r.seed(carrier("the first words"));
     const titles = await r.canonTitles();
     const [differs, equal, based] = [titles[0]!, `${URI}-equal`, `${URI}-based`];
-    // Copies written straight into the working layer's own store (as an old house's meme door did): no base.
+    // Copies written straight into the working layer's own store: no base.
     const c0 = (await r.canon.get(differs))!.tiddler;
     await r.working.put({ tiddler: { ...c0, text: `${String(c0["text"] ?? "")} and a hand's line` }, meta: {} }, hand);
     await r.canon.put({ tiddler: { title: equal, text: "canon and copy agree" }, meta: {} }, hand);

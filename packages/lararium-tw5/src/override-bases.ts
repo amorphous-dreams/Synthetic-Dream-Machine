@@ -103,8 +103,8 @@ export interface BaseUnknownCopy {
 }
 
 /**
- * THE DOUBT A MISSING BASE LEAVES, NAMED. A copy forked through a door that stamped no base (an older house's meme door or
- * LOAD), or carried from such a house, can never raise the fresher warning, and the true base cannot be recovered after
+ * THE DOUBT A MISSING BASE LEAVES, NAMED. A copy that names no base (one a door wrote straight into the working layer's
+ * store, or one a carry brought in so) can never raise the fresher warning, and the true base cannot be recovered after
  * the fact. So the instrument names each such copy whose bytes differ from the live canon record below it, for a person to
  * review: it may hide fresher canon. A copy equal to canon, a copy that names a base (the fresher read weighs it), and a
  * working-only title stay out. Reads alone; ordered by title.
