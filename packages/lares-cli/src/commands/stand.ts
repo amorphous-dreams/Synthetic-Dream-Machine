@@ -183,7 +183,7 @@ export async function cmdStand(args: ParsedArgs): Promise<number> {
   // implies" rather than "answer if something answers".
   //
   // Absence never licenses this: no marker, an unreadable one, or a writer that is gone all read
-  // `attach`, so an older vessel or a crash never becomes a restart nobody asked for. `--observe`
+  // `attach`, so a vessel that writes no marker, or a crash, never becomes a restart nobody asked for. `--observe`
   // withholds it like every other acting half.
   let liftReason: string | null = null;
   let standingReason: string | null = null;

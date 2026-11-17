@@ -173,7 +173,7 @@ export interface DeviceAdmitPayload {
    * Automerge URL of the genesis island doc on the issuing vessel's Repo.
    * Browser vessels call repo.find(islandDocUrl) over the WebSocket to sync
    * the genesis island (TW5 core blob + sigil tiddlers) without a separate
-   * binary delivery. Absent on payloads from older vessels; treated as null.
+   * binary delivery. Absent reads as null.
    */
   readonly islandDocUrl?:          string | null;
   /**
