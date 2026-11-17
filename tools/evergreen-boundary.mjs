@@ -11,7 +11,10 @@
 //   narration  — a comment that narrates history (used to, previously, legacy, the old, back-compat, …) or names the
 //                lane, wave or slice that built its line (`Wave C`, `slice 2`, `this lane`); the `#` comments of the
 //                workflows, the Dockerfile and the root compose files join this corpus.
-//   old-shape  — source identifiers, literal readings, or comments that recognize a shape from before a format cut.
+//   old-shape  — source identifiers, literal readings, or comments that recognize a shape from before a format cut, and a
+//                comment or string literal that names an OLDER PEER (an older build, vessel, daemon, pūlama, peer, writer,
+//                client or house; a frame, payload or session from an older one): a house runs one revision, so a parse
+//                refuses on its own terms and never by the build that wrote the bytes.
 // It reads lines, not a syntax tree, so a sink split across lines escapes it; false green is the tolerable side.
 //
 // FOUR MORE CLASSES hold the places a past shape lingers after its code burns (each over its own corpus):
@@ -90,6 +93,9 @@ const ID_NAME = /\b(?:[A-Za-z_$][\w$]*)?(?:id|Id|ID|nonce|Nonce|epoch|Epoch)\s*=
 const OLD_SHAPE_NAME = /\b(?:Legacy\w*Refus\w*|OldShape\w*|oldShape\w*|refuseLegacy\w*)\b/;
 const OLD_SHAPE_LITERAL = /^["']old-shape(?:-inception)?["']$/;
 const OLD_SHAPE_COMMENT = /retired (?:spelling|shape|layout|name)|falls? back to the retired|tolerates every grammar/i;
+// An older PEER, never an older run, version or runtime: the nouns name who wrote the bytes, so an older Node, an IndexedDB
+// store's older version and a run still in flight read nothing.
+const OLDER_PEER = /\bolder (?:(?:daemon|vessel|node|pūlama|pulama|peer) )?(?:builds?|vessels?|daemons?|peers?|pūlamas?|pulamas?|writers?|clients?|houses?|key holders?)\b|\b(?:frames?|payloads?|sessions?) from (?:an? )?older\b/i;
 
 // `statement` has its string literals blanked, so a clock named inside a string reads nothing; `keyed` keeps them,
 // so a quoted record key (`"requested-at":`) still names its field.
@@ -136,7 +142,7 @@ export function scanText(rel, text) {
     if (/\.(?:sh|py)$/.test(rel)) { if (clockSink(code)) add(finding("clock")); continue; }
     const literals = code.match(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g) ?? [];
     const names = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g, "\"\"");
-    if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal)) || OLD_SHAPE_COMMENT.test(comments)) add(finding("old-shape"));
+    if (OLD_SHAPE_NAME.test(names) || literals.some(literal => OLD_SHAPE_LITERAL.test(literal) || OLDER_PEER.test(literal)) || OLD_SHAPE_COMMENT.test(comments) || OLDER_PEER.test(comments)) add(finding("old-shape"));
     if (/\bschemaVersion\b/.test(names) || /["']schemaVersion["']\s*:/.test(code) || /\[\s*["']schemaVersion["']\s*\]/.test(code) || /\b(?:version|[A-Za-z_$][\w$]*Version)\s*\??\s*:\s*(?:\d[\d_]*\b|number\b)/.test(names) || VERSION_CONST.test(names) || literals.some(literal => FORMAT.test(literal.slice(1, -1)))) add(finding("version"));
     const clockCode = code.replace(/"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, "\"\"");
     if (clockSink(`${carry.clock} ${clockCode}`, `${carry.keyed} ${code}`)) add(finding("clock"));
