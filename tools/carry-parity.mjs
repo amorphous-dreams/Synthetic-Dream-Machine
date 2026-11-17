@@ -106,6 +106,20 @@ export function mergeReadings(readings) {
   return out;
 }
 
+/** A census that read nothing proves nothing: two of them compare equal, so a side with no face or no meme refuses. */
+export class CensusEmpty extends Error {
+  constructor(side, what, labels) {
+    super(`census-empty: the ${side} side read ${what} (${labels.filter(Boolean).join(", ") || "unlabelled"}); a census of nothing never reads par — read the face rows the image answers, or name the census that read the house`);
+    this.fault = "census-empty";
+    this.side = side;
+  }
+}
+function refuseEmpty(side, merged) {
+  const faces = Object.values(merged.face);
+  if (faces.length === 0) throw new CensusEmpty(side, "no face", merged.labels);
+  if (faces.every((f) => Object.keys(f.memes ?? {}).length === 0)) throw new CensusEmpty(side, "no meme", merged.labels);
+}
+
 function compareMap(scope, cls, old, fresh, base, differences) {
   for (const [key, value] of Object.entries(old)) {
     if (!(key in fresh)) differences.push({ scope, class: cls, kind: "missing", key, old: value });
@@ -125,6 +139,7 @@ function compareMap(scope, cls, old, fresh, base, differences) {
  */
 export function compareCensus(oldReadings, newReadings, baseReadings = [], { standOffs = [], carried = [] } = {}) {
   const old = mergeReadings(oldReadings), fresh = mergeReadings(newReadings);
+  for (const [side, r] of [["old", old], ["new", fresh]]) refuseEmpty(side, r);
   const base = baseReadings.length > 0 ? mergeReadings(baseReadings) : null;
   const found = [];
   const differences = found;
@@ -290,7 +305,10 @@ export async function census({ root, port, lares: laresCmd, label = "" }) {
     const r = lares(["kahua", "list", "--face", String(p.handleIndex)]);
     let answer = null;
     try { answer = JSON.parse(r.stdout.trim().split("\n").pop() ?? ""); } catch { /* the face stands shut */ }
-    const face = { petname: p.petname, handleIndex: p.handleIndex, mounted: answer?.mounted === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
+    // CROSSING SCAFFOLDING, READING BOTH IMAGES: the exporting image (983c705) answers the face row `worn`, the image under
+    // proof answers `mounted`, and a carry census reads one house of each. It burns once the swap lands and no house
+    // standing answers `worn`.
+    const face = { petname: p.petname, handleIndex: p.handleIndex, mounted: answer?.mounted === true || answer?.worn === true, relation: answer?.relation ?? null, ...(answer ? {} : { unread: (r.stderr || r.stdout).trim().slice(0, 300) }) };
     faces.push(face);
     if (face.relation && face.petname) relations[face.petname] = face.relation;
     if (face.mounted) mounted = { face, items: Array.isArray(answer.items) ? answer.items : [] };
@@ -412,7 +430,7 @@ export async function main(argv) {
     return receipt.verdict === "par" ? 0 : 1;
   } catch (e) {
     console.error(`carry-parity: ${e instanceof Error ? e.message : String(e)}`);
-    if (!(e instanceof DoorRefused)) console.error(USAGE.join("\n"));
+    if (!(e instanceof DoorRefused) && !(e instanceof CensusEmpty)) console.error(USAGE.join("\n"));
     return 2;
   }
 }
