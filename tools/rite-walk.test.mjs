@@ -621,6 +621,30 @@ test("carry-meme-text-rides-raw: the walker's meme reads ask the text alone (`--
   assert.match(script, /SWEPT \$n BAD \$bad/);
 });
 
+test("carry-light-seats-a-served-vessel: up-by-pulama reads a recreated vessel that dialed the pūlama and names what the pūlama waits on; the operator's admission (`pulama admit`, its route typed) and an unlock that reads the vessel unlocked follow it, so the leg passes only a vessel the pūlama serves", () => {
+  const { CARRY_STEPS } = present(carryLeg);
+  const { judgeUpPulama, pulamaWaits, judgePulamaAdmit } = present(imageLeg);
+  const waiting = ["[pulama] the pūlama serves no session: pulama-image-unadmitted; this vessel keeps the floor"];
+  assert.equal(pulamaWaits(waiting), "pulama-image-unadmitted");
+  assert.equal(pulamaWaits(["[pulama] unlock: this vessel stands by its pūlama"]), null);
+  const up = judgeUpPulama({ code: 0, before: "a", after: "b", lines: waiting });
+  assert.equal(up.ok, true, "the seat stands: the vessel dialed");
+  assert.match(up.answer, /waits: pulama-image-unadmitted/);
+  assert.match(up.answer, /pulama admit/, "an unadmitted image names the operator's admission");
+  assert.equal(judgeUpPulama({ code: 0, before: "a", after: "a", lines: waiting }).ok, false, "a vessel the up never recreated reads no new seat");
+  assert.equal(judgeUpPulama({ code: 0, before: "a", after: "b", lines: [] }).ok, false, "a vessel that never dialed reads no seat");
+  assert.equal(judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "admitted", admitted: "sha256:x", face: 0 }).ok, true);
+  const refused = judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "image-unreported" });
+  assert.equal(refused.ok, false);
+  assert.match(refused.answer, /image-unreported/);
+  assert.equal(judgePulamaAdmit({ code: 0, typed: false }, null).ok, false);
+  const ids = CARRY_STEPS.map((s) => s.id);
+  for (const [a, b] of [["up-by-pulama", "pulama-admit"], ["pulama-admit", "unlock-by-pulama"], ["unlock-by-pulama", "teardown"]]) assert.ok(ids.indexOf(a) >= 0 && ids.indexOf(a) < ids.indexOf(b), `${a} before ${b}`);
+  const admit = CARRY_STEPS.find((s) => s.id === "pulama-admit");
+  assert.ok(admit.needs.includes("up-by-pulama") && admit.via === "pty" && /operator/.test(admit.command), "the admission names the operator's route");
+  assert.ok(CARRY_STEPS.find((s) => s.id === "unlock-by-pulama").needs.includes("pulama-admit"));
+});
+
 test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
   const { CARRY_STEPS, CARRY_SAYS } = present(carryLeg);
   const ids = CARRY_STEPS.map((s) => s.id);
