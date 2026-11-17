@@ -101,7 +101,7 @@ describe("RED pulama-reserves-an-admitted-image", () => {
     expect(await s.reserved(IMAGE)).toBe(2);
     expect(await s.returns()).toBe(1);
     // The pūlama relit after a host reboot reads the same admission: it rests on disk, signed, and no key rests with it.
-    expect((await s.door({ op: "tessera" }))["admitted"]).toEqual([{ image: IMAGE, faces: [{ fcid: s.face.fcid, ordinal: 0 }], by: "rite", tessera: row.body.act === "image-admitted" ? row.body.tessera : "", reserved: 2 }]);
+    expect((await s.door({ op: "tessera" }))["admitted"]).toEqual([{ image: IMAGE, faces: [{ fcid: s.face.fcid, ordinal: 0 }], by: "rite", tessera: row.body.act === "image-admitted" ? row.body.tessera : "", tesserae: row.body.act === "image-admitted" ? row.body.tesserae : [], reserved: 2 }]);
   });
 });
 

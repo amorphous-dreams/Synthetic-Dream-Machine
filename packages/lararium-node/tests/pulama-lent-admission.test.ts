@@ -18,7 +18,7 @@ describe("RED pulama-admission-names-a-set", () => {
     const faces = [{ fcid: "two", ordinal: 2 }, { fcid: "zero", ordinal: 0 }];
     await admissions.admitByHand("image", faces, by);
     expect(await facesOf()).toEqual([faces[1], faces[0]]);
-    await admissions.admitByRite("image", [faces[0]!], "tessera", by);
+    await admissions.admitByRite("image", [{ ...faces[0]!, tessera: "0a".repeat(32) }], by);
     expect(await facesOf()).toEqual([faces[0]]);
     await expect(admissions.admitByHand("image", [], by)).rejects.toThrow("lent-faces-empty");
     const rest = async (fields: Record<string, unknown>): Promise<void> => {

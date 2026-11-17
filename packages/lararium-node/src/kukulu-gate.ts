@@ -19,10 +19,12 @@
  * lit it refuses `kukulu-face-locked`), spends no lei and rests one re-service row. A
  * restart with no rebuild therefore wakes standing. Any other image refuses `pulama-image-unadmitted`, and the refusal
  * names the two acts that admit one: the hand's `pulama admit`, and the rite (`lares rite kukulu`). An admission row whose
- * faces read no lent set refuses by the set's own reading (`lent-faces-empty`, `lent-faces-malformed`).
+ * faces read no lent set refuses by the set's own reading (`lent-faces-empty`, `lent-faces-malformed`), and one whose
+ * tesserae name no tessera per face refuses `admission-tesserae-mismatch`.
  *
- * AN IMAGE STANDS ADMITTED ONCE ITS KŪKULU LANDS PAR. The scope's `land` rests the host half; where the pair reads par, the
- * image the vouch walked joins the admitted set under the rite's own tessera. A kūkulu that never composed admits nothing.
+ * AN IMAGE STANDS ADMITTED ONCE ITS KŪKULU LANDS PAR. The scope's `land` rests each face's host half; where every pair reads
+ * par, the image the vouches walked joins the admitted set on every lent face's own rite tessera. A kūkulu that never
+ * composed admits nothing.
  *
  * ── WHAT THE GATE READS OF AN OFFER, IN ORDER; EACH MISS REFUSES BY NAME ────────────────────────
  *   `kukulu-unvouched`          the offer carries a lei and no vouch
@@ -224,8 +226,8 @@ export function kukuluGate(a: {
           let par = true;
           for (const b of begun) par = (await a.rite.land(b.tessera, b.at)).par && par;
           // PAR ADMITS: the kūkulu composed and every half matches, so the image its vouches walked serves the lent set again
-          // without a lei. The admission rests on the lowest lent face's tessera; each face's pair stays in the records.
-          if (par && a.admissions) await a.admissions.admitByRite(raised, admittedWire(lentOf(begun.map((b) => b.face))), begun[0]!.tessera, by);
+          // without a lei. The admission names every lent face's tessera, each face's own rite pair.
+          if (par && a.admissions) await a.admissions.admitByRite(raised, begun.map((b) => ({ ...b.face, tessera: b.tessera })), by);
           return { par };
         },
       };

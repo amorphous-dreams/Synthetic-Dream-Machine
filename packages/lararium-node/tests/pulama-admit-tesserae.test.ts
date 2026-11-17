@@ -1,7 +1,7 @@
 /**
  * pulama-admit-tesserae — an admission names every lent face's tessera: a rite admits on each face's own rite tessera (its
  * guest and host halves), and the admission's own tessera names that set; a hand admits every face under its one tessera. A
- * row whose tesserae miss a face, add one, or name another set reads as no admission.
+ * signed row whose tesserae miss a face, add one, or name another set refuses `admission-tesserae-mismatch` by name.
  */
 import { describe, expect, test } from "vitest";
 import { canonicalJsonBytes, ed25519SignerFromSeed, ed25519VerifyingKeyFromSeed, sha256HexBytesSync, type SwarmWikiPort } from "@lararium/mesh";
@@ -32,7 +32,7 @@ describe("RED pulama-admission-names-every-tessera", () => {
     await s.admissions.admitByRite("image", [{ fcid: "two", ordinal: 2, tessera: T2 }, { fcid: "zero", ordinal: 0, tessera: T0 }], s.by);
     const admitted = await s.admissions.admitted("image", s.by);
     expect(admitted).toMatchObject({ by: "rite", faces: [{ fcid: "zero", ordinal: 0 }, { fcid: "two", ordinal: 2 }], tesserae: [{ ordinal: 0, tessera: T0 }, { ordinal: 2, tessera: T2 }] });
-    expect(admitted!.tessera).toBe(sha256HexBytesSync(canonicalJsonBytes([{ ordinal: 0, tessera: T0 }, { ordinal: 2, tessera: T2 }])));
+    expect(admitted !== null && "tessera" in admitted ? admitted.tessera : null).toBe(sha256HexBytesSync(canonicalJsonBytes([{ ordinal: 0, tessera: T0 }, { ordinal: 2, tessera: T2 }])));
     expect((await s.admissions.list(s.by))[0]).toMatchObject({ tesserae: [{ ordinal: 0, tessera: T0 }, { ordinal: 2, tessera: T2 }] });
   });
 
@@ -42,7 +42,7 @@ describe("RED pulama-admission-names-every-tessera", () => {
     expect(await s.admissions.admitted("image", s.by)).toMatchObject({ by: "hand", tessera, tesserae: [{ ordinal: 0, tessera }, { ordinal: 2, tessera }] });
   });
 
-  test("CONTROL: a rite row whose tesserae miss a face, add one, repeat one or name another set reads as no admission; a rite naming no tessera refuses", async () => {
+  test("CONTROL: a signed rite row whose tesserae miss a face, add one, repeat one, name another set or name none refuses `admission-tesserae-mismatch`; a rite naming no tessera refuses", async () => {
     const s = await stand();
     const rites = [{ fcid: "zero", ordinal: 0, tessera: T0 }, { fcid: "two", ordinal: 2, tessera: T2 }];
     for (const change of [
@@ -53,9 +53,10 @@ describe("RED pulama-admission-names-every-tessera", () => {
       (b: Record<string, unknown>) => { const { tesserae: _drop, ...rest } = b; return rest; },
     ]) {
       await s.admissions.admitByRite("image", rites, s.by);
-      expect(await s.admissions.admitted("image", s.by)).not.toBeNull();
+      expect(await s.admissions.admitted("image", s.by)).toMatchObject({ by: "rite" });
       await s.resign("image", change);
-      expect(await s.admissions.admitted("image", s.by)).toBeNull();
+      expect(await s.admissions.admitted("image", s.by)).toMatchObject({ refusal: "admission-tesserae-mismatch" });
+      expect(await s.admissions.list(s.by)).toEqual([]);
     }
     await expect(s.admissions.admitByRite("image", [{ fcid: "zero", ordinal: 0, tessera: "" }], s.by)).rejects.toThrow("admission-tessera-malformed");
   });
