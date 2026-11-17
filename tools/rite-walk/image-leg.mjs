@@ -563,10 +563,14 @@ export function judgePulamaAdmit(r, answer) {
   return { ok, answer: `exit ${r?.code}; route typed: ${r?.typed === true}; reading ${answer?.reading ?? "(none)"}${answer?.admitted ? ` · admitted ${answer.admitted} for face ${answer.face}` : ""}` };
 }
 
-/** THE OPERATOR'S HAND ADMITS THE IMAGE the host reported at `up`: `pulama admit` reads the route on a terminal (the published
- *  test route here) and proves it against the lit holder; it opens nothing. */
+/** The admission's shim line: it names the face (the steward, h0), since a pūlama holding several faces open answers
+ *  `face-not-named` to an admit that names none. */
+export const pulamaAdmitArgs = (face = 0) => ["pulama", "admit", String(face)];
+
+/** THE OPERATOR'S HAND ADMITS THE IMAGE the host reported at `up`: `pulama admit 0` reads the route on a terminal (the
+ *  published test route here) and proves it against the lit holder; it opens nothing. */
 export const pulamaAdmit = async (h) => {
-  const r = await h.pty(h.shimLine(["pulama", "admit"]), { says: [{ prompt: "to admit ", answer: TEST_PASSPHRASE }], route: TEST_PASSPHRASE, timeout: 120_000 });
+  const r = await h.pty(h.shimLine(pulamaAdmitArgs()), { says: [{ prompt: "to admit ", answer: TEST_PASSPHRASE }], route: TEST_PASSPHRASE, timeout: 120_000 });
   const j = judgePulamaAdmit(r, lastJson(r.stdout.replace(/\r/g, "")));
   return { ...j, measures: { ms: r.ms } };
 };
