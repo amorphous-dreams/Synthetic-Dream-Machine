@@ -6,8 +6,8 @@
  *   1. checkout     the checkout's head and branch
  *   2. rite-begin   IN THE VESSEL: derive the head's tree, return the kukulu lei, rest the guest half (`rite-begun`)
  *   3. shim build   rebuild the vessel's image from the committed checkout
- *   3a. rite-offer  IN THE VESSEL, where the host names the image it built (`image`): gather the line's lei, sign the vouch
- *                   over that image, and rest the offer the new vessel carries to the pūlama (`kukulu-offer.json`)
+ *   3a. rite-offer  IN THE VESSEL, where the host names the image it built (`image`): gather every lent face's line, sign
+ *                   one vouch per face over that image, and rest the offer the new vessel carries to the pūlama (`kukulu-offer.json`)
  *   4. shim down    the standing vessel goes down
  *   5. shim up      a new vessel stands
  *   6. rite-land    IN THE NEW VESSEL: rest the host half (`rite-landed`), naming the begun half and the head it stands at
@@ -74,7 +74,10 @@ export async function riteKukulu(ports: RitePorts, opts: { readonly branch?: str
       ports.say(`kūkulu: the standing vessel wrote no offer (${offered.message}); it still stands, the lei's return stays spent, and the begun half reads red until a vessel at ${head} lands it (${landCall}).`);
       return { code: 1, data: { ...base, tessera, begun: true, landed: false, stopped: "offer", refusal: offered.code } };
     }
-    ports.say(`kūkulu: the offer rests for the next vessel (${String(offered.output["lei"] ?? "?")} lei, a vouch over ${image})`);
+    const names = (key: string): string[] => (Array.isArray(offered.output[key]) ? (offered.output[key] as unknown[]).map(String) : []);
+    const faces = names("faces"), waits = names("waits");
+    ports.say(`kūkulu: the offer rests for the next vessel (${String(offered.output["lei"] ?? "?")} lei, a vouch for each of ${faces.length > 0 ? faces.join(", ") : "the lent faces"} over ${image})`);
+    for (const face of waits) ports.say(`kūkulu: ${face} carries no lei on this line and waits at the pūlama by name; the other faces' lend stands`);
   }
   const landed = await ports.row("rite-land", { tessera, head });
   if (landed.ok) {

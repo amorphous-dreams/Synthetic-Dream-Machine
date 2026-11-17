@@ -44,8 +44,11 @@ export const kukuluOfferPath = (): string => join(larConfigHome(), KUKULU_OFFER_
 
 export interface KukuluOffer { readonly lei: readonly SignedSwarmAct[]; readonly unstrung: readonly unknown[]; readonly vouch: readonly SignedKukuluVouch[] }
 
-/** One face the offer asks lent: its group, the trust its own hand's records verify under, and its ward witness. */
-export interface KukuluOfferFace { readonly group: string; readonly trust: SwarmTrust; readonly ward: WardActWitness }
+/**
+ * One face the offer asks lent: its group, the trust its own hand's records verify under, its ward witness, and the name the
+ * answer gives it (`h<ordinal>`; its group where the caller names none).
+ */
+export interface KukuluOfferFace { readonly group: string; readonly trust: SwarmTrust; readonly ward: WardActWitness; readonly name?: string }
 
 const IMAGE_DIGEST = /^[a-z0-9]+:[0-9a-f]{32,128}$/;
 
@@ -64,11 +67,19 @@ export async function writeKukuluOffer(a: {
   /** The holder whose custody root yields the vouch key: this vessel's seated one. */
   readonly holder: Pick<CustodyHolder, "derive">;
   readonly path: string;
-}): Promise<{ readonly path: string; readonly vouch: readonly string[]; readonly lei: number; readonly verdict: "pass" | "fail" }> {
+}): Promise<{
+  readonly path: string; readonly vouch: readonly string[]; readonly lei: number; readonly verdict: "pass" | "fail";
+  /** Every face the offer vouches for, by name, in the order asked. */
+  readonly faces: readonly string[];
+  /** The faces whose line carries no lei: each rides its vouch and waits at the pūlama by name. */
+  readonly waits: readonly string[];
+}> {
   if (!IMAGE_DIGEST.test(a.image)) throw new SwarmRefused("rite-offer-malformed", "an offer names the image by its digest, `<algorithm>:<hex>`");
-  const lei: SignedSwarmAct[] = [], unstrung: unknown[] = [];
+  const lei: SignedSwarmAct[] = [], unstrung: unknown[] = [], waits: string[] = [];
+  const nameOf = (face: KukuluOfferFace): string => face.name ?? face.group;
   for (const face of a.faces) {
     const chain = await readLeiChain(a.wiki, { rite: "kukulu", branch: a.branch }, face.trust, face.group, face.ward);
+    if (chain.cosigned.length === 0) waits.push(nameOf(face));
     for (const row of chain.cosigned) {
       lei.push(row.act);
       const text = await a.wiki.read(swarmLeiUnstrungTitle(row.cid));
@@ -91,7 +102,7 @@ export async function writeKukuluOffer(a: {
   const fd = openSync(tmp, "w", 0o600);
   try { writeSync(fd, JSON.stringify(offer)); fsyncSync(fd); } finally { closeSync(fd); }
   renameSync(tmp, a.path);
-  return { path: a.path, vouch: vouch.map((v) => kukuluVouchDigest(v)), lei: offer.lei.length, verdict };
+  return { path: a.path, vouch: vouch.map((v) => kukuluVouchDigest(v)), lei: offer.lei.length, verdict, faces: a.faces.map(nameOf), waits };
 }
 
 /** Remove a spent offer; answers whether a file went. A file that will not go stays, and the caller names it. */

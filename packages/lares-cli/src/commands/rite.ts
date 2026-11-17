@@ -14,8 +14,8 @@
  *   begin      `rite-begin` in the vessel: derive the head's tree, return the rite's lei, rest the guest half of the tessera
  *   land       `rite-land` in the vessel that stands after: rest the host half, naming the begun half and the head
  *   receipts   `rite-receipts`: every half that verifies (`data.receipts`) and conferre's read of them (`data.conferre`)
- *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather the line's lei, sign the vouch over
- *              the image the host built, and rest the offer the next vessel carries to the pūlama
+ *   offer      `rite-offer` in the STANDING vessel, between the build and the lowering: gather every lent face's line, sign one
+ *              vouch per face over the image the host built, and rest the offer the next vessel carries to the pūlama
  *   receipt    `rite-receipt`: the host battery hands the vessel its verdict over a tree, and the vessel signs `receipt/<tree>`.
  *              It notarises testimony: the vessel re-runs no check
  *
@@ -217,12 +217,19 @@ const readShim = (shim: string, verb: string): Promise<string | null> => new Pro
 /** The shim verb that names the digest of the image the build left (the same digest the shim reports to a pūlama at `up`). */
 export const SHIM_IMAGE_VERB = "image-digest";
 
+/**
+ * One vessel row as the host's CLI line. The begin and the landing act as the face the rite names; the offer gathers every
+ * lent face's line in the vessel, so it names none.
+ */
+export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", rowArgs: Record<string, unknown>, face: string | undefined): string[] =>
+  ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs), ...(face === undefined || verb === "rite-offer" ? [] : ["--face", face])];
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(runShim: (verb: string) => Promise<number>, face: string | undefined, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
     image,
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
-    row: (verb, rowArgs) => cliVerb(["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs), ...(face === undefined ? [] : ["--face", face])]),
+    row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs, face)),
     shim: (verb) => runShim(verb),
     say,
   };

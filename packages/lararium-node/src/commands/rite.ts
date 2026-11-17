@@ -28,8 +28,8 @@ import {
 } from "@lararium/mesh";
 import { loadFaceFold, nodeWardCosignPortOf, IntentRefused, type FaceFold } from "./intent.js";
 import { treeOfHead } from "../git-tree-reader.js";
-import { openedCustody } from "../custody-seat.js";
-import { kukuluOfferPath, writeKukuluOffer } from "../kukulu-offer.js";
+import { openedCustody, unlockedFaceOrdinals } from "../custody-seat.js";
+import { kukuluOfferPath, writeKukuluOffer, type KukuluOfferFace } from "../kukulu-offer.js";
 import { larWorkspacesHome } from "../vessel-paths.js";
 import { CarryBundleRefused, unsafeRelPath, verifyBundle } from "../carry-manifest.js";
 
@@ -82,6 +82,34 @@ export async function riteTreeOf(rite: SwarmLeiRite, head: string, gitTree: (hea
   return derived;
 }
 
+/**
+ * EVERY LENT FACE'S LINE RIDES THE OFFER. A kūkulu lends the next vessel the faces this one serves, so the offer gathers one
+ * face per lent ordinal, in the lend's order, each named `h<ordinal>` and loaded through `face`. No lent face refuses
+ * `lent-faces-empty`; a lent face whose log reads unloadable refuses `face-log-unreadable`, naming it, and the offer rests nothing.
+ */
+export async function lentOfferFaces(lent: readonly number[], face: (ordinal: number) => Promise<KukuluOfferFace>): Promise<KukuluOfferFace[]> {
+  if (lent.length === 0) throw new SwarmRefused("lent-faces-empty", "the offer gathers the lent faces' lines, and this vessel serves no face");
+  const out: KukuluOfferFace[] = [];
+  for (const ordinal of lent) {
+    let loaded: KukuluOfferFace;
+    try { loaded = await face(ordinal); }
+    catch (e) { if (e instanceof SwarmRefused) throw e; throw new SwarmRefused("face-log-unreadable", `the lent face h${ordinal} loads no log: ${e instanceof Error ? e.message : String(e)}`); }
+    out.push({ ...loaded, name: `h${ordinal}` });
+  }
+  return out;
+}
+
+/** One loaded face as the offer reads it: its group, the trust its hand and this device's atom verify under, its ward witness. */
+async function offerFaceOf(repo: Repo, catalogUrl: string | undefined, ordinal: number): Promise<KukuluOfferFace> {
+  let fold: FaceFold;
+  try { fold = await loadFaceFold(repo, catalogUrl, { index: ordinal }); }
+  catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
+  const vesselKey = fold.signer.key.toLowerCase();
+  const trust: SwarmTrust = { hand: (key) => fold.face.currentSigner(key), vessel: (key) => key === vesselKey, lead: () => false };
+  try { return { group: fold.group, trust, ward: cosignPortWitness(await nodeWardCosignPortOf(repo, fold)) }; }
+  catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", `h${ordinal}: ${e.message}`); throw e; }
+}
+
 export async function runRiteVerb(opts: {
   repo: Repo; catalogUrl?: string; face?: number; action: RiteAction;
   args: Readonly<Record<string, unknown>>; wiki?: SwarmWikiPort;
@@ -91,9 +119,23 @@ export async function runRiteVerb(opts: {
   offerPath?: string;
   /** Where a keep's workspaces stand; the house's workspaces home where the caller seats none. */
   workspacesHome?: string;
+  /** The faces this vessel serves, by ordinal; the custody seat's unlocked faces where the caller seats none. */
+  lentOrdinals?: () => Promise<readonly number[]>;
 }): Promise<Record<string, unknown>> {
   if (!opts.wiki) throw new SwarmRefused("swarm-no-daemon", "no standing daemon: a rite's records need the founded wiki");
   const str = (key: string): string => (typeof opts.args[key] === "string" ? opts.args[key] as string : "");
+  if (opts.action === "offer") {
+    // THE OFFER A KŪKULU CARRIES TO THE PŪLAMA: this vessel, still standing, gathers every lent face's line and signs one vouch
+    // per face over the image the host named, then rests them where the next vessel reads them (`kukulu-offer`). It loads each
+    // lent face itself, so no one face loads first.
+    if (!str("branch") || !str("head") || !str("image")) throw new SwarmRefused("rite-offer-malformed", "an offer names its branch, its head and the image the host built");
+    const offerTree = await (opts.treeOf ?? gitTreeOf)(str("head"));
+    const faces = await lentOfferFaces(await (opts.lentOrdinals ?? unlockedFaceOrdinals)(), (ordinal) => offerFaceOf(opts.repo, opts.catalogUrl, ordinal));
+    return { ...await writeKukuluOffer({
+      wiki: opts.wiki, faces, branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
+      holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
+    }) };
+  }
   let loaded: FaceFold;
   try { loaded = await loadFaceFold(opts.repo, opts.catalogUrl, { index: opts.face }); }
   catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", e.message); throw e; }
@@ -109,19 +151,6 @@ export async function runRiteVerb(opts: {
   if (opts.action === "land") {
     if (!/^[0-9a-f]{64}$/.test(str("tessera")) || !str("head")) throw new SwarmRefused("rite-malformed", "a landing names its tessera and the head the vessel stands at");
     return { ...await landRite(opts.wiki, { tessera: str("tessera"), head: str("head") }, trust, group, vessel) };
-  }
-  if (opts.action === "offer") {
-    // THE OFFER A KŪKULU CARRIES TO THE PŪLAMA: this vessel, still standing, gathers the line's lei and signs the vouch over
-    // the image the host named, then rests both where the next vessel reads them (`kukulu-offer`).
-    if (!str("branch") || !str("head") || !str("image")) throw new SwarmRefused("rite-offer-malformed", "an offer names its branch, its head and the image the host built");
-    const offerTree = await (opts.treeOf ?? gitTreeOf)(str("head"));
-    let offerWard;
-    try { offerWard = cosignPortWitness(await nodeWardCosignPortOf(opts.repo, loaded)); }
-    catch (e) { if (e instanceof IntentRefused) throw new SwarmRefused("face-log-unreadable", e.message); throw e; }
-    return { ...await writeKukuluOffer({
-      wiki: opts.wiki, faces: [{ group, trust, ward: offerWard }], branch: str("branch"), head: str("head"), tree: offerTree, image: str("image"),
-      holder: await openedCustody(), path: opts.offerPath ?? kukuluOfferPath(),
-    }) };
   }
   const rite = opts.args["rite"];
   if (!isSwarmLeiRite(rite) || !str("branch") || !str("head")) throw new SwarmRefused("rite-malformed", "a rite names its rite, its branch and the head it runs at");
