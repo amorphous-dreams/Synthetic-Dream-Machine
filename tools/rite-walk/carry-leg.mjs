@@ -818,9 +818,17 @@ const parity = async (c) => {
  *  of that envelope refuses (`postamble-content`), so the read asks `--no-json`. */
 export const memeGetArgs = (uri) => ["meme", "get", uri, "--recipe", "default", "--no-json"];
 
+/** A `row-key` meta line however canon pads its key (`row-key = "…"`, `row-key     = "…"`), as a sed/grep basic regex. */
+export const ROW_KEY_BRE = '^row-key[[:space:]]*=[[:space:]]*"[^"]*"[[:space:]]*$';
+
 /** The sweep's one exec inside the vessel: read each stage row as text (`--no-json`), strip its `row-key` line, put it back.
- *  A refused row prints with the refusal's own text (the get's stderr, or the put's answer), so the receipt names why. */
-export const sweepScript = (cli) => `n=0; bad=0; for u in $(cat /lar/config/sweep/uris); do n=$((n+1)); if ${cli} meme get "$u" --recipe default --no-json > /tmp/sweep.mem 2> /tmp/sweep.err && sed -i '/^row-key = "[^"]*"$/d' /tmp/sweep.mem && ${cli} meme put "$u" --recipe default --file /tmp/sweep.mem --json > /tmp/sweep.err 2>&1; then :; else bad=$((bad+1)); echo "SWEEP-REFUSED $u: $(tail -c 400 /tmp/sweep.err | tr '\\n' ' ')"; fi; done; echo "SWEPT $n BAD $bad"`;
+ *  A meme read back pads its meta keys to one column, so the strip matches the key however padded. A refused row prints with
+ *  the refusal's own text (the get's stderr, or the put's answer), so the receipt names why. `uris` and `tmp` move for a test. */
+export const sweepScript = (cli, { uris = "/lar/config/sweep/uris", tmp = "/tmp" } = {}) => `n=0; bad=0; for u in $(cat ${uris}); do n=$((n+1)); if ${cli} meme get "$u" --recipe default --no-json > ${tmp}/sweep.mem 2> ${tmp}/sweep.err && sed -i '/${ROW_KEY_BRE}/d' ${tmp}/sweep.mem && ${cli} meme put "$u" --recipe default --file ${tmp}/sweep.mem --json > ${tmp}/sweep.err 2>&1; then :; else bad=$((bad+1)); echo "SWEEP-REFUSED $u: $(tail -c 400 ${tmp}/sweep.err | tr '\\n' ' ')"; fi; done; echo "SWEPT $n BAD $bad"`;
+
+/** The keyed count, inside the vessel over the same rows: each row read back as text, and counted where a `row-key` line
+ *  stands (padded or bare). A row that reads nothing counts apart (`UNREAD`), so a count of nothing never reads as a strip. */
+export const keyedScript = (cli, { uris = "/lar/config/sweep/uris", tmp = "/tmp" } = {}) => `n=0; k=0; x=0; for u in $(cat ${uris}); do n=$((n+1)); if ${cli} meme get "$u" --recipe default --no-json > ${tmp}/keyed.mem 2>/dev/null; then if grep -q '${ROW_KEY_BRE}' ${tmp}/keyed.mem; then k=$((k+1)); fi; else x=$((x+1)); fi; done; echo "KEYED $k OF $n UNREAD $x"`;
 
 /** The instrument must read red where the new house moved: one row dropped, one row changed; then both restored, par again. */
 const instrumentCollisions = async (c) => {
@@ -888,11 +896,15 @@ const rowKeySweep = async (c) => {
   const h = c.hands("new");
   const w = await wear(c, "new", 0);
   if (!w.ok) return { ok: false, answer: `the steward never stood worn: ${tail(w.transcript)}` };
-  const keyed = async () => (json((await h.shim(["wiki", "filter", `[prefix[${STAGE_PREFIX}]has[row-key]]`, "--recipe", "default", "--all", "--json"], { timeout: 300_000 })).stdout)?.data?.rows ?? []).length;
-  const before = await keyed();
-  const script = sweepScript(IN_CLI);
   mkdirSync(join(c.scope.houseNew, "config", "sweep"), { recursive: true });
   writeFileSync(join(c.scope.houseNew, "config", "sweep", "uris"), `${(c.vars.stageUris ?? []).join("\n")}\n`);
+  // THE COUNT READS THE ROWS THE SWEEP READS, as text: a key the meta pads counts, and a row that reads nothing counts apart.
+  const keyed = async () => {
+    const k = /KEYED (\d+) OF (\d+) UNREAD (\d+)/.exec(said(await h.compose(["exec", "-T", "lares", "sh", "-c", keyedScript(IN_CLI)], { timeout: 1_800_000 })));
+    return k ? { keyed: Number(k[1]), of: Number(k[2]), unread: Number(k[3]) } : null;
+  };
+  const before = await keyed();
+  const script = sweepScript(IN_CLI);
   const r = await h.compose(["exec", "-T", "lares", "sh", "-c", script], { timeout: 3_600_000 });
   const m = /SWEPT (\d+) BAD (\d+)/.exec(said(r));
   const after = await keyed();
@@ -901,7 +913,10 @@ const rowKeySweep = async (c) => {
   const keyless = await h.shim(["meme", "put", fresh, "--recipe", "default", "--file", "/lar/config/sweep/keyless.mem", "--json"]);
   const refusedRows = said(r).split("\n").filter((l) => l.startsWith("SWEEP-REFUSED ")).map((l) => l.slice("SWEEP-REFUSED ".length).trim());
   c.vars.sweep = { before, after, swept: m ? Number(m[1]) : null, bad: m ? Number(m[2]) : null, keylessExit: keyless.code, refused: refusedRows.slice(0, 20) };
-  return { ok: m !== null && Number(m[2]) === 0 && after === 0 && keyless.code === 0, answer: `keyed rows ${before} → ${after}; swept ${c.vars.sweep.swept}, refused ${c.vars.sweep.bad}; a keyless row: exit ${keyless.code}${refusedRows.length ? ` · refused: ${refusedRows.slice(0, 3).join(" · ")}` : ""}`, measures: c.vars.sweep };
+  // THE SWEEP PROVES A STRIP: keyed rows stood before it (the seed keys every stage row), none after, and every row read.
+  const proved = before !== null && after !== null && before.keyed > 0 && before.unread === 0 && after.keyed === 0 && after.unread === 0;
+  const shown = (k) => (k === null ? "(no count)" : `${k.keyed}/${k.of}${k.unread ? ` (${k.unread} unread)` : ""}`);
+  return { ok: m !== null && Number(m[2]) === 0 && proved && keyless.code === 0, answer: `keyed rows ${shown(before)} → ${shown(after)}; swept ${c.vars.sweep.swept}, refused ${c.vars.sweep.bad}; a keyless row: exit ${keyless.code}${refusedRows.length ? ` · refused: ${refusedRows.slice(0, 3).join(" · ")}` : ""}`, measures: c.vars.sweep };
 };
 
 /** The containers go down; the base clears, save under `--keep` (`vars.keep`), where it stands for a reader after the walk. */

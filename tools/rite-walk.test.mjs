@@ -957,7 +957,7 @@ function sweepStore(texts) {
   const store = join(dir, "store");
   mkdirSync(store);
   const cli = join(dir, "cli");
-  writeFileSync(cli, `#!/bin/sh\nf="${store}/$(printf %s "$3" | md5sum | cut -d' ' -f1)"\ncase "$2" in get) cat "$f" ;; put) cp "$6" "$f" ;; *) exit 9 ;; esac\n`, { mode: 0o755 });
+  writeFileSync(cli, `#!/bin/sh\nf="${store}/$(printf %s "$3" | md5sum | cut -d' ' -f1)"\ncase "$2" in get) cat "$f" ;; put) cp "$7" "$f" ;; *) exit 9 ;; esac\n`, { mode: 0o755 });
   const key = (u) => createHash("md5").update(u).digest("hex");
   for (const [u, t] of Object.entries(texts)) writeFileSync(join(store, key(u)), t);
   const uris = join(dir, "uris");
