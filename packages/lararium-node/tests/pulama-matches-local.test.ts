@@ -10,7 +10,7 @@ import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { faceProofKeyFile } from "../src/face-key-custody.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { PulamaRefused } from "../src/pulama-wire.js";
-import { fixtureRoute, fixtureSlots, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { fixtureRoute, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -29,7 +29,7 @@ async function outcome<T>(run: () => Promise<T> | T): Promise<unknown> {
 }
 
 async function stand() {
-  fx = await standPulama("pulama-matches", () => openGate({ face: null, coldReads: ["face-proof-key"] }));
+  fx = await standPulama("pulama-matches", () => openGate({ faces: lend(0), coldReads: ["face-proof-key"] }));
   const face = await fx.local.foundFace({ group: personaGroupDigest(GROUP), ordinal: 0, slots: fixtureSlots });
   expect((await fx.kept.unlockFace({ fcid: face.fcid }, fixtureRoute)).reading).toBe("opens");
   const remote = fx.vessel();

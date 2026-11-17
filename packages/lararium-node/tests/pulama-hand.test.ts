@@ -15,7 +15,7 @@ import { swarmTesseraTitle } from "@lararium/mesh";
 import { pulamaImage, pulamaRecords } from "../src/pulama-state.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
 import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
-import { SESSION_DERIVES, fixtureSlots, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { SESSION_DERIVES, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -46,11 +46,11 @@ describe("the pūlama's state holds signed rows and a public digest", () => {
 
 describe("only the hand door lights the pūlama", () => {
   test("light opens the vessel key and its faces; a wrong route spends an attempt; image, tessera, status and lock answer no secret", async () => {
-    fx = await standPulama("pulama-hand", () => openGate({ face: null, coldReads: [] }));
+    fx = await standPulama("pulama-hand", () => openGate({ faces: lend(0), coldReads: [] }));
     await fx.kept.foundFace({ group: personaGroupDigest("group-hand"), ordinal: 0, slots: fixtureSlots });
     // A pūlama's own start: a fresh holder over the hearth, holding nothing.
     const holder = makeCustodyHolder({ io: new FsCustodyIo(fx.seat.homes), homes: fx.seat.homes });
-    const server = servePulama({ holder, gate: openGate({ face: null, coldReads: [] }), derives: SESSION_DERIVES });
+    const server = servePulama({ holder, gate: openGate({ faces: lend(0), coldReads: [] }), derives: SESSION_DERIVES });
     const dir = scratch(), records = pulamaRecords(dir);
     const lines: string[] = [];
     const door = pulamaHandDoor({ holder, server, image: pulamaImage(dir), records, onLog: (l) => lines.push(l) });
@@ -88,11 +88,9 @@ describe("a vessel finds its pūlama by one name and stands by it", () => {
   });
 
   test("a session mounts the lei's face and composes sovereign; its drop composes at the floor; a refused hello keeps the floor", async () => {
-    let scope: { fcid: string; ordinal: number } | null = null;
     let admit = true;
-    fx = await standPulama("pulama-stand-by", () => ({ admit: async () => admit ? { ok: true, scope: { face: scope, coldReads: [] } } : { ok: false, reading: "kukulu-unvouched" } }));
-    const face = await fx.kept.foundFace({ group: personaGroupDigest("group-stand-by"), ordinal: 0, slots: fixtureSlots });
-    scope = { fcid: face.fcid, ordinal: 0 };
+    fx = await standPulama("pulama-stand-by", () => ({ admit: async () => admit ? { ok: true, scope: { faces: lend(0), coldReads: [] } } : { ok: false, reading: "kukulu-unvouched" } }));
+    await fx.kept.foundFace({ group: personaGroupDigest("group-stand-by"), ordinal: 0, slots: fixtureSlots });
     const composed: boolean[] = [], mounted: number[] = [], lines: string[] = [];
     const deps = { recompose: async (sovereign: boolean) => { composed.push(sovereign); return { standing: sovereign ? "hearth" : "floor" }; }, mount: (o: number) => { mounted.push(o); }, onLog: (l: string) => { lines.push(l); } };
     const vessel = fx.vessel();

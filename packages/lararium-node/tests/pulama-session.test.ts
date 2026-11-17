@@ -8,14 +8,16 @@ import { custodyRootFromBytes, openCustodyRootCarrier } from "../src/custody-roo
 import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { faceProofKeyFile } from "../src/face-key-custody.js";
 import { personaGroupDigest } from "../src/persona-group-file.js";
-import { PulamaRefused, unpackBytes, type PulamaChannel } from "../src/pulama-wire.js";
-import { fixtureRoute, fixtureSlots, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { makePulamaHolder } from "../src/pulama-holder.js";
+import { PulamaRefused, pulamaChannelPair, unpackBytes, type PulamaChannel } from "../src/pulama-wire.js";
+import { fixtureRoute, fixtureSlots, lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
 const HOT = ".persona-admissions.json";
 const GROUP_A = "group-pulama-a";
 const GROUP_B = "group-pulama-b";
+const GROUP_C = "group-pulama-c";
 const WARDED = ".persona-group-root-h0.json";
 const COLD_NODE = "intent-relay-key.bin";
 
@@ -48,7 +50,7 @@ function ask(channel: PulamaChannel, id: number, op: string, a: Record<string, u
 
 describe("RED pulama-serves-no-key: no frame either side writes carries a key the holder holds", () => {
   test("a working session's frames hold no vessel key, custody root, face key or ward key; CONTROL: the scan finds a derived child", async () => {
-    fx = await standPulama("pulama-no-key", () => openGate({ face: null, coldReads: ["face-proof-key"] }));
+    fx = await standPulama("pulama-no-key", () => openGate({ faces: lend(0), coldReads: ["face-proof-key"] }));
     const face = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     const wardKeys: Uint8Array[] = [];
     fx.kept.watchWardKeys((key) => { wardKeys.push(Uint8Array.from(key)); });
@@ -90,7 +92,7 @@ describe("RED pulama-serves-no-key: no frame either side writes carries a key th
   });
 
   test("a lock drops every session and zero-fills the keys the holder held", async () => {
-    fx = await standPulama("pulama-lock", () => openGate({ face: null, coldReads: [] }));
+    fx = await standPulama("pulama-lock", () => openGate({ faces: lend(0), coldReads: [] }));
     await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     const vessel = fx.vessel();
     await vessel.unlock([]);
@@ -110,7 +112,7 @@ describe("RED pulama-serves-no-key: no frame either side writes carries a key th
 
 describe("RED pulama-record-ops: both ends of the wire name a custody record's ops `record.*` and the claim `records`", () => {
   test("the vessel's doors send record ops alone and the pūlama answers them; the retired row ops answer as no operation", async () => {
-    fx = await standPulama("pulama-record-ops", () => openGate({ face: null, coldReads: ["face-proof-key"] }));
+    fx = await standPulama("pulama-record-ops", () => openGate({ faces: lend(0), coldReads: ["face-proof-key"] }));
     await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     await fx.kept.updateColdRecord("identity", faceProofKeyFile(0, "nexus-x"), () => ({ plaintext: new Uint8Array(32).fill(6), value: null }));
     const vessel = fx.vessel();
@@ -149,7 +151,7 @@ describe("a session stands only on a live channel, and a decision writes only ov
     let pass!: () => void;
     const reading = new Promise<void>((resolve) => { pass = resolve; });
     let asked = 0;
-    fx = await standPulama("pulama-admission", () => ({ admit: async () => { asked += 1; await reading; return { ok: true, scope: { face: null, coldReads: [] } }; } }));
+    fx = await standPulama("pulama-admission", () => ({ admit: async () => { asked += 1; await reading; return { ok: true, scope: { faces: lend(0), coldReads: [] } }; } }));
     // The channel closes while the gate still reads its hello.
     const gone = fx.vessel();
     const dial = gone.unlock([]);
@@ -173,7 +175,7 @@ describe("a session stands only on a live channel, and a decision writes only ov
   });
 
   test("RED: a decision that writes into the bytes it was handed never lands over a row another writer moved; it decides again", async () => {
-    fx = await standPulama("pulama-swap", () => openGate({ face: null, coldReads: [] }));
+    fx = await standPulama("pulama-swap", () => openGate({ faces: lend(0), coldReads: [] }));
     const vessel = fx.vessel();
     await vessel.unlock([]);
     await fx.local.writeRecord("identity", HOT, Uint8Array.from([0xa]));
@@ -197,7 +199,7 @@ describe("a session stands only on a live channel, and a decision writes only ov
 
 describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded row and no act a human route guards", () => {
   test("cold rows refuse needs-the-human; the one cold row the scope names reads and never writes; CONTROL: the pūlama's own holder opens them", async () => {
-    fx = await standPulama("pulama-cold", () => openGate({ face: null, coldReads: ["face-proof-key"] }));
+    fx = await standPulama("pulama-cold", () => openGate({ faces: lend(0), coldReads: ["face-proof-key"] }));
     await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     const proof = faceProofKeyFile(0, "nexus-x");
     await fx.kept.updateColdRecord("identity", COLD_NODE, () => ({ plaintext: new Uint8Array(32).fill(1), value: null }));
@@ -224,7 +226,7 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
   });
 
   test("a ward act, a backup's proof, an unlock, an adoption, a founding and a lock refuse on the vessel's side and at the pūlama's door", async () => {
-    fx = await standPulama("pulama-human", () => openGate({ face: null, coldReads: [] }));
+    fx = await standPulama("pulama-human", () => openGate({ faces: lend(0), coldReads: [] }));
     await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     const vessel = fx.vessel();
     await vessel.unlock([]);
@@ -251,57 +253,106 @@ describe("RED pulama-refuses-cold-rows: a session opens no cold row, no warded r
     expect(fx.kept.isUnlocked()).toBe(true);
   });
 
-  test("a session bound to one face reads no other face's rows; CONTROL: its own face's rows read", async () => {
-    let scoped: { fcid: string; ordinal: number } | null = null;
-    fx = await standPulama("pulama-lei-face", () => ({ admit: async () => ({ ok: true, scope: { face: scoped, coldReads: [] } }) }));
+  test("RED lend-set-guard: a session lent {h0, h2} reads both faces' rows and refuses h1's outside-the-lei, naming the set; CONTROL: the pūlama's own holder reads h1", async () => {
+    fx = await standPulama("pulama-lend-guard", () => openGate({ faces: lend(0, 2), coldReads: [] }));
     const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     const b = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
+    const c = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_C), ordinal: 2, slots: fixtureSlots });
     await fx.kept.writeRecord("identity", faceAtomGroupFile(GROUP_A), Uint8Array.from([1]));
     await fx.kept.writeRecord("identity", faceAtomGroupFile(GROUP_B), Uint8Array.from([2]));
-    scoped = { fcid: a.fcid, ordinal: 0 };
+    await fx.kept.writeRecord("identity", faceAtomGroupFile(GROUP_C), Uint8Array.from([3]));
     const vessel = fx.vessel();
     await vessel.unlock([]);
-    expect(vessel.wears()).toBe(0);
+    expect(vessel.lends()).toEqual([0, 2]);
     expect(await vessel.readRecord("identity", faceAtomGroupFile(GROUP_A))).toEqual({ reading: "opens", plaintext: Uint8Array.from([1]) });
+    expect(await vessel.readRecord("identity", faceAtomGroupFile(GROUP_C))).toEqual({ reading: "opens", plaintext: Uint8Array.from([3]) });
+    // THE WIDENING KEEPS THE WALL: a face outside the lent set refuses at every door, and the refusal names the set.
     const outside = { name: "PulamaRefused", reading: "outside-the-lei" };
-    await expect(vessel.readRecord("identity", faceAtomGroupFile(GROUP_B))).rejects.toMatchObject(outside);
-    // The refusal names the lei's face, the row, its selector and the face that selector reaches, so a vessel's log reads which row asked.
     await expect(vessel.readRecord("identity", faceAtomGroupFile(GROUP_B))).rejects.toMatchObject({
-      message: `outside-the-lei: the lei names face h0; this face-atom row selects {"group":"${personaGroupDigest(GROUP_B)}"}, face h1`,
+      ...outside,
+      message: `outside-the-lei: the pūlama lends this vessel h0, h2; this face-atom row selects {"group":"${personaGroupDigest(GROUP_B)}"}, face h1`,
     });
     await expect(vessel.writeRecord("identity", faceAtomGroupFile(GROUP_B), Uint8Array.from([9]))).rejects.toMatchObject(outside);
+    await expect(vessel.updateRecord("identity", faceAtomGroupFile(GROUP_B), () => ({ plaintext: Uint8Array.from([9]), value: null }))).rejects.toMatchObject(outside);
     await expect(vessel.withRecords((records) => records.read("identity", faceAtomGroupFile(GROUP_B)))).rejects.toMatchObject(outside);
+    await expect(vessel.wardPublicKey({ ordinal: 1 })).rejects.toMatchObject(outside);
     expect(await vessel.faceStanding({ fcid: b.fcid })).toBeNull();
-    expect((await vessel.unlockFaces([])).map((f) => f.reading)).toEqual(["already-unlocked"]);
+    expect(await vessel.faceStanding({ ordinal: 2 })).toMatchObject({ fcid: c.fcid, ordinal: 2 });
+    expect((await vessel.unlockFaces([])).map((f) => f.reading === "already-unlocked" ? f.ordinal : f.reading)).toEqual([0, 2]);
     expect(await fx.kept.readRecord("identity", faceAtomGroupFile(GROUP_B))).toEqual({ reading: "opens", plaintext: Uint8Array.from([2]) });
+    expect(a.fcid).not.toBe(c.fcid);
   });
 
-  test("RED session-standing-names-the-lei-face: a session bound to one face names only that face open, at the session and at every refresh, though the pūlama holds more open", async () => {
-    let scoped: { fcid: string; ordinal: number } | null = null;
-    fx = await standPulama("pulama-lei-standing", () => ({ admit: async () => ({ ok: true, scope: { face: scoped, coldReads: [] } }) }));
+  test("RED lend-set-binds-fcid: a lent face the admission names by custody id serves only while the index still names that id at its ordinal", async () => {
+    let lent = lend(0);
+    fx = await standPulama("pulama-lend-fcid", () => ({ admit: async () => ({ ok: true, scope: { faces: lent, coldReads: [] } }) }));
+    const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    await fx.kept.writeRecord("identity", faceAtomGroupFile(GROUP_A), Uint8Array.from([1]));
+    lent = lend({ fcid: "f".repeat(32), ordinal: 0 });
+    const stale = fx.vessel();
+    await stale.unlock([]);
+    expect(stale.unlockedFaces()).toEqual([]);
+    expect(stale.waiting()).toEqual([0]);
+    await expect(stale.readRecord("identity", faceAtomGroupFile(GROUP_A))).rejects.toMatchObject({ reading: "outside-the-lei" });
+    await stale.lock();
+    // CONTROL: the admission's own custody id serves.
+    lent = lend({ fcid: a.fcid, ordinal: 0 });
+    const bound = fx.vessel();
+    await bound.unlock([]);
+    expect(bound.unlockedFaces()).toEqual([a.fcid]);
+    expect(await bound.readRecord("identity", faceAtomGroupFile(GROUP_A))).toEqual({ reading: "opens", plaintext: Uint8Array.from([1]) });
+  });
+
+  test("RED lend-set-standing: the standing names the lent faces that stand lit and the lent faces that wait, at the session and at every refresh, and never a face outside the set", async () => {
+    fx = await standPulama("pulama-lend-standing", () => openGate({ faces: lend(0, 2), coldReads: [] }));
     const a = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
     const b = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_B), ordinal: 1, slots: fixtureSlots });
-    await fx.kept.writeRecord("identity", faceAtomGroupFile(GROUP_A), Uint8Array.from([1]));
-    // The pūlama holds both faces open; the lei names the first.
-    expect([...fx.kept.unlockedFaces()].sort()).toEqual([a.fcid, b.fcid].sort());
-    scoped = { fcid: a.fcid, ordinal: 0 };
+    const c = await fx.kept.foundFace({ group: personaGroupDigest(GROUP_C), ordinal: 2, slots: fixtureSlots });
+    // The pūlama holds all three lit; the lend names two.
+    expect([...fx.kept.unlockedFaces()].sort()).toEqual([a.fcid, b.fcid, c.fcid].sort());
     const vessel = fx.vessel();
     await vessel.unlock([]);
-    // A boot reader walks the faces the holder names open and reads each one's rows: every face it names serves.
-    expect(vessel.unlockedFaces()).toEqual([a.fcid]);
+    expect(vessel.unlockedFaces()).toEqual([a.fcid, c.fcid]);
+    expect(vessel.waiting()).toEqual([]);
     expect(await vessel.isFaceUnlocked({ fcid: b.fcid })).toBe(false);
-    for (const fcid of vessel.unlockedFaces()) {
-      const face = await vessel.faceStanding({ fcid });
-      expect(await vessel.readRecord("identity", `anchors-h${face!.ordinal}.json`)).toMatchObject({ reading: "absent" });
-    }
+    // PARTIAL LIGHTING: a lent face the pūlama dims waits by name; the lit one keeps serving.
+    await fx.kept.lockFace(c.fcid);
     fx.server.refresh();
-    await new Promise((settle) => setTimeout(settle, 10));
+    await vi.waitFor(() => expect(vessel.waiting()).toEqual([2]));
     expect(vessel.unlockedFaces()).toEqual([a.fcid]);
-    // CONTROL: a session the gate scoped to no face apart names every face the pūlama holds open.
-    await vessel.lock();
-    scoped = null;
-    const wide = fx.vessel();
-    await wide.unlock([]);
-    expect([...wide.unlockedFaces()].sort()).toEqual([a.fcid, b.fcid].sort());
+    // The session frame names the lent set, ordinals with their custody ids where the gate named them.
+    const session = fx.lines.fromPulama.map((l) => JSON.parse(l) as Record<string, unknown>).find((f) => f["t"] === "session")!;
+    expect(session["scope"]).toEqual({ faces: [{ ordinal: 0 }, { ordinal: 2 }] });
+  });
+
+  test("RED no-set-serves-no-face: a gate scope naming no lent set refuses the hello by name and no session stands; NO SET NEVER MEANS EVERY FACE", async () => {
+    let faces: unknown = null;
+    fx = await standPulama("pulama-lend-none", () => ({ admit: async () => ({ ok: true, scope: { faces, coldReads: [] } as never }) }));
+    await fx.kept.foundFace({ group: personaGroupDigest(GROUP_A), ordinal: 0, slots: fixtureSlots });
+    for (const none of [null, undefined, []]) {
+      faces = none;
+      const vessel = fx.vessel();
+      await expect(vessel.unlock([])).rejects.toMatchObject({ name: "PulamaRefused", reading: "lent-faces-empty" });
+      expect(vessel.isUnlocked()).toBe(false);
+      expect(fx.server.sessions()).toBe(0);
+    }
+    faces = [0, 0];
+    await expect(fx.vessel().unlock([])).rejects.toMatchObject({ reading: "lent-faces-duplicate" });
+  });
+
+  test("RED stale-pulama-names-its-build: a session frame from a pūlama on an older build (one ordinal, or none) refuses by name at the vessel, and no session stands", async () => {
+    fx = await standPulama("pulama-lend-stale", () => openGate({ faces: lend(0), coldReads: [] }));
+    for (const scope of [{ ordinal: 0 }, { ordinal: null }, undefined]) {
+      const vessel = makePulamaHolder({
+        homes: fx.seat.homes, offer: () => ({}),
+        dial: async () => {
+          const pair = pulamaChannelPair();
+          pair.pulama.onFrame((f) => { if (f.t === "hello") pair.pulama.send({ t: "session", scope, standing: { slot: "s", attemptsLeft: 3, faces: [] }, derived: {} }); });
+          return pair.vessel;
+        },
+      });
+      await expect(vessel.unlock([])).rejects.toMatchObject({ name: "PulamaRefused", reading: "pulama-lend-unnamed" });
+      expect(vessel.isUnlocked()).toBe(false);
+    }
   });
 });

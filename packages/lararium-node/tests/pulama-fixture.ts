@@ -2,7 +2,7 @@
  * pulama-fixture — one scratch custody with TWO holders over the same store: the in-process holder a vessel seats today, and a
  * pūlama's own holder behind a server, reached through a `PulamaHolder` over an in-memory channel pair.
  */
-import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, mintFck, type FaceCustodyKey, type TreeKey } from "@lararium/mesh";
+import { FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN, lentFacesOf, mintFck, type FaceCustodyKey, type LentFaces, type TreeKey } from "@lararium/mesh";
 import { makeCustodyHolder, type CustodyHolder } from "../src/custody-holder.js";
 import { makePulamaHolder, type PulamaHolder } from "../src/pulama-holder.js";
 import { servePulama, type PulamaGate, type PulamaScope, type PulamaServer } from "../src/pulama-server.js";
@@ -12,6 +12,13 @@ import { FIXTURE_PASSPHRASE, seatScratchCustody, type SeatedScratchCustody } fro
 export const SESSION_DERIVES = [FLOOR_REST_KEY_INFO, GATE_BUNDLE_INFO, KUKULU_VOUCH_DOMAIN] as const;
 export const fixtureRoute = [{ kind: "passphrase" as const, passphrase: FIXTURE_PASSPHRASE }];
 export const fixtureSlots = [{ t: 1, pins: [{ kind: "passphrase" as const, passphrase: FIXTURE_PASSPHRASE }] }];
+
+/** The lent set over these faces: ordinals, or `{fcid, ordinal}` where the admission names a custody id. */
+export function lend(...faces: ReadonlyArray<number | { readonly fcid: string; readonly ordinal: number }>): LentFaces {
+  const parsed = lentFacesOf(faces);
+  if (!parsed.ok) throw new Error(parsed.message);
+  return parsed.faces;
+}
 
 /** A gate that admits every hello under one scope. */
 export const openGate = (scope: PulamaScope): PulamaGate => ({ admit: async () => ({ ok: true, scope }) });

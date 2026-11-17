@@ -10,7 +10,7 @@ import { CustodyLocked } from "../src/custody-holder.js";
 import { makePulamaHolder } from "../src/pulama-holder.js";
 import { dialPulama, listenPulama } from "../src/pulama-socket.js";
 import type { PulamaChannel } from "../src/pulama-wire.js";
-import { openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
+import { lend, openGate, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
 
@@ -27,7 +27,7 @@ afterEach(async () => {
 
 describe("RED pulama-session-drops-with-socket", () => {
   test("a dropped connection ends the session, releases its claim and locks the vessel's side; CONTROL: a fresh dial serves again", async () => {
-    fx = await standPulama("pulama-socket", () => openGate({ face: null, coldReads: [] }));
+    fx = await standPulama("pulama-socket", () => openGate({ faces: lend(0), coldReads: [] }));
     dir = mkdtempSync(join(tmpdir(), "lar-pulama-sock-"));
     const path = join(dir, "pulama.sock");
     listener = await listenPulama(path, (channel) => fx!.server.accept(channel));
