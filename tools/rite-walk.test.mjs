@@ -387,7 +387,8 @@ test("carry-seed-keys-every-stage-row: each stage meme carries `row-key` equal t
   assert.ok(rows.filter((r) => /slot=`#\/note-/.test(r.text)).length >= 12, "twelve rows carry ahu slots");
   assert.ok(rows.filter((r) => /ʻ/.test(r.text)).length >= 5, "five rows carry non-ASCII");
   assert.ok(rows.some((r) => r.kind === "non-nfc" && r.text !== r.text.normalize("NFC")), "one row stands outside NFC");
-  assert.deepEqual(plan.expectedStandoff, [CANON.moved.uri], "the working copy over moved canon is the one stand-off the import owes");
+  assert.deepEqual(plan.expectedStandoff, [], "no row owes a stand-off: an override base works as an instrument, never a gate");
+  assert.deepEqual(plan.expectedFresher, { bag: "lares", titles: [CANON.moved.uri], quiet: [CANON.still.uri] }, "the copy over moved canon is the one fresher warning the new house owes; the still one stays quiet");
 });
 
 test("carry-seed-sweep: the sweep strips the one `row-key` line and leaves every other byte", () => {
@@ -473,6 +474,52 @@ test("carry-standoff-reads-a-named-set: the import's stand-offs judge against th
   assert.match(never.faults.join("; "), /expected refusal .*non-nfc never refused/);
   const unread = judgeImport([{ code: 2, json: null }], { expectedStandoff: [] });
   assert.match(unread.faults.join("; "), /answered no JSON/);
+});
+
+test("carry-fresher-reads-the-warning: the copy over moved canon lands and the new house warns it fresher; the still copy stays quiet", () => {
+  const { judgeFresher, CARRY_STEPS } = present(carryLeg);
+  const moved = CANON.moved.uri, still = CANON.still.uri;
+  const read = (lines, code = 0) => ({ code, text: lines.join("\n") });
+  const fresh = { bag: "lares", titles: [moved], quiet: [still] };
+  const head = "fresher: 1 working copy over lar:///ha.ka.ba/bags/lares shadow a fresher canon record (base -> canon now):";
+  const ok = judgeFresher(read([head, `  ${moved}  sha256:aaaa… -> sha256:bbbb…`]), fresh);
+  assert.equal(ok.ok, true, ok.faults.join("; "));
+  assert.deepEqual(ok.listed, [moved]);
+  assert.match(judgeFresher(read(["fresher: no working copy over lar:///ha.ka.ba/bags/lares shadows a fresher canon record"]), fresh).faults.join("; "), /expected fresher .*moved-canon.* never warned/);
+  assert.match(judgeFresher(read(["fresher: 2 …", `  ${moved}  a -> b`, `  ${still}  a -> c`]), fresh).faults.join("; "), /unexpected fresher .*still-canon/);
+  assert.match(judgeFresher(read(["lares vessel fresher: cap-denied"], 2), fresh).faults.join("; "), /exited 2/);
+  assert.equal(judgeFresher(read(["fresher: no working copy over lar:///ha.ka.ba/bags/lares shadows a fresher canon record"]), { titles: [], quiet: [still] }).ok, true, "a plan that owes no warning reads a quiet house green");
+  // The read runs as its own step, after every face imported and before the re-import.
+  const ids = CARRY_STEPS.map((s) => s.id);
+  const step = CARRY_STEPS.find((s) => s.id === "fresher");
+  assert.ok(step, "a fresher step stands");
+  assert.ok(step.needs.includes("import-apply") && ids.indexOf("fresher") === ids.indexOf("import-apply") + 1, "the fresher read follows the three imports");
+  assert.match(step.command, /lares vessel fresher --bag/);
+});
+
+test("carry-fresher-step-reads-at-the-steward: the step wears face 0 and reads `vessel fresher --bag <plan bag>`; a plan with no expectation reads nothing", async () => {
+  const { CARRY_STEPS, assertCarryScope } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  mkdirSync(scope.base, { recursive: true });
+  const moved = CANON.moved.uri;
+  const answer = (kind, args) => {
+    const line = [args].flat().map(String).join(" ");
+    if (/vault status/.test(line)) return { code: 0, stdout: '{"ok":true,"data":{"unlocked":true,"wears":0}}', stderr: "" };
+    if (/vessel fresher/.test(line)) return { code: 0, stdout: `fresher: 1 working copy over lar:///ha.ka.ba/bags/lares shadow a fresher canon record (base -> canon now):\n  ${moved}  a -> b\n`, stderr: "" };
+    return { code: 0, stdout: "{}", stderr: "" };
+  };
+  const step = CARRY_STEPS.find((s) => s.id === "fresher");
+  const { c, calls } = recordingCarry(scope, { answer, vars: { oldRev: OLD_REV, pin: PIN, expectedFresher: { bag: "lares", titles: [moved], quiet: [CANON.still.uri] } } });
+  const r = await step.run(c);
+  assert.equal(r.ok, true, r.answer);
+  const fresherCall = calls.find((k) => k.args.join(" ").includes("vessel fresher"));
+  assert.ok(fresherCall && fresherCall.phase === "new", "the read runs in the new house");
+  assert.deepEqual(fresherCall.args.slice(-3), ["fresher", "--bag", "lares"]);
+  assert.ok(calls.some((k) => /vault unlock --face 0/.test(k.args.join(" "))), "the steward wears for the read");
+  const none = recordingCarry(scope, { answer, vars: { oldRev: OLD_REV, pin: PIN } });
+  const skipped = await step.run(none.c);
+  assert.equal(skipped.ok, true);
+  assert.equal(none.calls.length, 0, "a plan that names no fresher expectation reads nothing");
 });
 
 test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
