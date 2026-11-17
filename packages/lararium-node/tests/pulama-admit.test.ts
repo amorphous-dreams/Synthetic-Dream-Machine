@@ -80,7 +80,7 @@ describe("RED pulama-reserves-an-admitted-image", () => {
     // THE ADMISSION rests under the pūlama's own key, naming the image, the face and the rite's tessera.
     const row = JSON.parse((await s.records.read(pulamaAdmittedTitle(IMAGE)))!) as SignedPulamaAdmit;
     expect(row.signer).toBe(s.pulamaKey);
-    expect(row.body).toMatchObject({ kind: PULAMA_TESSERA_DOMAIN, act: "image-admitted", image: IMAGE, fcid: s.face.fcid, ordinal: 0, by: "rite" });
+    expect(row.body).toMatchObject({ kind: PULAMA_TESSERA_DOMAIN, act: "image-admitted", image: IMAGE, faces: [{ fcid: s.face.fcid, ordinal: 0 }], by: "rite" });
     expect(verifyEd25519(row.sig, canonicalJsonBytes(row.body), row.signer)).toBe(true);
 
     // A RESTART WITH NO REBUILD: the vessel carries no offer, the host reports the same image, and the pūlama serves it again.
@@ -93,7 +93,7 @@ describe("RED pulama-reserves-an-admitted-image", () => {
     expect(await s.reserved(IMAGE)).toBe(1);
     const audit = JSON.parse((await s.records.read(`${pulamaReservedPrefix(IMAGE)}1`))!) as SignedPulamaAdmit;
     expect(audit.signer).toBe(s.pulamaKey);
-    expect(audit.body).toMatchObject({ act: "image-reserved", image: IMAGE, fcid: s.face.fcid, ordinal: 0, n: 1 });
+    expect(audit.body).toMatchObject({ act: "image-reserved", image: IMAGE, faces: [{ fcid: s.face.fcid, ordinal: 0 }], n: 1 });
     // A session served on the admitted image began under no rite, so it lands no tessera.
     await expect(again.landRite()).rejects.toMatchObject({ reading: "rite-not-begun" });
     // Each further wake rests its own row, and still spends nothing.
@@ -101,7 +101,7 @@ describe("RED pulama-reserves-an-admitted-image", () => {
     expect(await s.reserved(IMAGE)).toBe(2);
     expect(await s.returns()).toBe(1);
     // The pūlama relit after a host reboot reads the same admission: it rests on disk, signed, and no key rests with it.
-    expect((await s.door({ op: "tessera" }))["admitted"]).toEqual([{ image: IMAGE, fcid: s.face.fcid, ordinal: 0, by: "rite", tessera: row.body.act === "image-admitted" ? row.body.tessera : "", reserved: 2 }]);
+    expect((await s.door({ op: "tessera" }))["admitted"]).toEqual([{ image: IMAGE, faces: [{ fcid: s.face.fcid, ordinal: 0 }], by: "rite", tessera: row.body.act === "image-admitted" ? row.body.tessera : "", reserved: 2 }]);
   });
 });
 
@@ -168,7 +168,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     expect(t.input.raw).toEqual([true, false]);
     expect(t.said.join("")).not.toContain(FIXTURE_PASSPHRASE);
     expect(frames.map((f) => f["op"])).toEqual(["status", "admit"]);
-    expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, face: 0, lit: true });
+    expect(answer).toMatchObject({ op: "admit", reading: "admitted", admitted: IMAGE, faces: [0], lit: true });
     // THE ROUTE OPENED NOTHING: the holder stood lit before and holds the same faces after; no attempt spent.
     expect(s.fx.kept.unlockedFaces()).toEqual([s.face.fcid]);
     expect(answer["attemptsLeft"]).toBe(3);
@@ -176,7 +176,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     const tessera = String(answer["tessera"]);
     const guest = JSON.parse((await s.records.read(pulamaAdmitTesseraTitle(tessera, "guest")))!) as SignedPulamaAdmit;
     const host = JSON.parse((await s.records.read(pulamaAdmitTesseraTitle(tessera, "host")))!) as SignedPulamaAdmit;
-    expect(guest.body).toMatchObject({ act: "admit-begun", image: IMAGE, fcid: s.face.fcid, tessera });
+    expect(guest.body).toMatchObject({ act: "admit-begun", image: IMAGE, faces: [{ fcid: s.face.fcid, ordinal: 0 }], tessera });
     expect(host.body).toMatchObject({ act: "admit-landed", image: IMAGE, tessera });
     expect([guest.signer, host.signer]).toEqual([s.pulamaKey, s.pulamaKey]);
     expect((JSON.parse((await s.records.read(pulamaAdmittedTitle(IMAGE)))!) as SignedPulamaAdmit).body).toMatchObject({ act: "image-admitted", by: "hand", tessera });
@@ -197,7 +197,7 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     expect(await s.records.read(pulamaAdmittedTitle(IMAGE))).toBeNull();
     expect(await s.hello({})).toBe("pulama-image-unadmitted");
     expect(await s.door({ op: "admit" })).toMatchObject({ reading: "malformed" });
-    expect(await s.door({ op: "admit", credentials: fixtureRoute, face: 3 })).toMatchObject({ reading: "face-locked", openFaces: [0] });
+    expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: [3] })).toMatchObject({ reading: "face-locked", openFaces: [0] });
     await s.fx.kept.lockFace(s.face.fcid);
     expect(await s.door({ op: "admit", credentials: fixtureRoute })).toMatchObject({ reading: "face-locked", openFaces: [] });
     expect(JSON.stringify(s.lines)).not.toContain("a-wrong-route");
@@ -207,6 +207,35 @@ describe("RED pulama-admit-asks-the-route-on-a-terminal", () => {
     await expect(runHandVerb("unlock-everything", undefined, ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
     expect(await runHandVerb("status", undefined, ports)).toMatchObject({ op: "status", lit: true, image: IMAGE });
     expect(await runHandVerb("image", OTHER, ports)).toMatchObject({ reading: "reported", image: OTHER });
+  });
+});
+
+describe("RED pulama-admit-lends-a-set", () => {
+  test("no face named admits every lit face; named faces admit as a set; a named unlit face refuses by name; a twice-named or non-ordinal face refuses; the verb takes several ordinals", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    const one = await s.fx.kept.foundFace({ group: personaGroupDigest(`${GROUP}-1`), ordinal: 1, slots: fixtureSlots });
+    await s.fx.kept.foundFace({ group: personaGroupDigest(`${GROUP}-2`), ordinal: 2, slots: fixtureSlots });
+    await s.fx.kept.lockFace(one.fcid);
+    const witness = await pulamaSignerOf(s.fx.kept);
+    const lent = async () => (await s.admissions.admitted(IMAGE, witness))?.faces.map((f) => f.ordinal);
+    // NONE NAMED: every lit face (h1 rests dark).
+    expect(await s.door({ op: "admit", credentials: fixtureRoute })).toMatchObject({ reading: "admitted", admitted: IMAGE, faces: [0, 2] });
+    expect(await lent()).toEqual([0, 2]);
+    // NAMED: the set named, and a later admission writes over the row.
+    expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: [2] })).toMatchObject({ reading: "admitted", faces: [2] });
+    expect(await lent()).toEqual([2]);
+    // A NAMED DARK FACE refuses by name, and the row stays as it stood.
+    expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: [0, 1] })).toMatchObject({ reading: "face-locked", face: 1, openFaces: [0, 2] });
+    expect(await lent()).toEqual([2]);
+    expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: [0, 0] })).toMatchObject({ reading: "lent-faces-duplicate" });
+    expect(await s.door({ op: "admit", credentials: fixtureRoute, faces: ["0"] })).toMatchObject({ reading: "lent-faces-malformed" });
+    expect(await s.door({ op: "admit", credentials: fixtureRoute, face: 0 })).toMatchObject({ reading: "lent-faces-malformed" });
+    // THE VERB: several ordinals ride one line, sorted in the answer.
+    const ports = { ask: (frame: Readonly<Record<string, unknown>>) => s.door(frame), route: async () => FIXTURE_PASSPHRASE };
+    expect(await runHandVerb("admit", ["2", "0"], ports)).toMatchObject({ reading: "admitted", faces: [0, 2] });
+    await expect(runHandVerb("admit", ["0", "h2"], ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
+    expect(await lent()).toEqual([0, 2]);
   });
 });
 

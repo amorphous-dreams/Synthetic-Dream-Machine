@@ -633,7 +633,7 @@ test("carry-light-seats-a-served-vessel: up-by-pulama reads a recreated vessel t
   assert.match(up.answer, /pulama admit/, "an unadmitted image names the operator's admission");
   assert.match(judgeUpPulama({ code: 0, before: "a", after: "a", lines: waiting }).answer, /a new vessel container: false/, "whether the up recreated the container rides the answer");
   assert.equal(judgeUpPulama({ code: 0, before: "a", after: "b", lines: [] }).ok, false, "a vessel that never dialed reads no seat");
-  assert.equal(judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "admitted", admitted: "sha256:x", face: 0 }).ok, true);
+  assert.equal(judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "admitted", admitted: "sha256:x", faces: [0, 2] }).ok, true);
   const refused = judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "image-unreported" });
   assert.equal(refused.ok, false);
   assert.match(refused.answer, /image-unreported/);
@@ -654,10 +654,10 @@ test("image-light-seats-a-served-vessel: the image leg's operator admits the ima
   assert.ok(IMAGE_STEPS.find((s) => s.id === "unlock-by-pulama").needs.includes("pulama-admit"));
 });
 
-test("pulama-admit-names-the-face: the admission names face 0, since a pūlama holding several faces open answers `face-not-named` to an admit that names none (pulama-hand.ts admit)", () => {
+test("pulama-admit-names-the-lent-set: the admission names no face and the pūlama admits every lit face; named ordinals ride the line as a set (pulama-hand.ts admit)", () => {
   const { pulamaAdmitArgs } = present(imageLeg);
-  assert.deepEqual(pulamaAdmitArgs(), ["pulama", "admit", "0"]);
-  assert.deepEqual(pulamaAdmitArgs(2), ["pulama", "admit", "2"]);
+  assert.deepEqual(pulamaAdmitArgs(), ["pulama", "admit"]);
+  assert.deepEqual(pulamaAdmitArgs([0, 2]), ["pulama", "admit", "0", "2"]);
 });
 
 test("carry-collisions-restore-as-the-steward: the census between the collision and the restore wears every face in turn, so the restore puts and the restored census run with the steward (face 0) worn again", async () => {
