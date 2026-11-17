@@ -66,11 +66,13 @@ export const INDEX_BYTES = 4096;
 /** The reads' shared budget; the harness's own timeout stays the only bound above it. */
 export const WAKE_BUDGET_MS = 12_000;
 /**
- * The rows in play: the state rows, derived by their address prefix and never listed here, newest first. A cold session
- * reads them before the index, so the handoff (where it stands) leads, then the porch, the ledger and the orders.
+ * The rows in play: the state rows, derived by their address prefix and never listed here; a slot title (`…#/entry`)
+ * stays out, its meme already stands in the block. A cold session reads them before the index, the handoff (where one
+ * stands) first and the rest in the door's title order: the stage memes carry no `modified` field, so no sort by it
+ * stands.
  */
 export const STATE_PREFIX = "lar:///ha.ka.ba/kahua/memory/state/";
-export const STATE_FILTER = `[prefix[${STATE_PREFIX}]!sort[modified]]`;
+export const STATE_FILTER = `[prefix[${STATE_PREFIX}]!regexp[#]]`;
 export const STATE_HANDOFF = `${STATE_PREFIX}handoff`;
 /** The rows in play stay short: a row ceiling, a byte cap on the block, and one on each row's line. */
 export const STATE_ROWS = 8;
@@ -191,7 +193,7 @@ export function renderIndex(answer, cap = INDEX_BYTES) {
   });
 }
 
-/** The rows-in-play block: the handoff row first where one stands, the rest in the door's own order (newest first). */
+/** The rows-in-play block: the handoff row first where one stands, the rest in the door's own order. */
 export function renderState(answer, cap = STATE_BYTES) {
   return renderRows(answer, {
     head: "Lares rows in play (start here)", filter: STATE_FILTER, cap, lineCap: STATE_LINE_BYTES,

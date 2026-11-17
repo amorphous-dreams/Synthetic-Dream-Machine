@@ -37,7 +37,7 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
     { title: "lar:///ha.ka.ba/kahua/memory/project/house-laws", fields: { title: "lar:///ha.ka.ba/kahua/memory/project/house-laws", description: "The seven house laws." } },
     { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", description: "What stands open." } },
   ] } });
-  const stateAnswer = JSON.stringify({ ok: true, requestId: "s", data: { recipe: "default", filter: "[prefix[lar:///ha.ka.ba/kahua/memory/state/]!sort[modified]]", total: 2, next: null, asOf: "90a1a6dbea5e1f15", rows: [
+  const stateAnswer = JSON.stringify({ ok: true, requestId: "s", data: { recipe: "default", filter: "[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]", total: 2, next: null, asOf: "90a1a6dbea5e1f15", rows: [
     { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", description: "What stands open." } },
     { title: "lar:///ha.ka.ba/kahua/memory/state/handoff", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/handoff", description: "Start here." } },
   ] } });

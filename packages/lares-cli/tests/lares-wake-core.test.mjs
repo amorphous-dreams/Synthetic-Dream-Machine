@@ -131,13 +131,14 @@ test("wake-leads-with-rows-in-play: every wake prints the state rows before the 
     assert.ok(head < lines.findIndex((l) => l.startsWith("Lares memory index")), `${source}: the rows in play come before the index`);
     assert.match(lines[head], /^Lares rows in play \(start here\): 4 rows/);
     assert.equal(lines[head + 1], "lar:///ha.ka.ba/kahua/memory/state/handoff — Start here: the handoff from the last controller.");
-    // The rest keep the door's own order (newest first).
+    // The rest keep the door's own order.
     assert.equal(lines[head + 2], "lar:///ha.ka.ba/kahua/memory/state/porch-2026-11-16 — The porch: what the last sitting left on the step.");
     assert.equal(lines[head + 4], "lar:///ha.ka.ba/kahua/memory/state/standing-orders — The orders that stand.");
     assert.match(lines[head + 5], /read a row: meme_get\(uri=<title>, recipe="default"\)/);
-    // The read derives the rows by their address prefix, newest first: no list of addresses rides the wake.
+    // The read derives the rows by their address prefix, slot titles (`…#/entry`) left out: no list of addresses rides the wake.
+    // No sort by `modified`: the stage memes carry no such field, so the door's title order stands.
     assert.deepEqual(calls.state, stateArgv());
-    assert.equal(calls.state[2], `[prefix[${STATE_PREFIX}]!sort[modified]]`);
+    assert.equal(calls.state[2], `[prefix[${STATE_PREFIX}]!regexp[#]]`);
   }
   // CONTROL: no handoff row leaves the door's order as it stands.
   const bare = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), state: answered(statePage(STATE.filter((r) => !r.title.endsWith("/handoff")))) }) });
@@ -152,7 +153,7 @@ test("wake-leads-with-rows-in-play: the block stays short, and a fault or an emp
   assert.ok(shown.length > 0 && shown.length <= STATE_ROWS, `${shown.length} rows shown`);
   for (const line of shown) assert.ok(Buffer.byteLength(line) <= 400, `a row line holds ${Buffer.byteLength(line)} bytes`);
   assert.match(long, /Lares rows in play \(start here\): 20 rows \(\d+ shown\)/);
-  assert.match(long, /(read further|read the whole view): wiki_filter\(filter="\[prefix\[lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/\]!sort\[modified\]\]"/);
+  assert.match(long, /(read further|read the whole view): wiki_filter\(filter="\[prefix\[lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/\]!regexp\[#\]\]"/);
   const none = await wake({ run: runner({ ...base, state: answered(statePage([])) }) });
   assert.match(none, /Lares rows in play: no row stands under lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/ in the worn face's daemon wiki/);
   const broken = await wake({ run: runner({ ...base, state: answered("", 127) }) });

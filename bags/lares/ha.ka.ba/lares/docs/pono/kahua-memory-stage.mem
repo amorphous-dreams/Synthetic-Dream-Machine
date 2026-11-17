@@ -285,7 +285,7 @@ Memory stage memes REST in the face-bound daemon wiki's working layer (`wikis/da
 
 ''The wake'' (`packages/lares-cli/.claude-plugin/hooks/lares-wake-hook.mjs`, a `SessionStart` hook; its words live in `lares-wake-core.mjs`) starts three reads together: the vessel observation and the index read through the checkout's shim (`tools/lares-container.sh wiki filter '[tag[stage/index]]' --recipe default --fields title,description --limit 32 --max-bytes 4096 --json`), and the homes line through the host CLI. It prints the vessel's frame, `Lares homes: …`, then `Lares memory index: <N> rows`, one line per entry (`<title> — <description>`), and one line naming the call that reads further: `wiki_filter(…, after="<cursor>")` where the door answered a cursor, else `meme_get(uri=<title>, recipe="default")`. The door cuts the page at 4096 bytes and hands the cursor of the entries behind it; the render keeps the same cap and names a cut of its own. A fault prints `memory index unread: <cause>` in the door's own words (`vessel-locked: …`, an exit with no answer, an answer that did not parse), and the frame and the homes line still ride. A vessel that answers anything but up stops the index read, and the wake says once `memory index skipped: no vessel answers`.
 
-''The rows in play lead.'' Before the index, every wake (startup, resume, clear, compact) reads the state rows by their address prefix through the same door (`[prefix[lar:///ha.ka.ba/kahua/memory/state/]!sort[modified]]`, at most 8 rows) and prints `Lares rows in play (start here): <N> rows`: the `state/handoff` row first where one stands, the rest newest first, each line cut at 320 bytes and the block at 2048, then the call that reads further. The hook names no row by address; a state row joins by its title alone. A fault prints `Lares rows in play unread: <cause>` beside the view that reads them.
+''The rows in play lead.'' Before the index, every wake (startup, resume, clear, compact) reads the state rows by their address prefix through the same door (`[prefix[lar:///ha.ka.ba/kahua/memory/state/]!regexp[#]]`, at most 8 rows; a slot title `…#/entry` stays out) and prints `Lares rows in play (start here): <N> rows`: the `state/handoff` row first where one stands, the rest by title (the stage memes carry no `modified` field, so the door holds nothing to sort them newest first by), each line cut at 320 bytes and the block at 2048, then the call that reads further. The hook names no row by address; a state row joins by its title alone. A fault prints `Lares rows in play unread: <cause>` beside the view that reads them.
 
 ''One budget.'' The harness bounds the hook at 15 seconds and discards its whole answer past that bound, so the three reads share one budget of 12 seconds inside it: a read still open then stops and reports itself (`vessel observation timed out`, `memory index unread: no answer inside the wake's budget`), and the wake carries what the others answered. The budget decides nothing about the house.
 
@@ -370,6 +370,6 @@ Two research spirits read in parallel: Naʻau-Scout through neuroscience, Manaʻ
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;adW7qn7_lAz0WPALNiSbNOMYyXw_N1bztq5oTfLz_oc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oGgCIIASkk6nG4SkBZnC88APxai0zUEWClV8wOo-g5U`>>
 
 <<^ code=`&#x0004;` to=`?`>>
