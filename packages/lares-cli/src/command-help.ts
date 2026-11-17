@@ -520,7 +520,7 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "lares wiki status --recipe default                                       # which layer takes a write for this face",
     ],
     flags: [
-      "--recipe <slug>      the wiki read or written (this phase: default, the worn face's daemon wiki)",
+      "--recipe <slug>      the wiki read or written (this phase: default, the daemon mount's wiki)",
       "--slot <#/name>      (get) one slot of the meme the title names",
       "--fields <a,b>       (get) the named fields alone   ·   (put) a JSON object of field names to string values",
       "--skinny             (get) every field, the text left home",

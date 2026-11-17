@@ -203,10 +203,10 @@ export function unlockFaceLines(a: CustodyDoorAnswer): string {
     const shut = readings.filter((r) => r.reading !== "opened").map((r) => `h${String(r.face)}`);
     parts.push(opened.length > 0 ? `opened ${opened.join(", ")}` : "opened no face");
     if (shut.length > 0) parts.push(`${shut.join(", ")} did not open under this route — run \`lares vault unlock --face N\` for each`);
-    if (typeof a["wears"] === "number") parts.push(`the vessel wears h${String(a["wears"])}`);
+    if (typeof a["wears"] === "number") parts.push(`the daemon mount runs under h${String(a["wears"])}`);
   }
   if (typeof a["switchRefused"] === "string") {
-    parts.push(`the vessel wearing h${String(a["face"])} did not stand (${a["switchRefused"]}); h${String(a["wornAgain"])} stands worn again, and the vessel key stays held`);
+    parts.push(`the daemon mount for h${String(a["face"])} did not stand (${a["switchRefused"]}); h${String(a["wornAgain"])} runs the daemon mount again, and the vessel key stays held`);
   }
   return parts.length > 0 ? ` ${parts.join("; ")}.` : "";
 }
@@ -458,7 +458,7 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
   }
   if (typeof out !== "string" || out.length === 0) throw new UsageError("backup needs a file to write: `lares vault backup --face <N> --out <file>`");
   if (!daemonUp) {
-    const why = "a cut needs the standing vessel, unlocked, wearing that face: its island holds the content keys. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then cut.";
+    const why = "a cut needs the standing vessel, unlocked, its daemon mount running under that face: its island holds the content keys. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then cut.";
     emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault backup: ${why}`) });
     return 1;
   }
@@ -487,9 +487,9 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
   const asRaw = args.options["as"];
   if (asRaw !== undefined && (!/^(0|[1-9]\d*)$/.test(asRaw) || !Number.isSafeInteger(Number(asRaw)))) throw new UsageError("--as takes a handle-index: `lares vault restore <file> --as <N>`");
   const memory = args.flags["memory"] === true;
-  if (memory && asRaw !== undefined) throw new UsageError("--memory lands keys on the seat of the face the vessel wears, and takes no --as");
+  if (memory && asRaw !== undefined) throw new UsageError("--memory lands keys on the seat of the face the daemon mount runs under, and takes no --as");
   if (memory && !daemonUp) {
-    const why = "an import needs the vessel standing unlocked and wearing the restored face: its island wraps each key for this vessel's own seat. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then import.";
+    const why = "an import needs the vessel standing unlocked, its daemon mount running under the restored face: its island wraps each key for this vessel's own seat. Stand it (`lares vessel stand`), unlock it (`lares vault unlock`), then import.";
     emit(args, { ok: false, error: { code: "no-vessel", message: why }, human: () => console.error(`lares vault restore: ${why}`) });
     return 1;
   }

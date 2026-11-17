@@ -15,7 +15,7 @@ describe("vault unlock's per-face lines", () => {
 
   test("a refused switch names the face it named, the face worn again, and the key held", () => {
     const line = unlockFaceLines({ op: "unlock", reading: "already-unlocked", switchRefused: "h1 would not stand", face: 1, wornAgain: 0 });
-    expect(line).toMatch(/h1 did not stand \(h1 would not stand\); h0 stands worn again, and the vessel key stays held/);
+    expect(line).toMatch(/h1 did not stand \(h1 would not stand\); h0 runs the daemon mount again, and the vessel key stays held/);
   });
 
   test("CONTROL: a plain unlock adds nothing", () => {
