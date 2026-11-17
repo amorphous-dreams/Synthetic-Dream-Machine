@@ -633,7 +633,7 @@ test("carry-light-seats-a-served-vessel: up-by-pulama reads a recreated vessel t
   assert.match(up.answer, /pulama admit/, "an unadmitted image names the operator's admission");
   assert.match(judgeUpPulama({ code: 0, before: "a", after: "a", lines: waiting }).answer, /a new vessel container: false/, "whether the up recreated the container rides the answer");
   assert.equal(judgeUpPulama({ code: 0, before: "a", after: "b", lines: [] }).ok, false, "a vessel that never dialed reads no seat");
-  assert.equal(judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "admitted", admitted: "sha256:x", faces: [0, 2] }).ok, true);
+  assert.equal(judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "admitted", admitted: "sha256:x", lent: [0, 2], faces: 3 }).ok, true);
   const refused = judgePulamaAdmit({ code: 0, typed: true }, { op: "admit", reading: "image-unreported" });
   assert.equal(refused.ok, false);
   assert.match(refused.answer, /image-unreported/);
