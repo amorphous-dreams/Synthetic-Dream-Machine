@@ -71,20 +71,46 @@ cmds -= _bare_shim
 if any(c.split()[0] == "found" for c in _bare_shim):
     cmds.add("vessel found")
 
-# A rite that walks the container instructs through the HOST SHIM. The shim keeps five verbs of its
-# own (the engine's: up, down, logs, build; and reset, which clears the hearth on the host), spells the founding act `found`, and hands every other word to
-# the CLI. So a shim line claims a CLI door exactly as a bare `lares` line does.
-SHIM_OWN = {"up", "down", "logs", "build", "reset"}
+# A rite that walks the container instructs through the HOST SHIM. The shim answers some verbs itself (the engine's
+# up, down, logs, build; reset, which clears the hearth on the host; the pūlama's own verb; image-digest), spells the
+# founding act `found`, and hands every other word to the CLI. So a shim line claims a CLI door exactly as a bare
+# `lares` line does, unless the shim's own arm answers it.
+#
+# THE SHIM'S OWN VERBS DERIVE FROM ITS DISPATCH. Each top-level arm of the shim's `case "$verb" in` either hands the
+# word to the CLI (`route_cli`, or `waited_run` for `found`) or answers it on the host. An arm that names neither hands
+# nothing to the CLI, so it stands as the shim's own door, and a sub-word the rite gives it must name a branch in that
+# arm's own nested `case` (`pulama admit` reads `admit)`). A shim verb added later joins without a hand edit, and a
+# sub-word the arm drops reads red here by name. The PowerShell shim keeps the same verbs (both shims answer one
+# surface), so the bash shim's dispatch carries the reading for both spellings.
+shim_fail = []
+_main = re.search(r'(?ms)^case "\$verb" in\n(.*?)^esac', _shim)
+if not _main:
+    print("[rite-commands] tools/lares-container.sh PARSED TO NO VERB DISPATCH — the probe binds its `case \"$verb\" in` … `esac`.")
+    sys.exit(1)
+_arms = {}
+_spans = list(re.finditer(r'(?m)^  ([a-z][a-z0-9|-]*)\)', _main.group(1)))
+for _i, _a in enumerate(_spans):
+    _end = _spans[_i + 1].start() if _i + 1 < len(_spans) else len(_main.group(1))
+    _body = _main.group(1)[_a.end():_end]
+    for _name in _a.group(1).split("|"):
+        _arms[_name] = _body
+SHIM_OWN = {v for v, b in _arms.items() if not re.search(r'\b(?:route_cli|waited_run)\b', b)}
+if not SHIM_OWN:
+    print("[rite-commands] tools/lares-container.sh PARSED TO ZERO OWN VERBS — the probe reads arms that call no `route_cli`.")
+    sys.exit(1)
 for m in re.finditer(
         r'(?m)^\s*tools/lares-container\.(?:sh|ps1) ((?:[a-z][a-z0-9-]*)(?: [a-z][a-z0-9-]*)?)', rite):
     words = m.group(1).split()
     if words[0] in SHIM_OWN:
+        if len(words) > 1 and not re.search(
+                rf'(?m)^\s*(?:[a-z][a-z0-9-]*\|)*{re.escape(words[1])}(?:\|[a-z][a-z0-9-]*)*\)', _arms[words[0]]):
+            shim_fail.append(f"{m.group(1)!r} — `{words[1]}` names no branch in the shim's own `{words[0]})` arm")
         continue
     cmds.add("vessel found" if words[0] == "found" else m.group(1))
 cmds = sorted(cmds)
 
 CMDS_DIR = pathlib.Path("packages/lares-cli/src/commands")
-fail, subs_checked = [], 0
+fail, subs_checked = list(shim_fail), 0
 
 # ── A SUB-DOOR READS AT A DISPATCH POSITION, NEVER AS A LOOSE STRING ────────────────────────────
 # Three shapes carry every dispatch in this CLI, and the VALUE side is half of each:
