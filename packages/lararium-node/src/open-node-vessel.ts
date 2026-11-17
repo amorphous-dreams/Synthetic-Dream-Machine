@@ -3533,17 +3533,7 @@ async function prepareNodeBootOn(
       sealedRest.store.mapMoved();
       return faces;
     };
-    // ONE LIGHT PER FACE AT A TIME: the unlock frame and the lend's light watch may both ask a face to light on one open, and
-    // the second ask waits on the first rather than light it twice.
-    const lightsInFlight = new Map<number, Promise<void>>();
-    lightFace = (ordinal) => {
-      const running = lightsInFlight.get(ordinal);
-      if (running) return running;
-      const light = lightFaceNow(ordinal).finally(() => lightsInFlight.delete(ordinal));
-      lightsInFlight.set(ordinal, light);
-      return light;
-    };
-    const lightFaceNow = async (ordinal: number): Promise<void> => {
+    lightFace = async (ordinal) => {
       if (!siblingPorts) throw new Error(`face h${ordinal} cannot light without a mounted face`);
       const [entry] = await joinedFaceAuth({ ...siblingPorts, ordinals: () => [ordinal] });
       if (entry) {
@@ -3555,6 +3545,17 @@ async function prepareNodeBootOn(
         if (group) await registerFacePlanesForRelay({ group, relayEnabled: async (g) => (await enabledIntentRelayFaces()).includes(g), prove: proveRelayFace, register: registerInCatalogOf(group) });
       }
       await intentRelay?.refresh();
+    };
+    // ONE LIGHT PER FACE AT A TIME: the unlock frame and the lend's light watch may both ask a face to light on one open, and
+    // the second ask waits on the first rather than light it twice.
+    const lightFaceNow = lightFace;
+    const lightsInFlight = new Map<number, Promise<void>>();
+    lightFace = (ordinal) => {
+      const running = lightsInFlight.get(ordinal);
+      if (running) return running;
+      const light = lightFaceNow(ordinal).finally(() => lightsInFlight.delete(ordinal));
+      lightsInFlight.set(ordinal, light);
+      return light;
     };
     // A FACE SERVED AFTER THE COMPOSITION STOOD lights on the custody's open: the pūlama lights a waiting face and its standing
     // event widens the served set, and each served face neither mounted nor lit lights here, in turn, before a session on it
