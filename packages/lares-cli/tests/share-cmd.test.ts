@@ -6,6 +6,8 @@
  *   SH2 — no vessel standing: the file alone takes the row, and the line says the next boot reconciles it
  *   SH3 — `--list` prints each row's resolved readers and writers, and names a pet-name no face carries
  *   SH4 — a filter operator refuses by name and writes nothing
+ *   SH6 — a row of the other kind standing for the slug refuses `share-kind-standing`, writes nothing and rides no verb;
+ *         `--remove` unshares the row (file and control document), and the other kind then shares
  */
 import { describe, expect, test } from "vitest";
 import { parseShareFile, serializeShareFile, type ShareFace } from "@lararium/mesh";
@@ -63,6 +65,26 @@ describe("the share door", () => {
     expect(await cmdShare("bag", f.doors)(args(["notes"], { read: "[tag[x]]" }))).toBe(2);
     expect(f.file()).toBeNull();
     expect(() => petnamesOf("h9", FACES)).toThrow(/h9 names no face/);
+  });
+
+  test("SH6 — a row of the other kind refuses and writes nothing; --remove unshares it, then the other kind shares", async () => {
+    const standing = serializeShareFile([{ slug: "cold-shelf", kind: "wiki", read: "the referee", write: "", owner: "joshua-fontany" }]);
+    const f = fake({ file: standing });
+    expect(await cmdShare("bag", f.doors)(args(["cold-shelf"], { read: "h1 h2" }))).toBe(2);
+    expect(f.err.join("\n")).toMatch(/share-kind-standing: "cold-shelf" stands shared as a wiki row.*unshare it first \(`lares wiki share cold-shelf --remove`\)/);
+    expect(f.file(), "the wiki row stands whole").toBe(standing);
+    expect(f.verbs).toEqual([]);
+    expect(await cmdShare("wiki", f.doors)(args(["cold-shelf"], {}, { remove: true }))).toBe(0);
+    expect(parseShareFile(f.file()!)).toEqual([]);
+    expect(f.verbs).toEqual([{ name: "share-set", args: { slug: "cold-shelf", remove: true } }]);
+    expect(await cmdShare("bag", f.doors)(args(["cold-shelf"], { read: "h1 h2" }))).toBe(0);
+    expect(parseShareFile(f.file()!)).toEqual([{ slug: "cold-shelf", kind: "bag", read: "joshua-fontany-engineer [[the referee]]", write: "" }]);
+    // --remove names the kind the row carries: the other kind's door refuses, and a slug no row holds reads as such.
+    const g = fake({ file: standing });
+    expect(await cmdShare("bag", g.doors)(args(["cold-shelf"], {}, { remove: true }))).toBe(2);
+    expect(g.file()).toBe(standing);
+    expect(await cmdShare("bag", g.doors)(args(["nothing-here"], {}, { remove: true }))).toBe(2);
+    expect(g.verbs).toEqual([]);
   });
 
   test("SH5 — the row keeps its owner in the control document as in the file", async () => {
