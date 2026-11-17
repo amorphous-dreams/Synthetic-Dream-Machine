@@ -660,6 +660,50 @@ test("pulama-admit-names-the-face: the admission names face 0, since a pūlama h
   assert.deepEqual(pulamaAdmitArgs(2), ["pulama", "admit", "2"]);
 });
 
+test("carry-collisions-restore-as-the-steward: the census between the collision and the restore wears every face in turn, so the restore puts and the restored census run with the steward (face 0) worn again", async () => {
+  const { CARRY_STEPS } = present(carryLeg);
+  const step = CARRY_STEPS.find((s) => s.id === "instrument-collisions");
+  const dir = mkdtempSync(join(tmpdir(), "carry-collide-"));
+  const [a, b, d] = ["lar:///ha.ka.ba/kahua/memory/x/zero", "lar:///ha.ka.ba/kahua/memory/ruling/2026-11-13", "lar:///ha.ka.ba/kahua/memory/ruling/2026-11-14"];
+  const acts = [];
+  let worn = null, compares = 0;
+  const h = {
+    checkout: dir, env: {},
+    shimLine: (args) => args.join(" "),
+    pty: async (line) => { const m = /vault unlock --face (\d+)/.exec(line); if (m) { worn = Number(m[1]); acts.push(`wear ${worn}`); } return { code: 0, stdout: "" }; },
+    shim: async (args) => {
+      if (args[0] === "vault") return { code: 0, stdout: `{"unlocked":true,"wears":${worn}}`, stderr: "" };
+      if (args[0] === "meme" && args[1] === "get") return { code: 0, stdout: "TEXT\n<<~/ahu>>\n", stderr: "" };
+      if (args[0] === "meme" && args[1] === "put") acts.push(`put ${args[2]} as ${worn}`);
+      return { code: 0, stdout: "{}", stderr: "" };
+    },
+  };
+  const c = {
+    scope: { houseNew: dir, census: join(dir, "census"), base: dir }, vars: { stageUris: [a, b, d] }, hands: () => h,
+    node: async (args) => {
+      if (args.includes("census")) { acts.push(`census as ${worn}`); return { code: 0, stdout: "", stderr: "" }; }
+      compares++;
+      return compares === 1 ? { code: 1, stdout: JSON.stringify({ verdict: "red", differences: [b, d] }), stderr: "" } : { code: 0, stdout: JSON.stringify({ verdict: "par" }), stderr: "" };
+    },
+  };
+  try {
+    const r = await step.run(c);
+    assert.equal(r.ok, true, r.answer);
+    const puts = acts.filter((x) => x.startsWith("put "));
+    assert.equal(puts.length, 3, acts.join(" · "));
+    for (const p of puts) assert.match(p, / as 0$/, `every put runs with the steward worn: ${acts.join(" · ")}`);
+    const restored = acts.lastIndexOf("put " + d + " as 0");
+    assert.equal(acts[restored + 1], "wear 0", `the restored census opens with the steward worn: ${acts.join(" · ")}`);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("carry-sweep-names-its-refusals: the sweep prints each refused row with the refusal's own text, not only the counts", () => {
+  const { sweepScript } = present(carryLeg);
+  const script = sweepScript("lares");
+  assert.match(script, /SWEEP-REFUSED \$u: /);
+  assert.match(script, /\/tmp\/sweep\.err/);
+});
+
 test("carry-table-keeps-the-order: census before down, no reset step, no accept-loss typed, teardown last", () => {
   const { CARRY_STEPS, CARRY_SAYS } = present(carryLeg);
   const ids = CARRY_STEPS.map((s) => s.id);
