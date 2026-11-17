@@ -7,7 +7,8 @@
 import { expect, test } from "vitest";
 import { STORE_DOOR_FACE_VERBS, STORE_DOOR_HAND_ONLY_ACTS, STORE_DOOR_VERBS, storeDoorReactors, type StoreDoorDeps } from "../src/store-door-verbs.js";
 import { storeVerbGatesFirst, storeVerbNeedsWard } from "../src/ward-credential.js";
-import { lentOfferFaces } from "../src/commands/rite.js";
+import { beginLentFaces, lentOfferFaces } from "../src/commands/rite.js";
+import { SwarmRefused } from "@lararium/mesh";
 
 const ROWS = ["rite-begin", "rite-land", "rite-receipts", "rite-receipt", "rite-offer"] as const;
 
@@ -43,4 +44,21 @@ test("RED: the offer gathers every lent face's line, one face each in the lend's
   expect(faces.map((f) => [f.name, f.group])).toEqual([["h0", "g0"], ["h2", "g2"]]);
   await expect(lentOfferFaces([], face)).rejects.toMatchObject({ code: "lent-faces-empty" });
   await expect(lentOfferFaces([0, 5], face)).rejects.toMatchObject({ code: "face-log-unreadable", message: expect.stringContaining("h5") });
+});
+
+test("RED: a kūkulu begins one rite per lent face, each spending that face's own lei; a face whose lei is missing waits by name; CONTROL: every face waiting refuses by the lei's reading, another reading refuses the whole begin, and no lent face refuses", async () => {
+  const began: number[] = [];
+  const begin = (missing: readonly number[], other: number | null = null) => async (ordinal: number) => {
+    if (ordinal === other) throw new SwarmRefused("swarm-lei-returned", "spent");
+    if (missing.includes(ordinal)) throw new SwarmRefused("swarm-lei-absent", `no lei of h${ordinal}`);
+    began.push(ordinal);
+    return { tessera: String(ordinal).repeat(64), rite: "kukulu" as const, lei: "l", n: 1, begun: "b" };
+  };
+  expect(await beginLentFaces([0, 1, 2], begin([1]))).toEqual({
+    rite: "kukulu", faces: [{ face: "h0", ordinal: 0, tessera: "0".repeat(64), lei: "l", n: 1, begun: "b" }, { face: "h2", ordinal: 2, tessera: "2".repeat(64), lei: "l", n: 1, begun: "b" }], waits: ["h1"],
+  });
+  expect(began).toEqual([0, 2]);
+  await expect(beginLentFaces([0, 1], begin([0, 1]))).rejects.toMatchObject({ code: "swarm-lei-absent", message: expect.stringContaining("h0, h1") });
+  await expect(beginLentFaces([0, 1], begin([], 1))).rejects.toMatchObject({ code: "swarm-lei-returned" });
+  await expect(beginLentFaces([], begin([]))).rejects.toMatchObject({ code: "lent-faces-empty" });
 });

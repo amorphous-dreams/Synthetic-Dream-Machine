@@ -23,7 +23,7 @@ function fakes(over: { begin?: RiteVerbAnswer; land?: RiteVerbAnswer; shim?: Par
     checkout: async () => { calls.push("checkout"); return { head: HEAD, branch: "main" }; },
     row: async (verb, args) => {
       calls.push(`${verb} ${JSON.stringify(args)}`);
-      if (verb === "rite-begin") return over.begin ?? { ok: true, output: { tessera: TESSERA, rite: "kukulu", lei: "d".repeat(64), n: 1, begun: "e".repeat(64) } };
+      if (verb === "rite-begin") return over.begin ?? { ok: true, output: { rite: "kukulu", faces: [{ face: "h0", ordinal: 0, tessera: TESSERA, lei: "d".repeat(64), n: 1, begun: "e".repeat(64) }], waits: [] } };
       return over.land ?? { ok: true, output: { tessera: TESSERA, rite: "kukulu", begun: "e".repeat(64), landed: "f".repeat(64), par: true } };
     },
     shim: async (verb) => { calls.push(`shim ${verb}`); return over.shim?.[verb] ?? 0; },
@@ -40,9 +40,9 @@ describe("rite-begun-before-down", () => {
       "checkout",
       `rite-begin ${JSON.stringify({ rite: "kukulu", branch: "main", head: HEAD })}`,
       "shim build", "shim down", "shim up",
-      `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD })}`,
+      `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD, face: 0 })}`,
     ]);
-    expect(out).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, tessera: TESSERA, begun: true, landed: true, par: true } });
+    expect(out).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, tesserae: [{ face: "h0", tessera: TESSERA }], begun: true, landed: true, par: true } });
   });
 
   it("RED: a build that fails leaves the vessel standing: no down, no up, no landing, and the answer names the begun half that now waits", async () => {
@@ -50,7 +50,7 @@ describe("rite-begun-before-down", () => {
     const out = await riteKukulu(f.ports, {});
     expect(f.calls.filter((c) => c.startsWith("shim"))).toEqual(["shim build"]);
     expect(f.calls.some((c) => c.startsWith("rite-land"))).toBe(false);
-    expect(out).toMatchObject({ code: 1, data: { tessera: TESSERA, begun: true, landed: false, stopped: "build" } });
+    expect(out).toMatchObject({ code: 1, data: { tesserae: [{ face: "h0", tessera: TESSERA }], begun: true, landed: false, stopped: "build" } });
     expect(f.said.join("\n")).toMatch(/the lei's return stays spent/);
   });
 
@@ -77,8 +77,8 @@ describe("the vessel that stands locked lands later", () => {
   it("RED: a landing the locked vessel refuses ends the rite clean, names the unlock and the landing still owed, and reads no par", async () => {
     const f = fakes({ land: { ok: false, code: "vessel-locked", message: "this vessel's key rests unopened" } });
     const out = await riteKukulu(f.ports, {});
-    expect(out).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, tessera: TESSERA, begun: true, landed: false, awaits: "unlock" } });
-    expect(f.said.join("\n")).toMatch(new RegExp(`lares vault unlock[\\s\\S]*lares rite land --tessera ${TESSERA} --head ${HEAD}`));
+    expect(out).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, tesserae: [{ face: "h0", tessera: TESSERA }], begun: true, landed: false, awaits: "unlock" } });
+    expect(f.said.join("\n")).toMatch(new RegExp(`lares vault unlock[\\s\\S]*lares rite land --tessera ${TESSERA} --head ${HEAD} --face 0`));
   });
 
   it("RED: any other landing refusal ends the rite red under its own code", async () => {
@@ -137,7 +137,7 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
       "shim build", "image",
       `rite-offer ${JSON.stringify({ branch: "main", head: HEAD, image: IMAGE })}`,
       "shim down", "shim up",
-      `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD })}`,
+      `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD, face: 0 })}`,
     ]);
     expect(out.code).toBe(0);
     expect(f.said.join("\n")).toMatch(/the offer rests for the next vessel/);
@@ -162,10 +162,27 @@ describe("kukulu-offer-reaches-the-new-vessel (the host's step)", () => {
     expect(none.said.join("\n")).toMatch(/no offer rests for a pūlama/);
   });
 
-  it("RED: the offer row gathers every lent face's line, so the host names no face on it; CONTROL: the begin and the landing keep the face the rite names", () => {
-    expect(hostRowLine("rite-offer", { branch: "main", head: HEAD, image: IMAGE }, "1")).toEqual(["rite", "offer", "--branch", "main", "--head", HEAD, "--image", IMAGE]);
-    expect(hostRowLine("rite-begin", { rite: "kukulu", branch: "main", head: HEAD }, "1")).toEqual(["rite", "begin", "--rite", "kukulu", "--branch", "main", "--head", HEAD, "--face", "1"]);
-    expect(hostRowLine("rite-land", { tessera: TESSERA, head: HEAD }, undefined)).toEqual(["rite", "land", "--tessera", TESSERA, "--head", HEAD]);
+  it("RED: the begin and the offer gather every lent face in the vessel, so the host names no face on them; each landing names the face its tessera began under", () => {
+    expect(hostRowLine("rite-offer", { branch: "main", head: HEAD, image: IMAGE })).toEqual(["rite", "offer", "--branch", "main", "--head", HEAD, "--image", IMAGE]);
+    expect(hostRowLine("rite-begin", { rite: "kukulu", branch: "main", head: HEAD })).toEqual(["rite", "begin", "--rite", "kukulu", "--branch", "main", "--head", HEAD]);
+    expect(hostRowLine("rite-land", { tessera: TESSERA, head: HEAD, face: 2 })).toEqual(["rite", "land", "--tessera", TESSERA, "--head", HEAD, "--face", "2"]);
+  });
+
+  it("RED: a begin over several lent faces lands each face's tessera under that face, names each face that waits for its lei, and reads par only where every pair reads par", async () => {
+    const T2 = "2".repeat(64);
+    const f = fakes({ begin: { ok: true, output: { rite: "kukulu", faces: [{ face: "h0", ordinal: 0, tessera: TESSERA }, { face: "h2", ordinal: 2, tessera: T2 }], waits: ["h1"] } } });
+    const out = await riteKukulu(f.ports, {});
+    expect(f.calls.filter((c) => c.startsWith("rite-land"))).toEqual([
+      `rite-land ${JSON.stringify({ tessera: TESSERA, head: HEAD, face: 0 })}`,
+      `rite-land ${JSON.stringify({ tessera: T2, head: HEAD, face: 2 })}`,
+    ]);
+    expect(out).toEqual({ code: 0, data: { rite: "kukulu", branch: "main", head: HEAD, tesserae: [{ face: "h0", tessera: TESSERA }, { face: "h2", tessera: T2 }], waits: ["h1"], begun: true, landed: true, par: true } });
+    expect(f.said.join("\n")).toMatch(/h1 carries no kukulu lei on this line and waits/);
+    // One face's pair reading red reads the whole landing red.
+    const red = fakes({ begin: { ok: true, output: { rite: "kukulu", faces: [{ face: "h0", ordinal: 0, tessera: TESSERA }, { face: "h2", ordinal: 2, tessera: T2 }], waits: [] } } });
+    const row = red.ports.row;
+    red.ports.row = async (verb, args) => verb === "rite-land" && args["face"] === 2 ? { ok: true, output: { par: false } } : row(verb, args);
+    expect(await riteKukulu(red.ports, {})).toMatchObject({ code: 1, data: { landed: true, par: false } });
   });
 
   it("RED: the host names each face the offer vouches for, and each face whose line carries no lei waits by name", async () => {
