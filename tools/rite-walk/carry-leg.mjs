@@ -151,17 +151,49 @@ export function judgeImport(answers, { expectedStandoff = [], expectedRefused = 
 }
 
 /**
- * Judge the new house's fresher read (`lares vessel fresher --bag <slug>`, one `  <title>  <base> -> <canon>` line per copy)
- * against the plan: each named title warns, each quiet title does not. A read that refused faults by its exit.
+ * Judge the new house's fresher read (`lares vessel fresher --bag <slug>`) against the plan. It prints two classes: the
+ * fresher class (`  <title>  <base> -> <canon>`, canon moved past the copy's base) and the base-unknown class
+ * (`  <title>  base unknown -> <canon>`, a copy that names no base and differs from canon). Each `titles` entry must warn
+ * fresher, each `unknown` entry must stand in the base-unknown class, and each `quiet` title in neither. A read that refused
+ * faults by its exit.
  */
-export function judgeFresher(r, { titles = [], quiet = [] } = {}) {
+export function judgeFresher(r, { titles = [], unknown = [], quiet = [] } = {}) {
   const text = String(r?.text ?? "");
-  const listed = new Set(text.split("\n").map((l) => /^\s+(lar:\/\/\/\S+)\s/.exec(l)?.[1]).filter(Boolean));
+  const fresher = new Set(), doubt = new Set();
+  for (const l of text.split("\n")) {
+    const m = /^\s+(lar:\/\/\/\S+)\s+(.*)$/.exec(l);
+    if (!m) continue;
+    (/^base unknown\b/.test(m[2]) ? doubt : fresher).add(m[1]);
+  }
   const faults = [];
   if (r?.code !== 0) faults.push(`the fresher read exited ${r?.code}: ${text.trim().slice(-200)}`);
-  for (const t of titles) if (!listed.has(t)) faults.push(`expected fresher ${t} never warned (its working copy landed without the base it forked from)`);
-  for (const t of quiet) if (listed.has(t)) faults.push(`unexpected fresher ${t} (canon held still under it)`);
-  return { ok: faults.length === 0, faults, listed: [...listed] };
+  for (const t of titles) if (!fresher.has(t)) faults.push(`expected fresher ${t} never warned (its working copy landed without the base it forked from)`);
+  for (const t of unknown) if (!doubt.has(t)) faults.push(`expected base-unknown ${t} never named (a copy with no base that differs from canon must read for review)`);
+  for (const t of quiet) {
+    if (fresher.has(t)) faults.push(`unexpected fresher ${t} (canon held still under it)`);
+    if (doubt.has(t)) faults.push(`unexpected base-unknown ${t} (its copy carries a base, or equals canon)`);
+  }
+  return { ok: faults.length === 0, faults, listed: [...fresher], unknown: [...doubt] };
+}
+
+/**
+ * The fresher read the plan owes, by what the bundle carried. A working row that carries its override base owes the plan as
+ * written (the moved copy warns fresher, the still copy stays quiet). A row that carries none (a source house whose meme door
+ * stamped no base, as at 983c70580) owes the base-unknown class: the true base cannot be recovered and no base gets forged
+ * at landing, and each seeded copy carries the rehearsal's paragraph, so it differs from canon whether canon moved or not.
+ * A planned title the bundle carries no working row for faults.
+ */
+export function fresherPlanFor(expected, manifest) {
+  if (!expected) return null;
+  const rows = manifest?.rows ?? [];
+  const rowOf = (uri) => rows.find((r) => (r.layer === "wiki-working" || r.layer === "working") && String(r.path ?? "").endsWith(`${expected.bag}/working/${uri.slice("lar:///".length)}.mem`));
+  const plan = { bag: expected.bag, titles: [], unknown: [], quiet: [], faults: [] };
+  for (const [uri, cls] of [...(expected.titles ?? []).map((u) => [u, "titles"]), ...(expected.quiet ?? []).map((u) => [u, "quiet"])]) {
+    const row = rowOf(uri);
+    if (!row) { plan.faults.push(`the bundle carries no working row for ${uri}`); continue; }
+    if (typeof row.overrideBase === "string") plan[cls].push(uri); else plan.unknown.push(uri);
+  }
+  return plan;
 }
 
 /** Judge the export's answer: exit 0, and no omission but the allowed ones. A wiki the steward woke at hold-old projected
@@ -634,18 +666,23 @@ const importApply = async (c) => {
   return { ok: j.ok, answer: j.ok ? `stood off exactly the named set ${JSON.stringify(j.stoodOff)}; landed ${JSON.stringify(j.landed)}` : [...j.faults, ...unread].join("; "), measures: { exits: answers.map((a) => a.code), stoodOff: j.stoodOff, refused: j.refused, landed: j.landed, unread } };
 };
 
-/** THE FRESHER WARNING, read at the steward's wear after every face imported: the copy over moved canon landed naming the
- *  base it forked from, so the new house names it, and the copy over still canon stays quiet. A plan that names no
- *  expectation reads nothing. */
+/** THE FRESHER WARNING, read at the steward's wear after every face imported (`fresherPlanFor` decides what it owes): a copy
+ *  carried with its base reads fresher where canon moved and quiet where it held still; a copy carried with none reads in the
+ *  base-unknown class, for review, so the carry loses nothing silently. A plan that names no expectation reads nothing. */
 const fresherRead = async (c) => {
-  const want = c.vars.expectedFresher;
-  if (!want) return { ok: true, answer: "the plan names no fresher expectation; nothing read" };
+  if (!c.vars.expectedFresher) return { ok: true, answer: "the plan names no fresher expectation; nothing read" };
+  // What the read owes follows what the bundle carried: a row with its base owes the warning, one with none the review class.
+  const manifestPath = join(importHost(c), "manifest.json");
+  let manifest = null;
+  try { manifest = JSON.parse(readFileSync(manifestPath, "utf8")); } catch { return { ok: false, answer: `the bundle's manifest would not read at ${manifestPath}` }; }
+  const want = fresherPlanFor(c.vars.expectedFresher, manifest);
+  if (want.faults.length > 0) return { ok: false, answer: want.faults.join("; ") };
   const h = c.hands("new");
   const w = await wear(c, "new", 0);
   if (!w.ok) return { ok: false, answer: `the steward never stood worn for the fresher read: ${tail(w.transcript)}` };
   const r = await h.shim(["vessel", "fresher", "--bag", want.bag]);
   const j = judgeFresher({ code: r.code, text: said(r) }, want);
-  return { ok: j.ok, answer: j.ok ? `fresher ${JSON.stringify(j.listed)}; quiet ${JSON.stringify(want.quiet ?? [])}` : j.faults.join("; "), measures: { exit: r.code, fresher: j.listed } };
+  return { ok: j.ok, answer: j.ok ? `fresher ${JSON.stringify(j.listed)}; base unknown ${JSON.stringify(j.unknown)}; quiet ${JSON.stringify(want.quiet)}` : j.faults.join("; "), measures: { exit: r.code, fresher: j.listed, unknown: j.unknown, owed: { titles: want.titles, unknown: want.unknown, quiet: want.quiet } } };
 };
 
 const reimport = async (c) => {
@@ -801,7 +838,7 @@ export const CARRY_STEPS = Object.freeze([
   { id: "census-new-base", command: "carry-parity.mjs census --root house-new (per worn face, before the import)", via: PTY, needs: ["seed-canon-new"], expect: "the new house's own genesis rows read", run: censusStep("new", "new-base") },
   { id: "import-preview", command: `lares import ${BUNDLE} --json`, via: PTY, needs: ["census-new-base"], expect: "every pet-name maps to a face", run: importPreview },
   { id: "import-apply", command: `per face: lares import ${BUNDLE} --apply --json`, via: PTY, needs: ["import-preview"], expect: "stand-offs exactly the named set; nothing refused; nothing waiting", run: importApply },
-  { id: "fresher", command: "lares vault unlock --face 0 · lares vessel fresher --bag <plan bag>", via: PTY, needs: ["import-apply"], expect: "the copy over moved canon warns fresher; the copy over still canon stays quiet", run: fresherRead },
+  { id: "fresher", command: "lares vault unlock --face 0 · lares vessel fresher --bag <plan bag>", via: PTY, needs: ["import-apply"], expect: "a copy carried with its base: moved warns fresher, still stays quiet; a copy carried with none reads base unknown", run: fresherRead },
   { id: "reimport", command: `per face: lares import ${BUNDLE} --apply · lares vessel seed --apply --yes`, via: PTY, needs: ["import-apply"], expect: "lands 0", run: reimport },
   { id: "parity", command: "carry-parity.mjs census (new) · carry-parity.mjs compare --old … --new … --base … --json", via: PTY, needs: ["reimport", "census-old"], expect: "par", run: parity },
   { id: "instrument-collisions", command: "drop one row, change one row · compare (red) · restore · compare (par)", via: PTY, needs: ["parity"], expect: "red naming both, then par", run: instrumentCollisions },

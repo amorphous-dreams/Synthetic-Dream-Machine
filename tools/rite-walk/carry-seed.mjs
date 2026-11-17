@@ -167,7 +167,8 @@ export function seedPlan({ seed = "carry-rehearsal", count = 300, canon, bodies 
   ];
   // THE COPY OVER MOVED CANON LANDS AND WARNS, never stands off (override-base.ts, wiki-layer-ontology): its override base
   // names the canon record it forked from, so after the import the new house's fresher read names it, and the copy over the
-  // canon that held still stays quiet.
+  // canon that held still stays quiet. Where the source house stamped no base, the leg's `fresherPlanFor` turns both into
+  // the base-unknown class the new house names for review instead.
   return { seed, count, faces, edges, expectedStandoff: [], expectedFresher: { bag: "lares", titles: [canon.moved.uri], quiet: [canon.still.uri] } };
 }
 
