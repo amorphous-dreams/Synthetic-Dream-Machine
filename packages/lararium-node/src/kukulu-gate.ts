@@ -164,7 +164,7 @@ export function kukuluGate(a: {
       if (o.lei !== undefined && !Array.isArray(o.lei)) return refuse("kukulu-lei-shape", "a kūkulu's lei reads as an array of strung rows");
       if (o.unstrung !== undefined && !Array.isArray(o.unstrung)) return refuse("kukulu-unstrung-shape", "a kūkulu's unstrung rows read as an array");
       const lei: readonly unknown[] = o.lei ?? [], unstrung: readonly unknown[] = o.unstrung ?? [];
-      if (o.vouch === undefined || o.vouch === null) {
+      if (o.vouch === undefined) {
         if (lei.length > 0) return refuse("kukulu-unvouched", "a kūkulu wears its lei beside a vouch; this hello carries none");
         // NO OFFER: the vessel enters by the image the host reports, where that image stands admitted.
         const reported = await a.image();
