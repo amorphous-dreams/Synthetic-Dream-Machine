@@ -19,6 +19,8 @@ import { personaGroupDigest } from "../src/persona-group-file.js";
 import { pulamaRecords } from "../src/pulama-state.js";
 import { wardRootSigner } from "../src/ward-signer.js";
 import { fixtureWard } from "./custody-seat-fixture.js";
+import type { PulamaAdmissions } from "../src/pulama-admit.js";
+import { faceAtomGroupFile } from "../src/face-atom-store.js";
 import { fixtureRoute, fixtureSlots, standPulama, type PulamaFixture } from "./pulama-fixture.js";
 
 vi.setConfig({ testTimeout: 180_000 });
@@ -212,5 +214,121 @@ describe("RED pulama-refuses-a-returned-lei", () => {
     const seed = new Uint8Array(32).fill(9);
     const forged = await signSwarmAct({ act: "lei-unstrung", group: GROUP, rite: "kukulu", branch: BRANCH, lei: swarmActCid(next) }, { key: await ed25519VerifyingKeyFromSeed(seed), sign: ed25519SignerFromSeed(seed) });
     expect(await s.hello({ lei: next, unstrung: forged, vouch: v })).toBe("opens");
+  });
+});
+
+const GROUPS = ["group-lend-steward", "group-lend-engineer", "group-lend-referee"] as const;
+
+/** Three faces at one pūlama, each with its own hand (its root under the ward); the gate over the product's lei family. */
+async function standLend(admissions?: PulamaAdmissions) {
+  const dir = mkdtempSync(join(tmpdir(), "lar-kukulu-lend-"));
+  dirs.push(dir);
+  const records: SwarmWikiPort = pulamaRecords(dir);
+  fx = await standPulama("kukulu-lend", (kept: CustodyHolder) => kukuluGate({
+    holder: kept, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => IMAGE, ...(admissions ? { admissions } : {}),
+  }));
+  const faces = [], hands: SwarmSignerPort[] = [];
+  for (const [i, group] of GROUPS.entries()) {
+    faces.push(await fx.kept.foundFace({ group: personaGroupDigest(group), ordinal: i, slots: fixtureSlots }));
+    expect((await fx.local.unlockFace({ ordinal: i }, fixtureRoute)).reading).toBe("opens");
+    const root = await generateOrLoadPersonaGroupRoot(i, fixtureWard());
+    hands.push({ key: root.verifyingKey, sign: async (bytes) => (await wardRootSigner(i, fixtureWard(), "a swarm control")).sign(bytes) });
+    await fx.kept.writeRecord("identity", faceAtomGroupFile(group), Uint8Array.from([i]));
+  }
+  /** A kukulu lei for the face at `ordinal`, strung by `by`'s hand (its own, unless a test names another). */
+  const string = (ordinal: number, by = ordinal): Promise<SignedSwarmAct> =>
+    signSwarmAct({ act: "lei", group: GROUPS[ordinal]!, rite: "kukulu", branch: BRANCH, after: null, reach: "wide", returns: 2 }, hands[by]!);
+  const vouch = async (ordinal: number): Promise<SignedKukuluVouch> =>
+    signKukuluVouch({ group: GROUPS[ordinal]!, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, verdict: "pass", receipt: null }, await vouchSignerOf(fx!.local));
+  const returns = async (lei: SignedSwarmAct): Promise<number> => (await records.list(swarmLeiReturnedPrefix(swarmActCid(lei)))).length;
+  const sessionScope = (): unknown => fx!.lines.fromPulama.map((l) => JSON.parse(l) as Record<string, unknown>).filter((f) => f["t"] === "session").at(-1)?.["scope"];
+  const hello = async (offer: unknown): Promise<string> => {
+    try { return (await fx!.vessel(offer).unlock([])).reading; }
+    catch (err) { return (err as { reading?: string }).reading ?? String(err); }
+  };
+  return { fx, faces, hands, records, string, vouch, returns, sessionScope, hello };
+}
+
+describe("RED the lend draws one kūkulu lei per lent face", () => {
+  test("two faces' leis, each strung by its own hand beside its own vouch, lend both; each lei returns once; a face outside the lend still refuses; both halves land par", async () => {
+    const s = await standLend();
+    const l0 = await s.string(0), l2 = await s.string(2);
+    const vessel = s.fx.vessel({ lei: [l0, l2], vouch: [await s.vouch(0), await s.vouch(2)] });
+    expect((await vessel.unlock([])).reading).toBe("opens");
+    expect(vessel.lends()).toEqual([0, 2]);
+    expect(vessel.unlockedFaces()).toEqual([s.faces[0]!.fcid, s.faces[2]!.fcid]);
+    expect([await s.returns(l0), await s.returns(l2)]).toEqual([1, 1]);
+    expect(await vessel.readRecord("identity", faceAtomGroupFile(GROUPS[2]))).toEqual({ reading: "opens", plaintext: Uint8Array.from([2]) });
+    // THE WIDENING KEEPS THE WALL: the face no lei lent refuses, naming the lend.
+    await expect(vessel.readRecord("identity", faceAtomGroupFile(GROUPS[1]))).rejects.toMatchObject({ reading: "outside-the-lei", message: expect.stringContaining("h0, h2") });
+    expect(s.sessionScope()).toMatchObject({ faces: [{ fcid: s.faces[0]!.fcid, ordinal: 0 }, { fcid: s.faces[2]!.fcid, ordinal: 2 }] });
+    expect(await vessel.landRite()).toEqual({ par: true });
+    expect((await s.records.list(swarmTesseraPrefix())).length).toBe(4);
+  });
+
+  test("a vouched face whose lei is missing waits by name and the lend stands for the rest; a lei one face's hand strung for another face lends nothing", async () => {
+    const s = await standLend();
+    const l0 = await s.string(0);
+    const vessel = s.fx.vessel({ lei: [l0], vouch: [await s.vouch(0), await s.vouch(2)] });
+    expect((await vessel.unlock([])).reading).toBe("opens");
+    expect(vessel.lends()).toEqual([0]);
+    expect(s.sessionScope()).toMatchObject({ faces: [{ ordinal: 0 }], unlent: [{ ordinal: 2, reading: "swarm-lei-absent" }] });
+    await vessel.lock();
+    // NO FACE LENDS ANOTHER: face 0's hand strings a lei naming face 2's group; it verifies as no hand of face 2, so face 2 waits.
+    const forged = await s.string(2, 0);
+    const l0b = await s.string(0);
+    const again = s.fx.vessel({ lei: [l0b, forged], vouch: [await s.vouch(0), await s.vouch(2)] });
+    expect((await again.unlock([])).reading).toBe("opens");
+    expect(again.lends()).toEqual([0]);
+    expect(await s.returns(forged)).toBe(0);
+    // Every vouched face waiting refuses the hello by the first face's reading.
+    expect(await s.hello({ lei: [], vouch: [await s.vouch(1), await s.vouch(2)] })).toBe("swarm-lei-absent");
+  });
+
+  test("a dark face waits and its lei spends nothing; a vouch set naming one face twice refuses", async () => {
+    const s = await standLend();
+    await s.fx.kept.lockFace(s.faces[2]!.fcid);
+    const l0 = await s.string(0), l2 = await s.string(2);
+    const vessel = s.fx.vessel({ lei: [l0, l2], vouch: [await s.vouch(0), await s.vouch(2)] });
+    expect((await vessel.unlock([])).reading).toBe("opens");
+    expect(vessel.lends()).toEqual([0]);
+    expect(s.sessionScope()).toMatchObject({ unlent: [{ ordinal: 2, reading: "kukulu-face-locked" }] });
+    expect([await s.returns(l0), await s.returns(l2)]).toEqual([1, 0]);
+    expect(await s.hello({ lei: [l0], vouch: [await s.vouch(0), await s.vouch(0)] })).toBe("kukulu-vouch-duplicate");
+  });
+});
+
+describe("RED the admitted image lends its set (L4)", () => {
+  /** An admitted set stub: the row names `faces`, as the admission records carry a lend. */
+  const admittedSet = (faces: () => ReadonlyArray<{ fcid: string; ordinal: number }>) => {
+    const reserved: unknown[] = [];
+    const admissions = {
+      admitted: async () => ({ ...faces()[0]!, faces: faces(), by: "hand" as const, tessera: "0".repeat(64) }),
+      reserved: async (_image: string, face: unknown) => { reserved.push(face); return reserved.length; },
+      admitByRite: async () => {}, admitByHand: async () => ({ tessera: "0".repeat(64) }), list: async () => [],
+    } as unknown as PulamaAdmissions;
+    return { admissions, reserved };
+  };
+
+  test("an image admitted for {h0, h2} serves a scope of both; a dark h2 waits and h0 serves; every lent face dark refuses by name; h1 stays outside", async () => {
+    let lent: Array<{ fcid: string; ordinal: number }> = [];
+    const { admissions, reserved } = admittedSet(() => lent);
+    const s = await standLend(admissions);
+    lent = [{ fcid: s.faces[0]!.fcid, ordinal: 0 }, { fcid: s.faces[2]!.fcid, ordinal: 2 }];
+    const vessel = s.fx.vessel({});
+    expect((await vessel.unlock([])).reading).toBe("opens");
+    expect(vessel.lends()).toEqual([0, 2]);
+    expect(vessel.waiting()).toEqual([]);
+    await expect(vessel.readRecord("identity", faceAtomGroupFile(GROUPS[1]))).rejects.toMatchObject({ reading: "outside-the-lei" });
+    expect(reserved).toHaveLength(1);
+    await vessel.lock();
+    await s.fx.kept.lockFace(s.faces[2]!.fcid);
+    const partial = s.fx.vessel({});
+    expect((await partial.unlock([])).reading).toBe("opens");
+    expect(partial.lends()).toEqual([0, 2]);
+    expect(partial.waiting()).toEqual([2]);
+    await partial.lock();
+    await s.fx.kept.lockFace(s.faces[0]!.fcid);
+    expect(await s.hello({})).toBe("kukulu-face-locked");
   });
 });

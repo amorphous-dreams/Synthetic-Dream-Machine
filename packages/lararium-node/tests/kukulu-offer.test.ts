@@ -68,7 +68,7 @@ async function stand() {
     return lei;
   };
   const receipt = (verdict: "pass" | "fail") => restReceipt(wiki, { tree: TREE, checks: ["typecheck", "mesh"], verdict, definitions: "d".repeat(64) }, trust, GROUP, atom);
-  const offer = (image = IMAGE) => writeKukuluOffer({ wiki, trust, group: GROUP, ward: NO_COSIGN, branch: BRANCH, head: HEAD, tree: TREE, image, holder: fx!.local, path });
+  const offer = (image = IMAGE) => writeKukuluOffer({ wiki, faces: [{ group: GROUP, trust, ward: NO_COSIGN }], branch: BRANCH, head: HEAD, tree: TREE, image, holder: fx!.local, path });
   const hello = async (offered: unknown): Promise<string> => {
     try { return (await fx!.vessel(offered).unlock([])).reading; }
     catch (err) { return (err as { reading?: string }).reading ?? String(err); }
@@ -90,10 +90,12 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     const file = JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer;
     expect(file.lei.map((l) => swarmActCid(l)).sort()).toEqual([swarmActCid(first), swarmActCid(lei)].sort());
     expect(file.unstrung).toEqual([]);
-    const vouched = verifyKukuluVouch(file.vouch, await vouchKeyOf(s.fx.kept));
-    expect(vouched).toMatchObject({ ok: true, digest: wrote.vouch });
-    expect(file.vouch.body).toMatchObject({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, verdict: "pass" });
-    expect(kukuluVouchDigest(file.vouch)).toBe(wrote.vouch);
+    // ONE VOUCH PER LENT FACE, each naming its own face's group.
+    expect(file.vouch).toHaveLength(1);
+    const vouched = verifyKukuluVouch(file.vouch[0], await vouchKeyOf(s.fx.kept));
+    expect(vouched).toMatchObject({ ok: true, digest: wrote.vouch[0] });
+    expect(file.vouch[0]!.body).toMatchObject({ group: GROUP, branch: BRANCH, head: HEAD, tree: TREE, image: IMAGE, verdict: "pass" });
+    expect(kukuluVouchDigest(file.vouch[0]!)).toBe(wrote.vouch[0]);
     // Nothing secret rests in the file: no route, no key the holder holds.
     expect(readFileSync(s.path, "utf8")).not.toContain(Buffer.from(s.fx.treeKey).toString("hex"));
 
@@ -122,8 +124,8 @@ describe("RED kukulu-offer-reaches-the-new-vessel", () => {
     await s.receipt("pass");
     const one = await s.offer();
     const two = await s.offer("sha256:" + "cd".repeat(32));
-    expect(two.vouch).not.toBe(one.vouch);
-    expect((JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer).vouch.body.image).toBe("sha256:" + "cd".repeat(32));
+    expect(two.vouch).not.toEqual(one.vouch);
+    expect((JSON.parse(readFileSync(s.path, "utf8")) as KukuluOffer).vouch[0]!.body.image).toBe("sha256:" + "cd".repeat(32));
     // The host raises another image than the newest offer names: the pūlama refuses, and the file stays.
     const vessel = s.fx.vessel(readKukuluOffer(s.path));
     const by = pulamaStandBy({ holder: vessel, recompose: async () => ({ standing: "floor" }), mount: () => {}, onLog: () => {}, consumeOffer: () => consumeKukuluOffer(s.path) });
