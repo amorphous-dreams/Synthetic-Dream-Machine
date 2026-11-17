@@ -37,11 +37,15 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
     { title: "lar:///ha.ka.ba/kahua/memory/project/house-laws", fields: { title: "lar:///ha.ka.ba/kahua/memory/project/house-laws", description: "The seven house laws." } },
     { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", description: "What stands open." } },
   ] } });
+  const stateAnswer = JSON.stringify({ ok: true, requestId: "s", data: { recipe: "default", filter: "[prefix[lar:///ha.ka.ba/kahua/memory/state/]!sort[modified]]", total: 2, next: null, asOf: "90a1a6dbea5e1f15", rows: [
+    { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/open-ledger", description: "What stands open." } },
+    { title: "lar:///ha.ka.ba/kahua/memory/state/handoff", fields: { title: "lar:///ha.ka.ba/kahua/memory/state/handoff", description: "Start here." } },
+  ] } });
   const standingShim = [
     "#!/bin/sh",
     'case "$1 $2" in',
     `"vessel stand") printf '%s\\n' '{"data":{"node":{"up":true,"port":4321,"cap":"observe"}}}' ;;`,
-    `"wiki filter") printf '%s\\n' '${indexAnswer}' ;;`,
+    `"wiki filter") case "$3" in "[prefix"*) printf '%s\\n' '${stateAnswer}' ;; *) printf '%s\\n' '${indexAnswer}' ;; esac ;;`,
     "*) exit 2 ;;",
     "esac",
     "",
@@ -71,20 +75,20 @@ test("wake observes the checkout shim and bounds failures", async (t) => {
       assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/project\/house-laws — The seven house laws\./);
       assert.match(context, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/open-ledger — What stands open\./);
       assert.match(context, /Lares homes: home reading/);
-      assert.doesNotMatch(context, /Lares rows in play/);
+      assert.match(context, /Lares rows in play \(start here\): 2 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/handoff — Start here\.\n/);
     });
-    await t.test("a wake after a compaction carries the rows in play by address", () => {
+    await t.test("a wake after a compaction leads with the rows in play too", () => {
       writeFileSync(shim, standingShim, { mode: 0o755 });
       const context = run(JSON.stringify({ hook_event_name: "SessionStart", source: "compact" }));
       assert.match(context, /Lares memory index: 2 rows\n/);
-      assert.match(context, /Lares rows in play: lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/open-ledger · lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/standing-orders/);
+      assert.ok(context.indexOf("Lares rows in play") < context.indexOf("Lares memory index"));
     });
     await t.test("the compaction hook hands the summary the index and the rows in play as plain text", () => {
       writeFileSync(shim, standingShim, { mode: 0o755 });
       const text = spawnHook("lares-compact-hook.mjs", JSON.stringify({ hook_event_name: "PreCompact", trigger: "auto" }));
       assert.match(text, /^Lares compaction carry: keep every `lar:` address below verbatim in the summary/);
       assert.match(text, /Lares memory index: 2 rows\n/);
-      assert.match(text, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/standing-orders/);
+      assert.match(text, /Lares rows in play \(start here\): 2 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/handoff/);
       // A PreCompact hook's stdout rides as compact instructions, never as a JSON envelope.
       assert.throws(() => JSON.parse(text));
     });

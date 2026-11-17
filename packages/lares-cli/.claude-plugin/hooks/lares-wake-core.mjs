@@ -65,14 +65,21 @@ export const INDEX_ROWS = 32;
 export const INDEX_BYTES = 4096;
 /** The reads' shared budget; the harness's own timeout stays the only bound above it. */
 export const WAKE_BUDGET_MS = 12_000;
-/** The rows a context turn keeps by address across a compaction: the open ledger and the standing orders. */
-export const ROWS_IN_PLAY = [
-  "lar:///ha.ka.ba/kahua/memory/state/open-ledger",
-  "lar:///ha.ka.ba/kahua/memory/state/standing-orders",
-];
+/**
+ * The rows in play: the state rows, derived by their address prefix and never listed here, newest first. A cold session
+ * reads them before the index, so the handoff (where it stands) leads, then the porch, the ledger and the orders.
+ */
+export const STATE_PREFIX = "lar:///ha.ka.ba/kahua/memory/state/";
+export const STATE_FILTER = `[prefix[${STATE_PREFIX}]!sort[modified]]`;
+export const STATE_HANDOFF = `${STATE_PREFIX}handoff`;
+/** The rows in play stay short: a row ceiling, a byte cap on the block, and one on each row's line. */
+export const STATE_ROWS = 8;
+export const STATE_BYTES = 2048;
+export const STATE_LINE_BYTES = 320;
 
 const CURE = "stand it with tools/lares-container.sh up";
-const VIEW = `wiki_filter(filter="${INDEX_FILTER}", recipe="default", fields=["title","description"]`;
+const viewOf = (filter) => `wiki_filter(filter="${filter}", recipe="default", fields=["title","description"]`;
+const VIEW = viewOf(INDEX_FILTER);
 const bytes = (text) => Buffer.byteLength(text, "utf8");
 
 /** The rites a lei carries, and the shim's argv for the checkout's head then branch. */
@@ -90,6 +97,11 @@ export const observeArgv = () => ["vessel", "stand", "--observe", "--json"];
 export const indexArgv = (after) => [
   "wiki", "filter", INDEX_FILTER, "--recipe", "default", "--fields", "title,description",
   "--limit", String(INDEX_ROWS), "--max-bytes", String(INDEX_BYTES), "--json", ...(after ? ["--after", after] : []),
+];
+/** The shim's argv for the rows in play, read in the worn face's daemon wiki. */
+export const stateArgv = () => [
+  "wiki", "filter", STATE_FILTER, "--recipe", "default", "--fields", "title,description",
+  "--limit", String(STATE_ROWS), "--max-bytes", String(INDEX_BYTES), "--json",
 ];
 /** The host CLI's argv for the homes line. */
 export const homesArgv = () => ["home", "read", "--brief"];
@@ -127,57 +139,92 @@ export function observation(result) {
   return { up, line: up ? JSON.stringify(frame) : `vessel down (the observation answered node.up ${JSON.stringify(frame?.data?.node?.up ?? null)}); ${CURE}` };
 }
 
+/** A row's line, its description cut where the line would outrun `lineCap` bytes; its address stays whole. */
+function rowLine(row, lineCap) {
+  const description = String(row?.fields?.description ?? "").replace(/\s+/g, " ").trim();
+  const line = description ? `${row.title} — ${description}` : String(row.title);
+  if (bytes(line) <= lineCap) return line;
+  const room = Math.max(0, lineCap - bytes(`${row.title} — …`));
+  return `${row.title} — ${Buffer.from(description, "utf8").subarray(0, room).toString("utf8").replace(/\uFFFD+$/, "")}…`;
+}
+
 /**
- * The index block for one page the filter door answered: a count line, one line per row, and one line naming the call
+ * One block of rows for one page the filter door answered: a count line, one line per row, and one line naming the call
  * that reads further. The block keeps `cap` bytes of rows: a row past the cap leaves, by count, and a row whose own
  * line outruns the cap alone shows with its description cut.
  */
-export function renderIndex(answer, cap = INDEX_BYTES) {
+function renderRows(answer, { head: label, filter, cap, lineCap = cap, rows: order = (rows) => rows, empty }) {
   const data = answer?.data ?? {};
-  const rows = Array.isArray(data.rows) ? data.rows : (Array.isArray(data.titles) ? data.titles.map((title) => ({ title, fields: {} })) : []);
+  const rows = order(Array.isArray(data.rows) ? data.rows : (Array.isArray(data.titles) ? data.titles.map((title) => ({ title, fields: {} })) : []));
   const total = typeof data.total === "number" ? data.total : rows.length;
+  const view = viewOf(filter);
+  if (total === 0 && rows.length === 0) return empty(view);
   const lines = [];
   let size = 0;
   for (const row of rows) {
-    const description = String(row?.fields?.description ?? "").replace(/\s+/g, " ").trim();
-    let line = description ? `${row.title} — ${description}` : String(row.title);
+    let line = rowLine(row, lineCap);
     if (size + bytes(line) + 1 > cap) {
       if (lines.length > 0) break;
       // The first row alone outruns the cap: its description gives way, its address stays whole.
-      const room = Math.max(0, cap - bytes(`${row.title} — …`) - 1);
-      line = `${row.title} — ${Buffer.from(description, "utf8").subarray(0, room).toString("utf8").replace(/�+$/, "")}…`;
+      line = rowLine(row, cap - 1);
     }
     lines.push(line);
     size += bytes(line) + 1;
   }
-  const head = `Lares memory index: ${total} rows${lines.length < total ? ` (${lines.length} shown)` : ""}`;
+  const head = `${label}: ${total} rows${lines.length < total ? ` (${lines.length} shown)` : ""}`;
   const cut = lines.length < rows.length;
   const next = typeof data.next === "string" && data.next !== "" ? data.next : null;
   // A cursor names the page behind the door's own page; a render cut drops rows inside that page, so it names the view whole.
   const further = cut
-    ? `cut at the wake's byte cap after ${lines.length} of ${total} rows; read the whole view: ${VIEW})`
+    ? `cut at the wake's byte cap after ${lines.length} of ${total} rows; read the whole view: ${view})`
     : next
-      ? `read further: ${VIEW}, after="${next}")`
-      : total === 0
-        ? `no row carries the tag ${INDEX_TAG} in the worn face's daemon wiki; the view: ${VIEW})`
-        : `read a row: meme_get(uri=<title>, recipe="default"); the same view: ${VIEW})`;
+      ? `read further: ${view}, after="${next}")`
+      : `read a row: meme_get(uri=<title>, recipe="default"); the same view: ${view})`;
   return [head, ...lines, further].join("\n");
 }
 
-/** The index read's lines: the block where the door answered a page, else `memory index unread: <cause>`. */
-export function indexLines(result) {
-  const unread = (cause) => `memory index unread: ${cause}`;
+/** The index block for one page the filter door answered. */
+export function renderIndex(answer, cap = INDEX_BYTES) {
+  return renderRows(answer, {
+    head: "Lares memory index", filter: INDEX_FILTER, cap,
+    empty: (view) => `Lares memory index: 0 rows\nno row carries the tag ${INDEX_TAG} in the worn face's daemon wiki; the view: ${view})`,
+  });
+}
+
+/** The rows-in-play block: the handoff row first where one stands, the rest in the door's own order (newest first). */
+export function renderState(answer, cap = STATE_BYTES) {
+  return renderRows(answer, {
+    head: "Lares rows in play (start here)", filter: STATE_FILTER, cap, lineCap: STATE_LINE_BYTES,
+    rows: (rows) => [...rows.filter((r) => r?.title === STATE_HANDOFF), ...rows.filter((r) => r?.title !== STATE_HANDOFF)],
+    empty: (view) => `Lares rows in play: no row stands under ${STATE_PREFIX} in the worn face's daemon wiki; the view: ${view})`,
+  });
+}
+
+/** A filter read's answer, or its fault in the read's own words. */
+function filterAnswer(result) {
   const fault = readFault(result, "read");
-  if (fault) return unread(fault);
+  if (fault) return { fault };
   const answer = parseAnswer(result.stdout);
-  if (answer === null) return unread(`the read's answer did not parse (exit ${result.code ?? result.signal})`);
+  if (answer === null) return { fault: `the read's answer did not parse (exit ${result.code ?? result.signal})` };
   if (answer.ok === false || !answer.data) {
     const error = answer.error ?? {};
     const message = String(error.message ?? "").replace(/\s+/g, " ").trim().slice(0, 240);
     const code = String(error.code ?? "");
-    return unread(message.startsWith(`${code}:`) || !code ? (message || `the door refused (exit ${result.code ?? result.signal})`) : `${code}: ${message}`);
+    return { fault: message.startsWith(`${code}:`) || !code ? (message || `the door refused (exit ${result.code ?? result.signal})`) : `${code}: ${message}` };
   }
-  return renderIndex(answer);
+  return { answer };
+}
+
+/** The rows-in-play read's lines: the block where the door answered a page, else `Lares rows in play unread: <cause>` with the view. */
+export function stateLines(result) {
+  const { fault, answer } = filterAnswer(result);
+  return fault ? `Lares rows in play unread: ${fault}; the view: ${viewOf(STATE_FILTER)})` : renderState(answer);
+}
+
+/** The index read's lines: the block where the door answered a page, else `memory index unread: <cause>`. */
+export function indexLines(result) {
+  const { fault, answer } = filterAnswer(result);
+  return fault ? `memory index unread: ${fault}` : renderIndex(answer);
 }
 
 /** The refusal a locked vessel answers, in the words a session reads: it calls the operator at once. */
@@ -300,10 +347,6 @@ export function halvesLines(result) {
   return [`Lares tessera conferre: ${par} par, ${red.length} red (no match): ${red.map((h) => `${h.rite} ${h.tessera.slice(0, 12)} ${word(h)}`).join("; ")}`, ...keepRed].join("\n");
 }
 
-/** The line that keeps the rows in play by address across a context turn. */
-export const rowsInPlayLine = () =>
-  `Lares rows in play: ${ROWS_IN_PLAY.join(" · ")} (read each again with meme_get(uri=…, recipe="default"))`;
-
 /** Race each started read against the one budget; a read the budget closes stops and answers BUDGET. */
 function underBudget(budgetMs) {
   let timer;
@@ -316,14 +359,16 @@ function underBudget(budgetMs) {
 }
 
 /**
- * The SessionStart context: the vessel's frame, the homes line, the memory index, and after a compaction the rows in
- * play. The three reads start together. A vessel that answers anything but up stops the index read, and the wake says
- * once that it skipped it.
+ * The SessionStart context: the vessel's frame, the homes line, the rows in play (the state rows, handoff first), then
+ * the memory index, on every wake. The reads start together. A vessel that answers anything but up stops the memory
+ * reads, and the wake says once that it skipped them.
  */
-export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "", keepWorkspace = null }) {
+// `source` (startup, resume, clear, compact) changes nothing the wake reads: every wake leads with the rows in play.
+export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source: _source = "", keepWorkspace = null }) {
   const reads = { observe: run("observe", observeArgv()), index: run("index", indexArgv()), homes: run("homes", homesArgv()) };
   // The optional reads: a runner that answers none leaves their lines out.
   const optional = (name, argv) => run(name, argv) ?? null;
+  const stateRead = optional("state", stateArgv());
   const gitRead = optional("git", gitArgv());
   const halvesRead = optional("halves", halvesArgv());
   const keepRead = keepWorkspace ? optional("keep", keepArgv(keepWorkspace)) : null;
@@ -331,7 +376,8 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "", keepWo
   const homesRead = budget.settle(reads.homes);
   const seen = observation(await budget.settle(reads.observe));
   // The index read started beside the observation; a vessel that answers no "up" stops it, and nothing waits on it.
-  if (!seen.up) for (const read of [reads.index, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  if (!seen.up) for (const read of [reads.index, stateRead, halvesRead, keepRead]) { try { read?.kill(); } catch { /* the read already left */ } }
+  const state = stateRead && seen.up ? await budget.settle(stateRead) : null;
   const index = seen.up ? await budget.settle(reads.index) : null;
   const leiAnswers = {};
   const checkout = gitRead && seen.up ? checkoutOf(await budget.settle(gitRead)) : null;
@@ -350,28 +396,31 @@ export async function wake({ run, budgetMs = WAKE_BUDGET_MS, source = "", keepWo
     "Lares live wake (SessionStart) — what is true right now " +
       "(the canonical frame is already loaded from CLAUDE.md): " + seen.line,
     `Lares homes: ${homesLine}`,
-    seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)",
   ];
+  if (state !== null) lines.push(stateLines(state));
+  lines.push(seen.up ? indexLines(index) : "memory index skipped: no vessel answers (the line above names the cause)");
   if (checkout && Object.keys(leiAnswers).length > 0) lines.push(...leiLines(checkout, leiAnswers));
   if (keep !== null) { const line = keepLines(keepWorkspace, keep); if (line) lines.push(line); }
   if (halves !== null) { const line = halvesLines(halves); if (line) lines.push(line); }
-  if (source === "compact") lines.push(rowsInPlayLine());
   return lines.join("\n");
 }
 
 /**
  * The PreCompact text: Claude Code appends a PreCompact hook's stdout to the compaction's instructions, so this hands
- * the summary the addresses to keep. The index read rides the same door and the same budget; a fault names its cause
- * and the rows in play ride on.
+ * the summary the addresses to keep. The rows in play and the index ride the same door and the same budget; a fault
+ * names its cause and the other read rides on.
  */
 export async function compactCarry({ run, budgetMs = WAKE_BUDGET_MS }) {
   const budget = underBudget(budgetMs);
-  const index = await budget.settle(run("index", indexArgv()));
+  const stateRead = run("state", stateArgv());
+  const indexRead = run("index", indexArgv());
+  const state = await budget.settle(stateRead);
+  const index = await budget.settle(indexRead);
   budget.close();
   return [
     "Lares compaction carry: keep every `lar:` address below verbatim in the summary, each beside its description, " +
       "so the session reads its memory again by address once the context turns.",
+    stateLines(state),
     indexLines(index),
-    rowsInPlayLine(),
   ].join("\n");
 }

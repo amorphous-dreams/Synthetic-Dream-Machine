@@ -2,15 +2,16 @@
 
 The Lares boot **entry point**, as a Claude Code plugin.
 
-On every `SessionStart`, `hooks/lares-wake-hook.mjs` starts three reads together and carries their answers into the session:
+On every `SessionStart`, `hooks/lares-wake-hook.mjs` starts its reads together and carries their answers into the session:
 
 - **the vessel observation** — `tools/lares-container.sh vessel stand --observe --json`; it observes and never stands a vessel;
+- **the rows in play** — `tools/lares-container.sh wiki filter '[prefix[lar:///ha.ka.ba/kahua/memory/state/]!sort[modified]]' --recipe default --fields title,description --limit 8 --max-bytes 4096 --json`, printed before the index on every wake (startup, resume, clear, compact) as `Lares rows in play (start here): <N> rows`, the `state/handoff` row first where one stands and the rest newest first, each line cut at 320 bytes and the block at 2048, then the call that reads further; the rows come from their address prefix, never a list in the hook; a fault prints `Lares rows in play unread: <cause>`;
 - **the memory index** — `tools/lares-container.sh wiki filter '[tag[stage/index]]' --recipe default --fields title,description --limit 32 --max-bytes 4096 --json`, printed as `Lares memory index: <N> rows`, one `<title> — <description>` line per row, and one line naming the call that reads further; a fault prints `memory index unread: <cause>`, and a vessel that answers no "up" skips the read;
 - **the homes line** — `lares home read --brief`.
 - **the lei** — `lares lei show --rite <push|kukulu> --branch <branch> --head <sha> --json` through the shim, one read per rite at the checkout's branch (`git rev-parse HEAD --abbrev-ref HEAD`), printed as `Lares lei: this session wears <rite> … at <branch>@<head>` (or `none worn`); a locked vessel prints the operator's call (run `lares vault unlock`; tell the operator by the harness's push notification);
 - **the tessera conferre** — `lares rite receipts --json` through the shim, each guest half (`rite-begun`) set against its host half (`rite-landed`), printed as `Lares tessera conferre: N par, M red (no match): …`. Both doors stand behind ports; a runner that answers neither leaves their lines out.
 
-Before a compaction, `hooks/lares-compact-hook.mjs` (`PreCompact`) prints the same index and the rows in play (the open ledger, the standing orders) by `lar:` address; Claude Code appends that text to the compaction's instructions. The wake fires again on the session start that follows a compaction and prints both into the new context. What either hook says lives in `hooks/lares-wake-core.mjs`.
+Before a compaction, `hooks/lares-compact-hook.mjs` (`PreCompact`) prints the same rows in play and index by `lar:` address; Claude Code appends that text to the compaction's instructions. The wake fires again on the session start that follows a compaction and prints both into the new context. What either hook says lives in `hooks/lares-wake-core.mjs`.
 
 At a session's end, `hooks/lares-keep-hook.mjs` (`SessionEnd`) starts `lares rite keep --if-due` and leaves at once: the keep carries the house and this device's Claude Code sessions into the operator's repo under a keep lei, each push spending one return. Its lines land in `$XDG_STATE_HOME/lares/keep-hook.log` (the last run alone); a keep with no workspace named, or with nothing moved, keeps nothing.
 

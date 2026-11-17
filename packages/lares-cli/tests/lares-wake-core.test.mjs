@@ -5,7 +5,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 const core = await import(resolve("packages/lares-cli/.claude-plugin/hooks/lares-wake-core.mjs"));
-const { wake, compactCarry, renderIndex, indexArgv, INDEX_BYTES, WAKE_BUDGET_MS, ROWS_IN_PLAY } = core;
+const { wake, compactCarry, renderIndex, indexArgv, stateArgv, INDEX_BYTES, WAKE_BUDGET_MS, STATE_PREFIX, STATE_FILTER, STATE_ROWS } = core;
 
 const UP = JSON.stringify({ data: { node: { up: true, port: 4321 } } });
 const row = (key, description) => ({ title: `lar:///ha.ka.ba/kahua/memory/${key}`, fields: { title: `lar:///ha.ka.ba/kahua/memory/${key}`, description } });
@@ -108,28 +108,75 @@ test("one budget bounds all three reads, and each read left open reports itself"
   }
 });
 
-test("a wake after a compaction carries the rows in play by address", async () => {
-  const run = runner({ observe: answered(UP), homes: answered("h"), index: answered(page([row("state/open-ledger", "What stands open.")])) });
-  const after = await wake({ run, source: "compact" });
-  for (const uri of ROWS_IN_PLAY) assert.ok(after.includes(uri), uri);
-  assert.match(after, /Lares rows in play/);
-  const cold = await wake({ run, source: "startup" });
-  assert.doesNotMatch(cold, /Lares rows in play/);
+// The rows in play: the state rows, derived by their address prefix, read on every wake and printed before the index.
+const STATE = [
+  row("state/porch-2026-11-16", "The porch: what the last sitting left on the step."),
+  row("state/open-ledger", "What stands open."),
+  row("state/handoff", "Start here: the handoff from the last controller."),
+  row("state/standing-orders", "The orders that stand."),
+];
+const statePage = (rows, extra = {}) => JSON.stringify({ ok: true, requestId: "s", data: { recipe: "default", filter: STATE_FILTER, rows, total: rows.length, next: null, asOf: "90a1a6dbea5e1f15", ...extra } });
+
+test("wake-leads-with-rows-in-play: every wake prints the state rows before the index, the handoff first", async () => {
+  for (const source of ["startup", "resume", "clear", "compact", ""]) {
+    const calls = {};
+    const context = await wake({ source, run: runner({
+      observe: answered(UP), homes: answered("h"),
+      index: answered(page([row("project/house-laws", "The seven house laws.")])),
+      state: answered(statePage(STATE)),
+    }, calls) });
+    const lines = context.split("\n");
+    const head = lines.findIndex((l) => l.startsWith("Lares rows in play"));
+    assert.ok(head > 0, `${source}: the rows in play stand in the wake`);
+    assert.ok(head < lines.findIndex((l) => l.startsWith("Lares memory index")), `${source}: the rows in play come before the index`);
+    assert.match(lines[head], /^Lares rows in play \(start here\): 4 rows/);
+    assert.equal(lines[head + 1], "lar:///ha.ka.ba/kahua/memory/state/handoff — Start here: the handoff from the last controller.");
+    // The rest keep the door's own order (newest first).
+    assert.equal(lines[head + 2], "lar:///ha.ka.ba/kahua/memory/state/porch-2026-11-16 — The porch: what the last sitting left on the step.");
+    assert.equal(lines[head + 4], "lar:///ha.ka.ba/kahua/memory/state/standing-orders — The orders that stand.");
+    assert.match(lines[head + 5], /read a row: meme_get\(uri=<title>, recipe="default"\)/);
+    // The read derives the rows by their address prefix, newest first: no list of addresses rides the wake.
+    assert.deepEqual(calls.state, stateArgv());
+    assert.equal(calls.state[2], `[prefix[${STATE_PREFIX}]!sort[modified]]`);
+  }
+  // CONTROL: no handoff row leaves the door's order as it stands.
+  const bare = await wake({ run: runner({ observe: answered(UP), homes: answered("h"), index: answered(page([])), state: answered(statePage(STATE.filter((r) => !r.title.endsWith("/handoff")))) }) });
+  assert.match(bare, /Lares rows in play \(start here\): 3 rows\nlar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/porch-2026-11-16/);
 });
 
-test("the compaction carry hands the summary the index and the rows in play", async () => {
-  const text = await compactCarry({ run: runner({ index: answered(page([row("project/house-laws", "The seven house laws.")])) }) });
+test("wake-leads-with-rows-in-play: the block stays short, and a fault or an empty prefix names itself", async () => {
+  const base = { observe: answered(UP), homes: answered("h"), index: answered(page([])) };
+  const many = Array.from({ length: 20 }, (_, i) => row(`state/row-${String(i).padStart(2, "0")}`, "z".repeat(900)));
+  const long = await wake({ run: runner({ ...base, state: answered(statePage(many.slice(0, STATE_ROWS), { total: 20, next: `${STATE_ROWS}.90a1a6dbea5e1f15` })) }) });
+  const shown = long.split("\n").filter((l) => l.startsWith("lar:///ha.ka.ba/kahua/memory/state/"));
+  assert.ok(shown.length > 0 && shown.length <= STATE_ROWS, `${shown.length} rows shown`);
+  for (const line of shown) assert.ok(Buffer.byteLength(line) <= 400, `a row line holds ${Buffer.byteLength(line)} bytes`);
+  assert.match(long, /Lares rows in play \(start here\): 20 rows \(\d+ shown\)/);
+  assert.match(long, /(read further|read the whole view): wiki_filter\(filter="\[prefix\[lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/\]!sort\[modified\]\]"/);
+  const none = await wake({ run: runner({ ...base, state: answered(statePage([])) }) });
+  assert.match(none, /Lares rows in play: no row stands under lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/state\/ in the worn face's daemon wiki/);
+  const broken = await wake({ run: runner({ ...base, state: answered("", 127) }) });
+  assert.match(broken, /Lares rows in play unread: the read exited 127 with no answer; the view: wiki_filter\(filter="\[prefix/);
+  // CONTROL: a vessel that answers down reads no state rows and says the memory skip once.
+  const killed = [];
+  const down = await wake({ run: runner({ ...base, observe: answered(JSON.stringify({ data: { node: { up: false } } })), index: hung(killed, "index"), state: hung(killed, "state") }) });
+  assert.doesNotMatch(down, /rows in play/);
+  assert.deepEqual(killed.sort(), ["index", "state"]);
+});
+
+test("the compaction carry hands the summary the rows in play and the index", async () => {
+  const text = await compactCarry({ run: runner({ index: answered(page([row("project/house-laws", "The seven house laws.")])), state: answered(statePage(STATE)) }) });
   assert.match(text, /^Lares compaction carry: keep every `lar:` address below verbatim in the summary/);
-  assert.match(text, /Lares memory index: 1 rows\n/);
+  assert.ok(text.indexOf("Lares rows in play") < text.indexOf("Lares memory index: 1 rows\n"));
   assert.match(text, /lar:\/\/\/ha\.ka\.ba\/kahua\/memory\/project\/house-laws — The seven house laws\./);
-  for (const uri of ROWS_IN_PLAY) assert.ok(text.includes(uri), uri);
-  assert.deepEqual(ROWS_IN_PLAY, ["lar:///ha.ka.ba/kahua/memory/state/open-ledger", "lar:///ha.ka.ba/kahua/memory/state/standing-orders"]);
-  // A fault still carries the addresses: the read names its cause and the rows in play ride on.
-  const faulted = await compactCarry({ run: runner({ index: answered("", 1) }) });
+  for (const r of STATE) assert.ok(text.includes(r.title), r.title);
+  // A fault names its cause and the other read rides on.
+  const faulted = await compactCarry({ run: runner({ index: answered("", 1), state: answered(statePage(STATE)) }) });
   assert.match(faulted, /memory index unread: the read exited 1 with no answer/);
-  for (const uri of ROWS_IN_PLAY) assert.ok(faulted.includes(uri), uri);
-  const slow = await compactCarry({ budgetMs: 30, run: runner({ index: hung([], "index") }) });
+  assert.ok(faulted.includes("lar:///ha.ka.ba/kahua/memory/state/handoff"));
+  const slow = await compactCarry({ budgetMs: 30, run: runner({ index: hung([], "index"), state: hung([], "state") }) });
   assert.match(slow, /memory index unread: no answer inside the wake's budget/);
+  assert.match(slow, /Lares rows in play unread: no answer inside the wake's budget/);
 });
 
 // Road `L48`: the wake shows the lei and the unmatched tessera halves; each read stands behind a port, answered here by fixtures.
