@@ -218,7 +218,7 @@ describe("RED pulama-admit-lends-a-set", () => {
     await s.fx.kept.foundFace({ group: personaGroupDigest(`${GROUP}-2`), ordinal: 2, slots: fixtureSlots });
     await s.fx.kept.lockFace(one.fcid);
     const witness = await pulamaSignerOf(s.fx.kept);
-    const lent = async () => (await s.admissions.admitted(IMAGE, witness))?.faces.map((f) => f.ordinal);
+    const lent = async () => { const a = await s.admissions.admitted(IMAGE, witness); return a !== null && "faces" in a ? a.faces.map((f) => f.ordinal) : undefined; };
     // NONE NAMED: every lit face (h1 rests dark).
     expect(await s.door({ op: "admit", credentials: fixtureRoute })).toMatchObject({ reading: "admitted", admitted: IMAGE, lent: [0, 2] });
     expect(await lent()).toEqual([0, 2]);
