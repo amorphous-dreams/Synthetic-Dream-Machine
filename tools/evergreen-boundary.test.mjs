@@ -59,6 +59,27 @@ test("E1c old-shape: a parse, refusal or comment that names an older peer's buil
   assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
   const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
 });
+test("E1d old-shape: a reading or comment that names an earlier shape reads; a prior revision of data does not", () => {
+  for (const body of [
+    'export type CharterShape = "absent" | "whole" | "torn" | "earlier-shape";',
+    '// THE EARLIER SHAPES, each by its own mark: one `nextKeyCommit` per epoch.',
+    '// The previous charter shape had one commitment for the whole successor set.',
+    '// The earlier link shape named one `prevEpochCid`.',
+    '// A row that stands and does not open (torn, bare, an earlier shape) refuses.',
+    'const why = "a pre-cut shape reads by name";',
+  ]) {
+    assert.equal(scanText("a.ts", body).filter(f => f.rule === "old-shape").length, 1, body);
+    const red = one(body); assert.equal(red.status, 1); assert.match(red.stdout, /old-shape +packages\/example\/src\/a\.ts:1/);
+  }
+  const lawful = [
+    '// tombstone: the aside path map alone holds a pack\'s prior shape.',
+    '// the previous frame\'s posterior is this frame\'s prior.',
+    '// A source already gone (a re-entered founding recovered its seed from an earlier group row) keeps the destination.',
+    'const shape = "torn";',
+  ].join("\n");
+  assert.equal(scanText("a.ts", lawful).filter(f => f.rule === "old-shape").length, 0);
+  const green = one(lawful); assert.equal(green.status, 0, green.stdout + green.stderr);
+});
 test("E2 schema field is a version finding", () => {
   const body = "const record = { schemaVersion: 1 };";
   assert.equal(scanText("a.ts", body).filter(f => f.rule === "version").length, 1);
