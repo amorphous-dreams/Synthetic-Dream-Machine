@@ -83,6 +83,7 @@ function withWard(verb: string, row: Row): Row {
     return row(ward ? Object.assign({ ...args }, { [WARD_ARG]: ward }) : args);
   };
 }
+import { unlockedFaceOrdinals } from "./custody-seat.js";
 import { runPromoteVerb } from "./commands/promote.js";
 import { runSwarmVerb } from "./commands/swarm.js";
 import { runRiteVerb, type RiteAction } from "./commands/rite.js";
@@ -381,7 +382,8 @@ function storeDoorVerbsBare(deps: StoreDoorDeps): Record<StoreDoorVerb, Row> {
       ...opt("proposals", args["proposals"]), ...opt("session", str(args["session"])),
       ...opt("history", args["history"] === true ? true : undefined),
       ...opt("cids", list(args["cids"])), ...opt("all", args["all"] === true ? true : undefined),
-      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon), ...opt("worn", deps.wornFace),
+      ...opt("cap", kahuaCap), ...opt("faceCanon", deps.faceCanon), ...opt("mount", deps.wornFace),
+      ...opt("lent", deps.wornFace ? async () => unlockedFaceOrdinals().catch(() => null) : undefined),
     });
   };
   const promoteVerb = (action: PromoteCommandRequest["action"], args: Readonly<Record<string, unknown>>) =>

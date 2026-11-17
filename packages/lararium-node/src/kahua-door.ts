@@ -33,6 +33,8 @@ import {
   readKahuaStage, signKahuaCarry, signKahuaLift, signKahuaWithdraw, writeIntentEntry, writeKahuaAct,
   type IntentVerbRegistry, type KahuaItem, type KahuaStagedMeme, type KahuaRevision, type KahuaSource, type LarDoc, type PersonaProjection,
 } from "@lararium/mesh";
+import { actingFaceOf, choreReceiptMark, type ChoreAsk, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
+import { lentFacesOf } from "@lararium/mesh/lent-faces";
 
 export class KahuaRefused extends Error { override name = "KahuaRefused"; }
 
@@ -71,13 +73,21 @@ export interface KahuaDoorPorts {
    */
   readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
   /**
-   * WHETHER THE STANDING VESSEL WEARS THIS FACE. A face's local canon and its signing hand open under the worn face alone: the
-   * canon rests sealed under the face's own key, and the island's one content-key holder carries the worn face's. So a row that
-   * stages, lifts, withdraws or carries for a face that stands open and unworn refuses `kahua-face-unworn` before any document
-   * opens (a walked hearth waited without end on that canon, and the wear after it never answered). Absent (a direct act, a
-   * rig): no wear reads, and each row keeps its own refusals.
+   * THE CHORE CHECK (no silent steward, `@lararium/mesh/chore-ask`). A face's local canon and its signing hand open under the
+   * daemon mount alone: the canon rests sealed under the face's own key, and the island's one content-key holder carries the
+   * mount's. So a row that stages, lifts, withdraws or carries (or reads a staged row back) asks `actingFaceOf` for the face
+   * it names against the lend and the one face this process carries, the mount, before any document opens: a lent face other
+   * than the mount refuses `chore-face-not-mounted` and a face outside the lend `face-not-lent`, each naming both sides (a
+   * walked hearth once waited without end on such a canon). Where no lent set reads, the mount and the face asked stand the
+   * lend. A write that runs carries the `ChoreReceiptMark` on its answer as `chore`. Absent, or a mount reading null (a
+   * direct act, the floor, a rig): no chore check stands, and each row keeps its own refusals.
    */
-  readonly worn?: () => boolean;
+  readonly chore?: {
+    readonly face: number;
+    readonly mount: () => number | null | undefined;
+    readonly lent: () => Promise<readonly number[] | null>;
+    readonly asker: ChoreAsk["asker"];
+  };
 }
 
 export interface KahuaLiftInput {
@@ -110,10 +120,25 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     return url;
   };
   const stage = async (): Promise<DocHandle<LarDoc>> => ports.repo.find<LarDoc>(stageUrl() as never);
-  /** The rows that write a face's canon or sign as the face ask its wear first: nothing opens for a face that stands unworn. */
-  const wornOrRefuse = (act: string): void => {
-    if (ports.worn && !ports.worn()) throw new KahuaRefused(`kahua-face-unworn: ${act} asks this face's own wear: its local canon bags/daemon-<F> rests sealed under its own key, and its hand signs under its own grant, so both open only while the vessel wears it; wear it (\`lares vault unlock --face N\`) and run it again`);
+  /**
+   * The rows that write a face's canon or sign as the face ask the chore check first: nothing opens for a face the vessel does
+   * not carry. Answers the receipt mark the row's answer carries, or null where no chore check stands.
+   */
+  const actingOrRefuse = async (act: string): Promise<ChoreReceiptMark | null> => {
+    const check = ports.chore;
+    const mount = check?.mount();
+    if (!check || mount === null || mount === undefined) return null;
+    const lent = await check.lent();
+    const set = lentFacesOf(lent && lent.length > 0 ? lent : [...new Set([mount, check.face])]);
+    if (!set.ok) throw new KahuaRefused(set.message);
+    const ask: ChoreAsk = { chore: act, face: check.face, asker: check.asker };
+    const acting = actingFaceOf(ask, set.faces, [mount]);
+    if (!acting.ok) throw new KahuaRefused(acting.refusal === "chore-face-not-mounted"
+      ? `${acting.message}; its local canon bags/daemon-<F> rests sealed under its own key and its hand signs under its own grant, so both open only under the daemon mount`
+      : acting.message);
+    return choreReceiptMark(ask, acting.face);
   };
+  const marked = <T extends object>(answer: T, mark: ChoreReceiptMark | null): T & { readonly chore?: ChoreReceiptMark } => (mark === null ? answer : { ...answer, chore: mark });
   const foldFace = () => ({ group, grant: ports.currentSigner, ...(ports.signedAt ? { signedAt: ports.signedAt } : {}) });
   const records = async () => kahuaActRecords((await stage()).doc(), group);
   const reading = async () => readKahuaStage(await records(), foldFace());
@@ -187,15 +212,15 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
     },
 
     async staged(title: string): Promise<KahuaStagedMeme & { readonly relation: string }> {
-      wornOrRefuse("a staged row's read");
+      await actingOrRefuse("kahua-staged");
       const { relation, handle } = await canon("kahua-lift-unstaged");
       const row = readKahuaStagedMeme(handle.doc(), title);
       if (!row) throw new KahuaRefused(`kahua-lift-unstaged: bags/daemon-${relation} holds no row "${title}"; stage it there first (\`lares kahua stage\`)`);
       return { ...row, relation };
     },
 
-    async stage(input: KahuaStageInput): Promise<{ readonly title: string; readonly digest: string; readonly relation: string; readonly staged: boolean }> {
-      wornOrRefuse("a kahua stage");
+    async stage(input: KahuaStageInput): Promise<{ readonly title: string; readonly digest: string; readonly relation: string; readonly staged: boolean; readonly chore?: ChoreReceiptMark }> {
+      const mark = await actingOrRefuse("kahua-stage");
       if (typeof input.title !== "string" || input.title.length === 0) throw new KahuaRefused("kahua-stage-title: name the row's title");
       if (typeof input.text !== "string") throw new KahuaRefused("kahua-stage-text: name the row's body");
       const { relation, handle } = await canon("kahua-stage-no-canon");
@@ -205,11 +230,11 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
       if (out === null) throw new KahuaRefused("kahua-stage-unwritten: the local canon took no change");
       const done: { row: KahuaStagedMeme; wrote: boolean } = out;
       if (done.wrote) await ports.repo.flush();
-      return { title: done.row.title, digest: done.row.digest, relation, staged: done.wrote };
+      return marked({ title: done.row.title, digest: done.row.digest, relation, staged: done.wrote }, mark);
     },
 
-    async lift(input: KahuaLiftInput): Promise<{ readonly cid: string; readonly parent: string | null; readonly landed: boolean }> {
-      wornOrRefuse("a kahua lift");
+    async lift(input: KahuaLiftInput): Promise<{ readonly cid: string; readonly parent: string | null; readonly landed: boolean; readonly chore?: ChoreReceiptMark }> {
+      const mark = await actingOrRefuse("kahua-lift");
       stageUrl();
       if (!Array.isArray(input.taint)) throw new KahuaRefused("kahua-act-refused: taint: name the lift's taint list (empty when every input came from inside the face)");
       if (typeof input.digest !== "string" || !/^[0-9a-f]{64}$/.test(input.digest)) throw new KahuaRefused("kahua-lift-unstaged: name the staged row's digest as its preview printed it");
@@ -239,7 +264,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
         const item = (await reading()).get(input.title);
         const head = item?.status === "standing" ? item.heads[0] : undefined;
         if (head && head.text === row.text && JSON.stringify(sortedFields(head.fields)) === JSON.stringify(sortedFields(row.fields))) {
-          return { cid: head.cid, parent: head.parent, landed: false };
+          return marked({ cid: head.cid, parent: head.parent, landed: false }, mark);
         }
       }
       await cap();
@@ -263,22 +288,22 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
         ports.intents.change((d) => writeIntentEntry(d, outcome));
       }
       await ports.repo.flush();
-      return { cid, parent, landed: true };
+      return marked({ cid, parent, landed: true }, mark);
     },
 
-    async withdraw(target: string): Promise<{ readonly cid: string }> {
-      wornOrRefuse("a kahua withdraw");
+    async withdraw(target: string): Promise<{ readonly cid: string; readonly chore?: ChoreReceiptMark }> {
+      const mark = await actingOrRefuse("kahua-withdraw");
       stageUrl();
       await cap();
       const root = await grant();
       if (!/^[0-9a-f]{64}$/.test(target) || !(await reading()).revision(target)) throw new KahuaRefused(`withdraw-unknown: no verified revision ${target} stands on the stage`);
       const cid = await land(await signKahuaWithdraw({ group, epoch: ports.epoch(), target }, root));
       await ports.repo.flush();
-      return { cid };
+      return marked({ cid }, mark);
     },
 
-    async carry(input: { readonly cids?: readonly string[]; readonly all?: boolean }): Promise<{ readonly cids: readonly string[]; readonly carried: readonly string[] }> {
-      wornOrRefuse("a kahua carry");
+    async carry(input: { readonly cids?: readonly string[]; readonly all?: boolean }): Promise<{ readonly cids: readonly string[]; readonly carried: readonly string[]; readonly chore?: ChoreReceiptMark }> {
+      const mark = await actingOrRefuse("kahua-carry");
       stageUrl();
       await cap();
       const root = await grant();
@@ -296,7 +321,7 @@ export function kahuaDoor(ports: KahuaDoorPorts) {
         cids.push(await land(await signKahuaCarry({ group, epoch: ports.epoch(), carries: carried.slice(i, i + KAHUA_CARRY_MAX) }, root)));
       }
       await ports.repo.flush();
-      return { cids, carried };
+      return marked({ cids, carried }, mark);
     },
 
     async list(): Promise<KahuaItem[]> { return (await reading()).list(); },

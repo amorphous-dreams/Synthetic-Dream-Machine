@@ -923,9 +923,9 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
   /** A kahua carrier as the projector writes it: the block, a blank line, the body verbatim (no newline added). */
   const kahuaTid = (title: string, body: string): string => `kahua-sources: []\nkahua-taint: []\ntitle: ${title}\ntype: text/vnd.tiddlywiki\n\n${body}`;
   const clearOld = (): void => { rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true }); };
-  /** The vessel's own law, as a walked hearth answers it: a lift for a face it does not wear refuses `kahua-face-unworn`. */
+  /** The vessel's own law, as a walked hearth answers it: a lift for a face it does not mount refuses `chore-face-not-mounted`. */
   const liftsAsWornAlone = (v: FakeHouse): CarryDoors["kahuaLift"] => async (face, lift) => {
-    if (v.faces.find((f) => f.handleIndex === face)?.relation !== v.worn) throw new Error("kahua-face-unworn: a kahua stage asks this face's own wear");
+    if (v.faces.find((f) => f.handleIndex === face)?.relation !== v.worn) throw new Error("chore-face-not-mounted: a kahua stage acts for a face this vessel does not mount");
     return v.kahuaLift(face, lift);
   };
 

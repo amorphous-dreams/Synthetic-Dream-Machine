@@ -71,8 +71,13 @@ export interface KahuaCommandOptions {
   readonly cap?: KahuaCapPort;
   /** The face's local canon `bags/daemon-<F>` by relation, as the standing vessel opens it; absent on a direct act. */
   readonly faceCanon?: (relation: string) => Promise<DocHandle<LarDoc> | null>;
-  /** The face the standing vessel wears (`wornFace`); absent on a direct act. A write row for any other face refuses `kahua-face-unworn`. */
-  readonly worn?: () => number | null | undefined;
+  /**
+   * The daemon mount, the one face the standing vessel carries (`wornFace`); absent on a direct act. A row that writes a
+   * face's canon or signs as it meets the chore check against it (`chore-face-not-mounted`, `face-not-lent`).
+   */
+  readonly mount?: () => number | null | undefined;
+  /** The faces this vessel serves; null where none reads, and the mount and the face asked then stand the lend. */
+  readonly lent?: () => Promise<readonly number[] | null>;
 }
 
 /**
@@ -85,7 +90,7 @@ export function faceCanonThroughControl(repo: Repo, control: () => Promise<DocHa
     const named = tiddlerText(ownEntry((await control()).doc()?.tiddlers, `${CONTROL_HOME_ID}/daemon-canon/${encodeURIComponent(relation)}`));
     if (!named || !named.startsWith("automerge:")) return null;
     // THE ONE BOUNDED RESOLVE (`findOrThrow`): a canon no peer answers for refuses by name and never holds a session's act
-    // open. The wear check (`kahua-face-unworn`) decides first; this bound stands under it as the resolve's own liveness floor.
+    // open. The chore check (`chore-face-not-mounted`) decides first; this bound stands under it as the resolve's own liveness floor.
     try { return await findOrThrow(repo, named, `bags/daemon-${relation} (the face's local canon)`); }
     catch (e) { if (e instanceof DocumentUnavailableRefusal) throw new KahuaRefused(`kahua-canon-unavailable: ${e.message}`); throw e; }
   };
@@ -112,8 +117,9 @@ export async function runKahuaCommand(opts: KahuaCommandOptions): Promise<Record
     register: (bagId, url) => catalog.change((d) => { d.tiddlers[bagId] = storedLarRecord(bagId, { text: url, kind: "oracle" }, "kahua-pin"); }),
     session: () => session,
     ...(opts.faceCanon ? { faceCanon: opts.faceCanon } : {}),
-    // The face this row names against the face the vessel wears: a row for an open, unworn face refuses before a document opens.
-    ...(opts.worn ? { worn: () => { const w = opts.worn!(); return w === null || w === undefined || w === index; } } : {}),
+    // THE CHORE CHECK: the face this row names against the lend and the daemon mount; a row for a lent face the vessel does
+    // not mount refuses before a document opens. The operator's hand asks it here; a session's or a seat's door judged it first.
+    ...(opts.mount ? { chore: { face: index, mount: opts.mount, lent: opts.lent ?? (async () => null), asker: { hand: "cli" as const, session: opts.session ?? null, generation: null } } } : {}),
   };
   const door = kahuaDoor(ports);
   const need = (v: string | undefined, what: string): string => { if (!v) throw new KahuaRefused(`${opts.action}: name ${what}`); return v; };

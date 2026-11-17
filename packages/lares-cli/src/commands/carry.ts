@@ -1057,7 +1057,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     if (face.kahua === null) { tallies.kahua.refused.push(`the stage of h${face.handleIndex} would not read (${face.kahuaRefusal ?? "unread"}); ${heads.length} head(s) wait`); continue; }
     const byTitle = new Map<string, CarryKahuaHead[]>();
     for (const h of heads) byTitle.set(h.title, [...(byTitle.get(h.title) ?? []), h]);
-    // A LIFT RIDES ITS OWN FACE'S WEAR (`kahua-face-unworn`): where the vessel names the face it wears, a head of any other
+    // A LIFT RIDES THE DAEMON MOUNT (`chore-face-not-mounted`): where the vessel names the face it mounts, a head of any other
     // open face waits by name, and no lift reaches the vessel for it.
     const liftsHere = !faces.some((f) => f.worn !== undefined) || face.relation === litRelation;
     let waitingHeads = 0;
