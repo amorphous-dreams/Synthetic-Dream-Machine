@@ -206,7 +206,7 @@ The working kind of every wiki but the daemon's rests in the wiki's REALM WORKBE
 
 !! The CLI ~ a one-shot command names its face
 
-''A one-shot CLI command names its face on each invocation'' (operator ruling, 2026-10-11, approved as presented). No vessel-wide default face stands, and `persona wear` stands no more: a command names its face (`--face N`), or the vessel resolves the one face standing open, and several faces open with none named refuse by name (`FaceNotNamed`). The face `lares vault unlock --face N` names is the face the composition mounts, and no command reads it.
+''A one-shot CLI command names its face on each invocation'' (operator ruling, 2026-10-11, approved as presented). No vessel-wide default face stands, and `persona wear` stands no more: a command names its face (`--face N`), or the vessel resolves the one face lent (with no pūlama, the one face standing open), and several faces lent with none named refuse by name (`FaceNotNamed`); a face named outside the lent set refuses by name. With no pūlama, the face `lares vault unlock --face N` names takes the composition's daemon mount, and no command reads it.
 
 * ''A per-terminal hint MAY soften the naming.'' The vessel re-verifies the hint on every use, and the hint grants nothing.
 * ''A live session switches its own face.'' `LocalSession.switch` sends `session:switch` and later calls speak under the face the vessel answered; a switch the vessel could not commit closes that session, and the connector refuses locally from then on.
@@ -335,6 +335,6 @@ At every ending the session's facets, signer handles, dials, scoped views, route
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mukwXzw9DqrKWYEid3d43yT89KOcINEycAlFcOxIZRk`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Gebmhzciy5ZEX2snpwsXwkMUMG8qOWqW566nGbqVei4`>>
 
 <<^ code=`&#x0004;` to=`?`>>

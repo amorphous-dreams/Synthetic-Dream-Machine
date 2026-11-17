@@ -52,11 +52,12 @@ The wall stays custody-by-TYPE: acting as a face ''REQUIRES that this vessel HOL
 !!! Three layers ~ where each object lives
 
 |! VESSEL |! PERSONA |! SESSION |
-| its own roots, device-minted (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key`>>) | the persona root, held in the vessel's custody; it never travels | the worn face |
+| its own roots, device-minted (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/vessel-key`>>) | the persona root, held in the vessel's custody; it never travels | the worn face, one inside the lend |
 | the one store and its one backing Repo | its planes (`@persona` · `@circles` · `@identities` · `@sessions`) | a capability-limited view of that Repo |
 | the device key, serving custody and local identity ONLY | its admit relation | access to the worn face's planes and to no other face's |
 | custody, the store lock, the holder | its ONE current public Handle | the EFFECTIVE recipe |
 | the daemon island, face-blind | a face-scoped proof subject | fresh transport keys per dial; ONE face's proof and admit, presented |
+| the lend: the faces a pūlama lends it, none of them worn (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama`>>) | | |
 | the switch RECORD, vessel-private | | the switch ACT |
 
 ''What the ruling states outright'': a vessel holds its roots and one store; a session contracts in as ONE persona; the vessel-wide parts (custody, the daemon island) serve every session and let none read another's planes; each session proves itself under its own face-scoped key. ''The remaining cells place objects as a model study read them against canon and code (2026-10-11)'': builders read those cells as the standing model, unbuilt, and a later ruling may move one. Two carriers state the model as a contract: what a session carries and how its vessel answers it (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/session-contract`>>), and the face-scoped proof subject a session presents at a gate (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof`>>).
@@ -259,6 +260,6 @@ So the mesh ''declines to build the SIN even to defend itself''. It could bind p
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;CXzW6lc0cSWLdd8tTsmZLJCflbI6Hb1tokaWMAxSPKY`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9B116OBsPE8V1KLnnCU0CAYVM2y9LM8jMgknn00GkSQ`>>
 
 <<^ code=`&#x0004;` to=`?`>>

@@ -82,7 +82,7 @@ A ''bond'' is a relation between two roots, enacted by an act each end signs dow
 
 ''Law 7 — the floor holds no custody key.'' It holds its own named place signer, scoped to an allowlist of floor duties, under a KEL whose next key rests offline.
 
-A session wears one face: each browser tab asks that face's unlock, a node opens its S once per boot, each CLI, MCP or watcher run proves its face at the gate, the asker seals, and the last session of a face rests its keys.
+A session wears one face: each browser tab asks that face's unlock, the human lights a node's faces at its pūlama once and each boot draws a lend of them with no route, each CLI, MCP or watcher run proves its face at the gate, the asker seals, and the last session of a face rests its keys.
 
 !!!! The grammar enacts the same law
 
@@ -381,6 +381,6 @@ Provisional (operator, 2026-07-28): `pili` — cling/adhere/''pertain'', one ver
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;KBQBj2rysYrQJZbpUP771YTD0tHgR2Sut1gtGRV7UDw`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8zhUALvpVpO1K7GNBcW3DOMDujmWgxt3CHh48HWDWRg`>>
 
 <<^ code=`&#x0004;` to=`?`>>
