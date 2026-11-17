@@ -52,6 +52,17 @@ describe("lares wiki list", () => {
     expect(payload.data).toEqual(ANSWER);
   });
 
+  test("`--face` refuses `face-not-routed`: the list rides the maintenance frame, which carries no face, so it never answers another face's catalog", async () => {
+    const c = capture();
+    const errs: string[] = [];
+    vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
+    expect(await cmdWikiList(parseArgs(["wiki", "--face", "1", "--no-json"]))).toBe(2);
+    expect(errs.join("\n")).toMatch(/^face-not-routed:/);
+    expect(c.out()).not.toMatch(/wikis \(/);
+    expect(await cmdWikiList(parseArgs(["wiki", "--face", "1", "--json"]))).toBe(2);
+    expect(JSON.parse(c.out().trim().split("\n").pop()!)).toMatchObject({ ok: false, error: { code: "face-not-routed" } });
+  });
+
   test("CONTROL: a row with composition `own` and defaultDiffers false does not read as differing", async () => {
     ANSWER.wikis[0]!.defaultDiffers = false as unknown as true;
     const c = capture();

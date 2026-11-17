@@ -29,6 +29,7 @@ class _FakeVessel:
         self.answer: dict = {"status": "done", "output": {"items": []}}
         self.refuse: "str | None" = None
         self.open: "set[int]" = {0, 1, 2}
+        self.lent: "set[int]" = {0, 1, 2}
         self.worn = 2
         self._srv = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self._srv.bind(path)
@@ -68,7 +69,10 @@ class _FakeVessel:
                                  "refusal": f"face-not-open: the face h{named} does not stand open on this vessel"}
                     conn.sendall((json.dumps(reply) + "\n").encode())
                     return
-                if op == "session:open":
+                if op == "session:open" and int(str(frame.get("faceRef", "h-1"))[1:] or -1) not in self.lent:
+                    # The vessel's wall: an AI seat opens a face inside the lent set alone (lararium-node `seat-hand.ts`).
+                    reply = {"kind": "session:refused", "requestId": rid, "refusal": "face-not-lent"}
+                elif op == "session:open":
                     reply = {"kind": "session:opened", "requestId": rid, "ownerEpoch": "e1", "sessionId": "s1",
                              "generation": 0, "faceRef": "proof-face"}
                 elif op == "session:act":
@@ -132,19 +136,29 @@ def test_kahua_list_and_get_run_the_read_row_on_the_named_worn_face(vessel):
     assert _tools()["kahua_get"](title="T", history=True, face=1) == {"item": None, "history": []}
     assert vessel.acts() == [{"act": "kahua-read", "args": {"action": "list"}},
                              {"act": "kahua-read", "args": {"action": "get", "title": "T", "history": True}}]
-    # The seat reads the worn face first; naming it, the seat opens it, marked as the AI seat.
-    assert [f["args"] for f in vessel.frames if f.get("op") == "act"] == [{"worn": True}] * 2
+    # The seat asks the vessel for the face it names; standing open, the seat opens it, marked as the AI seat.
+    assert [f["args"] for f in vessel.frames if f.get("op") == "act"] == [{"worn": True, "face": 1}] * 2
     opened = [f for f in vessel.frames if f.get("op") == "session:open"]
     assert {f["faceRef"] for f in opened} == {"h1"} and all(f.get("seat") == "ai" for f in opened)
 
 
-def test_the_ai_seat_naming_a_face_other_than_the_worn_one_refuses_and_opens_no_session(vessel):
+def test_the_ai_seat_naming_an_open_lent_face_other_than_the_worn_one_opens_that_face(vessel):
+    # EACH SESSION WEARS ONE FACE INSIDE THE LENT SET: the client asks the vessel for the named face and lets the vessel's
+    # wall judge the set, never refusing a face for standing apart from the worn one.
+    vessel.answer = {"status": "done", "output": {"verb": "kahua-read", "items": []}}
     vessel.worn = 2
-    for call in (lambda t: t["kahua_list"](face=1), lambda t: t["kahua_get"](title="T", face=0),
-                 lambda t: t["kahua_propose"](proposals=[{"title": "T", "revision": "r", "text": "b", "taint": []}], face=1)):
-        with pytest.raises(uds.LaresVerbError, match="face-hand-refused"):
-            call(_tools())
-    assert not any(f.get("op") == "session:open" for f in vessel.frames)
+    assert _tools()["kahua_list"](face=1) == {"items": []}
+    assert _tools()["kahua_get"](title="T", face=0) == {"items": []}
+    opened = [f for f in vessel.frames if f.get("op") == "session:open"]
+    assert [(f["hand"], f["faceRef"], f.get("seat")) for f in opened] == [("seat", "h1", "ai"), ("seat", "h0", "ai")]
+
+
+def test_a_face_outside_the_lent_set_refuses_by_the_vessels_name(vessel):
+    vessel.lent = {2}
+    vessel.worn = 2
+    with pytest.raises(uds.LaresVerbError, match="face-not-lent"):
+        _tools()["kahua_list"](face=1)
+    assert not vessel.acts()
 
 
 def test_the_mcp_seat_marks_every_request_line_as_the_ai_seat(vessel):
@@ -165,10 +179,10 @@ def test_with_several_faces_open_and_none_named_the_seat_acts_as_the_worn_face(v
     assert [f["faceRef"] for f in vessel.frames if f.get("op") == "session:open"] == ["h1"]
 
 
-def test_a_named_face_that_stands_shut_and_is_not_worn_refuses_by_name_and_opens_no_session(vessel):
+def test_a_named_face_that_stands_shut_refuses_by_name_and_opens_no_session(vessel):
     vessel.open = {1}
     vessel.worn = 1
-    with pytest.raises(uds.LaresVerbError, match="face-hand-refused"):
+    with pytest.raises(uds.LaresVerbError, match="face-not-open"):
         _tools()["kahua_list"](face=2)
     assert not any(f.get("op") == "session:open" for f in vessel.frames)
 
@@ -217,13 +231,14 @@ def test_kahua_stage_runs_the_stage_row_on_a_seat_session_of_the_worn_face(vesse
     assert vessel.acts()[-1] == {"act": "kahua-stage", "args": {"title": "T", "text": "body"}}
 
 
-def test_kahua_stage_refuses_a_malformed_row_and_another_face_before_any_session(vessel):
+def test_kahua_stage_refuses_a_malformed_row_and_a_shut_face_before_any_session(vessel):
     stage = _tools()["kahua_stage"]
     for bad in ({"title": "", "text": "b"}, {"title": "T", "text": None}, {"title": "T", "text": "b", "fields": {"n": 1}},
                 {"title": "T", "text": "b", "fields": ["tags"]}):
         with pytest.raises(ValueError, match="kahua_stage"):
             stage(**bad)
-    with pytest.raises(uds.LaresVerbError, match="face-hand-refused"):
+    vessel.open = {2}
+    with pytest.raises(uds.LaresVerbError, match="face-not-open"):
         stage(title="T", text="b", face=1)
     assert not any(f.get("op") == "session:open" for f in vessel.frames)
     # CONTROL: the vessel's own row refusal crosses by name.
