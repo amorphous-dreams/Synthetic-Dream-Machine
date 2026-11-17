@@ -72,7 +72,7 @@ import { parseShareFile, type ShareEntry } from "@lararium/mesh";
 import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
-import { scanFiles, candidatesOf, settleIngest, openSyncedTree, submitIngest, type SubmitIngestOpts } from "./ingest-core.js";
+import { scanFiles, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
@@ -95,7 +95,8 @@ export interface MirrorWave {
   /** Top-level dirs under the folder that carry no layer of their own (`recovery`, `temp`). */
   readonly skipTop: readonly string[];
   /** THE BASES A WORKING WAVE RESTORES (title -> the carrier identity of the canon record its copy forked from), read off each owning face's
-   *  bases sidecar: the island stamps each on the copy it lands, so a fork keeps its base across a re-founding. */
+   *  bases sidecar: the island stamps each on the record it lands (a carrier's root and each fragment of its family,
+   *  `carriedBasesOf`), so a fork keeps its base across a re-founding. */
   readonly bases?: Readonly<Record<string, string>>;
   /** THE FACE-NAMED WAVE (the lit set): the open face, other than the mount, whose own layer takes this wave. The island
    *  lands it only where that face owns the document, never on the daemon mount. Absent: the daemon mount's layer. */
@@ -787,7 +788,7 @@ export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts 
   const abs = mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta")).map((r) => join(wave.source, ...r.split("/")));
   const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => mirrorDirFileToUri(wave.uriDir, f));
   const bases = wave.bases ?? {};
-  const candidates = candidatesOf(scan.rows).map((r) => (bases[r.uri] !== undefined ? { ...r, overrideBase: bases[r.uri]! } : r));
+  const candidates = candidatesOf(scan.rows).map((r) => ({ ...r, ...carriedBasesOf(r.uri, bases) }));
   const kapae = scan.shadows ?? [];
   const refused = [
     ...scan.rows.filter((r) => r.status === "non-nfc").map((r) => ({ uri: r.uri, why: "non-NFC bytes" })),
