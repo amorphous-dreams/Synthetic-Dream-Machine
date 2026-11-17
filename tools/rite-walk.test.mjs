@@ -908,6 +908,27 @@ test("carry-keeps-the-source-house: the keep stands between the export and the d
   refuses(() => parseCarryArgs(["--carry-leg", "--import-from", "elsewhere"]), /--import-from/);
 });
 
+test("carry-keep-rite-answer-leaves-the-keep-flag: a keep rite's answer lands under its own name, and teardown still reads `--keep` as true", async () => {
+  const { CARRY_STEPS, KEEP_WORKSPACE, assertCarryScope } = present(carryLeg);
+  const scope = assertCarryScope(carryOpts());
+  const T = "7".repeat(64), B = "b".repeat(64);
+  const answer = (kind, args) => {
+    const line = [args].flat().join(" ");
+    if (kind === "node" && /rite keep --workspace/.test(line)) return { code: 0, stdout: JSON.stringify({ ok: true, data: { rite: "keep", workspace: KEEP_WORKSPACE, tessera: T, bundleId: B, pushed: true, par: true } }) };
+    if (kind === "shim" && /rite receipts/.test(line)) return { code: 0, stdout: JSON.stringify({ ok: true, data: { conferre: { par: [{ tessera: T, rite: "keep", par: true }], red: [] } } }) };
+    return { code: 0, stdout: "{}", stderr: "" };
+  };
+  const walk = recordingCarry(scope, { answer, vars: { oldRev: OLD_REV, pin: PIN, keep: true } });
+  await CARRY_STEPS.find((s) => s.id === "keep-old").run(walk.c);
+  assert.equal(walk.c.vars.keep, true, "the keep rite leaves the walk's --keep flag alone");
+  assert.equal(walk.c.vars.keepRite.tessera, T);
+  assert.equal(walk.c.vars.keepRite.bundleId, B);
+  const asked = [];
+  const c = { scope: { newSrc: "/nonexistent-new-src", image: "img" }, vars: walk.c.vars, hands: () => ({ teardown: async (o = {}) => { asked.push(o); return { downCode: 0, containers: "", baseStands: o.keepBase === true, log: [] }; } }) };
+  assert.equal((await CARRY_STEPS.find((s) => s.id === "teardown").run(c)).ok, true);
+  assert.equal(asked[0].keepBase, true, "teardown still keeps the base after a keep rite");
+});
+
 test("carry-keep-reads-par: the lei strings under the ward, the keep pushes to the scratch remote and conferre reads its tessera par; a red tessera fails; a source with no keep rite reads unreached", async () => {
   const { CARRY_STEPS, KEEP_WORKSPACE, assertCarryScope } = present(carryLeg);
   const scope = assertCarryScope(carryOpts());
@@ -929,8 +950,8 @@ test("carry-keep-reads-par: the lei strings under the ward, the keep pushes to t
   assert.ok(kui.says.length > 0 && kui.says.every((s) => s.answer !== "accept-loss"), "the ward's prompt gets the published route");
   const kept = await step("keep-old").run(good.c);
   assert.equal(kept.ok, true, kept.answer);
-  assert.equal(good.c.vars.keep.tessera, T);
-  assert.equal(good.c.vars.keep.bundleId, B);
+  assert.equal(good.c.vars.keepRite.tessera, T);
+  assert.equal(good.c.vars.keepRite.bundleId, B);
   const keepCall = good.calls.find((k) => k.kind === "node" && k.args.includes("keep"));
   assert.ok(keepCall.args.includes("--workspace") && keepCall.args.includes(KEEP_WORKSPACE), keepCall.args.join(" "));
   const red = recordingCarry(scope, { answer: answers(false), vars: { oldRev: OLD_REV, pin: PIN } });
