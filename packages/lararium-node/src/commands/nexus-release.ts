@@ -87,10 +87,11 @@ export async function runFloorRelease(opts: {
 
   const manifest = sha256HexBytesSync(manifestBytes);
   if (opts.casDir !== undefined) {
-    writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
     // The blobs every mount needs, as the genesis this hearth ships declares them: a release may change the plugins, never drop these.
     const required = floorRequiredBlobIds(readGenesisSeed()?.blobs);
-    const whole = await resolveFloorWhole(manifest, async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir!), { required });
+    // RESOLVE BEFORE STAGING: the manifest answers from these bytes, everything else from the CAS; the manifest stages only once
+    // the release counts, beside the row. A refused release writes nothing.
+    const whole = await resolveFloorWhole(manifest, async (cid) => (cid === manifest ? manifestBytes : readVerifiedCasBlobFromFs(cid, opts.casDir!)), { required });
     if ("refusal" in whole) throw new NexusCabalError(`the floor this manifest names does not stand whole in this hearth's CAS, so no release names it: ${whole.refusal} (${whole.reason}).`);
   }
   // THE PRIOR is the head of the chain the rows' own bodies spell: the release no other row names as its prior. This
@@ -115,6 +116,7 @@ export async function runFloorRelease(opts: {
   if (!verdict.ok) {
     throw new NexusCabalError(`the release counts nothing here: ${describe(verdict.reason)}`);
   }
+  if (opts.casDir !== undefined) writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
   board.change((draft) => writeFloorRelease(draft, release));
   return { nexus: core.nexus, release, counted: verdict.counted, threshold: verdict.threshold };
 }
