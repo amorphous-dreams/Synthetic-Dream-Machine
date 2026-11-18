@@ -354,7 +354,7 @@ export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; read
   const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };
   const opt = (name: string): string => (typeof args.options[name] === "string" ? (args.options[name] as string).trim() : "");
   const slot = opt("slot");
-  if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --tree` names the slots a meme holds)");
+  if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --recipe <slug> --tree` names the slots a meme holds)");
   const append = opt("append");
   const replace = opt("replace");
   if (Boolean(append) === Boolean(replace)) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --replace <file> (the slot's whole body)");
