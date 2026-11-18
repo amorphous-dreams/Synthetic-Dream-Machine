@@ -1039,7 +1039,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "grant", R0);
     const sealed = "[document-unavailable] lar:///ha.ka.ba/wikis/daemon/working (a lit face's own layer) unavailable: doc automerge:2rZ45c35 was reported unavailable by every reachable peer; make the document reachable from a peer, then restart.";
     const refusing = (why: string): MirrorDoors => ({ ...v.mirrorDoors(), lay: async (wave, apply) => wave.face === undefined ? v.lay(wave, apply)
-      : { planned: [NOTE], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: apply ? [{ uri: NOTE, why }] : [], unanswered: [] } });
+      : { planned: [NOTE], kapae: [], landed: [], kapaeRaised: [], conflicts: [], refused: apply ? [{ uri: NOTE, why }] : [], unanswered: [], skipped: [] } });
     const r = await seedMirrors({ apply: true, doors: refusing(sealed) });
     expect(r.layers.flatMap((t) => t.refused)).toEqual([]);
     expect(r.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[1, "unresolved"]]);
