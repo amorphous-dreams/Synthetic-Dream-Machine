@@ -28,7 +28,7 @@ import { hkdf } from "@noble/hashes/hkdf.js";
 import { sha256 } from "@noble/hashes/sha2.js";
 import { constantTimeBytesEqual, defaultCryptoProvider, hex, hexToBytes } from "./crypto.js";
 import { KEEP_CUT_DOMAIN, KEEP_PAIR_INFO, KEEP_ROSTER_INFO, KEEP_SIGN_INFO } from "./domains.js";
-import { bindSlot, decodeSlotTree, encodeSlotTree, openTreeKey, stretchForRemote, type Credential, type KdfPort, type PinSpec, type SlotSpec, type SlotTree } from "./keyslot.js";
+import { bindSlot, confirmHeldPaper, decodeSlotTree, encodeSlotTree, openTreeKey, stretchForRemote, type Credential, type KdfPort, type PinSpec, type SlotSpec, type SlotTree } from "./keyslot.js";
 import { openFromSender, sealToRecipient, SEALED_BOX_AEAD_NONCE_LEN } from "./sealed-box.js";
 import { mintTreeKey, type TreeKey } from "./tree-key.js";
 
@@ -98,6 +98,28 @@ export async function mintKeepSeat(spec: SlotSpec, kdf: KdfPort): Promise<KeepMi
     const secret = secretOf(treeKey);
     try { return { seat: { publicKey: x25519.getPublicKey(secret), stretchSalt, slots }, signingSeed: signingSeedOf(treeKey) }; } finally { secret.fill(0); }
   } finally { treeKey.fill(0); }
+}
+
+/**
+ * Mint a keep pair under a PROVED route (the credentials a custody open named as its opener): one slot holding every pin of the
+ * route at its threshold, then the self-check, opening the seat under that very route and matching its verify key to the seed.
+ * A route holding a passkey, or none, mints nothing. Throws `keep-seat-unchecked` where the check fails; nothing should rest then.
+ */
+export async function mintKeepSeatUnder(route: readonly Credential[], kdf: KdfPort): Promise<KeepMint | null> {
+  const pins: PinSpec[] = [];
+  for (const c of route) {
+    if (c.kind === "passphrase" && c.passphrase !== "") pins.push({ kind: "passphrase", passphrase: c.passphrase });
+    else if (c.kind === "paper") pins.push({ kind: "paper", confirmed: confirmHeldPaper(c.sheets) });
+    else return null;
+  }
+  if (pins.length === 0) return null;
+  const mint = await mintKeepSeat({ t: pins.length, pins }, kdf);
+  const check = await openKeepSecret(mint.seat, route, kdf);
+  if (check.reading !== "opens") throw new Error(`keep-seat-unchecked: the pair minted under this route did not open under it (${check.reading})`);
+  const answers = constantTimeBytesEqual(check.verifyKey, keepVerifyKeyOf(mint.signingSeed));
+  check.secret.fill(0); check.signingSeed.fill(0);
+  if (!answers) throw new Error("keep-seat-unchecked: the pair minted under this route opened to another signing key");
+  return mint;
 }
 
 /** The bytes a cut signs: the domain, the bundle id, and the sealed roster's digest. */

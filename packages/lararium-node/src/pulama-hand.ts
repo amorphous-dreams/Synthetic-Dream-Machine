@@ -38,10 +38,11 @@
  * Meme: lar:///ha.ka.ba/lares/docs/pono/the-worn-house#/the-pulama
  */
 import {
-  LEI_RETURNS_ASK_ABOVE, isSwarmLeiRite, signSwarmAct, swarmActCid, swarmTesseraPrefix,
+  LEI_RETURNS_ASK_ABOVE, encodeKeepSeat, isSwarmLeiRite, mintKeepSeatUnder, signSwarmAct, swarmActCid, swarmTesseraPrefix,
   type Credential, type SwarmBodyParts, type SwarmSignerPort, type SwarmWikiPort,
 } from "@lararium/mesh";
 import { lentFacesOf } from "@lararium/mesh/lent-faces";
+import { nativeKdf } from "@lararium/mesh/node";
 import type { CustodyHolder } from "./custody-holder.js";
 import { pulamaSignerOf } from "./kukulu-gate.js";
 import type { PulamaAdmissions } from "./pulama-admit.js";
@@ -217,6 +218,26 @@ export function pulamaHandDoor(a: {
         }
         log(`signed by hand: a ${terms.parts.act === "lei-unstrung" ? "lei's unstring" : "lei"} for h${face}; the vessel lands it`);
         return { op: "lei", act, reading: "signed", face, record, cid: swarmActCid(record), ...(act === "restring" ? { restrung: terms.after } : {}) };
+      }
+      case "keep-seat": {
+        // THE KEEP SEAT AT THE PŪLAMA: a house the pūlama keeps reads its route here alone. The route PROVES against the lit
+        // holder's key (it opens nothing new; a miss spends an attempt), and the pair mints under the credentials that proof names:
+        // the seat (public half, the slot tree wrapping its secret) and the signing seed answer over this hand socket alone, to the
+        // verb in this same pūlama, which writes the house's seat file and prints neither.
+        if (!holder.isUnlocked()) return { op: "keep-seat", reading: "pulama-locked", ...status() };
+        const credentials = credentialsOf(f["credentials"]);
+        if (credentials === null) return { op: "keep-seat", reading: "malformed" };
+        const proof = await holder.proves(credentials);
+        if (proof.reading !== "proves") { log(`keep-seat: ${proof.reading}`); return { op: "keep-seat", ...proof, ...status() }; }
+        const opener = proof.opener.map((i) => credentials[i]).filter((c): c is Credential => c !== undefined);
+        let mint: Awaited<ReturnType<typeof mintKeepSeatUnder>>;
+        try { mint = await mintKeepSeatUnder(opener, nativeKdf); }
+        catch (e) { return { op: "keep-seat", reading: "keep-seat-unchecked", detail: e instanceof Error ? e.message : String(e) }; }
+        if (mint === null) return { op: "keep-seat", reading: "keep-seat-unseatable", detail: "the proved route holds no human route the keep binds (a passkey alone)" };
+        const signingSeed = Buffer.from(mint.signingSeed).toString("hex");
+        mint.signingSeed.fill(0);
+        log("keep-seat: a fresh keep pair seated under the proved route; the verb writes the house's seat");
+        return { op: "keep-seat", reading: "seated", seat: encodeKeepSeat(mint.seat), signingSeed, publicKey: Buffer.from(mint.seat.publicKey).toString("hex") };
       }
       case "lock": await server.lock(); return { op: "lock", ...status() };
       case "status": return { op: "status", ...status(), ...await admissionDigests() };

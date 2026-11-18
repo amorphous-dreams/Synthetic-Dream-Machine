@@ -7,6 +7,9 @@
  *   lei      `lei kui|restring|unstring '<terms>'`: read the route on a real terminal, hand it to the hand door with the lei's
  *            terms (one JSON object: `face`, `rite`, `branch`, and `returns` · `reach` · `head` · `after` · `confirm` · `lei`
  *            as the act needs): the face root signs one record there, and the answer carries it for the vessel to land
+ *   keep-seat  read the route on a real terminal, hand it to the hand door: the route proves against the lit holder and a fresh
+ *            keep pair mints under it; the verb writes the house's keep seat file (`keepSeat`, mode 0600) and prints the public
+ *            half and the path alone, never the signing seed and never the slot tree
  *   lock · status · tessera · image <digest> | image '{"digest","seed"}'   one frame each, no route
  *
  * ── A ROUTE RIDES A REAL TERMINAL AND NOTHING ELSE ──────────────────────────────────────────────
@@ -73,7 +76,7 @@ export function readRoute(label: string, what: string, terminal: RouteTerminal =
   });
 }
 
-export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
+export const PULAMA_VERB_USAGE = `usage: pulama-main.js serve | light | admit [face…] | unadmit <image digest> | lei kui|restring|unstring '{"face":…,"rite":…,"branch":…,…}' | keep-seat | lock | status | image <digest> | image '{"digest":…,"seed":…}' | tessera`;
 
 /** A verb line the hand door holds no act for. */
 export class PulamaVerbUsage extends Error { override readonly name = "PulamaVerbUsage"; constructor() { super(PULAMA_VERB_USAGE); } }
@@ -84,6 +87,8 @@ export class PulamaVerbUsage extends Error { override readonly name = "PulamaVer
 export async function runHandVerb(verb: string, arg: string | readonly string[] | undefined, ports: {
   readonly ask: (frame: Readonly<Record<string, unknown>>) => Promise<PulamaHandAnswer>;
   readonly route: (label: string, what: string) => Promise<string>;
+  /** Write the house's keep seat file from a seated answer (the seat and its signing seed), and answer the path written. */
+  readonly keepSeat?: (answer: PulamaHandAnswer) => string;
 }): Promise<PulamaHandAnswer> {
   if (verb === "light") {
     const passphrase = await ports.route("pūlama route: ", "the pūlama's light");
@@ -124,6 +129,18 @@ export async function runHandVerb(verb: string, arg: string | readonly string[] 
     const what = act === "unstring" ? `unstring the ${String(t["rite"])} lei ${String(t["lei"])}` : `${act} a ${String(t["rite"])} lei`;
     const passphrase = await ports.route(`pūlama route, to ${what} at "${String(t["branch"])}" for h${String(t["face"])}: `, "a lei");
     return ports.ask({ op: "lei", act, ...t, credentials: [{ kind: "passphrase", passphrase }] });
+  }
+  if (verb === "keep-seat" && arg === undefined) {
+    if (!ports.keepSeat) throw new PulamaVerbUsage();
+    // THE DOOR READS FIRST: an unlit pūlama refuses here, before anybody types a route.
+    const standing = await ports.ask({ op: "status" });
+    if (standing["lit"] !== true) return { op: "keep-seat", reading: "pulama-locked", detail: "the pūlama stands unlit: light it first (`light`), then seat the keep" };
+    const passphrase = await ports.route("pūlama route, to seat the house's keep pair: ", "a keep seat");
+    const answer = await ports.ask({ op: "keep-seat", credentials: [{ kind: "passphrase", passphrase }] });
+    if (answer["reading"] !== "seated") return answer;
+    // THE LINE CARRIES NO SECRET: the seed and the tree go to the file alone.
+    const path = ports.keepSeat(answer);
+    return { op: "keep-seat", reading: "seated", path, publicKey: answer["publicKey"] ?? JSON.parse(String(answer["seat"]))["publicKey"] };
   }
   if ((verb === "lock" || verb === "status" || verb === "tessera") && arg === undefined) return ports.ask({ op: verb });
   if (verb === "image" && typeof arg === "string") {
