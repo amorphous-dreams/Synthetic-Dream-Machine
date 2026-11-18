@@ -983,7 +983,7 @@ export class ContentKeyHolder {
       const named = await this.#sign("manifest", manifest, { writer: sessionWriter(signer) }, args.bagId, line.locator, key, signer);
       if (isRefusal(named)) return named;
       const resealBody: ResealBody = { bag: line.locator, keyVersion: at.head, replaced: old.keyVersion, from: old.address, to: body.cid, entry: old.entry };
-      const reseal = await this.#sign("re-seal", resealBody, { acts: [...acts] }, args.bagId, line.locator, key, signer);
+      const reseal = await this.#sign("re-seal", resealBody, { acts: [...acts], role: "blob", ref: args.ref }, args.bagId, line.locator, key, signer);
       if (isRefusal(reseal)) return reseal;
       // THE COMMIT POINT, as a blob's seal reads it: a raise counted while the replacement signed binds it here.
       if (owesRoll()) return refuse("roll-owed");

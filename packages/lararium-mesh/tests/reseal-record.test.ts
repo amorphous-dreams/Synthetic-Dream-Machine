@@ -136,8 +136,8 @@ describe("a forged or unsigned re-seal record refuses by name", () => {
     const lineage = s.lineageOf([v0, v1]);
     const body = { from: s.address(0, PHOTO), to: s.address(1, PHOTO), entry: s.entry(0, PHOTO) };
     const held = { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests: [] };
-    expect(judgeReseal(await s.reseal(1, 0, body, { acts: ["raise-other"] }), held)).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "successor" });
-    expect(judgeReseal(await s.reseal(1, 0, body, { acts: ["raise-1"] }), held)).toMatchObject({ verdict: "unverified" });
+    expect(judgeReseal(await s.reseal(1, 0, body, { acts: ["raise-other"], role: "blob", ref: PHOTO }), held)).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "successor" });
+    expect(judgeReseal(await s.reseal(1, 0, body, { acts: ["raise-1"], role: "blob", ref: PHOTO }), held)).toMatchObject({ verdict: "unverified" });
   });
 });
 
@@ -209,7 +209,7 @@ describe("the judge reads counted history alone", () => {
     const v0 = await s.version(0, [], 0, { kind: "founding" });
     await s.version(1, [0], 0, { kind: "removal", acts: ["raise-1"] });
     const from = s.address(0, PHOTO), to = s.address(1, PHOTO);
-    const record = await s.reseal(1, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"] });
+    const record = await s.reseal(1, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
     const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(1, PHOTO, to)];
     // The reader counted the founding alone: the successor's record reached it, and its count never landed.
     const verdict = judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0]), keys: s.keyMap(0, 1), manifests });
@@ -239,7 +239,7 @@ describe("a replacement never crosses a span (sealed-store #/epochs: an inviter 
     const v1 = await s.version(1, [0], 1, { kind: "admission", act: "admit-1" });
     const v2 = await s.version(2, [1], 1, { kind: "removal", acts: ["raise-1"] });
     const from = s.address(0, PHOTO), to = s.address(2, PHOTO);
-    const record = await s.reseal(2, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"] });
+    const record = await s.reseal(2, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
     const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(2, PHOTO, to)];
     expect(judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0, v1, v2]), keys: s.keyMap(0, 1, 2), manifests }))
       .toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "replaced" });
@@ -286,7 +286,7 @@ describe("a head after the removal still owes the replacement: the nearest remov
     const v2 = await s.version(2, [0], 0, { kind: "removal", acts: ["raise-1"] });
     const v3 = await s.version(3, [1, 2], 0, { kind: "join" });
     const from = s.address(0, PHOTO), to = s.address(3, PHOTO);
-    const record = await s.reseal(3, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"] });
+    const record = await s.reseal(3, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
     const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(3, PHOTO, to)];
     expect(judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0, v1, v2, v3]), keys: s.keyMap(0, 1, 2, 3), manifests })).toEqual({ verdict: "complete" });
   });

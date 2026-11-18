@@ -184,9 +184,13 @@ export interface MemoryImportPrivate {
   readonly seat: string;
 }
 export interface ResealPrivate {
-  /** The removal acts that authorized the roll: raises the successor answers, unique, sorted, never empty. Sealed, as the
-   *  key version's own cause rests. */
+  /** The removal acts that authorized the roll: raises the nearest removal within the successor's span answers, unique,
+   *  sorted, never empty. Sealed, as the key version's own cause rests. */
   readonly acts: readonly string[];
+  /** The replaced entry's role and logical reference: a reader holding either key recomputes that key's entry locator
+   *  from them, so `from` and `to` bind one logical entry. Sealed, since a reference hashes plaintext. */
+  readonly role: ChunkRole;
+  readonly ref:  string;
 }
 export interface RecordPrivates { "key-version": KeyVersionPrivate; manifest: ManifestPrivate; checkpoint: CheckpointPrivate; "hand-over": HandOverPrivate; "memory-import": MemoryImportPrivate; "re-seal": ResealPrivate }
 
@@ -370,9 +374,11 @@ function readPrivate<K extends RecordKind>(kind: K, value: unknown, body: Record
       return (seat === null ? null : { seat }) as RecordPrivates[K] | null;
     }
     if (kind === "re-seal") {
-      if (!isRecord(value) || !exactKeys(value, ["acts"])) return null;
+      if (!isRecord(value) || !exactKeys(value, ["acts", "role", "ref"])) return null;
       const acts = readActs(value["acts"]);
-      return (acts === null || !acts.every((act) => nonEmptyText(act) !== null) ? null : { acts }) as RecordPrivates[K] | null;
+      const role = value["role"], ref = value["ref"];
+      if (acts === null || !acts.every((act) => nonEmptyText(act) !== null) || !isChunkRole(role) || !isHex64(ref)) return null;
+      return { acts, role, ref } as RecordPrivates[K];
     }
     if (kind !== "checkpoint") return null;
     if (!isRecord(value) || !exactKeys(value, ["frontier"])) return null;
@@ -421,7 +427,10 @@ function privateImage<K extends RecordKind>(kind: K, value: RecordPrivates[K]): 
   if (kind === "manifest") return sealedImage("", utf8Bytes((value as ManifestPrivate).writer));
   if (kind === "hand-over") return sealedImage("", utf8Bytes((value as HandOverPrivate).reader));
   if (kind === "memory-import") return sealedImage("", utf8Bytes((value as MemoryImportPrivate).seat));
-  if (kind === "re-seal") return sealedImage("", listField((value as ResealPrivate).acts.map((act) => utf8Bytes(act))));
+  if (kind === "re-seal") {
+    const p = value as ResealPrivate;
+    return sealedImage("", listField(p.acts.map((act) => utf8Bytes(act))), utf8Bytes(p.role), hexToBytes(p.ref));
+  }
   return sealedImage("", listField((value as CheckpointPrivate).frontier.map((id) => utf8Bytes(id))));
 }
 
@@ -647,12 +656,31 @@ export function judgeReseal(record: VerifiedRecord<"re-seal">, held: {
       if (!found) { if (gap) missing.push("replaced"); else return unbound("replaced"); }
     }
   }
-  // THE REPLACED VALUE: a manifest under the replaced version names its address under the entry the record names.
+  // ONE LOGICAL ENTRY: the record's role and reference recompute each side's entry locator under that side's key, where
+  // the reader holds a counted one; a key it lacks leaves that side unverified.
+  const { role, ref } = record.private;
+  const entryUnder = (id: KeyVersionId): string | null => {
+    const key = held.lineage.has(id) ? held.keys.get(id) : undefined;
+    return key === undefined ? null : entryLocatorOf(key, { bagId: held.bagId, keyVersion: id, role, logicalRef: hexToBytes(ref) });
+  };
+  // THE REPLACED VALUE: the record's entry recomputes under the replaced key, and a manifest under the replaced version
+  // names the replaced address under that entry.
+  const oldEntry = entryUnder(replaced);
+  if (oldEntry !== null && oldEntry !== entry) return unbound("from");
   const fromEntries = manifestsUnder(replaced).flatMap((m) => m.body.entries).filter((e) => e.address === from);
-  if (fromEntries.length === 0) missing.push("from");
-  else if (!fromEntries.some((e) => e.locator === entry)) return unbound("from");
-  // THE REPLACEMENT: a manifest under the successor names its address.
-  if (!manifestsUnder(keyVersion).some((m) => m.body.entries.some((e) => e.address === to))) missing.push("to");
+  if (fromEntries.length > 0 && !fromEntries.some((e) => e.locator === entry && e.role === role)) return unbound("from");
+  if (oldEntry === null || fromEntries.length === 0) missing.push("from");
+  // THE REPLACEMENT: a manifest under the successor, written by the hand that signed the re-seal, names the replacement's
+  // address under the same entry recomputed under the successor's key.
+  const signer = recordWriterSubject(record.certificate);
+  const toManifests = manifestsUnder(keyVersion).filter((m) => m.body.entries.some((e) => e.address === to));
+  if (toManifests.length > 0) {
+    const own = toManifests.filter((m) => recordWriterSubject(m.certificate) === signer);
+    if (own.length === 0) return unbound("to");
+    const newEntry = entryUnder(keyVersion);
+    if (newEntry === null) missing.push("to");
+    else if (!own.some((m) => m.body.entries.some((e) => e.address === to && e.locator === newEntry && e.role === role))) return unbound("to");
+  } else missing.push("to");
   return missing.length === 0 ? { verdict: "complete" } : { verdict: "unverified", missing };
 }
 
