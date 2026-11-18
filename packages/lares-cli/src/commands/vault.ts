@@ -32,6 +32,7 @@ import { helpLines } from "../command-help.js";
 import { LIVE_SHARE_DOORS, landShares } from "../share-doors.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { offerKeepLei, type KeepOfferPorts } from "../keep-at-unlock.js";
+import { seatKeepAtUnlock } from "../keep-seat.js";
 import { configuredKeepWorkspace } from "../keep-config.js";
 import { canPromptSecret } from "../prompt-secret.js";
 import { storeFailure, storeVerb } from "../store-door.js";
@@ -305,6 +306,9 @@ async function vaultUnlockByPulama(args: ParsedArgs): Promise<number> {
   return 1;
 }
 
+/** Where a keep seat line goes: the terminal, never a `--json` answer's stdout. */
+const keepSay = (args: ParsedArgs) => (line: string): void => { if (wantsJson(args)) console.error(line); else console.log(line); };
+
 /** The keep offer's live ports: this terminal (never under `--json`), and the store door, the ward taking the unlock's route. */
 function keepOfferPorts(args: ParsedArgs): KeepOfferPorts {
   return {
@@ -371,13 +375,17 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
         if (landed !== null && Number(landed["granted"] ?? 0) > 0) console.log(`shares: ${Number(landed["granted"])} grant(s) landed for the faces now open`);
         if (landed !== null && Number(landed["lifted"] ?? 0) > 0) console.log(`shares: ${Number(landed["lifted"])} granted bag(s) now stand in this face's catalog`);
       } catch (e) { console.error(`shares: the share config waits (${e instanceof Error ? e.message : String(e)}); \`lares bag share --list\` reads it`); }
-      // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route.
+      // THE HOUSE KEEPS ITSELF: where the config names a keep workspace, the same act offers its keep lei under this one route,
+      // and the keep pair seats under this passphrase where none rests (`../keep-seat.ts`).
       await offerKeepLei(keepOfferPorts(args), { workspace: configuredKeepWorkspace(), route: creds });
+      await seatKeepAtUnlock(creds, keepSay(args));
     }
     return ok ? 0 : 1;
   }
   const u = await openOrRefuse(args, "unlock", homes, io, creds);
   if (!u) return 1;
+  // THE PASSPHRASE STANDS PROVED: the keep pair seats under it where none rests, with no vessel standing as with one.
+  await seatKeepAtUnlock(creds, keepSay(args));
   emit(args, {
     ok: true, data: { reading: "opens", slot: u.slot, held: false },
     human: () => console.log(`slot ${u.slot} opens the vessel key. No vessel stands on this store, so nothing holds it open — stand the vessel (\`lares vessel stand\`), then run \`lares vault unlock\` again.`),

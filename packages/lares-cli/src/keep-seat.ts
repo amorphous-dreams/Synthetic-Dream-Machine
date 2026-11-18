@@ -90,6 +90,23 @@ export async function seatKeepPair(credentials: readonly Credential[]): Promise<
   return { seated: true, seat };
 }
 
+/**
+ * THE UNLOCK'S MOMENT: an unlock that opened under a passphrase seats the keep pair under it where none rests, and says so. A
+ * route with no passphrase, or a seat that rests, leaves the house as it stood; a seat that would not write warns and waits.
+ */
+export async function seatKeepAtUnlock(route: readonly Credential[], say: (line: string) => void): Promise<"seated" | "resting" | "no-passphrase" | "unseated"> {
+  try {
+    if (readResting() !== null) return "resting";
+    const { seated } = await seatKeepPair(route);
+    if (!seated) return "no-passphrase";
+    say(`keep: the keep pair seats under this passphrase (${keepSeatPath()}); a keep's roster seals to it, and a restore opens it with this passphrase`);
+    return "seated";
+  } catch (e) {
+    say(`keep: the keep pair did not seat (${e instanceof Error ? e.message : String(e)}); the next unlock seats it`);
+    return "unseated";
+  }
+}
+
 /** Adopt a pair a bundle carried, where this house rests none: the next keep seals to the pair the restore opened. */
 export function adoptKeepSeat(seat: KeepSeat): boolean {
   if (readResting() !== null) return false;
