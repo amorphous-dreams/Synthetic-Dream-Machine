@@ -687,7 +687,8 @@ export class VesselIslandPoolCore {
   /** The floor shadow tally as this pool last folded it; null before any wiki mounted with a founding record. */
   floorShadowTally(): FloorShadowTally | null { return this._shadowTally; }
 
-  /** Read one floor beside the founding record, once per boot and floor; fold, keep and print. Never throws. */
+  /** Read one floor beside the founding record, once per boot and floor; fold, keep and print. Never throws. The readings run
+   *  one after another on one chain, so the store's load and save never race; a mount fires this and does not wait. */
   private _shadowReadFloor(pinned: string | null, coreHash: string | null): Promise<void> {
     const founding = this._foundingRecord;
     if (!founding) return Promise.resolve();
@@ -761,8 +762,9 @@ export class VesselIslandPoolCore {
     // The mirror of a wiki island reads the plugin list the island booted with, never a second resolution that an offering change could move.
     if (!plan.surface && plan.coreHash) this._bootInputs.set(wikiId, { coreCid: plan.coreHash, pluginCids });
     // THE FLOOR SHADOW READ (backlog-awakens 3a): the floor this wiki stands on, beside the founding record it serves. It
-    // only reads and records; the manifest below still carries the same floor and the island serves as before.
-    if (!plan.surface) await this._shadowReadFloor(floorCid, plan.coreHash);
+    // only reads and records; the manifest below still carries the same floor and the island serves as before. NEVER ON THE
+    // BOOT PATH: serving never waits on its answer, so a content reader or tally store that hangs stalls no mount.
+    if (!plan.surface) void this._shadowReadFloor(floorCid, plan.coreHash);
 
     // THE FENCE READS BEFORE ANY VIEW ATTACHES. A session that ended or switched while the plugins resolved,
     // or a pool that began to close, opens no channel at all.
