@@ -414,7 +414,7 @@ export function houseIgnored(rel: string): string | null {
   return null;
 }
 
-// ── Siting run backward (the mirror seed's and the watcher's read) ──────────
+// ── Siting run backward (the mirror lay's and the watcher's read) ──────────
 
 /** One mirror plane a file reads back against. */
 export interface SiteMirror {

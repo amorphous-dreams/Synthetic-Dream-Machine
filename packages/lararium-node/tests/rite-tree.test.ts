@@ -10,7 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { SwarmRefused } from "@lararium/mesh";
 import { gitTreeOf, keepStagedTree, riteTreeOf } from "../src/commands/rite.js";
-import { CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, zeroCounts } from "../src/carry-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, zeroCounts } from "../src/bundle-manifest.js";
 
 let dir: string;
 const git = (...args: string[]): string => execFileSync("git", ["-C", dir, ...args], { encoding: "utf8", env: { ...process.env, GIT_AUTHOR_NAME: "t", GIT_AUTHOR_EMAIL: "t@t", GIT_COMMITTER_NAME: "t", GIT_COMMITTER_EMAIL: "t@t" } }).trim();
@@ -36,7 +36,7 @@ test("RED: a head git holds no commit for, a head that reads as no object name, 
   }
 });
 
-test("RED: a keep's head names a carry bundle by its id, and the id the vessel derives from the staged tree stands as the tree with no checkout asked; CONTROL: a keep head that spells no bundle id, or a keep that names no staged tree, refuses, and every other rite still derives its tree from git", async () => {
+test("RED: a keep's head names a house bundle by its id, and the id the vessel derives from the staged tree stands as the tree with no checkout asked; CONTROL: a keep head that spells no bundle id, or a keep that names no staged tree, refuses, and every other rite still derives its tree from git", async () => {
   const bundle = "c".repeat(64);
   const asked: string[] = [];
   const git0 = async (head: string): Promise<string> => { asked.push(head); return gitTreeOf(head, [dir]); };
@@ -59,11 +59,11 @@ function stageBundle(dest: string, text: string): string {
   const rel = "faces/f0/working/heron.tid";
   mkdirSync(join(dest, "faces", "f0", "working"), { recursive: true });
   writeFileSync(join(dest, rel), text);
-  const redeclare = `${JSON.stringify({ schema: CARRY_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] })}\n`;
+  const redeclare = `${JSON.stringify({ schema: BUNDLE_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] })}\n`;
   writeFileSync(join(dest, REDECLARE_FILE), redeclare);
   const files = [{ path: rel, sha256: sha256Hex(text), bytes: Buffer.byteLength(text) }, { path: REDECLARE_FILE, sha256: sha256Hex(redeclare), bytes: Buffer.byteLength(redeclare) }].sort((x, y) => (x.path < y.path ? -1 : 1));
   const bundleId = bundleIdOf(files);
-  writeFileSync(join(dest, MANIFEST_FILE), JSON.stringify({ schema: CARRY_SCHEMA, bundleId, faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }));
+  writeFileSync(join(dest, MANIFEST_FILE), JSON.stringify({ schema: BUNDLE_SCHEMA, bundleId, faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] }));
   return bundleId;
 }
 

@@ -42,7 +42,7 @@
  */
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { MANIFEST_FILE, unsafeRelPath } from "./carry-manifest.js";
+import { MANIFEST_FILE, unsafeRelPath } from "./bundle-manifest.js";
 import { configuredKeepSessions } from "./keep-config.js";
 import { DEVICES_DIR, SessionsRefused, mirrorSessions, readOrMintDevice, sessionSources, type SessionSources } from "./keep-sessions.js";
 import { KEEP_INTO, KeepRefused, RITE_KEEP, mountLine } from "./rite-keep.js";

@@ -107,7 +107,7 @@ describe("SyncedTree.uriAt — the reverse lookup a base row gives", () => {
   });
 });
 
-describe("HOUSE_IGNORED — the one list every scan, watcher and carry honours", () => {
+describe("HOUSE_IGNORED — the one list every scan, watcher and bundle honours", () => {
   test("names each ignored shape with its reason, and passes a carrier", () => {
     for (const rel of [".git/config", ".git/objects/ab/cdef", ".vscode/settings.json", ".shore/ha.ka.ba/x.mem",
       "ha.ka.ba/notes/pond.orphans/part.mem", `ha.ka.ba/notes/pond.mem.4242.${"0".repeat(8)}-0000-4000-8000-${"0".repeat(12)}.tmp`, "temp/scratch.tid"]) {
