@@ -334,9 +334,9 @@ describe("RED pulama-unadmit-ends-an-admission by a signed tombstone", () => {
     expect(await s.door({ op: "unadmit", image: IMAGE })).toMatchObject({ op: "unadmit", reading: "malformed" });
     expect(await s.door({ op: "unadmit", image: IMAGE, credentials: [{ kind: "passphrase", passphrase: "a-wrong-route" }] })).toMatchObject({ op: "unadmit", reading: "no-slot-opens", attemptsLeft: 2 });
     // AN UNKNOWN DIGEST answers a reading and rests nothing.
-    expect(await s.door({ op: "unadmit", image: OTHER, credentials: fixtureRoute })).toMatchObject({ op: "unadmit", reading: "image-not-admitted", image: OTHER });
+    expect(await s.door({ op: "unadmit", image: OTHER, credentials: fixtureRoute })).toMatchObject({ op: "unadmit", reading: "image-not-admitted", digest: OTHER });
     const ended = await s.door({ op: "unadmit", image: IMAGE, credentials: fixtureRoute });
-    expect(ended).toMatchObject({ op: "unadmit", reading: "unadmitted", image: IMAGE, ends: tessera });
+    expect(ended).toMatchObject({ op: "unadmit", reading: "unadmitted", digest: IMAGE, ends: tessera });
     const tomb = JSON.parse((await s.records.read(pulamaUnadmittedTitle(IMAGE, tessera)))!) as SignedPulamaAdmit;
     expect(tomb.signer).toBe(s.pulamaKey);
     expect(tomb.body).toMatchObject({ kind: PULAMA_TESSERA_DOMAIN, act: "image-unadmitted", image: IMAGE, ends: tessera });
