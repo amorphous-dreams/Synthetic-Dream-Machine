@@ -4,8 +4,11 @@
  * so the one wall a seat keeps guards the operator's browser: at the tiddler door, the meme door and INGEST alike, the AI
  * seat's write naming a startup tag refuses `seat-startup-offer`, names the operator's own hand, and moves no byte.
  *
- * CONTROLS: the operator's CLI hand and a context naming no asker land the same write natively; a seat write with no
- * startup tag lands; a tag that only begins like one (`$:/tags/StartupActionX`) is no startup tag.
+ * The wall reads the mesh's one executable-class list (`executable-class.ts`), which fails closed: a tag that only begins like
+ * a startup tag (`$:/tags/StartupActionX`) still names an unlisted system tag, so it offers too.
+ *
+ * CONTROLS: the operator's CLI hand and a context naming no asker land the same write natively; a seat write with a plain
+ * user tag lands.
  */
 import { describe, test, expect } from "vitest";
 import { CompositeStore, bagUri, isVerbRefusal, type Verb } from "@lararium/mesh";
@@ -57,7 +60,9 @@ describe("seat-startup-offer — a seat's startup action offers and never lands"
       expect(await reasonOf(() => r.put(meme(tags), "seat")), tags).toBe("seat-startup-offer");
       expect(await r.garden.get(URI)).toBeNull();
     }
-    expect((await r.put(meme(`["$:/tags/StartupActionX"]`), "seat"))["decision"]).toBe("ingest");
+    // An unlisted system tag reads executable (the one list fails closed); a plain user tag lands.
+    expect(await reasonOf(() => r.put(meme(`["$:/tags/StartupActionX"]`), "seat"))).toBe("seat-startup-offer");
+    expect((await r.put(meme(`["memory"]`), "seat"))["decision"]).toBe("ingest");
   });
 
   test("RED: a seat-asked INGEST carrying a StartupAction tag refuses seat-startup-offer and lands nothing", async () => {

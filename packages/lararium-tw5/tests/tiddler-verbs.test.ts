@@ -305,27 +305,32 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
   });
 
-  test("RED: the code-class wall burns: a module field, a script type, a system title and a system tag land natively for every asker; a seat-asked StartupAction tag offers (seat-startup-offer) and lands nothing; CONTROL the operator's hand and no asker land it", async () => {
+  test("RED: the seat wall reads the one executable-class list: a seat-asked module, script type, plugin, startup action, global, view template and an unlisted system tag each offer (seat-startup-offer) and land nothing; CONTROL plain `$:/config` lands for a seat, and the operator's hand and no asker land every class natively", async () => {
     const r = await rig();
     const put = makeTiddlerPutReactor(r.opts);
     const as = (asker?: "seat" | "cli"): VerbContext => ({ ...ctx(), ...(asker ? { asker } : {}) });
-    for (const asker of ["seat", "cli", undefined] as const) {
-      for (const [i, shape] of [
-        { title: "$:/config/x", text: "y" }, { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
-        { title: "Plug", fields: { "plugin-type": "plugin" } }, { title: "Glob", fields: { tags: "$:/tags/Global" } }, { title: "Near", tagsAdd: "$:/tags/StartupActionX" },
-      ].entries()) {
-        const title = `${shape.title} ${asker ?? "none"} ${i}`;
-        expect(await put({ ...A, ...shape, title }, as(asker)), `${title} lands natively`).toMatchObject({ decision: "put" });
-      }
+    const classes = [
+      { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
+      { title: "Plug", fields: { "plugin-type": "plugin" } }, { title: "Glob", fields: { tags: "$:/tags/Global" } }, { title: "View", tagsAdd: "$:/tags/ViewTemplate" },
+      { title: "Near", tagsAdd: "$:/tags/StartupActionX" }, { title: "Startup", tagsAdd: "$:/tags/StartupAction" },
+      { title: "Browser", fields: { tags: "memory [[$:/tags/StartupAction/Browser]]" } },
+    ];
+    for (const [i, shape] of classes.entries()) {
+      const title = `${shape.title} seat ${i}`;
+      await expect(put({ ...A, ...shape, title }, as("seat")), `${title} offers`).rejects.toMatchObject({ reason: "seat-startup-offer" });
+      expect(r.engine.wiki.getTiddler(title)).toBeUndefined();
     }
-    for (const tagged of [{ tagsAdd: "$:/tags/StartupAction" }, { fields: { tags: "memory [[$:/tags/StartupAction/Browser]]" } }]) {
-      await expect(put({ ...A, title: "Startup seat", ...tagged }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
-      expect(r.engine.wiki.getTiddler("Startup seat")).toBeUndefined();
+    for (const asker of ["seat", "cli", undefined] as const) {
+      expect(await put({ ...A, title: `$:/config/x ${asker ?? "none"}`, text: "y" }, as(asker))).toMatchObject({ decision: "put" });
+      expect(await put({ ...A, title: `Palette ${asker ?? "none"}`, text: "y", tagsAdd: "$:/tags/Palette" }, as(asker))).toMatchObject({ decision: "put" });
     }
     await expect(put({ ...A, title: "Note 06", tagsAdd: "$:/tags/StartupAction" }, as("seat"))).rejects.toMatchObject({ reason: "seat-startup-offer" });
     expect(r.engine.wiki.getTiddler("Note 06")?.fields["tags"]).toEqual(["memory"]);
     for (const asker of ["cli", undefined] as const) {
-      expect(await put({ ...A, title: `Startup ${asker ?? "none"}`, tagsAdd: "$:/tags/StartupAction" }, as(asker))).toMatchObject({ decision: "put" });
+      for (const [i, shape] of classes.entries()) {
+        const title = `${shape.title} ${asker ?? "none"} ${i}`;
+        expect(await put({ ...A, ...shape, title }, as(asker)), `${title} lands natively`).toMatchObject({ decision: "put" });
+      }
     }
   });
 
