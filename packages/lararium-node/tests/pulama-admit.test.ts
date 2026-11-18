@@ -390,3 +390,29 @@ describe("RED pulama-unadmit-ends-an-admission by a signed tombstone", () => {
     expect(await s.admissions.admitted(IMAGE, await pulamaSignerOf(s.fx.kept))).toMatchObject({ by: "hand" });
   });
 });
+
+describe("RED unadmit-never-answers-unadmitted-with-no-tombstone-resting", () => {
+  test("a junk row planted at `unadmitted/<image>/<tessera>` refuses `unadmit-slot-occupied`, naming the slot and that the admission still stands; the image keeps serving", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    const first = await s.door({ op: "admit", credentials: fixtureRoute });
+    const tessera = String(first["tessera"]);
+    await s.records.write(pulamaUnadmittedTitle(IMAGE, tessera), "not a signed row");
+    const a = await s.door({ op: "unadmit", image: IMAGE, credentials: fixtureRoute });
+    expect(a).toMatchObject({ op: "unadmit", reading: "unadmit-slot-occupied", digest: IMAGE, slot: pulamaUnadmittedTitle(IMAGE, tessera) });
+    expect(String(a["detail"])).toMatch(/still stands/);
+    expect(await s.admissions.admitted(IMAGE, await pulamaSignerOf(s.fx.kept))).toMatchObject({ by: "hand", tessera });
+    expect(await s.hello({})).toBe("opens");
+  });
+
+  test("a signed tombstone that landed first (a race) answers already ended, never a second write", async () => {
+    const s = await stand();
+    s.image.report(IMAGE);
+    await s.door({ op: "admit", credentials: fixtureRoute });
+    const by = await pulamaSignerOf(s.fx.kept);
+    // Two unadmits read the same standing admission; the second finds the first's signed tombstone in the slot.
+    const [one, two] = await Promise.all([s.admissions.unadmit(IMAGE, by), s.admissions.unadmit(IMAGE, by)]);
+    expect([one, two].filter((r) => r !== null && "already" in r && r.already === true)).toHaveLength(1);
+    expect(await s.admissions.admitted(IMAGE, by)).toBeNull();
+  });
+});
