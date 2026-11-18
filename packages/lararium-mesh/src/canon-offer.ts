@@ -751,6 +751,8 @@ export interface ReleaseFloorPorts {
   readonly blob:      (cid: string) => Promise<Uint8Array | null>;
   /** Stage the cut's blobs (the manifest and each fresh snapshot) where the release door and the porch read them. */
   readonly stage:     (blobs: ReadonlyArray<{ readonly cid: string; readonly bytes: Uint8Array }>) => Promise<void>;
+  /** The engine digest this vessel's genesis names; a prior floor whose engine differs refuses `floor-engine-unoffered`. */
+  readonly genesisEngine?: () => Promise<string | null> | string | null;
 }
 
 /** The fewest rows a prior snapshot holds before the thin read weighs it: a holding of a handful of rows halves by one retire. */
@@ -816,7 +818,8 @@ export async function cutReleaseFloor(ports: ReleaseFloorPorts, args: { readonly
     if (floorCutReadsThin(live, priorCount)) thin.push({ slug, live, prior: priorCount });
   }
   if (thin.length > 0) throw new FloorCutThin(thin);
-  const cut = cutCanonFloor({ prior: opened.manifest, canon, drop: dropped });
+  const genesisEngine = (await ports.genesisEngine?.()) ?? undefined;
+  const cut = cutCanonFloor({ prior: opened.manifest, canon, drop: dropped, ...(genesisEngine !== undefined ? { genesisEngine } : {}) });
   await ports.stage([...Object.values(cut.snapshots).map((s) => ({ cid: s.cid, bytes: s.bytes })), { cid: cut.manifestCid, bytes: cut.manifestBytes }]);
   const moved = Object.keys(canon).filter((slug) => cut.manifest.snapshots[slug] !== opened.manifest.snapshots[slug]).sort();
   return { manifestCid: cut.manifestCid, manifestBytes: cut.manifestBytes, prior: prior.manifestCid, cut: Object.keys(canon).sort(), kept, moved, dropped };

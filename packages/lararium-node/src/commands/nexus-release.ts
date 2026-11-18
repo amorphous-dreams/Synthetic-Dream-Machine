@@ -21,7 +21,7 @@ import { readFileSync } from "node:fs";
 import type { Repo } from "@automerge/automerge-repo";
 import {
   FLOOR_RELEASE_SURFACE, assembleFloorRelease, publicationDocUrl, floorReleaseEntriesFromBoard, foldFloorReleases, materializeSharedLarDoc,
-  openFloorReleaseBody, readPromotionApproval, resolveFloor, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
+  openFloorReleaseBody, readPromotionApproval, resolveFloorWhole, sha256HexBytesSync, verifyFloorRelease, writeFloorRelease,
   type FloorRelease, type FloorReleaseStanding, type FloorReleaseRefusal,
 } from "@lararium/mesh";
 import { readNexusDoc } from "../nexus-doc.js";
@@ -87,7 +87,7 @@ export async function runFloorRelease(opts: {
   const manifest = sha256HexBytesSync(manifestBytes);
   if (opts.casDir !== undefined) {
     writeCasEntriesFs([{ cid: manifest, bytes: manifestBytes }], opts.casDir);
-    const whole = await resolveFloor(manifest, async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir!));
+    const whole = await resolveFloorWhole(manifest, async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir!));
     if ("refusal" in whole) throw new NexusCabalError(`the floor this manifest names does not stand whole in this hearth's CAS, so no release names it: ${whole.refusal} (${whole.reason}).`);
   }
   // THE PRIOR is the head of the chain the rows' own bodies spell: the release no other row names as its prior. This
