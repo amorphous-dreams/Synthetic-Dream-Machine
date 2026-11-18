@@ -4,15 +4,18 @@
 <<^ code=`&#x0002;`>>
 
 ```toml meta
-cacheable  = true
-hydrate    = true
-l-space    = "stable"
-revised-on = "2026-11-18"
-role       = "THE PONO ROADMAP — the one carrier that holds the house's road to STABLE FOUNDING and the two-hearth live test: what a cold session reads, runs and obeys, the priority order a free slot takes, the operator's rulings, the design decisions that shape unbuilt work, the memory-stage hearth at the front, the six paths in the one order a builder walks, the test re-cut as train T beside them, every open loop beside the train that closes it, the sealed-store thread, the side lanes, the fresh start, and what the operator owns"
-title      = "lar:///ha.ka.ba/lares/docs/stable-founding-road"
-type       = "text/memetic-wikitext+tiddlywiki"
-uri-path   = "ha.ka.ba/lares/docs/stable-founding-road"
-written    = "2026-10-08"
+cacheable    = true
+hydrate      = true
+l-space      = "stable"
+projection   = "rendered"
+render-title = "road.html"
+render-type  = "text/html"
+revised-on   = "2026-11-18"
+role         = "THE PONO ROADMAP — the one carrier that holds the house's road to STABLE FOUNDING and the two-hearth live test: what a cold session reads, runs and obeys, the priority order a free slot takes, the operator's rulings, the design decisions that shape unbuilt work, the memory-stage hearth at the front, the six paths in the one order a builder walks, the test re-cut as train T beside them, every open loop beside the train that closes it, the sealed-store thread, the side lanes, the fresh start, and what the operator owns"
+title        = "lar:///ha.ka.ba/lares/docs/stable-founding-road"
+type         = "text/memetic-wikitext+tiddlywiki"
+uri-path     = "ha.ka.ba/lares/docs/stable-founding-road"
+written      = "2026-10-08"
 ```
 
 <<~ ahu slot=`#/the-attractor`>>
@@ -1391,6 +1394,6 @@ Nexuses rejoin through presented admits; every old admit names an old AID and re
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;4UoL_dwMppEeyLmmPYOdlSaRKdQ-BGyUTwBGbF-agbE`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FFRkV4AMOckq5FiEGKsKOG1a-icq90MDeJMowWccuHk`>>
 
 <<^ code=`&#x0004;` to=`?`>>
