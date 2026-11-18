@@ -149,14 +149,22 @@ export function toLarTiddlerRecord(
  *   - TW local edits must not round-trip as remote changes.
  *   - CRDT remote changes must not fire back as local TW edits.
  */
-export type ChangeOrigin =
+export type ChangeOrigin = (
   | { readonly kind: "tw-local";        readonly instanceId: string }
   | { readonly kind: "crdt-remote";     readonly edgeIsland: string }
   | { readonly kind: "canon-hydrate";   readonly receipt:    string }
   | { readonly kind: "mcp-draft";       readonly toolCallId: string }
   | { readonly kind: "operator-import"; readonly sessionId:  string }
   | { readonly kind: "canvas-draft";    readonly shapeId:    string }
-  | { readonly kind: "lares-verb";       readonly requestId:  string };
+  | { readonly kind: "lares-verb";       readonly requestId:  string }
+) & {
+  /**
+   * The face the writer wore: its PersonaGroup, or null at the veil floor. A write that names one lands under the actor
+   * that face derives for the document (`WireIdentity.actor`), a stale base included, or refuses by name where the store
+   * holds no actor door; it never lands under the engine's actor. Absent: the write names no face and rides the engine's.
+   */
+  readonly face?: string | null;
+};
 
 // ---------------------------------------------------------------------------
 // LarTiddlerChange — stream unit from store.subscribe()
