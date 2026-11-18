@@ -4,7 +4,7 @@
  * The ward door's prompt names the face by its handle index (or the worn face where the act names none).
  */
 import { EventEmitter } from "node:events";
-import { afterEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, test, vi } from "vitest";
 
 const asked: string[] = [];
 vi.mock("../src/prompt-secret.js", async (real) => {
@@ -17,7 +17,8 @@ vi.mock("../src/prompt-secret.js", async (real) => {
   };
 });
 
-import { gatherCredentials } from "../src/custody-prompt.js";
+let gatherCredentials: typeof import("../src/custody-prompt.js").gatherCredentials;
+beforeAll(async () => { vi.resetModules(); ({ gatherCredentials } = await import("../src/custody-prompt.js")); });
 
 afterEach(() => { asked.length = 0; vi.restoreAllMocks(); });
 

@@ -349,7 +349,7 @@ async function vaultUnlock(args: ParsedArgs, daemonUp: boolean): Promise<number>
   }
   const homes = custodyHomes();
   const io = new FsCustodyIo(homes);
-  const creds = await gatherCredentials("lares vault unlock", routeFlag(args));
+  const creds = await gatherCredentials("lares vault unlock", { kind: "vessel" }, routeFlag(args));
   if (daemonUp) {
     const face = typeof args.options["face"] === "string" ? Number(args.options["face"]) : undefined;
     if (face !== undefined && (!Number.isSafeInteger(face) || face < 0)) throw new UsageError("--face names a handle index (a whole number from 0)");
@@ -413,7 +413,7 @@ async function vaultLock(args: ParsedArgs, daemonUp: boolean): Promise<number> {
  */
 async function vaultRewrap(args: ParsedArgs): Promise<number> {
   const face = faceOption(args) ?? 0;
-  const ward = await gatherWardRoute(`lares vault rewrap --face ${face}`);
+  const ward = await gatherWardRoute(`lares vault rewrap --face ${face}`, face);
   const done = await sealedAct<{ rewrapped: number }>("ward.rewrap", { handleIndex: face, ward });
   emit(args, { ok: true, data: done, human: () => console.log(done.rewrapped === 0
     ? `face h${face} stands warded: no root row needed moving.`
@@ -481,7 +481,7 @@ async function vaultBackup(args: ParsedArgs, daemonUp: boolean): Promise<number>
     return 1;
   }
   if (!wantsJson(args)) console.log("First this vessel's own route: it proves a person stands at this cut.");
-  const vesselCredentials = await gatherCredentials("lares vault backup", routeFlag(args));
+  const vesselCredentials = await gatherCredentials("lares vault backup", { kind: "vessel" }, routeFlag(args));
   const bundleRoutes = await gatherBundleRoute("lares vault backup");
   const result = await cutBundleToFile({ face: Number(faceRaw), out, vesselCredentials, bundleRoutes, send: (frame) => sendCustodyFrame(frame) });
   if (!result.ok) {
@@ -512,7 +512,7 @@ async function vaultRestore(args: ParsedArgs, daemonUp: boolean): Promise<number
     return 1;
   }
   if (!wantsJson(args)) console.log("The bundle's own route: the passphrase or the paper sheet it got sealed under.");
-  const credentials = await gatherCredentials("lares vault restore", routeFlag(args));
+  const credentials = await gatherCredentials("lares vault restore", { kind: "vessel" }, routeFlag(args));
   // The restored face takes a route of its own; inside a standing vessel it rides the custody door first.
   seatNewFaceRoute();
   const result = await restoreFromBundle({
@@ -571,7 +571,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
   const io = new FsCustodyIo(homes);
   const face = faceOption(args);
   if (face !== undefined) {
-    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`);
+    const faceCreds = await gatherCredentials(`lares vault bind --face ${face}`, { kind: "face", ordinal: face });
     const f = await openFaceOrRefuse(args, "bind", homes, io, face, faceCreds);
     if (!f) return 1;
     const spec = await gatherNewSlot(`lares vault bind --face ${face}`, args.flags["paper"] ? "paper" : "passphrase");
@@ -579,7 +579,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
     emit(args, { ok: true, data: { face, slotId: out.slotId, slots: out.tree.slots.length }, human: () => console.log(`bound: slot ${out.slotId} now opens face h${face} (${out.tree.slots.length} slot(s) stand). The node tree is untouched.`) });
     return 0;
   }
-  const creds = await gatherCredentials("lares vault bind");
+  const creds = await gatherCredentials("lares vault bind", { kind: "vessel" });
   const u = await openOrRefuse(args, "bind", homes, io, creds);
   if (!u) return 1;
   const spec = await gatherNewSlot("lares vault bind", args.flags["paper"] ? "paper" : "passphrase");
@@ -593,7 +593,7 @@ async function vaultBind(args: ParsedArgs): Promise<number> {
 
 /** `vault unbind <slot-id> --face N [--rotate]`: one route leaves the face's own tree; the node tree is untouched. */
 async function vaultUnbindFace(args: ParsedArgs, homes: CustodyHomes, io: FsCustodyIo, face: number, slotId: string, rotate: boolean): Promise<number> {
-  const creds = await gatherCredentials(`lares vault unbind --face ${face}`);
+  const creds = await gatherCredentials(`lares vault unbind --face ${face}`, { kind: "face", ordinal: face });
   const f = await openFaceOrRefuse(args, "unbind", homes, io, face, creds);
   if (!f) return 1;
   const entry = readFaceIndexSync(homes.identity).faces[face];
@@ -628,7 +628,7 @@ async function vaultUnbind(args: ParsedArgs): Promise<number> {
   const io = new FsCustodyIo(homes);
   const face = faceOption(args);
   if (face !== undefined) return await vaultUnbindFace(args, homes, io, face, slotId, rotate);
-  const creds = await gatherCredentials("lares vault unbind");
+  const creds = await gatherCredentials("lares vault unbind", { kind: "vessel" });
   const u = await openOrRefuse(args, "unbind", homes, io, creds);
   if (!u) return 1;
 
