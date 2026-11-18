@@ -49,12 +49,24 @@ async function readCardLines(chair: string): Promise<string> {
 /** Count the line feeds written to stdout until `stop` restores it, so a card's erase covers exactly what it printed. */
 function tapLineFeeds(): { count: () => number; stop: () => void } {
   const original = process.stdout.write;
-  let lineFeeds = 0;
+  const columns = process.stdout.columns;
+  const wraps = typeof columns === "number" && columns > 0;
+  let rows = 0;     // rows the finished lines took
+  let current = 0;  // visible characters on the line the cursor stands in
   process.stdout.write = ((chunk: unknown, ...rest: unknown[]) => {
-    lineFeeds += String(chunk).split("\n").length - 1;
+    const segments = String(chunk).split("\n");
+    segments.forEach((segment, at) => {
+      // ANSI escapes take no column; what a hidden prompt reads back is never echoed, so it never reaches this tap.
+      current += segment.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, "").length;
+      if (at < segments.length - 1) {
+        rows += wraps ? Math.max(1, Math.ceil(current / columns)) : 1;
+        current = 0;
+      }
+    });
     return (original as (...a: unknown[]) => boolean).call(process.stdout, chunk, ...rest);
   }) as typeof process.stdout.write;
-  return { count: () => lineFeeds, stop: () => { process.stdout.write = original; } };
+  // An unfinished line that wrapped leaves the cursor on a lower row; the climb covers those rows too.
+  return { count: () => rows + (wraps && current > 0 ? Math.floor((current - 1) / columns) : 0), stop: () => { process.stdout.write = original; } };
 }
 
 /**
