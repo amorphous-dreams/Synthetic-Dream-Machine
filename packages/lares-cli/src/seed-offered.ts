@@ -26,8 +26,11 @@ export interface SeedRead {
   readonly digests: GenesisDigests;
 }
 
-/** The founding record as a house answers it, or why none reads here. */
-export type FoundingRecordReading = { readonly record: GenesisDigests } | { readonly unread: string };
+/**
+ * The founding record as a house answers it; why a house that answers reads none (`unread`); or no house here at all
+ * (`noHouse`: the one-shot image run at `up` mounts no hearth, so the record reads at the next boot, never as a fault).
+ */
+export type FoundingRecordReading = { readonly record: GenesisDigests } | { readonly unread: string } | { readonly noHouse: true };
 
 /** What `floor seed` answers. `seed` holds the one line (the pūlama frame's `seed`); `offer` pairs only where both read. */
 export interface FloorSeedRead {
@@ -36,6 +39,8 @@ export interface FloorSeedRead {
   readonly offer: SeedOffer | null;
   readonly ratchets: string | null;
   readonly recordUnread?: string;
+  /** True where no house answered here: the founding record reads at boot. */
+  readonly noHouse?: true;
   readonly seed: string;
 }
 
@@ -65,6 +70,9 @@ export async function floorSeedRead(opts: { readonly genesisDir: string; readonl
   let reading: FoundingRecordReading;
   try { reading = await opts.record(); }
   catch (e) { reading = { unread: (e instanceof Error ? e.message : String(e)).replace(/[\r\n]+/g, " ").trim() || "the house answered nothing" }; }
+  if ("noHouse" in reading) {
+    return { genesis: opts.genesisDir, offered, offer: null, ratchets: null, noHouse: true, seed: `seed ${offered.cid} offered; the founding record reads at boot` };
+  }
   if ("unread" in reading) {
     return { genesis: opts.genesisDir, offered, offer: null, ratchets: null, recordUnread: reading.unread, seed: `seed ${offered.cid}: the founding record unread here (${reading.unread})` };
   }

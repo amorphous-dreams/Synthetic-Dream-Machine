@@ -32,7 +32,9 @@ import { storeVerb, storeFailure } from "../store-door.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { HouseRootUnnamed, resolveGenesis } from "@lararium/node";
 import { repoRoot } from "@lararium/mesh/node";
-import { larGenesisDir } from "../env.js";
+import { existsSync } from "node:fs";
+import { larBootstrapPath, larGenesisDir } from "../env.js";
+import { udsAlive } from "../local-connector.js";
 import { floorSeedRead, foundingRecordFromStatus, type FloorSeedRead } from "../seed-offered.js";
 
 const short = (cid: string | null | undefined): string => (cid ? `${cid.slice(0, 16)}…` : "(genesis floor)");
@@ -87,7 +89,8 @@ export function floorSeedLines(r: FloorSeedRead): string[] {
   const o = r.offered.digests;
   const lines = ["floor seed", `  seed (offered):  ${r.offered.cid} at ${r.genesis}`,
     `  seed digests:    engine ${d(o.engine)} · grammar ${d(o.grammar)} · plugins ${d(o.plugins)} · floor ${d(o.floor)}`];
-  if (r.offer === null) lines.push(`  founding record: unread here (${r.recordUnread ?? "no house answers"})`);
+  if (r.noHouse === true) lines.push("  founding record: reads at boot (no house answers here)");
+  else if (r.offer === null) lines.push(`  founding record: unread here (${r.recordUnread ?? "no house answers"})`);
   else {
     const g = r.offer.record;
     lines.push(`  founding record: engine ${d(g.engine)} · grammar ${d(g.grammar)} · plugins ${d(g.plugins)} · floor ${d(g.floor)}`);
@@ -107,11 +110,22 @@ function floorSeedDir(args: ParsedArgs): string {
   }
 }
 
+/**
+ * Does a house answer here? A daemon on the socket, or a vessel founded under the root (its bootstrap stands). The one-shot
+ * image run at `up` holds neither, and the store door then opens nothing: the founding record reads at boot.
+ */
+async function houseAnswers(): Promise<boolean> {
+  if (await udsAlive()) return true;
+  try { return existsSync(larBootstrapPath()); }
+  catch (err) { if (err instanceof HouseRootUnnamed) return false; throw err; }
+}
+
 /** `floor seed`: the read and its answer; the founding record reads through the store door, and its failure only names why. */
 async function cmdFloorSeed(args: ParsedArgs): Promise<number> {
   const read = await floorSeedRead({
     genesisDir: floorSeedDir(args),
     record: async () => {
+      if (!(await houseAnswers())) return { noHouse: true };
       try { return foundingRecordFromStatus((await storeVerb("floor-status", {})).output, "the house answers no founding record"); }
       catch (err) { return { unread: (err instanceof Error ? err.message : String(err)).replace(/[\r\n]+/g, " ").trim() || "no house answers" }; }
     },
