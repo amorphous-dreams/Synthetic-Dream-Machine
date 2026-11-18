@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-18`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0440"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-18"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-18"
+```
+
+| 18 | AFTER | the epoch burn: the integer `boundEpoch` retires (the leap of 2026-11-12), merged with `L32` (the lease end state's slices 3 and 4) and Leap 0's tail | The integer epoch breaks the operator's 2026-11-11 law (no version numbers, no scalar clocks), and `M6` lands before the keeper rite; `L24`'s re-measure retires with the roll. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;YeG62FIfT8na-9Bkpvri5_7Qnp81l_FHE-SqFTQ4PaY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

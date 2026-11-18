@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-18-d2s-three-additions`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-18"
+order    = "2280"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-18-d2s-three-additions"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-18-d2s-three-additions"
+```
+
+* ''D2's three additions'' (operator, 2026-11-18: //"approve all three D2 additions"//): a kept undo, adopting keeping the prior state to roll back to; one plain choice for a non-terminal family member, one question and a receipt, no route dance under the pūlama; adopt per ratchet, grammar, engine and canon floor each on its own. ''The moʻolelo of three pushbacks and the Nexus default'' (operator, 2026-11-18: //"Approve the moʻolelo and your default on the Nexus question"//): D2 builds as a floor-pin move, never a whole-document merge, adopting cutting a local floor manifest that mixes the offered field with the pinned rest; the undo runs as a forward revert along the pin's `prior` chain; mounts read engine, grammar and plugins from the pinned floor first as a shadow read, flipping once clean; a pre-test of `reconcileGenesisCid` against an older-seed store comes first; D3's one-way guard enters canon as phase two's entry condition, built the day a Nexus first carries a floor between two houses; D5 gains one house witness stating the land rule, and a queue outage drops to serial lands by the same witness. On a shared Nexus, adopting a grammar or engine stands as one house's own act on its own floor, marked local, and a release stays the shared rendezvous; houses may run different grammars labelled by CID meanwhile. The build rides rank 4h.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F6iNlrhI_WAOcjIYlkvMG4F52NuV5nKSZolq3LWAbM8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

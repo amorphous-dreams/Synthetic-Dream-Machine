@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-01-train-q-the-kupono`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-01"
+order    = "1120"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-01-train-q-the-kupono"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-01-train-q-the-kupono"
+```
+
+* ''Train Q, the kupono grammar cut'' (operator approval, 2026-10-31, every house lean with the chiasmus folded in; scheduled 2026-11-01). One lane re-cut the whole sigil grammar and every bag before the memory stage takes its first tiddlers: the bare arrow left every sigil for `from=` and `to=`, no `@` follows whitespace, every sigil value takes a backtick under a name, the turn frame folds into `set lares=` with `aim`, `steer` and `yield`, and the turn harvesters burned. Its rulings, the `steer` name, the `slot=` and `action=` names, a steer carrying no `from` (operator, at the seed's gate: //"I don't think from= is needed inside a chiasmus."//) and the seed's ceiling lifted past 40K (operator: //"We can exceed the 40K ceiling if needed, as we now deterministically load the boot seed via hooks."//) among them, live in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/grammar-watch#/the-kupono-cut`>>, with its one provisional clause on the turn frame. Landed, PR #149 (#/o-takiage).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TjOpooRRZSrVVUtksSEJbYJu_Kq1TTRqQJHIbkUVB6k`>>
+
+<<^ code=`&#x0004;` to=`?`>>

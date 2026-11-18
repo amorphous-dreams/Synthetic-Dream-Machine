@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-removal-no-reader-can`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2370"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-removal-no-reader-can"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-removal-no-reader-can"
+```
+
+* ''A removal no reader can keep'' (house ruling under the operator's delegation, 2026-10-14). The based removal refuses by name where no parallel-drafts reader keeps the concurrent words, or every reader failed, and the store authors nothing; the refusal carries a durable conflict handle (the document, the removal's request id, the conflicting change and head identities, never the hand's text), so a hand whose editor went offline finds the same conflict on its return. The reason: a draft the store wrote would choose a bag, a tier and a steward no hand named. The ruling flips on an already-authorized destination for such words that keeps provenance and tier without the store choosing either (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/automerge-doc-store`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2x7YnrB8nsYk8w531CEZn0gxf_gx8jfLKZBAO0ucsk8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

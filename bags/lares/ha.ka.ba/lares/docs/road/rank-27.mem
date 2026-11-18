@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-27`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0540"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-27"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-27"
+```
+
+| 27 | AFTER | the legacy-check pyre (#/side-lanes) | Its gate opened when the house stood and the MCP seat answered (2026-11-13), and `retired-trailer` still stands in `check.ts`, `span.ts` and `ingest-gate.ts`. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;AILZDTVSDHR3_FoKN-1QWQMmCmc-8XLV373JZPM0W2o`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-ceremonys-answer-kinds`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-defaults"
+order    = "1540"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-ceremonys-answer-kinds"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-ceremonys-answer-kinds"
+```
+
+* ''The ceremony's answer kinds'' (operator, 2026-11-06, approving the house's defaults). The clean ceremony document hosts a passphrase answer (custody and ward) and a WebAuthn PRF answer (custody only); the ward refuses a passkey, and a PRF slot never stands as the sole copy. PRF only wraps a custody key: it never authenticates and never gates an act (the 2026-11-04 ruling "never a passkey": no WebAuthn registry gates any act). Carrier: `pono/browser-vessel-lift#/the-ceremony`, carried by the b1 lanes' carriers at their land.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;t6hy0sd0goM3raPBOKvcdoX6o6zjS34xmgP9m_lAOA0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

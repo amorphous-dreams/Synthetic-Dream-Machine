@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-admits-gate-pin`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2530"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-admits-gate-pin"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-admits-gate-pin"
+```
+
+* ''The admit's gate pin'' (house ruling under the operator's delegation, 2026-10-15). The admit carriage and fleet-join answer sign a validated full `GateBundlePin` for the hearth's sovereign sync route at the named Nexus, read by `readGateBundlePin`; its digest derives from that object. Dials index by (hearth, Nexus, route, tier). Floor routes receive their own full pins through an authenticated relation or a carried signed pin set; an announcement never authenticates its own first pin. The reason: a digest alone gives an offline dialer no trusted route or key. The ruling flips on an equally authenticated digest-to-full-pin carrier with an unambiguous route and offline first contact.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;tLthCeZ5oo9lYakI5YHVsUDtjfm85yb_PAvGUQCTARw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

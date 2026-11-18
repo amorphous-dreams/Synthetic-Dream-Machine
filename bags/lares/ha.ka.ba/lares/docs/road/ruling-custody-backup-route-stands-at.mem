@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-custody-backup-route-stands-at`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "custody"
+order    = "0380"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-custody-backup-route-stands-at"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-custody-backup-route-stands-at"
+```
+
+* ''A backup route stands at every tier.'' Every keyslot tree, household or civic, keeps a human route (passphrase or paper); bind refuses a tree without one. Embers never stand as the only way in.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hf_o3hUcUlsAWckSU8jwbWjysjgf9bzBhD2sSifh_IU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

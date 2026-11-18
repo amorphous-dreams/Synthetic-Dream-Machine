@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-dogfood-proof-set`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-07"
+order    = "1870"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-dogfood-proof-set"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-07-dogfood-proof-set"
+```
+
+* ''The dogfood proof set'' (operator, 2026-11-07: //"1) yes this needs a deterministic set of e2e tests, but please try to find existing ones to update first (hand this design+build to a one-off Luna spirit)."// and //"3) incude this in the dogfood stand/proof. 4) agree, we need the main repo on the full read-to-dogfood stte, then a full rebuild, then a check tht the live Lararium will launch containterized and pono-web3-local-first."//). A deterministic e2e set, built from existing suites first, proves the dogfood stand in CI (lane `dogfood-proof`, a Luna seat). The stand opens only after the main repo reaches the full ready-to-dogfood state, a full rebuild runs, and a check reads the live Lararium launching containerized, web3 and local-first.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;xa7ZdIvh8NMj3qAg7hxRbH7eK4Oo-4Y1K3c8YT-m4xI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

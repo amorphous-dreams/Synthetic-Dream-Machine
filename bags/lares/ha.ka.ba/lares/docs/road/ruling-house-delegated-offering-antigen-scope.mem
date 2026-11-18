@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-offering-antigen-scope`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2420"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-offering-antigen-scope"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-offering-antigen-scope"
+```
+
+* ''The Offering Antigen scope'' (house ruling under the operator's delegation, 2026-10-14). A signed Offering act carries a stable scope, the joint Nexus AID its signed inception mints, beside `sealEpochCid` as the authorizing epoch. The receiver resolves its own charter scope, verifies the act's epoch inside that scope's locally held lineage, checks the quorum at that exact epoch, and only then folds; an act whose scope differs stays as foreign evidence outside the `kapae` and `un_kapae` fold, and an incomplete lineage reads `unavailable`. The joint inception image commits to the offer fingerprint and to both founders' fresh cold successor commitments, and a successor commitment a vault already used refuses, so the AID names one founding statement and two foundings by one roster never alias. The reason: a neighbour's condemnation copied onto another board reads as testimony, never as that board's verdict. The ruling flips on a case where two foundings by one roster must read as one Nexus (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/offering-antigen-scope-decision-record`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;N_tm7MFNeWEI8OkP4zHPv-K7iW5lQaVhVMVNKwg6VbI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

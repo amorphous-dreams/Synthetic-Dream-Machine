@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-planes-one-face-at-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "planes"
+order    = "0340"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-planes-one-face-at-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-planes-one-face-at-a"
+```
+
+* ''One face at a time names WHO ANSWERS for an act.'' The switch law reads in `lar:///ha.ka.ba/lares/api/pono/persona-policy#/one-face`.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;F7fYNB6on6yfnF5aPruZXDe9peck04-Jwezl4Mfwmxk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

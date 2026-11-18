@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-two-of-three-recovery`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-31"
+order    = "1000"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-two-of-three-recovery"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-31-two-of-three-recovery"
+```
+
+* ''Two of three recovery contacts'' (operator ruling, 2026-10-31: //"2 of 3"//). A face enrols exactly three recovery contacts at threshold two: one lost contact leaves recovery standing, and no single contact can rotate the face alone. Enrolment refuses any other count or threshold by name. The face's own self-recovery digest counts as none of the three (operator, 2026-10-31, approving the house lean): it keeps its own road, a seed in hand rotating the face alone, so the quorum that can rotate a face never includes a key the person lost. Item `K18` carries the door.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;831aIqz71F8fgDObk3rzZ1tIy4WRjZWmXRaEYk4NcQo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

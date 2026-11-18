@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-fleet-join-serves-every`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2610"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-fleet-join-serves-every"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-fleet-join-serves-every"
+```
+
+* ''Fleet join serves every face'' (house ruling under the operator's delegation, 2026-10-15). `fleet join` names its face with `--face <index>`, default `0`; a nonzero face carries that face's certificates, grants and address secret. The reason: a person wears several faces, and each face needs its own fleet relation. The ruling flips on a face-independent proof that carries the same per-face authority without mixing identities.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SDK1dbsWscQX_FOd6LukP1l-noUlne7TCv6f6bIAflE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

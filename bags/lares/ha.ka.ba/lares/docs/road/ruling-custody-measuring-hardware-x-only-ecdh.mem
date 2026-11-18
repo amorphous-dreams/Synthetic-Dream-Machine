@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-custody-measuring-hardware-x-only-ecdh`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "custody"
+order    = "0430"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-custody-measuring-hardware-x-only-ecdh"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-custody-measuring-hardware-x-only-ecdh"
+```
+
+* Measuring hardware x-only ECDH (phone enclaves) before trusting an enclave-held ember: approved, deferred.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;OpL_augbDzC5XcSyYHdhjZ6zX4AyORJzVXl0rt1SDwM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

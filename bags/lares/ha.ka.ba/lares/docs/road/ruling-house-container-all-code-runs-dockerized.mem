@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-container-all-code-runs-dockerized`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-container"
+order    = "0060"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-container-all-code-runs-dockerized"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-container-all-code-runs-dockerized"
+```
+
+* ''All CODE runs dockerized''; the host keeps only the hooks into the operator's environment (files and bags, session capture, the editor and CLI entry, custody).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9Z3_tFp_v9HUHr64NnKCITQmY84ftyguP_urLzVBzr4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

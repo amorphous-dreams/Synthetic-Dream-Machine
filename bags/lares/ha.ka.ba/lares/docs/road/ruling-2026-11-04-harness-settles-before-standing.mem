@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-harness-settles-before-standing`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-04"
+order    = "1280"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-harness-settles-before-standing"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-04-harness-settles-before-standing"
+```
+
+* ''The harness settles before standing'' (operator: //"Settle the AI harness, and we can wrap that up and do deep reads and debugging after the wiki server stands up."//). Terra's nine rounds closed the harness; it lands by its own PR, and the deep read and debug pass resume after the wiki stands (#/the-order, rank 31). Item 7 enacts the wiki-daemon key cap at standing (operator: //"enact the full wiki-daemon key cap design now"//).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;0-rND9kqxyV0CtSaokwM-wTjFT1-WEa5nzMqslgwhBg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

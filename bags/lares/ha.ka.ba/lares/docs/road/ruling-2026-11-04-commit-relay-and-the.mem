@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-commit-relay-and-the`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-04"
+order    = "1220"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-commit-relay-and-the"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-04-commit-relay-and-the"
+```
+
+* ''The commit relay and the lead mode stay as a dev tool with a documented trust boundary'' (operator, 2026-11-04). A lead's tree counts as trusted code, and the relay's reach beyond that stands as a ruled exception to the read that found it; the broker that replaced the relay's in-memory key holds the boundary (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-trust-model`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BXaCZmLEUtiel7lCVfvFPgm1foN7VZYHyqKK0Me_aHk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

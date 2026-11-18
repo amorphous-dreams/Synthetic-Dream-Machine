@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-house-canon-rests-at`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-11"
+order    = "2010"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-house-canon-rests-at"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-11-house-canon-rests-at"
+```
+
+* ''House canon rests at contract; its CIDs read public'' (operator, 2026-11-11: //"veil ⊂ persona-group ⊂ contract ⊂ public -> Those note the 'access posture' for CRDTs, and the CRDTs for the canon rest under Kahu cabal contract. The CIDs are public."//). The cap tiers name a CRDT's access posture and nest by inclusion. The house canon (`houseCanonSlugs`: `lares` and `lararium` always, every disk-sourced holding but the public board `crossroads`) rests live in the Kahu realm at contract; the Kahu steward alone writes it, every other face reads the floor, and the published snapshots travel by CID to every DreamNet user. No separate vessel tier stands. Landed (`a3d3dbed5`; <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/house-canon`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i_t_MNlztCRdEB8lUg7tI_6fp9PUXdBHuXNDcnJ6--c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

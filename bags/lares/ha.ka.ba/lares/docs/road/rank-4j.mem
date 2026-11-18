@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-4j`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0170"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-4j"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-4j"
+```
+
+| 4j | RIGHT AFTER, ruled (operator, 2026-11-18: //"I tell the lararium where our workspaces exist, and it projects plain text bags and wikis, and other rendered artifacts to that workspace. No carve out for Kahu cabal (Amorphous Dreams Cabal) operators, that's the working surface"//, then //"Approve."//) | workspaces and read-back by descent (lar:///ha.ka.ba/kahua/memory/state/decisions #/ruled-workspaces): the operator names each workspace and the house projects bags, wikis and rendered artifacts into it, the repo checkout standing as the cabal's working surface; read-back follows descent from the commit the house last laid (a fast-forward flows in, a fork asks one plain question, uncommitted edits stand as Confluence hints); the house reads descent at the moments it already acts (boot and `up`, every `lay`, the first canon-reading verb after a gap), with no watcher; the shim's canon-clone warning (`0f26c3e45`) retires and `tools/house-canon.mjs` stays only where a separate clone serves. Holders: Lares-Alpha (the `CanonSource` port, the descent read, the shim) and Lares-Awakens (the boot line naming the workspace commit) | A house meets the working surface by exchanging history: it projects into the workspace, takes what descends from its own history, and asks at a fork. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2_2H5b6V-F8rPSAkq7MjtIrEraOnkbF_1kJ_H6o7-tQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

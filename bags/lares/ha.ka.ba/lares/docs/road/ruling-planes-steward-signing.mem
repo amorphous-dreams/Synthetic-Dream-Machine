@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-planes-steward-signing`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "planes"
+order    = "0260"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-planes-steward-signing"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-planes-steward-signing"
+```
+
+* ''Steward signing.'' A scoped face signs acts that belong to one person; a transparent quorum Handle signs acts the collective owns; the root never appears publicly. A human wears MANY faces and many public Handles, each in many cabals, and signs a steward edge with the face or Handle worn IN THAT CABAL.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;T-Kz9LKP8EB2hp05V84bjNDuCm1K7v67zmG3ty0fu2w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

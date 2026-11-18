@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-09-carriage-log-and-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-09"
+order    = "1960"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-09-carriage-log-and-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-09-carriage-log-and-a"
+```
+
+* ''The carriage log, and a sixth floor duty'' (operator, 2026-11-09). A place's relay state rests in its public carriage log: append-only, unsealed, keyed by the carriage's own id, each receipt signed under the place key as the sixth floor duty, `CARRIAGE_RECEIPT_DOMAIN` (`place-signer.ts`), herm and hearth alike. <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/lamplighters#/the-carriage-log`>>.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lKyv6UFzbsHRH-3oZq2srsr3cEjWdad5ccH9uMikY6k`>>
+
+<<^ code=`&#x0004;` to=`?`>>
