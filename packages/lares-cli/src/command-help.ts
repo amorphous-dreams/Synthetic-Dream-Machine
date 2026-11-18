@@ -582,6 +582,8 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
       "--over-fresher     (offer promote) the steward's explicit choice to land an offer canon moved under (\"canon is fresher\")",
       "--gradient         (check) name each file's kind and the marks that kind requires and lacks",
       "--edges            (check) name the addresses these carriers point at, and which of them answer",
+      "--format=problems  (check) one `path:line:col: severity: code: message` line per diagnostic, for an " +
+        "editor's problem matcher (lar:///ha.ka.ba/lares/cli/problems); a clean file prints nothing, the exit stays",
       "--grammar          (normalize/check) also apply GRAMMAR-authority clauses (authored spelling, " +
         "e.g. a call site's `:` vs `=`) — default reports them as a preference and moves no byte",
       "--to <mem|md|html|tid|json>   (project) the render target",
