@@ -334,3 +334,37 @@ describe("the replacement names the same logical entry it replaced, and the same
     expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests })).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "to" });
   });
 });
+
+describe("a replacement rests its record first, and a retry never duplicates one", () => {
+  it("THE RECORD RESTS BEFORE THE MANIFEST: a stop between leaves a `to` no manifest names yet, which reads unverified, the safe direction", async () => {
+    const { a, photo } = await rolledShelf();
+    const from = a.rest.calls.length;
+    const replaced = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer });
+    if ("refusal" in replaced) throw new Error(said(replaced));
+    const calls = a.rest.calls.slice(from);
+    expect(calls.indexOf("put re-seal")).toBeGreaterThanOrEqual(0);
+    expect(calls.indexOf("put re-seal")).toBeLessThan(calls.indexOf("put manifest"));
+  });
+
+  it("A RETRY AFTER THE REPLACEMENT STANDS refuses `value-current` and rests no second record", async () => {
+    const { a, photo } = await rolledShelf();
+    const first = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer });
+    if ("refusal" in first) throw new Error(said(first));
+    expect(said(await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer }))).toBe("value-current");
+    expect((await a.store.records("re-seal")).length).toBe(1);
+  });
+
+  it("A RETRY AFTER A STOP BETWEEN THE RECORD AND ITS MANIFEST finishes that replacement: the same record, its manifest now, and it reads complete", async () => {
+    const { a, photo } = await rolledShelf();
+    a.rest.failOn = (kind) => kind === "manifest";
+    expect(said(await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer }))).toMatch(/^store-failed/);
+    const left = await a.store.records("re-seal");
+    expect(left.length).toBe(1);
+    a.rest.failOn = null;
+    const finished = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer });
+    if ("refusal" in finished) throw new Error(said(finished));
+    expect(finished.reseal).toBe(recordIdOf("re-seal", left[0]!.body));
+    expect((await a.store.records("re-seal")).length).toBe(1);
+    expect(await a.holder.judgeReseals(BAG)).toEqual([{ id: finished.reseal, verdict: "complete" }]);
+  });
+});
