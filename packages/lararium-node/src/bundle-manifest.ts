@@ -11,16 +11,19 @@
  *
  * THE ROSTER RIDES SEALED (cabal-realm.mem:189: no record crossing to another vessel ties one face to another, and a keep's
  * remote crosses). The re-declare list, the one file that names faces (pet-names, Handles, handle indexes, chair labels) and the
- * share rows (owners and seats by pet-name), rests as ONE sealed value of the house's own format (`sealed-chunk`), under the keep
- * key the house holds (`<config>/keep-key`); the manifest's faces carry their path key alone and its rows name a face by that
- * key. Whoever holds the bundle without the key reads the content a person wrote, and no roster. {@link verifyBundle} proves the
- * bundle whole with no key (the vessel derives a keep's id from it); {@link openBundle} opens the roster with the key, and the
- * import reads that opened view, where faces carry their pet-names and rows name a face by pet-name as before.
+ * share rows (owners and seats by pet-name), rests SEALED TO THE KEEP PAIR's public half (`@lararium/mesh` keep-seat), so a cut
+ * asks for no credential. The pair's secret half rides beside it in `keep-seat.json`, wrapped in a slot tree under the human's
+ * own routes (a passphrase, a paper sheet): a restore opens a slot with what the human supplies, then the roster, and no key file
+ * crosses by hand. The manifest's faces carry their path key alone and its rows name a face by that key. Whoever holds the bundle
+ * without a route reads the content a person wrote, and no roster. {@link verifyBundle} proves the bundle whole with no route
+ * (the vessel derives a keep's id from it); {@link openBundle} opens the roster with the keep secret, and the import reads that
+ * opened view, where faces carry their pet-names and rows name a face by pet-name as before.
  *
  * Layout under the bundle root:
  *
  *   manifest.json                  this module's {@link BundleDiskManifest}
- *   re-declare.sealed              {@link BundleRedeclare}, sealed under the keep key
+ *   re-declare.sealed              {@link BundleRedeclare}, sealed to the keep pair's public half
+ *   keep-seat.json                 the keep pair: its public half and the slot tree its secret half opens from
  *   faces/<fk>/working/<interior>  the face's daemon-wiki working carriers and `.kapae` shadows, at their uri-path
  *   faces/<fk>/drafts/<path>       the face's draft recovery files
  *   faces/<fk>/temp/<path>         the face's consented temp carriers
@@ -40,18 +43,18 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { createHash, createHmac } from "node:crypto";
+import { createHash } from "node:crypto";
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join, posix, sep } from "node:path";
-import { authorizeAddress, keyVersionIdOf, openChunk, readContentKey, sealChunk, sealedAddressOf, type ContentKey, type SealContext } from "@lararium/mesh";
+import { decodeKeepSeat, openFromKeep, sealToKeep, type KeepSeat } from "@lararium/mesh";
 
 /** The schema a bundle names; an import refuses any other. */
 export const BUNDLE_SCHEMA = "lar-house-bundle";
 export const MANIFEST_FILE = "manifest.json";
-/** The sealed re-declare list: the one file of a bundle that names faces, and it names them under the keep key alone. */
+/** The sealed re-declare list: the one file of a bundle that names faces, and it names them sealed to the keep pair alone. */
 export const REDECLARE_FILE = "re-declare.sealed";
-/** The bag id the keep seal binds as its sealed value's context: it names the keep, never a face or a house. */
-export const KEEP_SEAL_BAG = "lar:///ha.ka.ba/lares/keep-seal";
+/** The keep pair the roster seals to: its public half and the slot tree its secret half opens from, nothing secret without a route. */
+export const KEEP_SEAT_FILE = "keep-seat.json";
 export const KAHUA_HEADS_FILE = "kahua-heads.json";
 
 /** A row's layer: what it carries and how the import lands it. */
@@ -313,47 +316,53 @@ export function verifyBundle(root: string): SealedBundle {
 
 // ── the keep seal ────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** The four facts the re-declare list's sealed value binds: the keep, the key's version, a record, the file's own name. */
-function keepSealContext(key: ContentKey): SealContext {
-  return { bagId: KEEP_SEAL_BAG, keyVersion: keyVersionIdOf(key, KEEP_SEAL_BAG), role: "record", logicalRef: new TextEncoder().encode(REDECLARE_FILE) };
-}
-
-/** A keep key as 32 bytes, or a refusal naming its shape. */
-function keepKeyOf(key: Uint8Array): ContentKey {
-  const read = readContentKey(key);
-  if (read === null) throw new BundleVerifyRefused("bundle-keep-key-shape: the keep key rides no 32 bytes");
-  return read;
+/** The re-declare list's plaintext bytes: what the seal covers, and what a house compares to tell an unmoved roster. */
+export function redeclareBytes(redeclare: BundleRedeclare): Uint8Array {
+  return new TextEncoder().encode(`${JSON.stringify(redeclare, null, 2)}\n`);
 }
 
 /**
- * Seal the re-declare list under the keep key, as one sealed value of the house's own format. THE SALT DERIVES from the key and
- * the plaintext (HMAC-SHA-256), never from fresh randomness: an unmoved house re-cuts the very same bytes, so its keep names the
- * same bundle and spends nothing. The same list sealed twice reads as the same list, which the bundle id already shows; two
- * lists never share a salt, so no body key repeats.
+ * Seal the re-declare list to the keep pair's PUBLIC half: no credential at the cut, so a keep that runs where nobody stands still
+ * seals. Each seal draws a fresh ephemeral and nonce; the house that wants an unmoved roster to cut the same bytes keeps its last
+ * seal beside the seat and hands it back (`keep-seat.ts`, lares-cli).
  */
-export function sealRedeclare(key: Uint8Array, redeclare: BundleRedeclare): Buffer {
-  const k = keepKeyOf(key);
-  const plaintext = new TextEncoder().encode(`${JSON.stringify(redeclare, null, 2)}\n`);
-  const salt = createHmac("sha256", k).update("lar-keep-seal-salt").update(plaintext).digest();
-  const fill = <T extends Uint8Array<ArrayBuffer>>(a: T): T => { a.set(salt.subarray(0, a.length)); return a; };
-  const sealed = sealChunk({ key: k, context: keepSealContext(k), plaintext, random: { getRandomValues: fill } });
-  if ("refusal" in sealed) throw new BundleVerifyRefused(`bundle-redeclare-unsealed: the re-declare list would not seal (${sealed.refusal})`);
-  return Buffer.from(sealed.chunk.sealed);
+export function sealRedeclare(publicKey: Uint8Array, redeclare: BundleRedeclare): Buffer {
+  if (publicKey.length !== 32) throw new BundleVerifyRefused("bundle-keep-seat-shape: the keep pair's public half rides no 32 bytes");
+  return Buffer.from(sealToKeep(publicKey, redeclareBytes(redeclare), REDECLARE_FILE));
 }
 
 /**
- * Open a whole bundle's roster under the keep key: the sealed re-declare list (its address vouched for by the manifest entry
- * {@link verifyBundle} hashed), its shape, and its agreement with the manifest's face keys. Answers the opened view: faces carry
- * their pet-names and rows name a face by pet-name. A key that opens nothing refuses by name, before anything moves.
+ * The keep pair a bundle carries. A bundle cut before the pair (its roster sealed under the burned `config/keep-key`) carries none
+ * and refuses by name: keep again, and restore from that keep.
  */
-export function openBundle(bundle: SealedBundle, key: Uint8Array): VerifiedBundle {
-  const k = keepKeyOf(key);
-  const bytes = bundleBytes(bundle.root, REDECLARE_FILE);
-  const authorized = authorizeAddress(sealedAddressOf(bytes), "manifest-entry");
-  const opened = authorized === null ? { refusal: "address-unauthorized" as const } : openChunk({ key: k, context: keepSealContext(k), sealed: bytes, authorized });
-  if ("refusal" in opened) throw new BundleVerifyRefused(`bundle-redeclare-sealed: the re-declare list opens under no keep key this house holds (${opened.refusal}); restore with the keep key of the house that cut it in this house's config home`);
+export function readBundleSeat(bundle: SealedBundle): KeepSeat {
+  if (!bundle.manifest.files.some((f) => f.path === KEEP_SEAT_FILE)) {
+    throw new BundleVerifyRefused(`bundle-keep-key-burned: the bundle carries no ${KEEP_SEAT_FILE}; its roster rests sealed under the loose keep key a house no longer holds: keep again on the house that cut it, and restore from that keep`);
+  }
+  const read = decodeKeepSeat(bundleBytes(bundle.root, KEEP_SEAT_FILE).toString("utf8"));
+  if (read.reading !== "readable") throw new BundleVerifyRefused(`bundle-keep-seat-shape: ${KEEP_SEAT_FILE} reads no keep pair (${read.why})`);
+  return read.seat;
+}
+
+/**
+ * Open a whole bundle's roster under the keep secret: the sealed re-declare list (whole by the manifest entry {@link verifyBundle}
+ * hashed), its shape, and its agreement with the manifest's face keys. Answers the opened view: faces carry their pet-names and rows
+ * name a face by pet-name. A secret that opens nothing refuses by name, before anything moves.
+ */
+export function openBundle(bundle: SealedBundle, secret: Uint8Array): VerifiedBundle {
+  const opened = openFromKeep(secret, bundleBytes(bundle.root, REDECLARE_FILE), REDECLARE_FILE);
+  if (opened === null) throw new BundleVerifyRefused("bundle-redeclare-sealed: the re-declare list opens under no keep secret in hand; open the keep seat the bundle carries with its passphrase or paper sheet");
   let redeclareRaw: unknown;
-  try { redeclareRaw = JSON.parse(new TextDecoder().decode(opened.plaintext)); } catch { throw new BundleVerifyRefused(`bundle-redeclare-unreadable: ${REDECLARE_FILE} opens to no JSON`); }
+  try { redeclareRaw = JSON.parse(new TextDecoder().decode(opened)); } catch { throw new BundleVerifyRefused(`bundle-redeclare-unreadable: ${REDECLARE_FILE} opens to no JSON`); }
+  return rosterView(bundle, redeclareRaw);
+}
+
+/**
+ * The opened view of a bundle under its roster: the roster's shape, its agreement with the manifest's face keys, and the manifest
+ * with faces carrying their pet-names and rows naming a face by pet-name. The cut reads its own roster through here, since it
+ * sealed to a public half and holds no secret to open it again.
+ */
+export function rosterView(bundle: SealedBundle, redeclareRaw: unknown): VerifiedBundle {
   if (!isObj(redeclareRaw) || redeclareRaw.schema !== BUNDLE_SCHEMA || !Array.isArray(redeclareRaw.faces)) throw new BundleVerifyRefused("bundle-redeclare-shape: the re-declare list names no faces");
   const keys = new Set(bundle.manifest.faces.map((f) => f.key));
   const petOf = new Map<string, string>();

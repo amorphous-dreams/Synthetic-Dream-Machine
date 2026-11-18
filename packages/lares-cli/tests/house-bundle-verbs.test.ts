@@ -26,8 +26,9 @@ import { kapaeShadowBody, SyncedTree } from "@lararium/node";
 import { DAEMON_BAG_ID, daemonFaceCanonBag } from "@lararium/mesh";
 import { scanFiles } from "../src/ingest-core.js";
 import { houseExport, houseImport, bundleJournalPath, BundleRefused, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
-import { BundleVerifyRefused, MANIFEST_FILE, openBundle, verifyBundle } from "../src/bundle-manifest.js";
-import { readKeepKey } from "../src/keep-key.js";
+import { BundleVerifyRefused, MANIFEST_FILE, openBundle, readBundleSeat, verifyBundle } from "../src/bundle-manifest.js";
+import { openKeepSeat } from "../src/keep-seat.js";
+import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";
 import type { CensusReading } from "../src/commands/census.js";
 import type { BundleKahuaHead } from "../src/bundle-manifest.js";
 
@@ -295,8 +296,11 @@ describe("the house bundle verbs", () => {
     expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
     expect(manifest.counts).toMatchObject({ working: 2, kapae: 1, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
     expect(manifest.tempBytes["lar:///ha.ka.ba/wikis/daemon/temp"]).toBe(tid("scratch", "a passing note").length);
-    // The re-declare list rests sealed under the house's keep key; the house that cut it opens it.
-    const redeclare = openBundle(verifyBundle(out), readKeepKey()!).redeclare;
+    // The re-declare list rests sealed to the keep pair; the steward's route opens the seat the bundle carries, then the roster.
+    const verified = verifyBundle(out);
+    const opening = await openKeepSeat(readBundleSeat(verified), [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
+    if (opening.reading !== "opens") throw new Error(`the keep seat opened nothing: ${opening.reading}`);
+    const redeclare = openBundle(verified, opening.secret).redeclare;
     expect(redeclare.faces).toEqual([{ face: "f0", handleIndex: 0, petname: "hearth-one", handle: "Heron", seat: true, chair: "east" }]);
   });
 
