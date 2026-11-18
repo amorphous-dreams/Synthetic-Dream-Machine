@@ -477,6 +477,12 @@ export class LarDiskProjector {
   private readonly standoffs = new Map<string, StandoffEntry>();
   /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
   private readonly answered = new Map<string, string>();
+  /**
+   * The records' render each `sides` standoff weighed, by (bag, carrier), beside the key it folded into. A text carrier
+   * with no sidecar alone: `lares shore take-disk` reads it (`standoffRender`) to merge the file and the records slot by
+   * slot against the base's words. Memory only, and it leaves with its standoff.
+   */
+  private readonly standoffRenders = new Map<string, { readonly standoff: string; readonly text: string }>();
   /** Every carrier whose file vanished from the path its base names, by (bag, carrier). Memory only: a boot's mount scan finds each anew. */
   private readonly pending = new Map<string, { readonly bagId: string; readonly uri: string; readonly path: string }>();
   /** The pending removals a person answered `restore` for. Read once, by the reconcile the answer starts. */
@@ -775,6 +781,20 @@ export class LarDiskProjector {
     }
     const after = this.standoffs.get(key)?.standoff;
     return after === undefined ? { took: true } : { took: false, why: `the states moved while the answer travelled; the standoff stands under key ${after}` };
+  }
+
+  /**
+   * THE RECORDS' SIDE OF ONE STANDOFF, AS IT WAS WEIGHED: the render the projector would have written when it raised
+   * the standoff under `standoff`, with its hash. Null where no standoff stands under that key, or the carrier holds
+   * a sidecar, a pointer or a binary body (no text a line merge can read). A key folds the records' hash, so the
+   * render answers only the state the person read.
+   */
+  standoffRender(bagId: string, uri: string, standoff: string): { readonly text: string; readonly records: string } | null {
+    const key = sitedKey(bagId, uri);
+    const entry = this.standoffs.get(key);
+    const render = this.standoffRenders.get(key);
+    if (entry === undefined || entry.standoff !== standoff || render === undefined || render.standoff !== standoff || entry.records === undefined) return null;
+    return { text: render.text, records: entry.records };
   }
 
   /** Reconcile one carrier root through the queue where it runs, and wait for the queue to drain. */
@@ -1084,6 +1104,7 @@ export class LarDiskProjector {
     const entry = this.standoffs.get(key);
     if (entry === undefined || (kind !== undefined && entry.kind !== kind)) return;
     this.standoffs.delete(key);
+    this.standoffRenders.delete(key);
     this.onConflictResolved?.({ bagId, uri, standoff: entry.standoff });
   }
 
@@ -1934,6 +1955,8 @@ export class LarDiskProjector {
     const obsHash    = carrierHash(output, metaBody);             // whole-carrier, for the Synced tree
     const metaPath   = metaBody !== undefined ? candidate + ".meta" : null;
     const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
+    /** The records' render as text a line merge reads: a text carrier with no sidecar alone (`standoffRender`). */
+    const renderText = metaPath === null && !bodyPending && typeof writeBytes === "string" ? writeBytes : undefined;
 
     // ── THE HOMES THIS CARRIER LEFT ─────────────────────────────────────────
     // A siting rule that moved the carrier leaves its files at the earlier path. Two memories name that
@@ -2086,6 +2109,7 @@ export class LarDiskProjector {
         // that meets the standoff it already raised stays quiet; the write still stands down.
         this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason,
           { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}) });
+        if (renderText !== undefined && !another) this.standoffRenders.set(key, { standoff, text: renderText });
         return;
       }
     }
