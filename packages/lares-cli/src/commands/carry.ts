@@ -57,7 +57,7 @@ import { wikiBagUri, wikiSlotUri, daemonFaceCanonBag, KAHUA_BAG, defaultChairLab
 import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, daemonFaceFolder, isDaemonFaceFolder, isKahuaFaceFolder, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, PERSONAL_PROJECTION_DIR, daemonBagsDir,
-  listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier,
+  listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier, houseIgnored,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
@@ -522,6 +522,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
     odd += listed.odd.length;
     for (const rel of listed.files) {
       if (skipTop.includes(rel.split("/")[0]!)) continue;
+      if (houseIgnored(rel) !== null) continue;          // HOUSE_IGNORED: a workspace's `.git`, the shore's renders, orphan folders, atomic temps
       if (isStray(rel)) { strays++; continue; }
       const abs = join(srcDir, ...rel.split("/"));
       plan.push({ from: abs, to: `${toDir}/${rel}`, row: rowOf(rel, abs) });
@@ -590,7 +591,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       odd += listed.odd.length;
       for (const rel of listed.files) {
         if (isStray(rel)) { strays++; continue; }
-        if (isViewState(rel)) continue;
+        if (isViewState(rel) || houseIgnored(rel) !== null) continue;
         const abs = join(own, slug, ...rel.split("/"));
         plan.push({ from: abs, to: `faces/${fk}/personal/${slug}/${rel}`, row: { face: f.petname!, bag: wikiSlotUri(slug, "personal"), layer: "personal", title: carriedFileTitle(own, abs), rowKey: null } });
       }
@@ -950,7 +951,10 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   }
 
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
-  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
+  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, carried: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
+    // HOUSE_IGNORED: a bundle an older export wrote may carry a mirror's `.git/` or a stand-off render; none of it restores.
+    const files: string[] = [];
+    for (const f of carried) { if (houseIgnored(relative(sourceDir, join(bundle.root, ...f.split("/")))) === null) files.push(f); else skipped.push(join(bundle.root, ...f.split("/"))); }
     if (files.length === 0) return;
     const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => carriedFileTitle(uriDir, file));
     for (const s of scan.skipped) if (!s.file.endsWith(".meta")) skipped.push(s.file);
@@ -1222,7 +1226,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   const weigh = (r: string, fk: string): { same: number; beyond: number } => {
     let same = 0, beyond = 0;
     for (const { dir, kind } of faceDirs(r)) {
-      for (const rel of plainFiles(dir).files.filter((x) => !isStray(x))) {
+      for (const rel of plainFiles(dir).files.filter((x) => !isStray(x) && houseIgnored(x) === null)) {
         if (kind === "working" && (rel.startsWith("recovery/") || rel.startsWith(`${TEMP_LAYER_DIR}/`))) continue;
         if (kind === "personal" && isViewState(rel)) continue;
         const sha = sha256Hex(readFileSync(join(dir, ...rel.split("/"))));
