@@ -63,6 +63,14 @@ describe("vessel found — the store's shape is read before any route is asked",
     expect(asked).toBe(1);
   });
 
+  it("★ a route that gathers no slot refuses CustodyFoundingRefused by name, with its advice and no stack ★", async () => {
+    setFoundingRoute(async () => []);
+    expect(await cmdFound(parseArgs(["vessel", "found"]))).toBe(1);
+    expect(err[0]).toMatch(/^\[lares vessel found\] refused: CustodyFoundingRefused: /);
+    expect(err[1]).toMatch(/binds a human route/);
+    expect(err.join("\n")).not.toMatch(/\n\s+at /);
+  });
+
   it("★ with no TTY the real gatherer refuses CredentialTtyRefusal, leads the line by name, and writes nothing ★", async () => {
     setFoundingRoute(gatherFoundingRoute);
     const before = snapshot(root);
