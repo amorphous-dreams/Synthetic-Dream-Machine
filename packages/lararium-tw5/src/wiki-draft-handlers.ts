@@ -20,7 +20,7 @@ export function makeDraftReactor(opts: DraftHandlerOptions): VerbReactor {
       toBag = fallback;
     }
 
-    await requireKahuReach(toBag, opts.kahuReach, "draft");
+    await requireKahuReach(toBag, opts.kahuReach, "draft", ctx.asker);
     const proof = await ctx.cap("admin", toBag);
     if (!proof.ok) {
       throw new Error(`cap-denied: admin on ${toBag} required (${proof.reason ?? "no reason"})`);

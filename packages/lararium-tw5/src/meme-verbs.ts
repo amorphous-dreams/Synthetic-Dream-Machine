@@ -449,7 +449,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     const base = optionalStringArg(args, "base");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
-    await requireKahuReach(bag, opts.kahuReach, "meme put");
+    await requireKahuReach(bag, opts.kahuReach, "meme put", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     // THE BASE A WIKI'S WRITER READ MAY REST BELOW THE LAYER IT WRITES. `--recipe <slug>` reads through the wiki's stack and
@@ -645,7 +645,7 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
  */
 async function deleteThroughRecipe(
   opts: MemeVerbOptions, slug: string, uri: string, base: string | null | undefined, origin: ChangeOrigin,
-  cap: Parameters<VerbReactor>[1]["cap"],
+  cap: Parameters<VerbReactor>[1]["cap"], asker?: Parameters<VerbReactor>[1]["asker"],
 ): Promise<Record<string, unknown>> {
   const rec = await opts.recipeOf?.(slug);
   if (!rec) throw new Error(`meme: recipe "${slug}" not found in any registry plane — run \`lares wiki init ${slug}\` first`);
@@ -654,7 +654,7 @@ async function deleteThroughRecipe(
   if (!stack.includes(designated)) {
     throw new VerbRefusal("recipe-unshadowed", `recipe-unshadowed: recipe "${slug}" designates bag "${designated}", which its own stack never reads; a tombstone there shadows nothing the wiki reads, so meme-delete removes nothing.`);
   }
-  await requireKahuReach(designated, opts.kahuReach, "meme delete");
+  await requireKahuReach(designated, opts.kahuReach, "meme delete", asker);
   const answered = await reachRecipeBag(opts, slug, "get", uri);
   const readProof = await cap("read", answered.bag);
   if (!readProof.ok) throw new Error(`cap-denied: read on ${answered.bag} required (${readProof.reason ?? "no reason"})`);
@@ -752,9 +752,9 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
     const target = readTarget(args, "meme-delete");
     const base = optionalStringArg(args, "base");
     const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
-    if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap);
+    if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
-    await requireKahuReach(bag, opts.kahuReach, "meme delete");
+    await requireKahuReach(bag, opts.kahuReach, "meme delete", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
     if (!proof.ok) throw new Error(`cap-denied: admin on ${bag} required (${proof.reason ?? "no reason"})`);
     const receipt = await removeMeme({ uri: target.uri, baseHash: base }, sink);
