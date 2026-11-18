@@ -47,6 +47,7 @@ import type { Hand } from "@lararium/mesh/session-contract";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
+import { hasRenderedTiddlers } from "./rendered-tiddler.js";
 import { hasCapture } from "./capture/has-capture.js";
 import { VerbDispatcher, VerbTable } from "./verb-dispatcher.js";
 import type { IslandCap } from "./island-caps.js";
@@ -390,6 +391,8 @@ export function makeDaemonBehavior(opts: DaemonBehaviorOptions = {}): IslandBeha
     // point the daemon surfaces like any pinned wiki (same VM, same path).
     hasProjection(opts.onBoot),
     hasEngineWatch(),
+    // A marked source renders into a live tiddler of its own, on the daemon wiki as on a pool wiki.
+    hasRenderedTiddlers(),
     hasCapture({
       ...(opts.makeCaptureEngine ? { makeEngine: opts.makeCaptureEngine } : {}),
       ...(opts.captureTickMs !== undefined ? { tickMs: opts.captureTickMs } : {}),
