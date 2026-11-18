@@ -27,7 +27,9 @@ function sender(handle: (parsed: unknown, sock: Socket) => boolean) {
 }
 
 /** A scratch vessel with faces under the routes named; `refuseWearing` names a face whose composition refuses to stand. */
-async function vessel(faceRoutes: readonly string[], refuseWearing?: number) {
+/** What the stub composition does, settable mid-test: the mounts it refuses to stand on, and the mounts it throws on. */
+interface Composing { readonly refuse: Set<number>; readonly throwOn: Set<number> }
+async function vessel(faceRoutes: readonly string[], refuseWearing?: number, ctl: Composing = { refuse: new Set(), throwOn: new Set() }) {
   seat = await seatScratchCustody("wear-frame");
   const { holder } = seat;
   for (const [i, route] of faceRoutes.entries()) await holder.foundFace({ group: `${String(i + 1).repeat(64)}`, slots: [slot(route)] });
@@ -39,10 +41,13 @@ async function vessel(faceRoutes: readonly string[], refuseWearing?: number) {
     recompose: async (sovereign, ward) => {
       composed.push({ sovereign, ward, mount: mountedFaceOrdinal() });
       if (sovereign && refuseWearing !== undefined && mountedFaceOrdinal() === refuseWearing) return { standing: "herm", refused: `h${refuseWearing} would not stand` };
+      const m = mountedFaceOrdinal();
+      if (sovereign && m !== undefined && ctl.throwOn.has(m)) throw new Error(`the composition wearing h${m} fell over`);
+      if (sovereign && m !== undefined && ctl.refuse.has(m)) return { standing: "herm", refused: `h${m} would not stand` };
       return { standing: sovereign ? "hearth" : "herm" };
     },
   });
-  return { holder, composed, logs, send: sender(handle) };
+  return { holder, composed, logs, send: sender(handle), ctl };
 }
 
 describe("RED wear: the session's choice among the faces standing open, with no route", () => {
@@ -153,5 +158,34 @@ describe("RED wear under a pūlama: the lent set bounds it", () => {
     expect(d.composed).toEqual([]);
     expect(mountedFaceOrdinal()).toBe(0);
     expect(d.unlockFaceCalls).toEqual([]);
+  });
+});
+
+describe("RED wear's rollback: a key never rests over a floor", () => {
+  test("wear-rollback-that-also-refuses-locks-and-answers-not-held", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.ctl.refuse.add(0); v.ctl.refuse.add(1);
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", face: 1, held: false, switchRefused: "h1 would not stand" });
+    expect(a["held"]).not.toBe(true);
+    expect(v.holder.isUnlocked()).toBe(false);
+  });
+
+  test("wear-whose-recompose-throws-restores-the-prior-mount", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.ctl.throwOn.add(1);
+    const a = await v.send({ op: "wear", face: 1 });
+    expect(a).toMatchObject({ op: "wear", status: "error" });
+    expect(mountedFaceOrdinal()).toBe(0);
+  });
+
+  test("CONTROL: a rollback that stands keeps the key and answers held on the face it left", async () => {
+    const v = await vessel([FIXTURE_PASSPHRASE, SECOND]);
+    await v.send({ op: "unlock", credentials: [...cred(FIXTURE_PASSPHRASE), ...cred(SECOND)], all: true });
+    v.ctl.refuse.add(1);
+    expect(await v.send({ op: "wear", face: 1 })).toMatchObject({ held: true, wornAgain: 0 });
+    expect(v.holder.isUnlocked()).toBe(true);
   });
 });
