@@ -52,7 +52,7 @@ The custody passphrase follows the same law: you type it on your own terminal, a
 
 !! 1 · The host
 
-Walk the host runbook sections 1 to 5 in order: WSL from the Store, a distro (`Ubuntu-24.04` fits), `tools/wsl2/stand-linux.sh` (it needs the clone from step 2, so clone first when the runbook says so), Docker Engine in the distro, Node 24 through nvm, `corepack enable` for pnpm. Then add the two tools the house reaches for on the host, and your git identity:
+Walk the host runbook sections 1 to 5 in order: WSL from the Store, a distro (`Ubuntu-24.04` fits), `tools/wsl2/stand-linux.sh` (it runs from the clone: when the runbook clones, use step 2's lines below; its `~/src/Synthetic-Dream-Machine` and this walk's `~/Synthetic-Dream-Machine` both serve, so keep one and read it for the other), Docker Engine in the distro, Node 24 through nvm, `corepack enable` for pnpm. Then add the two tools the house reaches for on the host, and your git identity:
 
 ```sh
 sudo apt update && sudo apt install -y zstd gh   # zstd: the keep compresses each session it mirrors; gh: GitHub sign-in
@@ -263,6 +263,6 @@ In the session, `/mcp` lists `lares` connected, and the session opens on the boo
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;mG0JS4L41-56bOY7no6YJlrYI6DnnuOWeN0-r1DQ4uM`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;hm3tXtSVJ6Wy-RnhWauXc_J68xUgerT97LMHstMjVdo`>>
 
 <<^ code=`&#x0004;` to=`?`>>
