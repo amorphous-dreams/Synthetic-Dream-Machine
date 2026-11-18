@@ -69,14 +69,14 @@ import {
   daemonFaceFolder, kahuaFaceFolder, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, PERSONAL_PROJECTION_DIR,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
-import { LIVE_CARRY_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "./commands/carry.js";
+import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
 import { scanFiles, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
-import { sha256Hex, type CarryKahuaHead } from "./carry-manifest.js";
+import { sha256Hex, type BundleKahuaHead } from "./bundle-manifest.js";
 import { readFaceLabel, readFaceBases } from "./face-labels.js";
 import { moveFaceToAshes } from "./ashes.js";
 
@@ -119,12 +119,12 @@ export interface MirrorLaid {
 
 /** The doors the mirror leg reaches a vessel through, injectable so a test drives them with no vessel standing. */
 export interface MirrorDoors {
-  readonly faces: CarryDoors["faces"];
-  readonly tempConsented: CarryDoors["tempConsented"];
-  readonly heldSlugs: CarryDoors["heldSlugs"];
-  readonly mintBag: CarryDoors["mintBag"];
-  readonly mintWiki?: CarryDoors["mintWiki"];
-  readonly kahuaLift: CarryDoors["kahuaLift"];
+  readonly faces: BundleDoors["faces"];
+  readonly tempConsented: BundleDoors["tempConsented"];
+  readonly heldSlugs: BundleDoors["heldSlugs"];
+  readonly mintBag: BundleDoors["mintBag"];
+  readonly mintWiki?: BundleDoors["mintWiki"];
+  readonly kahuaLift: BundleDoors["kahuaLift"];
   /** Scan one folder against the synced base and, applied, lay its new and moved carriers through INGEST's gate. */
   readonly lay: (wave: MirrorWave, apply: boolean) => Promise<MirrorLaid>;
   /** Whether a slug's canon stands under the canon source (the holdings leg feeds it; the mirror leg leaves it). */
@@ -301,7 +301,7 @@ function placeFiles(from: string, to: string, rels: readonly string[], apply: bo
 }
 
 /** A kahua stage file read as a lift: its title, body, lift fields, taint and sources. Null for bytes that name no item. */
-export function readKahuaFile(text: string): { title: string; text: string; fields: Record<string, string>; taint: string[]; sources: CarryKahuaHead["sources"] } | null {
+export function readKahuaFile(text: string): { title: string; text: string; fields: Record<string, string>; taint: string[]; sources: BundleKahuaHead["sources"] } | null {
   const parsed = parseTidCarrier(text);
   if (parsed === null) return null;
   // THE BODY RIDES BYTE FOR BYTE: the projector writes a stage carrier's body as it stands and adds no newline, so a trailing
@@ -354,14 +354,14 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   if (relations.length === 0 && (opts.kahuaOnly || houseBags.length + houseWikis.length + sourcedBenches.length === 0)) return empty;
 
   // ── THE FACE MAP: each relation's folders land on the face that wears it, or on the ONE face carrying its pet-name. ──
-  let faces: CarryVesselFace[] = [];
+  let faces: BundleVesselFace[] = [];
   if (relations.length > 0 || sourcedBenches.length + houseWikis.length + houseBags.length > 0) {
     try { faces = await doors.faces(); }
     catch (e) { throw new MirrorRefused("seed-faces-unread", `the projections root holds face folders and the faces this vessel wears would not read (${e instanceof Error ? e.message : String(e)}): stand the vessel and unlock its key (\`lares vessel stand\`, then \`lares vault unlock\`), and lay again`); }
   }
-  const byRelation = new Map<string, CarryVesselFace>();
+  const byRelation = new Map<string, BundleVesselFace>();
   for (const f of faces) if (f.relation !== null) byRelation.set(f.relation, f);
-  const target = new Map<string, CarryVesselFace>();
+  const target = new Map<string, BundleVesselFace>();
   const adoptions: Array<{ relation: string; petname: string; handleIndex: number; toRelation: string }> = [];
   // ONE FOLDER'S REFUSAL NEVER HALTS THE REST: an unlabelled, unmatched or doubly-named folder records its line and lands
   // nothing, and the lay goes on for every other folder.
@@ -417,7 +417,7 @@ export async function seedMirrors(opts: SeedMirrorsOpts): Promise<MirrorSeedResu
   const kahuaRefused: string[] = [];
   /** Each kahua refusal by the former relation whose folder held it: an ashes hold reads per face, never across faces. */
   const kahuaRefusedBy = new Map<string, number>();
-  const refuseKahua = (r: string, face: CarryVesselFace, line: string): void => {
+  const refuseKahua = (r: string, face: BundleVesselFace, line: string): void => {
     kahuaRefused.push(`h${face.handleIndex}${face.petname ? ` ("${face.petname}")` : ""}: ${line}`);
     kahuaRefusedBy.set(r, (kahuaRefusedBy.get(r) ?? 0) + 1);
   };
@@ -818,12 +818,12 @@ export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts 
 }
 
 export const LIVE_MIRROR_DOORS: MirrorDoors = {
-  faces: LIVE_CARRY_DOORS.faces,
-  tempConsented: LIVE_CARRY_DOORS.tempConsented,
-  heldSlugs: LIVE_CARRY_DOORS.heldSlugs,
-  mintBag: LIVE_CARRY_DOORS.mintBag,
-  ...(LIVE_CARRY_DOORS.mintWiki ? { mintWiki: LIVE_CARRY_DOORS.mintWiki } : {}),
-  kahuaLift: LIVE_CARRY_DOORS.kahuaLift,
+  faces: LIVE_BUNDLE_DOORS.faces,
+  tempConsented: LIVE_BUNDLE_DOORS.tempConsented,
+  heldSlugs: LIVE_BUNDLE_DOORS.heldSlugs,
+  mintBag: LIVE_BUNDLE_DOORS.mintBag,
+  ...(LIVE_BUNDLE_DOORS.mintWiki ? { mintWiki: LIVE_BUNDLE_DOORS.mintWiki } : {}),
+  kahuaLift: LIVE_BUNDLE_DOORS.kahuaLift,
   lay: liveLay,
   sourced: (slug) => { try { return canonIsDisk({ holding: slug, source: join(daemonBagsDir(), slug) }); } catch { return false; } },
   canonWikis: () => { try { return join(dirname(resolve(daemonBagsDir())), "wikis"); } catch { return null; } },

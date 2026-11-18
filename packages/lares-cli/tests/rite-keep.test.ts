@@ -1,5 +1,5 @@
 /**
- * rite-keep — the keep rite's vessel half: the house lays its authored memory, cut as a cleartext carry bundle, into one of the
+ * rite-keep — the keep rite's vessel half: the house lays its authored memory, cut as a cleartext house bundle, into one of the
  * operator's bound workspaces, and the cut spends a return of the keep lei the operator strung for that workspace.
  *
  *   K1  with no keep lei standing the rite refuses by the lei's own refusal, cuts nothing and writes nothing;

@@ -74,18 +74,18 @@ import { writeFaceLabels, readFaceLabel, readFaceBases, labelFaceAtNaming, faceR
 import { moveFaceToAshes } from "../ashes.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
-  CARRY_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, CarryBundleRefused,
-  type CarryFace, type CarryFile, type CarryKahuaHead, type CarryManifest, type CarryOmission, type CarryRedeclare,
-  type CarryRedeclareFace, type CarryRow, type CarryShareEntry, type VerifiedBundle,
-} from "../carry-manifest.js";
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, BundleVerifyRefused,
+  type BundleFace, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
+  type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
+} from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
 
-/** One document a keep left to another holder (`CarryManifest.elsewhere`). */
-type CarryElsewhere = NonNullable<CarryManifest["elsewhere"]>[number];
+/** One document a keep left to another holder (`BundleManifest.elsewhere`). */
+type BundleElsewhere = NonNullable<BundleManifest["elsewhere"]>[number];
 
 
 /** One face this vessel wears, as the doors read it. */
-export interface CarryVesselFace {
+export interface BundleVesselFace {
   readonly handleIndex: number;
   readonly petname: string | null;
   /** The face relation F its private folders carry, read off its verified log; null where the log pins none. */
@@ -94,7 +94,7 @@ export interface CarryVesselFace {
   readonly seat: boolean;
   readonly chair: string | null;
   /** The stage's standing heads, or null where the stage would not read (`kahuaRefusal` says why). */
-  readonly kahua: readonly CarryKahuaHead[] | null;
+  readonly kahua: readonly BundleKahuaHead[] | null;
   readonly kahuaRefusal?: string;
   /** The store door's name for that refusal (`storeFailure`): `vessel-locked`, `daemon-unreachable`, … */
   readonly kahuaRefusalCode?: string;
@@ -111,7 +111,7 @@ export interface CarryVesselFace {
  * --face N`). No face's private memory ever lands in another face. Where the vessel named which face it wears, that face (or none);
  * where no door answered the reading (a direct holder), the one face carrying a relation, else none.
  */
-export function mountFaceOf(faces: readonly CarryVesselFace[]): CarryVesselFace | null {
+export function mountFaceOf(faces: readonly BundleVesselFace[]): BundleVesselFace | null {
   const mounted = faces.filter((f) => f.mounted === true && f.relation !== null);
   if (mounted.length === 1) return mounted[0]!;
   if (faces.some((f) => f.mounted !== undefined)) return null;
@@ -163,8 +163,8 @@ export function carriedFileTitle(mirrorDir: string, file: string): string | null
 /** A view-state carrier of a `personal` layer (a `$:/` title: the story list, a fold state): it never travels and never adopts. */
 const isViewState = (rel: string): boolean => (rel.split("/").pop() ?? "").startsWith("$__");
 
-/** What one ingest wave settled, as the carry verbs read it. */
-export interface CarryIngestAnswer {
+/** What one ingest wave settled, as the export and import read it. */
+export interface BundleIngestAnswer {
   readonly landed: readonly string[];
   readonly conflicts: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
   readonly refused: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
@@ -174,16 +174,16 @@ export interface CarryIngestAnswer {
 }
 
 /** The doors the two verbs reach a vessel through, injectable so a test drives them with no vessel standing. */
-export interface CarryDoors {
+export interface BundleDoors {
   readonly census: () => Promise<CensusReading>;
-  readonly faces: () => Promise<CarryVesselFace[]>;
+  readonly faces: () => Promise<BundleVesselFace[]>;
   readonly tempConsented: () => readonly string[];
   readonly rename: (handleIndex: number, petname: string) => Promise<void>;
   readonly declareHandle: (handleIndex: number, handle: string) => Promise<void>;
   readonly standSeat: (handleIndex: number, chair: string | null) => Promise<void>;
   /** `face`: THE FACE-NAMED WAVE, the open face (not the mount) whose own layer takes it; the island lands it only where that
    *  face owns the document (`face-unresolved`, `ingest-face-foreign` otherwise), never on the daemon mount. */
-  readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[]; readonly inWiki?: boolean; readonly wiki?: string; readonly face?: number }) => Promise<CarryIngestAnswer>;
+  readonly ingest: (wave: { readonly source: string; readonly toBag: string; readonly candidates: readonly ScanRow[]; readonly kapae: readonly string[]; readonly inWiki?: boolean; readonly wiki?: string; readonly face?: number }) => Promise<BundleIngestAnswer>;
   /** The wiki slugs this vessel's catalog registers. */
   readonly heldSlugs: () => Promise<ReadonlySet<string>>;
   /** The USER wikis this vessel's catalog registers (`list-wikis`, kind `user`), by slug: each carries, a wiki with no page among them. Absent: none travels. */
@@ -223,7 +223,7 @@ export interface CarryDoors {
   readonly shareSet?: (row: ShareEntry) => Promise<void>;
   /** Land the shares again (`share-apply`); null where no vessel answers. */
   readonly landShares?: () => Promise<Record<string, unknown> | null>;
-  readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: CarryKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
+  readonly kahuaLift: (handleIndex: number, lift: { readonly title: string; readonly text: string; readonly fields: Readonly<Record<string, string>>; readonly taint: readonly string[]; readonly sources: BundleKahuaHead["sources"]; readonly parent: string | null }) => Promise<{ readonly cid: string }>;
 }
 
 // ── the live doors ─────────────────────────────────────────────────────────────────────────────────────────────
@@ -232,18 +232,18 @@ function fleetStores() {
   return { petnames: makeFleetPetnameStore(sealedPetnameStore()), declarations: makeFleetDeclarationStore(sealedDeclarationStore()) };
 }
 
-async function liveFaces(): Promise<CarryVesselFace[]> {
+async function liveFaces(): Promise<BundleVesselFace[]> {
   const { petnames, declarations } = fleetStores();
-  const out: CarryVesselFace[] = [];
+  const out: BundleVesselFace[] = [];
   for (const { handleIndex } of (await readPersonaRoots()).roots) {
     const declaration = await declarations.get(handleIndex);
-    let kahua: CarryKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, mounted: boolean | undefined;
+    let kahua: BundleKahuaHead[] | null = null, relation: string | null = null, kahuaRefusal: string | undefined, kahuaRefusalCode: string | undefined, mounted: boolean | undefined;
     try {
       const { output } = await storeVerb("kahua-read", { face: handleIndex, action: "list" });
       relation = typeof output["relation"] === "string" ? output["relation"] : null;
       if (typeof output["mounted"] === "boolean") mounted = output["mounted"];
       const items = Array.isArray(output["items"]) ? (output["items"] as Array<{ heads?: unknown }>) : [];
-      kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as CarryKahuaHead[] : []))
+      kahua = items.flatMap((item) => (Array.isArray(item.heads) ? item.heads as BundleKahuaHead[] : []))
         .map((h) => ({ title: h.title, cid: h.cid, text: h.text, fields: { ...h.fields }, taint: [...h.taint], sources: h.sources.map((s) => ({ title: s.title, revision: s.revision })) }));
     } catch (e) { kahuaRefusal = e instanceof Error ? e.message : String(e); kahuaRefusalCode = storeFailure(e).code; }
     out.push({
@@ -260,7 +260,7 @@ async function liveFaces(): Promise<CarryVesselFace[]> {
   return out;
 }
 
-export const LIVE_CARRY_DOORS: CarryDoors = {
+export const LIVE_BUNDLE_DOORS: BundleDoors = {
   census: () => readCensus(),
   faces: liveFaces,
   tempConsented: () => tempConsentedSlugs(loadLaresConfig()),
@@ -366,8 +366,8 @@ export const LIVE_CARRY_DOORS: CarryDoors = {
 // ── shared ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** A refusal the verbs raise by name; the message carries the cure. */
-export class CarryRefused extends Error {
-  override readonly name = "CarryRefused";
+export class BundleRefused extends Error {
+  override readonly name = "BundleRefused";
   constructor(readonly code: string, message: string) { super(`${code}: ${message}`); }
 }
 
@@ -412,13 +412,13 @@ const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
 // ── export ─────────────────────────────────────────────────────────────────────────────────────────────────────
 
 /** What an export wrote. */
-export interface CarryExportResult { readonly dest: string; readonly manifest: CarryManifest }
+export interface HouseExportResult { readonly dest: string; readonly manifest: BundleManifest }
 
 /**
- * Write a bundle at `dest`. Throws {@link CarryRefused} naming what stays unsettled, unclaimed or unkeyed; with
+ * Write a bundle at `dest`. Throws {@link BundleRefused} naming what stays unsettled, unclaimed or unkeyed; with
  * `acceptOmissions` an unsettled census and an unclaimed folder land in the manifest's omissions instead.
  */
-export async function carryExport(dest: string, opts: { readonly acceptOmissions: boolean; readonly doors: CarryDoors;
+export async function houseExport(dest: string, opts: { readonly acceptOmissions: boolean; readonly doors: BundleDoors;
   /** A BOUND WORKSPACE the calling act names (the keep rite, which spends a lei for it): a dest inside this one directory rests
    *  there though it stands under the house root. A bare export names none, so a workspace takes no bundle without that act. */
   readonly workspace?: string;
@@ -427,23 +427,23 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   readonly woken?: readonly string[];
   /** THE KEEP CUTS HOUSE-ONLY CONTENT (the keep rite alone): a workbench whose mirror rests inside the checkout, which git holds,
    *  stays out of the files and lands under the manifest's `elsewhere`. A bare export carries every workbench, as before. */
-  readonly houseOnly?: boolean }): Promise<CarryExportResult> {
+  readonly houseOnly?: boolean }): Promise<HouseExportResult> {
   const { doors, acceptOmissions } = opts;
   const target = resolve(dest);
   const house = larHouseRoot();
   // THE CONFIG HOME TAKES A BUNDLE: a reset clears the hearth alone and keeps config, and the container binds config to the host
   // (`/lar/config` ← `$LARES_HOUSE/config`), so a bundle exported through the shim rests where the host reads it and the
   // re-founding never reaches (the vault backup's own precedent). Every other house class refuses.
-  if (inside(house, target) && !inside(larConfigHome(), target) && !(opts.workspace !== undefined && inside(opts.workspace, target))) throw new CarryRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house, or under its config home ${resolve(larConfigHome())}, which a reset keeps`);
-  if (inside(repoRoot, target)) throw new CarryRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
-  if (existsSync(target)) throw new CarryRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
-  const omissions: CarryOmission[] = [];
+  if (inside(house, target) && !inside(larConfigHome(), target) && !(opts.workspace !== undefined && inside(opts.workspace, target))) throw new BundleRefused("carry-dest-inside-house", `${target} stands inside the house root ${resolve(house)}; a bundle carries memory across a re-founding, so it rests outside the house, or under its config home ${resolve(larConfigHome())}, which a reset keeps`);
+  if (inside(repoRoot, target)) throw new BundleRefused("carry-dest-inside-workspace", `${target} stands inside the workspace ${repoRoot}; a bundle holds private memory and never rests in a tracked tree`);
+  if (existsSync(target)) throw new BundleRefused("carry-dest-stands", `${target} already stands; name a fresh path, and the export never writes over one`);
+  const omissions: BundleOmission[] = [];
 
   // A SETTLED PROJECTION FIRST: what the census names would leave out of the copy.
   const census = await doors.census();
   if (!census.clean) {
     const lines = [...census.items.map(censusLine), ...census.unanswered.map((u) => `unanswered  ${u.part}: ${u.why}`)];
-    if (!acceptOmissions) throw new CarryRefused("carry-unsettled", `the census names ${lines.length} item(s) the projection has not settled, so a copy now would leave them out:\n  ${lines.join("\n  ")}\nsettle them (unlock the vault, let the projector drain) and export again, or pass --accept-omissions for an explicitly partial bundle`);
+    if (!acceptOmissions) throw new BundleRefused("carry-unsettled", `the census names ${lines.length} item(s) the projection has not settled, so a copy now would leave them out:\n  ${lines.join("\n  ")}\nsettle them (unlock the vault, let the projector drain) and export again, or pass --accept-omissions for an explicitly partial bundle`);
     const held = census.items.filter((i) => i.kind === "held-save").map(censusLine);
     const carriers = census.items.filter((i) => i.kind === "carrier").map(censusLine);
     if (held.length > 0) omissions.push({ kind: "held-saves", detail: "saves the sealed rest holds in memory, never on disk", items: held, count: held.length });
@@ -452,12 +452,12 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   }
 
   const faces = await doors.faces();
-  const byRelation = new Map<string, CarryVesselFace>();
+  const byRelation = new Map<string, BundleVesselFace>();
   for (const f of faces) if (f.relation !== null) byRelation.set(f.relation, f);
   const projections = larProjectionsHome();
   const wikisDir = join(projections, "wikis"), bagsDir = join(projections, "bags");
   const folders = (dir: string): string[] => { try { return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name).sort(); } catch { return []; } };
-  const faceFolderOf = (name: string): CarryVesselFace | null => {
+  const faceFolderOf = (name: string): BundleVesselFace | null => {
     const relation = isDaemonFaceFolder(name) ? name.slice("daemon-".length) : isKahuaFaceFolder(name) ? name.slice("kahua-".length) : null;
     return relation === null ? null : byRelation.get(relation) ?? null;
   };
@@ -468,7 +468,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   for (const name of folders(bagsDir).filter((name) => isKahuaFaceFolder(name) || isDaemonFaceFolder(name))) if (faceFolderOf(name) === null) unclaimedFolders.push(join(bagsDir, name));
   const unclaimed = unclaimedFolders.length;
   if (unclaimed > 0) {
-    if (!acceptOmissions) throw new CarryRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) belong to no face this vessel wears:\n  ${unclaimedFolders.join("\n  ")}\n`
+    if (!acceptOmissions) throw new BundleRefused("carry-unclaimed-face-folder", `${unclaimed} face folder(s) belong to no face this vessel wears:\n  ${unclaimedFolders.join("\n  ")}\n`
       + `each holds a face's private memory in cleartext: a face whose key stands shut (unlock every face and export again), or a former face a re-founding left behind (projections survive a re-founding). `
       + `For a former face whose bundle you already imported, move each folder out of the house root (\`mv <folder> <a place outside ${resolve(house)}>\`) and export again; `
       + `or export with --accept-omissions to leave them where they stand, out of the bundle`);
@@ -476,20 +476,20 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   }
 
   // THE FACES KEY BY PET-NAME. A face that carries memory needs one, and no two may share it.
-  const carries = (f: CarryVesselFace): boolean => f.relation !== null && (existsSync(join(wikisDir, daemonFaceFolder(f.relation))) || existsSync(join(bagsDir, `kahua-${f.relation}`)) || existsSync(join(bagsDir, daemonFaceFolder(f.relation))) || (f.kahua?.length ?? 0) > 0);
+  const carries = (f: BundleVesselFace): boolean => f.relation !== null && (existsSync(join(wikisDir, daemonFaceFolder(f.relation))) || existsSync(join(bagsDir, `kahua-${f.relation}`)) || existsSync(join(bagsDir, daemonFaceFolder(f.relation))) || (f.kahua?.length ?? 0) > 0);
   for (const f of faces) {
-    if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new CarryRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
-    if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new CarryRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
+    if (carries(f) && (f.petname === null || f.petname.trim() === "")) throw new BundleRefused("carry-face-unnamed", `the face at h${f.handleIndex} carries memory and no pet-name, and a bundle keys each face by its pet-name: name it (\`lares persona new ${f.handleIndex} --name '<label>'\`) and export again`);
+    if (f.kahuaRefusal !== undefined && f.relation === null && !acceptOmissions) throw new BundleRefused("carry-face-unread", `the face at h${f.handleIndex} would not read its stage or relation (${f.kahuaRefusal}); unlock it, or export with --accept-omissions to leave its memory behind`);
     if (f.kahuaRefusal !== undefined) omissions.push({ kind: "face-unread", detail: `the face at h${f.handleIndex} would not read its stage: ${f.kahuaRefusal}` });
   }
   const named = faces.filter((f) => f.petname !== null && f.petname.trim() !== "").sort((a, b) => a.handleIndex - b.handleIndex);
   const seenNames = new Map<string, number>();
   for (const f of named) {
     const prior = seenNames.get(f.petname!);
-    if (prior !== undefined) throw new CarryRefused("carry-face-duplicate-petname", `the faces at h${prior} and h${f.handleIndex} both carry the pet-name "${f.petname}", and a bundle keys each face by its pet-name alone: rename one and export again`);
+    if (prior !== undefined) throw new BundleRefused("carry-face-duplicate-petname", `the faces at h${prior} and h${f.handleIndex} both carry the pet-name "${f.petname}", and a bundle keys each face by its pet-name alone: rename one and export again`);
     seenNames.set(f.petname!, f.handleIndex);
   }
-  const bundleFaces: CarryFace[] = named.map((f, i) => ({ key: `f${i}`, petname: f.petname! }));
+  const bundleFaces: BundleFace[] = named.map((f, i) => ({ key: `f${i}`, petname: f.petname! }));
   const keyOf = new Map(named.map((f, i) => [f.handleIndex, `f${i}`] as const));
 
   // THE OVERRIDE BASES: a base rides the record's meta envelope and never projects, so the export reads it by title and
@@ -509,15 +509,15 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   };
   // A CARRIER'S FAMILY TRAVELS WHOLE: each fragment record of a working copy forked its own base, so the row carries the
   // root's and every fragment's (`carriedBasesOf`), and canon that moves a fragment under a still root still reads fresher.
-  const withBase = (row: Omit<CarryRow, "sha256" | "path">, bases: Readonly<Record<string, string>>): Omit<CarryRow, "sha256" | "path"> =>
+  const withBase = (row: Omit<BundleRow, "sha256" | "path">, bases: Readonly<Record<string, string>>): Omit<BundleRow, "sha256" | "path"> =>
     row.title !== null ? { ...row, ...carriedBasesOf(row.title, bases) } : row;
 
   // THE COPY PLAN: source abs path -> bundle rel path, with the row each file makes.
-  const plan: Array<{ from: string; to: string; row: Omit<CarryRow, "sha256" | "path"> | null }> = [];
+  const plan: Array<{ from: string; to: string; row: Omit<BundleRow, "sha256" | "path"> | null }> = [];
   const tempBytes: Record<string, number> = {};
   const consented = new Set(doors.tempConsented());
   let strays = 0, odd = 0;
-  const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<CarryRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
+  const addTree = (srcDir: string, toDir: string, rowOf: (rel: string, abs: string) => Omit<BundleRow, "sha256" | "path"> | null, skipTop: readonly string[] = []): void => {
     const listed = plainFiles(srcDir);
     odd += listed.odd.length;
     for (const rel of listed.files) {
@@ -566,7 +566,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   // A SOURCED WIKI'S ONE WORKBENCH FOLDER rests beside its canon source: the same one row set, from that folder. A KEEP reads
   // where the folder rests: inside the checkout git holds it, so the keep names it under `elsewhere` and carries none of it.
   const canonWikis = doors.canonWikis?.() ?? null;
-  const elsewhere: CarryElsewhere[] = [];
+  const elsewhere: BundleElsewhere[] = [];
   if (canonWikis !== null && resolve(canonWikis) !== resolve(wikisDir)) {
     for (const name of folders(canonWikis)) {
       if (doors.sourced?.(name) !== true || isPrivateProjectionSlug(name)) continue;
@@ -613,7 +613,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       continue;
     }
     if (name === "daemon") {
-      // This directory has no disk mirror grant, so its files stay out of the carry bundle.
+      // This directory has no disk mirror grant, so its files stay out of the house bundle.
       continue;
     }
     if (isPrivateProjectionSlug(name)) continue;
@@ -627,7 +627,7 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   let userWikis: string[] = [];
   if (doors.userWikis) {
     try { userWikis = [...(await doors.userWikis())].filter((slug) => slug !== "daemon" && doors.sourced?.(slug) !== true && !isPrivateProjectionSlug(slug)).sort(); }
-    catch (e) { throw new CarryRefused("carry-wikis-unread", `the catalog's wiki list would not read (${e instanceof Error ? e.message : String(e)}), so a wiki that holds no page would stay behind unnamed: stand the vessel and export again`); }
+    catch (e) { throw new BundleRefused("carry-wikis-unread", `the catalog's wiki list would not read (${e instanceof Error ? e.message : String(e)}), so a wiki that holds no page would stay behind unnamed: stand the vessel and export again`); }
   }
   if (strays > 0) omissions.push({ kind: "atomic-write-strays", detail: "orphan *.lar-tmp-* files an atomic write left; none carries a record", count: strays });
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
@@ -637,10 +637,10 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
   const staging = join(dirname(target), `.${basename(target)}.lar-tmp-${randomBytes(6).toString("hex")}`);
   mkdirSync(staging, { recursive: true });
   try {
-    const files: CarryFile[] = [];
-    const rows: CarryRow[] = [];
+    const files: BundleFile[] = [];
+    const rows: BundleRow[] = [];
     const counts = zeroCounts();
-    const put = (rel: string, bytes: Buffer | string): CarryFile => {
+    const put = (rel: string, bytes: Buffer | string): BundleFile => {
       const abs = join(staging, ...rel.split("/"));
       mkdirSync(dirname(abs), { recursive: true });
       writeFileSync(abs, bytes, { flag: "wx" });
@@ -664,17 +664,17 @@ export async function carryExport(dest: string, opts: { readonly acceptOmissions
       const file = put(`faces/${fk}/${KAHUA_HEADS_FILE}`, `${JSON.stringify(heads, null, 2)}\n`);
       for (const h of heads) { rows.push({ face: f.petname, bag: KAHUA_BAG, layer: "kahua-head", title: h.title, rowKey: h.cid, sha256: sha256Hex(h.text), path: file.path }); counts["kahua-head"]++; }
     }
-    const redeclare: CarryRedeclare = {
-      schema: CARRY_SCHEMA,
-      faces: named.map((f): CarryRedeclareFace => ({ face: keyOf.get(f.handleIndex)!, handleIndex: f.handleIndex, petname: f.petname!, handle: f.handle, seat: f.seat, chair: f.seat ? f.chair : null })),
+    const redeclare: BundleRedeclare = {
+      schema: BUNDLE_SCHEMA,
+      faces: named.map((f): BundleRedeclareFace => ({ face: keyOf.get(f.handleIndex)!, handleIndex: f.handleIndex, petname: f.petname!, handle: f.handle, seat: f.seat, chair: f.seat ? f.chair : null })),
       // THE SHARE ROWS travel with the workbenches they seat: owner and seats by pet-name, the operator's own private carry.
-      ...((): { shares?: CarryShareEntry[] } => { const rows = doors.shareRows?.read() ?? []; return rows.length > 0 ? { shares: rows.map((r) => ({ ...r })) } : {}; })(),
+      ...((): { shares?: BundleShareEntry[] } => { const rows = doors.shareRows?.read() ?? []; return rows.length > 0 ? { shares: rows.map((r) => ({ ...r })) } : {}; })(),
       // EVERY USER WIKI, by slug: a wiki stands before it holds a page, so one with no workbench row still re-stands at the import.
       ...(userWikis.length > 0 ? { wikis: userWikis } : {}),
     };
     put(REDECLARE_FILE, `${JSON.stringify(redeclare, null, 2)}\n`);
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
-    const manifest: CarryManifest = { schema: CARRY_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
+    const manifest: BundleManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
     verifyBundle(staging);      // every byte read back against the manifest before the bundle takes its name
     renameSync(staging, target);
@@ -743,7 +743,7 @@ export function sameCarrierRecord(a: Record<string, string> | null, b: Record<st
  * after a re-founding, and the import would land nothing; keyed by the target relations too, a re-walk imports afresh, while
  * a second import onto the same faces still lands nothing.
  */
-export function carryJournalPath(bundleId: string, targetRelations: readonly string[]): string {
+export function bundleJournalPath(bundleId: string, targetRelations: readonly string[]): string {
   const faces = sha256Hex([...targetRelations].sort().join("\n")).slice(0, 16);
   return join(larConfigHome(), "carry-journal", `${bundleId}.${faces}.ndjson`);
 }
@@ -751,7 +751,7 @@ export function carryJournalPath(bundleId: string, targetRelations: readonly str
 interface Journal { readonly done: Map<string, string>; mark(key: string, value: string): void }
 
 function openJournal(bundleId: string, targetRelations: readonly string[], write: boolean): Journal {
-  const path = carryJournalPath(bundleId, targetRelations);
+  const path = bundleJournalPath(bundleId, targetRelations);
   const done = new Map<string, string>();
   try {
     for (const line of readFileSync(path, "utf8").split("\n")) {
@@ -775,16 +775,16 @@ function openJournal(bundleId: string, targetRelations: readonly string[], write
  * of a face that stands open and unworn (its daemon rows, its `personal` rows, its kahua heads), which lands at that face's
  * own wear. A waiting row names its face in the result and never reads as a refusal.
  */
-export interface CarryTally { landed: number; already: number; stoodOff: string[]; refused: string[]; planned: number; waiting: number }
-const tally = (): CarryTally => ({ landed: 0, already: 0, stoodOff: [], refused: [], planned: 0, waiting: 0 });
+export interface BundleTally { landed: number; already: number; stoodOff: string[]; refused: string[]; planned: number; waiting: number }
+const tally = (): BundleTally => ({ landed: 0, already: 0, stoodOff: [], refused: [], planned: 0, waiting: 0 });
 
-export interface CarryImportResult {
+export interface HouseImportResult {
   readonly bundleId: string;
   readonly applied: boolean;
   /** Bundle face pet-name -> the handle index it lands on. */
   readonly faceMap: Readonly<Record<string, number>>;
   readonly redeclare: readonly string[];
-  readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking" | "personal", CarryTally>>;
+  readonly tallies: Readonly<Record<"working" | "kapae" | "faceCanon" | "kahua" | "draft" | "temp" | "bag" | "wikiWorking" | "personal", BundleTally>>;
   /** Each workbench (or the canon of a wiki another face owns) whose rows wait: `writer` (the daemon mount holds no writer's seat
    *  there) or `owner` (a share row names another face as the wiki's owner, and no face stood it here yet). Nothing of it landed. */
   readonly benchWaiting: ReadonlyArray<{ readonly slug: string; readonly why: "writer" | "owner"; readonly owner?: string }>;
@@ -812,12 +812,12 @@ export interface CarryImportResult {
 
 /**
  * Import the bundle at `src`. The bundle verifies whole before anything moves; preview (`apply` false) reads the vessel
- * and plans every act, and writes nothing. Throws {@link CarryRefused} (or {@link CarryBundleRefused}) by name.
+ * and plans every act, and writes nothing. Throws {@link BundleRefused} (or {@link BundleVerifyRefused}) by name.
  */
 /** The store door's names for a vessel that stands down or locked: a face reads no relation under any of them. */
 const SHUT_VESSEL_CODES: ReadonlySet<string> = new Set(["vessel-locked", "daemon-unreachable", "vessel-composing"]);
 
-export async function carryImport(src: string, opts: { readonly apply: boolean; readonly doors: CarryDoors }): Promise<CarryImportResult> {
+export async function houseImport(src: string, opts: { readonly apply: boolean; readonly doors: BundleDoors }): Promise<HouseImportResult> {
   const { doors, apply } = opts;
   const bundle: VerifiedBundle = verifyBundle(resolve(src));
   const { manifest, redeclare } = bundle;
@@ -829,28 +829,28 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   // A PREVIEW READS THE SAME GUARD AS A WARNING: it names what the apply would refuse, and plans on.
   const unseeded = doors.unseeded ? doors.unseeded() : [];
   const unseededWhy = `the canon of ${unseeded.join(", ")} stands unlaid on this vessel, and an import lands over laid canon alone: run \`lares vessel lay --apply\` first, then import again`;
-  if (apply && unseeded.length > 0) throw new CarryRefused("carry-canon-unseeded", unseededWhy);
+  if (apply && unseeded.length > 0) throw new BundleRefused("carry-canon-unseeded", unseededWhy);
   const warnings: string[] = unseeded.length > 0 ? [`carry-canon-unseeded: ${unseededWhy}`] : [];
   const projections = larProjectionsHome();
   let faces = await doors.faces();
 
   // RE-DECLARE FIRST: each bundle face finds the ONE face here that carries its pet-name, or names one by its index.
   const acts: string[] = [];
-  const planned: Array<{ row: CarryRedeclareFace; handleIndex: number; rename: boolean; handle: boolean; seat: boolean }> = [];
+  const planned: Array<{ row: BundleRedeclareFace; handleIndex: number; rename: boolean; handle: boolean; seat: boolean }> = [];
   for (const row of redeclare.faces) {
     const matches = faces.filter((f) => f.petname === row.petname);
-    if (matches.length > 1) throw new CarryRefused("carry-face-duplicate-petname", `faces ${matches.map((m) => `h${m.handleIndex}`).join(" and ")} on this vessel both carry the pet-name "${row.petname}"; the bundle's memory for it lands on one face alone, so rename one and import again`);
+    if (matches.length > 1) throw new BundleRefused("carry-face-duplicate-petname", `faces ${matches.map((m) => `h${m.handleIndex}`).join(" and ")} on this vessel both carry the pet-name "${row.petname}"; the bundle's memory for it lands on one face alone, so rename one and import again`);
     let target = matches[0];
     let rename = false;
     if (target === undefined) {
       const at = faces.find((f) => f.handleIndex === row.handleIndex);
-      if (at === undefined) throw new CarryRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and none stands at h${row.handleIndex} to carry it: found it (\`lares persona new ${row.handleIndex} --name '${row.petname}'\`) and import again`);
-      if (at.petname !== null) throw new CarryRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and the face at h${row.handleIndex} carries "${at.petname}"; the bundle never merges one face's memory into another's: name the face that should carry "${row.petname}" and import again`);
+      if (at === undefined) throw new BundleRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and none stands at h${row.handleIndex} to carry it: found it (\`lares persona new ${row.handleIndex} --name '${row.petname}'\`) and import again`);
+      if (at.petname !== null) throw new BundleRefused("carry-face-unmatched", `no face on this vessel carries the pet-name "${row.petname}", and the face at h${row.handleIndex} carries "${at.petname}"; the bundle never merges one face's memory into another's: name the face that should carry "${row.petname}" and import again`);
       target = at;
       rename = true;
     }
-    if (row.handle !== null && target.handle !== null && target.handle !== row.handle) throw new CarryRefused("carry-redeclare-diverged", `the face "${row.petname}" declares the Handle "${target.handle}" here and "${row.handle}" in the bundle; the import never overwrites a declaration`);
-    if (row.seat && target.seat && row.chair !== null && target.chair !== null && target.chair !== row.chair) throw new CarryRefused("carry-redeclare-diverged", `the face "${row.petname}" stands for the chair "${target.chair}" here and "${row.chair}" in the bundle; the import never overwrites a declaration`);
+    if (row.handle !== null && target.handle !== null && target.handle !== row.handle) throw new BundleRefused("carry-redeclare-diverged", `the face "${row.petname}" declares the Handle "${target.handle}" here and "${row.handle}" in the bundle; the import never overwrites a declaration`);
+    if (row.seat && target.seat && row.chair !== null && target.chair !== null && target.chair !== row.chair) throw new BundleRefused("carry-redeclare-diverged", `the face "${row.petname}" stands for the chair "${target.chair}" here and "${row.chair}" in the bundle; the import never overwrites a declaration`);
     planned.push({ row, handleIndex: target.handleIndex, rename, handle: row.handle !== null && target.handle === null, seat: row.seat && !target.seat });
   }
   for (const p of planned) {
@@ -869,7 +869,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
 
   // THE FACE MAP: pet-name -> the face here, which must wear a relation for its folders.
   const faceMap: Record<string, number> = {};
-  const target = new Map<string, CarryVesselFace>();
+  const target = new Map<string, BundleVesselFace>();
   for (const bf of manifest.faces) {
     const p = planned.find((x) => x.row.face === bf.key)!;
     const face = faces.find((f) => f.handleIndex === p.handleIndex)!;
@@ -877,7 +877,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     if (face.relation === null && mountFaceOf(faces) === null) {
       // A face reads no relation while its vessel stands down or locked: the cure reads "up, then unlock", before anything else.
       const shut = face.kahuaRefusalCode !== undefined && SHUT_VESSEL_CODES.has(face.kahuaRefusalCode);
-      throw new CarryRefused("carry-face-unworn", shut
+      throw new BundleRefused("carry-face-unworn", shut
         ? `the face h${face.handleIndex} ("${bf.petname}") reads no face relation because the vessel's key stands shut or no vessel answers (${face.kahuaRefusal}): run up and vault unlock first (\`tools/lares-container.sh up\` or \`lares vessel stand\`, then \`lares vault unlock\`), and import again`
         : `the face h${face.handleIndex} ("${bf.petname}") pins no face relation, so its daemon wiki has no folder to land in: stand the vessel wearing it and import again${face.kahuaRefusal ? ` (${face.kahuaRefusal})` : ""}`);
     }
@@ -950,7 +950,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
   }
 
   // An import restores each file into its mirror, then ingest reads it there so the placement ward sees the bag's own mirror.
-  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: CarryTally, kapaeTally: CarryTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
+  const wave = async (sourceDir: string, uriDir: string, mirrorDir: string, toBag: string, files: readonly string[], keyPrefix: string, workTally: BundleTally, kapaeTally: BundleTally | null, wiki: string | null = null, freshLayer = false, faceArg: { face?: number } = {}): Promise<void> => {
     if (files.length === 0) return;
     const scan = scanFiles(bundle.root, files.map((f) => join(bundle.root, ...f.split("/"))), toBag, new SyncedTree(null), (_r, file) => carriedFileTitle(uriDir, file));
     for (const s of scan.skipped) if (!s.endsWith(".meta")) skipped.push(s);
@@ -1011,7 +1011,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     // or went unanswered leaves the mirror again, since a file standing there reads `already` at the next import and its
     // record never rides to INGEST.
     const unrestore = (kept: ReadonlySet<string>): void => { for (const { uri, to } of pending) if (!differing.has(uri) && !kept.has(uri)) rmSync(to, { force: true }); };
-    let answer: CarryIngestAnswer;
+    let answer: BundleIngestAnswer;
     try {
       answer = await doors.ingest({ source: mirrorDir, toBag, candidates, kapae, ...(wiki !== null ? { inWiki: true, wiki } : {}), ...faceArg });
     } catch (e) {
@@ -1059,7 +1059,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
     if (heads.length === 0) continue;
     if (face.kahua === null && unworn.has(bf.key)) continue;              // a shut face that waits its turn: its heads lift once it opens
     if (face.kahua === null) { tallies.kahua.refused.push(`the stage of h${face.handleIndex} would not read (${face.kahuaRefusal ?? "unread"}); ${heads.length} head(s) wait`); continue; }
-    const byTitle = new Map<string, CarryKahuaHead[]>();
+    const byTitle = new Map<string, BundleKahuaHead[]>();
     for (const h of heads) byTitle.set(h.title, [...(byTitle.get(h.title) ?? []), h]);
     // A LIFT RIDES THE DAEMON MOUNT (`chore-face-not-mounted`): where the vessel names the face it mounts, a head of any other
     // open face waits by name, and no lift reaches the vessel for it.
@@ -1091,7 +1091,7 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
 
   // DRAFTS AND TEMP: files land back beside the new face's working folder, where none stands.
   const consented = new Set(doors.tempConsented());
-  const place = (from: string, to: string, sha: string, t: CarryTally): void => {
+  const place = (from: string, to: string, sha: string, t: BundleTally): void => {
     const key = `file:${to}:${sha}`;
     if (existsSync(to)) {
       if (sha256Hex(readFileSync(to)) === sha) { t.already++; return; }
@@ -1260,9 +1260,9 @@ export async function carryImport(src: string, opts: { readonly apply: boolean; 
 // ── the commands' shared refusal ─────────────────────────────────────────────────────────────────────────────
 
 /** Emit a carry refusal by name; anything else rethrows. */
-export function carryRefusal(args: ParsedArgs, verb: string, err: unknown): number {
-  if (err instanceof CarryRefused || err instanceof CarryBundleRefused) {
-    const code = err instanceof CarryRefused ? err.code : "carry-bundle-refused";
+export function bundleRefusal(args: ParsedArgs, verb: string, err: unknown): number {
+  if (err instanceof BundleRefused || err instanceof BundleVerifyRefused) {
+    const code = err instanceof BundleRefused ? err.code : "carry-bundle-refused";
     emit(args, { ok: false, error: { code, message: err.message }, human: () => console.error(`lares ${verb}: ${err.message}`) });
     return exitFor("usage");
   }
