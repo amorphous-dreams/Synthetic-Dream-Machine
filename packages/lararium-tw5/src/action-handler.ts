@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, refuseSeatStartupAction, requireKahuReach, resolveHouseCanon, ownEntry, startupTagOf } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, refuseSeatStartupAction, renderedWriteFault, requireKahuReach, resolveHouseCanon, ownEntry, startupTagOf, RENDERED_DERIVES_REASON } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -1648,6 +1648,16 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       }
       if (decision.kind === "conflict") {
         results.push({ uri, decision: "conflict", reason: decision.reason, filetype: carrier.ext || "text/plain", warnings: [conflictWhy(uri, decision.reason)] });
+        continue;
+      }
+      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a file that would land over a standing render, or land a record
+      // carrying `rendered-from` (a hand's edit to a projected render, the watcher's read-back), refuses its carrier by
+      // name. The projector's own echo never reaches here: it reads `noop` above.
+      const rendered = renderedWriteFault(uri, currentRec?.tiddler, null, "INGEST")
+        ?? (decision.records as Array<Record<string, unknown>>).map((record) => renderedWriteFault(String(record["title"] ?? uri), null, record, "INGEST")).find((fault) => fault !== null)
+        ?? null;
+      if (rendered !== null) {
+        results.push({ uri, decision: "refuse", code: RENDERED_DERIVES_REASON, reason: rendered, warnings: [rendered] });
         continue;
       }
       freshRecords = decision.records as Array<Record<string, unknown>>;

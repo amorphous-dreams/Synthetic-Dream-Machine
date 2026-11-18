@@ -60,7 +60,7 @@
  */
 
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseSeatStartupAction, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, refuseSeatStartupAction, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   carrierHashOf, isWorkingLayerBag, overrideBaseOf,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
@@ -477,9 +477,16 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
         else shown = standing;
       }
     }
-    // THE ONE WALL A SEAT KEEPS: a seat's startup action offers and never lands, whatever bag it names.
+    // THE ONE WALL A SEAT KEEPS: a seat's startup action offers and never lands, whatever bag it names. And ONLY THE
+    // RENDERER WRITES A RENDERED TIDDLER: a put over one, or a record that would land carrying `rendered-from`, refuses.
+    const standingRoot = await sink.read(target.uri);
+    refuseRenderedWrite(target.uri, standingRoot, null, "meme put");
     const vet = (records: readonly Record<string, unknown>[]): void => {
-      for (const record of records) refuseSeatStartupAction(String(record["title"] ?? target.uri), record["tags"], "meme put", ctx.asker);
+      for (const record of records) {
+        const title = String(record["title"] ?? target.uri);
+        refuseSeatStartupAction(title, record["tags"], "meme put", ctx.asker);
+        refuseRenderedWrite(title, null, record, "meme put");
+      }
     };
     const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet }, sink);
     // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`
