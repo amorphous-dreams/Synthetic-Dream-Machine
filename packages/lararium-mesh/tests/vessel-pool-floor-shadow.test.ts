@@ -10,7 +10,8 @@ import type { VesselIslandHost, VesselWorkerHandle } from "../src/vessel-host.js
 import type { WikiMountSpec } from "../src/wiki-recipe.js";
 import { sha256HexBytesSync } from "../src/crypto.js";
 import { FLOOR_MANIFEST_FORMAT, GENESIS_FLOOR_TIDDLER, floorManifestBytes } from "../src/floor-manifest.js";
-import { computeEngineCid, computeGrammarCid, computePluginsCid } from "../src/genesis-doc.js";
+import { computeEngineCid } from "../src/genesis-doc.js";
+import { signFloorOffering } from "../src/floor-offering.js";
 import { ENGINE_CORE_ID, type LarDoc, type LarBlobEntry } from "../src/base-doc.js";
 import { storedLarRecord } from "../src/stored-record.js";
 import type { FloorShadowTally } from "../src/floor-shadow.js";
@@ -20,8 +21,12 @@ const blobs: Record<string, LarBlobEntry> = {
   [ENGINE_CORE_ID]: { id: ENGINE_CORE_ID, version: "5.4.0", sha256: CORE, mimeType: "application/javascript" },
   extra: { id: "$:/plugins/operator/extra", version: "1", sha256: "2".repeat(64), mimeType: "application/json", kind: "plugin" },
 };
-const entries = [{ id: "$:/plugins/operator/extra", version: "1", sha256: "2".repeat(64), kind: "plugin" as const }];
-const truth = { engine: computeEngineCid(CORE), grammar: computeGrammarCid(entries), plugins: computePluginsCid(entries) };
+/** The plugins offering over the founding record's boot set: the one non-core blob it loads. */
+const OFFERING = await signFloorOffering({ seed: new Uint8Array(32).fill(2), blobs: [{
+  id: "$:/plugins/operator/extra", version: "1", sha256: "2".repeat(64),
+  provenance: { source: "https://example.test", commit: "0".repeat(40), path: "p.json", licence: "MIT" },
+}] });
+const truth = { engine: computeEngineCid(CORE), plugins: OFFERING.cid };
 function manifest(fields: Partial<typeof truth> = {}) {
   const bytes = floorManifestBytes({ format: FLOOR_MANIFEST_FORMAT, ...truth, ...fields, snapshots: { lares: "a".repeat(64), lararium: "b".repeat(64) } });
   return { cid: sha256HexBytesSync(bytes), bytes };
@@ -50,7 +55,7 @@ function rig(opts: { pin: string | null; record: LarDoc; held: Array<{ cid: stri
   const pool = new VesselIslandPoolCore({
     host, resolvePluginCids: async () => ({ ok: true, pluginCids: [] }),
     floorCid: () => opts.pin,
-    readContent: (cid) => opts.hangRead ? new Promise<Uint8Array | null>(() => {}) : opts.held.find((m) => m.cid === cid)?.bytes ?? null,
+    readContent: (cid) => opts.hangRead ? new Promise<Uint8Array | null>(() => {}) : opts.held.find((m) => m.cid === cid)?.bytes ?? (cid === OFFERING.cid ? OFFERING.bytes : null),
     foundingRecord: () => opts.record,
     floorShadow: { load: () => opts.hangLoad ? new Promise<unknown>(() => {}) : tally.value, save: (t: FloorShadowTally) => { tally.value = JSON.parse(JSON.stringify(t)); } },
   });

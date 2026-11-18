@@ -25,7 +25,7 @@
 import type { AutomergeUrl, DocHandle, Repo } from "@automerge/automerge-repo";
 import {
   acceptFloorRelease, floorReleaseEntriesFromBoard, floorRequiredBlobIds, genesisFloorCidOf, materializeSharedLarDoc, nexusAidOf,
-  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorManifest, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
+  oracleGenesisDocUrl, publicationDocUrl, readControlHome, readFloorManifest, readFloorOffering, readFloorStatus, resolveBootDoc, sha256HexBytesSync,
   type FloorPinLike,
   type FloorAcceptOutcome, type FloorPinPorts, type FloorRemount, type FloorStatus, type LarDoc,
 } from "@lararium/mesh";
@@ -129,12 +129,18 @@ export type FloorStatusRead = Partial<FloorStatus> & {
   readonly nexusRefused?: { readonly refusal: string; readonly message: string };
 };
 
-/** The pinned floor's manifest from this vessel's own CAS (an accept stages it there), or null where it does not read. */
+/**
+ * The pinned floor's manifest from this vessel's own CAS (an accept stages it there), or null where it does not read, with its
+ * plugins offering where that reads too (null where it does not: grammar and plugins then read absent, never same).
+ */
 function pinnedFloorOf(manifestCid: string, casDir: string): FloorPinLike | null {
   const bytes = readVerifiedCasBlobFromFs(manifestCid, casDir);
   if (!bytes) return null;
   const read = readFloorManifest(bytes);
-  return "manifest" in read ? { manifestCid, manifest: read.manifest } : null;
+  if (!("manifest" in read)) return null;
+  const offeringBytes = readVerifiedCasBlobFromFs(read.manifest.plugins, casDir);
+  const offering = offeringBytes ? readFloorOffering(offeringBytes, read.manifest.plugins) : null;
+  return { manifestCid, manifest: read.manifest, offering: offering && "offering" in offering ? offering.offering : null };
 }
 
 /** `lares floor status`: both truths for every place, and the Nexus part where a charter stands. */
