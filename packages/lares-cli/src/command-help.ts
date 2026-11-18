@@ -497,6 +497,62 @@ export const COMMAND_HELP: Readonly<Record<string, CommandHelp>> = {
     next: ["lares sense status --lens content", "lares mempalace status   # the guest comparator door"],
   },
 
+  surface: {
+    usage: "usage: lares surface init|check|open|commit [--face N] [--launch] [-m <seam>]",
+    synopsis:
+      "THE FACE POOL — each face's private planes rest under projections/faces/<pet name>/ (wiki, canon, stage, margins, recovery), " +
+      "and that root holds the face's one git working tree. Git runs here with an empty global config and no system config.",
+    details: [
+      "  lares surface init     make the worn (or named) face's root a pool: .git (0700), the house's ignore list, a local author, the roster hook",
+      "  lares surface check    the roster witness over the repo standing here; exit 1 names each breach (the pre-commit hook runs it)",
+      "  lares surface open     print `code -n <face root> <realm pools>`; --launch runs it; writes no workspace file",
+      "  lares surface commit   commit only what the house already agrees with, under a lar: subject naming no face; never pushes",
+    ],
+    examples: ["lares surface init", "lares surface open --launch", "lares surface commit -m sitting-close", "lares surface check --face 1"],
+    flags: ["--face N   face index (the worn face where absent)", "--launch   (open) run the window line on this machine", "-m <seam>   (commit) the seam the subject names (by-hand where absent)"],
+    next: ["lares surface open --launch", "lares shore   # a path that reads apart stands off the house"],
+    meme: "lar:///ha.ka.ba/kahua/memory/project/face-pools",
+  },
+  "surface init": {
+    usage: "usage: lares surface init [--face N]",
+    synopsis:
+      "Make the worn (or named) face's root, projections/faces/<pet name>/, a git working tree: .git inside it at 0700; .git/info/exclude carries the " +
+      "house's one ignore list (HOUSE_IGNORED: .vscode/, .shore/, temp/, *.orphans/, the atomic writer's temps) while .meta, .kapae, .mem and .tid stay " +
+      "committable; local config sets user.name to the pet name, user.email to <slug>@face.invalid and commit.gpgsign=false, never a global config; " +
+      "a pre-commit hook runs `lares surface check`. A second init changes nothing and says already; a hook of another hand stands, named.",
+    examples: ["lares surface init", "lares surface init --face 1"],
+    flags: ["--face N   face index (the worn face where absent)"],
+    next: ["lares surface open --launch"],
+  },
+  "surface check": {
+    usage: "usage: lares surface check [--face N]",
+    synopsis:
+      "The roster witness over the repo standing at this directory (or the named face's pool). It refuses a repo top holding face-labels/, " +
+      "kahua-index.toml, share.tid, kahua-pending.json or another face's root; any repo holding projections/ or config/; and an author email or " +
+      "signing key another face pool in the house carries. It reads local config alone and exits 1 naming each breach.",
+    examples: ["lares surface check", "lares surface check --face 1 --json"],
+    flags: ["--face N   check that face's pool wherever this runs"],
+  },
+  "surface open": {
+    usage: "usage: lares surface open [--face N] [--launch]",
+    synopsis:
+      "Print the one window line: `code -n` over the worn face's root and the realm pools it belongs to (each wiki it keeps a margin or a " +
+      "recovery folder for, where that wiki's workbench mirror stands). --launch runs it. It writes no workspace file.",
+    examples: ["lares surface open", "lares surface open --launch"],
+    flags: ["--face N   face index", "--launch   run the line on this machine"],
+  },
+  "surface commit": {
+    usage: "usage: lares surface commit [--face N] [-m <seam>]",
+    synopsis:
+      "Keep the sitting: stage only the pool paths whose disk bytes equal the synced base (the house already agrees with them; a .meta rides " +
+      "with its carrier, a removal stages where no base stands), and commit them under `lar:///surface.keeps.the-sitting/<seam> — N carriers`, " +
+      "naming no face, the carrier URIs in the body, the author from the pool's local config. A path standing off reads apart by name and stays " +
+      "unstaged. It never pushes.",
+    examples: ["lares surface commit", "lares surface commit -m sitting-close"],
+    flags: ["--face N   face index", "-m <seam>   the seam the subject names, one slug (by-hand where absent)"],
+    next: ["lares shore   # each path that read apart"],
+  },
+
   tiddler: {
     usage: "usage: lares tiddler <get | put | delete> <title> (--recipe <slug> | --bag <slug>)   (this phase answers --recipe default)",
     synopsis:
