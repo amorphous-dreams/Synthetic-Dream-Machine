@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * land-rule — THE land rule for code into the span, judged by hand for one sha (controller-handoff#/the-lanes).
+ * land-rule — THE land rule for code into the span, judged by hand for one sha (controller-handoff#/the-seat).
  *
  *   node tools/land-rule.mjs <40-hex sha>      run from a checkout whose origin names the repository
  *
