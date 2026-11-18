@@ -16,6 +16,7 @@ import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { keepHouse } from "./support/kept-house.js";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -52,17 +53,27 @@ const withRoot = <T>(index: number, run: (repo: Repo) => Promise<T>): Promise<T>
   return ownedStore(larDataDir(), run);
 };
 
-beforeEach(async () => {
+let charter: ReturnType<typeof heldCharter>;
+const steward = keepHouse("lares-release-a-", async () => {
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+  await generateOrLoadPersonaGroupRoot(0);
+  const chair = (await seatChairs([0])).keys[0]!;
+  charter = heldCharter({ keys: [chair], threshold: 1, successors: { keys: [await chairKey(0, 1)], threshold: 1 } });
+  writeNexusDoc(larSealHome(), charter.doc());
+});
+// Root B holds the same charter and no seat key.
+const observer = keepHouse("lares-release-b-", async () => {
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+  writeNexusDoc(larSealHome(), charter.doc());
+});
+
+beforeEach(() => {
   prior = process.env["LAR_ROOT"];
   roots = [mkdtempSync(join(tmpdir(), "lares-release-a-")), mkdtempSync(join(tmpdir(), "lares-release-b-"))];
   work = mkdtempSync(join(tmpdir(), "lares-release-files-"));
-  process.env["LAR_ROOT"] = roots[0]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } }); await generateOrLoadPersonaGroupRoot(0);
-  const chair = (await seatChairs([0])).keys[0]!;
-  const charter = heldCharter({ keys: [chair], threshold: 1, successors: { keys: [await chairKey(0, 1)], threshold: 1 } });
-  writeNexusDoc(larSealHome(), charter.doc());
-  // Root B holds the SAME charter and NO seat key: a vessel that cannot seal.
-  process.env["LAR_ROOT"] = roots[1]!; await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
-  writeNexusDoc(larSealHome(), charter.doc());
+  steward.into(roots[0]!);
+  observer.into(roots[1]!);
+  process.env["LAR_ROOT"] = roots[1]!;
 });
 afterEach(async () => {
   if (prior === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = prior;

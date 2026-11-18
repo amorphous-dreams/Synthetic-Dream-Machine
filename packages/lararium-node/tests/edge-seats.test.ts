@@ -22,14 +22,16 @@ import { assertDyadBinds } from "../src/commands/device-admit.js";
 import { direct } from "./direct-store.js";
 import { atomKeyOf, atomSeedOf, seedFaceAtom, actingAtomKey } from "./atom-fixture.js";
 import { seedFleet } from "./fleet-seed-fixture.js";
-import { scratchRoot as root, it } from "./support/scratch-fixture.js";
+import { scratchRoot as root, scratchHome, it } from "./support/scratch-fixture.js";
+import { keepHouse } from "./support/kept-house.js";
 
-beforeEach(async () => {
+const house = keepHouse("lares-edge-seats-", async () => {
   await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
   await generateOrLoadPersonaGroupRoot(0);
   await seedFaceAtom(0);
   await seedFleet(0);
 });
+beforeEach(() => house.into(root, scratchHome));
 afterEach(async () => {
   // Every Repo this suite opened rests (its adapter closed) before the directory leaves: no save of theirs can land after.
   await restEvery();
