@@ -105,6 +105,7 @@ import {
   loadOrMaterializeOracle,
   readGenesisCasManifest, genesisProtectSet, genesisCasDir,
 } from "./genesis-artifact.js";
+import { foundingRecordLine, readFoundingRecordTruths } from "./genesis-truths.js";
 import { bootFacePlanes, bootDaemonUrl }               from "./boot-face-planes.js";
 import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtectedHolder, kahuStandingBook, protectedDocsOver, watchKahuStanding, type KahuCanonDocs } from "./kahu-realm.js";
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
@@ -2614,6 +2615,8 @@ async function prepareNodeBootOn(
       }
       const coreHash = coreBlobEntry.sha256;
       if (!coreHash) throw new Error(`[openNodeVessel] TW5 core blob missing sha256; re-run build:genesis`);
+      // Both truths, one line: the founding record beside the seed (offered) on disk, ratchet by ratchet (D1). Reads only.
+      console.log(foundingRecordLine(readFoundingRecordTruths({ record: islandHandle.doc()!, genesisDir })));
 
       // Populate the fs CAS — every island worker pulls engine + plugin bytes by CID from
       // this local CID plane, off the sync port. The genesis CRDT now carries METADATA only;
