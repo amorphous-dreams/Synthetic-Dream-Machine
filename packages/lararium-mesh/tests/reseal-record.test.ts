@@ -44,7 +44,7 @@ async function fleet(...names: string[]): Promise<{ w: World; v: Vessel[] }> {
   return { w, v };
 }
 /** A, B and C hold a photo; a raise over C counts on every board; A rolls the bag, leaving C out. */
-async function rolledShelf(): Promise<{ a: Vessel; b: Vessel; photo: SealedBlob; successor: string }> {
+async function rolledShelf(): Promise<{ a: Vessel; b: Vessel; c: Vessel; photo: SealedBlob; successor: string }> {
   const { w, v: [a, b, c] } = await fleet("a", "b", "c");
   const photo = await seal(a!, "the harbour photo");
   await carry(a!, b!, BAG); await carry(a!, c!, BAG);
@@ -52,7 +52,7 @@ async function rolledShelf(): Promise<{ a: Vessel; b: Vessel; photo: SealedBlob;
   w.group.delete(c!.id);
   const reports = await rolls(a!, roll(["raise-1"], c!));
   expect(reports.map((r) => r.result)).toEqual(["rolled"]);
-  return { a: a!, b: b!, photo, successor: reports[0]!.keyVersion! };
+  return { a: a!, b: b!, c: c!, photo, successor: reports[0]!.keyVersion! };
 }
 /** Hand B every re-seal record A rests, as a carrier would. */
 async function handOver(a: Vessel, b: Vessel): Promise<void> {
@@ -368,5 +368,53 @@ describe("a replacement rests its record first, and a retry never duplicates one
     expect(finished.reseal).toBe(recordIdOf("re-seal", left[0]!.body));
     expect((await a.store.records("re-seal")).length).toBe(1);
     expect(await a.holder.judgeReseals(BAG)).toEqual([{ id: finished.reseal, verdict: "complete" }]);
+  });
+});
+
+describe("the central clause: a missing parent reads unverified, never complete, and each held binding can break", () => {
+  it("A THREE-VERSION CHAIN WITH ITS MIDDLE RECORD WITHHELD: the replaced version stays unread, `unverified` with `replaced` alone missing", async () => {
+    const s = await keyShore(3);
+    const v0 = await s.version(0, [], 0, { kind: "founding" });
+    await s.version(1, [0], 0, { kind: "removal", acts: ["raise-0"] });             // minted, and never handed to this reader
+    const v2 = await s.version(2, [1], 0, { kind: "removal", acts: ["raise-1"] });
+    const from = s.address(0, PHOTO), to = s.address(2, PHOTO);
+    const record = await s.reseal(2, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
+    const manifests = [await s.manifest(0, PHOTO, from), await s.manifest(2, PHOTO, to)];
+    // The reader counts the founding and the head, the head as a base over the parent it holds no record for.
+    const lineage = s.lineageOf([v0, v2], [s.ids[1]!]);
+    expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0, 2), manifests })).toEqual({ verdict: "unverified", missing: ["replaced"] });
+    // CONTROL: the same reader with the middle record counted reads complete.
+    const whole = s.lineageOf([v0, await s.version(1, [0], 0, { kind: "removal", acts: ["raise-0"] }), v2]);
+    expect(judgeReseal(record, { bagId: BAG, lineage: whole, keys: s.keyMap(0, 2), manifests })).toEqual({ verdict: "complete" });
+  });
+
+  it("a replaced version the reader counted in the span, and never upstream of the roll, refuses `reseal-unbound` (binding `replaced`)", async () => {
+    const s = await keyShore(3);
+    const v0 = await s.version(0, [], 0, { kind: "founding" });
+    const v1 = await s.version(1, [0], 0, { kind: "removal", acts: ["raise-1"] });
+    const v2 = await s.version(2, [1], 0, { kind: "removal", acts: ["raise-2"] });
+    // The record rides under v1 and names v2, a version AFTER that roll, as replaced.
+    const from = s.address(2, PHOTO), to = s.address(1, PHOTO);
+    const record = await s.reseal(1, 2, { from, to, entry: s.entry(2, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
+    expect(judgeReseal(record, { bagId: BAG, lineage: s.lineageOf([v0, v1, v2]), keys: s.keyMap(0, 1, 2), manifests: [] }))
+      .toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "replaced" });
+  });
+
+  it("a manifest under the replaced version that names `from` under another entry refuses `reseal-unbound` (binding `from`)", async () => {
+    const s = await keyShore(2);
+    const lineage = s.lineageOf([await s.version(0, [], 0, { kind: "founding" }), await s.version(1, [0], 0, { kind: "removal", acts: ["raise-1"] })]);
+    const from = s.address(0, PHOTO), to = s.address(1, PHOTO);
+    const record = await s.reseal(1, 0, { from, to, entry: s.entry(0, PHOTO) }, { acts: ["raise-1"], role: "blob", ref: PHOTO });
+    // The record's entry recomputes under the replaced key; the manifest names `from` under another reference's entry.
+    const manifests = [await s.manifest(0, "b".repeat(64), from), await s.manifest(1, PHOTO, to)];
+    expect(judgeReseal(record, { bagId: BAG, lineage, keys: s.keyMap(0, 1), manifests })).toMatchObject({ verdict: "refused", refusal: "reseal-unbound", binding: "from" });
+  });
+
+  it("A HOLDER READER WITH NO SUCCESSOR KEY (the removed C) reads every binding unverified, never complete", async () => {
+    const { a, c, photo } = await rolledShelf();
+    const replaced = await a.holder.resealBlob({ bagId: BAG, ref: photo.body.ref, signer: a.signer });
+    if ("refusal" in replaced) throw new Error(said(replaced));
+    for (const one of await a.store.records("re-seal")) await c.store.putRecord(one);
+    expect(await c.holder.judgeReseals(BAG)).toEqual([{ id: replaced.reseal, verdict: "unverified", missing: ["successor", "replaced", "from", "to"] }]);
   });
 });
