@@ -7,17 +7,26 @@
  * adoption it held the events and answered `bag-not-registered`.
  */
 import type { KeyhiveProvider } from "./keyhive-provider.js";
+import { registerBagsDurably, type BagDocLedger } from "./bag-doc-ledger.js";
 
 export interface ShareGrantInput {
   readonly owner: KeyhiveProvider;
   readonly grantee: KeyhiveProvider;
   readonly bag: string;
   readonly access: "read" | "edit";
+  /**
+   * The ledger the owner's late registration reads (`registerBagsDurably`): a Document the grant mints rides it, so the owner
+   * standing again adopts the one the grantee adopted, never a fresh one. Absent, a minted Document lives in this process alone.
+   */
+  readonly ownerLedger?: BagDocLedger;
 }
 
 /** Land one grant. `fresh` where the owner's hive held no such delegation before. */
-export async function grantShare({ owner, grantee, bag, access: grade }: ShareGrantInput): Promise<{ fresh: boolean }> {
-  if (!owner.docIdOfBag(bag)) await owner.registerBag(bag);
+export async function grantShare({ owner, grantee, bag, access: grade, ownerLedger }: ShareGrantInput): Promise<{ fresh: boolean }> {
+  if (!owner.docIdOfBag(bag)) {
+    if (ownerLedger) await registerBagsDurably({ provider: owner, bags: [bag], ledger: ownerLedger });
+    else await owner.registerBag(bag);
+  }
   const { id } = await owner.receiveContactCard(await grantee.contactCard());
   // A writer takes the hand the house grants a face over a bag it writes (Keyhive's `admin`, `FACE_SEATS_AND_UNSEATS`).
   const access = grade === "edit" ? "admin" : "read";

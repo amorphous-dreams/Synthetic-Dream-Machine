@@ -19,9 +19,9 @@ import { grantShare } from "../src/share-grant.js";
 
 const NOTES = bagUri("notes");
 const strip = (id: string): string => id.replace(/^0x/, "").toLowerCase();
-const stand = async (fill: number, eventStore = new InMemoryEventStore()): Promise<KeyhiveProvider> => {
+const stand = async (fill: number, eventStore = new InMemoryEventStore(), archiveBytes?: Uint8Array): Promise<KeyhiveProvider> => {
   const p = new KeyhiveProvider();
-  await p.init({ seed: new Uint8Array(32).fill(fill), eventStore });
+  await p.init({ seed: new Uint8Array(32).fill(fill), eventStore, ...(archiveBytes ? { archiveBytes } : {}) });
   await p.hydrateFromEventStore();
   return p;
 };
@@ -50,8 +50,10 @@ describe("a share grant adopts the bag on the grantee", () => {
     const minted = owner.docIdOfBag(NOTES);
     expect(minted).not.toBeNull();
     expect(await ledger.get(NOTES)).toBe(minted);
+    // The face stands again as a boot does: its Archive floor kept (`persistArchiveFloor`), its events replayed.
+    const archive = await owner.exportArchiveAfterTheCard();
     await owner.dispose();
-    const again = await stand(0xd3, ownerEvents);
+    const again = await stand(0xd3, ownerEvents, archive);
     await registerBagsDurably({ provider: again, bags: [NOTES], ledger });
     expect(again.docIdOfBag(NOTES)).toBe(minted);
     expect(grantee.docIdOfBag(NOTES)).toBe(minted);

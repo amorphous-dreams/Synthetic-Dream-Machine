@@ -1663,7 +1663,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           grant: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
             if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");
-            return grantShare({ owner, grantee, bag: g.bag, access: g.access });
+            // THE MOUNTED FACE'S MINT RIDES ITS LEDGER: its late registration reads the face plane's ledger, so a Document this
+            // grant mints adopts again after a restart; a lit sibling registers its bags in-process (no plane ledger here).
+            const ownerIsMounted = daemonAuth.personaGroupId !== undefined && g.ownerGroup === daemonAuth.personaGroupId;
+            return grantShare({ owner, grantee, bag: g.bag, access: g.access, ...(ownerIsMounted && faceLedger ? { ownerLedger: faceLedger } : {}) });
           },
         });
         return { ok: true, ...applied, waiting: [...applied.waiting], ...(applied.standing ? { standing: [...applied.standing] } : {}), workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };
