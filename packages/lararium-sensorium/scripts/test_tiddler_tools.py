@@ -221,3 +221,14 @@ def test_house_refusals_cross_the_seat_in_their_own_words(daemon):
         daemon.error = {"errorMessage": refusal, "refusal": {"reason": refusal.split(":", 1)[0]}}
         is_error, said = _call(mcp, name, args)
         assert is_error and refusal.split(":", 1)[0] in said, (name, said)
+
+
+def test_the_cards_name_the_rendered_read(daemon):
+    # THE RENDERED TIDDLER (backlog-awakens): an agent reads a whole render with ONE `tiddler_get` and any slice with its
+    # own `wiki_filter` over the sources, so the cards say so; the write cards name the wall only the renderer passes.
+    tools = {t.name: t for t in asyncio.run(_mcp().list_tools())}
+    get, filt = tools["tiddler_get"].description, tools["wiki_filter"].description
+    assert "projection: rendered" in get and "rendered-from" in get, get
+    assert "rendered-from" in filt and "slice" in filt, filt
+    for name in ("tiddler_put", "tiddler_delete"):
+        assert "rendered-derives" in tools[name].description, name
