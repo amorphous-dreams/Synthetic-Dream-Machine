@@ -1,5 +1,5 @@
 /**
- * seed-mirrors — a seed lays EVERY disk mirror back into the ONE layer it mirrors, through INGEST's three-way gate; it
+ * seed-mirrors — a lay lays EVERY disk mirror back into the ONE layer it mirrors, through INGEST's three-way gate; it
  * adopts a former face's folders by pet-name after a re-founding; it lifts kahua by the operator's hand alone, with eyes;
  * and it moves an adopted face's folders to ashes once nothing stands pending.
  *
@@ -7,18 +7,18 @@
  * nothing, disk moved lands, both moved stands off), the composite's override-base fork, and each face's kahua stage.
  *
  *   M1  the full round trip: a working copy over a canon title, a working-only title, a kāpae shadow, a face-canon memory,
- *       a house-bag row and a kahua item; export -> reset -> found -> seed -> import puts every record in the same layer
+ *       a house-bag row and a kahua item; export -> reset -> found -> lay -> import puts every record in the same layer
  *       with the same bytes, the copy keeps its base and still shadows, kahua stands pending until confirmed and then
- *       lifts signed by the new face, the old folders rest under ashes; a second seed and a second import land nothing
- *   M2  the same with NO export: reset -> found -> seed recovers the daemon memory by pet-name, from disk alone
- *   M3  an ambiguous pet-name refuses that folder and lands nothing of it, and the seed goes on; so do an unmatched one and a
+ *       lifts signed by the new face, the old folders rest under ashes; a second lay and a second import land nothing
+ *   M2  the same with NO export: reset -> found -> lay recovers the daemon memory by pet-name, from disk alone
+ *   M3  an ambiguous pet-name refuses that folder and lands nothing of it, and the lay goes on; so do an unmatched one and a
  *       folder no label names
  *   M4  a kahua mirror file: the preview lists it; no confirm -> pending; a wrong count refuses; --yes alone lifts nothing;
  *       a file that differs from the standing head reads `differs` and supersedes it on the confirmed count
  *   M5  ashes never read back into a layer, never travel in a bundle, never copy into a live mirror
  *   M6  an import's bag row and the seeded canon for one title meet at the gate: divergence stands off, never overwrites
  *   M7  the override base travels: the export's working row carries it, and an import that lands the copy restores it
- *   M8b the live lay restores a carrier's family whole: a seed-only recovery's wave hands each fragment's base from the
+ *   M8b the live lay restores a carrier's family whole: a lay-only recovery's wave hands each fragment's base from the
  *       face's sidecar beside the root's
  *   M7b a carrier's family travels whole: the working row carries each fragment record's base beside the root's, and the
  *       import hands them to the wave
@@ -26,12 +26,12 @@
  *       fresher than the copy
  *   M9  two faces: each face's working rows carry that face's own bases, never the face the daemon wears
  *   M10 a labelled former face whose folders hold a file the bundle never carried: the import leaves it out of ashes,
- *       the seed adopts it, and only then do its folders move to ashes
- *   M11 a fresh face that reads no relation and no stage (no refusal) never halts the seed
- *   M12 a face folder no label names: the seed names it and adopts nothing; the import never adopts, labels or moves it
- *   M13 THE LIT SET: three faces open, h1 worn: one seed lands each face's working memory in its own document alone (the worn
- *       face's through the ordinary wave, the others through waves naming them); a second seed lands nothing
- *   M13b h0 and h1 open, h2 shut: one seed lands h0 and h1 and names h2 ("stays shut"); unlocking h2 and seeding lands h2 alone
+ *       the lay adopts it, and only then do its folders move to ashes
+ *   M11 a fresh face that reads no relation and no stage (no refusal) never halts the lay
+ *   M12 a face folder no label names: the lay names it and adopts nothing; the import never adopts, labels or moves it
+ *   M13 THE LIT SET: three faces open, h1 worn: one lay lands each face's working memory in its own document alone (the worn
+ *       face's through the ordinary wave, the others through waves naming them); a second lay lands nothing
+ *   M13b h0 and h1 open, h2 shut: one lay lands h0 and h1 and names h2 ("stays shut"); unlocking h2 and laying lands h2 alone
  *   M14 the import's lit set: a bundle of three faces onto three open faces lands each face's rows in its own document
  *   M15 one refused folder never halts the rest: an unmatched folder records its line while a labelled one adopts and lands
  *   M16 a face whose pet-name would not read blocks only the folders no other face claims; a SHUT face waits for its own
@@ -45,10 +45,10 @@ import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash, type ShareEntry } from "@lararium/mesh";
 import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
-import { carryExport, carryImport, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
+import { houseExport, houseImport, foldWaveRefusal, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
-import { runMirrorLeg } from "../src/commands/seed.js";
-import type { CarryKahuaHead } from "../src/carry-manifest.js";
+import { runMirrorLeg } from "../src/commands/lay.js";
+import type { BundleKahuaHead } from "../src/bundle-manifest.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const F2 = "22222222-2222-4222-8222-222222222222";
@@ -68,10 +68,10 @@ interface Rec { text: string; base?: string; deleted?: boolean }
 
 /** A vessel the doors reach: layered records, a synced base per mirror file, the override fork, each face's stage. */
 class FakeHouse {
-  faces: CarryVesselFace[];
+  faces: BundleVesselFace[];
   layers = new Map<string, Map<string, Rec>>();
   synced = new Map<string, string>();
-  stage = new Map<number, CarryKahuaHead[]>();
+  stage = new Map<number, BundleKahuaHead[]>();
   lifts: Array<{ face: number; title: string; text: string; signer: string; parent: string | null }> = [];
   laid: string[] = [];
   held = new Set<string>();
@@ -79,7 +79,7 @@ class FakeHouse {
   /** The slugs minted through the WIKI door (`init-wiki`: canon, draft and recipe row), a subset of `mints`. */
   wikiMints: string[] = [];
   /** The relation the composition wears: the daemon working layer holds THAT face's document alone (`wear` switches it). */
-  constructor(faces: Array<Partial<CarryVesselFace> & { handleIndex: number }>, readonly grant: string, public worn: string) {
+  constructor(faces: Array<Partial<BundleVesselFace> & { handleIndex: number }>, readonly grant: string, public worn: string) {
     this.faces = faces.map((f) => ({ petname: null, relation: null, handle: null, seat: false, chair: null, kahua: [], ...f }));
     for (const f of this.faces) this.stage.set(f.handleIndex, [...(f.kahua ?? [])]);
   }
@@ -95,7 +95,7 @@ class FakeHouse {
   bench(slug: string): Map<string, Rec> { return this.layers.get(`lar:///ha.ka.ba/wikis/${slug}/working`) ?? new Map(); }
   /** The writer seats each wiki's workbench holds, by relation; a slug with no entry stands unbound (no face stood it yet). */
   seats = new Map<string, Set<string>>();
-  /** The share rows the vessel-private file holds, and how many times the seed landed them. */
+  /** The share rows the vessel-private file holds, and how many times the lay landed them. */
   shareRows: ShareEntry[] = [];
   shareLandings = 0;
   /** The `wikis` dir beside the canon source, and the slugs that stand sourced there (none: no canon source stands). */
@@ -118,10 +118,10 @@ class FakeHouse {
     const base = given ?? prior?.base ?? (canon !== null && this.live(canon, title) ? carrierOf(this.live(canon, title)!.text) : undefined);
     this.layer(bag).set(title, { text, ...(base !== undefined ? { base } : {}) });
   }
-  facesNow(): CarryVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])], mounted: f.relation !== null && f.relation === this.worn })); }
+  facesNow(): BundleVesselFace[] { return this.faces.map((f) => ({ ...f, kahua: [...(this.stage.get(f.handleIndex) ?? [])], mounted: f.relation !== null && f.relation === this.worn })); }
   /** Open faces this island resolves no layer for (the live node before the sibling resolver lands). */
   unresolved = new Set<number>();
-  /** Each wave's face, as the seed named it (undefined: the worn face's own wave). */
+  /** Each wave's face, as the lay named it (undefined: the worn face's own wave). */
   waveFaces: Array<{ source: string; face: number | undefined }> = [];
   /**
    * THE ISLAND'S FACE-NAMED WAVE: a wave naming an open face lands in THAT face's own document (never the worn one's); a wave
@@ -168,7 +168,7 @@ class FakeHouse {
     for (const t of kapae) { if (this.layer(wave.toBag).get(t)?.deleted) continue; this.layer(wave.toBag).set(t, { text: "", deleted: true }); out.kapaeRaised.push(t); }
     return out;
   }
-  kahuaLift: CarryDoors["kahuaLift"] = async (face, lift) => {
+  kahuaLift: BundleDoors["kahuaLift"] = async (face, lift) => {
     const cid = sha(`${this.grant}:${lift.title}:${lift.text}:${this.lifts.length}`);
     this.lifts.push({ face, title: lift.title, text: lift.text, signer: this.grant, parent: lift.parent });
     const heads = (this.stage.get(face) ?? []).filter((h) => h.cid !== lift.parent);
@@ -198,7 +198,7 @@ class FakeHouse {
   }
   /** The shared wikis whose seats a landing already set on this founding. */
   sharesSeated = new Set<string>();
-  carryDoors(): CarryDoors {
+  bundleDoors(): BundleDoors {
     return {
       census: async () => ({ clean: true, items: [], unanswered: [] }),
       faces: async () => this.facesNow(), tempConsented: () => ["daemon"],
@@ -255,7 +255,7 @@ function oldDisk(): void {
   put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/gone.kapae`, kapaeShadowBody(GONE));
   put(`projections/wikis/daemon-${F1}/recovery/draft-one.tid`, tid("draft one", "half a thought"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a rose"));
-  // A stage carrier's body rides as it stands: the projector adds no newline after it, and the seed's lift reads it byte for byte.
+  // A stage carrier's body rides as it stands: the projector adds no newline after it, and the lay's lift reads it byte for byte.
   put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(HERON, "remember the heron", `kahua-taint: []\nkahua-sources: [{"title":"${POND}","revision":"r1"}]\n`).replace(/\n$/, ""));
 }
 
@@ -276,7 +276,7 @@ function keepBases(v: FakeHouse, relation: string): void {
 }
 
 /** reset -> found: the hearth cleared, persona zero founded fresh under the same pet-name with a new relation and grant. */
-function refound(faces: Array<Partial<CarryVesselFace> & { handleIndex: number }> = [{ handleIndex: 0, petname: "hearth-one", relation: F2 }]): FakeHouse {
+function refound(faces: Array<Partial<BundleVesselFace> & { handleIndex: number }> = [{ handleIndex: 0, petname: "hearth-one", relation: F2 }]): FakeHouse {
   rmSync(join(root, "hearth"), { recursive: true, force: true });
   return new FakeHouse(faces, "new-grant", F2);
 }
@@ -290,12 +290,12 @@ beforeEach(() => {
 });
 afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
 
-describe("the seed lays every mirror back into its one layer", () => {
-  test("M1 — export -> reset -> found -> seed -> import: every record in its layer with its bytes, the base kept, kahua on the confirmed count, ashes; nothing twice", async () => {
+describe("the lay lays every mirror back into its one layer", () => {
+  test("M1 — export -> reset -> found -> lay -> import: every record in its layer with its bytes, the base kept, kahua on the confirmed count, ashes; nothing twice", async () => {
     const old = await oldVessel();
     const oldBase = old.layer(WORKING).get(POND)!.base;
     expect(oldBase).toBe(carrierOf(POND_CANON));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     expect(manifest.rows.find((r) => r.layer === "working" && r.title === POND)?.overrideBase).toBe(oldBase);
 
     const after = refound();
@@ -315,7 +315,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(existsSync(P(`ashes/${F1}/wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`))).toBe(true);
     expect(existsSync(P(`wikis/daemon-${F1}`)) || existsSync(P(`bags/daemon-${F1}`)) || existsSync(P(`bags/kahua-${F1}`))).toBe(false);
 
-    const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    const imported = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     expect(Object.values(imported.tallies).every((t) => t.stoodOff.length === 0 && t.refused.length === 0)).toBe(true);
     expect(imported.tallies.kahua.landed).toBe(0);                 // the stage already holds the heron's body
     expect(after.lifts).toHaveLength(1);
@@ -336,12 +336,12 @@ describe("the seed lays every mirror back into its one layer", () => {
     const again = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
     expect(again.layers.reduce((n, t) => n + t.landed + t.kapae, 0)).toBe(0);
     expect(again.kahua.preview).toEqual([]);
-    const reimport = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    const reimport = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     expect(Object.values(reimport.tallies).every((t) => t.landed === 0 && t.planned === 0)).toBe(true);
     expect(after.lifts).toHaveLength(1);
   });
 
-  test("M2 — with NO export, reset -> found -> seed recovers the daemon memory by pet-name from disk alone", async () => {
+  test("M2 — with NO export, reset -> found -> lay recovers the daemon memory by pet-name from disk alone", async () => {
     await oldVessel();
     const after = refound();
     const preview = await seedMirrors({ apply: false, doors: after.mirrorDoors() });
@@ -377,7 +377,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(mirrorsLeftWork(t)).toBe(true);
     expect(t.adoptions).toEqual([]);
     nothingOfF1(twins);
-    // The rest of the seed went on: the house bag still laid.
+    // The rest of the lay went on: the house bag still laid.
     expect(twins.live(GARDEN, ROSE)?.text).toBe(tid(ROSE, "a rose"));
 
     const stranger = refound([{ handleIndex: 0, petname: "someone-else", relation: F2 }]);
@@ -413,7 +413,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     const [log, err] = [console.log, console.error];
     console.log = (...a: unknown[]) => { said.push(a.join(" ")); };
     console.error = (...a: unknown[]) => { said.push(a.join(" ")); };
-    try { await runMirrorLeg({ command: "vessel", positional: ["seed"], options: {}, flags: { apply: true, yes: true } }, v.mirrorDoors()); }
+    try { await runMirrorLeg({ command: "vessel", positional: ["lay"], options: {}, flags: { apply: true, yes: true } }, v.mirrorDoors()); }
     finally { console.log = log; console.error = err; }
     expect(v.lifts).toEqual([]);
     expect(said.join("\n")).toMatch(/--lift-kahua 1/);
@@ -439,7 +439,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(after.laid.some((s) => s.includes(`${join("projections", "ashes")}`))).toBe(false);
     expect(after.live(WORKING, "lar:///ha.ka.ba/notes/late")).toBeUndefined();
     // The export walks the live mirrors alone: ashes never refuse it as unclaimed, and none of their bytes travel.
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: after.carryDoors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: after.bundleDoors() });
     expect(manifest.files.some((f) => f.path.includes("late") || f.path.includes("ashes"))).toBe(false);
     expect(manifest.omissions.some((o) => o.kind === "unclaimed-face-folders")).toBe(false);
     // The face worn now projects under its own folders, never under ashes: the late file lands in no live mirror.
@@ -448,16 +448,16 @@ describe("the seed lays every mirror back into its one layer", () => {
 
   test("M6 — an import's bag row meets the seeded canon at the gate: divergence stands off and never overwrites", async () => {
     const old = await oldVessel();
-    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     const after = refound();
     after.held.add("garden");
-    // The seed laid another canon text for the title (the checkout's), and the house mirror left the disk.
+    // The lay laid another canon text for the title (the checkout's), and the house mirror left the disk.
     after.layer(GARDEN).set(ROSE, { text: tid(ROSE, "the checkout's rose") });
     rmSync(P("bags/garden"), { recursive: true });
-    const r = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    const r = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     expect(r.tallies.bag.stoodOff.join("\n")).toContain(ROSE);
     expect(after.live(GARDEN, ROSE)?.text).toBe(tid(ROSE, "the checkout's rose"));
-    // And the other way: a seed over the bundle's landed row stands off on a disk file that moved too.
+    // And the other way: a lay over the bundle's landed row stands off on a disk file that moved too.
     put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid(ROSE, "a third rose"));
     const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
     expect(seeded.layers.find((t) => t.toBag === GARDEN)?.stoodOff.join("\n")).toContain(ROSE);
@@ -467,18 +467,18 @@ describe("the seed lays every mirror back into its one layer", () => {
   test("M7 — the override base travels: an import that lands the copy restores the base the bundle carried", async () => {
     const old = await oldVessel();
     const oldBase = old.layer(WORKING).get(POND)!.base!;
-    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
-    // Move the old folders aside by hand (no seed adoption), so the import lands each copy itself.
+    await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
+    // Move the old folders aside by hand (no lay adoption), so the import lands each copy itself.
     for (const rel of [`wikis/daemon-${F1}`, `bags/daemon-${F1}`, `bags/kahua-${F1}`]) rmSync(P(rel), { recursive: true });
     const after = refound();
     after.held.add("garden");
-    await carryImport(out, { apply: true, doors: after.carryDoors() });
+    await houseImport(out, { apply: true, doors: after.bundleDoors() });
     // The working wave lands before the face canon does, so no canon stands to fork from: the carried base alone names it.
     expect(after.layer(WORKING).get(POND)?.base).toBe(oldBase);
     expect(after.live(WORKING, POND)?.text).toBe(POND_WORKING);
   });
 
-  test("M8 — a base forked before the reset survives a seed-only recovery, and canon still reads fresher", async () => {
+  test("M8 — a base forked before the reset survives a lay-only recovery, and canon still reads fresher", async () => {
     const old = await oldVessel();
     const forkBase = old.layer(WORKING).get(POND)!.base!;
     // Canon moved past the fork before the reset: the face canon's disk file says something newer.
@@ -512,7 +512,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     const B1 = `sha256:${"1".repeat(64)}`, B3 = `sha256:${"3".repeat(64)}`;
     writeFaceBases(F1, { [POND]: B1 }, join(root, "projections"));
     writeFaceBases(F3, { [POND]: B3 }, join(root, "projections"));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: { ...two.carryDoors(), overrideBases: async () => ({ [POND]: `sha256:${"9".repeat(64)}` }) } });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: { ...two.bundleDoors(), overrideBases: async () => ({ [POND]: `sha256:${"9".repeat(64)}` }) } });
     const rowOf = (pet: string) => manifest.rows.find((r) => r.layer === "working" && r.face === pet && r.title === POND);
     expect(rowOf("one")?.overrideBase).toBe(B1);
     expect(rowOf("two")?.overrideBase).toBe(B3);
@@ -523,28 +523,28 @@ describe("the seed lays every mirror back into its one layer", () => {
     const B0 = `sha256:${"a".repeat(64)}`, BP = `sha256:${"b".repeat(64)}`, BX = `sha256:${"c".repeat(64)}`;
     // The face's bases sidecar names the root, one fragment of its family, and another carrier's fragment.
     writeFaceBases(F1, { [POND]: B0, [`${POND}#/part`]: BP, [`${HERON}#/part`]: BX }, join(root, "projections"));
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     const row = manifest.rows.find((r) => r.layer === "working" && r.title === POND);
     expect(row?.overrideBase).toBe(B0);
     expect(row?.familyBases).toEqual({ [`${POND}#/part`]: BP });
     for (const rel of [`wikis/daemon-${F1}`, `bags/daemon-${F1}`, `bags/kahua-${F1}`]) rmSync(P(rel), { recursive: true });
     const after = refound();
     after.held.add("garden");
-    const doors = after.carryDoors();
+    const doors = after.bundleDoors();
     const asked: Array<{ uri: string; overrideBase?: string; familyBases?: Readonly<Record<string, string>> }> = [];
-    await carryImport(out, { apply: true, doors: { ...doors, ingest: async (wave) => { asked.push(...wave.candidates); return doors.ingest(wave); } } });
+    await houseImport(out, { apply: true, doors: { ...doors, ingest: async (wave) => { asked.push(...wave.candidates); return doors.ingest(wave); } } });
     const pond = asked.find((c) => c.uri === POND);
     expect(pond?.overrideBase).toBe(B0);
     expect(pond?.familyBases).toEqual({ [`${POND}#/part`]: BP });
   });
 
-  test("M10 — a labelled former face whose folders hold a file the bundle never carried: the import leaves it, the seed adopts it, then ashes", async () => {
+  test("M10 — a labelled former face whose folders hold a file the bundle never carried: the import leaves it, the lay adopts it, then ashes", async () => {
     const old = await oldVessel();
-    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     // The former face wrote one more memory after the export: the bundle never carried it.
     put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/after-export.tid`, tid("lar:///ha.ka.ba/notes/after-export", "written after the export"));
     const after = refound();
-    const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    const imported = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     expect(imported.ashes).toEqual([]);
     expect(imported.ashesLeft.find((a) => a.relation === F1)?.why).toMatch(/never carried/);
     const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
@@ -553,9 +553,9 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(seeded.ashes.map((a) => a.relation)).toEqual([F1]);
   });
 
-  test("M12 — a face folder no label names: the seed names it and adopts nothing; the import never adopts it, labels it or moves it", async () => {
+  test("M12 — a face folder no label names: the lay names it and adopts nothing; the import never adopts it, labels it or moves it", async () => {
     const old = await oldVessel();
-    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     rmSync(faceLabelPath(F1, join(root, "projections")));
     const after = refound();
     const seeded = await seedMirrors({ apply: true, doors: after.mirrorDoors() });
@@ -565,14 +565,14 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(refused?.message).not.toMatch(/import/);
     expect(after.live(WORKING, POND)).toBeUndefined();
     expect(after.laid.some((s) => s.includes(F1))).toBe(false);
-    const imported = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    const imported = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     expect(imported.ashes).toEqual([]);
     expect(readFaceLabel(F1, join(root, "projections"))).toBeNull();
     expect(existsSync(P(`wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`))).toBe(true);
     expect(existsSync(P(`ashes/${F1}`))).toBe(false);
   });
 
-  test("M13 — the lit set: three faces open, h1 worn; one seed lands every face's memory, each in its own document alone", async () => {
+  test("M13 — the lit set: three faces open, h1 worn; one lay lands every face's memory, each in its own document alone", async () => {
     const [G0, G1, G2] = ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa0", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1", "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa2"];
     const [N0, N1, N2] = ["lar:///ha.ka.ba/notes/zero-only", "lar:///ha.ka.ba/notes/one-only", "lar:///ha.ka.ba/notes/two-only"];
     // The FORMER founding's three faces left their folders, each labelled with its pet-name.
@@ -599,12 +599,12 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(first.waiting).toEqual([]);
     expect(mirrorsLeftWork(first)).toBe(false);
     expect(first.ashes.map((a) => a.relation).sort()).toEqual([G0, G1, G2].sort());
-    // A second seed lands nothing.
+    // A second lay lands nothing.
     const again = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(again.layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
   });
 
-  test("M13b — h0 and h1 open, h2 shut: one seed lands h0 and h1 and names h2; unlocking h2 and seeding lands h2 alone", async () => {
+  test("M13b — h0 and h1 open, h2 shut: one lay lands h0 and h1 and names h2; unlocking h2 and laying lands h2 alone", async () => {
     const [G0, G1, G2] = ["dddddddd-dddd-4ddd-8ddd-ddddddddddd0", "dddddddd-dddd-4ddd-8ddd-ddddddddddd1", "dddddddd-dddd-4ddd-8ddd-ddddddddddd2"];
     const [N0, N1, N2] = ["lar:///ha.ka.ba/notes/zero-own", "lar:///ha.ka.ba/notes/one-own", "lar:///ha.ka.ba/notes/two-own"];
     rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true });
@@ -623,12 +623,12 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(v.workingOf(R1).get(N1)?.text).toBe(tid(N1, "face h1's memory"));
     expect(v.waveFaces.some((w) => w.face === 2)).toBe(false);
     expect(first.waiting.map((w) => [w.handleIndex, w.petname, w.relations])).toEqual([[2, pets[2], [G2]]]);
-    expect(mirrorLines(first).out.join("\n")).toContain(`${pets[2]} stays shut: \`lares vault unlock --face 2\`, then seed again`);
+    expect(mirrorLines(first).out.join("\n")).toContain(`${pets[2]} stays shut: \`lares vault unlock --face 2\`, then lay again`);
     expect(existsSync(P(`wikis/daemon-${G2}`))).toBe(true);
     expect(first.ashesLeft.map((a) => a.relation)).not.toContain(G0);
 
-    // `lares vault unlock --face 2`, then seed: h2's memory lands in h2's own document alone; h0 and h1 read quiet.
-    (v.faces as Array<CarryVesselFace>)[2] = { ...v.faces[2]!, relation: R2, kahua: [] };
+    // `lares vault unlock --face 2`, then lay: h2's memory lands in h2's own document alone; h0 and h1 read quiet.
+    (v.faces as Array<BundleVesselFace>)[2] = { ...v.faces[2]!, relation: R2, kahua: [] };
     v.waveFaces = [];
     const second = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(v.workingOf(R2).get(N2)?.text).toBe(tid(N2, "face h2's memory"));
@@ -664,12 +664,12 @@ describe("the seed lays every mirror back into its one layer", () => {
     rmSync(P(`bags/kahua-${F1}`), { recursive: true });
     put(`projections/wikis/daemon-${F2}/ha.ka.ba/notes/two.tid`, tid("lar:///ha.ka.ba/notes/two", "face two's"));
     put(`projections/wikis/daemon-${F3}/ha.ka.ba/notes/three.tid`, tid("lar:///ha.ka.ba/notes/three", "face three's"));
-    await carryExport(out, { acceptOmissions: true, doors: old.carryDoors() });
+    await houseExport(out, { acceptOmissions: true, doors: old.bundleDoors() });
     for (const r of [F1, F2, F3]) for (const d of [`wikis/daemon-${r}`, `bags/daemon-${r}`]) rmSync(P(d), { recursive: true, force: true });
     const [R0, R1, R2] = ["cccccccc-cccc-4ccc-8ccc-ccccccccccc0", "cccccccc-cccc-4ccc-8ccc-ccccccccccc1", "cccccccc-cccc-4ccc-8ccc-ccccccccccc2"];
     const after = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "new", R1);
     after.held.add("garden");
-    const r = await carryImport(out, { apply: true, doors: after.carryDoors() });
+    const r = await houseImport(out, { apply: true, doors: after.bundleDoors() });
     // Every face open: each bundle face's rows land in its own face's document, the worn one's and the two named alike.
     expect(r.waiting).toEqual([]);
     expect(after.live(WORKING, "lar:///ha.ka.ba/notes/two")?.text).toBe(tid("lar:///ha.ka.ba/notes/two", "face two's"));
@@ -714,7 +714,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     const s2 = await seedMirrors({ apply: true, doors: shut.mirrorDoors() });
     expect(s2.refusals).toEqual([]);
     expect(s2.waiting.map((w) => [w.handleIndex, w.petname, w.relations])).toEqual([[2, "referee", [SHUT]]]);
-    expect(mirrorLines(s2).out.join("\n")).toContain("referee stays shut: `lares vault unlock --face 2`, then seed again");
+    expect(mirrorLines(s2).out.join("\n")).toContain("referee stays shut: `lares vault unlock --face 2`, then lay again");
     expect(existsSync(P(`wikis/daemon-${SHUT}/ha.ka.ba/notes/shut.tid`))).toBe(true);
   });
 
@@ -755,7 +755,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(v.bench("notes").get(RFC)?.text).toBe(tid(RFC, "the one working copy the seated faces share"));
     expect(second.benchWaiting).toEqual([]);
     expect(second.layers.map((t) => [t.mirror, t.landed])).toEqual([["workbench notes", 1]]);
-    // THE STEWARD WORN: the document already holds it, so the second writer's seed lands nothing. Once per document.
+    // THE STEWARD WORN: the document already holds it, so the second writer's lay lands nothing. Once per document.
     v.wear(R0);
     const third = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(third.layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
@@ -778,11 +778,11 @@ describe("the seed lays every mirror back into its one layer", () => {
     const v = new FakeHouse([R0, R1, R2].map((relation, handleIndex) => ({ handleIndex, petname: pets[handleIndex]!, relation })), "grant", R2);
     v.seats.set("cold-shelf", new Set([R0]));
     const r = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(v.wikiMints, "the referee's seed mints no wiki of its own over the steward's").toEqual([]);
+    expect(v.wikiMints, "the referee's lay mints no wiki of its own over the steward's").toEqual([]);
     expect(r.minted).toEqual([]);
     expect(r.benchWaiting).toEqual([{ slug: "cold-shelf", folder: P("wikis/cold-shelf"), why: "writer" }]);
     expect(v.bench("cold-shelf").size + v.personalOf(R2, "cold-shelf").size).toBe(0);
-    // CONTROL: an unbound house wiki (no face stood it on this founding) still mints at the worn face's seed, which stands it.
+    // CONTROL: an unbound house wiki (no face stood it on this founding) still mints at the worn face's lay, which stands it.
     rmSync(P("wikis/cold-shelf"), { recursive: true });
     put("projections/wikis/lending-shelf/ha.ka.ba/lares/ref/RFC-4151.tid", tid(RFC, "a page in a wiki no face stood yet"));
     const fresh = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
@@ -807,7 +807,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(v.bench("lares").get(RFC)?.text).toBe(tid(RFC, "the shared working copy, beside the source"));
     expect(second.layers.map((t) => t.mirror)).toEqual(["workbench lares (beside the canon source)"]);
     expect(second.benchWaiting).toEqual([]);
-    // The steward's seed after it lands nothing.
+    // The steward's lay after it lands nothing.
     v.wear(F2);
     expect((await seedMirrors({ apply: true, doors: v.mirrorDoors() })).layers.reduce((n, t) => n + t.landed, 0)).toBe(0);
   });
@@ -838,7 +838,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(second.benchWaiting).toEqual([]);
     expect(second.shares?.workbenches).toEqual([{ slug: "notes", members: 1, founded: false, seated: 1, removed: 0 }]);
     expect(mirrorLines(second).out.join("\n")).toMatch(/shares: landed 0 grant\(s\); workbench seats: notes \(1 member face\(s\), 1 seated now\)/);
-    // The engineer's seed after it lands nothing: the document arrived once.
+    // The engineer's lay after it lands nothing: the document arrived once.
     v.seats.get("notes")!.add(R1);
     v.wear(R1);
     const third = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
@@ -880,7 +880,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(existsSync(P(`personal/${G1}`))).toBe(false);
     expect(second.waiting).toEqual([]);
     const again = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
-    expect(again.layers.reduce((n, t) => n + t.landed, 0), "a second seed lands nothing").toBe(0);
+    expect(again.layers.reduce((n, t) => n + t.landed, 0), "a second lay lands nothing").toBe(0);
   });
 
   test("M22 — export and import carry by document: a workbench travels as ONE row set with its share row, a personal layer for its one face; each lands once", async () => {
@@ -899,7 +899,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     old.held.add("notes"); old.held.add("lares");
     old.canonWikis = join(root, "wikis"); old.sourcedSlugs.add("lares");
     old.shareRows = [{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }];
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     expect(manifest.counts["wiki-working"], "each workbench travels as its one row set: notes, and the sourced lares").toBe(2);
     expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.title, r.face]).sort()).toEqual([[SOURCED, null], [DRAFTED, null]].sort());
     expect(manifest.rows.filter((r) => r.layer === "personal").map((r) => [r.title, r.face, r.bag])).toEqual([[MARGIN, "engineer", "lar:///ha.ka.ba/wikis/lares/personal"]]);
@@ -912,7 +912,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R1);
     v.canonWikis = join(root, "wikis"); v.sourcedSlugs.add("lares"); v.held.add("lares");
     v.seats.set("lares", new Set([R0]));           // the steward's first mount stood the house wiki's workbench
-    const first = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    const first = await houseImport(out, { apply: true, doors: v.bundleDoors() });
     expect(v.shareRows, "the share row lands in the vessel-private file").toEqual([{ slug: "notes", kind: "wiki", read: "", write: "engineer", owner: "steward" }]);
     expect(first.shares.written).toEqual(["notes"]);
     expect(first.benchWaiting.map((w) => [w.slug, w.why, w.owner]).sort(), "notes waits for its owner, lares for a seated writer").toEqual([["lares", "writer", undefined], ["notes", "owner", "steward"]]);
@@ -922,7 +922,7 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(first.tallies.personal.landed).toBe(1);
     // THE STEWARD WEARS: the wiki mints, its canon and both workbenches land once, and the engineer's margin stays the engineer's.
     v.wear(R0);
-    const second = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    const second = await houseImport(out, { apply: true, doors: v.bundleDoors() });
     expect(v.mints).toEqual(["lar:///ha.ka.ba/bags/notes"]);
     expect(v.wikiMints, "a wiki mints through the wiki door, so its recipe row stands").toEqual(["notes"]);
     expect(v.layer("lar:///ha.ka.ba/bags/notes").get(PAGE)?.text).toBe(tid(PAGE, "a promoted page"));
@@ -934,16 +934,16 @@ describe("the seed lays every mirror back into its one layer", () => {
     expect(v.personalOf(R0, "lares").size, "no face's margin lands on another face").toBe(0);
     expect(v.shareLandings).toBeGreaterThan(0);
     // A SECOND IMPORT LANDS NOTHING, under either face.
-    const third = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    const third = await houseImport(out, { apply: true, doors: v.bundleDoors() });
     expect(Object.values(third.tallies).reduce((n, t) => n + t.landed + t.planned, 0)).toBe(0);
     v.seats.get("notes")!.add(R1);
     v.wear(R1);
-    const fourth = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    const fourth = await houseImport(out, { apply: true, doors: v.bundleDoors() });
     expect(Object.values(fourth.tallies).reduce((n, t) => n + t.landed + t.planned, 0)).toBe(0);
     expect(v.mints).toHaveLength(1);
   });
 
-  test("M11 — a fresh face that reads no relation and no stage never halts the seed", async () => {
+  test("M11 — a fresh face that reads no relation and no stage never halts the lay", async () => {
     const v = new FakeHouse([{ handleIndex: 0, petname: "hearth-one", relation: F1 }, { handleIndex: 1, petname: "fresh", relation: null, kahua: [] }], "grant", F1);
     v.held.add("garden");
     const r = await seedMirrors({ apply: true, doors: v.mirrorDoors(), liftKahua: 1 });
@@ -960,12 +960,12 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
   const kahuaTid = (title: string, body: string): string => `kahua-sources: []\nkahua-taint: []\ntitle: ${title}\ntype: text/vnd.tiddlywiki\n\n${body}`;
   const clearOld = (): void => { rmSync(P(`wikis/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/daemon-${F1}`), { recursive: true }); rmSync(P(`bags/kahua-${F1}`), { recursive: true }); rmSync(P("bags/garden"), { recursive: true }); };
   /** The vessel's own law, as a walked hearth answers it: a lift for a face it does not mount refuses `chore-face-not-mounted`. */
-  const liftsAsWornAlone = (v: FakeHouse): CarryDoors["kahuaLift"] => async (face, lift) => {
+  const liftsAsWornAlone = (v: FakeHouse): BundleDoors["kahuaLift"] => async (face, lift) => {
     if (v.faces.find((f) => f.handleIndex === face)?.relation !== v.worn) throw new Error("chore-face-not-mounted: a kahua stage acts for a face this vessel does not mount");
     return v.kahuaLift(face, lift);
   };
 
-  test("W1 — RED: a kahua item of an open, unworn face waits by name for its own wear: the count names what this wear lifts, no lift reaches the vessel for it, the seed leaves no work; CONTROL: the worn face's item lifts, and the unworn face's lifts at its own wear", async () => {
+  test("W1 — RED: a kahua item of an open, unworn face waits by name for its own wear: the count names what this wear lifts, no lift reaches the vessel for it, the lay leaves no work; CONTROL: the worn face's item lifts, and the unworn face's lifts at its own wear", async () => {
     clearOld();
     put(`projections/bags/kahua-${G0}/ha.ka.ba/kahua/memory/heron.tid`, kahuaTid(HERON, "remember the heron"));
     put(`projections/bags/kahua-${G1}/ha.ka.ba/kahua/memory/wren.tid`, kahuaTid(WREN, "remember the wren"));
@@ -1000,13 +1000,13 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     expect(r.layers.flatMap((t) => t.refused)).toEqual([]);
     expect(r.waiting.map((w) => [w.handleIndex, w.why])).toEqual([[1, "unresolved"]]);
     expect(mirrorsLeftWork(r), "an expected wait leaves the exit green").toBe(false);
-    expect(mirrorLines(r).out.join("\n")).toMatch(/engineer stands open, and its own layer lays at its own face's wear[^\n]*wear it \(`lares vault unlock --face 1`\) and seed again/);
+    expect(mirrorLines(r).out.join("\n")).toMatch(/engineer stands open, and its own layer lays at its own face's wear[^\n]*wear it \(`lares vault unlock --face 1`\) and lay again/);
     expect(mirrorLines(r).err).toEqual([]);
     const other = await seedMirrors({ apply: true, doors: refusing("cap-denied: write on the layer required") });
     expect(mirrorsLeftWork(other), "CONTROL: a refusal that names no wait still asks a hand").toBe(true);
   });
 
-  test("W3 — RED: a kahua body rides the seed's lift byte for byte, its trailing newline kept, so the import after it reads the stage as holding the bundle's body; CONTROL: a body that ends with no newline lifts as it stands", async () => {
+  test("W3 — RED: a kahua body rides the lay's lift byte for byte, its trailing newline kept, so the import after it reads the stage as holding the bundle's body; CONTROL: a body that ends with no newline lifts as it stands", async () => {
     expect(readKahuaFile(kahuaTid(WREN, "a body that ends with one newline\n"))?.text).toBe("a body that ends with one newline\n");
     expect(readKahuaFile(kahuaTid(WREN, "a body that ends with none"))?.text).toBe("a body that ends with none");
     clearOld();
@@ -1015,16 +1015,16 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     writeFaceLabels([{ relation: G0, petname: "steward", handleIndex: 0 }], join(root, "projections"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }], "old-grant", G0);
     old.stage.set(0, [{ title: WREN, cid: sha("old-wren"), text: body, fields: {}, taint: [], sources: [] }]);
-    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }], "new-grant", R0);
     await seedMirrors({ apply: true, doors: v.mirrorDoors(), liftKahua: 1 });
     expect(v.lifts.map((l) => l.text)).toEqual([body]);
-    const imported = await carryImport(out, { apply: true, doors: v.carryDoors() });
+    const imported = await houseImport(out, { apply: true, doors: v.bundleDoors() });
     expect(imported.tallies.kahua.stoodOff, "the stage holds the bundle's own body, so nothing stands off").toEqual([]);
     expect(imported.tallies.kahua.already).toBe(1);
   });
 
-  test("W4 — RED: a seed whose share landing moved nothing says nothing of shares; CONTROL: a landing that moved a grant, seated a face or left one pending says so", async () => {
+  test("W4 — RED: a lay whose share landing moved nothing says nothing of shares; CONTROL: a landing that moved a grant, seated a face or left one pending says so", async () => {
     clearOld();
     put("projections/wikis/notes/ha.ka.ba/notes/page.tid", tid("lar:///ha.ka.ba/notes/page", "a page"));
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }], "grant", R0);
@@ -1035,7 +1035,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     await seedMirrors({ apply: true, doors: landing({ granted: 2, moved: 0, carried: 2, pending: 0, workbenches: [{ slug: "notes", members: 2, founded: false, seated: 0, removed: [] }] }) });
     const second = await seedMirrors({ apply: true, doors: landing({ granted: 2, moved: 0, carried: 2, pending: 0, workbenches: [{ slug: "notes", members: 2, founded: false, seated: 0, removed: [] }] }) });
     expect(quiet.shares?.moved).toBe(0);
-    expect(mirrorLines(second).out.join("\n"), "a second seed lands and says nothing").not.toMatch(/shares:/);
+    expect(mirrorLines(second).out.join("\n"), "a second lay lands and says nothing").not.toMatch(/shares:/);
     const moved = await seedMirrors({ apply: true, doors: landing({ granted: 2, moved: 1, carried: 1, pending: 0, workbenches: [{ slug: "notes", members: 2, founded: false, seated: 1, removed: [] }] }) });
     expect(mirrorLines(moved).out.join("\n")).toMatch(/shares: landed 1 grant\(s\) \(1 reach their grantee at that face's next wear\); workbench seats: notes \(2 member face\(s\), 1 seated now\)/);
     const pending = await seedMirrors({ apply: true, doors: landing({ granted: 0, moved: 0, carried: 0, pending: 1, workbenches: [] }) });
@@ -1049,35 +1049,35 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
     old.held.add("lares");
     old.stage.set(1, [{ title: WREN, cid: sha("old-wren"), text: "remember the wren\n", fields: {}, taint: [], sources: [] }]);
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     expect(manifest.counts.personal).toBe(1);
     rmSync(P(`personal/${G1}`), { recursive: true }); rmSync(P(`bags/kahua-${G1}`), { recursive: true });
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
     v.held.add("lares");
-    const doors = (): CarryDoors => ({ ...v.carryDoors(), kahuaLift: liftsAsWornAlone(v) });
-    const first = await carryImport(out, { apply: true, doors: doors() });
+    const doors = (): BundleDoors => ({ ...v.bundleDoors(), kahuaLift: liftsAsWornAlone(v) });
+    const first = await houseImport(out, { apply: true, doors: doors() });
     expect(first.tallies.personal).toMatchObject({ landed: 0, already: 0, waiting: 1 });
     expect(first.tallies.kahua).toMatchObject({ landed: 0, waiting: 1, refused: [], stoodOff: [] });
     expect(first.kahuaWaiting).toEqual([{ petname: "engineer", handleIndex: 1, heads: 1 }]);
     expect(v.lifts).toEqual([]);
     v.wear(R1);
-    const second = await carryImport(out, { apply: true, doors: doors() });
+    const second = await houseImport(out, { apply: true, doors: doors() });
     expect(second.tallies.personal).toMatchObject({ landed: 1, waiting: 0 });
     expect(second.tallies.kahua).toMatchObject({ landed: 1, waiting: 0 });
     expect(v.lifts.map((l) => [l.face, l.text])).toEqual([[1, "remember the wren\n"]]);
-    const third = await carryImport(out, { apply: true, doors: doors() });
+    const third = await houseImport(out, { apply: true, doors: doors() });
     expect(Object.values(third.tallies).reduce((n, t) => n + t.landed + t.planned + t.waiting, 0)).toBe(0);
   });
 
   test("W6 — RED: an export names each wiki that stands cold, since a put a face made into a cold wiki rides no mirror and so no bundle; CONTROL: with every wiki awake the export names none", async () => {
     clearOld();
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }], "old-grant", G0);
-    const cold = await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), coldWikis: async () => ["notes"] } });
+    const cold = await houseExport(out, { acceptOmissions: false, doors: { ...old.bundleDoors(), coldWikis: async () => ["notes"] } });
     const named = cold.manifest.omissions.find((o) => o.kind === "cold-wikis");
     expect(named?.items).toEqual(["notes"]);
     expect(named?.detail).toMatch(/lares wiki hold <slug>/);
     rmSync(out, { recursive: true });
-    const awake = await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), coldWikis: async () => [] } });
+    const awake = await houseExport(out, { acceptOmissions: false, doors: { ...old.bundleDoors(), coldWikis: async () => [] } });
     expect(awake.manifest.omissions.map((o) => o.kind)).not.toContain("cold-wikis");
   });
 
@@ -1106,11 +1106,11 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
    *  draws `document-unavailable` (a lit sibling's daemon layer opens at its own wear), or `refusal` where one is named, and an
    *  in-wiki wave for a wiki the vessel holds no bag of draws `wiki-mount-refused: no-such-bag`. The live door FOLDS the answer
    *  into one refused row per candidate (`foldWaveRefusal`); `shape: "throw"` stands a door that throws it instead. */
-  const liveIngest = (v: FakeHouse, refusal: string | null = null, shape: "fold" | "throw" = "fold"): CarryDoors["ingest"] => async (wave) => {
+  const liveIngest = (v: FakeHouse, refusal: string | null = null, shape: "fold" | "throw" = "fold"): BundleDoors["ingest"] => async (wave) => {
     const whole = wave.face !== undefined && v.faces.find((f) => f.handleIndex === wave.face)?.relation !== v.worn
       ? refusal ?? "[document-unavailable] lar:///ha.ka.ba/wikis/daemon/working (a lit face's own layer) unavailable: doc automerge:35dAufh4 was reported unavailable by every reachable peer; make the document reachable from a peer, then restart."
       : wave.inWiki === true && wave.wiki !== undefined && !v.held.has(wave.wiki) ? `wiki-mount-refused: no-such-bag lar:///ha.ka.ba/bags/${wave.wiki}` : null;
-    if (whole === null) return v.carryDoors().ingest(wave);
+    if (whole === null) return v.bundleDoors().ingest(wave);
     if (shape === "throw") throw new Error(whole);
     return { landed: [], unanswered: [], conflicts: [], kapaeRaised: [], ...foldWaveRefusal(whole, wave.candidates, wave.kapae) };
   };
@@ -1119,26 +1119,26 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     clearOld();
     put(`projections/wikis/daemon-${G1}/ha.ka.ba/notes/engineer-own.tid`, tid(NOTE, "the engineer's own memory"));
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G0);
-    await carryExport(out, { acceptOmissions: false, doors: old.carryDoors() });
+    await houseExport(out, { acceptOmissions: false, doors: old.bundleDoors() });
     rmSync(P(`wikis/daemon-${G1}`), { recursive: true });
     const restored = P(`wikis/daemon-${R1}/ha.ka.ba/notes/engineer-own.tid`);
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
-    await expect(carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v, "cap-denied: write on the layer required", "throw") } }),
+    await expect(houseImport(out, { apply: true, doors: { ...v.bundleDoors(), ingest: liveIngest(v, "cap-denied: write on the layer required", "throw") } }),
       "CONTROL: a whole-wave throw that names no wait still rejects").rejects.toThrow(/cap-denied/);
     expect(existsSync(restored), "CONTROL: the thrown wave leaves no restored file behind").toBe(false);
-    const named = await carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v, "cap-denied: write on the layer required") } });
+    const named = await houseImport(out, { apply: true, doors: { ...v.bundleDoors(), ingest: liveIngest(v, "cap-denied: write on the layer required") } });
     expect(named.tallies.working.refused, "CONTROL: the live door's folded refusal stands named row by row").toEqual([`${NOTE} (cap-denied: write on the layer required)`]);
     expect(named.daemonWaiting).toEqual([]);
     expect(existsSync(restored), "CONTROL: a refused row's restored file leaves the mirror").toBe(false);
     for (const shape of ["fold", "throw"] as const) {
-      const first = await carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v, null, shape) } });
+      const first = await houseImport(out, { apply: true, doors: { ...v.bundleDoors(), ingest: liveIngest(v, null, shape) } });
       expect(first.daemonWaiting, shape).toEqual([{ petname: "engineer", handleIndex: 1 }]);
       expect(first.tallies.working, shape).toMatchObject({ landed: 0, waiting: 1, refused: [], stoodOff: [] });
       expect(v.workingOf(R1).size).toBe(0);
       expect(existsSync(restored), `${shape}: a waiting wave's restored file leaves the mirror again`).toBe(false);
     }
     v.wear(R1);
-    const second = await carryImport(out, { apply: true, doors: { ...v.carryDoors(), ingest: liveIngest(v) } });
+    const second = await houseImport(out, { apply: true, doors: { ...v.bundleDoors(), ingest: liveIngest(v) } });
     expect(second.daemonWaiting).toEqual([]);
     expect(second.tallies.working).toMatchObject({ landed: 1, waiting: 0, refused: [] });
     expect(v.workingOf(R1).get(NOTE)?.text).toBe(tid(NOTE, "the engineer's own memory"));
@@ -1153,21 +1153,21 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     old.held.add("notes");
     old.shareRows = [{ slug: "notes", kind: "wiki", read: "engineer", write: "", owner: "steward" }];
     // The live export names each user wiki the vessel holds (`list-wikis`), so the bundle re-declares `notes` though no page of its workbench travels.
-    const { manifest } = await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), userWikis: async () => ["notes"] } });
+    const { manifest } = await houseExport(out, { acceptOmissions: false, doors: { ...old.bundleDoors(), userWikis: async () => ["notes"] } });
     expect(manifest.counts.personal).toBe(1);
     rmSync(P(`personal/${G1}`), { recursive: true });
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R1);
-    const doors = (): CarryDoors => ({ ...v.carryDoors(), ingest: liveIngest(v) });
-    const first = await carryImport(out, { apply: true, doors: doors() });
+    const doors = (): BundleDoors => ({ ...v.bundleDoors(), ingest: liveIngest(v) });
+    const first = await houseImport(out, { apply: true, doors: doors() });
     expect(v.mints, "the steward's wiki mints at the steward's wear").toEqual([]);
     expect(first.personalWaiting).toEqual([{ petname: "engineer", handleIndex: 1, wiki: "notes", owner: "steward" }]);
     expect(first.tallies.personal).toMatchObject({ landed: 0, waiting: 1, refused: [] });
     expect(existsSync(P(`personal/${R1}/notes`)), "a waiting margin restores nothing into the mirror").toBe(false);
     v.wear(R0);
-    await carryImport(out, { apply: true, doors: doors() });
+    await houseImport(out, { apply: true, doors: doors() });
     expect(v.wikiMints).toEqual(["notes"]);
     v.wear(R1);
-    const third = await carryImport(out, { apply: true, doors: doors() });
+    const third = await houseImport(out, { apply: true, doors: doors() });
     expect(third.personalWaiting).toEqual([]);
     expect(third.tallies.personal).toMatchObject({ landed: 1, waiting: 0 });
     expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));
@@ -1181,7 +1181,7 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const old = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: G0 }, { handleIndex: 1, petname: "engineer", relation: G1 }], "old-grant", G1);
     old.held.add("notes");
     old.shareRows = [{ ...ROW }];
-    await carryExport(out, { acceptOmissions: false, doors: { ...old.carryDoors(), userWikis: async () => ["notes"] } });
+    await houseExport(out, { acceptOmissions: false, doors: { ...old.bundleDoors(), userWikis: async () => ["notes"] } });
     rmSync(P(`personal/${G1}`), { recursive: true });
     const v = new FakeHouse([{ handleIndex: 0, petname: "steward", relation: R0 }, { handleIndex: 1, petname: "engineer", relation: R1 }], "new-grant", R0);
     // The vessel's own law, as a walked hearth answers it: share-apply reads the CONTROL document (never the file), a face's
@@ -1194,8 +1194,8 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
     const atLanding: ShareEntry[][] = [];
     let sets = 0;
     const wear = (rel: string): void => { v.wear(rel); for (const slug of half(rel, carried)) half(rel).add(slug); carried.delete(rel); };
-    const doors = (): CarryDoors => {
-      const base = v.carryDoors();
+    const doors = (): BundleDoors => {
+      const base = v.bundleDoors();
       return {
         ...base,
         mintWiki: async (slug) => { await base.mintWiki!(slug); half(v.worn).add(slug); },
@@ -1217,13 +1217,13 @@ describe("a carry act waits by name for a face that stands open and unworn, and 
         },
       };
     };
-    const first = await carryImport(out, { apply: true, doors: doors() });
+    const first = await houseImport(out, { apply: true, doors: doors() });
     expect(v.wikiMints, "the steward's wiki mints at the steward's wear").toEqual(["notes"]);
     expect(v.shareRows, "the row rests in the vessel-private file").toEqual([ROW]);
     expect(atLanding[0], "the owner's landing read no row: the carried row rested in the file alone").toEqual([ROW]);
     expect(first.warnings.filter((w) => w.startsWith("carry-share-unset"))).toEqual([]);
     wear(R1);
-    const second = await carryImport(out, { apply: true, doors: doors() });
+    const second = await houseImport(out, { apply: true, doors: doors() });
     expect(sets, "CONTROL: a row the file already held sets again").toBe(1);
     expect(second.tallies.personal, "the reader's margin mounts the wiki its half now names").toMatchObject({ landed: 1, waiting: 0, refused: [] });
     expect(v.personalOf(R1, "notes").get(PAGE)?.text).toBe(tid(PAGE, "the engineer's margin of the steward's wiki"));

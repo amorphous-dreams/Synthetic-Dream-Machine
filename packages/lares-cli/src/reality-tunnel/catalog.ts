@@ -86,12 +86,62 @@ export function projectScout(seedPath: string, seed: string, s: Spec): string {
 const item = (radius: Radius, s: Spec, path: string, rest: Partial<Item>): Item =>
   ({ id: s.id, radius, host: s.host, path, what: s.what, ...rest });
 
-/** The checkout's items. */
-export function repoItems(repo: string, d: Declared = declared(repo), textOf: TextOf = treeText(repo)): Item[] {
+/** git with the tree handed in deciding: a leaked hook env (GIT_DIR and its kin) would answer for another repository. */
+function gitIn(root: string, args: readonly string[]): { status: number | null; out: string } {
+  const env = { ...process.env };
+  for (const k of ["GIT_DIR", "GIT_WORK_TREE", "GIT_COMMON_DIR", "GIT_INDEX_FILE"]) delete env[k];
+  // LIVENESS: git config answers at once or not at all.
+  const r = spawnSync("git", ["-C", root, ...args], { encoding: "utf8", env, timeout: 10_000 });
+  return { status: r.error ? null : r.status, out: String(r.stdout ?? "").replace(/\n$/, "") };
+}
+
+/** The clone's shared git dir (every worktree of the clone reads its `config`), or null outside any repository. */
+function gitCommonDir(root: string): string | null {
+  const r = gitIn(root, ["rev-parse", "--path-format=absolute", "--git-common-dir"]);
+  return r.status === 0 && r.out ? r.out : null;
+}
+
+/**
+ * One key in the clone's shared git config, changed through git's own `git config --local`. In a worktree `--local`
+ * writes the common config, so one tend seats every worktree of the clone.
+ */
+function gitConfig(root: string, key: string, value: string): External {
+  const get = (): string | null => {
+    const r = gitIn(root, ["config", "--local", "--get", key]);
+    return r.status === 0 ? r.out : null;
+  };
+  const put = (v: string | null): { ok: boolean; detail: string } => {
+    if (v === null && get() === null) return { ok: true, detail: "" };
+    const r = gitIn(root, v === null ? ["config", "--local", "--unset-all", key] : ["config", "--local", "--replace-all", key, v]);
+    return r.status === 0 ? { ok: true, detail: "" } : { ok: false, detail: `git config ${key} did not take` };
+  };
+  return {
+    observe: () => {
+      const cur = get();
+      if (cur === value) return { aligned: true, detail: `${key} = ${value}` };
+      return { aligned: false, detail: cur === null ? `${key} unset; tend sets it to ${value}` : `${key} reads ${cur}; tend sets it to ${value}` };
+    },
+    apply: () => put(value),
+    snapshot: () => JSON.stringify(get()),
+    restore: (snap) => put(JSON.parse(snap) as string | null),
+  };
+}
+
+/**
+ * The checkout's items. `staged` reads what a commit carries: a git config rides in no commit, so its items read
+ * absent there and the commit gate never waits on a clone's own config.
+ */
+export function repoItems(repo: string, d: Declared = declared(repo), textOf: TextOf = treeText(repo), opts: { staged?: boolean } = {}): Item[] {
   const seedAbs = join(repo, d.seed);
+  const common = d.repo.some((s) => s.kind === "git-config") && !opts.staged ? gitCommonDir(repo) : null;
   return d.repo.map((s) => {
     const path = join(repo, s.file);
     switch (s.kind) {
+      case "git-config": {
+        if (opts.staged) return item("repo", s, path, { absent: "a commit carries no git config; the clone's own tend seats it" });
+        if (common === null) return item("repo", s, path, { absent: `${repo} stands outside any git repository` });
+        return item("repo", s, join(common, "config"), { external: gitConfig(repo, str(s, "key"), str(s, "value")) });
+      }
       case "seed-link": return item("repo", s, path, { link: relative(dirname(path), seedAbs) });
       case "head-import": return item("repo", s, path, { transform: headLine(str(s, "line"), str(s, "render")) });
       case "seedless": return item("repo", s, path, { transform: seedless(s["render"] as string | undefined) });

@@ -1,10 +1,10 @@
 /**
- * seed-mirror-leg — the seed's mirror leg as a door any verb walks through with a narrow options object.
+ * seed-mirror-leg — the lay's mirror leg as a door any verb walks through with a narrow options object.
  *
  * The leg takes what it reads by name (`apply`, the raw `--lift-kahua` count, whether the reading answers as JSON, the
- * kahua-only cut) and never a verb's whole flag bag, so `lares vessel seed` and `lares shore lift-kahua` each read only
+ * kahua-only cut) and never a verb's whole flag bag, so `lares vessel lay` and `lares shore lift-kahua` each read only
  * the flags their own accepts row names (`tests/laws/accepts-track-the-handlers.law.test.ts`). This module reaches no
- * command handler: the seed's ingest and act gestures stay in `commands/seed.ts`.
+ * command handler: the lay's ingest and act gestures stay in `commands/lay.ts`.
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
@@ -53,7 +53,7 @@ export async function runMirrors(opts: MirrorLegOptions, doors: MirrorDoors): Pr
     for (const l of err) console.error(l);
     return mirrorsLeftWork(result) ? 1 : 0;
   } catch (e) {
-    if (e instanceof MirrorRefused) { console.error(`lares vessel seed: ${e.message}`); return 1; }
+    if (e instanceof MirrorRefused) { console.error(`lares vessel lay: ${e.message}`); return 1; }
     throw e;
   }
 }
