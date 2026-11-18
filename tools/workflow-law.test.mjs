@@ -122,6 +122,78 @@ test("WL2 CONTROL: a planted workflow without the caps reads every breach, and a
   assert.deepEqual(breaches("from-step.yml", fromStep), []);
 });
 
+// THE NEEDS LAW. Actions hands a job the `needs` context of its DIRECT dependencies alone: a job that reads
+// `needs.<id>.outputs` (or `.result`) off a job its own `needs:` does not name reads null, quietly, and a guard built on it
+// reads the wrong way on every run. Each reference must name a job the reading job lists.
+
+/** The breaches of the needs law in one workflow text, comments dropped: each `needs.<id>` a job reads but does not list. */
+export function needsBreaches(file, text) {
+  const out = [];
+  const lines = text.split("\n").map((l) => l.replace(/^\s*#.*$/, "").replace(/\s+#\s.*$/, ""));
+  const at = lines.findIndex((l) => /^jobs:\s*$/.test(l));
+  if (at === -1) return out;
+  let job = null;
+  const close = () => {
+    if (!job) return;
+    for (const id of job.reads) if (!job.needs.includes(id)) out.push(`${file}: job ${job.name} reads needs.${id} but does not list ${id} in its needs`);
+  };
+  for (const line of lines.slice(at + 1)) {
+    if (/^\S/.test(line)) break;
+    const head = /^ {2}([A-Za-z0-9_-]+):\s*$/.exec(line);
+    if (head) { close(); job = { name: head[1], needs: [], reads: new Set() }; continue; }
+    if (!job) continue;
+    const needs = /^ {4}needs:\s*(.+?)\s*$/.exec(line);
+    if (needs) job.needs = needs[1].replace(/^\[|\]$/g, "").split(",").map((s) => s.trim()).filter(Boolean);
+    for (const m of line.matchAll(/\bneeds\.([A-Za-z0-9_-]+)\./g)) job.reads.add(m[1]);
+  }
+  close();
+  return out;
+}
+
+test("WL6 RED: every job that reads needs.<id> lists <id> in its own needs, in every workflow", () => {
+  const found = [];
+  for (const file of readdirSync(WORKFLOWS).filter((f) => /\.ya?ml$/.test(f)).sort()) found.push(...needsBreaches(file, readFileSync(join(WORKFLOWS, file), "utf8")));
+  assert.deepEqual(found, []);
+});
+
+test("WL6b CONTROL: a planted read of an unlisted job's outputs breaches; a listed one, a block and a comment read clean", () => {
+  const planted = [
+    "jobs:",
+    "  s:",
+    "    runs-on: ubuntu-latest",
+    "  a:",
+    "    needs: [s]",
+    "    if: ${{ needs.s.outputs.canon != 'true' }}",
+    "  b:",
+    "    if: ${{ needs.s.outputs.canon != 'true' }}",
+    "    # needs.q.result in a comment never counts",
+    "  c:",
+    "    needs: s",
+    "    with:",
+    "      flag: ${{ needs.s.outputs.canon == 'true' }}",
+  ].join("\n");
+  assert.deepEqual(needsBreaches("planted.yml", planted), ["planted.yml: job b reads needs.s but does not list s in its needs"]);
+});
+
+test("WL7 RED: the canon doorstep reads ci.yml's scope job in every job a canon-only push skips, and in the e2e doorstep input", () => {
+  const text = readFileSync(join(WORKFLOWS, "ci.yml"), "utf8");
+  const jobs = new Map(jobsOf(text).map((j) => [j.name, j]));
+  assert.ok(jobs.has("scope"), "ci.yml carries no scope job");
+  const scope = jobs.get("scope");
+  assert.ok(scope.keys.some((k) => /^if: \$\{\{ github\.event_name != 'pull_request' \|\| github\.event\.pull_request\.head\.repo\.fork \}\}$/.test(k)), "the scope job stands on other events than the cells it feeds");
+  assert.ok(!scope.keys.some((k) => k.startsWith("needs:")), "the scope job waits on another job: it must stand first");
+  for (const id of ["test-cells", "test", "witness-cells", "witnesses", "e2e"]) {
+    const job = jobs.get(id);
+    assert.ok(job, `ci.yml lost the ${id} job`);
+    const needs = job.keys.find((k) => k.startsWith("needs:")) ?? "";
+    assert.match(needs, /\bscope\b/, `${id} does not list scope in its needs`);
+    const reads = job.keys.filter((k) => /^(if|doorstep):/.test(k)).join("\n") + "\n" + text.slice(text.indexOf(`\n  ${id}:\n`)).split(/\n  [a-z][\w-]*:\n/)[0].match(/^ {6}doorstep: .*$/m)?.[0];
+    assert.match(reads, /github\.event_name == 'push' && \([^)]*needs\.scope\.outputs\.canon == 'true'/, `${id} reads no canon doorstep off the scope job, or reads it off another event than a push`);
+  }
+  // The quick job stands beside the scope read, never behind it: the doorstep's one heavy job does not wait on a diff.
+  assert.ok(!(jobs.get("quick").keys.find((k) => k.startsWith("needs:")) ?? "").includes("scope"), "the quick job waits on the scope read");
+});
+
 // The pinned Playwright image supplies Node 26 for the browser cells; the other jobs pin Node 24.
 // The browser import boundary must keep product code compatible with Node 24.
 // THE BROWSER LIBRARIES COME IN THE IMAGE. `playwright install-deps` is an apt step; on a hosted runner it timed out at its five
