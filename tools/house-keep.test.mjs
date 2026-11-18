@@ -149,7 +149,7 @@ test("the keep rite lays a bundle into a bound workspace under a lei, and a bran
     assert.deepEqual(held(), [".git", "house"]);
     const manifest = JSON.parse(readFileSync(join(workspace, "house", "manifest.json"), "utf8"));
     assert.equal(manifest.bundleId, kept.bundleId);
-    assert.equal(manifest.schema, "lar-carry/1");
+    assert.equal(manifest.schema, "lar-house-bundle");
     assert.ok(manifest.files.some((f) => f.path.endsWith("heron.mem") || f.path.endsWith("heron.tid")), "the bundle carries the memory as a plain file a person reads");
     assert.equal(line("keep").returnsLeft, 1, "one return spent");
     const red = old.answer(old.must(["rite", "receipts", "--json"])).data.conferre;

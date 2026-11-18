@@ -21,7 +21,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { census, compareCensus, MAY_DIFFER, receiptLines } from "./census-drill.mjs";
+import { census, compareCensus, CENSUS_SCHEMA, MAY_DIFFER, RECEIPT_SCHEMA, receiptLines } from "./census-drill.mjs";
 import { unlockTestCustody } from "./unlock-test-custody.mjs";
 import { daemonStood } from "./daemon-stood.mjs";
 
@@ -34,7 +34,7 @@ const tool = join(repo, "tools/census-drill.mjs");
 
 /** A census reading as the instrument writes one: per face by pet-name, then the house-wide classes. */
 const reading = (over = {}) => ({
-  schema: "lar-carry-census/1",
+  schema: "lar-census",
   label: "fixture",
   faces: [{ petname: "steward", handleIndex: 0, mounted: true, relation: "11111111-1111-4111-8111-111111111111" }],
   face: {
@@ -61,6 +61,13 @@ test("P1 equal readings read par, and what a restore re-mints by design never de
   for (const name of ["face relations", "CRDT heads", "kahua cids", "Nexus AID", "floor pin"]) {
     assert.ok(MAY_DIFFER.some((m) => m.name === name), `the may-differ list names ${name}`);
   }
+});
+
+test("P1 the census and its compare receipt name their format, never count it: `lar-census` and `lar-census-compare`, no `/N`", () => {
+  assert.equal(CENSUS_SCHEMA, "lar-census");
+  assert.equal(RECEIPT_SCHEMA, "lar-census-compare");
+  assert.equal(compareCensus([reading()], [reading()]).schema, "lar-census-compare");
+  assert.throws(() => compareCensus([{ ...reading(), schema: "lar-carry-census/1" }], [reading()]), /not lar-census/, "a reading under the numbered name refuses: no back-compat reader");
 });
 
 test("P1 a missing, a changed and an extra row each read red under their class and key", () => {

@@ -77,6 +77,16 @@ beforeEach(() => {
 afterEach(() => { rmSync(root, { recursive: true, force: true }); });
 
 describe("the keep rite, vessel half", () => {
+  test("K0 RED: the bundle the keep cuts names its format, never counts it: `lar-house-bundle`, no `/N`; CONTROL: a manifest under the numbered name refuses, with no back-compat reader", () => {
+    expect(BUNDLE_SCHEMA).toBe("lar-house-bundle");
+    const dest = join(root, "old-name");
+    mkdirSync(dest, { recursive: true });
+    const manifest = writeBundle(dest, { heron: "remember the heron\n" });
+    expect(verifyBundle(dest).manifest.schema).toBe("lar-house-bundle");
+    writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify({ ...manifest, schema: "lar-carry/1" }, null, 2)}\n`);
+    expect(() => verifyBundle(dest)).toThrow(/bundle-schema/);
+  });
+
   test("K1 RED: with no keep lei standing the rite refuses by the lei's own refusal, cuts nothing and writes nothing; CONTROL: the line it read names the keep rite at this workspace", async () => {
     const r = rig({ lei: { standing: false, refusal: "absent", after: null } });
     expect(await refusal(riteKeep(r.ports, { workspace: "backup" }))).toBe("swarm-lei-absent");
