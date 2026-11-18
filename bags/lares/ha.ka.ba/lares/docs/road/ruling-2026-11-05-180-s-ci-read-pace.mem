@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-05-180-s-ci-read-pace`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-05"
+order    = "1420"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-05-180-s-ci-read-pace"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-05-180-s-ci-read-pace"
+```
+
+* ''The 180 s CI-read pace'' (operator, 2026-11-05; PR #166): a pace for a tool's own reads at the web2 edge, never a deadline or a verdict (the quota-driven pace stands owed as `G54`).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;qwO-jcdXLAYXZig40Zbms8M-fsgurq8HvzEsK75jLmo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

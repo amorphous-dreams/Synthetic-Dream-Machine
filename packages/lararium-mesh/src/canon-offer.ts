@@ -45,7 +45,7 @@ import { isHouseCanonBag } from "./kahu-canon-reach.js";
 import { projectionWithheld, resolvedTitlePath } from "./projection-filter.js";
 import { bagUri, CONTROL_HOME_ID, SECRET_HOME_ID } from "./lar-uris.js";
 import type { LarTiddlerRecord } from "./tiddler-store.js";
-import { cutCanonFloor, floorCarriesTier, floorSlugs, openFloorSnapshot, readFloorManifest, FLOOR_REQUIRED_SLUGS } from "./floor-manifest.js";
+import { FloorManifestRefusal, cutCanonFloor, floorCarriesTier, floorSlugs, openFloorSnapshot, readFloorManifest, FLOOR_REQUIRED_SLUGS } from "./floor-manifest.js";
 import type { CapTier } from "./cap-tier.js";
 import { rosterOfLineage } from "./floor-release.js";
 import type { SealEpoch } from "./wax-stamp.js";
@@ -751,6 +751,9 @@ export interface ReleaseFloorPorts {
   readonly blob:      (cid: string) => Promise<Uint8Array | null>;
   /** Stage the cut's blobs (the manifest and each fresh snapshot) where the release door and the porch read them. */
   readonly stage:     (blobs: ReadonlyArray<{ readonly cid: string; readonly bytes: Uint8Array }>) => Promise<void>;
+  /** The engine digest this vessel's genesis names; a prior floor whose engine differs refuses `floor-engine-unoffered`. Required: no cut
+   *  passes the guard, and a genesis that names no engine refuses the cut. */
+  readonly genesisEngine: () => Promise<string | null> | string | null;
 }
 
 /** The fewest rows a prior snapshot holds before the thin read weighs it: a holding of a handful of rows halves by one retire. */
@@ -816,7 +819,9 @@ export async function cutReleaseFloor(ports: ReleaseFloorPorts, args: { readonly
     if (floorCutReadsThin(live, priorCount)) thin.push({ slug, live, prior: priorCount });
   }
   if (thin.length > 0) throw new FloorCutThin(thin);
-  const cut = cutCanonFloor({ prior: opened.manifest, canon, drop: dropped });
+  const genesisEngine = await ports.genesisEngine();
+  if (genesisEngine === null) throw new FloorManifestRefusal("floor-engine-unoffered", "floor-cut refused: this vessel's genesis names no engine, so no cut can show it carries the one genesis names");
+  const cut = cutCanonFloor({ prior: opened.manifest, canon, drop: dropped, genesisEngine });
   await ports.stage([...Object.values(cut.snapshots).map((s) => ({ cid: s.cid, bytes: s.bytes })), { cid: cut.manifestCid, bytes: cut.manifestBytes }]);
   const moved = Object.keys(canon).filter((slug) => cut.manifest.snapshots[slug] !== opened.manifest.snapshots[slug]).sort();
   return { manifestCid: cut.manifestCid, manifestBytes: cut.manifestBytes, prior: prior.manifestCid, cut: Object.keys(canon).sort(), kept, moved, dropped };

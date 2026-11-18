@@ -30,7 +30,7 @@ import { Repo, type AutomergeUrl } from "@automerge/automerge-repo";
 import { NodeFSStorageAdapter } from "@automerge/automerge-repo-storage-nodefs";
 import { plainRecordOrNull } from "../../packages/lararium-mesh/src/stored-value.js";
 import { DEVICE_DELEGATION_SELF_TIDDLER } from "../../packages/lararium-mesh/src/lar-uris.js";
-import { daemonFaceFolder, kahuaFaceFolder } from "../../packages/lararium-node/src/bag-paths.js";
+import { faceRoot } from "../../packages/lararium-node/src/bag-paths.js";
 
 /**
  * Remove a staged root, and WAIT OUT THE DAEMON'S LAST WRITES.
@@ -307,11 +307,20 @@ export function stagedHearthGroup(root: string): string {
 }
 
 /**
- * Where a staged hearth's daemon wiki (the kahua wiki's working top, bag `wikis/daemon/working`) projects on disk: the face
- * rides the folder's name, `<root>/wikis/kahua-<tag>`, the tag the founded face's derived persona tag.
+ * Persona zero's face root on a staged hearth, `<root>/projections/faces/<pet name>`: the pet name its founding labelled
+ * (`face-labels/<F>.json`, which rests beside `faces/`, never inside it).
  */
+export function stagedFaceRoot(root: string): string {
+  const relation = stagedHearthRelation(root);
+  const label = JSON.parse(readFileSync(join(root, "projections", "face-labels", `${relation}.json`), "utf8")) as { petname?: unknown };
+  if (typeof label.petname !== "string") throw new Error(`the face label of ${relation} names no pet name`);
+  return faceRoot(join(root, "projections"), label.petname);
+}
+
+/** Where a staged hearth's daemon wiki (the kahua wiki's working top, bag `wikis/daemon/working`) projects on disk: the face
+ *  root's `wiki/`, `<root>/projections/faces/<pet name>/wiki`. */
 export function daemonWikiDir(root: string): string {
-  return join(root, "projections", "wikis", daemonFaceFolder(stagedHearthRelation(root)));
+  return join(stagedFaceRoot(root), "wiki");
 }
 
 /**
@@ -322,9 +331,9 @@ export function wikiWorkbenchDir(root: string, slug: string): string {
   return join(root, "projections", "wikis", slug);
 }
 
-/** The face's kahua stage on a staged hearth: `<root>/projections/bags/kahua-<F>`. */
+/** The face's kahua stage on a staged hearth: `<root>/projections/faces/<pet name>/stage`. */
 export function kahuaStageDir(root: string): string {
-  return join(root, "projections", "bags", kahuaFaceFolder(stagedHearthRelation(root)));
+  return join(stagedFaceRoot(root), "stage");
 }
 
 /**

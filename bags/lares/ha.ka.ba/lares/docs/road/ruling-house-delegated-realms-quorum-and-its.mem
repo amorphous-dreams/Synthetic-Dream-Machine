@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-realms-quorum-and-its`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2470"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-realms-quorum-and-its"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-realms-quorum-and-its"
+```
+
+* ''A realm's quorum and its boards'' (house ruling under the operator's delegation, 2026-10-14). Each realm stands under ONE Nexus, which the vessel's first act there names and its edge ledger keeps; every reader takes the realm's quorum roster off that Nexus's charter, never off its own primary one; and the realm's boards key on the realm's own id, so a removal's record stays among its parties. The reason: authority comes from the governing charter while the record addresses the relation it affects. The ruling flips on a realm-native charter model with its own seat creation, migration and conflict rule (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/kapae#/edge-hands`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9epBiW_kM-O9rQPKwTBRTUoMnsBBfLB9ceQHr2F-6rQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

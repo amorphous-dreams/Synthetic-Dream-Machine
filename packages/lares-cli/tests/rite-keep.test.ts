@@ -15,35 +15,40 @@
  *       keep lei already stands, else h0), names it on every row and in its answer; a named `--face N` rides as named; the lei
  *       hint names the keep's face.
  */
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, verifyBundle, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
+import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sealRedeclare, sha256Hex, verifyBundle, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
 import { KEEP_CHECK, KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
 import type { RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { RiteUsage, keepPlan } from "../src/commands/rite.js";
 import { parseArgs } from "../src/parse-args.js";
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string;
 const TESSERA = "e".repeat(64), LEI = "d".repeat(64);
+
+const ROSTER_SEALED = sealRedeclare(new Uint8Array(32).fill(7), { schema: BUNDLE_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] });
 
 /** A whole, small bundle at `dest`, as an export leaves one: every file hashed, the id over the file list. */
 function writeBundle(dest: string, notes: Readonly<Record<string, string>>): BundleManifest {
   const files: BundleFile[] = [];
-  const put = (rel: string, text: string): void => {
+  const put = (rel: string, text: string | Buffer): void => {
     const abs = join(dest, ...rel.split("/"));
     mkdirSync(dirname(abs), { recursive: true });
     writeFileSync(abs, text);
     files.push({ path: rel, sha256: sha256Hex(text), bytes: Buffer.byteLength(text) });
   };
   for (const [name, text] of Object.entries(notes)) put(`faces/f0/working/${name}.tid`, text);
-  put(REDECLARE_FILE, `${JSON.stringify({ schema: BUNDLE_SCHEMA, faces: [{ face: "f0", handleIndex: 0, petname: "steward", handle: null, seat: false, chair: null }] })}\n`);
+  // The roster rides sealed to a keep pair; the vessel half proves the bundle whole with no route. One seal for the whole suite,
+  // as a house keeps its last seal, so an unmoved cut names the same bundle.
+  put(REDECLARE_FILE, ROSTER_SEALED);
   files.sort((a, b) => (a.path < b.path ? -1 : 1));
-  const manifest: BundleManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: [{ key: "f0", petname: "steward" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
-  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`);
-  return manifest;
+  const onDisk = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: [{ key: "f0" }], files, rows: [], counts: zeroCounts(), tempBytes: {}, omissions: [] };
+  writeFileSync(join(dest, MANIFEST_FILE), `${JSON.stringify(onDisk, null, 2)}\n`);
+  // The cut answers the opened view: each face by its pet-name.
+  return { ...onDisk, faces: [{ key: "f0", petname: "steward" }] } as BundleManifest;
 }
 
 /** The vessel's rows and the cut, recorded; `lei` names what the keep line reads, `begin` what the begin row answers. */
@@ -70,7 +75,7 @@ const workspace = (): string => join(root, "workspaces", "backup");
 const refusal = async (run: Promise<unknown>): Promise<string> => run.then(() => "no refusal", (e: unknown) => (e instanceof KeepRefused ? e.code : `threw ${String(e)}`));
 
 beforeEach(() => {
-  house = openIsolatedHouse();
+  house = openScratch();
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep suite\n");
   mkdirSync(join(root, "hearth"), { recursive: true });
@@ -78,7 +83,7 @@ beforeEach(() => {
   writeFileSync(join(workspace(), ".git", "HEAD"), "ref: refs/heads/main\n");
   writeFileSync(join(workspace(), "README.md"), "the operator's own backup repo\n");
 });
-afterEach(() => { house.close(); });
+afterEach(() => { closeScratch(house); });
 
 describe("the keep rite, vessel half", () => {
   test("K0 RED: the bundle the keep cuts names its format, never counts it: `lar-house-bundle`, no `/N`; CONTROL: a manifest under the numbered name refuses, with no back-compat reader", () => {

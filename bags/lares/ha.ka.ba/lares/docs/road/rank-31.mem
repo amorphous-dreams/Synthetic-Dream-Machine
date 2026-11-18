@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-31`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0590"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-31"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-31"
+```
+
+| 31 | AFTER | the harness moves in: `L22`'s `S4` to `S6`, the secrets vault, `L30`, the swarm's re-think (#/rulings, 2026-11-13), the comms for non-Claude seats, the harness deep read, the harness items after its batch, the seat-harness CI debt, the Projection Loom (reserved on `feature/projection-loom`, PR #222, toward a natively callable web3 capability; Lares-Alpha holds the Loom's branch, backlog-alpha #/later) | The operator set the harness's move after the house remembers (#/rulings, 2026-11-07), and the re-think replaces the procedures only once the Lararium fully stands. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;3vFo_Qa6WvwtKL4extMP8L7Q-275A_DgqVU6H_U4OKI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

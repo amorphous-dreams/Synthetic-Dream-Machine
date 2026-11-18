@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-no-version-numbers`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-11"
+order    = "2100"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-no-version-numbers"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-11-no-version-numbers"
+```
+
+* ''No version numbers'' (operator, 2026-11-11, LAW: //"NO version numbers enter our stack ('no global now' no clocks, no scalar-clocks either)."//). A format reads by its shape name, identity by CID, and order by causal link alone: a KEL orders by hash-chain descent with `seq` as a cross-check, a release and an announcement by `prior`, a rotated canon by `rotated-from`. The evergreen witness caps version literals and only lowers the cap. Landed across the clockless sweep (evergreen `version 0/0`).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9UeSPVMB6B5DCyWpbQT6xkLz62Tfs1InRAER4PpwlL8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

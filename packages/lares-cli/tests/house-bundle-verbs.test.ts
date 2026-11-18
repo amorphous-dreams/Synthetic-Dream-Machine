@@ -15,7 +15,7 @@
  *   C8  preview writes nothing; a re-declare row replays as fresh acts on an unnamed face.
  */
 import { checkHouseTeardown } from "./support/check-house-teardown.js";
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { mkdirSync, mkdtempSync, writeFileSync, readFileSync, existsSync, rmSync, readdirSync, symlinkSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -26,7 +26,9 @@ import { kapaeShadowBody, SyncedTree } from "@lararium/node";
 import { DAEMON_BAG_ID, daemonFaceCanonBag } from "@lararium/mesh";
 import { scanFiles } from "../src/ingest-core.js";
 import { houseExport, houseImport, bundleJournalPath, BundleRefused, type BundleDoors, type BundleVesselFace } from "../src/commands/house-bundle.js";
-import { BundleVerifyRefused, MANIFEST_FILE } from "../src/bundle-manifest.js";
+import { BundleVerifyRefused, MANIFEST_FILE, openBundle, readBundleSeat, verifyBundle } from "../src/bundle-manifest.js";
+import { openKeepSeat } from "../src/keep-seat.js";
+import { TEST_ROUTE_PASSPHRASE } from "../src/offline-custody.js";
 import type { CensusReading } from "../src/commands/census.js";
 import type { BundleKahuaHead } from "../src/bundle-manifest.js";
 
@@ -90,41 +92,47 @@ class FakeVessel {
   }
 }
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
 const head = (title: string, text: string, cid: string): BundleKahuaHead => ({ title, cid, text, fields: { tags: "memory" }, taint: [], sources: [{ title: NOTE, revision: "r1" }] });
 
+/** The face root "hearth-one"'s pet name makes, under the projections root. */
+const FACE = "projections/faces/hearth-one";
+
 /** The house as the old founding left it: a worn face's working folder, stage, drafts, temp, a minted bag, and what never travels. */
 function seedHouse(): void {
-  put(`projections/wikis/daemon-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
-  put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/pond.tid`, tid(NOTE, "the pond at dusk"));
-  put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/gone.kapae`, kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
-  put(`projections/wikis/daemon-${F1}/recovery/draft-one.tid`, tid("draft one", "half a thought"));
-  put(`projections/wikis/daemon-${F1}/temp/scratch.tid`, tid("scratch", "a passing note"));
-  put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
+  put(`${FACE}/wiki/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
+  put(`${FACE}/wiki/ha.ka.ba/notes/pond.tid`, tid(NOTE, "the pond at dusk"));
+  put(`${FACE}/wiki/ha.ka.ba/notes/gone.kapae`, kapaeShadowBody("lar:///ha.ka.ba/notes/gone"));
+  put(`${FACE}/recovery/daemon/draft-one.tid`, tid("draft one", "half a thought"));
+  put(`${FACE}/wiki/temp/scratch.tid`, tid("scratch", "a passing note"));
+  put(`${FACE}/stage/ha.ka.ba/kahua/memory/heron.tid`, tid(MEMORY, "remember the heron"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
   put("sensoriums/memory/persistence/testimony.ndjson", "{\"witness\":1}\n");
   put("hearth/vessel/store.bin", "old keys");
 }
 
 const oldVessel = (): FakeVessel => new FakeVessel([{ handleIndex: 0, petname: "hearth-one", relation: F1, handle: "Heron", seat: true, chair: "east", kahua: [head(MEMORY, "remember the heron", sha("old-cid-1"))] }], "old-grant");
-/** A re-founding: the hearth cleared, persona zero founded fresh under the same pet-name, a new relation and grant. */
+/** A re-founding: the hearth cleared, persona zero founded fresh under the same pet-name, a new relation and grant. The face root
+ *  leaves too, as a tear-out with no surviving projections leaves it: the bundle alone carries the face's memory back (a root
+ *  that survives lays through the lay, `seed-mirrors.test.ts`). */
 function refound(over: Partial<BundleVesselFace> = {}): FakeVessel {
   rmSync(join(root, "hearth"), { recursive: true, force: true });
+  rmSync(join(root, FACE), { recursive: true, force: true });
   return new FakeVessel([{ handleIndex: 0, petname: "hearth-one", relation: F2, ...over }], "new-grant");
 }
 
 beforeEach(() => {
-  house = openIsolatedHouse({ home: true, gitConfig: true });
+  house = openScratch({ gitConfig: "private" });
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "house bundle suite\n");
-  out = join(house.scratchDir, "export", "bundle");
+  out = join(house.home, "export", "bundle");
   mkdirSync(dirname(out));
   seedHouse();
 });
-afterEach(() => { house.close(); });
+afterEach(() => { closeScratch(house); });
 
 checkHouseTeardown();
 
@@ -157,8 +165,8 @@ describe("the house bundle verbs", () => {
 
   test("face working shadows and canon land in target face mirrors", async () => {
     const gone = "lar:///ha.ka.ba/memory/gone", canon = "lar:///ha.ka.ba/memory/canon";
-    put(`projections/wikis/daemon-${F1}/ha.ka.ba/memory/gone.kapae`, kapaeShadowBody(gone));
-    put(`projections/bags/daemon-${F1}/ha.ka.ba/memory/canon.tid`, tid(canon, "canon memory"));
+    put(`${FACE}/wiki/ha.ka.ba/memory/gone.kapae`, kapaeShadowBody(gone));
+    put(`${FACE}/canon/ha.ka.ba/memory/canon.tid`, tid(canon, "canon memory"));
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.some((r) => r.layer === "kapae" && r.title === gone)).toBe(true);
     expect(manifest.rows.some((r) => r.layer === "daemon-canon" && r.title === canon)).toBe(true);
@@ -168,9 +176,9 @@ describe("the house bundle verbs", () => {
     expect(result.tallies.kapae.landed).toBe(2);
     expect(after.bagRecords.get(daemonFaceCanonBag(F2))?.get(canon)).toBe(tid(canon, "canon memory"));
     expect(result.tallies.faceCanon.landed).toBe(1);
-    expect(after.waves.find((w) => w.toBag === daemonFaceCanonBag(F2))?.source).toBe(join(root, `projections/bags/daemon-${F2}`));
-    expect(after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/wikis/daemon/working")?.source).toBe(join(root, `projections/wikis/daemon-${F2}`));
-    expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
+    expect(after.waves.find((w) => w.toBag === daemonFaceCanonBag(F2))?.source).toBe(join(root, `${FACE}/canon`));
+    expect(after.waves.find((w) => w.toBag === "lar:///ha.ka.ba/wikis/daemon/working")?.source).toBe(join(root, `${FACE}/wiki`));
+    expect(readFileSync(join(root, `${FACE}/wiki/ha.ka.ba/memory/gone.kapae`), "utf8")).toBe(kapaeShadowBody(gone));
   });
 
   test("a mirror file holding a different record is left as it stands, and the row rides on to INGEST's three-way gate — no byte-drift stand-off", async () => {
@@ -220,7 +228,6 @@ describe("the house bundle verbs", () => {
     expect(existsSync(bundleJournalPath(manifest.bundleId, [F2]))).toBe(true);
     // reset -> found again: config (and its journal) stays; the face stands on a fresh relation with an empty mirror.
     const F3 = "33333333-3333-4333-8333-333333333333";
-    rmSync(join(root, `projections/wikis/daemon-${F2}`), { recursive: true, force: true });
     rmSync(join(root, "projections/bags/garden"), { recursive: true, force: true });
     const second = refound({ relation: F3 });
     const again = await houseImport(out, { apply: true, doors: second.doors() });
@@ -259,8 +266,8 @@ describe("the house bundle verbs", () => {
     expect(result.tallies.bag).toMatchObject({ already: 1, landed: 0 });
     expect(after.waves.flatMap((w) => w.candidates).some((c) => c.uri === "lar:///ha.ka.ba/garden/rose")).toBe(false);
     expect(after.lifts).toEqual([{ face: 0, title: MEMORY, text: "remember the heron", signer: "new-grant", parent: null }]);
-    expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/recovery/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
-    expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/temp/scratch.tid`), "utf8")).toBe(tid("scratch", "a passing note"));
+    expect(readFileSync(join(root, `${FACE}/recovery/daemon/draft-one.tid`), "utf8")).toBe(tid("draft one", "half a thought"));
+    expect(readFileSync(join(root, `${FACE}/wiki/temp/scratch.tid`), "utf8")).toBe(tid("scratch", "a passing note"));
     // The re-declare list replayed what the fresh face did not hold yet: the Handle and the chair.
     expect(after.acts).toEqual(["handle h0 Heron", "seat h0 east"]);
     expect(Object.values(result.tallies).every((t) => t.refused.length === 0 && t.stoodOff.length === 0)).toBe(true);
@@ -294,7 +301,11 @@ describe("the house bundle verbs", () => {
     expect(manifest.omissions.some((o) => o.kind === "daemon-bag")).toBe(false);
     expect(manifest.counts).toMatchObject({ working: 2, kapae: 1, draft: 1, temp: 1, "kahua-carrier": 1, "kahua-head": 1, bag: 1 });
     expect(manifest.tempBytes["lar:///ha.ka.ba/wikis/daemon/temp"]).toBe(tid("scratch", "a passing note").length);
-    const redeclare = JSON.parse(readFileSync(join(out, "re-declare.json"), "utf8"));
+    // The re-declare list rests sealed to the keep pair; the steward's route opens the seat the bundle carries, then the roster.
+    const verified = verifyBundle(out);
+    const opening = await openKeepSeat(readBundleSeat(verified), [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
+    if (opening.reading !== "opens") throw new Error(`the keep seat opened nothing: ${opening.reading}`);
+    const redeclare = openBundle(verified, opening.secret).redeclare;
     expect(redeclare.faces).toEqual([{ face: "f0", handleIndex: 0, petname: "hearth-one", handle: "Heron", seat: true, chair: "east" }]);
   });
 
@@ -306,7 +317,7 @@ describe("the house bundle verbs", () => {
     const after = refound();
     await expect(houseImport(out, { apply: true, doors: after.doors() })).rejects.toThrow(/bundle-hash-mismatch/);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
-    expect(existsSync(join(root, `projections/wikis/daemon-${F2}`))).toBe(false);
+    expect(existsSync(join(root, FACE))).toBe(false);
     writeFileSync(target, good);
 
     writeFileSync(join(out, "faces/f0/stray.tid"), "slipped in");
@@ -350,7 +361,8 @@ describe("the house bundle verbs", () => {
     const out2 = join(dirname(out), "bundle-two");
     const twinsOld = new FakeVessel([{ handleIndex: 0, petname: "same", relation: F1 }, { handleIndex: 1, petname: "same", relation: "33333333-3333-4333-8333-333333333333" }], "g");
     await expect(houseExport(out2, { acceptOmissions: false, doors: twinsOld.doors() })).rejects.toThrow(/carry-face-duplicate-petname/);
-    const unnamed = new FakeVessel([{ handleIndex: 0, petname: null, relation: F1 }], "g");
+    // An unnamed face makes no root, so its stage alone shows it carries memory.
+    const unnamed = new FakeVessel([{ handleIndex: 0, petname: null, relation: F1, kahua: [head(MEMORY, "remember the heron", sha("u"))] }], "g");
     await expect(houseExport(out2, { acceptOmissions: false, doors: unnamed.doors() })).rejects.toThrow(/carry-face-unnamed/);
   });
 
@@ -358,14 +370,14 @@ describe("the house bundle verbs", () => {
     await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     const after = refound({ kahua: [head(MEMORY, "a different heron", sha("x"))] });
     after.records.set(NOTE, tid(NOTE, "the pond rewritten"));
-    put(`projections/wikis/daemon-${F2}/recovery/draft-one.tid`, "someone else's draft");
+    put(`${FACE}/recovery/daemon/draft-one.tid`, "someone else's draft");
     const result = await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.records.get(NOTE)).toBe(tid(NOTE, "the pond rewritten"));
     expect(result.tallies.working.stoodOff.join()).toContain(NOTE);
     expect(result.tallies.kahua.stoodOff.join()).toContain(MEMORY);
     expect(after.lifts).toEqual([]);
     expect(result.tallies.draft.stoodOff).toHaveLength(1);
-    expect(readFileSync(join(root, `projections/wikis/daemon-${F2}/recovery/draft-one.tid`), "utf8")).toBe("someone else's draft");
+    expect(readFileSync(join(root, `${FACE}/recovery/daemon/draft-one.tid`), "utf8")).toBe("someone else's draft");
   });
 
   test("C8 — preview writes nothing; an unnamed face at the bundle's index takes the pet-name as a fresh act", async () => {
@@ -376,7 +388,7 @@ describe("the house bundle verbs", () => {
     expect(preview.tallies.working.planned).toBeGreaterThan(0);
     expect(preview.tallies.kahua.planned).toBe(1);
     expect(after.ingestCalls + after.lifts.length + after.acts.length).toBe(0);
-    expect(existsSync(join(root, `projections/wikis/daemon-${F2}`))).toBe(false);
+    expect(existsSync(join(root, FACE))).toBe(false);
     expect(existsSync(join(root, "config", "carry-journal"))).toBe(false);
     await houseImport(out, { apply: true, doors: after.doors() });
     expect(after.acts[0]).toBe("rename h0 hearth-one");
@@ -403,7 +415,7 @@ describe("the house bundle verbs", () => {
   test("C11 — every other wiki's working rows travel; a slug the fresh vessel lacks mints first, named in the preview", async () => {
     const PAGE = "lar:///ha.ka.ba/notes/field-page";
     put("projections/wikis/field-notes/ha.ka.ba/notes/field-page.tid", tid(PAGE, "a field note"));
-    put("projections/wikis/field-notes/recovery/half.tid", tid("half", "a draft"));
+    put(`${FACE}/recovery/field-notes/half.tid`, tid("half", "a draft"));
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.filter((r) => r.layer === "wiki-working").map((r) => [r.bag, r.title])).toEqual([["lar:///ha.ka.ba/wikis/field-notes/working", PAGE]]);
     const after = refound();
@@ -415,13 +427,14 @@ describe("the house bundle verbs", () => {
     expect(after.mints).toEqual(["lar:///ha.ka.ba/bags/field-notes", "lar:///ha.ka.ba/bags/garden"]);
     expect(after.bagRecords.get("lar:///ha.ka.ba/wikis/field-notes/working")?.get(PAGE)).toBe(tid(PAGE, "a field note"));
     expect(after.inWikiBags).toEqual(["lar:///ha.ka.ba/wikis/field-notes/working in field-notes"]);
-    expect(readFileSync(join(root, "projections/wikis/field-notes/recovery/half.tid"), "utf8")).toBe(tid("half", "a draft"));
+    expect(readFileSync(join(root, `${FACE}/recovery/field-notes/half.tid`), "utf8")).toBe(tid("half", "a draft"));
+    expect(existsSync(join(root, "projections/wikis/field-notes/recovery")), "a draft never rests under the shared workbench").toBe(false);
   });
 
   test("carry-keeps-a-free-titled-record — a record whose title owns no lar: address carries under the title its own file states", async () => {
-    put(`projections/wikis/daemon-${F1}/plain note.tid`, tid("plain note", "a free note"));
+    put(`${FACE}/wiki/plain note.tid`, tid("plain note", "a free note"));
     // CONTROL: a file whose own title names a lar: address its siting does not derive stays skipped, never re-addressed.
-    put(`projections/wikis/daemon-${F1}/stray.tid`, tid("lar:///ha.ka.ba/notes/elsewhere", "misplaced"));
+    put(`${FACE}/wiki/stray.tid`, tid("lar:///ha.ka.ba/notes/elsewhere", "misplaced"));
     const { manifest } = await houseExport(out, { acceptOmissions: false, doors: oldVessel().doors() });
     expect(manifest.rows.find((r) => r.path === "faces/f0/working/plain note.tid")?.title).toBe("plain note");
     expect(manifest.rows.find((r) => r.path === "faces/f0/working/stray.tid")?.title).toBeNull();
@@ -493,19 +506,19 @@ describe("the house bundle verbs", () => {
     rmSync(dir, { recursive: true, force: true });
   });
 
-  test("C14 — after a re-founding the old face's folders stay; the next export names each one and the exact next step", async () => {
-    // reset -> found: projections stay (survive-refound), the new face wears F2, and nothing claims daemon-F1 / kahua-F1.
-    const after = refound();
-    put(`projections/wikis/daemon-${F2}/ha.ka.ba/notes/new.tid`, tid("lar:///ha.ka.ba/notes/new", "after"));
+  test("C14 — after a re-founding a root whose pet name no face carries stays; the next export names it and the exact next step", async () => {
+    // reset -> found: projections stay (survive-refound), and the new face wears another pet name, so nothing claims hearth-one's root.
+    rmSync(join(root, "hearth"), { recursive: true, force: true });
+    const after = new FakeVessel([{ handleIndex: 0, petname: "someone-else", relation: F2 }], "new-grant");
+    put("projections/faces/someone-else/wiki/ha.ka.ba/notes/new.tid", tid("lar:///ha.ka.ba/notes/new", "after"));
     const refused = await houseExport(out, { acceptOmissions: false, doors: after.doors() }).then(() => null, (e: Error) => e);
     expect(refused).toBeInstanceOf(BundleRefused);
     expect((refused as BundleRefused).code).toBe("carry-unclaimed-face-folder");
     const msg = (refused as Error).message;
-    expect(msg).toContain(join(root, "projections", "wikis", `daemon-${F1}`));
-    expect(msg).toContain(join(root, "projections", "bags", `kahua-${F1}`));
-    expect(msg).not.toContain(`daemon-${F2}`);
+    expect(msg).toContain(join(root, FACE));
+    expect(msg).not.toContain("someone-else");
     // the next step, in the order a person runs it
-    expect(msg).toMatch(/move each folder out of the house root/);
+    expect(msg).toMatch(/move its root out of the house root/);
     expect(msg).toMatch(/--accept-omissions/);
   });
 

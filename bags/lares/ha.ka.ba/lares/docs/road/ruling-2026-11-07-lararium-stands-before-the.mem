@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-lararium-stands-before-the`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-07"
+order    = "1860"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-07-lararium-stands-before-the"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-07-lararium-stands-before-the"
+```
+
+* ''The Lararium stands before the harness moves in, and before any measurement'' (operator, 2026-11-07: //"We stand the LArarium and dogfodo the harness INTO the LArarium before all that (delete that last direction from the plan/roadmaps, it's just more churn)"//). The order runs: the dogfood Lararium stands, `M5`'s memory stage builds on it, the harness moves into it (its controls as signed tiddlers in the daemon wiki, <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-controls`>>), and only then does measurement work open (the outcome ledger, the cached-token measure, the capability manifest's drift test).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bfbRSK_8hyCNvI7BynMqaBGuU8GUlIYwnqldRq-QV-4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

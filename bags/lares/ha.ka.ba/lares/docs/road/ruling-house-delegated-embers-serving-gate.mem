@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-embers-serving-gate`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2350"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-embers-serving-gate"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-embers-serving-gate"
+```
+
+* ''The ember's serving gate'' (house ruling under the operator's delegation, 2026-10-14). A third gate tier, the serving route, takes its bundle from SK, and the floor and sovereign tiers stand untouched; a pin moves only by a signed causal event or a verified key-history step, and no quiet period ages a pin out. The reason: a dialer that pinned the sovereign tier never mistakes a serving hearth for an unlocked one. The ruling flips on proof that a gate pin decides no authority anywhere (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/face-proof#/the-gate-exchange`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Rzsf0Zg11yRLnbSgCTF-c13sU6G92aS-UvvYxNqCKBE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

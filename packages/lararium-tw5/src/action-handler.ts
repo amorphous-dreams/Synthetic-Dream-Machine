@@ -33,6 +33,7 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
+import { wearOf } from "@lararium/mesh";
 import type {
   CompositeStore,
   LarTiddlerRecord,
@@ -43,7 +44,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, requireKahuReach, resolveHouseCanon, ownEntry } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, refuseSeatStartupAction, renderedWriteFault, requireKahuReach, resolveHouseCanon, ownEntry, startupTagOf, RENDERED_DERIVES_REASON } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -396,7 +397,7 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
             causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
             return null;
           });
-          store = handle ? new AutomergeDocStore(handle, bag) : null;
+          store = handle ? new AutomergeDocStore(handle, bag, wearOf(reach.repo)) : null;
         } else if (answer) {
           store = answer.row;
         }
@@ -412,7 +413,7 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
           };
           const url = await reach.slotDocUrl(m[1]!, m[2] as WikiSlotKind, { mint: false }).catch(reason);
           const handle = url ? await findOrThrow(reach.repo, url, bag).catch(reason) : null;
-          store = handle ? new AutomergeDocStore(handle, bag) : null;
+          store = handle ? new AutomergeDocStore(handle, bag, wearOf(reach.repo)) : null;
         }
       }
       cache.set(bag, store);
@@ -445,7 +446,7 @@ export interface CapturedEffect {
  * whole projected effect while the executor runs UNCHANGED. (CREATE's mint +
  * registry write live OUTSIDE access — its executor guards on `dryRun` itself.)
  */
-function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured: CapturedEffect } {
+function makeCapturingBagAccess(real: BagAccess, onPut?: (record: LarTiddlerRecord) => void): { access: BagAccess; captured: CapturedEffect } {
   const puts: Array<{ bag: string; title: string }> = [];
   const tombstones: Array<{ bag: string; title: string }> = [];
   const removes: Array<{ bag: string; title: string }> = [];
@@ -456,7 +457,7 @@ function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured:
       const capturing: LarTiddlerStore = {
         listVisible: () => (realStore ? realStore.listVisible() : Promise.resolve([])),
         get: (title) => (realStore ? realStore.get(title) : Promise.resolve(null)),
-        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); },
+        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); onPut?.(record); },
         tombstone: async (title) => { tombstones.push({ bag, title }); },
         remove: async (title) => { removes.push({ bag, title }); },
         subscribe: () => () => {},
@@ -668,6 +669,16 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
           `CREATE ${destBag} to stand a fresh bag, then write again.`,
         );
       }
+    }
+
+    // THE ONE WALL A SEAT KEEPS (state/decisions, "Native TW5 wikis"): a wave a seat asks lands no startup action, since a
+    // wiki's startup action runs in the operator's tab. The executor runs once through the capturing access first, and a
+    // record it would land carrying a `$:/tags/StartupAction*` tag refuses the whole wave before a byte moves.
+    if (ctx.asker === "seat" && (action.verb === "INGEST" || action.verb === "LOAD")) {
+      const startup: LarTiddlerRecord[] = [];
+      const vet = makeCapturingBagAccess(access, (record) => { if (startupTagOf(record.tiddler["tags"]) !== null) startup.push(record); });
+      await executeAction(action, vet.access, opts.tw5, opts.resolveByCid, opts.yieldHostTask);
+      for (const record of startup) refuseSeatStartupAction(String(record.tiddler.title), record.tiddler["tags"], action.verb, ctx.asker);
     }
 
     // `--dry-run`: run the executor through the capturing access — content writes
@@ -931,7 +942,7 @@ async function createHouseCanon(action: CreateAction, opts: ActionHandlerOptions
     throw new VerbRefusal("house-canon-unlanded", `house-canon-unlanded: ${action.bag} rests in the Kahu realm, and the realm registers no document for it yet; the steward's next boot lands it (standKahuCanon), and no catalog row ever mints canon`);
   }
   const handle = await findOrThrow(opts.reach.repo, url, action.bag).catch(() => null);
-  const count = handle ? (await new AutomergeDocStore(handle, action.bag).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
+  const count = handle ? (await new AutomergeDocStore(handle, action.bag, wearOf(opts.reach.repo)).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
   return { ...base, docUrl: url, count };
 }
 
@@ -1638,6 +1649,16 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       }
       if (decision.kind === "conflict") {
         results.push({ uri, decision: "conflict", reason: decision.reason, filetype: carrier.ext || "text/plain", warnings: [conflictWhy(uri, decision.reason)] });
+        continue;
+      }
+      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a file that would land over a standing render, or land a record
+      // carrying `rendered-from` (a hand's edit to a projected render, the watcher's read-back), refuses its carrier by
+      // name. The projector's own echo never reaches here: it reads `noop` above.
+      const rendered = renderedWriteFault(uri, currentRec?.tiddler, null, "INGEST")
+        ?? (decision.records as Array<Record<string, unknown>>).map((record) => renderedWriteFault(String(record["title"] ?? uri), null, record, "INGEST")).find((fault) => fault !== null)
+        ?? null;
+      if (rendered !== null) {
+        results.push({ uri, decision: "refuse", code: RENDERED_DERIVES_REASON, reason: rendered, warnings: [rendered] });
         continue;
       }
       freshRecords = decision.records as Array<Record<string, unknown>>;

@@ -3,7 +3,7 @@
  * `LAR_ROOT`, founded and unlocked through the test door) and a real Chromium joined to its face through the fleet-join door.
  *
  *   S1 — the node half: a CLI `meme put --recipe default` lands in the daemon wiki's working layer, its carrier projects
- *        under `<root>/projections/wikis/daemon-<F>/` (the face-bound daemon wiki the operator works in), and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
+ *        under `<root>/projections/faces/<pet name>/wiki/` (the face-bound daemon wiki the operator works in), and `meme get --recipe default` reads the same bytes; the repo's tree takes no write.
  *        It doubles as the KNOWN POSITIVE for S3's disk instrument: a write under the root reads as a write.
  *   S2 — a fresh browser joins the hearth's face (offer → request → answer → land), crosses connected, and SUMMONS its own
  *        daemon surface: the one wiki whose recipe stacks this device's working top over the face's kahua stage over canon
@@ -33,11 +33,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, statSync
 import { join, resolve } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import { chromium, type Browser, type BrowserContext, type Page } from "playwright";
-import { foundStagedHearth, openStaged, stageDir, stagedHearthRelation, type LarInstance } from "../../../../tests/harness/instance.js";
+import { foundStagedHearth, openStaged, stageDir, daemonWikiDir, kahuaStageDir, type LarInstance } from "../../../../tests/harness/instance.js";
 import { mintStagedNexusKey } from "../../../../tests/harness/vessel-key.js";
 // The published test route answers the custody form a fresh vessel raises (a harness door; never a person's passphrase).
 import { armTestCustody } from "../../../lararium-node/dist/probes/browser-test-custody.js";
-import { daemonFaceFolder, kahuaFaceFolder } from "../../../lararium-node/dist/src/bag-paths.js";
 import { KAHUA_PROPOSE_VERB } from "../../../lararium-mesh/dist/kahua-stage.js";
 
 const REPO = resolve(import.meta.dirname, "../../../..");
@@ -82,18 +81,14 @@ const projection = (): Map<string, number> =>
 
 const tail = (): string => lines.filter((l) => !l.startsWith("Warning: Global assignment")).slice(-80).join("\n");
 
-/** The worn face's stage folder (`kahua-<F>`), its relation read off the hearth's founding record. */
-const faceFolder = (): string => kahuaFaceFolder(stagedHearthRelation(hearth!.root));
-/** The worn face's daemon wiki folder (`daemon-<F>`), the same relation. */
-const daemonFolder = (): string => daemonFaceFolder(stagedHearthRelation(hearth!.root));
 /**
- * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's daemon wiki working top under the projections root
- * (`<root>/projections/wikis/daemon-<F>`).
+ * WHERE A NODE-SIDE DRAFT PROJECTS: the worn face's daemon wiki working top in its face root
+ * (`<root>/projections/faces/<pet name>/wiki`).
  * One helper, so the lane repoints every read when the top moves.
  */
-const draftPath = (titlePath: string, ext: string): string => join(hearth!.root, "projections", "wikis", daemonFolder(), `${titlePath}${ext}`);
-/** Where a LIFTED kahua item projects: the face's stage under the projections root (`<root>/projections/bags/kahua-<F>`), sited by title. */
-const stagePath = (titlePath: string): string => join(hearth!.root, "projections", "bags", faceFolder(), `${titlePath}.tid`);
+const draftPath = (titlePath: string, ext: string): string => join(daemonWikiDir(hearth!.root), `${titlePath}${ext}`);
+/** Where a LIFTED kahua item projects: the face's stage in its face root (`<root>/projections/faces/<pet name>/stage`), sited by title. */
+const stagePath = (titlePath: string): string => join(kahuaStageDir(hearth!.root), `${titlePath}.tid`);
 
 /** Poll a predicate on the hearth's disk or CLI to a bound; answer its last reading. */
 async function settle<T>(read: () => T | Promise<T>, done: (v: T) => boolean, ms = 30_000): Promise<T> {
@@ -268,7 +263,7 @@ afterAll(async () => {
 });
 
 describe("the stage walk: the node half, the join, and the page's save route", () => {
-  test("S1 — a CLI put to recipe default projects under <root>/projections/wikis/daemon-<F> and reads back the same bytes", async () => {
+  test("S1 — a CLI put to recipe default projects under <root>/projections/faces/<pet name>/wiki and reads back the same bytes", async () => {
     const uri = "lar:///t.stage.walk/cli-put";
     const file = join(scratch, "cli.txt");
     writeFileSync(file, "hello from the CLI\n");
@@ -363,7 +358,7 @@ describe("the stage walk: the node half, the join, and the page's save route", (
     proposal = ids[0]!;
     // Digests only crossed: nothing stands on the stage until the operator's hand lifts.
     expect(existsSync(stagePath(DRAFT.title))).toBe(false);
-    expect(filesUnder(join(hearth!.root, "projections", "bags", faceFolder()))).toEqual([]);
+    expect(filesUnder(kahuaStageDir(hearth!.root))).toEqual([]);
     const got = await hearth!.cli(["kahua", "get", DRAFT.title]);
     expect(got.code, got.stderr).toBe(0);
     expect((JSON.parse(got.stdout) as { item: unknown }).item).toBeNull();

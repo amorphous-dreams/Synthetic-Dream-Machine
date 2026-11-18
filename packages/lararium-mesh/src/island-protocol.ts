@@ -268,7 +268,7 @@ export interface IslandMsg_Manifest {
   /**
    * Serializable disk mirror configs for island-hosted LarDiskProjector.
    * Each entry carries `bagId`, `mirrorRoot` (absolute path), and `scope`
-   * (e.g. "@lares", "@lararium") so the island can reconstruct `BagMirrorConfig`
+   * (e.g. "daemon", "kahua") so the island can reconstruct `BagMirrorConfig`
    * via `namedBagMirror(scope, mirrorRoot)` from `bag-paths`.
    * Absent = no disk projection for this island.
    */
@@ -402,6 +402,12 @@ export interface DaemonMsg_PlaceVerb {
   args: Record<string, unknown>;
   requestedBy: string;
   face?: string;
+  /**
+   * The face a session wore, as the vessel's session door booked it: its ordinal on this vessel, the presenter that door
+   * verified, and the PersonaGroup the vessel's worn face maps the ordinal to (absent where it maps none). The island
+   * books it with the act and hands it to the reactor as `ctx.worn`; absent for every ask that rode no session.
+   */
+  worn?: { readonly ordinal: number; readonly presenter: string; readonly group?: string };
   /**
    * The asker's hand as the vessel's own door read it (`seat` off a seat-marked line, `cli` for the operator's line, a
    * session's own hand). Absent for an ask no door read (content, a synced summons). The island books it with the act and
@@ -716,6 +722,26 @@ export interface DaemonMsg_ResidencyOp {
   reason?: string;
 }
 
+/**
+ * Island → vessel: the actor a face derives for one document, for the island's own Repo (`WireIdentity.actor` under the
+ * island's `replica`, minted at its boot). The derivation's secrets stay with the vessel; the actor alone crosses.
+ */
+export interface DaemonMsg_WearActorRequest {
+  type: "daemon:wear-actor-request";
+  requestId: string;
+  face: string | null;
+  documentId: string;
+  replica: string;
+}
+
+/** Vessel → island: the derived actor, or the refusal that stands in its place (`worn-face-unwritable`). */
+export interface DaemonMsg_WearActorResult {
+  type: "daemon:wear-actor-result";
+  requestId: string;
+  actor?: string;
+  refusal?: string;
+}
+
 /** Vessel → island: ack for a residency-op. */
 export interface DaemonMsg_ResidencyOpResult {
   type: "daemon:residency-op-result";
@@ -806,6 +832,7 @@ export type VesselToIslandMsg =
   | DaemonMsg_GateVerbRequest
   | DaemonMsg_EvictResult
   | DaemonMsg_ResidencyOpResult
+  | DaemonMsg_WearActorResult
   | WikiMsg_PlaceVerb
   | LarMsg_ControlEvent
   | LarMsg_Resend
@@ -1166,6 +1193,7 @@ export type IslandToVesselMsg =
   | DaemonMsg_GateVerbResult
   | DaemonMsg_EvictRequest
   | DaemonMsg_ResidencyOp
+  | DaemonMsg_WearActorRequest
   | DaemonMsg_WikiAlert
   | DaemonMsg_FloorAnswer
   | IslandMsg_CasWant
@@ -1206,7 +1234,7 @@ export function isVesselToIslandMsg(v: unknown): v is VesselToIslandMsg {
   if (v.type === LAR_CONTROL_EVENT) return readLarControlEvent(v) !== null;
   if (v.type === LAR_RESEND) return readLarResend(v) !== null;
   if (isPortKind(v.type)) return readPortVesselMsg(v) !== null;   // the record port reads whole at the door too
-  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
+  return (["manifest", "hooanu", "teardown", "daemon:place-verb", "telemetry:place-verb", "structurepalace:kapae", "daemon:worldline-compare-request", "daemon:worldline-trajectory-request", "daemon:verb-result", "daemon:face-lit", "daemon:face-drop", "daemon:face-bags", "daemon:verify-request", "daemon:resolve-binding-request", "daemon:gate-verb-request", "daemon:evict-result", "daemon:residency-op-result", "daemon:wear-actor-result", "wiki:place-verb", "cas:block", "dyad:read", "receipt:issued", "rest:answer", "custody:written", "session:signed", "view:catalog-result", "view:content-result", "view:settled"] as const)
     .includes(v.type as Exclude<VesselToIslandMsg["type"], "receipt:close" | "wiki:request-drain" | SensoriumSignalType | typeof LAR_CONTROL_EVENT | typeof LAR_RESEND | PortVesselToIslandMsg["type"]>) || isSensoriumSignalType(v.type);
 }
 
@@ -1236,7 +1264,7 @@ export function isIslandToVesselMsg(v: unknown): v is IslandToVesselMsg {
     const tiddler = record?.tiddler as Record<string, unknown> | undefined;
     return typeof record === "object" && record !== null && typeof tiddler === "object" && tiddler !== null && typeof tiddler.title === "string";
   }
-  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
+  return (["event", "teardown:ack", "ea", "breath", "fault", "ready", "gate:clear", "gate:refused", "wiki:verb-result", "daemon:face-settled", "daemon:delegate-verb", "daemon:worldline-compare-result", "daemon:worldline-trajectory-result", "daemon:verify-result", "daemon:resolve-binding-result", "daemon:gate-verb-result", "daemon:evict-request", "daemon:residency-op", "daemon:wear-actor-request", "daemon:wiki-alert", "cas:want", "dyad:ask", "receipt:request", "rest:ask", "custody:write", "session:sign", "view:catalog", "view:content", "view:settle", "docstore:sealed", "docstore:opened", "docstore:live", "docstore:slot", "docstore:answering", "docstore:silent"] as const).includes(
     v.type as Exclude<IslandToVesselMsg["type"], "receipt:asks-done" | "daemon:floor-answer" | LarIslandToVesselMsg["type"] | PortIslandToVesselMsg["type"]>,
   );
 }
@@ -1325,6 +1353,7 @@ export function mkDaemonPlaceVerb(opts: {
   args: Record<string, unknown>;
   requestedBy: string;
   face?: string;
+  worn?: DaemonMsg_PlaceVerb["worn"];
   asker?: Hand;
   chore?: ChoreReceiptMark;
   targets?: string[];
@@ -1348,6 +1377,7 @@ export function mkDaemonPlaceVerb(opts: {
   if (opts.listenable)       msg.listenable = opts.listenable;
   if (opts.effectKey)        msg.effectKey  = opts.effectKey;
   if (opts.face)             msg.face       = opts.face;
+  if (opts.worn)             msg.worn       = opts.worn;
   if (opts.asker)            msg.asker      = opts.asker;
   if (opts.chore)            msg.chore      = opts.chore;
   return msg;

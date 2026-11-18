@@ -56,7 +56,7 @@ function ingest(extra: string[]): ReturnType<LarInstance["cli"]> {
 beforeAll(async () => {
   lar = await targetInstance();
   if (!stagedTarget) return;
-  // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `wikis/daemon-<F>/`, the face in the folder's name), so the
+  // Each wiki projects its own tree under `wikis/<slug>/` (the daemon's own rides `faces/<pet name>/wiki/`, in the face's root), so the
   // scan back into `wikis/lares/working` reads `wikis/lares/` alone — a sibling wiki's tree is never its source.
   wikisDir = wikiWorkbenchDir(lar.root, "lares");
   const r = await lar.cli(["act", "LOAD", "--source-uri", BOOT_MEME, "--to", WORKING, "--in-wiki", "--yes", "--json"]);

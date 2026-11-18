@@ -12,10 +12,17 @@
 import { describe, expect, test } from "vitest";
 import {
   acceptFloorRelease, assembleFloorRelease, cutFloorSnapshot, emptyLarDoc, floorAnswerOf, floorManifestBytes, openFloorReleaseBody,
-  readFloorStatus, sha256HexBytesSync, type FloorPinHome, type FloorPinPorts, type FloorRelease, type FloorRemount, type LarDoc,
+  readFloorStatus, sha256HexBytesSync, signFloorOffering, type FloorPinHome, type FloorPinPorts, type FloorRelease, type FloorRemount, type LarDoc,
 } from "@lararium/mesh";
 import { browserFloorAccept, browserFloorStatus, type BrowserFloorBinding } from "../src/browser-floor-pin.js";
 import { oneSeatCharter, type OneSeat } from "./browser-charter.js";
+
+/** The plugins offering every test floor names: one blob whose bytes ride the porch's CAS beside the record. */
+const PLUGIN_BYTES = new TextEncoder().encode("plugin bytes");
+const OFFERING = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+  id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(PLUGIN_BYTES),
+  provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+}] });
 
 const pinOf = (aid: string): string => Array.from(new TextEncoder().encode(aid), (b) => b.toString(16).padStart(2, "0")).join("");
 
@@ -23,9 +30,10 @@ function floor(tag: string) {
   const cas = new Map<string, Uint8Array>();
   const lares = cutFloorSnapshot({ [`lar:///t/${tag}/lares`]: { tiddler: { title: `lar:///t/${tag}/lares`, text: tag } } });
   const lararium = cutFloorSnapshot({ [`lar:///t/${tag}/lararium`]: { tiddler: { title: `lar:///t/${tag}/lararium`, text: tag } } });
-  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } });
+  const manifestBytes = floorManifestBytes({ format: "lararium-floor", engine: "e".repeat(64), plugins: OFFERING.cid, snapshots: { lares: lares.cid, lararium: lararium.cid } });
   const manifestCid = sha256HexBytesSync(manifestBytes);
   cas.set(lares.cid, lares.bytes); cas.set(lararium.cid, lararium.bytes); cas.set(manifestCid, manifestBytes);
+  cas.set(OFFERING.cid, OFFERING.bytes); cas.set(OFFERING.offering.blobs[0]!.sha256, PLUGIN_BYTES);
   return { cas, manifestBytes, manifestCid };
 }
 async function released(c: OneSeat, f: ReturnType<typeof floor>, prior: string | null = null): Promise<FloorRelease> {
@@ -55,7 +63,7 @@ function browserBinding(c: OneSeat, releases: readonly FloorRelease[], cas: Map<
   const local = new Map<string, Uint8Array>();
   const alerts: FloorRemount[] = [];
   const binding: BrowserFloorBinding = {
-    baseUrl: BASE, nexusPin: pinOf(c.aid), home: () => home, genesisManifest: GENESIS,
+    baseUrl: BASE, nexusPin: pinOf(c.aid), home: () => home, genesisManifest: GENESIS, requiredBlobIds: [OFFERING.offering.blobs[0]!.id],
     fetchFn: porch(c.aid, releases, cas),
     readLocal: async (cid) => local.get(cid) ?? null,
     writeLocal: async (blobs) => { for (const b of blobs) local.set(b.cid, b.bytes); },
@@ -66,7 +74,7 @@ function browserBinding(c: OneSeat, releases: readonly FloorRelease[], cas: Map<
 /** A node-shaped binding: board rows read straight, a local CAS, no porch. */
 function nodeShaped(c: OneSeat, releases: readonly FloorRelease[], cas: Map<string, Uint8Array>, home: FloorPinHome): FloorPinPorts {
   return {
-    home, nexus: c.aid, genesisManifest: GENESIS,
+    home, nexus: c.aid, genesisManifest: GENESIS, requiredBlobIds: [OFFERING.offering.blobs[0]!.id],
     rows: async () => releases.map((r) => ({ keyCid: r.cid, record: r })),
     fetchCas: async (cid) => cas.get(cid) ?? null,
     stage: async () => {},

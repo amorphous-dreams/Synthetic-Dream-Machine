@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-05-ceremony-document-is-approved`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-05"
+order    = "1390"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-05-ceremony-document-is-approved"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-05-ceremony-document-is-approved"
+```
+
+* ''The ceremony document is approved'' (operator, 2026-11-05): the clean ceremony document takes every secret over a service-worker-brokered port (`B1` slice 1b); no secret crosses the page's own thread.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;L6T4lYi03AWwEpsyG_0bCq9xbhdG_XehXOG1aaXjHR0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

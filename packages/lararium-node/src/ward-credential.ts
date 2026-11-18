@@ -144,6 +144,8 @@ export function storeVerbNeedsWard(verb: string, args: Readonly<Record<string, u
   if (verb === "promote-commit") return isWardBoundWiki(typeof args["wiki"] === "string" && args["wiki"].length > 0 ? args["wiki"] : "daemon");
   // A realm hand signs as its leaf at that realm; only the holder's own act signs with the face root.
   if (verb === "edge-kapae") return typeof args["realm"] !== "string";
+  // A HAND RECORD carries its own root signature (the hand signed it at the pūlama's hand door), so landing it opens no ward.
+  if ((verb === "swarm-lei-kui" || verb === "swarm-lei-unstring") && args["signed"] !== undefined) return false;
   return WARD_VERBS.has(verb);
 }
 

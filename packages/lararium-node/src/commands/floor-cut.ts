@@ -21,7 +21,7 @@ import { join } from "node:path";
 import type { AutomergeUrl, Repo } from "@automerge/automerge-repo";
 import {
   AutomergeDocStore, BAG_MANIFEST_FILE, FloorCutThin, bagUri, cutReleaseFloor, floorPinOf, floorReleaseEntriesFromBoard, foldFloorReleases,
-  publicationDocUrl, materializeSharedLarDoc, realmStandingDocUrl, sha256HexBytesSync,
+  FloorManifestRefusal, publicationDocUrl, materializeSharedLarDoc, readFloorManifest, realmStandingDocUrl, sha256HexBytesSync,
   type CapTier, type LarDoc, type LarTiddlerRecord, type OfferRecordReader,
 } from "@lararium/mesh";
 import { readBagManifest } from "../bag-declare.js";
@@ -80,6 +80,8 @@ export async function runFloorCutOver(opts: {
   readonly bagTier:     (slug: string) => CapTier | null;
   /** Slugs the steward names thin on purpose: each cuts though its live rows count under half the prior snapshot's. */
   readonly thin?:       readonly string[];
+  /** The engine digest this vessel's genesis floor names; a prior whose engine differs refuses `floor-engine-unoffered`. Required. */
+  readonly genesisEngine: () => Promise<string | null> | string | null;
 }): Promise<FloorCutResult> {
   const out = await cutReleaseFloor({
     prior: async () => {
@@ -97,8 +99,10 @@ export async function runFloorCutOver(opts: {
     tier: opts.bagTier,
     blob: async (cid) => readVerifiedCasBlobFromFs(cid, opts.casDir),
     stage: async (blobs) => { writeCasEntriesFs(blobs.map((b) => ({ cid: b.cid, bytes: b.bytes })), opts.casDir); },
+    genesisEngine: opts.genesisEngine,
   }, { ...(opts.thin ? { thin: opts.thin } : {}) }).catch((e: unknown) => {
     if (e instanceof FloorCutThin) throw new FloorRefused(e.refusal, e.message);
+    if (e instanceof FloorManifestRefusal && e.code === "floor-engine-unoffered") throw new FloorRefused(e.code, e.message);
     throw new FloorRefused("floor-cut-refused", e instanceof Error ? e.message : String(e));
   });
   if (sha256HexBytesSync(out.manifestBytes) !== out.manifestCid) throw new FloorRefused("floor-cut-refused", "the cut manifest's bytes differ from its CID");
@@ -120,6 +124,12 @@ export async function runFloorCut(opts: {
     repo: opts.repo, casDir: opts.casDir, out: opts.out, canonDocUrl: await nodeCanonDocUrl(opts.repo, opts.catalogUrl),
     bagTier: (slug) => declaredBagTier(daemonBagsDir(), slug),
     ...(opts.thin ? { thin: opts.thin } : {}),
+    // The engine the genesis floor names: a cut carries the engine it stands on and never offers one.
+    genesisEngine: async () => {
+      const bytes = pinPorts.genesisManifest ? await casRead(pinPorts.genesisManifest) : null;
+      const read = bytes ? readFloorManifest(bytes) : null;
+      return read && "manifest" in read ? read.manifest.engine : null;
+    },
     prior: async () => {
       const standing = await foldFloorReleases({ rows: floorReleaseEntriesFromBoard(board.doc()), nexus: pinPorts.nexus, manifestBytesOf: casRead });
       return standing.standing === "released" ? standing.head.body.manifest : floorPinOf(pinPorts.home.doc(), pinPorts.nexus, pinPorts.genesisManifest).pin.manifest;

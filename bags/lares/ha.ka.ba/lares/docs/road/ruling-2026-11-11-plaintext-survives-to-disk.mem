@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-plaintext-survives-to-disk`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-11"
+order    = "2080"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-plaintext-survives-to-disk"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-11-plaintext-survives-to-disk"
+```
+
+* ''Plaintext survives to disk'' (operator, 2026-11-11: //"Plaintext survives to disk"//, re-affirming 2026-11-10). Every layer that holds a face's content keeps a cleartext mirror that seeds back across a re-founding: the workbench through its one folder `wikis/<slug>` (beside the source for a checkout-sourced wiki) or its workspace, once for its document (operator, 2026-11-14: //"most wikis should NOT seed per-face because shared crdts, while daemon wikis should seed per-face. Same with import/export."//), `personal` through `personal/<F>/<slug>`, the daemon tiers through `wikis/daemon-<F>` and `bags/daemon-<F>`.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;GRKk1mHgI3uGuWnsp5zAvOvUSLSWpqkSf249iZX6UXk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-outbox-at-rest`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2380"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-outbox-at-rest"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-outbox-at-rest"
+```
+
+* ''The outbox at rest'' (house ruling under the operator's delegation, 2026-10-14). Each outbox parcel seals under randomized authenticated encryption with a stable outbox key the vessel key wraps and an unlock hands the daemon island, the way content keys reach it, and rests under a random name with its routing inside the sealed body, so a locked disk names no reader; the `sealed-outbox` carrier leaves `floor-plain` for a sealed class. Before a parcel's atomic commit nothing stands sendable, after it the parcel re-opens and retries at the next unlock, and after a ship and before the local delete the receiver folds a repeat idempotently. The reason: a reader digest on a stolen disk names a relationship; no flip stands expected, since the ruling closes a residue (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-table`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;lZUTenK7vJfYhbiFPdo9NLcaebyRSPA1wKr1sljdnfw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

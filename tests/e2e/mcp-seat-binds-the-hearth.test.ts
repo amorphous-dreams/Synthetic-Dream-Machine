@@ -180,7 +180,7 @@ describe.skipIf(gaps.length > 0)("★ THE MCP SEAT BINDS THE HEARTH — a harnes
     }, { budgetMs: 60_000 });
     expect(existsSync(projection), `MCP write never projected to ${projection}`).toBe(true);
     expect(readFileSync(projection, "utf8")).toContain(`uri-path = "${PATH}"`);
-    // CONTROL (placement over patterns): the seat's write lands in the worn face's `wikis/daemon-<F>`, and the outcome and
+    // CONTROL (placement over patterns): the seat's write lands in the worn face's `faces/<pet name>/wiki`, and the outcome and
     // receipt it raised rest in the control document, which names no mirror: no projected file names a private home.
     expect(existsSync(join(lar.root, "projections", "bags", "daemon")), "control: the daemon document gained a mirror").toBe(false);
     expect(privateTitlesProjected(lar.root), "control: a control, secret or daemon-document title projected").toEqual([]);

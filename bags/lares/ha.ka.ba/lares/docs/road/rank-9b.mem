@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-9b`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0280"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-9b"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-9b"
+```
+
+| 9b | WAVE TWO, beside | `L40` the code map (`L40a` the generator, then `L40b` the derived library) | Every later builder opens a slice by line range instead of a giant whole; `L40a` holds new tool files alone, and its wiki reads wait on `L17-2a` (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/first-three-wave-map#/thing-one-the-code-map`>>). |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;x2r3KdK5KQuYqYn6ppwFVupFGWOsBU2LfcSXb2h0nHk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

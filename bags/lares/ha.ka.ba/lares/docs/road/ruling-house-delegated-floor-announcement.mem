@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-floor-announcement`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2600"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-floor-announcement"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-floor-announcement"
+```
+
+* ''The floor announcement'' (house ruling under the operator's delegation, 2026-10-15). `waking-floor-announce` signs one canonical body per carried Nexus under that Nexus's floor bundle signing key: `{ kind: "floor-announcement", nexus, floorPin, standing, prior }`, `prior` naming the digest of the announcement this floor made before for that Nexus (null at the first). No counter and no position orders it: a reader holding an announcement takes only the one that names it as `prior`, and `foldFloorAnnouncements` names a fork rather than settling it by recency. It travels only inside an authenticated socket or relay relation. The reader checks the already pinned floor pin, domain, Nexus and route, and treats the body as a peer hint alone. The reason: a floor hint must neither bootstrap its own trust nor replay across Nexuses. The ruling flips on a smaller body that still refuses cross-Nexus replay, stale replacement and first-contact self-certification.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;iWWg5ghlvx1QcnTVfZrQ81ad3isqcUykM3Ln9_ontZQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

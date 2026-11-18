@@ -33,7 +33,7 @@ async function rig() {
   const casDir = join(dir, "cas");
   const lares = cutFloorSnapshot({ [T]: row(T, "canon says") });
   const lararium = cutFloorSnapshot({ "lar:///ha.ka.ba/lararium/x": row("lar:///ha.ka.ba/lararium/x", "x") });
-  const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
+  const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), plugins: "b".repeat(64), snapshots: { lares: lares.cid, lararium: lararium.cid } };
   const gBytes = floorManifestBytes(genesis);
   const gCid = sha256HexBytesSync(gBytes);
   writeCasEntriesFs([{ cid: lares.cid, bytes: lares.bytes }, { cid: lararium.cid, bytes: lararium.bytes }, { cid: gCid, bytes: gBytes }], casDir);
@@ -51,7 +51,7 @@ describe("the node's floor cut", () => {
     try {
       await r.canon.put(row(T, "the promoted page"), { kind: "lares-verb", requestId: "promote" });
       const out = join(r.dir, "floor.json");
-      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.gCid, canonDocUrl: r.canonDocUrl, bagTier: () => null });
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.gCid, canonDocUrl: r.canonDocUrl, genesisEngine: () => "e".repeat(64), bagTier: () => null });
       expect(cut).toMatchObject({ prior: r.gCid, cut: ["lares"], kept: ["lararium"], moved: ["lares"], out });
       expect(sha256HexBytesSync(new Uint8Array(readFileSync(out)))).toBe(cut.manifestCid);
       const floor = await resolveFloor(cut.manifestCid, async (cid) => readVerifiedCasBlobFromFs(cid, r.casDir));
@@ -64,7 +64,7 @@ describe("the node's floor cut", () => {
   test("RED: a cut over unmoved canon answers the prior's own CID", async () => {
     const r = await rig();
     try {
-      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "same.json"), prior: async () => r.gCid, canonDocUrl: r.canonDocUrl, bagTier: () => null });
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "same.json"), prior: async () => r.gCid, canonDocUrl: r.canonDocUrl, genesisEngine: () => "e".repeat(64), bagTier: () => null });
       expect(cut).toMatchObject({ manifestCid: r.gCid, moved: [] });
     } finally { await r.repo.shutdown(); }
   });
@@ -73,7 +73,7 @@ describe("the node's floor cut", () => {
     const r = await rig();
     try {
       const out = join(r.dir, "none.json");
-      await expect(runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => "0".repeat(64), canonDocUrl: r.canonDocUrl, bagTier: () => null }))
+      await expect(runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => "0".repeat(64), canonDocUrl: r.canonDocUrl, genesisEngine: () => "e".repeat(64), bagTier: () => null }))
         .rejects.toMatchObject({ refusal: "floor-cut-refused" });
       expect(existsSync(out)).toBe(false);
     } finally { await r.repo.shutdown(); }
@@ -89,7 +89,7 @@ describe("the node's floor cut", () => {
       const wBytes = floorManifestBytes(wide), wCid = sha256HexBytesSync(wBytes);
       writeCasEntriesFs([elyncia, referee, sdm, { cid: wCid, bytes: wBytes }].map((b) => ({ cid: b.cid, bytes: b.bytes })), r.casDir);
       const tiers: Record<string, "public" | "contract"> = { elyncia: "public", "elyncia-referee": "contract" };
-      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "tier.json"), prior: async () => wCid, canonDocUrl: r.canonDocUrl, bagTier: (slug) => tiers[slug] ?? null });
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "tier.json"), prior: async () => wCid, canonDocUrl: r.canonDocUrl, genesisEngine: () => "e".repeat(64), bagTier: (slug) => tiers[slug] ?? null });
       expect(cut.dropped).toEqual(["elyncia-referee"]);
       const floor = await resolveFloor(cut.manifestCid, async (cid) => readVerifiedCasBlobFromFs(cid, r.casDir));
       if ("refusal" in floor) throw new Error(floor.refusal);
@@ -124,11 +124,11 @@ describe("the node's floor cut", () => {
     const r = await wideRig(3);
     try {
       const out = join(r.dir, "thin.json");
-      await expect(runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, bagTier: () => null }))
+      await expect(runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, genesisEngine: () => "e".repeat(64), bagTier: () => null }))
         .rejects.toMatchObject({ refusal: "floor-cut-thin", message: expect.stringMatching(/lares \(3 live rows? under 20\).*--thin lares/s) });
       expect(existsSync(out)).toBe(false);
       // CONTROL: the steward names the slug thin on purpose, and the cut lands.
-      const named = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, bagTier: () => null, thin: ["lares"] });
+      const named = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out, prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, genesisEngine: () => "e".repeat(64), bagTier: () => null, thin: ["lares"] });
       expect(named).toMatchObject({ cut: ["lares"], moved: ["lares"] });
       expect(existsSync(out)).toBe(true);
     } finally { await r.repo.shutdown(); }
@@ -137,7 +137,7 @@ describe("the node's floor cut", () => {
   test("CONTROL: a slug that sheds some rows (12 of 20) cuts with no flag", async () => {
     const r = await wideRig(12);
     try {
-      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "shed.json"), prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, bagTier: () => null });
+      const cut = await runFloorCutOver({ repo: r.repo, casDir: r.casDir, out: join(r.dir, "shed.json"), prior: async () => r.wCid, canonDocUrl: r.canonDocUrl, genesisEngine: () => "e".repeat(64), bagTier: () => null });
       expect(cut).toMatchObject({ cut: ["lares"], moved: ["lares"] });
     } finally { await r.repo.shutdown(); }
   });

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-top-layer-always-shadows`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-11"
+order    = "2090"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-top-layer-always-shadows"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-11-top-layer-always-shadows"
+```
+
+* ''The top layer always shadows'' (operator, 2026-11-11: //"The top layer always shadows"//). The recipe stack alone decides what shows: a working record shadows canon's, nothing retracts a higher layer, and a seed's canon leg warns where canon stands fresher (`override-bases.ts`, `seed-mirrors.ts`). Landed.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;oqXWupN1smNkQAJws9N8s_T8udIa39N4Cp_aIrCfBdA`>>
+
+<<^ code=`&#x0004;` to=`?`>>

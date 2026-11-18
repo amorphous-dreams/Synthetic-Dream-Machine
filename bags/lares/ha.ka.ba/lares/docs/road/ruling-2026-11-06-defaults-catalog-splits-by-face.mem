@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-catalog-splits-by-face`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-defaults"
+order    = "1510"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-catalog-splits-by-face"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-catalog-splits-by-face"
+```
+
+* ''The catalog splits by face'' (operator, 2026-11-06, approving the house's defaults). No vessel-wide content key stands: each face holds its own catalog (`D`, sealed under the face), and a floor catalog names public bags alone (`F`); the daemon bag splits into the floor core (`F`, signed) and each face's daemon wiki content (`D`). The floor catalog's fields stand enumerated: a public bag's id, its kind and its published lookup reference, nothing else, so no private bag's name or metadata reaches `F`. The sealed-store carrier holds it, carried by the b1 lanes' carriers at their land.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;uAPntaTC5-OPyVvfFCnZ-_7RvkcqtXXU_Ed6XJKdIRs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

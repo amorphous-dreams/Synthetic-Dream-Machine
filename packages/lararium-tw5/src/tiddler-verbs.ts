@@ -24,9 +24,12 @@
  * asks the Kahu predicate and the face's write cap on the bag the cascade lands in (wikis-first: the working layer).
  * A title that stays home (`offerWithheldTitle`: the temp and state namespaces, the control and secret homes, `cap/**`;
  * and the volatile VM plane, the daemon's own scratch and verb trail)
- * answers no read and takes no write. A put that would land a code-bearing record (a `$:/` title or tag, a module or
- * plugin field, a script type) refuses `tiddler-put-code-class`: no eval door opens here. No action string and no
- * `tm-*` message rides this door (the `act` ask, phase 2).
+ * answers no read and takes no write. Every other record lands natively, as a person's edit in the wiki lands it: a `$:/`
+ * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
+ * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
+ * only the renderer writes it, and both refuse `rendered-derives`. THE ONE WALL A SEAT KEEPS: a seat-asked put carrying a
+ * `$:/tags/StartupAction*` tag refuses `seat-startup-offer` (a wiki's startup action runs in the operator's tab), and the
+ * operator's own hand lands it. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
  *
  * THE FAMILY LAW (`@lararium/mesh/family`) DECIDES WHERE A RECORD STANDS AND WHAT A DELETE MOVES. `position` and
  * `family` read through `familyOf`; a delete reads its `consequence` before anything lands, over the reader's view,
@@ -53,7 +56,7 @@
  */
 
 import {
-  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseRenderedWrite, refuseSeatStartupAction, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -64,6 +67,8 @@ import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import { wornOrigin } from "./verb-dispatcher.js";
+import { wikiWearsNext } from "./island-recipe.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 export interface TiddlerVerbOptions {
@@ -471,26 +476,6 @@ export function makeWikiRenderReactor(opts: TiddlerVerbOptions): VerbReactor {
 
 // ── tiddler-put ───────────────────────────────────────────────────────────────────────────────────────
 
-const CODE_FIELDS = ["module-type", "plugin-type"] as const;
-const CODE_TYPES: ReadonlySet<string> = new Set(["application/javascript", "application/x-javascript", "text/javascript"]);
-
-/**
- * THE CODE-CLASS FENCE (until the act ward's `codeClassOf` stands, phase 2): a record the engine would run or import
- * as definitions never lands through this door. A `$:/` title configures or extends the engine; a `$:/` tag enrolls a
- * record in a system list (global definitions, startup actions, raw markup); a module or plugin field and a script
- * type name code outright. Each refuses by name and lands nothing.
- */
-function refuseCodeClass(title: string, next: Record<string, string>, tags: readonly string[]): void {
-  const wall = (why: string): never => {
-    throw new VerbRefusal("tiddler-put-code-class", `tiddler-put-code-class: ${why}; the tiddler door lands no record the engine would run or import. A person edits such a record in the wiki.`);
-  };
-  if (title.startsWith("$:/")) wall(`"${title}" names a system title`);
-  for (const name of CODE_FIELDS) if (next[name] !== undefined) wall(`"${title}" would carry the field \`${name}\``);
-  if (CODE_TYPES.has(next["type"] ?? "")) wall(`"${title}" would carry the script type "${next["type"]}"`);
-  const systemTag = tags.find((tag) => tag.startsWith("$:/"));
-  if (systemTag !== undefined) wall(`"${title}" would carry the system tag "${systemTag}"`);
-}
-
 /** The stage meme law (`place-meme.ts`), on a plain record: a title under the memory stage reads one or two lowercase path segments. */
 function refuseMalformedStagePath(title: string): void {
   if (!title.startsWith(STAGE_MEME_PREFIX)) return;
@@ -563,12 +548,16 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
     if ((place.position !== "plain" && structural.length > 0) || joinsFamily) {
       throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
     }
-    refuseCodeClass(title, next, tags);
+    refuseSeatStartupAction(title, tags, "tiddler put", ctx.asker);
+    // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
+    refuseRenderedWrite(title, before, next, "tiddler put");
     refuseMalformedStagePath(title);
 
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
     // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
+    // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
+    wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
     wiki.addTiddler(new Tiddler(next));
     const landed = readRecord(wiki.getTiddler(title)!).fields;
     return answer("put", { created: !standing, changed, hash: hashOf(landed), textHash: textHashOf(landed) });
@@ -585,7 +574,6 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     refuseWithheld(title, "tiddler-delete");
     await requireWrite(opts, anchor, ctx.cap, "tiddler delete", ctx.asker);
     const wiki = anchor.engine.wiki;
-    if (title.startsWith("$:/")) throw new VerbRefusal("tiddler-put-code-class", `tiddler-put-code-class: "${title}" names a system title; the tiddler door removes no record the engine reads as configuration or code.`);
     const standing = wiki.tiddlerExists(title) ? wiki.getTiddler(title) : undefined;
     if (!standing) return { recipe: "default", title, decision: "absent", tombstoned: [] };
     const { fields, bag } = readRecord(standing);
@@ -612,6 +600,8 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     if (read.position !== "plain" && !flagOn(args["family"])) {
       return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares meme delete ${read.family}\` (meme_delete).`);
     }
+    const rendered = renderedWriteFault(title, fields, null, "tiddler delete");
+    if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
     if (read.refusals.length > 0) {
       const first = read.refusals[0]!;
       const why = first.code === "reveal-top-unwritable"
@@ -632,7 +622,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
     // that change in the wiki as one grain. A record no layer holds leaves through the live wiki, as a hand's delete.
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const perBag = new Map<string, { tombstones: string[]; retracts: string[] }>();
     const byHand: string[] = [];
     for (const row of read.acts) {
@@ -645,7 +635,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     for (const [landing, group] of perBag) {
       await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
     }
-    for (const member of byHand) wiki.deleteTiddler(member);
+    for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face); wiki.deleteTiddler(member); }
     return { recipe: "default", title, decision: "removed", mode, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
 }

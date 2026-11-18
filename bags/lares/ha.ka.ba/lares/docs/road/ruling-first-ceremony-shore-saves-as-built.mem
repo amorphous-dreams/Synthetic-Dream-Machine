@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-shore-saves-as-built`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "first-ceremony"
+order    = "0630"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-shore-saves-as-built"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-first-ceremony-shore-saves-as-built"
+```
+
+* ''Shore saves, as built'': a rename onto a standing title proceeds as an ordinary write at field grain; a tombstone moved into a bag that lacks the title refuses unless the hand asks to shadow.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;XoYZ89sbDvIdm_rNBy5o0L-ehSvdRBePmS4m87H5IdM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

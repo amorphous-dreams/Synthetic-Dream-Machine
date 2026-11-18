@@ -10,7 +10,7 @@
  *   H3  a plain export (no keep) over the checkout's workbench carries it as before, and names no `elsewhere`.
  */
 import { checkHouseTeardown } from "./support/check-house-teardown.js";
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -21,7 +21,7 @@ import { verifyBundle } from "../src/bundle-manifest.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 
@@ -43,18 +43,18 @@ function doors(canonWikis: string): BundleDoors {
 }
 
 beforeEach(() => {
-  house = openIsolatedHouse({ home: true, gitConfig: true });
+  house = openScratch({ gitConfig: "private" });
   root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep house-only suite\n");
   out = join(root, "workspaces", "backup", "house");
   mkdirSync(dirname(out), { recursive: true });
   // House-only classes: the face's daemon working layer, its kahua stage, a user wiki's workbench, a minted bag.
-  put(`projections/wikis/daemon-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
-  put(`projections/bags/kahua-${F1}/ha.ka.ba/kahua/memory/heron.tid`, tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
+  put("projections/faces/steward/wiki/ha.ka.ba/kahua/memory/heron.tid", tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
+  put("projections/faces/steward/stage/ha.ka.ba/kahua/memory/heron.tid", tid("lar:///ha.ka.ba/kahua/memory/heron", "remember the heron"));
   put("projections/wikis/notes/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
 });
-afterEach(() => { house.close(); });
+afterEach(() => { closeScratch(house); });
 
 const workspace = (): string => join(root, "workspaces", "backup");
 const houseOnly = ["faces/f0/working/ha.ka.ba/kahua/memory/heron.tid", "faces/f0/kahua/ha.ka.ba/kahua/memory/heron.tid", "wikis/notes/working/ha.ka.ba/notes/pond.tid", "bags/garden/ha.ka.ba/garden/rose.tid"];

@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { CompositeStore, wikiSlotUri } from "@lararium/mesh";
 import { MemoryTiddlerStore } from "../../lararium-tw5/src/memory-store.js";
-import { daemonWorkingMirror, daemonFaceFolder } from "../src/bag-paths.js";
+import { daemonWorkingMirror, faceRoot } from "../src/bag-paths.js";
 import { LarDiskProjector } from "../src/disk-projector.js";
 
 const bag = wikiSlotUri("daemon", "working");
@@ -19,14 +19,14 @@ async function rig() {
   const store = new MemoryTiddlerStore(bag);
   await store.put({ tiddler: { title, text: "live" } }, origin);
   const projector = new LarDiskProjector({
-    mirrors: [daemonWorkingMirror(root, tag)],
+    mirrors: [daemonWorkingMirror(root, { relation: tag, segment: "Heron" })],
     carrierFileFn: async () => ({ ext: ".mem", body: "live", defaultRelPath: "ha.ka.ba/t/daemon/shadow-test.mem" }),
     recoveryStore: () => store,
     bagsHolding: async () => { const record = await store.get(title); return record && !record.meta?.deleted ? [bag] : []; },
   });
   const internal = projector as unknown as { flush(b: string, t: string): Promise<void>; reconcile(t: string): Promise<void> };
   await internal.flush(bag, title);
-  const stem = join(root, "wikis", daemonFaceFolder(tag), "ha.ka.ba/t/daemon/shadow-test");
+  const stem = join(faceRoot(root, "Heron"), "wiki", "ha.ka.ba/t/daemon/shadow-test");
   return { store, internal, stem };
 }
 

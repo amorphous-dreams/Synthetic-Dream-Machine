@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-red-first-homed`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "test-refactor"
+order    = "2840"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-red-first-homed"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-test-refactor-red-first-homed"
+```
+
+* ''Red-first, homed'' (operator ruling, 2026-11-04): each fix lands a behavior red with its control in the narrowest existing home, and a new file opens only at a distinct runtime, boundary, harness or suite class.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zagOz8yEMaQGoARa3lyfPU5GyHKAW3WAxVrJu1VowtY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

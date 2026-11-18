@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-hosted-walk-n-a-node-may`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "hosted-walk"
+order    = "0490"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-hosted-walk-n-a-node-may"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-hosted-walk-n-a-node-may"
+```
+
+* ''N — a node may walk.'' The sorter sorts by proven relation, never by device type.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fhUbS44XaEV0JbslEwskQk8c-DWNknZUyRb6HIue3-c`>>
+
+<<^ code=`&#x0004;` to=`?`>>

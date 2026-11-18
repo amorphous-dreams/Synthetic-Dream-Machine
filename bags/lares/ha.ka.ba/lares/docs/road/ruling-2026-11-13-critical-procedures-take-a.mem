@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-13-critical-procedures-take-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-13"
+order    = "2230"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-13-critical-procedures-take-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-13-critical-procedures-take-a"
+```
+
+* ''Critical procedures take a confirm gate'' (operator, 2026-11-13: //"Note for the future (find the DreamNet/DreamDom roadmaps and survey then true up and add) that critical procedures like `lares("vessel", "reset")` and its UX twin should get gated behind an operator/user confirmation (like the pwd, etc)."//). A critical procedure and its page twin stand behind a confirmation of the operator or user who holds the device. The browser's `lares("vessel", "reset")` and the page's own button raise one reset ask, and the ceremony document burns the place only on the pass its confirm gate mints (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/browser-vessel-lift#/the-confirm-gate`>>; `C4` in #/the-leaps). The host shim's `reset` takes a typed word alone (`C10`). The gate's shape rests in the house's lean below, overrulable (#/open).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k688xZV5e5O7LM3DbGsGCcZncl1AbWIN-aO5tj1e_Yg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

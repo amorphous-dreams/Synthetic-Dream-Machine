@@ -13,6 +13,7 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/operator-daemon-behavior
  */
 
+import { wearOf } from "@lararium/mesh";
 import { seatGrantsReader } from "./carried-seat.js";   // leaf-fleet
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
@@ -34,6 +35,7 @@ import {
   registerCanonOfferVerbs, CANON_OFFER_VERBS,
 } from "@lararium/tw5";
 import { applyShares, liftCarriedShares } from "./share-apply.js";
+import { grantShare } from "./share-grant.js";
 import { adoptWorkbench, faceWorkbenchRealm, landWorkbench, workbenchFoundsOnWrite, workbenchWriterSeat, type LedgerDoc } from "./workbench-realm.js";
 import { workbenchKeyDocs, ledgerWorkbenchRealms, privateCabalRealmId, bagUri as meshBagUri, shareCarryTitle, shareCarryOf, tiddlerText } from "@lararium/mesh";
 import { DAEMON_WIKI_SLUG, stoodDocumentBytes, ACTION_VERBS, sha256HexBytesSync, canonicalJsonBytes, DOCUMENT_HANG_BOUND_MS, VerbRefusal, DAEMON_BAG_ID, AutomergeDocStore, personaBagIdFor, personaSiblingBagIds, didFromVerifyingKey, deviceEdgeDigest, edgeLedgerDocUrl, fleetEdgeBoardDocUrl, personaKelChainForPrefix, materializeSharedLarDoc, wikiBagUri, recipeLayerIndex, wikiSlotUri, mutableLarRecord, faceIntentVerbs, faceRecordsOf, isVesselGround, ControlHomeUnavailable, canonOfferDocUrl, type ChangeOrigin } from "@lararium/mesh";
@@ -452,7 +454,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const out = await siblingNotices.announcing(resolver).slotDoc(DAEMON_WIKI_SLUG, kind);
         return out?.url ?? null;
       },
-      storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag),
+      storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag, wearOf(ctx.repo)),
     });
   };
   // THE WORKBENCH LEDGER (cabal-realm#/the-workbench): the vessel's own ledger under its place key, where each wiki's realm is
@@ -560,7 +562,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       if (!resolved) continue;
       const handle = await findOrThrow(ctx.repo, resolved.url, `${bag} (the daemon's ${kind} layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
-      const store = new AutomergeDocStore(handle, bag);
+      const store = new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
       ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
       ctx.handles.set(bag, handle);
       store.emitInitialReplay();
@@ -605,7 +607,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (!resolved) throw new Error("working slot did not resolve");
       const workingUrl = resolved.url;
       const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
-      const store = new AutomergeDocStore(handle, working);
+      const store = new AutomergeDocStore(handle, working, wearOf(ctx.repo));
       // The face canon mounts after ea, so the working layer reads its seat off the recipe, never off the canon alone: an
       // absent canon read as index -1 seated working beneath the kahua stage, which then shadowed every working edit.
       ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
@@ -1253,7 +1255,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               founderEdge: ownEdge, signGrant: faceAtom().sign, atomSeed: meshHexToBytes(daemonAuth.atom!.seed),
               founderProof: { personaKel: founderKel, dyad: (key) => key.toLowerCase() === ownEdge.deviceVerifyingKey.toLowerCase() ? founderDyad : "unknown" },
               operationStore,
-              grantPlane: { store: new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup())), heads: () => planeHandle.heads() },
+              grantPlane: { store: new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup()), wearOf(ctx.repo)), heads: () => planeHandle.heads() },
               fence: { intentId: at.intentId, pinnedAtom: at.pinnedAtom, ownAtom: faceAtom().key },
             });
           };
@@ -1662,15 +1664,10 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
           grant: async (g) => {
             const owner = holderOf(g.ownerGroup), grantee = holderOf(g.granteeGroup);
             if (!owner || !grantee) throw new VerbRefusal("share-face-shut", "share-face-shut: a face of this grant stands shut here");
-            if (!owner.docIdOfBag(g.bag)) await owner.registerBag(g.bag);
-            const { id } = await owner.receiveContactCard(await grantee.contactCard());
-            // A writer takes the hand the house grants a face over a bag it writes (Keyhive's `admin`, `FACE_SEATS_AND_UNSEATS`).
-            const access = g.access === "edit" ? "admin" : "read";
-            // THE ROSTER'S OWN READ: a delegation the owner's hive already holds delegates again by reference and moves nothing.
-            const held = (await owner.verify({ bagUrl: g.bag, presenter: id, access }).catch(() => ({ ok: false }))).ok;
-            await owner.delegate({ audience: id, bagUrl: g.bag, access });
-            await grantee.ingestPeerEvents(await owner.eventsForPeer(id));
-            return { fresh: !held };
+            // THE MOUNTED FACE'S MINT RIDES ITS LEDGER: its late registration reads the face plane's ledger, so a Document this
+            // grant mints adopts again after a restart; a lit sibling registers its bags in-process (no plane ledger here).
+            const ownerIsMounted = daemonAuth.personaGroupId !== undefined && g.ownerGroup === daemonAuth.personaGroupId;
+            return grantShare({ owner, grantee, bag: g.bag, access: g.access, ...(ownerIsMounted && faceLedger ? { ownerLedger: faceLedger } : {}) });
           },
         });
         return { ok: true, ...applied, waiting: [...applied.waiting], ...(applied.standing ? { standing: [...applied.standing] } : {}), workbenches: applied.workbenches.map((w) => ({ ...w, removed: [...w.removed] })) };

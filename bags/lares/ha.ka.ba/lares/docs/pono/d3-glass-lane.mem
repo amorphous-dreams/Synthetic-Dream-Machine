@@ -147,7 +147,7 @@ Stock binds its root messages in three browser startups the mirror's boot keeps 
 !! What the lane leaves alone
 
 * The hands spine until PR #108 lands (`session-contract.ts`, `uds-channel.ts`, `uds-session-door.ts`, `session-switch.ts`, `store-door-verbs.ts`, the openers' compose hunks) and I2's `intent-*` files. No opener compose hunk unless the controller hands one; the glass builds it as a named patch.
-* The road and the changelog.
+* The road.
 * D4's manifest and gate.
 
 <<~/ahu>>
@@ -160,6 +160,6 @@ Stock binds its root messages in three browser startups the mirror's boot keeps 
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;vNBMdSnLQEeWHlLxD_GRxb-deSCP6W9o_FUukgix97E`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;FqvXrXksXIAyWTqAPsaWk5oKwV42ubx1WPpt0J5fO2g`>>
 
 <<^ code=`&#x0004;` to=`?`>>

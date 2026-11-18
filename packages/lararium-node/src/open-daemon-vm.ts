@@ -44,6 +44,8 @@ const DEFAULT_ADMIN_WORKER_URL = new URL("./node-daemon-island.js", import.meta.
 
 export interface DaemonVmOptions {
   repo:              Repo;
+  /** The PersonaGroup a session's ordinal maps to (`DaemonVmCoreOptions.wornGroupOf`). */
+  wornGroupOf?:      (ordinal: number) => string | null;
   /**
    * THE CAPABILITY RECORD the vessel hands its daemon island at the spawn (`receipt`, `cas`, `dyad`, `custodyWrite`).
    * The island reads each member from this record at ask time, so the vessel may stand a member after the spawn; a
@@ -59,6 +61,9 @@ export interface DaemonVmOptions {
    *  Absent with `personaUrl`; the two stand or fall together. */
   personaBagId?:      string;
   faceRelation?: string | null;
+  /** THE FACE ROOT'S FOLDER the worn face's private mirrors rest under (`faces/<pet name>`, `faceSiteOf`); absent or null with a
+   *  relation standing: the face makes no folder (no pet name, or one the segment rule refuses), so no private mirror stands. */
+  faceSegment?: string | null;
   faceGroup?: string;
   faceLabel?: string;
   /**
@@ -100,7 +105,7 @@ export interface DaemonVmOptions {
   casData?:          IslandCasData;
   /** D-VR-C: persist only the explicit daemon document in its owned scope. */
   ownedDocument?:    boolean;
-  /** The house's projections root (`<root>/projections`): `wikis/daemon-<F>/` receives the daemon wiki's working layer. */
+  /** The house's projections root (`<root>/projections`): `faces/<pet name>/wiki/` receives the daemon wiki's working layer. */
   projectionRoot?:   string;
   /** Override the daemon island script URL (tests). */
   workerScriptUrl?:  URL;
@@ -119,7 +124,7 @@ export function faceRelationStance(input: { personaBagId?: string | null | undef
 }
 
 export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore> {
-  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData } = opts;
+  const { repo, caps, daemonUrl, personaUrl, personaBagId, faceRelation, faceSegment, faceGroup, faceLabel, personaLate = false, coreHash, pluginCids, libraryBags, daemonAuth, storageDir, ownedDocument = false, projectionRoot, workerScriptUrl, casData } = opts;
 
   // An explicitly supplied empty path must not silently downgrade the worker to
   // memory-only storage. Omit `storageDir` when the caller intends the
@@ -159,6 +164,7 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
 
   const stance = faceRelationStance({ personaBagId, faceGroup, faceRelation });
   if (projectionRoot && stance === "no-face") console.log("[kahua] no face worn; no private kahua mirrors");
+  if (projectionRoot && stance === "worn" && !faceSegment) console.log("[kahua] the worn face makes no folder under faces/ (no pet name, or one the segment rule refuses); no private mirrors until it names one");
   if (projectionRoot && stance === "unproven") console.log("[kahua] the face's founding record stands unproven in this composition (the key rests locked or the face is still joining); no private kahua mirrors until the unlocked composition proves it");
   if (projectionRoot && faceRelation && faceGroup) await writeKahuaIndex(projectionRoot, [{ relation: faceRelation, tag: personaScopeTag(faceGroup), label: faceLabel ?? "", group: faceGroup }]);
 
@@ -202,11 +208,11 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       documentUrl: daemonUrl,
       storage: { type: "nodefs" as const, dir: join(storageDir!, "daemon-owned") },
     } } : {}),
-    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the daemon mount's working top under `<projections>/wikis/daemon-<F>/`,
-    // its daemon canon under `<projections>/bags/daemon-<F>/`, its kahua stage under `<projections>/bags/kahua-<F>/`, crossroads
-    // back to its canon source where one stands; the control document and the daemon document hold none. The verified founding relation names the folders that face projects on
-    // every device; no daemon mount projects no private kahua layer.
-    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), faceRelation: faceRelation ?? null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
+    // The daemon VM's mirrors, one list (`daemonDiskMirrors`): the worn face's root `<projections>/faces/<pet name>/` (its daemon
+    // working top under `wiki/`, its daemon canon under `canon/`, its kahua stage under `stage/`), crossroads back to its canon
+    // source where one stands; the control document and the daemon document hold none. The pet name names the folder (it carries
+    // across a re-found), the verified founding relation the bags; no daemon mount projects no private layer.
+    ...(projectionRoot ? { diskMirrors: daemonDiskMirrors({ projectionRoot, canonBags: daemonBagsDir(), face: faceRelation && faceSegment ? { relation: faceRelation, segment: faceSegment } : null, canon: canonBag !== undefined, temp: tempMirror }) } : {}),
     // THE VESSEL'S FLOOR PIN, off the control document that just stood: the daemon island mounts the accepted floor, so every
     // face's `meme get|list --bag <house canon>` answers the released canon from its next composition on. A control document
     // that reads nothing (a locked floor) names no pin, and the island reads its genesis seed's floor.
@@ -218,5 +224,6 @@ export async function openDaemonVm(opts: DaemonVmOptions): Promise<DaemonVmCore>
       return pick.source === "pin" ? pick.cid : null;
     },
     workerScriptUrl: workerScriptUrl ?? DEFAULT_ADMIN_WORKER_URL,
+    ...(opts.wornGroupOf ? { wornGroupOf: opts.wornGroupOf } : {}),
   });
 }

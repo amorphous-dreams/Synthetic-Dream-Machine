@@ -10,7 +10,7 @@
  *
  * Controls: a fault that names no expired wait still throws; a settle that completes clears the record.
  */
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -70,14 +70,14 @@ function vessel(answer: (firstUri: string, askNo: number) => "settle" | "wait", 
   return { run, now: () => t, asks };
 }
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root = "";
 beforeEach(() => {
-  house = openIsolatedHouse();
+  house = openScratch();
   root = house.root;
 });
 afterEach(() => {
-  house.close();
+  closeScratch(house);
   hoisted.run = null;
   vi.restoreAllMocks();
 });

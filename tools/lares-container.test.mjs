@@ -33,6 +33,9 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
+      `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
+      `case " $* " in *"pulama-main.js lei "*) printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\r\\n' "\${FAKE_LEI_ANSWER}"; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
+      `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
       `case " $* " in *" --observe --json "*) printf '%s\\n' "\${FAKE_OBSERVE_OUTPUT:-}"; exit "\${FAKE_OBSERVE_RC:-0}";; esac\n` +
       `case " $* " in *" vessel census "*) [ -z "\${FAKE_CENSUS_OUTPUT:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_OUTPUT}"; [ -z "\${FAKE_CENSUS_ERR:-}" ] || printf '%s\\n' "\${FAKE_CENSUS_ERR}" >&2; exit "\${FAKE_CENSUS_RC:-0}";; esac\n` +
       `case " $* " in *" vault status --json "*) printf '%s\\n' "\${FAKE_CUSTODY_OUTPUT:-}"; exit 0;; esac\n` +
@@ -225,6 +228,20 @@ for (const [name, shim] of shims) {
     assert.doesNotMatch(r.calls, /xterm-256color|truecolor|s3cret|SOME_TOKEN/);
     const offline = await run(shim, ["persona", "list"], { env: { ...MOUNTS, TERM: "dumb" } });
     assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ -e TERM -T offline persona list/);
+  });
+
+  test(`${name}: a harness mark crosses into the vessel by name, so an AI shell's CLI asks as a seat (#231); an unmarked shell carries none`, async () => {
+    const marks = { CLAUDECODE: "1", CODEX_SANDBOX: "seatbelt", CODEX_SANDBOX_NETWORK_DISABLED: "1" };
+    const r = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", ...marks } });
+    assert.equal(r.status, 0, r.stderr);
+    const exec = r.calls.split("\n").find((l) => / exec /.test(l) && / vessel read$/.test(l));
+    assert.ok(exec, r.calls);
+    for (const n of Object.keys(marks)) assert.match(exec, new RegExp(`(^| )-e ${n}( |$)`));
+    assert.doesNotMatch(r.calls, /seatbelt/, "the value never rides argv");
+    const offline = await run(shim, ["persona", "list"], { env: { ...MOUNTS, CLAUDECODE: "1" } });
+    assert.match(offline.calls, /--profile offline run --rm --name lares-offline-[0-9a-f]+ (?:-e \S+ )*-e CLAUDECODE /);
+    const bare = await run(shim, ["vessel", "read"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.doesNotMatch(bare.calls, /-e (?:CLAUDECODE|CODEX_SANDBOX)/);
   });
 
   test(`${name}: an act carries its stop handle: an exec its LARES_EXEC_TAG by name, a run its lares-offline-<tag> name`, async () => {
@@ -691,11 +708,10 @@ for (const [name, shim] of shims) {
     } finally { await rm(dir, { recursive: true, force: true }); }
   });
 
-  test(`${name}: a workspace inside the checkout or the hearth refuses by name, before docker runs`, async () => {
-    const inCheckout = await run(shim, ["up", "--workspace", `tree=${join(ROOT, "tools")}`], { env: MOUNTS });
-    assert.equal(inCheckout.status, 2);
-    assert.match(inCheckout.stderr, /inside the checkout/);
-    assert.equal(inCheckout.calls, "");
+  test(`${name}: a workspace inside the hearth refuses by name, before docker runs; the checkout binds like any directory (rank 4j)`, async () => {
+    const inCheckout = await run(shim, ["up", "--workspace", `tree=${join(ROOT, "tools")}`], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_OBSERVE_OUTPUT: '{"data":{"standing":{"act":"restand","reason":"face lit"}}}' } });
+    assert.equal(inCheckout.status, 0, inCheckout.stderr);
+    assert.match(inCheckout.calls, /target: \/lar\/workspaces\/tree/);
     const inHearth = await run(shim, ["up", "--workspace", "deep=@HOUSE@/hearth"], { env: MOUNTS });
     assert.equal(inHearth.status, 2);
     assert.match(inHearth.stderr, /inside the hearth/);
@@ -840,6 +856,40 @@ test(`${name}: pulama-mode up stands the pūlama first, reports the image digest
   const img = lines.findIndex((l) => /exec -T pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js image sha256:abc123/.test(l));
   const ves = lines.findIndex((l) => /up -d --wait lares/.test(l));
   assert.ok(pul >= 0 && img > pul && ves > img, `order pūlama, digest, vessel:\n${r.calls}`);
+});
+test(`${name}: pulama-mode up reads the image's offered seed one-shot (no house mounted) and reports the whole frame; a read that prints nothing falls back to the bare digest`, { skip }, async () => {
+  const frame = '{"digest":"sha256:abc123","seed":"seed bafkseed offered; the founding record reads at boot"}';
+  const r = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123", FAKE_SEED_FRAME: frame } });
+  assert.equal(r.status, 0, r.stderr);
+  const read = r.calls.split("\n").find((l) => / vessel floor seed /.test(l));
+  assert.ok(read, r.calls);
+  assert.match(read, /^run --rm -e LAR_ROOT=\/lar \S+ node packages\/lares-cli\/bin\/lares\.mjs vessel floor seed --genesis \/app\/genesis --image sha256:abc123$/);
+  assert.doesNotMatch(read, / -v /, "the one-shot mounts no house");
+  assert.ok(r.calls.includes(`pulama-main.js image ${frame}`), `the frame reaches the pūlama whole:\n${r.calls}`);
+  const bare = await run(shim, ["up"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });
+  assert.equal(bare.status, 0, bare.stderr);
+  assert.match(bare.calls, /pulama-main\.js image sha256:abc123$/m);
+});
+test(`${name}: lei-hand-door-chain: under a pūlama, lei kui reads the terms in the vessel, the pūlama signs on this terminal, and the vessel lands the answer; a refused signing lands nothing`, { skip }, async () => {
+  const terms = '{"face":1,"rite":"push","branch":"feature/x","returns":3,"after":null}';
+  const answer = '{"op":"lei","reading":"signed","face":1,"record":{"body":{"act":"lei"}}}';
+  const r = await run(shim, ["lei", "kui", "--rite", "push", "--branch", "feature/x", "--returns", "3"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_LEI_TERMS: terms, FAKE_LEI_ANSWER: answer } });
+  assert.equal(r.status, 0, r.stdout);
+  const lines = r.calls.split("\n");
+  const read = lines.findIndex((l) => /exec (?:-e \S+ )*-T lares node \S+ lei terms kui --rite push --branch feature\/x --returns 3$/.test(l));
+  const sign = lines.findIndex((l) => l.includes(`pulama-main.js lei kui ${terms}`) && !/ -T /.test(l));
+  const land = lines.findIndex((l) => l.includes(`lei land ${answer}`));
+  assert.ok(read >= 0 && sign > read && land > sign, `order terms, sign (attached), land:\n${r.calls}`);
+  const refused = await run(shim, ["lei", "kui", "--rite", "push", "--branch", "feature/x"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_RUNNING_ID: "cid", FAKE_LEI_TERMS: terms } });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stdout, /the pūlama signed nothing; nothing lands/);
+  assert.doesNotMatch(refused.calls, /lei land/);
+  const noTty = await run(shim, ["lei", "kui", "--rite", "push", "--branch", "feature/x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid", FAKE_LEI_TERMS: terms, FAKE_LEI_ANSWER: answer } });
+  assert.notEqual(noTty.status, 0);
+  assert.match(noTty.stderr, /lei under a pūlama reads its route on a terminal/);
+  const plain = await run(shim, ["lei", "show", "--rite", "push", "--branch", "x"], { envFile: PULAMA_ENV, env: { FAKE_RUNNING_ID: "cid" } });
+  assert.match(plain.calls, /lares node \S+ lei show --rite push --branch x/);
+  assert.doesNotMatch(plain.calls, /pulama-main\.js lei/);
 });
 test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });

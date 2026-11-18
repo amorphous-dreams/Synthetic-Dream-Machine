@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-stable-state-add-a-face-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "stable-state"
+order    = "0180"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-stable-state-add-a-face-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-stable-state-add-a-face-a"
+```
+
+* ''Add-a-face (A).'' The daemon writes the public half; the terminal seals the recovery share; seating stays a separate act.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9TSaFBpVXBfAaYDmMGUhTbKZeNAg34SiyyOW9R3eTHg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

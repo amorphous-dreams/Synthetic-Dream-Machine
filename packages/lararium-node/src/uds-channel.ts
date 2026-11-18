@@ -39,6 +39,7 @@
  */
 
 import { faceRefOrdinal, namedFaceOf, seatFaceRefusal, seatKindOf, seatRefusalClass } from "./seat-hand.js";
+import { peerSeatOf } from "./uds-peer.js";
 import { choreAtDoor, isChore } from "./chore-face.js";
 import { choreReceiptMarkOf, type ChoreReceiptMark } from "@lararium/mesh/chore-ask";
 import { type Socket } from "node:net";
@@ -1067,6 +1068,9 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         return sessionRefuse(sock, "malformed-message", requestId);
       }
       if (!opts.sessions) return sessionRefuse(sock, "no-session-door", requestId);
+      // THE PEER BINDS THE HAND (`uds-peer`): a `cli` session opened from a harness's branch wears the seat's hand and profile.
+      if (frame["hand"] === "cli" && await peerSeatOf(sock) === "ai") frame["hand"] = "seat";
+      if (closing || sock.destroyed) return;
       // THE AI SEAT OPENS A FACE INSIDE THE LENT SET: a `seat` hand (or a frame marked `seat: "ai"`) naming a face outside it refuses.
       // The set reads only where a seat names a face, so no other opening touches custody.
       const seatAsks = (frame["hand"] === "seat" || seatKindOf(frame) !== null) && faceRefOrdinal(frame["faceRef"]) !== null;
@@ -1439,7 +1443,8 @@ export function makeUdsSeat(opts: UdsChannelOptions): UdsSeat {
         // THE AI SEAT ACTS INSIDE THE LENT SET, read off the seat kind its request line carries (`seat-hand`): a marked call
         // naming a face outside the set refuses by name before any dispatch; the operator's hand (no seat kind) names any open
         // face. The set reads async, so the check rides this deferred tick, and only where a seat names a face.
-        const seat = seatKindOf(parsed);
+        // THE PEER BINDS THE SEAT (`uds-peer`): a line with no mark whose peer descends from a harness reads `seat` all the same.
+        const seat = seatKindOf(parsed) ?? (sessionRequestId === undefined ? await peerSeatOf(sock) : null);
         // THE ASKER THE DOOR READ rides the placed ask (`ctx.asker`): the one-shot line's seat kind, `cli` without one.
         if (sessionRequestId === undefined) inv.asker = seat !== null ? "seat" : "cli";
         const named = namedFaceOf(inv.args);

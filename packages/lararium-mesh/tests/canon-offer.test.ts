@@ -30,6 +30,7 @@ import {
 import { cutFloorSnapshot, floorManifestBytes, floorReadFace, floorRecordsInOrder, resolveFloor, type FloorManifest } from "../src/floor-manifest.js";
 import { assembleFloorRelease, openFloorReleaseBody } from "../src/floor-release.js";
 import { acceptFloorRelease, type FloorPinPorts } from "../src/floor-pin.js";
+import { signFloorOffering } from "../src/floor-offering.js";
 import { sha256HexBytesSync } from "../src/crypto.js";
 import type { LarTiddlerRecord } from "../src/tiddler-store.js";
 import { kahuHand, strangerHand } from "./kahu-reach-fixture.js";
@@ -347,7 +348,14 @@ describe("the loop", () => {
     const genesisLararium = { "lar:///ha.ka.ba/lararium/x": rec("lar:///ha.ka.ba/lararium/x", "x") };
     const cas = new Map<string, Uint8Array>();
     const gl = cutFloorSnapshot(genesisLares), gr = cutFloorSnapshot(genesisLararium);
-    const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), grammar: "a".repeat(64), plugins: "b".repeat(64), snapshots: { lares: gl.cid, lararium: gr.cid } };
+    // The plugins offering the floor names, its one blob's bytes in the same CAS: a release's bytes travel with it.
+    const pluginBytes = new TextEncoder().encode("plugin bytes");
+    const offering = await signFloorOffering({ seed: new Uint8Array(32).fill(3), blobs: [{
+      id: "lar:///ha.ka.ba/lararium/plugins/lares/memetic-wikitext", version: "unknown", sha256: sha256HexBytesSync(pluginBytes),
+      provenance: { source: "https://example.test", commit: "0".repeat(40), path: "plugin.json", licence: "MIT" },
+    }] });
+    cas.set(offering.cid, offering.bytes); cas.set(offering.offering.blobs[0]!.sha256, pluginBytes);
+    const genesis: FloorManifest = { format: "lararium-floor", engine: "e".repeat(64), plugins: offering.cid, snapshots: { lares: gl.cid, lararium: gr.cid } };
     const gBytes = floorManifestBytes(genesis), gCid = sha256HexBytesSync(gBytes);
     for (const [c, b] of [[gl.cid, gl.bytes], [gr.cid, gr.bytes], [gCid, gBytes]] as const) cas.set(c, b);
 
@@ -380,6 +388,7 @@ describe("the loop", () => {
       tier: () => null,
       blob: async (cid) => cas.get(cid) ?? null,
       stage: async (blobs) => { for (const b of blobs) cas.set(b.cid, b.bytes); },
+      genesisEngine: () => genesis.engine,
     });
     expect(cut).toMatchObject({ prior: gCid, cut: ["lares"], kept: ["lararium"], moved: ["lares"] });
     expect(cas.get(cut.manifestCid)).toEqual(cut.manifestBytes);
@@ -394,7 +403,7 @@ describe("the loop", () => {
     const controlDoc = emptyLarDoc();
     const local = new Map<string, Uint8Array>([[gl.cid, gl.bytes], [gr.cid, gr.bytes], [gCid, gBytes]]);
     const pinPorts: FloorPinPorts = {
-      home, nexus: c.aid, genesisManifest: gCid,
+      home, nexus: c.aid, genesisManifest: gCid, requiredBlobIds: [offering.offering.blobs[0]!.id],
       rows: async () => [{ keyCid: release.cid, record: JSON.parse(JSON.stringify(release)) as unknown }],
       fetchCas: async (cid) => local.get(cid) ?? cas.get(cid) ?? null,
       stage: async (blobs) => { for (const b of blobs) local.set(b.cid, b.bytes); },
@@ -410,7 +419,7 @@ describe("the loop", () => {
     expect(read?.tiddler.text).toBe("the referee's revised page");
     expect(carrierHashOf(read!.tiddler as Record<string, unknown>)).toBe(offer.body.records[0]!.digest);
     // CONTROL: a cut over unmoved canon answers the prior's own CID (a replayed cut lands nothing new).
-    const again = await cutReleaseFloor({ prior: async () => ({ manifestCid: gCid, bytes: gBytes }), canonRows: async (slug) => (slug === "lares" ? genesisLares : null), tier: () => null, blob: async (cid) => cas.get(cid) ?? null, stage: async () => {} });
+    const again = await cutReleaseFloor({ prior: async () => ({ manifestCid: gCid, bytes: gBytes }), canonRows: async (slug) => (slug === "lares" ? genesisLares : null), tier: () => null, blob: async (cid) => cas.get(cid) ?? null, stage: async () => {}, genesisEngine: () => genesis.engine });
     expect(again).toMatchObject({ manifestCid: gCid, moved: [] });
     // CONTROL: the genesis floor still reads the old page (the pin moved, the old floor did not).
     const old = await resolveFloor(gCid, async (cid) => local.get(cid) ?? null);

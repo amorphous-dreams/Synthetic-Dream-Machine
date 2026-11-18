@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-unwired-code-takes-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-defaults"
+order    = "1570"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-unwired-code-takes-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-unwired-code-takes-a"
+```
+
+* ''The unwired code takes a zero-trust review first'' (operator, 2026-11-06: //"The unwired code should get zero trust critical reviews before wiring (might be legit old design, might be pono but last steps unfinished design)."//). Code that production never calls (the unwired-code scout at `ffe05bc79`) earns no wiring by its presence: a zero-trust critical review decides retire, wire or reshape, then the work. Its items land before the rite: `L28`, `K22`, `K23` and `P27`.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;_GBBxGQZZP7Yd5OeC0kvjpjWwNAve-QVdcrae488Omw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

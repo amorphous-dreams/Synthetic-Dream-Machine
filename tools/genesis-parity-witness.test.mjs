@@ -20,7 +20,11 @@
  *   · RED: an absent engine blob reads red, never skipped;
  *   · RED: a genesis file git does not track reads red inside a git tree.
  *   · FLOOR: a coherent release reads green; a mismatched snapshot or release witness reads red;
- *     a seed with no floor release remains green.
+ *     a seed with no floor release remains green;
+ *   · FLOOR: the manifest carries exactly format, engine, plugins and snapshots (one naming grammar reads
+ *     red), and `plugins` names the sha256 of the `floor-plugin-offering` seed row's bytes, a row of kind
+ *     floor and the plugin-offering mime; a manifest naming another offering, or a seed lacking the row,
+ *     reads red.
  */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -46,6 +50,9 @@ const GRAMMAR = JSON.stringify({ title: GRAMMAR_ID, version: "0.0.1", text: "{\"
 const SHADOWS = JSON.stringify([{ title: "a shadow" }]);
 const WITNESS_PREFIX = "lar:///ha.ka.ba/bags/oracle/genesis-cid-";
 const REGION_CIDS = { engine: "engine-cid", grammar: "grammar-cid", plugins: "plugins-cid" };
+const OFFERING = JSON.stringify({ format: "lararium-plugin-offering", blobs: [] });
+const OFFERING_ID = "floor-plugin-offering";
+const OFFERING_MIME = "application/vnd.lararium.plugin-offering+json";
 const FLOOR_LARES = "floor lares snapshot";
 const FLOOR_LARARIUM = "floor lararium snapshot";
 
@@ -62,7 +69,7 @@ function seedFixture(floor = null) {
     }
     tiddlers[WITNESS_PREFIX + "floor"] = { tiddler: { cid: floor.witnessCid ?? floor.manifestCid } };
     for (const [id, cid] of Object.entries(floor.rows)) {
-      blobs[id] = { id, sha256: cid, kind: "floor" };
+      blobs[id] = { id, sha256: cid, kind: "floor", ...(id === OFFERING_ID ? { mimeType: floor.offeringMime ?? OFFERING_MIME } : {}) };
     }
   }
   return JSON.stringify({ format: "lararium-genesis-seed", blobs, tiddlers });
@@ -71,23 +78,27 @@ function seedFixture(floor = null) {
 const FLOOR_SDM = "floor sdm snapshot";
 
 const FLOOR_FORMAT = "lararium-floor";
-function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = FLOOR_FORMAT, pairKeyed = false } = {}) {
-  // The floor keys one snapshot per house-canon slug, sorted; a pair-keyed plant keys lares and lararium alone, a shape
-  // that lacks `snapshots` and that the witness refuses by its fields.
+function floorPlant({ lares = sha(FLOOR_LARES), witnessCid, omitRow, format = FLOOR_FORMAT, pairKeyed = false, grammar = false, plugins = sha(OFFERING), offeringMime } = {}) {
+  // The floor keys format, engine, plugins and snapshots, one snapshot per house-canon slug, sorted; `plugins` names the
+  // sha256 of the offering record's bytes. A pair-keyed plant keys lares and lararium alone, and a grammar plant carries the
+  // retired grammar field: shapes the witness refuses by their fields.
+  const head = { format, engine: REGION_CIDS.engine, ...(grammar ? { grammar: REGION_CIDS.grammar } : {}), plugins };
   const manifest = pairKeyed
-    ? JSON.stringify({ format, ...REGION_CIDS, lares, lararium: sha(FLOOR_LARARIUM) })
-    : JSON.stringify({ format, ...REGION_CIDS, snapshots: { lararium: sha(FLOOR_LARARIUM), lares, sdm: sha(FLOOR_SDM) } });
+    ? JSON.stringify({ ...head, lares, lararium: sha(FLOOR_LARARIUM) })
+    : JSON.stringify({ ...head, snapshots: { lararium: sha(FLOOR_LARARIUM), lares, sdm: sha(FLOOR_SDM) } });
   const manifestCid = sha(manifest);
   const rows = {
     "floor-manifest": manifestCid,
+    [OFFERING_ID]: sha(OFFERING),
     "floor-lares": sha(FLOOR_LARES),
     "floor-lararium": sha(FLOOR_LARARIUM),
     ...(pairKeyed ? {} : { "floor-sdm": sha(FLOOR_SDM) }),
   };
   if (omitRow) delete rows[omitRow];
   return {
-    "genesis/seed.json": seedFixture({ manifestCid, witnessCid, rows }),
+    "genesis/seed.json": seedFixture({ manifestCid, witnessCid, rows, offeringMime }),
     [`genesis/cas/${manifestCid}`]: manifest,
+    [`genesis/cas/${sha(OFFERING)}`]: OFFERING,
     [`genesis/cas/${sha(FLOOR_LARES)}`]: FLOOR_LARES,
     [`genesis/cas/${sha(FLOOR_LARARIUM)}`]: FLOOR_LARARIUM,
     [`genesis/cas/${sha(FLOOR_SDM)}`]: FLOOR_SDM,
@@ -154,7 +165,7 @@ await test("CONTROL: a genesis that carries the tree's bytes reads green and lis
 await test("FLOOR: a coherent manifest, snapshot rows and release witness read green", async () => {
   await withTree(floorPlant(), (run, out) => {
     assert.equal(run.status, 0, out);
-    assert.match(out, /3 source artifact\(s\) compared against 7 genesis blob\(s\)/);
+    assert.match(out, /3 source artifact\(s\) compared against 8 genesis blob\(s\)/);
     assert.doesNotMatch(out, /NO SOURCE|FLOOR\s+|RED:/);
   });
 });
@@ -185,6 +196,25 @@ await test("FLOOR RED: a manifest keyed by lares and lararium alone refuses by t
   await withTree(floorPlant({ omitRow: "floor-sdm" }), (run, out) => {
     assert.notEqual(run.status, 0, out);
     assert.match(out, /FLOOR\s+floor-manifest names floor-sdm but the seed holds no floor snapshot row/);
+  });
+});
+
+await test("FLOOR RED: a manifest naming grammar refuses by its fields; plugins naming another offering, a missing offering row, or one of another mime reads red", async () => {
+  await withTree(floorPlant({ grammar: true }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+floor-manifest does not read as canonical lararium-floor: fields or order differ from the four fixed keys/);
+  });
+  await withTree(floorPlant({ plugins: sha("another offering") }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+floor-manifest plugins [0-9a-f]{64} differs from floor-plugin-offering row/);
+  });
+  await withTree(floorPlant({ omitRow: OFFERING_ID }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+floor-plugin-offering row stands absent/);
+  });
+  await withTree(floorPlant({ offeringMime: "application/json" }), (run, out) => {
+    assert.equal(run.status, 1, out);
+    assert.match(out, /FLOOR\s+floor-plugin-offering row carries mime application\/json/);
   });
 });
 

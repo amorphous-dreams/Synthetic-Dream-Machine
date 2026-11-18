@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-recovery-contacts-custodians-and`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-31"
+order    = "0990"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-recovery-contacts-custodians-and"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-31-recovery-contacts-custodians-and"
+```
+
+* ''Recovery contacts, custodians and the Handle'' (operator ruling, 2026-10-31: //"Approve recovery contact, and during this rewrite we should use Handle (& explain it) over 'name'."//). A person who holds a recovery key over one face's key history and signs its rotation reads as a ''recovery contact'', the field's own word for the role. A quorum of a face's recovery contacts rotates the face's root beneath its fixed KEL prefix, so the face keeps its ''Handle'': the public, self-certifying card a face publishes and others recognise by its own key, never by a registry and never by a pet-name (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/heraldry`>> #/ruling). A holder of one share of a root seed reads as a ''custodian'' (`CustodianTag` already says so). A custodian card returns memory, a recovery contact returns the Handle, and neither stands in for the other. ''Guardian'' keeps only its human sense (a child's legal guardian) and the fiction (the Lares as guardian spirits), and the Kahu keep their own name. Text a person reads says "your Handle" where it means what recovery restores, never "your name". The rename across canon, code and the CLI rides one lane, with a weld test before it.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dv2CZtDug04YYSMYioeLCRxQnFCwApaKB9yt2WwRABM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

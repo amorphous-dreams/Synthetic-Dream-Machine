@@ -6,19 +6,31 @@
  * daemon-wiki working carriers and their kāpae shadows, their kahua stage, draft recovery files, consented temp
  * carriers, house-minted bags) and the RE-DECLARE list (each face's pet-name, declared Handle and chair label as plain
  * strings). It carries no key, no signature, no CRDT history and no face relation: a re-founding mints new keys, and the
- * import writes NEW changes under the new face's authority. Faces key by PET-NAME (`f0`, `f1` … name them in paths).
+ * import writes NEW changes under the new face's authority. Faces key by PET-NAME, and the bundle names each by a path key
+ * alone (`f0`, `f1` …, in paths and on rows).
+ *
+ * THE ROSTER RIDES SEALED (cabal-realm.mem:189: no record crossing to another vessel ties one face to another, and a keep's
+ * remote crosses). The re-declare list, the one file that names faces (pet-names, Handles, handle indexes, chair labels) and the
+ * share rows (owners and seats by pet-name), rests SEALED TO THE KEEP PAIR's public half (`@lararium/mesh` keep-seat), so a cut
+ * asks for no credential. The pair's secret half rides beside it in `keep-seat.json`, wrapped in a slot tree under the human's
+ * own routes (a passphrase, a paper sheet): a restore opens a slot with what the human supplies, then the roster, and no key file
+ * crosses by hand. The manifest's faces carry their path key alone and its rows name a face by that key. Whoever holds the bundle
+ * without a route reads the content a person wrote, and no roster. {@link verifyBundle} proves the bundle whole with no route
+ * (the vessel derives a keep's id from it); {@link openBundle} opens the roster with the keep secret, and the import reads that
+ * opened view, where faces carry their pet-names and rows name a face by pet-name as before.
  *
  * Layout under the bundle root:
  *
- *   manifest.json                  this module's {@link BundleManifest}
- *   re-declare.json                {@link BundleRedeclare}
+ *   manifest.json                  this module's {@link BundleDiskManifest}
+ *   re-declare.sealed              {@link BundleRedeclare}, sealed to the keep pair's public half
+ *   keep-seat.json                 the keep pair: its public half and the slot tree its secret half opens from
  *   faces/<fk>/working/<interior>  the face's daemon-wiki working carriers and `.kapae` shadows, at their uri-path
- *   faces/<fk>/drafts/<path>       the face's draft recovery files
- *   faces/<fk>/temp/<path>         the face's consented temp carriers
+ *   faces/<fk>/canon/<interior>    the face's daemon canon carriers (`bags/daemon-<F>`)
+ *   faces/<fk>/drafts/<slug>/<path> the face's draft recovery files in each wiki (`faces/<pet name>/recovery/<slug>`)
+ *   faces/<fk>/temp/<slug>/<path>  the face's consented temp carriers in each wiki (`daemon`: its daemon wiki's)
+ *   faces/<fk>/personal/<slug>/<interior> the face's margin over a wiki (`faces/<pet name>/margins/<slug>`)
  *   faces/<fk>/kahua/<path>        the face's kahua stage carriers (the plaintext a person reads)
  *   faces/<fk>/kahua-heads.json    the stage's standing heads as the fold read them: what the import re-lifts
- *   wikis/<slug>/drafts/<path>     another wiki's draft recovery files
- *   wikis/<slug>/temp/<path>       another wiki's consented temp carriers
  *   bags/<slug>/<path>             a house-minted bag's carriers (a user wiki's own canon, `self`, among them)
  *   daemon/canon/<interior>        the daemon wiki's canon (`bags/daemon`), its authored records alone
  *   wikis/<slug>/working/<interior> another wiki's working carriers
@@ -34,11 +46,15 @@
 import { createHash } from "node:crypto";
 import { lstatSync, readdirSync, readFileSync } from "node:fs";
 import { join, posix, sep } from "node:path";
+import { decodeKeepSeat, openFromKeep, sealToKeep, type KeepSeat } from "@lararium/mesh";
 
 /** The schema a bundle names; an import refuses any other. */
 export const BUNDLE_SCHEMA = "lar-house-bundle";
 export const MANIFEST_FILE = "manifest.json";
-export const REDECLARE_FILE = "re-declare.json";
+/** The sealed re-declare list: the one file of a bundle that names faces, and it names them sealed to the keep pair alone. */
+export const REDECLARE_FILE = "re-declare.sealed";
+/** The keep pair the roster seals to: its public half and the slot tree its secret half opens from, nothing secret without a route. */
+export const KEEP_SEAT_FILE = "keep-seat.json";
 export const KAHUA_HEADS_FILE = "kahua-heads.json";
 
 /** A row's layer: what it carries and how the import lands it. */
@@ -49,7 +65,8 @@ const BUNDLE_LAYERS: readonly BundleLayer[] = ["working", "kapae", "draft", "tem
 export interface BundleFile { readonly path: string; readonly sha256: string; readonly bytes: number }
 
 /**
- * One logical row. `face` names a bundle face by pet-name (null for a row no face wears); `bag` names the bag the row
+ * One logical row. `face` names a bundle face (null for a row no face wears): by its path key on disk, by its pet-name in the
+ * opened view {@link openBundle} answers; `bag` names the bag the row
  * lands in; `title` names the record where the row derives one; `rowKey` names the stage revision a kahua head stood at;
  * `sha256` hashes the row's content (the file's bytes, or a kahua head's body); `path` names the file that holds it.
  */
@@ -71,8 +88,10 @@ export interface BundleRow {
   readonly familyBases?: Readonly<Record<string, string>>;
 }
 
-/** A bundle face: its path key and the pet-name it carries. */
-export interface BundleFace { readonly key: string; readonly petname: string }
+/** A bundle face as the manifest on disk names it: its path key alone. */
+export interface BundleFaceKey { readonly key: string }
+/** A bundle face in the opened view: its path key and the pet-name the sealed re-declare list carries for it. */
+export interface BundleFace extends BundleFaceKey { readonly petname: string }
 
 /**
  * One document a keep left to another holder, named by where it rests: a sourced wiki's workbench inside the checkout, which git
@@ -99,6 +118,9 @@ export interface BundleManifest {
   /** What a KEEP left to another holder, by where it rests (absent on a plain export). */
   readonly elsewhere?: readonly BundleElsewhere[];
 }
+
+/** The manifest as it rests in the bundle: faces by path key alone, rows naming a face by that key. */
+export type BundleDiskManifest = Omit<BundleManifest, "faces"> & { readonly faces: readonly BundleFaceKey[] };
 
 /** One face's re-declare row: the strings the operator chose, replayed as fresh acts under the new keys. */
 export interface BundleRedeclareFace {
@@ -187,7 +209,14 @@ const isObj = (x: unknown): x is Record<string, unknown> => typeof x === "object
 const isStr = (x: unknown): x is string => typeof x === "string";
 const isHex = (x: unknown): x is string => isStr(x) && /^[0-9a-f]{64}$/.test(x);
 
-/** A whole, verified bundle: every byte hashed against the manifest, every path safe, every row accounted for. */
+/** A whole bundle, proved with no key: every byte hashed against the manifest, every path safe, every row accounted for. */
+export interface SealedBundle {
+  readonly root: string;
+  readonly manifest: BundleDiskManifest;
+  /** Each face's kahua heads, by face key. */
+  readonly heads: ReadonlyMap<string, readonly BundleKahuaHead[]>;
+}
+/** A whole bundle with its roster opened under the keep key: faces carry pet-names, and rows name a face by pet-name. */
 export interface VerifiedBundle {
   readonly root: string;
   readonly manifest: BundleManifest;
@@ -212,10 +241,11 @@ function readHeads(root: string, path: string): BundleKahuaHead[] {
 
 /**
  * THE ONE BUNDLE READER. Verifies the schema, every path (safe, unique, a plain file), the file set (nothing on disk the
- * manifest leaves out, nothing it names missing), every file's sha-256, the re-declare list's shape, every row's file
- * and every kahua head's body digest. Throws {@link BundleVerifyRefused} naming the first fault; reads only.
+ * manifest leaves out, nothing it names missing), every file's sha-256, the faces' keys, every row's file and face key,
+ * and every kahua head's body digest. It needs no key: the sealed re-declare list proves whole by its hash alone, and
+ * {@link openBundle} opens it. Throws {@link BundleVerifyRefused} naming the first fault; reads only.
  */
-export function verifyBundle(root: string): VerifiedBundle {
+export function verifyBundle(root: string): SealedBundle {
   let raw: unknown;
   try { raw = JSON.parse(readFileSync(join(root, MANIFEST_FILE), "utf8")); }
   catch { throw new BundleVerifyRefused(`bundle-manifest-unreadable: ${join(root, MANIFEST_FILE)} holds no JSON manifest`); }
@@ -241,29 +271,14 @@ export function verifyBundle(root: string): VerifiedBundle {
     if (bytes.length !== f.bytes || sha256Hex(bytes) !== f.sha256) throw new BundleVerifyRefused(`bundle-hash-mismatch: ${f.path} holds bytes the manifest never hashed`);
   }
   if (bundleIdOf(files as BundleFile[]) !== raw.bundleId) throw new BundleVerifyRefused("bundle-id-mismatch: the bundle id names another file list");
-  if (!seen.has(REDECLARE_FILE)) throw new BundleVerifyRefused(`bundle-redeclare-missing: the manifest names no ${REDECLARE_FILE}`);
+  if (!seen.has(REDECLARE_FILE)) throw new BundleVerifyRefused(`bundle-redeclare-missing: the manifest names no ${REDECLARE_FILE}; a bundle an older keep cut carried its roster in clear and restores no more: keep again, and restore from that keep`);
 
-  const faceKeys = new Map<string, string>();
-  const petnames = new Set<string>();
+  // THE FACES BY PATH KEY ALONE: a face that names anything more (a pet-name) would carry the roster in clear.
+  const faceKeys = new Set<string>();
   for (const f of raw.faces as unknown[]) {
-    if (!isObj(f) || !isStr(f.key) || !/^f[0-9]+$/.test(f.key) || !isStr(f.petname) || f.petname.trim() === "") throw new BundleVerifyRefused("bundle-face-shape: a face names no key or pet-name");
-    if (faceKeys.has(f.key) || petnames.has(f.petname)) throw new BundleVerifyRefused(`bundle-face-duplicate: the face "${f.petname}" (${f.key}) stands twice`);
-    faceKeys.set(f.key, f.petname);
-    petnames.add(f.petname);
-  }
-
-  let redeclareRaw: unknown;
-  try { redeclareRaw = JSON.parse(bundleBytes(root, REDECLARE_FILE).toString("utf8")); } catch { throw new BundleVerifyRefused(`bundle-redeclare-unreadable: ${REDECLARE_FILE} holds no JSON`); }
-  if (!isObj(redeclareRaw) || redeclareRaw.schema !== BUNDLE_SCHEMA || !Array.isArray(redeclareRaw.faces)) throw new BundleVerifyRefused("bundle-redeclare-shape: the re-declare list names no faces");
-  for (const r of redeclareRaw.faces as unknown[]) {
-    if (!isObj(r) || !isStr(r.face) || faceKeys.get(r.face) !== r.petname || !Number.isSafeInteger(r.handleIndex) || (r.handleIndex as number) < 0
-      || !(r.handle === null || isStr(r.handle)) || typeof r.seat !== "boolean" || !(r.chair === null || isStr(r.chair))) {
-      throw new BundleVerifyRefused("bundle-redeclare-shape: a re-declare row disagrees with the manifest's faces");
-    }
-  }
-  if ((redeclareRaw.faces as unknown[]).length !== faceKeys.size) throw new BundleVerifyRefused("bundle-redeclare-shape: the re-declare list and the manifest name different faces");
-  if (redeclareRaw.wikis !== undefined && (!Array.isArray(redeclareRaw.wikis) || (redeclareRaw.wikis as unknown[]).some((w) => !isStr(w) || !/^[a-z0-9][a-z0-9-]*$/.test(w)))) {
-    throw new BundleVerifyRefused("bundle-redeclare-shape: the re-declare list's wikis name something no wiki slug spells");
+    if (!isObj(f) || !isStr(f.key) || !/^f[0-9]+$/.test(f.key) || Object.keys(f).length !== 1) throw new BundleVerifyRefused("bundle-face-shape: a face names no path key, or names more than its key");
+    if (faceKeys.has(f.key)) throw new BundleVerifyRefused(`bundle-face-duplicate: the face ${f.key} stands twice`);
+    faceKeys.add(f.key);
   }
 
   if (raw.elsewhere !== undefined && (!Array.isArray(raw.elsewhere) || (raw.elsewhere as unknown[]).some((e) => !isObj(e) || !isStr(e.slug) || e.layer !== "wiki-working"
@@ -278,7 +293,7 @@ export function verifyBundle(root: string): VerifiedBundle {
   }
   for (const row of raw.rows as unknown[]) {
     if (!isObj(row) || !isStr(row.path) || !isHex(row.sha256) || !BUNDLE_LAYERS.includes(row.layer as BundleLayer) || !isStr(row.bag)
-      || !(row.face === null || (isStr(row.face) && petnames.has(row.face))) || !(row.title === null || isStr(row.title)) || !(row.rowKey === null || isStr(row.rowKey))) {
+      || !(row.face === null || (isStr(row.face) && faceKeys.has(row.face))) || !(row.title === null || isStr(row.title)) || !(row.rowKey === null || isStr(row.rowKey))) {
       throw new BundleVerifyRefused("bundle-row-shape: a row names no layer, bag, face, path or hash the manifest holds");
     }
     if (!fileSha.has(row.path)) throw new BundleVerifyRefused(`bundle-row-file: a row names ${row.path} and the manifest lists no such file`);
@@ -290,14 +305,85 @@ export function verifyBundle(root: string): VerifiedBundle {
       throw new BundleVerifyRefused(`bundle-row-family-bases: the row at ${row.path} names family bases off its own carrier's family, no sha256 hash, or off a working row`);
     }
     if (row.layer === "kahua-head") {
-      const key = [...faceKeys].find(([, p]) => p === row.face)?.[0];
-      const head = key === undefined ? undefined : heads.get(key)?.find((h) => h.cid === row.rowKey && h.title === row.title);
+      const head = isStr(row.face) ? heads.get(row.face)?.find((h) => h.cid === row.rowKey && h.title === row.title) : undefined;
       if (head === undefined || sha256Hex(head.text) !== row.sha256) throw new BundleVerifyRefused(`bundle-head-mismatch: the kahua head ${String(row.title)} names a body its heads file never holds`);
     } else if (fileSha.get(row.path) !== row.sha256) {
       throw new BundleVerifyRefused(`bundle-row-hash: the row at ${row.path} names a hash its file never carried`);
     }
   }
-  return { root, manifest: raw as unknown as BundleManifest, redeclare: redeclareRaw as unknown as BundleRedeclare, heads };
+  return { root, manifest: raw as unknown as BundleDiskManifest, heads };
+}
+
+// ── the keep seal ────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** The re-declare list's plaintext bytes: what the seal covers, and what a house compares to tell an unmoved roster. */
+export function redeclareBytes(redeclare: BundleRedeclare): Uint8Array {
+  return new TextEncoder().encode(`${JSON.stringify(redeclare, null, 2)}\n`);
+}
+
+/**
+ * Seal the re-declare list to the keep pair's PUBLIC half: no credential at the cut, so a keep that runs where nobody stands still
+ * seals. Each seal draws a fresh ephemeral and nonce; the house that wants an unmoved roster to cut the same bytes keeps its last
+ * seal beside the seat and hands it back (`keep-seat.ts`, lares-cli).
+ */
+export function sealRedeclare(publicKey: Uint8Array, redeclare: BundleRedeclare): Buffer {
+  if (publicKey.length !== 32) throw new BundleVerifyRefused("bundle-keep-seat-shape: the keep pair's public half rides no 32 bytes");
+  return Buffer.from(sealToKeep(publicKey, redeclareBytes(redeclare), REDECLARE_FILE));
+}
+
+/**
+ * The keep pair a bundle carries. A bundle cut before the pair (its roster sealed under the burned `config/keep-key`) carries none
+ * and refuses by name: keep again, and restore from that keep.
+ */
+export function readBundleSeat(bundle: SealedBundle): KeepSeat {
+  if (!bundle.manifest.files.some((f) => f.path === KEEP_SEAT_FILE)) {
+    throw new BundleVerifyRefused(`bundle-keep-key-burned: the bundle carries no ${KEEP_SEAT_FILE}; its roster rests sealed under the loose keep key a house no longer holds: keep again on the house that cut it, and restore from that keep`);
+  }
+  const read = decodeKeepSeat(bundleBytes(bundle.root, KEEP_SEAT_FILE).toString("utf8"));
+  if (read.reading !== "readable") throw new BundleVerifyRefused(`bundle-keep-seat-shape: ${KEEP_SEAT_FILE} reads no keep pair (${read.why})`);
+  return read.seat;
+}
+
+/**
+ * Open a whole bundle's roster under the keep secret: the sealed re-declare list (whole by the manifest entry {@link verifyBundle}
+ * hashed), its shape, and its agreement with the manifest's face keys. Answers the opened view: faces carry their pet-names and rows
+ * name a face by pet-name. A secret that opens nothing refuses by name, before anything moves.
+ */
+export function openBundle(bundle: SealedBundle, secret: Uint8Array): VerifiedBundle {
+  const opened = openFromKeep(secret, bundleBytes(bundle.root, REDECLARE_FILE), REDECLARE_FILE);
+  if (opened === null) throw new BundleVerifyRefused("bundle-redeclare-sealed: the re-declare list opens under no keep secret in hand; open the keep seat the bundle carries with its passphrase or paper sheet");
+  let redeclareRaw: unknown;
+  try { redeclareRaw = JSON.parse(new TextDecoder().decode(opened)); } catch { throw new BundleVerifyRefused(`bundle-redeclare-unreadable: ${REDECLARE_FILE} opens to no JSON`); }
+  return rosterView(bundle, redeclareRaw);
+}
+
+/**
+ * The opened view of a bundle under its roster: the roster's shape, its agreement with the manifest's face keys, and the manifest
+ * with faces carrying their pet-names and rows naming a face by pet-name. The cut reads its own roster through here, since it
+ * sealed to a public half and holds no secret to open it again.
+ */
+export function rosterView(bundle: SealedBundle, redeclareRaw: unknown): VerifiedBundle {
+  if (!isObj(redeclareRaw) || redeclareRaw.schema !== BUNDLE_SCHEMA || !Array.isArray(redeclareRaw.faces)) throw new BundleVerifyRefused("bundle-redeclare-shape: the re-declare list names no faces");
+  const keys = new Set(bundle.manifest.faces.map((f) => f.key));
+  const petOf = new Map<string, string>();
+  for (const r of redeclareRaw.faces as unknown[]) {
+    if (!isObj(r) || !isStr(r.face) || !keys.has(r.face) || petOf.has(r.face) || !isStr(r.petname) || r.petname.trim() === "" || !Number.isSafeInteger(r.handleIndex) || (r.handleIndex as number) < 0
+      || !(r.handle === null || isStr(r.handle)) || typeof r.seat !== "boolean" || !(r.chair === null || isStr(r.chair))) {
+      throw new BundleVerifyRefused("bundle-redeclare-shape: a re-declare row disagrees with the manifest's faces");
+    }
+    if ([...petOf.values()].includes(r.petname)) throw new BundleVerifyRefused(`bundle-face-duplicate: the face "${r.petname}" stands twice`);
+    petOf.set(r.face, r.petname);
+  }
+  if (petOf.size !== keys.size) throw new BundleVerifyRefused("bundle-redeclare-shape: the re-declare list and the manifest name different faces");
+  if (redeclareRaw.wikis !== undefined && (!Array.isArray(redeclareRaw.wikis) || (redeclareRaw.wikis as unknown[]).some((w) => !isStr(w) || !/^[a-z0-9][a-z0-9-]*$/.test(w)))) {
+    throw new BundleVerifyRefused("bundle-redeclare-shape: the re-declare list's wikis name something no wiki slug spells");
+  }
+  const manifest: BundleManifest = {
+    ...bundle.manifest,
+    faces: bundle.manifest.faces.map((f) => ({ key: f.key, petname: petOf.get(f.key)! })),
+    rows: bundle.manifest.rows.map((r) => (r.face === null ? r : { ...r, face: petOf.get(r.face)! })),
+  };
+  return { root: bundle.root, manifest, redeclare: redeclareRaw as unknown as BundleRedeclare, heads: bundle.heads };
 }
 
 /** A path under `base`, in posix form, or null where it stands outside. */

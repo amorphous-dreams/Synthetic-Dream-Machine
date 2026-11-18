@@ -15,6 +15,7 @@ import {
 import { GENESIS_CID_ENGINE_TIDDLER, GENESIS_CID_GRAMMAR_TIDDLER, GENESIS_CID_PLUGINS_TIDDLER, type GenesisSeed } from "../src/genesis-doc.js";
 import { GENESIS_FLOOR_TIDDLER } from "../src/floor-manifest.js";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI } from "../src/lar-uris.js";
+import { floorMountBlobRows, signFloorOffering } from "../src/floor-offering.js";
 
 const repoRoot = join(import.meta.dirname, "..", "..", "..");
 const shipped = (): GenesisSeed => JSON.parse(readFileSync(join(repoRoot, "genesis", "seed.json"), "utf8")) as GenesisSeed;
@@ -72,15 +73,31 @@ describe("seed (offered) beside the founding record", () => {
 });
 
 describe("the floor pin beside the founding record", () => {
-  it("a pin on the genesis floor reads same; a pinned floor whose grammar field moved reads grammar moved and floor moved", () => {
+  const provenance = { source: "https://example.test", commit: "0".repeat(40), path: "p.json", licence: "MIT" };
+  const offerOf = (rows: ReadonlyArray<{ id: string; version: string; sha256: string }>) =>
+    signFloorOffering({ seed: new Uint8Array(32).fill(8), blobs: rows.map((b) => ({ id: b.id, version: b.version, sha256: b.sha256, provenance })) });
+
+  it("a pin whose offering carries the founding record's boot set reads same; one whose parser bytes moved reads grammar moved, plugins moved and floor moved", async () => {
     const seed = shipped();
     const record = foundingRecordDigests(seed);
-    const genesisFloor = { engine: record.engine!, grammar: record.grammar!, plugins: record.plugins! };
-    const same = compareSeedToFoundingRecord({ record: seed, floorPin: { manifestCid: record.floor!, manifest: genesisFloor } });
+    const rows = floorMountBlobRows(Object.values(seed.blobs) as Array<{ id: string; version: string; sha256: string; mimeType: string }>);
+    const whole = await offerOf(rows);
+    const genesisFloor = { engine: record.engine!, plugins: whole.cid };
+    const same = compareSeedToFoundingRecord({ record: seed, floorPin: { manifestCid: record.floor!, manifest: genesisFloor, offering: whole.offering } });
     expect(ratchetWords(same.floorPin!)).toBe("engine same · grammar same · plugins same · floor same");
     expect(same.seed).toBeNull();
 
-    const moved = floorPinDigests("a".repeat(64), { ...genesisFloor, grammar: "bafkreigrammarmoved" });
-    expect(ratchetWords(compareGenesisDigests(record, moved))).toBe("engine same · grammar moved · plugins same · floor moved");
+    const parserMoved = await offerOf(rows.map((r) => (r.id === LARES_MEMETIC_WIKITEXT_PLUGIN_URI ? { ...r, sha256: "f".repeat(64) } : r)));
+    const moved = compareSeedToFoundingRecord({ record: seed, floorPin: { manifestCid: "a".repeat(64), manifest: { ...genesisFloor, plugins: parserMoved.cid }, offering: parserMoved.offering } });
+    expect(ratchetWords(moved.floorPin!)).toBe("engine same · grammar moved · plugins moved · floor moved");
+  });
+
+  it("a pin whose offering did not read names grammar and plugins absent, never same", () => {
+    const seed = shipped();
+    const record = foundingRecordDigests(seed);
+    const read = compareSeedToFoundingRecord({ record: seed, floorPin: { manifestCid: record.floor!, manifest: { engine: record.engine!, plugins: "b".repeat(64) }, offering: null } });
+    expect(ratchetWords(read.floorPin!)).toBe("engine same · grammar absent · plugins absent · floor same");
+    expect(ratchetWords(compareGenesisDigests(record, floorPinDigests("a".repeat(64), { engine: record.engine!, plugins: "b".repeat(64) }))))
+      .toBe("engine same · grammar absent · plugins absent · floor moved");
   });
 });

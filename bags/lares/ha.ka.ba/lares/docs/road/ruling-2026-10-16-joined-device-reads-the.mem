@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-16-joined-device-reads-the`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-16"
+order    = "0770"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-16-joined-device-reads-the"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-16-joined-device-reads-the"
+```
+
+* ''A joined device reads the hearth's corpus and keeps its own.'' A joinee mounts the hearth's `@lararium` corpus read-only beside its own, and its writes stay in its own; the oracle plane (the hearth's catalog, daemon doc and faces' planes) never crosses (`device-admit.ts#admitCanonDocs`). The admit names that canon for the face it seats (`faceCustodyGroup`): a device of a face outside the Kahu cabal carries no canon name, mounts no document the hearth's wire holds back from it, and reads house canon from the floor, as that face does at the hearth. Item `W21` carries the build.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;k37W7MDUm7ysvGIVXgOzI_RgKXSHrj2pQ3SsP7iG9yc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

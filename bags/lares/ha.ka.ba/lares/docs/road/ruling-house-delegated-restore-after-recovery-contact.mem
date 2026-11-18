@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-restore-after-recovery-contact`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2480"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-restore-after-recovery-contact"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-restore-after-recovery-contact"
+```
+
+* ''A restore after recovery contact enrolment'' (house ruling under the operator's delegation, 2026-10-15). A face's own bundle restores after it enrols recovery contacts, so long as the face's log still holds the set its own root enrolled by the typed first event and no later event moved it; a recovery contact rotation that moves the set cuts every earlier bundle off. The restored face stands provisional as the restore's key-history ruling holds. The reason: enrolling recovery contacts must never silently kill a person's own backups, and the recovery contacts' rotation, not the enrolment, cuts off a stolen bundle. The ruling flips on a provisional gate that cannot stop a restored face from signing an authority-changing act before a party confirms it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-restore`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5-3-XIvX1J37STs9TQlgnX7_TcnMWFof0p7egH4NsFQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

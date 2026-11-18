@@ -9,21 +9,21 @@
  *      `<root>/genesis`, never the shared tree's.
  */
 
-import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
+import { closeScratch, openScratch, type Scratch } from "../../lararium-node/tests/support/scratch-fixture.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
 import { join } from "node:path";
 import { bakePlan } from "../src/commands/scripted.js";
 
-let house: IsolatedHouse;
+let house: Scratch;
 let root: string;
 
 beforeEach(() => {
-  house = openIsolatedHouse();
+  house = openScratch();
   root = house.root;
 });
 
 afterEach(() => {
-  house.close();
+  closeScratch(house);
 });
 
 describe("bakePlan — the bake reads the plugin that stands", () => {

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-askers-session-seals`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-defaults"
+order    = "1480"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-askers-session-seals"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-askers-session-seals"
+```
+
+* ''The asker's session seals'' (operator, 2026-11-06, approving the house's defaults; it sharpens "the asker seals" of 2026-10-19 above). The asker's session seals, on the vessel worker's thread, while that face's session stands unlocked, and `seal-awaits-session` stands. When the asker cannot answer, another admitted, unlocked session of the same face takes the seal, and the takeover refuses once no session of that face stands unlocked. Carriers: <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/k15-wave-b-lane#/the-reds`>>, and `pono/browser-vessel-lift`, carried by the b1 lanes' carriers at their land.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;LcXLjydKxE1ggywNauwVA1wVJvjUOw9drrNO5ouNw58`>>
+
+<<^ code=`&#x0004;` to=`?`>>

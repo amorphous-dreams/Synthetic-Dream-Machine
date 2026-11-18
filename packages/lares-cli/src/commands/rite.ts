@@ -32,9 +32,8 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
-import { riteKukulu, type RitePorts, type RiteVerbAnswer, type SeedOffer } from "../rite-kukulu.js";
-import { foundingRecordDigests, type GenesisDigests, type GenesisRecordLike } from "@lararium/mesh";
-import { createHash } from "node:crypto";
+import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
+import { foundingRecordFromStatus, hostSeedOfferPort } from "../seed-offered.js";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, keepFaceLine, riteKeep, type KeepPorts } from "../rite-keep.js";
 import { houseFaces } from "../custody-door.js";
@@ -232,32 +231,24 @@ export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", row
   ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs)];
 
 /**
- * The founding record beside the seed the image offers: the record's digests from the vessel's own floor status (it answers
- * them charter-free), the seed's from this checkout's `genesis/seed.json` (the shim builds the image from this clean
- * checkout, so its seed stands at the head). Null where either does not read. Reads only.
+ * The founding record beside the seed the image offers, through the host's one seed read (`../seed-offered.ts`, the read
+ * `lares vessel floor seed` prints): the seed from this checkout's genesis dir (the shim builds the image from this clean
+ * checkout, and the image carries that dir at `/app/genesis`), the record's digests from the vessel's own floor status (it
+ * answers them charter-free). Null where either does not read. Reads only.
  */
-async function hostSeedOffer(): Promise<SeedOffer | null> {
-  try { return await hostSeedOfferRead(); }
-  catch { return null; }   // a read-only line never stops the rite
-}
-
-async function hostSeedOfferRead(): Promise<SeedOffer | null> {
-  const status = await cliVerb(["vessel", "floor", "status"]);
-  const genesis = status.ok ? status.output["genesis"] as { record?: GenesisDigests; unread?: string } | undefined : undefined;
-  const record = genesis?.unread === undefined ? genesis?.record : undefined;
-  if (!record) return null;
-  let bytes: Buffer;
-  try { bytes = readFileSync(join(CHECKOUT, "genesis", "seed.json")); } catch { return null; }
-  let body: GenesisRecordLike;
-  try { body = JSON.parse(bytes.toString("utf8")) as GenesisRecordLike; } catch { return null; }
-  return { record, seed: { cid: createHash("sha256").update(bytes).digest("hex"), digests: foundingRecordDigests(body) } };
-}
+const hostSeedOffer = hostSeedOfferPort({
+  genesisDir: join(CHECKOUT, "genesis"),
+  record: async () => {
+    const status = await cliVerb(["vessel", "floor", "status"]);
+    return status.ok ? foundingRecordFromStatus(status.output, "the vessel's floor status names no founding record") : { unread: status.message };
+  },
+});
 
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(runShim: (verb: string) => Promise<number>, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
     image,
-    seedOffer: () => hostSeedOffer(),
+    seedOffer: (head) => hostSeedOffer(head).catch(() => null),   // a read-only line never stops the rite
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     shim: (verb) => runShim(verb),

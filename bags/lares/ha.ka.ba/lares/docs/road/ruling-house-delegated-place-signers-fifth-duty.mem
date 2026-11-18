@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-place-signers-fifth-duty`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2650"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-place-signers-fifth-duty"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-place-signers-fifth-duty"
+```
+
+* ''The place signer's fifth duty'' (operator, 2026-10-20, approving the controller's lean). A place's finish at another place's gate, `GATE_PLACE_FINISH_DOMAIN`, joins the place signer's floor duties: a faceless place that reads another's floor performs a floor act. Each of the five duties binds its domain by an exact head at byte zero, in one table beside the allowlist; `X0` moves the framing into the signer.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;MMKIiBD2xolrhCLqlwpikFAi3KT5zuSVHCOzBukxiFE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

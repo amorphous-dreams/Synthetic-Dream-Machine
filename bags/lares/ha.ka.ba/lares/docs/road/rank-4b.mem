@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-4b`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0090"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-4b"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-4b"
+```
+
+| 4b | RIGHT AFTER | the pūlama's honest edges. ''Built in this span'': `vault unlock` reads the house's own config (`pulamaStands` in `packages/lares-cli/src/house-config.ts`: `LAR_PULAMA_SOCKET` inside the vessel, else `LARES_PULAMA` in the surface env) and refuses `custody-probe-unread` on an unread custody probe, never falling to a prompt, and across a recomposition answers `pulama-waits` naming what the pūlama waits on (`packages/lares-cli/src/commands/vault.ts`); `containerRoot` reads the `lares` service by name (`LARES_SERVICE`), never the first `LAR_ROOT` it meets (`packages/lares-cli/src/mcp-resolve.ts`). ''Owed'': `lei kui` and `unstring` move to the pūlama's hand door beside light and admit, restring riding kui; the tool door writes as the worn face (`writeAs`), the actor seat starting there, a stale-base write keeping the face's actor or refusing by name. Holder: Lares-Awakens (backlog-awakens Wave 4b, lanes B and C, after Wave 4); rank 4l's routeless kūkulu waits on it | The span's cold custody read named each edge, and every hand act at one door finishes the ruling of 2026-11-15. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Cj8wF6mB9EIKDvqzsUlacwqWkVjTV3ImbK4fByQy9RU`>>
+
+<<^ code=`&#x0004;` to=`?`>>
