@@ -4,6 +4,15 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### Every branch settles: the O-TAKIAGE, the genesis re-bake, Freyja's lore, the Loom kept home
+
+- **The branches settle into `main` and `develop`.** A survey of 448 refs (a Codex seat and an Opus spirit, collided) burned every merged or superseded branch, landed the live work as PRs into `develop` (the reach-vault canon #219, the ruled spend table #220, the art-sigils companions #223), and kept the parked work as `archive/*` tags canon names (`archive/p27-wire`, `archive/gate-ancestry`, `archive/stryker-probe`, `archive/w26-own-canon`, `archive/fold-trial-2026-11-01-b`, `archive/loom/*`, `archive/pr84-markdown-pre-otakiage-20261031`, `archive/lady-aki-character-sheet`).
+- **Freyja Fontany's Lady Aki and Ichi lore stands in `develop`** under her name: the ShrineBeest household design, the annotated character sheets, the bandolier slots and the quantum kit (#210, #224). Her pages ride the next genesis bake.
+- **The Projection Loom stays in the house,** reserved on `feature/projection-loom` (draft #222) for its refactor into a natively callable web3 capability; road rank 31 points there.
+- **Genesis re-baked at `develop`** (`lar:///genesis.bakes.floor/develop-at-1150fef58`). A house founded on the earlier seed re-stands on it with every face and page whole, and keeps serving the grammar and floor its stored island holds; the CAS sweep protects the union of the declared seed and the stored island.
+- **CI stands on the ubuntu-26.04 runners:** the container test cells build the holder venv on the Playwright image's own python3, and a missing `ssl` fails by name.
+- **Rank 34 (ONE FACE) stands RIGHT AFTER** by the operator's re-rank; long work lanes wait until the branches settle.
+
 ### Develop lives: the integration branch, the road trued, the rite's first heals
 
 - **`develop` stands as the integration branch.** Lanes cut as `develop--<lane>` (and `lane/*`) and merge back into `develop`; `main` carries releases, each a pull request from `develop`. CI raises a run for a pull request into `develop` or `main`; held-out runs on pushes to `develop` and `main` alone. `tools/land-train.mjs` trains onto `develop`, `tools/disk-guard.mjs` counts `develop--` lanes, and the controller handoff, the swarm canon and the road name the same flow.
