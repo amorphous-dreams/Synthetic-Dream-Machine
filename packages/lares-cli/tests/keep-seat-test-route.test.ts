@@ -43,7 +43,7 @@ beforeEach(() => {
   writeFileSync(join(root, ".lar-test-scratch"), "keep test route suite\n");
   process.env["LAR_ROOT"] = root;
   out = join(mkdtempSync(join(tmpdir(), "lar-keep-test-route-out-")), "bundle");
-  const p = join(root, "projections", "wikis", `daemon-${F1}`, "ha.ka.ba", "notes", "pond.tid");
+  const p = join(root, "projections", "faces", "otter-face", "wiki", "ha.ka.ba", "notes", "pond.tid");
   mkdirSync(dirname(p), { recursive: true });
   writeFileSync(p, "title: lar:///ha.ka.ba/notes/pond\ntype: text/vnd.tiddlywiki\n\nthe pond\n");
 });
