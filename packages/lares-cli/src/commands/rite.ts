@@ -32,7 +32,9 @@ import { fileURLToPath } from "node:url";
 import { helpLines } from "../command-help.js";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor, refuseUsage } from "../render.js";
-import { riteKukulu, type RitePorts, type RiteVerbAnswer } from "../rite-kukulu.js";
+import { riteKukulu, type RitePorts, type RiteVerbAnswer, type SeedOffer } from "../rite-kukulu.js";
+import { foundingRecordDigests, type GenesisDigests, type GenesisRecordLike } from "@lararium/mesh";
+import { createHash } from "node:crypto";
 import { storeFailure, storeVerb } from "../store-door.js";
 import { KeepRefused, keepWorkspaceDir, mountLine, riteKeep, type KeepPorts } from "../rite-keep.js";
 import { sealedAct } from "../sealed-act-door.js";
@@ -229,10 +231,27 @@ export const SHIM_IMAGE_VERB = "image-digest";
 export const hostRowLine = (verb: "rite-begin" | "rite-land" | "rite-offer", rowArgs: Record<string, unknown>): string[] =>
   ["rite", verb === "rite-begin" ? "begin" : verb === "rite-offer" ? "offer" : "land", ...flagsOf(rowArgs)];
 
+/**
+ * The founding record beside the seed the image offers: the record's digests from the vessel's own floor status (it answers
+ * them charter-free), the seed's from this checkout's `genesis/seed.json` (the shim builds the image from this clean
+ * checkout, so its seed stands at the head). Null where either does not read. Reads only.
+ */
+async function hostSeedOffer(): Promise<SeedOffer | null> {
+  const status = await cliVerb(["vessel", "floor", "status"]);
+  const record = status.ok ? (status.output["genesis"] as { record?: GenesisDigests } | undefined)?.record : undefined;
+  if (!record) return null;
+  let bytes: Buffer;
+  try { bytes = readFileSync(join(CHECKOUT, "genesis", "seed.json")); } catch { return null; }
+  let body: GenesisRecordLike;
+  try { body = JSON.parse(bytes.toString("utf8")) as GenesisRecordLike; } catch { return null; }
+  return { record, seed: { cid: createHash("sha256").update(bytes).digest("hex"), digests: foundingRecordDigests(body) } };
+}
+
 /** The host's ports: git in this checkout, this CLI again for a vessel row (the bridge forwards it), and the checkout's shim. */
 function hostPorts(runShim: (verb: string) => Promise<number>, say: (line: string) => void, image: () => Promise<string | null>): RitePorts {
   return {
     image,
+    seedOffer: () => hostSeedOffer(),
     checkout: async () => ({ head: await git(["rev-parse", "HEAD"]), branch: await git(["rev-parse", "--abbrev-ref", "HEAD"]) }),
     row: (verb, rowArgs) => cliVerb(hostRowLine(verb, rowArgs)),
     shim: (verb) => runShim(verb),
