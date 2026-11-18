@@ -97,6 +97,7 @@ export * from "./swarm-tessera.js";
 export * from "./swarm-board.js";
 export * from "./swarm-door.js";
 export * from "./exec-lei.js";
+export * from "./doc-swarm-wiki.js";
 export * from "./kukulu-vouch.js";
 export * from "./face-relation.js";
 export * from "./promote-door.js";

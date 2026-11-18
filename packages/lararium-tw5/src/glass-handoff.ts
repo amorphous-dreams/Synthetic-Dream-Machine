@@ -8,6 +8,8 @@ export interface GlassBootInputs {
   preloadedTiddlers: Record<string, unknown>[];
   /** The vessel's word that its store rests sealed (S's row): the plugin gate opens on it and on nothing else. */
   sealedRest: boolean;
+  /** The vessel's answer to which of the wiki's startup records this tab runs (`admitStartupRecords` behind it); absent, none runs. */
+  startupAdmit?: (records: readonly PortWireRecord[]) => Promise<ReadonlySet<string>>;
 }
 /** The names the vessel gives for a wiki's boot set: the CIDs its island booted from. The bytes come from the island, over the port. */
 export interface GlassBootNames { coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean }

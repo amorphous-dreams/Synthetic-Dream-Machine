@@ -18,6 +18,7 @@ import { execLeiBranch, type ExecLeiScope } from "./exec-lei-scope.js";
 import { SwarmRefused, returnLei, type SwarmLeiBody, type SwarmLeiReach, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "./swarm-tiddlers.js";
 import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
 import type { ExecLeiPort } from "./seat-startup-offer.js";
+import { isHouseCanonBag } from "./kahu-canon-reach.js";
 
 export { execLeiBranch, execLeiScopeRefusal, type ExecLeiScope } from "./exec-lei-scope.js";
 
@@ -78,3 +79,33 @@ export async function admitStartupRecords(records: readonly { readonly title: st
   }
   return { admitted, offered };
 }
+
+/** The one internal verb a daemon island routes to its vessel's main thread to spend an exec lei's return (`islandExecLeiPort`). */
+export const EXEC_LEI_SPEND_VERB = "exec-lei-spend" as const;
+
+/**
+ * The vessel's exec-lei port over its swarm wiki, the face's trust and the vessel's own signer: the one composition a node and a
+ * browser vessel each make from their own control document (`docSwarmWiki`) and their own atom.
+ */
+export function execLeiPortOver(deps: { readonly wiki: SwarmWikiPort; readonly trust: SwarmTrust; readonly group: string; readonly spender: SwarmSignerPort }): ExecLeiPort {
+  return { spend: async (land) => {
+    const spent = await spendExecLei(deps.wiki, { wiki: land.wiki, title: land.title, fields: land.fields, ...(land.writer !== undefined ? { writer: land.writer } : {}) }, deps.trust, deps.group, deps.spender);
+    return { lei: spent.lei, n: spent.n };
+  } };
+}
+
+/**
+ * A refusal read back off the message it crossed a delegation as (`<code>: <detail>`): a lei code keeps its code; any other
+ * message (no handler, a dark main thread) reads `swarm-lei-port-unanswered`, so the door offers rather than fails.
+ */
+export function swarmRefusedFromMessage(message: string): SwarmRefused {
+  const m = /^(swarm-[a-z0-9-]+): ([\s\S]*)$/.exec(message);
+  return m ? new SwarmRefused(m[1]!, m[2]!) : new SwarmRefused("swarm-lei-port-unanswered", message);
+}
+
+/**
+ * Whether a tab reads a wiki as its wearing face's own (`admitStartupRecords`'s `own`): every wiki but the house canon, since a
+ * vessel hosts its operator's faces alone (state/decisions "Five floors walked" (3)) and the seat wall lets no seat land an
+ * executable record without a lei; the house canon comes from the Kahu realm's hand, another writer's.
+ */
+export const tabStartupOwn = (wiki: string): boolean => !isHouseCanonBag(wiki);

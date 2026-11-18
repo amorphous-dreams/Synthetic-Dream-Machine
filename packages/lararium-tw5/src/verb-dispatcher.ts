@@ -283,6 +283,8 @@ export class VerbTable {
 
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
+  /** The vessel's exec-lei port (`islandExecLeiPort` in a daemon island): every local reactor reads it as `ctx.execLei`. */
+  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
   readonly daemon:    CompositeStore;
   /**
    * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and
@@ -365,6 +367,7 @@ export class VerbDispatcher {
         ...(this.opts.surfaceOf ? { surfaceOf: this.opts.surfaceOf } : {}),
         ...(this.opts.askerOf ? { askerOf: this.opts.askerOf } : {}),
         ...(this.opts.wornOf ? { wornOf: this.opts.wornOf } : {}),
+        ...(this.opts.execLei ? { execLei: this.opts.execLei } : {}),
       });
     }
     if (this.opts.routeFn) {

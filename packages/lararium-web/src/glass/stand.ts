@@ -1,3 +1,4 @@
+import type { PortWireRecord } from "@lararium/mesh/record-port";
 import { glassPortOpen, makeBootHandoff } from "@lararium/tw5/glass";
 import type { GlassBootInputs, GlassBootNames, GlassDoor, GlassTransport } from "@lararium/tw5/glass";
 import { sha256HexBytesSync } from "@lararium/mesh/crypto";
@@ -51,6 +52,8 @@ type Fault = { why: string; capacity: boolean };
  */
 export async function standMirror(options: {
   host: HTMLElement; port: ReturnTypeOfPagePort; inputs: GlassBootNames; wikiUri: string; actor: string;
+  /** The vessel's answer to which of this wiki's startup records the tab runs (the tab half of the exec lei); absent, none runs. */
+  startupAdmit?: (surface: string, records: readonly PortWireRecord[]) => Promise<readonly string[]>;
   onState?: (state: MirrorState) => void; evidence?: Evidence;
   /** The surface's host doors (`doors.ts`); absent, every door ask refuses by name on the alert rail. */
   door?: GlassDoor;
@@ -174,7 +177,9 @@ export async function standMirror(options: {
       onMessage(listener) { forward = listener; for (const message of hand.later()) listener(message); return () => { forward = null; off(); }; },
     };
     try {
-      mirror = await bootGlass({ shadowRoot, inputs, port: options.port, wikiUri: options.wikiUri, actor: options.actor, width: at, transport: facade,
+      const admit = options.startupAdmit;
+      const booting: GlassBootInputs = admit ? { ...inputs, startupAdmit: async (records) => new Set(await admit(options.wikiUri, records)) } : inputs;
+      mirror = await bootGlass({ shadowRoot, inputs: booting, port: options.port, wikiUri: options.wikiUri, actor: options.actor, width: at, transport: facade,
         portId, opened: { records: hand.records() }, ...(options.door ? { door: options.door } : {}), seams: { ...mirrorSeams, ...(landed ? { landed } : {}), refused }, deferPaint: true });
     } catch (error) { return quit({ why: reasonOf(error), capacity: capacity(error) }); }
     if (bootFault || ended) { const failure = bootFault ?? { why: endedWhy, capacity: false }; mirror.unmount(); mirror = null; return failure; }

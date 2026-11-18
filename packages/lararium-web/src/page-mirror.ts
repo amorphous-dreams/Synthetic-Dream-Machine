@@ -30,6 +30,8 @@ export async function standPageMirror(root: {
   /** The vessel's names for the surface's boot set; the bytes come from its island over the port. */
   mirrorInputs: (surface: string) => Promise<{ coreCid: string; pluginCids: readonly string[]; sealedRest?: boolean } | null>;
   onState?: (state: MirrorState) => void;
+  /** The vessel's answer to which of the wiki's startup records the tab runs (`read:startup-admit`); absent, none runs. */
+  startupAdmit?: (surface: string, records: readonly { title: string; fields: Record<string, string> }[]) => Promise<readonly string[]>;
   /** Boot the mirror afresh (the `route` door's `reload`): the caller unmounts this mirror and stands another. */
   reload?: () => void | Promise<void>;
 }, seams: Stand = {}) {
@@ -51,6 +53,7 @@ export async function standPageMirror(root: {
   const door = makeMirrorDoor({ host: root.host, story: () => story(),
     route: { reload: () => { if (!root.reload) throw new Error("no reload"); return root.reload(); } } });
   const result = await standMirror({ host: root.host, port: root.port, inputs, wikiUri: surface, actor: root.actor, door,
+    ...(root.startupAdmit ? { startupAdmit: root.startupAdmit } : {}),
     ...(root.onState ? { onState: root.onState } : {}) }, seams);
   if (result.kind === "floor") { mark(`none:${result.why}`); return result; }
   mark(result.width);
