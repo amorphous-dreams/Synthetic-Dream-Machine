@@ -34,18 +34,20 @@ const commit = (dir, message) => { git(dir, "commit", "-q", "--allow-empty", "-m
 const run = (dir, ...args) => spawnSync(process.execPath, [TOOL, ...args], { cwd: dir, encoding: "utf8" });
 
 test("the known set names the house's record keys and the attribution keys, each in its canonical spelling", () => {
-  assert.deepEqual([...KNOWN_KEYS], ["Breaking", "Operator-Act", "Changed", "Amends", "Co-Authored-By", "Claude-Session", "Signed-off-by"]);
+  assert.deepEqual([...KNOWN_KEYS], ["Breaking", "Changed", "Amends", "Co-Authored-By", "Claude-Session", "Signed-off-by"]);
 });
 
 test("canonicalKey matches case-insensitively, as git does, and answers the canonical spelling; an unknown key answers null", () => {
   assert.equal(canonicalKey("co-authored-by"), "Co-Authored-By");
-  assert.equal(canonicalKey("OPERATOR-ACT"), "Operator-Act");
+  assert.equal(canonicalKey("BREAKING"), "Breaking");
+  // Operator acts live in the house, never in git history: the key reads unknown.
+  assert.equal(canonicalKey("Operator-Act"), null);
   assert.equal(canonicalKey("Braking"), null);
 });
 
 test("nearestKey points a misspelling at the known key it sits closest to", () => {
   assert.equal(nearestKey("Braking"), "Breaking");
-  assert.equal(nearestKey("Operator-Acts"), "Operator-Act");
+  assert.equal(nearestKey("Changd"), "Changed");
   assert.equal(nearestKey("Amend"), "Amends");
   assert.equal(nearestKey("Claude-Sesion"), "Claude-Session");
 });
@@ -53,7 +55,7 @@ test("nearestKey points a misspelling at the known key it sits closest to", () =
 test("a range whose lane commits carry only known keys reads clean and exits 0", (t) => {
   const dir = scratch(t);
   const base = git(dir, "rev-parse", "HEAD");
-  commit(dir, "lar:///a.b.c/one — first\n\nBody prose.\n\nChanged: the first thing\nOperator-Act: none\nCo-Authored-By: Someone <s@example.invalid>");
+  commit(dir, "lar:///a.b.c/one — first\n\nBody prose.\n\nChanged: the first thing\nCo-Authored-By: Someone <s@example.invalid>");
   commit(dir, "lar:///a.b.c/two — second\n\nBreaking: the old flag leaves\nClaude-Session: https://example.invalid/s");
   assert.deepEqual(checkRange(`${base}..HEAD`, { cwd: dir }).unknown, []);
   const r = run(dir, `${base}..HEAD`);

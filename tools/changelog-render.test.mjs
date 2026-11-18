@@ -46,7 +46,7 @@ const run = (dir, ...args) => spawnSync(process.execPath, [TOOL, ...args], { cwd
 test("merges render newest first, each by its PR title, each carrying its own Changed lines", (t) => {
   const dir = scratch(t);
   const base = git(dir, "rev-parse", "HEAD");
-  const one = land(dir, 1, "the first lane", ["lar:///a.b.c/one — one\n\nChanged: the first change\nOperator-Act: none"]);
+  const one = land(dir, 1, "the first lane", ["lar:///a.b.c/one — one\n\nChanged: the first change"]);
   const two = land(dir, 2, "the second lane", ["lar:///a.b.c/two — two\n\nChanged: the second change", "lar:///a.b.c/three — three\n\nChanged: the third change"]);
   const quiet = land(dir, 3, "a quiet lane", ["lar:///a.b.c/quiet — no trailers"]);
   const data = renderRange(`${base}..HEAD`, { cwd: dir });
@@ -57,26 +57,20 @@ test("merges render newest first, each by its PR title, each carrying its own Ch
   assert.deepEqual(data.problems, []);
 });
 
-test("Operator acts come first, each naming its merge's PR title; the literal `none` never lists; Breaking follows", (t) => {
+test("Breaking comes first, each naming its merge's PR title; no operator-acts section renders, since acts live in the house", (t) => {
   const dir = scratch(t);
   const base = git(dir, "rev-parse", "HEAD");
-  land(dir, 1, "the keep moves", ["lar:///a.b.c/keep — keep\n\nOperator-Act: re-run the keep before the next re-light\nBreaking: the old keep path leaves"]);
-  land(dir, 2, "a plain lane", ["lar:///a.b.c/plain — plain\n\nOperator-Act: none\nChanged: plain work"]);
-  land(dir, 3, "the shim moves", ["lar:///a.b.c/shim — shim\n\noperator-act: re-run the host shim install"]);
+  land(dir, 1, "the keep moves", ["lar:///a.b.c/keep — keep\n\nBreaking: the old keep path leaves"]);
+  land(dir, 2, "a plain lane", ["lar:///a.b.c/plain — plain\n\nChanged: plain work"]);
   const data = renderRange(`${base}..HEAD`, { cwd: dir });
-  assert.deepEqual(data.operatorActs.map((a) => [a.act, a.title]), [
-    ["re-run the host shim install", "the shim moves"],
-    ["re-run the keep before the next re-light", "the keep moves"],
-  ]);
+  assert.equal("operatorActs" in data, false);
   assert.deepEqual(data.breaking.map((b) => [b.text, b.title]), [["the old keep path leaves", "the keep moves"]]);
   const md = toMarkdown(data);
-  const acts = md.indexOf("## Operator acts");
+  assert.doesNotMatch(md, /Operator acts/);
   const breaking = md.indexOf("## Breaking");
   const merges = md.indexOf("## Merges");
-  assert.ok(acts >= 0 && breaking > acts && merges > breaking, md);
-  assert.match(md, /re-run the keep before the next re-light — the keep moves/);
-  assert.doesNotMatch(md, /- none — a plain lane/);
-  assert.ok(md.indexOf("### the shim moves") < md.indexOf("### a plain lane"), "newest merge first");
+  assert.ok(breaking >= 0 && merges > breaking, md);
+  assert.ok(md.indexOf("### a plain lane") < md.indexOf("### the keep moves"), "newest merge first");
   assert.match(md, /### a plain lane[^\n]*\n+- Changed: plain work/);
 });
 
@@ -152,12 +146,12 @@ test("the walk follows the first parent only: a lane's own merge of develop brin
 test("--json gives the same data structured; plain output gives the markdown", (t) => {
   const dir = scratch(t);
   const base = git(dir, "rev-parse", "HEAD");
-  land(dir, 1, "a lane", ["lar:///a.b.c/one — one\n\nChanged: a note\nOperator-Act: do the thing"]);
+  land(dir, 1, "a lane", ["lar:///a.b.c/one — one\n\nChanged: a note"]);
   const json = run(dir, `${base}..HEAD`, "--json");
   assert.equal(json.status, 0, json.stderr);
   const data = JSON.parse(json.stdout);
   assert.deepEqual(data, renderRange(`${base}..HEAD`, { cwd: dir }));
-  assert.equal(data.operatorActs[0].act, "do the thing");
+  assert.deepEqual(data.merges[0].changed, ["a note"]);
   const md = run(dir, `${base}..HEAD`);
   assert.equal(md.status, 0, md.stderr);
   assert.equal(md.stdout, toMarkdown(data));
