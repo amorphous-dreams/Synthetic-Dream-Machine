@@ -14,6 +14,8 @@
  *   KP5  RED: a mint under a weak passphrase seats and WARNS by name (`keep-passphrase-weak`), never refuses.
  *   KP6  RED: `lares vault reseat` mints a fresh pair under the route custody proves; a wrong route refuses and the seat stands.
  *   KP7  RED: `lares vault unbind` (the custody passphrase changing) re-seats the keep under the staying route that proved it.
+ *   KP8  RED: an unbind authorised by the very passphrase it removes seats NO fresh pair under that passphrase: the route opens
+ *        nothing of the tree the unbind leaves, so the keep stands as it stood and the unbind names `lares vault reseat`.
  */
 import { afterEach, beforeAll, beforeEach, describe, expect, test, vi } from "vitest";
 import { mkdtempSync, rmSync } from "node:fs";
@@ -133,5 +135,23 @@ describe("the keep pair seats under the proved route alone", () => {
     expect(await cmdVault(parseArgs(["vault", "unbind", first, "--json"]))).toBe(0);
     expect(await opens([{ kind: "passphrase", passphrase: PW2 }]), "the staying route opens the re-seated keep").toBe("opens");
     expect(await opens([{ kind: "passphrase", passphrase: PW }]), "the removed passphrase opens the new keep no more").toBe("no-slot-opens");
+  });
+
+  test("KP8 RED: an unbind authorised by the passphrase it removes seats no fresh pair under it", async () => {
+    const PW2 = "the steward's new words";
+    const homes = vesselCustodyHomes();
+    await foundCustody({ io: new FsCustodyIo(homes), homes, slots: [{ t: 1, pins: [{ kind: "passphrase", passphrase: PW }] }, { t: 1, pins: [{ kind: "passphrase", passphrase: PW2 }] }] });
+    await seats.seatKeepAtUnlock({ reading: "opens", opener: [0] }, [{ kind: "passphrase", passphrase: PW2 }], () => {});
+    const before = Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex");
+    const { custodyStatus } = await import("@lararium/node");
+    const s = await custodyStatus({ io: new FsCustodyIo(homes), homes });
+    const first = s.tree.reading === "readable" ? s.tree.slots[0]!.id : "";
+    const errs: string[] = [];
+    (console.error as unknown as { mockImplementation(f: (...a: unknown[]) => void): void }).mockImplementation((...a: unknown[]) => { errs.push(a.join(" ")); });
+    answers.push("p", PW, "n");
+    expect(await cmdVault(parseArgs(["vault", "unbind", first, "--json"]))).toBe(0);
+    expect(Buffer.from(seats.readKeepSeat()!.publicKey).toString("hex"), "no fresh pair seated under the removed passphrase").toBe(before);
+    expect(await opens([{ kind: "passphrase", passphrase: PW }]), "the removed passphrase opens no keep").toBe("no-slot-opens");
+    expect(errs.join("\n")).toMatch(/lares vault reseat/);
   });
 });
