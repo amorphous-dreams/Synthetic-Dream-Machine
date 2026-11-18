@@ -4,6 +4,28 @@ No release has shipped. A release names its floor by CID under the steward's `fl
 
 ## Unreleased
 
+### The flow unblurred: lay and the house bundle, wear inside the lend, the AI's writing surface, the floor's two truths
+
+**Breaking**
+- **`meme get` answers the carrier.** `lares meme get` prints the meme's carrier by default, through a pipe too, with its `base: sha256:…` line on stderr; `--json` returns the envelope. A script that parsed the old envelope passes `--json`.
+- **The words unblur.** `lares vessel seed` reads `lares vessel lay`; the carry's command and manifest read the house bundle (`commands/house-bundle.ts`, `bundle-manifest.ts`), and `tools/carry-parity.mjs` reads `tools/census-drill.mjs`. Schemas carry names, never numbers: `lar-carry/1` reads `lar-house-bundle`, `lar-carry-census/1` reads `lar-census`, `lar-carry-parity/1` reads `lar-census-compare`. A keep pushed under the old tag gets one fresh `lares rite keep` to re-lay it.
+- **The shim's canon-clone warning retires** with the workspaces ruling (road rank 4j): neither shim nor the compose reads `LARES_DEV_INSTALL`.
+- **The gates fail closed.** Typecheck, mesh coverage, rite commands and the symbol-anchor witness stop passing on prose, empty input or a crash.
+- **An AI seat's write to house canon refuses `seat-canon-reach`** at every door; the seat offers, never writes, and the chore mark persists.
+
+**Added**
+- **`lares wear N`** moves the daemon mount inside the lent set and asks no route (the frame `{op: "wear", face}`; an AI seat refuses `seat-wears-no-face`). Route prompts name the face that owns them, the keep lei strings once per house, and `lares pulama unadmit <digest>` takes an admission back.
+- **`lares meme patch`** edits one slot through the put's own gate: `--slot '#/x'` with `--append <file>` or `--replace <file>`, under `--base <hash>`.
+- **`share --remove` takes back the grant it delegated,** or refuses naming what still reads through it.
+- **The cadence offer** (`@lararium/mesh` `cadence-offer`): a pure slice where the cadence threshold alone offers engines, never an endorsement. `engineWindow` folds signed offers and release denies against an inception and answers the engines or one refusal (`cadence-offer-malformed`, `-foreign-inception`, `-foreign-signer`, `-unsigned`, `-chain-broken`).
+- **The floor reads two truths.** The boot, `lares floor status`, the kūkulu and `pulama admit` name the founding record beside the seed it offered; each mount reads its pinned floor beside the founding record off the boot path, keeping a count the operator reads.
+- **The land rule stands as a house witness:** one sha, one verdict.
+
+**Fixed**
+- **A confirmed cold-key card leaves the screen,** and a minted wiki stands held, so its census reads at once.
+- **`lares cas` reads the daemon's protect set,** the bulb names the founding record, and the seed witness's header trues to canon alone.
+- **The repository tidies:** the dead Python package and dev scripts burn, and the MCP and Playwright configs drop their pinned browser path.
+
 ### Every branch settles: the O-TAKIAGE, the genesis re-bake, Freyja's lore, the Loom kept home
 
 - **The branches settle into `main` and `develop`.** A survey of 448 refs (a Codex seat and an Opus spirit, collided) burned every merged or superseded branch, landed the live work as PRs into `develop` (the reach-vault canon #219, the ruled spend table #220, the art-sigils companions #223), and kept the parked work as `archive/*` tags canon names (`archive/p27-wire`, `archive/gate-ancestry`, `archive/stryker-probe`, `archive/w26-own-canon`, `archive/fold-trial-2026-11-01-b`, `archive/loom/*`, `archive/pr84-markdown-pre-otakiage-20261031`, `archive/lady-aki-character-sheet`).
