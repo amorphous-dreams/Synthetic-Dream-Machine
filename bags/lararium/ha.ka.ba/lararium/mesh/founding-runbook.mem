@@ -367,7 +367,7 @@ lares rite keep --workspace house-backup --face 0               # on the host, a
 lares rite receipts --face 0                                     # conferre reads the keep's tessera par
 tools/lares-container.sh down                                    # never accept-loss: a census that asks for it means vault unlock, let it settle, down again
 # THE NEW HOUSE: export LARES_HOUSE="$HOME/.lares-next" in this shell, for every line through the swap's down
-mkdir -p ~/.lares-next/config/carry && git clone <the keep repo> ~/.lares-next/config/carry/keep-clone && cp -a ~/.lares/sensoriums ~/.lares/library ~/.lares-next/
+mkdir -p ~/.lares-next/config && git clone <the keep repo> ~/.lares-next/config/keep-clone && cp -a ~/.lares/sensoriums ~/.lares/library ~/.lares-next/
 tools/lares-container.sh found --hearth --name '<face 0 pet-name>' --chair '<its chair label>'   # the names keep-clone/house/re-declare.json carries
 # re-state the temp consent by hand: projection.temp and projection.tempExpiryDays from ~/.lares/config/config.json into ~/.lares-next/config/config.json
 tools/lares-container.sh up                                      # up unlocks on the attached terminal
@@ -377,9 +377,9 @@ tools/lares-container.sh vault unlock --all --face 1             # each face sta
 tools/lares-container.sh vault unlock --face N && tools/lares-container.sh vessel lay --apply --yes   # each face: canon first, then that face's mirrors
 tools/lares-container.sh vessel lay --apply --lift-kahua <K>    # still wearing that face, where its lay said `kahua: K item(s) stand pending`
 tools/lares-container.sh vault unlock --face N && node tools/census-drill.mjs census --root ~/.lares-next --label 'new-base <pet-name>' --out ~/census-drill/new-base-<pet-name>.json --lares tools/lares-container.sh   # each face, before the import
-tools/lares-container.sh vault unlock --face 0 && tools/lares-container.sh import /lar/config/carry/keep-clone/house   # a preview: writes nothing; every pet-name maps to a face
-tools/lares-container.sh vault unlock --face N && tools/lares-container.sh import /lar/config/carry/keep-clone/house --apply   # each face
-tools/lares-container.sh vault unlock --face N && tools/lares-container.sh import /lar/config/carry/keep-clone/house --apply && tools/lares-container.sh vessel lay --apply --yes   # each face again: lands 0
+tools/lares-container.sh vault unlock --face 0 && tools/lares-container.sh import /lar/config/keep-clone/house   # a preview: writes nothing; every pet-name maps to a face
+tools/lares-container.sh vault unlock --face N && tools/lares-container.sh import /lar/config/keep-clone/house --apply   # each face
+tools/lares-container.sh vault unlock --face N && tools/lares-container.sh import /lar/config/keep-clone/house --apply && tools/lares-container.sh vessel lay --apply --yes   # each face again: lands 0
 tools/lares-container.sh vault unlock --face N && node tools/census-drill.mjs census --root ~/.lares-next --label 'new <pet-name>' --out ~/census-drill/new-<pet-name>.json --lares tools/lares-container.sh   # each face
 node tools/census-drill.mjs compare --old ~/census-drill/old-*.json --new ~/census-drill/new-[!b]*.json --base ~/census-drill/new-base-*.json --json --out ~/census-drill/parity.json   # par
 tools/lares-container.sh lei kui --rite keep --branch house-backup --returns 12 --face 0   # before any pūlama: a ward act, which a pūlama refuses `needs-the-human`; the lei door names its face, since several faces stand open
@@ -591,6 +591,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;wYTJfYb5ydR7UAf2JrXtZyr7Gx8MYSX-mtIod2O8wGc`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;9RF68pchBydL_XePw04UP8V-hA9dWNGqgzE7EexiHA8`>>
 
 <<^ code=`&#x0004;` to=`?`>>
