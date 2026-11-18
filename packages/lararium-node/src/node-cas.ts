@@ -546,6 +546,9 @@ export function installCasSweep(opts: InstallCasSweepOptions): CasSweepInstalled
     opts.onSweep?.(out);
     return out;
   };
+  // cas-protect — the daemon names the set its sweep guards (the seed's blobs and the stored island's), so a
+  // reader reports the union the daemon holds instead of re-deriving a narrower one.
+  opts.registry.register("cas-protect", async () => ({ verb: "cas-protect", protect: [...opts.protect].sort() }));
   opts.registry.register("cas-sweep", async (args) => {
     const r = await sweep(args["dryRun"] === true);
     return r as unknown as Record<string, unknown>;
