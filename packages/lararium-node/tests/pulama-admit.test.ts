@@ -338,9 +338,14 @@ describe("RED pulama-admit-names-the-seed-the-image-offers (D1)", () => {
     expect(JSON.stringify(row)).not.toContain("seed");
     const tessera = String(answer["tessera"]);
     for (const half of ["guest", "host"] as const) expect(await s.records.read(pulamaAdmitTesseraTitle(tessera, half))).not.toContain("seed");
-    // The verb line: the seed rides the words after the digest.
+    // The verb line: the seed rides a structured frame `{ digest, seed }`, never trailing words; a bare digest stays valid.
     const ports = { ask: (frame: Readonly<Record<string, unknown>>) => s.door(frame), route: async () => FIXTURE_PASSPHRASE };
-    expect(await runHandVerb("image", [OTHER, ...SEED.split(" ")], ports)).toMatchObject({ reading: "reported", image: OTHER, seed: SEED });
+    expect(await runHandVerb("image", JSON.stringify({ digest: OTHER, seed: SEED }), ports)).toMatchObject({ reading: "reported", image: OTHER, seed: SEED });
+    await expect(runHandVerb("image", [OTHER, ...SEED.split(" ")], ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
+    await expect(runHandVerb("image", JSON.stringify({ digest: OTHER, seed: 7 }), ports)).rejects.toBeInstanceOf(PulamaVerbUsage);
+    const bare = await runHandVerb("image", IMAGE, ports);
+    expect(bare).toMatchObject({ reading: "reported", image: IMAGE });
+    expect(bare["seed"]).toBeUndefined();
   });
 
   test("CONTROL: a report with no seed line clears the earlier one; status and the answer then name no seed", async () => {
