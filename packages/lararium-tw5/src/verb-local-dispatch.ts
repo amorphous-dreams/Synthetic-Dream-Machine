@@ -18,8 +18,8 @@ import {
   type CapabilityVerifier,
   type CompositeStore,
   type Verb,
-  type Hand,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { wikiSlugOfBag } from "@lararium/mesh";
 import type { SessionWorn, VerbReactor, VerbTable } from "./verb-dispatcher.js";
 

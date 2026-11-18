@@ -89,13 +89,13 @@ import {
   type DaemonMsg_ResidencyOp,
   type DaemonMsg_WikiAlert,
   type BatchMode,
-  type Hand,
   type ChoreReceiptMark,
   type IslandMsg_Ea,
   type IslandMsg_TeardownAck,
   isTeardownFault,
   landBindingDocuments,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { runLocalVerb } from "./verb-local-dispatch.js";
 import type { SessionWorn, VerbTable } from "./verb-dispatcher.js";
 /** Well 1 input the host round-trips to the worker — two handles + the edge-DAG to project from. */

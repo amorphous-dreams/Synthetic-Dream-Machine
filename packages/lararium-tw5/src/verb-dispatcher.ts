@@ -43,7 +43,6 @@
 
 import {
   type Verb,
-  type Hand,
   type ChoreReceiptMark,
   type CompositeStore,
   type CapabilityVerifier,
@@ -57,6 +56,7 @@ import {
   wikiSlugOfBag,
   ControlHomeUnavailable,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { dispatchVerb, placeVerb, copyEffectOutcome, writeOutcome, removeVerb, EFFECT_URI_PREFIX } from "./verb-vm.js";
 import type { TW5Engine } from "./tw5-vm.js";
 import { heedSummons } from "./verb-summons.js";

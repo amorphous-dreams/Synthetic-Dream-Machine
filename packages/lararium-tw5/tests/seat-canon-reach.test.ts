@@ -9,7 +9,8 @@
  */
 import { describe, test, expect } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
-import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, recipeUri, type Hand, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
+import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, recipeUri, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { makeMemePutReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
 import { makeActionReactorFor } from "../src/action-handler.js";

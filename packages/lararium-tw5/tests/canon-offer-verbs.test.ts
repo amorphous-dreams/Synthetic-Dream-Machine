@@ -13,7 +13,8 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore, CompositeStore, bagUri, carrierHashOf, emptyLarDoc, faceAtomKeyFromSeed, isVerbRefusal, OVERRIDE_BASE_META, type LarDoc, type Verb } from "@lararium/mesh";
-import type { Hand, KahuReachSource, OfferSeat, OfferSigner } from "@lararium/mesh";
+import type { KahuReachSource, OfferSeat, OfferSigner } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { seatedCharter, type SeatedCharter } from "../../lararium-mesh/tests/charter-fixture.js";
 import { makeOfferMakeReactor, makeOfferListReactor, makeOfferPromoteReactor, makeOfferShowReactor, type CanonOfferVerbOptions } from "../src/canon-offer-verbs.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";

@@ -35,12 +35,12 @@ import {
   type DaemonMsg_WorldlineTrajectoryRequest,
   type BatchMode,
   type Verb,
-  type Hand,
   type ChoreReceiptMark,
   type CapabilityVerifier,
   type CaptureEngine,
   type CapturePost,
 } from "@lararium/mesh";
+import type { Hand } from "@lararium/mesh/session-contract";
 import { placeVerb } from "./verb-vm.js";
 import { composeIsland } from "./island-caps.js";
 import { hasEngineWatch, hasHandBoundary, hasProjection } from "./has-island-watches.js";
