@@ -76,31 +76,31 @@ describe("a write under a worn face lands under the face's actor, or refuses by 
     await store.put(rec("v0"), engine);
     const base = store.headsNow()!;
     await store.put(rec("v1"), engine);
-    const engineActor = A.getActorId(handle.doc());
-    const before = hashes(handle.doc());
+    const engineActor = A.getActorId(handle.doc()!);
+    const before = hashes(handle.doc()!);
     await store.put(rec("v2"), worn(FACE_A), { base });
-    const added = actorsAdded(before, handle.doc());
+    const added = actorsAdded(before, handle.doc()!);
     const faceActor = await wire.actor(FACE_A, handle.documentId);
     expect(added, "one change lands").toHaveLength(1);
     expect(underActor(added[0], faceActor), `the stale-base write lands under the worn face's actor (wrote ${added[0]}, face ${faceActor})`).toBe(true);
     expect(wire.ownsActor(added[0]!), "the composition derived the actor").toBe(true);
     expect(underActor(added[0], engineActor), `the stale-base write rides the engine's actor (wrote ${added[0]}, engine ${engineActor})`).toBe(false);
     expect(store.parallelDrafts(T).length, "the concurrent value the write never saw stays a conflict").toBeGreaterThan(0);
-    expect(A.getActorId(handle.doc()), "the document stands again under the engine's actor").toBe(engineActor);
+    expect(A.getActorId(handle.doc()!), "the document stands again under the engine's actor").toBe(engineActor);
   });
 
   test("S2 RED: a plain write under a worn face lands under the face's actor", async () => {
     const { wire, handle, store } = stand(true);
     await store.put(rec("v0"), engine);
-    const engineActor = A.getActorId(handle.doc());
-    const before = hashes(handle.doc());
+    const engineActor = A.getActorId(handle.doc()!);
+    const before = hashes(handle.doc()!);
     await store.put(rec("v1"), worn(FACE_A));
-    expect(actorsAdded(before, handle.doc())).toEqual([await wire.actor(FACE_A, handle.documentId)]);
-    expect(A.getActorId(handle.doc())).toBe(engineActor);
+    expect(actorsAdded(before, handle.doc()!)).toEqual([await wire.actor(FACE_A, handle.documentId)]);
+    expect(A.getActorId(handle.doc()!)).toBe(engineActor);
     // The veil floor derives an actor of its own, apart from every face and from the engine.
-    const floorBefore = hashes(handle.doc());
+    const floorBefore = hashes(handle.doc()!);
     await store.put(rec("v2"), worn(null));
-    const floor = actorsAdded(floorBefore, handle.doc());
+    const floor = actorsAdded(floorBefore, handle.doc()!);
     expect(floor).toEqual([await wire.actor(null, handle.documentId)]);
     expect(floor[0]).not.toBe(engineActor);
   });
@@ -110,10 +110,10 @@ describe("a write under a worn face lands under the face's actor, or refuses by 
     await store.put(rec("v0"), engine);
     const base = store.headsNow()!;
     await store.put(rec("v1"), engine);
-    const engineActor = A.getActorId(handle.doc());
-    const before = hashes(handle.doc());
+    const engineActor = A.getActorId(handle.doc()!);
+    const before = hashes(handle.doc()!);
     await store.put(rec("v2"), engine, { base });
-    const added = actorsAdded(before, handle.doc());
+    const added = actorsAdded(before, handle.doc()!);
     expect(added).toHaveLength(1);
     expect(underActor(added[0], engineActor), `the based write rides the engine's actor (wrote ${added[0]}, engine ${engineActor})`).toBe(true);
     expect(store.parallelDrafts(T).length).toBeGreaterThan(0);
@@ -122,9 +122,9 @@ describe("a write under a worn face lands under the face's actor, or refuses by 
   test("S4 RED: a tombstone under a worn face rides the face's actor", async () => {
     const { wire, handle, store } = stand(true);
     await store.put(rec("v0"), engine);
-    const before = hashes(handle.doc());
+    const before = hashes(handle.doc()!);
     await store.tombstone(T, worn(FACE_A));
-    expect(actorsAdded(before, handle.doc())).toEqual([await wire.actor(FACE_A, handle.documentId)]);
+    expect(actorsAdded(before, handle.doc()!)).toEqual([await wire.actor(FACE_A, handle.documentId)]);
     expect((await store.get(T))?.meta?.deleted).toBe(true);
   });
 
@@ -133,9 +133,9 @@ describe("a write under a worn face lands under the face's actor, or refuses by 
     await store.put(rec("v0"), engine);
     const base = store.headsNow()!;
     await store.put(rec("v1"), engine);
-    const before = hashes(handle.doc());
+    const before = hashes(handle.doc()!);
     await expect(store.put(rec("v2"), worn(FACE_A)), "a plain write naming a face").rejects.toMatchObject({ reason: "worn-face-unwritable" });
     await expect(store.put(rec("v2"), worn(FACE_A), { base }), "a stale-base write naming a face").rejects.toMatchObject({ reason: "stale-base-under-worn-face" });
-    expect(hashes(handle.doc()), "nothing lands under the engine's actor").toEqual(before);
+    expect(hashes(handle.doc()!), "nothing lands under the engine's actor").toEqual(before);
   });
 });
