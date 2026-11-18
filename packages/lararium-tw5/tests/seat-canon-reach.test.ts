@@ -12,6 +12,8 @@ import { Repo } from "./wiki-shore-rig.js";
 import { AutomergeDocStore, CompositeStore, bagUri, emptyLarDoc, isVerbRefusal, recipeUri, type Hand, type LarTiddlerRecord, type Verb } from "@lararium/mesh";
 import { makeMemePutReactor, makeMemeDeleteReactor, type MemeVerbOptions } from "../src/meme-verbs.js";
 import { makeDraftReactor } from "../src/wiki-draft-handlers.js";
+import { makeActionReactorFor } from "../src/action-handler.js";
+import { VerbDispatcher, VerbTable } from "../src/verb-dispatcher.js";
 import type { VerbContext } from "../src/verb-dispatcher.js";
 import { kahuHand } from "../../lararium-mesh/tests/kahu-reach-fixture.js";
 
@@ -91,6 +93,35 @@ describe("seat-canon-reach — the AI seat never writes house canon live", () =>
       expect(await reasonOf(async () => makeDraftReactor({ composite: r.composite, kahuReach: await kahuHand() })({ tiddler: "T", toBag: LARES }, ctxOf(r.composite, "draft", "seat")))).toBe("seat-canon-reach");
       expect(r.heads()).toEqual(before);
     } finally { await r.repo.shutdown(); }
+  });
+
+  test("RED: a seat-asked residency ADD into house canon refuses seat-canon-reach; CONTROL: a seat COPY OUT of canon lands", async () => {
+    const r = await rig();
+    try {
+      const run = async (verb: "ADD" | "COPY", args: Record<string, unknown>) =>
+        makeActionReactorFor(verb, { composite: r.composite, kahuReach: await kahuHand() })(args, ctxOf(r.composite, verb, "seat"));
+      await r.stores.get(WORKING)!.put({ tiddler: { title: "W", text: "W" }, meta: { changeId: "change:W" } }, hand);
+      const before = r.heads();
+      expect(await reasonOf(() => run("ADD", { title: "W", "from-bag": WORKING, "to-bag": LARES, "change-id": "c1" }))).toBe("seat-canon-reach");
+      expect(r.heads()).toEqual(before);
+      await run("COPY", { title: "T", "from-bag": LARES, "to-bag": GARDEN, "change-id": "c2" });
+      expect(await r.stores.get(GARDEN)!.get("T")).toMatchObject({ tiddler: { text: "T" } });
+    } finally { await r.repo.shutdown(); }
+  });
+
+  test("RED: a routed act the island clears for main refuses a seat asker naming a house canon bag, with or without a verifier; CONTROL: a COPY OUT, a cli asker and a face row pass", async () => {
+    const dispatcher = (asker?: Hand) => new VerbDispatcher({
+      daemonVm: {} as never, daemon: new CompositeStore(), control: new CompositeStore(), registry: new VerbTable(),
+      routeFn: async () => ({}), localOf: () => true, surfaceOf: () => false, askerOf: () => asker,
+    });
+    const routed = (verb: string, args: Record<string, unknown>) =>
+      ({ requestId: "w1", title: "t", action: "wiki-act", args: { wiki: "trove", verb, args }, targets: [], batchMode: "best-effort", status: "pending", requestedBy: "me", requestedAt: "" }) as unknown as Verb;
+    const into = routed("ADD", { title: "W", "from-bag": WORKING, "to-bag": LARES });
+    const out = routed("COPY", { title: "T", "from-bag": LARES, "to-bag": GARDEN });
+    expect(await reasonOf(() => dispatcher("seat").clearRouted(into))).toBe("seat-canon-reach");
+    expect(await reasonOf(() => dispatcher("seat").clearRouted(out))).toBeNull();
+    expect(await reasonOf(() => dispatcher("cli").clearRouted(into))).toBeNull();
+    expect(await reasonOf(() => dispatcher("seat").clearRouted(into, { local: true, presenter: "me" }))).toBeNull();
   });
 
   test("CONTROL: the operator's CLI hand, and a context naming no asker, land the same put under the Kahu hand", async () => {
