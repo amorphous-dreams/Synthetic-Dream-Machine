@@ -7,7 +7,7 @@
  * binds, and that no argv ever carries the docker socket.
  */
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, readdir, writeFile, chmod, rm, stat } from "node:fs/promises";
 import { spawn, spawnSync } from "node:child_process";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
@@ -24,7 +24,7 @@ const havePwsh = spawnSync("pwsh", ["-NoProfile", "-Command", "1"]).status === 0
  * and a scratch house root, so no test reads a real `~/.lares`. `envAt: "clone"` plants the file beside the compose
  * file instead, where the shim must not look. `@HOUSE@` in an env value or an env file names the run's scratch house.
  */
-async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace } = {}) {
+async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, checkout, wornFace, keepSeat } = {}) {
   const dir = await mkdtemp(join(tmpdir(), "lares-container-"));
   try {
     const log = join(dir, "calls.log");
@@ -33,6 +33,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       `case " $* " in *" ps -q --status running lares "*) printf '%s' "\${FAKE_RUNNING_ID:-}"; exit "\${FAKE_PS_RC:-0}";; esac\n` +
       `case " $* " in *" ps -q --status running pulama "*) printf '%s' "\${FAKE_PULAMA_ID:-}"; exit "\${FAKE_PULAMA_PS_RC:-0}";; esac\n` +
       `case " $* " in *"image inspect"*) printf '%s\\n' "\${FAKE_IMAGE_ID:-sha256:feedface}"; exit 0;; esac\n` +
+      `case " $* " in *"pulama-main.js keep-seat"*) printf '%s\\r\\n' 'pūlama: route proved'; [ -z "\${FAKE_KEEP_SEAT_LINE:-}" ] || printf '%s\\r\\n' "\${FAKE_KEEP_SEAT_LINE}"; exit "\${FAKE_KEEP_SEAT_RC:-0}";; esac\n` +
+      `case " $* " in *" pulama node -e "*) code=''; take=''; for a in "$@"; do if [ -n "$take" ]; then code=$a; take=''; elif [ "$a" = -e ]; then take=1; fi; done; exec node -e "$code";; esac\n` +
       `case " $* " in *" lei terms "*) printf '%s\\n' "\${FAKE_LEI_TERMS:-}"; exit "\${FAKE_TERMS_RC:-0}";; esac\n` +
       `case " $* " in *"pulama-main.js lei "*) printf '%s\\r\\n' 'pūlama route, to kui a push lei: '; [ -z "\${FAKE_LEI_ANSWER:-}" ] || printf '%s\\r\\n' "\${FAKE_LEI_ANSWER}"; exit "\${FAKE_LEI_RC:-0}";; esac\n` +
       `case " $* " in *" vessel floor seed "*) [ -z "\${FAKE_SEED_FRAME:-}" ] || printf '%s\\n' "\${FAKE_SEED_FRAME}"; printf '%s\\n' 'rebuild chatter' >&2; exit "\${FAKE_SEED_RC:-0}";; esac\n` +
@@ -50,6 +52,8 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
     const house = join(dir, "house");
     // `wornFace` plants the face the shim last saw worn (`config/last-worn-face`), as a prior `vault unlock --face N` left it.
     if (wornFace !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "last-worn-face"), `${wornFace}\n`); }
+    // `keepSeat` plants a keep seat already resting (`config/keep-seat.json`), as an earlier seating left it.
+    if (keepSeat !== undefined) { await mkdir(join(house, "config"), { recursive: true }); await writeFile(join(house, "config", "keep-seat.json"), JSON.stringify(keepSeat) + "\n", { mode: 0o600 }); }
     const fill = (v) => typeof v === "string" ? v.replaceAll("@HOUSE@", house) : v;
     const home = env.HOME ? fill(env.HOME) : join(dir, "home");
     await mkdir(join(home, ".lares"), { recursive: true });
@@ -83,9 +87,10 @@ async function run(shim, argv, { env = {}, envFile, envAt = "hearth", tty, check
       : spawnSync("script", ["-qec", [cmd[0], ...cmd[1]].map((a) => `'${a}'`).join(" "), "/dev/null"], { env: { ...base, ...filled }, encoding: "utf8", input: tty });
     let calls = ""; try { calls = await readFile(log, "utf8"); } catch {}
     let worn = null; try { worn = (await readFile(join(house, "config", "last-worn-face"), "utf8")).trim(); } catch {}
+    let seat = null; let seatMode = null; try { seat = JSON.parse(await readFile(join(house, "config", "keep-seat.json"), "utf8")); seatMode = (await stat(join(house, "config", "keep-seat.json"))).mode & 0o777; } catch {}
     const made = {};
     for (const c of ["hearth", "sensoriums", "projections", "library", "config", "pulama/socket"]) { try { await readdir(join(house, c)); made[c] = true; } catch { made[c] = false; } }
-    return { ...r, calls, dir, made, worn };
+    return { ...r, calls, dir, made, worn, seat, seatMode };
   } finally { await rm(dir, { recursive: true, force: true }); }
 }
 
@@ -891,6 +896,28 @@ test(`${name}: lei-hand-door-chain: under a pūlama, lei kui reads the terms in 
   assert.match(plain.calls, /lares node \S+ lei show --rite push --branch x/);
   assert.doesNotMatch(plain.calls, /pulama-main\.js lei/);
 });
+test(`${name}: pulama-keep-seat-writes-the-seat: the pūlama's seat line lands as config/keep-seat.json (0600) with its signer, the signer never shown; an existing seat refuses without --reseat; a refusal writes nothing`, { skip }, async () => {
+  const seat = { publicKey: "ab".repeat(32), tree: { slots: [{ kind: "passphrase", salt: "s1" }] }, verifyKey: "cd".repeat(32) };
+  const signer = "ef".repeat(32);
+  const line = JSON.stringify({ op: "keep-seat", reading: "seated", seat, signer });
+  const env = (house) => ({ FAKE_KEEP_SEAT_LINE: line, LARES_HOUSE_PROBE: house });
+  const r = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, tty: "", env: env("") });
+  assert.equal(r.status, 0, r.stdout);
+  assert.doesNotMatch(r.stdout + (r.stderr ?? ""), new RegExp(signer), "the signer never shows");
+  assert.match(r.calls, /--profile pulama exec pulama node packages\/lararium-node\/dist\/src\/pulama-main\.js keep-seat/);
+  assert.deepEqual(r.seat, { ...seat, signer });
+  assert.equal(r.seatMode, 0o600);
+  const again = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, tty: "", env: env(""), keepSeat: r.seat });
+  assert.notEqual(again.status, 0);
+  assert.match(again.stdout, /a keep seat already rests/);
+  assert.doesNotMatch(again.calls, /keep-seat/);
+  const refused = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, tty: "", env: { FAKE_KEEP_SEAT_LINE: JSON.stringify({ op: "keep-seat", reading: "refused", code: "pulama-unlit", message: "light it first" }), FAKE_KEEP_SEAT_RC: "1" } });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stdout, /pulama-unlit/);
+  const noTty = await run(shim, ["pulama", "keep-seat"], { envFile: PULAMA_ENV, env: { FAKE_KEEP_SEAT_LINE: line } });
+  assert.notEqual(noTty.status, 0);
+  assert.match(noTty.stderr, /reads its route on a terminal/);
+});
 test(`${name}: CONTROL a house without LARES_PULAMA stands the vessel alone, and names no pūlama`, { skip }, async () => {
   const r = await run(shim, ["up"], { envFile: "LARES_HOUSE=@HOUSE@\nLARES_WORKSPACE=@HOUSE@/ws\n" });
   assert.equal(r.status, 0, r.stderr);
@@ -934,7 +961,7 @@ test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama
   assert.equal(face.status, 0, face.stderr);
   assert.match(face.calls, /pulama-main\.js admit 2/);
   const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
-  assert.match(bad.stderr, /pulama takes up, down, light, admit, unadmit, lock, status or tessera/);
+  assert.match(bad.stderr, /pulama takes up, down, light, admit, unadmit, keep-seat, lock, status or tessera/);
 });
 test(`${name}: pulama-unadmit-reaches-the-hand-door: unadmit forwards one image digest to the pūlama's own verb; a bare or malformed digest refuses and sends nothing`, { skip }, async () => {
   const digest = "sha256:" + "ab".repeat(32);
