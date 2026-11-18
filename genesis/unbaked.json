@@ -3,8 +3,8 @@
   "unbaked": [
     {
       "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "6f1cad11be9873b997d0bc86326cf2bf3e633466455aaec668891e3d3eefbf89",
-      "why": "PR #237 moves the plugin beneath genesis: the meme-patch slot edit (patchSlotCarrier through meme-put's own gate) and the meme-put row's slot, append and replace answers rebuild the memetic-wikitext bundle. Lares-Alpha's ONE labelled GENESIS RE-BAKE, in its own PR, carries these bytes into the seed and deletes this row."
+      "sha256": "0dd72b399601af0b87db24109b5bb18d9b733681a002eb59c49226275cf44f54",
+      "why": "PR #237 moves the plugin beneath genesis: the meme-patch slot edit (patchSlotCarrier through meme-put's own gate) and the meme-put row's slot, append and replace answers rebuild the memetic-wikitext bundle. Lares-Alpha's ONE labelled GENESIS RE-BAKE, in its own PR, carries these bytes into the seed and deletes this row. Lane native-wikis moves it again: place-meme takes a vet hook that reads every record an ingest decision would land before the first lands, so meme put refuses a seat-asked startup action (seat-startup-offer) and lands nothing."
     }
   ]
 }

@@ -43,7 +43,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, requireKahuReach, resolveHouseCanon, ownEntry } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, refuseSeatStartupAction, requireKahuReach, resolveHouseCanon, ownEntry, startupTagOf } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -445,7 +445,7 @@ export interface CapturedEffect {
  * whole projected effect while the executor runs UNCHANGED. (CREATE's mint +
  * registry write live OUTSIDE access — its executor guards on `dryRun` itself.)
  */
-function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured: CapturedEffect } {
+function makeCapturingBagAccess(real: BagAccess, onPut?: (record: LarTiddlerRecord) => void): { access: BagAccess; captured: CapturedEffect } {
   const puts: Array<{ bag: string; title: string }> = [];
   const tombstones: Array<{ bag: string; title: string }> = [];
   const removes: Array<{ bag: string; title: string }> = [];
@@ -456,7 +456,7 @@ function makeCapturingBagAccess(real: BagAccess): { access: BagAccess; captured:
       const capturing: LarTiddlerStore = {
         listVisible: () => (realStore ? realStore.listVisible() : Promise.resolve([])),
         get: (title) => (realStore ? realStore.get(title) : Promise.resolve(null)),
-        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); },
+        put: async (record) => { puts.push({ bag, title: String(record.tiddler.title) }); onPut?.(record); },
         tombstone: async (title) => { tombstones.push({ bag, title }); },
         remove: async (title) => { removes.push({ bag, title }); },
         subscribe: () => () => {},
@@ -668,6 +668,16 @@ export function makeActionReactorFor(verb: ActionVerb, opts: ActionHandlerOption
           `CREATE ${destBag} to stand a fresh bag, then write again.`,
         );
       }
+    }
+
+    // THE ONE WALL A SEAT KEEPS (state/decisions, "Native TW5 wikis"): a wave a seat asks lands no startup action, since a
+    // wiki's startup action runs in the operator's tab. The executor runs once through the capturing access first, and a
+    // record it would land carrying a `$:/tags/StartupAction*` tag refuses the whole wave before a byte moves.
+    if (ctx.asker === "seat" && (action.verb === "INGEST" || action.verb === "LOAD")) {
+      const startup: LarTiddlerRecord[] = [];
+      const vet = makeCapturingBagAccess(access, (record) => { if (startupTagOf(record.tiddler["tags"]) !== null) startup.push(record); });
+      await executeAction(action, vet.access, opts.tw5, opts.resolveByCid, opts.yieldHostTask);
+      for (const record of startup) refuseSeatStartupAction(String(record.tiddler.title), record.tiddler["tags"], action.verb, ctx.asker);
     }
 
     // `--dry-run`: run the executor through the capturing access — content writes

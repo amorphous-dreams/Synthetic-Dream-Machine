@@ -292,7 +292,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     expect(await put({ ...A, title: "Note 04", fields: { status: "done" }, base: live }, ctx())).toMatchObject({ decision: "put" });
   });
 
-  test("tiddler-put fences: the face's write cap decides, a family member's text stays at the meme door, code-bearing shapes refuse by name", async () => {
+  test("tiddler-put fences: the face's write cap decides, a family member's text stays at the meme door, a title that stays home refuses by name", async () => {
     const r = await rig();
     await placeMeme({ uri: MEME, text: memeText(["a"]) }, wikiMemeSink(r.engine.wiki));
     const put = makeTiddlerPutReactor(r.opts);
@@ -300,10 +300,7 @@ describe.skipIf(wikiSkip)(`the tiddler door on the anchor${skipNote}`, () => {
     await expect(put({ ...A, title: MEME, text: "bare" }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
     await expect(put({ ...A, title: `${MEME}#/a`, text: "bare" }, ctx())).rejects.toMatchObject({ reason: "tiddler-put-in-a-family" });
     expect(await put({ ...A, title: MEME, fields: { status: "ripe" }, tagsAdd: "memory" }, ctx())).toMatchObject({ decision: "put", position: "root" });
-    for (const bad of [
-      { title: "$:/config/x", text: "y" }, { title: "Mod", fields: { "module-type": "startup" } }, { title: "Js", fields: { type: "application/javascript" } },
-      { title: "Tagged", tagsAdd: "$:/tags/StartupAction" }, { title: "Tagged", fields: { tags: "$:/tags/Global" } }, { title: "$:/temp/lares/secret", text: "y" },
-    ]) await expect(put({ ...A, ...bad }, ctx())).rejects.toMatchObject({ reason: expect.stringMatching(/^(tiddler-put-code-class|tiddler-withheld)$/) });
+    await expect(put({ ...A, title: "$:/temp/lares/secret", text: "y" }, ctx())).rejects.toMatchObject({ reason: "tiddler-withheld" });
     await expect(put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/Feedback/x", text: "y" }, ctx())).rejects.toMatchObject({ reason: "stage-path-shape" });
     expect(await put({ ...A, title: "lar:///ha.ka.ba/kahua/memory/feedback/x", text: "y" }, ctx())).toMatchObject({ decision: "put" });
   });
