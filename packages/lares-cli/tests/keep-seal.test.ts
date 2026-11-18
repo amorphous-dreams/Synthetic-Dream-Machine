@@ -11,6 +11,10 @@
  *   KS2  RED: an import with no route to open the bundle's keep seat (no terminal, no staged root) refuses by name before anything
  *        moves; the bundle carries no loose key, so nothing else opens its roster.
  *   KS3  a re-cut of an unmoved house names the same bundle (the seat keeps its last seal, so an unmoved keep spends nothing).
+ *   KS4  RED: no face RELATION and no handle index rides the bundle in clear: a face's canon plane, its kahua heads, a census
+ *        that names held saves and carriers by bag and document, a face whose stage would not read, and a legacy `daemon-<F>`
+ *        folder in the wikis and bags mirrors all stand in the house, and no byte or path of the bundle names F, and no
+ *        omission names `h<N>`. CONTROL: each omission still names its kind and count, and the canon row travels under its key.
  */
 import { plantKeptSeat } from "./support/kept-seat.js";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
@@ -111,5 +115,38 @@ describe("the keep bundle seals its roster", () => {
     const a = await houseExport(out, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
     const b = await houseExport(`${out}-again`, { acceptOmissions: true, doors: doors(oldFaces(), SHARES) });
     expect(b.manifest.bundleId).toBe(a.manifest.bundleId);
+  });
+
+  test("KS4 RED: no face relation and no handle index rides the bundle in clear", async () => {
+    const RELATIONS = [F1, F2];
+    put("projections/faces/otter-face/canon/ha.ka.ba/notes/canon-note.tid", tid("lar:///ha.ka.ba/notes/canon-note", "a canon note"));
+    put(`projections/wikis/daemon-${F1}/ha.ka.ba/notes/old.tid`, tid("lar:///ha.ka.ba/notes/old", "a legacy mirror"));
+    put(`projections/bags/daemon-${F2}/ha.ka.ba/notes/old.tid`, tid("lar:///ha.ka.ba/notes/old", "a legacy bag mirror"));
+    const faces: BundleVesselFace[] = [
+      { handleIndex: 0, petname: "otter-face", relation: F1, handle: "Otterhandle", seat: true, chair: "north-chair",
+        kahua: [{ title: "lar:///ha.ka.ba/kahua/memory/heron", cid: "a".repeat(64), text: "remember the heron", fields: {}, taint: [], sources: [] }] },
+      { handleIndex: 1, petname: "kestrel-face", relation: F2, handle: "Kestrelhandle", seat: false, chair: null, kahua: null,
+        kahuaRefusal: `vessel-locked: face h1 (relation ${F2}) stands shut`, kahuaRefusalCode: "vessel-locked" },
+    ];
+    const census = {
+      clean: false,
+      items: [
+        { kind: "held-save" as const, refusal: "sealed-rest-held", documentId: `doc-${F1}`, saves: 2, bagId: `lar:///ha.ka.ba/bags/daemon-${F1}` },
+        { kind: "carrier" as const, state: "pending", uri: `lar:///ha.ka.ba/notes/pending-${F2}`, bagId: `lar:///ha.ka.ba/bags/daemon-${F2}`, island: "h1" },
+      ],
+      unanswered: [{ part: "face h1", why: `relation ${F2} answered nothing` }],
+    };
+    await houseExport(out, { acceptOmissions: true, doors: { ...doors(faces, SHARES), census: async () => census } });
+    for (const p of walkBundle(out)) {
+      for (const r of RELATIONS) expect(p.includes(r), `the path ${p} names a face relation`).toBe(false);
+      const text = bundleBytes(out, p).toString("latin1");
+      for (const r of RELATIONS) expect(text.includes(r), `${p} carries the face relation ${r} in clear`).toBe(false);
+    }
+    const manifest = JSON.parse(readFileSync(join(out, MANIFEST_FILE), "utf8")) as { omissions: Array<{ kind: string; detail: string; items?: string[]; count?: number }>; rows: Array<{ layer: string; face: string | null }> };
+    for (const o of manifest.omissions) expect(`${o.detail} ${(o.items ?? []).join(" ")}`, `the omission ${o.kind} names a handle index`).not.toMatch(/\bh\d+\b/);
+    // CONTROL: the omissions still name their kinds and counts, and the canon row travels under its face key.
+    expect(manifest.omissions.map((o) => o.kind)).toEqual(expect.arrayContaining(["held-saves", "unsettled-carriers", "census-unanswered", "face-unread"]));
+    expect(manifest.omissions.find((o) => o.kind === "held-saves")?.count).toBe(1);
+    expect(manifest.rows.some((r) => r.layer === "daemon-canon" && r.face === "f0")).toBe(true);
   });
 });
