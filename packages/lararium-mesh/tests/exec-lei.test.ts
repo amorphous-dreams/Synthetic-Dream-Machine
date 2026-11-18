@@ -123,7 +123,7 @@ describe("admitStartupRecords — the tab half's rule, one function for every ve
     expect([...out.admitted]).toEqual(["Member start"]);
     expect(out.offered).toEqual([{ title: "Own start", reason: "swarm-lei-out-of-scope" }]);
     const again = await admitStartupRecords(records, { wiki: WIKI, own: false, port });
-    expect(again.offered.map((o) => o.reason)).toEqual(["swarm-lei-out-of-scope", "swarm-lei-returns-spent"]);
+    expect(again.offered.map((o) => o.reason)).toEqual(["swarm-lei-returns-spent", "swarm-lei-returns-spent"]);
     const none = await admitStartupRecords(records, { wiki: WIKI, own: false });
     expect(none.admitted.size).toBe(0);
     expect(none.offered.map((o) => o.reason)).toEqual(["no-exec-lei-port", "no-exec-lei-port"]);

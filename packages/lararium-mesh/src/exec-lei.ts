@@ -17,6 +17,7 @@ import { executableClassOf } from "./executable-class.js";
 import { execLeiBranch, type ExecLeiScope } from "./exec-lei-scope.js";
 import { SwarmRefused, returnLei, type SwarmLeiBody, type SwarmLeiReach, type SwarmSignerPort, type SwarmTrust, type SwarmWikiPort } from "./swarm-tiddlers.js";
 import { WARD_GATE_DECIDED } from "./ward-door-decided.js";
+import type { ExecLeiPort } from "./seat-startup-offer.js";
 
 export { execLeiBranch, execLeiScopeRefusal, type ExecLeiScope } from "./exec-lei-scope.js";
 
@@ -56,4 +57,24 @@ export async function spendExecLei(wiki: SwarmWikiPort, land: ExecLand, trust: S
   const spent = await returnLei(wiki, { rite: "exec", branch: execLeiBranch(land.wiki), head: land.title, tree }, trust, group, spender, WARD_GATE_DECIDED,
     (lei: SwarmLeiBody) => execScopeRefusal(lei.scope, land, cls.class));
   return { ...spent, tree };
+}
+
+/**
+ * THE TAB HALF'S RULE (#260's tab half; state/decisions "Five floors walked" (1) and (5)): which of a wiki's startup records a
+ * vessel booting that wiki runs. In a wiki the wearing face alone writes (`own`), every startup record runs: no other writer
+ * reaches it, and the seat wall let no AI seat land one there without spending a lei's return at the door. In a wiki another
+ * writer reaches (a shared realm's), a startup record runs only where the vessel's port spends one return of a standing exec lei
+ * the face strung for it; any other waits, and the vessel shows it as an offer (never failing silent). Both vessels, the browser's
+ * and the node's, read this one function.
+ */
+export async function admitStartupRecords(records: readonly { readonly title: string; readonly fields: Readonly<Record<string, unknown>> }[],
+  at: { readonly wiki: string; readonly own: boolean; readonly port?: ExecLeiPort | undefined }): Promise<{ admitted: Set<string>; offered: { title: string; reason: string }[] }> {
+  const admitted = new Set<string>(), offered: { title: string; reason: string }[] = [];
+  for (const record of records) {
+    if (at.own) { admitted.add(record.title); continue; }
+    if (!at.port) { offered.push({ title: record.title, reason: "no-exec-lei-port" }); continue; }
+    try { await at.port.spend({ wiki: at.wiki, title: record.title, fields: record.fields }); admitted.add(record.title); }
+    catch (error) { if (!(error instanceof SwarmRefused)) throw error; offered.push({ title: record.title, reason: error.code }); }
+  }
+  return { admitted, offered };
 }

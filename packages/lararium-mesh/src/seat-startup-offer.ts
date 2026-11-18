@@ -23,11 +23,12 @@ export const SEAT_STARTUP_OFFER_REASON = "seat-startup-offer" as const;
 
 /**
  * The vessel's exec-lei port, bound to its daemon wiki, its trust and its own signer (`spendExecLei` behind it). A door names the
- * wiki it lands in, the record, and the writer it read (`seat` for an AI seat's ask). It answers the spent return, or throws the
- * lei grammar's refusal (`SwarmRefused`): absent, spent, out of scope.
+ * wiki it lands in, the record, and the writer it read (`seat` for an AI seat's ask); a tab booting a wiki names no writer, since
+ * a synced record carries none the vessel verified. It answers the spent return, or throws the lei grammar's refusal
+ * (`SwarmRefused`): absent, spent, out of scope.
  */
 export interface ExecLeiPort {
-  spend(land: { readonly wiki: string; readonly title: string; readonly fields: Readonly<Record<string, unknown>>; readonly writer: string }): Promise<{ readonly lei: string; readonly n: number }>;
+  spend(land: { readonly wiki: string; readonly title: string; readonly fields: Readonly<Record<string, unknown>>; readonly writer?: string }): Promise<{ readonly lei: string; readonly n: number }>;
 }
 
 /**
