@@ -3,8 +3,8 @@
   "unbaked": [
     {
       "source": "packages/lararium-tw5/plugins/lares-memetic-wikitext.json",
-      "sha256": "6f1cad11be9873b997d0bc86326cf2bf3e633466455aaec668891e3d3eefbf89",
-      "why": "PR #237 moves the plugin beneath genesis: the meme-patch slot edit (patchSlotCarrier through meme-put's own gate) and the meme-put row's slot, append and replace answers rebuild the memetic-wikitext bundle. Lares-Alpha's ONE labelled GENESIS RE-BAKE, in its own PR, carries these bytes into the seed and deletes this row."
+      "sha256": "037edb4674d865bd5204729a6d896bdb25272d8a49b7e47d546a7d65335d9594",
+      "why": "PR #237 moves the plugin beneath genesis (the meme-patch slot edit and the meme-put row's slot, append and replace answers), and Lares-Alpha's surface-problems lane moves it again (a duplicated meta key's record carries its line, for `lares meme check --format=problems`): both rebuild the memetic-wikitext bundle. Lares-Alpha's ONE labelled GENESIS RE-BAKE, in its own PR, carries these bytes into the seed and deletes this row."
     }
   ]
 }
