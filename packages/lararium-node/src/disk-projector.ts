@@ -477,6 +477,12 @@ export class LarDiskProjector {
   private readonly standoffs = new Map<string, StandoffEntry>();
   /** The standoff a person answered for each (bag, carrier), by the key they named. Read once, by the reconcile the answer starts. */
   private readonly answered = new Map<string, string>();
+  /**
+   * The records' render each `sides` standoff weighed, by (bag, carrier), beside the key it folded into. A text carrier
+   * with no sidecar alone: `lares shore take-disk` reads it (`standoffRender`) to merge the file and the records slot by
+   * slot against the base's words. Memory only, and it leaves with its standoff.
+   */
+  private readonly standoffRenders = new Map<string, { readonly standoff: string; readonly text: string }>();
   /** Every carrier whose file vanished from the path its base names, by (bag, carrier). Memory only: a boot's mount scan finds each anew. */
   private readonly pending = new Map<string, { readonly bagId: string; readonly uri: string; readonly path: string }>();
   /** The pending removals a person answered `restore` for. Read once, by the reconcile the answer starts. */
@@ -777,6 +783,20 @@ export class LarDiskProjector {
     return after === undefined ? { took: true } : { took: false, why: `the states moved while the answer travelled; the standoff stands under key ${after}` };
   }
 
+  /**
+   * THE RECORDS' SIDE OF ONE STANDOFF, AS IT WAS WEIGHED: the render the projector would have written when it raised
+   * the standoff under `standoff`, with its hash. Null where no standoff stands under that key, or the carrier holds
+   * a sidecar, a pointer or a binary body (no text a line merge can read). A key folds the records' hash, so the
+   * render answers only the state the person read.
+   */
+  standoffRender(bagId: string, uri: string, standoff: string): { readonly text: string; readonly records: string } | null {
+    const key = sitedKey(bagId, uri);
+    const entry = this.standoffs.get(key);
+    const render = this.standoffRenders.get(key);
+    if (entry === undefined || entry.standoff !== standoff || render === undefined || render.standoff !== standoff || entry.records === undefined) return null;
+    return { text: render.text, records: entry.records };
+  }
+
   /** Reconcile one carrier root through the queue where it runs, and wait for the queue to drain. */
   private async reconcileNow(rootUri: string): Promise<void> {
     if (this.gate === null) { await this.reconcile(rootUri); return; }
@@ -889,7 +909,7 @@ export class LarDiskProjector {
       }
       for (const [path, { body, key }] of wanted) {
         const hash = carrierHash(body);
-        if (safeReadEquals(path, body)) { this.pin(mirror.bagId, key, path, hash); continue; }
+        if (safeReadEquals(path, body)) { this.pin(mirror.bagId, key, path, hash, hash, body); continue; }
         // A file a hand left at this path stays: the base alone vouches for bytes the projector may replace.
         if (existsSync(path)) {
           const base = this.ownBaseAt(mirror.bagId, key, path);
@@ -901,7 +921,7 @@ export class LarDiskProjector {
         try {
           mkdirSync(dirname(path), { recursive: true });
           this.atomicWrite(path, body);
-          this.pin(mirror.bagId, key, path, hash);
+          this.pin(mirror.bagId, key, path, hash, hash, body);
         } finally { this.writing.delete(key); }
       }
       if (!existsSync(folder)) continue;
@@ -1084,6 +1104,7 @@ export class LarDiskProjector {
     const entry = this.standoffs.get(key);
     if (entry === undefined || (kind !== undefined && entry.kind !== kind)) return;
     this.standoffs.delete(key);
+    this.standoffRenders.delete(key);
     this.onConflictResolved?.({ bagId, uri, standoff: entry.standoff });
   }
 
@@ -1143,9 +1164,10 @@ export class LarDiskProjector {
     return this.syncedTree.bases(syncedTreeKey(bagId, uri)).filter((base) => !this.otherDocument(bagId, base));
   }
 
-  /** Pin an agreement between the file at `path` and this document's records. */
-  private pin(bagId: string, uri: string, path: string, diskHash: string, recordsHash: string = diskHash): void {
-    this.syncedTree.set(syncedTreeKey(bagId, uri), path, diskHash, recordsHash, this.docOf(bagId));
+  /** Pin an agreement between the file at `path` and this document's records; `body` hands in the agreed text of a
+   *  carrier with no sidecar, so a three-way merge (`shore take-disk`) reads the base's words. */
+  private pin(bagId: string, uri: string, path: string, diskHash: string, recordsHash: string = diskHash, body?: string): void {
+    this.syncedTree.set(syncedTreeKey(bagId, uri), path, diskHash, recordsHash, this.docOf(bagId), body);
   }
 
   /** The base at `path` leaves, unless it names another document: that row stays with the file it vouches for. */
@@ -1934,6 +1956,8 @@ export class LarDiskProjector {
     const obsHash    = carrierHash(output, metaBody);             // whole-carrier, for the Synced tree
     const metaPath   = metaBody !== undefined ? candidate + ".meta" : null;
     const metaInSync = metaPath === null || (existsSync(metaPath) && safeReadEquals(metaPath, metaBody!));
+    /** The agreed words a base keeps beside it: a text carrier with no sidecar alone (`SyncedTree.bodyAt`). */
+    const agreedText = metaPath === null && !bodyPending && typeof writeBytes === "string" ? writeBytes : undefined;
 
     // ── THE HOMES THIS CARRIER LEFT ─────────────────────────────────────────
     // A siting rule that moved the carrier leaves its files at the earlier path. Two memories name that
@@ -1958,7 +1982,7 @@ export class LarDiskProjector {
         : contentHash(readFileSync(candidate, "utf-8")) === outputHash);
       if (bodyInSync && metaInSync) {
         // Another document's file already says what these records render: its own base stays, and nothing writes.
-        if (!this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate))) this.pin(bagId, tiddlerUri, candidate, obsHash);
+        if (!this.otherDocument(bagId, this.syncedTree.baseAt(syncedTreeKey(bagId, tiddlerUri), candidate))) this.pin(bagId, tiddlerUri, candidate, obsHash, obsHash, agreedText);
         this._leaveStandoff(bagId, tiddlerUri);
         this._leavePending(bagId, tiddlerUri);
         if (mirror.mirrorClass !== "recovery") await this.sweepLeftMirrors(bagId, tiddlerUri, candidate, bodyPending ? null : obsHash);
@@ -2058,7 +2082,7 @@ export class LarDiskProjector {
         // later disk edit from a later record edit. A base that already names this agreement stays put.
         if (decision.reason === "canonical-equivalent" && diskHash !== null && !another
             && !(base !== null && base.disk === diskHash && base.records === gateRecords)) {
-          this.pin(bagId, tiddlerUri, candidate, diskHash, gateRecords);
+          this.pin(bagId, tiddlerUri, candidate, diskHash, gateRecords, metaPath === null && onDisk !== null && !isBinary ? onDisk.body : undefined);
         }
         // A PENDING POINTER'S SIDECAR STANDS AS THE RECORDS RENDER IT, and no base stands here: that
         // agreement holds a sidecar alone, and its base says so. A base that already stands stays: where
@@ -2086,6 +2110,7 @@ export class LarDiskProjector {
         // that meets the standoff it already raised stays quiet; the write still stands down.
         this._enterStandoff(mirror.bagId, tiddlerUri, standoff, "sides", reason,
           { path: candidate, disk: diskHash, records: gateRecords, ...(base !== null ? { base: { disk: base.disk, records: base.records } } : {}) });
+        if (agreedText !== undefined && !another) this.standoffRenders.set(key, { standoff, text: agreedText });
         return;
       }
     }
@@ -2115,7 +2140,7 @@ export class LarDiskProjector {
       // THE KĀPAE LOWERED: the carrier writes back, so a shadow standing at its stem leaves with the raise.
       LarDiskProjector.lowerShadowAt(candidate.slice(0, candidate.length - extname(candidate).length) + KAPAE_EXT);
       // The observation names the WHOLE carrier; under a pending body it names the sidecar alone.
-      this.pin(bagId, tiddlerUri, candidate, gateRecords);
+      this.pin(bagId, tiddlerUri, candidate, gateRecords, gateRecords, agreedText);
       // A bag counts as projected once a file of it stands: a pending body with no sidecar wrote nothing yet.
       if ((!bodyPending || metaPath !== null) && !this.projectedBags.has(bagId)) {
         this.projectedBags.add(bagId);

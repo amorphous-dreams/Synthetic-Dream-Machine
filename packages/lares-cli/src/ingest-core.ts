@@ -366,7 +366,8 @@ export function recordLandedCarriers(
     const answered = typeof c["canonicalHash"] === "string" && c["canonicalHash"] ? (c["canonicalHash"] as string) : null;
     const recordsHash = answered
       ?? (standing !== null && digestsEqual(standing.disk, cand.diskHash) ? standing.records : cand.diskHash);
-    tree.set(key, cand.file, cand.diskHash, recordsHash);
+    // The agreed words of a text carrier with no sidecar rest beside the base, for a later three-way merge.
+    tree.set(key, cand.file, cand.diskHash, recordsHash, undefined, cand.meta === undefined && !cand.binary ? cand.text : undefined);
     recorded++;
   }
   return recorded;

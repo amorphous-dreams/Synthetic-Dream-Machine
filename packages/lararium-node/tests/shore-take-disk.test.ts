@@ -5,8 +5,9 @@
  * sides moved past the mirror's base, so the carrier stands off as `both-moved` under one key and one
  * alert. `lares ingest` of the mirror file reads that conflict and lands nothing. `take-records` settles
  * the standoff toward the records. Its twin, `take-disk`, settles it toward the disk: under the key, the
- * file's words land in the records, the file's bytes stay as the hand left them, the base pins and the
- * alert clears.
+ * file's words land in the records, merged slot by slot with the records' own edit against the base's words
+ * (the hand's line and the holding copy's line both stand), the file holds the merged words, the base pins and
+ * the alert clears. Two edits at one place refuse by name (`slot-conflict`), and nothing writes or lands.
  *
  * The key reaches the one state its giver read, on both sides: another key, a file that moved since, and
  * records that moved since each refuse by name and land nothing. No wave takes this door by itself.
@@ -25,6 +26,11 @@ const HOLDING_LINE = "A LINE ADDED IN THE HOLDING COPY.";
 const HAND_LINE = "A HAND WROTE THIS LINE IN THE MIRROR FILE.";
 const LATER_LINE = "A LATER LINE ADDED IN THE HOLDING COPY.";
 const addLine = (text: string, line: string): string => text.replace(/\n! ([^\n]*)\n/, (m) => `${m}\n${line}\n`);
+/** A line added far from `addLine`'s: just before the carrier's last slot closes. */
+const addLineLate = (text: string, line: string): string => {
+  const at = text.lastIndexOf("\n<<~/ahu>>");
+  return `${text.slice(0, at)}\n${line}\n${text.slice(at)}`;
+};
 
 describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk under its key", () => {
   let rig: ShoreRig;
@@ -38,10 +44,11 @@ describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk und
     return { ok, output, refusal: ok ? null : String(output["refusal"]), why: ok ? null : String(output["why"]) };
   };
   const deps = (over: Partial<TakeDiskDeps> = {}): TakeDiskDeps => ({ ask, tree: rig.tree, root: rig.scratch, did: "did:test", submit: rig.submitWave, ...over });
-  /** A hand's edit in the mirror, then a holding ingest that moves the records: the carrier stands off. */
-  const standOff = async (uri: string, holdingLine: string): Promise<{ hand: string; key: string }> => {
+  /** A hand's edit in the mirror, then a holding ingest that moves the records: the carrier stands off. `apart`
+   *  sets the hand's line far from the holding copy's, so the two merge; otherwise both land at one place. */
+  const standOff = async (uri: string, holdingLine: string, apart = false): Promise<{ hand: string; key: string }> => {
     const before = rig.read(uri);
-    const hand = before.includes(HAND_LINE) ? before : addLine(before, HAND_LINE);
+    const hand = before.includes(HAND_LINE) ? before : (apart ? addLineLate : addLine)(before, HAND_LINE);
     rig.write(uri, hand);
     const holding = holdingOf(uri);
     mkdirSync(path.dirname(holding), { recursive: true });
@@ -61,7 +68,7 @@ describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk und
 
   test("the standoff reads both-moved, and its one alert names both doors under its key", async () => {
     const uri = rig.uris[0]!;
-    const { key } = await standOff(uri, HOLDING_LINE);
+    const { key } = await standOff(uri, HOLDING_LINE, true);
     const alert = rig.conflicts.filter((c) => c.uri === uri);
     expect(alert).toHaveLength(1);
     expect(alert[0]!.reason).toMatch(/both-moved/);
@@ -89,16 +96,16 @@ describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk und
     expect(wikiSays(uri, HAND_LINE)).toBe(false);
   });
 
-  test("★ take-disk under the standing key lands the file's words, keeps the file's bytes, pins the base and clears the alert ★", async () => {
+  test("★ take-disk under the standing key lands the file's words merged with the records' own edit, pins the base and clears the alert ★", async () => {
     const uri = rig.uris[0]!;
-    const hand = rig.read(uri);
     const key = rig.projector.standing().find((s) => s.uri === uri)!.standoff;
     const taken = await takeDisk({ uri, key }, deps());
-    expect(taken).toMatchObject({ ok: true, uri, bag: RIG_BAG, key, path: rig.fileOf(uri) });
+    expect(taken).toMatchObject({ ok: true, uri, bag: RIG_BAG, key, path: rig.fileOf(uri), merge: { kind: "slots" } });
     await rig.land();
     expect(wikiSays(uri, HAND_LINE)).toBe(true);
-    expect(wikiSays(uri, HOLDING_LINE), "the records kept the words the person chose the disk over").toBe(false);
-    expect(rig.read(uri)).toBe(hand);
+    expect(wikiSays(uri, HOLDING_LINE), "the records' own edit drowned under the file's").toBe(true);
+    expect(rig.read(uri)).toContain(HAND_LINE);
+    expect(rig.read(uri)).toContain(HOLDING_LINE);
     expect(rig.projector.standing().filter((s) => s.uri === uri)).toEqual([]);
     expect(rig.resolved.some((r) => r.uri === uri && r.standoff === key)).toBe(true);
     expect(rig.tree.baseAt(syncedTreeKey(RIG_BAG, uri), rig.fileOf(uri))).not.toBeNull();
@@ -145,6 +152,27 @@ describe.skipIf(coreBlobSkip)("a both-moved standoff settles toward the disk und
     expect(rig.read(uri)).toContain(LATER_LINE);
     expect(rig.read(uri)).not.toContain(HAND_LINE);
     expect(rig.projector.standing().filter((s) => s.uri === uri)).toEqual([]);
+  });
+
+  test("★ two edits at one place refuse by name: nothing writes, nothing lands, and the standoff keeps its key ★", async () => {
+    const uri = rig.uris[3]!;
+    const { hand, key } = await standOff(uri, HOLDING_LINE);
+    const taken = await takeDisk({ uri, key }, deps());
+    expect(taken).toMatchObject({ ok: false, refusal: "slot-conflict" });
+    await rig.land();
+    expect(rig.read(uri)).toBe(hand);
+    expect(wikiSays(uri, HAND_LINE)).toBe(false);
+    expect(wikiSays(uri, HOLDING_LINE)).toBe(true);
+    expect(rig.projector.standing().find((s) => s.uri === uri)?.standoff).toBe(key);
+  });
+
+  test("the island answers the records' render a standoff weighed under its key, and nothing under another", async () => {
+    const uri = rig.uris[3]!;
+    const key = rig.projector.standing().find((s) => s.uri === uri)!.standoff;
+    const render = await answerShore(rig.projector, { op: "render", uri, key });
+    expect(render).toMatchObject({ ok: true, uri, key, bag: RIG_BAG });
+    expect(String(render["text"])).toContain(HOLDING_LINE);
+    expect(await answerShore(rig.projector, { op: "render", uri, key: "0".repeat(24) })).toMatchObject({ ok: false, refusal: "standoff-key-moved" });
   });
 
   test("the shore lists a standoff with the states its key folds, and answers for named carriers alone", async () => {

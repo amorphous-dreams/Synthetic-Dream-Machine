@@ -15,6 +15,7 @@
  *                  names each carrier it landed, the hash its records render and the causal heads it landed;
  *                  the word ends when the wiki holds them, or by name when the far side closes first)
  *   take-records   take the records' side of one standoff, named by its key
+ *   render         answer the records' render one standoff weighed, named by its key (`take-disk` merges it)
  *   restore        write a vanished file back from the records and pin its base
  *   remove         delete the vanished carrier in the wiki, by the wiki shore's own delete door
  *   census         name every carrier the projector has not settled: each its queue still owes (`pending`) and
@@ -26,7 +27,9 @@
  * settles toward the disk, and no projector performs that: no disk byte reaches a record through the
  * projecting leg. The CLI reads the standoff's states here (`list`, by carrier), proves the key and the
  * file's bytes still name them, and sends the file through the ingest leg with the records the person
- * read as its base, so the gate lands the disk's words only where those records still stand.
+ * read as its base, so the gate lands the disk's words only where those records still stand. Where the
+ * records moved one slot and the file another, the CLI first reads the render this island weighed under the
+ * key (`render`) and merges it with the file against the base's words, slot by slot, so neither edit drowns.
  *
  * Every answer names the state the person read: a standoff's key, and for more than one pending removal
  * the count that stood pending. An answer that names a state which moved since takes nothing and says so:
@@ -40,7 +43,7 @@ import type { LarDiskProjector } from "./disk-projector.js";
 export const SHORE_VERB = "shore";
 
 /** The acts the verb carries. */
-export const SHORE_OPS = ["list", "sense", "settle", "take-records", "restore", "remove", "census"] as const;
+export const SHORE_OPS = ["list", "sense", "settle", "take-records", "render", "restore", "remove", "census"] as const;
 export type ShoreOp = (typeof SHORE_OPS)[number];
 
 /**
@@ -246,6 +249,25 @@ export async function answerShore(projector: LarDiskProjector, args: Readonly<Re
     return answer.took
       ? { ok: true, op, bag: named.bagId, uri, key, took: "records" }
       : { ok: false, op, refusal: "standoff-key-moved", why: answer.why ?? "the states moved while the answer travelled" };
+  }
+  if (op === "render") {
+    const uri = text(args["uri"]);
+    const key = text(args["key"]);
+    if (uri === null || key === null) return { ok: false, op, refusal: "shore-answer-incomplete", why: "render names a carrier (`uri`) and the standoff's key (`key`)" };
+    const stands = projector.standing().filter((s) => s.uri === uri && (text(args["bag"]) === null || s.bagId === args["bag"]));
+    const named = stands.find((s) => s.standoff === key);
+    if (named === undefined) {
+      return {
+        ok: false, op, refusal: stands.length === 0 ? "no-standoff-stands" : "standoff-key-moved",
+        why: stands.length === 0
+          ? `no standoff stands for ${uri} at this island's shore`
+          : `the standoff for ${uri} stands under key ${stands.map((s) => s.standoff).join(", ")}; the answer names ${key}`,
+      };
+    }
+    const render = projector.standoffRender(named.bagId, uri, key);
+    return render === null
+      ? { ok: false, op, refusal: "standoff-render-unheld", why: `the standoff for ${uri} holds no text render a merge can read (a sidecar, a pointer or a binary body)` }
+      : { ok: true, op, bag: named.bagId, uri, key, records: render.records, text: render.text };
   }
   if (op === "census") {
     const after = args["after"] === undefined ? null : text(args["after"]);
