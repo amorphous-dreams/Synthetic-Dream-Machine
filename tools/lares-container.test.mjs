@@ -264,7 +264,7 @@ for (const [name, shim] of shims) {
   // A VESSEL STANDS HOLDING NO KEY. With no TTY the shim names the one command that opens it, after every act
   // that stands or restarts the vessel; a vessel that already holds its key draws no line.
   // A vessel of several faces refuses a bare unlock, so the hint names every face the credential opens and the face to wear.
-  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock --all --face 0 `);
+  const NAMES_UNLOCK = new RegExp(`the vessel stands holding no vessel key; open it on a terminal: lares-container\\.${name} vault unlock --all, then lares-container\\.${name} wear 0 `);
   test(`${name}: up names vault unlock when the vessel holds no key`, async () => {
     const r = await run(shim, ["up"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"ok":true,"data":{"door":{"op":"custody","unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
@@ -276,7 +276,7 @@ for (const [name, shim] of shims) {
   test(`${name}: the unlock hint wears the face last worn through the shim, never the bare command`, async () => {
     const r = await run(shim, ["up"], { wornFace: 2, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_CUSTODY_OUTPUT: '{"data":{"door":{"unlocked":false}}}' } });
     assert.equal(r.status, 0, r.stderr);
-    assert.match(r.stderr, new RegExp(`open it on a terminal: lares-container\\.${name} vault unlock --all --face 2 \\(every face the credential opens, wearing h2; one face: --face N\\)`));
+    assert.match(r.stderr, new RegExp(`open it on a terminal: lares-container\\.${name} vault unlock --all, then lares-container\\.${name} wear 2 \\(every face the credential opens, then wear h2; another face: wear N\\)`));
     assert.doesNotMatch(r.stderr, new RegExp(`vault unlock(?! --all)(?! --face)\\s*$`, "m"));
   });
 
@@ -290,6 +290,16 @@ for (const [name, shim] of shims) {
     assert.equal(refused.worn, "1");
     const bare = await run(shim, ["vault", "unlock", "--all"], { wornFace: 1, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
     assert.equal(bare.worn, "1");
+  });
+
+  test(`${name}: wear N routes to the vessel's own wear and, when it lands, remembers the face; a refused wear remembers nothing`, async () => {
+    const worn = await run(shim, ["wear", "2"], { env: { ...MOUNTS, FAKE_RUNNING_ID: "cid" } });
+    assert.equal(worn.status, 0, worn.stderr);
+    assert.match(worn.calls, /exec (?:-e LARES_EXEC_TAG )?(?:-T )?lares node \S+ wear 2/);
+    assert.equal(worn.worn, "2");
+    const refused = await run(shim, ["wear", "3"], { wornFace: 2, env: { ...MOUNTS, FAKE_RUNNING_ID: "cid", FAKE_EXEC_RC: "1" } });
+    assert.notEqual(refused.status, 0);
+    assert.equal(refused.worn, "2");
   });
 
   test(`${name}: CONTROL a vessel that holds its key draws no unlock line`, async () => {
@@ -874,7 +884,19 @@ test(`${name}: pulama-admit-reaches-the-hand-door: admit forwards to the pūlama
   assert.equal(face.status, 0, face.stderr);
   assert.match(face.calls, /pulama-main\.js admit 2/);
   const bad = await run(shim, ["pulama", "burn"], { envFile: PULAMA_ENV });
-  assert.match(bad.stderr, /pulama takes up, down, light, admit, lock, status or tessera/);
+  assert.match(bad.stderr, /pulama takes up, down, light, admit, unadmit, lock, status or tessera/);
+});
+test(`${name}: pulama-unadmit-reaches-the-hand-door: unadmit forwards one image digest to the pūlama's own verb; a bare or malformed digest refuses and sends nothing`, { skip }, async () => {
+  const digest = "sha256:" + "ab".repeat(32);
+  const ok = await run(shim, ["pulama", "unadmit", digest], { envFile: PULAMA_ENV });
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.calls, new RegExp(`--profile pulama exec (-T )?pulama node packages/lararium-node/dist/src/pulama-main\\.js unadmit ${digest}`));
+  for (const argv of [["pulama", "unadmit"], ["pulama", "unadmit", "not-a-digest"]]) {
+    const bad = await run(shim, argv, { envFile: PULAMA_ENV });
+    assert.notEqual(bad.status, 0);
+    assert.match(bad.stderr, /pulama unadmit takes one image digest \(sha256:<64 hex>\)/);
+    assert.doesNotMatch(bad.calls, /unadmit/);
+  }
 });
 test(`${name}: image-digest-names-the-raised-image: the rite reads, as the last stdout line, the digest up reports to the pūlama`, { skip }, async () => {
   const r = await run(shim, ["image-digest"], { envFile: PULAMA_ENV, env: { FAKE_IMAGE_ID: "sha256:abc123" } });

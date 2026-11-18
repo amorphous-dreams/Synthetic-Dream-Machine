@@ -255,7 +255,7 @@ function RememberWornFace([string[]]$argv) {
 }
 
 # The vessel just stood (or restarted), so it holds no key. With a TTY, run the unlock attached: it opens every face the
-# credential opens (`--all`) and wears the last worn face again (or face 0); without one, name that command. A refused or
+# credential opens (`--all`), then `lares wear` takes the last worn face again (or face 0); without one, name both commands. A refused or
 # abandoned unlock leaves the vessel standing at the floor and never fails the act that stood it. A hint never names the
 # bare command that fails on a vessel of several faces.
 # UNDER A PŪLAMA THE ROUTE GOES TO THE PŪLAMA ALONE. The vessel's own unlock asks nothing there (it redials the pūlama),
@@ -264,21 +264,28 @@ function DetachedUnlock([string[]]$argv) {
   $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli vault unlock @argv
   return $LASTEXITCODE
 }
+function DetachedWear([string]$face) {
+  $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli wear $face
+  return $LASTEXITCODE
+}
 function UnlockOrName {
   if (KeyHeld) { return }
   $wear = LastWornFace
   if ($PulamaMode) {
-    if ((DetachedUnlock @('--all', '--face', "$wear")) -ne 0) {
+    if ((DetachedUnlock @('--all')) -eq 0) {
+      if ((DetachedWear "$wear") -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened, but h$wear stands outside the lent set or locked; wear another face with ``lares-container.ps1 wear N``") }
+    } else {
       [Console]::Error.WriteLine('lares-container: the vessel stands at the floor, unserved by the pūlama; read it with `lares-container.ps1 pulama status`, light it with `lares-container.ps1 pulama light`, admit the image that stands with `lares-container.ps1 pulama admit`, or raise a served vessel with `lares rite kukulu`')
     }
     return
   }
   if ($script:Tty) {
-    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, wearing h$wear)")
-    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock --all --face $wear
-    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock --all --face $wear``, or one face with ``lares-container.ps1 vault unlock --face N``") }
+    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; unlocking it on this terminal (every face the credential opens, then wear h$wear)")
+    & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv lares node $Cli vault unlock --all
+    if ($LASTEXITCODE -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel still stands at the floor; open every face the credential opens with ``lares-container.ps1 vault unlock --all``, then ``lares-container.ps1 wear $wear``") }
+    elseif ((DetachedWear "$wear") -ne 0) { [Console]::Error.WriteLine("lares-container: the vessel opened, but h$wear stands locked or outside the lent set; wear another face with ``lares-container.ps1 wear N``") }
   } else {
-    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock --all --face $wear (every face the credential opens, wearing h$wear; one face: --face N)")
+    [Console]::Error.WriteLine("lares-container: the vessel stands holding no vessel key; open it on a terminal: lares-container.ps1 vault unlock --all, then lares-container.ps1 wear $wear (every face the credential opens, then wear h$wear; another face: wear N)")
   }
 }
 
@@ -528,7 +535,13 @@ switch ($verb) {
         foreach ($f in $face) { if ($f -notmatch '^[0-9]+$') { Die 'pulama admit takes face ordinals (numbers)' } }
         Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'admit') + $face)
       }
-      default { Die 'pulama takes up, down, light, admit, lock, status or tessera' }
+      'unadmit' {
+        # unadmit ends one image's admission: the route proves on a real terminal inside the pūlama, and a signed
+        # tombstone naming the admission's tessera rests; the gate then reads pulama-image-unadmitted.
+        if ($rest.Count -ne 2 -or $rest[1] -cnotmatch '^sha256:[0-9a-f]{64}$') { Die 'pulama unadmit takes one image digest (sha256:<64 hex>)' }
+        Compose (@('--profile', 'pulama', 'exec') + $NoTty + @('pulama', 'node', $PulamaMain, 'unadmit', $rest[1]))
+      }
+      default { Die 'pulama takes up, down, light, admit, unadmit, lock, status or tessera' }
     }
   }
   'logs'  { Compose (@('logs') + $rest + @('lares')) }
@@ -565,6 +578,13 @@ switch ($verb) {
     # Stopping the daemon stops the container's main process: a host act.
     elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
+  }
+  'wear' {
+    # `lares wear N` moves the daemon mount inside the lent set and asks no route; a wear that landed names the face the
+    # operator wears, which the shim keeps for the next stand.
+    RouteCli (@($verb) + $rest) $true
+    $face = @($rest | Where-Object { $_ -match '^[0-9]+$' } | Select-Object -First 1)
+    if ($face.Count -gt 0) { RememberWornFace @('--face', $face[0]) }
   }
   'vault' {
     # A `vault unlock --face N` that landed names the face the operator wears: the shim keeps it for the next stand.
