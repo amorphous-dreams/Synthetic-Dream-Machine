@@ -10,6 +10,9 @@ import { evalExpr, eventContext, graphNumbers, liveFiles, mergeGroupOnly, REQUIR
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const CAP = 10;
 const GATES = 3;
+// The scope job reads whether a push changes canon alone before the cells start; it stands beside the Quick gates, ahead of
+// every cell, so it widens no concurrent set and adds one to the total.
+const READS = 1;
 
 const planted = `name: x
 on:
@@ -46,10 +49,10 @@ test("G0b CONTROL: a shape the reader does not know throws, never a quiet zero",
   assert.throws(() => graphNumbers("x.yml", { "x.yml": "jobs:\n  a:\n    strategy:\n      matrix: ${{ fromJSON(x) }}\n" }), /expression/);
 });
 
-test("G1 RED: a full CI run raises at most ten jobs that can run at once, and at most thirteen in all", () => {
+test("G1 RED: a full CI run raises at most ten jobs that can run at once, and at most fourteen in all", () => {
   const n = graphNumbers("ci.yml", liveFiles(ROOT));
   assert.ok(n.concurrent <= CAP, `ci.yml raises ${n.concurrent} concurrent jobs (cap ${CAP}): ${n.jobs.join(", ")}`);
-  assert.ok(n.total <= CAP + GATES, `ci.yml raises ${n.total} jobs in all (cap ${CAP + GATES}: ${CAP} cells and ${GATES} gates)`);
+  assert.ok(n.total <= CAP + GATES + READS, `ci.yml raises ${n.total} jobs in all (cap ${CAP + GATES + READS}: ${CAP} cells, ${GATES} gates and the scope read)`);
 });
 
 test("G2 RED: a lane push with an open pull request raises ONE CI run, and a fork's pull request still raises its own", () => {
@@ -137,6 +140,10 @@ test("G5 CONTROL: a merge_group-only job joins the merge_group run's graph and n
 // Every required check still reports on a lane head, or no lane enters the queue.
 
 const ran = (plan) => plan.filter((j) => j.state === "run").map((j) => j.key);
+/** The doorstep set: the scope read, the Quick gates, and the e2e gate on its one doorstep step. */
+const DOORSTEP = ["scope", "quick", "e2e/merge"];
+/** A push whose scope job read a canon-only change (`true`) or any other (`false`). */
+const scoped = (ctx, canon) => ({ ...ctx, outputs: { scope: { canon: canon ? "true" : "false" } } });
 const FULL = [
   ["merge_group", eventContext("merge_group")],
   ["a push to develop", eventContext("push", { branch: "develop" })],
@@ -170,7 +177,7 @@ test("D1 RED: a lane push runs the Quick gates alone; the e2e gate answers on it
   const files = liveFiles(ROOT);
   for (const branch of LANES) {
     const plan = runPlan("ci.yml", files, eventContext("push", { branch }));
-    assert.deepEqual(ran(plan), ["quick", "e2e/merge"], `${branch}: ${ran(plan).join(", ")}`);
+    assert.deepEqual(ran(plan), DOORSTEP, `${branch}: ${ran(plan).join(", ")}`);
     const merge = plan.find((j) => j.key === "e2e/merge");
     assert.equal(merge.steps.length, 1, `${branch}: the e2e gate walks ${merge.steps.join(" · ")} on a lane push`);
     assert.match(merge.steps[0], /^Doorstep/, "the one step the e2e gate walks on a lane push names the doorstep");
@@ -202,4 +209,52 @@ test("D3 RED: every required check stands defined ONCE and reports on a lane pus
       if (FULL.some(([w]) => w === what)) assert.equal(twins[0].state, "run", `${what}: the required check "${name}" skips on a full run`);
     }
   }
+});
+
+// ── THE CANON DOORSTEP ───────────────────────────────────────────────────────────────────────────
+// A push that changes only the paths tools/ci-ignored-paths.json names raised no run at all (push `paths-ignore`), so a canon
+// pull request never saw its four required checks and could not enter the queue (measured on PR #242). The push trigger
+// now ignores nothing; the scope job reads the push's diff against that one list, and a canon-only push, on a lane or on
+// develop/main, runs the doorstep set alone. A code push keeps the run law above exactly.
+
+const CANON_PUSHES = [...LANES, "develop", "main", "feature/green-jello-dinosaur-5"].map((branch) => [branch, eventContext("push", { branch })]);
+
+test("D4 RED: a canon-only push, on a lane or on develop/main, runs exactly the doorstep set, and every required check reports", () => {
+  const files = liveFiles(ROOT);
+  for (const [what, ctx] of CANON_PUSHES) {
+    const plan = runPlan("ci.yml", files, scoped(ctx, true));
+    assert.deepEqual(ran(plan), DOORSTEP, `${what}: a canon-only push ran ${ran(plan).join(", ")}`);
+    const merge = plan.find((j) => j.key === "e2e/merge");
+    assert.equal(merge.steps.length, 1, `${what}: the e2e gate walks ${merge.steps.join(" · ")} on a canon-only push`);
+    assert.match(merge.steps[0], /^Doorstep/);
+    for (const name of REQUIRED_CHECKS) {
+      const twins = plan.filter((j) => j.name === name);
+      assert.equal(twins.length, 1, `${what}: the required check "${name}" stands ${twins.length} times on a canon-only push`);
+    }
+    for (const gate of ["Test", "Witnesses"]) assert.equal(plan.find((j) => j.name === gate).state, "skipped", `${what}: ${gate} runs on a canon-only push`);
+  }
+});
+
+test("D5 RED: a mixed or code push reads as code: develop and main run every job, a lane still runs the doorstep", () => {
+  const files = liveFiles(ROOT);
+  for (const [what, ctx] of CANON_PUSHES) {
+    const plan = runPlan("ci.yml", files, scoped(ctx, false));
+    const lane = LANES.includes(what);
+    if (lane) assert.deepEqual(ran(plan), DOORSTEP, `${what}: a code lane push ran ${ran(plan).join(", ")}`);
+    else assert.deepEqual(plan.filter((j) => j.state !== "run").map((j) => j.key), [], `${what}: a code push skips a job`);
+  }
+});
+
+test("D6 RED: the doorstep reads the push alone: a canon answer on merge_group, a dispatch or a fork's PR still runs every job", () => {
+  const files = liveFiles(ROOT);
+  for (const [what, ctx] of FULL.filter(([w]) => !/push/.test(w))) {
+    const plan = runPlan("ci.yml", files, scoped(ctx, true));
+    assert.deepEqual(plan.filter((j) => j.state !== "run").map((j) => j.key), [], `${what} skips a job on a canon answer`);
+  }
+});
+
+test("D6b CONTROL: a job reads the outputs of its direct needs alone, as Actions hands them", () => {
+  const text = `on:\n  push:\njobs:\n  s:\n    name: S\n  a:\n    name: A\n    needs: s\n    if: \${{ needs.s.outputs.go == 'true' }}\n  b:\n    name: B\n    if: \${{ needs.s.outputs.go == 'true' }}\n`;
+  const plan = runPlan("x.yml", { "x.yml": text }, { ...eventContext("push"), outputs: { s: { go: "true" } } });
+  assert.deepEqual(plan.map((j) => `${j.key}:${j.state}`), ["s:run", "a:run", "b:skipped"], "b names no needs on s, so it cannot read s's outputs");
 });

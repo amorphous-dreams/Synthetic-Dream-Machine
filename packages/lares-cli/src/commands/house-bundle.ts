@@ -62,6 +62,7 @@ import {
   larHouseRoot, larProjectionsHome, larConfigHome, mirrorDirFileToUri, projectedFileTitle, SyncedTree, TEMP_LAYER_DIR,
   KAPAE_EXT, readKapaeShadow, isPrivateProjectionSlug, loadLaresConfig, tempConsentedSlugs, daemonBagsDir, FACES_PROJECTION_DIR, FACE_PLANES, faceRoot, faceSegmentRefusal,
   listCollections, libraryCollectionDir, atomicWriteFileSync, parseTidCarrier, houseIgnored,
+  foldWaveRefusal,
 } from "@lararium/node";
 import type { ParsedArgs } from "../parse-args.js";
 import { emit, exitFor } from "../render.js";
@@ -150,11 +151,7 @@ export const FACE_LAYER_WAITS = /\bface-unresolved\b|\bdocument-unavailable\b/;
  * door both fold through here, so a wave the island refuses whole reads alike at both: a face-named wave refused with a
  * `FACE_LAYER_WAITS` answer waits by name, and any other refusal stands named row by row, never a bare throw.
  */
-export function foldWaveRefusal(why: string, candidates: ReadonlyArray<{ readonly uri: string }>, kapae: readonly string[]): {
-  readonly refused: Array<{ uri: string; why: string }>; readonly kapaeRefused: Array<{ uri: string; why: string }>;
-} {
-  return { refused: candidates.map((c) => ({ uri: c.uri, why })), kapaeRefused: kapae.map((t) => ({ uri: t, why })) };
-}
+export { foldWaveRefusal };
 
 /** The words a SHUT face reads: unlock it, then lay (or import) again. A named expected state, never a stand-off, and it
  *  never blocks the faces that stand open (THE LIT SET: one lay lays every open face, each in its own layer). */

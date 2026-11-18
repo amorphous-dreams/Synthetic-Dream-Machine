@@ -24,6 +24,10 @@
       "import": "./dist/record-port.js",
       "types": "./dist/record-port.d.ts"
     },
+    "./executable-class": {
+      "import": "./dist/executable-class.js",
+      "types": "./dist/executable-class.d.ts"
+    },
     "./port-lease": {
       "import": "./dist/port-lease.js",
       "types": "./dist/port-lease.d.ts"

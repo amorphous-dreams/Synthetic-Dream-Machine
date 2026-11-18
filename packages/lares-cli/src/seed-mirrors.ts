@@ -59,19 +59,19 @@
  *
  * Meme: lar:///ha.ka.ba/lares/docs/pono/kahua-memory-stage
  */
-import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { daemonFaceCanonBag, wikiBagUri, wikiSlotUri } from "@lararium/mesh";
 import {
-  larProjectionsHome, larConfigHome, isPrivateProjectionSlug, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir, houseIgnored,
+  larProjectionsHome, larConfigHome, isPrivateProjectionSlug, KAPAE_EXT, TEMP_LAYER_DIR, parseTidCarrier, atomicWriteFileSync, daemonBagsDir,
   FACES_PROJECTION_DIR, FACE_PLANES, faceSegmentRefusal, labelledRelations, readFaceLabel, readFaceBases,
-  type FileSiting, type SyncedTree,
+  mirrorFiles, siteWaveFile, liveLay as layWave, type MirrorWave, type MirrorLaid,
 } from "@lararium/node";
 import { parseShareFile, type ShareEntry } from "@lararium/mesh";
-import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, foldWaveRefusal, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
+import { LIVE_BUNDLE_DOORS, mountFaceOf, unlockItLine, FACE_LAYER_WAITS, type BundleDoors, type BundleVesselFace } from "./commands/house-bundle.js";
 import { LIVE_SHARE_DOORS, landShares } from "./share-doors.js";
 import { runVerb } from "./verb-call.js";
-import { scanFiles, skipLines, siteMirrorFile, candidatesOf, settleIngest, openSyncedTree, submitIngest, carriedBasesOf, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
+import { skipLines, submitIngest, type SubmitIngestOpts, type ScanSkip } from "./ingest-core.js";
 import { summaryOutput, type SubmitResult } from "./verb-result.js";
 import { vesselDid } from "./env.js";
 import { canonIsDisk } from "./holdings.js";
@@ -79,42 +79,8 @@ import { sha256Hex, type BundleKahuaHead } from "./bundle-manifest.js";
 
 // ── the doors ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-/** One mirror folder laid into the one layer it mirrors. */
-export interface MirrorWave {
-  /** The folder the wave reads. */
-  readonly source: string;
-  /** The plane dir the uri derives against (`<projections>/wikis` or `<projections>/bags`): the first segment under it
-   *  names the holding slot and never enters the name. */
-  readonly uriDir: string;
-  readonly toBag: string;
-  /** The wiki the INGEST runs in (a wiki's working layer other than the daemon's); absent: daemon-side. */
-  readonly wiki?: string;
-  /** Top-level dirs under the folder that carry no layer of their own (`recovery`, `temp`). */
-  readonly skipTop: readonly string[];
-  /** THE BASES A WORKING WAVE RESTORES (title -> the carrier identity of the canon record its copy forked from), read off each owning face's
-   *  bases sidecar: the island stamps each on the record it lands (a carrier's root and each fragment of its family,
-   *  `carriedBasesOf`), so a fork keeps its base across a re-founding. */
-  readonly bases?: Readonly<Record<string, string>>;
-  /** THE FACE-NAMED WAVE (the lit set): the open face, other than the mount, whose own layer takes this wave. The island
-   *  lands it only where that face owns the document, never on the daemon mount. Absent: the daemon mount's layer. */
-  readonly face?: number;
-}
-
-/** What a wave planned and landed. A preview plans alone. */
-export interface MirrorLaid {
-  /** The carriers the scan read new or moved against the synced base. */
-  readonly planned: readonly string[];
-  /** The titles the folder's kāpae shadows name. */
-  readonly kapae: readonly string[];
-  readonly landed: readonly string[];
-  /** The kāpae the wave newly raised (one already standing reads nothing). */
-  readonly kapaeRaised: readonly string[];
-  readonly conflicts: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
-  readonly refused: ReadonlyArray<{ readonly uri: string; readonly why: string }>;
-  readonly unanswered: readonly string[];
-  /** NO SILENT SKIPS: each file the scan read no carrier from, with why (`ScanResult.skipped`). */
-  readonly skipped: readonly ScanSkip[];
-}
+/** One mirror folder laid into the one layer it mirrors, and what its wave planned and landed (`@lararium/node` ingest-scan). */
+export type { MirrorWave, MirrorLaid } from "@lararium/node";
 
 /** The doors the mirror leg reaches a vessel through, injectable so a test drives them with no vessel standing. */
 export interface MirrorDoors {
@@ -250,27 +216,10 @@ export function kahuaConfirmPrompt(count: number): string {
 
 // ── the files ──────────────────────────────────────────────────────────────────────────────────────────────────
 
-const isStray = (rel: string): boolean => rel.includes(".lar-tmp-");
 const folders = (dir: string): string[] => { try { return readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory() && !e.name.startsWith(".")).map((e) => e.name).sort(); } catch { return []; } };
 
-/** Every plain file under `dir` (posix rel paths, sorted), the top dirs `skipTop` names and every path `HOUSE_IGNORED` names left
- *  out; an absent dir reads empty. */
-export function mirrorFiles(dir: string, skipTop: readonly string[] = []): string[] {
-  const out: string[] = [];
-  const visit = (abs: string, rel: string): void => {
-    let names: string[];
-    try { names = readdirSync(abs).sort(); } catch { return; }
-    for (const name of names) {
-      const a = join(abs, name), r = rel === "" ? name : `${rel}/${name}`;
-      if (rel === "" && skipTop.includes(name)) continue;
-      const st = lstatSync(a);
-      if (st.isDirectory()) visit(a, r);
-      else if (st.isFile() && !isStray(r) && houseIgnored(r) === null) out.push(r);
-    }
-  };
-  visit(dir, "");
-  return out;
-}
+/** Every plain file under a mirror dir, the top dirs named and every path `HOUSE_IGNORED` names left out (`@lararium/node`). */
+export { mirrorFiles };
 
 /** A kahua stage file read as a lift: its title, body, lift fields, taint and sources. Null for bytes that name no item. */
 export function readKahuaFile(text: string): { title: string; text: string; fields: Record<string, string>; taint: string[]; sources: BundleKahuaHead["sources"] } | null {
@@ -664,53 +613,15 @@ export interface LayPorts {
 }
 export const LIVE_LAY_PORTS: LayPorts = { did: vesselDid, submit: submitIngest };
 
-/**
- * THE TITLE A WAVE'S FILE READS BACK UNDER, or why it reads none: the projector's siting run backward (`siteFileToTitle`) over
- * the wave's plane, the vessel's synced base first. A plain-title working tiddler (`My Notes.tid`, `Time_ dusk.tid` stating
- * `Time: dusk`) reads home under its own title, so a re-found's lay lands it beside the loci carriers instead of dropping it.
- * A personal layer's view state reads back only where a base stands at its path (`siteMirrorFile`).
- */
-export function siteWaveFile(wave: Pick<MirrorWave, "uriDir" | "toBag">, file: string, tree: SyncedTree): FileSiting {
-  return siteMirrorFile(wave.uriDir, file, tree, wave.toBag.endsWith("/personal"));
-}
+/** The title a wave's file reads back under, or why it reads none (`@lararium/node` ingest-scan). */
+export { siteWaveFile };
 
 /**
- * Lay one folder through INGEST's three-way gate against the vessel's synced base: a carrier whose disk equals its base
- * takes no wave (the second lay lands nothing), a moved one lands, and one whose records moved too stands off. The wave
- * rides unattended, so a file that holds no base over records that say something else stands off rather than adopting.
+ * Lay one folder through INGEST's three-way gate against the vessel's synced base (`@lararium/node` ingest-scan), over the
+ * verb socket unless a caller lends its own ports.
  */
-export async function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts = LIVE_LAY_PORTS): Promise<MirrorLaid> {
-  const tree = openSyncedTree();
-  const abs = mirrorFiles(wave.source, wave.skipTop).filter((r) => !r.endsWith(".meta")).map((r) => join(wave.source, ...r.split("/")));
-  const scan = scanFiles(wave.source, abs, wave.toBag, tree, (_r, f) => { const s = siteWaveFile(wave, f, tree); return "why" in s ? s : s.title; });
-  const bases = wave.bases ?? {};
-  const candidates = candidatesOf(scan.rows).map((r) => ({ ...r, ...carriedBasesOf(r.uri, bases) }));
-  const kapae = scan.shadows ?? [];
-  const refused = [
-    ...scan.rows.filter((r) => r.status === "non-nfc").map((r) => ({ uri: r.uri, why: "non-NFC bytes" })),
-    ...(scan.refusedShadows ?? []).map((r) => ({ uri: r.file, why: r.refusal })),
-  ];
-  const read: MirrorLaid = { planned: candidates.map((c) => c.uri), kapae, landed: [], kapaeRaised: [], conflicts: [], refused, unanswered: [], skipped: scan.skipped };
-  if (!apply || (candidates.length === 0 && kapae.length === 0)) return read;
-  const settled = await settleIngest({
-    source: wave.source, toBag: wave.toBag, candidates, did: await ports.did(), unattended: true,
-    ...(wave.face !== undefined ? { face: wave.face } : {}),
-    ...(wave.wiki !== undefined ? { inWiki: true, wiki: wave.wiki } : {}), ...(kapae.length > 0 ? { kapae } : {}),
-  }, tree, ports.submit);
-  if (settled.first.status === "error") {
-    const folded = foldWaveRefusal(settled.first.errorMessage ?? "INGEST refused", candidates, kapae);
-    return { ...read, refused: [...refused, ...folded.refused, ...folded.kapaeRefused] };
-  }
-  const k = (summaryOutput(settled.first) as { kapae?: { raised?: unknown; refused?: unknown } } | null)?.kapae;
-  return {
-    ...read,
-    landed: [...settled.landed],
-    kapaeRaised: Array.isArray(k?.raised) ? k.raised.map(String) : [],
-    conflicts: settled.conflicts.map((c) => ({ uri: c.uri, why: c.why })),
-    refused: [...refused, ...settled.refused.map((c) => ({ uri: c.uri, why: c.why })),
-      ...(Array.isArray(k?.refused) ? (k.refused as Array<Record<string, unknown>>).map((r) => ({ uri: String(r["uri"]), why: String(r["code"]) })) : [])],
-    unanswered: [...settled.unanswered],
-  };
+export function liveLay(wave: MirrorWave, apply: boolean, ports: LayPorts = LIVE_LAY_PORTS): Promise<MirrorLaid> {
+  return layWave(wave, apply, ports);
 }
 
 export const LIVE_MIRROR_DOORS: MirrorDoors = {

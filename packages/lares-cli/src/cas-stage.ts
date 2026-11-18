@@ -34,25 +34,9 @@ import { join } from "node:path";
 import { sha256HexBytesSync, utf8Bytes, isOversizedBody, ridesAsPointer, mediaTypeFromExt } from "@lararium/mesh";
 import { larCasDir } from "./env.js";
 
-/** The one override. A utf8 body reaches the cid/ tier only when the operator marks `_lar_cas = "yes"`
- *  in a `.meta` sidecar (`_lar_cas: yes`, TW5 field form) OR a per-ahu `toml meta`
- *  (`_lar_cas = "yes"`). The flag reads off text the gesture already holds — never a CAS
- *  resolve. Matches either `:` or `=`, with or without quotes. */
-const CAS_FLAG_RE = /(?:^|\n)\s*_lar_cas\s*[:=]\s*"?yes"?/i;
-
-/** Does a carrier opt IN to CAS externalization? Reads the `.meta` sidecar and the body meta
- *  (both in hand at scan time — a flag read is never a body resolve). */
-export function carrierCasFlagged(text: string, meta?: string): boolean {
-  return CAS_FLAG_RE.test(meta ?? "") || CAS_FLAG_RE.test(text);
-}
-
-/** The `type:` a `.meta` sidecar declares — the declaration the kind decision reads FIRST (a
- *  `.svg` declared `text/xml` inlines; a `.bin` declared `image/png` rides a pointer). Undefined
- *  when the sidecar is absent or names no type. */
-export function declaredType(meta?: string): string | undefined {
-  const m = /(?:^|\n)type\s*:\s*(\S+)/.exec(meta ?? "");
-  return m?.[1];
-}
+/** The `_lar_cas` override and the `.meta` type declaration read off text the gesture already holds: both stand in the node's
+ *  ingest machinery (`ingest-scan`), which the vessel's own waves read too. */
+export { carrierCasFlagged, declaredType } from "@lararium/node";
 
 export interface StageCarrierOpts {
   /** The file extension (".png"/".mem"/…) — resolves the type through TW5's registry when no

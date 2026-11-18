@@ -11,6 +11,16 @@
  *      disk. No standoff, or one under another key, refuses by name and nothing lands.
  *   2. THE FILE. The file at the standoff's path gets read through the scan's own door, and its hash must
  *      equal the disk state the key folded. A file that moved since refuses by name.
+ *   2b. THE MERGE. Where the records moved too, their edit must not drown under the file's. The door reads
+ *      the base's words from the file's own git history (the face pool's commit whose blob hashes to the base
+ *      the key folded, `basePoolText`; the synced tree holds hashes alone) and the render the
+ *      island weighed under the key (`render`), and merges the three through the one seal merge
+ *      (`shore-merge.ts` over `@lararium/mesh/meme-merge`, the module git's `.mem` driver reads too): a slot only one side moved
+ *      takes that side, a slot both moved line-merges alone, and a `.mem` re-seals. A clean merge writes the
+ *      file whole (temp, then rename) and the merged words ride the wave; a slot both sides moved into
+ *      overlap refuses by name (`slot-conflict`), and nothing writes or lands on either side. A file in no
+ *      git history, a pool with no commit holding the base, a sidecar or a binary body lands the file whole,
+ *      and the answer says so (`merge`).
  *   3. THE RECORDS. The file rides one INGEST wave whose base names the records the key folded. The gate
  *      lands the disk's words where the records still stand at that state (rule 4), and answers `conflict`
  *      where they moved since: nothing lands, and the standoff that stands keeps its own key.
@@ -22,8 +32,10 @@
  * A person's gesture alone: nothing calls this door by itself, and no flag makes a wave take it.
  */
 
-import type { SyncedTree } from "@lararium/node";
-import { mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh";
+import { statSync } from "node:fs";
+import { atomicWriteFileSync, contentHash, syncedTreeKey, type GitRun, type SyncedTree } from "@lararium/node";
+import { digestsEqual, mediaTypeFromExt, ridesAsPointer } from "@lararium/mesh";
+import { basePoolText, mergeStandoffSides } from "./shore-merge.js";
 import { carrierCasFlagged, declaredType } from "./cas-stage.js";
 import { scanFiles, settleIngest, submitIngest, type ScanRow, type SubmitIngestOpts } from "./ingest-core.js";
 import { readShoreList, type ShoreAnswer } from "./shore-core.js";
@@ -43,16 +55,73 @@ export interface TakeDiskDeps {
   readonly root: string;
   readonly did: string;
   readonly submit?: (o: SubmitIngestOpts) => Promise<SubmitResult>;
+  /** The git run the base read takes in the file's pool; absent, `runGit`. */
+  readonly git?: GitRun;
 }
 
+/**
+ * How the file's words met the records': `slots` merged the two edits against the base and wrote the merge; `disk`
+ * found the records unmoved past the base, so the file stood as the merge; `whole` landed the file with no merge, and
+ * `why` names what the door lacked.
+ */
+export type TakeDiskMerge =
+  | { readonly kind: "slots" | "disk" }
+  | { readonly kind: "whole"; readonly why: string };
+
 export type TakeDiskResult =
-  | { readonly ok: true; readonly uri: string; readonly bag: string; readonly key: string; readonly path: string; readonly decision: string; readonly requestId?: string }
+  | { readonly ok: true; readonly uri: string; readonly bag: string; readonly key: string; readonly path: string; readonly decision: string; readonly merge: TakeDiskMerge; readonly requestId?: string }
   | { readonly ok: false; readonly refusal: string; readonly why: string; readonly requestId?: string };
 
 /** A wiki's instance slot addressed as a bag: its INGEST runs inside that wiki's island. */
 const WIKI_SLOT_BAG_RE = /^lar:\/\/\/ha\.ka\.ba\/wikis\/[^/]+\/(temp|draft|working|personal)$/;
 
 const text = (v: unknown): string | null => (typeof v === "string" && v !== "" ? v : null);
+
+type Merged =
+  | { readonly ok: true; readonly text: string | null; readonly merge: TakeDiskMerge }
+  | { readonly ok: false; readonly refusal: string; readonly why: string; readonly requestId?: string };
+
+/**
+ * THE THREE SIDES MEET. `text` answers the merged words where they differ from the file's, null where the file
+ * stands as the merge already (or lands whole).
+ */
+async function mergeSides(
+  req: { readonly uri: string; readonly key: string; readonly bag: string; readonly path: string; readonly row: ScanRow; readonly named: Record<string, unknown> },
+  deps: TakeDiskDeps,
+): Promise<Merged> {
+  const { uri, key, bag, path, row, named } = req;
+  const whole = (why: string): Merged => ({ ok: true, text: null, merge: { kind: "whole", why } });
+  if (row.meta !== undefined || row.binary) return whole("the carrier rides a sidecar or a binary body, which no line merge reads");
+  const folded = named["base"] as { disk?: unknown } | undefined;
+  const foldedDisk = text(folded?.disk);
+  if (foldedDisk === null) return whole("no base names a last agreement, so nothing tells which side moved a line");
+  const treeBase = deps.tree.baseAt(syncedTreeKey(bag, uri), path);
+  if (treeBase === null || !digestsEqual(treeBase.disk, foldedDisk)) {
+    return { ok: false, refusal: "standoff-key-moved", why: `the base at ${path} moved since the key was read; \`lares shore\` names the standoff's present key` };
+  }
+  const pooled = basePoolText(path, foldedDisk, deps.git);
+  if (pooled.text === null) return whole(pooled.why);
+  const baseText = pooled.text;
+  const answer = await deps.ask({ op: "render", uri, key, bag });
+  if (!answer.ok) {
+    if (answer.refusal === "standoff-render-unheld" || answer.refusal === "shore-op-unknown") return whole(answer.why ?? "the island holds no render of the records' side");
+    return { ok: false, refusal: answer.refusal ?? "verb-error", why: answer.why ?? "the island refused", ...(answer.requestId !== undefined ? { requestId: answer.requestId } : {}) };
+  }
+  const recordsText = typeof answer.output["text"] === "string" ? answer.output["text"] : null;
+  const records = text(named["records"]);
+  if (recordsText === null || records === null || !digestsEqual(contentHash(recordsText), records)) {
+    return { ok: false, refusal: "standoff-key-moved", why: `the records' render for ${uri} moved since the key was read; \`lares shore\` names the standoff's present key` };
+  }
+  if (digestsEqual(contentHash(recordsText), contentHash(baseText))) return { ok: true, text: null, merge: { kind: "disk" } };
+  const merged = mergeStandoffSides({ base: baseText, records: recordsText, disk: row.text, path, ext: row.ext });
+  if (!merged.resolved) {
+    return {
+      ok: false, refusal: "slot-conflict",
+      why: `the records and the file both moved ${path} past their last agreement into one place (${merged.why}); nothing writes and nothing lands. Bring the file to the words both should hold and \`lares shore\` names the new key, or take the records' side under this one`,
+    };
+  }
+  return { ok: true, text: merged.text === row.text ? null : merged.text, merge: { kind: "slots" } };
+}
 
 export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promise<TakeDiskResult> {
   const { uri, key } = req;
@@ -99,8 +168,24 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
     };
   }
 
+  // 2b — the merge: the records' edit and the file's meet against the base's words.
+  const merged = await mergeSides({ uri, key, bag, path, row, named }, deps);
+  if (!merged.ok) return merged;
+  let landing: ScanRow = row;
+  if (merged.text !== null) {
+    // The file moved since it was read: the merge names a state no one read, and nothing writes.
+    const again = scanFiles(deps.root, [path], bag, deps.tree, () => uri).rows[0];
+    if (again === undefined || again.diskHash !== disk) return { ok: false, refusal: "standoff-key-moved", why: `the file at ${path} moved while the merge ran; \`lares shore\` names the standoff's present key` };
+    let mode: number | undefined;
+    try { mode = statSync(path).mode & 0o777; } catch { mode = undefined; }
+    atomicWriteFileSync(path, merged.text, undefined, mode !== undefined ? { mode } : {});
+    const read = scanFiles(deps.root, [path], bag, deps.tree, () => uri).rows[0];
+    if (read === undefined || read.status === "deleted" || read.text !== merged.text) return { ok: false, refusal: "standoff-key-moved", why: `the file at ${path} moved as the merge landed; \`lares shore\` names the standoff's present key` };
+    landing = read;
+  }
+
   // 3 — the records, as the person read them: the wave's base names that state, on both sides.
-  const { syncedRecordsHash: _side, ...rest } = row;
+  const { syncedRecordsHash: _side, ...rest } = landing;
   const candidate: ScanRow = { ...rest, status: "changed", syncedHash: records };
   const settled = await settleIngest(
     // A wiki's instance slot ingests inside the active wiki's island; the daemon island's own working layer
@@ -123,5 +208,5 @@ export async function takeDisk(req: TakeDiskRequest, deps: TakeDiskDeps): Promis
   }
   if (settled.refused.length > 0) return { ok: false, refusal: "disk-refused", why: settled.refused[0]!.why, requestId };
   if (!settled.landed.has(uri)) return { ok: false, refusal: "verb-error", why: `the island answered the wave without a row for ${uri}`, requestId };
-  return { ok: true, uri, bag, key, path, decision: String(settled.named.get(uri)?.["decision"] ?? "ingest"), requestId };
+  return { ok: true, uri, bag, key, path, decision: String(settled.named.get(uri)?.["decision"] ?? "ingest"), merge: merged.merge, requestId };
 }

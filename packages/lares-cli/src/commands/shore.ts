@@ -180,8 +180,13 @@ export async function cmdShore(args: ParsedArgs): Promise<number> {
     const done = taken;
     emit(args, {
       ok: true, ...(done.requestId !== undefined ? { requestId: done.requestId } : {}),
-      data: { op: "take-disk", bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision },
-      human: () => console.log(`took the disk's side: ${done.uri} (${done.bag}); the words at ${done.path} stand in the records`),
+      data: { op: "take-disk", bag: done.bag, uri: done.uri, key: done.key, path: done.path, took: "disk", decision: done.decision, merge: done.merge },
+      human: () => {
+        console.log(done.merge.kind === "slots"
+          ? `took the disk's side, merged with the records' slot by slot: ${done.uri} (${done.bag}); the merged words at ${done.path} stand in the records`
+          : `took the disk's side: ${done.uri} (${done.bag}); the words at ${done.path} stand in the records`);
+        if (done.merge.kind === "whole") console.log(`  landed whole, with no merge: ${done.merge.why}`);
+      },
     });
     return 0;
   }

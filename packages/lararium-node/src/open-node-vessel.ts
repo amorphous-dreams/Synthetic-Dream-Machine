@@ -34,7 +34,7 @@ import { enabledIntentRelayFaces } from "./intent-relay-ring.js";
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
 import { larBootstrapPath, larCatalogUrlPath, larProjectionsHome, larConfigHome, larWorkspacesHome, larHearthHome } from "./vessel-paths.js";
 import { createAfterRoll } from "./after-roll-chain.js";
-import { join, dirname, resolve as resolvePath } from "path";
+import { join } from "path";
 import type { Server }                  from "node:http";
 import type { HttpFaceDispatcher } from "./http-face-dispatcher.js";
 import type { DocHandle, AutomergeUrl, DocumentId, PeerId } from "@automerge/automerge-repo";
@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, type ShareEntry } from "@lararium/mesh";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatRepoWear, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, type ShareEntry } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -111,7 +111,10 @@ import { seatHouseCanonFromCheckout, standKahuCanon, kahuHandAtWire, kahuProtect
 import { dialRelationOf, seatDialPeer, unseatDialPeer, type DialRelation, type DialSeatMaps } from "./dial-relation.js";
 import { assemblePersonaGroupRing }       from "@lararium/keyhive";
 import { daemonGenesisDir, daemonBagsDir, loadLaresConfig, tempConsentedSlugs } from "./lares-config.js";
-import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR } from "./bag-paths.js";
+import { projectionRoots, workspaceRootsOf, FACES_PROJECTION_DIR, faceRoot } from "./bag-paths.js";
+import { armFacePoolWatch, type FacePoolWatch } from "./watch-core.js";
+import { islandIngestSubmit, poolIngestPorts } from "./ingest-scan.js";
+import { newRequestId, KAHUA_BAG } from "@lararium/mesh";
 import { orderHandleTurnsToStubs, type HandleTurn } from "@lararium/mempalace";
 import { writebackWing, TelemetryUnavailable } from "@lararium/sensorium";
 import { DeterministicFederationGate, carriageDocUrl, hostingDocUrl } from "@lararium/mesh";
@@ -258,7 +261,9 @@ import {
 } from "@lararium/mesh";
 import { placeCarriedNexuses, unionReadings }      from "./vessel-raise.js";
 import { landEveryHostingAct }                    from "./commands/host.js";
-import { loadNodeWardCosignPort }                  from "./commands/intent.js";
+import { loadNodeWardCosignPort, loadFaceFold }    from "./commands/intent.js";
+import { makeExecLeiSpendReactor }                 from "./exec-lei-door.js";
+import { EXEC_LEI_SPEND_VERB }                     from "@lararium/mesh";
 import { listWalkRecords }        from "./node-walk-store.js";
 import { storeDoorReactors, awaitOnRolled }       from "./store-door-verbs.js";
 import { controlSwarmWiki }                       from "./swarm-wiki.js";
@@ -634,6 +639,8 @@ export interface NodeVesselResult extends VesselResult<VesselIslandPool, DaemonV
   /** The stand-down's last flush of the sealed rest (T3), after every session closed and before the daemon island goes:
    *  answers how many saves still wait unbooked (each rests nowhere new; its change returns by sync). */
   sealedRestStandDown: () => Promise<number>;
+  /** The stand-down's watch close: the worn face's pool drains its final wave and runs its commit seam, as a down. */
+  facePoolStandDown: () => Promise<void>;
   /** The census of saves this vessel's sealed rest holds in memory, by document and never by body (`lares vessel census`). */
   heldSaves: () => readonly HeldSaves[];
 }
@@ -732,6 +739,8 @@ interface NodeBootPrep {
   sealedRestLock:  (signer: object) => Promise<void>;
   /** The stand-down's last flush of the sealed rest (T3), after every session closed: answers how many saves still wait. */
   sealedRestStandDown: () => Promise<number>;
+  /** The stand-down's watch close over the worn face's pool: the final wave, then the commit seam, as a down. */
+  facePoolStandDown: () => Promise<void>;
   /** The census of saves the sealed rest holds in memory, by document and never by body. */
   heldSaves: () => readonly HeldSaves[];
   /** The floor's rest key as this composition began with it (`standFloorKey`). */
@@ -930,6 +939,10 @@ async function prepareNodeBootOn(
   /** THE WORN FACE'S FOLDER under `faces/` (its pet-name segment, `faceSiteOf`): the face-rooted grants (margins, drafts, temp)
    *  read it at each mount; null while no face stands lit or its pet name makes no folder. */
   let wornFaceSegment: string | null = null;
+  /** THE WORN FACE'S DAEMON CANON BAG (`bags/daemon-<F>`), where it stands registered: the pool's `canon/` waves land there. */
+  let wornFaceCanonBag: string | null = null;
+  /** THE WATCH over the worn face's pool (`watch-core`, face-pools W1, W2): armed at after-live, downed at teardown and stand-down. */
+  let facePoolWatch: FacePoolWatch | null = null;
   /** The folder a face's pet name makes under `faces/`, or null (named in the log) where it makes none. The label names the pet
    *  name where the sealed row reads none (a locked key); the segment rule reads the other faces' names off the label shelf. */
   const faceSegmentOf = async (relation: string, handleIndex: number): Promise<string | null> => {
@@ -1466,6 +1479,9 @@ async function prepareNodeBootOn(
       });
     }, wireProbe ?? undefined),
   });
+  // THE COMPOSITION'S ACTOR DOOR, seated on its Repo: every store over this Repo's documents (`wearOf(repo)`) writes a worn
+  // face's change under the actor the wire identity derives, and the daemon island's own Repo asks for its actors here.
+  seatRepoWear(repo, wire);
   // The SECOND half of the probe — a doc enters a peer's sync session exactly when sync messages start moving
   // for that (doc, peer) pair, and leaves it when they stop. `doc-metrics` carries both directions.
   if (wireProbe) {
@@ -3472,6 +3488,7 @@ async function prepareNodeBootOn(
     // its bag stands registered (`standingDaemonCanonBag`), and the map names it before the canon's document moves a byte.
     const faceStandsLit = faceLit && !!personaGroupId && wornFaceProved;
     const canonBagId = standingDaemonCanonBag({ lit: faceStandsLit, faceRelation: wornRelation });
+    wornFaceCanonBag = canonBagId && wornRelation ? canonBagId : null;
     const faceWikiBags = wornFaceWikiBags({ slot, lit: faceStandsLit, ...(canonBagId ? { daemonCanon: canonBagId } : {}) });
     // A house canon bag in this set never seals under the face: the map skips it (`sealedBagMap`, cap-tier.mem house canon).
     sealedCells.bags = () => faceWikiBags.sealed;
@@ -3699,6 +3716,13 @@ async function prepareNodeBootOn(
         },
         // ONE READING WITH THE CONTROL DOCUMENT: the daemon VM reads the floor key again once its control document stood.
         floorKey: () => (floorKeyGrant = standFloorKey()),
+        // A SESSION'S ORDINAL TO ITS FACE: the mounted face's group, or a lit sibling's; a tool-door write names it on its origin.
+        wornGroupOf: (ordinal: number) => {
+          const mount = mountGateFace();
+          if (mount && mount.face === ordinal) return mount.personaGroup;
+          for (const [group, at] of siblingOrdinals) if (at === ordinal) return group;
+          return null;
+        },
         daemonAuth: daemonAuthNow(joinedFaces),
         storageDir,
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
@@ -4191,6 +4215,14 @@ async function prepareNodeBootOn(
       });
     });
     registry.register("residency", makeResidencyStatsReactor({ residency }));
+    // THE EXEC LEI'S MAIN HALF: the daemon island routes `exec-lei-spend` here (it holds no key); this vessel spends one return
+    // of the standing exec lei over the control document's swarm wiki, under the mounted face's trust and its own atom.
+    registry.register(EXEC_LEI_SPEND_VERB, makeExecLeiSpendReactor({ wiki: controlSwarmWiki(readControlDoc), face: async () => {
+      const { group, face, signer } = await loadFaceFold(repo, assembly.catalogHandle.url, { index: mountFace ?? undefined });
+      const vesselKey = signer.key.toLowerCase();
+      return { group, spender: { key: signer.key, sign: (bytes: Uint8Array) => signer.sign(bytes) },
+        trust: { hand: (key: string) => face.currentSigner(key), vessel: (key: string) => key === vesselKey, lead: () => false } };
+    } }));
 
     // THE STORE'S DOOR TABLE — `lares nexus kapae/posture/admit-take`, and every other store-touching verb run
     // here while this vessel stands, against the Repo its peers sync, so no second Repo ever writes beside this
@@ -4464,13 +4496,14 @@ async function prepareNodeBootOn(
     // projections root (`<root>/projections`), outside the hearth a re-founding clears.
     const projectionRoot = larProjectionsHome();
     const projection = projectionRoots({ projectionRoot, canonBags: daemonBagsDir() });
-    // THE WORKSPACES the share rows name (`$LAR_ROOT/config/share.tid`): each bound dir under `<root>/workspaces`; one inside the
-    // checkout or the hearth, or for a checkout-sourced slug, refuses by name and its workbench projects under projections.
+    // THE WORKSPACES the share rows name (`$LAR_ROOT/config/share.tid`): each bound dir under `<root>/workspaces`, one inside the
+    // checkout included (the cabal's working surface); one inside the hearth, or for a checkout-sourced slug, refuses by name
+    // and its workbench projects under projections.
     const workspaces = (() => {
       const path = join(larConfigHome(), SHARE_CONFIG_FILE);
       let rows: ShareEntry[] = [];
       try { rows = existsSync(path) ? parseShareFile(readFileSync(path, "utf8")) : []; } catch (err) { console.warn(`[workspaces] the share file reads as none: ${String(err)}`); }
-      const read = workspaceRootsOf({ rows, workspacesHome: larWorkspacesHome(), checkoutRoot: dirname(resolvePath(daemonBagsDir())), hearth: larHearthHome(), sourcedSlugs: projection.sourcedSlugs() });
+      const read = workspaceRootsOf({ rows, workspacesHome: larWorkspacesHome(), hearth: larHearthHome(), sourcedSlugs: projection.sourcedSlugs() });
       for (const line of read.refused) console.warn(`[workspaces] refused: ${line}`);
       for (const line of read.unbound) console.warn(`[workspaces] ${line}`);
       return read;
@@ -4497,7 +4530,7 @@ async function prepareNodeBootOn(
       // wikiSlot). The authority (the wikis base) stays static here; designation
       // rides the recipe's mirrorBags.
       // A wiki's working slot rests in its realm workbench (cabal-realm#/the-workbench); a share row may root its mirror in an
-      // operator workspace (`/lar/workspaces/<name>`), never inside the checkout or the hearth (`workspaceRootsOf`).
+      // operator workspace (`/lar/workspaces/<name>`), the checkout included and never inside the hearth (`workspaceRootsOf`).
       // ONE FOLDER ANSWERS A WORKBENCH, whichever seated writer wears: `<projections>/wikis/<slug>`, and a sourced slug's beside
       // its canon source (`<source>/../wikis/<slug>`, the repo workspace: git tracks it). No face relation enters that path.
       { bagId: "working",        mirrorRoot: join(projectionRoot, "wikis"),          scope: "working",  wikiSlot: "working", sourcedRoots: projection.sourcedRoots("wikis"), workspaceRoots: workspaces.roots },
@@ -4592,6 +4625,27 @@ async function prepareNodeBootOn(
     void pushPromoteSnapshot?.().catch(console.warn);
     const stopPromoteWatch = promoteWiringRef?.watch();
     if (stopPromoteWatch) stood.push({ what: "the promote watcher", down: stopPromoteWatch });
+    // THE WATCH OVER THE WORN FACE'S POOL (face-pools W1, W2): armed here, off the boot path (the arm hands back at once), over
+    // `faces/<pet name>/`. It names the wake's stage edits, catches up once, and lands each settled wave by itself
+    // (`poolIngestPorts`): an UNATTENDED INGEST wave per plane on the daemon island (`islandIngestSubmit`), the working layer
+    // under `wiki/`, the face's daemon canon under `canon/`, the kahua stage under `stage/`, each where the island grants
+    // its mirror. A stand-off (both moved, or no base over records that say something else), a vanish and a margin go to the
+    // island's disk shore (`shore` op `sense`). A teardown (a lock, or a wear that moves the mount) sets the face down: the
+    // final wave, then the pool's commit seam; the stand-down runs the same as a down (`facePoolStandDown`).
+    if (wornFaceSegment !== null) {
+      const pool = faceRoot(larProjectionsHome(), wornFaceSegment);
+      const requestedBy = `0x${activeAtom?.key ?? ""}`;
+      const sense = (uris?: readonly string[]): Promise<unknown> => islandAsk(daemonHolder)((ports) => askIslandVerb({
+        ...ports, verb: "shore", args: { op: "sense", ...(uris !== undefined ? { uris: [...uris] } : {}) },
+        requestedBy, requestId: newRequestId(),
+      })).answer;
+      const submit = islandIngestSubmit((verb, args, requestId) => islandAsk(daemonHolder)((ports) => askIslandVerb({ ...ports, verb, args, requestedBy, requestId })).answer);
+      const log = (line: string): void => console.log(`[faces] ${line}`);
+      const bags = { wiki: DAEMON_WORKING_SLOT, stage: KAHUA_BAG, ...(wornFaceCanonBag !== null ? { canon: wornFaceCanonBag } : {}) };
+      const watch = armFacePoolWatch({ pool, ports: poolIngestPorts({ pool, bags, submit, sense, did: requestedBy, log }), log });
+      facePoolWatch = watch;
+      stood.push({ what: "the face pool's watch", down: async () => { await watch.down("lock"); if (facePoolWatch === watch) facePoolWatch = null; } });
+    }
     if (slotActiveWikiId) void residency.pin(slotActiveWikiId, "boot:home-wiki", "wiki");
   };
 
@@ -4653,6 +4707,7 @@ async function prepareNodeBootOn(
       if (waiting > 0) nameHeldSaves(waiting);
       return waiting;
     },
+    facePoolStandDown: async () => { await facePoolWatch?.down("down"); },
     heldSaves: () => sealedRest.store.held(),
     get floorKey() { return floorKeyGrant; },
     backupDoor: {
@@ -4857,6 +4912,7 @@ async function composeNodeVesselOn(opts: NodeVesselOptions, p: NodeBootPrep): Pr
     sessionSigns:    sessionSign.book,
     sealedRestLock:  p.sealedRestLock,
     sealedRestStandDown: p.sealedRestStandDown,
+    facePoolStandDown: p.facePoolStandDown,
     heldSaves:       p.heldSaves,
     floorKey:        p.floorKey,
     backupDoor:      p.backupDoor,

@@ -59,8 +59,9 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/meme-verbs
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
-  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseSeatStartupAction, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
+  AutomergeDocStore, NoWorkingLayerRefusal, VerbRefusal, floorReadFace, isHouseCanonBag, refuseRenderedWrite, admitSeatExecutable, requireKahuReach, resolveHouseCanon, bagUri, designatedBagOf, expandRecipe, recipeFromRecord, wikiSlotKindOf, wikiSlotUri,
   REALM_ID_TIDDLER, realmDocPointer, realmDocUrl, realmStewardPointer, realmStandingPointer, readRealmStanding, mayWriteRealmBag, tiddlerText,
   carrierHashOf, isWorkingLayerBag, overrideBaseOf,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerRecord, type LarTiddlerStore, type WikiSlotKind,
@@ -75,6 +76,8 @@ import { MEMETIC_SOURCE } from "./meme-ast/diagnostics.js";
 import { projectCarrierText, projectTargetOf } from "./meme-project.js";
 import { pinTargetsOf, profileOf } from "./weave/index.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import { wornOrigin } from "./verb-dispatcher.js";
+import { wikiWearsNext } from "./island-recipe.js";
 import type { LaresTw5Extension } from "./types/lares-globals.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
@@ -130,7 +133,7 @@ export function memeVerbOptions(
       const url = await slotDocUrl(slug, kind, opts);
       if (!url) return null;
       const handle = await findOrThrow(ctx.repo, url, `${bag} (${kind} slot of ${slug})`);
-      return new AutomergeDocStore(handle, bag);
+      return new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
     },
     // The vessel's own composition shadows a system wiki's default: the one reader, own first.
     recipeOf: async (slug) => (await effectiveRecipeOf(slug, { catalog, oracle }))?.record ?? null,
@@ -150,7 +153,7 @@ export function memeVerbOptions(
         row: async () => {
           for (const accessor of planes) {
             const handle = await accessor.find(key).catch(() => null);
-            if (handle) return new AutomergeDocStore(handle, bag);
+            if (handle) return new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
           }
           return null;
         },
@@ -158,7 +161,7 @@ export function memeVerbOptions(
       if (answer === null) return null;
       if ("row" in answer) return answer.row;
       const handle = await findOrThrow(ctx.repo, answer.realm, bag).catch(() => null);
-      return handle ? new AutomergeDocStore(handle, bag) : null;
+      return handle ? new AutomergeDocStore(handle, bag, wearOf(ctx.repo)) : null;
     },
     // The realm's WRITE answer: the standing registration's doc as a writable store, for a steward alone.
     realmWritable: async (bag, namedRealm) => {
@@ -168,7 +171,7 @@ export function memeVerbOptions(
       if (!mayWriteRealmBag(standing.bags, bag, nym)) return null;
       const rec = standing.bags.get(bag)!;
       const handle = await findOrThrow(ctx.repo, rec.docUrl, `${bag} (realm bag)`).catch(() => null);
-      return handle ? new AutomergeDocStore(handle, bag) : null;
+      return handle ? new AutomergeDocStore(handle, bag, wearOf(ctx.repo)) : null;
     },
   };
 
@@ -191,8 +194,20 @@ export function memeVerbOptions(
     const standing = (await realmStanding(namedRealm))?.bags.get(key);
     if (!standing) return null;
     const handle = await findOrThrow(ctx.repo, standing.docUrl, `${bag} (realm bag)`).catch(() => null);
-    return handle ? new AutomergeDocStore(handle, bag) : null;
+    return handle ? new AutomergeDocStore(handle, bag, wearOf(ctx.repo)) : null;
   }
+}
+
+/** THE ANCHOR'S HOP CARRIES THE FACE: each member the wiki sink lands or removes names the origin's face on the shore first,
+ *  so the shore's write of it lands under that face's actor. An origin that names no face hands the sink back unchanged. */
+function wornWikiSink(sink: MemeSink, tw5: object, origin: ChangeOrigin): MemeSink {
+  if (origin.face === undefined) return sink;
+  const face = origin.face;
+  return {
+    ...sink,
+    land: (fields) => { wikiWearsNext(tw5, String((fields as { title?: unknown }).title ?? ""), face); return sink.land(fields); },
+    tombstone: (title) => { wikiWearsNext(tw5, title, face); return sink.tombstone(title); },
+  };
 }
 
 /** A bare slug becomes its bag URI; a full `lar:` URI passes through. */
@@ -413,7 +428,7 @@ async function resolveSink(opts: MemeVerbOptions, target: Omit<MemeArgs, "uri"> 
     return { bag, sink: bagSink(opts, target.recipe, bag, store, origin, mode), anchor: false };
   }
   // The anchor: the daemon's own wiki, its cascade routing the records to the top bag.
-  return { bag: anchorBagOf(opts), sink: wikiMemeSink(opts.tw5.$tw.wiki), anchor: true };
+  return { bag: anchorBagOf(opts), sink: wornWikiSink(wikiMemeSink(opts.tw5.$tw.wiki), opts.tw5, origin), anchor: true };
 }
 
 /** A house canon bag's floor snapshot, where the floor this island mounted carries one. */
@@ -457,7 +472,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
     const text = stringArg(args, "text");
     if (!text) throw new Error("meme-put: args.text is required (the whole meme, framed)");
     const base = optionalStringArg(args, "base");
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
     await requireKahuReach(bag, opts.kahuReach, "meme put", ctx.asker);
     const proof = await capOf(realmGrant, ctx.cap)("admin", bag);
@@ -477,9 +492,18 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
         else shown = standing;
       }
     }
-    // THE ONE WALL A SEAT KEEPS: a seat's startup action offers and never lands, whatever bag it names.
-    const vet = (records: readonly Record<string, unknown>[]): void => {
-      for (const record of records) refuseSeatStartupAction(String(record["title"] ?? target.uri), record["tags"], "meme put", ctx.asker);
+    // THE ONE WALL A SEAT KEEPS: a seat's executable record offers, whatever bag it names, or lands spending one return of a
+    // standing exec lei for the wiki the put names. And ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or a record
+    // that would land carrying `rendered-from`, refuses.
+    const standingRoot = await sink.read(target.uri);
+    refuseRenderedWrite(target.uri, standingRoot, null, "meme put");
+    const wiki = target.recipe ?? (typeof args["bag"] === "string" ? args["bag"] : bag);
+    const vet = async (records: readonly Record<string, unknown>[]): Promise<void> => {
+      for (const record of records) {
+        const title = String(record["title"] ?? target.uri);
+        refuseRenderedWrite(title, null, record, "meme put");
+        await admitSeatExecutable(title, record, "meme put", ctx.asker, { wiki, port: ctx.execLei });
+      }
     };
     const receipt = await placeMeme({ uri: target.uri, text, baseHash, vet }, sink);
     // THE ANSWER NAMES THE LAYER: the bag the put landed in, and for a named wiki the slot of it (`working`, or `personal`
@@ -493,7 +517,7 @@ export function makeMemePutReactor(opts: MemeVerbOptions): VerbReactor {
 export function makeMemeGetReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-get");
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
     // The read hands a person the meme's TEXT: a pointer whose body rests in the content tier refuses by name.
     if (await holdsUnreadPointer(target.uri, sink)) {
@@ -523,7 +547,7 @@ export function makeMemePatchReactor(opts: MemeVerbOptions): VerbReactor {
     if ((append === null) === (replace === null)) throw new VerbRefusal("patch-malformed", "patch-malformed: meme-patch names exactly one of args.append (a paragraph at the end of the slot's body) or args.replace (the slot's whole body).");
     const base = optionalStringArg(args, "base");
     if (!base) throw new VerbRefusal("base-required", `base-required: meme-patch edits bytes the writer read; pass args.base, the canonical hash \`meme get\` answers for ${target.uri}.`);
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { sink } = await resolveRead(opts, target, origin, ctx.cap);
     if (await holdsUnreadPointer(target.uri, sink)) {
       throw new VerbRefusal(POINTER_BODY_CODE, `${POINTER_BODY_CODE}: ${target.uri} holds a pointer whose body rests in the content tier; meme-patch reads no pointer body.`);
@@ -630,7 +654,7 @@ export function makeMemeListReactor(opts: MemeVerbOptions): VerbReactor {
     const target = readContainer(args, "meme-list");
     const tree = args["tree"] === true || args["tree"] === "1" || args["tree"] === "true";
     const page = { tree, after: optionalStringArg(args, "after") ?? null, limit: pageLimitOf(args["limit"]) };
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     if (target.recipe && target.recipe !== "default") return listRecipeStack(opts, target.recipe, page, origin, ctx.cap);
     const { bag, sink, floor } = await resolveRead(opts, target, origin, ctx.cap);
     return { bag, ...(floor ? { floor: true } : {}), ...(await listMemePage(sink, page)) };
@@ -765,7 +789,7 @@ export function makeMemeDeleteReactor(opts: MemeVerbOptions): VerbReactor {
   return async (args, ctx) => {
     const target = readTarget(args, "meme-delete");
     const base = optionalStringArg(args, "base");
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     if (target.recipe && target.recipe !== "default") return deleteThroughRecipe(opts, target.recipe, target.uri, base, origin, ctx.cap, ctx.asker);
     const { bag, sink, realmGrant } = await resolveSink(opts, target, origin, "put");
     await requireKahuReach(bag, opts.kahuReach, "meme delete", ctx.asker);
@@ -787,7 +811,7 @@ export function makeMemeProjectReactor(opts: MemeVerbOptions): VerbReactor {
     if (projectTarget !== "md" && (dialect || tongue)) {
       throw new Error(`meme-project: --dialect/--tongue weave the "md" target alone; got "${projectTarget}"`);
     }
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const { bag, sink, anchor } = await resolveRead(opts, target, origin, ctx.cap);
     // A projection renders the meme's TEXT: the same pointer refusal the read gives, at every seat.
     if (await holdsUnreadPointer(target.uri, sink)) {

@@ -271,7 +271,7 @@ const refusedAt = (island: ShoreIsland, a: ShoreAnswer): ShoreAnswer =>
  *            settle ends `stalled` where no page newly settled for the stall window (`SETTLE_STALL_MS`),
  *            naming what still waits (`pendingCount`, `stalledCount`, `pendingUris`)
  *   answers  (`take-records`, `restore`, `remove`) go to the island whose list holds the state: the standoff
- *            under the named key, or the pending removals the answer names (by carrier, by bag, or all).
+ *            under the named key (and `render`, the records' side that standoff weighed, reads there too), or the pending removals the answer names (by carrier, by bag, or all).
  *            Where both islands hold it, or a set splits across them, the answer refuses by name
  *            (`shore-answer-incomplete`) and names how to split it: two bags never fold into one answer.
  *            Where neither holds it, the active wiki's island answers and names what stands there.
@@ -417,10 +417,12 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
   const bag = typeof shoreArgs["bag"] === "string" ? shoreArgs["bag"] : null;
   const holders: ShoreIsland[] = [];
   const keysSeen: string[] = [];
+  // A KEYED ACT names one standoff: the records' side taken, or the records' side read.
+  const keyed = op === "take-records" || op === "render";
   for (const island of SHORE_ISLANDS) {
-    const listed = await readShoreList(ask(island), { op: "list", ...(op === "take-records" && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}) });
+    const listed = await readShoreList(ask(island), { op: "list", ...(keyed && uri !== null ? { uris: [uri] } : uris.length > 0 ? { uris } : {}), ...(bag !== null ? { bag } : {}) });
     if (!listed.ok) { if (holdsNoShore(listed)) continue; return refusedAt(island, listed); }
-    if (op === "take-records") {
+    if (keyed) {
       const stands = listed.standoffs.filter((s) => s["uri"] === uri);
       keysSeen.push(...stands.map((s) => String(s["standoff"])));
       if (stands.some((s) => s["standoff"] === shoreArgs["key"])) holders.push(island);
@@ -429,11 +431,11 @@ export async function askShore(shoreArgs: Readonly<Record<string, unknown>>, did
     }
   }
   if (holders.length > 1) {
-    return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: op === "take-records"
+    return { ok: false, output: {}, refusal: "shore-answer-incomplete", why: keyed
       ? `the standoff under key ${String(shoreArgs["key"])} stands at both islands over one bag; the door cannot name which one a person read, so it takes neither`
       : `what the answer names stands pending at both islands; name one bag with \`bag\`, or answer each island's carriers apart` };
   }
-  if (holders.length === 0 && op === "take-records" && keysSeen.length > 0) {
+  if (holders.length === 0 && keyed && keysSeen.length > 0) {
     return { ok: false, output: {}, refusal: "standoff-key-moved", why: `the standoff for ${uri} stands under key ${keysSeen.join(", ")}; the answer names ${String(shoreArgs["key"])}` };
   }
   // No island lists the state: the active wiki's island answers, and names what stands there.

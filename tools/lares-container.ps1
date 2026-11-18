@@ -411,7 +411,7 @@ $verb = [string]$args[0]
 $rest = @(); if ($args.Count -gt 1) { $rest = @($args[1..($args.Count - 1)]) }
 
 # A WORKSPACE (cabal-realm#/the-workbench): bound read-write at /lar/workspaces/<name>, from `--workspace <name>=<dir>` and from
-# LARES_WORKSPACES (`;`-separated `<name>=<dir>` pairs). One inside the checkout, LARES_WORKSPACE or LARES_HOUSE/hearth refuses.
+# LARES_WORKSPACES (`;`-separated `<name>=<dir>` pairs). One inside LARES_HOUSE/hearth refuses; the checkout and LARES_WORKSPACE bind (rank 4j).
 $script:WorkspaceNames = @()
 function Test-Within([string]$child, [string]$parent) {
   $c = $child.TrimEnd('/', '\'); $p = $parent.TrimEnd('/', '\')
@@ -427,9 +427,6 @@ function WorkspaceBind([string]$pair) {
   $real = (Get-Item $wdir).ResolveLinkTarget($true)
   $real = if ($real) { $real.FullName } else { (Resolve-Path $wdir).Path }
   $real = $real.TrimEnd('/', '\')
-  if (Test-Within $real ([System.IO.Path]::GetFullPath($Root))) { Die "--workspace $name refuses $real — it rests inside the checkout ($Root)" }
-  $ws = ValueOf 'LARES_WORKSPACE'
-  if ($ws -and (Test-Within $real ([System.IO.Path]::GetFullPath($ws)))) { Die "--workspace $name refuses $real — it rests inside LARES_WORKSPACE ($ws)" }
   if (Test-Within $real ([System.IO.Path]::GetFullPath((Join-Path $House 'hearth')))) { Die "--workspace $name refuses $real — it rests inside the hearth" }
   if ($real.Contains("`n")) { Die '--workspace refuses a path that holds a newline' }
   $script:WorkspaceNames += $name
@@ -584,6 +581,27 @@ switch ($verb) {
     # Stopping the daemon stops the container's main process: a host act.
     elseif ($sub -eq 'stop') { if ($rest.Count -ne 1) { Die 'vessel stop takes no option through this shim' }; Compose @('stop', 'lares') }
     else { RouteCli (@($verb) + $rest) (-not $observing) }
+  }
+  'lei' {
+    # The lei hand door under a pūlama (#269): the vessel reads the act's terms, the pūlama reads the route on this terminal
+    # and signs one record, the vessel lands it. The signing's terminal output shows as it runs; the answer is its last JSON
+    # line. A signing that answers no record lands nothing. Without a pūlama, every lei act routes as before.
+    $sub = if ($rest.Count -gt 0) { $rest[0] } else { '' }
+    if ($PulamaMode -and $sub -in @('kui', 'restring', 'unstring')) {
+      if (-not $script:Tty) { Die 'lei under a pūlama reads its route on a terminal; run it on one (nothing signed)' }
+      $terms = ($null | & docker compose @Base exec @PassEnv -T lares node $Cli lei terms @rest) -join ''
+      if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      $answer = ''
+      & docker compose @Base --profile pulama exec pulama node $PulamaMain lei $sub $terms | ForEach-Object {
+        [Console]::Error.WriteLine($_)
+        $line = "$_".Trim("`r")
+        if ($line.StartsWith('{')) { $answer = $line }
+      }
+      if (-not $answer) { Die 'the pūlama signed nothing; nothing lands' }
+      $null | & docker compose @Base exec -e LARES_EXEC_TAG @PassEnv -T lares node $Cli lei land $answer
+      exit $LASTEXITCODE
+    }
+    RouteCli (@($verb) + $rest) $true
   }
   'wear' {
     # `lares wear N` moves the daemon mount inside the lent set and asks no route; a wear that landed names the face the

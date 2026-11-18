@@ -15,6 +15,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/vessel-steps
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   AutomergeDocStore,
   computeRecipeFingerprint,
@@ -49,18 +50,18 @@ export type ResolveBagHandle = (
  * tiddlers, but `defaultWritable:false` so unbagged TW5 saves keep routing to
  * the wiki — only an explicit `record.bag === bagId` write lands here.
  */
-export function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
+export function addSubstrateLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo?: object): void {
   composite.addLayer({
     bagId,
-    store:           new AutomergeDocStore(handle, bagId),
+    store:           new AutomergeDocStore(handle, bagId, wearOf(repo)),
     writable:        true,
     defaultWritable: false,
   });
 }
 
 /** Read-only layer (catalog registry, corpus bags): synced for reads, never written. */
-export function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>): void {
-  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId), writable: false });
+export function addReadOnlyLayer(composite: CompositeStore, bagId: string, handle: DocHandle<LarDoc>, repo?: object): void {
+  composite.addLayer({ bagId, store: new AutomergeDocStore(handle, bagId, wearOf(repo)), writable: false });
 }
 
 /**

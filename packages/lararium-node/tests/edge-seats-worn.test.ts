@@ -16,6 +16,7 @@
  *       the roster does not serve.
  */
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { keepHouse } from "./support/kept-house.js";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -41,12 +42,15 @@ type WornFold = (o: { repo: unknown; worn?: { fleetRoot: string | null; atomKey:
 
 let root: string;
 let priorLarRoot: string | undefined;
-beforeEach(async () => {
+const house = keepHouse("lares-edge-seats-worn-", async () => {
+  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
+  await seedFaceAtom(0);                                   // the joinee's own atom and anchors; no persona root stands
+});
+beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), "lares-edge-seats-worn-"));
   priorLarRoot = process.env["LAR_ROOT"];
   process.env["LAR_ROOT"] = root;
-  await generateOrLoadVesselIdentity({ placeFoundingCard: { readBack: async () => {} } });
-  await seedFaceAtom(0);                                   // the joinee's own atom and anchors; no persona root stands
+  house.into(root);
 });
 afterEach(async () => {
   await restEvery();

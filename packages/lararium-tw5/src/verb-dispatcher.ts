@@ -84,11 +84,24 @@ export interface VerbContext {
    * (`seat-canon-reach`); never read off args, a payload or a tiddler.
    */
   readonly asker?: Hand;
+  /**
+   * The vessel's exec-lei port (`ExecLeiPort`): a write door asks it to spend one return of a standing executable-record lei
+   * before a seat's executable record lands. Absent, every seat's executable record offers.
+   */
+  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
   readonly cap:   (access: import("@lararium/mesh").CapabilityAccess, bagUrl: string) => Promise<import("@lararium/mesh").CapabilityVerifyResult>;
 }
 
-/** What a session wore: its face's ordinal on this vessel and the presenter its door verified. */
-export interface SessionWorn { readonly ordinal: number; readonly presenter: string }
+/** What a session wore: its face's ordinal on this vessel, the presenter its door verified, and the PersonaGroup the
+ *  vessel's worn face maps the ordinal to (absent where it maps none). A tool-door write names the group on its origin
+ *  (`ChangeOrigin.face`), so it lands under the actor that face derives. */
+export interface SessionWorn { readonly ordinal: number; readonly presenter: string; readonly group?: string }
+
+/** The face a write's origin names for this verb's worn face: its group, or nothing where the ask rode no session or
+ *  the vessel mapped its ordinal to no group (the write then rides the engine's actor). */
+export function wornOrigin(worn: SessionWorn | undefined): { readonly face?: string } {
+  return typeof worn?.group === "string" ? { face: worn.group } : {};
+}
 
 export type VerbReactor = (
   args:    Readonly<Record<string, unknown>>,
@@ -270,6 +283,8 @@ export class VerbTable {
 
 export interface VerbDispatcherOptions {
   readonly daemonVm:   TW5Engine;
+  /** The vessel's exec-lei port (`islandExecLeiPort` in a daemon island): every local reactor reads it as `ctx.execLei`. */
+  readonly execLei?: import("@lararium/mesh").ExecLeiPort;
   readonly daemon:    CompositeStore;
   /**
    * The vessel's CONTROL document as a store (`controlStoreOf`): the summons this dispatcher heeds, the outcome ledger and
@@ -288,6 +303,8 @@ export interface VerbDispatcherOptions {
   readonly askerOf?: (invocation: Verb) => Hand | undefined;
   /** The chore's receipt mark the island booked for this exact act; the outcome carries it. Absent where none. */
   readonly choreOf?: (invocation: Verb) => ChoreReceiptMark | undefined;
+  /** The face a session wore, as the island booked it with this exact act; absent for every ask that rode no session. */
+  readonly wornOf?: (invocation: Verb) => SessionWorn | undefined;
   /** Route a verb to main. `signal` aborts when the dispatcher gives up on the ask (a mount that timed out), so the router drops what it holds for it. */
   readonly routeFn?:  (invocation: Verb, signal?: AbortSignal) => Promise<Record<string, unknown>>;
 }
@@ -349,6 +366,8 @@ export class VerbDispatcher {
         ...(this.opts.localOf ? { localOf: this.opts.localOf } : {}),
         ...(this.opts.surfaceOf ? { surfaceOf: this.opts.surfaceOf } : {}),
         ...(this.opts.askerOf ? { askerOf: this.opts.askerOf } : {}),
+        ...(this.opts.wornOf ? { wornOf: this.opts.wornOf } : {}),
+        ...(this.opts.execLei ? { execLei: this.opts.execLei } : {}),
       });
     }
     if (this.opts.routeFn) {

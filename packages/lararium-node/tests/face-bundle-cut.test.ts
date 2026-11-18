@@ -20,7 +20,7 @@
 import { seatSuiteWard } from "./support/scratch-custody-setup.js";
 // This suite stands as the person at the terminal: its root acts carry no ward route, and the suite's person answers (seat-harness#/the-ward).
 seatSuiteWard();
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, vi } from "vitest";
 import * as ed from "@noble/ed25519";
 import {
   HandleBook, bundleMemoryKeypair, recoveryContactRegistrationCard, hex, mintRecoveryContactEnrolment, sealKeySetHash, mintBundleKey, mintHandleInception, mintPersonaInception, openFaceBundleBody,
@@ -38,8 +38,12 @@ import {
   generateOrLoadPersonaGroupRoot, loadPersonaGroupRootSeed, makeNodePersonaDeclarationStore, makeNodePersonaPetnameStore,
 } from "../src/node-vessel-identity.js";
 import * as carriers from "../src/vault-carriers.js";
-import { seatScratchCustody, type SeatedScratchCustody } from "./custody-seat-fixture.js";
-import { removeCustodyRecord, writeCustodyRecord } from "../src/custody-seat.js";
+import { FIXTURE_PASSPHRASE } from "./custody-seat-fixture.js";
+import { FsCustodyIo } from "../src/custody-io.js";
+import { openCustodyNodeKey } from "../src/custody-session.js";
+import { keepHouse } from "./support/kept-house.js";
+import { scratchRoot as root, scratchHome, test } from "./support/scratch-fixture.js";
+import { openedCustody, removeCustodyRecord, standingCustody, unseatCustody, writeCustodyRecord } from "../src/custody-seat.js";
 import { faceAddressSecretFile, landFaceAddressSecret } from "../src/fleet-join-custody.js";
 import { recoveryContactSetFile } from "../src/recovery-contact-enrolment.js";
 
@@ -61,11 +65,9 @@ async function cardOf(fill: number, glamour: string): Promise<HandleCard> {
 /** Synthetic PersonaGroup ids, in the lower hex a group id reads as. */
 const GROUP0 = "0a".repeat(32);
 const GROUP1 = "1b".repeat(32);
-let seat: SeatedScratchCustody;
 let keys: { face0: string; face1: string };
 let kel0: PersonaKelEvent[];
-beforeEach(async () => {
-  seat = await seatScratchCustody("bundle-cut");
+const house = keepHouse("lares-bundle-cut-", async () => {
   const r0 = await generateOrLoadPersonaGroupRoot(0);
   const r1 = await generateOrLoadPersonaGroupRoot(1);
   keys = { face0: r0.verifyingKey, face1: r1.verifyingKey };
@@ -105,7 +107,14 @@ beforeEach(async () => {
   await book1.ingest(nobodys); book1.setPetname(nobodys.nym, "LABEL-OF-NOBODY");
   await saveNodeHandleBook(1, book1);
 });
-afterEach(async () => { await seat.drop(); });
+beforeEach(() => house.into(root, scratchHome));
+afterEach(async () => {
+  const holder = standingCustody();
+  if (holder) {
+    await holder.lock();
+    unseatCustody(holder);
+  }
+});
 
 /** A composition's lend, as a standing vessel mounting face `mounted` would hand it. `asked` keeps what reached the island. */
 function door(over: Partial<BackupDoor> & { mounted?: number | null } = {}): { door: BackupDoor; asked: Uint8Array[] } {
@@ -167,6 +176,9 @@ describe("a cut carries one face's standing section and its memory section", () 
     const cut = await cutFaceBundle({ face: 0, bundleKey, door: door().door });
     const { text } = opened(cut.sealedBody, bundleKey);
     const otherSeed = hex(await loadPersonaGroupRootSeed(1));
+    const homes = carriers.vesselCustodyHomes();
+    const seat = await openCustodyNodeKey({ io: new FsCustodyIo(homes), homes, credentials: [{ kind: "passphrase", passphrase: FIXTURE_PASSPHRASE }] });
+    if (seat.reading !== "opens") throw new Error(`the copied vessel key reads ${seat.reading}`);
     const strangers = [
       otherSeed, keys.face1, "PETNAME-OF-FACE-ONE", "HANDLE-OF-FACE-ONE", hex(secretOf(5)), "FRIEND-OF-ONE", "LABEL-OF-FACE-ONE",
       "UNTAGGED-FRIEND", "LABEL-OF-NOBODY",
@@ -248,8 +260,9 @@ describe("a cut refuses by name, and a refused cut seals nothing", () => {
   test("C4 — under its own shadow the cut refuses `own-edge-shadowed`: the shadow reads once, no island ask leaves and no root row opens", async () => {
     let reads = 0;
     const lend = door({ ownEdgeShadowed: async () => { reads++; return true; } });
-    const openCold = vi.spyOn(seat.holder, "openColdRecord");
-    const readHot = vi.spyOn(seat.holder, "readRecord");
+    const holder = await openedCustody();
+    const openCold = vi.spyOn(holder, "openColdRecord");
+    const readHot = vi.spyOn(holder, "readRecord");
     expect(await refusalOf(cutFaceBundle({ face: 0, bundleKey: mintBundleKey(), door: lend.door }))).toBe("own-edge-shadowed");
     expect(reads).toBe(1);
     expect(lend.asked).toEqual([]);

@@ -101,8 +101,10 @@ export interface WireIdentity {
    */
   leg<T extends object>(adapter: T, seat: WireLegSeat, onRefusal?: (refusal: WireLegRefusal, peerId: string) => void): T;
   /** The change actor `face` (null: the veil floor) writes `documentId` under in this composition: sixteen bytes of hex,
-   *  settled once, and every later reading answers it. Another composition derives another. */
-  actor(face: string | null, documentId: string): Promise<string>;
+   *  settled once, and every later reading answers it. Another composition derives another. `replica` names another
+   *  Repo of this composition that writes the document (an island's own, minted at its boot): it derives an actor of its
+   *  own, so two Repos never hand one actor's sequence out twice, and `ownsActor` answers it all the same. */
+  actor(face: string | null, documentId: string, replica?: string): Promise<string>;
   /**
    * WRITE ONE CHANGE AS A FACE: `change` lands on the handle's document under the actor `face` derives for it, and the
    * document then stands again under the actor it held, so a write that names no face never rides a face's actor. With
@@ -377,15 +379,15 @@ export function wireIdentityOf(input: { readonly store: StorageAdapterInterface;
   const actorSalt = hexOf(globalThis.crypto.getRandomValues(new Uint8Array(32)));
   const actors = new Map<string, Promise<string>>();
   const owned = new Set<string>();
-  const actor = (face: string | null, documentId: string): Promise<string> => {
+  const actor = (face: string | null, documentId: string, replica?: string): Promise<string> => {
     const scope = wireScopeOf(face);
-    const name = `${scope}\n${documentId}`;
+    const name = `${scope}\n${replica ?? ""}\n${documentId}`;
     let reading = actors.get(name);
     if (reading === undefined) {
       reading = (async () => {
         // The face scope's own secret keys the digest (the secret a pair's alias derives from, under another domain).
         const secret = await rested(`${STORE_ID}-${scope}.veil`, () => hexOf(globalThis.crypto.getRandomValues(new Uint8Array(32))));
-        const derived = hexOf(hmac(sha256, secret, new TextEncoder().encode(`${WIRE_ACTOR_DOMAIN}\n${actorSalt}\n${documentId}`)).slice(0, 16));
+        const derived = hexOf(hmac(sha256, secret, new TextEncoder().encode(replica === undefined ? `${WIRE_ACTOR_DOMAIN}\n${actorSalt}\n${documentId}` : `${WIRE_ACTOR_DOMAIN}\n${actorSalt}\n${replica}\n${documentId}`)).slice(0, 16));
         owned.add(derived);
         return derived;
       })().catch((e: unknown) => { actors.delete(name); throw e; });

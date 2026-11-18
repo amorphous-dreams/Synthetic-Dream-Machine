@@ -13,6 +13,7 @@
  *
  * Canon: lar:///ha.ka.ba/lararium/docs/crossroads · lar:///ha.ka.ba/lares/api/pono/persona-circle#/the-vault
  */
+import { wearOf } from "./repo-wear.js";
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { CapModule } from "./cap-compose.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
@@ -67,7 +68,7 @@ export function whoFaceCap(deps: {
       // Written by NAME, never the default: the vessel alone names its working layer, and a capability's
       // layer composed after it must not take a bagless write.
       assembly.composite.addLayer({
-        bagId, store: new AutomergeDocStore(board, bagId), writable: true, defaultWritable: false,
+        bagId, store: new AutomergeDocStore(board, bagId, wearOf(deps.repo)), writable: true, defaultWritable: false,
       });
       await deps.residency?.pin(bagId, "boot:who-face");
       return {
