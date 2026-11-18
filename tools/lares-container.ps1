@@ -402,7 +402,7 @@ $NoTty = if ($Tty) { @() } else { @('-T') }
 # DISPLAY AND DEBUG RIDE BY NAME: each one the caller's environment sets crosses into the vessel as `-e NAME` (compose
 # reads the value from this environment), so no value rides argv; no other name crosses, and no credential.
 $PassEnv = @()
-foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG')) {
+foreach ($name in @('NO_COLOR', 'TERM', 'COLORTERM', 'LARES_DEBUG', 'CLAUDECODE', 'CODEX_SANDBOX', 'CODEX_SANDBOX_NETWORK_DISABLED')) {
   if (Test-Path "env:$name") { $PassEnv += @('-e', $name) }
 }
 
