@@ -558,6 +558,14 @@ describe("the brief line's count", () => {
     expect(briefLine([row("e", "aligned")])).toBe("reality tunnel: every item holds");
   });
 
+  it("names the read of the radius that printed it: lares repo read for the checkout, lares home read for the home", () => {
+    const off = [row("git.merge-driver", "drift"), row("c", "aligned")];
+    expect(briefLine(off, "repo")).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares repo read)");
+    // CONTROL: the home radius, named or left to its default, keeps its own read.
+    expect(briefLine(off, "home")).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares home read)");
+    expect(briefLine(off)).toBe("reality tunnel: 1 item(s) off the tunnel — git.merge-driver (lares home read)");
+  });
+
   it("names a row the house once wrote whose host now stands absent here: apart from drift, never dropped from the line", () => {
     const line = briefLine([row("gone", "absent", true), row("c", "aligned")]);
     expect(line).toBe("reality tunnel: every item holds (1 item(s) the house once wrote, changed since, on a host now absent here: gone)");
