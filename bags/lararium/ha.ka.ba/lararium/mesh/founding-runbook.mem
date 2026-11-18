@@ -361,7 +361,7 @@ tools/lares-container.sh vault unlock --face N && node tools/carry-parity.mjs ce
 lares rite keep --workspace house-backup --face 0               # on the host, as the steward: the last cut, pushed and landed
 lares rite receipts --face 0                                     # conferre reads the keep's tessera par
 tools/lares-container.sh down                                    # never accept-loss: a census that asks for it means vault unlock, let it settle, down again
-# THE NEW HOUSE: export LARES_HOUSE=/home/joshu/.lares-next in this shell, for every line through the swap's down
+# THE NEW HOUSE: export LARES_HOUSE="$HOME/.lares-next" in this shell, for every line through the swap's down
 mkdir -p ~/.lares-next/config/carry && git clone <the keep repo> ~/.lares-next/config/carry/keep-clone && cp -a ~/.lares/sensoriums ~/.lares/library ~/.lares-next/
 tools/lares-container.sh found --hearth --name '<face 0 pet-name>' --chair '<its chair label>'   # the names keep-clone/house/re-declare.json carries
 # re-state the temp consent by hand: projection.temp and projection.tempExpiryDays from ~/.lares/config/config.json into ~/.lares-next/config/config.json
@@ -417,7 +417,7 @@ lares rite receipts --face 0                                     # conferre read
 
 ''Each face's memory lands at its own wear.'' Unlock every face your one passphrase opens (`lares vault unlock --all --face 1`), then seed once wearing each face in turn: the worn face's working and face-canon folders land in its own layer through the ordinary wave. Every other open face's ride an INGEST that names it, which the island lands in that face's own document only where it can open that document, never on the worn face (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-lit-set`>>); on a walked hearth a sibling's daemon layer rests sealed under its own key and answers `face-unresolved` or `document-unavailable`, so the seed names that face as waiting (`stands open, and its own layer lays at its own face's wear`), lands nothing of it anywhere and exits 0. Its kahua items wait the same way (`lifts at its own face's wear`). A face that stays SHUT waits by name (`<pet-name> stays shut: lares vault unlock --face N, then seed again`), its folders kept out of ashes until its own seed lands them, and it never blocks the rest; unlock it and seed again, and that face lands alone. The import reads the same. No face's memory ever lands in another face. House canon alone waits on the worn face: it lands only in a seed the steward (face 0) wears, whichever faces stand open beside it.
 
-''Share a bag by name.'' A custom bag stays its owner's; `lares bag share notes --read joshua-fontany-referee --write joshua-fontany` shares it by pet-name (`hN` and `--face N` resolve to one), writes `config/share.tid`, and lands it by reference and delegation while both faces stand lit; `lares bag share --list` reads who reads and writes each bag (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config`>>). House canon takes no share entry: no share lifts a write into it.
+''Share a bag by name.'' A custom bag stays its owner's; `lares bag share notes --read <referee-pet-name> --write <steward-pet-name>` shares it by pet-name (`hN` and `--face N` resolve to one), writes `config/share.tid`, and lands it by reference and delegation while both faces stand lit; `lares bag share --list` reads who reads and writes each bag (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/sealed-store#/the-share-config`>>). House canon takes no share entry: no share lifts a write into it.
 
 ''House canon: the steward writes it, every other face reads the floor.'' Every disk-sourced holding but the public board (`lares`, `lararium`, `sdm`, `elyncia`, `elyncia-referee`; `crossroads` stays the Nexus's board) rests in the Kahu realm at contract and takes no catalog entry, so no face can fork it (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/cap-tier#/house-canon`>>). The Kahu steward (h0) writes it live: the founding lands each bag in the realm, and the steward's boot lands a bag the checkout gained since. Every other face reads a `public`-tier holding (`lares`, `lararium`, `sdm`, `elyncia`) as the floor snapshot every DreamNet user receives by CID, and the contract-tier `elyncia-referee` through its realm document and a read grant, since the public floor carries `public`-tier bags alone; a hearth founded earlier sheds the referee snapshot at its next `lares nexus release <file> --cut`, the slug named in `dropped`. Its seed reads clean and names each such holding `house canon, written by the Kahu steward (h0); this face reads the floor`, and an edit there copies up into that wiki's working layer. Admitting another face to write canon stays the operator's deliberate act: `lares nexus cabal admit <group>` at the seat quorum.
 
@@ -586,6 +586,6 @@ A seat in a Nexus records a Kahu relation, held by a seat key apart from the per
 
 <<~/ahu>>
 
-<<^ code=`&#x0003;` bcc=`ni:///sha-256;xzaThOSE3fv4ZEjBIeFQBIkIcLb1pzkPSCzP7XhDiQs`>>
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;BiRustP1Ed0hZz3HErs0WM5MKziXomApRDY3A0eqJdU`>>
 
 <<^ code=`&#x0004;` to=`?`>>
