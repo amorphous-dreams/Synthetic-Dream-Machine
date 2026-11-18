@@ -51,9 +51,9 @@ const short = (digest: string | null): string => (digest === null ? "absent" : d
 /**
  * The one line: `[genesis] founding record: engine … · grammar … · plugins … · floor …; seed (offered) <cid>: same on
  * every ratchet` or `… a newer seed waits: <ratchet words> — the founding record keeps serving; lay moves canon, never
- * the founding record`, then the floor pin, per ratchet where held, else `unread here`.
+ * the founding record`, then the floor pin, per ratchet where held, else `pinNote` (the boot's own default: `unread here`).
  */
-export function foundingRecordLine(truths: FoundingRecordTruths): string {
+export function foundingRecordLine(truths: FoundingRecordTruths, opts: { readonly pinNote?: string } = {}): string {
   const r = truths.record;
   const record = `founding record: engine ${short(r.engine)} · grammar ${short(r.grammar)} · plugins ${short(r.plugins)} · floor ${short(r.floor)}`;
   const seed = truths.seed === null
@@ -62,7 +62,7 @@ export function foundingRecordLine(truths: FoundingRecordTruths): string {
       ? `seed (offered) ${truths.seed.cid}: a newer seed waits: ${ratchetWords(truths.seed.ratchets)} — the founding record keeps serving; lay moves canon, never the founding record`
       : `seed (offered) ${truths.seed.cid}: same on every ratchet`;
   const pin = truths.floorPin === null
-    ? "floor pin: unread here (lares floor status reads it)"
+    ? `floor pin: ${opts.pinNote ?? "unread here (lares floor status reads it)"}`
     : `floor pin ${truths.floorPin.manifestCid}: ${ratchetWords(truths.floorPin.ratchets)}`;
   return `[genesis] ${record}; ${seed}; ${pin}`;
 }
