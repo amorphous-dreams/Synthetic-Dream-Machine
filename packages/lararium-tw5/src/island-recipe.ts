@@ -58,7 +58,10 @@ export interface BuildIslandRecipeInput {
   kahuaFaceWatch?: (fn: () => void) => () => void;
 }
 
-/** The islands bound by the code wards: the daemon wiki and a face's kahua stage (`kahua-<tag>`). A user's own wiki is not bound. */
+/**
+ * The islands bound by the code wards: the daemon wiki and a face's kahua stage (`kahua-<tag>`). Their seed pass runs no
+ * StartupAction at all, not even a floor plugin's shadow laid after boot: code runs there from the boot pass alone.
+ */
 export function startupGated(slug: string): boolean {
   return slug === "daemon" || slug.startsWith("kahua-");
 }
@@ -154,20 +157,18 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     }
   }
 
-  // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed. The seed carries
-  // the bags' own startup actions, so each one the boot pass never saw runs once over the resident seed;
-  // the ones that already ran stay run.
+  // TW5 ran `$:/tags/StartupAction` over the preloads alone, before any record landed: the floor-admitted plugins' own startup
+  // actions ran there, once. THE FLOOR ALONE RUNS CODE ON THE ISLAND (state/decisions, "Native TW5 wikis"), as the module gate
+  // admits modules from the granted preloads alone: the seed pass runs a StartupAction only where it stands as a floor plugin's
+  // shadow the boot pass never saw (a house seed laid after boot), unshadowed by any landed record. A record the wiki's document
+  // landed (any layer, any fields, `kahua-cid` or not) rides inert here on every wiki and runs in the tab alone, under that
+  // engine's own accept, so a member's record in a shared realm never runs on the operator's vessel.
   const checkpoint = adaptor.armSeedCheckpoint().then(() => {
-    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; getTiddler(t: string): { fields: Record<string, unknown> } | undefined }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
+    const tw = tw5.$tw as unknown as { wiki: { filterTiddlers(f: string): string[]; getTiddlerText(t: string): string | undefined; isShadowTiddler(t: string): boolean; tiddlerExists(t: string): boolean }; rootWidget: { invokeActionString(actions: string, triggeringWidget: unknown, event: unknown, variables: Record<string, string>): void } };
     for (const title of tw.wiki.filterTiddlers(STARTUP_ACTIONS)) {
       if (ranAtBoot.has(title)) continue;
-      // A StartupAction lifted from the kahua stage stays inert data: it carries `kahua-cid`, and only a promotion puts a rite among the
-      // preloads, where the boot pass above ran it. The seed pass never runs code a hand has not promoted.
-      if (tw.wiki.getTiddler(title)?.fields["kahua-cid"] !== undefined) continue;
-      // THE LAYER GATE (operator ruling 2026-11-04). The daemon island and the kahua stage hold the module gate's law: code runs only from
-      // genesis or the promoted set, and both are preloads the boot pass ran. Every record the seed landed rides inert there, whatever
-      // layer it came from and whatever fields it wears, and names itself. A user's own wiki keeps full caps.
-      if (startupGated(slug)) { console.warn(`[startup-gate] ${slug}: ${title} rides inert (a StartupAction runs only from genesis or the promoted set)`); continue; }
+      if (!tw.wiki.isShadowTiddler(title) || tw.wiki.tiddlerExists(title)) continue;
+      if (startupGated(slug)) { console.warn(`[startup-gate] ${slug}: ${title} rides inert (a StartupAction runs here from the boot pass alone)`); continue; }
       tw.rootWidget.invokeActionString(tw.wiki.getTiddlerText(title) ?? "", tw.rootWidget, undefined, {});
     }
   });
