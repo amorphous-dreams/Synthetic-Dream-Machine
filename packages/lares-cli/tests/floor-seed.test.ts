@@ -11,6 +11,8 @@ import { repoRoot } from "@lararium/mesh/node";
 import { LARES_MEMETIC_WIKITEXT_PLUGIN_URI, foundingRecordDigests, type GenesisSeed } from "@lararium/mesh";
 import { genesisSeedCid } from "@lararium/node";
 import { floorSeedRead, readSeedOffered } from "../src/seed-offered.js";
+import { cmdFloor, floorSeedLines } from "../src/commands/floor.js";
+import { parseArgs } from "../src/parse-args.js";
 
 const SHIPPED = join(repoRoot, "genesis");
 const shippedBytes = (): Buffer => readFileSync(join(SHIPPED, "seed.json"));
@@ -32,6 +34,28 @@ function grammarMovedBytes(): string {
   const blobs = { ...seed.blobs, [LARES_MEMETIC_WIKITEXT_PLUGIN_URI]: { ...seed.blobs[LARES_MEMETIC_WIKITEXT_PLUGIN_URI]!, sha256: "f".repeat(64) } };
   return JSON.stringify({ ...seed, blobs });
 }
+
+describe("`lares vessel floor seed` prints the read", () => {
+  test("RED: the verb reads the named genesis dir and answers the seed line and the offer fields under --json; CONTROL: the human lines name the seed and its CID", async () => {
+    const dir = genesisDirWith(shippedBytes());
+    const cid = genesisSeedCid(new Uint8Array(shippedBytes()));
+    const out: string[] = [];
+    const write = process.stdout.write.bind(process.stdout);
+    process.stdout.write = ((chunk: string | Uint8Array) => { out.push(String(chunk)); return true; }) as typeof process.stdout.write;
+    let code: number;
+    try { code = await cmdFloor(parseArgs(["floor", "seed", "--genesis", dir, "--json"])); }
+    finally { process.stdout.write = write; }
+    expect(code).toBe(0);
+    const answer = JSON.parse(out.join("").trim().split("\n").at(-1)!) as { ok: boolean; data: Record<string, unknown> };
+    expect(answer.ok).toBe(true);
+    expect(answer.data["genesis"]).toBe(dir);
+    expect(answer.data["offered"]).toEqual({ cid, digests: foundingRecordDigests(shipped()) });
+    expect(String(answer.data["seed"])).toMatch(new RegExp(`^seed ${cid}: `));
+    const lines = floorSeedLines({ genesis: dir, offered: { cid, digests: foundingRecordDigests(shipped()) }, offer: null, ratchets: null, recordUnread: "no vessel answers", seed: `seed ${cid}: the founding record unread here (no vessel answers)` });
+    expect(lines).toContain(`  seed (offered):  ${cid} at ${dir}`);
+    expect(lines).toContain("  founding record: unread here (no vessel answers)");
+  });
+});
 
 describe("the seed a genesis dir offers, beside the founding record", () => {
   test("RED: the same seed reads its CID and digests, same on every ratchet as the founding record", async () => {
