@@ -21,6 +21,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/catalog-accessor
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   CATALOG_DOC_URI,
   tiddlerText,
@@ -138,7 +139,7 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
 
   const storeOf = async (bagUri: string): Promise<LarTiddlerStore | null> => {
     const h = await find(bagUri);
-    return h ? new AutomergeDocStore(h, bagUri) : null;
+    return h ? new AutomergeDocStore(h, bagUri, wearOf(repo)) : null;
   };
 
   const homeOf = async (bagUri: string): Promise<DocHandle<LarDoc> | null> => {
@@ -148,7 +149,7 @@ function accessorOver(handle: () => Promise<DocHandle<LarDoc>>, catalogUrl: stri
   };
   const homeStoreOf = async (bagUri: string): Promise<LarTiddlerStore | null> => {
     const h = await homeOf(bagUri);
-    return h ? new AutomergeDocStore(h, bagUri) : null;
+    return h ? new AutomergeDocStore(h, bagUri, wearOf(repo)) : null;
   };
 
   return { handle, floor: floorHandle ?? handle, urlOf, recordOf, find, storeOf, homeOf, homeStoreOf };

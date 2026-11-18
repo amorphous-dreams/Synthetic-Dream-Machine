@@ -187,6 +187,7 @@ export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";
 export * from "./automerge-doc-store.js";
+export { seatRepoWear, wearOf } from "./repo-wear.js";
 export * from "./parallel-drafts.js";
 export * from "./lar-vessel.js";
 export * from "./lararium-vessel.js";

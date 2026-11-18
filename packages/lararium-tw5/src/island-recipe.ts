@@ -13,6 +13,7 @@
  * stays one shape across platforms.
  */
 
+import type { FaceActorDoor } from "@lararium/mesh";
 import {
   CompositeStore,
   AutomergeDocStore,
@@ -56,6 +57,8 @@ export interface BuildIslandRecipeInput {
   kahuaFace?: () => KahuaStageFace | null;
   /** Wakes the kahua layer's re-fold when the face's lineage moves (`liveKahuaFace`). */
   kahuaFaceWatch?: (fn: () => void) => () => void;
+  /** The island Repo's actor door (`wearOf(repo)`'s door): each slot's store writes a worn face's change through it. */
+  wear?: FaceActorDoor;
 }
 
 /**
@@ -104,7 +107,7 @@ export function buildIslandRecipe(input: BuildIslandRecipeInput): {
     // verified standing items alone, through the one seam (`kahuaLayerStore`), and never the doc's titles.
     const base: LarTiddlerStore = slot === KAHUA_BAG
       ? kahuaLayerStore(handle, input.kahuaFace ?? (() => null), input.kahuaFaceWatch)
-      : new AutomergeDocStore(handle, slot);
+      : new AutomergeDocStore(handle, slot, input.wear ? { wear: input.wear } : {});
     const store = slot === ORACLE_BAG ? floorReadFace({ rows: floorRecords ?? [], base, bagId: slot }) : base;
     // Oracle takes no writes; other CRDT slots accept writes through the in-wiki bag-paths cascade
     // (lar:///ha.ka.ba/lararium/config/bag-paths). A ceremony that names its own slot writes the
@@ -206,6 +209,15 @@ const adaptors = new WeakMap<TW5Engine, IslandAdaptor>();
  */
 export function wikiLandedCovers(tw5: TW5Engine, bag: string, named: readonly string[]): boolean {
   return adaptors.get(tw5)?.landedCovers(bag, named) ?? false;
+}
+
+/**
+ * Name the face the next hand of `title` wears on the shore mounted over this engine (`IslandAdaptor.wearNext`): a tool
+ * door that lands a record through `wiki.addTiddler` calls this first, so the record lands under the face's actor. An
+ * engine whose recipe mounted no shore takes nothing.
+ */
+export function wikiWearsNext(tw5: object, title: string, face: string | null | undefined): void {
+  adaptors.get(tw5 as TW5Engine)?.wearNext(title, face);
 }
 
 /** Ask the shore mounted over this engine to take an inbound act boundary. */

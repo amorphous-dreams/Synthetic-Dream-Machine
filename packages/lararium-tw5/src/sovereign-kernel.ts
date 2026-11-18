@@ -39,6 +39,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/sovereign-kernel
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   CompositeStore,
   ENGINE_CORE_ID,
@@ -570,6 +571,8 @@ export function runSovereignKernel(
                 ...(msg.grants.writeSlot ? { writeSlot: msg.grants.writeSlot } : {}),
                 kahuaFace,
                 kahuaFaceWatch,
+                // Each slot's store writes a worn face's change through the island Repo's seated actor door.
+                ...(wearOf(_repo).wear ? { wear: wearOf(_repo).wear! } : {}),
               });
               _adaptor = adaptor;
               // THE RECEIPT CAPABILITY, for a host whose vessel declares it. A save act's result waits for the vessel to hold and flush
@@ -674,7 +677,7 @@ export function runSovereignKernel(
       return;
     }
     if (composite.hasBag(slot)) return;
-    const store = new AutomergeDocStore(out.handle, slot);
+    const store = new AutomergeDocStore(out.handle, slot, wearOf(repo));
     composite.addLayer({ bagId: slot, store, ...slotLayerFlags(slot, msg.recipe.wikiSlug) }, recipeLayerIndex(composite, msg.recipe, slot));
     _handles.set(slot, out.handle);
     store.emitInitialReplay();

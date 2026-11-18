@@ -36,6 +36,7 @@ export const HOLDER_ROUTES = {
   "daemon:evict-request": "owner",
   "daemon:face-settled": "owner",
   "daemon:residency-op": "owner",
+  "daemon:wear-actor-request": "owner",
   "daemon:wiki-alert": "owner",
   // A floor's verb answer reaches the vessel whose verb door waits on it.
   "daemon:floor-answer": "owner",
@@ -90,6 +91,7 @@ export const HOLDER_SENDERS = {
   "daemon:gate-verb-request": "any",
   "daemon:evict-result": "owner",
   "daemon:residency-op-result": "owner",
+  "daemon:wear-actor-result": "owner",
   "wiki:place-verb": "any",
   "lar:control-event": "any",
   "lar:resend": "any",

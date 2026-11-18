@@ -81,7 +81,7 @@ import type { HeldSaves, MountManifest } from "@lararium/mesh";
 import { nodePromoteStores, nodePromoteCas } from "./promoted-store.js";
 import { casDirForStorage, casFetchReading, corpusCasDirFromEnv, makeNodeCasResolver, type IslandCasData, mirrorGenesisCasFs, installCasSweep, makeRealmPaceCell, readCasPins, hermCasTransitFromEnv } from "./node-cas.js";
 import { adoptKahuaPlane, adoptedKahuaUrl, kahuaCatalogRow, adoptPromotePlane, adoptedPromoteUrl, adoptPromoteBoard } from "@lararium/mesh";
-import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, type ShareEntry } from "@lararium/mesh";
+import { workbenchDocIds, workbenchDecider, workbenchSeatHolds, edgeLedgerDocUrl, realmMaintenanceFromBoard, shareConfigOf, wireIdentityOf, seatRepoWear, seatDialLeg, SessionTable, sessionBinding, protectedDocGuard, islandPeersOf, wikiIslandPeersOf, peerArrivals, admitGatePinDigest, ownEntry, plainField, CATALOG_ENTRY_TIER_FIELD, SHARE_CONFIG_FILE, parseShareFile, shareEntryOf, shareEntryFields, reconcileShareEntries, shareEntryTitle, type ShareEntry } from "@lararium/mesh";
 import { makeBagTierReader } from "./vessel-bag-tier.js";
 import type { ShareVerdictRecord, ShareVerdictSink } from "@lararium/mesh";
 import type { CapabilityRecord, CustodyWriter, DyadReader, LarVessel, ReceiptIssuer } from "@lararium/mesh";
@@ -1466,6 +1466,9 @@ async function prepareNodeBootOn(
       });
     }, wireProbe ?? undefined),
   });
+  // THE COMPOSITION'S ACTOR DOOR, seated on its Repo: every store over this Repo's documents (`wearOf(repo)`) writes a worn
+  // face's change under the actor the wire identity derives, and the daemon island's own Repo asks for its actors here.
+  seatRepoWear(repo, wire);
   // The SECOND half of the probe — a doc enters a peer's sync session exactly when sync messages start moving
   // for that (doc, peer) pair, and leaves it when they stop. `doc-metrics` carries both directions.
   if (wireProbe) {
@@ -3699,6 +3702,13 @@ async function prepareNodeBootOn(
         },
         // ONE READING WITH THE CONTROL DOCUMENT: the daemon VM reads the floor key again once its control document stood.
         floorKey: () => (floorKeyGrant = standFloorKey()),
+        // A SESSION'S ORDINAL TO ITS FACE: the mounted face's group, or a lit sibling's; a tool-door write names it on its origin.
+        wornGroupOf: (ordinal: number) => {
+          const mount = mountGateFace();
+          if (mount && mount.face === ordinal) return mount.personaGroup;
+          for (const [group, at] of siblingOrdinals) if (at === ordinal) return group;
+          return null;
+        },
         daemonAuth: daemonAuthNow(joinedFaces),
         storageDir,
         // D-VR-C: the daemon bag is the one explicit worker-owned durable scope;
