@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-t21-to-t25-land`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-04"
+order    = "1260"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-t21-to-t25-land"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-04-t21-to-t25-land"
+```
+
+* ''`T21` to `T25` land before `X0`'' (operator, 2026-11-04). The five test-recut security and correctness items precede the bake (#/stride-t-recut).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yHDf7Xj4MWmFqsaQAl0xXVQ_wK6sukjg3pik5OklWh4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

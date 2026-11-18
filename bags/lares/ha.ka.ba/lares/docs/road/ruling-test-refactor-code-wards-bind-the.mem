@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-code-wards-bind-the`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "test-refactor"
+order    = "2770"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-code-wards-bind-the"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-test-refactor-code-wards-bind-the"
+```
+
+* ''Code wards bind the daemon and the kahua stage, never a user's wiki'' (operator ruling, 2026-11-04): a StartupAction in the daemon island or a `kahua-<tag>` stage runs only from genesis or the promoted set; every other layer's StartupAction rides inert and names itself in the boot log. A user's own wiki keeps full caps and runs its StartupActions. The hand-gesture ward on `promote-commit` and `kapae-lower` stays a later item, and the promote hand gate (the session profile chooses its own hand) stays held for the operator.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;dQU9rssTF6zraridMxY1sqenNW7u8LgwdQtB2ZbKb1Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

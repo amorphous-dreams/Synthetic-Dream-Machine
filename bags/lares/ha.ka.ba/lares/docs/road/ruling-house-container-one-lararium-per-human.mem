@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-container-one-lararium-per-human`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-container"
+order    = "0070"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-container-one-lararium-per-human"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-container-one-lararium-per-human"
+```
+
+* ''ONE Lararium per HUMAN, never per face.'' A human's faces keep their data together in one vessel (`PRIVATE-all, PUBLIC-one`); the recorded face-switch act carries plurality. No design assumes a container or a state mount per face.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;WdJbiyiz4kO83-WRsC4nrk8lnNuuzKnUVbe4OZ-kYMY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

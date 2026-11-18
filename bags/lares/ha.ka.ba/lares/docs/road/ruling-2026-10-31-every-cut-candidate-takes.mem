@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-every-cut-candidate-takes`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-10-31"
+order    = "1090"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-10-31-every-cut-candidate-takes"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-10-31-every-cut-candidate-takes"
+```
+
+* ''Every cut candidate takes a full cold read first'' (operator ruling, 2026-10-31: //"Pono, I want the 'cut candidates' to get batched Sonnet-scout-spirit cold-readers in full before we even touch them."//). No lane opens on a cut item (`T4`, `T5`, `T9` to `T14`, `T16`, `T17`) until a Sonnet cold reader, batched by seam, has read its whole span, never by excerpt, and its report stands. The read names what each candidate does, the state it shares, its callers, the laws it touches and what the cut risks; a lane brief cites it.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;a3NyGkTtOg90W_L8UHq_HZl7HZDIIsXfd6VhCt879I8`>>
+
+<<^ code=`&#x0004;` to=`?`>>

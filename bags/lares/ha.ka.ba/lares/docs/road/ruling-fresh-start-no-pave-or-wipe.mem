@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-fresh-start-no-pave-or-wipe`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "fresh-start"
+order    = "2710"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-fresh-start-no-pave-or-wipe"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-fresh-start-no-pave-or-wipe"
+```
+
+* ''No pave or wipe command'' — such a command carries too much risk. See #/fresh-start.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;P0stOBjiuPfyC6jrYOpnRW5wJerxX_LrqJclfAHkWT0`>>
+
+<<^ code=`&#x0004;` to=`?`>>

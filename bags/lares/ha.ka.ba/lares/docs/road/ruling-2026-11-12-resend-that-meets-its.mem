@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-resend-that-meets-its`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-12"
+order    = "2190"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-resend-that-meets-its"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-12-resend-that-meets-its"
+```
+
+* ''A resend that meets its act still waiting refunds the attempt'' (controller ruling, 2026-11-12, overrulable; built, `50b8fd8ae`). The page's retry bound counts only sends the vessel never acknowledged (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/dreamdom-port-contract#/retry-law`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;8U-graqbHeqQk9dRvJiNe5uNjTKUl1cECBTqQA5dUDI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -7,46 +7,32 @@
 //
 // A CARRIER'S SEAL MOVES WITH EVERY BODY EDIT. The ETX mark's `bcc=` slot checks the span it closes, so two branches
 // that edit the body far apart and each re-seal both rewrite that one line, and git's text merge stops there though
-// the bodies merge clean. The driver reads the three sides with that one seal line set bare and runs git's own
-// three-way merge over them. A clean merge there means the seal alone conflicted: the driver takes the merged body,
-// runs the normalize law `lares meme normalize` runs (frame canonical, then the block check minted over the body it
-// follows) and writes the sealed carrier, exit 0. Anything else (a body hunk that conflicts, a frame normalize names
-// a fault in, a span no check can cover, a shore that does not answer) writes git's own conflict over the original
-// three sides, markers and all, and exits non-zero, so the merge stops exactly as it would without the driver.
+// the bodies merge clean. The merge itself lives in ONE module, `@lararium/mesh/meme-merge` (git's line merge at
+// `@lararium/mesh/meme-merge-git`), which the vessel's own carrier merge reads too; this driver shells over it for git
+// (weld: tools/mem-merge-weld.test.mjs). The module reads the three sides with the seal line set bare and merges them,
+// whole and then slot by slot; a clean merge there means the seal alone stood in the way: the driver hands the merged
+// body to the normalize law `lares meme normalize` runs (frame canonical, then the block check minted over the body it
+// follows) and writes the sealed carrier, exit 0. Anything else (a hunk that conflicts within one slot, a frame
+// normalize names a fault in, a span no check can cover, a shore that does not answer) writes git's own conflict over
+// the original three sides, markers and all, and exits non-zero, so the merge stops exactly as it would without the
+// driver. A checkout whose mesh build stands absent runs `git merge-file` in place: git's own conflict, nothing more.
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const SEAL = /^<<\^ code=`&#x0003;` bcc=`[^`]*`>>$/;
-const BARE = "<<^ code=`&#x0003;`>>";
 
-/** The carrier with its ETX seal set bare: the LAST seal-shaped line, since a body may quote the mark in a fence. */
-export function bareSeal(text) {
-  const lines = text.split("\n");
-  for (let i = lines.length - 1; i >= 0; i--) {
-    if (SEAL.test(lines[i])) { lines[i] = BARE; return lines.join("\n"); }
+/** The one merge module from this checkout's build: `{ mergeCarrier, mergeTexts }`. */
+export async function loadMerge(repo = REPO) {
+  const merge = join(repo, "packages/lararium-mesh/dist/meme-merge.js");
+  const git = join(repo, "packages/lararium-mesh/dist/meme-merge-git.js");
+  for (const at of [merge, git]) {
+    if (!existsSync(at)) throw new Error(`no built shore at ${at} (cure: pnpm --filter @lararium/mesh build)`);
   }
-  return text;
-}
-
-/** git's own three-way merge over three texts: `{ text, conflicts }`, conflicts counted as `git merge-file` counts them. */
-export function mergeTexts({ base, ours, theirs, path = "carrier", markerSize = 7 }) {
-  const dir = mkdtempSync(join(tmpdir(), "mem-merge-"));
-  try {
-    for (const [name, text] of [["O", base], ["A", ours], ["B", theirs]]) writeFileSync(join(dir, name), text);
-    const r = spawnSync("git", [
-      "merge-file", "-p", `--marker-size=${markerSize}`,
-      "-L", path, "-L", `${path} (base)`, "-L", `${path} (theirs)`,
-      join(dir, "A"), join(dir, "O"), join(dir, "B"),
-    ], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
-    if (r.status === null || r.status < 0 || r.error) throw new Error(`git merge-file did not answer: ${r.error ?? r.stderr}`);
-    return { text: r.stdout, conflicts: r.status };
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
+  const { mergeCarrier } = await import(pathToFileURL(merge).href);
+  const { mergeTexts } = await import(pathToFileURL(git).href);
+  return { mergeCarrier, mergeTexts };
 }
 
 /** The normalize law's shore: the frame package's check and the tw5 package's normalize, from this checkout's build. */
@@ -69,21 +55,6 @@ export async function loadSealer(repo = REPO) {
   };
 }
 
-/**
- * One merge. `{ resolved: true, text }` when the seal alone conflicted and the merged body re-sealed; otherwise
- * `{ resolved: false, text, why }`, the text being git's own conflict over the original three sides.
- */
-export function mergeCarrier({ base, ours, theirs, path, markerSize, seal }) {
-  const plain = mergeTexts({ base, ours, theirs, path, markerSize });
-  if (plain.conflicts === 0) return { resolved: true, text: plain.text };
-  const leave = (why) => ({ resolved: false, text: plain.text, why });
-  const bare = mergeTexts({ base: bareSeal(base), ours: bareSeal(ours), theirs: bareSeal(theirs), path, markerSize });
-  if (bare.conflicts !== 0) return leave(`${bare.conflicts} conflict(s) beyond the seal`);
-  if (!seal) return leave("the normalize shore does not answer");
-  const sealed = seal(bare.text);
-  return sealed.ok ? { resolved: true, text: sealed.text } : leave(sealed.why);
-}
-
 async function main(argv) {
   const [o, a, b, path = "carrier", size] = argv;
   if (!o || !a || !b) {
@@ -91,12 +62,19 @@ async function main(argv) {
     return 2;
   }
   const markerSize = Number.parseInt(size ?? "7", 10) || 7;
+  let merge;
+  try { merge = await loadMerge(); } catch (err) {
+    // No module to merge with: git's own text merge in place over ours, markers and all.
+    spawnSync("git", ["merge-file", `--marker-size=${markerSize}`, "-L", path, "-L", `${path} (base)`, "-L", `${path} (theirs)`, a, o, b]);
+    process.stderr.write(`mem-merge-driver: ${path} stays conflicted — ${err?.message ?? err}\n`);
+    return 1;
+  }
   let seal = null;
   let shoreWhy = "";
   try { seal = await loadSealer(); } catch (err) { shoreWhy = String(err.message ?? err); }
-  const out = mergeCarrier({
+  const out = merge.mergeCarrier({
     base: readFileSync(o, "utf8"), ours: readFileSync(a, "utf8"), theirs: readFileSync(b, "utf8"),
-    path, markerSize, seal,
+    path, markerSize, lineMerge: merge.mergeTexts, seal,
   });
   writeFileSync(a, out.text);
   if (out.resolved) return 0;

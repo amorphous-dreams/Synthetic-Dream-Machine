@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-late-every-vessel-fix-checks`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-late"
+order    = "1610"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-late-every-vessel-fix-checks"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-late-every-vessel-fix-checks"
+```
+
+* ''Every vessel fix checks for a lift'' (operator, 2026-11-06: //"any 'vessel' codefixes should be checked for idempotent-by-intent lifts to /mesh or to mirror behaviour between all vessel types."//). A fix that touches a vessel composer, host or gate server answers, in its commit, whether the cure belongs in `@lararium/mesh` as one relation or mirrors across node, browser and herm.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;i6D1boLVM0mQXe8mxKZbzVx70W_RarloFOohYYRTw-U`>>
+
+<<^ code=`&#x0004;` to=`?`>>

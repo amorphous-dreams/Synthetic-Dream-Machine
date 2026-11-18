@@ -23,6 +23,7 @@
  * Meme: lar:///ha.ka.ba/lararium/tw5/recipe-watch
  */
 
+import { wearOf } from "@lararium/mesh";
 import {
   AutomergeDocStore,
   LARES_BAG,
@@ -102,7 +103,7 @@ export async function startRecipeWatch(ctx: IslandContext): Promise<(() => void)
     }
     // The kahua stage stands read-only on the seam's store; every other library on its document store.
     const kahua = bagId === KAHUA_BAG;
-    const store = kahua ? kahuaLayerStore(handle, ctx.kahuaFace ?? (() => null), ctx.kahuaFaceWatch) : new AutomergeDocStore(handle, bagId);
+    const store = kahua ? kahuaLayerStore(handle, ctx.kahuaFace ?? (() => null), ctx.kahuaFaceWatch) : new AutomergeDocStore(handle, bagId, wearOf(ctx.repo));
     ctx.composite.addLayer({ bagId, store, writable: !kahua, defaultWritable: false }, at);
     ctx.handles.set(bagId, handle);
     const replays = store as Partial<Pick<AutomergeDocStore, "emitInitialReplay" | "markSyncComplete">>;

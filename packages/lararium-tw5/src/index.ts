@@ -131,6 +131,7 @@ export { startRecipeWatch } from "./recipe-watch.js";
 export type { ActionHandlerOptions } from "./action-handler.js";
 
 export { exportMemeText, exportCarrierFile, exportRecordCarrierFile } from "./meme-write.js";
+export { armRenderedTiddlers, hasRenderedTiddlers, marksRendered, renderedTitleOf, renderTypeOf, RENDER_TYPE_FIELD, RENDER_TITLE_FIELD, RENDERED_TITLE_SUFFIX, type RenderedTiddlerPorts } from "./rendered-tiddler.js";
 export {
   familyRefsOf, familyViewOf, wikiFamilyView, surfaceOrphanAlert, tendOrphanAlert, tendOrphanAlerts, renameFamilyInWiki, retitleSlotsInWiki,
   type FamilyRenameWiki, type MemeAlertWiki,

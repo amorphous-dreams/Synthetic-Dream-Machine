@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-planes-cancel-crossing-a-herm`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "planes"
+order    = "0330"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-planes-cancel-crossing-a-herm"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-planes-cancel-crossing-a-herm"
+```
+
+* ''A cancel crossing a herm yields three receipts'': the caller's abandonment, the relay's delivery (transit only), the vessel's outcome. A caller timeout never counts as a cancel; eviction answers `retention-gap`.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;J92uVgH9lHrjVP-CyPGZZ9JBE_GGoYZ4H0X_Fudk4Tw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

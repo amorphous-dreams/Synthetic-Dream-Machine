@@ -8,10 +8,12 @@
  *   node tools/span-push.mjs <branch> [--remote <name>]      run from the checkout that stands on <branch>
  *
  * In order: the PINS run, every one of them, since canon a tool quotes (the rite runbook, any sealed carrier, the evergreen
- * ceilings) moves with a pick and no CI run reads the push of a canon-only change; a red pin refuses by name. A push whose
- * every path (over the remote's head as this checkout last fetched it) the CI ignore list skips (tools/ci-ignored-paths.json)
- * raises no run, so it cancels none, and pushes with no CI read. Any other push (one path outside the list, or a remote head
- * the checkout cannot read) raises a run whose concurrency group cancels the one in flight: ONE read of
+ * ceilings) moves with a pick and CI reads a canon-only push on its doorstep alone; a red pin refuses by name. A push to
+ * `develop` or `main` (QUIET_SPANS) whose every path (over the remote's head as this checkout last fetched it) the canon list
+ * names (tools/ci-ignored-paths.json) raises CI's doorstep run alone, which cancels nothing there (ci.yml lets a span's run
+ * in flight finish), and held-out none, so it pushes with no CI read. Any other push (one path outside the list, a remote
+ * head the checkout cannot read, or a canon push to any other branch, whose doorstep run cancels the run in flight) raises a
+ * run whose concurrency group cancels the one in flight: ONE read of
  * `gh run list --branch <branch>` per active status (land-train's `activeRuns`: every status in flight, never only the
  * newest five runs), and a run in flight refuses: push after it completes. The read happens once; this tool never waits,
  * polls or watches, so the pace stays the caller's (POLL_FLOOR_S in tools/ci-verdict.mjs governs any read again).
@@ -28,6 +30,9 @@ import { classifyFailure } from "./ci-verdict.mjs";
 import { activeRuns, ghEnv, repoOfRemote, spanPushRefusal } from "./land-train.mjs";
 
 export const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+
+/** The spans whose CI run in flight a newer push never cancels (ci.yml's `cancel-in-progress`; span-push.test.mjs welds it). */
+export const QUIET_SPANS = ["develop", "main"];
 
 /** The local pin checks a canon-touching push still owes. */
 export const PINS = [
@@ -49,7 +54,7 @@ export async function spanPush({ branch, remote = "origin" }, ops) {
   if (red.length) { ops.say(`SPAN PUSH REFUSES: ${red.join(", ")}`); return { code: 1 }; }
 
   const paths = ops.changed(remote, branch);
-  if (paths && onlyIgnoredPaths(paths)) return pushNow(ops, remote, branch, `span-push: ${paths.length} ignored paths alone (tools/ci-ignored-paths.json): the push raises no run and cancels none, so no CI read`);
+  if (paths && onlyIgnoredPaths(paths) && QUIET_SPANS.includes(branch)) return pushNow(ops, remote, branch, `span-push: ${paths.length} ignored paths alone (tools/ci-ignored-paths.json): CI answers on its doorstep and cancels no run on ${branch}, so no CI read`);
 
   let runs;
   try { runs = activeRuns(ops.gh, branch); }

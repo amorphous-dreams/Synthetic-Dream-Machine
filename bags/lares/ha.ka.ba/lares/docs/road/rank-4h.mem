@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-4h`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0150"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-4h"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-4h"
+```
+
+| 4h | RIGHT AFTER (ruled 2026-11-18) | genesis as floors (#/rulings, 2026-11-18: D1, D2, its three additions, the moʻolelo, the Nexus default; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane`>>): contact reads on the real house; one boot line naming the pinned floor beside the offered seed field by field, and the seed witness pinned for every seed source; the protect report and `/bulb` reading the stored island; the shadow read at mount; a floor format whose fields resolve to bytes (every floor CID moves, one genesis re-bake, Lares-Alpha baking); the flip once the operator's own house reads clean; adopt per ratchet as a `LocalFloor` beside the `ReleaseFloor`, its undo a forward revert, a release accept reading descent from the local floor's base; the whole-document merge (`reconcileGenesisCid`) retiring, its two-bakes reds (PR #225) carried into the adopt's tests; oracle to floor. Holder: Lares-Awakens (backlog-awakens Waves 0 to 3) | A standing house's island acts as a second registry beside its floor pin, and the floor manifest's fields go unread; the ruled shape moves only the pin. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;Qlp-2EKKoVfIDNq6Cn-x1jk2fFta4hDGB0bwu6Mv0QQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

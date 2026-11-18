@@ -33,6 +33,7 @@
  * Meme:    lar:///ha.ka.ba/lararium/api/residency-model
  */
 
+import { wearOf } from "@lararium/mesh";
 import type {
   CompositeStore,
   LarTiddlerRecord,
@@ -43,7 +44,7 @@ import type {
   ResidencyAction, AddAction, CopyAction, MoveAction, ClearAction, DropAction, LoadAction, IngestAction, CreateAction,
   WikiSlotKind,
 } from "@lararium/mesh";
-import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, refuseSeatStartupAction, requireKahuReach, resolveHouseCanon, ownEntry, startupTagOf } from "@lararium/mesh";
+import { isHouseCanonBag, holdsKahuReach, plainRecordOrNull, refuseSeatStartupAction, renderedWriteFault, requireKahuReach, resolveHouseCanon, ownEntry, startupTagOf, RENDERED_DERIVES_REASON } from "@lararium/mesh";
 import type { KahuReachSource } from "@lararium/mesh";
 import {
   ACTION_VERBS, type ActionVerb, AutomergeDocStore,
@@ -396,7 +397,7 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
             causes.set(bag, [...(causes.get(bag) ?? []), `realm: ${err instanceof Error ? err.message : String(err)}`]);
             return null;
           });
-          store = handle ? new AutomergeDocStore(handle, bag) : null;
+          store = handle ? new AutomergeDocStore(handle, bag, wearOf(reach.repo)) : null;
         } else if (answer) {
           store = answer.row;
         }
@@ -412,7 +413,7 @@ export function makeBagAccess(opts: ActionHandlerOptions): BagAccess {
           };
           const url = await reach.slotDocUrl(m[1]!, m[2] as WikiSlotKind, { mint: false }).catch(reason);
           const handle = url ? await findOrThrow(reach.repo, url, bag).catch(reason) : null;
-          store = handle ? new AutomergeDocStore(handle, bag) : null;
+          store = handle ? new AutomergeDocStore(handle, bag, wearOf(reach.repo)) : null;
         }
       }
       cache.set(bag, store);
@@ -941,7 +942,7 @@ async function createHouseCanon(action: CreateAction, opts: ActionHandlerOptions
     throw new VerbRefusal("house-canon-unlanded", `house-canon-unlanded: ${action.bag} rests in the Kahu realm, and the realm registers no document for it yet; the steward's next boot lands it (standKahuCanon), and no catalog row ever mints canon`);
   }
   const handle = await findOrThrow(opts.reach.repo, url, action.bag).catch(() => null);
-  const count = handle ? (await new AutomergeDocStore(handle, action.bag).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
+  const count = handle ? (await new AutomergeDocStore(handle, action.bag, wearOf(opts.reach.repo)).listVisible()).filter((t) => !isEffectRecordUri(t)).length : 0;
   return { ...base, docUrl: url, count };
 }
 
@@ -1648,6 +1649,16 @@ async function executeIngest(action: IngestAction, access: BagAccess, tw5?: Tw5D
       }
       if (decision.kind === "conflict") {
         results.push({ uri, decision: "conflict", reason: decision.reason, filetype: carrier.ext || "text/plain", warnings: [conflictWhy(uri, decision.reason)] });
+        continue;
+      }
+      // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a file that would land over a standing render, or land a record
+      // carrying `rendered-from` (a hand's edit to a projected render, the watcher's read-back), refuses its carrier by
+      // name. The projector's own echo never reaches here: it reads `noop` above.
+      const rendered = renderedWriteFault(uri, currentRec?.tiddler, null, "INGEST")
+        ?? (decision.records as Array<Record<string, unknown>>).map((record) => renderedWriteFault(String(record["title"] ?? uri), null, record, "INGEST")).find((fault) => fault !== null)
+        ?? null;
+      if (rendered !== null) {
+        results.push({ uri, decision: "refuse", code: RENDERED_DERIVES_REASON, reason: rendered, warnings: [rendered] });
         continue;
       }
       freshRecords = decision.records as Array<Record<string, unknown>>;

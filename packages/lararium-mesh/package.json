@@ -40,6 +40,14 @@
       "import": "./dist/carrier-type.js",
       "types": "./dist/carrier-type.d.ts"
     },
+    "./meme-merge": {
+      "import": "./dist/meme-merge.js",
+      "types": "./dist/meme-merge.d.ts"
+    },
+    "./meme-merge-git": {
+      "import": "./dist/meme-merge-git.js",
+      "types": "./dist/meme-merge-git.d.ts"
+    },
     "./cas": {
       "import": "./dist/cas.js",
       "types": "./dist/cas.d.ts"

@@ -187,6 +187,7 @@ export * from "./gate-tuning.js";
 export * from "./lar-event-bus.js";
 export * from "./social-tiddlers.js";
 export * from "./automerge-doc-store.js";
+export { seatRepoWear, wearOf } from "./repo-wear.js";
 export * from "./parallel-drafts.js";
 export * from "./lar-vessel.js";
 export * from "./lararium-vessel.js";
@@ -488,6 +489,7 @@ export * from "./promotion-approval.js";
 export * from "./kahu-cabal-admission.js";
 export * from "./kahu-canon-reach.js";
 export * from "./seat-startup-offer.js";
+export * from "./rendered-derives.js";
 export * from "./house-canon-doc.js";
 export * from "./floor-release.js";
 export * from "./floor-answer.js";
@@ -654,6 +656,9 @@ export type {
 export { bindSlot, unbindSlot, openTreeKey, nobleKdf, encodeSlotTree, decodeSlotTree, draftPaperPin, confirmPaperPin, confirmHeldPaper, mintPasskeySalt, openPasskeyPin, PIN_KINDS } from "./keyslot.js";
 export type { KdfPort, ScryptCost, PaperDraft, ConfirmedPaperPin, SlotTree, SlotSpec, PinSpec, PinKind, PinRecord, PasskeyPinRecord, Credential, TreeKeyUnlock, SlotTreeReading } from "./keyslot.js";
 export { mintTreeKey, treeKeyEquals } from "./tree-key.js";
+// The keep pair: a keep bundle's roster seals to its public half; its secret rests wrapped under the human's routes — see `keep-seat`.
+export { mintKeepSeat, openKeepSecret, bindKeepSlot, sealToKeep, openFromKeep, encodeKeepSeat, decodeKeepSeat } from "./keep-seat.js";
+export type { KeepSeat, KeepSecretOpening, KeepSlotBinding, KeepSeatReading } from "./keep-seat.js";
 // The serving key and the serving tree that wraps it under the tree key's entry — see `serving-key`.
 export { mintServingKey, SK_LENGTH } from "./serving-key.js";
 export type { ServingKey } from "./serving-key.js";

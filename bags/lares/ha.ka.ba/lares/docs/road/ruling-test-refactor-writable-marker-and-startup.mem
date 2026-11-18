@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-writable-marker-and-startup`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "test-refactor"
+order    = "2730"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-test-refactor-writable-marker-and-startup"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-test-refactor-writable-marker-and-startup"
+```
+
+* ''The writable marker and startup order'' (operator ruling, 2026-11-04): the writable marker orders promoted modules after the writable route, and startup takes that marker as its gate.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SfXAg3kpcTXk5crlDya4EkpC-SNjkGtI6-iDl8avTeM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -13,6 +13,7 @@
  * Meme: lar:///ha.ka.ba/lararium/keyhive/operator-daemon-behavior
  */
 
+import { wearOf } from "@lararium/mesh";
 import { seatGrantsReader } from "./carried-seat.js";   // leaf-fleet
 import {
   makeDaemonBehavior, makeWhereReactor, makeResolveReactor, makeListWikisReactor,
@@ -453,7 +454,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
         const out = await siblingNotices.announcing(resolver).slotDoc(DAEMON_WIKI_SLUG, kind);
         return out?.url ?? null;
       },
-      storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag),
+      storeOf: async (url, bag) => new AutomergeDocStore(await findOrThrow(ctx.repo, url, `${bag} (a lit face's own layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS }) as never, bag, wearOf(ctx.repo)),
     });
   };
   // THE WORKBENCH LEDGER (cabal-realm#/the-workbench): the vessel's own ledger under its place key, where each wiki's realm is
@@ -561,7 +562,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       }
       if (!resolved) continue;
       const handle = await findOrThrow(ctx.repo, resolved.url, `${bag} (the daemon's ${kind} layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
-      const store = new AutomergeDocStore(handle, bag);
+      const store = new AutomergeDocStore(handle, bag, wearOf(ctx.repo));
       ctx.composite.addLayer({ bagId: bag, store, writable: true, defaultWritable: false }, recipeLayerIndex(ctx.composite, ctx.recipe, bag));
       ctx.handles.set(bag, handle);
       store.emitInitialReplay();
@@ -606,7 +607,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
       if (!resolved) throw new Error("working slot did not resolve");
       const workingUrl = resolved.url;
       const handle = await findOrThrow(ctx.repo, workingUrl, `${working} (the daemon's working layer)`, { timeoutMs: DOCUMENT_HANG_BOUND_MS });
-      const store = new AutomergeDocStore(handle, working);
+      const store = new AutomergeDocStore(handle, working, wearOf(ctx.repo));
       // The face canon mounts after ea, so the working layer reads its seat off the recipe, never off the canon alone: an
       // absent canon read as index -1 seated working beneath the kahua stage, which then shadowed every working edit.
       ctx.composite.addLayer({ bagId: working, store, writable: true, defaultWritable: true }, recipeLayerIndex(ctx.composite, ctx.recipe, working));
@@ -1254,7 +1255,7 @@ export function operatorDaemonOptions(manifest: IslandMsg_Manifest, extra: Daemo
               founderEdge: ownEdge, signGrant: faceAtom().sign, atomSeed: meshHexToBytes(daemonAuth.atom!.seed),
               founderProof: { personaKel: founderKel, dyad: (key) => key.toLowerCase() === ownEdge.deviceVerifyingKey.toLowerCase() ? founderDyad : "unknown" },
               operationStore,
-              grantPlane: { store: new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup())), heads: () => planeHandle.heads() },
+              grantPlane: { store: new AutomergeDocStore(planeHandle, personaBagIdFor(faceGroup()), wearOf(ctx.repo)), heads: () => planeHandle.heads() },
               fence: { intentId: at.intentId, pinnedAtom: at.pinnedAtom, ownAtom: faceAtom().key },
             });
           };

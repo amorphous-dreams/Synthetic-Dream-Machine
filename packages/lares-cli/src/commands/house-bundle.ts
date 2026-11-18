@@ -22,12 +22,16 @@
  *      copies face working and canon mirrors, granted draft recovery files, consented temp carriers, kahua stage carriers and the stage's standing heads; every
  *      other wiki's working, draft and consented temp files; house-minted bags (a user wiki's own canon among them); and
  *      lists the acquired library's collections by index digest (the originals survive in place and never travel);
- *   5. writes `manifest.json` and `re-declare.sealed` (the roster sealed under the keep key, `../keep-key.ts`; with every user wiki the catalog holds, by slug, so a wiki that holds no
- *      page still carries), reads every byte back against the manifest, and only then moves
+ *   5. writes `manifest.json`, `re-declare.sealed` (the roster sealed to the keep pair's public half, `../keep-seat.ts`, asking for
+ *      no credential; with every user wiki the catalog holds, by slug, so a wiki that holds no page still carries) and
+ *      `keep-seat.json` (the pair: its public half and the slot tree its secret opens from under the human's routes), reads every
+ *      byte back against the manifest, and only then moves
  *      the bundle into place.
  *
  * IMPORT (previews by default; `--apply` writes):
- *   1. verifies the whole bundle before touching anything (`verifyBundle`);
+ *   1. verifies the whole bundle before touching anything (`verifyBundle`), and opens the keep seat it carries with the passphrase
+ *      or paper sheet the human supplies, then the roster (a wrong route refuses by name, before anything moves); on apply, a house
+ *      that rests no keep pair seats the bundle's, so its next keep seals to the same pair;
  *   2. replays the re-declare list as fresh acts (pet-name, Handle, seat and chair) where the vessel's face holds none;
  *   3. maps each bundle face's pet-name to the ONE face on this vessel that carries it, refusing by name where none or
  *      two do (never a silent merge into another face's memory);
@@ -73,12 +77,18 @@ import { readPersonaRoots, sealedPetnameStore, sealedDeclarationStore } from "..
 import { writeFaceLabels, readFaceBases, labelFaceAtNaming, faceRelationOnStage } from "../face-labels.js";
 import { makeFleetPetnameStore, makeFleetDeclarationStore } from "../daemon-persona-store.js";
 import {
-  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, openBundle, sealRedeclare, BundleVerifyRefused,
+  BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, KEEP_SEAT_FILE, KAHUA_HEADS_FILE, bundleIdOf, sha256Hex, zeroCounts, verifyBundle, openBundle, rosterView, readBundleSeat, BundleVerifyRefused,
   type BundleDiskManifest, type BundleFaceKey, type BundleFile, type BundleKahuaHead, type BundleManifest, type BundleOmission, type BundleRedeclare,
   type BundleRedeclareFace, type BundleRow, type BundleShareEntry, type VerifiedBundle,
 } from "../bundle-manifest.js";
 import { LIVE_SHARE_DOORS, landShares, shareSetArgs } from "../share-doors.js";
-import { keepKeyForCut, keepKeyPath, readKeepKey } from "../keep-key.js";
+import { KeepSeatRefused, adoptKeepSeat, bundleSeatText, keepSeatForCut, liveKeepRoute, openKeepSeat, sealRosterForCut } from "../keep-seat.js";
+import type { Credential } from "@lararium/mesh";
+
+/** A keep seat refusal, as the bundle verbs name it. */
+async function seatAct<T>(act: () => Promise<T>): Promise<T> {
+  try { return await act(); } catch (e) { if (e instanceof KeepSeatRefused) throw new BundleRefused(e.code, e.detail); throw e; }
+}
 
 /** One document a keep left to another holder (`BundleManifest.elsewhere`). */
 type BundleElsewhere = NonNullable<BundleManifest["elsewhere"]>[number];
@@ -215,6 +225,9 @@ export interface BundleDoors {
   readonly benchSeat?: (slug: string) => Promise<{ readonly writeSlot: "working" | "personal" | null; readonly bound: boolean }>;
   /** The vessel-private share rows (`config/share.tid`), read and written whole. Absent: no rows travel and none land. */
   readonly shareRows?: { read(): readonly ShareEntry[]; write(rows: readonly ShareEntry[]): void };
+  /** The route a restore opens the bundle's keep seat with (a passphrase, a paper sheet). Absent: the terminal asks
+   *  (`liveKeepRoute`), and a root a harness staged with no terminal offers the published test route. */
+  readonly keepRoute?: () => Promise<readonly Credential[]>;
   /**
    * Write one share row into the standing vessel's control document (`share-set`), its owner by pet-name beside it. The vessel
    * reconciles `config/share.tid` only at its boot and the landing (`share-apply`) reads the control document, so a row written
@@ -629,6 +642,8 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
   if (odd > 0) omissions.push({ kind: "links-or-special-files", detail: "entries under the projections root that stand as neither a plain file nor a directory", count: odd });
   omissions.push({ kind: "parallel-drafts", detail: "another place's unmerged drafts rest in its draft floor doc (wikis/<slug>/drafts/<did>) and project nowhere; no door names them yet, so none travels" });
 
+  // THE KEEP PAIR the roster seals to, read before any byte stages: a house that rests none refuses the cut by name.
+  const seat = await seatAct(keepSeatForCut);
   // WRITE BESIDE THE DEST, VERIFY, THEN MOVE INTO PLACE.
   const staging = join(dirname(target), `.${basename(target)}.lar-tmp-${randomBytes(6).toString("hex")}`);
   mkdirSync(staging, { recursive: true });
@@ -668,14 +683,18 @@ export async function houseExport(dest: string, opts: { readonly acceptOmissions
       // EVERY USER WIKI, by slug: a wiki stands before it holds a page, so one with no workbench row still re-stands at the import.
       ...(userWikis.length > 0 ? { wikis: userWikis } : {}),
     };
-    // THE ROSTER RIDES SEALED under the house's keep key: a remote the bundle reaches crosses to another vessel.
-    const key = keepKeyForCut();
-    put(REDECLARE_FILE, sealRedeclare(key, redeclare));
+    // THE ROSTER RIDES SEALED to the keep pair's public half: a remote the bundle reaches crosses to another vessel, and the cut
+    // asks for no credential. The pair rides beside it, its secret wrapped under the human's routes.
+    put(REDECLARE_FILE, sealRosterForCut(seat, redeclare));
+    put(KEEP_SEAT_FILE, bundleSeatText(seat));
     files.sort((a, b) => (a.path < b.path ? -1 : 1));
     const manifest: BundleDiskManifest = { schema: BUNDLE_SCHEMA, bundleId: bundleIdOf(files), faces: bundleFaces, files, rows, counts, tempBytes, omissions, library: libraryListing(), ...(opts.houseOnly === true ? { elsewhere } : {}) };
     writeFileSync(join(staging, MANIFEST_FILE), `${JSON.stringify(manifest, null, 2)}\n`, { flag: "wx" });
-    // Every byte read back against the manifest, and the roster opened under the key, before the bundle takes its name.
-    const opened = openBundle(verifyBundle(staging), key);
+    // Every byte read back against the manifest, the seat read whole, and the roster read against the manifest, before the bundle
+    // takes its name.
+    const verified = verifyBundle(staging);
+    readBundleSeat(verified);
+    const opened = rosterView(verified, redeclare);
     renameSync(staging, target);
     return { dest: target, manifest: opened.manifest };
   } catch (e) {
@@ -815,10 +834,19 @@ const SHUT_VESSEL_CODES: ReadonlySet<string> = new Set(["vessel-locked", "daemon
 export async function houseImport(src: string, opts: { readonly apply: boolean; readonly doors: BundleDoors }): Promise<HouseImportResult> {
   const { doors, apply } = opts;
   const sealed = verifyBundle(resolve(src));
-  // THE ROSTER OPENS UNDER THE HOUSE'S KEEP KEY: a house holding none refuses by name, before anything moves.
-  const key = readKeepKey();
-  if (key === null) throw new BundleRefused("keep-key-absent", `this house holds no keep key at ${keepKeyPath()}, and the bundle's roster rests sealed under the key of the house that cut it: copy that house's config/keep-key there, then import again`);
-  const bundle: VerifiedBundle = openBundle(sealed, key);
+  // THE ROSTER OPENS UNDER THE KEEP SEAT THE BUNDLE CARRIES: the human's passphrase or paper sheet opens its secret, then the
+  // roster. A route that opens no slot refuses by name, before anything moves; no key file crosses by hand.
+  const seat = readBundleSeat(sealed);
+  const route = await seatAct(doors.keepRoute ?? liveKeepRoute);
+  const opening = await openKeepSeat(seat, route);
+  if (opening.reading !== "opens") {
+    throw new BundleRefused("keep-route-refused", opening.reading === "seat-torn"
+      ? "a slot of the bundle's keep seat opened a secret that answers another pair: the seat stands torn; restore from another keep"
+      : "the route presented opens no slot of the bundle's keep seat: present the steward's passphrase or paper sheet the keep sealed under, then import again");
+  }
+  let bundle: VerifiedBundle;
+  try { bundle = openBundle(sealed, opening.secret); } finally { opening.secret.fill(0); }
+  if (apply) adoptKeepSeat(seat);
   const { manifest, redeclare } = bundle;
   // THE ORDER GUARD: the walk runs found -> up -> lay -> import. An import lands its rows over the canon the lay
   // laid, so its bag rows meet the checkout's canon at INGEST's three-way gate and stand off where they diverge; over

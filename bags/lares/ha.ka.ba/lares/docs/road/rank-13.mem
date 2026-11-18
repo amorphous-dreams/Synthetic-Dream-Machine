@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-13`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0340"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-13"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-13"
+```
+
+| 13 | WAVE TWO | `L17-2d` road items as slot children with fields (`L41b`) | A backlog that reprioritizes by filter dogfoods the caps on the house's own road; a content lane on this carrier alone. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;K-uci6SCTBkPVDK-uJttoEc-XdWysi4gNNr1uCbKIAw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

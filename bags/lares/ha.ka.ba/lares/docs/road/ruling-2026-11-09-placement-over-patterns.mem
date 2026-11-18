@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-09-placement-over-patterns`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-09"
+order    = "1910"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-09-placement-over-patterns"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-09-placement-over-patterns"
+```
+
+* ''Placement over patterns'' (operator, 2026-11-09, the placement leap). Where a record rests decides where it reaches disk: a record projects by the bag that holds it and that bag's mirror grant, never by its title or a field it carries; a record that must stay off disk rests where no mirror reaches (the control document, the secret home, the shadow layer, a board no recipe mounts). <<~ loulou uri=`lar:///ha.ka.ba/lararium/api/disk-projection#/projection-filter`>>; `tools/placement-residency-witness.mjs` reads it.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;61qbmoZ7xbSu5erdUtMrcZpaILA1hnu_emp0QaUylNM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

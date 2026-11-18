@@ -14,6 +14,10 @@
  *                                                   `image '{"digest":…,"seed":…}'` it carries beside it the seed line the
  *                                                   host read (the seed that image offers beside the founding record)
  *   node dist/src/pulama-main.js tessera            print the pūlama's signed tessera halves
+ *   node dist/src/pulama-main.js lei kui|restring|unstring '<terms>'
+ *                                                   the operator strings, restrings or unstrings a lei: reads the route on a
+ *                                                   real terminal, the face root signs one record here, and the answer prints
+ *                                                   it for the vessel to land (`lares lei land`)
  *
  * Environment (every name required for `serve`; the hand verbs need `LAR_PULAMA_HAND` alone):
  *   LAR_ROOT            the house root whose hearth this pūlama keeps (the same root the vessel names)
@@ -36,6 +40,7 @@ import { FsCustodyIo } from "./custody-io.js";
 import { PULAMA_SESSION_DERIVES, kukuluGate } from "./kukulu-gate.js";
 import { kukuluRiteOver } from "./kukulu-lei-seat.js";
 import { seatCustody } from "./custody-seat.js";
+import { loadIdentityAnchors } from "./identity-anchors.js";
 import { loadPersonaGroupRootVerifyingKey } from "./node-vessel-identity.js";
 import { pulamaAdmissions } from "./pulama-admit.js";
 import { pulamaHandDoor, type PulamaHandAnswer } from "./pulama-hand.js";
@@ -44,6 +49,8 @@ import { servePulama } from "./pulama-server.js";
 import { listenPulama, socketPathFits } from "./pulama-socket.js";
 import { pulamaImage, pulamaRecords } from "./pulama-state.js";
 import { vesselCustodyHomes } from "./vault-carriers.js";
+import { wardCredential } from "./ward-credential.js";
+import { wardRootSigner } from "./ward-signer.js";
 
 class PulamaUnnamed extends Error {
   override readonly name = "PulamaUnnamed";
@@ -69,7 +76,12 @@ async function serve(): Promise<void> {
     // THE HAND'S KEY reads off the face's own roster row, through this pūlama's seated holder.
     gate: kukuluGate({ holder, hand: (ordinal) => loadPersonaGroupRootVerifyingKey(ordinal), rite: kukuluRiteOver(records), image: () => image.raised(), admissions }),
   });
-  const door = pulamaHandDoor({ holder, server, image, records, admissions, onLog: log });
+  // THE LEI HAND reads the face's group off its anchors row and opens its root fresh under the route, through this seated holder.
+  const lei = {
+    group: async (ordinal: number) => (await loadIdentityAnchors(ordinal).catch(() => null))?.personaGroupId ?? null,
+    signer: (ordinal: number, credentials: Parameters<typeof wardCredential>[0]) => wardRootSigner(ordinal, wardCredential(credentials), `the face root at h${ordinal}, for a lei at the pūlama's hand door`),
+  };
+  const door = pulamaHandDoor({ holder, server, image, records, admissions, lei, onLog: log });
 
   // THE VESSEL SOCKET CLAIMS FIRST: a second pūlama over the same socket refuses here, before it touches a hand door.
   const listener = await listenPulama(socket, (channel) => server.accept(channel));
@@ -132,7 +144,7 @@ async function main(): Promise<void> {
   const [verb = "serve", ...args] = process.argv.slice(2);
   if (verb === "serve") return serve();
   try {
-    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what) }), null, 2));
+    console.log(JSON.stringify(await runHandVerb(verb, verb === "admit" || verb === "lei" ? args : args.length === 1 ? args[0] : args.length === 0 ? undefined : args, { ask: askHand, route: (label, what) => readRoute(label, what) }), null, 2));
   } catch (err) {
     if (!(err instanceof PulamaVerbUsage)) throw err;
     console.error(err.message);

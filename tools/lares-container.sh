@@ -431,9 +431,9 @@ verb=$1; shift
 # A WORKSPACE (cabal-realm#/the-workbench): an operator-configured directory a private wiki's workbench mirror rests in,
 # bound read-write at `/lar/workspaces/<name>` (a wiki's share row names it: `lares wiki share <wiki> --workspace <name>`).
 # They come from `--workspace <name>=<dir>` on `up` and from LARES_WORKSPACES (the environment or the env file: `;`-separated
-# `<name>=<dir>` pairs, so they stand on every up). A workspace inside the checkout (this shim's repo or LARES_WORKSPACE) or
-# inside LARES_HOUSE/hearth refuses by name: projection follows placement, and a private wiki never rests in the tracked tree or
-# in what a re-founding clears. A name binds once.
+# `<name>=<dir>` pairs, so they stand on every up). A workspace inside LARES_HOUSE/hearth refuses by name: a re-founding
+# clears the hearth. The checkout and LARES_WORKSPACE bind like any directory (founding road rank 4j: the checkout counts as
+# the cabal's working surface). A name binds once.
 workspace_names=" "
 workspace_bind() { # $1 = name=dir; appends one bind to $files
   pair=$1
@@ -443,11 +443,7 @@ workspace_bind() { # $1 = name=dir; appends one bind to $files
   case "$workspace_names" in *" $name "*) die "--workspace: \"$name\" binds once" ;; esac
   real=$(realpath -e -- "$wdir" 2>/dev/null) || die "--workspace $name: $wdir is no directory"
   [ -d "$real" ] || die "--workspace $name: $wdir is no directory"
-  checkout_real=$(realpath -m -- "$ROOT")
-  ws_real=$(realpath -m -- "$(value_of LARES_WORKSPACE)")
   hearth_real=$(realpath -m -- "$HOUSE/hearth")
-  case "$real/" in "$checkout_real/"*) die "--workspace $name refuses $real — it rests inside the checkout ($checkout_real)" ;; esac
-  case "$real/" in "$ws_real/"*) die "--workspace $name refuses $real — it rests inside LARES_WORKSPACE ($ws_real)" ;; esac
   case "$real/" in "$hearth_real/"*) die "--workspace $name refuses $real — it rests inside the hearth ($hearth_real)" ;; esac
   case "$real" in *"
 "*) die "--workspace refuses a path that holds a newline" ;; esac
@@ -489,7 +485,13 @@ stand_pulama() {
   [ -n "$PULAMA_MODE" ] || return 0
   compose --profile pulama up -d --no-recreate pulama || die "the pūlama did not stand; nothing raised"
   image_digest
-  compose --profile pulama exec -T pulama node "$PULAMA_MAIN" image "$digest" || die "the pūlama refused the image digest $digest; nothing raised"
+  # THE IMAGE OFFERS ITS SEED BESIDE ITS DIGEST. A one-shot of the image itself reads the seed it carries (no house
+  # mounted: the pūlama compares nothing, and the founding record reads at boot, inside the vessel) and prints the whole
+  # frame on one stdout line; rebuild chatter rides stderr. A read that prints no frame falls back to the bare digest,
+  # so a seed read never blocks a stand.
+  frame=$(docker run --rm -e LAR_ROOT=/lar "$image" node "$CLI" vessel floor seed --genesis /app/genesis --image "$digest" 2>/dev/null | tail -n 1) || frame=""
+  case "$frame" in '{'*) report=$frame ;; *) report=$digest ;; esac
+  compose --profile pulama exec -T pulama node "$PULAMA_MAIN" image "$report" || die "the pūlama refused the image report for $digest; nothing raised"
 }
 # Does a pūlama run beside the vessel? It reads the container itself, whatever LARES_PULAMA now says: running, absent, or
 # unknown where the ps fails.
@@ -675,6 +677,26 @@ case "$verb" in
       rite) route_cli "$verb" "$@" ;;
       *) route_cli "$verb" "$@" ;;
     esac ;;
+  lei)
+    # THE LEI HAND DOOR UNDER A PŪLAMA (#269): the pūlama opens no document, so the vessel reads the act's terms (the
+    # face, and for a restring the line's tip), the pūlama reads the route on THIS terminal and signs one record, and the
+    # vessel lands it. The signing's terminal output shows here as it runs (its prompt among it); the answer is its last
+    # JSON line. A signing that answers no record lands nothing. Without a pūlama, every lei act routes as before.
+    case "${1:-}" in
+      kui|restring|unstring)
+        if [ -n "$PULAMA_MODE" ]; then
+          act=$1
+          [ -n "$HAVE_TTY" ] || die "lei under a pūlama reads its route on a terminal; run it on one (nothing signed)"
+          # shellcheck disable=SC2046
+          terms=$(compose exec $(pass_env) -T lares node "$CLI" lei terms "$@" </dev/null) || exit $?
+          answer=$(compose --profile pulama exec pulama node "$PULAMA_MAIN" lei "$act" "$terms" | tee /dev/stderr | tr -d '\r' | grep '^{' | tail -n 1)
+          [ -n "$answer" ] || die "the pūlama signed nothing; nothing lands"
+          # shellcheck disable=SC2046
+          waited_exec $(pass_env) -T lares node "$CLI" lei land "$answer" </dev/null
+          exit $?
+        fi ;;
+    esac
+    route_cli "$verb" "$@" ;;
   wear)
     # `lares wear N` moves the daemon mount inside the lent set and asks no route; a wear that landed names the face the
     # operator wears, which the shim keeps for the next stand.

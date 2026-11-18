@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-restores-key-history`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2410"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-restores-key-history"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-restores-key-history"
+```
+
+* ''The restore's key history'' (house ruling under the operator's delegation, 2026-10-14). A restored face stands PROVISIONAL until at least one party to its relation (a sibling device of the same human, a seated chair of its Nexus, or a recovery contact) shows its own log view and that view agrees with the restore's head; while provisional the face reads, recovers and serves its own content and signs no authority-changing act, the restore prints which head it read and from where, and the provisional state names who could confirm it. Where every such party stays unreachable, the recovery contacts' path (the impersonation quorum) answers, never the local read alone. The reason: no vessel reads a head it never received, and the house keeps no registry of heads; no flip stands, and the residue stays stated: one agreeing party may itself sit stale (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/custody#/the-restore`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;JOLHAO2Lf-mITOcUXHvgndxmcTOfuuZZZzqM91PER3Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

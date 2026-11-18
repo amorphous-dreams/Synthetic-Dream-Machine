@@ -26,7 +26,8 @@
  * and the volatile VM plane, the daemon's own scratch and verb trail)
  * answers no read and takes no write. Every other record lands natively, as a person's edit in the wiki lands it: a `$:/`
  * title or tag, a module or plugin field and a script type alike (the island holds a document's code as data; its code
- * comes from the floor-admitted preloads alone). THE ONE WALL A SEAT KEEPS: a seat-asked put carrying a
+ * comes from the floor-admitted preloads alone). A RENDERED TIDDLER (`rendered-from`) takes no put and no delete here:
+ * only the renderer writes it, and both refuse `rendered-derives`. THE ONE WALL A SEAT KEEPS: a seat-asked put carrying a
  * `$:/tags/StartupAction*` tag refuses `seat-startup-offer` (a wiki's startup action runs in the operator's tab), and the
  * operator's own hand lands it. No action string and no `tm-*` message rides this door (the `act` ask, phase 2).
  *
@@ -55,7 +56,7 @@
  */
 
 import {
-  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseSeatStartupAction, requireKahuReach, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
+  VerbRefusal, canonicalJsonBytes, isVolatileVmUri, offerWithheldTitle, refuseRenderedWrite, refuseSeatStartupAction, renderedWriteFault, requireKahuReach, RENDERED_DERIVES_REASON, sha256HexBytesSync, wikiSlotKindOf, DAEMON_WIKI_SLUG,
   type ChangeOrigin, type CompositeStore, type KahuReachSource, type LarTiddlerStore,
 } from "@lararium/mesh";
 import { CARRIER_TYPE } from "@lararium/mesh/carrier-type";
@@ -66,6 +67,8 @@ import { localFilter } from "./record-port-projection.js";
 import { pageFilterAnswer, checkFilter, WIKI_FILTER_ROWS, WIKI_FILTER_BYTES, WIKI_ANSWER_BYTES_MAX, type FilterRow, type FilterWiki } from "./filter-page.js";
 import { optionalStringArg, stringArg } from "./handler-args.js";
 import type { TW5Engine } from "./tw5-vm.js";
+import { wornOrigin } from "./verb-dispatcher.js";
+import { wikiWearsNext } from "./island-recipe.js";
 import type { VerbContext, VerbReactor } from "./verb-dispatcher.js";
 
 export interface TiddlerVerbOptions {
@@ -546,11 +549,15 @@ export function makeTiddlerPutReactor(opts: TiddlerVerbOptions): VerbReactor {
       throw new VerbRefusal("tiddler-put-in-a-family", `tiddler-put-in-a-family: use the meme door. "${title}" ${joinsFamily ? "would land as a carrier or a slot" : `stands as a meme ${place.position} and this put moves ${structural.map((n) => `\`${n}\``).join(", ")}`}; \`lares meme put\` (meme_put) lands a family's text through the Confluence gate. A field or tag patch on a standing root or slot lands here.`);
     }
     refuseSeatStartupAction(title, tags, "tiddler put", ctx.asker);
+    // ONLY THE RENDERER WRITES A RENDERED TIDDLER: a put over one, or one that would land carrying `rendered-from`, refuses.
+    refuseRenderedWrite(title, before, next, "tiddler put");
     refuseMalformedStagePath(title);
 
     const changed = Object.keys({ ...(before ?? {}), ...next }).filter(moved);
     if (standing && changed.length === 0) return answer("noop", { created: false, changed, hash: liveHash, textHash: textHashOf(before!) });
     // The record lands through the live wiki, so the in-wiki cascade routes it to the working layer as a person's edit would.
+    // THE FACE CROSSES THE HOP: the shore's write of this title carries the session's worn face on its origin.
+    wikiWearsNext(opts.tw5, title, wornOrigin(ctx.worn).face);
     wiki.addTiddler(new Tiddler(next));
     const landed = readRecord(wiki.getTiddler(title)!).fields;
     return answer("put", { created: !standing, changed, hash: hashOf(landed), textHash: textHashOf(landed) });
@@ -593,6 +600,8 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     if (read.position !== "plain" && !flagOn(args["family"])) {
       return refused("tiddler-delete-in-a-family", `"${title}" stands as a meme ${read.position} of ${read.family}; this delete would move ${moves} record${moves === 1 ? "" : "s"} (the consequence names each). Name the family act (\`family: true\`, \`--family\`) to land it as one change, or use \`lares meme delete ${read.family}\` (meme_delete).`);
     }
+    const rendered = renderedWriteFault(title, fields, null, "tiddler delete");
+    if (rendered !== null) return refused(RENDERED_DERIVES_REASON, rendered.slice(RENDERED_DERIVES_REASON.length + 2) + " Nothing moved.");
     if (read.refusals.length > 0) {
       const first = read.refusals[0]!;
       const why = first.code === "reveal-top-unwritable"
@@ -613,7 +622,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
 
     // THE LANDING: each layer takes its members as ONE change (tombstones and retracts together), and the shore lands
     // that change in the wiki as one grain. A record no layer holds leaves through the live wiki, as a hand's delete.
-    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId };
+    const origin: ChangeOrigin = { kind: "lares-verb", requestId: ctx.invocation.requestId, ...wornOrigin(ctx.worn) };
     const perBag = new Map<string, { tombstones: string[]; retracts: string[] }>();
     const byHand: string[] = [];
     for (const row of read.acts) {
@@ -626,7 +635,7 @@ export function makeTiddlerDeleteReactor(opts: TiddlerVerbOptions): VerbReactor 
     for (const [landing, group] of perBag) {
       await opts.composite.writeFamily([], group.tombstones, origin, { bag: landing as never, ...(group.retracts.length > 0 ? { retracts: group.retracts } : {}) });
     }
-    for (const member of byHand) wiki.deleteTiddler(member);
+    for (const member of byHand) { wikiWearsNext(opts.tw5, member, wornOrigin(ctx.worn).face); wiki.deleteTiddler(member); }
     return { recipe: "default", title, decision: "removed", mode, tombstoned: tombstones, retracted: retracts, hash, consequence: read };
   };
 }

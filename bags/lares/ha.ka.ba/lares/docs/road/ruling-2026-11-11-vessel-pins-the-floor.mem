@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-vessel-pins-the-floor`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-11"
+order    = "2020"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-11-vessel-pins-the-floor"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-11-vessel-pins-the-floor"
+```
+
+* ''The vessel pins the floor'' (operator, 2026-11-11: //"The pull/push tension can go the way the memegraph/code leans"//). A release gets cut and published; each VESSEL accepts it, one pin per (vessel, Nexus) in its control home, and faces pin nothing. The accept fast-forwards along `prior` and refuses a fork or a non-descendant by name; an island that swaps its floor live swaps, any other raises the reboot alert. `lares vessel floor status|accept`. Landed (`63bc695d9`, `W26` slice 5; <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/w26-floor-lane#/the-vessel-pin`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;TogKu4gRZsbf73ijWu7aA4oHUisPWHV6dPIsq1_0Gso`>>
+
+<<^ code=`&#x0004;` to=`?`>>

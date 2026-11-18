@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-18-two-deep-deferrals`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-18"
+order    = "2330"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-18-two-deep-deferrals"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-18-two-deep-deferrals"
+```
+
+* ''Two deep deferrals'' (operator, 2026-11-18: //"2 minor things we need to deeply defer: installing on Freyja's PC, and 'release'"//). DEFERRED: Freyja's install and its first live walk (lar:///ha.ka.ba/wsl2/new-hearth stays in canon and keeps truing as rulings land, and no lane schedules the install; the house preflight and the hard-coded paths stand on their own merit, never as its gate); DEFERRED: the first release from `main` (naming, cadence, what a release carries, the image and genesis bake per release, the queue's pull request from `develop` to `main`), its draft resting for the day it wakes and no lane scheduling it. #/the-order marks both.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;B1yK-vt9zBkgULXbWuKuVAM1OtqS0KLjA_WcExlc8mw`>>
+
+<<^ code=`&#x0004;` to=`?`>>

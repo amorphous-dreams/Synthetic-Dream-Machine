@@ -160,6 +160,12 @@ export const SLOT_WRAP_INFO = mint("slot-wrap");
 /** The HKDF `info` of the slot tree's tree key check: the keyed digest a tree carries so every writer proves the tree key
  *  in hand against the standing tree before any byte moves. */
 export const TREE_CHECK_INFO = mint("tree-key-check");
+/** The HKDF `info` the KEEP PAIR's X25519 secret derives under, from the random key its own slot tree wraps: the keep's tree
+ *  key never doubles as the secret itself, and no face's tree key derives into it. */
+export const KEEP_PAIR_INFO = mint("keep-pair");
+/** The sealed-box `info` a keep bundle's roster seals to the keep pair's public half under: a roster never opens as another
+ *  protocol's seal between the same keys. */
+export const KEEP_ROSTER_INFO = mint("keep-roster");
 
 // ── ADMISSION + ENROLMENT ───────────────────────────────────────────────────────────────────────
 /** A hearth's HOSTING ACT in one Nexus: its per-Nexus leaf signs the Nexus, itself, the act's POPRF public key

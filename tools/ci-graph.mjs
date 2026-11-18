@@ -213,7 +213,7 @@ function tokens(src) {
 }
 
 /**
- * Evaluate one `if:` expression against a context: `{ github, inputs, needsOk }`. It takes the shapes the house's
+ * Evaluate one `if:` expression against a context: `{ github, inputs, needs, needsOk }`. It takes the shapes the house's
  * workflows write (`||`, `&&`, `==`, `!=`, `!`, parentheses, quoted strings, numbers, context paths, `always()`, `success()`,
  * `failure()`, `cancelled()`, `startsWith()`, `endsWith()`, `contains()`); any other shape throws, never a quiet answer.
  * `==` compares strings case-blind, as Actions does; an unknown context path reads null. `success()` reads whether every
@@ -296,7 +296,9 @@ export function jobDetail(text, id) {
 /**
  * Every job one event raises, each with what it answers: `run`, or `skipped` (its own `if:` read false, or a job it needs
  * did not run and its `if:` names no status function), and the names of the steps a running job would walk. `ctx`
- * carries `github` (`event_name`, `ref`, `event`); a called workflow reads `inputs` off the caller's `with:`. A called job
+ * carries `github` (`event_name`, `ref`, `event`) and `outputs` (`{ <job>: { <name>: value } }`, the answers a job's steps
+ * would hand on at run time); a job reads `needs.<id>.result` and `needs.<id>.outputs` of its DIRECT needs alone, as
+ * Actions hands them, and a job that skipped hands on no outputs. A called workflow reads `inputs` off the caller's `with:`. A called job
  * reads under the name GitHub gives its check, `Caller / Callee`; a skipped caller raises its own name and none of the
  * callee's, which is how a required `Caller / Callee` check goes missing.
  */
@@ -307,16 +309,18 @@ export function runPlan(rootName, files, ctx, prefix = "", namePrefix = "") {
   for (const j of readJobs(text)) {
     const d = jobDetail(text, j.id);
     const needsOk = j.needs.every((n) => state.get(n) === "run");
+    const needs = Object.fromEntries(j.needs.map((n) => [n, state.get(n) === "run" ? { result: "success", outputs: { ...(ctx.outputs?.[n] ?? {}) } } : { result: "skipped", outputs: {} }]));
+    const jctx = { ...ctx, needs, needsOk };
     const cond = j.ifText ?? "success()";
-    const runs = STATUS_FN.test(cond) ? evalExpr(cond, { ...ctx, needsOk }) : needsOk && evalExpr(cond, { ...ctx, needsOk });
+    const runs = STATUS_FN.test(cond) ? evalExpr(cond, jctx) : needsOk && evalExpr(cond, jctx);
     state.set(j.id, runs ? "run" : "skipped");
     if (j.uses && runs) {
       const called = /^\.\/\.github\/workflows\/(.+)$/.exec(j.uses)[1];
-      const inputs = Object.fromEntries(Object.entries(d.with).map(([k, v]) => [k, /^\$\{\{/.test(v) ? evalExpr(v, ctx) : v]));
+      const inputs = Object.fromEntries(Object.entries(d.with).map(([k, v]) => [k, /^\$\{\{/.test(v) ? evalExpr(v, jctx) : v]));
       out.push(...runPlan(called, files, { github: ctx.github, inputs }, `${prefix}${j.id}/`, `${namePrefix}${d.name} / `));
       continue;
     }
-    const steps = runs ? d.steps.filter((s) => s.ifText === null || STATUS_FN.test(s.ifText) || evalExpr(s.ifText, { ...ctx, needsOk: true })).map((s) => s.name) : [];
+    const steps = runs ? d.steps.filter((s) => s.ifText === null || STATUS_FN.test(s.ifText) || evalExpr(s.ifText, { ...jctx, needsOk: true })).map((s) => s.name) : [];
     out.push({ key: `${prefix}${j.id}`, name: `${namePrefix}${d.name}`, state: runs ? "run" : "skipped", steps });
   }
   return out;

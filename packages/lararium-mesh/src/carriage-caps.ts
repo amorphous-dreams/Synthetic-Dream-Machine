@@ -17,6 +17,7 @@
 import type { Repo, DocHandle } from "@automerge/automerge-repo";
 import type { CapModule } from "./cap-compose.js";
 import { AutomergeDocStore } from "./automerge-doc-store.js";
+import { wearOf } from "./repo-wear.js";
 import {
   MESH_PALACE_BAG, emptyMeshPalaceDoc, type MeshPalaceDoc,
   dialEntryToRecord, dialEntries, type DialEntry,
@@ -72,7 +73,7 @@ export function meshPalaceCap(deps: { repo: Repo; residency?: BagStowage; seed?:
         });
       }
       assembly.composite.addLayer({
-        bagId: MESH_PALACE_BAG, store: new AutomergeDocStore(handle, MESH_PALACE_BAG),
+        bagId: MESH_PALACE_BAG, store: new AutomergeDocStore(handle, MESH_PALACE_BAG, wearOf(deps.repo)),
         // Written by NAME, never the default: the vessel alone names its working layer.
         writable: true, defaultWritable: false,
       });

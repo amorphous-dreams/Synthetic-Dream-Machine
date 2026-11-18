@@ -49,6 +49,14 @@ describe("help flags", () => {
     for (const c of COMMANDS) expect(r.out, c.name).toMatch(new RegExp(`^\\s+(✍ )?${c.name}\\s`, "m"));
   });
 
+  test("the bundle verbs name the roster sealed under the keep key, never a cleartext bundle (bundle-manifest.ts)", () => {
+    for (const name of ["export", "rite"]) {
+      const c = COMMANDS.find((x) => x.name === name)!;
+      expect(c.summary, name).not.toMatch(/cleartext/i);
+      expect(c.summary, name).toMatch(/sealed under the (house's )?keep key/);
+    }
+  });
+
   test("★ the footer promise holds: every verb's --help and -h exit 0 and carry its long account ★", async () => {
     for (const c of COMMANDS) {
       const long = await run([c.name, "--help"]);

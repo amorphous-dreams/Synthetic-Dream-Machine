@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-hosting-key`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "first-ceremony"
+order    = "0580"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-hosting-key"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-first-ceremony-hosting-key"
+```
+
+* ''The hosting key'': the operator's seat signs ONE delegation to a hosting key; that key signs each hosting act and seeds each epoch. A session wearing any other face signs nothing for the hearth.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;agW2m5b6qjY-K1Fy3Gjp6CvAxTi_FUGyLZgEht9Q9cs`>>
+
+<<^ code=`&#x0004;` to=`?`>>

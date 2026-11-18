@@ -971,6 +971,9 @@ async function composeHearthStanding(ctx: BootContext & ComposedAs, sovereign: S
       const sessionsClosed = front.close();
       lanSocket()?.close();
       httpServer.close();
+      // THE WORN FACE'S POOL CLOSES ITS SITTING (face-pools W2): the final wave reaches the daemon island's shore while it still
+      // answers, then the pool's commit seam runs, as a down.
+      await step("face-pool", () => result.facePoolStandDown());
       await step("sessions-flush", () => sessionsClosed);
       await step("sealed-rest", () => result.sealedRestStandDown());
       // M17: print the INSTANT this step resolves, never waiting for the final line below. The

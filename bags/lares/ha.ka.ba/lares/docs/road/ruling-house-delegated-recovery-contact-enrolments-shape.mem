@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-recovery-contact-enrolments-shape`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2450"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-recovery-contact-enrolments-shape"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-recovery-contact-enrolments-shape"
+```
+
+* ''Recovery contact enrolment's shape'' (house ruling under the operator's delegation, 2026-10-14). Each face founds one-of-one with no recovery contacts, and its log's verifier knows a typed first-enrolment event from the start: the face's own current key signs it, it commits the recovery contact set and threshold, and the face's prefix stays as it stands; every later change to the set takes the recovery contacts' authority. The event shape and its verifier land before the fence, so an enrolment never re-founds a face. The reason: a face founded alone keeps its Handle's history when recovery contacts join a year later, and no third hand holds standing over a one-of-one face. The ruling flips on an existing event kind that already permits that first, face-key-signed transition. The count stands ruled at two of three recovery contacts (#/rulings, 2026-10-31); request authentication, the veto, death and succession stay open (#/open).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;H-FiBxuq9fZFdjQjznBNmGcj3-UJuKtxLQQJT6dZzKk`>>
+
+<<^ code=`&#x0004;` to=`?`>>

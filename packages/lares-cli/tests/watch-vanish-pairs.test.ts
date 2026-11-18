@@ -45,7 +45,8 @@ describe("the watcher's source holds no clock over a vanish and no fraction", ()
   });
   test("no grace, no fraction, no monotonic or wall reading", () => {
     expect(src).not.toMatch(/delete-grace|delete-fraction|massDeleteFraction|performance\.now|Date\.now\(\)\s*-/);
-    // The two timers that stand pace an edit's settle and the backend self-test; neither reads a vanish.
-    expect(src.match(/setTimeout\(/g) ?? []).toHaveLength(2);
+    // The two timers that pace an edit's settle and the backend self-test stand in the drain seat (`@lararium/node`
+    // watch-core), and neither reads a vanish: the watcher itself arms none.
+    expect(src.match(/setTimeout\(/g) ?? []).toHaveLength(0);
   });
 });

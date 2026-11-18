@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-models-one-roadmap`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "models"
+order    = "0680"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-models-one-roadmap"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-models-one-roadmap"
+```
+
+* ''One roadmap'': this carrier. Standing procedures rest at <<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/working-procedures`>>, and the grammar watch at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/grammar-watch`>>.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;2zJdMol0J7ygShwBdI40yukEpP98j0-dl2-np0ufyBY`>>
+
+<<^ code=`&#x0004;` to=`?`>>
