@@ -352,13 +352,14 @@ export function patchPlan(args: ParsedArgs): { readonly verb: "meme-patch"; read
   const uri = args.positional[1];
   if (!uri) throw new UsageError("a uri is required (e.g. `lares meme patch lar:///ha.ka.ba/... --slot '#/x' --append note.txt --base <hash> --recipe <slug>`)");
   const out: Record<string, string> = { uri, ...containerArgs(args, "meme patch", "write") };
-  const opt = (name: string): string => (typeof args.options[name] === "string" ? (args.options[name] as string).trim() : "");
-  const slot = opt("slot");
+  // Each flag reads by its literal name, so the accepts row answers for it (no computed read).
+  const trimmed = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
+  const slot = trimmed(args.options["slot"]);
   if (!slot) throw new UsageError("--slot '#/name' names the slot whose body moves (`lares meme list --recipe <slug> --tree` names the slots a meme holds)");
-  const append = opt("append");
-  const replace = opt("replace");
+  const append = trimmed(args.options["append"]);
+  const replace = trimmed(args.options["replace"]);
   if (Boolean(append) === Boolean(replace)) throw new UsageError("name exactly one of --append <file> (a paragraph at the end of the slot's body) or --replace <file> (the slot's whole body)");
-  const base = opt("base");
+  const base = trimmed(args.options["base"]);
   if (!base) throw new UsageError("--base <hash> is required: the canonical hash `lares meme get` prints on stderr (`base: sha256:…`)");
   out["slot"] = slot;
   out["base"] = base;
