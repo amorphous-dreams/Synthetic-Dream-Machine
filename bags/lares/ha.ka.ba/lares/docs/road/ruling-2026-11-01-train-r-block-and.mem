@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-01-train-r-block-and`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-01"
+order    = "1160"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-01-train-r-block-and"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-01-train-r-block-and"
+```
+
+* ''Train R, block and inline sigils at parsing parity'' (operator approval, 2026-11-01: //"Approve 1 + 2a(3 floor) cleanup of inline vs block sigils to tw5 pono parsing parity"//). A block sigil owns its line, the seal rides the ETX foot as a named value, a sigil whose `>>` leaves text after it reads inline as TiddlyWiki splits it, and trailing text reads as a recovered node with a diagnostic, never silent. Two addons ride it (operator, 2026-11-01): every code fence in the boot seed names its grammar, so the syntax plugin colours it (//"code-fenced blocks in the boot seed should get the grammar marked explicitly"//), and a fence opens and closes with more ticks than the longest run inside it. It follows ''Q'' as its own train and keeps the before-`L4` property. Landed, PR #150 (#/o-takiage).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;C5452MqGzK1fx6Y_bU76jXK8eWmNmt1hbZj5Ko52Ngo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

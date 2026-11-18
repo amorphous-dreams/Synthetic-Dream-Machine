@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-roll-waits-on-its`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2510"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-roll-waits-on-its"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-roll-waits-on-its"
+```
+
+* ''A roll waits on its prior anchor'' (operator ruling, 2026-10-15). A seal roll refuses by name while the prior roll stands with no anchor, so no Nexus stacks a roll over a step its readers cannot yet carry across a removal. The reason: an admit carries across a seal roll only through its roll anchors, and a roll laid over an anchorless one strands every admit between them.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4HRWLbvFkaz8U8nIOk8aqNdjDFc_G_uDlTCkdakklqo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

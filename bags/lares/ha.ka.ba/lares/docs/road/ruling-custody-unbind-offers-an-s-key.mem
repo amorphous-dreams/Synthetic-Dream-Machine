@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-custody-unbind-offers-an-s-key`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "custody"
+order    = "0400"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-custody-unbind-offers-an-s-key"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-custody-unbind-offers-an-s-key"
+```
+
+* ''Unbind offers an S-key rotation loudly'', every time, never folded in silently.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;7oexjTYL1vS7KTM2N8UofeQ8EchdRr7z4b8jffGbEQU`>>
+
+<<^ code=`&#x0004;` to=`?`>>

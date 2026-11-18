@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-herm-floor-reframe`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-04"
+order    = "1200"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-herm-floor-reframe"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-04-herm-floor-reframe"
+```
+
+* ''The herm floor reframe'' (operator: //"Herms are the floor capabilities of all Lararia (a lifted herm floor + Pronaos = Node Lararium)."//). A Node Lararium holds a lifted herm floor and the Pronaos. The island capability record composes along the cap stack, floor courses first (`NodeHermResult.islandCaps` carries the floor record), the lift on top (`caps.receipt` names a LIFT capability, since wiki islands exist only on a lifted floor); a herm never stands as a party beside a vessel. Q1 (one answerer per `receipt:request`) landed in PR #157, and the follow lane carried the rest (PR #160, #/ashes `cap-stack`).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1AlW7G-GZ-313QvVFCVqtNi61WJItQI6BfXmN9j-2lg`>>
+
+<<^ code=`&#x0004;` to=`?`>>

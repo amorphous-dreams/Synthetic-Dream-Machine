@@ -1,0 +1,22 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-three-leans-approved`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-12"
+order    = "2170"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-three-leans-approved"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-12-three-leans-approved"
+```
+
+* ''Three leans approved'' (operator, 2026-11-12: //"Pono, approve all three leans. Update any memes that read un-pono."//).
+*# ''A leaf binds `hearthTrueName: ""` by design.'' The field names a hearth's seed-charter Nexus AID; a hearth-agnostic leaf states it empty, no place wall stands for a leaf, and the AID's wall arrives by an act when a face founds or joins a hearth (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/lararium-identity#/delegation-edge`>>). No build; the stale-text sweep stays owed in #/the-leaps.
+*# ''The integer `boundEpoch` retires'' (the next leap). An edge names the head digest of the PersonaGroup lineage it bound under; supersession rides acts (a Keyhive revoke, a kāpae, a renewal linked by digest), and a hard break forks as exit (a new PersonaGroup id, or a new seed charter for a hearth).
+*# ''A hearth founds as an existing face'' (the next leap). The node stands its veil floor, joins the face F through the carriage (the leaves' seat door, with seat verbs on the node's command line), and seals the seed charter as F; today `found` forces a fresh face 0 (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/founding-runbook#/the-growth-rite`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zlV51cVxXn8bVKG2qwAcUBgLr_cYLMDY5CjssKj1qlI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

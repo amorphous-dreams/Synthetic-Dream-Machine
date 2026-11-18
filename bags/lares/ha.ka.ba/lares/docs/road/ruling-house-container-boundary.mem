@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-container-boundary`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-container"
+order    = "0120"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-container-boundary"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-container-boundary"
+```
+
+* ''The boundary'' (settled by the house under those rulings): one multi-arch image; `/workspace` mounts bags and wikis, `/state` mounts vessel homes and custody, never an image layer; the local socket stays INSIDE the container and the host CLI enters through `docker compose exec`; the app never receives the docker socket; mDNS offers unauthoritative LAN candidates and a pinned admission alone grants authority; DNS-01 wildcard TLS supplies browser secure contexts; a release manifest binds the image digest to the genesis, engine and grammar CIDs.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;RDx6ndgfkCAXTlz8Ve4sYOwmvu6W3H_pNNIqxtjrRBc`>>
+
+<<^ code=`&#x0004;` to=`?`>>

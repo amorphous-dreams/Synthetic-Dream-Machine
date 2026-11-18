@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-operators-own-herm`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "first-ceremony"
+order    = "0570"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-first-ceremony-operators-own-herm"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-first-ceremony-operators-own-herm"
+```
+
+* ''An operator's own herm'': an operator contracts their own herm with one signature, scoped to one place and one Nexus, and it falls with a kapae of the operator's admit.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yuOlhTIX4XYo2SfBRGOqNzQxaIeHYVec4Pjeycccq0Y`>>
+
+<<^ code=`&#x0004;` to=`?`>>

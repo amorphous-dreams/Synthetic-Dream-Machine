@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-01-seal-binds-the-head`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-01"
+order    = "1190"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-01-seal-binds-the-head"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-01-seal-binds-the-head"
+```
+
+* ''The seal binds the head, paired with the phantom-record cure'' (operator ruling, 2026-11-01: //"Approve, pair it with the phantom-record cure"//). The seal covers STX through ETX, so the SOH head's `to=` and `namespace=` sat outside it, and a promotion's `carrierHash` bound the bytes, never the head address (''R''s security read, INFO). The head binds through the sealed meta: its `to=` answers to the meta `title`, else to `lar:///` joined to the meta `uri-path`; a split between them reads torn (`head-meta-split`); a meta naming neither reads head-unbound, shown by name and never read as a match or a tear; `namespace=` binds only where the meta carries one (the shape ruled by the house under the operator's delegation). The phantom-record cure rides the same lane (#/side-lanes, harden).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;zaW2IbY-9VjMYYtyZL3dYiHGCPqshAeApAMTdcVGXac`>>
+
+<<^ code=`&#x0004;` to=`?`>>

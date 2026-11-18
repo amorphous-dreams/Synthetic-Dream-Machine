@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-models-sealed-record-acts-ride-the`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "models"
+order    = "0740"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-models-sealed-record-acts-ride-the"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-models-sealed-record-acts-ride-the"
+```
+
+* ''Sealed-record acts ride the custody door'', never a store verb whose output lands in the daemon's document in the clear (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/waking-floor#/the-shape`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;1tJxKbA4THkw8r94usVnbrJnorm2G55MpXwj2bG9688`>>
+
+<<^ code=`&#x0004;` to=`?`>>

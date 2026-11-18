@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-planes-session-wears-the-face`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "planes"
+order    = "0350"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-planes-session-wears-the-face"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-planes-session-wears-the-face"
+```
+
+* ''A session wears the face; the vessel wears none'' (operator ruling).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;fT93fkg0O5p7SzqnbqalqegiCF6FdwE8lStc_5CXktQ`>>
+
+<<^ code=`&#x0004;` to=`?`>>

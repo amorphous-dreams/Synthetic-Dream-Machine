@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-stable-state-every-lararium-holds-a`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "stable-state"
+order    = "0150"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-stable-state-every-lararium-holds-a"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-stable-state-every-lararium-holds-a"
+```
+
+* ''Every Lararium holds a charter.'' One operator's charter reads as a SEED and two operators' seats in one charter read as a NEXUS (<<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/kahu#/seed-and-nexus`>>). A household seed never grows into a Nexus; a Nexus founds fresh at threshold two of two. One "I" may hold several PersonaGroups. A Nexus grows by adding seats through its own rolls.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jynGAP1GSmcxSo-kTYt60T-7tXqjhezn36y3lMNwFqM`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-paper-restores-a-root`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2490"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-paper-restores-a-root"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-paper-restores-a-root"
+```
+
+* ''Paper restores a root, never memory'' (house ruling under the operator's delegation, 2026-10-15). The split-root cards rebuild the persona root alone; content keys stay random and wrap under the vessel key or a bundle's own key, and no key the root derives opens memory. A person recovers memory through a bundle, under the route that bundle seals. The reason: a root card that opened memory would turn every share holder and every thief of the paper into a reader of the face's private bytes. The ruling flips on an explicit choice that root-share holders read memory, with the custody that choice costs stated.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;yqev3JYlr1XLdJHu0O8ypiYmdeXCkY8Qv92HKaiuh5w`>>
+
+<<^ code=`&#x0004;` to=`?`>>

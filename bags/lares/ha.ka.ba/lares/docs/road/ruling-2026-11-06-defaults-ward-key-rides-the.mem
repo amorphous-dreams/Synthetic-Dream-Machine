@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-ward-key-rides-the`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-06-defaults"
+order    = "1470"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-ward-key-rides-the"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-06-defaults-ward-key-rides-the"
+```
+
+* ''The ward key rides the admission'' (operator, 2026-11-06, approving the house's defaults). Each device's per-face ward public key rides its signed admission (`wardKey`, covered by `vesselSig`, the tag key's signature over group, atom and ward key) beside its proof of possession (`wardPop`), and a ward-act approval carries that key's signature over the answer, the ask's digest and the frontier the answerer read; the vessel key never enters a face admission (the fleets-overlap ruling, 2026-11-05). An approval binds one ask's digest, and the frozen spend refuses its replay. A ward key never rotates silently: a rewrap keeps the key, and a device whose ward goes missing re-joins as a new vessel (`ward-key-would-rotate`). The law rests in <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/seat-harness#/the-swarm-slices`>>.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;5KNSrPyYCOPiJizduGuC0D63b-Th0ZkKgVfdmmOoCgE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

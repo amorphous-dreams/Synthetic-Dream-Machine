@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-sync-carries-verification-decides`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2660"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-sync-carries-verification-decides"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-sync-carries-verification-decides"
+```
+
+* ''Sync carries; verification decides'' (operator, 2026-10-20, approving the research at <<~ loulou uri=`lar:///ha.ka.ba/lares/docs/research/identity-invariants-2026`>> and the controller's leans). A mutable CRDT carries identity claims and never decides them. Each face holds, on each device, a ''sealed identity anchor'' in its own custody (a D record): its PersonaGroup, its persona-KEL prefix, a commitment to its root, its device edge's digest, and a known frontier that never falls. Only founding, admission and the recovery rites (recovery contact rotation, bundle restore, root cards) write an anchor; sync never writes one. Founding and admission acts, device edges and lease advances travel as signed records in the face's `@persona` plane, a signed-entry log every reader verifies against the anchor and the KEL; two signed acts at one sequence surface as a fork, never a CRDT winner. The face planes hold verified projections. A device reads freely; an act that widens authority (admit, grant, re-key, seal to a reader) checks the sealed frontier and refuses a target that names a newer bound, its receipt naming the frontier it acted under. Transparency and witnesses for equivocation wait for their own item. Wave C carries the build inside `K15` step 6.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;4q2umhTHzwXs12oxtIC5P3ONg7jvIX_s3R_UfHIBzoE`>>
+
+<<^ code=`&#x0004;` to=`?`>>

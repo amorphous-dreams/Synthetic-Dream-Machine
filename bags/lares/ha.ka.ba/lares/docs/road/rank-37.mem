@@ -1,0 +1,18 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/rank-37`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+order    = "0640"
+tags     = ["road/rank"]
+title    = "lar:///ha.ka.ba/lares/docs/road/rank-37"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/rank-37"
+```
+
+| 37 | AFTER | train T's waves A to C: `T2`, `T4`, `T5`, `T36`, `T38`, `T6` to `T8`, `T30` to `T32`, `T10` to `T18` | The re-cut makes the code testable at the grain its claims live at; it rides beside every path and stalls none. |
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;SnzRZpePJYk52r5S0hyHyTOQNHuF-vU4PqXnUo8p-5M`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-working-address`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "house-delegated"
+order    = "2520"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-house-delegated-working-address"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-house-delegated-working-address"
+```
+
+* ''The working address'' (house ruling under the operator's delegation, 2026-10-15; the operator's workbench rulings of 2026-11-11 above flip it). The daemon wiki alone keeps a face-private working document. Every other wiki's working layer rests in a realm workbench at `realmWorkbenchDocUrl(realm, slug)`, `deterministicDocUrl` over the realm board's address with `#working/<slug>`: no member change moves it and knowing it grants nothing, and an unshared wiki's realm id derives from the owning face and the slug (`privateCabalRealmId`), so two offline devices of one face converge on one address (<<~ loulou uri=`lar:///ha.ka.ba/lares/api/pono/cabal-realm#/the-workbench`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;27JZ4HbnGmcUyZcVx1dPPYLH6wl9btk_MGNTJ70CzTY`>>
+
+<<^ code=`&#x0004;` to=`?`>>

@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-never-a-passkey`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-04"
+order    = "1230"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-04-never-a-passkey"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-04-never-a-passkey"
+```
+
+* ''Never a passkey'' (operator: a passkey //"binds us to un-pono web2.5 registries, we aim past that for pono web3+ DreamNet"//). No WebAuthn registry gates any act; the hand gesture rides keys the face holds.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;KPV9rF5THx2A6xsCEZ6sRtRkLnOyrql-unZeaF_2tO4`>>
+
+<<^ code=`&#x0004;` to=`?`>>

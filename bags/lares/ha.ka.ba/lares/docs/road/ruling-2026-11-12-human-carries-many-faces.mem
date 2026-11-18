@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-human-carries-many-faces`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-12"
+order    = "2150"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-human-carries-many-faces"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-12-human-carries-many-faces"
+```
+
+* ''A human carries many faces, and every vessel stands by capability'' (operator, 2026-11-12: //"a human carries multiple faces"//; //"isomorphic by intent for all vessels by capability"//; //"users have leaf-device fleets, operators have leaf+node fleets"//). A user's fleet holds leaves alone, so the fleet-join door, the founding door and the carried seat stand whole on a leaf; an operator's fleet adds nodes. One composer and one seat core serve every vessel, and a host differs only in what its capabilities carry (<<~ loulou uri=`lar:///ha.ka.ba/lares/docs/pono/device-capabilities-2026#/device-seats`>>, its in-house rulings 1 to 10; the stories in <<~ loulou uri=`lar:///ha.ka.ba/lararium/mesh/dreamnet-architecture#/the-walkers`>>).
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;bSk2OCCDefZ8_zTRw7AjtACsIYoOTeu9Fw4GcnFPQrI`>>
+
+<<^ code=`&#x0004;` to=`?`>>

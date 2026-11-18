@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-no-query-string-overrides`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "2026-11-12"
+order    = "2160"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-2026-11-12-no-query-string-overrides"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-2026-11-12-no-query-string-overrides"
+```
+
+* ''No query string overrides the page'' (operator, 2026-11-12: //"I don't like query strings as overrides, that interrupts the tw5 native uri handling (or if we can pipe it through the mirror & tw5 vm it may read pono)."//). A page act never rides a query key: the founding ask moved onto the identity panel's own button, carried across one reload (`?found` left, `aca107a97`). The arrival's relay, floor card and anchor left the address (the relay reads off the page's own origin; the card and the anchor come in at the carriage door). The last keys left the address: the floor reads at the page's own origin (`?flow=` burned), a harness raises the boot trace in the tab's sessionStorage (`lares:c4trace`), and `?mesh=` burned with its door owed in #/the-leaps. A census in `lararium-web` `tests/live-status.test.ts` reads every page source: none reads the query, and the fragment keeps the mirror's permalink and the ceremony document's ask as its named readers.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;6qbWlL9H-rDREPmy-FDL1wSejwNn6rbVlV1MKWBSFlo`>>
+
+<<^ code=`&#x0004;` to=`?`>>

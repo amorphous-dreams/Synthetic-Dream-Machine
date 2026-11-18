@@ -1,0 +1,19 @@
+<<!DOCTYPE type=`memetic-wikitext+tiddlywiki` spec=`lar:///ha.ka.ba/lares/api/pono/memetic-wikitext`>>
+
+<<^ code=`&#x0001;` from=`?` to=`lar:///ha.ka.ba/lares/docs/road/ruling-custody-ember`>>
+<<^ code=`&#x0002;`>>
+
+```toml meta
+group    = "custody"
+order    = "0370"
+tags     = ["road/ruling"]
+title    = "lar:///ha.ka.ba/lares/docs/road/ruling-custody-ember"
+type     = "text/memetic-wikitext+tiddlywiki"
+uri-path = "ha.ka.ba/lares/docs/road/ruling-custody-ember"
+```
+
+* ''EMBER'' names the Tang-shaped, per-relation device pin; it holds no share of S key. Only the blinded points cross on unlock.
+
+<<^ code=`&#x0003;` bcc=`ni:///sha-256;jcTyqKiGShX8HuqfDsUI-r6AJcvaBkn1hWnooBzS8V8`>>
+
+<<^ code=`&#x0004;` to=`?`>>
