@@ -11,7 +11,9 @@
  * offers the keep lei) mints it under that passphrase where none rests. A paper slot joins at a paper read-back (`lares vault
  * bind --paper`), opened by the route that bind already took. A cut asks for nothing: it seals to the public half, so `rite keep
  * --if-due` and the session-end hook cut where nobody stands; a house with no seat refuses the cut by name. A root a harness
- * staged (`.lar-test-scratch`) with no terminal seats under the published test route, as its custody opens under it.
+ * staged (`.lar-test-scratch`) with no terminal seats under the published test route, and only where its custody tree itself
+ * opens under that route or stands absent: a house a person founded never takes a keep the world's test passphrase opens. A
+ * seat the test route made says so, and the first real proved unlock replaces it.
  *
  * THE CUT SIGNS ITS ROSTER. Whoever writes the remote reads the public half and could seal a roster of their own to it, so the
  * mint derives a signing seed from the same key the slot tree wraps: the seed rests here beside the seat (0600, local alone,
@@ -29,11 +31,11 @@ import { createHmac } from "node:crypto";
 import { mkdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import {
-  bindKeepSlot, confirmHeldPaper, decodeKeepSeat, encodeKeepSeat, keepVerifyKeyOf, mintKeepSeat, openKeepSecret, signKeepCut,
+  bindKeepSlot, confirmHeldPaper, decodeKeepSeat, decodeSlotTree, openTreeKey, encodeKeepSeat, keepVerifyKeyOf, mintKeepSeat, openKeepSecret, signKeepCut,
   type ConfirmedPaperPin, type Credential, type KeepSeat, type KeepSecretOpening, type PinSpec, type SlotSpec,
 } from "@lararium/mesh";
 import { nativeKdf } from "@lararium/mesh/node";
-import { atomicWriteFileSync, larConfigHome } from "@lararium/node";
+import { FsCustodyIo, atomicWriteFileSync, larConfigHome, sSlotsPath, vesselCustodyHomes } from "@lararium/node";
 import { KEEP_SEAT_FILE, REDECLARE_FILE, redeclareBytes, sealRedeclare, type BundleRedeclare } from "./bundle-manifest.js";
 import { gatherCredentials } from "./custody-prompt.js";
 import { TEST_ROUTE_PASSPHRASE, testScratchRoot } from "./offline-custody.js";
@@ -54,7 +56,7 @@ export function keepSeatPath(): string {
 }
 
 /** The seat as it rests here: the pair, the last roster seal, and the signing seed its cuts sign under (null where none rests). */
-interface RestingSeat { readonly seat: KeepSeat; readonly lastRoster: LastRosterSeal | null; readonly signingSeed: Uint8Array | null }
+interface RestingSeat { readonly seat: KeepSeat; readonly lastRoster: LastRosterSeal | null; readonly signingSeed: Uint8Array | null; readonly testRoute: boolean }
 
 function readResting(): RestingSeat | null {
   let text: string;
@@ -66,17 +68,19 @@ function readResting(): RestingSeat | null {
   if (read.reading !== "readable") throw new KeepSeatRefused("keep-seat-unreadable", `${keepSeatPath()} reads no keep pair (${read.why}); the bundle a keep cut before carries the seat whole: restore it from there`);
   let lastRoster: LastRosterSeal | null = null;
   let signingSeed: Uint8Array | null = null;
+  let testRoute = false;
   try {
-    const raw = JSON.parse(text) as { lastRoster?: { digest?: unknown; sealed?: unknown }; signingSeed?: unknown };
+    const raw = JSON.parse(text) as { lastRoster?: { digest?: unknown; sealed?: unknown }; signingSeed?: unknown; route?: unknown };
+    testRoute = raw.route === "test";
     if (typeof raw.lastRoster?.digest === "string" && typeof raw.lastRoster.sealed === "string") lastRoster = { digest: raw.lastRoster.digest, sealed: raw.lastRoster.sealed };
     if (typeof raw.signingSeed === "string" && /^[0-9a-f]{64}$/.test(raw.signingSeed)) signingSeed = Uint8Array.from(Buffer.from(raw.signingSeed, "hex"));
   } catch { /* the seat read whole above */ }
-  return { seat: read.seat, lastRoster, signingSeed };
+  return { seat: read.seat, lastRoster, signingSeed, testRoute };
 }
 
-function writeResting(seat: KeepSeat, lastRoster: LastRosterSeal | null, signingSeed: Uint8Array | null): void {
+function writeResting(seat: KeepSeat, lastRoster: LastRosterSeal | null, signingSeed: Uint8Array | null, testRoute = false): void {
   const body = JSON.parse(encodeKeepSeat(seat)) as Record<string, unknown>;
-  const local = { ...body, ...(signingSeed !== null ? { signingSeed: Buffer.from(signingSeed).toString("hex") } : {}), ...(lastRoster !== null ? { lastRoster } : {}) };
+  const local = { ...body, ...(testRoute ? { route: "test" } : {}), ...(signingSeed !== null ? { signingSeed: Buffer.from(signingSeed).toString("hex") } : {}), ...(lastRoster !== null ? { lastRoster } : {}) };
   mkdirSync(larConfigHome(), { recursive: true });
   atomicWriteFileSync(keepSeatPath(), `${JSON.stringify(local, null, 2)}\n`, undefined, { mode: 0o600 });
 }
@@ -111,7 +115,7 @@ function weakPassphrase(p: string): boolean {
 const WEAK_LINE = "keep: keep-passphrase-weak: the keep's wrapped secret rides its remote, where anyone who copies it may guess offline; this passphrase reads short. The keep seats anyway; a longer custody passphrase (`lares vault bind --passphrase`, then `lares vault unbind` the old slot) re-seats it stronger";
 
 /** Mint a fresh pair under `opener` and prove it opens before it rests; `replace` writes over a seat that rests. */
-async function mintUnder(opener: readonly Credential[], say: (line: string) => void): Promise<KeepSeat | null> {
+async function mintUnder(opener: readonly Credential[], say: (line: string) => void, testRoute = false): Promise<KeepSeat | null> {
   const pins = opener.map(pinOf);
   if (pins.length === 0 || pins.some((p) => p === null)) return null;
   const { seat, signingSeed } = await mintKeepSeat({ t: pins.length, pins: pins as PinSpec[] }, nativeKdf);
@@ -122,7 +126,7 @@ async function mintUnder(opener: readonly Credential[], say: (line: string) => v
   const answers = Buffer.from(check.verifyKey).equals(Buffer.from(keepVerifyKeyOf(signingSeed)));
   check.secret.fill(0); check.signingSeed.fill(0);
   if (!answers) throw new KeepSeatRefused("keep-seat-unchecked", "the keep pair minted under this route opened to another signing key; nothing rests");
-  writeResting(seat, null, signingSeed);
+  writeResting(seat, null, signingSeed, testRoute);
   if (opener.some((c) => c.kind === "passphrase" && weakPassphrase(c.passphrase))) say(WEAK_LINE);
   return seat;
 }
@@ -144,10 +148,10 @@ export async function reseatKeepPair(opener: readonly Credential[], say: (line: 
  * one slot holding every pin of the opener, at its threshold, so a custody slot of two pins seats a keep slot of the same two,
  * never the passphrase alone. Right after the mint the seat opens under that route, or nothing rests and the refusal names it.
  */
-export async function seatKeepPair(opener: readonly Credential[], say: (line: string) => void = () => {}): Promise<{ readonly seated: boolean; readonly seat: KeepSeat | null }> {
+export async function seatKeepPair(opener: readonly Credential[], say: (line: string) => void = () => {}, testRoute = false): Promise<{ readonly seated: boolean; readonly seat: KeepSeat | null }> {
   const resting = readResting();
   if (resting !== null) return { seated: false, seat: resting.seat };
-  const seat = await mintUnder(opener, say);
+  const seat = await mintUnder(opener, say, testRoute);
   return { seated: seat !== null, seat };
 }
 
@@ -166,11 +170,18 @@ export async function seatKeepAtUnlock(answer: CustodyOpenAnswer, route: readonl
   if (opener.length !== answer.opener.length) return "unproved";
   try {
     const resting = readResting();
+    // A SEAT THE TEST ROUTE MADE gives way to the first real proved route: the world reads the test passphrase.
+    const real = opener.some((c) => !(c.kind === "passphrase" && c.passphrase === TEST_ROUTE_PASSPHRASE));
+    if (resting !== null && resting.testRoute && real) {
+      if (await mintUnder(opener, say) === null) return "unseatable";
+      say(`keep: the keep pair the test route seated gives way to one under the route this unlock proved (${keepSeatPath()})`);
+      return "seated";
+    }
     if (resting !== null) {
       const o = await openKeepSecret(resting.seat, opener, nativeKdf);
       if (o.reading === "opens") {
         // A SEAT THAT LOST ITS SIGNING SEED takes it back here: the proved route opened the very key it derives from.
-        if (resting.signingSeed === null) writeResting(resting.seat, resting.lastRoster, o.signingSeed);
+        if (resting.signingSeed === null) writeResting(resting.seat, resting.lastRoster, o.signingSeed, resting.testRoute);
         o.secret.fill(0); o.signingSeed.fill(0);
         return "resting";
       }
@@ -204,7 +215,7 @@ export async function bindKeepPaper(openWith: readonly Credential[], confirmed: 
   if (resting === null) return "no-seat";
   const b = await bindKeepSlot(resting.seat, openWith, { t: 1, pins: [{ kind: "paper", confirmed }] }, nativeKdf);
   if (b.reading !== "bound") return b.reading;
-  writeResting(b.seat, resting.lastRoster, resting.signingSeed);
+  writeResting(b.seat, resting.lastRoster, resting.signingSeed, resting.testRoute);
   return "bound";
 }
 
@@ -233,6 +244,21 @@ export function openKeepSeat(seat: KeepSeat, credentials: readonly Credential[])
   return openKeepSecret(seat, credentials, nativeKdf);
 }
 
+/**
+ * Whether the house's custody tree takes the published test route: it stands absent (a harness's bare scratch root), or the test
+ * passphrase opens it (a harness founded it so). A tree a person founded answers no.
+ */
+async function custodyTakesTestRoute(): Promise<boolean> {
+  const homes = vesselCustodyHomes();
+  const tree = decodeSlotTree(await new FsCustodyIo(homes).read(sSlotsPath(homes.identity)));
+  if (tree.reading === "absent") return true;
+  if (tree.reading !== "readable") return false;
+  const u = await openTreeKey(tree.tree, [{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }], nativeKdf);
+  if (u.reading !== "opens") return false;
+  u.treeKey.fill(0);
+  return true;
+}
+
 /** What a cut seals to and signs under. */
 export interface CutSeat { readonly seat: KeepSeat; readonly signingSeed: Uint8Array }
 
@@ -243,8 +269,8 @@ export interface CutSeat { readonly seat: KeepSeat; readonly signingSeed: Uint8A
  */
 export async function keepSeatForCut(): Promise<CutSeat> {
   let resting = readResting();
-  if (resting === null && testScratchRoot() && !canPromptSecret()) {
-    await seatKeepPair([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }]);
+  if (resting === null && testScratchRoot() && !canPromptSecret() && await custodyTakesTestRoute()) {
+    await seatKeepPair([{ kind: "passphrase", passphrase: TEST_ROUTE_PASSPHRASE }], () => {}, true);
     resting = readResting();
   }
   if (resting !== null) {
@@ -262,7 +288,7 @@ export function sealRosterForCut(seat: KeepSeat, redeclare: BundleRedeclare): Bu
     return Buffer.from(resting.lastRoster.sealed, "base64");
   }
   const sealed = sealRedeclare(seat.publicKey, redeclare);
-  if (resting !== null && Buffer.from(resting.seat.publicKey).equals(Buffer.from(seat.publicKey))) writeResting(resting.seat, { digest, sealed: sealed.toString("base64") }, resting.signingSeed);
+  if (resting !== null && Buffer.from(resting.seat.publicKey).equals(Buffer.from(seat.publicKey))) writeResting(resting.seat, { digest, sealed: sealed.toString("base64") }, resting.signingSeed, resting.testRoute);
   return sealed;
 }
 
