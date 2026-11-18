@@ -44,7 +44,7 @@ import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, mirrorDirFileToUri } from "@lararium/node";
 import { daemonFaceCanonBag, carrierHash, type ShareEntry } from "@lararium/mesh";
-import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
+import { seedMirrors, liveLay, mirrorFiles, mirrorLines, mirrorsLeftWork, readKahuaPending, readKahuaFile, kahuaPendingPath, type MirrorDoors, type MirrorLaid, type MirrorWave } from "../src/seed-mirrors.js";
 import { carryExport, carryImport, foldWaveRefusal, type CarryDoors, type CarryVesselFace } from "../src/commands/carry.js";
 import { writeFaceLabels, faceLabelPath, writeFaceBases, readFaceLabel } from "../src/face-labels.js";
 import { runMirrorLeg } from "../src/commands/seed.js";
@@ -403,6 +403,12 @@ describe("the seed lays every mirror back into its one layer", () => {
     const bare = await seedMirrors({ apply: true, doors: v.mirrorDoors() });
     expect(bare.kahua.pending.map((p) => p.title)).toEqual([HERON]);
     expect(readKahuaPending().map((p) => p.title)).toEqual([HERON]);
+    // THE PENDING FILE NAMES WHAT IT HOLDS, never a number: bytes under a numbered tag read as nothing pending.
+    const pendingBytes = readFileSync(kahuaPendingPath(), "utf8");
+    expect(JSON.parse(pendingBytes).schema).toBe("lar-kahua-pending");
+    writeFileSync(kahuaPendingPath(), JSON.stringify({ ...JSON.parse(pendingBytes), schema: "lar-kahua-pending/1" }));
+    expect(readKahuaPending()).toEqual([]);
+    writeFileSync(kahuaPendingPath(), pendingBytes);
     expect(v.lifts).toEqual([]);
 
     await expect(seedMirrors({ apply: true, doors: v.mirrorDoors(), liftKahua: 2 })).rejects.toThrow(/seed-kahua-count/);
