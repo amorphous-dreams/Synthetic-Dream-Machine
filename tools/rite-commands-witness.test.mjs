@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -40,6 +40,12 @@ const NEXUS = `export async function nexus(args) {
 }
 `;
 const SOURCE = 'export function sealKeySetHash(keys: string[]): string { return keys.join(""); }\n';
+// The witness refuses when any rite it reads stands absent, so the fixture stands every rite the witness's own
+// RITES list names: the founding runbook carries the planted commands, each other rite a quiet page.
+const FOUNDING = 'bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem';
+const RITE_PATHS = [...(readFileSync(join(tools, 'rite-commands-witness.sh'), 'utf8')
+  .match(/^RITES = \[\n([\s\S]*?)^\]/m)?.[1] ?? '').matchAll(/pathlib\.Path\("([^"]+)"\)/g)].map(m => m[1]);
+assert.ok(RITE_PATHS.includes(FOUNDING), `the witness's RITES list names the founding runbook: ${RITE_PATHS}`);
 const RITE = '# rite\n\n```sh\nlares nexus admit\nlares seal\n```\n\nThe chain reads `sealKeySetHash`.\n';
 
 // The witness `cd`s to its own parent's parent, so a copy under a scratch root reads that root's rites and modules.
@@ -49,8 +55,7 @@ function run({ rite = RITE, nexus = NEXUS, source = SOURCE, env = {} } = {}) {
   mkdirSync(join(root, 'tools'));
   for (const f of ['rite-commands-witness.sh', 'code_scan.py'])
     if (existsSync(join(tools, f))) copyFileSync(join(tools, f), join(root, 'tools', f));
-  put('bags/lararium/ha.ka.ba/lararium/mesh/founding-runbook.mem', rite);
-  put('bags/lararium/ha.ka.ba/lararium/api/sensorium-runbook.mem', '# tending\n');
+  for (const rel of RITE_PATHS) put(rel, rel === FOUNDING ? rite : '# a rite that instructs nothing\n');
   put('packages/lares-cli/dist/src/bin/lares.js', BIN);
   put('packages/lares-cli/src/host-bridge.ts', BRIDGE);
   put('packages/lares-cli/src/commands/nexus.ts', nexus);
