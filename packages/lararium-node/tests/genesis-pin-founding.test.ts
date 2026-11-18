@@ -1,10 +1,10 @@
 /**
- * genesis-pin-founding -- the genesis pin moves only when a founding SUCCEEDS.
+ * genesis-pin-founding -- the seed witness moves only when a founding SUCCEEDS.
  *
- * A vessel pinned to seed A that attempts `found --force` on a shifted build and refuses (custody locked) must
- * keep seed A's pin: its unchanged store boots on the shifted build, and the boot must still refuse. A pin
- * replaced before custody opens would let the refused founding launder the shift. A successful re-found pins
- * the seed it used.
+ * A vessel witnessed on seed A that attempts `found --force` on a shifted build and refuses (custody locked) must
+ * keep seed A's witness: its unchanged store boots on the shifted build, and the boot must still name the shifted
+ * seed as an offer. A witness replaced before custody opens would let the refused founding launder the shift. A
+ * successful re-found witnesses the seed it used.
  */
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 describe("the pin moves with a successful founding only", () => {
-  test("RED: a refused `found --force` keeps the old pin, so the boot on the shifted build still refuses — CONTROL: a successful re-found pins the new seed", async () => {
+  test("RED: a refused `found --force` keeps the old witness, so the boot on the shifted build still names the offer — CONTROL: a successful re-found witnesses the new seed", async () => {
     delete process.env["LAR_GENESIS"];
     expect(existsSync(join(SHIPPED, "seed.json"))).toBe(true);
     const r = mkdtempSync(join(tmpdir(), "lar-pin-founding-")); roots.push(r);
@@ -49,14 +49,14 @@ describe("the pin moves with a successful founding only", () => {
       await expect(ownedStore(storage, (repo) =>
         runInit({ repo, storageDir: storage, genesisDir: SHIPPED, force: true, custody: { slots: [] } }))).rejects.toThrow(/rests unopened|CustodyLocked|locked/i);
       expect((JSON.parse(readFileSync(pinPath, "utf8")) as { seedCid: string }).seedCid).toBe(seedA);
-      // ...so the boot on the shifted build refuses by name.
-      expect(() => checkGenesisPin(storage, resolveGenesis({ corpusRoot: r, shippedRoot: repoRoot }))).toThrow(/genesis seed/);
+      // ...so the boot on the shifted build names the shifted seed as an offer.
+      expect(checkGenesisPin(storage, resolveGenesis({ corpusRoot: r, shippedRoot: repoRoot }))).toMatch(/a newer seed waits/);
 
       // CONTROL: a founding that succeeds pins the seed it used, and the boot passes.
       await openTestCustody();
       await foundDirect({ storageDir: storage, genesisDir: SHIPPED, force: true });
       expect((JSON.parse(readFileSync(pinPath, "utf8")) as { seedCid: string }).seedCid).toBe(pinned.seedCid);
-      expect(() => checkGenesisPin(storage, resolveGenesis({ corpusRoot: r, shippedRoot: repoRoot }))).not.toThrow();
+      expect(checkGenesisPin(storage, resolveGenesis({ corpusRoot: r, shippedRoot: repoRoot }))).toMatch(/\[genesis seed\] witnessed /);
     });
   }, 120_000);
 });
