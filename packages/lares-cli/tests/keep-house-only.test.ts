@@ -9,6 +9,8 @@
  *       `elsewhere` names nothing;
  *   H3  a plain export (no keep) over the checkout's workbench carries it as before, and names no `elsewhere`.
  */
+import { checkHouseTeardown } from "./support/check-house-teardown.js";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -19,6 +21,7 @@ import { verifyBundle } from "../src/bundle-manifest.js";
 
 const F1 = "11111111-1111-4111-8111-111111111111";
 const tid = (title: string, text: string): string => `title: ${title}\ntype: text/vnd.tiddlywiki\n\n${text}\n`;
+let house: IsolatedHouse;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 
@@ -40,9 +43,9 @@ function doors(canonWikis: string): BundleDoors {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-keep-house-only-"));
+  house = openIsolatedHouse({ home: true, gitConfig: true });
+  root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep house-only suite\n");
-  process.env["LAR_ROOT"] = root;
   out = join(root, "workspaces", "backup", "house");
   mkdirSync(dirname(out), { recursive: true });
   // House-only classes: the face's daemon working layer, its kahua stage, a user wiki's workbench, a minted bag.
@@ -51,10 +54,12 @@ beforeEach(() => {
   put("projections/wikis/notes/ha.ka.ba/notes/pond.tid", tid("lar:///ha.ka.ba/notes/pond", "the pond at dusk"));
   put("projections/bags/garden/ha.ka.ba/garden/rose.tid", tid("lar:///ha.ka.ba/garden/rose", "a rose"));
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); });
+afterEach(() => { house.close(); });
 
 const workspace = (): string => join(root, "workspaces", "backup");
 const houseOnly = ["faces/f0/working/ha.ka.ba/kahua/memory/heron.tid", "faces/f0/kahua/ha.ka.ba/kahua/memory/heron.tid", "wikis/notes/working/ha.ka.ba/notes/pond.tid", "bags/garden/ha.ka.ba/garden/rose.tid"];
+
+checkHouseTeardown();
 
 describe("the keep cuts house-only content", () => {
   test("H1 RED: a keep leaves a workbench resting in the checkout out and names it under `elsewhere`; CONTROL: every house-only class rides whole", async () => {

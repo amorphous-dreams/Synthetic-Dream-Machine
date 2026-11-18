@@ -15,9 +15,9 @@
  *       keep lei already stands, else h0), names it on every row and in its answer; a named `--face N` rides as named; the lei
  *       hint names the keep's face.
  */
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { afterEach, beforeEach, describe, expect, test } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, readdirSync, symlinkSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { BUNDLE_SCHEMA, MANIFEST_FILE, REDECLARE_FILE, bundleIdOf, sha256Hex, verifyBundle, zeroCounts, type BundleFile, type BundleManifest } from "../src/bundle-manifest.js";
 import { KEEP_CHECK, KeepRefused, riteKeep, type KeepPorts } from "../src/rite-keep.js";
@@ -25,6 +25,7 @@ import type { RiteVerbAnswer } from "../src/rite-kukulu.js";
 import { RiteUsage, keepPlan } from "../src/commands/rite.js";
 import { parseArgs } from "../src/parse-args.js";
 
+let house: IsolatedHouse;
 let root: string;
 const TESSERA = "e".repeat(64), LEI = "d".repeat(64);
 
@@ -69,15 +70,15 @@ const workspace = (): string => join(root, "workspaces", "backup");
 const refusal = async (run: Promise<unknown>): Promise<string> => run.then(() => "no refusal", (e: unknown) => (e instanceof KeepRefused ? e.code : `threw ${String(e)}`));
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-keep-house-"));
+  house = openIsolatedHouse();
+  root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "keep suite\n");
-  process.env["LAR_ROOT"] = root;
   mkdirSync(join(root, "hearth"), { recursive: true });
   mkdirSync(join(workspace(), ".git"), { recursive: true });
   writeFileSync(join(workspace(), ".git", "HEAD"), "ref: refs/heads/main\n");
   writeFileSync(join(workspace(), "README.md"), "the operator's own backup repo\n");
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); });
+afterEach(() => { house.close(); });
 
 describe("the keep rite, vessel half", () => {
   test("K0 RED: the bundle the keep cuts names its format, never counts it: `lar-house-bundle`, no `/N`; CONTROL: a manifest under the numbered name refuses, with no back-compat reader", () => {

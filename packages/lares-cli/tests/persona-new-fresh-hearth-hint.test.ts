@@ -3,24 +3,21 @@
  * operator to the Stable founding act (`lares found --hearth --name '<label>'`), which founds persona zero with the hearth;
  * it never names `persona new 0` there.
  */
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { cmdPersona } from "../src/commands/persona.js";
 
 describe("persona new on a place with no face", () => {
-  let root = "";
-  const saved = process.env["LAR_ROOT"];
+  let house: IsolatedHouse;
   beforeEach(() => {
-    root = mkdtempSync(join(tmpdir(), "lares-fresh-hint-"));
-    writeFileSync(join(root, ".lar-test-scratch"), "");
-    process.env["LAR_ROOT"] = root;
+    house = openIsolatedHouse();
+    writeFileSync(join(house.root, ".lar-test-scratch"), "");
   });
   afterEach(() => {
     vi.restoreAllMocks();
-    if (saved === undefined) delete process.env["LAR_ROOT"]; else process.env["LAR_ROOT"] = saved;
-    rmSync(root, { recursive: true, force: true });
+    house.close();
   });
 
   test("the refusal names `lares found --hearth --name`, never `persona new 0`", async () => {

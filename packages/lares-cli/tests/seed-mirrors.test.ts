@@ -40,9 +40,10 @@
  *   M24 a file no rule reads names itself and its reason in the lay's lines
  *   M25 HOUSE_IGNORED reaches the bundle: an export carries no `.git/`, an adoption copies none
  */
+import { checkHouseTeardown } from "./support/check-house-teardown.js";
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { describe, test, expect, beforeEach, afterEach } from "vitest";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { createHash } from "node:crypto";
 import { kapaeShadowBody, readKapaeShadow, SyncedTree } from "@lararium/node";
@@ -244,6 +245,7 @@ class FakeHouse {
   }
 }
 
+let house: IsolatedHouse;
 let root: string, out: string;
 const put = (rel: string, text: string): void => { const p = join(root, ...rel.split("/")); mkdirSync(dirname(p), { recursive: true }); writeFileSync(p, text); };
 const tid = (title: string, text: string, extra = ""): string => `title: ${title}\n${extra}type: text/vnd.tiddlywiki\n\n${text}\n`;
@@ -288,13 +290,16 @@ function refound(faces: Array<Partial<BundleVesselFace> & { handleIndex: number 
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "lar-seed-mirrors-"));
+  house = openIsolatedHouse({ home: true, gitConfig: true });
+  root = house.root;
   writeFileSync(join(root, ".lar-test-scratch"), "seed-mirrors suite\n");
-  process.env["LAR_ROOT"] = root;
-  out = join(mkdtempSync(join(tmpdir(), "lar-seed-mirrors-out-")), "bundle");
+  out = join(house.scratchDir, "export", "bundle");
+  mkdirSync(dirname(out));
   oldDisk();
 });
-afterEach(() => { rmSync(root, { recursive: true, force: true }); rmSync(dirname(out), { recursive: true, force: true }); });
+afterEach(() => { house.close(); });
+
+checkHouseTeardown();
 
 describe("the lay lays every mirror back into its one layer", () => {
   test("M1 — export -> reset -> found -> lay -> import: every record in its layer with its bytes, the base kept, kahua on the confirmed count, ashes; nothing twice", async () => {

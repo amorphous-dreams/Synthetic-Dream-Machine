@@ -3,16 +3,17 @@
  * every refusal leads its line by name with no stack, and `vessel stand --init` carries a refused founding's exit code.
  * Real files under a scratch LAR_ROOT; the only fake is the route gatherer's count.
  */
+import { openIsolatedHouse, type IsolatedHouse } from "./support/isolated-house.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
-import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { vesselCustodyHomes } from "@lararium/node";
 import { parseArgs } from "../src/parse-args.js";
 import { cmdFound, setFoundingRoute } from "../src/commands/found.js";
 import { gatherFoundingRoute, CredentialTtyRefusal } from "../src/custody-prompt.js";
 
+let house: IsolatedHouse;
 let root: string;
 let err: string[];
 
@@ -30,13 +31,13 @@ function snapshot(dir: string): string {
 }
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), "found-refusals-"));
-  process.env["LAR_ROOT"] = root;
+  house = openIsolatedHouse();
+  root = house.root;
   err = [];
   vi.spyOn(console, "error").mockImplementation((...a) => { err.push(a.join(" ")); });
   vi.spyOn(console, "log").mockImplementation(() => {});
 });
-afterEach(() => { vi.restoreAllMocks(); delete process.env["LAR_ROOT"]; rmSync(root, { recursive: true, force: true }); });
+afterEach(() => { vi.restoreAllMocks(); house.close(); });
 
 describe("vessel found — the store's shape is read before any route is asked", () => {
   it("★ a store holding a face row with no slot tree refuses OccupiedStoreRefusal by name, asks for NO route, prints no stack, writes nothing ★", async () => {
